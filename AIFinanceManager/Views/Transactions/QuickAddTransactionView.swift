@@ -20,6 +20,8 @@ struct QuickAddTransactionView: View {
 
     @Environment(TimeFilterManager.self) private var timeFilterManager
 
+    @Namespace private var categoryNamespace
+
     // MARK: - Initialization
 
     init(
@@ -52,7 +54,8 @@ struct QuickAddTransactionView: View {
             onCategoryTap: { category, type in
                 coordinator.handleCategorySelected(category, type: type)
             },
-            emptyStateAction: coordinator.handleAddCategory
+            emptyStateAction: coordinator.handleAddCategory,
+            sourceNamespace: categoryNamespace
         )
         .sheet(item: $coordinator.activeSelection) { selection in
             addTransactionSheet(for: selection.category, type: selection.type)
@@ -77,6 +80,7 @@ struct QuickAddTransactionView: View {
             onDismiss: coordinator.dismissModal
         )
         .environment(timeFilterManager)
+        .navigationTransition(.zoom(sourceID: "\(category)_\(type.rawValue)", in: categoryNamespace))
     }
 
     private var categoryEditSheet: some View {

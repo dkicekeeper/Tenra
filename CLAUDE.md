@@ -140,6 +140,14 @@ AIFinanceManager/
 - Fixed: `InsightDetailView` previously omitted the parameter entirely (relied on default `false`)
 - Design doc: `docs/plans/2026-02-22-chart-display-mode-design.md`
 
+**Phase 39** (2026-03-02): ContentView Reactivity — `.task(id:)` replaces manual `onChange` chains
+- 5 `onChange` + `summaryUpdateTask`/`wallpaperLoadingTask` @State handles + 4 функции (`updateSummary`, `loadWallpaperOnce`, `reloadWallpaper`, `startWallpaperLoad`) → 2 `.task(id:)` (~160 LOC removed)
+- `SummaryTrigger: Equatable` struct (`txCount`, `filterName`, `isImporting`, `isFullyInitialized`) — параметр `.task(id: summaryTrigger)`; SwiftUI отменяет/перезапускает автоматически
+- Дебаунс-условие: `try? await Task.sleep(for: .milliseconds(80))` только внутри `if !coordinator.isFullyInitialized` — при завершении инициализации карточка обновляется немедленно
+- Обои: `HomePersistentState.wallpaperImageName` хранит имя загруженного файла; `guard homeState.wallpaperImageName != targetName` в `.task(id:)` исключает перезагрузку при возврате назад
+- `@MainActor private static let summaryDateFormatter` — форматируем даты на MainActor, передаём `String` (Sendable) в `Task.detached`; `DateFormatter` нельзя создавать внутри detached-задач (не Sendable)
+- `HomePersistentState.hasAppearedOnce` удалён — больше не нужен; `.task(id:)` перезапуск при re-appear дёшев
+
 **Phase 38** (2026-02-28): InsightsService Split — 2832 LOC Monolith → 10 Domain Files
 - `InsightsService.swift` shrunk to 782 LOC — retains: class decl, init, public API, granularity API, period data points, shared helpers
 - 9 new extension files: `+Spending`, `+Income`, `+Budget`, `+Recurring`, `+CashFlow`, `+Wealth`, `+Savings`, `+Forecasting`, `+HealthScore`
@@ -421,12 +429,15 @@ New file needed?
 - Cache frequently accessed data (see BalanceCoordinator cache)
 - Optimize CoreData fetch requests with appropriate batch sizes
 - **⚠️ SwiftUI `List` + 500+ sections = hard freeze** — SwiftUI renders all `Section` headers eagerly; 3,530 sections causes 10-12s UI freeze. Always slice: `Array(sections.prefix(visibleSectionLimit))` with `@State var visibleSectionLimit = 100`. Add `ProgressView().onAppear { visibleSectionLimit += 100 }` as the last List row for infinite scroll ("умная подгрузка"). `@State` auto-resets to 100 on each `NavigationStack` push.
-- **⚠️ `ContentView.onAppear` fires on every back-navigation** — guard expensive ops (e.g. `updateSummary()` ~540ms) with `@State private var hasAppearedOnce = false`. Safe to skip on re-appearances: `onChange(of: transactionStore.transactions.count)` keeps `cachedSummary` current.
+- **⚠️ `onAppear` fires on every back-navigation** — не используй `@State var hasAppearedOnce` как заглушку. Вместо этого применяй `.task(id: trigger)`: перезапуск task дёшев (фон + дебаунс), данные всегда актуальны. `ContentView` не использует `onAppear` для загрузки данных (Phase 39).
 - **⚠️ Dead code deletion — orphaned call sites**: When deleting a class (e.g. `BalanceUpdateQueue`), grep all `.swift` sources for the class name AND all method names it implemented. Removed parameters silently survive at call sites and only surface at build time as "extra argument" errors. Example: after deleting `BalanceUpdateQueue`, `AccountOperationService` still passed `priority: .immediate` to `coordinator.updateForTransaction()`.
 - **`CompileAssetCatalogVariant` failure can be transient** — if the only failing build step is asset catalog compilation and `grep -E "error:"` returns nothing, just retry; it's a Xcode caching artifact, not a code issue.
 - **Making an `@Observable` property reactive**: remove `@ObservationIgnored`, change to `private(set) var`; in the observing View add `.onChange(of: vm.property) { ... }`. Used for `InsightsViewModel.isStale` → drives `InsightsView` reload while tab stays open.
 - **Cross-file extension access control**: `private` on a class member is file-scoped — extensions in OTHER `.swift` files CANNOT access it. When splitting a class into extension files: change `private let/static let/func` shared helpers and dependencies to `internal` (no modifier). Methods only called within the same extension file can stay `private` within that extension. Rule: caller and callee in different files → `internal`; same file only → `private`.
 - **Extension file imports are not inherited**: Each extension file is an independent compilation unit — it does NOT inherit `import os`, `import CoreData`, `import SwiftUI` from the main class file. Every file calling `Self.logger.debug(...)` needs `import os`; every file using `NSFetchRequest` needs `import CoreData`.
+- **`.task(id:)` вместо цепочки `onChange`** — объединяй все реактивные входы в `Equatable` struct (`SummaryTrigger`-паттерн); SwiftUI управляет отменой сам. Смешанная срочность: дебаунс внутри `if !isFullyInitialized`, чтобы init-complete-триггер был немедленным.
+- **`DateFormatter` не Sendable** — объявляй как `@MainActor private static let`; форматируй строки на MainActor до `Task.detached`; передавай `String`, а не сам форматтер. Никогда не создавай `DateFormatter` внутри `Task.detached`.
+- **`Group {}` в `@ViewBuilder` computed var лишний** — если `private var foo: some View` возвращает `if/else`, добавь `@ViewBuilder` и убери `Group`; семантика идентична, один уровень иерархии сэкономлен.
 
 ## SwiftUI Layout Gotchas
 
@@ -599,7 +610,7 @@ Key references: `docs/PROJECT_BIBLE.md`, `docs/ARCHITECTURE_FINAL_STATE.md`, `do
 
 ---
 
-**Last Updated**: 2026-02-28
-**Project Status**: Active development - InsightsService split 2832→782 LOC (Phase 38). Service audit: 3 dead protocols deleted, TransactionConverterService merged, RecurringTransactionService documented. Reactivity audit + dead code removal (Phase 36). ~800 LOC deleted, 7 reactivity bugs fixed (ForEach identity, sheet flicker, insights staleness, budget rollover, double-invalidation, category grid, isStale). CSV import crash fix (Phase 35). Utils cleanup + design system split (Phase 34). Zero hardcoded colors (Phase 32-33). SwiftUI anti-pattern sweep (Phase 31), Per-element skeleton loading (Phase 30), Instant launch (Phase 28), Performance optimized, Persistent aggregate caching, Fine-grained @Observable updates.
+**Last Updated**: 2026-03-02
+**Project Status**: Active development - ContentView fully reactive via `.task(id:)` (Phase 39). InsightsService split 2832→782 LOC (Phase 38). Service audit: 3 dead protocols deleted, TransactionConverterService merged, RecurringTransactionService documented. Reactivity audit + dead code removal (Phase 36). ~800 LOC deleted, 7 reactivity bugs fixed (ForEach identity, sheet flicker, insights staleness, budget rollover, double-invalidation, category grid, isStale). CSV import crash fix (Phase 35). Utils cleanup + design system split (Phase 34). Zero hardcoded colors (Phase 32-33). SwiftUI anti-pattern sweep (Phase 31), Per-element skeleton loading (Phase 30), Instant launch (Phase 28), Performance optimized, Persistent aggregate caching, Fine-grained @Observable updates.
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns enforced via `SWIFT_STRICT_CONCURRENCY = targeted`

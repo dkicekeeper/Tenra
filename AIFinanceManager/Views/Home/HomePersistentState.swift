@@ -20,11 +20,12 @@ final class HomePersistentState {
     /// Nil only before the first computation completes.
     var cachedSummary: Summary? = nil
 
-    /// Guards expensive first-appear work in ContentView.
-    /// Once true, back-navigation re-appearances are cheap.
-    var hasAppearedOnce: Bool = false
-
     /// Decoded wallpaper image (downsampled to screen resolution).
     /// UIImage is a class — changes propagate via @Observable automatically.
     var wallpaperImage: UIImage? = nil
+
+    /// The wallpaper file name that produced `wallpaperImage`.
+    /// Used by ContentView's .task(id: wallpaperImageName) to distinguish
+    /// a name-change reload from a plain view re-appear (same name → skip).
+    var wallpaperImageName: String? = nil
 }

@@ -541,11 +541,13 @@ final class InsightsService: @unchecked Sendable {
             ?? Date()
         let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate)
 
-        // Phase 31: Fast path for .year and .allTime — these granularities span full history
-        // which may exceed the windowed transaction store (Task 7 windowMonths = 3).
-        // MonthlyAggregateService always holds full history regardless of windowing.
+        // Fast path for all non-week granularities — MonthlyAggregateService holds full history
+        // regardless of the 3-month in-memory window (windowMonths = 3).
+        // .month and .quarter were previously excluded, causing charts to show only 3 months.
+        // .week spans 52 weeks at weekly resolution; monthly aggregates can't back-fill per-week
+        // bars accurately, so it remains on the transaction-scan path (limited to window).
         switch granularity {
-        case .year, .allTime:
+        case .year, .allTime, .month, .quarter:
             let monthlyAggs = transactionStore.monthlyAggregateService.fetchRange(
                 from: windowStart, to: windowEnd, currency: baseCurrency
             )
@@ -561,7 +563,7 @@ final class InsightsService: @unchecked Sendable {
             }
             // Fallback to transaction scan if aggregates not ready (first launch)
             guard !transactions.isEmpty else { return [] }
-        case .week, .month, .quarter:
+        case .week:
             guard !transactions.isEmpty else { return [] }
         }
 
@@ -626,9 +628,8 @@ final class InsightsService: @unchecked Sendable {
         }
     }
 
-    /// Phase 31: Build PeriodDataPoint array from MonthlyFinancialAggregate records.
-    /// Used for .year and .allTime granularities to avoid reading windowed transactions.
-    /// Groups monthly aggregate rows into the correct bucket (yearly or all-time).
+    /// Build PeriodDataPoint array from MonthlyFinancialAggregate records.
+    /// Handles .year, .allTime, .month, and .quarter by grouping monthly rows into buckets.
     private func computePeriodDataPointsFromAggregates(
         _ aggregates: [MonthlyFinancialAggregate],
         granularity: InsightGranularity,
@@ -659,7 +660,9 @@ final class InsightsService: @unchecked Sendable {
                 keySet.insert(key)
             }
             switch granularity {
-            case .year:    cursor = calendar.date(byAdding: .year, value: 1, to: cursor) ?? windowEnd
+            case .year:    cursor = calendar.date(byAdding: .year,       value: 1, to: cursor) ?? windowEnd
+            case .month:   cursor = calendar.date(byAdding: .month,      value: 1, to: cursor) ?? windowEnd
+            case .quarter: cursor = calendar.date(byAdding: .month,      value: 3, to: cursor) ?? windowEnd
             case .allTime: cursor = windowEnd
             default:       cursor = windowEnd
             }
@@ -669,7 +672,9 @@ final class InsightsService: @unchecked Sendable {
             let periodStart = granularity.periodStart(for: key)
             let periodEnd: Date
             switch granularity {
-            case .year:    periodEnd = calendar.date(byAdding: .year, value: 1, to: periodStart) ?? periodStart
+            case .year:    periodEnd = calendar.date(byAdding: .year,  value: 1, to: periodStart) ?? periodStart
+            case .month:   periodEnd = calendar.date(byAdding: .month, value: 1, to: periodStart) ?? periodStart
+            case .quarter: periodEnd = calendar.date(byAdding: .month, value: 3, to: periodStart) ?? periodStart
             case .allTime: periodEnd = windowEnd
             default:       periodEnd = windowEnd
             }

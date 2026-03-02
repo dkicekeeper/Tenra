@@ -14,6 +14,7 @@ struct CategoryGridView: View {
     let gridColumns: Int?
     let onCategoryTap: (String, TransactionType) -> Void
     let emptyStateAction: (() -> Void)?
+    var sourceNamespace: Namespace.ID? = nil
 
     // MARK: - Body
 
@@ -69,6 +70,7 @@ struct CategoryGridView: View {
                 CategoryGridItem(
                     category: category,
                     baseCurrency: baseCurrency,
+                    sourceNamespace: sourceNamespace,
                     onTap: {
                         onCategoryTap(category.name, category.type)
                     }
@@ -100,6 +102,7 @@ struct CategoryGridView: View {
 private struct CategoryGridItem: View {
     let category: CategoryDisplayData
     let baseCurrency: String
+    var sourceNamespace: Namespace.ID? = nil
     let onTap: () -> Void
 
     var body: some View {
@@ -129,6 +132,23 @@ private struct CategoryGridItem: View {
                     .lineLimit(1)
             }
             Spacer()
+        }
+        .matchedTransitionSourceIfPresent(
+            id: "\(category.name)_\(category.type.rawValue)",
+            namespace: sourceNamespace
+        )
+    }
+}
+
+// MARK: - Helpers
+
+private extension View {
+    @ViewBuilder
+    func matchedTransitionSourceIfPresent(id: some Hashable, namespace: Namespace.ID?) -> some View {
+        if let ns = namespace {
+            matchedTransitionSource(id: id, in: ns)
+        } else {
+            self
         }
     }
 }

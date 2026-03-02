@@ -225,14 +225,15 @@ final class InsightsViewModel {
         let allTransactions = Array(transactionStore.transactions)
         let balanceSnapshot = makeBalanceSnapshot()
         let priorityGranularity = currentGranularity  // show this one first
+        // Fetch earliest transaction date from CoreData — NOT from windowed allTransactions.
+        // allTransactions only holds last 3 months; without this fix .month/.quarter granularities
+        // would compute windowStart = ~3 months ago and show only 3 months of chart data.
+        let firstDate = transactionStore.fetchFirstTransactionDate()
+            ?? allTransactions.compactMap { DateFormatters.dateFormatter.date(from: $0.date) }.min()
 
         recomputeTask = Task.detached(priority: .userInitiated) { [weak self] in
             guard let self, !Task.isCancelled else { return }
             Self.logger.debug("🔧 [InsightsVM] Background recompute START (detached) — 5 granularities")
-
-            let firstDate = allTransactions
-                .compactMap { DateFormatters.dateFormatter.date(from: $0.date) }
-                .min()
 
             var newInsights = [InsightGranularity: [Insight]]()
             var newPoints   = [InsightGranularity: [PeriodDataPoint]]()

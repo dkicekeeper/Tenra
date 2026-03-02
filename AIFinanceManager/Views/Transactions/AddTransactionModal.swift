@@ -27,6 +27,8 @@ struct AddTransactionModal: View {
     @State private var subcategorySearchText = ""
     @State private var showingCategoryHistory = false
 
+    @Namespace private var historyNamespace
+
     // MARK: - Callbacks
 
     let onDismiss: () -> Void
@@ -83,8 +85,8 @@ struct AddTransactionModal: View {
                 }
             )
             .overlay(overlayContent)
-            .sheet(isPresented: $showingCategoryHistory) {
-                categoryHistorySheet
+            .navigationDestination(isPresented: $showingCategoryHistory) {
+                categoryHistoryDestination
             }
             .onChange(of: coordinator.formData.accountId) { _, _ in
                 coordinator.updateCurrencyForSelectedAccount()
@@ -140,12 +142,6 @@ struct AddTransactionModal: View {
                     )
                 }
 
-                MenuPickerRow(
-                    title: String(localized: "quickAdd.makeRecurring"),
-                    selection: $bindableCoordinator.formData.recurring
-                        
-                )
-
                 DescriptionTextField(
                     text: $bindableCoordinator.formData.description,
                     placeholder: String(localized: "quickAdd.descriptionPlaceholder")
@@ -164,12 +160,45 @@ struct AddTransactionModal: View {
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
+                recurringMenuButton
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
                     showingCategoryHistory = true
                 }) {
                     Image(systemName: "clock.arrow.circlepath")
                 }
+                .matchedTransitionSource(id: "history", in: historyNamespace)
             }
+        }
+    }
+
+    private var recurringMenuButton: some View {
+        let isActive = coordinator.formData.recurring != .never
+        return Menu {
+            Button {
+                coordinator.formData.recurring = .never
+            } label: {
+                if coordinator.formData.recurring == .never {
+                    Label(String(localized: "recurring.never"), systemImage: "checkmark")
+                } else {
+                    Text(String(localized: "recurring.never"))
+                }
+            }
+            ForEach(RecurringFrequency.allCases, id: \.self) { freq in
+                Button {
+                    coordinator.formData.recurring = .frequency(freq)
+                } label: {
+                    if coordinator.formData.recurring == .frequency(freq) {
+                        Label(freq.displayName, systemImage: "checkmark")
+                    } else {
+                        Text(freq.displayName)
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: "repeat")
+                .foregroundStyle(isActive ? Color.accentColor : Color.primary)
         }
     }
 
@@ -205,17 +234,16 @@ struct AddTransactionModal: View {
         .presentationDragIndicator(.visible)
     }
 
-    private var categoryHistorySheet: some View {
-        NavigationStack {
-            HistoryView(
-                transactionsViewModel: coordinator.transactionsViewModel,
-                accountsViewModel: coordinator.accountsViewModel,
-                categoriesViewModel: coordinator.categoriesViewModel,
-                paginationController: appCoordinator.transactionPaginationController,
-                initialCategory: coordinator.formData.category
-            )
-            .environment(timeFilterManager)
-        }
+    private var categoryHistoryDestination: some View {
+        HistoryView(
+            transactionsViewModel: coordinator.transactionsViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            paginationController: appCoordinator.transactionPaginationController,
+            initialCategory: coordinator.formData.category
+        )
+        .environment(timeFilterManager)
+        .navigationTransition(.zoom(sourceID: "history", in: historyNamespace))
     }
 
     // MARK: - Private Methods

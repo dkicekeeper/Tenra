@@ -9,9 +9,6 @@
 import SwiftUI
 import os
 import ImageIO
-#if DEBUG
-import QuartzCore
-#endif
 
 private let cvLogger = Logger(subsystem: "AIFinanceManager", category: "ContentView")
 
@@ -38,12 +35,34 @@ struct ContentView: View {
     @Namespace private var accountNamespace
     @State private var showingTimeFilter = false
     @State private var showingAddAccount = false
-    /// In-progress wallpaper load handle — prevents duplicate concurrent loads.
-    /// Does NOT need to persist across ContentView recreation: if homeState.wallpaperImage
-    /// is already set, loadWallpaperOnce() returns early without starting a new load.
-    @State private var wallpaperLoadingTask: Task<Void, Never>? = nil
-    /// Debounce task for summary recalculation — prevents double-fire during initialization.
-    @State private var summaryUpdateTask: Task<Void, Never>?
+
+    // MARK: - Summary Trigger
+    // Equatable snapshot of every input that drives the summary card.
+    // .task(id: summaryTrigger) restarts automatically whenever this changes.
+    private struct SummaryTrigger: Equatable {
+        let txCount: Int
+        let filterName: String  // displayName proxy — avoids Equatable requirement on TimeFilter
+        let isImporting: Bool
+        let isFullyInitialized: Bool
+    }
+    private var summaryTrigger: SummaryTrigger {
+        SummaryTrigger(
+            txCount: transactionStore.transactions.count,
+            filterName: timeFilterManager.currentFilter.displayName,
+            isImporting: transactionStore.isImporting,
+            isFullyInitialized: coordinator.isFullyInitialized
+        )
+    }
+
+    // Thread-safe because it is only accessed from @MainActor context (.task body).
+    @MainActor
+    private static let summaryDateFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd"
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = .current
+        return df
+    }()
 
     // MARK: - Computed ViewModels (from coordinator)
     private var viewModel: TransactionsViewModel {
@@ -79,7 +98,7 @@ struct ContentView: View {
                     accountsViewModel: accountsViewModel,
                     account: account,
                     namespace: accountNamespace,
-                    categoriesViewModel: coordinator.categoriesViewModel
+                    categoriesViewModel: categoriesViewModel
                 )
                 .environment(timeFilterManager)
                 .navigationTransition(.zoom(sourceID: account.id, in: accountNamespace))
@@ -92,58 +111,99 @@ struct ContentView: View {
                 await coordinator.initializeFastPath()
                 await coordinator.initialize()
             }
-            .onAppear { setupOnAppear() }
-            .onChange(of: viewModel.appSettings.wallpaperImageName) { _, _ in
-                reloadWallpaper()
-            }
-            // Phase 17: Only track time filter changes explicitly
-            // Transaction data changes are tracked automatically via @Observable
-            // on transactionStore.transactions (accessed through computed properties)
-            .onChange(of: timeFilterManager.currentFilter) { _, _ in
-                updateSummary()
-            }
-            .onChange(of: transactionStore.isImporting) { _, isImporting in
-                // When import finishes (true→false), run a single summary update with complete data.
-                guard !isImporting else { return }
-                summaryUpdateTask?.cancel()
-                updateSummary()
-            }
-            .onChange(of: transactionStore.transactions.count) { oldCount, newCount in
-                // Skip partial updates during CSV import — finishImport() triggers a single
-                // update via the isImporting onChange above.
+            // ── Reactive summary ──────────────────────────────────────────────────
+            // Fires whenever transactions count, active filter, import state, or
+            // initialization state changes. SwiftUI cancels the previous task and
+            // starts a new one automatically — no manual task tracking needed.
+            .task(id: summaryTrigger) {
                 guard !transactionStore.isImporting else { return }
-                // Debounce: coalesce rapid count changes (e.g. batch loads) into a single
-                // updateSummary(). 80ms is long enough to absorb a burst of CoreData saves
-                // yet short enough to be imperceptible to the user.
-                summaryUpdateTask?.cancel()
-                summaryUpdateTask = Task {
+                // Debounce rapid count changes during initial data load.
+                // When isFullyInitialized flips true the trigger fires immediately
+                // (skip sleep so the summary card is ready the moment skeleton lifts).
+                if !coordinator.isFullyInitialized {
                     try? await Task.sleep(for: .milliseconds(80))
                     guard !Task.isCancelled else { return }
-#if DEBUG
-                    let t0 = CACurrentMediaTime()
-                    cvLogger.debug("🔢 [ContentView] tx count \(oldCount)→\(newCount) — updateSummary (debounced)")
-#endif
-                    updateSummary()
-#if DEBUG
-                    cvLogger.debug("🔢 [ContentView] updateSummary() done in \(String(format: "%.0f", (CACurrentMediaTime()-t0)*1000))ms")
-#endif
                 }
+                // Capture Sendable value-type snapshots on @MainActor before leaving.
+                let snapshot     = Array(transactionStore.transactions)
+                let filterRange  = timeFilterManager.currentFilter.dateRange()
+                let filterStart  = filterRange.start
+                let filterEnd    = filterRange.end
+                let currency     = viewModel.appSettings.baseCurrency
+                let windowStart  = transactionStore.windowStartDate
+                let aggregateTotals: (income: Double, expenses: Double, planned: Double)?
+                if let windowStart, filterStart < windowStart {
+                    let (income, expenses) = transactionStore.fetchAggregateSummary(
+                        from: filterStart, to: filterEnd, currency: currency
+                    )
+                    let planned = transactionStore.fetchPlannedExpenses(from: filterStart, to: filterEnd, currency: currency)
+                    aggregateTotals = (income, expenses, planned)
+                } else {
+                    aggregateTotals = nil
+                }
+                // Pre-format dates on @MainActor — DateFormatter is not Sendable.
+                let startStr = ContentView.summaryDateFormatter.string(from: filterStart)
+                let endStr   = ContentView.summaryDateFormatter.string(from: filterEnd)
+
+                let summary = await Task.detached(priority: .userInitiated) {
+                    if let (income, expenses, planned) = aggregateTotals {
+                        Summary(
+                            totalIncome: income,
+                            totalExpenses: expenses,
+                            totalInternalTransfers: 0,
+                            netFlow: income - expenses,
+                            currency: currency,
+                            startDate: startStr,
+                            endDate: endStr,
+                            plannedAmount: planned
+                        )
+                    } else {
+                        SummaryCalculator.compute(
+                            transactions: snapshot,
+                            filterStart: filterStart,
+                            filterEnd: filterEnd,
+                            baseCurrency: currency
+                        )
+                    }
+                }.value
+
+                guard !Task.isCancelled else { return }
+                homeState.cachedSummary = summary
+            }
+            // ── Reactive wallpaper ────────────────────────────────────────────────
+            // Fires when wallpaperImageName changes. Skips re-appear when the image
+            // for the current name is already loaded in homeState.
+            .task(id: viewModel.appSettings.wallpaperImageName) {
+                let targetName = viewModel.appSettings.wallpaperImageName
+                // Same name already loaded → nothing to do (handles back-navigation).
+                guard homeState.wallpaperImageName != targetName else { return }
+                homeState.wallpaperImage = nil
+                homeState.wallpaperImageName = nil
+                guard let name = targetName else { return }
+
+                let screenSize  = UIScreen.main.bounds.size
+                let scale       = UIScreen.main.scale
+                let fileURL     = FileManager.default
+                    .urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent(name)
+                guard FileManager.default.fileExists(atPath: fileURL.path) else { return }
+
+                let image = await Task.detached(priority: .userInitiated) {
+                    ContentView.downsampleWallpaper(at: fileURL, screenSize: screenSize, scale: scale)
+                }.value
+
+                guard !Task.isCancelled else { return }
+                homeState.wallpaperImage     = image
+                homeState.wallpaperImageName = name
             }
 #if DEBUG
             .onChange(of: coordinator.isFastPathDone) { _, isDone in
                 cvLogger.debug("⚡️ [ContentView] isFastPathDone → \(isDone)")
             }
-#endif
             .onChange(of: coordinator.isFullyInitialized) { _, isInit in
-#if DEBUG
-                cvLogger.debug("✅ [ContentView] isFullyInitialized → \(isInit) — skeleton removal triggered")
-#endif
-                guard isInit else { return }
-                // Cancel any pending debounce and run summary immediately so
-                // TransactionsSummaryCard has real data the moment the skeleton lifts.
-                summaryUpdateTask?.cancel()
-                updateSummary()
+                cvLogger.debug("✅ [ContentView] isFullyInitialized → \(isInit)")
             }
+#endif
         }
     }
 
@@ -180,21 +240,16 @@ struct ContentView: View {
 
     // MARK: - Sections
 
+    @ViewBuilder
     private var accountsSection: some View {
-        Group {
-            if accountsViewModel.accounts.isEmpty {
-                EmptyAccountsPrompt(onAddAccount: {
-                    showingAddAccount = true
-                })
-            } else {
-                // Fix #1: use coordinator.balanceCoordinator (non-optional let)
-                // instead of accountsViewModel.balanceCoordinator! (force-unwrap).
-                AccountsCarousel(
-                    accounts: accountsViewModel.accounts,
-                    balanceCoordinator: coordinator.balanceCoordinator,
-                    namespace: accountNamespace
-                )
-            }
+        if accountsViewModel.accounts.isEmpty {
+            EmptyAccountsPrompt(onAddAccount: { showingAddAccount = true })
+        } else {
+            AccountsCarousel(
+                accounts: accountsViewModel.accounts,
+                balanceCoordinator: coordinator.balanceCoordinator,
+                namespace: accountNamespace
+            )
         }
     }
 
@@ -203,7 +258,7 @@ struct ContentView: View {
             TransactionsSummaryCard(
                 summary: homeState.cachedSummary,
                 currency: viewModel.appSettings.baseCurrency,
-                isEmpty: viewModel.allTransactions.isEmpty
+                isEmpty: transactionStore.totalTransactionCount == 0
             )
         }
         .buttonStyle(.bounce)
@@ -318,168 +373,6 @@ struct ContentView: View {
         )
     }
 
-    // MARK: - Lifecycle Methods
-
-    private func setupOnAppear() {
-#if DEBUG
-        let t0 = CACurrentMediaTime()
-        cvLogger.debug("🏠 [ContentView] onAppear START — isFastPathDone:\(self.coordinator.isFastPathDone) isFullyInitialized:\(self.coordinator.isFullyInitialized) sections:\(self.coordinator.transactionPaginationController.sections.count) firstTime:\(!self.homeState.hasAppearedOnce)")
-        PerformanceProfiler.start("ContentView.onAppear")
-#endif
-        loadWallpaperOnce()
-
-        // Only run updateSummary() on first appearance. On back-navigation the
-        // cachedSummary is already current — transactions.count onChange keeps it fresh.
-        if !homeState.hasAppearedOnce {
-            homeState.hasAppearedOnce = true
-            updateSummary()
-        }
-
-#if DEBUG
-        cvLogger.debug("🏠 [ContentView] onAppear DONE in \(String(format: "%.0f", (CACurrentMediaTime()-t0)*1000))ms")
-        PerformanceProfiler.end("ContentView.onAppear")
-#endif
-    }
-
-    // MARK: - State Updates
-
-    private func updateSummary() {
-        // Phase 31 Fix B: Capture value-type snapshots on MainActor, then compute off-thread.
-        // This eliminates the ~275ms synchronous block that caused skeleton→content jank.
-        let snapshot = Array(transactionStore.transactions)
-        let filterRange = timeFilterManager.currentFilter.dateRange()
-        let filterStart = filterRange.start
-        let filterEnd = filterRange.end
-        let currency = viewModel.appSettings.baseCurrency
-        let txCount = snapshot.count
-
-        // Out-of-window fast path (Phase 31 windowing fix):
-        // When the time filter extends beyond the 3-month in-memory window (e.g. "All Time",
-        // "Last Year"), the snapshot only contains recent transactions and would produce wrong
-        // totals. In that case, use MonthlyAggregateService (O(M) CoreData fetch) instead.
-        // This call is on MainActor (synchronous, < 1ms for typical ranges), so we capture the
-        // result as a plain value tuple before entering the detached task.
-        let windowStart = transactionStore.windowStartDate
-        let aggregateTotals: (income: Double, expenses: Double)?
-        if let windowStart, filterStart < windowStart {
-            aggregateTotals = transactionStore.fetchAggregateSummary(
-                from: filterStart, to: filterEnd, currency: currency
-            )
-        } else {
-            aggregateTotals = nil
-        }
-
-        summaryUpdateTask?.cancel()
-        summaryUpdateTask = Task.detached(priority: .userInitiated) {
-#if DEBUG
-            let t0 = CACurrentMediaTime()
-            PerformanceProfiler.start("ContentView.updateSummary")
-#endif
-            let summary: Summary
-            if let (income, expenses) = aggregateTotals {
-                // Out-of-window: build Summary from pre-computed monthly aggregates.
-                // internalTransfers and plannedAmount are omitted (not tracked in aggregates;
-                // negligible for historical periods spanning years).
-                let df = DateFormatter()
-                df.dateFormat = "yyyy-MM-dd"
-                df.locale = Locale(identifier: "en_US_POSIX")
-                df.timeZone = TimeZone.current
-                summary = Summary(
-                    totalIncome: income,
-                    totalExpenses: expenses,
-                    totalInternalTransfers: 0,
-                    netFlow: income - expenses,
-                    currency: currency,
-                    startDate: df.string(from: filterStart),
-                    endDate: df.string(from: filterEnd),
-                    plannedAmount: 0
-                )
-            } else {
-                // In-window: compute from the in-memory snapshot (fast path, no CoreData I/O).
-                summary = SummaryCalculator.compute(
-                    transactions: snapshot,
-                    filterStart: filterStart,
-                    filterEnd: filterEnd,
-                    baseCurrency: currency
-                )
-            }
-#if DEBUG
-            let dt = CACurrentMediaTime() - t0
-#endif
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                homeState.cachedSummary = summary
-#if DEBUG
-                if dt > 0.005 {
-                    cvLogger.debug("📊 [ContentView] updateSummary() \(String(format: "%.0f", dt*1000))ms — allTx:\(txCount)")
-                }
-#endif
-            }
-#if DEBUG
-            PerformanceProfiler.end("ContentView.updateSummary")
-#endif
-        }
-    }
-
-    /// Start a wallpaper load. If a load is already in progress OR the image is already
-    /// set in homeState (survived tab recreation), does nothing.
-    private func loadWallpaperOnce() {
-        guard wallpaperLoadingTask == nil, homeState.wallpaperImage == nil else { return }
-        startWallpaperLoad()
-    }
-
-    /// Cancel any in-progress load and start a fresh one.
-    /// Use this from onChange handlers where the wallpaper name has actually changed.
-    private func reloadWallpaper() {
-        wallpaperLoadingTask?.cancel()
-        wallpaperLoadingTask = nil
-        homeState.wallpaperImage = nil
-        startWallpaperLoad()
-    }
-
-    private func startWallpaperLoad() {
-        // Capture screen size on MainActor for downsampling target.
-        let screenSize = UIScreen.main.bounds.size
-        let scale = UIScreen.main.scale
-
-        wallpaperLoadingTask = Task.detached(priority: .userInitiated) {
-            guard let wallpaperName = await MainActor.run(body: {
-                viewModel.appSettings.wallpaperImageName
-            }) else {
-                await MainActor.run {
-                    homeState.wallpaperImage = nil
-                    wallpaperLoadingTask = nil
-                }
-                return
-            }
-
-            let documentsPath = FileManager.default.urls(
-                for: .documentDirectory,
-                in: .userDomainMask
-            )[0]
-            let fileURL = documentsPath.appendingPathComponent(wallpaperName)
-
-            guard FileManager.default.fileExists(atPath: fileURL.path) else {
-                await MainActor.run {
-                    homeState.wallpaperImage = nil
-                    wallpaperLoadingTask = nil
-                }
-                return
-            }
-
-            // Fix #6: Downsample to screen resolution via ImageIO.
-            // UIImage(contentsOfFile:) decodes the full raw image (up to 200 MB for 12 MP photos).
-            // CGImageSourceCreateThumbnailAtIndex reads metadata + decodes only a scaled copy,
-            // reducing memory use to ~screen_pixels × 4 bytes ≈ 8–12 MB on a 6× screen.
-            let image = ContentView.downsampleWallpaper(at: fileURL, screenSize: screenSize, scale: scale)
-
-            await MainActor.run {
-                homeState.wallpaperImage = image
-                wallpaperLoadingTask = nil
-            }
-        }
-    }
-
     /// Decodes `fileURL` into a UIImage downsampled to `screenSize × scale` pixels.
     /// Returns nil if the file cannot be read or decoded.
     private static func downsampleWallpaper(
@@ -522,9 +415,9 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Observable Pattern
-    // With @Observable, SwiftUI automatically tracks dependencies
-    // We use onChange modifiers above to trigger updates when specific properties change
+    // MARK: - Reactive Updates
+    // Summary and wallpaper update via .task(id:) — SwiftUI manages cancellation
+    // and restart automatically. No manual task tracking or onChange chains needed.
 }
 
 // MARK: - Skeleton Components

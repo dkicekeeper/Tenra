@@ -75,7 +75,6 @@ class TransactionCacheManager {
     }
 
     // MARK: - Account Balance Cache (DEPRECATED — use BalanceCoordinator instead)
-    // These properties exist only for legacy RecurringTransactionServiceDelegate compatibility.
     // New code must read balances from BalanceCoordinator, not from this cache.
 
     @available(*, deprecated, message: "Read balances from BalanceCoordinator, not from TransactionCacheManager")

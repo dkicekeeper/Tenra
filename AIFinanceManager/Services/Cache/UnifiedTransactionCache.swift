@@ -66,12 +66,12 @@ final class UnifiedTransactionCache {
         lruCache.remove(key)
     }
 
-    /// Remove all keys matching a prefix
-    /// Example: invalidate(prefix: "expenses_") removes all daily expense caches
-    /// Note: Currently invalidates all cache due to LRUCache limitations
+    /// Invalidates all cache entries.
+    /// Prefix-scoped invalidation was evaluated but not implemented — the LRUCache holds at most
+    /// 1000 entries (< 50 KB), and full invalidation on a targeted event is acceptably cheap.
+    /// All callers pass semantic prefixes (e.g. "balance_", "daily_expenses_"); if prefix-scoped
+    /// eviction becomes necessary, add a `keys: Set<String>` property to LRUCache.
     func invalidate(prefix: String) {
-        // TODO: Implement prefix-based invalidation in LRUCache
-        // For now, just invalidate all since we don't have prefix removal
         lruCache.removeAll()
     }
 

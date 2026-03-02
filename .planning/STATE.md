@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-02)
 ## Current Position
 
 Phase: 1 of 4 (Safety & Cleanup)
-Plan: 3 of 3 in current phase (01-01 and 01-02 complete; 01-03 next)
-Status: In progress
-Last activity: 2026-03-02 — Completed 01-01 (RecurringTransactionService deadlock elimination)
+Plan: 3 of 3 in current phase (01-01, 01-02, and 01-03 all complete)
+Status: Phase 1 complete
+Last activity: 2026-03-02 — Completed 01-03 (cache dead code removal; CLN-03 + CLN-04)
 
-Progress: [████░░░░░░] 20%
+Progress: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
@@ -27,10 +27,10 @@ Progress: [████░░░░░░] 20%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Safety & Cleanup | 2 | 11 min | 6 min |
+| 1. Safety & Cleanup | 3 | 12 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (4 min), 01-01 (7 min)
+- Last 5 plans: 01-03 (1 min), 01-02 (4 min), 01-01 (7 min)
 - Trend: -
 
 *Updated after each plan completion*
@@ -42,11 +42,12 @@ Progress: [████░░░░░░] 20%
 See PROJECT.md Key Decisions table for full log. Active decisions affecting current work:
 
 - Delete `RecurringTransactionService` entirely rather than partial fix (deadlock risk too high for targeted fix)
-- `UnifiedTransactionCache`: replace incomplete prefix invalidation with full invalidation (simpler, safe enough for current load)
+- `UnifiedTransactionCache`: replace incomplete prefix invalidation with full invalidation (simpler, safe enough for current load) — confirmed and documented in 01-03
 - `TransactionStore`: extract only `RecurringStore` this milestone; full split deferred (too risky without tests)
 - CoreData file protection: `.complete` (financial data; iOS enforces at locked screen)
 - Use `@MainActor private static let` (not `nonisolated(unsafe)`) for DateFormatter on @MainActor classes — matches CLAUDE.md rule
 - Delete tombstone files immediately — no live code referenced them; only historical comments remained
+- Deprecated property sections: delete outright once all callers confirmed removed (not just mark with @available)
 
 ### Pending Todos
 
@@ -60,5 +61,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Completed 01-01-PLAN.md — RecurringTransactionService deadlock elimination; 01-01 and 01-02 both done; next is 01-03-PLAN.md
+Stopped at: Completed 01-03-PLAN.md — cache dead code removal (CLN-03 + CLN-04); Phase 1 Safety & Cleanup is fully complete; next is Phase 2
 Resume file: None

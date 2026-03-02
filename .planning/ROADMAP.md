@@ -10,7 +10,7 @@ Four phases eliminate active risks (deadlock, race conditions, dead code), harde
 
 ## Phases
 
-- [ ] **Phase 1: Safety & Cleanup** - Delete deadlock-prone service, fix DateFormatter race, remove 4 dead-code files
+- [x] **Phase 1: Safety & Cleanup** - Delete deadlock-prone service, fix DateFormatter race, remove 4 dead-code files
 - [ ] **Phase 2: Security & Data Migration** - File protection on CoreData store, amount upper-bound validation, explicit CoreData migration model
 - [ ] **Phase 3: Performance** - Pre-aggregate category totals in PreAggregatedData, extract RecurringStore from TransactionStore
 - [ ] **Phase 4: Critical Tests** - Unit tests for DepositInterestService, CategoryBudgetService, RecurringTransactionGenerator edge cases, CoreData round-trip
@@ -31,7 +31,7 @@ Four phases eliminate active risks (deadlock, race conditions, dead code), harde
 Plans:
 - [x] 01-01-PLAN.md — Delete RecurringTransactionService + protocol; rewire TransactionsViewModel recurring calls to TransactionStore
 - [x] 01-02-PLAN.md — Fix TransactionQueryService DateFormatter thread safety; delete TransactionConverterService tombstones
-- [ ] 01-03-PLAN.md — Remove deprecated Account Balance Cache from TransactionCacheManager; resolve UnifiedTransactionCache TODO
+- [x] 01-03-PLAN.md — Remove deprecated Account Balance Cache from TransactionCacheManager; resolve UnifiedTransactionCache TODO
 
 ### Phase 2: Security & Data Migration
 **Goal**: Financial data is protected at rest and validated at entry; a CoreData schema migration model exists so an app update cannot crash existing users
@@ -70,7 +70,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Safety & Cleanup | 2/3 | In progress | - |
+| 1. Safety & Cleanup | 3/3 | Complete | 2026-03-02 |
 | 2. Security & Data Migration | 0/TBD | Not started | - |
 | 3. Performance | 0/TBD | Not started | - |
 | 4. Critical Tests | 0/TBD | Not started | - |

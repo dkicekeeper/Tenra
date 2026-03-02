@@ -20,8 +20,8 @@
 
 - [x] **CLN-01**: Удалить `Services/CSV/TransactionConverterService.swift` (5 LOC, deprecated Phase 37)
 - [x] **CLN-02**: Удалить `Protocols/TransactionConverterServiceProtocol.swift` (6 LOC, no implementations)
-- [ ] **CLN-03**: Удалить deprecated секцию Account Balance Cache из `TransactionCacheManager.swift` (~77 LOC)
-- [ ] **CLN-04**: Закрыть TODO в `UnifiedTransactionCache.swift` — заменить незаконченный prefix invalidation на full invalidation per event
+- [x] **CLN-03**: Удалить deprecated секцию Account Balance Cache из `TransactionCacheManager.swift` (~77 LOC)
+- [x] **CLN-04**: Закрыть TODO в `UnifiedTransactionCache.swift` — заменить незаконченный prefix invalidation на full invalidation per event
 
 ### Performance (Производительность)
 
@@ -75,8 +75,8 @@
 | SAFE-03 | Phase 1 | Complete |
 | CLN-01 | Phase 1 | Complete |
 | CLN-02 | Phase 1 | Complete |
-| CLN-03 | Phase 1 | Pending |
-| CLN-04 | Phase 1 | Pending |
+| CLN-03 | Phase 1 | Complete |
+| CLN-04 | Phase 1 | Complete |
 | SEC-01 | Phase 2 | Pending |
 | SEC-02 | Phase 2 | Pending |
 | DATA-01 | Phase 2 | Pending |

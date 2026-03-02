@@ -46,7 +46,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Add NSFileProtectionComplete to CoreDataStack store description and resetAllData() path (SEC-01)
 - [x] 02-02-PLAN.md — Add AmountFormatter.validate() upper-bound method; enforce in AddTransactionCoordinator (SEC-02)
-- [ ] 02-03-PLAN.md — Create v2→v3 xcmappingmodel bundle inside xcdatamodeld; human verify compiles (DATA-01)
+- [x] 02-03-PLAN.md — Create v2→v3 xcmappingmodel bundle inside xcdatamodeld; human verify compiles (DATA-01)
 
 ### Phase 3: Performance
 **Goal**: Insights `.allTime` granularity completes in under 50ms; `TransactionStore` has a separately testable `RecurringStore`
@@ -56,7 +56,11 @@ Plans:
   1. `PreAggregatedData.build()` computes `categoryTotals: [String: Decimal]` in its single O(N) pass; Insights generators use this dictionary instead of scanning transactions per granularity
   2. Insights `.allTime` wall-clock time drops from ~307ms to under 50ms (measurable via `PerformanceProfiler` in DEBUG mode)
   3. Recurring methods are in a standalone `RecurringStore` file; `TransactionStore.swift` no longer contains recurring generation or series management logic
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Add categoryTotals to PreAggregatedData.build(); wire generateSpendingInsights to use it for .allTime (PERF-01)
+- [ ] 03-02-PLAN.md — Create RecurringStore.swift; extract recurring state from TransactionStore; wire AppCoordinator (PERF-02)
 
 ### Phase 4: Critical Tests
 **Goal**: The four highest-risk business-logic paths have unit tests that will catch regressions
@@ -76,6 +80,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Safety & Cleanup | 3/3 | Complete    | 2026-03-02 |
-| 2. Security & Data Migration | 3/3 | Complete   | 2026-03-02 |
-| 3. Performance | 0/TBD | Not started | - |
+| 2. Security & Data Migration | 3/3 | Complete    | 2026-03-02 |
+| 3. Performance | 0/2 | Not started | - |
 | 4. Critical Tests | 0/TBD | Not started | - |

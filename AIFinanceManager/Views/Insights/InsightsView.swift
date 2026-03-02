@@ -54,7 +54,8 @@ struct InsightsView: View {
                     }
                     .pickerStyle(.inline)
                 } label: {
-                    Label(insightsViewModel.currentGranularity.shortName, systemImage: insightsViewModel.currentGranularity.icon)
+                    Label(insightsViewModel.currentGranularity.displayName, systemImage: insightsViewModel.currentGranularity.icon)
+                        .labelStyle(.titleAndIcon)
                 }
             }
         }

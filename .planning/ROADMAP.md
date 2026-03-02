@@ -41,7 +41,12 @@ Plans:
   1. CoreData SQLite store is created with `NSFileProtectionKey: .complete`; the option is visible in `CoreDataStack.swift` store configuration
   2. `AmountInputView` rejects any amount above 999,999,999.99; `AmountFormatter.validate()` is called before the value is accepted by the store
   3. An explicit CoreData mapping model exists for the version containing `MonthlyAggregateEntity` and `CategoryAggregateEntity`; upgrading from old schema to current does not crash
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Add NSFileProtectionComplete to CoreDataStack store description and resetAllData() path (SEC-01)
+- [ ] 02-02-PLAN.md — Add AmountFormatter.validate() upper-bound method; enforce in AddTransactionCoordinator (SEC-02)
+- [ ] 02-03-PLAN.md — Create v2→v3 xcmappingmodel bundle inside xcdatamodeld; human verify compiles (DATA-01)
 
 ### Phase 3: Performance
 **Goal**: Insights `.allTime` granularity completes in under 50ms; `TransactionStore` has a separately testable `RecurringStore`
@@ -71,6 +76,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Safety & Cleanup | 3/3 | Complete    | 2026-03-02 |
-| 2. Security & Data Migration | 0/TBD | Not started | - |
+| 2. Security & Data Migration | 0/3 | Not started | - |
 | 3. Performance | 0/TBD | Not started | - |
 | 4. Critical Tests | 0/TBD | Not started | - |

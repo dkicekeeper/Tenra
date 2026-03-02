@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-03-02)
 ## Current Position
 
 Phase: 1 of 4 (Safety & Cleanup)
-Plan: 2 of 3 in current phase
+Plan: 3 of 3 in current phase (01-01 and 01-02 complete; 01-03 next)
 Status: In progress
-Last activity: 2026-03-02 — Completed 01-02 (DateFormatter fix + tombstone deletion)
+Last activity: 2026-03-02 — Completed 01-01 (RecurringTransactionService deadlock elimination)
 
-Progress: [██░░░░░░░░] 10%
+Progress: [████░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 4 min
-- Total execution time: 0.1 hours
+- Total plans completed: 2
+- Average duration: 6 min
+- Total execution time: 0.2 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Safety & Cleanup | 1 | 4 min | 4 min |
+| 1. Safety & Cleanup | 2 | 11 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (4 min)
+- Last 5 plans: 01-02 (4 min), 01-01 (7 min)
 - Trend: -
 
 *Updated after each plan completion*
@@ -54,11 +54,11 @@ None.
 
 ### Blockers/Concerns
 
-- Phase 3 (PERF-02 RecurringStore extract) must not start until Phase 1 SAFE-01 is complete; extracting recurring while the deprecated service still exists creates two competing sources of truth
+- ~~Phase 3 (PERF-02 RecurringStore extract) must not start until Phase 1 SAFE-01 is complete~~ — RESOLVED: SAFE-01 complete; RecurringTransactionService deleted, no competing source of truth
 - DATA-01 (CoreData migration) requires verifying against real device with old app version installed; emulator-only testing is insufficient
 
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Completed 01-02-PLAN.md — DateFormatter race fix + tombstone deletion; next is 01-03-PLAN.md
+Stopped at: Completed 01-01-PLAN.md — RecurringTransactionService deadlock elimination; 01-01 and 01-02 both done; next is 01-03-PLAN.md
 Resume file: None

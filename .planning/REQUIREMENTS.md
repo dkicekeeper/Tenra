@@ -7,8 +7,8 @@
 
 ### Safety (Активные риски — дедлок и гонки)
 
-- [ ] **SAFE-01**: Удалить `RecurringTransactionService.swift` (558 LOC) — мигрировать все активные call sites в `TransactionStore+Recurring.swift`
-- [ ] **SAFE-02**: Удалить `RecurringTransactionServiceProtocol.swift` (59 LOC) после завершения SAFE-01
+- [x] **SAFE-01**: Удалить `RecurringTransactionService.swift` (558 LOC) — мигрировать все активные call sites в `TransactionStore+Recurring.swift`
+- [x] **SAFE-02**: Удалить `RecurringTransactionServiceProtocol.swift` (59 LOC) после завершения SAFE-01
 - [x] **SAFE-03**: Исправить `DateFormatter` race в `TransactionQueryService` — объявить `@MainActor private static let`, форматировать на MainActor, передавать `String` в `Task.detached`
 
 ### Security (Безопасность данных)
@@ -70,8 +70,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SAFE-01 | Phase 1 | Pending |
-| SAFE-02 | Phase 1 | Pending |
+| SAFE-01 | Phase 1 | Complete |
+| SAFE-02 | Phase 1 | Complete |
 | SAFE-03 | Phase 1 | Complete |
 | CLN-01 | Phase 1 | Complete |
 | CLN-02 | Phase 1 | Complete |

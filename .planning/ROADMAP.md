@@ -29,7 +29,7 @@ Four phases eliminate active risks (deadlock, race conditions, dead code), harde
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Delete RecurringTransactionService + protocol; rewire TransactionsViewModel recurring calls to TransactionStore
+- [x] 01-01-PLAN.md — Delete RecurringTransactionService + protocol; rewire TransactionsViewModel recurring calls to TransactionStore
 - [x] 01-02-PLAN.md — Fix TransactionQueryService DateFormatter thread safety; delete TransactionConverterService tombstones
 - [ ] 01-03-PLAN.md — Remove deprecated Account Balance Cache from TransactionCacheManager; resolve UnifiedTransactionCache TODO
 
@@ -70,7 +70,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Safety & Cleanup | 1/3 | In progress | - |
+| 1. Safety & Cleanup | 2/3 | In progress | - |
 | 2. Security & Data Migration | 0/TBD | Not started | - |
 | 3. Performance | 0/TBD | Not started | - |
 | 4. Critical Tests | 0/TBD | Not started | - |

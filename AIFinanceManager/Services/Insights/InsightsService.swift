@@ -395,6 +395,7 @@ final class InsightsService: @unchecked Sendable {
         // ── Granularity-DEPENDENT generators (always compute) ──────────────
 
         // Phase 42d: pass txDateMap to spending generator to avoid date re-parsing
+        // Phase 03-PERF-01: pass preAggregated so .allTime uses O(1) categoryTotals lookup
         insights.append(contentsOf: generateSpendingInsights(
             filtered: windowedTransactions,
             allTransactions: allTransactions,
@@ -405,7 +406,8 @@ final class InsightsService: @unchecked Sendable {
             currencyService: currencyService,
             granularity: granularity,
             periodPoints: periodPoints,
-            txDateMap: dateMap
+            txDateMap: dateMap,
+            preAggregated: preAggregated
         ))
 
         insights.append(contentsOf: generateIncomeInsights(

@@ -42,7 +42,8 @@ extension InsightsService {
         currencyService: TransactionCurrencyService,
         granularity: InsightGranularity? = nil,
         periodPoints: [PeriodDataPoint] = [],
-        txDateMap: [String: Date]? = nil   // Phase 42d: pre-parsed dates for O(1) range filter
+        txDateMap: [String: Date]? = nil,   // Phase 42d: pre-parsed dates for O(1) range filter
+        preAggregated: PreAggregatedData? = nil // Phase 03-PERF-01: O(1) categoryTotals for .allTime
     ) -> [Insight] {
         var insights: [Insight] = []
         let expenses = filterService.filterByType(filtered, type: .expense)
@@ -80,15 +81,29 @@ extension InsightsService {
             topTotalExpenses = periodSummary.totalExpenses
         }
 
-        // Phase 40: Direct in-memory category grouping — all transactions available.
-        // Phase 42e: Single grouping pass (was duplicated — bucketGroups + categoryGroups identical)
-        let categoryGroups = Dictionary(grouping: topExpenses, by: { $0.category })
-        let sortedCategories: [(key: String, total: Double)] = categoryGroups
-            .map { key, txns in
-                let total = txns.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
-                return (key: key, total: total)
-            }
-            .sorted { $0.total > $1.total }
+        // Phase 03-PERF-01: For .allTime with PreAggregatedData, use O(1) categoryTotals lookup.
+        // For other granularities (or when preAggregated is nil), use the existing O(N) grouping.
+        let sortedCategories: [(key: String, total: Double)]
+        let categoryGroups: [String: [Transaction]]
+
+        if granularity == .allTime, let catTotals = preAggregated?.categoryTotals, !catTotals.isEmpty {
+            // O(1) path: dictionary already built in PreAggregatedData.build() single O(N) pass
+            sortedCategories = catTotals
+                .filter { !$0.key.isEmpty }
+                .map { (key: $0.key, total: $0.value) }
+                .sorted { $0.total > $1.total }
+            // categoryGroups needed only for subcategory breakdown — build lazily only if needed
+            categoryGroups = Dictionary(grouping: topExpenses, by: { $0.category })
+        } else {
+            // Original O(N) path for non-allTime granularities
+            categoryGroups = Dictionary(grouping: topExpenses, by: { $0.category })
+            sortedCategories = categoryGroups
+                .map { key, txns in
+                    let total = txns.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
+                    return (key: key, total: total)
+                }
+                .sorted { $0.total > $1.total }
+        }
 
         let topCategoryName = sortedCategories.first?.key ?? "—"
         let topCategoryAmount = sortedCategories.first?.total ?? 0

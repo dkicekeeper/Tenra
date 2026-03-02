@@ -44,8 +44,8 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Add NSFileProtectionComplete to CoreDataStack store description and resetAllData() path (SEC-01)
-- [ ] 02-02-PLAN.md — Add AmountFormatter.validate() upper-bound method; enforce in AddTransactionCoordinator (SEC-02)
+- [x] 02-01-PLAN.md — Add NSFileProtectionComplete to CoreDataStack store description and resetAllData() path (SEC-01)
+- [x] 02-02-PLAN.md — Add AmountFormatter.validate() upper-bound method; enforce in AddTransactionCoordinator (SEC-02)
 - [ ] 02-03-PLAN.md — Create v2→v3 xcmappingmodel bundle inside xcdatamodeld; human verify compiles (DATA-01)
 
 ### Phase 3: Performance

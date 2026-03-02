@@ -115,6 +115,10 @@ final class CoreDataStack: @unchecked Sendable {
         description?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
 
+        // Protect financial data at rest: file is inaccessible while device is locked
+        description?.setOption(FileProtectionType.complete as NSObject,
+                                forKey: NSPersistentStoreFileProtectionKey)
+
         // Enable automatic lightweight migration
         description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
         description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
@@ -131,6 +135,7 @@ final class CoreDataStack: @unchecked Sendable {
                 }
             } else {
                 CoreDataStack.logger.info("✅ [CoreDataStack] Persistent store loaded: \(storeDescription.url?.lastPathComponent ?? "unknown", privacy: .public)")
+                CoreDataStack.logger.info("✅ [CoreDataStack] File protection: .complete enabled")
             }
         }
 
@@ -259,7 +264,11 @@ final class CoreDataStack: @unchecked Sendable {
         for store in coordinator.persistentStores {
             if let storeURL = store.url {
                 try coordinator.destroyPersistentStore(at: storeURL, ofType: store.type, options: nil)
-                try coordinator.addPersistentStore(ofType: store.type, configurationName: nil, at: storeURL, options: nil)
+                // Restore file protection on the recreated store — passing nil would drop it.
+                let storeOptions: [String: Any] = [
+                    NSPersistentStoreFileProtectionKey: FileProtectionType.complete
+                ]
+                try coordinator.addPersistentStore(ofType: store.type, configurationName: nil, at: storeURL, options: storeOptions)
             }
         }
 

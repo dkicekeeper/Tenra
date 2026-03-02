@@ -25,8 +25,8 @@
 
 ### Performance (Производительность)
 
-- [ ] **PERF-01**: Добавить `categoryTotals: [String: Double]` в `PreAggregatedData.build()` — устранить O(N) группировку по категориям при каждой гранулярности Insights (`.allTime` 307ms → <50ms). `Double` используется для консистентности с `resolveAmountStatic` (возвращает `Double`) и существующим `categoryMonthExpenses: [CategoryMonthKey: Double]`.
-- [ ] **PERF-02**: Вынести Recurring методы из `TransactionStore` в отдельный `RecurringStore` (~200 LOC извлечь) — первый шаг разбивки 1213-LOC монолита
+- [x] **PERF-01**: Добавить `categoryTotals: [String: Double]` в `PreAggregatedData.build()` — устранить O(N) группировку по категориям при каждой гранулярности Insights (`.allTime` 307ms → <50ms). `Double` используется для консистентности с `resolveAmountStatic` (возвращает `Double`) и существующим `categoryMonthExpenses: [CategoryMonthKey: Double]`.
+- [x] **PERF-02**: Вынести Recurring методы из `TransactionStore` в отдельный `RecurringStore` (~200 LOC извлечь) — первый шаг разбивки 1213-LOC монолита
 
 ### Testing (Критичное покрытие)
 
@@ -80,8 +80,8 @@
 | SEC-01 | Phase 2 | Complete |
 | SEC-02 | Phase 2 | Complete |
 | DATA-01 | Phase 2 | Complete |
-| PERF-01 | Phase 3 | Pending |
-| PERF-02 | Phase 3 | Pending |
+| PERF-01 | Phase 3 | Complete |
+| PERF-02 | Phase 3 | Complete |
 | TEST-01 | Phase 4 | Pending |
 | TEST-02 | Phase 4 | Pending |
 | TEST-03 | Phase 4 | Pending |

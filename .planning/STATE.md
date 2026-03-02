@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-02T19:48:45.464Z"
+last_updated: "2026-03-02T19:50:35.974Z"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -52,6 +52,7 @@ Progress: [██████████] 100% (Phase 2 complete)
 | Phase 02-security-and-data-migration P02 | 12 | 2 tasks | 11 files |
 | Phase 02-security-and-data-migration P03 | 3 | 2 tasks | 1 files |
 | Phase 03-performance P01 | 3 | 2 tasks | 2 files |
+| Phase 03-performance P02 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ See PROJECT.md Key Decisions table for full log. Active decisions affecting curr
 - [Phase 02-security-and-data-migration]: xcmappingmodel: NSExpression '$source.dateSectionKey' without nil-coalescing; CoreData applies defaultValueString automatically
 - [Phase 03-performance]: Use Double (not Decimal) for categoryTotals for consistency with resolveAmountStatic and existing categoryMonthExpenses field
 - [Phase 03-performance]: Conditional fast-path: allTime + preAggregated available = O(1) categoryTotals; other granularities unchanged
+- [Phase 03-performance]: Computed forwarders on TransactionStore (not AppCoordinator storage) — views already access recurring data via transactionStore.recurringSeries; no callsite changes needed
+- [Phase 03-performance]: RecurringStore.load(series:occurrences:) accepts already-fetched arrays from Task.detached — avoids duplicate background fetch; keeps threading logic in TransactionStore
+- [Phase 03-performance]: Phase 03-02: Four private updateStateFor* helpers deleted outright — logic moved into RecurringStore.handle* methods; delegate-via-owned-store + computed forwarder pattern ready for future AccountStore/CategoryStore splits
 
 ### Pending Todos
 

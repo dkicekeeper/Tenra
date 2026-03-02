@@ -55,12 +55,18 @@ extension InsightsService {
     private func generateSpendingForecast(baseCurrency: String) -> Insight? {
         let calendar = Calendar.current
         let now = Date()
+        let df = DateFormatters.dateFormatter
 
         guard let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: now) else { return nil }
-        let last30Aggregates = transactionStore.categoryAggregateService.fetchRange(
-            from: thirtyDaysAgo, to: now, currency: baseCurrency
-        )
-        let last30Spent = last30Aggregates.reduce(0.0) { $0 + $1.totalExpenses }
+
+        // Phase 40: Direct in-memory expense sum for last 30 days
+        let last30Spent = transactionStore.transactions
+            .filter { $0.type == .expense }
+            .reduce(0.0) { total, tx in
+                guard let txDate = df.date(from: tx.date),
+                      txDate >= thirtyDaysAgo, txDate < now else { return total }
+                return total + resolveAmount(tx, baseCurrency: baseCurrency)
+            }
         let avgDailySpend = last30Spent / 30
 
         let totalDaysInMonth = calendar.range(of: .day, in: .month, for: now)?.count ?? 30
@@ -74,22 +80,18 @@ extension InsightsService {
                 return isExpense
             }
             .reduce(0.0) { total, series in
-                let dateFormatter = DateFormatters.dateFormatter
-                guard let startDate = dateFormatter.date(from: series.startDate) else { return total }
+                guard let startDate = df.date(from: series.startDate) else { return total }
                 if startDate > now { return total }
                 return total + seriesMonthlyEquivalent(series, baseCurrency: baseCurrency)
             }
 
-        let spentSoFar = transactionStore.monthlyAggregateService
-            .fetchLast(1, currency: baseCurrency)
-            .first?.totalExpenses ?? 0
+        // Phase 40: Current month totals from in-memory transactions
+        let currentMonthData = Self.computeLastMonthlyTotals(1, from: transactionStore.transactions, baseCurrency: baseCurrency).first
+        let spentSoFar = currentMonthData?.totalExpenses ?? 0
+        let monthlyIncome = currentMonthData?.totalIncome ?? 0
 
         let pendingRecurring = max(0, (monthlyRecurringExpenses / Double(totalDaysInMonth)) * Double(daysRemaining))
         let forecast = spentSoFar + (avgDailySpend * Double(daysRemaining)) + pendingRecurring
-
-        let monthlyIncome = transactionStore.monthlyAggregateService
-            .fetchLast(1, currency: baseCurrency)
-            .first?.totalIncome ?? 0
 
         let severity: InsightSeverity = monthlyIncome > 0 ? (forecast > monthlyIncome ? .warning : .positive) : .neutral
 
@@ -118,7 +120,8 @@ extension InsightsService {
         let currentBalance = transactionStore.accounts.reduce(0.0) { $0 + balanceFor($1.id) }
         guard currentBalance > 0 else { return nil }
 
-        let aggregates = transactionStore.monthlyAggregateService.fetchLast(3, currency: baseCurrency)
+        // Phase 40: In-memory 3-month average net flow
+        let aggregates = Self.computeLastMonthlyTotals(3, from: transactionStore.transactions, baseCurrency: baseCurrency)
         guard !aggregates.isEmpty else { return nil }
 
         let avgMonthlyNetFlow = aggregates.reduce(0.0) { $0 + $1.netFlow } / Double(aggregates.count)
@@ -170,13 +173,9 @@ extension InsightsService {
         let now = Date()
         guard let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: now) else { return nil }
 
-        let thisMonth = transactionStore.monthlyAggregateService
-            .fetchLast(1, currency: baseCurrency)
-            .first
-
-        let lastYear = transactionStore.monthlyAggregateService
-            .fetchLast(1, anchor: oneYearAgo, currency: baseCurrency)
-            .first
+        // Phase 40: In-memory lookups replace MonthlyAggregateService.fetchLast()
+        let thisMonth = Self.computeLastMonthlyTotals(1, from: transactionStore.transactions, baseCurrency: baseCurrency).first
+        let lastYear = Self.computeLastMonthlyTotals(1, from: transactionStore.transactions, anchor: oneYearAgo, baseCurrency: baseCurrency).first
 
         guard let thisExpenses = thisMonth?.totalExpenses,
               let lastYearExpenses = lastYear?.totalExpenses,
@@ -219,8 +218,9 @@ extension InsightsService {
         let now = Date()
         guard let fiveYearsAgo = calendar.date(byAdding: .year, value: -5, to: now) else { return nil }
 
-        let allAggregates = transactionStore.monthlyAggregateService.fetchRange(
-            from: fiveYearsAgo, to: now, currency: baseCurrency
+        // Phase 40: In-memory computation replaces MonthlyAggregateService.fetchRange()
+        let allAggregates = Self.computeMonthlyTotals(
+            from: transactionStore.transactions, from: fiveYearsAgo, to: now, baseCurrency: baseCurrency
         )
         guard allAggregates.count >= 12 else { return nil }
 
@@ -273,8 +273,11 @@ extension InsightsService {
         let dayOfMonth = calendar.component(.day, from: now)
         guard dayOfMonth > 3 else { return nil }
 
-        let thisMonth = transactionStore.monthlyAggregateService.fetchLast(1, currency: baseCurrency).first
-        let lastMonth = transactionStore.monthlyAggregateService.fetchLast(2, currency: baseCurrency).first
+        // Phase 40: In-memory lookups replace MonthlyAggregateService.fetchLast()
+        // fetchLast(1) → [currentMonth], .first = currentMonth
+        // fetchLast(2) → [prevMonth, currentMonth], .first = prevMonth
+        let thisMonth = Self.computeLastMonthlyTotals(1, from: transactionStore.transactions, baseCurrency: baseCurrency).first
+        let lastMonth = Self.computeLastMonthlyTotals(2, from: transactionStore.transactions, baseCurrency: baseCurrency).first
 
         guard let spentSoFar = thisMonth?.totalExpenses, spentSoFar > 0 else { return nil }
         guard let lastMonthTotal = lastMonth?.totalExpenses, lastMonthTotal > 0 else { return nil }

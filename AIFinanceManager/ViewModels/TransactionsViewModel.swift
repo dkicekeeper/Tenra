@@ -423,24 +423,8 @@ class TransactionsViewModel {
             Set(vm.customCategories.map { $0.name })
         }
 
-        // Phase 31 windowing fix: if the time filter extends beyond the 3-month in-memory
-        // window, allTransactions only contains recent data and would return wrong amounts.
-        // Use CategoryAggregateService (full-history CoreData records) as a fast path instead.
+        // Phase 40: All transactions in memory — always compute directly from allTransactions.
         let filter = timeFilterManager.currentFilter
-        if let store = transactionStore,
-           let windowStart = store.windowStartDate,
-           filter.startDate < windowStart {
-            return store.fetchCategoryExpenses(
-                preset: filter.preset,
-                from: filter.startDate,
-                to: filter.endDate,
-                currency: appSettings.baseCurrency,
-                validCategoryNames: validCategoryNames
-            )
-        }
-
-        // In-window: calculate from the in-memory transaction snapshot.
-        // Phase 36: aggregateCache stub removed — calculates directly from transactions
         let result = queryService.getCategoryExpenses(
             timeFilter: filter,
             baseCurrency: appSettings.baseCurrency,

@@ -155,13 +155,10 @@ class AppCoordinator {
         let insightsFilterService = TransactionFilterService(dateFormatter: DateFormatters.dateFormatter)
         let insightsQueryService = TransactionQueryService()
 
-        // Phase 22: Budget spending cache for O(1) period spending lookups
-        let budgetSpendingCache = BudgetSpendingCacheService()
-
+        // Phase 40: Budget cache removed — direct O(N) scan on all-time transactions is fast enough.
         let insightsBudgetService = CategoryBudgetService(
             currencyService: transactionsViewModel.currencyService,
-            appSettings: transactionsViewModel.appSettings,
-            budgetCache: budgetSpendingCache
+            appSettings: transactionsViewModel.appSettings
         )
         let insightsService = InsightsService(
             transactionStore: self.transactionStore,
@@ -281,6 +278,11 @@ class AppCoordinator {
         let t5 = CACurrentMediaTime()
         logger.debug("✅ [INIT] isFullyInitialized=true: total so far \(String(format: "%.0f", (t5-t_init_start)*1000))ms")
 
+        // Phase 41: Trigger insights recompute now that all transactions are in memory.
+        // syncTransactionStoreToViewModels(batchMode: true) skipped this to avoid a
+        // pre-data compute; here we schedule it after the store is fully loaded.
+        insightsViewModel.invalidateAndRecompute()
+
         // Task 9 / v3 migration: populate dateSectionKey for records that were imported via
         // NSBatchInsertRequest before 2026-02-24 (batch inserts bypass willSave()).
         // Fire-and-forget — History is already open.  The FRC refreshes automatically once
@@ -300,27 +302,8 @@ class AppCoordinator {
             await settingsViewModel.loadInitialData()
         }
 
-        // Phase 22: Rebuild persistent aggregates if CoreData is missing them.
-        // Runs in background — doesn't block startup. On subsequent launches the
-        // aggregates are already built and maintained incrementally via apply().
-        Task.detached(priority: .background) { [weak self] in
-            guard let self = self else { return }
-            // Phase 31 Task 4: Load from repo with dateRange: nil (full history) so that
-            // CategoryAggregateEntity and MonthlyAggregateEntity always reflect complete
-            // transaction history — not just the in-memory windowed store.
-            let allTx = self.repository.loadTransactions(dateRange: nil)
-            let txCount = allTx.count
-            let currency = await self.transactionStore.baseCurrency
-
-            // Check if aggregates exist; rebuild only if CoreData is empty
-            let existingMonthly = await self.transactionStore.monthlyAggregateService.fetchLast(
-                1, currency: currency
-            )
-            if existingMonthly.first?.transactionCount == 0 && txCount > 0 {
-                await self.transactionStore.categoryAggregateService.rebuild(from: allTx, baseCurrency: currency)
-                await self.transactionStore.monthlyAggregateService.rebuild(from: allTx, baseCurrency: currency)
-            }
-        }
+        // Phase 40: Aggregate rebuild removed — MonthlyAggregateService and CategoryAggregateService
+        // deleted. All insights computed in-memory from transactionStore.transactions.
 
         // Phase 19: Removed transactionsViewModel.loadDataAsync() — was duplicating TransactionStore work
         // (generateRecurringAsync + loadAggregateCacheAsync which was a no-op)

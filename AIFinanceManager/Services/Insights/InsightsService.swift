@@ -169,14 +169,10 @@ final class InsightsService: @unchecked Sendable {
         cache.invalidateAll()
     }
 
-    // MARK: - Monthly Data Points (Phase 22: reads from MonthlyAggregateService)
+    // MARK: - Monthly Data Points
 
     /// Compute monthly data points for chart display.
-    ///
-    /// Phase 22 optimization: reads pre-computed MonthlyAggregateEntity records from CoreData
-    /// instead of scanning all transactions (O(M) lookups vs the previous O(N×M) passes).
-    /// Falls back to the original transaction-scan path if aggregates are unavailable
-    /// (e.g. on first launch before a full rebuild).
+    /// Phase 40: All transactions are in memory — direct in-memory scan replaces aggregate service.
     @MainActor
     func computeMonthlyDataPoints(
         transactions: [Transaction],
@@ -186,39 +182,9 @@ final class InsightsService: @unchecked Sendable {
         currencyService: TransactionCurrencyService,
         anchorDate: Date? = nil
     ) -> [MonthlyDataPoint] {
-
         let anchor = anchorDate ?? Date()
-
-        // Phase 22: Try fast path — read from persistent MonthlyAggregateEntity
-        let aggregates = transactionStore.monthlyAggregateService.fetchLast(
-            months,
-            anchor: anchor,
-            currency: baseCurrency
-        )
-
-        // If we got a full set of aggregate records, use them directly (O(M) fetch)
-        if aggregates.count == months {
-            Self.logger.debug("⚡️ [Insights] Monthly points FAST PATH — \(months) months from CoreData aggregates")
-            let dataPoints: [MonthlyDataPoint] = aggregates.map { agg in
-                let monthDate = Calendar.current.date(
-                    from: DateComponents(year: agg.year, month: agg.month, day: 1)
-                ) ?? Date()
-                return MonthlyDataPoint(
-                    id: Self.yearMonthFormatter.string(from: monthDate),
-                    month: monthDate,
-                    income: agg.totalIncome,
-                    expenses: agg.totalExpenses,
-                    netFlow: agg.netFlow,
-                    label: Self.monthYearFormatter.string(from: monthDate)
-                )
-            }
-            Self.logger.debug("📅 [Insights] Monthly points END (fast) — \(dataPoints.count) points")
-            return dataPoints
-        }
-
-        // Phase 22 fallback: aggregates not ready yet (first launch) — use transaction scan
-        Self.logger.debug("📅 [Insights] Monthly points SLOW PATH — aggregates count=\(aggregates.count) (expected \(months)), scanning transactions")
-        return computeMonthlyDataPointsSlow(
+        Self.logger.debug("📅 [Insights] Monthly points — scanning \(transactions.count) transactions for \(months) months")
+        return computeMonthlyDataPointsDirect(
             transactions: transactions,
             months: months,
             baseCurrency: baseCurrency,
@@ -227,8 +193,7 @@ final class InsightsService: @unchecked Sendable {
         )
     }
 
-    /// Original O(N×M) implementation used as fallback before aggregates are built.
-    private func computeMonthlyDataPointsSlow(
+    private func computeMonthlyDataPointsDirect(
         transactions: [Transaction],
         months: Int,
         baseCurrency: String,
@@ -541,31 +506,8 @@ final class InsightsService: @unchecked Sendable {
             ?? Date()
         let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate)
 
-        // Fast path for all non-week granularities — MonthlyAggregateService holds full history
-        // regardless of the 3-month in-memory window (windowMonths = 3).
-        // .month and .quarter were previously excluded, causing charts to show only 3 months.
-        // .week spans 52 weeks at weekly resolution; monthly aggregates can't back-fill per-week
-        // bars accurately, so it remains on the transaction-scan path (limited to window).
-        switch granularity {
-        case .year, .allTime, .month, .quarter:
-            let monthlyAggs = transactionStore.monthlyAggregateService.fetchRange(
-                from: windowStart, to: windowEnd, currency: baseCurrency
-            )
-            if !monthlyAggs.isEmpty {
-                Self.logger.debug("⚡️ [Insights] PeriodDataPoints FAST PATH (\(granularity.rawValue)) — \(monthlyAggs.count) monthly records from CoreData")
-                return computePeriodDataPointsFromAggregates(
-                    monthlyAggs,
-                    granularity: granularity,
-                    windowStart: windowStart,
-                    windowEnd: windowEnd,
-                    calendar: calendar
-                )
-            }
-            // Fallback to transaction scan if aggregates not ready (first launch)
-            guard !transactions.isEmpty else { return [] }
-        case .week:
-            guard !transactions.isEmpty else { return [] }
-        }
+        // Phase 40: All transactions are in memory — direct scan for all granularities.
+        guard !transactions.isEmpty else { return [] }
 
         // Build ordered list of all keys in this window
         var orderedKeys: [String] = []
@@ -628,81 +570,129 @@ final class InsightsService: @unchecked Sendable {
         }
     }
 
-    /// Build PeriodDataPoint array from MonthlyFinancialAggregate records.
-    /// Handles .year, .allTime, .month, and .quarter by grouping monthly rows into buckets.
-    private func computePeriodDataPointsFromAggregates(
-        _ aggregates: [MonthlyFinancialAggregate],
-        granularity: InsightGranularity,
-        windowStart: Date,
-        windowEnd: Date,
-        calendar: Calendar
-    ) -> [PeriodDataPoint] {
-        var incomeByKey = [String: Double]()
-        var expensesByKey = [String: Double]()
-
-        for agg in aggregates {
-            guard let monthDate = calendar.date(
-                from: DateComponents(year: agg.year, month: agg.month, day: 1)
-            ) else { continue }
-            let key = granularity.groupingKey(for: monthDate)
-            incomeByKey[key, default: 0] += agg.totalIncome
-            expensesByKey[key, default: 0] += agg.totalExpenses
-        }
-
-        // Determine canonical ordered keys from cursor walk (same as main path)
-        var orderedKeys: [String] = []
-        var keySet = Set<String>()
-        var cursor = windowStart
-        while cursor < windowEnd {
-            let key = granularity.groupingKey(for: cursor)
-            if !keySet.contains(key) {
-                orderedKeys.append(key)
-                keySet.insert(key)
-            }
-            switch granularity {
-            case .year:    cursor = calendar.date(byAdding: .year,       value: 1, to: cursor) ?? windowEnd
-            case .month:   cursor = calendar.date(byAdding: .month,      value: 1, to: cursor) ?? windowEnd
-            case .quarter: cursor = calendar.date(byAdding: .month,      value: 3, to: cursor) ?? windowEnd
-            case .allTime: cursor = windowEnd
-            default:       cursor = windowEnd
-            }
-        }
-
-        return orderedKeys.map { key in
-            let periodStart = granularity.periodStart(for: key)
-            let periodEnd: Date
-            switch granularity {
-            case .year:    periodEnd = calendar.date(byAdding: .year,  value: 1, to: periodStart) ?? periodStart
-            case .month:   periodEnd = calendar.date(byAdding: .month, value: 1, to: periodStart) ?? periodStart
-            case .quarter: periodEnd = calendar.date(byAdding: .month, value: 3, to: periodStart) ?? periodStart
-            case .allTime: periodEnd = windowEnd
-            default:       periodEnd = windowEnd
-            }
-            return PeriodDataPoint(
-                id: key,
-                granularity: granularity,
-                key: key,
-                periodStart: periodStart,
-                periodEnd: periodEnd,
-                label: granularity.periodLabel(for: key),
-                income: incomeByKey[key] ?? 0,
-                expenses: expensesByKey[key] ?? 0,
-                cumulativeBalance: nil
-            )
-        }
-    }
-
     // MARK: - Shared Helpers
     // Internal (no `private`) so cross-file extensions can call them.
 
     /// Lightweight summary value type used internally to avoid constructing the full `Summary` model.
-    /// We cannot use `Summary` directly because it requires fields (currency, startDate, endDate,
-    /// plannedAmount, totalInternalTransfers) that are irrelevant here and would force us to call
-    /// `queryService.calculateSummary` — which hits the contaminating global cache.
     struct PeriodSummary {
         let totalIncome: Double
         let totalExpenses: Double
         let netFlow: Double
+    }
+
+    // MARK: - Phase 40: In-Memory Aggregate Helpers
+    // Replaces MonthlyAggregateService and CategoryAggregateService CoreData queries.
+    // All transactions are now in memory, so O(N) single-pass is the canonical path.
+
+    /// Monthly income/expense totals computed from in-memory transactions.
+    struct InMemoryMonthlyTotal {
+        let year: Int
+        let month: Int
+        let totalIncome: Double
+        let totalExpenses: Double
+        var netFlow: Double { totalIncome - totalExpenses }
+        var label: String {
+            guard let date = Calendar.current.date(
+                from: DateComponents(year: year, month: month, day: 1)
+            ) else { return "\(month)/\(year)" }
+            return InsightsService.monthYearFormatter.string(from: date)
+        }
+    }
+
+    /// Per-category expense totals for a specific (year, month) computed from in-memory transactions.
+    struct InMemoryCategoryMonthTotal {
+        let categoryName: String
+        let year: Int
+        let month: Int
+        let totalExpenses: Double
+    }
+
+    /// Groups transactions by (year, month) and returns income/expense totals sorted chronologically.
+    /// Replaces MonthlyAggregateService.fetchRange().
+    static func computeMonthlyTotals(
+        from transactions: [Transaction],
+        from startDate: Date,
+        to endDate: Date,
+        baseCurrency: String
+    ) -> [InMemoryMonthlyTotal] {
+        let calendar = Calendar.current
+        let df = DateFormatters.dateFormatter
+        struct Key: Hashable { let year: Int; let month: Int }
+        var acc: [Key: (income: Double, expenses: Double)] = [:]
+
+        for tx in transactions {
+            guard tx.type == .income || tx.type == .expense else { continue }
+            guard let txDate = df.date(from: tx.date),
+                  txDate >= startDate, txDate < endDate else { continue }
+            let comps = calendar.dateComponents([.year, .month], from: txDate)
+            guard let year = comps.year, let month = comps.month else { continue }
+            let key = Key(year: year, month: month)
+            let amount = resolveAmountStatic(tx, baseCurrency: baseCurrency)
+            switch tx.type {
+            case .income:  acc[key, default: (0, 0)].income += amount
+            case .expense: acc[key, default: (0, 0)].expenses += amount
+            default: break
+            }
+        }
+
+        return acc.map { key, val in
+            InMemoryMonthlyTotal(year: key.year, month: key.month, totalIncome: val.income, totalExpenses: val.expenses)
+        }
+        .sorted { $0.year != $1.year ? $0.year < $1.year : $0.month < $1.month }
+    }
+
+    /// Returns monthly totals for the last `n` months ending at `anchor`.
+    /// Equivalent to MonthlyAggregateService.fetchLast(_:anchor:currency:).
+    static func computeLastMonthlyTotals(
+        _ months: Int,
+        from transactions: [Transaction],
+        anchor: Date = Date(),
+        baseCurrency: String
+    ) -> [InMemoryMonthlyTotal] {
+        let calendar = Calendar.current
+        let anchorMonthStart = calendar.date(
+            from: calendar.dateComponents([.year, .month], from: anchor)
+        ) ?? anchor
+        guard
+            let startDate = calendar.date(byAdding: .month, value: -(months - 1), to: anchorMonthStart),
+            let endDateExclusive = calendar.date(byAdding: .month, value: 1, to: anchorMonthStart)
+        else { return [] }
+        return computeMonthlyTotals(from: transactions, from: startDate, to: endDateExclusive, baseCurrency: baseCurrency)
+    }
+
+    /// Groups expense transactions by (category, year, month) and returns totals sorted chronologically.
+    /// Replaces CategoryAggregateService.fetchRange().
+    static func computeCategoryMonthTotals(
+        from transactions: [Transaction],
+        from startDate: Date,
+        to endDate: Date,
+        baseCurrency: String
+    ) -> [InMemoryCategoryMonthTotal] {
+        let calendar = Calendar.current
+        let df = DateFormatters.dateFormatter
+        struct Key: Hashable { let category: String; let year: Int; let month: Int }
+        var acc: [Key: Double] = [:]
+
+        for tx in transactions {
+            guard tx.type == .expense, !tx.category.isEmpty else { continue }
+            guard let txDate = df.date(from: tx.date),
+                  txDate >= startDate, txDate < endDate else { continue }
+            let comps = calendar.dateComponents([.year, .month], from: txDate)
+            guard let year = comps.year, let month = comps.month else { continue }
+            let key = Key(category: tx.category, year: year, month: month)
+            acc[key, default: 0] += resolveAmountStatic(tx, baseCurrency: baseCurrency)
+        }
+
+        return acc.map { key, expenses in
+            InMemoryCategoryMonthTotal(categoryName: key.category, year: key.year, month: key.month, totalExpenses: expenses)
+        }
+        .sorted { $0.year != $1.year ? $0.year < $1.year : $0.month < $1.month }
+    }
+
+    /// Amount resolver for static helper methods (no `self` needed).
+    private static func resolveAmountStatic(_ tx: Transaction, baseCurrency: String) -> Double {
+        guard tx.currency != baseCurrency else { return tx.amount }
+        return tx.convertedAmount ?? tx.amount
     }
 
     /// Returns the amount in baseCurrency. Uses cached convertedAmount when available.

@@ -5,6 +5,9 @@
 //  Phase 38: Extracted from InsightsService monolith (2832 LOC → domain files).
 //  Responsible for: composite financial health score (0-100, 5 weighted components).
 //
+//  Phase 41: @MainActor removed — snapshots passed as parameters so the function
+//  runs entirely inside Task.detached (no main-thread hop for O(N) date-parse scans).
+//
 
 import Foundation
 import SwiftUI
@@ -15,13 +18,17 @@ extension InsightsService {
 
     /// Computes a composite 0-100 financial health score from five weighted components.
     /// Call after `generateAllInsights` once totals and period data points are available.
-    @MainActor
+    /// Phase 41: Receives pre-captured snapshots — safe to call from Task.detached.
     func computeHealthScore(
         totalIncome: Double,
         totalExpenses: Double,
         latestNetFlow: Double,
         baseCurrency: String,
-        balanceFor: (String) -> Double
+        balanceFor: (String) -> Double,
+        allTransactions: [Transaction],
+        categories: [CustomCategory],
+        recurringSeries: [RecurringSeries],
+        accounts: [Account]
     ) -> FinancialHealthScore {
         guard totalIncome > 0 else { return .unavailable() }
 
@@ -34,10 +41,11 @@ extension InsightsService {
 
         // --- Component 2: Budget Adherence (weight 0.25) ---
         let monthStart = startOfMonth(calendar, for: now)
-        let currentMonthAggregates = transactionStore.categoryAggregateService.fetchRange(
-            from: monthStart, to: now, currency: baseCurrency
+        // Phase 40: In-memory computation replaces CategoryAggregateService.fetchRange()
+        let currentMonthAggregates = Self.computeCategoryMonthTotals(
+            from: allTransactions, from: monthStart, to: now, baseCurrency: baseCurrency
         )
-        let categoriesWithBudget = transactionStore.categories.filter { ($0.budgetAmount ?? 0) > 0 }
+        let categoriesWithBudget = categories.filter { ($0.budgetAmount ?? 0) > 0 }
         let onBudgetCount = categoriesWithBudget.filter { category in
             let spent = currentMonthAggregates.first { $0.categoryName == category.name }?.totalExpenses ?? 0
             return spent <= (category.budgetAmount ?? 0)
@@ -48,17 +56,18 @@ extension InsightsService {
             : 50 // neutral when no budgets set
 
         // --- Component 3: Recurring Ratio (weight 0.20) ---
-        let recurringCost = transactionStore.recurringSeries
+        let recurringCost = recurringSeries
             .filter { $0.isActive }
             .reduce(0.0) { total, series in
-                let isExpense = transactionStore.categories.first { $0.name == series.category }?.type != .income
+                let isExpense = categories.first { $0.name == series.category }?.type != .income
                 return isExpense ? total + seriesMonthlyEquivalent(series, baseCurrency: baseCurrency) : total
             }
         let recurringRatioScore = Int(max(0, (1.0 - recurringCost / max(totalIncome, 1)) * 100).rounded())
 
         // --- Component 4: Emergency Fund (weight 0.15) ---
-        let totalBalance = transactionStore.accounts.reduce(0.0) { $0 + balanceFor($1.id) }
-        let last3Months = transactionStore.monthlyAggregateService.fetchLast(3, anchor: now, currency: baseCurrency)
+        let totalBalance = accounts.reduce(0.0) { $0 + balanceFor($1.id) }
+        // Phase 40: In-memory computation replaces MonthlyAggregateService.fetchLast()
+        let last3Months = Self.computeLastMonthlyTotals(3, from: allTransactions, baseCurrency: baseCurrency)
         let avgMonthlyExpenses = last3Months.isEmpty
             ? totalExpenses / 12
             : last3Months.reduce(0.0) { $0 + $1.totalExpenses } / Double(last3Months.count)

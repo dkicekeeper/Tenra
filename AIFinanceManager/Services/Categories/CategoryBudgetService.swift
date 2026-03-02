@@ -5,7 +5,7 @@
 //  Service for category budget calculations and progress tracking.
 //  Extracted from CategoriesViewModel for better separation of concerns.
 //
-//  Phase 22: Added BudgetSpendingCacheService fast path for O(1) reads.
+//  Phase 40: Removed BudgetSpendingCacheService fast path — all transactions in memory, O(N) is fast.
 //
 
 import Foundation
@@ -18,19 +18,14 @@ struct CategoryBudgetService {
     let currencyService: TransactionCurrencyService?
     let appSettings: AppSettings?
 
-    /// Phase 22: Optional budget spending cache for O(1) period-total reads.
-    var budgetCache: BudgetSpendingCacheService?
-
     // MARK: - Initialization
 
     init(
         currencyService: TransactionCurrencyService? = nil,
-        appSettings: AppSettings? = nil,
-        budgetCache: BudgetSpendingCacheService? = nil
+        appSettings: AppSettings? = nil
     ) {
         self.currencyService = currencyService
         self.appSettings = appSettings
-        self.budgetCache = budgetCache
     }
 
     // MARK: - Public Methods
@@ -53,24 +48,8 @@ struct CategoryBudgetService {
 
     /// Calculate spent amount for a category in the current budget period.
     ///
-    /// Phase 22 fast path: reads from BudgetSpendingCacheService (O(1) CoreData field read).
-    /// Falls back to O(N) transaction scan if cache is unavailable (first launch / cache miss).
+    /// Phase 40: Always O(N) scan — all transactions are in memory, cache removed.
     func calculateSpent(for category: CustomCategory, transactions: [Transaction]) -> Double {
-        let baseCurrency = appSettings?.baseCurrency ?? "KZT"
-
-        // Phase 22 + Phase 36: Fast path — read from persistent cache in CustomCategoryEntity.
-        // Pass budgetPeriodStart so the cache correctly invalidates on period rollover.
-        let periodStart = budgetPeriodStart(for: category)
-        if let cached = budgetCache?.cachedSpent(for: category.name, currency: baseCurrency, budgetPeriodStart: periodStart) {
-            return cached
-        }
-
-        // Slow path: O(N) scan (first launch or cache not yet populated)
-        return calculateSpentSlow(for: category, transactions: transactions)
-    }
-
-    /// Original O(N) scan implementation, used as fallback when cache is unavailable.
-    func calculateSpentSlow(for category: CustomCategory, transactions: [Transaction]) -> Double {
         let periodStart = budgetPeriodStart(for: category)
         let periodEnd = Date()
 
@@ -142,16 +121,14 @@ struct CategoryBudgetService {
 
 extension CategoryBudgetService {
 
-    /// Create budget service with all dependencies (Phase 22: includes BudgetSpendingCacheService).
+    /// Create budget service with all dependencies.
     static func create(
         currencyService: TransactionCurrencyService,
-        appSettings: AppSettings,
-        budgetCache: BudgetSpendingCacheService? = nil
+        appSettings: AppSettings
     ) -> CategoryBudgetService {
         CategoryBudgetService(
             currencyService: currencyService,
-            appSettings: appSettings,
-            budgetCache: budgetCache
+            appSettings: appSettings
         )
     }
 }

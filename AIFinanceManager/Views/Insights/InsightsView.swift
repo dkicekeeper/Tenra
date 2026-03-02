@@ -61,14 +61,9 @@ struct InsightsView: View {
         .onChange(of: insightsViewModel.currentGranularity) { _, _ in
             HapticManager.light()
         }
-        // Phase 36: React to staleness while tab is visible — if a transaction is
-        // added while Insights tab is open, invalidateAndRecompute() sets isStale = true.
-        // Since isStale is now observable, this onChange fires and triggers reload.
-        .onChange(of: insightsViewModel.isStale) { _, isStale in
-            if isStale {
-                insightsViewModel.onAppear()
-            }
-        }
+        // Phase 41: onChange(of: isStale) removed — recompute is now debounced inside
+        // InsightsViewModel.invalidateAndRecompute() (800ms). The .task below handles
+        // tab navigation; the debounce handles mutations while the tab is open.
         .task {
             insightsViewModel.onAppear()
         }

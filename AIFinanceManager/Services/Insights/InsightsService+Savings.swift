@@ -64,7 +64,8 @@ extension InsightsService {
         let totalBalance = transactionStore.accounts.reduce(0.0) { $0 + balanceFor($1.id) }
         guard totalBalance > 0 else { return nil }
 
-        let aggregates = transactionStore.monthlyAggregateService.fetchLast(3, currency: baseCurrency)
+        // Phase 40: In-memory 3-month average replaces MonthlyAggregateService.fetchLast()
+        let aggregates = Self.computeLastMonthlyTotals(3, from: transactionStore.transactions, baseCurrency: baseCurrency)
         guard !aggregates.isEmpty else { return nil }
 
         let avgMonthlyExpenses = aggregates.reduce(0.0) { $0 + $1.totalExpenses } / Double(aggregates.count)
@@ -94,7 +95,8 @@ extension InsightsService {
 
     @MainActor
     private func generateSavingsMomentum(baseCurrency: String) -> Insight? {
-        let aggregates = transactionStore.monthlyAggregateService.fetchLast(4, currency: baseCurrency)
+        // Phase 40: In-memory computation replaces MonthlyAggregateService.fetchLast()
+        let aggregates = Self.computeLastMonthlyTotals(4, from: transactionStore.transactions, baseCurrency: baseCurrency)
         guard aggregates.count >= 2 else { return nil }
 
         let rates: [Double] = aggregates.map { agg in

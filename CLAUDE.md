@@ -96,34 +96,22 @@ AIFinanceManager/
 - Located at: `AIFinanceManager/ViewModels/AppCoordinator.swift`
 - Provides: Repository, all ViewModels, Stores, and Coordinators
 
-#### TransactionStore (Phase 7+, Enhanced Phase 9, Performance Phase 16-22)
+#### TransactionStore (Phase 7+, Enhanced Phase 9, Performance Phase 16-40)
 - **THE** single source of truth for transactions, accounts, and categories
+- Phase 40: Loads **all** transactions with `dateRange: nil` — no 3-month window. ~7.6 MB for 19k tx.
 - ViewModels use computed properties reading directly from TransactionStore (Phase 16)
 - Debounced sync with 16ms coalesce window (Phase 17)
 - Granular cache invalidation per event type (Phase 20)
 - Event-driven architecture with TransactionStoreEvent
 - Handles subscriptions and recurring transactions
-- Phase 22: Owns `categoryAggregateService` and `monthlyAggregateService` — persistent aggregate maintenance
+- `apply()` pipeline: `updateState` → `updateBalances` → `invalidateCache` → `persistIncremental` (4 steps; aggregate step removed in Phase 40)
 
-#### CategoryAggregateService (Phase 22)
-- Maintains `CategoryAggregateEntity` records in CoreData (already had schema, now active)
-- Incremental O(1) updates on each transaction mutation
-- Stores spending totals per (category, year, month) — monthly, yearly, and all-time granularity
-- `fetchRange(from:to:currency:)` used by InsightsService for O(M) category breakdown instead of O(N) scan
-- Located at: `Services/Categories/CategoryAggregateService.swift`
-
-#### MonthlyAggregateService (Phase 22)
-- New `MonthlyAggregateEntity` CoreData entity (added Phase 22)
-- Stores (totalIncome, totalExpenses, netFlow) per (year, month, currency)
-- InsightsService `computeMonthlyDataPoints()` reads these — O(M) instead of O(N×M)
-- Graceful fallback: if aggregates not ready (first launch), uses original O(N×M) transaction scan
-- Located at: `Services/Balance/MonthlyAggregateService.swift`
-
-#### BudgetSpendingCacheService (Phase 22)
-- Caches current-period spending totals in `CustomCategoryEntity.cachedSpentAmount`
-- `CategoryBudgetService.calculateSpent()` reads cache first (O(1)), falls back to O(N) scan
-- Invalidated on any transaction mutation in the relevant category
-- Located at: `Services/Categories/BudgetSpendingCacheService.swift`
+#### InsightsService — In-Memory Aggregation Helpers (Phase 40)
+Replaced `MonthlyAggregateService` + `CategoryAggregateService` with three static helpers in `InsightsService.swift`:
+- `computeMonthlyTotals(from:from:to:baseCurrency:)` — groups by (year,month), sums income/expenses
+- `computeLastMonthlyTotals(_:from:anchor:baseCurrency:)` — equivalent to old `fetchLast(_:anchor:currency:)`
+- `computeCategoryMonthTotals(from:from:to:baseCurrency:)` — groups by (category,year,month), sums expenses
+All return lightweight value-type structs (`InMemoryMonthlyTotal`, `InMemoryCategoryMonthTotal`).
 
 #### BalanceCoordinator (Phase 1-4)
 - Single entry point for balance operations
@@ -131,6 +119,19 @@ AIFinanceManager/
 - Includes: Store, Engine, Queue, Cache
 
 ### Recent Refactoring Phases
+
+**Phase 40** (2026-03-02): Single Source of Truth — Window + Aggregates Removed
+- **Root cause**: `windowMonths=3` + three CoreData aggregate services = two sources of truth. Every new feature had to account for both paths; every edge case broke one of them.
+- **Fix**: Load all transactions (`dateRange: nil`). 19k × ~400B ≈ 7.6 MB — acceptable.
+- **Deleted**: `MonthlyAggregateService.swift`, `CategoryAggregateService.swift`, `BudgetSpendingCacheService.swift`
+- **CoreData schema**: `MonthlyAggregateEntity`, `CategoryAggregateEntity`, `cachedSpent*` fields on `CustomCategoryEntity` left in `.xcdatamodeld` — no migration needed, just stopped reading/writing.
+- **TransactionStore**: removed `windowMonths`, `windowStartDate`, `totalTransactionCount`, `categoryAggregateService`, `monthlyAggregateService`, all `fetch*` aggregate methods, `updateAggregates(for:)`.
+- **InsightsService**: added 3 static in-memory helpers + 2 lightweight structs. Removed all aggregate service call sites across 5 extension files (14 total).
+- **CategoryBudgetService**: always O(N) direct scan — `BudgetSpendingCacheService` dependency removed.
+- **ContentView**: single-path summary via `SummaryCalculator.compute()` always; `isEmpty` uses `transactions.isEmpty`.
+- **InsightsViewModel**: `categoryDeepDive()` and `loadInsightsBackground()` — window checks removed, `firstDate` computed from in-memory array.
+- **AppCoordinator**: aggregate rebuild `Task.detached` removed from `initialize()`.
+- **TransactionsViewModel**: `windowStartDate` guard removed from `categoryExpenses()` — always uses direct in-memory query.
 
 **Phase 25** (2026-02-22): ChartDisplayMode — Consistent Chart API
 - Replaced `compact: Bool` with `ChartDisplayMode` enum (`.compact` / `.full`) across all 7 chart components
@@ -217,9 +218,9 @@ AIFinanceManager/
 
 **Phase 23** (2026-02-20): @ObservationIgnored sweep — rule now in Dev Guidelines. Reference implementations: `AppCoordinator`, `TransactionStore`, `AddTransactionCoordinator`.
 
-**Phase 22** (2026-02-19): Persistent Aggregate Caching — `CategoryAggregateEntity` activated; `MonthlyAggregateEntity` + `BudgetSpendingCacheService` added. `TransactionStore.apply()` calls `updateAggregates(for:)` after each mutation. Performance: Insights O(N×M) → O(M), budget read O(N) → O(1). Startup rebuild if aggregates empty.
+**Phase 22** (2026-02-19): Persistent Aggregate Caching — introduced `CategoryAggregateEntity`, `MonthlyAggregateEntity`, `BudgetSpendingCacheService`. **Superseded by Phase 40** — all three services deleted; in-memory computation replaces CoreData aggregate reads.
 
-**Phase 16-21** (2026-02-19): Performance — ViewModels use computed properties from TransactionStore (SSOT); debounced sync (16ms); InsightsViewModel lazy. **⚠️ `allTransactions` setter is a no-op** — to delete use `TransactionStore.deleteTransactions(for...)` which routes through `apply(.deleted)` for proper aggregate/cache/persistence.
+**Phase 16-21** (2026-02-19): Performance — ViewModels use computed properties from TransactionStore (SSOT); debounced sync (16ms); InsightsViewModel lazy. **⚠️ `allTransactions` setter is a no-op** — to delete use `TransactionStore.deleteTransactions(for...)` which routes through `apply(.deleted)` for proper cache/persistence.
 
 **Phase 15** (2026-02-16): `MessageBanner` — unified `.success`/`.error`/`.warning`/`.info` (see `Views/Components/MessageBanner.swift`).
 **Phase 14** (2026-02-16): `UniversalFilterButton` — `.button(onTap)` + `.menu(content)` modes (see `Views/Components/UniversalFilterButton.swift`).
@@ -366,7 +367,7 @@ func saveAccountsInternal(...) throws {
 - CoreDataRepository acts as facade, delegating to specialized repos
 - Fetch requests should be optimized with predicates
 - Use background contexts for heavy operations
-- **⚠️ OR-per-month predicate crash**: Never build `NSCompoundPredicate(orPredicateWithSubpredicates:)` with one subpredicate per calendar month. For ranges > ~80 months SQLite raises `Expression tree too large (maximum depth 1000)`. Use a constant 7-condition range predicate instead: `year > 0 AND month > 0 AND (year > startYear OR (year == startYear AND month >= startMonth)) AND (year < endYear OR (year == endYear AND month <= endMonth))`. See `CategoryAggregateService.fetchRange()` for reference implementation.
+- **⚠️ OR-per-month predicate crash** (historical, Phase 27): Never build `NSCompoundPredicate(orPredicateWithSubpredicates:)` with one subpredicate per calendar month — exceeds SQLite expression tree depth limit (1000) for ranges > ~80 months. Phase 40 removed the aggregate services that had this bug; but if building similar CoreData range queries, use a constant 7-condition range predicate: `year > 0 AND month > 0 AND (year > startYear OR (year == startYear AND month >= startMonth)) AND (year < endYear OR (year == endYear AND month <= endMonth))`.
 - **`NSDecimalNumber.compare()` gotcha**: `number.compare(.zero)` **не компилируется** — Swift не выводит тип из `NSNumber`; всегда пиши `number.compare(NSDecimalNumber.zero)`
 - **`performFetch()` + `rebuildSections()` are synchronous on MainActor** — sections fully updated before the next line. Gates like `isHistoryListReady` only protect UI if the section count is already bounded before the flag turns `true`; an unbounded allTime FRC (3,530 sections) will still freeze even with the gate.
 - **`resetAllData()` invalidates FRC**: `CoreDataStack.resetAllData()` destroys/recreates the persistent store (new UUID). Any existing `NSFetchedResultsController` retains stale `NSManagedObject` references → crash on fault fire. Fix: `CoreDataStack` posts `storeDidResetNotification`; FRC holders observe it and call `setup()` to recreate on the new store. See `TransactionPaginationController.handleStoreReset()`.
@@ -611,6 +612,6 @@ Key references: `docs/PROJECT_BIBLE.md`, `docs/ARCHITECTURE_FINAL_STATE.md`, `do
 ---
 
 **Last Updated**: 2026-03-02
-**Project Status**: Active development - ContentView fully reactive via `.task(id:)` (Phase 39). InsightsService split 2832→782 LOC (Phase 38). Service audit: 3 dead protocols deleted, TransactionConverterService merged, RecurringTransactionService documented. Reactivity audit + dead code removal (Phase 36). ~800 LOC deleted, 7 reactivity bugs fixed (ForEach identity, sheet flicker, insights staleness, budget rollover, double-invalidation, category grid, isStale). CSV import crash fix (Phase 35). Utils cleanup + design system split (Phase 34). Zero hardcoded colors (Phase 32-33). SwiftUI anti-pattern sweep (Phase 31), Per-element skeleton loading (Phase 30), Instant launch (Phase 28), Performance optimized, Persistent aggregate caching, Fine-grained @Observable updates.
+**Project Status**: Active development - Single source of truth (Phase 40): window removed, all 3 aggregate services deleted, all transactions in memory. ContentView fully reactive via `.task(id:)` (Phase 39). InsightsService split 2832→782 LOC (Phase 38). Service audit: 3 dead protocols deleted, TransactionConverterService merged (Phase 38). Reactivity audit + dead code removal (Phase 36). CSV import crash fix (Phase 35). Utils cleanup + design system split (Phase 34). Zero hardcoded colors (Phase 32-33). SwiftUI anti-pattern sweep (Phase 31), Per-element skeleton loading (Phase 30), Instant launch (Phase 28).
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns enforced via `SWIFT_STRICT_CONCURRENCY = targeted`

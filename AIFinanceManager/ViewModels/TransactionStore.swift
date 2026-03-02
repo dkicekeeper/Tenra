@@ -126,171 +126,6 @@ final class TransactionStore {
     // Coordinator for syncing changes to ViewModels (with @Observable we need manual sync)
     @ObservationIgnored weak var coordinator: AppCoordinator?
 
-    // MARK: - Phase 22: Persistent Aggregate Services
-
-    /// Maintains per-category spending totals in CategoryAggregateEntity.
-    /// Updated incrementally on each transaction mutation (O(1) per transaction).
-    @ObservationIgnored let categoryAggregateService: CategoryAggregateService
-
-    /// Maintains per-month income/expense totals in MonthlyAggregateEntity.
-    /// Used by InsightsService for O(M) chart data instead of O(N×M) scans.
-    @ObservationIgnored let monthlyAggregateService: MonthlyAggregateService
-
-    // MARK: - Task 11: Transaction Windowing Strategy
-
-    /// How many calendar months of transactions to load into the in-memory store for
-    /// real-time business logic (balance delta, recurring checks, current-period insights).
-    ///
-    /// Set to 0 (disabled) until the three blockers below are resolved:
-    ///
-    /// BLOCKER 1 — BalanceCoordinator.registerAccounts(_:transactions:)  [RESOLVED — Phase 31 Task 5]
-    ///   Phase B background recalculation removed. registerAccounts now only reads the persisted
-    ///   `account.balance` field (kept accurate by persistIncremental() on every mutation).
-    ///   No transaction list is passed; windowing does not affect balance correctness.
-    ///
-    /// BLOCKER 2 — InsightsService reads transactionStore.transactions directly  [RESOLVED — Phase 31 Task 6]
-    ///   InsightsService.generateAllInsights() captures `Array(transactionStore.transactions)`
-    ///   at line 85 and passes it as `allTransactions` to generators including:
-    ///   - accountDormancy (needs all-time transaction dates per account)
-    ///   - spendingVelocity (needs multi-month trend window)
-    ///   - incomeSourceBreakdown (needs the selected period's transactions)
-    ///   - computePeriodDataPoints (for .allTime / .year granularities spanning years)
-    ///   All four generators now read from CategoryAggregateService / MonthlyAggregateService
-    ///   (Phase 22 aggregate services). Windowing does not affect insight correctness.
-    ///
-    /// BLOCKER 3 — AppCoordinator aggregate rebuild reads transactionStore.transactions  [RESOLVED — Phase 31 Task 4]
-    ///   AppCoordinator.initialize aggregate rebuild now calls
-    ///   `repository.loadTransactions(dateRange: nil)` on a background context independently,
-    ///   bypassing the in-memory windowed store entirely. Aggregate records are always built
-    ///   from the full transaction history regardless of the window setting.
-    ///
-    /// All three blockers resolved in Phase 31 (Tasks 4, 5, 6). Window is now active.
-    /// UI history is served by TransactionPaginationController (NSFetchedResultsController)
-    /// and is not affected by this constant — it always queries CoreData directly.
-    private let windowMonths: Int = 3  // Phase 31: enabled — all blockers resolved
-
-    /// The start of the in-memory transaction window, or nil if all transactions are loaded.
-    /// ContentView uses this to decide whether to fall back to MonthlyAggregateService for
-    /// filters that extend beyond the window (e.g. "All Time", "Last Year").
-    var windowStartDate: Date? {
-        guard windowMonths > 0 else { return nil }
-        return Calendar.current.date(byAdding: .month, value: -windowMonths, to: Date())
-    }
-
-    /// Total transaction count across ALL of CoreData, not just the in-memory window.
-    /// Updated in loadData() via COUNT query and maintained via apply() events.
-    /// Use this instead of `transactions.count` when checking "are there any transactions at all?"
-    /// — `transactions` only holds the last 3 months due to windowing.
-    private(set) var totalTransactionCount: Int = 0
-
-    /// Returns (totalIncome, totalExpenses) for the given period using MonthlyAggregateService.
-    /// O(M) CoreData fetch where M = number of calendar months in [startDate, endDate].
-    /// Called by ContentView when the time filter extends beyond the in-memory window.
-    func fetchAggregateSummary(from startDate: Date, to endDate: Date, currency: String) -> (income: Double, expenses: Double) {
-        let records = monthlyAggregateService.fetchRange(from: startDate, to: endDate, currency: currency)
-        return (
-            income:   records.reduce(0.0) { $0 + $1.totalIncome },
-            expenses: records.reduce(0.0) { $0 + $1.totalExpenses }
-        )
-    }
-
-    /// Returns the total planned (future-dated) expenses within [startDate, endDate].
-    /// "Planned" = expense transactions with date > today.
-    /// Reads directly from CoreData viewContext — bypasses the 3-month in-memory window.
-    /// Called by ContentView for the aggregate summary path so the "Planned" row shows correctly
-    /// even for out-of-window filters (e.g. "All Time", "Last Year").
-    func fetchPlannedExpenses(from startDate: Date, to endDate: Date, currency: String) -> Double {
-        let today = Date()
-        guard endDate > today else { return 0 }  // Past period — no future transactions possible
-
-        // TransactionEntity.date is NSDate — use NSDate comparison directly.
-        let context = CoreDataStack.shared.viewContext
-        let request = TransactionEntity.fetchRequest()
-        request.predicate = NSPredicate(
-            format: "type == %@ AND date > %@ AND date <= %@",
-            "expense", today as NSDate, endDate as NSDate
-        )
-        request.fetchBatchSize = 100
-
-        do {
-            let entities = try context.fetch(request)
-            return entities.reduce(0.0) { total, entity in
-                let tx = entity.toTransaction()
-                if tx.currency == currency { return total + tx.amount }
-                if let c = tx.convertedAmount, c > 0 { return total + c }
-                return total + (CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: currency) ?? tx.amount)
-            }
-        } catch {
-            return 0
-        }
-    }
-
-    /// Returns the date of the earliest transaction in CoreData.
-    /// O(1) — sorted ASC + fetchLimit 1. Bypasses the 3-month in-memory window.
-    /// Used by InsightsViewModel to compute the correct granularity window for .month / .quarter.
-    func fetchFirstTransactionDate() -> Date? {
-        let context = CoreDataStack.shared.viewContext
-        let request = NSFetchRequest<TransactionEntity>(entityName: "TransactionEntity")
-        request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
-        request.fetchLimit = 1
-        do {
-            let entities = try context.fetch(request)
-            return entities.first?.date
-        } catch {}
-        return nil
-    }
-
-    /// Fetches expense transactions for a specific category within [startDate, endDate] from CoreData.
-    /// Bypasses the in-memory window — used by InsightsViewModel.categoryDeepDive() when the
-    /// previous-bucket period falls outside the 3-month window.
-    func fetchCategoryTransactions(categoryName: String, from startDate: Date, to endDate: Date) -> [Transaction] {
-        let startString = DateFormatters.dateFormatter.string(from: startDate)
-        let endString   = DateFormatters.dateFormatter.string(from: endDate)
-        let context = CoreDataStack.shared.viewContext
-        let request = TransactionEntity.fetchRequest()
-        request.predicate = NSPredicate(
-            format: "category == %@ AND type == %@ AND date >= %@ AND date <= %@",
-            categoryName, "expense", startString, endString
-        )
-        request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-        do {
-            return try context.fetch(request).map { $0.toTransaction() }
-        } catch {
-            return []
-        }
-    }
-
-    /// Returns [categoryName: CategoryExpense] for the given period using CategoryAggregateService.
-    /// O(1) for allTime (pre-summed year==0 records), O(M) for date ranges (monthly records summed per category).
-    /// Called by TransactionsViewModel when the time filter extends beyond the in-memory window.
-    ///
-    /// - Parameters:
-    ///   - preset: The filter preset — `.allTime` uses the year==0 all-time totals, others use fetchRange.
-    ///   - startDate / endDate: The filter bounds.
-    ///   - currency: Base currency string.
-    ///   - validCategoryNames: Optional allowlist — only categories in this set are returned.
-    func fetchCategoryExpenses(
-        preset: TimeFilterPreset,
-        from startDate: Date,
-        to endDate: Date,
-        currency: String,
-        validCategoryNames: Set<String>? = nil
-    ) -> [String: CategoryExpense] {
-        // allTime → use the pre-summed year==0/month==0 records (O(categories), most accurate).
-        // Any other out-of-window filter → sum monthly rows for the date range (O(M)).
-        let aggregates: [CategoryMonthlyAggregate]
-        if preset == .allTime {
-            aggregates = categoryAggregateService.fetchAllTime(currency: currency)
-        } else {
-            aggregates = categoryAggregateService.fetchRange(from: startDate, to: endDate, currency: currency)
-        }
-
-        return aggregates.reduce(into: [String: CategoryExpense]()) { result, agg in
-            guard !agg.categoryName.isEmpty else { return }
-            if let validNames = validCategoryNames, !validNames.contains(agg.categoryName) { return }
-            result[agg.categoryName] = CategoryExpense(total: agg.totalExpenses, subcategories: [:])
-        }
-    }
 
     // MARK: - Initialization
 
@@ -307,10 +142,6 @@ final class TransactionStore {
         self.recurringGenerator = RecurringTransactionGenerator(dateFormatter: DateFormatters.dateFormatter)
         self.recurringValidator = RecurringValidationService()
         self.recurringCache = LRUCache<String, [Transaction]>(capacity: 100)
-
-        // Phase 22: Initialize persistent aggregate services
-        self.categoryAggregateService = CategoryAggregateService()
-        self.monthlyAggregateService = MonthlyAggregateService()
 
         // Setup notification observer for app lifecycle
         setupNotificationObservers()
@@ -339,36 +170,18 @@ final class TransactionStore {
     /// Phase 28-B: All CoreData fetches run on a background thread via Task.detached.
     /// MainActor is NOT blocked — it awaits the background result.
     ///
-    /// Task 11 / Phase 31: When windowMonths > 0 (currently 3), only transactions within the
-    /// rolling window are loaded into memory.  The window is computed here on @MainActor and
-    /// passed to the background fetch as a DateInterval predicate.  Filters that extend beyond
-    /// the window (e.g. "All Time", "Last Year") use MonthlyAggregateService via
-    /// fetchAggregateSummary(from:to:currency:) — see ContentView `.task(id: summaryTrigger)`.
+    /// Phase 40: All transactions are loaded into memory (no window limit).
+    /// 19k transactions × ~400 bytes ≈ 7.6 MB — a single source of truth.
     func loadData() async throws {
         // Capture repository before leaving @MainActor — it's a constant (@ObservationIgnored let).
         let repo = self.repository
 
-        // Task 11: Build optional date window. nil means "load all" (current behaviour).
-        let txDateRange: DateInterval? = windowMonths > 0
-            ? {
-                let now = Date()
-                let windowStart: Date
-                if let computed = Calendar.current.date(byAdding: .month, value: -windowMonths, to: now) {
-                    windowStart = computed
-                } else {
-                    assertionFailure("Calendar overflow computing transaction window — windowMonths=\(windowMonths)")
-                    windowStart = Date.distantPast
-                }
-                return DateInterval(start: windowStart, end: now)
-            }()
-            : nil
-
         // Run ALL repository reads on a background thread.
-        // Each repository method uses bgContext.performAndWait internally (Change 1),
+        // Each repository method uses bgContext.performAndWait internally,
         // so they are safe to call from any thread.
         let (txs, accs, cats, subs, catLinks, txLinks, series, occurrences) =
             try await Task.detached(priority: .userInitiated) {
-                let txs        = repo.loadTransactions(dateRange: txDateRange)
+                let txs        = repo.loadTransactions(dateRange: nil)  // Phase 40: load all
                 let accs       = repo.loadAccounts()
                 let cats       = repo.loadCategories()
                 let subs       = repo.loadSubcategories()
@@ -388,11 +201,6 @@ final class TransactionStore {
         transactionSubcategoryLinks = txLinks
         recurringSeries = series
         recurringOccurrences = occurrences
-
-        // Set totalTransactionCount from CoreData — not from `txs` which is windowed.
-        // viewContext COUNT is O(1) (SQLite COUNT(*)) and safe to call on MainActor.
-        let countRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "TransactionEntity")
-        totalTransactionCount = (try? CoreDataStack.shared.viewContext.count(for: countRequest)) ?? txs.count
 
         // Note: baseCurrency will be set via updateBaseCurrency() from AppCoordinator
     }
@@ -414,17 +222,6 @@ final class TransactionStore {
     func updateBaseCurrency(_ currency: String) {
         baseCurrency = currency
         cache.invalidateAll() // Currency change affects all cached calculations
-        // Phase 22: Rebuild aggregates — all amounts must be re-converted to new base currency.
-        // FIX: load ALL transactions from CoreData (self.transactions is windowed to last 3 months,
-        // so using it would wipe historical aggregates for pre-window data, e.g. 2015-2023).
-        let repo = repository
-        let newCurrency = currency
-        Task.detached(priority: .utility) { [weak self] in
-            guard let self else { return }
-            let allTx = repo.loadTransactions(dateRange: nil)
-            self.categoryAggregateService.rebuild(from: allTx, baseCurrency: newCurrency)
-            self.monthlyAggregateService.rebuild(from: allTx, baseCurrency: newCurrency)
-        }
     }
 
     // MARK: - CRUD Operations
@@ -578,21 +375,6 @@ final class TransactionStore {
         // Mark import done ONLY after all saves have succeeded.
         // Setting this earlier would fire ContentView observers while CoreData writes are still in progress.
         isImporting = false
-
-        print("✅ [TransactionStore] finishImport: all saves complete, rebuilding aggregates…")
-
-        // Phase 22: After import, rebuild persistent aggregates.
-        // FIX: load ALL transactions from CoreData after saving, not self.transactions which is
-        // windowed to last 3 months. A partial re-import (e.g. only 2024 data) would otherwise
-        // wipe 2015-2023 aggregates because those years aren't in the in-memory window.
-        let repo = repository
-        let currency = baseCurrency
-        Task.detached(priority: .utility) { [weak self] in
-            guard let self else { return }
-            let allTx = repo.loadTransactions(dateRange: nil)
-            self.categoryAggregateService.rebuild(from: allTx, baseCurrency: currency)
-            self.monthlyAggregateService.rebuild(from: allTx, baseCurrency: currency)
-        }
 
         print("✅ [TransactionStore] finishImport DONE")
     }
@@ -1044,7 +826,7 @@ final class TransactionStore {
     /// Apply an event to the store
     /// Phase 1-4: Core event processing - validates, updates state, balances, cache, persists
     /// ✨ Phase 9: Made internal for access from TransactionStore+Recurring extension
-    /// 🗄️ Phase 22: Added incremental aggregate updates for CategoryAggregateEntity + MonthlyAggregateEntity
+    /// Phase 40: Aggregate services removed — all transactions in memory (single source of truth)
     internal func apply(_ event: TransactionEvent) async throws {
         // 1. Update state (SSOT)
         updateState(event)
@@ -1055,18 +837,12 @@ final class TransactionStore {
         // 3. Phase 20: Granular cache invalidation — only invalidate what changed
         invalidateCache(for: event)
 
-        // 4. Phase 22: Incremental aggregate updates (O(1) per transaction)
-        // Skip during import — a full rebuild is triggered after finishImport()
-        if !isImporting {
-            updateAggregates(for: event)
-        }
-
-        // 5. Phase 28-C: Incremental persist — O(1) per event (no await needed)
+        // 4. Phase 28-C: Incremental persist — O(1) per event (no await needed)
         if !isImporting {
             persistIncremental(event)
         }
 
-        // 6. Phase 17: Debounced sync — coalesces rapid mutations (e.g., batch adds)
+        // 5. Phase 17: Debounced sync — coalesces rapid mutations (e.g., batch adds)
         // @Observable automatically notifies SwiftUI for TransactionStore property changes.
         // Debounced sync handles cache invalidation and insights recompute.
         syncDebounceTask?.cancel()
@@ -1078,49 +854,11 @@ final class TransactionStore {
         }
     }
 
-    /// Phase 22: Incremental aggregate maintenance.
-    /// Dispatches O(1) updates to CategoryAggregateService and MonthlyAggregateService.
-    /// Bulk events trigger a full rebuild (same O(N) cost, but once instead of per-view).
-    private func updateAggregates(for event: TransactionEvent) {
-        let currency = baseCurrency
-        switch event {
-        case .added(let tx):
-            categoryAggregateService.applyAdded(tx, baseCurrency: currency)
-            monthlyAggregateService.applyAdded(tx, baseCurrency: currency)
-
-        case .deleted(let tx):
-            categoryAggregateService.applyDeleted(tx, baseCurrency: currency)
-            monthlyAggregateService.applyDeleted(tx, baseCurrency: currency)
-
-        case .updated(let old, let new):
-            categoryAggregateService.applyUpdated(old: old, new: new, baseCurrency: currency)
-            monthlyAggregateService.applyUpdated(old: old, new: new, baseCurrency: currency)
-
-        case .bulkAdded:
-            // Bulk add: rebuild aggregates from the full transaction set.
-            // FIX: load from CoreData via Task.detached (runs after persistIncremental saves the
-            // batch) so pre-window historical data (e.g. 2015-2023) is included in the rebuild.
-            let repo = repository
-            Task.detached(priority: .utility) { [weak self] in
-                guard let self else { return }
-                let allTx = repo.loadTransactions(dateRange: nil)
-                self.categoryAggregateService.rebuild(from: allTx, baseCurrency: currency)
-                self.monthlyAggregateService.rebuild(from: allTx, baseCurrency: currency)
-            }
-
-        case .seriesCreated, .seriesUpdated, .seriesStopped, .seriesDeleted:
-            // Recurring events don't directly change individual transactions here;
-            // the transaction mutations go through .added/.deleted/.bulkAdded paths.
-            break
-        }
-    }
-
     /// Update state based on event
     private func updateState(_ event: TransactionEvent) {
         switch event {
         case .added(let tx):
             transactions.append(tx)
-            totalTransactionCount += 1
 
         case .updated(let old, let new):
             if let index = transactions.firstIndex(where: { $0.id == old.id }) {
@@ -1129,11 +867,9 @@ final class TransactionStore {
 
         case .deleted(let tx):
             transactions.removeAll { $0.id == tx.id }
-            totalTransactionCount = max(0, totalTransactionCount - 1)
 
         case .bulkAdded(let txs):
             transactions.append(contentsOf: txs)
-            totalTransactionCount += txs.count
 
         // MARK: - Recurring Series Events (Phase 9)
 

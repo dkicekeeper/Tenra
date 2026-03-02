@@ -71,24 +71,14 @@ extension InsightsService {
             topTotalExpenses = periodSummary.totalExpenses
         }
 
-        // Phase 22: Try fast path — read category totals from CategoryAggregateService (O(M) fetch)
-        let aggCategories = transactionStore.categoryAggregateService.fetchRange(
-            from: topRange.start, to: topRange.end, currency: baseCurrency
-        )
-
-        let sortedCategories: [(key: String, total: Double)]
-        if !aggCategories.isEmpty {
-            Self.logger.debug("⚡️ [Insights] Category spending FAST PATH — \(aggCategories.count) categories from CoreData")
-            sortedCategories = aggCategories.map { (key: $0.categoryName, total: $0.totalExpenses) }
-        } else {
-            let bucketGroups = Dictionary(grouping: topExpenses, by: { $0.category })
-            sortedCategories = bucketGroups
-                .map { key, txns in
-                    let total = txns.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
-                    return (key: key, total: total)
-                }
-                .sorted { $0.total > $1.total }
-        }
+        // Phase 40: Direct in-memory category grouping — all transactions available.
+        let bucketGroups = Dictionary(grouping: topExpenses, by: { $0.category })
+        let sortedCategories: [(key: String, total: Double)] = bucketGroups
+            .map { key, txns in
+                let total = txns.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
+                return (key: key, total: total)
+            }
+            .sorted { $0.total > $1.total }
 
         let categoryGroups = Dictionary(grouping: topExpenses, by: { $0.category })
 
@@ -317,8 +307,12 @@ extension InsightsService {
         let now = Date()
         guard let threeMonthsAgo = calendar.date(byAdding: .month, value: -3, to: startOfMonth(calendar, for: now)) else { return nil }
 
-        let monthlyAggregates = transactionStore.categoryAggregateService.fetchRange(
-            from: threeMonthsAgo, to: now, currency: baseCurrency
+        // Phase 40: In-memory computation replaces CategoryAggregateService.fetchRange()
+        let monthlyAggregates = Self.computeCategoryMonthTotals(
+            from: transactionStore.transactions,
+            from: threeMonthsAgo,
+            to: now,
+            baseCurrency: baseCurrency
         )
         guard !monthlyAggregates.isEmpty else { return nil }
 
@@ -384,8 +378,12 @@ extension InsightsService {
         let now = Date()
         guard let sixMonthsAgo = calendar.date(byAdding: .month, value: -6, to: startOfMonth(calendar, for: now)) else { return nil }
 
-        let monthlyAggregates = transactionStore.categoryAggregateService.fetchRange(
-            from: sixMonthsAgo, to: now, currency: baseCurrency
+        // Phase 40: In-memory computation replaces CategoryAggregateService.fetchRange()
+        let monthlyAggregates = Self.computeCategoryMonthTotals(
+            from: transactionStore.transactions,
+            from: sixMonthsAgo,
+            to: now,
+            baseCurrency: baseCurrency
         )
         guard monthlyAggregates.count >= 4 else { return nil }
 

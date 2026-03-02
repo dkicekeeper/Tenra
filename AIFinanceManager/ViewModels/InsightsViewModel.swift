@@ -9,6 +9,12 @@
 //  - makeBalanceSnapshot() captures balances on MainActor before background hop
 //  - Only the final UI write hops back via await MainActor.run
 //
+//  Phase 41: Insights freeze + excessive-recompute fixes
+//  - computeHealthScore no longer @MainActor — snapshots passed as params, runs in Task.detached
+//  - invalidateAndRecompute() debounces recomputes by 800ms (debounceTask)
+//  - loadInsightsBackground() cancels pending debounce and clears isStale immediately
+//  - InsightsView.onChange(of: isStale) removed — debounce in VM handles mutations while tab open
+//
 
 import Foundation
 import SwiftUI
@@ -47,6 +53,9 @@ final class InsightsViewModel {
 
     /// Background recompute task handle — cancelled and replaced on each data change.
     @ObservationIgnored private var recomputeTask: Task<Void, Never>?
+
+    /// Phase 41: Debounce task — coalesces rapid mutation bursts into a single recompute.
+    @ObservationIgnored private var debounceTask: Task<Void, Never>?
 
     /// Phase 36: Stale flag — observable so InsightsView can react while tab is open.
     /// When true, data needs recompute. Removed @ObservationIgnored so the View sees the change
@@ -139,15 +148,27 @@ final class InsightsViewModel {
     }
 
     /// Lazy invalidation — marks stale without eager recompute.
-    /// Computation is deferred until user opens the Insights tab.
+    /// Phase 41: schedules a debounced recompute (800ms) so rapid mutations
+    /// coalesce into a single background pass instead of triggering one per transaction.
+    /// If the Insights tab is not visible the debounce fires harmlessly via loadInsightsBackground
+    /// (which checks cache freshness); if the tab IS open the debounce updates the visible data.
     func invalidateAndRecompute() {
-        Self.logger.debug("🔄 [InsightsVM] invalidateAndRecompute — marking stale (lazy)")
+        Self.logger.debug("🔄 [InsightsVM] invalidateAndRecompute — marking stale (debounced)")
         insightsService.invalidateCache()
         precomputedInsights = [:]
         precomputedPeriodPoints = [:]
         precomputedTotals = [:]
         isStale = true
         recomputeTask?.cancel()
+        debounceTask?.cancel()
+        debounceTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(800))
+            guard !Task.isCancelled else { return }
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                self.loadInsightsBackground()
+            }
+        }
     }
 
     func invalidateCache() {
@@ -181,20 +202,8 @@ final class InsightsViewModel {
         let prevEnd   = currentStart   // prev bucket ends where current bucket begins
         let prevFilter = TimeFilter(preset: .custom, startDate: prevStart, endDate: prevEnd)
 
-        // Phase 31 windowing fix: if either the current or previous bucket extends beyond the
-        // 3-month in-memory window, the windowed transactionStore.transactions would produce
-        // wrong subcategory breakdowns and a 0 prevBucketTotal. Fetch only the needed category
-        // transactions from CoreData for the combined [prevStart, currentEnd] span instead.
-        let allTransactions: [Transaction]
-        if let windowStart = transactionStore.windowStartDate, prevStart < windowStart {
-            allTransactions = transactionStore.fetchCategoryTransactions(
-                categoryName: categoryName,
-                from: prevStart,
-                to: currentEnd
-            )
-        } else {
-            allTransactions = Array(transactionStore.transactions)
-        }
+        // Phase 40: All transactions in memory — window check removed.
+        let allTransactions = Array(transactionStore.transactions)
 
         return insightsService.generateCategoryDeepDive(
             categoryName: categoryName,
@@ -214,6 +223,12 @@ final class InsightsViewModel {
     ///            User sees real data after ~1/5 of total computation time instead of zeros.
     /// Phase 2 — computes the remaining 4 granularities + health score, then does a final UI update.
     private func loadInsightsBackground() {
+        // Phase 41: Guard against startup race — if transactions haven't landed on the
+        // main actor yet (loadData() is still in flight), skip and stay stale so that
+        // AppCoordinator's post-init invalidateAndRecompute() will trigger correctly.
+        guard !transactionStore.transactions.isEmpty else { return }
+        isStale = false          // Phase 41: clear stale flag immediately
+        debounceTask?.cancel()   // Phase 41: cancel any pending debounce — we're computing now
         isLoading = true
         recomputeTask?.cancel()
 
@@ -224,12 +239,14 @@ final class InsightsViewModel {
         let service = insightsService
         let allTransactions = Array(transactionStore.transactions)
         let balanceSnapshot = makeBalanceSnapshot()
+        // Phase 41: Pre-capture @MainActor model snapshots so computeHealthScore
+        // can run off the main thread (no @MainActor hop required).
+        let categoriesSnapshot  = Array(transactionStore.categories)
+        let recurringSnapshot   = Array(transactionStore.recurringSeries)
+        let accountsSnapshot    = Array(transactionStore.accounts)
         let priorityGranularity = currentGranularity  // show this one first
-        // Fetch earliest transaction date from CoreData — NOT from windowed allTransactions.
-        // allTransactions only holds last 3 months; without this fix .month/.quarter granularities
-        // would compute windowStart = ~3 months ago and show only 3 months of chart data.
-        let firstDate = transactionStore.fetchFirstTransactionDate()
-            ?? allTransactions.compactMap { DateFormatters.dateFormatter.date(from: $0.date) }.min()
+        // Phase 40: All transactions in memory — compute firstDate directly from the array.
+        let firstDate = allTransactions.compactMap { DateFormatters.dateFormatter.date(from: $0.date) }.min()
 
         recomputeTask = Task.detached(priority: .userInitiated) { [weak self] in
             guard let self, !Task.isCancelled else { return }
@@ -306,12 +323,17 @@ final class InsightsViewModel {
             let monthTotals   = newTotals[.month]
             let monthPoints   = newPoints[.month] ?? []
             let latestNetFlow = monthPoints.last?.netFlow ?? 0
-            let computedHealthScore = await service.computeHealthScore(
+            // Phase 41: No longer @MainActor — runs synchronously in Task.detached.
+            let computedHealthScore = service.computeHealthScore(
                 totalIncome: monthTotals?.income   ?? 0,
                 totalExpenses: monthTotals?.expenses ?? 0,
                 latestNetFlow: latestNetFlow,
                 baseCurrency: currency,
-                balanceFor: { balanceSnapshot[$0] ?? 0 }
+                balanceFor: { balanceSnapshot[$0] ?? 0 },
+                allTransactions: allTransactions,
+                categories: categoriesSnapshot,
+                recurringSeries: recurringSnapshot,
+                accounts: accountsSnapshot
             )
 
             // Hop back to MainActor for the final UI write.

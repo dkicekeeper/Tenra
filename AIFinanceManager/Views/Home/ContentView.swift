@@ -130,41 +130,18 @@ struct ContentView: View {
                 let filterStart  = filterRange.start
                 let filterEnd    = filterRange.end
                 let currency     = viewModel.appSettings.baseCurrency
-                let windowStart  = transactionStore.windowStartDate
-                let aggregateTotals: (income: Double, expenses: Double, planned: Double)?
-                if let windowStart, filterStart < windowStart {
-                    let (income, expenses) = transactionStore.fetchAggregateSummary(
-                        from: filterStart, to: filterEnd, currency: currency
-                    )
-                    let planned = transactionStore.fetchPlannedExpenses(from: filterStart, to: filterEnd, currency: currency)
-                    aggregateTotals = (income, expenses, planned)
-                } else {
-                    aggregateTotals = nil
-                }
                 // Pre-format dates on @MainActor — DateFormatter is not Sendable.
                 let startStr = ContentView.summaryDateFormatter.string(from: filterStart)
                 let endStr   = ContentView.summaryDateFormatter.string(from: filterEnd)
 
+                // Phase 40: All transactions in memory — always use SummaryCalculator directly.
                 let summary = await Task.detached(priority: .userInitiated) {
-                    if let (income, expenses, planned) = aggregateTotals {
-                        Summary(
-                            totalIncome: income,
-                            totalExpenses: expenses,
-                            totalInternalTransfers: 0,
-                            netFlow: income - expenses,
-                            currency: currency,
-                            startDate: startStr,
-                            endDate: endStr,
-                            plannedAmount: planned
-                        )
-                    } else {
-                        SummaryCalculator.compute(
-                            transactions: snapshot,
-                            filterStart: filterStart,
-                            filterEnd: filterEnd,
-                            baseCurrency: currency
-                        )
-                    }
+                    SummaryCalculator.compute(
+                        transactions: snapshot,
+                        filterStart: filterStart,
+                        filterEnd: filterEnd,
+                        baseCurrency: currency
+                    )
                 }.value
 
                 guard !Task.isCancelled else { return }
@@ -258,7 +235,7 @@ struct ContentView: View {
             TransactionsSummaryCard(
                 summary: homeState.cachedSummary,
                 currency: viewModel.appSettings.baseCurrency,
-                isEmpty: transactionStore.totalTransactionCount == 0
+                isEmpty: transactionStore.transactions.isEmpty
             )
         }
         .buttonStyle(.bounce)

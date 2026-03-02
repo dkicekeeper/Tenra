@@ -258,6 +258,11 @@ final class AddTransactionCoordinator {
             return .invalid(errors)
         }
 
+        guard AmountFormatter.validate(decimalAmount) else {
+            errors.append(.amountExceedsMaximum)
+            return .invalid(errors)
+        }
+
         // Validate account selection
         guard let accountId = formData.accountId else {
             errors.append(.accountNotSelected)

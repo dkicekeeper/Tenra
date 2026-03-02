@@ -26,6 +26,7 @@ struct ValidationResult {
 enum ValidationError: LocalizedError {
     case invalidAmount
     case amountMustBePositive
+    case amountExceedsMaximum
     case accountNotSelected
     case accountNotFound
     case custom(String)  // NEW: For arbitrary error messages (e.g., from TransactionStore)
@@ -36,6 +37,11 @@ enum ValidationError: LocalizedError {
             return String(localized: "error.validation.enterAmount")
         case .amountMustBePositive:
             return String(localized: "error.validation.amountGreaterThanZero")
+        case .amountExceedsMaximum:
+            return String(
+                localized: "error.amount.exceedsMaximum",
+                defaultValue: "Amount cannot exceed 999,999,999.99"
+            )
         case .accountNotSelected:
             return String(localized: "error.validation.selectAccount")
         case .accountNotFound:

@@ -253,12 +253,8 @@ extension TransactionStore {
     /// Call this when series is updated to ensure fresh data
     /// - Parameter seriesId: The series ID to invalidate
     func invalidateCache(for seriesId: String) {
-        // Invalidate all horizon variants
-        for horizon in [1, 3, 6, 12] {
-            let cacheKey = "\(seriesId)_\(horizon)"
-            recurringCache.remove(cacheKey)
-        }
-
+        // Phase 03-PERF-02: delegate to RecurringStore
+        recurringStore.invalidateCacheFor(seriesId: seriesId)
     }
 
     /// Pause a subscription (subscription-specific convenience method)

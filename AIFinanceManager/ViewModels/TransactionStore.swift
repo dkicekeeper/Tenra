@@ -92,14 +92,6 @@ final class TransactionStore {
     /// Links between transactions and subcategories
     private(set) var transactionSubcategoryLinks: [TransactionSubcategoryLink] = []
 
-    // MARK: - Recurring Data (Phase 9: Aggressive Integration) ✨
-
-    /// All recurring series - subscriptions and generic recurring transactions
-    private(set) var recurringSeries: [RecurringSeries] = []
-
-    /// All recurring occurrences - tracks which transactions were generated from which series
-    private(set) var recurringOccurrences: [RecurringOccurrence] = []
-
     // MARK: - Dependencies
 
     @ObservationIgnored internal let repository: DataRepositoryProtocol  // ✨ Phase 9: internal for access from extension
@@ -109,10 +101,16 @@ final class TransactionStore {
     // This ensures balance updates always occur, no silent failures
     @ObservationIgnored private let balanceCoordinator: BalanceCoordinator
 
-    // ✨ Phase 9: Recurring dependencies (internal for access from extension)
-    @ObservationIgnored internal let recurringGenerator: RecurringTransactionGenerator
-    @ObservationIgnored internal let recurringValidator: RecurringValidationService
-    @ObservationIgnored internal let recurringCache: LRUCache<String, [Transaction]>
+    // Phase 03-PERF-02: Recurring state extracted to RecurringStore
+    @ObservationIgnored internal let recurringStore: RecurringStore
+
+    // MARK: - Recurring Forwarders (Phase 03-PERF-02)
+    // Extensions and callers use these to access RecurringStore state without knowing the indirection.
+    var recurringSeries: [RecurringSeries] { recurringStore.recurringSeries }
+    var recurringOccurrences: [RecurringOccurrence] { recurringStore.recurringOccurrences }
+    internal var recurringGenerator: RecurringTransactionGenerator { recurringStore.recurringGenerator }
+    internal var recurringValidator: RecurringValidationService { recurringStore.recurringValidator }
+    internal var recurringCache: LRUCache<String, [Transaction]> { recurringStore.recurringCache }
 
     // Settings
     internal var baseCurrency: String = "KZT"
@@ -132,16 +130,13 @@ final class TransactionStore {
     init(
         repository: DataRepositoryProtocol,
         balanceCoordinator: BalanceCoordinator,
+        recurringStore: RecurringStore,        // Phase 03-PERF-02
         cacheCapacity: Int = 1000
     ) {
         self.repository = repository
         self.balanceCoordinator = balanceCoordinator
+        self.recurringStore = recurringStore
         self.cache = UnifiedTransactionCache(capacity: cacheCapacity)
-
-        // ✨ Phase 9: Initialize recurring dependencies (internal for access from extension)
-        self.recurringGenerator = RecurringTransactionGenerator(dateFormatter: DateFormatters.dateFormatter)
-        self.recurringValidator = RecurringValidationService()
-        self.recurringCache = LRUCache<String, [Transaction]>(capacity: 100)
 
         // Setup notification observer for app lifecycle
         setupNotificationObservers()
@@ -199,8 +194,7 @@ final class TransactionStore {
         subcategories = subs
         categorySubcategoryLinks = catLinks
         transactionSubcategoryLinks = txLinks
-        recurringSeries = series
-        recurringOccurrences = occurrences
+        recurringStore.load(series: series, occurrences: occurrences)  // Phase 03-PERF-02
 
         // Note: baseCurrency will be set via updateBaseCurrency() from AppCoordinator
     }
@@ -363,9 +357,9 @@ final class TransactionStore {
                 repository.saveTransactionSubcategoryLinks(transactionSubcategoryLinks)
             }
 
-            // Save recurring data (these are less critical, can be async)
-            repository.saveRecurringSeries(recurringSeries)
-            repository.saveRecurringOccurrences(recurringOccurrences)
+            // Save recurring data — Phase 03-PERF-02: delegate to RecurringStore
+            recurringStore.saveSeries()
+            recurringStore.saveOccurrences()
 
         } catch {
             print("❌ [TransactionStore] finishImport FAILED: \(error)")
@@ -871,65 +865,20 @@ final class TransactionStore {
         case .bulkAdded(let txs):
             transactions.append(contentsOf: txs)
 
-        // MARK: - Recurring Series Events (Phase 9)
+        // MARK: - Recurring Series Events (Phase 9 / Phase 03-PERF-02: delegated to RecurringStore)
 
         case .seriesCreated(let series):
-            updateStateForSeriesCreated(series)
+            recurringStore.handleSeriesCreated(series)
 
         case .seriesUpdated(let old, let new):
-            updateStateForSeriesUpdated(old: old, new: new)
+            recurringStore.handleSeriesUpdated(old: old, new: new)
 
-        case .seriesStopped(let seriesId, let fromDate):
-            updateStateForSeriesStopped(seriesId: seriesId, fromDate: fromDate)
+        case .seriesStopped(let seriesId, _):
+            recurringStore.handleSeriesStopped(seriesId: seriesId)
 
-        case .seriesDeleted(let seriesId, let deleteTransactions):
-            updateStateForSeriesDeleted(seriesId: seriesId, deleteTransactions: deleteTransactions)
+        case .seriesDeleted(let seriesId, _):
+            recurringStore.handleSeriesDeleted(seriesId: seriesId)
         }
-    }
-
-    // MARK: - Recurring State Update Helpers (Phase 9)
-
-    /// Update state when a recurring series is created
-    private func updateStateForSeriesCreated(_ series: RecurringSeries) {
-        // Simply add series to array
-        // Transaction generation is handled in TransactionStore+Recurring.createSeries()
-        recurringSeries.append(series)
-
-    }
-
-    /// Update state when a recurring series is updated
-    private func updateStateForSeriesUpdated(old: RecurringSeries, new: RecurringSeries) {
-        // Update series in array
-        if let index = recurringSeries.firstIndex(where: { $0.id == old.id }) {
-            recurringSeries[index] = new
-        }
-
-
-        // Note: Transaction regeneration is handled in TransactionStore+Recurring.updateSeries()
-    }
-
-    /// Update state when a recurring series is stopped
-    private func updateStateForSeriesStopped(seriesId: String, fromDate: String) {
-        // Update series status to inactive
-        if let index = recurringSeries.firstIndex(where: { $0.id == seriesId }) {
-            var updatedSeries = recurringSeries[index]
-            updatedSeries.isActive = false
-            recurringSeries[index] = updatedSeries
-        }
-
-
-        // Note: Transaction cleanup is handled in TransactionStore+Recurring.stopSeries()
-        // before calling apply()
-    }
-
-    /// Update state when a recurring series is deleted
-    private func updateStateForSeriesDeleted(seriesId: String, deleteTransactions: Bool) {
-        // Remove series from array
-        recurringSeries.removeAll { $0.id == seriesId }
-
-
-        // Note: Transaction cleanup and occurrence removal is handled in
-        // TransactionStore+Recurring.deleteSeries() before calling apply()
     }
 
     // MARK: - Recurring Transaction Generation (Phase 9)
@@ -955,12 +904,9 @@ final class TransactionStore {
             let bulkEvent = TransactionEvent.bulkAdded(result.transactions)
             try await apply(bulkEvent)
 
-            // Track occurrences
-            recurringOccurrences.append(contentsOf: result.occurrences)
-
-            // Persist occurrences
-            repository.saveRecurringOccurrences(recurringOccurrences)
-
+            // Track occurrences — Phase 03-PERF-02: delegate to recurringStore
+            recurringStore.appendOccurrences(result.occurrences)
+            recurringStore.saveOccurrences()
         }
     }
 
@@ -1078,8 +1024,9 @@ final class TransactionStore {
 
         case .seriesCreated, .seriesUpdated, .seriesStopped, .seriesDeleted:
             // Recurring series are small datasets; use the existing full-save path
-            repository.saveRecurringSeries(recurringSeries)
-            repository.saveRecurringOccurrences(recurringOccurrences)
+            // Phase 03-PERF-02: delegate to RecurringStore
+            recurringStore.saveSeries()
+            recurringStore.saveOccurrences()
         }
     }
 
@@ -1090,9 +1037,9 @@ final class TransactionStore {
         // Save transactions
         repository.saveTransactions(transactions)
 
-        // ✨ Phase 9: Save recurring data
-        repository.saveRecurringSeries(recurringSeries)
-        repository.saveRecurringOccurrences(recurringOccurrences)
+        // Phase 03-PERF-02: Save recurring data via RecurringStore
+        recurringStore.saveSeries()
+        recurringStore.saveOccurrences()
 
         // Note: Accounts are not saved here - balance is managed by BalanceCoordinator
         // and will trigger its own save when balances are recalculated

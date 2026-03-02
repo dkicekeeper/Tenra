@@ -91,9 +91,13 @@ class AppCoordinator {
         // Single Source of Truth for all transaction operations
         // UPDATED 2026-02-05 Phase 7.1: Added balanceCoordinator for automatic balance updates
         // ✨ UPDATED 2026-02-09 Phase 9: Now includes recurring operations with LRU cache
+        // Phase 03-PERF-02: RecurringStore created before TransactionStore; TransactionStore owns it.
+        // Views that need recurring data go through TransactionStore.recurringSeries (forwarding computed property).
+        let recurringStore = RecurringStore(repository: self.repository)
         self.transactionStore = TransactionStore(
             repository: self.repository,
             balanceCoordinator: self.balanceCoordinator,
+            recurringStore: recurringStore,
             cacheCapacity: 1000
         )
 

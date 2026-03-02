@@ -26,7 +26,12 @@ Four phases eliminate active risks (deadlock, race conditions, dead code), harde
   2. `TransactionQueryService` declares its DateFormatter as `@MainActor private static let`; no DispatchSemaphore exists anywhere in the codebase
   3. `TransactionConverterService.swift`, `TransactionConverterServiceProtocol.swift`, deprecated Account Balance Cache section in `TransactionCacheManager.swift`, and the incomplete prefix-invalidation TODO in `UnifiedTransactionCache.swift` are all gone
   4. The app builds without errors under `SWIFT_STRICT_CONCURRENCY = targeted`
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Delete RecurringTransactionService + protocol; rewire TransactionsViewModel recurring calls to TransactionStore
+- [ ] 01-02-PLAN.md — Fix TransactionQueryService DateFormatter thread safety; delete TransactionConverterService tombstones
+- [ ] 01-03-PLAN.md — Remove deprecated Account Balance Cache from TransactionCacheManager; resolve UnifiedTransactionCache TODO
 
 ### Phase 2: Security & Data Migration
 **Goal**: Financial data is protected at rest and validated at entry; a CoreData schema migration model exists so an app update cannot crash existing users
@@ -65,7 +70,7 @@ Four phases eliminate active risks (deadlock, race conditions, dead code), harde
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Safety & Cleanup | 0/TBD | Not started | - |
+| 1. Safety & Cleanup | 0/3 | Planning done | - |
 | 2. Security & Data Migration | 0/TBD | Not started | - |
 | 3. Performance | 0/TBD | Not started | - |
 | 4. Critical Tests | 0/TBD | Not started | - |

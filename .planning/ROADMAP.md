@@ -71,7 +71,12 @@ Plans:
   2. `CategoryBudgetService` tests cover period boundary detection (spent exactly at limit), budget rollover between periods, and zero-transaction periods
   3. `RecurringTransactionGenerator` tests cover Feb 29 on leap year, Jan 31 monthly → Feb 28/29, and a DST-boundary generation window
   4. A CoreData round-trip test saves a `TransactionEntity` to an in-memory store and reloads it; all fields match after reload
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — DepositInterestService tests (TEST-01) + CategoryBudgetService tests (TEST-02)
+- [ ] 04-02-PLAN.md — RecurringTransactionGenerator edge-case tests: Feb 28/29, DST boundary (TEST-03)
+- [ ] 04-03-PLAN.md — CoreData round-trip test: save TransactionEntity to in-memory store, reload, verify fields (TEST-04)
 
 ## Progress
 
@@ -82,4 +87,4 @@ Plans:
 | 1. Safety & Cleanup | 3/3 | Complete    | 2026-03-02 |
 | 2. Security & Data Migration | 3/3 | Complete    | 2026-03-02 |
 | 3. Performance | 2/2 | Complete    | 2026-03-02 |
-| 4. Critical Tests | 0/TBD | Not started | - |
+| 4. Critical Tests | 0/3 | Not started | - |

@@ -32,6 +32,7 @@ struct RecurringTransactionTests {
     func testRecurringSeriesInit() {
         let series = RecurringSeries(
             id: "test-id",
+            isActive: true,
             amount: Decimal(100.0),
             currency: "USD",
             category: "Food",
@@ -40,10 +41,9 @@ struct RecurringTransactionTests {
             accountId: "account-1",
             targetAccountId: nil,
             frequency: .monthly,
-            startDate: "2024-01-15",
-            isActive: true
+            startDate: "2024-01-15"
         )
-        
+
         #expect(series.id == "test-id")
         #expect(series.amount == Decimal(100.0))
         #expect(series.currency == "USD")

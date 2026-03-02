@@ -6,6 +6,7 @@
 //
 
 import Testing
+import Foundation
 @testable import AIFinanceManager
 
 struct AmountFormatterTests {
@@ -65,5 +66,41 @@ struct AmountFormatterTests {
         #expect(AmountFormatter.validateDecimalPlaces("1234.5") == true)
         #expect(AmountFormatter.validateDecimalPlaces("1234.567") == false)
         #expect(AmountFormatter.validateDecimalPlaces("1234") == true)
+    }
+
+    // MARK: - validate(_:) — Upper-Bound Tests (SEC-02)
+
+    @Test("Validate: maximum allowed amount is accepted")
+    func testValidateMaximumAllowed() {
+        // 999,999,999.99 is the upper bound — must return true
+        let max = Decimal(string: "999999999.99")!
+        #expect(AmountFormatter.validate(max) == true)
+    }
+
+    @Test("Validate: amount above maximum is rejected")
+    func testValidateAboveMaximum() {
+        // 1,000,000,000 exceeds the upper bound — must return false
+        let overMax = Decimal(string: "1000000000")!
+        #expect(AmountFormatter.validate(overMax) == false)
+    }
+
+    @Test("Validate: small positive amount is accepted")
+    func testValidateSmallPositive() {
+        let small = Decimal(string: "0.01")!
+        #expect(AmountFormatter.validate(small) == true)
+    }
+
+    @Test("Validate: negative amount is rejected")
+    func testValidateNegativeAmount() {
+        let negative = Decimal(string: "-1")!
+        #expect(AmountFormatter.validate(negative) == false)
+    }
+
+    @Test("Validate: 999,999,999.999 (3 decimals) exceeds max — rejected")
+    func testValidateThreeDecimalExceedsMax() {
+        // validate() checks only upper bound (not decimal places)
+        // 999,999,999.999 > 999,999,999.99, so it must return false
+        let overMax = Decimal(string: "999999999.999")!
+        #expect(AmountFormatter.validate(overMax) == false)
     }
 }

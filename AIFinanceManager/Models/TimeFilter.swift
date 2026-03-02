@@ -144,6 +144,21 @@ struct TimeFilter: Codable, Equatable, Hashable {
         return preset.localizedName
     }
 
+    /// Returns true if the given date falls within [startDate, endDate).
+    func contains(date: Date) -> Bool {
+        return date >= startDate && date < endDate
+    }
+
+    /// Returns true if the date string (format: yyyy-MM-dd) falls within the filter range.
+    /// Returns false for invalid/unparseable date strings.
+    func contains(dateString: String) -> Bool {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        guard let date = formatter.date(from: dateString) else { return false }
+        return contains(date: date)
+    }
+
     /// Stable string key for use in caches keyed by time filter.
     /// For preset filters this is just the preset rawValue.
     /// For custom ranges, includes the date interval so different ranges get distinct keys.

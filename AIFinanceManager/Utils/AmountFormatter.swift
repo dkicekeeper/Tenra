@@ -108,4 +108,11 @@ struct AmountFormatter {
         }
         return true
     }
+
+    /// Returns true if `amount` is within the accepted transaction range: (0, 999_999_999.99].
+    /// Does NOT check decimal places — use `validateDecimalPlaces` for that.
+    static func validate(_ amount: Decimal) -> Bool {
+        let max = Decimal(string: "999999999.99")!
+        return amount > 0 && amount <= max
+    }
 }

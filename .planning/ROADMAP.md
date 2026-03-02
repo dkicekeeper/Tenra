@@ -13,7 +13,7 @@ Four phases eliminate active risks (deadlock, race conditions, dead code), harde
 - [x] **Phase 1: Safety & Cleanup** - Delete deadlock-prone service, fix DateFormatter race, remove 4 dead-code files
 - [x] **Phase 2: Security & Data Migration** - File protection on CoreData store, amount upper-bound validation, explicit CoreData migration model (completed 2026-03-02)
 - [x] **Phase 3: Performance** - Pre-aggregate category totals in PreAggregatedData, extract RecurringStore from TransactionStore (completed 2026-03-02)
-- [ ] **Phase 4: Critical Tests** - Unit tests for DepositInterestService, CategoryBudgetService, RecurringTransactionGenerator edge cases, CoreData round-trip
+- [x] **Phase 4: Critical Tests** - Unit tests for DepositInterestService, CategoryBudgetService, RecurringTransactionGenerator edge cases, CoreData round-trip (completed 2026-03-02)
 
 ## Phase Details
 
@@ -87,4 +87,4 @@ Plans:
 | 1. Safety & Cleanup | 3/3 | Complete    | 2026-03-02 |
 | 2. Security & Data Migration | 3/3 | Complete    | 2026-03-02 |
 | 3. Performance | 2/2 | Complete    | 2026-03-02 |
-| 4. Critical Tests | 2/3 | In Progress|  |
+| 4. Critical Tests | 2/3 | Complete    | 2026-03-02 |

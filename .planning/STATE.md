@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-03T19:01:00.000Z"
+last_updated: "2026-03-03T00:00:00.000Z"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
   completed_plans: 6
 ---
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-03-02)
 ## Current Position
 
 Phase: 2 of 4 (Security & Data Migration)
-Plan: 02-02 complete (amount upper-bound validation; SEC-02)
-Status: Active — 02-02 complete; 02-03 at checkpoint (Task 2: human-verify build) still pending
-Last activity: 2026-03-03 — Completed 02-02 (AmountFormatter.validate() + AddTransactionCoordinator enforcement; SEC-02)
+Plan: 02-03 complete (CoreData v2→v3 mapping model; DATA-01)
+Status: Phase 2 complete — all 3 plans done (02-01 SEC-01, 02-02 SEC-02, 02-03 DATA-01)
+Last activity: 2026-03-03 — Completed 02-03 (xcmappingmodel for v2→v3 CoreData migration; DATA-01)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100% (Phase 2 complete)
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Progress: [█████░░░░░] 50%
 *Updated after each plan completion*
 | Phase 02-security-and-data-migration P01 | 2 | 1 tasks | 1 files |
 | Phase 02-security-and-data-migration P02 | 12 | 2 tasks | 11 files |
+| Phase 02-security-and-data-migration P03 | 3 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,7 @@ See PROJECT.md Key Decisions table for full log. Active decisions affecting curr
 - [Phase 02-02 SEC-02]: Upper bound 999,999,999.99 chosen to prevent Decimal overflow; validate() checks positivity+upper-bound only (not decimal places — that's validateDecimalPlaces, separate concern)
 - [Phase 02-02 SEC-02]: ValidationError enum stays in TransactionFormServiceProtocol.swift — shared across coordinator and form service; not moved inline
 - [Phase 02-02 test infra]: 4 stale test files wrapped in #if false (BalanceCalculationTests, VoiceInputParserTests, TransactionStoreTests, pagination section tests) — tracked for rewrite in future phase
+- [Phase 02-security-and-data-migration]: xcmappingmodel: NSExpression '$source.dateSectionKey' without nil-coalescing; CoreData applies defaultValueString automatically
 
 ### Pending Todos
 
@@ -76,10 +78,10 @@ None.
 ### Blockers/Concerns
 
 - ~~Phase 3 (PERF-02 RecurringStore extract) must not start until Phase 1 SAFE-01 is complete~~ — RESOLVED: SAFE-01 complete; RecurringTransactionService deleted, no competing source of truth
-- DATA-01 (CoreData migration): mapping model file created (99e5ae6); still requires human Xcode build verification and ideally testing against real device with old app version installed; emulator-only testing is insufficient
+- ~~DATA-01 (CoreData migration): mapping model file created (99e5ae6); still requires human Xcode build verification~~ — RESOLVED: Human verified Xcode build compiles xcmappingmodel without errors (a78e7d3). Note: ideally still test against real device with old app version for full confidence.
 
 ## Session Continuity
 
 Last session: 2026-03-03
-Stopped at: Completed 02-02-PLAN.md — amount upper-bound validation (SEC-02) complete (4c07fa0, 3124d51). Note: 02-03 still at checkpoint from prior session (Task 2 human-verify build)
+Stopped at: Completed 02-03-PLAN.md — CoreData v2→v3 mapping model (DATA-01) complete (99e5ae6, a78e7d3). Phase 2 fully done.
 Resume file: None

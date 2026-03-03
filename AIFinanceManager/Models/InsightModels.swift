@@ -179,9 +179,7 @@ enum InsightCategory: String, CaseIterable, Hashable {
 
 enum InsightDetailData: Hashable {
     case categoryBreakdown([CategoryBreakdownItem])
-    case monthlyTrend([MonthlyDataPoint])
     case periodTrend([PeriodDataPoint])         // Phase 18 — granularity-aware trend
-    case dailyTrend([DailyDataPoint])
     case budgetProgressList([BudgetInsightItem])
     case recurringList([RecurringInsightItem])
     case accountComparison([AccountInsightItem])
@@ -211,24 +209,6 @@ struct SubcategoryBreakdownItem: Identifiable, Hashable {
     let name: String
     let amount: Double
     let percentage: Double
-}
-
-// MARK: - Trend Data Points
-
-struct MonthlyDataPoint: Identifiable, Hashable {
-    let id: String
-    let month: Date
-    let income: Double
-    let expenses: Double
-    let netFlow: Double
-    let label: String
-}
-
-struct DailyDataPoint: Identifiable, Hashable {
-    let id: String
-    let date: Date
-    let amount: Double
-    let label: String
 }
 
 // MARK: - Budget Insight Item

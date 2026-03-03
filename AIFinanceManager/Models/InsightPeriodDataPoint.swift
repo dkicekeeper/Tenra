@@ -79,42 +79,6 @@ extension PeriodDataPoint {
     }
 }
 
-// MARK: - MonthlyDataPoint + PeriodDataPoint bridge
-
-extension MonthlyDataPoint {
-    /// Converts a legacy `MonthlyDataPoint` to a `PeriodDataPoint` with `.month` granularity.
-    /// Used during incremental migration of chart components.
-    func asPeriodDataPoint() -> PeriodDataPoint {
-        let calendar = Calendar.current
-        let nextMonth = calendar.date(byAdding: .month, value: 1, to: month) ?? month
-        return PeriodDataPoint(
-            id: id,
-            granularity: .month,
-            key: InsightGranularity.month.groupingKey(for: month),
-            periodStart: month,
-            periodEnd: nextMonth,
-            label: label,
-            income: income,
-            expenses: expenses,
-            cumulativeBalance: nil
-        )
-    }
-}
-
-extension PeriodDataPoint {
-    /// Converts a `PeriodDataPoint` to a legacy `MonthlyDataPoint` for backward-compatible
-    /// use with existing chart components that haven't been migrated to PeriodDataPoint yet.
-    func asMonthlyDataPoint() -> MonthlyDataPoint {
-        MonthlyDataPoint(
-            id: id,
-            month: periodStart,
-            income: income,
-            expenses: expenses,
-            netFlow: netFlow,
-            label: label
-        )
-    }
-}
 
 // MARK: - Mock data for previews
 

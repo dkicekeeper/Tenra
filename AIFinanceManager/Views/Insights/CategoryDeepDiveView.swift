@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-import Charts
 import os
 
 struct CategoryDeepDiveView: View {
@@ -81,17 +80,11 @@ struct CategoryDeepDiveView: View {
             SectionHeaderView(String(localized: "insights.subcategories"), style: .insights)
                 .screenPadding()
 
-            // Donut chart — uses precomputed index map (P16 fix, was O(n²))
-            Chart(subcategories, id: \.id) { item in
-                SectorMark(
-                    angle: .value("Amount", item.amount),
-                    innerRadius: .ratio(0.55),
-                    angularInset: 1.5
-                )
-                .foregroundStyle(color.opacity(Double(subcategoryIndexMap[item.id] ?? 0) * 0.15 + 0.3))
-            }
-            .frame(height: 200)
-            .chartLegend(.hidden)
+            DonutChart(
+                slices: DonutSlice.from(subcategories, baseColor: color),
+                showAnnotations: false,
+                showLegend: false
+            )
             .screenPadding()
 
             // List

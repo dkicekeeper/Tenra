@@ -90,46 +90,25 @@ struct InsightsCardView<BottomChart: View>: View {
     private var miniChart: some View {
         switch insight.detailData {
         case .categoryBreakdown(let items):
-            CategoryBreakdownChart(items: items, mode: .compact)
-        case .monthlyTrend(let points):
-            CashFlowChart(dataPoints: points, currency: insight.metric.currency ?? "KZT", mode: .compact)
+            DonutChart(slices: DonutSlice.from(items), mode: .compact)
         case .budgetProgressList(let items):
             if let first = items.first {
                 budgetProgressBar(first)
             }
         case .recurringList:
             EmptyView()
-        case .dailyTrend(let points):
-            if !points.isEmpty {
-                SpendingTrendChart(
-                    dataPoints: points.map { MonthlyDataPoint(id: $0.id, month: $0.date, income: 0, expenses: $0.amount, netFlow: -$0.amount, label: $0.label) },
-                    currency: insight.metric.currency ?? "KZT",
-                    mode: .compact
-                )
-            }
         case .accountComparison:
             EmptyView()
         case .periodTrend(let points):
             // Phase 18 — mini period chart.
-            // Wealth category uses cumulative balance → WealthChart (accent colour).
-            // Other categories use PeriodCashFlowChart (net flow colouring).
-            if insight.category == .wealth {
-                WealthChart(
-                    dataPoints: points,
-                    currency: insight.metric.currency ?? "KZT",
-                    granularity: points.first?.granularity ?? .month,
-                    mode: .compact
-                )
-                .frame(height: 60)
-            } else {
-                PeriodCashFlowChart(
-                    dataPoints: points,
-                    currency: insight.metric.currency ?? "KZT",
-                    granularity: points.first?.granularity ?? .month,
-                    mode: .compact
-                )
-                .frame(height: 60)
-            }
+            // Phase 43 — uses PeriodLineChart with .wealth / .cashFlow series.
+            PeriodLineChart(
+                dataPoints: points,
+                series: insight.category == .wealth ? .wealth : .cashFlow,
+                granularity: points.first?.granularity ?? .month,
+                mode: .compact
+            )
+            .frame(height: 60)
         case .wealthBreakdown:
             // No mini chart for wealth breakdown (account list)
             EmptyView()
@@ -201,16 +180,17 @@ struct InsightsCardView<BottomChart: View>: View {
     ScrollView {
         VStack(spacing: AppSpacing.md) {
             InsightsCardView(insight: .mockCashFlow()) {
-                CashFlowChart(
-                    dataPoints: MonthlyDataPoint.mockTrend(),
-                    currency: "KZT",
+                PeriodLineChart(
+                    dataPoints: PeriodDataPoint.mockMonthly(),
+                    series: .cashFlow,
+                    granularity: .month,
                     mode: .full
                 )
             }
             InsightsCardView(insight: .mockPeriodTrend()) {
-                PeriodCashFlowChart(
+                PeriodLineChart(
                     dataPoints: PeriodDataPoint.mockMonthly(),
-                    currency: "KZT",
+                    series: .cashFlow,
                     granularity: .month,
                     mode: .full
                 )

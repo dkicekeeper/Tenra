@@ -91,36 +91,31 @@ struct InsightDetailView<CategoryDestination: View>: View {
         Group {
             switch insight.detailData {
             case .categoryBreakdown(let items):
-                CategoryBreakdownChart(items: items, mode: .full)
-            case .monthlyTrend(let points):
-                CashFlowChart(dataPoints: points, currency: currency, mode: .full)
+                DonutChart(slices: DonutSlice.from(items))
             case .periodTrend(let points):
                 // Phase 18 — granularity-aware chart.
-                // Phase 30 — different chart type per insight.type:
-                //   • Wealth category              → WealthChart (cumulative balance)
+                // Phase 30 — different chart type per insight.type.
+                // Phase 43 — PeriodCashFlowChart + WealthChart merged into PeriodLineChart:
                 //   • bestMonth / worstMonth /
-                //     incomeGrowth / incomeVsExpenseRatio
-                //                                  → PeriodIncomeExpenseChart (income vs expense bars)
-                //   • All others                   → PeriodCashFlowChart (net-flow, ±)
+                //     incomeGrowth / incomeVsExpenseRatio → PeriodBarChart (bars)
+                //   • wealth category                     → PeriodLineChart(.wealth)
+                //   • All others                          → PeriodLineChart(.cashFlow)
                 let gran = points.first?.granularity ?? .month
-                if insight.category == .wealth {
-                    WealthChart(dataPoints: points, currency: currency, granularity: gran, mode: .full)
-                } else if insight.type == .bestMonth || insight.type == .worstMonth
-                            || insight.type == .incomeGrowth || insight.type == .incomeVsExpenseRatio {
-                    PeriodIncomeExpenseChart(dataPoints: points, currency: currency, granularity: gran, mode: .full)
+                if insight.type == .bestMonth || insight.type == .worstMonth
+                    || insight.type == .incomeGrowth || insight.type == .incomeVsExpenseRatio {
+                    PeriodBarChart(dataPoints: points, currency: currency, granularity: gran, mode: .full)
                 } else {
-                    PeriodCashFlowChart(dataPoints: points, currency: currency, granularity: gran, mode: .full)
+                    PeriodLineChart(
+                        dataPoints: points,
+                        series: insight.category == .wealth ? .wealth : .cashFlow,
+                        granularity: gran,
+                        mode: .full
+                    )
                 }
             case .budgetProgressList(let items):
                 budgetChartSection(items)
             case .recurringList:
                 EmptyView()
-            case .dailyTrend(let points):
-                SpendingTrendChart(
-                    dataPoints: points.map { MonthlyDataPoint(id: $0.id, month: $0.date, income: 0, expenses: $0.amount, netFlow: -$0.amount, label: $0.label) },
-                    currency: currency,
-                    mode: .full
-                )
             case .accountComparison:
                 EmptyView()
             case .wealthBreakdown:
@@ -153,9 +148,6 @@ struct InsightDetailView<CategoryDestination: View>: View {
             recurringDetailList(items)
         case .budgetProgressList:
             EmptyView()
-        // P10: monthlyTrend and periodTrend share one rendering function
-        case .monthlyTrend(let points):
-            periodBreakdownList(points.map { BreakdownPoint(label: $0.label, income: $0.income, expenses: $0.expenses, netFlow: $0.netFlow) })
         case .periodTrend(let points):
             periodBreakdownList(points.map { BreakdownPoint(label: $0.label, income: $0.income, expenses: $0.expenses, netFlow: $0.netFlow) })
         case .wealthBreakdown(let accounts):

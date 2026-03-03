@@ -169,66 +169,51 @@ final class InsightsService: @unchecked Sendable {
         cache.invalidateAll()
     }
 
-    // MARK: - Monthly Data Points
+    // MARK: - Period Data Points (monthly granularity for CashFlow insights)
 
-    /// Compute monthly data points for chart display.
-    /// Phase 40: All transactions are in memory — direct in-memory scan replaces aggregate service.
+    /// Builds `[PeriodDataPoint]` for the given number of calendar months ending at `anchorDate`.
+    /// Replaces the removed `computeMonthlyDataPoints` (MonthlyDataPoint deleted in Phase 44).
     @MainActor
-    func computeMonthlyDataPoints(
+    func computeMonthlyPeriodDataPoints(
         transactions: [Transaction],
         months: Int,
         baseCurrency: String,
-        cacheManager: TransactionCacheManager,  // kept for API compatibility; not used inside
+        cacheManager: TransactionCacheManager, // kept for call-site compatibility; unused inside
         currencyService: TransactionCurrencyService,
         anchorDate: Date? = nil
-    ) -> [MonthlyDataPoint] {
-        let anchor = anchorDate ?? Date()
-        Self.logger.debug("📅 [Insights] Monthly points — scanning \(transactions.count) transactions for \(months) months")
-        return computeMonthlyDataPointsDirect(
-            transactions: transactions,
-            months: months,
-            baseCurrency: baseCurrency,
-            currencyService: currencyService,
-            anchor: anchor
-        )
-    }
-
-    private func computeMonthlyDataPointsDirect(
-        transactions: [Transaction],
-        months: Int,
-        baseCurrency: String,
-        currencyService: TransactionCurrencyService,
-        anchor: Date
-    ) -> [MonthlyDataPoint] {
+    ) -> [PeriodDataPoint] {
+        let anchor   = anchorDate ?? Date()
         let calendar = Calendar.current
-        var dataPoints: [MonthlyDataPoint] = []
+        var dataPoints: [PeriodDataPoint] = []
         dataPoints.reserveCapacity(months)
+        Self.logger.debug("📅 [Insights] Monthly period points — scanning \(transactions.count) tx for \(months) months")
 
         for i in (0..<months).reversed() {
             guard
                 let monthStart = calendar.date(byAdding: .month, value: -i, to: startOfMonth(calendar, for: anchor)),
-                let monthEnd = calendar.date(byAdding: .month, value: 1, to: monthStart)
+                let monthEnd   = calendar.date(byAdding: .month, value: 1, to: monthStart)
             else { continue }
 
-            let monthTransactions = filterService.filterByTimeRange(transactions, start: monthStart, end: monthEnd)
-            let (monthIncome, monthExpenses) = calculateMonthlySummary(
-                transactions: monthTransactions,
+            let monthTx = filterService.filterByTimeRange(transactions, start: monthStart, end: monthEnd)
+            let (inc, exp) = calculateMonthlySummary(
+                transactions: monthTx,
                 baseCurrency: baseCurrency,
                 currencyService: currencyService
             )
-            let monthNetFlow = monthIncome - monthExpenses
+            let key   = InsightGranularity.month.groupingKey(for: monthStart)
             let label = Self.monthYearFormatter.string(from: monthStart)
-
-            dataPoints.append(MonthlyDataPoint(
-                id: Self.yearMonthFormatter.string(from: monthStart),
-                month: monthStart,
-                income: monthIncome,
-                expenses: monthExpenses,
-                netFlow: monthNetFlow,
-                label: label
+            dataPoints.append(PeriodDataPoint(
+                id: key,
+                granularity: .month,
+                key: key,
+                periodStart: monthStart,
+                periodEnd: monthEnd,
+                label: label,
+                income: inc,
+                expenses: exp,
+                cumulativeBalance: nil
             ))
         }
-
         return dataPoints
     }
 
@@ -243,7 +228,7 @@ final class InsightsService: @unchecked Sendable {
         baseCurrency: String,
         cacheManager: TransactionCacheManager,
         currencyService: TransactionCurrencyService
-    ) -> (subcategories: [SubcategoryBreakdownItem], monthlyTrend: [MonthlyDataPoint], prevBucketTotal: Double) {
+    ) -> (subcategories: [SubcategoryBreakdownItem], prevBucketTotal: Double) {
         // All category expense transactions (used for prev-bucket comparison)
         let allCategoryTransactions = allTransactions.filter { $0.category == categoryName && $0.type == .expense }
 
@@ -275,7 +260,7 @@ final class InsightsService: @unchecked Sendable {
                 .reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
         }
 
-        return (subcategories, [], prevBucketTotal)
+        return (subcategories, prevBucketTotal)
     }
 
     // MARK: - Granularity-based API (Phase 18, updated Phase 23)

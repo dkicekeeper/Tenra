@@ -76,7 +76,7 @@ struct InsightsSummaryDetailView: View {
             SectionHeaderView(String(localized: "insights.cashFlowTrend"), style: .insights)
                 .padding([.horizontal, .top], AppSpacing.lg)
 
-            PeriodIncomeExpenseChart(
+            PeriodBarChart(
                 dataPoints: periodDataPoints,
                 currency: currency,
                 granularity: granularity,

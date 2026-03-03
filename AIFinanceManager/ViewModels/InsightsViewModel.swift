@@ -216,7 +216,7 @@ final class InsightsViewModel {
 
     func categoryDeepDive(
         categoryName: String
-    ) -> (subcategories: [SubcategoryBreakdownItem], monthlyTrend: [MonthlyDataPoint], prevBucketTotal: Double) {
+    ) -> (subcategories: [SubcategoryBreakdownItem], prevBucketTotal: Double) {
         // Phase 31: Use current granularity bucket only (not the full window).
         let currentKey   = currentGranularity.currentPeriodKey
         let currentStart = currentGranularity.periodStart(for: currentKey)

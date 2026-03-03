@@ -65,6 +65,40 @@ enum AppAnimation {
     /// Banner Y-offset when hidden (slides in from above)
     static let bannerHiddenOffset: CGFloat = -20
 
+    // MARK: - Chart Animations
+
+    /// Spring response for chart appearance (marks entering the viewport).
+    static let chartAppearResponse: Double = 0.55
+
+    /// Damping fraction for chart appearance spring.
+    static let chartAppearDamping: Double = 0.82
+
+    /// Spring response for chart data update (marks repositioning when data changes).
+    static let chartUpdateResponse: Double = 0.5
+
+    /// Damping fraction for chart data update spring.
+    static let chartUpdateDamping: Double = 0.85
+
+    /// Delay before chart appearance animation starts (lets layout settle).
+    static let chartAppearDelay: Double = 0.05
+
+    /// Starting scale for chart appearance (grows from this to 1.0, anchored at bottom).
+    static let chartHiddenScale: CGFloat = 0.94
+
+    /// Reduce-Motion-aware spring for chart appearance.
+    static var chartAppearAnimation: Animation {
+        isReduceMotionEnabled
+            ? .linear(duration: 0)
+            : .spring(response: chartAppearResponse, dampingFraction: chartAppearDamping)
+    }
+
+    /// Reduce-Motion-aware spring for chart data updates.
+    static var chartUpdateAnimation: Animation {
+        isReduceMotionEnabled
+            ? .linear(duration: 0)
+            : .spring(response: chartUpdateResponse, dampingFraction: chartUpdateDamping)
+    }
+
     // MARK: - Reduce Motion Aware Animations
 
     /// `true` когда пользователь включил "Reduce Motion" в Настройках → Универсальный доступ.

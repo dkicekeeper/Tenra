@@ -170,6 +170,44 @@ extension View {
     }
 }
 
+// MARK: - Chart Appear Modifier
+
+/// Animates a chart's entrance: fades in + scales up from the bottom edge.
+///
+/// Apply to any chart container view. Triggers once on first appearance.
+/// Respects the user's Reduce Motion accessibility setting.
+///
+/// ```swift
+/// SpendingTrendChart(dataPoints: points, currency: "KZT")
+///     .chartAppear()
+/// ```
+struct ChartAppearModifier: ViewModifier {
+    @State private var appeared = false
+    let delay: Double
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(appeared ? 1 : 0)
+            .scaleEffect(appeared ? 1 : AppAnimation.chartHiddenScale, anchor: .bottom)
+            .onAppear {
+                withAnimation(
+                    AppAnimation.chartAppearAnimation
+                        .delay(AppAnimation.chartAppearDelay + delay)
+                ) {
+                    appeared = true
+                }
+            }
+    }
+}
+
+extension View {
+    /// Animates chart entrance with opacity + scale spring from the bottom.
+    /// - Parameter delay: Extra delay before animation starts (use to stagger multiple charts).
+    func chartAppear(delay: Double = 0) -> some View {
+        modifier(ChartAppearModifier(delay: delay))
+    }
+}
+
 // MARK: - Transaction Row Styles
 
 /// Варианты стилизации строк транзакций

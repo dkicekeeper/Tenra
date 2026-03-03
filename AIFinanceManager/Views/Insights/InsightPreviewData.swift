@@ -9,35 +9,6 @@
 
 import SwiftUI
 
-// MARK: - Mock Monthly Trend
-
-extension MonthlyDataPoint {
-    static func mockTrend() -> [MonthlyDataPoint] {
-        let calendar = Calendar.current
-        let now = Date()
-        let abbrev = DateFormatter()
-        abbrev.dateFormat = "MMM"
-        let id = DateFormatter()
-        id.dateFormat = "yyyy-MM"
-
-        let incomeValues:   [Double] = [420_000, 385_000, 510_000, 470_000, 495_000, 530_000]
-        let expenseValues:  [Double] = [310_000, 340_000, 290_000, 360_000, 280_000, 320_000]
-
-        return (0..<6).reversed().enumerated().compactMap { idx, offset -> MonthlyDataPoint? in
-            guard let date = calendar.date(byAdding: .month, value: -offset, to: now) else { return nil }
-            let inc = incomeValues[idx]
-            let exp = expenseValues[idx]
-            return MonthlyDataPoint(
-                id: id.string(from: date),
-                month: date,
-                income: inc,
-                expenses: exp,
-                netFlow: inc - exp,
-                label: abbrev.string(from: date)
-            )
-        }
-    }
-}
 
 // MARK: - Mock Category Breakdown
 
@@ -173,7 +144,7 @@ extension Insight {
 
     // Cash flow
     static func mockCashFlow() -> Insight {
-        let trend = MonthlyDataPoint.mockTrend()
+        let trend = PeriodDataPoint.mockMonthly()
         return Insight(
             id: "preview_cashflow",
             type: .netCashFlow,
@@ -183,7 +154,7 @@ extension Insight {
             trend: InsightTrend(direction: .up, changePercent: nil, changeAbsolute: 30_000, comparisonPeriod: "vs среднее"),
             severity: .positive,
             category: .cashFlow,
-            detailData: .monthlyTrend(trend)
+            detailData: .periodTrend(trend)
         )
     }
 

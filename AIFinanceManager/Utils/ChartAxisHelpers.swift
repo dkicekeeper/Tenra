@@ -13,10 +13,9 @@ import Foundation
 
 /// Shared axis formatting utilities for all Insights chart components.
 ///
-/// Eliminates ~327 lines of duplicated code across:
-/// - `IncomeExpenseChart`, `PeriodIncomeExpenseChart`
-/// - `CashFlowChart`, `PeriodCashFlowChart`, `WealthChart`
-/// - `SpendingTrendChart`, `PeriodSpendingTrendChart`
+/// Eliminates duplicated axis formatting code across:
+/// - `PeriodBarChart`
+/// - `PeriodLineChart`
 enum ChartAxisHelpers {
 
     // MARK: - Y-axis value formatter (all charts)

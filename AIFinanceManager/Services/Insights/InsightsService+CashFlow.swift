@@ -51,7 +51,7 @@ extension InsightsService {
         let windowTransactions = filterService.filterByTimeRange(allTransactions, start: windowStart, end: filterEndExclusive)
         Self.logger.debug("💸 [Insights] CashFlow — \(trendMonths)-month window \(Self.monthYearFormatter.string(from: windowStart), privacy: .public) → \(Self.monthYearFormatter.string(from: anchorDate), privacy: .public) (anchor), transactions=\(windowTransactions.count) (was \(allTransactions.count))")
 
-        let monthlyData = computeMonthlyDataPoints(
+        let periodData = computeMonthlyPeriodDataPoints(
             transactions: windowTransactions,
             months: trendMonths,
             baseCurrency: baseCurrency,
@@ -59,16 +59,16 @@ extension InsightsService {
             currencyService: currencyService,
             anchorDate: anchorDate
         )
-        guard monthlyData.count >= 2 else {
-            Self.logger.debug("💸 [Insights] CashFlow — SKIPPED (only \(monthlyData.count) month(s) of data, need ≥2)")
+        guard periodData.count >= 2 else {
+            Self.logger.debug("💸 [Insights] CashFlow — SKIPPED (only \(periodData.count) month(s) of data, need ≥2)")
             return []
         }
 
         var insights: [Insight] = []
 
         // 1. Net cash flow trend
-        if let latest = monthlyData.last {
-            let avgNetFlow = monthlyData.reduce(0.0) { $0 + $1.netFlow } / Double(monthlyData.count)
+        if let latest = periodData.last {
+            let avgNetFlow = periodData.reduce(0.0) { $0 + $1.netFlow } / Double(periodData.count)
             let severity: InsightSeverity = latest.netFlow > 0 ? .positive : (latest.netFlow < 0 ? .critical : .neutral)
             Self.logger.debug("💸 [Insights] Net cash flow — latest=\(String(format: "%.0f", latest.netFlow), privacy: .public), avg=\(String(format: "%.0f", avgNetFlow), privacy: .public), severity=\(String(describing: severity), privacy: .public)")
 
@@ -91,12 +91,12 @@ extension InsightsService {
                 ),
                 severity: severity,
                 category: .cashFlow,
-                detailData: .monthlyTrend(monthlyData)
+                detailData: .periodTrend(periodData)
             ))
         }
 
         // 2. Best month
-        if let best = monthlyData.max(by: { $0.netFlow < $1.netFlow }) {
+        if let best = periodData.max(by: { $0.netFlow < $1.netFlow }) {
             insights.append(Insight(
                 id: "best_month",
                 type: .bestMonth,
@@ -111,7 +111,7 @@ extension InsightsService {
                 trend: nil,
                 severity: .positive,
                 category: .cashFlow,
-                detailData: .monthlyTrend(monthlyData)
+                detailData: .periodTrend(periodData)
             ))
         }
 

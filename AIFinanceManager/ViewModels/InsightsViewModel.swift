@@ -86,7 +86,8 @@ final class InsightsViewModel {
             guard oldValue != self.currentGranularity else { return }
             Self.logger.debug("🧠 [InsightsVM] granularity → \(self.currentGranularity.rawValue, privacy: .public)")
             if precomputedInsights[self.currentGranularity] != nil {
-                // Phase 42: Cache HIT — instant switch (0ms)
+                // Phase 42: Cache HIT — instant switch (0ms).
+                // withTransaction(animation: nil) is inside applyPrecomputed — covers all call sites.
                 self.applyPrecomputed(for: self.currentGranularity)
             } else {
                 // Phase 42: Cache MISS — trigger lazy background compute for this granularity only
@@ -407,14 +408,25 @@ final class InsightsViewModel {
     }
 
     /// Applies precomputed data for the given granularity to observable properties.
+    ///
+    /// `withTransaction(animation: nil)` suppresses implicit animations for all callers:
+    ///   - `currentGranularity.didSet` (granularity switch cache HIT)
+    ///   - `onAppear()` (back-navigation cache HIT)
+    ///   - `loadInsightsBackground()` Phase-1 and Phase-2 MainActor writes
+    ///
+    /// Views with explicit `.animation(_:value:)` modifiers (e.g. SkeletonLoadingModifier's
+    /// spring transition) override this transaction for their specific tracked value — their
+    /// animations fire normally. Only background implicit transitions are suppressed.
     private func applyPrecomputed(for granularity: InsightGranularity) {
-        insights       = precomputedInsights[granularity] ?? []
-        periodDataPoints = precomputedPeriodPoints[granularity] ?? []
-        let totals     = precomputedTotals[granularity]
-        totalIncome    = totals?.income   ?? 0
-        totalExpenses  = totals?.expenses ?? 0
-        netFlow        = totals?.netFlow  ?? 0
-        isLoading = false
+        withTransaction(SwiftUI.Transaction(animation: nil)) {
+            insights         = precomputedInsights[granularity] ?? []
+            periodDataPoints = precomputedPeriodPoints[granularity] ?? []
+            let totals       = precomputedTotals[granularity]
+            totalIncome      = totals?.income   ?? 0
+            totalExpenses    = totals?.expenses ?? 0
+            netFlow          = totals?.netFlow  ?? 0
+            isLoading        = false
+        }
     }
 
     /// Captures a snapshot of account balances on MainActor for safe use on background thread.

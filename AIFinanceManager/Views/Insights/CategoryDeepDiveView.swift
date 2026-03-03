@@ -100,11 +100,12 @@ struct CategoryDeepDiveView: View {
 
                     Spacer()
 
-                    AmountWithPercentage(
-                        amount: item.amount,
-                        currency: currency,
-                        percentage: item.percentage
-                    )
+                    VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
+                        FormattedAmountText(amount: item.amount, currency: currency, color: AppColors.textPrimary)
+                        Text(String(format: "%.1f%%", item.percentage))
+                            .font(AppTypography.bodySmall)
+                            .foregroundStyle(AppColors.textSecondary)
+                    }
                 }
                 .padding(.vertical, AppSpacing.xs)
                 .screenPadding()

@@ -184,78 +184,81 @@ struct InsightsView: View {
             .padding(.top, AppSpacing.xxxl)
 
         } else if insightsViewModel.selectedCategory == nil {
-            // Show all sections
-            InsightsSectionView(
-                category: .spending,
-                insights: insightsViewModel.spendingInsights,
-                currency: insightsViewModel.baseCurrency,
-                namespace: insightNamespace,
-                granularity: insightsViewModel.currentGranularity
-            )
-            .screenPadding()
+            // LazyVStack: defers body evaluation of off-screen sections — prevents simultaneous
+            // layout measurement of all 40+ compact Chart views during granularity switch.
+            LazyVStack(alignment: .leading, spacing: AppSpacing.xl) {
+                InsightsSectionView(
+                    category: .spending,
+                    insights: insightsViewModel.spendingInsights,
+                    currency: insightsViewModel.baseCurrency,
+                    namespace: insightNamespace,
+                    granularity: insightsViewModel.currentGranularity
+                )
+                .screenPadding()
 
-            InsightsSectionView(
-                category: .income,
-                insights: insightsViewModel.incomeInsights,
-                currency: insightsViewModel.baseCurrency,
-                namespace: insightNamespace,
-                granularity: insightsViewModel.currentGranularity
-            )
-            .screenPadding()
+                InsightsSectionView(
+                    category: .income,
+                    insights: insightsViewModel.incomeInsights,
+                    currency: insightsViewModel.baseCurrency,
+                    namespace: insightNamespace,
+                    granularity: insightsViewModel.currentGranularity
+                )
+                .screenPadding()
 
-            InsightsSectionView(
-                category: .budget,
-                insights: insightsViewModel.budgetInsights,
-                currency: insightsViewModel.baseCurrency,
-                namespace: insightNamespace,
-                granularity: insightsViewModel.currentGranularity
-            )
-            .screenPadding()
+                InsightsSectionView(
+                    category: .budget,
+                    insights: insightsViewModel.budgetInsights,
+                    currency: insightsViewModel.baseCurrency,
+                    namespace: insightNamespace,
+                    granularity: insightsViewModel.currentGranularity
+                )
+                .screenPadding()
 
-            InsightsSectionView(
-                category: .recurring,
-                insights: insightsViewModel.recurringInsights,
-                currency: insightsViewModel.baseCurrency,
-                namespace: insightNamespace,
-                granularity: insightsViewModel.currentGranularity
-            )
-            .screenPadding()
+                InsightsSectionView(
+                    category: .recurring,
+                    insights: insightsViewModel.recurringInsights,
+                    currency: insightsViewModel.baseCurrency,
+                    namespace: insightNamespace,
+                    granularity: insightsViewModel.currentGranularity
+                )
+                .screenPadding()
 
-            InsightsSectionView(
-                category: .cashFlow,
-                insights: insightsViewModel.cashFlowInsights,
-                currency: insightsViewModel.baseCurrency,
-                namespace: insightNamespace,
-                granularity: insightsViewModel.currentGranularity
-            )
-            .screenPadding()
+                InsightsSectionView(
+                    category: .cashFlow,
+                    insights: insightsViewModel.cashFlowInsights,
+                    currency: insightsViewModel.baseCurrency,
+                    namespace: insightNamespace,
+                    granularity: insightsViewModel.currentGranularity
+                )
+                .screenPadding()
 
-            InsightsSectionView(
-                category: .wealth,
-                insights: insightsViewModel.wealthInsights,
-                currency: insightsViewModel.baseCurrency,
-                namespace: insightNamespace,
-                granularity: insightsViewModel.currentGranularity
-            )
-            .screenPadding()
+                InsightsSectionView(
+                    category: .wealth,
+                    insights: insightsViewModel.wealthInsights,
+                    currency: insightsViewModel.baseCurrency,
+                    namespace: insightNamespace,
+                    granularity: insightsViewModel.currentGranularity
+                )
+                .screenPadding()
 
-            InsightsSectionView(
-                category: .savings,
-                insights: insightsViewModel.savingsInsights,
-                currency: insightsViewModel.baseCurrency,
-                namespace: insightNamespace,
-                granularity: insightsViewModel.currentGranularity
-            )
-            .screenPadding()
+                InsightsSectionView(
+                    category: .savings,
+                    insights: insightsViewModel.savingsInsights,
+                    currency: insightsViewModel.baseCurrency,
+                    namespace: insightNamespace,
+                    granularity: insightsViewModel.currentGranularity
+                )
+                .screenPadding()
 
-            InsightsSectionView(
-                category: .forecasting,
-                insights: insightsViewModel.forecastingInsights,
-                currency: insightsViewModel.baseCurrency,
-                namespace: insightNamespace,
-                granularity: insightsViewModel.currentGranularity
-            )
-            .screenPadding()
+                InsightsSectionView(
+                    category: .forecasting,
+                    insights: insightsViewModel.forecastingInsights,
+                    currency: insightsViewModel.baseCurrency,
+                    namespace: insightNamespace,
+                    granularity: insightsViewModel.currentGranularity
+                )
+                .screenPadding()
+            }
 
         } else {
             ForEach(filtered) { insight in

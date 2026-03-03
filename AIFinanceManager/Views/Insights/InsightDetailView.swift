@@ -205,11 +205,12 @@ struct InsightDetailView<CategoryDestination: View>: View {
             Spacer()
 
             HStack(spacing: AppSpacing.xs) {
-                AmountWithPercentage(
-                    amount: item.amount,
-                    currency: currency,
-                    percentage: item.percentage
-                )
+                VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
+                    FormattedAmountText(amount: item.amount, currency: currency, color: AppColors.textPrimary)
+                    Text(String(format: "%.1f%%", item.percentage))
+                        .font(AppTypography.bodySmall)
+                        .foregroundStyle(AppColors.textSecondary)
+                }
                 // P9: chevron only when drill-down closure is provided
                 if _onCategoryTap != nil {
                     Image(systemName: "chevron.right")

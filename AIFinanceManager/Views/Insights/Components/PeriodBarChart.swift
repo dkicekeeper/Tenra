@@ -43,32 +43,35 @@ struct PeriodBarChart: View {
     // MARK: Body
 
     var body: some View {
-        GeometryReader { proxy in
-            let container = proxy.size.width
-            let yAxisWidth: CGFloat = 50
-
+        Group {
             if isCompact {
-                // Compact: single chart, no Y-axis, no scroll
+                // Compact: no GeometryReader needed — chart fills proposed width from parent.
+                // GeometryReader in compact mode adds an extra two-pass layout per sparkline;
+                // removing it reduces per-chart layout cost during initial InsightsView render.
                 mainChart(showYAxis: false)
-                    .frame(width: container, height: chartHeight)
+                    .frame(maxWidth: .infinity)
             } else {
-                let scrollWidth = max(
-                    container,
-                    CGFloat(dataPoints.count) * pointWidth
-                )
-                ZStack(alignment: .topLeading) {
-                    // Scrollable bars (Y-axis hidden)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        mainChart(showYAxis: false)
-                            .frame(width: scrollWidth, height: chartHeight)
-                    }
-                    .scrollBounceBehavior(.basedOnSize)
-                    .defaultScrollAnchor(.trailing)
+                GeometryReader { proxy in
+                    let container = proxy.size.width
+                    let yAxisWidth: CGFloat = 50
+                    let scrollWidth = max(
+                        container,
+                        CGFloat(dataPoints.count) * pointWidth
+                    )
+                    ZStack(alignment: .topLeading) {
+                        // Scrollable bars (Y-axis hidden)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            mainChart(showYAxis: false)
+                                .frame(width: scrollWidth, height: chartHeight)
+                        }
+                        .scrollBounceBehavior(.basedOnSize)
+                        .defaultScrollAnchor(.trailing)
 
-                    // Y-axis overlay — always visible, doesn't scroll with chart
-                    yAxisReferenceChart
-                        .frame(width: yAxisWidth, height: chartHeight)
-                        .allowsHitTesting(false)
+                        // Y-axis overlay — always visible, doesn't scroll with chart
+                        yAxisReferenceChart
+                            .frame(width: yAxisWidth, height: chartHeight)
+                            .allowsHitTesting(false)
+                    }
                 }
             }
         }

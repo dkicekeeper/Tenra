@@ -9,6 +9,7 @@ import SwiftUI
 
 struct IconPickerView: View {
     @Binding var selectedSource: IconSource?
+    var allowLogos: Bool = true
     @Environment(\.dismiss) private var dismiss
 
     @State private var pickerMode: PickerMode = .icons
@@ -37,14 +38,16 @@ struct IconPickerView: View {
                 }
             }
             .safeAreaInset(edge: .top) {
-                SegmentedPickerView(
-                    title: "",
-                    selection: $pickerMode,
-                    options: PickerMode.allCases.map { (label: $0.localizedTitle, value: $0) }
-                )
-                .padding(.horizontal, AppSpacing.lg)
-                .padding(.vertical, AppSpacing.md)
-                .background(Color.clear)
+                if allowLogos {
+                    SegmentedPickerView(
+                        title: "",
+                        selection: $pickerMode,
+                        options: PickerMode.allCases.map { (label: $0.localizedTitle, value: $0) }
+                    )
+                    .padding(.horizontal, AppSpacing.lg)
+                    .padding(.vertical, AppSpacing.md)
+                    .background(Color.clear)
+                }
             }
             .navigationTitle(String(localized: "iconPicker.title"))
             .navigationBarTitleDisplayMode(.inline)

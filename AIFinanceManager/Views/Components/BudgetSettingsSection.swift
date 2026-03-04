@@ -17,7 +17,7 @@ struct BudgetSettingsSection: View {
 
     var body: some View {
         VStack(spacing: AppSpacing.md) {
-            VStack() {
+            VStack(spacing: 0) {
                 // Budget Amount
                 UniversalRow(
                     config: .standard,

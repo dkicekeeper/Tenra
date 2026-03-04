@@ -116,7 +116,7 @@ struct EditableHeroSection: View {
         }
         .padding(.vertical, AppSpacing.xl)
         .sheet(isPresented: $showingIconPicker) {
-            IconPickerView(selectedSource: $iconSource)
+            IconPickerView(selectedSource: $iconSource, allowLogos: !config.showColorPicker)
         }
     }
 

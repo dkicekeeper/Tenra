@@ -60,8 +60,7 @@ struct EditTransactionView: View {
                     VStack(spacing: AppSpacing.lg) {
                         // Error banner
                         if let error = coordinator.errorMessage {
-                            MessageBanner.error(error)
-                                .transition(.move(edge: .top).combined(with: .opacity))
+                            InlineStatusText(message: error, type: .error)
                                 .padding(.horizontal, AppSpacing.pageHorizontal)
                         }
 

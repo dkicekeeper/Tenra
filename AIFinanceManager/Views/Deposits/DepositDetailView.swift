@@ -59,7 +59,7 @@ struct DepositDetailView: View {
                 ScrollView {
                     VStack(spacing: AppSpacing.lg) {
                         if let error = reconciliationError {
-                            MessageBanner.error(error)
+                            InlineStatusText(message: error, type: .error)
                                 .screenPadding()
                         }
 

@@ -49,9 +49,8 @@ struct AccountEditView: View {
 
                     // Validation Error
                     if let error = validationError {
-                        MessageBanner.error(error)
+                        InlineStatusText(message: error, type: .error)
                             .padding(.horizontal, AppSpacing.lg)
-                            .transition(.move(edge: .top).combined(with: .opacity))
                     }
                 }
                 .padding(.horizontal, AppSpacing.lg)

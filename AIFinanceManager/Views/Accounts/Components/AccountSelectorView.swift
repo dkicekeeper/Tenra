@@ -62,8 +62,8 @@ struct AccountSelectorView: View {
             }
 
             if let warning = warningMessage {
-                MessageBanner.warning(warning)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                InlineStatusText(message: warning, type: .warning)
+                    .padding(.horizontal, AppSpacing.sm)
             }
         }
     }

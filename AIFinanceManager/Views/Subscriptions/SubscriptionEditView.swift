@@ -73,10 +73,9 @@ struct SubscriptionEditView: View {
                     
                     // Validation Error
                     if let error = validationError {
-                        MessageBanner.error(error)
+                        InlineStatusText(message: error, type: .error)
                             .padding(.horizontal, AppSpacing.lg)
                             .padding(.top, AppSpacing.md)
-                            .transition(.move(edge: .top).combined(with: .opacity))
                     }
                     
                     // Account Selector

@@ -29,7 +29,7 @@ struct InfoRow: View {
             HStack {
                 Text(label)
                     .font(AppTypography.bodyLarge)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
                 Spacer()
                 Text(value)
                     .font(AppTypography.bodyLarge)

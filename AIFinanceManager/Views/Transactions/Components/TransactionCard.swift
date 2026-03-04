@@ -10,12 +10,28 @@ import SwiftUI
 struct TransactionCard: View {
     let transaction: Transaction
     let currency: String
-    let customCategories: [CustomCategory]
-    let accounts: [Account]
+    /// Pre-resolved style data for this transaction's category.
+    /// Passed pre-computed from the call site so that changes to other categories
+    /// do not force a re-render of rows whose category is unaffected.
+    let styleData: CategoryStyleData
+    /// The account referenced by `transaction.accountId` (nil if deleted or unknown).
+    /// Passed pre-resolved so that balance updates to other accounts do not trigger
+    /// a re-render of rows that reference a different account.
+    let sourceAccount: Account?
+    /// The target account for internal transfers (`transaction.targetAccountId`). Nil otherwise.
+    let targetAccount: Account?
     let viewModel: TransactionsViewModel?
     let categoriesViewModel: CategoriesViewModel?
     let accountsViewModel: AccountsViewModel?   // Phase 16: needed for EditTransactionCoordinator
     let balanceCoordinator: BalanceCoordinator?  // Optional - can't use @ObservedObject with optionals
+
+    // MARK: - Convenience
+
+    /// Small [Account] array built from pre-resolved source/target for subviews
+    /// that still accept [Account] (TransactionInfoView, accessibilityText).
+    private var resolvedAccounts: [Account] {
+        [sourceAccount, targetAccount].compactMap { $0 }
+    }
 
     @State private var showingStopRecurringConfirmation = false
     @State private var showingEditModal = false
@@ -26,11 +42,6 @@ struct TransactionCard: View {
 
     // TransactionStore for delete and edit operations
     @Environment(TransactionStore.self) private var transactionStore
-
-    // ✅ CATEGORY REFACTORING: Use cached style data instead of recreating helper
-    private var styleData: CategoryStyleData {
-        CategoryStyleHelper.cached(category: transaction.category, type: transaction.type, customCategories: customCategories)
-    }
 
     /// Icon source from the subscription series linked to this transaction (nil for generic recurring)
     private var subscriptionIconSource: IconSource? {
@@ -62,8 +73,9 @@ struct TransactionCard: View {
     init(
         transaction: Transaction,
         currency: String,
-        customCategories: [CustomCategory],
-        accounts: [Account],
+        styleData: CategoryStyleData,
+        sourceAccount: Account? = nil,
+        targetAccount: Account? = nil,
         viewModel: TransactionsViewModel? = nil,
         categoriesViewModel: CategoriesViewModel? = nil,
         accountsViewModel: AccountsViewModel? = nil,
@@ -71,8 +83,9 @@ struct TransactionCard: View {
     ) {
         self.transaction = transaction
         self.currency = currency
-        self.customCategories = customCategories
-        self.accounts = accounts
+        self.styleData = styleData
+        self.sourceAccount = sourceAccount
+        self.targetAccount = targetAccount
         self.viewModel = viewModel
         self.categoriesViewModel = categoriesViewModel
         self.accountsViewModel = accountsViewModel
@@ -98,7 +111,7 @@ struct TransactionCard: View {
             // Transaction info
             TransactionInfoView(
                 transaction: transaction,
-                accounts: accounts,
+                accounts: resolvedAccounts,
                 linkedSubcategories: categoriesViewModel?.getSubcategoriesForTransaction(transaction.id) ?? []
             )
             
@@ -254,105 +267,25 @@ struct TransactionCard: View {
         }
         .sheet(isPresented: $showingEditModal) {
             if let viewModel = viewModel,
-               let categoriesViewModel = categoriesViewModel,
-               let accountsViewModel = accountsViewModel,
+               let catVM = categoriesViewModel,
+               let accVM = accountsViewModel,
                let balanceCoordinator = balanceCoordinator {
                 EditTransactionView(
                     transaction: transaction,
                     transactionsViewModel: viewModel,
-                    categoriesViewModel: categoriesViewModel,
-                    accountsViewModel: accountsViewModel,
+                    categoriesViewModel: catVM,
+                    accountsViewModel: accVM,
                     transactionStore: transactionStore,
-                    accounts: accounts,
-                    customCategories: customCategories,
+                    accounts: accVM.accounts,             // full list — only read when sheet opens
+                    customCategories: catVM.customCategories,
                     balanceCoordinator: balanceCoordinator
                 )
             }
         }
     }
     
-    private var amountText: String {
-        let prefix: String
-        switch transaction.type {
-        case .income:
-            prefix = "+"
-        case .expense:
-            prefix = "-"
-        case .internalTransfer:
-            prefix = "" // Для переводов без префикса
-        case .depositTopUp, .depositInterestAccrual:
-            prefix = "+"
-        case .depositWithdrawal:
-            prefix = "-"
-        }
-        let mainAmount = Formatting.formatCurrency(transaction.amount, currency: transaction.currency)
-        
-        // Для переводов: показываем суммы для обоих счетов друг под другом
-        if transaction.type == .internalTransfer {
-            var lines: [String] = []
-            
-            // Получаем информацию о счетах
-            var sourceAccount: Account? = nil
-            var targetAccount: Account? = nil
-            
-            if let sourceId = transaction.accountId {
-                sourceAccount = accounts.first(where: { $0.id == sourceId })
-            }
-            if let targetId = transaction.targetAccountId {
-                targetAccount = accounts.first(where: { $0.id == targetId })
-            }
-            
-            // Если счетов нет, показываем только основную сумму
-            guard let source = sourceAccount else {
-                return mainAmount
-            }
-            
-            // Сумма для источника — используем валюту транзакции (USD/etc), не валюту счёта
-            let sourceCurrency = transaction.currency.isEmpty ? source.currency : transaction.currency
-            let sourceAmount = transaction.amount
-
-            if let target = targetAccount {
-                let targetCurrency = target.currency
-
-                if sourceCurrency == targetCurrency {
-                    lines.append(Formatting.formatCurrency(sourceAmount, currency: sourceCurrency))
-                } else {
-                    lines.append(Formatting.formatCurrency(sourceAmount, currency: sourceCurrency))
-                    // Сумма для получателя — из targetAmount, записанного при создании
-                    let resolvedTargetAmount = transaction.targetAmount ?? transaction.convertedAmount ?? transaction.amount
-                    let resolvedTargetCurrency = transaction.targetCurrency ?? targetCurrency
-                    lines.append(Formatting.formatCurrency(resolvedTargetAmount, currency: resolvedTargetCurrency))
-                }
-            } else {
-                lines.append(Formatting.formatCurrency(sourceAmount, currency: sourceCurrency))
-            }
-            
-            // Объединяем все строки через \n (суммы друг под другом, без скобок)
-            return lines.isEmpty ? mainAmount : lines.joined(separator: "\n")
-        }
-        
-        // Для доходов и расходов: проверяем наличие targetCurrency/targetAmount (из CSV или ручного ввода)
-        if let targetCurrency = transaction.targetCurrency,
-           let targetAmount = transaction.targetAmount,
-           targetCurrency != transaction.currency {
-            let targetText = Formatting.formatCurrency(targetAmount, currency: targetCurrency)
-            return "\(prefix)\(mainAmount)\n(\(targetText))"
-        }
-
-        // Fallback: если есть конвертированная сумма и она отличается от основной
-        if let convertedAmount = transaction.convertedAmount,
-           let accountId = transaction.accountId,
-           let account = accounts.first(where: { $0.id == accountId }),
-           transaction.currency != account.currency {
-            let convertedText = Formatting.formatCurrency(convertedAmount, currency: account.currency)
-            return "\(prefix)\(mainAmount)\n(\(convertedText))"
-        }
-
-        return prefix + mainAmount
-    }
-    
     private var accessibilityText: String {
-        TransactionDisplayHelper.accessibilityText(for: transaction, accounts: accounts)
+        TransactionDisplayHelper.accessibilityText(for: transaction, accounts: resolvedAccounts)
     }
 
     private var amountColor: Color {
@@ -365,14 +298,7 @@ struct TransactionCard: View {
     
     @ViewBuilder
     private var transferAmountView: some View {
-        // Получаем информацию о счетах
-        let sourceAccount: Account? = transaction.accountId.flatMap { sourceId in
-            accounts.first(where: { $0.id == sourceId })
-        }
-        let targetAccount: Account? = transaction.targetAccountId.flatMap { targetId in
-            accounts.first(where: { $0.id == targetId })
-        }
-
+        // sourceAccount / targetAccount are stored properties — pre-resolved at the call site.
         if let source = sourceAccount {
             // Используем валюту транзакции (то, что ввёл пользователь), не валюту счёта
             let sourceCurrency = transaction.currency.isEmpty ? source.currency : transaction.currency
@@ -420,9 +346,7 @@ struct TransactionCard: View {
 
 #Preview("Expense") {
     let coordinator = AppCoordinator()
-    let mockAccounts = [
-        Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000)
-    ]
+    let kaspi = Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000)
     let sampleTransaction = Transaction(
         id: "preview-expense",
         date: DateFormatters.dateFormatter.string(from: Date()),
@@ -433,13 +357,14 @@ struct TransactionCard: View {
         category: "Food",
         accountId: "acc-kaspi"
     )
+    let styleData = CategoryStyleHelper.cached(category: sampleTransaction.category, type: sampleTransaction.type, customCategories: [])
 
     List {
         TransactionCard(
             transaction: sampleTransaction,
             currency: "KZT",
-            customCategories: [],
-            accounts: mockAccounts,
+            styleData: styleData,
+            sourceAccount: kaspi,
             viewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,
             accountsViewModel: coordinator.accountsViewModel,
@@ -452,9 +377,7 @@ struct TransactionCard: View {
 
 #Preview("Income") {
     let coordinator = AppCoordinator()
-    let mockAccounts = [
-        Account(id: "acc-halyk", name: "Halyk Bank", currency: "KZT", iconSource: .bankLogo(.halykBank), initialBalance: 500000)
-    ]
+    let halyk = Account(id: "acc-halyk", name: "Halyk Bank", currency: "KZT", iconSource: .bankLogo(.halykBank), initialBalance: 500000)
     let sampleTransaction = Transaction(
         id: "preview-income",
         date: DateFormatters.dateFormatter.string(from: Date()),
@@ -465,13 +388,14 @@ struct TransactionCard: View {
         category: "Salary",
         accountId: "acc-halyk"
     )
+    let styleData = CategoryStyleHelper.cached(category: sampleTransaction.category, type: sampleTransaction.type, customCategories: [])
 
     List {
         TransactionCard(
             transaction: sampleTransaction,
             currency: "KZT",
-            customCategories: [],
-            accounts: mockAccounts,
+            styleData: styleData,
+            sourceAccount: halyk,
             viewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,
             accountsViewModel: coordinator.accountsViewModel,
@@ -484,11 +408,8 @@ struct TransactionCard: View {
 
 #Preview("Transfer") {
     let coordinator = AppCoordinator()
-    let mockAccounts = [
-        Account(id: "acc-src", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000),
-        Account(id: "acc-tgt", name: "Halyk Bank", currency: "KZT", iconSource: .bankLogo(.halykBank), initialBalance: 250000)
-    ]
-
+    let src = Account(id: "acc-src", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000)
+    let tgt = Account(id: "acc-tgt", name: "Halyk Bank", currency: "KZT", iconSource: .bankLogo(.halykBank), initialBalance: 250000)
     let sampleTransaction = Transaction(
         id: "preview-transfer",
         date: DateFormatters.dateFormatter.string(from: Date()),
@@ -500,13 +421,15 @@ struct TransactionCard: View {
         accountId: "acc-src",
         targetAccountId: "acc-tgt"
     )
+    let styleData = CategoryStyleHelper.cached(category: sampleTransaction.category, type: sampleTransaction.type, customCategories: [])
 
     List {
         TransactionCard(
             transaction: sampleTransaction,
             currency: "KZT",
-            customCategories: [],
-            accounts: mockAccounts,
+            styleData: styleData,
+            sourceAccount: src,
+            targetAccount: tgt,
             viewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,
             accountsViewModel: coordinator.accountsViewModel,
@@ -519,9 +442,7 @@ struct TransactionCard: View {
 
 #Preview("Recurring") {
     let coordinator = AppCoordinator()
-    let mockAccounts = [
-        Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000)
-    ]
+    let kaspi = Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000)
     let sampleTransaction = Transaction(
         id: "preview-recurring",
         date: DateFormatters.dateFormatter.string(from: Date()),
@@ -533,13 +454,14 @@ struct TransactionCard: View {
         accountId: "acc-kaspi",
         recurringSeriesId: "series-1"
     )
+    let styleData = CategoryStyleHelper.cached(category: sampleTransaction.category, type: sampleTransaction.type, customCategories: [])
 
     List {
         TransactionCard(
             transaction: sampleTransaction,
             currency: "KZT",
-            customCategories: [],
-            accounts: mockAccounts,
+            styleData: styleData,
+            sourceAccount: kaspi,
             viewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,
             accountsViewModel: coordinator.accountsViewModel,

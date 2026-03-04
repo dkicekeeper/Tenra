@@ -167,7 +167,9 @@ struct FormSection<Content: View>: View {
             style: .list
         ) {
             Toggle("Notifications", isOn: .constant(true))
+                .padding(.vertical, AppSpacing.lg)
             Toggle("Dark Mode", isOn: .constant(false))
+                .padding(.vertical, AppSpacing.lg)
         }
     }
 }

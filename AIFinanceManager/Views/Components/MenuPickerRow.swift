@@ -29,18 +29,13 @@ struct MenuPickerRow<T: Hashable>: View {
     }
 
     var body: some View {
-        UniversalRow(config: .standard) {
-            HStack(spacing: AppSpacing.md) {
-                if let icon = icon {
-                    Image(systemName: icon)
-                        .font(.system(size: AppIconSize.sm))
-                        .foregroundStyle(AppColors.textPrimary)
-                        .frame(width: AppIconSize.lg, height: AppIconSize.lg)
-                }
-                Text(title)
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-            }
+        UniversalRow(
+            config: .standard,
+            leadingIcon: icon.map { .sfSymbol($0, color: AppColors.textPrimary, size: AppIconSize.lg) }
+        ) {
+            Text(title)
+                .font(AppTypography.body)
+                .foregroundStyle(AppColors.textPrimary)
         } trailing: {
             Menu {
                 ForEach(options, id: \.value) { option in

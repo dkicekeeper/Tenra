@@ -11,75 +11,59 @@ struct TimeFilterView: View {
     @Bindable var filterManager: TimeFilterManager
     @Environment(\.dismiss) var dismiss
     @State private var selectedPreset: TimeFilterPreset
-    @State private var customStartDate: Date
-    @State private var customEndDate: Date
+    @State private var customDateRange: ClosedRange<Date>
     @State private var showingCustomPicker = false
+
+    private let presetOptions = TimeFilterPreset.allCases.filter { $0 != .custom }
 
     init(filterManager: TimeFilterManager) {
         self.filterManager = filterManager
         _selectedPreset = State(initialValue: filterManager.currentFilter.preset)
-        _customStartDate = State(initialValue: filterManager.currentFilter.startDate)
-        _customEndDate = State(initialValue: filterManager.currentFilter.endDate)
+        let start = filterManager.currentFilter.startDate
+        let end = filterManager.currentFilter.endDate
+        _customDateRange = State(initialValue: start...end)
     }
-    
+
     var body: some View {
         NavigationStack {
             List {
                 Section(header: Text(String(localized: "timeFilter.presets", defaultValue: "Пресеты"))) {
-                    ForEach(TimeFilterPreset.allCases.filter { $0 != .custom }, id: \.self) { preset in
-                        Button(action: {
-                            selectedPreset = preset
-                            filterManager.setPreset(preset)
-                            dismiss()
-                        }) {
-                            HStack {
-                                Text(preset.localizedName)
-                                    .foregroundStyle(AppColors.textPrimary)
-                                Spacer()
-                                if selectedPreset == preset {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(AppColors.accent)
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                Section(header: Text(String(localized: "timeFilter.customPeriod", defaultValue: "Пользовательский период"))) {
-                    Button(action: {
-                        selectedPreset = .custom
-                        showingCustomPicker = true
-                    }) {
-                        HStack {
-                            Text(String(localized: "timeFilter.customPeriod", defaultValue: "Пользовательский период"))
-                                .foregroundStyle(AppColors.textPrimary)
-                            Spacer()
-                            if selectedPreset == .custom {
+                    ForEach(presetOptions, id: \.self) { preset in
+                        UniversalRow(config: .selectable) {
+                            Text(preset.localizedName)
+                        } trailing: {
+                            if selectedPreset == preset {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(AppColors.accent)
                             }
                         }
-                    }
-
-                    if selectedPreset == .custom {
-                        DatePicker(String(localized: "timeFilter.from", defaultValue: "С"), selection: $customStartDate, displayedComponents: .date)
-                            .datePickerStyle(.compact)
-
-                        DatePicker(String(localized: "timeFilter.to", defaultValue: "По"), selection: $customEndDate, in: customStartDate..., displayedComponents: .date)
-                            .datePickerStyle(.compact)
-
-                        Button(action: {
-                            filterManager.setCustomRange(start: customStartDate, end: customEndDate)
+                        .selectableRow(isSelected: selectedPreset == preset) {
+                            selectedPreset = preset
+                            filterManager.setPreset(preset)
                             dismiss()
-                        }) {
-                            Text(String(localized: "button.apply", defaultValue: "Применить"))
-                                .frame(maxWidth: .infinity)
-                                .padding(AppSpacing.md)
-                                .background(customEndDate >= customStartDate ? AppColors.accent : AppColors.secondaryBackground)
-                                .foregroundStyle(.white)
-                                .clipShape(.rect(cornerRadius: AppRadius.button))
                         }
-                        .disabled(customEndDate < customStartDate)
+                    }
+                }
+
+                Section(header: Text(String(localized: "timeFilter.customRange", defaultValue: "Свой период"))) {
+                    UniversalRow(config: .selectable) {
+                        VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                            Text(String(localized: "timeFilter.customPeriod", defaultValue: "Пользовательский период"))
+                            if selectedPreset == .custom {
+                                Text(customRangeDescription)
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(AppColors.textSecondary)
+                            }
+                        }
+                    } trailing: {
+                        if selectedPreset == .custom {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(AppColors.accent)
+                        }
+                    }
+                    .selectableRow(isSelected: selectedPreset == .custom) {
+                        selectedPreset = .custom
+                        showingCustomPicker = true
                     }
                 }
             }
@@ -87,21 +71,114 @@ struct TimeFilterView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
+                    Button { dismiss() } label: {
                         Image(systemName: "xmark")
                     }
                 }
             }
+            .sheet(isPresented: $showingCustomPicker) {
+                CustomPeriodPickerSheet(dateRange: $customDateRange) { range in
+                    filterManager.setCustomRange(start: range.lowerBound, end: range.upperBound)
+                    showingCustomPicker = false
+                    dismiss()
+                }
+            }
         }
+    }
+
+    private var customRangeDescription: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return "\(formatter.string(from: customDateRange.lowerBound)) – \(formatter.string(from: customDateRange.upperBound))"
     }
 }
 
-#Preview("Default") {
-    NavigationStack {
-        TimeFilterView(filterManager: TimeFilterManager())
+// MARK: - Custom Period Picker Sheet
+
+private struct CustomPeriodPickerSheet: View {
+    @Binding var dateRange: ClosedRange<Date>
+    let onApply: (ClosedRange<Date>) -> Void
+
+    @Environment(\.dismiss) var dismiss
+    @State private var localRange: ClosedRange<Date>
+
+    init(dateRange: Binding<ClosedRange<Date>>, onApply: @escaping (ClosedRange<Date>) -> Void) {
+        self._dateRange = dateRange
+        self.onApply = onApply
+        _localRange = State(initialValue: dateRange.wrappedValue)
     }
+
+    private var startBinding: Binding<Date> {
+        Binding(
+            get: { localRange.lowerBound },
+            set: { newStart in
+                let end = max(newStart, localRange.upperBound)
+                localRange = newStart...end
+            }
+        )
+    }
+
+    private var endBinding: Binding<Date> {
+        Binding(
+            get: { localRange.upperBound },
+            set: { newEnd in
+                let start = min(localRange.lowerBound, newEnd)
+                localRange = start...newEnd
+            }
+        )
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: AppSpacing.xl) {
+                    DatePicker(
+                        String(localized: "timeFilter.from", defaultValue: "С"),
+                        selection: startBinding,
+                        in: ...localRange.upperBound,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .padding(.horizontal, AppSpacing.md)
+
+                    Divider()
+
+                    DatePicker(
+                        String(localized: "timeFilter.to", defaultValue: "По"),
+                        selection: endBinding,
+                        in: localRange.lowerBound...,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .padding(.horizontal, AppSpacing.md)
+                }
+                .padding(.vertical, AppSpacing.md)
+            }
+            .navigationTitle(String(localized: "timeFilter.customPeriod", defaultValue: "Пользовательский период"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(String(localized: "common.cancel")) {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(String(localized: "button.apply", defaultValue: "Применить")) {
+                        onApply(localRange)
+                    }
+                }
+            }
+        }
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+// MARK: - Previews
+
+#Preview("Default") {
+    TimeFilterView(filterManager: TimeFilterManager())
 }
 
 #Preview("Custom Range") {
@@ -110,7 +187,5 @@ struct TimeFilterView: View {
         start: Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date(),
         end: Date()
     )
-    return NavigationStack {
-        TimeFilterView(filterManager: manager)
-    }
+    return TimeFilterView(filterManager: manager)
 }

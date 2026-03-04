@@ -135,11 +135,21 @@ struct HistoryTransactionsList: View {
                         )
                     ) {
                         ForEach(section.transactions) { transaction in
+                            // Pre-resolve per-transaction data so that changes to OTHER accounts
+                            // or OTHER categories do not force a re-render of this row.
+                            let styleData = CategoryStyleHelper.cached(
+                                category: transaction.category,
+                                type: transaction.type,
+                                customCategories: categoriesViewModel.customCategories
+                            )
+                            let sourceAccount = accountsViewModel.accounts.first { $0.id == transaction.accountId }
+                            let targetAccount = accountsViewModel.accounts.first { $0.id == transaction.targetAccountId }
                             TransactionCard(
                                 transaction: transaction,
                                 currency: baseCurrency,
-                                customCategories: categoriesViewModel.customCategories,
-                                accounts: accountsViewModel.accounts,
+                                styleData: styleData,
+                                sourceAccount: sourceAccount,
+                                targetAccount: targetAccount,
                                 viewModel: transactionsViewModel,
                                 categoriesViewModel: categoriesViewModel,
                                 accountsViewModel: accountsViewModel,
@@ -171,10 +181,13 @@ struct HistoryTransactionsList: View {
                 }
             }
             .listStyle(.plain)
-            .onChange(of: paginationController.sections.count) { _, _ in
+            // Populate the label cache synchronously before the first body pass
+            // so every section header finds a cached label immediately — no cold-start
+            // fallback calls to `displayDateKey` for all 100 visible sections.
+            .onAppear {
                 rebuildDisplayLabelCache()
             }
-            .task {
+            .onChange(of: paginationController.sections.count) { _, _ in
                 rebuildDisplayLabelCache()
             }
             .task {
@@ -203,10 +216,9 @@ struct HistoryTransactionsList: View {
     // MARK: - Auto Scroll
 
     private func performAutoScroll(proxy: ScrollViewProxy, sections: [TransactionSection]) async {
-        // Base 150ms + 10ms per 100 sections (max +50ms) — larger datasets need more render time
-        let baseDelay: UInt64 = 150_000_000
-        let additionalDelay = min(UInt64(sections.count / 100) * 10_000_000, 50_000_000)
-        try? await Task.sleep(nanoseconds: baseDelay + additionalDelay)
+        // Base 150ms + 10ms per 100 sections (max +50ms) — larger datasets need more render time.
+        let extraMs = min(sections.count / 10, 50)
+        try? await Task.sleep(for: .milliseconds(150 + extraMs))
 
         // Find the most recent non-future section (sections are sorted newest-first by FRC).
         // The FRC sorts descending by date, so the first section whose date is <= today is
@@ -218,32 +230,29 @@ struct HistoryTransactionsList: View {
         }
     }
 
-    /// Finds the best section id to auto-scroll to.
+    /// Finds the best section id to auto-scroll to in a single O(N) pass.
     /// Priority: today → yesterday → first past section → first section.
+    /// Sections are sorted newest-first by the FRC, so today/yesterday appear near index 0.
     private func findScrollTarget(in sections: [TransactionSection]) -> String? {
         guard !sections.isEmpty else { return nil }
 
         let calendar = Calendar.current
-        let todayStart = calendar.startOfDay(for: Date())
-        let yesterdayStart = calendar.date(byAdding: .day, value: -1, to: todayStart)!
+        let today = calendar.startOfDay(for: Date())
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+
+        var yesterdayId: String?
+        var firstPastId: String?
 
         for section in sections {
             guard let date = Self.isoParser.date(from: section.date) else { continue }
-            let sectionStart = calendar.startOfDay(for: date)
+            let sectionDay = calendar.startOfDay(for: date)
 
-            if sectionStart == todayStart { return section.id }
+            if sectionDay == today { return section.id }             // immediate win
+            if sectionDay == yesterday, yesterdayId == nil { yesterdayId = section.id }
+            if sectionDay <= today, firstPastId == nil { firstPastId = section.id }
         }
-        for section in sections {
-            guard let date = Self.isoParser.date(from: section.date) else { continue }
-            let sectionStart = calendar.startOfDay(for: date)
-            if sectionStart == yesterdayStart { return section.id }
-        }
-        for section in sections {
-            guard let date = Self.isoParser.date(from: section.date) else { continue }
-            let sectionStart = calendar.startOfDay(for: date)
-            if sectionStart <= todayStart { return section.id }
-        }
-        return sections.first?.id
+
+        return yesterdayId ?? firstPastId ?? sections.first?.id
     }
 
     // MARK: - Date Display Conversion

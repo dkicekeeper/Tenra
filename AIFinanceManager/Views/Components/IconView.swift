@@ -84,30 +84,41 @@ struct IconView: View {
 
     // MARK: - Computed Properties
 
-    /// Эффективный padding с автоматическим определением на основе типа источника
-    /// - SF Symbols: 20% padding для визуального баланса
+    /// Адаптивный padding с нелинейным масштабированием по размеру
+    /// - SF Symbols: 5% (малые <24pt) / 10% (средние 24–44pt) / 15% (большие 44–64pt) / 18% (героические 64pt+)
     /// - Логотипы (bank/brand): без padding (заполняют контейнер полностью)
-    /// - Placeholder: 15% padding
+    /// - Placeholder: нелинейная кривая аналогичная SF Symbols
     /// - Явно заданный padding имеет приоритет
     private var effectivePadding: CGFloat? {
-        // Явно заданный padding имеет приоритет
-        if let explicitPadding = style.padding {
-            return explicitPadding
-        }
+        if let explicitPadding = style.padding { return explicitPadding }
 
-        // Автоматическое определение padding на основе типа источника
         switch source {
         case .sfSymbol:
-            // SF Symbols нуждаются в padding (8% от размера контейнера)
-            return style.size * 0.08
-
+            return adaptiveSFSymbolPadding
         case .bankLogo, .brandService:
-            // Логотипы и изображения заполняют контейнер полностью (no padding)
             return nil
-
         case .none:
-            // Placeholder с небольшим padding (10%)
-            return style.size * 0.1
+            return adaptivePlaceholderPadding
+        }
+    }
+
+    /// Нелинейный padding для SF Symbols:
+    /// маленькие иконки получают меньше отступа (символ крупнее),
+    /// большие иконки получают больше (визуальное дыхание в окружности)
+    private var adaptiveSFSymbolPadding: CGFloat {
+        switch style.size {
+        case ..<24:   return style.size * 0   // малые: минимальный отступ, символ заметнее
+        case 24..<44: return style.size * 0.10   // средние: сбалансированно
+        case 44..<64: return style.size * 0.15   // крупные: пространство для дыхания
+        default:      return style.size * 0.18   // героические (64pt+): щедрый отступ
+        }
+    }
+
+    private var adaptivePlaceholderPadding: CGFloat {
+        switch style.size {
+        case ..<24:   return style.size * 0
+        case 24..<44: return style.size * 0.12
+        default:      return style.size * 0.18
         }
     }
 
@@ -476,7 +487,7 @@ struct IconView: View {
     ScrollView {
         VStack(alignment: .leading, spacing: AppSpacing.xxl) {
             VStack(alignment: .leading, spacing: AppSpacing.md) {
-                Text("SF Symbols (Auto 8% padding)")
+                Text("SF Symbols (Adaptive padding)")
                     .font(AppTypography.h4)
                     .foregroundStyle(AppColors.textPrimary)
 

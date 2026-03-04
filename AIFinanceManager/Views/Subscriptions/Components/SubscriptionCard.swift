@@ -40,7 +40,6 @@ struct SubscriptionCard: View {
             
             Spacer()
             
-            
             // Status indicator
             statusIndicator
         }

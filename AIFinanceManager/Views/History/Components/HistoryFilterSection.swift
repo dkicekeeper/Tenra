@@ -60,7 +60,7 @@ struct HistoryFilterSection: View {
                 // "All accounts" option
                 Button(action: { selectedAccountFilter = nil }) {
                     HStack {
-                        Text("filter.allAccounts")
+                        Text(String(localized: "filter.allAccounts"))
                         Spacer()
                         if selectedAccountFilter == nil {
                             Image(systemName: "checkmark")

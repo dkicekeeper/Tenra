@@ -100,17 +100,13 @@ private struct DateButtonsDatePickerSheet: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                DatePicker(
-                    String(localized: "date.choose"),
-                    selection: $selectedDate,
-                    displayedComponents: .date
-                )
-                .datePickerStyle(.graphical)
-                .padding()
-
-                Spacer()
-            }
+            DatePicker(
+                String(localized: "date.choose"),
+                selection: $selectedDate,
+                displayedComponents: .date
+            )
+            .datePickerStyle(.graphical)
+            .padding()
             .navigationTitle(String(localized: "date.choose"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -119,15 +115,16 @@ private struct DateButtonsDatePickerSheet: View {
                         dismiss()
                     }
                 }
-                ToolbarItem(placement: .bottomBar) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "common.select")) {
                         onDateSelected(selectedDate)
                         dismiss()
                     }
-                    .frame(maxWidth: .infinity)
                 }
             }
         }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 }
 

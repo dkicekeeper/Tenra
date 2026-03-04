@@ -97,10 +97,11 @@ struct UniversalRow<Content: View, Trailing: View>: View {
                 )
             }
 
-            // Content
+            // Content expands to fill available space, pushing trailing to the right edge.
+            // Using frame(maxWidth:) instead of a Spacer avoids competing spacers when
+            // content itself contains an inner Spacer (e.g. infoRow HStack).
             content()
-
-            Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             // Trailing element
             trailing()
@@ -187,8 +188,9 @@ struct RowConfiguration {
 
     // MARK: - Presets
 
-    /// Standard row (default)
-    /// Used for generic rows with balanced spacing
+    /// Standard form row (default)
+    /// V: 8pt / H: 12pt — matches TextField rows inside FormSection(.card).
+    /// Used for: MenuPickerRow, DatePickerRow, InfoRow, BudgetSettingsSection rows.
     static let standard = RowConfiguration(
         spacing: AppSpacing.md,
         verticalPadding: AppSpacing.sm,
@@ -208,12 +210,25 @@ struct RowConfiguration {
         cornerRadius: 0
     )
 
-    /// Selectable row style
-    /// Used for BankLogoRow, SubcategoryRow
+    /// Selectable row — for single-select lists (checkmark pattern).
+    /// V: 8pt / H: 12pt — same rhythm as .standard; semantic distinction only.
+    /// Use `.selectableRow(isSelected:action:)` modifier on top.
+    /// Used for: TimeFilterView selectable rows
     static let selectable = RowConfiguration(
         spacing: AppSpacing.md,
         verticalPadding: AppSpacing.sm,
         horizontalPadding: AppSpacing.md,
+        backgroundColor: .clear,
+        cornerRadius: 0
+    )
+
+    /// Sheet / form-list row — wider horizontal inset for modal selection sheets.
+    /// V: 8pt / H: 16pt — gives breathing room in full-width sheet lists.
+    /// Used for: modal selection sheets with wider horizontal inset
+    static let sheetList = RowConfiguration(
+        spacing: AppSpacing.md,
+        verticalPadding: AppSpacing.sm,
+        horizontalPadding: AppSpacing.lg,
         backgroundColor: .clear,
         cornerRadius: 0
     )
@@ -228,8 +243,8 @@ struct RowConfiguration {
         cornerRadius: 0
     )
 
-    /// Card row style
-    /// Row with background and corner radius
+    /// Card row style — available for standalone rows outside FormSection context.
+    /// Currently unused in production.
     static let card = RowConfiguration(
         spacing: AppSpacing.md,
         verticalPadding: AppSpacing.lg,

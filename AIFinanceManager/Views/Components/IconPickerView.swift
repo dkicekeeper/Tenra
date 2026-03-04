@@ -44,7 +44,7 @@ struct IconPickerView: View {
                 )
                 .padding(.horizontal, AppSpacing.lg)
                 .padding(.vertical, AppSpacing.md)
-                .background(AppColors.backgroundPrimary)
+                .background(Color.clear)
             }
             .navigationTitle(String(localized: "iconPicker.title"))
             .navigationBarTitleDisplayMode(.inline)
@@ -89,7 +89,7 @@ private struct IconsTabView: View {
                             .padding(.horizontal, AppSpacing.lg)
 
                         LazyVGrid(
-                            columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.lg), count: 6),
+                            columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.lg), count: 5),
                             spacing: AppSpacing.lg
                         ) {
                             ForEach(category.1, id: \.self) { iconName in
@@ -122,12 +122,16 @@ private struct IconButton: View {
 
     var body: some View {
         Button(action: onTap) {
-            Image(systemName: iconName)
-                .font(.system(size: AppIconSize.lg))
-                .foregroundStyle(isSelected ? .white : AppColors.textPrimary)
-                .frame(width: AppIconSize.coin, height: AppIconSize.coin)
-                .background(isSelected ? AppColors.accent : AppColors.surface)
-                .clipShape(.rect(cornerRadius: AppRadius.lg))
+            IconView(
+                source: .sfSymbol(iconName),
+                style: .circle(
+                    size: AppIconSize.xxxl,
+                    tint: .monochrome(isSelected ? .white : AppColors.textPrimary)
+                )
+            )
+            .frame(width: AppIconSize.coin, height: AppIconSize.coin)
+            .background(isSelected ? AppColors.accent : AppColors.surface)
+            .clipShape(.rect(cornerRadius: AppRadius.lg))
         }
         .buttonStyle(.plain)
     }
@@ -209,7 +213,7 @@ private struct LogoCategorySection: View {
                 .padding(.horizontal, AppSpacing.lg)
 
             LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.lg), count: 4),
+                columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.lg), count: 5),
                 spacing: AppSpacing.lg
             ) {
                 ForEach(items) { item in

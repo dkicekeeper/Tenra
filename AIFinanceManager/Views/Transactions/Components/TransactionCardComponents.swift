@@ -31,14 +31,14 @@ struct TransactionIconView: View {
                     )
                 )
             } else {
-                Circle()
-                    .fill(transaction.type == .internalTransfer ? AppColors.transfer.opacity(0.2) : styleData.lightBackgroundColor)
-                    .frame(width: AppIconSize.xxl, height: AppIconSize.xxl)
-                    .overlay(
-                        Image(systemName: styleData.iconName)
-                            .font(.system(size: AppIconSize.md))
-                            .foregroundStyle(transaction.type == .internalTransfer ? AppColors.transfer : styleData.primaryColor)
+                IconView(
+                    source: .sfSymbol(styleData.iconName),
+                    style: .circle(
+                        size: AppIconSize.xxl,
+                        tint: .monochrome(transaction.type == .internalTransfer ? AppColors.transfer : styleData.primaryColor),
+                        backgroundColor: transaction.type == .internalTransfer ? AppColors.transfer.opacity(0.2) : styleData.lightBackgroundColor
                     )
+                )
             }
 
             // Recurring badge — top-left corner (future + active series only)

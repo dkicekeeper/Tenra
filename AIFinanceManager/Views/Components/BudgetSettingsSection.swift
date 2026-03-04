@@ -17,17 +17,16 @@ struct BudgetSettingsSection: View {
 
     var body: some View {
         VStack(spacing: AppSpacing.md) {
-            VStack(spacing: AppSpacing.md) {
+            VStack() {
                 // Budget Amount
-                HStack(spacing: AppSpacing.md) {
-                    Image(systemName: "banknote")
-                        .font(.system(size: AppIconSize.sm))
-                        .foregroundStyle(AppColors.textPrimary)
-                        .frame(width: AppIconSize.lg, height: AppIconSize.lg)
-                    
+                UniversalRow(
+                    config: .standard,
+                    leadingIcon: .sfSymbol("banknote", color: AppColors.textPrimary, size: AppIconSize.lg)
+                ) {
                     Text(String(localized: "budget.amount"))
+                        .font(AppTypography.body)
                         .foregroundStyle(AppColors.textPrimary)
-                    Spacer()
+                } trailing: {
                     TextField("0", text: $budgetAmount)
                         .fontWeight(.semibold)
                         .keyboardType(.decimalPad)
@@ -53,12 +52,10 @@ struct BudgetSettingsSection: View {
                     Divider()
 
                     // Reset Day
-                    HStack(spacing: AppSpacing.md) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: AppIconSize.sm))
-                            .foregroundStyle(AppColors.textPrimary)
-                            .frame(width: AppIconSize.lg, height: AppIconSize.lg)
-
+                    UniversalRow(
+                        config: .standard,
+                        leadingIcon: .sfSymbol("arrow.clockwise", color: AppColors.textPrimary, size: AppIconSize.lg)
+                    ) {
                         Stepper(
                             String(localized: "budget_reset_day") + " \(resetDay)",
                             value: $resetDay,
@@ -68,7 +65,7 @@ struct BudgetSettingsSection: View {
                         .accessibilityValue("\(resetDay)")
                     }
                 }
-                
+
             }
             .cardStyle()
 

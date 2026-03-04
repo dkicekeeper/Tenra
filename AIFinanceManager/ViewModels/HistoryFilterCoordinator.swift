@@ -51,34 +51,26 @@ class HistoryFilterCoordinator {
 
     // MARK: - Public Methods
 
-    /// Apply search text with debouncing
-    /// - Parameter text: New search text
+    /// Debounces search input: waits 300 ms of inactivity before writing `debouncedSearchText`.
+    /// `searchText` is already set by the binding before this method is called — no reassignment needed.
+    /// - Parameter text: New search text (matches the current `searchText` value)
     func applySearch(_ text: String) {
-        searchText = text
-
-        // Cancel previous search task
         searchTask?.cancel()
 
-        // Debounce search - update after 300ms of no changes
-        searchTask = Task { [weak self] in
-            guard let self = self else { return }
-
+        searchTask = Task {
             try? await Task.sleep(nanoseconds: self.searchDebounceDelay)
             guard !Task.isCancelled else { return }
 
-            // Verify text hasn't changed during debounce
             if self.searchText == text {
                 self.debouncedSearchText = text
             }
         }
     }
 
-    /// Apply account filter change.
-    /// Filter forwarding is handled synchronously by HistoryView's onChange handler
-    /// via `applyFiltersToController()` — no debounce task needed here.
-    /// - Parameter accountId: Account ID to filter by (nil for all accounts)
-    func applyAccountFilter(_ accountId: String?) {
-        selectedAccountFilter = accountId
+    /// Fires haptic for account filter change.
+    /// The actual `selectedAccountFilter` mutation is done by the binding in
+    /// `HistoryFilterSection` before this method is called — no reassignment needed.
+    func applyAccountFilter() {
         HapticManager.selection()
     }
 
@@ -107,13 +99,6 @@ class HistoryFilterCoordinator {
         if let accountId = accountId, selectedAccountFilter != accountId {
             selectedAccountFilter = accountId
         }
-    }
-
-    // MARK: - Public Methods
-
-    /// Cancel all pending debounce tasks
-    func cancelPendingTasks() {
-        searchTask?.cancel()
     }
 
     // MARK: - Debug Helpers

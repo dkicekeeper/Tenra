@@ -72,12 +72,10 @@ AIFinanceManager/
 │   ├── Audio/           # Audio services
 │   └── ML/              # Machine learning services
 ├── Protocols/           # Protocol definitions
-├── Extensions/          # Swift extensions (6 files)
+├── Extensions/          # Swift extensions (7 files)
 ├── Utils/               # Helper utilities and formatters
 └── CoreData/            # CoreData stack and entities
 ```
-
-**Note:** All directories contain files - no empty directories remain.
 
 ## Architecture Principles
 
@@ -95,155 +93,41 @@ AIFinanceManager/
 - Manages all ViewModels and their dependencies
 - Located at: `AIFinanceManager/ViewModels/AppCoordinator.swift`
 - Provides: Repository, all ViewModels, Stores, and Coordinators
+- Two-phase startup: `initializeFastPath()` loads accounts+categories (<50ms) → UI visible instantly; full 19k-transaction load runs in background via `initialize()`
+- Observable flags `isFastPathDone` / `isFullyInitialized` drive per-section skeleton display
 
-#### TransactionStore (Phase 7+, Enhanced Phase 9, Performance Phase 16-40)
+#### TransactionStore
 - **THE** single source of truth for transactions, accounts, and categories
-- Phase 40: Loads **all** transactions with `dateRange: nil` — no 3-month window. ~7.6 MB for 19k tx.
-- ViewModels use computed properties reading directly from TransactionStore (Phase 16)
-- Debounced sync with 16ms coalesce window (Phase 17)
-- Granular cache invalidation per event type (Phase 20)
+- Loads **all** transactions in memory (`dateRange: nil`). ~7.6 MB for 19k tx — no windowing.
+- ViewModels use computed properties reading directly from TransactionStore
+- Debounced sync with 16ms coalesce window; granular cache invalidation per event type
 - Event-driven architecture with TransactionStoreEvent
 - Handles subscriptions and recurring transactions
-- `apply()` pipeline: `updateState` → `updateBalances` → `invalidateCache` → `persistIncremental` (4 steps; aggregate step removed in Phase 40)
+- `apply()` pipeline: `updateState` → `updateBalances` → `invalidateCache` → `persistIncremental`
+- **⚠️ `allTransactions` setter is a no-op** — to delete, use `TransactionStore.deleteTransactions(for...)` which routes through `apply(.deleted)`
 
-#### InsightsService — In-Memory Aggregation Helpers (Phase 40)
-Replaced `MonthlyAggregateService` + `CategoryAggregateService` with three static helpers in `InsightsService.swift`:
-- `computeMonthlyTotals(from:from:to:baseCurrency:)` — groups by (year,month), sums income/expenses
-- `computeLastMonthlyTotals(_:from:anchor:baseCurrency:)` — equivalent to old `fetchLast(_:anchor:currency:)`
-- `computeCategoryMonthTotals(from:from:to:baseCurrency:)` — groups by (category,year,month), sums expenses
-All return lightweight value-type structs (`InMemoryMonthlyTotal`, `InMemoryCategoryMonthTotal`).
+#### InsightsService — In-Memory Aggregation
+- Three static helpers: `computeMonthlyTotals`, `computeLastMonthlyTotals`, `computeCategoryMonthTotals`
+- All return lightweight value-type structs (`InMemoryMonthlyTotal`, `InMemoryCategoryMonthTotal`)
+- `PreAggregatedData` struct: single O(N) pass builds monthly totals, category-month expenses, `txDateMap`, per-account counts. All generators use O(M) dictionary lookups.
+- Split into 10 files: main service (~780 LOC) + 9 domain extensions (`+Spending`, `+Income`, `+Budget`, `+Recurring`, `+CashFlow`, `+Wealth`, `+Savings`, `+Forecasting`, `+HealthScore`)
 
-#### BalanceCoordinator (Phase 1-4)
+#### BalanceCoordinator
 - Single entry point for balance operations
 - Manages balance calculation and caching
 - Includes: Store, Engine, Queue, Cache
 
-### Recent Refactoring Phases
+#### Recurring Transactions — Single-Next-Occurrence Model
+- `generateUpToNextFuture()` backfills all past occurrences + creates exactly 1 future occurrence
+- `extendAllActiveSeriesHorizons()` called on `loadData` and foreground resume
+- `isActive: Bool` gates occurrence generation; `status: SubscriptionStatus?` controls Pause/Resume UI — both must be updated in tandem by `stopSeries`/`resumeSeries`
 
-**Phase 42** (2026-03-02): Insights Deep Performance Optimization — PreAggregatedData Pattern
-- **PreAggregatedData struct** (`InsightsService.swift`): Single O(N) pass builds monthly totals, category-month expenses, date parse cache (`txDateMap`), per-account transaction counts, and last-activity dates. All generators use O(M) dictionary lookups instead of O(N) scans.
-- **Shared insights** (Phase 42b): Granularity-independent insights (spendingSpike, categoryTrend, subscriptionGrowth, duplicateSubscriptions, accountDormancy) computed once on first granularity, merged into subsequent ones via `sharedInsights` parameter.
-- **Date parse cache** (`txDateMap: [String: Date]`): ~3794 unique date strings for 19k transactions. Passed to generators that need time-range filtering — eliminates O(DateFormatter) re-parsing (~16μs/call).
-- **Performance**: Total 4877ms → 1986ms (−59%). Phase 1 user-visible latency: ~370ms. `.week`/`.quarter`/`.year` generators: 7–19ms each.
-- **Key rule**: When adding new generators to InsightsService, accept `PreAggregatedData?` parameter and use its helpers. Never iterate `allTransactions` with `DateFormatter.date(from:)` — use `txDateMap` or pre-computed fields.
-
-**Phase 43** (2026-03-04): Recurring Transactions — Single-Next-Occurrence Model
-- **Model**: `generateUpToNextFuture()` backfills all past occurrences + creates exactly 1 future; `extendAllActiveSeriesHorizons()` called on `loadData` and foreground resume. No fixed 3-month horizon → yearly series always gets its next occurrence.
-- **`stopSeries`/`resumeSeries`**: `handleSeriesStopped` sets `status = .paused` for subscriptions (so SubscriptionDetailView shows Resume, not Pause). `resumeSeries(id:)` sets `isActive=true`, `status=.active`, calls `updateSeries()` then manually calls `generateUpToNextFuture()` (updateSeries only regenerates on freq/startDate change), reschedules notifications.
-- **Subcategory persistence for recurring**: `AddTransactionCoordinator.save()` calls `await createRecurringSeriesWithSubcategories()` — awaits `transactionStore.createSeries()` before linking subcats to all generated txs. Fire-and-forget Task was root cause of lost subcategories.
-- **Subcategory restoration on resume**: Snapshot `Set(transactionStore.transactions.map { $0.id })` before `resumeSeries`, subtract after to find newly generated IDs, link subcats from the original transaction. Pattern used in `TransactionCard` swipe action and `SubscriptionDetailView`.
-- **`SubscriptionDetailView` history**: uses `transactionStore.transactions.filter { $0.recurringSeriesId == id }` directly — no `getPlannedTransactions(horizon:)`. `isPlanned` uses `TransactionDisplayHelper.isFutureDate` instead of `"planned-"` prefix check.
-
-**Phase 40** (2026-03-02): Single Source of Truth — Window + Aggregates Removed
-- **Root cause**: `windowMonths=3` + three CoreData aggregate services = two sources of truth. Every new feature had to account for both paths; every edge case broke one of them.
-- **Fix**: Load all transactions (`dateRange: nil`). 19k × ~400B ≈ 7.6 MB — acceptable.
-- **Deleted**: `MonthlyAggregateService.swift`, `CategoryAggregateService.swift`, `BudgetSpendingCacheService.swift`
-- **CoreData schema**: `MonthlyAggregateEntity`, `CategoryAggregateEntity`, `cachedSpent*` fields on `CustomCategoryEntity` left in `.xcdatamodeld` — no migration needed, just stopped reading/writing.
-- **TransactionStore**: removed `windowMonths`, `windowStartDate`, `totalTransactionCount`, `categoryAggregateService`, `monthlyAggregateService`, all `fetch*` aggregate methods, `updateAggregates(for:)`.
-- **InsightsService**: added 3 static in-memory helpers + 2 lightweight structs. Removed all aggregate service call sites across 5 extension files (14 total).
-- **CategoryBudgetService**: always O(N) direct scan — `BudgetSpendingCacheService` dependency removed.
-- **ContentView**: single-path summary via `SummaryCalculator.compute()` always; `isEmpty` uses `transactions.isEmpty`.
-- **InsightsViewModel**: `categoryDeepDive()` and `loadInsightsBackground()` — window checks removed, `firstDate` computed from in-memory array.
-- **AppCoordinator**: aggregate rebuild `Task.detached` removed from `initialize()`.
-- **TransactionsViewModel**: `windowStartDate` guard removed from `categoryExpenses()` — always uses direct in-memory query.
-
-**Phase 25** (2026-02-22): ChartDisplayMode — Consistent Chart API
-- Replaced `compact: Bool` with `ChartDisplayMode` enum (`.compact` / `.full`) across all 7 chart components
-- New `Utils/ChartDisplayMode.swift` — `showAxes` and `showLegend` computed helpers
-- Each struct uses `private var isCompact: Bool { mode == .compact }` — minimal body diff
-- `InsightsCardView` → `.compact`, all detail/section views → `.full` (explicit at every call site)
-- Fixed: `InsightDetailView` previously omitted the parameter entirely (relied on default `false`)
-- Design doc: `docs/plans/2026-02-22-chart-display-mode-design.md`
-
-**Phase 39** (2026-03-02): ContentView Reactivity — `.task(id:)` replaces manual `onChange` chains
-- 5 `onChange` + `summaryUpdateTask`/`wallpaperLoadingTask` @State handles + 4 функции (`updateSummary`, `loadWallpaperOnce`, `reloadWallpaper`, `startWallpaperLoad`) → 2 `.task(id:)` (~160 LOC removed)
-- `SummaryTrigger: Equatable` struct (`txCount`, `filterName`, `isImporting`, `isFullyInitialized`) — параметр `.task(id: summaryTrigger)`; SwiftUI отменяет/перезапускает автоматически
-- Дебаунс-условие: `try? await Task.sleep(for: .milliseconds(80))` только внутри `if !coordinator.isFullyInitialized` — при завершении инициализации карточка обновляется немедленно
-- Обои: `HomePersistentState.wallpaperImageName` хранит имя загруженного файла; `guard homeState.wallpaperImageName != targetName` в `.task(id:)` исключает перезагрузку при возврате назад
-- `@MainActor private static let summaryDateFormatter` — форматируем даты на MainActor, передаём `String` (Sendable) в `Task.detached`; `DateFormatter` нельзя создавать внутри detached-задач (не Sendable)
-- `HomePersistentState.hasAppearedOnce` удалён — больше не нужен; `.task(id:)` перезапуск при re-appear дёшев
-
-**Phase 38** (2026-02-28): InsightsService Split — 2832 LOC Monolith → 10 Domain Files
-- `InsightsService.swift` shrunk to 782 LOC — retains: class decl, init, public API, granularity API, period data points, shared helpers
-- 9 new extension files: `+Spending`, `+Income`, `+Budget`, `+Recurring`, `+CashFlow`, `+Wealth`, `+Savings`, `+Forecasting`, `+HealthScore`
-- **Access control rule**: cross-file extensions need `internal` (no modifier) — changed `private let/static let/func` on logger, deps, formatters, `PeriodSummary`, shared helpers (`resolveAmount`, `startOfMonth`, `seriesMonthlyEquivalent`, `monthlyRecurringNet`)
-- **Import rule**: each extension file needs its own `import os` (for `Self.logger`) and `import CoreData` (for `NSFetchRequest`) — not inherited from main file
-- Service audit also completed: deleted 3 dead protocols, merged `TransactionConverterService` → `EntityMappingService`, fixed `TransactionQueryService` dateFormatter race, documented `CurrencyConverter` vs `TransactionCurrencyService`, marked `RecurringTransactionService` deprecations
-
-**Phase 36** (2026-02-28): Reactivity Audit — Dead Code Removal, Cache Simplification, Instant UI Updates
-- **~800 LOC deleted**: `BalanceCacheManager.swift`, `BalanceUpdateQueue.swift`, `BalanceUpdateCoordinator.swift`, `CategoryAggregateCacheStub.swift`, `CategoryAggregateCacheProtocol.swift` — all were dead after Phase 22 aggregate caching
-- **Double-invalidation fixed**: Removed synchronous `invalidateCaches()` from `TransactionStore.invalidateCache(for:)` — only the debounced path now runs
-- **Category grid reactivity**: Removed `@ObservationIgnored` from `QuickAddCoordinator.timeFilterManager` — grid totals now update on filter change
-- **Sheet identity fixed**: `CategorySelection` uses stable `name`-based `id` instead of `UUID()` — no more spurious sheet dismiss/reopen
-- **ForEach identity fixed**: `CategoryDisplayDataMapper` uses `"\(name)_\(type.rawValue)"` fallback id instead of `UUID().uuidString`
-- **Insights staleness fixed**: `InsightsViewModel.isStale` is now observable (no `@ObservationIgnored`); `InsightsView` adds `.onChange(of: insightsViewModel.isStale)` to reload while tab is open
-- **Budget period rollover fixed**: `BudgetSpendingCacheService.cachedSpent(for:currency:budgetPeriodStart:)` returns `nil` if cached data predates the current budget period
-- **Minor**: `InsightsViewModel.baseCurrency` reads `transactionStore.baseCurrency` directly; `DateSectionExpensesCache` drops `@Observable`; `BalanceStore.updateHistory` → `@ObservationIgnored`; `DateFormatter` cached as static in `CategoryBudgetService`/`MonthlyAggregateService`
-
-**Phase 35** (2026-02-27): CSV Import Crash Fix + Case-Sensitivity Fix
-- **FRC stale reference crash fixed**: `CoreDataStack.storeDidResetNotification` posted synchronously after `resetAllData()`. `TransactionPaginationController.handleStoreReset()` tears down old FRC and recreates on new store.
-- **FRC sync rebuild**: `controllerDidChangeContent` uses `MainActor.assumeIsolated { rebuildSections() }` instead of async `Task` — eliminates window for stale object access.
-- **Category case-sensitivity bug fixed**: `resolveCategoryByName` now uses case-insensitive comparison (like accounts/subcategories). Cache HIT returns stored name, not input name.
-- **addBatch fallback**: When batch validation fails, CSVImportCoordinator retries individual `add()` — salvages valid transactions instead of rejecting entire batch.
-- **Result**: CSV import of 19,444 rows: 18,444 → 19,444 (0 skipped). Zero crashes on store reset.
-
-**Phase 34** (2026-02-26): Utils Cleanup — Dead Code & Design System Split
-- **Deleted `PerformanceLogger.swift`** (390 LOC dead code) — все 18 call sites удалены из HistoryView, InsightsViewModel, InsightsService. Единственный активный профайлер: `PerformanceProfiler.swift` (#if DEBUG, 30+ call sites).
-- **`AppTheme.swift` (743 LOC) → 6 файлов**: `AppColors.swift`, `AppSpacing.swift`, `AppTypography.swift`, `AppShadow.swift`, `AppAnimation.swift`, `AppModifiers.swift` (все View extensions + TransactionRowVariant).
-- **Deleted `Colors.swift`** — `CategoryColors` struct (palette + hexColor) перенесён в `AppColors.swift`.
-- **`AmountFormatter.swift`**: убран мёртвый `import Combine`.
-- **`CategoryStyleCache.swift` НЕ удалён** — активно используется через `CategoryStyleHelper.cached()` в 4 view-файлах (TransactionCard, TransactionRowContent, CategoryChip, TransactionCardComponents). Не удалять.
-
-**Phase 33** (2026-02-26): Component Extraction — `BudgetProgressCircle` (`Views/Components/`), `StatusIndicatorBadge` + `EntityStatus` enum (`.active/.paused/.archived/.pending`), `RecurringSeries.entityStatus` bridge. `.futureTransactionStyle(isFuture:)` modifier added — use instead of inline `.opacity(0.5)`.
-
-**Phase 32** (2026-02-26): Design System Hardening — new `AppColors` tokens (`transfer` cyan-teal, `planned` blue, `statusActive/Paused/Archived`); new `AppSize`/`AppAnimation` constants; 27 hardcoded colors eliminated across 13 files. Critical localization fix: `AccountRow.swift` line 43 `Text("account.interestTodayPrefix")` → `String(localized:defaultValue:)`.
-
-**Phase 31** (2026-02-26): SwiftUI Anti-Pattern Sweep — `@ObservationIgnored` added to service deps in `InsightsViewModel` + `TransactionsViewModel`; `AnyView` → `@ViewBuilder` in 4 style modifiers; `InsightDetailView` made generic `<CategoryDestination: View>` (no `AnyView` in nav callback); `DispatchQueue` → structured concurrency in 2 views + 2 repos.
-
-**Phase 30** (2026-02-23): Per-Element Skeleton — `SkeletonLoadingModifier` (`Views/Components/SkeletonLoadingModifier.swift`), shimmer background/duration/blendMode fixes. `AppCoordinator` gains observable `isFastPathDone` / `isFullyInitialized` flags driving per-section skeleton display.
-
-**Phase 29** (2026-02-23): Initial skeleton attempt — superseded by Phase 30 bug fixes.
-
-**Phase 28** (2026-02-23): Instant Launch — Startup Performance
-- **Progressive UI**: `initializeFastPath()` loads accounts+categories only (<50ms) → UI visible instantly; full 19k-transaction load runs in background via `initialize()`
-- **Background CoreData fetch**: All 8 `load*()` repository methods moved from `viewContext` (main thread) to `newBackgroundContext() + performAndWait` — unblocks MainActor during 19k entity materialization. `loadData()` wrapped in `Task.detached` in TransactionStore.
-- **Two-phase balance registration**: Phase A reads persisted `account.balance` instantly (zero-delay UI). Phase B recalculates `shouldCalculateFromTransactions` accounts in background via `Task.detached` using only value-type captures (excludes deposit accounts). `@ObservationIgnored` applied to all 5 `let` dependencies in BalanceCoordinator.
-- **Deferred recurring generation**: `generateRecurringTransactions()` moved to `Task(priority: .background)` after full data load — removed from startup critical path.
-- **Incremental persist O(1)**: `persistIncremental(_ event:)` replaces `await persist()` (which called `saveTransactions([all 19k])` = O(3N) = ~57k ops). Routes to `insertTransaction`/`updateTransactionFields`/`batchInsertTransactions` per event type.
-- **Targeted repository methods**: Added `insertTransaction`, `updateTransactionFields`, `batchInsertTransactions` to `DataRepositoryProtocol`, `TransactionRepository`, `CoreDataRepository` (with no-op stubs in `UserDefaultsRepository`). Full error logging via `os.Logger`.
-- **NSBatchInsertRequest + viewContext merge**: `batchInsertTransactions` uses `NSBatchInsertRequest` (bypasses NSManagedObject overhead). `CoreDataStack.mergeBatchInsertResult(_:)` merges inserted IDs into viewContext via `NSManagedObjectContext.mergeChanges(fromRemoteContextSave:into:)`.
-- Design doc: `docs/plans/2026-02-23-startup-performance-instant-launch.md`
-
-**Performance improvements (Phase 28):**
-- Time to first pixel: ~2-4s (full spinner) → <100ms (fast-path)
-- CoreData fetch thread: main thread (blocks UI) → background context
-- Ops per single transaction mutation: ~57,000 (O(3N)) → ~3 (O(1))
-- Balance display at startup: after O(N×M) recalc → instant (persisted value)
-- CSV import 1000 rows: ~10s → <1s (NSBatchInsertRequest)
-
-**Phase 27** (2026-02-23): Insights Performance — SQLite Crash Fix + Progressive Loading
-- **Root cause fixed**: `CategoryAggregateService.fetchRange()` and `MonthlyAggregateService.fetchRange()` were building `NSCompoundPredicate(orPredicateWithSubpredicates:)` with one subpredicate per calendar month — exceeds SQLite expression tree depth limit (1000) for ranges > ~80 months. Fixed with a constant 7-condition range predicate.
-- **InsightsService batching**: `computeGranularities(_ granularities: [InsightGranularity], ...)` added — computes any subset of granularities in one call; `computeAllGranularities` delegates to it. Reduces 5 `@MainActor` hops → 1 from `Task.detached`.
-- **firstDate hoisted**: O(N) date-parse scan for earliest transaction moved out of per-granularity loop into `loadInsightsBackground()`, passed as `firstTransactionDate` parameter.
-- **Two-phase progressive loading**: Phase 1 computes only `currentGranularity` → writes to UI immediately (user sees real data after ~1/5 of total time). Phase 2 computes remaining 4 granularities + health score → final UI write.
-- Design doc: `docs/plans/2026-02-22-insights-performance-optimization.md`
-
-**Phase 24** (2026-02-22): Full Intelligence Suite — 10 new `InsightType` cases; `.savings` + `.forecasting` categories; `FinancialHealthScore` (0-100, 5 weighted components). `InsightsViewModel` gains `savingsInsights`, `forecastingInsights`, `healthScore`.
-
-**Phase 23** (2026-02-20): @ObservationIgnored sweep — rule now in Dev Guidelines. Reference implementations: `AppCoordinator`, `TransactionStore`, `AddTransactionCoordinator`.
-
-**Phase 22** (2026-02-19): Persistent Aggregate Caching — introduced `CategoryAggregateEntity`, `MonthlyAggregateEntity`, `BudgetSpendingCacheService`. **Superseded by Phase 40** — all three services deleted; in-memory computation replaces CoreData aggregate reads.
-
-**Phase 16-21** (2026-02-19): Performance — ViewModels use computed properties from TransactionStore (SSOT); debounced sync (16ms); InsightsViewModel lazy. **⚠️ `allTransactions` setter is a no-op** — to delete use `TransactionStore.deleteTransactions(for...)` which routes through `apply(.deleted)` for proper cache/persistence.
-
-**Phase 15** (2026-02-16): `MessageBanner` — unified `.success`/`.error`/`.warning`/`.info` (see `Views/Components/MessageBanner.swift`).
-**Phase 14** (2026-02-16): `UniversalFilterButton` — `.button(onTap)` + `.menu(content)` modes (see `Views/Components/UniversalFilterButton.swift`).
-**Phase 13** (2026-02-16): `UniversalCarousel` — presets `.standard/.compact/.filter/.cards/.csvPreview` (see `Views/Components/UniversalCarousel.swift`).
-**Phase 12** (2026-02-16): `UniversalRow` — generic row with `IconConfig`; `.navigationRow()`, `.actionRow()`, `.selectableRow()` (see `Views/Components/UniversalRow.swift`).
-**Phase 11** (2026-02-15): Swift 6 concurrency — ~164 warnings fixed; patterns in Dev Guidelines.
-**Phase 10** (2026-02-15): Repository split — `CoreDataRepository` facade + 4 specialized repos; `Services/` reorganized.
-**Phase 9**: `SubscriptionsViewModel` removed; recurring ops moved to `TransactionStore`.
-**Phase 7**: TransactionStore introduction. **Phase 1-4**: BalanceCoordinator foundation.
+### Current State
+- CoreData v4 model (`recurringSeriesId` String on `TransactionEntity` — survives entity deletion)
+- Old aggregate entities (`MonthlyAggregateEntity`, `CategoryAggregateEntity`) remain in `.xcdatamodeld` but are not read/written
+- ContentView reactivity via `.task(id: SummaryTrigger)` — no manual `onChange` chains
+- Per-element skeleton loading during initialization (`SkeletonLoadingModifier`)
+- `IconSource.displayIdentifier` produces `"sf:\(name)"` format; `IconSource.from(displayIdentifier:)` decodes it — use for any entity storing icons as Strings
 
 ## Development Guidelines
 
@@ -333,22 +217,22 @@ func saveAccountsInternal(...) throws {
 - Avoid @State in views for complex state - delegate to ViewModels
 - Use Observation framework, not Combine publishers
 
-### @Observable — Правила точечных обновлений (Phase 23)
+### @Observable — Rules for Granular Updates
 
-**Обязательные правила для всех `@Observable` классов:**
+**Required rules for all `@Observable` classes:**
 
-#### 1. @ObservationIgnored для зависимостей
-Любое свойство, которое является сервисом, репозиторием, кэшем, форматтером или ссылкой на другой VM/Coordinator — **обязано** быть помечено `@ObservationIgnored`:
+#### 1. @ObservationIgnored for Dependencies
+Any property that is a service, repository, cache, formatter, or reference to another VM/Coordinator **must** be marked `@ObservationIgnored`:
 
 ```swift
-// ❌ WRONG — SwiftUI начнёт трекать repository и currencyService
+// ❌ WRONG — SwiftUI will track repository and currencyService
 @Observable @MainActor class SomeViewModel {
     let repository: DataRepositoryProtocol
     let currencyService = TransactionCurrencyService()
     var isLoading = false
 }
 
-// ✅ CORRECT — трекается только isLoading
+// ✅ CORRECT — only isLoading is tracked
 @Observable @MainActor class SomeViewModel {
     @ObservationIgnored let repository: DataRepositoryProtocol
     @ObservationIgnored let currencyService = TransactionCurrencyService()
@@ -356,23 +240,25 @@ func saveAccountsInternal(...) throws {
 }
 ```
 
-**Правило большого пальца**: если свойство не меняется после `init` или его изменение не должно триггерить UI — ставь `@ObservationIgnored`.
+**Rule of thumb**: if a property doesn't change after `init` or its change shouldn't trigger UI — use `@ObservationIgnored`.
 
-**Важно**: `weak var` зависимости также обязаны иметь `@ObservationIgnored`, не только `let`. SwiftUI трекает доступы на уровне экземпляра — `transactionStore.property` всё равно отслеживается на TransactionStore напрямую.
+**Important**: `weak var` dependencies also need `@ObservationIgnored`, not just `let`. SwiftUI tracks accesses at instance level.
 
-#### 2. Хранение VM во View
-| Ситуация | Правильный паттерн |
-|----------|--------------------|
-| VM создаётся внутри View | `@State var vm = SomeViewModel()` |
-| VM передаётся снаружи (только чтение) | `let vm: SomeViewModel` |
-| VM передаётся снаружи (нужен `$binding`) | `@Bindable var vm: SomeViewModel` |
-| VM из environment | `@Environment(SomeViewModel.self) var vm` |
+**`@ObservationIgnored` only works inside `@Observable` classes**: on a regular `class`, `struct`, or `@MainActor`-class without `@Observable` — the attribute is silently ignored (no compile error, no effect). Remove it if `@Observable` is removed from the class.
 
-❌ **Никогда не используй** `@StateObject`, `@ObservedObject`, `@EnvironmentObject` — это для старого `ObservableObject`.
+#### 2. ViewModel Storage in Views
+| Situation | Correct Pattern |
+|-----------|----------------|
+| VM created inside View | `@State var vm = SomeViewModel()` |
+| VM passed from outside (read-only) | `let vm: SomeViewModel` |
+| VM passed from outside (need `$binding`) | `@Bindable var vm: SomeViewModel` |
+| VM from environment | `@Environment(SomeViewModel.self) var vm` |
 
-#### 3. Текущие исключения (намеренно observable)
-- `TransactionStore.baseCurrency` — `var` без `@ObservationIgnored`, т.к. смена базовой валюты должна триггерить пересчёт UI
-- `DepositsViewModel.balanceCoordinator` — `var?` без `@ObservationIgnored`, т.к. назначается после `init` (late injection)
+Never use `@StateObject`, `@ObservedObject`, `@EnvironmentObject` — those are for old `ObservableObject`.
+
+#### 3. Current Exceptions (intentionally observable)
+- `TransactionStore.baseCurrency` — `var` without `@ObservationIgnored`, because currency change must trigger UI recalc
+- `DepositsViewModel.balanceCoordinator` — `var?` without `@ObservationIgnored`, assigned after `init` (late injection)
 
 ### CoreData Usage
 - All CoreData operations through DataRepositoryProtocol
@@ -381,13 +267,14 @@ func saveAccountsInternal(...) throws {
 - CoreDataRepository acts as facade, delegating to specialized repos
 - Fetch requests should be optimized with predicates
 - Use background contexts for heavy operations
-- **⚠️ OR-per-month predicate crash** (historical, Phase 27): Never build `NSCompoundPredicate(orPredicateWithSubpredicates:)` with one subpredicate per calendar month — exceeds SQLite expression tree depth limit (1000) for ranges > ~80 months. Phase 40 removed the aggregate services that had this bug; but if building similar CoreData range queries, use a constant 7-condition range predicate: `year > 0 AND month > 0 AND (year > startYear OR (year == startYear AND month >= startMonth)) AND (year < endYear OR (year == endYear AND month <= endMonth))`.
-- **`NSDecimalNumber.compare()` gotcha**: `number.compare(.zero)` **не компилируется** — Swift не выводит тип из `NSNumber`; всегда пиши `number.compare(NSDecimalNumber.zero)`
-- **`performFetch()` + `rebuildSections()` are synchronous on MainActor** — sections fully updated before the next line. Gates like `isHistoryListReady` only protect UI if the section count is already bounded before the flag turns `true`; an unbounded allTime FRC (3,530 sections) will still freeze even with the gate.
-- **`resetAllData()` invalidates FRC**: `CoreDataStack.resetAllData()` destroys/recreates the persistent store (new UUID). Any existing `NSFetchedResultsController` retains stale `NSManagedObject` references → crash on fault fire. Fix: `CoreDataStack` posts `storeDidResetNotification`; FRC holders observe it and call `setup()` to recreate on the new store. See `TransactionPaginationController.handleStoreReset()`.
-- **FRC delegate must rebuild synchronously**: `controllerDidChangeContent` runs on main thread (viewContext). Use `MainActor.assumeIsolated { rebuildSections() }` — NOT `Task { @MainActor in }` which creates async hop, allowing stale section access between save and rebuild.
-- **`addBatch` fallback pattern**: `TransactionStore.addBatch()` validates ALL transactions; one failure rejects the entire batch (500 rows). `CSVImportCoordinator` catches batch errors and retries individual `add()` calls — only truly invalid transactions are skipped.
-- **Entity resolution case-sensitivity**: `ImportCacheManager` stores keys as `lowercased()`, but `EntityMappingService.resolveCategoryByName` must ALSO use case-insensitive store lookup (`$0.name.lowercased() == nameLower`). When cache HITs on a case-variant, return the **stored** entity name (not the input name) — otherwise `validate()` fails because the transaction's category name doesn't match the store. Accounts and subcategories already used case-insensitive resolution; categories fixed in Phase 35.
+- **⚠️ OR-per-month predicate crash**: Never build `NSCompoundPredicate(orPredicateWithSubpredicates:)` with one subpredicate per calendar month — exceeds SQLite expression tree depth limit (1000). Use a constant 7-condition range predicate instead.
+- **`NSDecimalNumber.compare()` gotcha**: `number.compare(.zero)` doesn't compile — always write `number.compare(NSDecimalNumber.zero)`
+- **`performFetch()` + `rebuildSections()` are synchronous on MainActor** — sections fully updated before the next line.
+- **`resetAllData()` invalidates FRC**: Destroys/recreates the persistent store. FRC holders must observe `storeDidResetNotification` and call `setup()` to recreate. See `TransactionPaginationController.handleStoreReset()`.
+- **FRC delegate must rebuild synchronously**: Use `MainActor.assumeIsolated { rebuildSections() }` — NOT `Task { @MainActor in }` which creates async hop allowing stale section access.
+- **`addBatch` fallback pattern**: `TransactionStore.addBatch()` validates ALL transactions; one failure rejects the entire batch. `CSVImportCoordinator` retries individual `add()` calls.
+- **Entity resolution case-sensitivity**: `resolveCategoryByName` must use case-insensitive comparison. When cache HITs on a case-variant, return the **stored** entity name (not the input name).
+- **NEVER use `NSBatchDeleteRequest` then `context.save()` on the SAME context** when deleted objects have inverse relationships. Use `context.delete()` instead.
 
 ### File Organization Rules ("Where Should I Put This File?")
 
@@ -443,31 +330,34 @@ New file needed?
 - Use background tasks for expensive operations
 - Cache frequently accessed data (see BalanceCoordinator cache)
 - Optimize CoreData fetch requests with appropriate batch sizes
-- **⚠️ SwiftUI `List` + 500+ sections = hard freeze** — SwiftUI renders all `Section` headers eagerly; 3,530 sections causes 10-12s UI freeze. Always slice: `Array(sections.prefix(visibleSectionLimit))` with `@State var visibleSectionLimit = 100`. Add `ProgressView().onAppear { visibleSectionLimit += 100 }` as the last List row for infinite scroll ("умная подгрузка"). `@State` auto-resets to 100 on each `NavigationStack` push.
-- **⚠️ `onAppear` fires on every back-navigation** — не используй `@State var hasAppearedOnce` как заглушку. Вместо этого применяй `.task(id: trigger)`: перезапуск task дёшев (фон + дебаунс), данные всегда актуальны. `ContentView` не использует `onAppear` для загрузки данных (Phase 39).
-- **⚠️ Dead code deletion — orphaned call sites**: When deleting a class (e.g. `BalanceUpdateQueue`), grep all `.swift` sources for the class name AND all method names it implemented. Removed parameters silently survive at call sites and only surface at build time as "extra argument" errors. Example: after deleting `BalanceUpdateQueue`, `AccountOperationService` still passed `priority: .immediate` to `coordinator.updateForTransaction()`.
-- **`CompileAssetCatalogVariant` failure can be transient** — if the only failing build step is asset catalog compilation and `grep -E "error:"` returns nothing, just retry; it's a Xcode caching artifact, not a code issue.
-- **Making an `@Observable` property reactive**: remove `@ObservationIgnored`, change to `private(set) var`; in the observing View add `.onChange(of: vm.property) { ... }`. Used for `InsightsViewModel.isStale` → drives `InsightsView` reload while tab stays open.
-- **Cross-file extension access control**: `private` on a class member is file-scoped — extensions in OTHER `.swift` files CANNOT access it. When splitting a class into extension files: change `private let/static let/func` shared helpers and dependencies to `internal` (no modifier). Methods only called within the same extension file can stay `private` within that extension. Rule: caller and callee in different files → `internal`; same file only → `private`.
-- **Extension file imports are not inherited**: Each extension file is an independent compilation unit — it does NOT inherit `import os`, `import CoreData`, `import SwiftUI` from the main class file. Every file calling `Self.logger.debug(...)` needs `import os`; every file using `NSFetchRequest` needs `import CoreData`.
-- **`.task(id:)` вместо цепочки `onChange`** — объединяй все реактивные входы в `Equatable` struct (`SummaryTrigger`-паттерн); SwiftUI управляет отменой сам. Смешанная срочность: дебаунс внутри `if !isFullyInitialized`, чтобы init-complete-триггер был немедленным.
-- **`DateFormatter` не Sendable** — объявляй как `@MainActor private static let`; форматируй строки на MainActor до `Task.detached`; передавай `String`, а не сам форматтер. Никогда не создавай `DateFormatter` внутри `Task.detached`.
-- **`Group {}` в `@ViewBuilder` computed var лишний** — если `private var foo: some View` возвращает `if/else`, добавь `@ViewBuilder` и убери `Group`; семантика идентична, один уровень иерархии сэкономлен.
-- **PreAggregatedData "piggyback" pattern**: When multiple generators need per-transaction data, add a field to `PreAggregatedData` struct and compute it in the existing `build()` O(N) loop — zero extra cost. Examples: `accountTransactionCounts`, `lastAccountDates`. Never add separate O(N) loops when one already exists.
-- **`filterService.filterByTimeRange` is expensive** (~16μs/tx due to DateFormatter): When `txDateMap` is available, use inline `transactions.filter { guard let d = map[tx.date], d >= start, d < end else { return false }; return true }` instead. Applied in spending generator and currentBucketForForecasting.
-- **⚠️ Recurring: fire-and-forget `createRecurringSeries()`** — `TransactionsViewModel.createRecurringSeries()` wraps a `Task`; generated txs are NOT in the store when `save()` returns. Always `await transactionStore.createSeries(series)` directly when you need to act on generated transactions (e.g. link subcategories).
-- **⚠️ `getPlannedTransactions(horizon:)` deprecated** — uses old 3-month generator; do not use in new code. Filter `transactionStore.transactions` directly.
-- **`isActive` vs `status` in `RecurringSeries`**: `isActive: Bool` gates occurrence generation. `status: SubscriptionStatus?` controls Pause/Resume UI in `SubscriptionDetailView`. Both must be updated in tandem by `stopSeries`/`resumeSeries`.
-- **Subcategory CoreData relationship**: `Transaction.subcategory: String?` is legacy; real subcats live in CoreData via `categoriesViewModel.linkSubcategoriesToTransaction(transactionId:subcategoryIds:)`. Generated recurring txs start with no subcategory links — must be linked explicitly after creation.
-- **`categoriesViewModel` threading in Views**: `SubscriptionDetailView` and `SubscriptionsListView` require `CategoriesViewModel` passed as parameter from `ContentView` → `SubscriptionsListView` → `SubscriptionDetailView`.
+- **⚠️ SwiftUI `List` + 500+ sections = hard freeze** — SwiftUI renders all `Section` headers eagerly. Always slice: `Array(sections.prefix(visibleSectionLimit))` with `@State var visibleSectionLimit = 100`. Add `ProgressView().onAppear { visibleSectionLimit += 100 }` as the last List row for infinite scroll.
+- **Pre-resolve per-row data at ForEach call site**: Passing `[Account]` or `[CustomCategory]` arrays to a row view means any element change forces ALL rows to re-render. Pre-resolve per-row `let` bindings inside `ForEach` and pass `Equatable` scalars.
+- **`.onAppear` for synchronous cache warm-up**: Use `.onAppear { rebuildCache() }` (runs synchronously before next frame), NOT `.task { await rebuildCache() }` (async — fires after List body renders).
+- **⚠️ `onAppear` fires on every back-navigation** — use `.task(id: trigger)` instead: combine reactive inputs in `Equatable` struct (`SummaryTrigger` pattern); SwiftUI manages cancellation automatically. Use debounce inside `if !isFullyInitialized` so init-complete triggers are immediate.
+- **⚠️ Dead code deletion — orphaned call sites**: When deleting a class, grep all `.swift` sources for the class name AND all method names it implemented.
+- **`CompileAssetCatalogVariant` failure can be transient** — if `grep -E "error:"` returns nothing, just retry.
+- **Making an `@Observable` property reactive**: remove `@ObservationIgnored`, change to `private(set) var`; in the observing View add `.onChange(of: vm.property) { ... }`.
+- **Cross-file extension access control**: `private` is file-scoped — extensions in OTHER files can't access it. Shared helpers → `internal` (no modifier); same file only → `private`.
+- **Extension file imports are not inherited**: Each file needs its own `import os`, `import CoreData`, etc.
+- **`DateFormatter` is not Sendable** — declare as `@MainActor private static let`; format strings on MainActor before `Task.detached`; pass `String`, not the formatter.
+- **`Group {}` in `@ViewBuilder` computed var is unnecessary** — add `@ViewBuilder` and remove `Group`.
+- **PreAggregatedData "piggyback" pattern**: Add fields to `PreAggregatedData.build()` O(N) loop — never add separate O(N) loops when one already exists.
+- **`filterService.filterByTimeRange` is expensive** (~16μs/tx due to DateFormatter): use `txDateMap` inline filter when available.
+- **⚠️ Recurring: fire-and-forget `createRecurringSeries()`** — generated txs are NOT in the store when `save()` returns. Always `await transactionStore.createSeries(series)` directly when you need to act on generated transactions (e.g. link subcategories).
+- **⚠️ `getPlannedTransactions(horizon:)` deprecated** — filter `transactionStore.transactions` directly.
+- **Subcategory CoreData relationship**: `Transaction.subcategory: String?` is legacy; real subcats live via `categoriesViewModel.linkSubcategoriesToTransaction(transactionId:subcategoryIds:)`. Generated recurring txs need explicit linking after creation.
+- **`categoriesViewModel` threading in Views**: `SubscriptionDetailView` and `SubscriptionsListView` require `CategoriesViewModel` passed as parameter from `ContentView`.
 
 ## SwiftUI Layout Gotchas
 
-- **`containerRelativeFrame` wrong container**: Plain `HStack`/`VStack` are NOT qualifying containers; the modifier walks up to the nearest `ScrollView`/`LazyHStack`/`LazyVGrid`. In a List row it resolves to the full screen width — use `GeometryReader` for proportional sizing inside non-lazy containers.
-- **`layoutPriority` is not proportional**: Two `frame(maxWidth: .infinity)` views with different `layoutPriority` values do NOT split space proportionally — higher priority takes all remaining space first.
-- **`Task.yield()` for focus timing**: Replace `Task.sleep(nanoseconds: 100_000_000)` focus hacks with `await Task.yield()` inside `.task {}` — suspends exactly one MainActor runloop tick, sufficient for SwiftUI layout before `@FocusState` activation.
-- **Missing struct `}` after Button wrap**: Wrapping a view's `HStack` body in `Button { }` can accidentally absorb the struct's closing brace — verify brace balance after this refactoring pattern (causes `expected '}'` build errors elsewhere in the file).
-- **`.task` vs `.onAppear { Task {} }`**: `.task` is automatically cancelled on view removal (sheet dismiss); unstructured `Task {}` created inside `.onAppear` is unowned and can fire after dismissal.
+- **`containerRelativeFrame` wrong container**: Plain `HStack`/`VStack` are NOT qualifying containers — use `GeometryReader` for proportional sizing inside non-lazy containers.
+- **`layoutPriority` is not proportional**: Higher priority takes all remaining space first — it's not a ratio.
+- **`Task.yield()` for focus timing**: Replace `Task.sleep(nanoseconds:)` focus hacks with `await Task.yield()` inside `.task {}`.
+- **Missing struct `}` after Button wrap**: Wrapping a view's body in `Button { }` can absorb the struct's closing brace — verify brace balance.
+- **`.task` vs `.onAppear { Task {} }`**: `.task` is automatically cancelled on view removal; unstructured `Task {}` in `.onAppear` is unowned and can fire after dismissal.
+- **`Text("localization.key")` renders the raw key**: Always use `Text(String(localized: "some.key"))` for guaranteed localized output.
+- **`Task.sleep(nanoseconds:)` → Duration API**: Use `try? await Task.sleep(for: .milliseconds(150))` instead.
+- **ForEach identity — never use `UUID()`**: `UUID()` generates a new id every render → spurious animations, sheet dismiss/reopen. Use stable identifiers: name-based id, `"\(name)_\(type.rawValue)"` fallback.
 
 ## Common Tasks
 
@@ -494,47 +384,37 @@ New file needed?
 - Follow existing naming patterns (e.g., MenuPicker)
 - Support both light and dark modes
 - Test on multiple device sizes
+- **IconView vs Image(systemName:)**: Use `IconView` for entity/category icons with styled backgrounds (accounts, categories, subscriptions, brand logos). Use `Image(systemName:)` for semantic indicators (checkmark, chevron, xmark, toolbar actions). Selection state wraps IconView externally (`.frame + .background + .clipShape`), not via IconView params.
+- **UniversalRow for form rows**: All form rows inside `FormSection(.card)` must use `UniversalRow(config: .standard)`. Optional icons: `icon.map { .sfSymbol($0, color:, size:) }`. Wrapper components (InfoRow, MenuPickerRow, DatePickerRow) delegate to UniversalRow internally.
+- **`futureTransactionStyle(isFuture:)`**: Use this modifier instead of inline `.opacity(0.5)` for planned transactions.
+- **`TransactionCard` API**: Takes `styleData: CategoryStyleData` (not `customCategories: [CustomCategory]`) and `sourceAccount: Account?` + `targetAccount: Account?` (not `accounts: [Account]`). Pre-compute at ForEach call site.
 
-#### MessageBanner Component (`Views/Components/MessageBanner.swift`)
-Universal banner: `.success`, `.error`, `.warning`, `.info` with spring animations (scale 0.85→1.0, upward slide, icon bounce) and type-matched haptics via `HapticManager.notification(type:)`.
+#### MessageBanner (`Views/Components/MessageBanner.swift`)
+Universal banner: `.success`, `.error`, `.warning`, `.info` with spring animations and type-matched haptics.
 
 ```swift
 MessageBanner.success("Transaction saved successfully")
 MessageBanner.error("Failed to load data")
-// With transition:
-MessageBanner.success(msg).transition(.move(edge: .top).combined(with: .opacity))
 ```
 
-#### UniversalCarousel Component (`Views/Components/UniversalCarousel.swift`)
-Generic horizontal carousel. Presets: `.standard` (selectors + auto-scroll), `.compact` (chips), `.filter` (tags), `.cards` (large items + `.screenPadding()`), `.csvPreview` (shows scroll indicators). Config: `Utils/CarouselConfiguration.swift`.
+#### UniversalCarousel (`Views/Components/UniversalCarousel.swift`)
+Generic horizontal carousel. Presets: `.standard`, `.compact`, `.filter`, `.cards`, `.csvPreview`. Config: `Utils/CarouselConfiguration.swift`.
 
-```swift
-UniversalCarousel(config: .standard, scrollToId: .constant(selectedId)) {
-    ForEach(items) { item in ChipView(item).id(item.id) }
-}
-```
+#### UniversalFilterButton (`Views/Components/UniversalFilterButton.swift`)
+Filter chip in `.button(onTap)` or `.menu(menuContent:)` mode. Styling: `.filterChipStyle(isSelected:)`.
 
-#### UniversalFilterButton Component (`Views/Components/UniversalFilterButton.swift`)
-Filter chip in `.button(onTap)` or `.menu(menuContent:)` mode. Styling: `.filterChipStyle(isSelected:)`. Use `CategoryFilterHelper` for category display logic.
-
-```swift
-// Button mode
-UniversalFilterButton(title: "All Time", isSelected: false, onTap: { showFilter = true }) {
-    Image(systemName: "calendar")
-}
-// Menu mode: add `menuContent: { Button(...) }` trailing closure
-```
-
-#### UniversalRow Component (`Views/Components/UniversalRow.swift`)
-Generic row with `IconConfig` leading icons. Presets: `.standard`, `.settings`, `.selectable`, `.info`, `.card`. Modifiers: `.navigationRow { Dest() }`, `.actionRow(role:) { }`, `.selectableRow(isSelected:) { }`. `IconConfig`: `.sfSymbol(name, color)`, `.bankLogo(logo)`, `.brandService(name)`, `.custom(source, style)`.
+#### UniversalRow (`Views/Components/UniversalRow.swift`)
+Generic row with `IconConfig` leading icons. Presets: `.standard`, `.settings`, `.selectable`, `.info`, `.card`. Modifiers: `.navigationRow {}`, `.actionRow(role:) {}`, `.selectableRow(isSelected:) {}`. `IconConfig`: `.sfSymbol(name, color)`, `.bankLogo(logo)`, `.brandService(name)`, `.custom(source, style)`.
 
 **Design system files** (`Utils/`):
-- `AppColors.swift` — semantic colors + `CategoryColors` palette (absorbed `Colors.swift`)
+- `AppColors.swift` — semantic colors + `CategoryColors` palette
 - `AppSpacing.swift` — `AppSpacing`, `AppRadius`, `AppIconSize`, `AppSize`
 - `AppTypography.swift` — `AppTypography` (Inter variable font)
 - `AppShadow.swift` — `AppShadow` enum, `Shadow` struct
 - `AppAnimation.swift` — `AppAnimation` constants, `BounceButtonStyle`
 - `AppModifiers.swift` — all View style extensions (`cardStyle`, `filterChipStyle`, `transactionRowStyle`, `futureTransactionStyle`, etc.) + `TransactionRowVariant`
+- `AppButton.swift` — button component variants
+- `AppEmptyState.swift` — empty state view component
 
 ## Testing
 
@@ -575,19 +455,19 @@ Current branch: `main`
 - **Services/Import/**: PDF and statement text parsing
 - **Services/Cache/**: Caching coordinators and managers
 
-### Utils — Amount Formatting (three formatters, разные назначения)
+### Utils — Amount Formatting
 | File | Purpose | Decimal places |
 |------|---------|----------------|
-| `AmountFormatter.swift` | Хранимые значения: format/parse/validate; `minimumFractionDigits=2` | Always 2 ("1 234.50") |
-| `AmountDisplayConfiguration.swift` | Глобальная конфигурация форматтера. **Hot path: `AmountDisplayConfiguration.formatter`** (кэширован). `makeNumberFormatter()` создаёт новый объект — не вызывать в `List`/`ForEach` | Configurable (default 2) |
-| `AmountInputFormatting.swift` | Механика input-компонентов: `cleanAmountString`, `displayAmount(for:)`, `calculateFontSize`. Используется в `AmountInputView` и `AnimatedAmountInput` | 0–2 (no trailing zeros) |
+| `AmountFormatter.swift` | Stored values: format/parse/validate; `minimumFractionDigits=2` | Always 2 ("1 234.50") |
+| `AmountDisplayConfiguration.swift` | Global formatter config. **Hot path: `.formatter`** (cached). `makeNumberFormatter()` creates new object — never call in `List`/`ForEach` | Configurable (default 2) |
+| `AmountInputFormatting.swift` | Input component mechanics: `cleanAmountString`, `displayAmount(for:)`, `calculateFontSize` | 0–2 (no trailing zeros) |
 
-- **`AmountDisplayConfiguration` cache invalidation**: `static var shared = Config() { didSet { _cache = nil } }` — мутация свойства `shared.prop = x` тоже тригерит `didSet` (Swift копирует struct и присваивает обратно)
+- **`AmountDisplayConfiguration` cache invalidation**: `static var shared = Config() { didSet { _cache = nil } }` — mutating `shared.prop = x` also triggers `didSet` (Swift copies struct and reassigns)
 
-### AnimatedInputComponents.swift (Phase 30+)
-- Содержит **только `BlinkingCursor`** — все AnimatedDigit/AnimatedChar/CharAnimState удалены
-- `AmountInputView` + `AnimatedAmountInput` используют `contentTransition(.numericText())` для чисел
-- `AnimatedTitleInput` использует `contentTransition(.interpolate)` для текста — намеренно разные
+### AnimatedInputComponents.swift
+- Contains only `BlinkingCursor` — all AnimatedDigit/AnimatedChar removed
+- `AmountInputView` + `AnimatedAmountInput` use `contentTransition(.numericText())`
+- `AnimatedTitleInput` uses `contentTransition(.interpolate)` — intentionally different
 
 ## AI Assistant Instructions
 
@@ -633,6 +513,5 @@ Key references: `docs/PROJECT_BIBLE.md`, `docs/ARCHITECTURE_FINAL_STATE.md`, `do
 ---
 
 **Last Updated**: 2026-03-04
-**Project Status**: Active development - Recurring single-next-occurrence model (Phase 43): stopSeries/resumeSeries fixed, subcategory persistence for recurring, SubscriptionDetailView history fix. Insights deep perf optimization (Phase 42): PreAggregatedData single O(N) pass, shared insights, date parse cache — total 4877→1986ms. Single source of truth (Phase 40): window removed, all 3 aggregate services deleted, all transactions in memory. ContentView fully reactive via `.task(id:)` (Phase 39). InsightsService split 2832→782 LOC (Phase 38). Service audit: 3 dead protocols deleted, TransactionConverterService merged (Phase 38). Reactivity audit + dead code removal (Phase 36). CSV import crash fix (Phase 35). Utils cleanup + design system split (Phase 34). Zero hardcoded colors (Phase 32-33). SwiftUI anti-pattern sweep (Phase 31), Per-element skeleton loading (Phase 30), Instant launch (Phase 28).
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns enforced via `SWIFT_STRICT_CONCURRENCY = targeted`

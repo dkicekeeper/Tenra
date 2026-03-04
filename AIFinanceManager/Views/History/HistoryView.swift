@@ -85,14 +85,6 @@ struct HistoryView: View {
                     todayKey: todayKey,
                     yesterdayKey: yesterdayKey
                 )
-            } else {
-                // Placeholder shown for ≤1 frame while onAppear applies the time filter.
-                // This prevents SwiftUI from constructing the List with 3,530 unfiltered
-                // sections (which causes a 10-12 s freeze). After applyFiltersToController()
-                // reduces sections to ~361, isHistoryListReady is set to true and the real
-                // List is rendered instantly.
-                Color(UIColor.systemGroupedBackground)
-                    .ignoresSafeArea()
             }
         }
         .safeAreaInset(edge: .top) {
@@ -110,7 +102,6 @@ struct HistoryView: View {
         }
         .navigationTitle(String(localized: "navigation.history"))
         .navigationBarTitleDisplayMode(.large)
-        .toolbarBackground(Color(.clear), for: .navigationBar)
         .searchable(
             text: $filterCoordinator.searchText,
             isPresented: $filterCoordinator.isSearchActive,
@@ -123,8 +114,8 @@ struct HistoryView: View {
             HapticManager.selection()
             applyFiltersToController()
         }
-        .onChange(of: filterCoordinator.selectedAccountFilter) { _, newValue in
-            filterCoordinator.applyAccountFilter(newValue)
+        .onChange(of: filterCoordinator.selectedAccountFilter) { _, _ in
+            filterCoordinator.applyAccountFilter()
             applyFiltersToController()
         }
         .onChange(of: filterCoordinator.searchText) { _, newValue in

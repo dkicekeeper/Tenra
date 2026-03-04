@@ -23,7 +23,7 @@ final class DateSectionExpensesCache {
     private var cache: [String: Double] = [:]
 
     /// Timestamp of last cache invalidation for debugging
-    @ObservationIgnored private var lastInvalidation: Date = Date()
+    private var lastInvalidation: Date = Date()
 
     // MARK: - Public Methods
 

@@ -13,7 +13,7 @@ extension View {
     /// Применяет стандартный стиль карточки
     func cardStyle(radius: CGFloat = AppRadius.pill, padding: CGFloat = AppSpacing.md) -> some View {
         self
-            .padding(padding)
+//            .padding(padding)
             .background(AppColors.cardBackground)
             .clipShape(.rect(cornerRadius: radius))
     }

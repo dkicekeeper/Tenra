@@ -29,34 +29,18 @@ struct DatePickerRow: View {
     }
 
     var body: some View {
-        HStack(spacing: AppSpacing.md) {
-            // Left side: Icon + Title
-            if let icon = icon {
-                HStack(spacing: AppSpacing.md) {
-                    Image(systemName: icon)
-                        .font(.system(size: AppIconSize.sm))
-                        .foregroundStyle(AppColors.textPrimary)
-                        .frame(
-                            width : AppIconSize.lg,
-                            height: AppIconSize.lg
-                        )
-
-                    DatePicker(
-                        title,
-                        selection: $selection,
-                        displayedComponents: displayedComponents
-                    )
-                }
-            } else {
-                // Without icon - default DatePicker
-                DatePicker(
-                    title,
-                    selection: $selection,
-                    displayedComponents: displayedComponents
-                )
-            }
+        UniversalRow(
+            config: .standard,
+            leadingIcon: icon.map { .sfSymbol($0, color: AppColors.textPrimary, size: AppIconSize.lg) }
+        ) {
+            DatePicker(
+                title,
+                selection: $selection,
+                displayedComponents: displayedComponents
+            )
+        } trailing: {
+            EmptyView()
         }
-//        .padding(.horizontal, AppSpacing.lg)
     }
 }
 

@@ -49,19 +49,6 @@ struct AccountActionView: View {
                     .frame(height: 0)
                     .glassEffectID("account-card-\(account.id)", in: namespace) // glass morph anchor
 
-                // 1. Picker типа действия (если есть)
-                if !account.isDeposit {
-                    SegmentedPickerView(
-                        title: String(localized: "common.type"),
-                        selection: $viewModel.selectedAction,
-                        options: [
-                            (label: String(localized: "transactionForm.transfer"), value: AccountActionViewModel.ActionType.transfer),
-                            (label: String(localized: "transactionForm.topUp"), value: AccountActionViewModel.ActionType.income)
-                        ]
-                    )
-                    .padding(AppSpacing.lg)
-                }
-
                 // 2. Сумма с выбором валюты
                 AmountInputView(
                     amount: $viewModel.amountText,
@@ -101,6 +88,21 @@ struct AccountActionView: View {
                     text: $viewModel.descriptionText,
                     placeholder: String(localized: "transactionForm.descriptionPlaceholder")
                 )
+            }
+        }
+        .safeAreaInset(edge: .top) {
+            if !account.isDeposit {
+                SegmentedPickerView(
+                    title: String(localized: "common.type"),
+                    selection: $viewModel.selectedAction,
+                    options: [
+                        (label: String(localized: "transactionForm.transfer"), value: AccountActionViewModel.ActionType.transfer),
+                        (label: String(localized: "transactionForm.topUp"), value: AccountActionViewModel.ActionType.income)
+                    ]
+                )
+                .padding(.horizontal, AppSpacing.lg)
+                .padding(.vertical, AppSpacing.md)
+                .background(Color.clear)
             }
         }
         .navigationTitle(viewModel.navigationTitleText)

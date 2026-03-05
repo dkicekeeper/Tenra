@@ -14,10 +14,14 @@ enum TransactionType: String, Codable {
     case depositTopUp = "deposit_topup"
     case depositWithdrawal = "deposit_withdrawal"
     case depositInterestAccrual = "deposit_interest"
+    case loanPayment = "loan_payment"
+    case loanEarlyRepayment = "loan_early_repayment"
 
     /// Static category name stored for internalTransfer transactions.
     /// Must be locale-independent so it survives locale changes and app restarts.
     static let transferCategoryName = "Transfer"
+    /// Locale-independent category name for loan payment transactions.
+    static let loanPaymentCategoryName = "Loan Payment"
 }
 
 struct Transaction: Identifiable, Codable, Equatable {
@@ -235,24 +239,143 @@ struct DepositInfo: Codable, Equatable, Hashable {
     }
 }
 
+// MARK: - Loan Models
+
+enum LoanType: String, Codable, Equatable, Hashable {
+    case annuity = "annuity"           // Аннуитетный кредит (фиксированный платёж, % меняется)
+    case installment = "installment"   // Рассрочка (0% процентов, равные платежи)
+}
+
+enum EarlyRepaymentType: String, Codable, Equatable, Hashable {
+    case reduceTerm = "reduce_term"       // Уменьшить срок, сохранить платёж
+    case reducePayment = "reduce_payment" // Уменьшить платёж, сохранить срок
+}
+
+struct EarlyRepayment: Codable, Equatable, Hashable {
+    let date: String        // YYYY-MM-DD
+    let amount: Decimal     // Сумма досрочного погашения
+    let type: EarlyRepaymentType
+    let note: String?
+
+    init(date: String, amount: Decimal, type: EarlyRepaymentType, note: String? = nil) {
+        self.date = date
+        self.amount = amount
+        self.type = type
+        self.note = note
+    }
+}
+
+struct LoanInfo: Codable, Equatable, Hashable {
+    var bankName: String
+    var loanType: LoanType
+
+    // Основная сумма
+    var originalPrincipal: Decimal      // Первоначальная сумма кредита (не меняется)
+    var remainingPrincipal: Decimal     // Текущий остаток долга
+
+    // Проценты
+    var interestRateAnnual: Decimal     // Годовая ставка (0 для рассрочки)
+    var interestRateHistory: [RateChange] // История изменения ставок (переиспользует RateChange)
+    var totalInterestPaid: Decimal      // Суммарные уплаченные проценты
+
+    // Срок
+    var termMonths: Int                 // Общий срок в месяцах
+    var startDate: String               // YYYY-MM-DD начало кредита
+    var endDate: String                 // YYYY-MM-DD расчётная дата окончания
+
+    // График платежей
+    var monthlyPayment: Decimal         // Фиксированный ежемесячный платёж
+    var paymentDay: Int                 // 1-31, день месяца для платежа
+    var paymentsMade: Int               // Количество совершённых платежей
+    var lastPaymentDate: String?        // YYYY-MM-DD последнего платежа
+    var lastReconciliationDate: String  // YYYY-MM-DD — для идемпотентной сверки
+
+    // Досрочные погашения
+    var earlyRepayments: [EarlyRepayment]
+
+    init(
+        bankName: String,
+        loanType: LoanType,
+        originalPrincipal: Decimal,
+        remainingPrincipal: Decimal? = nil,
+        interestRateAnnual: Decimal = 0,
+        interestRateHistory: [RateChange]? = nil,
+        totalInterestPaid: Decimal = 0,
+        termMonths: Int,
+        startDate: String,
+        endDate: String? = nil,
+        monthlyPayment: Decimal? = nil,
+        paymentDay: Int,
+        paymentsMade: Int = 0,
+        lastPaymentDate: String? = nil,
+        lastReconciliationDate: String? = nil,
+        earlyRepayments: [EarlyRepayment] = []
+    ) {
+        self.bankName = bankName
+        self.loanType = loanType
+        self.originalPrincipal = originalPrincipal
+        self.remainingPrincipal = remainingPrincipal ?? originalPrincipal
+        self.interestRateAnnual = interestRateAnnual
+        self.interestRateHistory = interestRateHistory ?? [RateChange(
+            effectiveFrom: startDate,
+            annualRate: interestRateAnnual
+        )]
+        self.totalInterestPaid = totalInterestPaid
+        self.termMonths = termMonths
+        self.startDate = startDate
+
+        // Вычисляем дату окончания если не передана
+        if let end = endDate {
+            self.endDate = end
+        } else {
+            let calendar = Calendar.current
+            if let start = DateFormatters.dateFormatter.date(from: startDate),
+               let end = calendar.date(byAdding: .month, value: termMonths, to: start) {
+                self.endDate = DateFormatters.dateFormatter.string(from: end)
+            } else {
+                self.endDate = DateFormatters.dateFormatter.string(from: Date())
+            }
+        }
+
+        // Вычисляем ежемесячный платёж если не передан
+        if let payment = monthlyPayment {
+            self.monthlyPayment = payment
+        } else {
+            self.monthlyPayment = LoanPaymentService.calculateMonthlyPayment(
+                principal: originalPrincipal,
+                annualRate: interestRateAnnual,
+                termMonths: termMonths
+            )
+        }
+
+        self.paymentDay = paymentDay
+        self.paymentsMade = paymentsMade
+        self.lastPaymentDate = lastPaymentDate
+        self.lastReconciliationDate = lastReconciliationDate ?? DateFormatters.dateFormatter.string(from: Date())
+        self.earlyRepayments = earlyRepayments
+    }
+}
+
 struct Account: Identifiable, Codable, Equatable, Hashable {
     let id: String
     var name: String
     var currency: String
     var iconSource: IconSource? // Unified icon/logo source (SF Symbol, BankLogo, logo.dev)
     var depositInfo: DepositInfo? // Опциональная информация о депозите (nil для обычных счетов)
+    var loanInfo: LoanInfo? // Опциональная информация о кредите/рассрочке (nil для обычных счетов)
     var createdDate: Date?
     var shouldCalculateFromTransactions: Bool // Режим расчета баланса: true = из транзакций, false = manual
     var initialBalance: Double?  // Начальный баланс при создании счёта (задаётся один раз, не меняется)
     var balance: Double          // Текущий баланс (обновляется BalanceCoordinator инкрементально)
     var order: Int? // Order for displaying accounts
 
-    init(id: String = UUID().uuidString, name: String, currency: String, iconSource: IconSource? = nil, depositInfo: DepositInfo? = nil, createdDate: Date? = nil, shouldCalculateFromTransactions: Bool = false, initialBalance: Double? = nil, balance: Double? = nil, order: Int? = nil) {
+    init(id: String = UUID().uuidString, name: String, currency: String, iconSource: IconSource? = nil, depositInfo: DepositInfo? = nil, loanInfo: LoanInfo? = nil, createdDate: Date? = nil, shouldCalculateFromTransactions: Bool = false, initialBalance: Double? = nil, balance: Double? = nil, order: Int? = nil) {
         self.id = id
         self.name = name
         self.currency = currency
         self.iconSource = iconSource
         self.depositInfo = depositInfo
+        self.loanInfo = loanInfo
         self.createdDate = createdDate ?? Date()
         self.shouldCalculateFromTransactions = shouldCalculateFromTransactions
         let resolvedInitial = initialBalance ?? (shouldCalculateFromTransactions ? 0.0 : nil)
@@ -264,7 +387,7 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
 
     // Кастомный decoder для обратной совместимости со старыми данными
     enum CodingKeys: String, CodingKey {
-        case id, name, balance, currency, bankLogo, iconSource, depositInfo, createdDate, shouldCalculateFromTransactions, initialBalance, order
+        case id, name, balance, currency, bankLogo, iconSource, depositInfo, loanInfo, createdDate, shouldCalculateFromTransactions, initialBalance, order
     }
 
     init(from decoder: Decoder) throws {
@@ -283,6 +406,7 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
         }
 
         depositInfo = try container.decodeIfPresent(DepositInfo.self, forKey: .depositInfo)
+        loanInfo = try container.decodeIfPresent(LoanInfo.self, forKey: .loanInfo)
         createdDate = try container.decodeIfPresent(Date.self, forKey: .createdDate)
         shouldCalculateFromTransactions = try container.decodeIfPresent(Bool.self, forKey: .shouldCalculateFromTransactions) ?? false
 
@@ -309,6 +433,7 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
         try container.encode(currency, forKey: .currency)
         try container.encodeIfPresent(iconSource, forKey: .iconSource)
         try container.encodeIfPresent(depositInfo, forKey: .depositInfo)
+        try container.encodeIfPresent(loanInfo, forKey: .loanInfo)
         try container.encodeIfPresent(createdDate, forKey: .createdDate)
         try container.encode(shouldCalculateFromTransactions, forKey: .shouldCalculateFromTransactions)
         try container.encodeIfPresent(initialBalance, forKey: .initialBalance)
@@ -319,5 +444,10 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
     // Computed property для проверки, является ли счет депозитом
     var isDeposit: Bool {
         depositInfo != nil
+    }
+
+    // Computed property для проверки, является ли счет кредитом/рассрочкой
+    var isLoan: Bool {
+        loanInfo != nil
     }
 }

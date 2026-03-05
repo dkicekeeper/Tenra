@@ -97,7 +97,7 @@ class CSVExporter {
 
     // MARK: - Type Export Name
 
-    /// Maps all 6 TransactionTypes to stable export strings
+    /// Maps all TransactionTypes to stable export strings
     private static func exportTypeName(_ type: TransactionType) -> String {
         switch type {
         case .expense: return "expense"
@@ -106,6 +106,8 @@ class CSVExporter {
         case .depositTopUp: return "deposit_topup"
         case .depositWithdrawal: return "deposit_withdrawal"
         case .depositInterestAccrual: return "deposit_interest"
+        case .loanPayment: return "loan_payment"
+        case .loanEarlyRepayment: return "loan_early_repayment"
         }
     }
 

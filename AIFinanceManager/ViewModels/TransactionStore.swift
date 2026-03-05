@@ -768,8 +768,9 @@ final class TransactionStore {
                 totalInternal += amountInBase
             case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
                 // Deposit transactions - handle separately
-                // For now, treat like internal transfers
                 totalInternal += amountInBase
+            case .loanPayment, .loanEarlyRepayment:
+                totalExpenses += amountInBase
             }
 
             // Track date range

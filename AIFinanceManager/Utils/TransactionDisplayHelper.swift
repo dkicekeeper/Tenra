@@ -34,6 +34,8 @@ enum TransactionDisplayHelper {
             return .green
         case .depositWithdrawal:
             return .primary
+        case .loanPayment, .loanEarlyRepayment:
+            return .primary
         }
     }
 
@@ -69,6 +71,8 @@ enum TransactionDisplayHelper {
         case .depositTopUp, .depositInterestAccrual:
             return "+"
         case .depositWithdrawal:
+            return "-"
+        case .loanPayment, .loanEarlyRepayment:
             return "-"
         }
     }

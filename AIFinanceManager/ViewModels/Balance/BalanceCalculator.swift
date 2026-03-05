@@ -70,6 +70,13 @@ actor BalanceCalculator {
             case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
                 break
 
+            case .loanPayment, .loanEarlyRepayment:
+                if let accountId = tx.accountId {
+                    guard !accountsToSkip.contains(accountId) else { continue }
+                    let amountToUse = tx.convertedAmount ?? tx.amount
+                    balanceChanges[accountId, default: 0] -= amountToUse
+                }
+
             case .internalTransfer:
                 // Handle source account
                 if let sourceId = tx.accountId {
@@ -141,6 +148,11 @@ actor BalanceCalculator {
 
             case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
                 break
+
+            case .loanPayment, .loanEarlyRepayment:
+                if tx.accountId == accountId {
+                    balance -= tx.convertedAmount ?? tx.amount
+                }
             }
         }
 
@@ -179,6 +191,11 @@ actor BalanceCalculator {
 
             case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
                 break
+
+            case .loanPayment, .loanEarlyRepayment:
+                if tx.accountId == accountId {
+                    sum -= tx.convertedAmount ?? tx.amount
+                }
             }
         }
 

@@ -46,7 +46,10 @@ struct CSVColumnMapping {
         // Deposit types (exported by CSVExporter)
         "deposit_topup": .depositTopUp,
         "deposit_withdrawal": .depositWithdrawal,
-        "deposit_interest": .depositInterestAccrual
+        "deposit_interest": .depositInterestAccrual,
+        // Loan types (exported by CSVExporter)
+        "loan_payment": .loanPayment,
+        "loan_early_repayment": .loanEarlyRepayment
     ]
 }
 

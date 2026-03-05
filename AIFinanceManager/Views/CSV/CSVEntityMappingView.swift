@@ -205,7 +205,8 @@ struct CSVEntityMappingView: View {
             case .income:
                 if !targetVal.isEmpty { accountSet.insert(targetVal) }
                 if !accountVal.isEmpty { incomeCategorySet.insert(accountVal) }
-            case .expense, .internalTransfer, .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
+            case .expense, .internalTransfer, .depositTopUp, .depositWithdrawal, .depositInterestAccrual,
+                 .loanPayment, .loanEarlyRepayment:
                 if !accountVal.isEmpty, !reserved.contains(accountVal.lowercased()) { accountSet.insert(accountVal) }
                 if type == .expense, !categoryVal.isEmpty { expenseCategorySet.insert(categoryVal) }
             case .none:

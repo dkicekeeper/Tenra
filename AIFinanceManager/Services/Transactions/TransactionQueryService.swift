@@ -66,10 +66,12 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
                     totalInternal += amountInBaseCurrency
                 case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
                     break
+                case .loanPayment, .loanEarlyRepayment:
+                    totalExpenses += amountInBaseCurrency
                 }
             } else {
                 // Calculate planned amount from future expense transactions
-                if transaction.type == .expense {
+                if transaction.type == .expense || transaction.type == .loanPayment {
                     plannedExpenses += amountInBaseCurrency
                 }
             }

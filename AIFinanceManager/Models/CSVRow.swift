@@ -66,7 +66,8 @@ struct CSVRow {
     /// - Transfer: uses rawAccountValue
     var effectiveAccountValue: String {
         switch type {
-        case .expense, .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
+        case .expense, .depositTopUp, .depositWithdrawal, .depositInterestAccrual,
+             .loanPayment, .loanEarlyRepayment:
             return rawAccountValue
 
         case .income:
@@ -89,7 +90,8 @@ struct CSVRow {
     /// - Transfer: empty (will use default localized "Transfer")
     var effectiveCategoryValue: String {
         switch type {
-        case .expense, .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
+        case .expense, .depositTopUp, .depositWithdrawal, .depositInterestAccrual,
+             .loanPayment, .loanEarlyRepayment:
             return rawCategoryValue
 
         case .income:

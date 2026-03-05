@@ -41,6 +41,15 @@ extension AccountEntity {
             depositInfo = nil
         }
 
+        // Decode full LoanInfo from JSON data (v6+)
+        let loanInfo: LoanInfo?
+        if let data = loanInfoData,
+           let decoded = try? JSONDecoder().decode(LoanInfo.self, from: data) {
+            loanInfo = decoded
+        } else {
+            loanInfo = nil
+        }
+
         // `balance`        — current running balance, updated by BalanceCoordinator on every mutation
         // `initialBalance` — balance at account creation, stored once and never overwritten
         //
@@ -56,6 +65,7 @@ extension AccountEntity {
             currency: currency ?? "KZT",
             iconSource: iconSource,
             depositInfo: depositInfo,
+            loanInfo: loanInfo,
             createdDate: createdAt,
             shouldCalculateFromTransactions: shouldCalculateFromTransactions,
             initialBalance: resolvedInitialBalance,
@@ -90,7 +100,8 @@ extension AccountEntity {
         }
 
         entity.isDeposit = account.isDeposit
-        entity.bankName = account.depositInfo?.bankName
+        entity.isLoan = account.isLoan
+        entity.bankName = account.depositInfo?.bankName ?? account.loanInfo?.bankName
         entity.createdAt = account.createdDate ?? Date()
         entity.shouldCalculateFromTransactions = account.shouldCalculateFromTransactions
 
@@ -100,6 +111,14 @@ extension AccountEntity {
             entity.depositInfoData = encoded
         } else {
             entity.depositInfoData = nil
+        }
+
+        // Encode full LoanInfo as JSON (v6+)
+        if let loanInfo = account.loanInfo,
+           let encoded = try? JSONEncoder().encode(loanInfo) {
+            entity.loanInfoData = encoded
+        } else {
+            entity.loanInfoData = nil
         }
 
         return entity

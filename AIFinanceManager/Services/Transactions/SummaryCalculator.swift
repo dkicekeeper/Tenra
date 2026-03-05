@@ -85,9 +85,11 @@ enum SummaryCalculator {
                     totalInternal += amountInBase
                 case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
                     break
+                case .loanPayment, .loanEarlyRepayment:
+                    totalExpenses += amountInBase
                 }
             } else {
-                if tx.type == .expense {
+                if tx.type == .expense || tx.type == .loanPayment {
                     plannedExpenses += amountInBase
                 }
             }

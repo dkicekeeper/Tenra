@@ -116,6 +116,12 @@ struct BalanceCalculationEngine {
             case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
                 // Handled by deposit-specific logic
                 break
+
+            case .loanPayment, .loanEarlyRepayment:
+                // Loan payments reduce the paying account balance (treated as expense)
+                if tx.accountId == accountId {
+                    balance -= getTransactionAmount(tx, for: accountCurrency)
+                }
             }
         }
 
@@ -163,6 +169,9 @@ struct BalanceCalculationEngine {
 
         case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
             return currentBalance
+
+        case .loanPayment, .loanEarlyRepayment:
+            return currentBalance - getTransactionAmount(transaction, for: account.currency)
         }
     }
 
@@ -199,6 +208,9 @@ struct BalanceCalculationEngine {
 
         case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
             return currentBalance
+
+        case .loanPayment, .loanEarlyRepayment:
+            return currentBalance + getTransactionAmount(transaction, for: account.currency)
         }
     }
 
@@ -279,6 +291,12 @@ struct BalanceCalculationEngine {
 
         case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
             break
+
+        case .loanPayment, .loanEarlyRepayment:
+            // Loan payments are expenses from the paying account
+            if transaction.accountId == accountId {
+                return -sign * getTransactionAmount(transaction, for: accountCurrency)
+            }
         }
 
         return 0
@@ -361,6 +379,11 @@ struct BalanceCalculationEngine {
                 }
             case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
                 break
+
+            case .loanPayment, .loanEarlyRepayment:
+                if tx.accountId == accountId {
+                    transactionsSum -= getTransactionAmount(tx, for: accountCurrency)
+                }
             }
         }
 

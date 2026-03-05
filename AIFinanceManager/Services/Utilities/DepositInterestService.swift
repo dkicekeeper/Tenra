@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import CoreData
 
 enum DepositInterestService {
 
@@ -218,16 +217,12 @@ enum DepositInterestService {
         let monthStart = calendar.date(from: components)!
         let monthStartString = DateFormatters.dateFormatter.string(from: monthStart)
 
-        // Idempotency check via CoreData — allTransactions is windowed so cannot be used
-        let context = CoreDataStack.shared.viewContext
-        let existsRequest = TransactionEntity.fetchRequest()
-        existsRequest.predicate = NSPredicate(
-            format: "accountId == %@ AND type == %@ AND date >= %@",
-            account.id, "depositInterestAccrual", monthStartString
-        )
-        existsRequest.fetchLimit = 1
-        existsRequest.includesPropertyValues = false
-        let alreadyPosted = (try? context.fetch(existsRequest).isEmpty == false) ?? false
+        // Idempotency check — in-memory (TransactionStore loads all transactions since Phase 16)
+        let alreadyPosted = allTransactions.contains { tx in
+            tx.accountId == account.id
+            && tx.type == .depositInterestAccrual
+            && tx.date >= monthStartString
+        }
         if alreadyPosted {
             return
         }

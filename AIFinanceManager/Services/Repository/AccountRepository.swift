@@ -233,6 +233,14 @@ final class AccountRepository: AccountRepositoryProtocol {
                     existing.isDeposit = account.isDeposit
                     existing.bankName = account.depositInfo?.bankName
                     existing.shouldCalculateFromTransactions = account.shouldCalculateFromTransactions
+
+                    // Encode full DepositInfo as JSON (v5+)
+                    if let depositInfo = account.depositInfo,
+                       let encoded = try? JSONEncoder().encode(depositInfo) {
+                        existing.depositInfoData = encoded
+                    } else {
+                        existing.depositInfoData = nil
+                    }
                 }
             } else {
                 // Create new

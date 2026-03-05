@@ -122,8 +122,19 @@ AIFinanceManager/
 - `extendAllActiveSeriesHorizons()` called on `loadData` and foreground resume
 - `isActive: Bool` gates occurrence generation; `status: SubscriptionStatus?` controls Pause/Resume UI — both must be updated in tandem by `stopSeries`/`resumeSeries`
 
+#### Deposits — Interest Accrual & Capitalization
+- `Account.isDeposit` is a **computed property** (`depositInfo != nil`), not a stored flag
+- `DepositInfo` persisted via `depositInfoData: Data?` (JSON-encoded Binary) on `AccountEntity` (CoreData v5)
+- Interest formula: `principalBalance × (rate/100) / 365` per day — simple daily, compound monthly at posting
+- `DepositInterestService.reconcileDepositInterest()`: triggered on view appear (`.task {}`), walks days since `lastInterestCalculationDate`, creates `.depositInterestAccrual` transaction on posting day
+- Capitalization: if enabled → `principalBalance += postedAmount`; if disabled → `interestAccruedNotCapitalized += postedAmount`
+- `calculateInterestToToday()`: read-only calculation for UI display (no side effects)
+- **Account → Deposit conversion**: `DepositEditView` handles 3 modes (new, edit, convert) via `isConverting` computed property
+- **⚠️ Initial date computation**: New/converted deposits MUST use `DepositEditView.computeInitialDates(postingDay:)` to set `lastInterestCalculationDate` to the most recent posting date — otherwise interest shows 0 (default is today → `calculateInterestToToday()` loop never executes)
+- **⚠️ Don't decompose Account for addDeposit**: Use `AccountsViewModel.addDepositAccount(_ account:)` to preserve computed DepositInfo dates. Decomposing into fields loses `lastInterestCalculationDate`/`lastInterestPostingMonth`.
+
 ### Current State
-- CoreData v4 model (`recurringSeriesId` String on `TransactionEntity` — survives entity deletion)
+- CoreData v5 model (`depositInfoData` on AccountEntity, `recurringSeriesId` String on `TransactionEntity`)
 - Old aggregate entities (`MonthlyAggregateEntity`, `CategoryAggregateEntity`) remain in `.xcdatamodeld` but are not read/written
 - ContentView reactivity via `.task(id: SummaryTrigger)` — no manual `onChange` chains
 - Per-element skeleton loading during initialization (`SkeletonLoadingModifier`)
@@ -519,6 +530,6 @@ Key references: `docs/PROJECT_BIBLE.md`, `docs/ARCHITECTURE_FINAL_STATE.md`, `do
 
 ---
 
-**Last Updated**: 2026-03-05
+**Last Updated**: 2026-03-06
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns enforced via `SWIFT_STRICT_CONCURRENCY = targeted`

@@ -51,7 +51,21 @@ struct AccountRow: View {
                             color: .secondary
                         )
 
-                        if let interest = interestToday, interest > 0 {
+                        if let interest = interestToday, interest > 0, let posting = nextPostingDate {
+                            HStack(spacing: 0) {
+                                let dateString = DateFormatters.displayDateFormatter.string(from: posting)
+                                Text(String(format: String(localized: "account.postingWithInterest", defaultValue: "Posting: %@  ·  "), dateString))
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(.secondary)
+
+                                FormattedAmountText(
+                                    amount: interest,
+                                    currency: account.currency,
+                                    fontSize: AppTypography.caption,
+                                    color: AppColors.planned
+                                )
+                            }
+                        } else if let interest = interestToday, interest > 0 {
                             HStack(spacing: 0) {
                                 Text(String(localized: "account.interestTodayPrefix", defaultValue: "Interest today: "))
                                     .font(AppTypography.caption)
@@ -61,12 +75,10 @@ struct AccountRow: View {
                                     amount: interest,
                                     currency: account.currency,
                                     fontSize: AppTypography.caption,
-                                    color: .secondary
+                                    color: AppColors.planned
                                 )
                             }
-                        }
-
-                        if let posting = nextPostingDate {
+                        } else if let posting = nextPostingDate {
                             let dateString = DateFormatters.displayDateFormatter.string(from: posting)
                             Text(String(format: String(localized: "account.nextPosting"), dateString))
                                 .font(AppTypography.caption)

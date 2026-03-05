@@ -254,9 +254,15 @@ struct DepositDetailView: View {
 
             // Interest info — uses view-level computed property (computed once per body pass)
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text(String(localized: "deposit.interestToday"))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
+                if let nextPosting = nextPosting {
+                    Text(String(format: String(localized: "deposit.postingWithDate", defaultValue: "Posting: %@"), formatDate(nextPosting)))
+                        .font(AppTypography.bodySmall)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(String(localized: "deposit.interestToday"))
+                        .font(AppTypography.bodySmall)
+                        .foregroundStyle(.secondary)
+                }
                 FormattedAmountText(
                     amount: NSDecimalNumber(decimal: interestToToday).doubleValue,
                     currency: account.currency,
@@ -283,14 +289,6 @@ struct DepositDetailView: View {
                 label: String(localized: "deposit.postingDay"),
                 value: "\(depositInfo.interestPostingDay)"
             )
-
-            if let nextPosting = nextPosting {
-                InfoRow(
-                    icon: "calendar.badge.clock",
-                    label: String(localized: "deposit.nextPosting"),
-                    value: formatDate(nextPosting)
-                )
-            }
         }
         .cardStyle()
     }

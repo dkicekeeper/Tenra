@@ -137,10 +137,27 @@ class AccountsViewModel {
     
     // MARK: - Deposit Operations
     
+    /// Add a fully-formed deposit Account (preserves computed dates in DepositInfo)
+    func addDepositAccount(_ account: Account) {
+        guard account.isDeposit, let depositInfo = account.depositInfo else { return }
+
+        transactionStore?.addAccount(account)
+
+        let balance = NSDecimalNumber(decimal: depositInfo.principalBalance).doubleValue
+        if let coordinator = balanceCoordinator {
+            Task {
+                await coordinator.registerAccounts([account])
+                await coordinator.setInitialBalance(balance, for: account.id)
+                await coordinator.updateDepositInfo(account, depositInfo: depositInfo)
+            }
+        }
+    }
+
     func addDeposit(
         name: String,
         balance: Double,
         currency: String,
+        bankName: String,
         iconSource: IconSource? = nil,
         principalBalance: Decimal,
         capitalizationEnabled: Bool,
@@ -148,7 +165,7 @@ class AccountsViewModel {
         interestPostingDay: Int
     ) {
         let depositInfo = DepositInfo(
-            bankName: name, // Используем name как bankName
+            bankName: bankName,
             principalBalance: principalBalance,
             capitalizationEnabled: capitalizationEnabled,
             interestRateAnnual: interestRateAnnual,

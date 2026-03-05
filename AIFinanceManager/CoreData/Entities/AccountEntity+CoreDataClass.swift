@@ -32,13 +32,13 @@ extension AccountEntity {
             iconSource = nil
         }
 
-        // For now, depositInfo is nil because it's not stored in AccountEntity
-        // This can be extended later if needed
-        let depositInfo: DepositInfo? = nil
-        if isDeposit {
-            // Note: We don't have all DepositInfo fields in AccountEntity
-            // This is a simplified conversion - full depositInfo would need additional fields
-            // For now, we'll return nil and handle deposits separately if needed
+        // Decode full DepositInfo from JSON data (v5+)
+        let depositInfo: DepositInfo?
+        if let data = depositInfoData,
+           let decoded = try? JSONDecoder().decode(DepositInfo.self, from: data) {
+            depositInfo = decoded
+        } else {
+            depositInfo = nil
         }
 
         // `balance`        — current running balance, updated by BalanceCoordinator on every mutation
@@ -92,9 +92,16 @@ extension AccountEntity {
         entity.isDeposit = account.isDeposit
         entity.bankName = account.depositInfo?.bankName
         entity.createdAt = account.createdDate ?? Date()
-        entity.shouldCalculateFromTransactions = account.shouldCalculateFromTransactions  // ✨ Phase 10: Save calculation mode
-        // Note: depositInfo details are not stored in AccountEntity
-        // This would need to be extended if full deposit support is required
+        entity.shouldCalculateFromTransactions = account.shouldCalculateFromTransactions
+
+        // Encode full DepositInfo as JSON (v5+)
+        if let depositInfo = account.depositInfo,
+           let encoded = try? JSONEncoder().encode(depositInfo) {
+            entity.depositInfoData = encoded
+        } else {
+            entity.depositInfoData = nil
+        }
+
         return entity
     }
 }

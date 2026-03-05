@@ -51,6 +51,7 @@ class DepositsViewModel {
             name: name,
             balance: NSDecimalNumber(decimal: principalBalance).doubleValue,
             currency: currency,
+            bankName: bankName,
             iconSource: iconSource,
             principalBalance: principalBalance,
             capitalizationEnabled: capitalizationEnabled,

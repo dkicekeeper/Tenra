@@ -23,6 +23,7 @@ extension AccountEntity {
     @NSManaged public var bankName: String?
     @NSManaged public var createdAt: Date?
     @NSManaged public var currency: String?
+    @NSManaged public var depositInfoData: Data?  // Stores full DepositInfo as JSON (v5)
     @NSManaged public var id: String?
     @NSManaged public var isDeposit: Bool
     @NSManaged public var logo: String?  // Deprecated: Use iconSourceData instead

@@ -19,6 +19,7 @@ struct AccountsManagementView: View {
     @State private var editingAccount: Account?
     @State private var accountToDelete: Account?
     @State private var showingAccountDeleteDialog = false
+    @State private var convertingAccount: Account?
     @State private var isReordering = false
 
     // Кешируем baseCurrency для оптимизации
@@ -79,6 +80,30 @@ struct AccountsManagementView: View {
                             interestToday: depositsViewModel.interestToday(for: account),
                             nextPostingDate: depositsViewModel.nextPostingDate(for: account)
                         )
+                        .contextMenu {
+                            Button {
+                                editingAccount = account
+                            } label: {
+                                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                            }
+
+                            if !account.isDeposit {
+                                Button {
+                                    HapticManager.light()
+                                    convertingAccount = account
+                                } label: {
+                                    Label(String(localized: "account.convertToDeposit", defaultValue: "Convert to Deposit"), systemImage: "banknote")
+                                }
+                            }
+
+                            Button(role: .destructive) {
+                                HapticManager.warning()
+                                accountToDelete = account
+                                showingAccountDeleteDialog = true
+                            } label: {
+                                Label(String(localized: "button.delete"), systemImage: "trash")
+                            }
+                        }
                     }
                     .onMove(perform: isReordering ? moveAccount : nil)
                 }
@@ -170,31 +195,21 @@ struct AccountsManagementView: View {
                 depositsViewModel: depositsViewModel,
                 account: nil,
                 onSave: { account in
-                    if let depositInfo = account.depositInfo {
-                        HapticManager.success()
-                        depositsViewModel.addDeposit(
-                            name: account.name,
-                            currency: account.currency,
-                            bankName: depositInfo.bankName,
-                            iconSource: account.iconSource,
-                            principalBalance: depositInfo.principalBalance,
-                            interestRateAnnual: depositInfo.interestRateAnnual,
-                            interestPostingDay: depositInfo.interestPostingDay,
-                            capitalizationEnabled: depositInfo.capitalizationEnabled
-                        )
-                        depositsViewModel.reconcileAllDeposits(
-                            allTransactions: transactionsViewModel.allTransactions,
-                            onTransactionCreated: { transaction in
-                                Task {
-                                    do {
-                                        _ = try await transactionStore.add(transaction)
-                                    } catch {
-                                        logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
-                                    }
+                    guard account.isDeposit else { return }
+                    HapticManager.success()
+                    accountsViewModel.addDepositAccount(account)
+                    depositsViewModel.reconcileAllDeposits(
+                        allTransactions: transactionsViewModel.allTransactions,
+                        onTransactionCreated: { transaction in
+                            Task {
+                                do {
+                                    _ = try await transactionStore.add(transaction)
+                                } catch {
+                                    logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
                                 }
                             }
-                        )
-                    }
+                        }
+                    )
                     showingAddDeposit = false
                 }
             )
@@ -227,6 +242,29 @@ struct AccountsManagementView: View {
                     )
                 }
             }
+        }
+        .sheet(item: $convertingAccount) { account in
+            DepositEditView(
+                depositsViewModel: depositsViewModel,
+                account: account,
+                onSave: { updatedAccount in
+                    HapticManager.success()
+                    accountsViewModel.updateDeposit(updatedAccount)
+                    depositsViewModel.reconcileAllDeposits(
+                        allTransactions: transactionsViewModel.allTransactions,
+                        onTransactionCreated: { transaction in
+                            Task {
+                                do {
+                                    _ = try await transactionStore.add(transaction)
+                                } catch {
+                                    logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
+                                }
+                            }
+                        }
+                    )
+                    convertingAccount = nil
+                }
+            )
         }
         .alert(String(localized: "account.deleteTitle"), isPresented: $showingAccountDeleteDialog, presenting: accountToDelete) { account in
             Button(String(localized: "button.cancel"), role: .cancel) {

@@ -57,6 +57,7 @@ struct SettingsView: View {
                 generalSection
                 dataManagementSection
                 exportImportSection
+                experimentsSection
                 dangerZoneSection
             }
             .navigationTitle(String(localized: "settings.title"))
@@ -178,6 +179,16 @@ struct SettingsView: View {
                 showingImportPicker = true
             }
         )
+    }
+
+    private var experimentsSection: some View {
+        Section {
+            NavigationLink {
+                ExperimentsListView()
+            } label: {
+                Label("Эксперименты", systemImage: "flask")
+            }
+        }
     }
 
     private var dangerZoneSection: some View {

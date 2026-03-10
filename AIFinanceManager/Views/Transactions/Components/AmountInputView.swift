@@ -141,12 +141,12 @@ struct AmountInputView: View {
                     Text(formatConvertedAmount(converted))
                         .font(AppTypography.h4)
                         .fontWeight(.medium)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.textSecondaryAccessible)
 
                     Text(Formatting.currencySymbol(for: baseCurrency))
                         .font(AppTypography.h4)
                         .fontWeight(.medium)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.textSecondaryAccessible)
                 } else {
                     ProgressView()
                         .scaleEffect(0.6)

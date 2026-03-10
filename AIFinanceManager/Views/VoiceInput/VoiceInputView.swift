@@ -174,7 +174,7 @@ struct VoiceInputView: View {
                 Spacer()
             }
             .padding(.bottom, AppSpacing.xl)
-            .background(Color(.systemBackground))
+            .background(AppColors.backgroundPrimary)
         }
     }
 

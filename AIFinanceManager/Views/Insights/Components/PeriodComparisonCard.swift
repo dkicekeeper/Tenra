@@ -50,7 +50,7 @@ struct PeriodComparisonCard: View {
                     currency: currency,
                     fontSize: AppTypography.h3,
                     fontWeight: .semibold,
-                    color: AppColors.textSecondary
+                    color: AppColors.textSecondaryAccessible
                 )
             }
 

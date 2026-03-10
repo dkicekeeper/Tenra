@@ -47,7 +47,7 @@ private struct GranularityChip: View {
                     .font(AppTypography.bodySmall)
                     .fontWeight(isSelected ? .semibold : .regular)
             }
-            .foregroundStyle(isSelected ? Color.white : AppColors.textPrimary)
+            .foregroundStyle(isSelected ? AppColors.staticWhite : AppColors.textPrimary)
             .padding(.horizontal, AppSpacing.md)
             .padding(.vertical, AppSpacing.sm)
             .background(
@@ -55,7 +55,7 @@ private struct GranularityChip: View {
                     if isSelected {
                         AppColors.accent
                     } else {
-                        AppColors.cardBackground
+                        AppColors.surface
                     }
                 }
                 .clipShape(Capsule())

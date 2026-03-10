@@ -70,7 +70,7 @@ struct CategoryChip: View {
                             )
                     } else {
                         Circle()
-                            .fill(isSelected ? styleData.coinColor.opacity(0.2) : Color(.systemGray6))
+                            .fill(isSelected ? styleData.coinColor.opacity(0.2) : AppColors.secondaryBackground)
                             .frame(width: AppIconSize.coin, height: AppIconSize.coin)
                             .overlay(
                                 Image(systemName: styleData.iconName)

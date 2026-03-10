@@ -1,10 +1,10 @@
 //
-//  EditTransactionCoordinator.swift
+//  TransactionEditCoordinator.swift
 //  AIFinanceManager
 //
-//  Phase 16 (2026-02-17): Coordinator for EditTransactionView.
+//  Phase 16 (2026-02-17): Coordinator for TransactionEditView.
 //  Consolidates 12 @State variables into a single @Observable coordinator,
-//  consistent with AddTransactionCoordinator architecture.
+//  consistent with TransactionAddCoordinator architecture.
 //
 
 import Foundation
@@ -30,11 +30,11 @@ struct EditTransactionFormData {
     var showingRecurringDisableDialog: Bool = false
 }
 
-// MARK: - EditTransactionCoordinator
+// MARK: - TransactionEditCoordinator
 
 @Observable
 @MainActor
-final class EditTransactionCoordinator {
+final class TransactionEditCoordinator {
 
     // MARK: - Dependencies
 

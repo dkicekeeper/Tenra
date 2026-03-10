@@ -42,7 +42,7 @@ private struct SubscriptionIconView: View {
         .clipShape(Circle())
         .overlay(
             Circle()
-                .stroke(Color(.systemBackground), lineWidth: 2)
+                .stroke(AppColors.backgroundPrimary, lineWidth: 2)
         )
     }
 }

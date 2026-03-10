@@ -101,32 +101,28 @@ struct SubscriptionEditView: View {
                         String(localized: "category.selectCategory") : nil
                     )
 
-                    // Additional Settings
-                    VStack(spacing: AppSpacing.md) {
-                        // Frequency
+                    // Schedule & reminders
+                    FormSection(header: String(localized: "subscription.scheduleSection", defaultValue: "Schedule")) {
                         MenuPickerRow(
                             icon: "arrow.triangle.2.circlepath",
                             title: String(localized: "common.frequency"),
                             selection: $selectedFrequency
                         )
                         Divider()
-                        
-                        // Start Date
+
                         DatePickerRow(
                             icon: "calendar",
                             title: String(localized: "common.startDate"),
                             selection: $startDate
                         )
                         Divider()
-                        
-                        // Reminder
+
                         MenuPickerRow(
                             icon: "bell",
                             title: String(localized: "subscription.reminders"),
                             selection: $reminder
                         )
                     }
-                    .cardStyle()
                 }
                 .padding(.horizontal, AppSpacing.lg)
             }

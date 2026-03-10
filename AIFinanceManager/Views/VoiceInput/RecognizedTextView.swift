@@ -107,7 +107,7 @@ struct RecognizedTextView: View {
             .navigationBarTitleDisplayMode(.inline)
             .overlay {
                 if isParsing {
-                    Color(.systemBackground).opacity(0.6)
+                    AppColors.backgroundPrimary.opacity(0.6)
                         .ignoresSafeArea()
                     ProgressView(String(localized: "progress.parsingStatement"))
                         .cardContentPadding()

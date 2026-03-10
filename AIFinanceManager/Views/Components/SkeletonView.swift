@@ -15,7 +15,7 @@ struct SkeletonShimmerModifier: ViewModifier {
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var phase: CGFloat = -0.5
+    @State private var phase: CGFloat = -2.5
     @State private var isAnimating = false
 
     func body(content: Content) -> some View {

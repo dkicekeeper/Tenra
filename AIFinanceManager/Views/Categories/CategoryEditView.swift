@@ -66,53 +66,50 @@ struct CategoryEditView: View {
 
                     // Budget Settings Section (expense categories only)
                     if type == .expense {
-                        BudgetSettingsSection(
-                            budgetAmount: $budgetAmount,
-                            selectedPeriod: $selectedPeriod,
-                            resetDay: $resetDay
-                        )
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            HStack {
+                                SectionHeaderView(
+                                    String(localized: "category.budget", defaultValue: "Budget"),
+                                    style: .default
+                                )
+                                Spacer()
+                            }
+                            BudgetSettingsSection(
+                                budgetAmount: $budgetAmount,
+                                selectedPeriod: $selectedPeriod,
+                                resetDay: $resetDay
+                            )
+                        }
                     }
 
                     // Subcategories Section (edit mode only)
                     if let category = category {
-                        VStack(spacing: AppSpacing.md) {
-                            Text(String(localized: "category.subcategories"))
-                                .font(AppTypography.h4)
-                                .foregroundStyle(AppColors.textSecondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-
-                            VStack(spacing: AppSpacing.sm) {
-                                ForEach(linkedSubcategories) { subcategory in
-                                    HStack {
-                                        Text(subcategory.name)
-                                        Spacer()
-                                        Button(action: {
-                                            HapticManager.light()
-                                            categoriesViewModel.unlinkSubcategoryFromCategory(subcategoryId: subcategory.id, categoryId: category.id)
-                                        }) {
-                                            Image(systemName: "xmark.circle.fill")
-                                                .foregroundStyle(AppColors.destructive)
-                                        }
+                        FormSection(header: String(localized: "category.subcategories")) {
+                            ForEach(linkedSubcategories) { subcategory in
+                                UniversalRow(config: .standard) {
+                                    Text(subcategory.name)
+                                        .font(AppTypography.body)
+                                        .foregroundStyle(AppColors.textPrimary)
+                                } trailing: {
+                                    Button(action: {
+                                        HapticManager.light()
+                                        categoriesViewModel.unlinkSubcategoryFromCategory(subcategoryId: subcategory.id, categoryId: category.id)
+                                    }) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(AppColors.destructive)
                                     }
-                                    .padding(AppSpacing.md)
-                                    .background(AppColors.surface)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.md))
                                 }
+                                Divider()
+                            }
 
-                                Button(action: {
-                                    HapticManager.light()
-                                    showingSubcategoryPicker = true
-                                }) {
-                                    HStack {
-                                        Image(systemName: "plus.circle.fill")
-                                        Text(String(localized: "category.addSubcategory"))
-                                    }
+                            UniversalRow(config: .standard, leadingIcon: .sfSymbol("plus.circle.fill", color: AppColors.accent)) {
+                                Text(String(localized: "category.addSubcategory"))
+                                    .font(AppTypography.body)
                                     .foregroundStyle(AppColors.accent)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(AppSpacing.md)
-                                    .background(AppColors.surface)
-                                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.md))
-                                }
+                            }
+                            .actionRow {
+                                HapticManager.light()
+                                showingSubcategoryPicker = true
                             }
                         }
                     }

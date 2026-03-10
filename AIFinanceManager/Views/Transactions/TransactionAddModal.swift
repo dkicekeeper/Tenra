@@ -1,18 +1,18 @@
 //
-//  AddTransactionModal.swift
+//  TransactionAddModal.swift
 //  AIFinanceManager
 //
-//  Modal form for adding a transaction from the QuickAdd category grid.
-//  Refactored to use AddTransactionCoordinator for business logic.
+//  Modal form for adding a transaction from the category picker grid.
+//  Refactored to use TransactionAddCoordinator for business logic.
 //
 
 import SwiftUI
 
-struct AddTransactionModal: View {
+struct TransactionAddModal: View {
 
     // MARK: - Coordinator
 
-    @State private var coordinator: AddTransactionCoordinator
+    @State private var coordinator: TransactionAddCoordinator
 
     // MARK: - Environment
 
@@ -47,7 +47,7 @@ struct AddTransactionModal: View {
         onDismiss: @escaping () -> Void
     ) {
         // ✅ REFACTORED: TransactionStore now passed directly, not via @EnvironmentObject
-        _coordinator = State(initialValue: AddTransactionCoordinator(
+        _coordinator = State(initialValue: TransactionAddCoordinator(
             category: category,
             type: type,
             currency: currency,
@@ -71,7 +71,7 @@ struct AddTransactionModal: View {
                         subcategorySearchSheet
                     }
             }
-            .navigationTitle(coordinator.formData.category)
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 toolbarContent
@@ -111,6 +111,12 @@ struct AddTransactionModal: View {
 
         return ScrollView {
             VStack(spacing: AppSpacing.lg) {
+                HeroSection(
+                    iconSource: categoryData?.iconSource,
+                    title: coordinator.formData.category,
+                    colorHex: categoryData?.colorHex
+                )
+
                 AmountInputView(
                     amount: $bindableCoordinator.formData.amountText,
                     selectedCurrency: $bindableCoordinator.formData.currency,
@@ -252,10 +258,14 @@ struct AddTransactionModal: View {
 
     // MARK: - Private Methods
 
-    private var categoryId: String? {
+    private var categoryData: CustomCategory? {
         coordinator.categoriesViewModel.customCategories.first {
             $0.name == coordinator.formData.category
-        }?.id
+        }
+    }
+
+    private var categoryId: String? {
+        categoryData?.id
     }
 
     private func saveTransaction() async {
@@ -280,7 +290,7 @@ struct AddTransactionModal: View {
 
 #Preview("Expense - Food") {
     let coordinator = AppCoordinator()
-    AddTransactionModal(
+    TransactionAddModal(
         category: "Food",
         type: .expense,
         currency: coordinator.transactionsViewModel.appSettings.baseCurrency,
@@ -297,7 +307,7 @@ struct AddTransactionModal: View {
 
 #Preview("Income - Salary") {
     let coordinator = AppCoordinator()
-    AddTransactionModal(
+    TransactionAddModal(
         category: "Salary",
         type: .income,
         currency: coordinator.transactionsViewModel.appSettings.baseCurrency,

@@ -81,88 +81,100 @@ struct LoanEditView: View {
                             .padding(.horizontal, AppSpacing.lg)
                     }
 
-                    // Loan details
-                    FormSection(style: .list) {
-                        // Bank name
-                        UniversalRow(config: .standard) {
-                            FormTextField(
-                                text: $bankName,
-                                placeholder: String(localized: "loan.bankPlaceholder", defaultValue: "Bank name"),
-                                style: .standard
+                    // Loan details: bank, type, interest rate
+                    FormSection(header: String(localized: "loan.detailsSection", defaultValue: "Loan Details")) {
+                        FormLabeledRow(
+                            icon: "building.columns",
+                            label: String(localized: "loan.bankPlaceholder", defaultValue: "Bank")
+                        ) {
+                            TextField(
+                                String(localized: "loan.bankPlaceholder", defaultValue: "Bank name"),
+                                text: $bankName
                             )
+                            .multilineTextAlignment(.trailing)
+                            .font(AppTypography.bodySmall)
                         }
 
                         Divider()
 
-                        // Loan type
-                        VStack(spacing: AppSpacing.sm) {
+                        // Loan type segmented picker
+                        VStack(alignment: .leading, spacing: AppSpacing.xs) {
                             Picker(String(localized: "loan.typePicker", defaultValue: "Type"), selection: $loanType) {
                                 Text(String(localized: "loan.typeAnnuity", defaultValue: "Annuity (Credit)")).tag(LoanType.annuity)
                                 Text(String(localized: "loan.typeInstallment", defaultValue: "Installment")).tag(LoanType.installment)
                             }
                             .pickerStyle(.segmented)
                             .disabled(isEditing)
-                            .padding(.horizontal, AppSpacing.md)
-                            .padding(.vertical, AppSpacing.sm)
 
                             if isEditing {
                                 Text(String(localized: "loan.typeLockedHint", defaultValue: "Loan type cannot be changed after creation"))
                                     .font(AppTypography.caption)
                                     .foregroundStyle(.secondary)
-                                    .padding(.horizontal, AppSpacing.md)
-                                    .padding(.bottom, AppSpacing.sm)
                             } else if loanType == .installment {
                                 Text(String(localized: "loan.installmentHint", defaultValue: "Installment = 0% interest, equal payments"))
                                     .font(AppTypography.caption)
                                     .foregroundStyle(.secondary)
-                                    .padding(.horizontal, AppSpacing.md)
-                                    .padding(.bottom, AppSpacing.sm)
                             }
                         }
+                        .padding(.vertical, AppSpacing.sm)
+                        .padding(.horizontal, AppSpacing.md)
 
-                        Divider()
-
-                        // Interest rate & term
                         if loanType == .annuity {
-                            UniversalRow(config: .standard, leadingIcon: .sfSymbol("percent", color: .secondary)) {
-                                FormTextField(
-                                    text: $interestRateText,
-                                    placeholder: "0.0",
-                                    style: .compact,
-                                    keyboardType: .decimalPad
-                                )
-                            } trailing: {
-                                Text(String(localized: "loan.rateAnnual", defaultValue: "% annual"))
-                                    .font(AppTypography.caption)
-                                    .foregroundStyle(.secondary)
-                            }
                             Divider()
-                        }
 
-                        UniversalRow(config: .standard, leadingIcon: .sfSymbol("clock", color: .secondary)) {
-                            FormTextField(
-                                text: $termMonthsText,
-                                placeholder: String(localized: "loan.termPlaceholder", defaultValue: "Number of months"),
-                                style: .compact,
-                                keyboardType: .numberPad
-                            )
-                        } trailing: {
-                            Text(String(localized: "loan.months", defaultValue: "months"))
-                                .font(AppTypography.caption)
-                                .foregroundStyle(.secondary)
+                            FormLabeledRow(
+                                icon: "percent",
+                                label: String(localized: "loan.rateAnnual", defaultValue: "Interest rate")
+                            ) {
+                                HStack(spacing: AppSpacing.xs) {
+                                    TextField("0.0", text: $interestRateText)
+                                        .keyboardType(.decimalPad)
+                                        .multilineTextAlignment(.trailing)
+                                        .font(AppTypography.bodySmall)
+                                        .frame(maxWidth: 80)
+                                    Text(String(localized: "loan.rateAnnual", defaultValue: "% annual"))
+                                        .font(AppTypography.caption)
+                                        .foregroundStyle(AppColors.textSecondary)
+                                }
+                            }
+                        }
+                    }
+
+                    // Loan schedule: term, payment day, start date
+                    FormSection(header: String(localized: "loan.scheduleSection", defaultValue: "Schedule")) {
+                        FormLabeledRow(
+                            icon: "clock",
+                            label: String(localized: "loan.termLabel", defaultValue: "Term")
+                        ) {
+                            HStack(spacing: AppSpacing.xs) {
+                                TextField("0", text: $termMonthsText)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .font(AppTypography.bodySmall)
+                                    .frame(maxWidth: 60)
+                                Text(String(localized: "loan.months", defaultValue: "months"))
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(AppColors.textSecondary)
+                            }
                         }
 
                         Divider()
 
-                        // Payment day
-                        MenuPickerRow(
+                        FormLabeledRow(
                             icon: "calendar.badge.clock",
-                            title: String(localized: "loan.paymentDay", defaultValue: "Day of month"),
-                            selection: $paymentDay,
-                            options: (1...31).map { ("\($0)", $0) }
-                        )
+                            label: String(localized: "loan.paymentDay", defaultValue: "Payment day")
+                        ) {
+                            HStack(spacing: AppSpacing.sm) {
+                                Text("\(paymentDay)")
+                                    .font(AppTypography.bodySmall)
+                                    .foregroundStyle(AppColors.textPrimary)
+                                    .frame(minWidth: 28, alignment: .trailing)
+                                Stepper("", value: $paymentDay, in: 1...31)
+                                    .labelsHidden()
+                                    .fixedSize()
+                            }
+                        }
 
-                        // Start date (only for new/convert)
                         if !isEditing {
                             Divider()
                             DatePickerRow(

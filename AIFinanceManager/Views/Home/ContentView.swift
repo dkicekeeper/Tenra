@@ -288,7 +288,7 @@ struct ContentView: View {
     }
 
     private var categoriesSection: some View {
-        QuickAddTransactionView(
+        TransactionCategoryPickerView(
             transactionsViewModel: viewModel,
             categoriesViewModel: categoriesViewModel,
             accountsViewModel: accountsViewModel,

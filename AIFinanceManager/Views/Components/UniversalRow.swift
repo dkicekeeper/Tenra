@@ -249,7 +249,7 @@ struct RowConfiguration {
         spacing: AppSpacing.md,
         verticalPadding: AppSpacing.lg,
         horizontalPadding: AppSpacing.lg,
-        backgroundColor: AppColors.cardBackground,
+        backgroundColor: AppColors.surface,
         cornerRadius: AppRadius.xl
     )
 }

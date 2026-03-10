@@ -260,7 +260,7 @@ struct TransactionCard: View {
                let catVM = categoriesViewModel,
                let accVM = accountsViewModel,
                let balanceCoordinator = balanceCoordinator {
-                EditTransactionView(
+                TransactionEditView(
                     transaction: transaction,
                     transactionsViewModel: viewModel,
                     categoriesViewModel: catVM,

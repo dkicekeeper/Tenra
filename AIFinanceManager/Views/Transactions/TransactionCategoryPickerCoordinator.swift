@@ -1,9 +1,9 @@
 //
-//  QuickAddCoordinator.swift
+//  TransactionCategoryPickerCoordinator.swift
 //  AIFinanceManager
 //
-//  Coordinator for QuickAdd transaction flow.
-//  Manages category display data preparation and transaction creation.
+//  Coordinator for TransactionCategoryPickerView.
+//  Manages the reactive category list and navigation state (category → AddTransactionModal).
 //
 
 import Foundation
@@ -19,7 +19,7 @@ struct CategorySelection: Identifiable {
 
 @Observable
 @MainActor
-final class QuickAddCoordinator {
+final class TransactionCategoryPickerCoordinator {
 
     // MARK: - Dependencies
 
@@ -73,19 +73,16 @@ final class QuickAddCoordinator {
 
     // MARK: - Public Methods
 
-    /// Handle category selection
     func handleCategorySelected(_ category: String, type: TransactionType) {
         activeSelection = CategorySelection(category: category, type: type)
         HapticManager.light()
     }
 
-    /// Handle add category action
     func handleAddCategory() {
         showingAddCategory = true
         HapticManager.light()
     }
 
-    /// Handle category added
     func handleCategoryAdded(_ category: CustomCategory) {
         HapticManager.success()
         categoriesViewModel.addCategory(category)
@@ -93,19 +90,16 @@ final class QuickAddCoordinator {
         showingAddCategory = false
     }
 
-    /// Dismiss current modal
     func dismissModal() {
         activeSelection = nil
     }
 
     // MARK: - Convenience Computed Properties
 
-    /// Base currency for display
     var baseCurrency: String {
         transactionsViewModel.appSettings.baseCurrency
     }
 
-    /// All accounts
     var accounts: [Account] {
         accountsViewModel.accounts
     }

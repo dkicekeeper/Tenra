@@ -27,7 +27,7 @@ struct AIFinanceManagerApp: App {
                 } else {
                     // System launch screen is still visible — show matching background
                     // so there is no flash when coordinator becomes ready.
-                    Color(.systemBackground).ignoresSafeArea()
+                    AppColors.backgroundPrimary.ignoresSafeArea()
                 }
             }
             .task {

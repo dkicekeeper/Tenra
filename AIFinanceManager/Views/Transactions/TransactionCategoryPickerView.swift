@@ -1,20 +1,21 @@
 //
-//  QuickAddTransactionView.swift
+//  TransactionCategoryPickerView.swift
 //  AIFinanceManager
 //
-//  Quick add transaction view with category grid.
+//  Category grid for creating transactions.
+//  Tap a category → opens TransactionAddModal.
 //  Refactored to follow Props + Callbacks pattern with zero ViewModel dependencies.
 //
 
 import SwiftUI
 
-// MARK: - QuickAddTransactionView
+// MARK: - TransactionCategoryPickerView
 
-struct QuickAddTransactionView: View {
+struct TransactionCategoryPickerView: View {
 
     // MARK: - Coordinator
 
-    @State private var coordinator: QuickAddCoordinator
+    @State private var coordinator: TransactionCategoryPickerCoordinator
 
     // MARK: - Environment
 
@@ -29,13 +30,11 @@ struct QuickAddTransactionView: View {
         categoriesViewModel: CategoriesViewModel,
         accountsViewModel: AccountsViewModel,
         transactionStore: TransactionStore,
-        // Fix #4: accept the real TimeFilterManager so QuickAddCoordinator computes
+        // Accept the real TimeFilterManager so the coordinator computes
         // categories with the correct filter on the very first body evaluation.
-        // Previously a dummy TimeFilterManager() was used and replaced in onAppear,
-        // causing two category-computation passes with different filter values.
         timeFilterManager: TimeFilterManager
     ) {
-        _coordinator = State(initialValue: QuickAddCoordinator(
+        _coordinator = State(initialValue: TransactionCategoryPickerCoordinator(
             transactionsViewModel: transactionsViewModel,
             categoriesViewModel: categoriesViewModel,
             accountsViewModel: accountsViewModel,
@@ -68,7 +67,7 @@ struct QuickAddTransactionView: View {
     // MARK: - Sheets
 
     private func addTransactionSheet(for category: String, type: TransactionType) -> some View {
-        AddTransactionModal(
+        TransactionAddModal(
             category: category,
             type: type,
             currency: coordinator.baseCurrency,
@@ -100,7 +99,7 @@ struct QuickAddTransactionView: View {
 #Preview {
     let coordinator = AppCoordinator()
     let tfm = TimeFilterManager()
-    QuickAddTransactionView(
+    TransactionCategoryPickerView(
         transactionsViewModel: coordinator.transactionsViewModel,
         categoriesViewModel: coordinator.categoriesViewModel,
         accountsViewModel: coordinator.accountsViewModel,

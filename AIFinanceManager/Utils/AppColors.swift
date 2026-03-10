@@ -19,14 +19,14 @@ enum AppColors {
     /// Фон surface (карточки, elevated elements)
     static let surface = Color(.secondarySystemBackground)
 
-    /// Фон основных карточек (alias для surface)
-    static let cardBackground = surface
-
     /// Фон вторичных элементов (chips, secondary buttons)
     static let secondaryBackground = Color(.systemGray5)
 
-    /// Фон экрана (alias для backgroundPrimary)
-    static let screenBackground = backgroundPrimary
+    /// Фон сгруппированных экранов (List/Form с .grouped style)
+    static let groupedBackground = Color(.systemGroupedBackground)
+
+    /// Фон вторичных секций внутри сгруппированных экранов
+    static let groupedBackgroundSecondary = Color(.secondarySystemGroupedBackground)
 
     // MARK: Text Colors
 
@@ -58,24 +58,24 @@ enum AppColors {
     /// Destructive actions
     static let destructive = Color.red
 
-    /// Success/positive
+    /// Success/positive — используй для UI-состояний (кнопки, индикаторы).
+    /// Для финансового дохода используй `income`.
     static let success = Color.green
 
     /// Warning
     static let warning = Color.orange
 
-    // MARK: Dividers & Borders
+    // MARK: Static Colors
 
-    /// Divider color
-    static let divider = Color(.separator)
-
-    /// Border color
-    static let border = Color(.systemGray4)
+    /// Белый цвет без адаптации к теме — для текста поверх тёмных/цветных фонов.
+    /// Не используй для обычного текста: предпочитай `textPrimary`.
+    static let staticWhite = Color.white
 
     // MARK: Transaction Type Colors (semantic)
 
-    /// Income transactions
-    static let income = Color.green
+    /// Income transactions — финансово-специфичный зелёный.
+    /// Не зависит от `success`: если дизайн меняет success, income не изменится.
+    static let income = Color(red: 0.13, green: 0.70, blue: 0.37)
 
     /// Expense transactions
     static let expense = Color.primary

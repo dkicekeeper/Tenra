@@ -45,7 +45,7 @@ struct BudgetProgressRow: View {
                     currency: currency,
                     fontSize: AppTypography.caption,
                     fontWeight: .regular,
-                    color: AppColors.textSecondary
+                    color: AppColors.textSecondaryAccessible
                 )
                 Text("/")
                     .font(AppTypography.caption)
@@ -55,7 +55,7 @@ struct BudgetProgressRow: View {
                     currency: currency,
                     fontSize: AppTypography.caption,
                     fontWeight: .regular,
-                    color: AppColors.textSecondary
+                    color: AppColors.textSecondaryAccessible
                 )
                 Spacer()
                 if item.daysRemaining > 0 {

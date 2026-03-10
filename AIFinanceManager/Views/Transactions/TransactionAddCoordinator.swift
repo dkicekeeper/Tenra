@@ -1,8 +1,8 @@
 //
-//  AddTransactionCoordinator.swift
+//  TransactionAddCoordinator.swift
 //  AIFinanceManager
 //
-//  Coordinator for AddTransactionModal.
+//  Coordinator for TransactionAddModal.
 //  Handles transaction creation with form validation and currency conversion.
 //
 
@@ -11,7 +11,7 @@ import SwiftUI
 
 @Observable
 @MainActor
-final class AddTransactionCoordinator {
+final class TransactionAddCoordinator {
 
     // MARK: - Dependencies
 

@@ -50,54 +50,63 @@ struct DepositEditView: View {
                         currencies: depositCurrencies
                     )
 
-                    // Bank name
-                    FormSection(header: String(localized: "deposit.bank")) {
-                        UniversalRow(config: .standard, leadingIcon: .sfSymbol("building.columns", color: .secondary)) {
-                            FormTextField(
-                                text: $bankName,
-                                placeholder: String(localized: "deposit.bankNamePlaceholder"),
-                                style: .compact
+                    // Bank name + interest rate grouped in one card
+                    FormSection(header: String(localized: "deposit.bankDetails", defaultValue: "Bank & Rate")) {
+                        FormLabeledRow(
+                            icon: "building.columns",
+                            label: String(localized: "deposit.bank")
+                        ) {
+                            TextField(
+                                String(localized: "deposit.bankNamePlaceholder"),
+                                text: $bankName
                             )
+                            .multilineTextAlignment(.trailing)
+                            .font(AppTypography.bodySmall)
+                        }
+
+                        Divider()
+
+                        FormLabeledRow(
+                            icon: "percent",
+                            label: String(localized: "deposit.interestRate")
+                        ) {
+                            HStack(spacing: AppSpacing.xs) {
+                                TextField("0.0", text: $interestRateText)
+                                    .keyboardType(.decimalPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .font(AppTypography.bodySmall)
+                                    .frame(maxWidth: 80)
+                                Text(String(localized: "deposit.rateAnnual"))
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(AppColors.textSecondary)
+                            }
                         }
                     }
 
-                    // Interest settings
-                    FormSection(header: String(localized: "deposit.interestRate")) {
-                        UniversalRow(config: .standard, leadingIcon: .sfSymbol("percent", color: .secondary)) {
-                            FormTextField(
-                                text: $interestRateText,
-                                placeholder: "0.0",
-                                style: .compact,
-                                keyboardType: .decimalPad
-                            )
-                        } trailing: {
-                            Text(String(localized: "deposit.rateAnnual"))
-                                .font(AppTypography.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    // Posting day & capitalization
-                    FormSection(
-                        header: String(localized: "deposit.postingDayTitle"),
-                        footer: String(localized: "deposit.postingDayHint")
-                    ) {
-                        MenuPickerRow(
+                    // Posting day + capitalization grouped in one card
+                    FormSection(header: String(localized: "deposit.schedule", defaultValue: "Schedule")) {
+                        FormLabeledRow(
                             icon: "calendar.badge.clock",
-                            title: String(localized: "deposit.dayOfMonth"),
-                            selection: $interestPostingDay,
-                            options: (1...31).map { ("\($0)", $0) }
-                        )
-                    }
+                            label: String(localized: "deposit.dayOfMonth")
+                        ) {
+                            HStack(spacing: AppSpacing.sm) {
+                                Text("\(interestPostingDay)")
+                                    .font(AppTypography.bodySmall)
+                                    .foregroundStyle(AppColors.textPrimary)
+                                    .frame(minWidth: 28, alignment: .trailing)
+                                Stepper("", value: $interestPostingDay, in: 1...31)
+                                    .labelsHidden()
+                                    .fixedSize()
+                            }
+                        }
 
-                    FormSection(
-                        header: String(localized: "deposit.capitalizationTitle"),
-                        footer: String(localized: "deposit.capitalizationHint")
-                    ) {
-                        UniversalRow(config: .standard, leadingIcon: .sfSymbol("arrow.triangle.2.circlepath", color: .secondary)) {
-                            Text(String(localized: "deposit.enableCapitalization"))
-                                .font(AppTypography.body)
-                        } trailing: {
+                        Divider()
+
+                        FormLabeledRow(
+                            icon: "arrow.triangle.2.circlepath",
+                            label: String(localized: "deposit.enableCapitalization"),
+                            hint: String(localized: "deposit.capitalizationHint")
+                        ) {
                             Toggle("", isOn: $capitalizationEnabled)
                                 .labelsHidden()
                         }

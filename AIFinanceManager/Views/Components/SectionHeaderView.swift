@@ -124,7 +124,7 @@ struct SectionHeaderView: View {
             TextField("Amount", text: .constant("9.99"))
                 .padding(AppSpacing.md)
         }
-        .background(AppColors.cardBackground)
+        .background(AppColors.surface)
         .clipShape(.rect(cornerRadius: AppRadius.md))
     }
     .padding()

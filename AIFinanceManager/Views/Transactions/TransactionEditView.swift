@@ -1,19 +1,19 @@
 //
-//  EditTransactionView.swift
+//  TransactionEditView.swift
 //  AIFinanceManager
 //
 //  Created on 2024
-//  Phase 16 (2026-02-17): Refactored to EditTransactionCoordinator pattern.
+//  Phase 16 (2026-02-17): Refactored to TransactionEditCoordinator pattern.
 //  Replaced 12 @State variables with coordinator, added MessageBanner for errors.
 //
 
 import SwiftUI
 
-struct EditTransactionView: View {
+struct TransactionEditView: View {
 
     // MARK: - Coordinator
 
-    @State private var coordinator: EditTransactionCoordinator
+    @State private var coordinator: TransactionEditCoordinator
 
     // MARK: - Environment
 
@@ -31,7 +31,7 @@ struct EditTransactionView: View {
         customCategories: [CustomCategory],
         balanceCoordinator: BalanceCoordinator
     ) {
-        _coordinator = State(initialValue: EditTransactionCoordinator(
+        _coordinator = State(initialValue: TransactionEditCoordinator(
             transaction: transaction,
             transactionsViewModel: transactionsViewModel,
             categoriesViewModel: categoriesViewModel,
@@ -58,6 +58,13 @@ struct EditTransactionView: View {
             ZStack(alignment: .top) {
                 ScrollView {
                     VStack(spacing: AppSpacing.lg) {
+                        // Hero: category icon + name (or transfer icon)
+                        HeroSection(
+                            iconSource: heroIconSource,
+                            title: heroTitle,
+                            colorHex: heroCategory?.colorHex
+                        )
+
                         // Error banner
                         if let error = coordinator.errorMessage {
                             InlineStatusText(message: error, type: .error)
@@ -137,24 +144,10 @@ struct EditTransactionView: View {
                     .animation(AppAnimation.gentleSpring, value: coordinator.errorMessage)
                 }
             }
-            .navigationTitle(String(localized: "transactionForm.editTransaction"))
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        coordinator.save { dismiss() }
-                    } label: {
-                        Image(systemName: "checkmark")
-                    }
-                    .disabled(!coordinator.canSave)
-                }
+                toolbarContent
             }
             .dateButtonsSafeArea(selectedDate: $bindableCoordinator.formData.selectedDate) { date in
                 coordinator.formData.selectedDate = date
@@ -185,6 +178,51 @@ struct EditTransactionView: View {
             }
         }
     }
+
+    // MARK: - Toolbar
+
+    private var toolbarContent: some ToolbarContent {
+        Group {
+            ToolbarItem(placement: .cancellationAction) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                }
+                .accessibilityLabel(String(localized: "button.close"))
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button {
+                    coordinator.save { dismiss() }
+                } label: {
+                    Image(systemName: "checkmark")
+                }
+                .disabled(!coordinator.canSave)
+                .accessibilityLabel(String(localized: "button.save"))
+            }
+        }
+    }
+
+    // MARK: - Hero Helpers
+
+    private var heroCategory: CustomCategory? {
+        guard coordinator.transaction.type != .internalTransfer else { return nil }
+        return _customCategories.first { $0.name == coordinator.formData.selectedCategory }
+    }
+
+    private var heroIconSource: IconSource? {
+        if coordinator.transaction.type == .internalTransfer {
+            return .sfSymbol("arrow.left.arrow.right")
+        }
+        return heroCategory?.iconSource
+    }
+
+    private var heroTitle: String {
+        if coordinator.transaction.type == .internalTransfer {
+            return String(localized: "transaction.type.internalTransfer", defaultValue: "Transfer")
+        }
+        return coordinator.formData.selectedCategory
+    }
 }
 
 // MARK: - Preview
@@ -206,7 +244,7 @@ struct EditTransactionView: View {
         accountId: "acc-kaspi"
     )
     return NavigationStack {
-        EditTransactionView(
+        TransactionEditView(
             transaction: sampleTransaction,
             transactionsViewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,
@@ -236,7 +274,7 @@ struct EditTransactionView: View {
         accountId: "acc-halyk"
     )
     return NavigationStack {
-        EditTransactionView(
+        TransactionEditView(
             transaction: sampleTransaction,
             transactionsViewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,

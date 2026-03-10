@@ -35,7 +35,7 @@ struct InsightsSummaryHeaderSkeleton: View {
             }
         }
         .padding(AppSpacing.md)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(AppColors.groupedBackgroundSecondary)
         .clipShape(.rect(cornerRadius: AppRadius.md))
         .accessibilityHidden(true)
     }
@@ -80,7 +80,7 @@ struct InsightCardSkeleton: View {
             SkeletonView(width: AppIconSize.budgetRing, height: AppIconSize.xxxl, cornerRadius: AppRadius.sm)
         }
         .padding(AppSpacing.md)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(AppColors.groupedBackgroundSecondary)
         .clipShape(.rect(cornerRadius: AppRadius.md))
         .accessibilityHidden(true)
     }
@@ -95,5 +95,5 @@ struct InsightCardSkeleton: View {
         InsightCardSkeleton()
     }
     .padding()
-    .background(Color(.systemGroupedBackground))
+    .background(AppColors.groupedBackground)
 }

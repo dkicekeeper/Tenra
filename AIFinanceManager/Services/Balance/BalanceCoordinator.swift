@@ -91,6 +91,9 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
 
     func removeAccount(_ accountId: String) async {
         store.removeAccount(accountId)
+        var updated = self.balances
+        updated.removeValue(forKey: accountId)
+        self.balances = updated
     }
 
     // MARK: - Transaction Updates
@@ -135,6 +138,10 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
         newBalance: Double
     ) async {
         store.setBalance(newBalance, for: account.id, source: .manual)
+        var updated = self.balances
+        updated[account.id] = newBalance
+        self.balances = updated
+        persistBalance(newBalance, for: account.id)
     }
 
     func updateDepositInfo(

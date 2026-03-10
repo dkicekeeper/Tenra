@@ -115,7 +115,8 @@ AIFinanceManager/
 #### BalanceCoordinator
 - Single entry point for balance operations
 - Manages balance calculation and caching
-- Includes: Store, Engine, Queue, Cache
+- Includes: Store, Engine
+- **⚠️ `self.balances` sync rule**: All public methods that modify store balance MUST also (1) update `self.balances` dict (the `@Observable` published property) and (2) call `persistBalance()`. Private methods (`processAddTransaction`, etc.) do this correctly. When adding new public balance mutation methods, follow the same pattern: `var updated = self.balances; updated[id] = newBal; self.balances = updated; persistBalance(...)`
 
 #### Recurring Transactions — Single-Next-Occurrence Model
 - `generateUpToNextFuture()` backfills all past occurrences + creates exactly 1 future occurrence
@@ -530,6 +531,6 @@ Key references: `docs/PROJECT_BIBLE.md`, `docs/ARCHITECTURE_FINAL_STATE.md`, `do
 
 ---
 
-**Last Updated**: 2026-03-06
+**Last Updated**: 2026-03-10
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns enforced via `SWIFT_STRICT_CONCURRENCY = targeted`

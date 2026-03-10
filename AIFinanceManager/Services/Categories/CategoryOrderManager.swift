@@ -9,7 +9,7 @@
 import Foundation
 
 /// Manages category display order as a lightweight UI preference
-final class CategoryOrderManager {
+final class CategoryOrderManager: @unchecked Sendable {
 
     // MARK: - Storage Key
 

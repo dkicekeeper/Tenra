@@ -30,12 +30,7 @@ final class CategoryBudgetCoordinator: CategoryBudgetCoordinatorProtocol {
     /// OPTIMIZATION: O(1) lookup instead of O(M) filtering per category
     private var budgetCache: [String: Double] = [:]
 
-    /// Date formatter for transaction dates
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
+
 
     // MARK: - Initialization
 
@@ -136,7 +131,7 @@ final class CategoryBudgetCoordinator: CategoryBudgetCoordinatorProtocol {
             guard transaction.type == .expense else { continue }
 
             // Parse transaction date
-            guard let transactionDate = dateFormatter.date(from: transaction.date) else { continue }
+            guard let transactionDate = DateFormatters.dateFormatter.date(from: transaction.date) else { continue }
 
             // Check if transaction belongs to any category with budget
             for category in categoriesWithBudgets {
@@ -166,9 +161,7 @@ final class CategoryBudgetCoordinator: CategoryBudgetCoordinatorProtocol {
     }
 
     func clearCache() {
-        let count = budgetCache.count
         budgetCache.removeAll()
-
     }
 
     // MARK: - Private Helpers

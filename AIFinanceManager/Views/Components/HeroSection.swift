@@ -41,7 +41,7 @@ struct HeroSection: View {
                 }
 
             Text(title)
-                .font(AppTypography.h1)
+                .font(AppTypography.h2)
                 .foregroundStyle(AppColors.textPrimary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, AppSpacing.lg)

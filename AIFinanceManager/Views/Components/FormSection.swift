@@ -62,7 +62,8 @@ struct FormSection<Content: View>: View {
                     VStack(spacing: 0) {
                         content
                     }
-                    .background(.secondary.opacity(0.05))
+                    .padding(AppSpacing.lg)
+                    .background(AppColors.groupedBackground)
                     .cornerRadius(AppRadius.xl)
 
                 case .plain:

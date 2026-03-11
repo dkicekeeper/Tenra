@@ -311,7 +311,8 @@ Never use `@StateObject`, `@ObservedObject`, `@EnvironmentObject` — those are 
 ```
 New file needed?
 ├─ Is it a SwiftUI View?
-│  └─ Yes → Views/FeatureName/ (with Components/ subfolder for reusable elements)
+│  ├─ Reusable component (card, row, input, chart, etc.)? → Views/Components/<subdir>/
+│  └─ Screen, modal, or coordinator? → Views/FeatureName/
 ├─ Is it UI state management?
 │  └─ Yes → ViewModels/ (mark with @Observable and @MainActor)
 ├─ Is it business logic?
@@ -418,7 +419,7 @@ New file needed?
 - **`futureTransactionStyle(isFuture:)`**: Use this modifier instead of inline `.opacity(0.5)` for planned transactions.
 - **`TransactionCard` API**: Takes `styleData: CategoryStyleData` (not `customCategories: [CustomCategory]`) and `sourceAccount: Account?` + `targetAccount: Account?` (not `accounts: [Account]`). Pre-compute at ForEach call site.
 
-#### MessageBanner (`Views/Components/MessageBanner.swift`)
+#### MessageBanner (`Views/Components/Feedback/MessageBanner.swift`)
 Universal banner: `.success`, `.error`, `.warning`, `.info` with spring animations and type-matched haptics.
 
 ```swift
@@ -426,13 +427,13 @@ MessageBanner.success("Transaction saved successfully")
 MessageBanner.error("Failed to load data")
 ```
 
-#### UniversalCarousel (`Views/Components/UniversalCarousel.swift`)
+#### UniversalCarousel (`Views/Components/Input/UniversalCarousel.swift`)
 Generic horizontal carousel. Presets: `.standard`, `.compact`, `.filter`, `.cards`, `.csvPreview`. Config: `Utils/CarouselConfiguration.swift`.
 
-#### UniversalFilterButton (`Views/Components/UniversalFilterButton.swift`)
+#### UniversalFilterButton (`Views/Components/Input/UniversalFilterButton.swift`)
 Filter chip in `.button(onTap)` or `.menu(menuContent:)` mode. Styling: `.filterChipStyle(isSelected:)`.
 
-#### UniversalRow (`Views/Components/UniversalRow.swift`)
+#### UniversalRow (`Views/Components/Rows/UniversalRow.swift`)
 Generic row with `IconConfig` leading icons. Presets: `.standard`, `.settings`, `.selectable`, `.info`, `.card`. Modifiers: `.navigationRow {}`, `.actionRow(role:) {}`, `.selectableRow(isSelected:) {}`. `IconConfig`: `.sfSymbol(name, color)`, `.bankLogo(logo)`, `.brandService(name)`, `.custom(source, style)`.
 
 **Design system files** (`Utils/`):

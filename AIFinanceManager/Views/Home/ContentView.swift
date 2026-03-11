@@ -128,7 +128,7 @@ struct ContentView: View {
                 await coordinator.initializeFastPath()
                 await coordinator.initialize()
             }
-            // ── Reactive summary ──────────────────────────────────────────────────
+            // Reactive summary
             // Fires whenever transactions count, active filter, import state, or
             // initialization state changes. SwiftUI cancels the previous task and
             // starts a new one automatically — no manual task tracking needed.
@@ -164,7 +164,7 @@ struct ContentView: View {
                 guard !Task.isCancelled else { return }
                 homeState.cachedSummary = summary
             }
-            // ── Reactive wallpaper ────────────────────────────────────────────────
+            // Reactive wallpaper
             // Fires when wallpaperImageName changes. Skips re-appear when the image
             // for the current name is already loaded in homeState.
             .task(id: viewModel.appSettings.wallpaperImageName) {

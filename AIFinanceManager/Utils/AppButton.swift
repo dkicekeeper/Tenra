@@ -66,4 +66,12 @@ extension View {
     func secondaryButton() -> some View {
         self.buttonStyle(SecondaryButtonStyle())
     }
+
+    /// Применяет glass prominent style с accent tint (iOS 26+)
+    /// Используй для: основных CTA в glass-контексте (sheets, overlays, toolbars)
+    func glassProminentButton() -> some View {
+        self
+            .buttonStyle(.glassProminent)
+            .tint(AppColors.accent)
+    }
 }

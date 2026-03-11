@@ -166,7 +166,7 @@ struct CSVColumnMappingView: View {
                 } label: {
                     Image(systemName: "arrow.right")
                 }
-                .buttonStyle(.glassProminent)
+                .glassProminentButton()
                 .disabled(!canProceed)
             }
         }

@@ -118,7 +118,7 @@ struct CategoriesManagementView: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .buttonStyle(.glassProminent)
+                    .glassProminentButton()
                 } else {
                     Button {
                         HapticManager.light()
@@ -137,7 +137,7 @@ struct CategoriesManagementView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
-                    .buttonStyle(.glassProminent)
+                    .glassProminentButton()
                 }
             }
         }

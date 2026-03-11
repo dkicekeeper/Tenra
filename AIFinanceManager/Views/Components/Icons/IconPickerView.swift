@@ -59,7 +59,7 @@ struct IconPickerView: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .buttonStyle(.glassProminent)
+                    .glassProminentButton()
                 }
             }
         }

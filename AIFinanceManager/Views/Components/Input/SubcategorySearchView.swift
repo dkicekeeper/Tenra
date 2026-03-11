@@ -169,7 +169,7 @@ struct SubcategorySearchView: View {
                         } label: {
                             Image(systemName: "checkmark")
                         }
-                        .buttonStyle(.glassProminent)
+                        .glassProminentButton()
                     }
                 }
             }

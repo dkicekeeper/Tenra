@@ -30,8 +30,6 @@ struct TransactionCategoryPickerView: View {
         categoriesViewModel: CategoriesViewModel,
         accountsViewModel: AccountsViewModel,
         transactionStore: TransactionStore,
-        // Accept the real TimeFilterManager so the coordinator computes
-        // categories with the correct filter on the very first body evaluation.
         timeFilterManager: TimeFilterManager
     ) {
         _coordinator = State(initialValue: TransactionCategoryPickerCoordinator(

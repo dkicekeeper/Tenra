@@ -147,7 +147,7 @@ struct AccountsManagementView: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .buttonStyle(.glassProminent)
+                    .glassProminentButton()
                     .accessibilityLabel(String(localized: "accessibility.accounts.doneReordering"))
                 } else {
                     Button {

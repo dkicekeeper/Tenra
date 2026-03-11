@@ -53,7 +53,7 @@ enum AppColors {
     // MARK: Interactive Colors
 
     /// Accent color (для выделений, selections)
-    static let accent = Color.blue
+    static let accent = Color.indigo
 
     /// Destructive actions
     static let destructive = Color.red

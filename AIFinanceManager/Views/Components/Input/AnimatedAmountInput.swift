@@ -133,7 +133,7 @@ struct AnimatedAmountInput: View {
 struct AnimatedTitleInput: View {
     @Binding var text: String
     let placeholder: String
-    var font: Font = AppTypography.h1
+    var font: Font = AppTypography.h2
     var color: Color = AppColors.textPrimary
     var alignment: TextAlignment = .center
 

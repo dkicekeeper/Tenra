@@ -40,19 +40,19 @@ struct LoanPaymentView: View {
                         .keyboardType(.decimalPad)
                         .focused($isAmountFocused)
                     Text(Formatting.currencySymbol(for: account.currency))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                 }
 
                 Text(String(format: String(localized: "loan.scheduledPayment", defaultValue: "Scheduled: %@"), Formatting.formatCurrency(NSDecimalNumber(decimal: loanInfo.monthlyPayment).doubleValue, currency: account.currency)))
                     .font(AppTypography.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
             }
 
             Section(header: Text(String(localized: "loan.sourceAccount", defaultValue: "Source Account"))) {
                 if availableAccounts.isEmpty {
                     Text(String(localized: "loan.noSourceAccounts", defaultValue: "No accounts available"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                 } else {
                     Picker(String(localized: "loan.selectSourceAccount", defaultValue: "Select account to pay from"), selection: $selectedSourceAccountId) {
                         Text(String(localized: "loan.selectSourceAccount", defaultValue: "Select account to pay from"))

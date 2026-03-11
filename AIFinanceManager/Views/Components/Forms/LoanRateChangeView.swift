@@ -31,7 +31,7 @@ struct LoanRateChangeView: View {
                         .keyboardType(.decimalPad)
                         .focused($isRateFocused)
                     Text(String(localized: "loan.rateAnnual", defaultValue: "% annual"))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                 }
             }
 
@@ -65,7 +65,7 @@ struct LoanRateChangeView: View {
                     } else {
                         Text(String(localized: "loan.enterRateForPreview", defaultValue: "Enter rate to see impact"))
                             .font(AppTypography.bodySmall)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(AppColors.textSecondary)
                     }
                 }
             }

@@ -39,12 +39,12 @@ struct LoanEarlyRepaymentView: View {
                         .keyboardType(.decimalPad)
                         .focused($isAmountFocused)
                     Text(Formatting.currencySymbol(for: account.currency))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                 }
 
                 Text(String(format: String(localized: "loan.remainingBalance", defaultValue: "Remaining: %@"), Formatting.formatCurrency(NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue, currency: account.currency)))
                     .font(AppTypography.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
             }
 
             Section(header: Text(String(localized: "loan.repaymentDate", defaultValue: "Date"))) {
@@ -62,7 +62,7 @@ struct LoanEarlyRepaymentView: View {
                      ? String(localized: "loan.reduceTermHint", defaultValue: "Keep monthly payment, finish sooner")
                      : String(localized: "loan.reducePaymentHint", defaultValue: "Keep term, lower monthly payment"))
                     .font(AppTypography.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
             }
 
             // Impact preview

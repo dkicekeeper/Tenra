@@ -50,7 +50,7 @@ struct EditableHeroSection: View {
     // MARK: - State
 
     @State private var showingIconPicker = false
-    @State private var iconScale: CGFloat = 0.8
+    @State private var iconScale: CGFloat = 0
 
     // MARK: - Initializer
 
@@ -153,6 +153,7 @@ struct EditableHeroSection: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(String(localized: "common.changeIcon"))
     }
 
     // MARK: - Balance View

@@ -19,12 +19,6 @@ struct FormSection<Content: View>: View {
     enum Style {
         /// Card style with background and rounded corners
         case card
-
-        /// List style (no background, for use inside List)
-        case list
-
-        /// Plain style (no background, no extra padding)
-        case plain
     }
 
     init(
@@ -50,24 +44,10 @@ struct FormSection<Content: View>: View {
             }
 
             // Content
-            switch style {
-            case .card:
-                VStack(spacing: 0) {
-                    content
-                }
-                .cardStyle()
-
-            case .list:
-                VStack(spacing: 0) {
-                    content
-                }
-                .padding(AppSpacing.lg)
-                .background(AppColors.groupedBackground)
-                .cornerRadius(AppRadius.xl)
-
-            case .plain:
+            VStack(spacing: 0) {
                 content
             }
+            .cardStyle()
 
             // Footer
             if let footer = footer {
@@ -147,42 +127,6 @@ struct FormSection<Content: View>: View {
         }
         .padding()
     }
-}
-
-#Preview("List Style") {
-    List {
-        FormSection(
-            header: "Account Details",
-            style: .list
-        ) {
-            Text("Row 1")
-            Text("Row 2")
-            Text("Row 3")
-        }
-
-        FormSection(
-            header: "Settings",
-            footer: "These settings affect your account",
-            style: .list
-        ) {
-            Toggle("Notifications", isOn: .constant(true))
-                .padding(.vertical, AppSpacing.lg)
-            Toggle("Dark Mode", isOn: .constant(false))
-                .padding(.vertical, AppSpacing.lg)
-        }
-    }
-}
-
-#Preview("Plain Style") {
-    FormSection(
-        header: "Simple Section",
-        style: .plain
-    ) {
-        Text("Item 1")
-        Text("Item 2")
-        Text("Item 3")
-    }
-    .padding()
 }
 
 

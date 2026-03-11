@@ -9,22 +9,12 @@
 import SwiftUI
 
 /// Enhanced text field for forms with error/help states and multiple styles.
-/// Supports single-line, multiline, and compact variants.
+/// Supports single-line and multiline variants.
 ///
 /// **States supported:**
 /// - Normal (idle), Focused (accent border + tinted bg), Filled (has text),
 ///   Error (red border + message), Disabled (dimmed, non-interactive),
 ///   Help (info text below)
-///
-/// **Focus chain (multi-field forms):**
-/// Передай `onSubmit` чтобы переключать фокус между полями при нажатии Return:
-/// ```swift
-/// @FocusState private var focused: Field?
-/// enum Field { case name, amount }
-///
-/// FormTextField(text: $name,   placeholder: "Название",  onSubmit: { focused = .amount })
-/// FormTextField(text: $amount, placeholder: "Сумма",     keyboardType: .decimalPad)
-/// ```
 struct FormTextField: View {
     @Binding var text: String
     let placeholder: String
@@ -33,10 +23,6 @@ struct FormTextField: View {
     let errorMessage: String?
     let helpText: String?
     let isDisabled: Bool
-    /// Вызывается при нажатии Return на клавиатуре.
-    /// Используй для перевода фокуса на следующее поле (focus chain) в форме.
-    /// `nil` (дефолт) — стандартное поведение Return.
-    let onSubmit: (() -> Void)?
     @FocusState private var isFocused: Bool
 
     enum Style {
@@ -45,9 +31,6 @@ struct FormTextField: View {
 
         /// Multiline text field with line limits and filled background
         case multiline(min: Int, max: Int)
-
-        /// Compact variant — no background, bottom underline indicator only
-        case compact
     }
 
     init(
@@ -57,8 +40,7 @@ struct FormTextField: View {
         keyboardType: UIKeyboardType = .default,
         errorMessage: String? = nil,
         helpText: String? = nil,
-        isDisabled: Bool = false,
-        onSubmit: (() -> Void)? = nil
+        isDisabled: Bool = false
     ) {
         self._text = text
         self.placeholder = placeholder
@@ -67,7 +49,6 @@ struct FormTextField: View {
         self.errorMessage = errorMessage
         self.helpText = helpText
         self.isDisabled = isDisabled
-        self.onSubmit = onSubmit
     }
 
     var body: some View {
@@ -116,13 +97,6 @@ struct FormTextField: View {
                     RoundedRectangle(cornerRadius: AppRadius.md)
                         .stroke(borderForState, lineWidth: borderWidth)
                 )
-
-        case .compact:
-            compactField
-                .padding(.vertical, AppSpacing.xs)
-                .overlay(alignment: .bottom) {
-                    compactUnderline
-                }
         }
     }
 
@@ -133,37 +107,13 @@ struct FormTextField: View {
             .keyboardType(keyboardType)
             .focused($isFocused)
             .font(AppTypography.body)
-            .onSubmit { onSubmit?() }
     }
 
     private func multilineField(min: Int, max: Int) -> some View {
-        // Multiline поля не имеют Return как submit — onSubmit здесь не применяется.
         TextField(placeholder, text: $text, axis: .vertical)
             .lineLimit(min...max)
             .focused($isFocused)
             .font(AppTypography.body)
-    }
-
-    private var compactField: some View {
-        TextField(placeholder, text: $text)
-            .keyboardType(keyboardType)
-            .focused($isFocused)
-            .font(AppTypography.bodySmall)
-            .onSubmit { onSubmit?() }
-    }
-
-    // MARK: - Compact Underline
-
-    private var compactUnderline: some View {
-        Rectangle()
-            .frame(height: isFocused ? 1.5 : 0.5)
-            .foregroundStyle(compactLineColor)
-    }
-
-    private var compactLineColor: Color {
-        if errorMessage != nil { return AppColors.destructive.opacity(0.7) }
-        if isFocused { return AppColors.accent }
-        return AppColors.textSecondary.opacity(0.25)
     }
 
     // MARK: - Styling Helpers
@@ -262,42 +212,6 @@ struct FormTextField: View {
     .padding()
 }
 
-#Preview("Compact Style") {
-    @Previewable @State var empty = ""
-    @Previewable @State var filled = "Some value"
-    @Previewable @State var invalid = "bad input"
-    @Previewable @State var disabledText = "Can't edit"
-
-    return VStack(spacing: AppSpacing.xl) {
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text("Empty").font(AppTypography.caption).foregroundStyle(AppColors.textSecondary)
-            FormTextField(text: $empty, placeholder: "Tap to focus", style: .compact)
-        }
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text("Filled").font(AppTypography.caption).foregroundStyle(AppColors.textSecondary)
-            FormTextField(text: $filled, placeholder: "Compact filled", style: .compact)
-        }
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text("Error").font(AppTypography.caption).foregroundStyle(AppColors.textSecondary)
-            FormTextField(
-                text: $invalid,
-                placeholder: "Compact error",
-                style: .compact,
-                errorMessage: "Invalid value"
-            )
-        }
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text("Disabled").font(AppTypography.caption).foregroundStyle(AppColors.textSecondary)
-            FormTextField(
-                text: $disabledText,
-                placeholder: "Compact disabled",
-                style: .compact,
-                isDisabled: true
-            )
-        }
-    }
-    .padding()
-}
 
 #Preview("All States") {
     @Previewable @State var normal = ""

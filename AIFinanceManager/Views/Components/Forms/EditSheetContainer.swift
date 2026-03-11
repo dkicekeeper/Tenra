@@ -83,6 +83,7 @@ struct EditSheetContainer<Content: View>: View {
             Button(action: onCancel) {
                 Image(systemName: "xmark")
             }
+            .accessibilityLabel(String(localized: "button.cancel"))
         }
         ToolbarItem(placement: .navigationBarTrailing) {
             Button {
@@ -92,7 +93,8 @@ struct EditSheetContainer<Content: View>: View {
                 Image(systemName: "checkmark")
             }
             .disabled(isSaveDisabled)
-            .buttonStyle(.glassProminent)
+            .glassProminentButton()
+            .accessibilityLabel(String(localized: "button.save"))
         }
     }
 }

@@ -19,52 +19,39 @@ struct DepositRateChangeView: View {
     @FocusState private var isRateFocused: Bool
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text(String(localized: "deposit.newRate"))) {
-                    HStack {
-                        TextField("0.0", text: $rateText)
-                            .keyboardType(.decimalPad)
-                            .focused($isRateFocused)
-                        Text(String(localized: "deposit.rateAnnual"))
-                            .foregroundStyle(.secondary)
-                    }
+        EditSheetContainer(
+            title: String(localized: "deposit.changeRateTitle"),
+            isSaveDisabled: rateText.isEmpty,
+            onSave: { saveRateChange() },
+            onCancel: { dismiss() }
+        ) {
+            Section(header: Text(String(localized: "deposit.newRate"))) {
+                HStack {
+                    TextField("0.0", text: $rateText)
+                        .keyboardType(.decimalPad)
+                        .focused($isRateFocused)
+                    Text(String(localized: "deposit.rateAnnual"))
+                        .foregroundStyle(AppColors.textSecondary)
                 }
+            }
 
-                Section(header: Text(String(localized: "deposit.effectiveDate"))) {
-                    DatePicker(String(localized: "deposit.date"), selection: $effectiveFromDate, displayedComponents: .date)
-                }
+            Section(header: Text(String(localized: "deposit.effectiveDate"))) {
+                DatePicker(String(localized: "deposit.date"), selection: $effectiveFromDate, displayedComponents: .date)
+            }
 
-                Section(header: Text(String(localized: "deposit.note"))) {
-                    TextField(String(localized: "deposit.note"), text: $noteText, axis: .vertical)
-                        .lineLimit(3...6)
-                }
+            Section(header: Text(String(localized: "deposit.note"))) {
+                TextField(String(localized: "deposit.note"), text: $noteText, axis: .vertical)
+                    .lineLimit(3...6)
             }
-            .navigationTitle(String(localized: "deposit.changeRateTitle"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(String(localized: "button.cancel")) {
-                        HapticManager.light()
-                        dismiss()
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(String(localized: "button.save")) {
-                        saveRateChange()
-                    }
-                    .disabled(rateText.isEmpty)
-                }
+        }
+        .onAppear {
+            if let depositInfo = account.depositInfo {
+                rateText = String(format: "%.2f", NSDecimalNumber(decimal: depositInfo.interestRateAnnual).doubleValue)
             }
-            .onAppear {
-                if let depositInfo = account.depositInfo {
-                    rateText = String(format: "%.2f", NSDecimalNumber(decimal: depositInfo.interestRateAnnual).doubleValue)
-                }
-            }
-            .task {
-                await Task.yield()
-                isRateFocused = true
-            }
+        }
+        .task {
+            await Task.yield()
+            isRateFocused = true
         }
     }
 

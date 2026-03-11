@@ -27,12 +27,7 @@ struct LoanPayAllView: View {
         EditSheetContainer(
             title: String(localized: "loan.payAllTitle", defaultValue: "Pay All Loans"),
             isSaveDisabled: selectedSourceAccountId.isEmpty || activeLoans.isEmpty,
-            onSave: {
-                let dateStr = DateFormatters.dateFormatter.string(from: paymentDate)
-                onPayAll(selectedSourceAccountId, dateStr)
-                HapticManager.success()
-                dismiss()
-            },
+            onSave: { savePayAll() },
             onCancel: { dismiss() }
         ) {
             // Loan list
@@ -47,7 +42,7 @@ struct LoanPayAllView: View {
                                     .font(AppTypography.bodySmall)
                                 Text(loanInfo.bankName)
                                     .font(AppTypography.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(AppColors.textSecondary)
                             }
 
                             Spacer()
@@ -78,7 +73,7 @@ struct LoanPayAllView: View {
                 if availableAccounts.isEmpty {
                     Text(String(localized: "loan.noSourceAccounts", defaultValue: "No accounts available"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                 } else {
                     Picker(String(localized: "loan.selectSourceAccount", defaultValue: "Select account to pay from"), selection: $selectedSourceAccountId) {
                         Text(String(localized: "loan.selectSourceAccount", defaultValue: "Select account to pay from"))
@@ -101,6 +96,15 @@ struct LoanPayAllView: View {
                 selectedSourceAccountId = first.id
             }
         }
+    }
+
+    // MARK: - Actions
+
+    private func savePayAll() {
+        let dateStr = DateFormatters.dateFormatter.string(from: paymentDate)
+        onPayAll(selectedSourceAccountId, dateStr)
+        HapticManager.success()
+        dismiss()
     }
 }
 

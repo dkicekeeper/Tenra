@@ -44,7 +44,16 @@ AIFinanceManager/
 ├── ViewModels/          # Observable view models (@MainActor)
 │   └── Balance/         # Balance calculation helpers
 ├── Views/               # SwiftUI views and components
-│   ├── Components/      # Shared reusable components (no extra nesting)
+│   ├── Components/      # Shared reusable components
+│   │   ├── Cards/       # Standalone card views (AnalyticsCard, TransactionCard, …)
+│   │   ├── Rows/        # List and form row views (UniversalRow, InfoRow, …)
+│   │   ├── Forms/       # Form containers (FormSection, EditSheetContainer, …)
+│   │   ├── Icons/       # Icon display and picking (IconView, IconPickerView)
+│   │   ├── Input/       # Interactive input (AmountInput, CategoryGrid, Carousel, …)
+│   │   ├── Charts/      # Data visualization (DonutChart, PeriodBarChart, …)
+│   │   ├── Headers/     # Section headers and hero displays (HeroSection, …)
+│   │   ├── Feedback/    # Banners, badges, status (MessageBanner, StatusBadge, …)
+│   │   └── Skeleton/    # Loading states (SkeletonView, SkeletonLoadingModifier)
 │   ├── Accounts/        # Account management views
 │   ├── Transactions/    # Transaction views
 │   ├── Categories/      # Category views

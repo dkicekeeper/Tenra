@@ -20,12 +20,12 @@ import SwiftUI
 /// Configuration for EditableHeroSection appearance and behavior
 struct HeroConfig {
     var showBalance: Bool = false
-    var showColorPicker: Bool = false
     var showCurrency: Bool = false
+    var allowLogos: Bool = true
 
     static let accountHero = HeroConfig(showBalance: true, showCurrency: true)
-    static let categoryHero = HeroConfig(showColorPicker: true)
     static let subscriptionHero = HeroConfig(showBalance: true, showCurrency: true)
+    static let categoryHero = HeroConfig(allowLogos: false)
 }
 
 // MARK: - EditableHeroSection
@@ -38,14 +38,15 @@ struct EditableHeroSection: View {
     @Binding var title: String
     @Binding var balance: String
     @Binding var currency: String
-    @Binding var selectedColor: String
 
     // MARK: - Configuration
 
     let titlePlaceholder: String
     let config: HeroConfig
-    let colorPalette: [String]
     let currencies: [String]
+    /// When set, the icon renders as a tinted circle (e.g. for categories).
+    /// When nil, the icon renders as a glass hero (e.g. for accounts, subscriptions).
+    let iconTintColor: String?
 
     // MARK: - State
 
@@ -59,24 +60,18 @@ struct EditableHeroSection: View {
         title: Binding<String>,
         balance: Binding<String> = .constant(""),
         currency: Binding<String> = .constant("USD"),
-        selectedColor: Binding<String> = .constant("#3b82f6"),
+        iconTintColor: String? = nil,
         titlePlaceholder: String,
         config: HeroConfig = HeroConfig(),
-        colorPalette: [String] = [
-            "#3b82f6", "#8b5cf6", "#ec4899", "#f97316", "#eab308",
-            "#22c55e", "#14b8a6", "#06b6d4", "#6366f1", "#d946ef",
-            "#f43f5e", "#a855f7", "#10b981", "#f59e0b"
-        ],
         currencies: [String] = ["USD", "EUR", "KZT", "RUB", "GBP"]
     ) {
         self._iconSource = iconSource
         self._title = title
         self._balance = balance
         self._currency = currency
-        self._selectedColor = selectedColor
+        self.iconTintColor = iconTintColor
         self.titlePlaceholder = titlePlaceholder
         self.config = config
-        self.colorPalette = colorPalette
         self.currencies = currencies
     }
 
@@ -104,19 +99,10 @@ struct EditableHeroSection: View {
             if config.showBalance {
                 balanceView
             }
-
-            // Color Picker (if enabled)
-            if config.showColorPicker {
-                ColorPickerRow(
-                    selectedColorHex: $selectedColor,
-                    title: "",
-                    palette: colorPalette
-                )
-            }
         }
         .padding(.vertical, AppSpacing.xl)
         .sheet(isPresented: $showingIconPicker) {
-            IconPickerView(selectedSource: $iconSource, allowLogos: !config.showColorPicker)
+            IconPickerView(selectedSource: $iconSource, allowLogos: config.allowLogos)
         }
     }
 
@@ -127,18 +113,18 @@ struct EditableHeroSection: View {
             HapticManager.light()
             showingIconPicker = true
         } label: {
-            if config.showColorPicker {
-                // Category icon with selected color
+            if let tintHex = iconTintColor {
+                // Tinted circle icon (e.g. categories)
                 IconView(
                     source: iconSource ?? .sfSymbol("star.fill"),
                     style: .circle(
                         size: AppIconSize.largeButton,
-                        tint: .monochrome(Color(hex: selectedColor)),
+                        tint: .monochrome(Color(hex: tintHex)),
                         backgroundColor: AppColors.surface
                     )
                 )
             } else {
-                // Account/Subscription icon with glass effect
+                // Glass hero icon (e.g. accounts, subscriptions)
                 if #available(iOS 18.0, *) {
                     IconView(
                         source: iconSource,
@@ -180,7 +166,6 @@ struct EditableHeroSection: View {
     @Previewable @State var title = "Kaspi Gold"
     @Previewable @State var balance = "125000.50"
     @Previewable @State var currency = "KZT"
-    @Previewable @State var color = "#3b82f6"
 
     return ScrollView {
         EditableHeroSection(
@@ -188,7 +173,6 @@ struct EditableHeroSection: View {
             title: $title,
             balance: $balance,
             currency: $currency,
-            selectedColor: $color,
             titlePlaceholder: String(localized: "account.namePlaceholder"),
             config: .accountHero
         )
@@ -199,20 +183,20 @@ struct EditableHeroSection: View {
 #Preview("Category Hero") {
     @Previewable @State var icon: IconSource? = .sfSymbol("fork.knife")
     @Previewable @State var title = "Food & Drinks"
-    @Previewable @State var balance = ""
-    @Previewable @State var currency = "USD"
     @Previewable @State var color = "#ec4899"
 
     return ScrollView {
-        EditableHeroSection(
-            iconSource: $icon,
-            title: $title,
-            balance: $balance,
-            currency: $currency,
-            selectedColor: $color,
-            titlePlaceholder: String(localized: "category.namePlaceholder"),
-            config: .categoryHero
-        )
+        VStack(spacing: 0) {
+            EditableHeroSection(
+                iconSource: $icon,
+                title: $title,
+                iconTintColor: color,
+                titlePlaceholder: String(localized: "category.namePlaceholder"),
+                config: .categoryHero
+            )
+            ColorPickerRow(selectedColorHex: $color)
+                .padding(.horizontal, AppSpacing.lg)
+        }
     }
     .padding()
 }
@@ -222,7 +206,6 @@ struct EditableHeroSection: View {
     @Previewable @State var title = "Netflix Premium"
     @Previewable @State var balance = "15.99"
     @Previewable @State var currency = "USD"
-    @Previewable @State var color = "#3b82f6"
 
     return ScrollView {
         EditableHeroSection(
@@ -230,7 +213,6 @@ struct EditableHeroSection: View {
             title: $title,
             balance: $balance,
             currency: $currency,
-            selectedColor: $color,
             titlePlaceholder: String(localized: "subscription.namePlaceholder"),
             config: .subscriptionHero
         )
@@ -243,7 +225,6 @@ struct EditableHeroSection: View {
     @Previewable @State var title = ""
     @Previewable @State var balance = ""
     @Previewable @State var currency = "USD"
-    @Previewable @State var color = "#3b82f6"
 
     return ScrollView {
         EditableHeroSection(
@@ -251,7 +232,6 @@ struct EditableHeroSection: View {
             title: $title,
             balance: $balance,
             currency: $currency,
-            selectedColor: $color,
             titlePlaceholder: String(localized: "account.namePlaceholder"),
             config: .accountHero
         )
@@ -275,7 +255,7 @@ struct EditableHeroSection: View {
                     title: $title,
                     balance: $balance,
                     currency: $currency,
-                    selectedColor: $color,
+                    iconTintColor: selectedConfig.allowLogos ? nil : color,
                     titlePlaceholder: String(localized: "common.name"),
                     config: selectedConfig
                 )

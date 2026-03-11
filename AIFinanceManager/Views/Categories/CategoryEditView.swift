@@ -49,14 +49,17 @@ struct CategoryEditView: View {
         ) {
             ScrollView {
                 VStack(spacing: AppSpacing.lg) {
-                    // Hero Section with Icon, Name, and Color Picker
+                    // Hero Section with Icon and Name
                     EditableHeroSection(
                         iconSource: $selectedIconSource,
                         title: $name,
-                        selectedColor: $selectedColor,
+                        iconTintColor: selectedColor,
                         titlePlaceholder: String(localized: "category.namePlaceholder"),
                         config: .categoryHero
                     )
+
+                    // Color Picker
+                    ColorPickerRow(selectedColorHex: $selectedColor)
 
                     // Validation Error
                     if let error = validationError {

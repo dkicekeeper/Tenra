@@ -20,28 +20,28 @@ extension TransactionEntity {
 
     /// Stored "YYYY-MM-DD" key used by NSFetchedResultsController for SQL-level section grouping.
     /// Set automatically via willSave() in TransactionEntity+SectionKey.swift.
-    @NSManaged public var dateSectionKey: String?
-    @NSManaged public var accountId: String?
-    @NSManaged public var amount: Double
-    @NSManaged public var category: String?
-    @NSManaged public var convertedAmount: Double
-    @NSManaged public var createdAt: Date?
-    @NSManaged public var currency: String?
-    @NSManaged public var date: Date?
-    @NSManaged public var descriptionText: String?
-    @NSManaged public var id: String?
+    @NSManaged nonisolated public var dateSectionKey: String?
+    @NSManaged nonisolated public var accountId: String?
+    @NSManaged nonisolated public var amount: Double
+    @NSManaged nonisolated public var category: String?
+    @NSManaged nonisolated public var convertedAmount: Double
+    @NSManaged nonisolated public var createdAt: Date?
+    @NSManaged nonisolated public var currency: String?
+    @NSManaged nonisolated public var date: Date?
+    @NSManaged nonisolated public var descriptionText: String?
+    @NSManaged nonisolated public var id: String?
     /// Stored series ID string — survives RecurringSeriesEntity deletion (mirrors accountId pattern).
-    @NSManaged public var recurringSeriesId: String?
-    @NSManaged public var subcategory: String?
-    @NSManaged public var targetAccountId: String?
-    @NSManaged public var targetAmount: Double
-    @NSManaged public var targetCurrency: String?
-    @NSManaged public var type: String?
-    @NSManaged public var accountName: String?
-    @NSManaged public var targetAccountName: String?
-    @NSManaged public var account: AccountEntity?
-    @NSManaged public var recurringSeries: RecurringSeriesEntity?
-    @NSManaged public var targetAccount: AccountEntity?
+    @NSManaged nonisolated public var recurringSeriesId: String?
+    @NSManaged nonisolated public var subcategory: String?
+    @NSManaged nonisolated public var targetAccountId: String?
+    @NSManaged nonisolated public var targetAmount: Double
+    @NSManaged nonisolated public var targetCurrency: String?
+    @NSManaged nonisolated public var type: String?
+    @NSManaged nonisolated public var accountName: String?
+    @NSManaged nonisolated public var targetAccountName: String?
+    @NSManaged nonisolated public var account: AccountEntity?
+    @NSManaged nonisolated public var recurringSeries: RecurringSeriesEntity?
+    @NSManaged nonisolated public var targetAccount: AccountEntity?
 
 }
 

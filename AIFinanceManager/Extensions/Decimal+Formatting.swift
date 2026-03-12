@@ -17,7 +17,7 @@ extension Decimal {
     ///   - currency: Currency code (e.g., "USD", "EUR")
     ///   - locale: Locale to use for formatting (default: current)
     /// - Returns: Formatted string (e.g., "$1,234.56")
-    func formatted(as currency: String, locale: Locale = .current) -> String {
+    nonisolated func formatted(as currency: String, locale: Locale = .current) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = currency
@@ -28,7 +28,7 @@ extension Decimal {
     /// Format decimal with specified fraction digits
     /// - Parameter fractionDigits: Number of decimal places (default: 2)
     /// - Returns: Formatted string (e.g., "1234.56")
-    func formatted(fractionDigits: Int = 2) -> String {
+    nonisolated func formatted(fractionDigits: Int = 2) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.minimumFractionDigits = fractionDigits
@@ -41,7 +41,7 @@ extension Decimal {
     /// Round to specified decimal places
     /// - Parameter places: Number of decimal places
     /// - Returns: Rounded decimal
-    func rounded(toPlaces places: Int) -> Decimal {
+    nonisolated func rounded(toPlaces places: Int) -> Decimal {
         var result = self
         var rounded = Decimal()
         NSDecimalRound(&rounded, &result, places, .plain)
@@ -49,41 +49,41 @@ extension Decimal {
     }
 
     /// Round to 2 decimal places (common for currencies)
-    var roundedToCurrency: Decimal {
+    nonisolated var roundedToCurrency: Decimal {
         rounded(toPlaces: 2)
     }
 
     /// Absolute value
-    var abs: Decimal {
+    nonisolated var abs: Decimal {
         self < 0 ? -self : self
     }
 
     // MARK: - Conversions
 
     /// Convert to Double (use with caution for precision-sensitive operations)
-    var doubleValue: Double {
+    nonisolated var doubleValue: Double {
         (self as NSDecimalNumber).doubleValue
     }
 
     /// Convert to String
-    var stringValue: String {
+    nonisolated var stringValue: String {
         "\(self)"
     }
 
     // MARK: - Comparisons
 
     /// Check if decimal is positive
-    var isPositive: Bool {
+    nonisolated var isPositive: Bool {
         self > 0
     }
 
     /// Check if decimal is negative
-    var isNegative: Bool {
+    nonisolated var isNegative: Bool {
         self < 0
     }
 
     /// Check if decimal is zero
-    var isZero: Bool {
+    nonisolated var isZero: Bool {
         self == 0
     }
 
@@ -92,21 +92,21 @@ extension Decimal {
     /// Calculate percentage of a value
     /// - Parameter percent: Percentage (e.g., 15 for 15%)
     /// - Returns: Calculated amount
-    func percentage(_ percent: Decimal) -> Decimal {
+    nonisolated func percentage(_ percent: Decimal) -> Decimal {
         (self * percent / 100).roundedToCurrency
     }
 
     /// Add percentage to value
     /// - Parameter percent: Percentage to add (e.g., 15 for 15%)
     /// - Returns: Value with percentage added
-    func adding(percentage percent: Decimal) -> Decimal {
+    nonisolated func adding(percentage percent: Decimal) -> Decimal {
         (self + percentage(percent)).roundedToCurrency
     }
 
     /// Subtract percentage from value
     /// - Parameter percent: Percentage to subtract (e.g., 15 for 15%)
     /// - Returns: Value with percentage subtracted
-    func subtracting(percentage percent: Decimal) -> Decimal {
+    nonisolated func subtracting(percentage percent: Decimal) -> Decimal {
         (self - percentage(percent)).roundedToCurrency
     }
 }

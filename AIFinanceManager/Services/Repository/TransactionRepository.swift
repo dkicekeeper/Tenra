@@ -28,7 +28,7 @@ protocol TransactionRepositoryProtocol {
 }
 
 /// CoreData implementation of TransactionRepositoryProtocol
-nonisolated final class TransactionRepository: TransactionRepositoryProtocol {
+nonisolated final class TransactionRepository: TransactionRepositoryProtocol, @unchecked Sendable {
 
     private static let logger = Logger(subsystem: "AIFinanceManager", category: "TransactionRepository")
 

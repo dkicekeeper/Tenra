@@ -19,7 +19,7 @@ protocol RecurringRepositoryProtocol {
 }
 
 /// CoreData implementation of RecurringRepositoryProtocol
-nonisolated final class RecurringRepository: RecurringRepositoryProtocol {
+nonisolated final class RecurringRepository: RecurringRepositoryProtocol, @unchecked Sendable {
 
     private static let logger = Logger(subsystem: "AIFinanceManager", category: "RecurringRepository")
     private let stack: CoreDataStack

@@ -399,7 +399,7 @@ nonisolated enum LoanPaymentService {
 // MARK: - Decimal Rounding Helper
 
 private extension Decimal {
-    func rounded(_ scale: Int) -> Decimal {
+    nonisolated func rounded(_ scale: Int) -> Decimal {
         var value = self
         var result = Decimal()
         NSDecimalRound(&result, &value, scale, .bankers)

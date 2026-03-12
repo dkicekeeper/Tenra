@@ -23,7 +23,7 @@ protocol AccountRepositoryProtocol {
 }
 
 /// CoreData implementation of AccountRepositoryProtocol
-nonisolated final class AccountRepository: AccountRepositoryProtocol {
+nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked Sendable {
 
     private static let logger = Logger(subsystem: "AIFinanceManager", category: "AccountRepository")
     private let stack: CoreDataStack

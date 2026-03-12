@@ -35,7 +35,7 @@ struct AmountDisplayConfiguration {
     /// Глобальный экземпляр конфигурации.
     /// Замена всего экземпляра или изменение любого свойства
     /// автоматически инвалидирует кэшированный форматтер.
-    static var shared = AmountDisplayConfiguration() {
+    nonisolated(unsafe) static var shared = AmountDisplayConfiguration() {
         didSet { _cachedFormatter = nil }
     }
 
@@ -43,9 +43,9 @@ struct AmountDisplayConfiguration {
 
     /// Кэшированный форматтер — пересоздаётся только при изменении `shared`.
     /// Используй в hot path (List, ForEach и т.п.).
-    private static var _cachedFormatter: NumberFormatter?
+    nonisolated(unsafe) private static var _cachedFormatter: NumberFormatter?
 
-    static var formatter: NumberFormatter {
+    nonisolated static var formatter: NumberFormatter {
         if let cached = _cachedFormatter { return cached }
         let f = shared.makeNumberFormatter()
         _cachedFormatter = f
@@ -56,7 +56,7 @@ struct AmountDisplayConfiguration {
 
     /// Создаёт новый `NumberFormatter` на основе текущих настроек.
     /// В hot path используй `AmountDisplayConfiguration.formatter` — он кэширован.
-    func makeNumberFormatter() -> NumberFormatter {
+    nonisolated func makeNumberFormatter() -> NumberFormatter {
         let f = NumberFormatter()
         f.numberStyle = .decimal
         f.groupingSeparator = thousandsSeparator

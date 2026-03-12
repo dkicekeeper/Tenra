@@ -18,7 +18,7 @@ final class CoreDataStack: @unchecked Sendable {
 
     // MARK: - Singleton
 
-    nonisolated static let shared = CoreDataStack()
+    nonisolated(unsafe) static let shared = CoreDataStack()
 
     /// Флаг доступности CoreData. При ошибке инициализации = false → приложение работает через UserDefaults fallback.
     private(set) var isCoreDataAvailable: Bool = true

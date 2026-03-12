@@ -77,15 +77,15 @@ enum VoiceInputConstants {
     /// Порог тишины в децибелах (dB)
     /// Значения ниже этого порога считаются тишиной
     /// Типичный диапазон: от -50 (очень чувствительный) до -30 (менее чувствительный)
-    static let vadSilenceThresholdDb: Float = -40.0
+    nonisolated static let vadSilenceThresholdDb: Float = -40.0
 
     /// Продолжительность тишины для автоматической остановки (секунды)
     /// Запись остановится после этой продолжительности непрерывной тишины
-    static let vadSilenceDuration: TimeInterval = 2.5
+    nonisolated static let vadSilenceDuration: TimeInterval = 2.5
 
     /// Минимальная продолжительность речи перед включением VAD (секунды)
     /// Предотвращает ложные срабатывания в начале записи
-    static let vadMinimumSpeechDuration: TimeInterval = 1.0
+    nonisolated static let vadMinimumSpeechDuration: TimeInterval = 1.0
 
     /// Включить/выключить Voice Activity Detection
     /// Если true, запись автоматически остановится после тишины
@@ -95,7 +95,7 @@ enum VoiceInputConstants {
     // MARK: - Debug
 
     /// Флаг для включения детального логирования парсинга
-    static let enableParsingDebugLogs = true
+    nonisolated static let enableParsingDebugLogs = true
 
     /// Префикс для debug-логов
     static let debugLogPrefix = "🔍 [VoiceInput]"

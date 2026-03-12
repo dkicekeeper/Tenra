@@ -327,12 +327,12 @@ nonisolated class CSVValidationService: CSVValidationServiceProtocol {
 // MARK: - Array Extensions
 
 extension Array {
-    subscript(safe index: Int) -> Element? {
+    nonisolated subscript(safe index: Int) -> Element? {
         indices.contains(index) ? self[index] : nil
     }
 
     /// Splits array into chunks of specified size (Phase 5 optimization for parallel processing)
-    func chunked(into size: Int) -> [[Element]] {
+    nonisolated func chunked(into size: Int) -> [[Element]] {
         stride(from: 0, to: count, by: size).map {
             Array(self[$0..<Swift.min($0 + size, count)])
         }

@@ -18,10 +18,10 @@ extension SubcategoryEntity {
         return NSFetchRequest<SubcategoryEntity>(entityName: "SubcategoryEntity")
     }
 
-    @NSManaged public var id: String?
-    @NSManaged public var name: String?
-    @NSManaged public var iconName: String?
-    @NSManaged public var transactions: NSSet?
+    @NSManaged nonisolated public var id: String?
+    @NSManaged nonisolated public var name: String?
+    @NSManaged nonisolated public var iconName: String?
+    @NSManaged nonisolated public var transactions: NSSet?
 
 }
 
@@ -29,16 +29,16 @@ extension SubcategoryEntity {
 extension SubcategoryEntity {
 
     @objc(addTransactionsObject:)
-    @NSManaged public func addToTransactions(_ value: SubcategoryEntity)
+    @NSManaged nonisolated public func addToTransactions(_ value: SubcategoryEntity)
 
     @objc(removeTransactionsObject:)
-    @NSManaged public func removeFromTransactions(_ value: SubcategoryEntity)
+    @NSManaged nonisolated public func removeFromTransactions(_ value: SubcategoryEntity)
 
     @objc(addTransactions:)
-    @NSManaged public func addToTransactions(_ values: NSSet)
+    @NSManaged nonisolated public func addToTransactions(_ values: NSSet)
 
     @objc(removeTransactions:)
-    @NSManaged public func removeFromTransactions(_ values: NSSet)
+    @NSManaged nonisolated public func removeFromTransactions(_ values: NSSet)
 
 }
 

@@ -43,7 +43,7 @@ struct AmountDisplayConfiguration {
 
     /// Кэшированный форматтер — пересоздаётся только при изменении `shared`.
     /// Используй в hot path (List, ForEach и т.п.).
-    nonisolated(unsafe) private static var _cachedFormatter: NumberFormatter?
+    private nonisolated(unsafe) static var _cachedFormatter: NumberFormatter?
 
     nonisolated static var formatter: NumberFormatter {
         if let cached = _cachedFormatter { return cached }

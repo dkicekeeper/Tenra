@@ -21,10 +21,12 @@ final class CoreDataStack: @unchecked Sendable {
     nonisolated static let shared = CoreDataStack()
 
     /// Флаг доступности CoreData. При ошибке инициализации = false → приложение работает через UserDefaults fallback.
-    private(set) var isCoreDataAvailable: Bool = true
+    /// nonisolated(unsafe): written once in loadPersistentStores callback, then only read — accepted race.
+    nonisolated(unsafe) private(set) var isCoreDataAvailable: Bool = true
 
     /// Ошибка инициализации CoreData (для отображения пользователю)
-    private(set) var initializationError: String? = nil
+    /// nonisolated(unsafe): written once in loadPersistentStores callback, then only read — accepted race.
+    nonisolated(unsafe) private(set) var initializationError: String? = nil
 
     /// Lock protecting one-time initialization of _persistentContainer.
     /// Swift `lazy var` is NOT thread-safe. preWarm() accesses persistentContainer from
@@ -34,7 +36,7 @@ final class CoreDataStack: @unchecked Sendable {
     /// registered in one coordinator become "not reachable" from the other, causing:
     /// "persistent store is not reachable from this NSManagedObjectContext's coordinator".
     private let containerLock = NSLock()
-    nonisolated(unsafe) private var _persistentContainer: NSPersistentContainer?
+    private nonisolated(unsafe) var _persistentContainer: NSPersistentContainer?
 
     private init() {
         setupNotifications()

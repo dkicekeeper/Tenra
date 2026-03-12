@@ -31,7 +31,7 @@ AIFinanceManager is a native iOS finance management application built with Swift
 
 **Tech Stack:**
 - SwiftUI (iOS 26+ with Liquid Glass adoption)
-- Swift 5.0 (project setting), targeting Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = targeted`
+- Swift 5.0 (project setting), targeting Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
 - CoreData for persistence
 - Observation framework (@Observable)
 - MVVM + Coordinator architecture
@@ -115,11 +115,14 @@ AIFinanceManager/
 - `apply()` pipeline: `updateState` → `updateBalances` → `invalidateCache` → `persistIncremental`
 - **⚠️ `allTransactions` setter is a no-op** — to delete, use `TransactionStore.deleteTransactions(for...)` which routes through `apply(.deleted)`
 
-#### InsightsService — In-Memory Aggregation
+#### InsightsService — nonisolated, Background Computation
+- `nonisolated final class` — explicitly opts out of implicit MainActor, runs on background thread via `Task.detached` in InsightsViewModel
+- `DataSnapshot` struct (`Sendable`): bundles MainActor-isolated data (transactions, categories, recurringSeries, accounts, balanceFor closure) — built on MainActor before `Task.detached`, threaded through entire computation chain
 - Three static helpers: `computeMonthlyTotals`, `computeLastMonthlyTotals`, `computeCategoryMonthTotals`
 - All return lightweight value-type structs (`InMemoryMonthlyTotal`, `InMemoryCategoryMonthTotal`)
 - `PreAggregatedData` struct: single O(N) pass builds monthly totals, category-month expenses, `txDateMap`, per-account counts. All generators use O(M) dictionary lookups.
-- Split into 10 files: main service (~780 LOC) + 9 domain extensions (`+Spending`, `+Income`, `+Budget`, `+Recurring`, `+CashFlow`, `+Wealth`, `+Savings`, `+Forecasting`, `+HealthScore`)
+- Split into 10 files: main service (~1095 LOC) + 9 domain extensions (`+Spending`, `+Income`, `+Budget`, `+Recurring`, `+CashFlow`, `+Wealth`, `+Savings`, `+Forecasting`, `+HealthScore`)
+- **⚠️ No `transactionStore` access in extension methods** — all data comes via parameters (snapshot fields). Adding new generators must follow this pattern.
 
 #### BalanceCoordinator
 - Single entry point for balance operations
@@ -155,6 +158,13 @@ AIFinanceManager/
 ### Swift 6 Concurrency Best Practices
 
 **Critical for thread safety - follow these patterns:**
+
+#### Implicit MainActor Isolation
+- **`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`** — ALL types are implicitly `@MainActor` unless explicitly `nonisolated`
+- `nonisolated` on a type opts it out of implicit MainActor — use for services that must run off main thread
+- `Task {}` inside `@MainActor` class inherits MainActor — `Task { @MainActor in }` is redundant
+- `Task { @MainActor in }` IS needed inside nonisolated closures, audio callbacks
+- **DataSnapshot pattern**: capture MainActor-isolated data into `Sendable` struct before `Task.detached`, pass through nonisolated computation chain (see `InsightsService.DataSnapshot`)
 
 #### CoreData Entity Mutations
 All CoreData entity property mutations MUST be wrapped in `context.perform { }`:
@@ -552,4 +562,4 @@ Key references: `docs/PROJECT_BIBLE.md`, `docs/ARCHITECTURE_FINAL_STATE.md`, `do
 
 **Last Updated**: 2026-03-10
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
-**Swift Version**: 5.0 project setting; Swift 6 patterns enforced via `SWIFT_STRICT_CONCURRENCY = targeted`
+**Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

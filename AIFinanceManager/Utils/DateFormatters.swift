@@ -7,32 +7,32 @@
 
 import Foundation
 
-/// Cached DateFormatter instances — MainActor-isolated because DateFormatter
-/// is NOT thread-safe. Never access these from background threads/tasks.
-/// For background date formatting, use Calendar component extraction
-/// (see TransactionSectionKeyFormatter for the pattern).
-@MainActor
+/// Cached DateFormatter instances. These formatters are configured once at
+/// startup and never mutated. @MainActor removed because DateFormatter is
+/// Sendable in iOS 26+ SDK — plain static let properties are accessible from
+/// any isolation domain. For older-style formatting patterns see
+/// TransactionSectionKeyFormatter.
 enum DateFormatters {
     /// Форматтер для дат в формате "yyyy-MM-dd"
-    static let dateFormatter: DateFormatter = {
+    nonisolated static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone.current
         return formatter
     }()
-    
+
     /// Форматтер для времени в формате "HH:mm"
-    static let timeFormatter: DateFormatter = {
+    nonisolated static let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone.current
         return formatter
     }()
-    
+
     /// Форматтер для отображения даты в формате "d MMMM" (локаль устройства)
-    static let displayDateFormatter: DateFormatter = {
+    nonisolated static let displayDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM"
         formatter.locale = .current
@@ -41,7 +41,7 @@ enum DateFormatters {
     }()
 
     /// Форматтер для отображения даты с годом в формате "d MMMM yyyy" (локаль устройства)
-    static let displayDateWithYearFormatter: DateFormatter = {
+    nonisolated static let displayDateWithYearFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
         formatter.locale = .current

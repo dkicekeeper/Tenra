@@ -17,7 +17,7 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
 
     // @MainActor isolation: all callers are @MainActor methods on this class.
     // Static let avoids repeated DateFormatters.dateFormatter lookups in tight loops.
-    @MainActor private static let dateFormatter = DateFormatters.dateFormatter
+    private static let dateFormatter = DateFormatters.dateFormatter
 
     // MARK: - TransactionQueryServiceProtocol Implementation
 

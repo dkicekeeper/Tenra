@@ -1037,7 +1037,7 @@ nonisolated final class InsightsService {
         txDateMap: [String: Date]? = nil   // Phase 42b: pre-parsed dates
     ) -> (income: Double, expenses: Double) {
         let today = Calendar.current.startOfDay(for: Date())
-        let dateFormatter = Self.yearMonthFormatter  // Phase 48: use own static formatter (nonisolated-safe)
+        // txDateMap fast path preferred; fallback allocates locally
         var income: Double = 0
         var expenses: Double = 0
 

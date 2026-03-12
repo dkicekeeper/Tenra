@@ -13,7 +13,7 @@ extension InsightsService {
 
     // MARK: - Wealth Insights (Phase 18)
 
-    func generateWealthInsights(
+    nonisolated func generateWealthInsights(
         periodPoints: [PeriodDataPoint],
         allTransactions: [Transaction],
         granularity: InsightGranularity,
@@ -133,7 +133,7 @@ extension InsightsService {
     /// Flags accounts that have been idle for 30+ days but still hold a positive balance.
     /// Phase 42: Replaced CoreData fetchLastTransactionDates with in-memory computation.
     /// Phase 42e: Uses PreAggregatedData.lastAccountDates — O(accounts) instead of O(N) date-parsing loop.
-    func generateAccountDormancy(allTransactions: [Transaction], balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil, accounts: [Account]) -> Insight? {
+    nonisolated func generateAccountDormancy(allTransactions: [Transaction], balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil, accounts: [Account]) -> Insight? {
         let now = Date()
         guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: now) else { return nil }
 

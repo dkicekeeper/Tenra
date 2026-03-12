@@ -21,7 +21,7 @@ extension InsightsService {
     /// For historical filters (e.g. "Last Year", "Last 3 Months") this is the filter's
     /// INCLUSIVE last day (end - 1 second), because `timeFilter.dateRange().end` is
     /// EXCLUSIVE (e.g. "Last Month" Jan 2026 → end = Feb 1 2026 00:00:00).
-    func momReferenceDate(for timeFilter: TimeFilter) -> Date {
+    nonisolated func momReferenceDate(for timeFilter: TimeFilter) -> Date {
         let end = timeFilter.dateRange().end
         if Calendar.current.isDateInToday(end) || end > Date() {
             return Date()
@@ -31,7 +31,7 @@ extension InsightsService {
 
     // MARK: - Spending Insights
 
-    func generateSpendingInsights(
+    nonisolated func generateSpendingInsights(
         filtered: [Transaction],
         allTransactions: [Transaction],
         periodSummary: PeriodSummary,
@@ -324,7 +324,7 @@ extension InsightsService {
     // MARK: - Spending Spike (Phase 24)
 
     /// Detects a category whose current-month spending exceeds 1.5× its 3-month historical average.
-    func generateSpendingSpike(baseCurrency: String, transactions: [Transaction], preAggregated: PreAggregatedData? = nil) -> Insight? {
+    nonisolated func generateSpendingSpike(baseCurrency: String, transactions: [Transaction], preAggregated: PreAggregatedData? = nil) -> Insight? {
         let calendar = Calendar.current
         let now = Date()
         guard let threeMonthsAgo = calendar.date(byAdding: .month, value: -3, to: startOfMonth(calendar, for: now)) else { return nil }
@@ -396,7 +396,7 @@ extension InsightsService {
     // MARK: - Category Trend (Phase 24)
 
     /// Finds the expense category that has been rising for the most consecutive months (min 2).
-    func generateCategoryTrend(baseCurrency: String, transactions: [Transaction], preAggregated: PreAggregatedData? = nil) -> Insight? {
+    nonisolated func generateCategoryTrend(baseCurrency: String, transactions: [Transaction], preAggregated: PreAggregatedData? = nil) -> Insight? {
         let calendar = Calendar.current
         let now = Date()
         guard let sixMonthsAgo = calendar.date(byAdding: .month, value: -6, to: startOfMonth(calendar, for: now)) else { return nil }

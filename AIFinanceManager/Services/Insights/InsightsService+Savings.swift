@@ -13,7 +13,7 @@ extension InsightsService {
 
     // MARK: - Savings Insights (Phase 24)
 
-    func generateSavingsInsights(
+    nonisolated func generateSavingsInsights(
         allIncome: Double,
         allExpenses: Double,
         baseCurrency: String,
@@ -43,7 +43,7 @@ extension InsightsService {
 
     // MARK: - Private Savings Sub-Generators
 
-    private func generateSavingsRate(allIncome: Double, allExpenses: Double, baseCurrency: String) -> Insight? {
+    private nonisolated func generateSavingsRate(allIncome: Double, allExpenses: Double, baseCurrency: String) -> Insight? {
         guard allIncome > 0 else { return nil }
         let rate = ((allIncome - allExpenses) / allIncome) * 100
         let savedAmount = allIncome - allExpenses
@@ -67,7 +67,7 @@ extension InsightsService {
         )
     }
 
-    private func generateEmergencyFund(accounts: [Account], transactions: [Transaction], baseCurrency: String, balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil) -> Insight? {
+    private nonisolated func generateEmergencyFund(accounts: [Account], transactions: [Transaction], baseCurrency: String, balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil) -> Insight? {
         let totalBalance = accounts.reduce(0.0) { $0 + balanceFor($1.id) }
         guard totalBalance > 0 else { return nil }
 
@@ -105,7 +105,7 @@ extension InsightsService {
         )
     }
 
-    private func generateSavingsMomentum(transactions: [Transaction], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
+    private nonisolated func generateSavingsMomentum(transactions: [Transaction], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
         // Phase 42: Use preAggregated O(M) lookup when available; fall back to O(N) scan
         let aggregates: [InMemoryMonthlyTotal]
         if let preAggregated {

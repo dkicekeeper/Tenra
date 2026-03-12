@@ -84,7 +84,7 @@ nonisolated final class InsightsService {
 
     // MARK: - Public API
 
-    func invalidateCache() {
+    nonisolated func invalidateCache() {
         cache.invalidateAll()
     }
 
@@ -92,7 +92,7 @@ nonisolated final class InsightsService {
 
     /// Builds `[PeriodDataPoint]` for the given number of calendar months ending at `anchorDate`.
     /// Replaces the removed `computeMonthlyDataPoints` (MonthlyDataPoint deleted in Phase 44).
-    func computeMonthlyPeriodDataPoints(
+    nonisolated func computeMonthlyPeriodDataPoints(
         transactions: [Transaction],
         months: Int,
         baseCurrency: String,
@@ -136,7 +136,7 @@ nonisolated final class InsightsService {
 
     // MARK: - Category Deep Dive
 
-    func generateCategoryDeepDive(
+    nonisolated func generateCategoryDeepDive(
         categoryName: String,
         allTransactions: [Transaction],
         timeFilter: TimeFilter,
@@ -186,7 +186,7 @@ nonisolated final class InsightsService {
     /// avoiding repeated Array(transactionStore.transactions) copies per granularity (P3/P4 fix).
     /// Phase 42b: `sharedInsights` — granularity-independent insights computed once by caller;
     /// when provided, shared generators are skipped and these insights are merged in.
-    func generateAllInsights(
+    nonisolated func generateAllInsights(
         granularity: InsightGranularity,
         transactions allTransactions: [Transaction],
         baseCurrency: String,
@@ -442,7 +442,7 @@ nonisolated final class InsightsService {
     ///
     /// Returns: `(results, sharedInsights)` — caller should pass `sharedInsights` from Phase 1
     /// into Phase 2 via the `sharedInsights` parameter.
-    func computeGranularities(
+    nonisolated func computeGranularities(
         _ granularities: [InsightGranularity],
         transactions allTransactions: [Transaction],
         baseCurrency: String,
@@ -514,7 +514,7 @@ nonisolated final class InsightsService {
     /// Computes all insight granularities in a single call.
     /// Called once from InsightsViewModel.loadInsightsBackground() to replace
     /// the 5-iteration for-loop that caused 5 separate main actor hops.
-    func computeAllGranularities(
+    nonisolated func computeAllGranularities(
         transactions allTransactions: [Transaction],
         baseCurrency: String,
         cacheManager: TransactionCacheManager,
@@ -538,7 +538,7 @@ nonisolated final class InsightsService {
     // MARK: - Period Data Points (Phase 18)
 
     /// Groups all transactions into PeriodDataPoint buckets according to granularity.
-    func computePeriodDataPoints(
+    nonisolated func computePeriodDataPoints(
         transactions: [Transaction],
         granularity: InsightGranularity,
         baseCurrency: String,
@@ -632,7 +632,7 @@ nonisolated final class InsightsService {
     /// For .quarter/.year: aggregates 3/12 monthly totals per period.
     /// For .allTime: aggregates all monthly totals into one point.
     /// .week MUST NOT use this (weekly resolution ≠ monthly) — caller checks granularity.
-    private func computePeriodDataPointsFromPreAggregated(
+    private nonisolated func computePeriodDataPointsFromPreAggregated(
         preAggregated: PreAggregatedData,
         granularity: InsightGranularity,
         firstTransactionDate: Date?
@@ -1010,13 +1010,13 @@ nonisolated final class InsightsService {
     }
 
     /// Returns the amount in baseCurrency. Uses cached convertedAmount when available.
-    func resolveAmount(_ transaction: Transaction, baseCurrency: String) -> Double {
+    nonisolated func resolveAmount(_ transaction: Transaction, baseCurrency: String) -> Double {
         guard transaction.currency != baseCurrency else { return transaction.amount }
         return transaction.convertedAmount ?? transaction.amount
     }
 
     /// Inline helper to avoid Calendar extension conflicts with Date+Helpers.swift.
-    func startOfMonth(_ calendar: Calendar, for date: Date) -> Date {
+    nonisolated func startOfMonth(_ calendar: Calendar, for date: Date) -> Date {
         let components = calendar.dateComponents([.year, .month], from: date)
         return calendar.date(from: components) ?? date
     }
@@ -1031,7 +1031,7 @@ nonisolated final class InsightsService {
     /// returns the cached month[0] result — even though a different transaction
     /// slice was passed. Since each monthly slice is independent, we must bypass
     /// the cache entirely and do the arithmetic directly.
-    private func calculateMonthlySummary(
+    private nonisolated func calculateMonthlySummary(
         transactions: [Transaction],
         baseCurrency: String,
         txDateMap: [String: Date]? = nil   // Phase 42b: pre-parsed dates
@@ -1064,7 +1064,7 @@ nonisolated final class InsightsService {
     }
 
     /// Converts a recurring series amount to monthly equivalent in baseCurrency.
-    func seriesMonthlyEquivalent(_ series: RecurringSeries, baseCurrency: String) -> Double {
+    nonisolated func seriesMonthlyEquivalent(_ series: RecurringSeries, baseCurrency: String) -> Double {
         let amount = NSDecimalNumber(decimal: series.amount).doubleValue
         let rawMonthly: Double
         switch series.frequency {
@@ -1083,7 +1083,7 @@ nonisolated final class InsightsService {
     /// Phase 23-C P12: shared monthly recurring net calculation.
     /// Was duplicated verbatim in generateCashFlowInsights and generateCashFlowInsightsFromPeriodPoints.
     /// Phase 48: Takes snapshot params instead of accessing transactionStore directly.
-    func monthlyRecurringNet(
+    nonisolated func monthlyRecurringNet(
         baseCurrency: String,
         recurringSeries: [RecurringSeries],
         categories: [CustomCategory]

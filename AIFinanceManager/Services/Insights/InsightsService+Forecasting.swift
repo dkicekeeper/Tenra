@@ -15,7 +15,7 @@ extension InsightsService {
 
     // MARK: - Forecasting Insights (Phase 24)
 
-    func generateForecastingInsights(
+    nonisolated func generateForecastingInsights(
         allTransactions: [Transaction],
         baseCurrency: String,
         snapshot: DataSnapshot,
@@ -57,7 +57,7 @@ extension InsightsService {
     // MARK: - Private Forecasting Sub-Generators
 
     /// Projects month-end spend = avg daily rate × remaining days + pending recurring.
-    private func generateSpendingForecast(transactions: [Transaction], recurringSeries: [RecurringSeries], categories: [CustomCategory], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
+    private nonisolated func generateSpendingForecast(transactions: [Transaction], recurringSeries: [RecurringSeries], categories: [CustomCategory], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
         let calendar = Calendar.current
         let now = Date()
         let df = DateFormatters.dateFormatter
@@ -126,7 +126,7 @@ extension InsightsService {
     }
 
     /// How many months the current balance will last at the current net-burn rate.
-    private func generateBalanceRunway(accounts: [Account], transactions: [Transaction], baseCurrency: String, balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil) -> Insight? {
+    private nonisolated func generateBalanceRunway(accounts: [Account], transactions: [Transaction], baseCurrency: String, balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil) -> Insight? {
         let currentBalance = accounts.reduce(0.0) { $0 + balanceFor($1.id) }
         guard currentBalance > 0 else { return nil }
 
@@ -182,7 +182,7 @@ extension InsightsService {
     }
 
     /// Compares this month's expenses against the same month last year.
-    private func generateYearOverYear(transactions: [Transaction], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
+    private nonisolated func generateYearOverYear(transactions: [Transaction], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
         let calendar = Calendar.current
         let now = Date()
         guard let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: now) else { return nil }
@@ -233,7 +233,7 @@ extension InsightsService {
     }
 
     /// Identifies which calendar month historically generates the highest income.
-    private func generateIncomeSeasonality(transactions: [Transaction], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
+    private nonisolated func generateIncomeSeasonality(transactions: [Transaction], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
         let calendar = Calendar.current
         let now = Date()
         guard let fiveYearsAgo = calendar.date(byAdding: .year, value: -5, to: now) else { return nil }
@@ -291,7 +291,7 @@ extension InsightsService {
     }
 
     /// Compares current daily spending rate vs last month's daily rate.
-    private func generateSpendingVelocity(transactions: [Transaction], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
+    private nonisolated func generateSpendingVelocity(transactions: [Transaction], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
         let calendar = Calendar.current
         let now = Date()
         let dayOfMonth = calendar.component(.day, from: now)
@@ -352,7 +352,7 @@ extension InsightsService {
 
     /// Groups income transactions by category to show income source distribution.
     /// Phase 31: Uses CoreData fetch for full-history income totals by category.
-    func generateIncomeSourceBreakdown(allTransactions: [Transaction], categories: [CustomCategory], baseCurrency: String) -> Insight? {
+    nonisolated func generateIncomeSourceBreakdown(allTransactions: [Transaction], categories: [CustomCategory], baseCurrency: String) -> Insight? {
         let incomeCategories = categories.filter { $0.type == .income }
         guard incomeCategories.count >= 2 else { return nil }
 

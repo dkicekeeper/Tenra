@@ -13,7 +13,7 @@ extension InsightsService {
 
     // MARK: - Cash Flow Insights (legacy timeFilter path)
 
-    func generateCashFlowInsights(
+    nonisolated func generateCashFlowInsights(
         allTransactions: [Transaction],
         timeFilter: TimeFilter,
         baseCurrency: String,
@@ -158,7 +158,7 @@ extension InsightsService {
 
     // MARK: - Cash Flow from Period Points (Phase 18)
 
-    func generateCashFlowInsightsFromPeriodPoints(
+    nonisolated func generateCashFlowInsightsFromPeriodPoints(
         periodPoints: [PeriodDataPoint],
         allTransactions: [Transaction],
         granularity: InsightGranularity,

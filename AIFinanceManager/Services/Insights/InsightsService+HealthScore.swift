@@ -19,7 +19,7 @@ extension InsightsService {
     /// Computes a composite 0-100 financial health score from five weighted components.
     /// Call after `generateAllInsights` once totals and period data points are available.
     /// Phase 41: Receives pre-captured snapshots — safe to call from Task.detached.
-    func computeHealthScore(
+    nonisolated func computeHealthScore(
         totalIncome: Double,
         totalExpenses: Double,
         latestNetFlow: Double,

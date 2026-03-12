@@ -14,7 +14,7 @@ extension InsightsService {
 
     // MARK: - Budget Insights
 
-    func generateBudgetInsights(
+    nonisolated func generateBudgetInsights(
         transactions: [Transaction],
         timeFilter: TimeFilter,
         baseCurrency: String,

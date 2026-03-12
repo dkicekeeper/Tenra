@@ -13,7 +13,7 @@ extension InsightsService {
 
     // MARK: - Income Insights
 
-    func generateIncomeInsights(
+    nonisolated func generateIncomeInsights(
         filtered: [Transaction],
         allTransactions: [Transaction],
         periodSummary: PeriodSummary,

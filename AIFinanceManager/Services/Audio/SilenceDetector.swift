@@ -10,7 +10,7 @@ import AVFAudio
 
 /// Detects silence in audio stream using Voice Activity Detection (VAD)
 /// Uses RMS (Root Mean Square) energy calculation to determine if audio contains speech
-class SilenceDetector {
+nonisolated class SilenceDetector {
 
     // MARK: - Configuration
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-class CSVExporter {
+nonisolated class CSVExporter {
 
     /// Export transactions to CSV string.
     /// - Parameters:

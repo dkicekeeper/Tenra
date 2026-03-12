@@ -333,12 +333,4 @@ extension NSManagedObjectContext {
             }
         }
     }
-    
-    /// Perform operation synchronously and save if successful
-    func performAndSaveSync(_ block: () throws -> Void) throws {
-        try block()
-        if hasChanges {
-            try save()
-        }
-    }
 }

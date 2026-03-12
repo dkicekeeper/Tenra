@@ -8,7 +8,6 @@
 
 import Foundation
 import SwiftUI
-import Combine
 
 /// Display data for a category in UI
 struct CategoryDisplayData: Identifiable, Hashable {

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 
 /// In-memory модель агрегированных данных по категориям/подкатегориям
 /// Supports 4 levels of granularity:

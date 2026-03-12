@@ -6,9 +6,8 @@
 //
 
 import Foundation
-import Combine
 
-class StatementTextParser {
+nonisolated class StatementTextParser {
     /// Парсит распознанный текст выписки Alatau City Bank в CSVFile формат
     /// Если structuredRows предоставлены, использует их напрямую, иначе парсит текст
     static func parseStatementToCSV(_ text: String, structuredRows: [[String]]? = nil) -> CSVFile {

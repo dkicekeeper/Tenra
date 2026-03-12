@@ -18,7 +18,7 @@ struct CSVFile {
     }
 }
 
-class CSVImporter {
+nonisolated class CSVImporter {
     private static let logger = Logger(subsystem: "AIFinanceManager", category: "CSVImporter")
 
     static func parseCSV(from url: URL) throws -> CSVFile {

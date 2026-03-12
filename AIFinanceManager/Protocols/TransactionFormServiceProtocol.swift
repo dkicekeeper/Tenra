@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 
 /// Result of form validation
 struct ValidationResult {

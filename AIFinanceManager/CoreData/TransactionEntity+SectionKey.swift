@@ -41,18 +41,20 @@ extension TransactionEntity {
 
 // MARK: - TransactionSectionKeyFormatter
 
-/// Shared DateFormatter for "YYYY-MM-DD" section key strings.
-/// Enum namespace ensures a single static instance across all call sites.
-enum TransactionSectionKeyFormatter {
-    private static let formatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.timeZone = TimeZone.current
-        return f
+/// Thread-safe formatter for "YYYY-MM-DD" section key strings.
+///
+/// Uses Calendar component extraction instead of DateFormatter because
+/// `willSave()` runs on CoreData's background queue — DateFormatter is NOT
+/// thread-safe and the old shared static instance was a data-race P0.
+enum TransactionSectionKeyFormatter: Sendable {
+    private nonisolated(unsafe) static let calendar: Calendar = {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = .current
+        return cal
     }()
 
     static func string(from date: Date) -> String {
-        formatter.string(from: date)
+        let comps = calendar.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", comps.year ?? 0, comps.month ?? 0, comps.day ?? 0)
     }
 }

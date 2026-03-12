@@ -10,8 +10,7 @@ import Foundation
 
 /// Protocol for CSV row validation operations
 /// Separates validation logic from import orchestration
-@MainActor
-protocol CSVValidationServiceProtocol {
+nonisolated protocol CSVValidationServiceProtocol {
     /// Validates a single CSV row and converts it to a structured DTO
     /// - Parameters:
     ///   - row: Array of string values from CSV

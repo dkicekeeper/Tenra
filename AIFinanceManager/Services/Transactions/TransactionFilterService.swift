@@ -10,7 +10,7 @@ import Foundation
 
 /// Service responsible for filtering transactions by various criteria
 /// Extracted from TransactionsViewModel to improve separation of concerns
-class TransactionFilterService {
+nonisolated class TransactionFilterService {
 
     // MARK: - Properties
 

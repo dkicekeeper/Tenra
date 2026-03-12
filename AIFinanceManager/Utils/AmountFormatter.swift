@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AmountFormatter {
+nonisolated struct AmountFormatter {
     // Кэшированный форматтер для производительности
     private static let cachedFormatter: NumberFormatter = {
         let formatter = NumberFormatter()

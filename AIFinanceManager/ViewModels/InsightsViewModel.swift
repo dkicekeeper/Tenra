@@ -124,6 +124,13 @@ final class InsightsViewModel {
         !transactionStore.transactions.isEmpty
     }
 
+    // MARK: - Lifecycle
+
+    deinit {
+        recomputeTask?.cancel()
+        debounceTask?.cancel()
+    }
+
     // MARK: - Init
 
     init(

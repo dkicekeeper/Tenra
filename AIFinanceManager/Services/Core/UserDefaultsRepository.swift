@@ -59,16 +59,9 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol {
     }
     
     func saveTransactions(_ transactions: [Transaction]) {
-        // Perform save asynchronously on background queue
-        Task.detached(priority: .utility) {
-            PerformanceProfiler.start("saveTransactions")
-
-            let encoder = JSONEncoder()
-            if let encoded = try? encoder.encode(transactions) {
-                UserDefaults.standard.set(encoded, forKey: self.storageKeyTransactions)
-            }
-
-            PerformanceProfiler.end("saveTransactions")
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(transactions) {
+            userDefaults.set(encoded, forKey: storageKeyTransactions)
         }
     }
 
@@ -100,15 +93,9 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol {
     }
     
     func saveAccounts(_ accounts: [Account]) {
-        Task.detached(priority: .utility) {
-            PerformanceProfiler.start("saveAccounts")
-
-            let encoder = JSONEncoder()
-            if let encoded = try? encoder.encode(accounts) {
-                UserDefaults.standard.set(encoded, forKey: self.storageKeyAccounts)
-            }
-
-            PerformanceProfiler.end("saveAccounts")
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(accounts) {
+            userDefaults.set(encoded, forKey: storageKeyAccounts)
         }
     }
 
@@ -152,15 +139,9 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol {
     }
     
     func saveCategoryRules(_ rules: [CategoryRule]) {
-        Task.detached(priority: .utility) {
-            PerformanceProfiler.start("saveCategoryRules")
-            
-            let encoder = JSONEncoder()
-            if let encoded = try? encoder.encode(rules) {
-                UserDefaults.standard.set(encoded, forKey: self.storageKeyRules)
-            }
-            
-            PerformanceProfiler.end("saveCategoryRules")
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(rules) {
+            userDefaults.set(encoded, forKey: storageKeyRules)
         }
     }
     
@@ -175,15 +156,9 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol {
     }
     
     func saveRecurringSeries(_ series: [RecurringSeries]) {
-        Task.detached(priority: .utility) {
-            PerformanceProfiler.start("saveRecurringSeries")
-            
-            let encoder = JSONEncoder()
-            if let encoded = try? encoder.encode(series) {
-                UserDefaults.standard.set(encoded, forKey: self.storageKeyRecurringSeries)
-            }
-            
-            PerformanceProfiler.end("saveRecurringSeries")
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(series) {
+            userDefaults.set(encoded, forKey: storageKeyRecurringSeries)
         }
     }
     
@@ -198,15 +173,9 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol {
     }
     
     func saveRecurringOccurrences(_ occurrences: [RecurringOccurrence]) {
-        Task.detached(priority: .utility) {
-            PerformanceProfiler.start("saveRecurringOccurrences")
-            
-            let encoder = JSONEncoder()
-            if let encoded = try? encoder.encode(occurrences) {
-                UserDefaults.standard.set(encoded, forKey: self.storageKeyRecurringOccurrences)
-            }
-            
-            PerformanceProfiler.end("saveRecurringOccurrences")
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(occurrences) {
+            userDefaults.set(encoded, forKey: storageKeyRecurringOccurrences)
         }
     }
     

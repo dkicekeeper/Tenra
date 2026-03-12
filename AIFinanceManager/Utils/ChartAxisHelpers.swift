@@ -16,7 +16,7 @@ import Foundation
 /// Eliminates duplicated axis formatting code across:
 /// - `PeriodBarChart`
 /// - `PeriodLineChart`
-enum ChartAxisHelpers {
+nonisolated enum ChartAxisHelpers {
 
     // MARK: - Y-axis value formatter (all charts)
 

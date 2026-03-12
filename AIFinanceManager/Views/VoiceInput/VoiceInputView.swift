@@ -199,7 +199,7 @@ struct VoiceInputView: View {
     private func handleStopTap() {
         voiceService.stopRecording()
         Task {
-            try? await Task.sleep(nanoseconds: VoiceInputConstants.finalizationDelayMs * 1_000_000)
+            try? await Task.sleep(for: .milliseconds(VoiceInputConstants.finalizationDelayMs))
             await MainActor.run {
                 if let errorMsg = voiceService.errorMessage, !errorMsg.isEmpty {
                     errorAlertMessage = errorMsg
@@ -219,7 +219,7 @@ struct VoiceInputView: View {
 
     private func startRecordingOnAppear() {
         Task {
-            try? await Task.sleep(nanoseconds: VoiceInputConstants.autoStartDelayMs * 1_000_000)
+            try? await Task.sleep(for: .milliseconds(VoiceInputConstants.autoStartDelayMs))
             let authorized = await voiceService.requestAuthorization()
             if authorized {
                 do {

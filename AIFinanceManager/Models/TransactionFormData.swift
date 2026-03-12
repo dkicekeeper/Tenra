@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 
 /// Unified form data for transaction creation/editing
 struct TransactionFormData {

@@ -102,7 +102,7 @@ struct VoiceInputConfirmationView: View {
 
                             // Создаем новую задачу с debounce
                             amountValidationTask = Task {
-                                try? await Task.sleep(nanoseconds: VoiceInputConstants.validationDebounceMs * 1_000_000)
+                                try? await Task.sleep(for: .milliseconds(VoiceInputConstants.validationDebounceMs))
 
                                 // Проверяем, не была ли задача отменена
                                 guard !Task.isCancelled else { return }
@@ -219,7 +219,7 @@ struct VoiceInputConfirmationView: View {
 
                 // Создаем новую задачу с debounce
                 accountValidationTask = Task {
-                    try? await Task.sleep(nanoseconds: VoiceInputConstants.validationDebounceMs * 1_000_000)
+                    try? await Task.sleep(for: .milliseconds(VoiceInputConstants.validationDebounceMs))
 
                     guard !Task.isCancelled else { return }
 
@@ -234,7 +234,7 @@ struct VoiceInputConfirmationView: View {
 
                 // Создаем новую задачу с debounce
                 categoryValidationTask = Task {
-                    try? await Task.sleep(nanoseconds: VoiceInputConstants.validationDebounceMs * 1_000_000)
+                    try? await Task.sleep(for: .milliseconds(VoiceInputConstants.validationDebounceMs))
 
                     guard !Task.isCancelled else { return }
 

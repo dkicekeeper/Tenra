@@ -23,7 +23,7 @@
 
 import Foundation
 
-class CurrencyConverter {
+nonisolated class CurrencyConverter {
     private static let baseURL = "https://nationalbank.kz/rss/get_rates.cfm"
     private static var cachedRates: [String: Double] = [:]
     private static var cacheDate: Date?

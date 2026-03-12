@@ -43,7 +43,7 @@ class HistoryFilterCoordinator {
     private var searchTask: Task<Void, Never>?
 
     /// Search debounce delay in nanoseconds (300ms)
-    private let searchDebounceDelay: UInt64 = 300_000_000
+    private let searchDebounceDelay: Duration = .milliseconds(300)
 
     // MARK: - Initialization
 
@@ -58,7 +58,7 @@ class HistoryFilterCoordinator {
         searchTask?.cancel()
 
         searchTask = Task {
-            try? await Task.sleep(nanoseconds: self.searchDebounceDelay)
+            try? await Task.sleep(for: self.searchDebounceDelay)
             guard !Task.isCancelled else { return }
 
             if self.searchText == text {

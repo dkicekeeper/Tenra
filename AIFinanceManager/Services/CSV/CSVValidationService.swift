@@ -10,8 +10,7 @@ import Foundation
 
 /// Service for validating CSV rows and converting them to structured DTOs
 /// Handles all field validation, parsing, and type conversions
-@MainActor
-class CSVValidationService: CSVValidationServiceProtocol {
+nonisolated class CSVValidationService: CSVValidationServiceProtocol {
 
     // MARK: - Properties
 
@@ -167,7 +166,7 @@ class CSVValidationService: CSVValidationServiceProtocol {
 
         await withTaskGroup(of: [(Int, Result<CSVRow, CSVValidationError>)].self) { group in
             for (batchIndex, batch) in batches.enumerated() {
-                group.addTask { @MainActor in
+                group.addTask {
                     var batchResults: [(Int, Result<CSVRow, CSVValidationError>)] = []
                     batchResults.reserveCapacity(batch.count)
 

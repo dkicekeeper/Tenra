@@ -28,7 +28,7 @@ import Foundation
 import SwiftUI
 import os
 
-final class InsightsService: @unchecked Sendable {
+final class InsightsService {
 
     // MARK: - Logger
     // Internal so cross-file extensions can log with `Self.logger`.

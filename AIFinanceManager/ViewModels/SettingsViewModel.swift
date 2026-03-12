@@ -51,6 +51,10 @@ final class SettingsViewModel {
     @ObservationIgnored private weak var categoriesViewModel: CategoriesViewModel?
     @ObservationIgnored private weak var accountsViewModel: AccountsViewModel?
 
+    // MARK: - Message Auto-Clear
+
+    @ObservationIgnored private var messageClearTask: Task<Void, Never>?
+
     // MARK: - Initialization
 
     init(
@@ -323,14 +327,12 @@ final class SettingsViewModel {
         errorMessage = message
         successMessage = nil
 
-
-        // Auto-clear after 5 seconds
-        Task {
-            try? await Task.sleep(nanoseconds: 5_000_000_000)
-            await MainActor.run {
-                if self.errorMessage == message {
-                    self.errorMessage = nil
-                }
+        // Auto-clear after 5 seconds (cancel previous to avoid race)
+        messageClearTask?.cancel()
+        messageClearTask = Task {
+            try? await Task.sleep(for: .seconds(5))
+            if self.errorMessage == message {
+                self.errorMessage = nil
             }
         }
     }
@@ -339,14 +341,12 @@ final class SettingsViewModel {
         successMessage = message
         errorMessage = nil
 
-
-        // Auto-clear after 3 seconds
-        Task {
-            try? await Task.sleep(nanoseconds: 3_000_000_000)
-            await MainActor.run {
-                if self.successMessage == message {
-                    self.successMessage = nil
-                }
+        // Auto-clear after 3 seconds (cancel previous to avoid race)
+        messageClearTask?.cancel()
+        messageClearTask = Task {
+            try? await Task.sleep(for: .seconds(3))
+            if self.successMessage == message {
+                self.successMessage = nil
             }
         }
     }

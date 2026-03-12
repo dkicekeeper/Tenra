@@ -323,7 +323,7 @@ class VoiceInputService: NSObject {
         currentRecognitionRequest?.endAudio()
 
         // Даем время на финализацию результата
-        try? await Task.sleep(nanoseconds: VoiceInputConstants.audioEngineStopDelayMs * 1_000_000)
+        try? await Task.sleep(for: .milliseconds(VoiceInputConstants.audioEngineStopDelayMs))
 
         // Останавливаем аудио engine
         if let engine = currentAudioEngine, engine.isRunning {

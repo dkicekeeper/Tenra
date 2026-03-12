@@ -10,7 +10,7 @@ import Foundation
 
 /// Service responsible for generating recurring transactions
 /// Extracted from TransactionsViewModel to improve separation of concerns
-class RecurringTransactionGenerator {
+nonisolated class RecurringTransactionGenerator {
 
     // MARK: - Properties
 

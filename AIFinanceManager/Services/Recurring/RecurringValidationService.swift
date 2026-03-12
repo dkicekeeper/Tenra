@@ -10,7 +10,7 @@ import Foundation
 
 /// Service responsible for validating recurring series
 /// Encapsulates all business rules for creating and updating recurring transactions
-class RecurringValidationService {
+nonisolated class RecurringValidationService {
 
     // MARK: - Validation Methods
 

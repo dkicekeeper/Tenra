@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum LoanPaymentService {
+nonisolated enum LoanPaymentService {
 
     // MARK: - Monthly Payment Calculation
 

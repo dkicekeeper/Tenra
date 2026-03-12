@@ -7,7 +7,11 @@
 
 import Foundation
 
-/// Кешированные DateFormatter для оптимизации производительности
+/// Cached DateFormatter instances — MainActor-isolated because DateFormatter
+/// is NOT thread-safe. Never access these from background threads/tasks.
+/// For background date formatting, use Calendar component extraction
+/// (see TransactionSectionKeyFormatter for the pattern).
+@MainActor
 enum DateFormatters {
     /// Форматтер для дат в формате "yyyy-MM-dd"
     static let dateFormatter: DateFormatter = {

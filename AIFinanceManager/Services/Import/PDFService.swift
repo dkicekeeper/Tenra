@@ -629,66 +629,69 @@ class PDFService {
     /// Распознает текст с получением координат для структурирования
     private func recognizeTextWithCoordinates(from cgImage: CGImage, pageSize: CGSize) async throws -> (text: String, observations: [TextObservation]) {
         return try await withCheckedThrowingContinuation { continuation in
-            // Выполняем запрос на фоне (не блокируя main thread)
             DispatchQueue.global(qos: .userInitiated).async {
                 var recognizedStrings: [String] = []
                 var textObservations: [TextObservation] = []
-                
-                // Создаем новый request для каждого изображения с обработчиком в инициализаторе
+
+                // Guard against double-resume: the completion handler fires
+                // on success, but handler.perform() can also throw independently.
+                var didResume = false
+
                 let request = VNRecognizeTextRequest { request, error in
+                    guard !didResume else { return }
+                    didResume = true
+
                     if let error = error {
                         continuation.resume(throwing: PDFError.ocrError(error.localizedDescription))
                         return
                     }
-                    
+
                     guard let observations = request.results as? [VNRecognizedTextObservation] else {
                         continuation.resume(returning: ("", []))
                         return
                     }
-                    
-                    // Сортируем наблюдения сверху вниз, слева направо для правильного порядка
+
                     let sortedObservations = observations.sorted { obs1, obs2 in
-                        // Сначала по Y (сверху вниз), потом по X (слева направо)
-                        let y1 = 1.0 - obs1.boundingBox.midY // Инвертируем Y для сортировки
+                        let y1 = 1.0 - obs1.boundingBox.midY
                         let y2 = 1.0 - obs2.boundingBox.midY
-                        
-                        if abs(y1 - y2) > 0.02 { // Разные строки (2% высоты)
+
+                        if abs(y1 - y2) > 0.02 {
                             return y1 < y2
                         } else {
                             return obs1.boundingBox.midX < obs2.boundingBox.midX
                         }
                     }
-                    
+
                     for observation in sortedObservations {
                         guard let topCandidate = observation.topCandidates(1).first else {
                             continue
                         }
-                        
+
                         let text = topCandidate.string
                         recognizedStrings.append(text)
-                        
-                        // Сохраняем наблюдение с координатами
+
                         textObservations.append(TextObservation(
                             text: text,
                             boundingBox: observation.boundingBox,
                             confidence: topCandidate.confidence
                         ))
                     }
-                    
+
                     let fullText = recognizedStrings.joined(separator: " ")
                     continuation.resume(returning: (fullText, textObservations))
                 }
-                
-                // Настраиваем параметры OCR
+
                 request.recognitionLanguages = ["ru-RU", "en-US"]
                 request.recognitionLevel = .accurate
                 request.usesLanguageCorrection = true
-                
+
                 let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-                
+
                 do {
                     try handler.perform([request])
                 } catch {
+                    guard !didResume else { return }
+                    didResume = true
                     continuation.resume(throwing: PDFError.ocrError(error.localizedDescription))
                 }
             }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum DepositInterestService {
+nonisolated enum DepositInterestService {
 
     // MARK: - Public Methods
 

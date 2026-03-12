@@ -8,7 +8,7 @@
 import Foundation
 
 /// Утилита для экспорта данных для обучения ML моделей
-class MLDataExporter {
+nonisolated class MLDataExporter {
 
     // MARK: - Category Training Data
 

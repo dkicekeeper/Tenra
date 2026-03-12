@@ -12,7 +12,7 @@ import Foundation
 /// Service responsible for grouping and sorting transactions
 /// Extracted from TransactionsViewModel to improve separation of concerns
 /// OPTIMIZED: Uses TransactionCacheManager for parsed dates (23x faster)
-class TransactionGroupingService {
+nonisolated class TransactionGroupingService {
 
     // MARK: - Properties
 

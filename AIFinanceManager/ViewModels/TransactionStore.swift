@@ -516,7 +516,7 @@ final class TransactionStore {
         // Debounced sync handles cache invalidation and insights recompute.
         syncDebounceTask?.cancel()
         syncDebounceTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: 16_000_000) // ~1 frame (16ms)
+            try? await Task.sleep(for: .milliseconds(16)) // ~1 frame
             guard !Task.isCancelled else { return }
             // Pass batchMode=true during import so InsightsVM isn't invalidated on every batch.
             self?.coordinator?.syncTransactionStoreToViewModels(batchMode: self?.isImporting ?? false)

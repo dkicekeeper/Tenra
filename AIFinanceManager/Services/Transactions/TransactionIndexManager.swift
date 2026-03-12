@@ -9,7 +9,7 @@ import Foundation
 
 /// Manages indexes for fast transaction filtering
 /// Provides O(1) lookups instead of O(n) linear searches
-class TransactionIndexManager {
+nonisolated class TransactionIndexManager {
     // MARK: - Indexes
 
     /// Index by account ID: accountId -> Set of transaction IDs

@@ -31,7 +31,7 @@ protocol CategoryRepositoryProtocol {
 }
 
 /// CoreData implementation of CategoryRepositoryProtocol
-final class CategoryRepository: CategoryRepositoryProtocol {
+nonisolated final class CategoryRepository: CategoryRepositoryProtocol {
 
     private static let logger = Logger(subsystem: "AIFinanceManager", category: "CategoryRepository")
 

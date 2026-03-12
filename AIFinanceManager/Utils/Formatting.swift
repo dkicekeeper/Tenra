@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Formatting {
+nonisolated struct Formatting {
     static let currencySymbols: [String: String] = [
         "KZT": "₸",
         "USD": "$",

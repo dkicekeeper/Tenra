@@ -217,7 +217,7 @@ class TransactionsViewModel {
             return
         }
 
-        Task { @MainActor in
+        Task {
             do {
                 _ = try await transactionStore.add(transaction)
             } catch {
@@ -231,7 +231,7 @@ class TransactionsViewModel {
         // This triggers ONE sync instead of N syncs
         guard let transactionStore = transactionStore else { return }
 
-        Task { @MainActor in
+        Task {
             do {
                 try await transactionStore.addBatch(newTransactions)
                 rebuildIndexes()
@@ -247,7 +247,7 @@ class TransactionsViewModel {
             return
         }
 
-        Task { @MainActor in
+        Task {
             do {
                 for transaction in newTransactions {
                     _ = try await transactionStore.add(transaction)
@@ -270,7 +270,7 @@ class TransactionsViewModel {
         }
 
 
-        Task { @MainActor in
+        Task {
             do {
                 try await transactionStore.update(transaction)
             } catch {
@@ -290,7 +290,7 @@ class TransactionsViewModel {
             recurringOccurrences.removeAll { $0.id == occurrenceId }
         }
 
-        Task { @MainActor in
+        Task {
             do {
                 try await transactionStore.delete(transaction)
             } catch {
@@ -315,7 +315,7 @@ class TransactionsViewModel {
         guard let store = transactionStore else { return }
         let matchingDescription = newRule.description.lowercased()
 
-        Task { @MainActor in
+        Task {
             for tx in store.transactions where tx.description.lowercased() == matchingDescription {
                 let updated = Transaction(
                     id: tx.id,
@@ -351,7 +351,7 @@ class TransactionsViewModel {
         guard let sourceIndex = accounts.firstIndex(where: { $0.id == sourceId }) else { return }
         let currency = accounts[sourceIndex].currency
 
-        Task { @MainActor in
+        Task {
             do {
                 try await transactionStore.transfer(
                     from: sourceId,
@@ -372,7 +372,7 @@ class TransactionsViewModel {
     func recalculateAccountBalances() {
         // Recalculate all balances through BalanceCoordinator
         if let coordinator = balanceCoordinator {
-            Task { @MainActor in
+            Task {
                 await coordinator.recalculateAll(accounts: accounts, transactions: allTransactions)
             }
         }
@@ -383,7 +383,7 @@ class TransactionsViewModel {
         // This is called after recurring transaction generation, CSV import, etc.
 
         if let coordinator = balanceCoordinator {
-            Task { @MainActor in
+            Task {
 
                 await coordinator.recalculateAll(
                     accounts: accounts,
@@ -406,7 +406,7 @@ class TransactionsViewModel {
         for account in accounts {
             // Update BalanceCoordinator with initial balance from account
             if let initialBalance = account.initialBalance {
-                Task { @MainActor in
+                Task {
                     await balanceCoordinator?.setInitialBalance(initialBalance, for: account.id)
                 }
             }
@@ -496,7 +496,7 @@ class TransactionsViewModel {
 
     func cleanupDeletedAccount(_ accountId: String) {
         // MIGRATED: BalanceCoordinator handles account removal
-        Task { @MainActor in
+        Task {
             await balanceCoordinator?.removeAccount(accountId)
         }
     }

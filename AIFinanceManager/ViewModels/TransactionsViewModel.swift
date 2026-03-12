@@ -181,22 +181,20 @@ class TransactionsViewModel {
         isDataLoaded = true
         PerformanceProfiler.start("TransactionsViewModel.loadDataAsync")
 
-        await MainActor.run { isLoading = true }
+        isLoading = true
 
         // PERFORMANCE OPTIMIZATION: Concurrent loading (Phase 2)
         // Phase 8: Storage loading handled by TransactionStore
         await generateRecurringAsync()
         await loadAggregateCacheAsync()
 
-        await MainActor.run { isLoading = false }
+        isLoading = false
         PerformanceProfiler.end("TransactionsViewModel.loadDataAsync")
     }
 
     /// Generate recurring transactions asynchronously (Phase 2)
     private func generateRecurringAsync() async {
-        await MainActor.run {
-            self.generateRecurringTransactions()
-        }
+        self.generateRecurringTransactions()
     }
 
     /// Load aggregate cache asynchronously
@@ -204,9 +202,7 @@ class TransactionsViewModel {
     private func loadAggregateCacheAsync() async {
         // Phase 8: Aggregate caching handled by TransactionStore
         // No action needed
-        await MainActor.run {
-            cacheManager.invalidateCategoryExpenses()
-        }
+        cacheManager.invalidateCategoryExpenses()
     }
 
     // MARK: - CRUD Operations (Delegated to Services)

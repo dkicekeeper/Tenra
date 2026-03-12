@@ -147,12 +147,10 @@ struct PDFImportCoordinator: View {
 
     // MARK: - PDF Analysis
     private func analyzePDF(url: URL) async {
-        await MainActor.run {
-            transactionsViewModel.isLoading = true
-            transactionsViewModel.errorMessage = nil
-            ocrProgress = nil
-            recognizedText = nil
-        }
+        transactionsViewModel.isLoading = true
+        transactionsViewModel.errorMessage = nil
+        ocrProgress = nil
+        recognizedText = nil
 
         do {
             // Extract text via PDFKit or OCR
@@ -165,42 +163,33 @@ struct PDFImportCoordinator: View {
             // Check that text is not empty
             let trimmedText = ocrResult.fullText.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmedText.isEmpty else {
-                await MainActor.run {
-                    transactionsViewModel.errorMessage = String(localized: "error.pdfExtraction")
-                    transactionsViewModel.isLoading = false
-                    ocrProgress = nil
-                }
+                transactionsViewModel.errorMessage = String(localized: "error.pdfExtraction")
+                transactionsViewModel.isLoading = false
+                ocrProgress = nil
                 return
             }
 
-            await MainActor.run {
-                recognizedText = ocrResult.fullText
-                structuredRows = ocrResult.structuredRows
-                ocrProgress = nil
-                transactionsViewModel.isLoading = false
-                showingRecognizedText = true
-            }
+            recognizedText = ocrResult.fullText
+            structuredRows = ocrResult.structuredRows
+            ocrProgress = nil
+            transactionsViewModel.isLoading = false
+            showingRecognizedText = true
 
         } catch let error as PDFError {
-            let errorMessage = error.localizedDescription
-            await MainActor.run {
-                transactionsViewModel.errorMessage = errorMessage
-                transactionsViewModel.isLoading = false
-                ocrProgress = nil
-                recognizedText = nil
-                structuredRows = nil
-            }
+            transactionsViewModel.errorMessage = error.localizedDescription
+            transactionsViewModel.isLoading = false
+            ocrProgress = nil
+            recognizedText = nil
+            structuredRows = nil
         } catch {
-            await MainActor.run {
-                transactionsViewModel.errorMessage = String(
-                    format: String(localized: "error.pdfRecognitionFailed"),
-                    error.localizedDescription
-                )
-                transactionsViewModel.isLoading = false
-                ocrProgress = nil
-                recognizedText = nil
-                structuredRows = nil
-            }
+            transactionsViewModel.errorMessage = String(
+                format: String(localized: "error.pdfRecognitionFailed"),
+                error.localizedDescription
+            )
+            transactionsViewModel.isLoading = false
+            ocrProgress = nil
+            recognizedText = nil
+            structuredRows = nil
         }
     }
 }

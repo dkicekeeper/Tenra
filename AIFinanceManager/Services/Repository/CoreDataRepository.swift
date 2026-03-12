@@ -13,7 +13,7 @@ import os
 
 /// Core Data implementation of DataRepositoryProtocol
 /// Delegates operations to specialized repositories for better separation of concerns
-nonisolated final class CoreDataRepository: DataRepositoryProtocol {
+nonisolated final class CoreDataRepository: DataRepositoryProtocol, @unchecked Sendable {
 
     private static let logger = Logger(subsystem: "AIFinanceManager", category: "CoreDataRepository")
 

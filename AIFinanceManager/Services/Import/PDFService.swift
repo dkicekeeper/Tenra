@@ -83,16 +83,14 @@ class PDFService {
         for pageIndex in 0..<pageCount {
             // Обновляем прогресс для текстовых PDF
             if let callback = progressCallback {
-                await MainActor.run {
-                    callback(pageIndex + 1, pageCount)
-                }
+                callback(pageIndex + 1, pageCount)
             }
-            
+
             guard let page = pdfDocument.page(at: pageIndex) else {
                 pageTexts.append("")
                 continue
             }
-            
+
             // Прямое извлечение текста (для текстовых PDF)
             if let pageText = page.string, !pageText.isEmpty {
                 let trimmedPageText = pageText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
@@ -163,16 +161,14 @@ class PDFService {
         for pageIndex in 0..<pageCount {
             // Обновляем прогресс (на main thread)
             if let callback = progressCallback {
-                await MainActor.run {
-                    callback(pageIndex + 1, pageCount)
-                }
+                callback(pageIndex + 1, pageCount)
             }
-            
+
             guard let page = pdfDocument.page(at: pageIndex) else {
                 pageTexts.append("")
                 continue
             }
-            
+
             // Рендерим страницу PDF в изображение
             let pageRect = page.bounds(for: .mediaBox)
             // Увеличиваем разрешение для лучшего качества OCR (2x)
@@ -212,9 +208,7 @@ class PDFService {
         
         // Финальный прогресс
         if let callback = progressCallback {
-            await MainActor.run {
-                callback(pageCount, pageCount)
-            }
+            callback(pageCount, pageCount)
         }
         
         let trimmedText = fullText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)

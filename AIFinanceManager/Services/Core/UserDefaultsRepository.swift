@@ -10,7 +10,7 @@ import Foundation
 
 /// UserDefaults-based implementation of DataRepositoryProtocol
 /// Handles all data persistence operations using UserDefaults
-nonisolated final class UserDefaultsRepository: DataRepositoryProtocol {
+nonisolated final class UserDefaultsRepository: DataRepositoryProtocol, @unchecked Sendable {
     
     // MARK: - Storage Keys
     

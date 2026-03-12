@@ -173,9 +173,7 @@ struct ImportTransactionPreviewView: View {
                 }
             }
 
-            await MainActor.run {
-                dismiss()
-            }
+            dismiss()
         }
     }
 }

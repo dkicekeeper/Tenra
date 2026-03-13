@@ -24,8 +24,11 @@ struct TransactionsSummaryCard: View {
         // предотвращая layout shift ("прыжок" контента вверх/вниз).
         ZStack {
             if isEmpty {
-                emptyState
-                    .transition(.opacity)
+                EmptyCardView(
+                    sectionTitle: String(localized: "analytics.history"),
+                    emptyTitle: String(localized: "emptyState.noTransactions")
+                )
+                .transition(.opacity)
             } else if let summary {
                 // Fix #8: removed .id("summary-…") — it forced SwiftUI to throw away and
                 // recreate AnalyticsCard on every income/expense change, preventing smooth
@@ -40,14 +43,6 @@ struct TransactionsSummaryCard: View {
         .frame(minHeight: AppSize.analyticsCardHeight)
         .animation(AppAnimation.gentleSpring, value: isEmpty)
         .animation(AppAnimation.gentleSpring, value: summary != nil)
-    }
-
-    // MARK: - Empty State
-    private var emptyState: some View {
-        EmptyCardView(
-            sectionTitle: String(localized: "analytics.history"),
-            emptyTitle: String(localized: "emptyState.noTransactions")
-        )
     }
 
     // MARK: - Loaded State

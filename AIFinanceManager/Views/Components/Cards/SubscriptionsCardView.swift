@@ -96,4 +96,5 @@ struct SubscriptionsCardView: View {
         transactionStore: coordinator.transactionStore,
         transactionsViewModel: coordinator.transactionsViewModel
     )
+    .screenPadding()
 }

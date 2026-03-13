@@ -21,21 +21,15 @@ struct CategoryGridView: View {
     var body: some View {
         Group {
             if categories.isEmpty {
-                emptyState
+                EmptyCardView(
+                    sectionTitle: String(localized: "categories.expenseCategories", defaultValue: "Expense Categories"),
+                    emptyTitle: String(localized: "emptyState.noCategories", defaultValue: "No categories"),
+                    action: emptyStateAction
+                )
             } else {
                 categoryGrid
             }
         }
-    }
-
-    // MARK: - Empty State
-
-    private var emptyState: some View {
-        EmptyCardView(
-            sectionTitle: String(localized: "categories.expenseCategories", defaultValue: "Expense Categories"),
-            emptyTitle: String(localized: "emptyState.noCategories", defaultValue: "No categories"),
-            action: emptyStateAction
-        )
     }
 
     // MARK: - Category Grid

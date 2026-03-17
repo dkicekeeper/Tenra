@@ -20,6 +20,12 @@ final class HomePersistentState {
     /// Nil only before the first computation completes.
     var cachedSummary: Summary? = nil
 
+    /// Top expense categories (by spend) with normalised weights for the
+    /// Apple Card-style gradient background in TransactionsSummaryCard.
+    /// Updated in the same `.task(id: summaryTrigger)` that recomputes `cachedSummary`.
+    /// Empty before first computation or when there are no expense transactions.
+    var cachedCategoryWeights: [CategoryColorWeight] = []
+
     /// Decoded wallpaper image (downsampled to screen resolution).
     /// UIImage is a class — changes propagate via @Observable automatically.
     var wallpaperImage: UIImage? = nil

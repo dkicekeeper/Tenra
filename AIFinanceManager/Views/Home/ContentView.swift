@@ -149,17 +149,27 @@ struct ContentView: View {
                 let currency     = viewModel.appSettings.baseCurrency
 
                 // Phase 40: All transactions in memory — always use SummaryCalculator directly.
-                let summary = await Task.detached(priority: .userInitiated) {
-                    SummaryCalculator.compute(
+                // Both summary and category weights are computed in one Task.detached so the
+                // transactions array is iterated only twice on the same background thread.
+                let (summary, categoryWeights) = await Task.detached(priority: .userInitiated) {
+                    let s = SummaryCalculator.compute(
                         transactions: snapshot,
                         filterStart: filterStart,
                         filterEnd: filterEnd,
                         baseCurrency: currency
                     )
+                    let w = SummaryCalculator.computeTopExpenseWeights(
+                        transactions: snapshot,
+                        filterStart: filterStart,
+                        filterEnd: filterEnd,
+                        baseCurrency: currency
+                    )
+                    return (s, w)
                 }.value
 
                 guard !Task.isCancelled else { return }
                 homeState.cachedSummary = summary
+                homeState.cachedCategoryWeights = categoryWeights
             }
             // Reactive wallpaper
             // Fires when wallpaperImageName changes. Skips re-appear when the image
@@ -261,7 +271,9 @@ struct ContentView: View {
             TransactionsSummaryCard(
                 summary: homeState.cachedSummary,
                 currency: viewModel.appSettings.baseCurrency,
-                isEmpty: transactionStore.transactions.isEmpty
+                isEmpty: transactionStore.transactions.isEmpty,
+                categoryWeights: homeState.cachedCategoryWeights,
+                customCategories: coordinator.categoriesViewModel.customCategories
             )
         }
         .buttonStyle(.bounce)

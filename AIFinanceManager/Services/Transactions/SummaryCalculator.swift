@@ -108,4 +108,66 @@ enum SummaryCalculator {
             plannedAmount: plannedExpenses
         )
     }
+
+    // MARK: - Category Gradient Background
+
+    /// Compute the top expense categories and their proportional weights for the
+    /// Apple Card-style gradient background in `TransactionsSummaryCard`.
+    ///
+    /// Runs identically on any thread (no @MainActor services required).
+    /// Returns at most `maxCount` items, sorted by spend descending, with
+    /// weights normalised to 0.0–1.0 relative to the largest category.
+    ///
+    /// - Parameters:
+    ///   - transactions: Full array captured on MainActor before dispatch.
+    ///   - filterStart: Inclusive lower bound of the active time window.
+    ///   - filterEnd: Exclusive upper bound of the active time window.
+    ///   - baseCurrency: The app base currency used for amount conversion.
+    ///   - maxCount: Maximum number of categories to return (default 5).
+    /// - Returns: Sorted `[CategoryColorWeight]`, empty when no expense data.
+    nonisolated static func computeTopExpenseWeights(
+        transactions: [Transaction],
+        filterStart: Date,
+        filterEnd: Date,
+        baseCurrency: String,
+        maxCount: Int = 5
+    ) -> [CategoryColorWeight] {
+        let dateFormatter = makeDateFormatter()
+        let today = Calendar.current.startOfDay(for: Date())
+
+        // Single O(N) pass: filter by date range + accumulate per-category totals.
+        var categoryTotals: [String: Double] = [:]
+
+        for tx in transactions {
+            // Only past (non-future) expense-like transactions count.
+            guard tx.type == .expense || tx.type == .loanPayment else { continue }
+            guard let txDate = dateFormatter.date(from: tx.date) else { continue }
+            guard txDate >= filterStart && txDate < filterEnd else { continue }
+            guard txDate <= today else { continue }
+
+            let amountInBase: Double
+            if tx.currency == baseCurrency {
+                amountInBase = tx.amount
+            } else {
+                amountInBase = tx.convertedAmount ?? tx.amount
+            }
+
+            categoryTotals[tx.category, default: 0] += amountInBase
+        }
+
+        guard !categoryTotals.isEmpty else { return [] }
+
+        // Sort descending by spend and keep the top N categories.
+        let sorted = categoryTotals
+            .sorted { $0.value > $1.value }
+            .prefix(maxCount)
+
+        // Normalise weights relative to the largest category (not total sum),
+        // so the dominant category always gets weight 1.0 and the others scale
+        // proportionally. This makes orb-size differences clearly visible.
+        let maxAmount = sorted.first?.value ?? 1.0
+        guard maxAmount > 0 else { return [] }
+
+        return sorted.map { CategoryColorWeight(category: $0.key, weight: $0.value / maxAmount) }
+    }
 }

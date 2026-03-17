@@ -9,6 +9,7 @@
 
 import SwiftUI
 import PhotosUI
+import UniformTypeIdentifiers
 
 /// Main Settings screen with modular component-based architecture
 /// Follows Single Responsibility Principle with Props pattern
@@ -31,7 +32,6 @@ struct SettingsView: View {
     @State private var showingResetConfirmation = false
     @State private var showingExportSheet = false
     @State private var showingImportPicker = false
-    @State private var selectedPhoto: PhotosPickerItem? = nil
 
     // MARK: - Body
 
@@ -120,29 +120,33 @@ struct SettingsView: View {
         SettingsGeneralSection(
             selectedCurrency: settingsViewModel.settings.baseCurrency,
             availableCurrencies: AppSettings.availableCurrencies,
-            currentBackgroundMode: settingsViewModel.settings.homeBackgroundMode,
-            wallpaperImage: settingsViewModel.currentWallpaper,
-            selectedPhoto: $selectedPhoto,
             onCurrencyChange: { newCurrency in
                 Task { await settingsViewModel.updateBaseCurrency(newCurrency) }
-            },
-            onBackgroundModeChange: { newMode in
-                Task { await settingsViewModel.updateBackgroundMode(newMode) }
-            },
-            onPhotoChange: { newItem in
-                guard let newItem else { return }
-                guard let data = try? await newItem.loadTransferable(type: Data.self) else { return }
-                guard let image = UIImage(data: data) else { return }
-                await settingsViewModel.selectWallpaper(image)
-                // Switching to wallpaper mode when a photo is picked
-                await settingsViewModel.updateBackgroundMode(.wallpaper)
-                // Reset so the same image can be re-selected
-                selectedPhoto = nil
-            },
-            onWallpaperRemove: {
-                await settingsViewModel.removeWallpaper()
             }
-        )
+        ) {
+            SettingsHomeBackgroundView(
+                currentMode: settingsViewModel.settings.homeBackgroundMode,
+                wallpaperImage: settingsViewModel.currentWallpaper,
+                blurWallpaper: settingsViewModel.settings.blurWallpaper,
+                onModeSelect: { newMode in
+                    Task { await settingsViewModel.updateBackgroundMode(newMode) }
+                },
+                onPhotoChange: { newItem in
+                    guard let newItem else { return }
+                    guard let data = try? await newItem.loadTransferable(type: Data.self) else { return }
+                    guard let image = UIImage(data: data) else { return }
+                    await settingsViewModel.selectWallpaper(image)
+                    // Automatically switch to wallpaper mode when a photo is picked
+                    await settingsViewModel.updateBackgroundMode(.wallpaper)
+                },
+                onWallpaperRemove: {
+                    await settingsViewModel.removeWallpaper()
+                },
+                onBlurChange: { blur in
+                    Task { await settingsViewModel.updateBlurWallpaper(blur) }
+                }
+            )
+        }
     }
 
     private var dataManagementSection: some View {

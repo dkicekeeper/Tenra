@@ -66,6 +66,7 @@
 "button.retry" = "Повторить";
 "button.change" = "Изменить";
 "button.select" = "Выбрать";
+"button.remove" = "Удалить";
 "button.apply" = "Применить";
 
 // MARK: - Empty States
@@ -84,6 +85,12 @@
 "settings.general" = "Общие настройки";
 "settings.baseCurrency" = "Базовая валюта";
 "settings.wallpaper" = "Обои на главной";
+"settings.background" = "Фон";
+"settings.background.none" = "Нет";
+"settings.background.gradient" = "Градиент";
+"settings.background.photo" = "Фото";
+"settings.background.blurWallpaper" = "Размыть обои";
+"settings.background.removePhoto" = "Удалить фото";
 "settings.dataManagement" = "Управление данными";
 "settings.categories" = "Категории";
 "settings.subcategories" = "Подкатегории";

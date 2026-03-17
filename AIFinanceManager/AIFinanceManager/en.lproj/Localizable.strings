@@ -66,6 +66,7 @@
 "button.retry" = "Retry";
 "button.change" = "Change";
 "button.select" = "Select";
+"button.remove" = "Remove";
 "button.apply" = "Apply";
 
 // MARK: - Empty States
@@ -84,6 +85,12 @@
 "settings.general" = "General Settings";
 "settings.baseCurrency" = "Base Currency";
 "settings.wallpaper" = "Home Wallpaper";
+"settings.background" = "Background";
+"settings.background.none" = "None";
+"settings.background.gradient" = "Gradient";
+"settings.background.photo" = "Photo";
+"settings.background.blurWallpaper" = "Blur Wallpaper";
+"settings.background.removePhoto" = "Remove Photo";
 "settings.dataManagement" = "Data Management";
 "settings.categories" = "Categories";
 "settings.subcategories" = "Subcategories";

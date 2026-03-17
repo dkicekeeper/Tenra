@@ -367,6 +367,7 @@ struct ContentView: View {
                 Image(uiImage: wallpaperImage)
                     .resizable()
                     .scaledToFill()
+                    .blur(radius: viewModel.appSettings.blurWallpaper ? 20 : 0, opaque: true)
                     .ignoresSafeArea(.all, edges: .all)
             }
         }

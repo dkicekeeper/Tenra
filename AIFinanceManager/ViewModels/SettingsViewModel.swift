@@ -190,6 +190,16 @@ final class SettingsViewModel {
         }
     }
 
+    /// Toggle wallpaper blur on the home screen.
+    func updateBlurWallpaper(_ blur: Bool) async {
+        settings.blurWallpaper = blur
+        do {
+            try await storageService.saveSettings(settings)
+        } catch {
+            await showError(error.localizedDescription)
+        }
+    }
+
     // MARK: - Export/Import Operations
 
     /// Export all data to CSV
@@ -292,12 +302,14 @@ final class SettingsViewModel {
 
     private func loadSettings() async {
         do {
-            settings = try await storageService.loadSettings()
-
+            let loaded = try await storageService.loadSettings()
+            // Mutate the existing instance in-place so the shared reference held by
+            // TransactionsViewModel (and observed by ContentView) stays intact.
+            // Replacing self.settings with a new instance would break the
+            // @Observable subscription chain and cause ContentView to miss updates.
+            settings.update(from: loaded)
         } catch {
-
-            // Use default on error
-            settings = AppSettings.makeDefault()
+            // Keep existing defaults on error — don't replace the shared reference.
         }
     }
 

@@ -34,6 +34,8 @@ class AppSettings: Codable {
     var wallpaperImageName: String?
     /// Активный режим фона главного экрана.
     var homeBackgroundMode: HomeBackgroundMode
+    /// Размыть фото-обои на главном экране.
+    var blurWallpaper: Bool
 
     // MARK: - Constants
 
@@ -52,11 +54,13 @@ class AppSettings: Codable {
     init(
         baseCurrency: String = defaultCurrency,
         wallpaperImageName: String? = nil,
-        homeBackgroundMode: HomeBackgroundMode = .none
+        homeBackgroundMode: HomeBackgroundMode = .none,
+        blurWallpaper: Bool = false
     ) {
         self.baseCurrency = baseCurrency
         self.wallpaperImageName = wallpaperImageName
         self.homeBackgroundMode = homeBackgroundMode
+        self.blurWallpaper = blurWallpaper
     }
 
     // MARK: - Codable
@@ -65,14 +69,16 @@ class AppSettings: Codable {
         case baseCurrency
         case wallpaperImageName
         case homeBackgroundMode
+        case blurWallpaper
     }
 
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         baseCurrency = try container.decode(String.self, forKey: .baseCurrency)
         wallpaperImageName = try container.decodeIfPresent(String.self, forKey: .wallpaperImageName)
-        // Backward-compatible: old saves without this key default to .none
+        // Backward-compatible: old saves without these keys use defaults
         homeBackgroundMode = (try? container.decodeIfPresent(HomeBackgroundMode.self, forKey: .homeBackgroundMode)) ?? .none
+        blurWallpaper = (try? container.decodeIfPresent(Bool.self, forKey: .blurWallpaper)) ?? false
     }
 
     func encode(to encoder: Encoder) throws {
@@ -80,6 +86,21 @@ class AppSettings: Codable {
         try container.encode(baseCurrency, forKey: .baseCurrency)
         try container.encodeIfPresent(wallpaperImageName, forKey: .wallpaperImageName)
         try container.encode(homeBackgroundMode, forKey: .homeBackgroundMode)
+        try container.encode(blurWallpaper, forKey: .blurWallpaper)
+    }
+
+    // MARK: - In-place Update
+
+    /// Copy all persisted values from `other` into this instance.
+    ///
+    /// Used by `SettingsViewModel.loadSettings()` so that the shared `AppSettings`
+    /// reference held by `TransactionsViewModel` (and observed by `ContentView`) is
+    /// mutated in-place rather than replaced — preserving the @Observable subscription chain.
+    func update(from other: AppSettings) {
+        baseCurrency = other.baseCurrency
+        wallpaperImageName = other.wallpaperImageName
+        homeBackgroundMode = other.homeBackgroundMode
+        blurWallpaper = other.blurWallpaper
     }
 
     // MARK: - Factory Methods

@@ -28,6 +28,8 @@
 	<key>LOGO_DEV_PUBLIC_KEY</key>
 	<string>pk_Riva83iaQH6NOq-Q9GcAfQ</string>
 	<key>SUPABASE_LOGOS_BASE_URL</key>
+	<string>https://mnkgheldjygknjghcpgy.supabase.co/storage/v1/object/public/logos</string>
+	<key>SUPABASE_ANON_KEY</key>
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>

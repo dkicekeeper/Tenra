@@ -531,14 +531,17 @@ Current branch: `main`
 |------|---------|----------------|
 | `AmountFormatter.swift` | Stored values: format/parse/validate; `minimumFractionDigits=2` | Always 2 ("1 234.50") |
 | `AmountDisplayConfiguration.swift` | Global formatter config. **Hot path: `.formatter`** (cached). `makeNumberFormatter()` creates new object — never call in `List`/`ForEach` | Configurable (default 2) |
-| `AmountInputFormatting.swift` | Input component mechanics: `cleanAmountString`, `displayAmount(for:)`, `calculateFontSize` | 0–2 (no trailing zeros) |
+| `AmountInputFormatting.swift` | Input component mechanics: `cleanAmountString`, `displayAmount(for:)`, `groupDigits()`, `formatLargeNumber()` | 0–2 (no trailing zeros) |
 
 - **`AmountDisplayConfiguration` cache invalidation**: `static var shared = Config() { didSet { _cache = nil } }` — mutating `shared.prop = x` also triggers `didSet` (Swift copies struct and reassigns)
 
 ### AnimatedInputComponents.swift
-- Contains only `BlinkingCursor` — all AnimatedDigit/AnimatedChar removed
-- `AmountInputView` + `AnimatedAmountInput` use `contentTransition(.numericText())`
+- Contains `BlinkingCursor`, `AmountDigitDisplay`, `AmountInput`
+- `AmountDigitDisplay`: animated amount display using single `Text` with `.numericText()` transition. Visual digit grouping via `AttributedString.kern` (not space characters). Font sizing via `.minimumScaleFactor(0.3)`
+- `AmountInput`: self-contained amount input (AmountDigitDisplay + hidden TextField + focus management). Configurable: `baseFontSize`, `color`, `placeholderColor`, `autoFocus`, `showContextMenu`, `onAmountChange`
+- `AmountInputView`: thin wrapper around `AmountInput` + currency selector + conversion display + error. Conversion display also uses kern-based grouping
 - `AnimatedTitleInput` uses `contentTransition(.interpolate)` — intentionally different
+- **Kern technique for `.numericText()`**: Space characters in the string shift character positions on grouping change ("1 234" -> "12 345"), causing multiple digits to animate. `AttributedString.kern` is a styling attribute invisible to `.numericText()` — the string stays "12345" but renders as "12 345". Only the actual typed/deleted digit animates.
 
 ## AI Assistant Instructions
 

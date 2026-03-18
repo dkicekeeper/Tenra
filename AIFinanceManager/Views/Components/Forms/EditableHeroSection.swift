@@ -149,8 +149,12 @@ struct EditableHeroSection: View {
 
     private var balanceView: some View {
         VStack(spacing: AppSpacing.sm) {
-            AnimatedAmountInput(amount: $balance)
-                .padding(.horizontal, AppSpacing.lg)
+            AmountInput(
+                amount: $balance,
+                baseFontSize: 48,
+                placeholderColor: AppColors.textTertiary
+            )
+            .padding(.horizontal, AppSpacing.lg)
 
             if config.showCurrency {
                 CurrencySelectorView(

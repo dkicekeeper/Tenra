@@ -3,9 +3,8 @@
 //  AIFinanceManager
 //
 //  Shared static utilities for amount input components.
-//  Single source of truth for string cleaning, display formatting,
-//  and dynamic font-size calculation used by AmountInputView
-//  and AnimatedAmountInput.
+//  Single source of truth for string cleaning and display formatting
+//  used by AmountDigitDisplay (via AmountInputView and AnimatedAmountInput).
 //
 
 import SwiftUI
@@ -14,15 +13,14 @@ import SwiftUI
 
 /// Static formatting utilities shared between amount input components.
 ///
-/// Centralises formatter instances, string cleaning, display formatting,
-/// and dynamic font-size calculation so both `AmountInputView` and
-/// `AnimatedAmountInput` use identical mechanics.
+/// Centralises formatter instances, string cleaning, and display formatting
+/// so all amount input components use identical mechanics.
 enum AmountInputFormatting {
 
     // MARK: - Formatter
 
     /// Primary formatter: groups digits with spaces, up to 2 decimal places.
-    /// Created once per app lifetime — safe to share across views.
+    /// Used by currency conversion display and other formatted amount contexts.
     static let displayFormatter: NumberFormatter = {
         let f = NumberFormatter()
         f.numberStyle = .decimal
@@ -33,15 +31,6 @@ enum AmountInputFormatting {
         f.decimalSeparator = "."
         return f
     }()
-
-    // MARK: - Font Measurement
-
-    /// Reference UIFont used exclusively for text-width measurement.
-    /// Falls back to system bold if "Inter" PostScript name doesn't match.
-    static let measureFont: UIFont =
-        UIFont(name: "Inter", size: 56) ?? UIFont.systemFont(ofSize: 56, weight: .bold)
-
-    static let measureAttributes: [NSAttributedString.Key: Any] = [.font: measureFont]
 
     // MARK: - String Cleaning
 
@@ -55,7 +44,7 @@ enum AmountInputFormatting {
 
     // MARK: - Display Formatting
 
-    /// Converts a raw amount string into a user-facing display string.
+    /// Converts a raw amount string into a user-facing display string with grouping.
     ///
     /// Rules:
     /// - Empty or zero input → `"0"`
@@ -93,36 +82,5 @@ enum AmountInputFormatting {
             result = String(char) + result
         }
         return result
-    }
-
-    // MARK: - Dynamic Font Sizing
-
-    /// Calculates the optimal font size so `displayAmount` fits within `containerWidth`.
-    ///
-    /// Returns `baseFontSize` unchanged when:
-    /// - `containerWidth` is zero (layout not yet determined)
-    /// - `displayAmount` is `"0"` (placeholder — always fits)
-    ///
-    /// Otherwise scales down proportionally, clamped to a minimum of 24 pt.
-    ///
-    /// - Parameters:
-    ///   - displayAmount: The formatted string currently shown.
-    ///   - containerWidth: Available width of the container view.
-    ///   - baseFontSize: Maximum (default) font size.
-    /// - Returns: Font size in the range `[24, baseFontSize]`.
-    static func calculateFontSize(
-        for displayAmount: String,
-        containerWidth: CGFloat,
-        baseFontSize: CGFloat
-    ) -> CGFloat {
-        guard containerWidth > 0, displayAmount != "0" else { return baseFontSize }
-
-        let maxWidth = containerWidth - (AppSpacing.lg * 2) - 20
-        let textWidth = (displayAmount as NSString).size(withAttributes: measureAttributes).width
-
-        guard textWidth > maxWidth, maxWidth > 0 else { return baseFontSize }
-
-        let scale = maxWidth / textWidth
-        return max(24, min(baseFontSize, baseFontSize * scale))
     }
 }

@@ -2,8 +2,8 @@
 //  AmountInputView.swift
 //  AIFinanceManager
 //
-//  Large centered amount input with currency selector.
-//  Supports copy/paste via long-press context menu.
+//  Large centered amount input with currency selector and conversion display.
+//  Core input mechanics delegated to AmountInput (AnimatedInputComponents.swift).
 //
 
 import SwiftUI
@@ -15,81 +15,24 @@ struct AmountInputView: View {
     let baseCurrency: String
     var onAmountChange: ((String) -> Void)? = nil
 
-    @FocusState private var isFocused: Bool
-    @State private var displayAmount: String = "0"
-    @State private var currentFontSize: CGFloat = 56
-    @State private var containerWidth: CGFloat = 0
-
     // MARK: - Currency Conversion
-
-    private struct ConversionKey: Equatable {
-        let amount: String
-        let currency: String
-    }
 
     @State private var convertedAmount: Double?
 
     var body: some View {
         VStack(spacing: AppSpacing.md) {
-            // Amount display — tap to focus, long-press for copy/paste
-            Button {
-                isFocused = true
-            } label: {
-                HStack(spacing: 0) {
-                    Spacer()
-                    HStack(spacing: AppSpacing.xs) {
-                        Text(displayAmount)
-                            .font(.custom(AppTypography.fontFamily, size: currentFontSize).weight(.bold))
-                            .contentTransition(.numericText())
-                            .foregroundStyle(errorMessage != nil ? AppColors.destructive : AppColors.textPrimary)
-                            .animation(AppAnimation.adaptiveSpring, value: displayAmount)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.3)
-
-                        if isFocused {
-                            BlinkingCursor()
-                        }
-                    }
-                    Spacer()
-                }
-            }
-            .buttonStyle(.plain)
-            .contextMenu {
-                Button {
-                    copyAmount()
-                } label: {
-                    Label(String(localized: "button.copy"), systemImage: "doc.on.doc")
-                }
-
-                if UIPasteboard.general.hasStrings {
-                    Button {
-                        pasteAmount()
-                    } label: {
-                        Label(String(localized: "button.paste"), systemImage: "doc.on.clipboard")
-                    }
-                }
-            }
+            AmountInput(
+                amount: $amount,
+                baseFontSize: 56,
+                color: errorMessage != nil ? AppColors.destructive : AppColors.textPrimary,
+                autoFocus: true,
+                showContextMenu: true,
+                onAmountChange: onAmountChange
+            )
 
             // Converted amount in base currency
             convertedAmountView
                 .animation(AppAnimation.gentleSpring, value: shouldShowConversion)
-
-            // Hidden TextField captures keyboard input
-            TextField("", text: $amount)
-                .keyboardType(.decimalPad)
-                .focused($isFocused)
-                .opacity(0)
-                .frame(height: 0)
-                .onChange(of: amount) { _, newValue in
-                    updateDisplayAmount(newValue)
-                    onAmountChange?(newValue)
-                }
-                // Debounced currency conversion — auto-cancels when amount or currency changes
-                .task(id: ConversionKey(amount: amount, currency: selectedCurrency)) {
-                    try? await Task.sleep(for: .milliseconds(300))
-                    guard !Task.isCancelled else { return }
-                    await updateConvertedAmount()
-                }
 
             // Currency selector (centred)
             CurrencySelectorView(selectedCurrency: $selectedCurrency)
@@ -103,27 +46,15 @@ struct AmountInputView: View {
             }
         }
         .padding(AppSpacing.lg)
-        .onGeometryChange(for: CGFloat.self) { proxy in
-            proxy.size.width
-        } action: { newWidth in
-            guard containerWidth != newWidth else { return }
-            containerWidth = newWidth
-            updateFontSize(for: newWidth)
-        }
-        .onChange(of: displayAmount) { _, _ in
-            if containerWidth > 0 {
-                updateFontSize(for: containerWidth)
-            }
-        }
-        .onAppear {
-            updateDisplayAmount(amount)
-            Task {
-                try? await Task.sleep(for: .milliseconds(100))
-                isFocused = true
-            }
-        }
-        .task {
+        // Debounced conversion for amount typing
+        .task(id: amount) {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
             await updateConvertedAmount()
+        }
+        // Immediate conversion on currency change
+        .onChange(of: selectedCurrency) { _, _ in
+            Task { await updateConvertedAmount() }
         }
     }
 
@@ -142,11 +73,14 @@ struct AmountInputView: View {
                         .font(AppTypography.h4)
                         .fontWeight(.medium)
                         .foregroundStyle(AppColors.textSecondaryAccessible)
+                        .contentTransition(.numericText())
+                        .animation(AppAnimation.gentleSpring, value: converted)
 
                     Text(Formatting.currencySymbol(for: baseCurrency))
                         .font(AppTypography.h4)
                         .fontWeight(.medium)
                         .foregroundStyle(AppColors.textSecondaryAccessible)
+                        .contentTransition(.numericText())
                 } else {
                     ProgressView()
                         .scaleEffect(0.6)
@@ -168,8 +102,38 @@ struct AmountInputView: View {
         Double(AmountInputFormatting.cleanAmountString(text))
     }
 
-    private func formatConvertedAmount(_ value: Double) -> String {
-        AmountInputFormatting.displayFormatter.string(from: NSNumber(value: value)) ?? "0"
+    /// Formats converted amount as AttributedString with kern-based grouping.
+    /// Same approach as AmountDigitDisplay — no space characters, so `.numericText()`
+    /// only animates the actual changed digits.
+    private func formatConvertedAmount(_ value: Double) -> AttributedString {
+        // Format without grouping — raw digits for stable .numericText() positions
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.usesGroupingSeparator = false
+        formatter.decimalSeparator = "."
+
+        let raw = formatter.string(from: NSNumber(value: value)) ?? "0"
+        var result = AttributedString(raw)
+
+        let integerEnd = raw.firstIndex(of: ".") ?? raw.endIndex
+        let integerCount = raw.distance(from: raw.startIndex, to: integerEnd)
+
+        guard integerCount > 3 else { return result }
+
+        let groupKern: CGFloat = 3.0
+
+        var attrIndex = result.startIndex
+        for charIndex in 0..<integerCount {
+            let nextIndex = result.index(afterCharacter: attrIndex)
+            if charIndex < integerCount - 1 && (integerCount - charIndex - 1) % 3 == 0 {
+                result[attrIndex..<nextIndex].kern = groupKern
+            }
+            attrIndex = nextIndex
+        }
+
+        return result
     }
 
     @MainActor
@@ -203,41 +167,7 @@ struct AmountInputView: View {
             convertedAmount = asyncConverted
         }
     }
-
-    // MARK: - Copy / Paste
-
-    private func copyAmount() {
-        UIPasteboard.general.string = amount.isEmpty ? "0" : amount
-    }
-
-    private func pasteAmount() {
-        guard let clipboardText = UIPasteboard.general.string else { return }
-        let cleaned = AmountInputFormatting.cleanAmountString(clipboardText)
-        guard !cleaned.isEmpty, Double(cleaned) != nil else { return }
-        amount = cleaned
-    }
-
-    // MARK: - Display Amount
-
-    private func updateDisplayAmount(_ text: String) {
-        displayAmount = AmountInputFormatting.displayAmount(for: text)
-    }
-
-    // MARK: - Font Sizing
-
-    private func updateFontSize(for width: CGFloat) {
-        let newSize = AmountInputFormatting.calculateFontSize(
-            for: displayAmount,
-            containerWidth: width,
-            baseFontSize: 56
-        )
-        if abs(currentFontSize - newSize) > 0.5 {
-            currentFontSize = newSize
-        }
-    }
 }
-
-// BlinkingCursor is defined in Views/Components/AnimatedInputComponents.swift
 
 #Preview("Amount Input - Empty") {
     @Previewable @State var amount = ""

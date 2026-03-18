@@ -184,7 +184,7 @@ struct TransactionAddModal: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 recurringMenuButton
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .confirmationAction) {
                 Button(action: {
                     showingCategoryHistory = true
                 }) {

@@ -206,12 +206,7 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
         let entry = ServiceLogoRegistry.domainMap[domain.lowercased()]
         var candidates: [String] = []
 
-        // 1. logoFilename (exact override)
-        if let filename = entry?.logoFilename {
-            candidates.append(IndexActor.normalize(filename))
-        }
-
-        // 2. displayName ("Kaspi", "Yandex Go")
+        // 1. displayName ("Kaspi", "Yandex Go")
         if let displayName = entry?.displayName {
             candidates.append(IndexActor.normalize(displayName))
         }

@@ -160,12 +160,27 @@ AIFinanceManager/
 - **⚠️ Initial date computation**: New/converted deposits MUST use `DepositEditView.computeInitialDates(postingDay:)` to set `lastInterestCalculationDate` to the most recent posting date — otherwise interest shows 0 (default is today → `calculateInterestToToday()` loop never executes)
 - **⚠️ Don't decompose Account for addDeposit**: Use `AccountsViewModel.addDepositAccount(_ account:)` to preserve computed DepositInfo dates. Decomposing into fields loses `lastInterestCalculationDate`/`lastInterestPostingMonth`.
 
+#### Logo Provider Chain (Supabase → LogoDev → GoogleFavicon → Lettermark)
+- `SupabaseLogoProvider` auto-indexes bucket via Storage API, fuzzy-matches normalized filenames (strips spaces/underscores/hyphens/dots + common affixes like "bank"). Index cached to disk, refreshed daily. Empty index retries every 60s.
+- `LogoDevProvider` uses logo.dev API with 5s timeout, checks `LogoDevConfig.isAvailable` internally
+- `GoogleFaviconProvider` uses Google Favicon API (`sz=128`), rejects responses <1KB or images ≤16x16
+- `LettermarkProvider` generates letter icons with djb2 deterministic colors — **never cached to disk** (so real logos can override later)
+- `LogoProviderChain.fetch()` returns `LogoProviderResult` with `providerName` + `shouldCacheToDisk`
+- `LogoDiskCache` has `cacheVersion` — bump it to invalidate stale cache on next launch
+- Supabase bucket `logos` requires SELECT RLS policy for anon role to enable listing
+- Config: `SUPABASE_LOGOS_BASE_URL` + `SUPABASE_ANON_KEY` in Info.plist
+- `ServiceLogoRegistry` (`nonisolated enum`): `allServices` (170+), `domainMap`, `aliasMap`, `resolveDomain(from:)`, `search(query:)`
+- `ServiceLogoEntry`: `domain`, `displayName`, `category`, `aliases` — no logoFilename, no bankLogo
+- `ServiceCategory` has `.banks`, `.localServices`, `.telecom`, `.cis` + original 7 categories
+- **⚠️ IconStyle rename**: `.bankLogo()` → `.roundedLogo()`, `.bankLogoLarge()` → `.roundedLogoLarge()`
+
 ### Current State
 - CoreData v6 model (`depositInfoData`, `isLoan`, `loanInfoData` on AccountEntity, `recurringSeriesId` String on `TransactionEntity`)
 - Old aggregate entities (`MonthlyAggregateEntity`, `CategoryAggregateEntity`) remain in `.xcdatamodeld` but are not read/written
 - ContentView reactivity via `.task(id: SummaryTrigger)` — no manual `onChange` chains
 - Per-element skeleton loading during initialization (`SkeletonLoadingModifier`)
-- `IconSource.displayIdentifier` produces `"sf:\(name)"` format; `IconSource.from(displayIdentifier:)` decodes it — use for any entity storing icons as Strings
+- `IconSource` has 2 cases: `.sfSymbol(String)` and `.brandService(String)`. `displayIdentifier` produces `"sf:\(name)"` / `"brand:\(name)"` format; `from(displayIdentifier:)` decodes it
+- **⚠️ BankLogo enum deleted** — all logos go through provider chain via `.brandService(domain)`
 
 ## Development Guidelines
 
@@ -467,7 +482,7 @@ Generic horizontal carousel. Presets: `.standard`, `.compact`, `.filter`, `.card
 Filter chip in `.button(onTap)` or `.menu(menuContent:)` mode. Styling: `.filterChipStyle(isSelected:)`.
 
 #### UniversalRow (`Views/Components/Rows/UniversalRow.swift`)
-Generic row with `IconConfig` leading icons. Presets: `.standard`, `.settings`, `.selectable`, `.info`, `.card`. Modifiers: `.navigationRow {}`, `.actionRow(role:) {}`, `.selectableRow(isSelected:) {}`. `IconConfig`: `.sfSymbol(name, color)`, `.bankLogo(logo)`, `.brandService(name)`, `.custom(source, style)`.
+Generic row with `IconConfig` leading icons. Presets: `.standard`, `.settings`, `.selectable`, `.info`, `.card`. Modifiers: `.navigationRow {}`, `.actionRow(role:) {}`, `.selectableRow(isSelected:) {}`. `IconConfig`: `.sfSymbol(name, color)`, `.brandService(name)`, `.custom(source, style)`.
 
 #### cardStyle() — Padding Contract
 - `cardStyle()` = **pure visual only** (shape + material, NO padding). Never rely on it for spacing.

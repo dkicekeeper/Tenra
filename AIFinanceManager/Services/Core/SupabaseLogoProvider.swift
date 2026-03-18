@@ -190,6 +190,7 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
                 .replacingOccurrences(of: " ", with: "")
                 .replacingOccurrences(of: "_", with: "")
                 .replacingOccurrences(of: "-", with: "")
+                .replacingOccurrences(of: ".", with: "")
         }
     }
 

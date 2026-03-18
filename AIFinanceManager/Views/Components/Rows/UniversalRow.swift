@@ -174,6 +174,22 @@ struct IconConfig {
     static func custom(source: IconSource?, style: IconStyle) -> IconConfig {
         IconConfig(source: source, style: style)
     }
+
+    /// Auto-select style based on source type
+    /// Mirrors IconView convenience init: sfSymbol→categoryIcon, bankLogo→bankLogo, brandService→serviceLogo
+    /// - Parameters:
+    ///   - source: IconSource
+    ///   - size: Icon size (default: AppIconSize.xl)
+    static func auto(source: IconSource, size: CGFloat = AppIconSize.xl) -> IconConfig {
+        switch source {
+        case .sfSymbol:
+            return IconConfig(source: source, style: .categoryIcon(size: size))
+        case .bankLogo:
+            return IconConfig(source: source, style: .bankLogo(size: size))
+        case .brandService:
+            return IconConfig(source: source, style: .serviceLogo(size: size))
+        }
+    }
 }
 
 // MARK: - Row Configuration
@@ -552,6 +568,92 @@ extension UniversalRow where Content == Text, Trailing == EmptyView {
         }
     }
     .padding()
+}
+
+#Preview("Sheet List Rows") {
+    @Previewable @State var selectedItem: String? = "Kaspi Gold"
+
+    NavigationStack {
+        ScrollView {
+            VStack(spacing: 0) {
+                // "All" option (no icon, like TimeFilterView)
+                UniversalRow(config: .sheetList) {
+                    Text("All Accounts")
+                        .fontWeight(.medium)
+                } trailing: {
+                    if selectedItem == nil {
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(AppColors.accent)
+                    }
+                }
+                .selectableRow(isSelected: selectedItem == nil) {
+                    selectedItem = nil
+                }
+
+                Divider()
+                    .padding(.leading, AppSpacing.lg)
+
+                // Row with icon + subtitle (like AccountFilterView)
+                UniversalRow(
+                    config: .sheetList,
+                    leadingIcon: .sfSymbol("creditcard.fill", color: AppColors.accent, size: AppIconSize.lg)
+                ) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Kaspi Gold")
+                            .font(AppTypography.bodySmall)
+                        Text("125 400 KZT")
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColors.textSecondary)
+                    }
+                } trailing: {
+                    if selectedItem == "Kaspi Gold" {
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(AppColors.accent)
+                    }
+                }
+                .selectableRow(isSelected: selectedItem == "Kaspi Gold") {
+                    selectedItem = "Kaspi Gold"
+                }
+
+                Divider()
+                    .padding(.leading, AppSpacing.lg)
+
+                // Row with icon, text only (like CategoryFilterView)
+                UniversalRow(
+                    config: .sheetList,
+                    leadingIcon: .sfSymbol("cart.fill", color: AppColors.accent, size: AppIconSize.lg)
+                ) {
+                    Text("Shopping")
+                } trailing: {
+                    if selectedItem == "Shopping" {
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(AppColors.accent)
+                    }
+                }
+                .selectableRow(isSelected: selectedItem == "Shopping") {
+                    selectedItem = "Shopping"
+                }
+
+                Divider()
+                    .padding(.leading, AppSpacing.lg)
+
+                // Text-only row (like TimeFilterView presets)
+                UniversalRow(config: .sheetList) {
+                    Text("This Month")
+                } trailing: {
+                    if selectedItem == "This Month" {
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(AppColors.accent)
+                    }
+                }
+                .selectableRow(isSelected: selectedItem == "This Month") {
+                    selectedItem = "This Month"
+                }
+            }
+        }
+        .navigationTitle("Sheet List")
+        .navigationBarTitleDisplayMode(.inline)
+    }
 }
 
 #Preview("Convenience Initializers") {

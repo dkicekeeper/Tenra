@@ -34,6 +34,9 @@ class HistoryFilterCoordinator {
     /// Whether search is currently active
     var isSearchActive: Bool = false
 
+    /// Whether account filter sheet is shown
+    var showingAccountFilter: Bool = false
+
     /// Whether category filter sheet is shown
     var showingCategoryFilter: Bool = false
 
@@ -87,6 +90,7 @@ class HistoryFilterCoordinator {
         searchText = ""
         debouncedSearchText = ""
         isSearchActive = false
+        showingAccountFilter = false
         showingCategoryFilter = false
 
         // Cancel pending tasks

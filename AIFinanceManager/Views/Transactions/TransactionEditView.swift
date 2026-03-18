@@ -55,9 +55,8 @@ struct TransactionEditView: View {
         @Bindable var bindableCoordinator = coordinator
 
         NavigationStack {
-            ZStack(alignment: .top) {
-                ScrollView {
-                    VStack(spacing: AppSpacing.lg) {
+            ScrollView {
+                VStack(spacing: AppSpacing.lg) {
                         // Hero: category icon + name (or transfer icon)
                         HeroSection(
                             iconSource: heroIconSource,
@@ -139,8 +138,7 @@ struct TransactionEditView: View {
                         )
                         .screenPadding()
                     }
-                    .animation(AppAnimation.gentleSpring, value: coordinator.errorMessage)
-                }
+                .animation(AppAnimation.gentleSpring, value: coordinator.errorMessage)
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)

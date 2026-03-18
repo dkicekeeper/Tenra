@@ -347,6 +347,7 @@
 "categoryFilter.allCategories" = "Все категории";
 "categoryFilter.noExpenseCategories" = "Нет категорий расходов";
 "categoryFilter.noIncomeCategories" = "Нет категорий доходов";
+"categoryFilter.deletedCategories" = "Удалённые";
 
 // MARK: - CSV
 "csv.emptyCell" = "Пусто";

@@ -95,6 +95,7 @@ struct HistoryView: View {
                 customCategories: categoriesViewModel.customCategories,
                 incomeCategories: transactionsViewModel.incomeCategories,
                 selectedAccountFilter: $filterCoordinator.selectedAccountFilter,
+                showingAccountFilter: $filterCoordinator.showingAccountFilter,
                 showingCategoryFilter: $filterCoordinator.showingCategoryFilter,
                 onTimeFilterTap: { showingTimeFilter = true },
                 balanceCoordinator: accountsViewModel.balanceCoordinator
@@ -147,6 +148,7 @@ struct HistoryView: View {
             CategoryFilterView(
                 expenseCategories: transactionsViewModel.expenseCategories,
                 incomeCategories: transactionsViewModel.incomeCategories,
+                customCategories: categoriesViewModel.customCategories,
                 currentFilter: transactionsViewModel.selectedCategories,
                 onFilterChanged: { newFilter in
                     transactionsViewModel.selectedCategories = newFilter
@@ -157,8 +159,17 @@ struct HistoryView: View {
         }
         .sheet(isPresented: $showingTimeFilter) {
             TimeFilterView(filterManager: timeFilterManager)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $filterCoordinator.showingAccountFilter) {
+            AccountFilterView(
+                accounts: accountsViewModel.accounts,
+                selectedAccountId: $filterCoordinator.selectedAccountFilter,
+                balanceCoordinator: accountsViewModel.balanceCoordinator
+            )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
         }
     }
 

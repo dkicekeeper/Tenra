@@ -347,6 +347,7 @@
 "categoryFilter.allCategories" = "All Categories";
 "categoryFilter.noExpenseCategories" = "No expense categories";
 "categoryFilter.noIncomeCategories" = "No income categories";
+"categoryFilter.deletedCategories" = "Deleted";
 
 // MARK: - CSV
 "csv.emptyCell" = "Empty";

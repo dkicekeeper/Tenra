@@ -15,6 +15,7 @@ struct HistoryFilterSection: View {
     let customCategories: [CustomCategory]
     let incomeCategories: [String]
     @Binding var selectedAccountFilter: String?
+    @Binding var showingAccountFilter: Bool
     @Binding var showingCategoryFilter: Bool
     let onTimeFilterTap: () -> Void
     let balanceCoordinator: BalanceCoordinator?
@@ -33,10 +34,6 @@ struct HistoryFilterSection: View {
         CategoryFilterHelper.displayText(for: selectedCategories)
     }
 
-    private var sortedAccounts: [Account] {
-        accounts.sortedByOrder()
-    }
-
     var body: some View {
         UniversalCarousel(config: .filter) {
             // Time filter button
@@ -48,45 +45,14 @@ struct HistoryFilterSection: View {
                 Image(systemName: "calendar")
             }
 
-            // Account filter menu
+            // Account filter button
             UniversalFilterButton(
                 title: accountFilterTitle,
-                isSelected: selectedAccountFilter != nil
+                isSelected: selectedAccountFilter != nil,
+                onTap: { showingAccountFilter = true }
             ) {
                 if let account = selectedAccount {
                     IconView(source: account.iconSource, size: AppIconSize.sm)
-                }
-            } menuContent: {
-                // "All accounts" option
-                Button(action: { selectedAccountFilter = nil }) {
-                    HStack {
-                        Text(String(localized: "filter.allAccounts"))
-                        Spacer()
-                        if selectedAccountFilter == nil {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-
-                // Account list
-                ForEach(sortedAccounts) { account in
-                    Button(action: { selectedAccountFilter = account.id }) {
-                        HStack(spacing: AppSpacing.sm) {
-                            IconView(source: account.iconSource, size: AppIconSize.md)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(account.name)
-                                    .font(AppTypography.bodySmall)
-                                let balance = balanceCoordinator?.balances[account.id] ?? 0
-                                Text(Formatting.formatCurrencySmart(balance, currency: account.currency))
-                                    .font(AppTypography.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            if selectedAccountFilter == account.id {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
                 }
             }
 
@@ -124,6 +90,7 @@ private let previewAccounts = [
         customCategories: [],
         incomeCategories: ["Salary"],
         selectedAccountFilter: .constant(nil),
+        showingAccountFilter: .constant(false),
         showingCategoryFilter: .constant(false),
         onTimeFilterTap: {},
         balanceCoordinator: coordinator.accountsViewModel.balanceCoordinator
@@ -140,6 +107,7 @@ private let previewAccounts = [
         customCategories: [],
         incomeCategories: ["Salary"],
         selectedAccountFilter: .constant("acc-1"),
+        showingAccountFilter: .constant(false),
         showingCategoryFilter: .constant(false),
         onTimeFilterTap: {},
         balanceCoordinator: coordinator.accountsViewModel.balanceCoordinator
@@ -155,6 +123,7 @@ private let previewAccounts = [
         customCategories: [],
         incomeCategories: [],
         selectedAccountFilter: .constant(nil),
+        showingAccountFilter: .constant(false),
         showingCategoryFilter: .constant(false),
         onTimeFilterTap: {},
         balanceCoordinator: nil
@@ -171,6 +140,7 @@ private let previewAccounts = [
         customCategories: [],
         incomeCategories: [],
         selectedAccountFilter: .constant("acc-2"),
+        showingAccountFilter: .constant(false),
         showingCategoryFilter: .constant(false),
         onTimeFilterTap: {},
         balanceCoordinator: coordinator.accountsViewModel.balanceCoordinator

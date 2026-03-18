@@ -26,11 +26,20 @@ struct TimeFilterView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section(header: Text(String(localized: "timeFilter.presets", defaultValue: "Пресеты"))) {
-                    ForEach(presetOptions, id: \.self) { preset in
-                        UniversalRow(config: .selectable) {
+            ScrollView {
+                VStack(spacing: 0) {
+                    // MARK: - Presets
+                    SectionHeaderView(String(localized: "timeFilter.presets", defaultValue: "Пресеты"), style: .compact)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, AppSpacing.lg)
+                        .padding(.top, AppSpacing.md)
+                        .padding(.bottom, AppSpacing.sm)
+
+                    ForEach(Array(presetOptions.enumerated()), id: \.element) { index, preset in
+                        UniversalRow(config: .sheetList) {
                             Text(preset.localizedName)
+                                .font(AppTypography.h4)
+                                .fontWeight(.regular)
                         } trailing: {
                             if selectedPreset == preset {
                                 Image(systemName: "checkmark")
@@ -42,13 +51,25 @@ struct TimeFilterView: View {
                             filterManager.setPreset(preset)
                             dismiss()
                         }
-                    }
-                }
 
-                Section(header: Text(String(localized: "timeFilter.customRange", defaultValue: "Свой период"))) {
-                    UniversalRow(config: .selectable) {
+                        if index < presetOptions.count - 1 {
+                            Divider()
+                                .padding(.leading, AppSpacing.lg)
+                        }
+                    }
+
+                    // MARK: - Custom Range
+                    SectionHeaderView(String(localized: "timeFilter.customRange", defaultValue: "Свой период"), style: .compact)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, AppSpacing.lg)
+                        .padding(.top, AppSpacing.lg)
+                        .padding(.bottom, AppSpacing.sm)
+
+                    UniversalRow(config: .sheetList) {
                         VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                             Text(String(localized: "timeFilter.customPeriod", defaultValue: "Пользовательский период"))
+                                .font(AppTypography.h4)
+                                .fontWeight(.regular)
                             if selectedPreset == .custom {
                                 Text(customRangeDescription)
                                     .font(AppTypography.caption)

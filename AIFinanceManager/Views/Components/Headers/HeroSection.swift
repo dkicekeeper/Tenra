@@ -46,7 +46,7 @@ struct HeroSection: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, AppSpacing.lg)
         }
-        .padding(.vertical, AppSpacing.xl)
+//        .padding(.vertical, AppSpacing.xl)
     }
 
     @ViewBuilder

@@ -977,3 +977,11 @@
 "loan.payAllTitle" = "Оплатить все кредиты";
 "loan.payAllTotal" = "Общая сумма";
 "loan.payAllConfirm" = "Оплатить все";
+
+// MARK: - Icon Picker (new categories)
+"iconPicker.localServices" = "Местные сервисы";
+"iconPicker.telecom" = "Телеком";
+"iconPicker.cis" = "СНГ сервисы";
+"iconPicker.suggestions" = "Предложения";
+"iconPicker.onlineSearch" = "Онлайн";
+"iconPicker.brandDomainHint" = "Введите домен бренда (например: netflix.com)";

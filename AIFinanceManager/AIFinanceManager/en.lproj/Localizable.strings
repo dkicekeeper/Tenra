@@ -977,3 +977,11 @@
 "loan.payAllTitle" = "Pay All Loans";
 "loan.payAllTotal" = "Total Payment";
 "loan.payAllConfirm" = "Pay All";
+
+// MARK: - Icon Picker (new categories)
+"iconPicker.localServices" = "Local Services";
+"iconPicker.telecom" = "Telecom";
+"iconPicker.cis" = "CIS Services";
+"iconPicker.suggestions" = "Suggestions";
+"iconPicker.onlineSearch" = "Online";
+"iconPicker.brandDomainHint" = "Enter brand domain (e.g. netflix.com)";

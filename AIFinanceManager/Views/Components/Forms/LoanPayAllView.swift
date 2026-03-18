@@ -42,7 +42,7 @@ struct LoanPayAllView: View {
                                 }
                                 UniversalRow(
                                     config: .standard,
-                                    leadingIcon: .custom(source: loan.iconSource, style: .bankLogo(size: AppIconSize.lg))
+                                    leadingIcon: .custom(source: loan.iconSource, style: .roundedLogo(size: AppIconSize.lg))
                                 ) {
                                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                                         Text(loan.name)
@@ -128,7 +128,7 @@ struct LoanPayAllView: View {
         id: "loan-1",
         name: "Car Loan",
         currency: "KZT",
-        iconSource: .bankLogo(.halykBank),
+        iconSource: .brandService("halykbank.kz"),
         loanInfo: LoanInfo(
             bankName: "Halyk Bank",
             loanType: .annuity,

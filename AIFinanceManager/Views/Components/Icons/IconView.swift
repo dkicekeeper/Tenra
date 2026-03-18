@@ -18,11 +18,6 @@ import SwiftUI
 /// IconView(source: .sfSymbol("star.fill"), style: .categoryIcon())
 /// ```
 ///
-/// ## Банковский логотип с кастомным размером
-/// ```swift
-/// IconView(source: .bankLogo(.kaspi), style: .bankLogo(size: 40))
-/// ```
-///
 /// ## Динамический логотип сервиса
 /// ```swift
 /// IconView(source: .brandService("netflix"), style: .serviceLogo())
@@ -64,8 +59,6 @@ struct IconView: View {
         switch source {
         case .sfSymbol:
             self.style = .categoryIcon(size: size)
-        case .bankLogo:
-            self.style = .bankLogo(size: size)
         case .brandService:
             self.style = .serviceLogo(size: size)
         case .none:
@@ -95,7 +88,7 @@ struct IconView: View {
         switch source {
         case .sfSymbol:
             return adaptiveSFSymbolPadding
-        case .bankLogo, .brandService:
+        case .brandService:
             return nil
         case .none:
             return adaptivePlaceholderPadding
@@ -137,9 +130,6 @@ struct IconView: View {
         switch source {
         case .sfSymbol(let name):
             sfSymbolView(name)
-
-        case .bankLogo(let logo):
-            bankLogoView(logo)
 
         case .brandService(let name):
             brandServiceView(name)
@@ -206,21 +196,6 @@ struct IconView: View {
         default:
             image
                 .foregroundStyle(AppColors.accent)
-        }
-    }
-
-    // MARK: - Bank Logo View
-
-    @ViewBuilder
-    private func bankLogoView(_ logo: BankLogo) -> some View {
-        if logo == .none {
-            placeholderView
-        } else if let uiImage = UIImage(named: logo.rawValue) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .aspectRatio(contentMode: style.contentMode)
-        } else {
-            placeholderView
         }
     }
 
@@ -342,7 +317,7 @@ struct IconView: View {
         switch source {
         case .sfSymbol:
             return false // SF Symbols не обрезаются
-        case .bankLogo, .brandService:
+        case .brandService:
             return true // Изображения обрезаются
         case .none:
             return false // Placeholder не обрезается

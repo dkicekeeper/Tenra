@@ -43,7 +43,7 @@
 //  ```swift
 //  UniversalRow(
 //      config: .selectable,
-//      leadingIcon: .bankLogo(.kaspi)
+//      leadingIcon: .brandService("kaspi.kz")
 //  ) {
 //      Text("Kaspi Bank")
 //  } trailing: {
@@ -139,20 +139,6 @@ struct IconConfig {
         )
     }
 
-    /// Bank logo
-    /// - Parameters:
-    ///   - logo: BankLogo enum value
-    ///   - size: Icon size (default: AppIconSize.xl)
-    static func bankLogo(
-        _ logo: BankLogo,
-        size: CGFloat = AppIconSize.xl
-    ) -> IconConfig {
-        IconConfig(
-            source: .bankLogo(logo),
-            style: .bankLogo(size: size)
-        )
-    }
-
     /// Brand service logo
     /// - Parameters:
     ///   - brandName: Service name (e.g., "netflix")
@@ -176,7 +162,7 @@ struct IconConfig {
     }
 
     /// Auto-select style based on source type
-    /// Mirrors IconView convenience init: sfSymbol→categoryIcon, bankLogo→bankLogo, brandService→serviceLogo
+    /// Mirrors IconView convenience init: sfSymbol→categoryIcon, brandService→serviceLogo
     /// - Parameters:
     ///   - source: IconSource
     ///   - size: Icon size (default: AppIconSize.xl)
@@ -184,8 +170,6 @@ struct IconConfig {
         switch source {
         case .sfSymbol:
             return IconConfig(source: source, style: .categoryIcon(size: size))
-        case .bankLogo:
-            return IconConfig(source: source, style: .bankLogo(size: size))
         case .brandService:
             return IconConfig(source: source, style: .serviceLogo(size: size))
         }
@@ -455,25 +439,26 @@ extension UniversalRow where Content == Text, Trailing == EmptyView {
 }
 
 #Preview("Selectable Rows") {
-    @Previewable @State var selectedBank: BankLogo? = .kaspi
+    @Previewable @State var selectedBank: String? = "kaspi.kz"
+    let banks = [("kaspi.kz", "Kaspi"), ("halykbank.kz", "Halyk Bank"), ("jusan.kz", "Jusan Bank"), ("homecredit.kz", "Home Credit")]
 
     List {
-        ForEach([BankLogo.kaspi, .halykBank, .jusan, .homeCredit], id: \.self) { bank in
+        ForEach(banks, id: \.0) { domain, name in
             UniversalRow(
                 config: .selectable,
-                leadingIcon: .bankLogo(bank)
+                leadingIcon: .brandService(domain)
             ) {
-                Text(bank.displayName)
+                Text(name)
                     .foregroundStyle(AppColors.textPrimary)
             } trailing: {
-                if selectedBank == bank {
+                if selectedBank == domain {
                     Image(systemName: "checkmark")
                         .foregroundStyle(AppColors.accent)
                 }
             }
-            .selectableRow(isSelected: selectedBank == bank) {
+            .selectableRow(isSelected: selectedBank == domain) {
                 HapticManager.selection()
-                selectedBank = bank
+                selectedBank = domain
             }
         }
     }
@@ -693,7 +678,7 @@ extension UniversalRow where Content == Text, Trailing == EmptyView {
         }
 
         UniversalRow(
-            leadingIcon: .bankLogo(.kaspi, size: AppIconSize.xl)
+            leadingIcon: .brandService("kaspi.kz", size: AppIconSize.xl)
         ) {
             Text("Bank Logo")
         } trailing: {

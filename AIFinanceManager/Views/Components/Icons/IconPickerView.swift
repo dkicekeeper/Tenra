@@ -227,13 +227,10 @@ private struct LogoCategorySection: View {
 // MARK: - Logo Item
 
 private enum LogoItem: Identifiable {
-    case bank(BankLogo)
     case service(ServiceLogoEntry)
 
     var id: String {
         switch self {
-        case .bank(let logo):
-            return "bank_\(logo.rawValue)"
         case .service(let entry):
             return "service_\(entry.domain)"
         }
@@ -241,10 +238,8 @@ private enum LogoItem: Identifiable {
 
     var iconSource: IconSource {
         switch self {
-        case .bank(let logo):
-            return .bankLogo(logo)
         case .service(let entry):
-            return entry.iconSource
+            return .brandService(entry.domain)
         }
     }
 }
@@ -296,13 +291,14 @@ private struct SearchResultsView: View {
             if !results.isEmpty {
                 Section {
                     ForEach(results) { entry in
+                        let entryIconSource = IconSource.brandService(entry.domain)
                         OnlineLogoRow(
-                            iconSource: entry.iconSource,
+                            iconSource: entryIconSource,
                             displayLabel: entry.displayName,
-                            isSelected: selectedSource == entry.iconSource,
+                            isSelected: selectedSource == entryIconSource,
                             onSelect: {
                                 HapticManager.selection()
-                                selectedSource = entry.iconSource
+                                selectedSource = entryIconSource
                                 dismiss()
                             }
                         )
@@ -400,6 +396,6 @@ private struct OnlineLogoRow: View {
 }
 
 #Preview("Logos Tab") {
-    @Previewable @State var source: IconSource? = .bankLogo(.kaspi)
+    @Previewable @State var source: IconSource? = .brandService("kaspi.kz")
     return IconPickerView(selectedSource: $source)
 }

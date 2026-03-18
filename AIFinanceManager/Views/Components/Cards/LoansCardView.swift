@@ -126,7 +126,7 @@ private struct LoanFacepileIcon: View {
         switch loan.iconSource {
         case .sfSymbol:
             return .circle(size: size, tint: .accentMonochrome, backgroundColor: AppColors.surface)
-        case .bankLogo, .brandService, .none:
+        case .brandService, .none:
             return .circle(size: size, tint: .original)
         }
     }

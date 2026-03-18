@@ -181,9 +181,9 @@ struct IconStyle: Equatable, Hashable {
         )
     }
 
-    /// Стандартный банковский логотип (скругленный квадрат)
+    /// Стандартный логотип с скругленным квадратом
     /// Используется в: AccountRow, AccountCard, AccountEditView
-    static func bankLogo(size: CGFloat = AppIconSize.xl) -> IconStyle {
+    static func roundedLogo(size: CGFloat = AppIconSize.xl) -> IconStyle {
         .roundedSquare(
             size: size,
             cornerRadius: AppRadius.md,
@@ -191,8 +191,8 @@ struct IconStyle: Equatable, Hashable {
         )
     }
 
-    /// Крупный банковский логотип для карточек счетов
-    static func bankLogoLarge(size: CGFloat = AppIconSize.avatar) -> IconStyle {
+    /// Крупный логотип для карточек счетов
+    static func roundedLogoLarge(size: CGFloat = AppIconSize.avatar) -> IconStyle {
         .roundedSquare(
             size: size,
             cornerRadius: AppRadius.lg,

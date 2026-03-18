@@ -65,7 +65,7 @@ private struct SubscriptionFacepileIcon: View {
         switch subscription.iconSource {
         case .sfSymbol:
             return .circle(size: size, tint: .accentMonochrome, backgroundColor: AppColors.surface)
-        case .bankLogo, .brandService, .none:
+        case .brandService, .none:
             return .circle(size: size, tint: .original)
         }
     }

@@ -14,8 +14,18 @@ struct ServiceLogoEntry: Sendable, Identifiable {
     let displayName: String
     let category: ServiceCategory
     let aliases: [String]
+    /// Custom filename in Supabase Storage (without extension). If nil, domain is used.
+    let logoFilename: String?
 
     nonisolated var id: String { domain }
+
+    init(domain: String, displayName: String, category: ServiceCategory, aliases: [String], logoFilename: String? = nil) {
+        self.domain = domain
+        self.displayName = displayName
+        self.category = category
+        self.aliases = aliases
+        self.logoFilename = logoFilename
+    }
 }
 
 nonisolated enum ServiceLogoRegistry {
@@ -122,34 +132,35 @@ nonisolated enum ServiceLogoRegistry {
         ])
 
         // === Banks ===
+        // logoFilename matches the actual filename in Supabase Storage (without .png extension)
         entries.append(contentsOf: [
-            ServiceLogoEntry(domain: "alataucitybank.kz", displayName: "Alatau City Bank", category: .banks, aliases: ["алатау"]),
-            ServiceLogoEntry(domain: "halykbank.kz", displayName: "Halyk Bank", category: .banks, aliases: ["халык", "halyk"]),
-            ServiceLogoEntry(domain: "kaspi.kz", displayName: "Kaspi", category: .banks, aliases: ["каспи", "kaspi"]),
-            ServiceLogoEntry(domain: "homecredit.kz", displayName: "Home Credit Bank", category: .banks, aliases: ["хоум кредит"]),
-            ServiceLogoEntry(domain: "eubank.kz", displayName: "Eurasian Bank", category: .banks, aliases: ["евразийский"]),
-            ServiceLogoEntry(domain: "forte.kz", displayName: "Forte Bank", category: .banks, aliases: ["форте"]),
-            ServiceLogoEntry(domain: "jusan.kz", displayName: "Jusan Bank", category: .banks, aliases: ["жусан"]),
-            ServiceLogoEntry(domain: "hcsbk.kz", displayName: "Otbasy Bank", category: .banks, aliases: ["отбасы"]),
-            ServiceLogoEntry(domain: "bcc.kz", displayName: "Bank Center Credit", category: .banks, aliases: ["центркредит", "цк"]),
-            ServiceLogoEntry(domain: "berekebank.kz", displayName: "Bereke Bank", category: .banks, aliases: ["береке"]),
-            ServiceLogoEntry(domain: "alfabank.kz", displayName: "Alfa Bank", category: .banks, aliases: ["альфа банк", "альфа"]),
-            ServiceLogoEntry(domain: "ffin.kz", displayName: "Freedom Bank", category: .banks, aliases: ["фридом"]),
-            ServiceLogoEntry(domain: "sberbank.kz", displayName: "Sber", category: .banks, aliases: ["сбер", "сбербанк"]),
-            ServiceLogoEntry(domain: "vtb.kz", displayName: "VTB", category: .banks, aliases: ["втб"]),
-            ServiceLogoEntry(domain: "tbank.kz", displayName: "T Bank", category: .banks, aliases: ["т банк", "тинькофф банк"]),
-            ServiceLogoEntry(domain: "rbk.kz", displayName: "Bank RBK", category: .banks, aliases: ["рбк"]),
-            ServiceLogoEntry(domain: "nurbank.kz", displayName: "Nur Bank", category: .banks, aliases: ["нур банк"]),
-            ServiceLogoEntry(domain: "asiacreditbank.kz", displayName: "Asia Credit Bank", category: .banks, aliases: ["азия кредит"]),
-            ServiceLogoEntry(domain: "tengribank.kz", displayName: "Tengri Bank", category: .banks, aliases: ["тенгри"]),
-            ServiceLogoEntry(domain: "kdb.kz", displayName: "BRK Bank", category: .banks, aliases: ["брк"]),
-            ServiceLogoEntry(domain: "altynbank.kz", displayName: "Altyn Bank", category: .banks, aliases: ["алтын", "altyn"]),
-            ServiceLogoEntry(domain: "kazpost.kz", displayName: "Qazpost Bank", category: .banks, aliases: ["казпочта", "казпост", "qazpost"]),
-            ServiceLogoEntry(domain: "citibank.kz", displayName: "Citibank", category: .banks, aliases: ["сити"]),
-            ServiceLogoEntry(domain: "bank-china.kz", displayName: "Bank of China", category: .banks, aliases: []),
-            ServiceLogoEntry(domain: "icbc.kz", displayName: "ICBC", category: .banks, aliases: []),
-            ServiceLogoEntry(domain: "shinhan.kz", displayName: "Shinhan Bank", category: .banks, aliases: []),
-            ServiceLogoEntry(domain: "atfbank.kz", displayName: "ATF Bank", category: .banks, aliases: ["атф"]),
+            ServiceLogoEntry(domain: "alataucitybank.kz", displayName: "Alatau City Bank", category: .banks, aliases: ["алатау"], logoFilename: "Alataucitybank"),
+            ServiceLogoEntry(domain: "halykbank.kz", displayName: "Halyk Bank", category: .banks, aliases: ["халык", "halyk"], logoFilename: "Halyk_bank"),
+            ServiceLogoEntry(domain: "kaspi.kz", displayName: "Kaspi", category: .banks, aliases: ["каспи", "kaspi"], logoFilename: "Kaspi"),
+            ServiceLogoEntry(domain: "homecredit.kz", displayName: "Home Credit Bank", category: .banks, aliases: ["хоум кредит"], logoFilename: "Home_Credit"),
+            ServiceLogoEntry(domain: "eubank.kz", displayName: "Eurasian Bank", category: .banks, aliases: ["евразийский"], logoFilename: "Eurasian"),
+            ServiceLogoEntry(domain: "forte.kz", displayName: "Forte Bank", category: .banks, aliases: ["форте"], logoFilename: "Forte"),
+            ServiceLogoEntry(domain: "jusan.kz", displayName: "Jusan Bank", category: .banks, aliases: ["жусан"], logoFilename: "Jusan"),
+            ServiceLogoEntry(domain: "hcsbk.kz", displayName: "Otbasy Bank", category: .banks, aliases: ["отбасы"], logoFilename: "Otbasy"),
+            ServiceLogoEntry(domain: "bcc.kz", displayName: "Bank Center Credit", category: .banks, aliases: ["центркредит", "цк"], logoFilename: "Center_Credit"),
+            ServiceLogoEntry(domain: "berekebank.kz", displayName: "Bereke Bank", category: .banks, aliases: ["береке"], logoFilename: "Bereke"),
+            ServiceLogoEntry(domain: "alfabank.kz", displayName: "Alfa Bank", category: .banks, aliases: ["альфа банк", "альфа"], logoFilename: "Alfa_bank"),
+            ServiceLogoEntry(domain: "ffin.kz", displayName: "Freedom Bank", category: .banks, aliases: ["фридом"], logoFilename: "Freedom"),
+            ServiceLogoEntry(domain: "sberbank.kz", displayName: "Sber", category: .banks, aliases: ["сбер", "сбербанк"], logoFilename: "Sber"),
+            ServiceLogoEntry(domain: "vtb.kz", displayName: "VTB", category: .banks, aliases: ["втб"], logoFilename: "VTB"),
+            ServiceLogoEntry(domain: "tbank.kz", displayName: "T Bank", category: .banks, aliases: ["т банк", "тинькофф банк"], logoFilename: "Tbank"),
+            ServiceLogoEntry(domain: "rbk.kz", displayName: "Bank RBK", category: .banks, aliases: ["рбк"], logoFilename: "Rbk"),
+            ServiceLogoEntry(domain: "nurbank.kz", displayName: "Nur Bank", category: .banks, aliases: ["нур банк"], logoFilename: "Nur_Bank"),
+            ServiceLogoEntry(domain: "asiacreditbank.kz", displayName: "Asia Credit Bank", category: .banks, aliases: ["азия кредит"], logoFilename: "AsiaCredit"),
+            ServiceLogoEntry(domain: "tengribank.kz", displayName: "Tengri Bank", category: .banks, aliases: ["тенгри"], logoFilename: "Tengri"),
+            ServiceLogoEntry(domain: "kdb.kz", displayName: "BRK Bank", category: .banks, aliases: ["брк"], logoFilename: "BRK"),
+            ServiceLogoEntry(domain: "altynbank.kz", displayName: "Altyn Bank", category: .banks, aliases: ["алтын", "altyn"], logoFilename: "Altyn"),
+            ServiceLogoEntry(domain: "kazpost.kz", displayName: "Qazpost Bank", category: .banks, aliases: ["казпочта", "казпост", "qazpost"], logoFilename: "Kaz_post"),
+            ServiceLogoEntry(domain: "citibank.kz", displayName: "Citibank", category: .banks, aliases: ["сити"], logoFilename: "Citi"),
+            ServiceLogoEntry(domain: "bank-china.kz", displayName: "Bank of China", category: .banks, aliases: [], logoFilename: "Bank_of_China"),
+            ServiceLogoEntry(domain: "icbc.kz", displayName: "ICBC", category: .banks, aliases: [], logoFilename: "ICBC"),
+            ServiceLogoEntry(domain: "shinhan.kz", displayName: "Shinhan", category: .banks, aliases: [], logoFilename: "Shinhan"),
+            ServiceLogoEntry(domain: "atfbank.kz", displayName: "ATF Bank", category: .banks, aliases: ["атф"], logoFilename: "ATF"),
         ])
 
         // === NEW: KZ/CIS Services ===
@@ -252,6 +263,15 @@ nonisolated enum ServiceLogoRegistry {
         if let entry = domainMap[lowered] { return entry.domain }
         if let entry = aliasMap[lowered] { return entry.domain }
         return input
+    }
+
+    /// Resolve the Supabase Storage filename for a domain.
+    /// Returns logoFilename if set, otherwise the domain itself.
+    static func resolveLogoFilename(for domain: String) -> String {
+        if let entry = domainMap[domain.lowercased()], let filename = entry.logoFilename {
+            return filename
+        }
+        return domain
     }
 }
 

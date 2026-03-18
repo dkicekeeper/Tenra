@@ -34,7 +34,9 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
         guard let baseURL = Self.baseURL else { return nil }
 
-        let urlString = "\(baseURL)/\(domain).png"
+        // Use custom filename from registry if available, otherwise domain
+        let filename = ServiceLogoRegistry.resolveLogoFilename(for: domain)
+        let urlString = "\(baseURL)/\(filename).png"
         guard let url = URL(string: urlString) else { return nil }
 
         do {

@@ -27,6 +27,8 @@
 	<string>1</string>
 	<key>LOGO_DEV_PUBLIC_KEY</key>
 	<string>pk_Riva83iaQH6NOq-Q9GcAfQ</string>
+	<key>SUPABASE_LOGOS_BASE_URL</key>
+	<string></string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSDocumentPickerUsageDescription</key>

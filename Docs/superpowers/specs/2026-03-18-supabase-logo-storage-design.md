@@ -59,7 +59,7 @@ Same pattern as existing `LOGO_DEV_PUBLIC_KEY` — no hardcoded URLs, can switch
 
 ## Legacy Cleanup
 
-No users exist — full cleanup with no migration.
+No users exist — full cleanup with no migration. User will delete app data on device before running new build.
 
 ### Files to Delete (3)
 
@@ -84,7 +84,7 @@ enum IconSource: Codable, Equatable, Hashable {
 }
 ```
 
-Update `displayIdentifier`, `from(displayIdentifier:)`, and Codable conformance to remove `bank:` prefix handling.
+Update `displayIdentifier`, `from(displayIdentifier:)`, `migrate()`, and Codable conformance to remove `bank:` prefix handling.
 
 ### ServiceLogoEntry Simplification
 
@@ -92,31 +92,73 @@ Remove `bankLogo: BankLogo?` field. Remove `iconSource` computed property — al
 
 Bank entries in `ServiceLogoRegistry` keep their domains (`kaspi.kz`, `altynbank.kz`, etc.) — SupabaseLogoProvider resolves them.
 
+### UniversalRow.IconConfig Cleanup
+
+Remove `IconConfig.bankLogo(_ logo: BankLogo, ...)` static method. Callers use `.custom(source:, style:)` with `.brandService(domain)` instead. Remove preview code referencing `BankLogo`.
+
+### IconStyle Factory Rename
+
+Rename `IconStyle.bankLogo(size:)` → `IconStyle.roundedLogo(size:)` and `IconStyle.bankLogoLarge(size:)` → `IconStyle.roundedLogoLarge(size:)`. These are visual style presets (rounded square), not tied to BankLogo enum.
+
 ## File Changes
 
 ### New Files (1)
 
 | File | Location | Purpose |
 |------|----------|---------|
-| `SupabaseLogoProvider.swift` | Services/Core/ | Supabase Storage logo fetcher |
-
-### Modified Files
-
-| File | Changes |
-|------|---------|
-| `LogoService.swift` | Replace LocalLogoProvider with SupabaseLogoProvider in chain. Supabase is first. |
-| `IconSource.swift` | Remove `.bankLogo` case, update Codable/displayIdentifier |
-| `ServiceLogo.swift` | Remove `bankLogo: BankLogo?` field, simplify bank entries to plain `ServiceLogoEntry` |
-| `IconView.swift` | Remove `.bankLogo` rendering branch |
-| `IconPickerView.swift` | Remove `LogoItem.bank` case, all items are `.service(ServiceLogoEntry)` |
-| `Info.plist` | Add `SUPABASE_LOGOS_BASE_URL` key |
-| `Assets.xcassets` | Delete all bank logo imagesets |
+| `SupabaseLogoProvider.swift` | Services/Core/ | Supabase Storage logo fetcher (`nonisolated final class`, dedicated URLSession with 5s timeout) |
 
 ### Deleted Files (3)
 
 - `Services/Core/LocalLogoProvider.swift`
 - `Utils/BankLogo.swift`
 - `Utils/BrandLogoDisplayHelper.swift`
+
+### Modified Files — Production Code
+
+| File | Changes |
+|------|---------|
+| `LogoService.swift` | Replace LocalLogoProvider with SupabaseLogoProvider in chain. Supabase first. |
+| `IconSource.swift` | Remove `.bankLogo` case, update Codable/displayIdentifier/migrate |
+| `ServiceLogo.swift` | Remove `bankLogo: BankLogo?` field, remove `iconSource` property, simplify bank entries. Delete legacy `ServiceLogo` enum (dead code). |
+| `IconView.swift` | Remove `.bankLogo` rendering branch and `bankLogoView` method |
+| `IconPickerView.swift` | Remove `LogoItem.bank` case, all items are `.service(ServiceLogoEntry)` |
+| `UniversalRow.swift` | Remove `IconConfig.bankLogo(...)` method, update to `.custom(source:, style:)` |
+| `IconStyle.swift` | Rename `bankLogo()` → `roundedLogo()`, `bankLogoLarge()` → `roundedLogoLarge()` |
+| `StaticSubscriptionIconsView.swift` | Remove `.bankLogo` switch case |
+| `LoansCardView.swift` | Remove `.bankLogo` switch case |
+| `LoanPayAllView.swift` | Replace `.bankLogo` style reference |
+| `AccountEntity+CoreDataClass.swift` | Remove `BankLogo(rawValue:)` fallback migration, use domain strings |
+| `RecurringSeriesEntity+CoreDataClass.swift` | Remove `BankLogo(rawValue:)` fallback migration |
+| `AccountRepository.swift` | Remove `BankLogo.none.rawValue` references |
+| `RecurringRepository.swift` | Remove `.bankLogo` case pattern match |
+| `Transaction.swift` | Remove `BankLogo` Codable decoder fallback |
+| `RecurringTransaction.swift` | Remove `BankLogo` Codable decoder fallback |
+| `Info.plist` | Add `SUPABASE_LOGOS_BASE_URL` key |
+| `Assets.xcassets` | Delete all 44 bank logo imagesets |
+
+### Modified Files — Preview Code Only
+
+These files have `#Preview` blocks referencing `.bankLogo(.kaspi)` etc. Replace with `.brandService("kaspi.kz")`.
+
+| File |
+|------|
+| `IconView+Previews.swift` |
+| `TransactionCard.swift` |
+| `TransactionCardComponents.swift` |
+| `TransactionEditView.swift` |
+| `AccountsManagementView.swift` |
+| `AccountEditView.swift` |
+| `DepositEditView.swift` |
+| `LoanEditView.swift` |
+| `LoanPaymentView.swift` |
+| `LoanRateChangeView.swift` |
+| `LoanEarlyRepaymentView.swift` |
+| `DepositRateChangeView.swift` |
+| `EditableHeroSection.swift` |
+| `HeroSection.swift` |
+| `AccountsCarousel.swift` |
+| `UniversalRow.swift` (preview section) |
 
 ### Unchanged
 
@@ -133,11 +175,12 @@ Bank entries in `ServiceLogoRegistry` keep their domains (`kaspi.kz`, `altynbank
 - **Supabase down:** 5s timeout, falls through gracefully
 - **No internet:** All remote providers return nil → Lettermark (always succeeds)
 - **Disk cache has old local logo:** Still works — cache key is domain-based, cached images persist
+- **Old CoreData with BankLogo data:** User deletes app data before upgrading — no migration needed
 
 ## Testing Strategy
 
 - Unit test SupabaseLogoProvider with mock URLSession
 - Unit test chain order: verify Supabase is called first
 - Unit test IconSource without `.bankLogo` case — Codable round-trip
-- Build verification: no references to BankLogo remain (grep)
+- Build verification: `grep -rn "BankLogo" AIFinanceManager/ --include="*.swift"` returns 0 results
 - Manual: upload a logo to Supabase, verify it appears in app

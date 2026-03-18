@@ -14,16 +14,24 @@ nonisolated protocol LogoProvider {
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage?
 }
 
-/// Runs providers in order, returns first non-nil result.
+/// Result from the provider chain, includes which provider succeeded.
+struct LogoProviderResult {
+    let image: UIImage
+    let providerName: String
+    /// Whether this result should be cached to disk (lettermark should NOT be cached)
+    var shouldCacheToDisk: Bool { providerName != "lettermark" }
+}
+
+/// Runs providers in order, returns first non-nil result with provider info.
 nonisolated enum LogoProviderChain {
     static func fetch(
         domain: String,
         size: CGFloat,
         providers: [any LogoProvider]
-    ) async -> UIImage? {
+    ) async -> LogoProviderResult? {
         for provider in providers {
             if let image = await provider.fetchLogo(domain: domain, size: size) {
-                return image
+                return LogoProviderResult(image: image, providerName: provider.name)
             }
         }
         return nil

@@ -60,14 +60,19 @@ final class LogoService {
         }
 
         // 3. Provider chain
-        if let image = await LogoProviderChain.fetch(
+        if let result = await LogoProviderChain.fetch(
             domain: domain,
             size: 128,
             providers: providers
         ) {
-            memoryCache.setObject(image, forKey: cacheKey)
-            diskCache.save(image, for: domain)
-            return image
+            memoryCache.setObject(result.image, forKey: cacheKey)
+            // Only cache real logos to disk, NOT lettermarks.
+            // Lettermarks are generated fallbacks — if a real logo becomes
+            // available later (uploaded to Supabase), we want to find it.
+            if result.shouldCacheToDisk {
+                diskCache.save(result.image, for: domain)
+            }
+            return result.image
         }
 
         return nil

@@ -15,13 +15,25 @@ final class LogoDiskCache {
     private let cacheDirectory: URL
     private let fileManager = FileManager.default
     
+    /// Bump this when cache format changes or stale data needs clearing.
+    /// Changing this wipes the entire logo disk cache on next launch.
+    private static let cacheVersion = 2 // v2: Supabase migration, lettermarks no longer cached
+
     private init() {
         // Используем Application Support / logos
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         cacheDirectory = appSupport.appendingPathComponent("logos", isDirectory: true)
-        
+
         // Создаем директорию при инициализации
         try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+
+        // Invalidate stale cache when version bumps
+        let versionKey = "LogoDiskCacheVersion"
+        let stored = UserDefaults.standard.integer(forKey: versionKey)
+        if stored < Self.cacheVersion {
+            clearCache()
+            UserDefaults.standard.set(Self.cacheVersion, forKey: versionKey)
+        }
     }
     
     /// Получает безопасное имя файла из brandName

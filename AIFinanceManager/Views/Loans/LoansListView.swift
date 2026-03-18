@@ -105,6 +105,7 @@ struct LoansListView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .glassProminentButton()
                 }
             }
         }

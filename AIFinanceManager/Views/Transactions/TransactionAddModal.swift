@@ -167,6 +167,7 @@ struct TransactionAddModal: View {
                     placeholder: String(localized: "quickAdd.descriptionPlaceholder"),
                     style: .multiline(min: 2, max: 6)
                 )
+                .screenPadding()
             }
         }
     }
@@ -181,10 +182,11 @@ struct TransactionAddModal: View {
                 }
                 .accessibilityLabel(String(localized: "button.close"))
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 recurringMenuButton
             }
-            ToolbarItem(placement: .confirmationAction) {
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
                 Button(action: {
                     showingCategoryHistory = true
                 }) {

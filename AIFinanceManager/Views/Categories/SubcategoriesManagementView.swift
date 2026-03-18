@@ -54,6 +54,7 @@ struct SubcategoriesManagementView: View {
                 }) {
                     Image(systemName: "plus")
                 }
+                .glassProminentButton()
             }
         }
         .sheet(isPresented: $showingAddSubcategory) {

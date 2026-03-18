@@ -84,7 +84,7 @@ struct LoanDetailView: View {
         }
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     HapticManager.selection()
                     showingHistory = true
@@ -92,8 +92,8 @@ struct LoanDetailView: View {
                     Image(systemName: "clock.arrow.circlepath")
                 }
             }
-
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
                         HapticManager.selection()

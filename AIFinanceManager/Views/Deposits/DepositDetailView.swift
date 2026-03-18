@@ -85,7 +85,7 @@ struct DepositDetailView: View {
         }
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     HapticManager.selection()
                     showingHistory = true
@@ -94,8 +94,8 @@ struct DepositDetailView: View {
                 }
                 .accessibilityLabel(String(localized: "accessibility.deposit.history"))
             }
-
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
                         HapticManager.selection()

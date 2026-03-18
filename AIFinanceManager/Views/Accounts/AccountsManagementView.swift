@@ -178,6 +178,7 @@ struct AccountsManagementView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .glassProminentButton()
                     .accessibilityLabel(String(localized: "accessibility.accounts.addMenu"))
                 }
             }

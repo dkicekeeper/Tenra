@@ -14,8 +14,35 @@ struct ServiceLogoEntry: Sendable, Identifiable {
     let displayName: String
     let category: ServiceCategory
     let aliases: [String]
+    let bankLogo: BankLogo?
 
     nonisolated var id: String { domain }
+
+    /// Convenience init without bankLogo (most entries)
+    init(domain: String, displayName: String, category: ServiceCategory, aliases: [String]) {
+        self.domain = domain
+        self.displayName = displayName
+        self.category = category
+        self.aliases = aliases
+        self.bankLogo = nil
+    }
+
+    /// Init with local BankLogo asset
+    init(domain: String, displayName: String, category: ServiceCategory, aliases: [String], bankLogo: BankLogo) {
+        self.domain = domain
+        self.displayName = displayName
+        self.category = category
+        self.aliases = aliases
+        self.bankLogo = bankLogo
+    }
+
+    /// Returns the correct IconSource — .bankLogo for local assets, .brandService for remote
+    var iconSource: IconSource {
+        if let bankLogo {
+            return .bankLogo(bankLogo)
+        }
+        return .brandService(domain)
+    }
 }
 
 nonisolated enum ServiceLogoRegistry {
@@ -123,33 +150,33 @@ nonisolated enum ServiceLogoRegistry {
 
         // === Banks (from BankLogo assets) ===
         entries.append(contentsOf: [
-            ServiceLogoEntry(domain: "alataucitybank.kz", displayName: "Alatau City Bank", category: .banks, aliases: ["алатау"]),
-            ServiceLogoEntry(domain: "halykbank.kz", displayName: "Halyk Bank", category: .banks, aliases: ["халык", "halyk"]),
-            ServiceLogoEntry(domain: "kaspi.kz", displayName: "Kaspi", category: .banks, aliases: ["каспи", "kaspi"]),
-            ServiceLogoEntry(domain: "homecredit.kz", displayName: "Home Credit Bank", category: .banks, aliases: ["хоум кредит"]),
-            ServiceLogoEntry(domain: "eubank.kz", displayName: "Eurasian Bank", category: .banks, aliases: ["евразийский"]),
-            ServiceLogoEntry(domain: "forte.kz", displayName: "Forte Bank", category: .banks, aliases: ["форте"]),
-            ServiceLogoEntry(domain: "jusan.kz", displayName: "Jusan Bank", category: .banks, aliases: ["жусан"]),
-            ServiceLogoEntry(domain: "hcsbk.kz", displayName: "Otbasy Bank", category: .banks, aliases: ["отбасы"]),
-            ServiceLogoEntry(domain: "bcc.kz", displayName: "Bank Center Credit", category: .banks, aliases: ["центркредит", "цк"]),
-            ServiceLogoEntry(domain: "berekebank.kz", displayName: "Bereke Bank", category: .banks, aliases: ["береке"]),
-            ServiceLogoEntry(domain: "alfabank.kz", displayName: "Alfa Bank", category: .banks, aliases: ["альфа банк", "альфа"]),
-            ServiceLogoEntry(domain: "ffin.kz", displayName: "Freedom Bank", category: .banks, aliases: ["фридом"]),
-            ServiceLogoEntry(domain: "sberbank.kz", displayName: "Sber", category: .banks, aliases: ["сбер", "сбербанк"]),
-            ServiceLogoEntry(domain: "vtb.kz", displayName: "VTB", category: .banks, aliases: ["втб"]),
-            ServiceLogoEntry(domain: "tbank.kz", displayName: "T Bank", category: .banks, aliases: ["т банк", "тинькофф банк"]),
-            ServiceLogoEntry(domain: "rbk.kz", displayName: "Bank RBK", category: .banks, aliases: ["рбк"]),
-            ServiceLogoEntry(domain: "nurbank.kz", displayName: "Nur Bank", category: .banks, aliases: ["нур банк"]),
-            ServiceLogoEntry(domain: "asiacreditbank.kz", displayName: "Asia Credit Bank", category: .banks, aliases: ["азия кредит"]),
-            ServiceLogoEntry(domain: "tengribank.kz", displayName: "Tengri Bank", category: .banks, aliases: ["тенгри"]),
-            ServiceLogoEntry(domain: "kdb.kz", displayName: "BRK Bank", category: .banks, aliases: ["брк"]),
-            ServiceLogoEntry(domain: "altynbank.kz", displayName: "Altyn Bank", category: .banks, aliases: ["алтын", "altyn"]),
-            ServiceLogoEntry(domain: "kazpost.kz", displayName: "Qazpost Bank", category: .banks, aliases: ["казпочта", "казпост", "qazpost"]),
-            ServiceLogoEntry(domain: "citibank.kz", displayName: "Citibank", category: .banks, aliases: ["сити"]),
-            ServiceLogoEntry(domain: "bank-china.kz", displayName: "Bank of China", category: .banks, aliases: []),
-            ServiceLogoEntry(domain: "icbc.kz", displayName: "ICBC", category: .banks, aliases: []),
-            ServiceLogoEntry(domain: "shinhan.kz", displayName: "Shinhan Bank", category: .banks, aliases: []),
-            ServiceLogoEntry(domain: "atfbank.kz", displayName: "ATF Bank", category: .banks, aliases: ["атф"]),
+            ServiceLogoEntry(domain: "alataucitybank.kz", displayName: "Alatau City Bank", category: .banks, aliases: ["алатау"], bankLogo: .alatauCityBank),
+            ServiceLogoEntry(domain: "halykbank.kz", displayName: "Halyk Bank", category: .banks, aliases: ["халык", "halyk"], bankLogo: .halykBank),
+            ServiceLogoEntry(domain: "kaspi.kz", displayName: "Kaspi", category: .banks, aliases: ["каспи", "kaspi"], bankLogo: .kaspi),
+            ServiceLogoEntry(domain: "homecredit.kz", displayName: "Home Credit Bank", category: .banks, aliases: ["хоум кредит"], bankLogo: .homeCredit),
+            ServiceLogoEntry(domain: "eubank.kz", displayName: "Eurasian Bank", category: .banks, aliases: ["евразийский"], bankLogo: .eurasian),
+            ServiceLogoEntry(domain: "forte.kz", displayName: "Forte Bank", category: .banks, aliases: ["форте"], bankLogo: .forte),
+            ServiceLogoEntry(domain: "jusan.kz", displayName: "Jusan Bank", category: .banks, aliases: ["жусан"], bankLogo: .jusan),
+            ServiceLogoEntry(domain: "hcsbk.kz", displayName: "Otbasy Bank", category: .banks, aliases: ["отбасы"], bankLogo: .otbasy),
+            ServiceLogoEntry(domain: "bcc.kz", displayName: "Bank Center Credit", category: .banks, aliases: ["центркредит", "цк"], bankLogo: .centerCredit),
+            ServiceLogoEntry(domain: "berekebank.kz", displayName: "Bereke Bank", category: .banks, aliases: ["береке"], bankLogo: .bereke),
+            ServiceLogoEntry(domain: "alfabank.kz", displayName: "Alfa Bank", category: .banks, aliases: ["альфа банк", "альфа"], bankLogo: .alfaBank),
+            ServiceLogoEntry(domain: "ffin.kz", displayName: "Freedom Bank", category: .banks, aliases: ["фридом"], bankLogo: .freedom),
+            ServiceLogoEntry(domain: "sberbank.kz", displayName: "Sber", category: .banks, aliases: ["сбер", "сбербанк"], bankLogo: .sber),
+            ServiceLogoEntry(domain: "vtb.kz", displayName: "VTB", category: .banks, aliases: ["втб"], bankLogo: .vtb),
+            ServiceLogoEntry(domain: "tbank.kz", displayName: "T Bank", category: .banks, aliases: ["т банк", "тинькофф банк"], bankLogo: .tbank),
+            ServiceLogoEntry(domain: "rbk.kz", displayName: "Bank RBK", category: .banks, aliases: ["рбк"], bankLogo: .rbk),
+            ServiceLogoEntry(domain: "nurbank.kz", displayName: "Nur Bank", category: .banks, aliases: ["нур банк"], bankLogo: .nurBank),
+            ServiceLogoEntry(domain: "asiacreditbank.kz", displayName: "Asia Credit Bank", category: .banks, aliases: ["азия кредит"], bankLogo: .asiaCredit),
+            ServiceLogoEntry(domain: "tengribank.kz", displayName: "Tengri Bank", category: .banks, aliases: ["тенгри"], bankLogo: .tengri),
+            ServiceLogoEntry(domain: "kdb.kz", displayName: "BRK Bank", category: .banks, aliases: ["брк"], bankLogo: .brk),
+            ServiceLogoEntry(domain: "altynbank.kz", displayName: "Altyn Bank", category: .banks, aliases: ["алтын", "altyn"], bankLogo: .altyn),
+            ServiceLogoEntry(domain: "kazpost.kz", displayName: "Qazpost Bank", category: .banks, aliases: ["казпочта", "казпост", "qazpost"], bankLogo: .kazPost),
+            ServiceLogoEntry(domain: "citibank.kz", displayName: "Citibank", category: .banks, aliases: ["сити"], bankLogo: .citi),
+            ServiceLogoEntry(domain: "bank-china.kz", displayName: "Bank of China", category: .banks, aliases: [], bankLogo: .bankOfChina),
+            ServiceLogoEntry(domain: "icbc.kz", displayName: "ICBC", category: .banks, aliases: [], bankLogo: .icbc),
+            ServiceLogoEntry(domain: "shinhan.kz", displayName: "Shinhan Bank", category: .banks, aliases: [], bankLogo: .shinhan),
+            ServiceLogoEntry(domain: "atfbank.kz", displayName: "ATF Bank", category: .banks, aliases: ["атф"], bankLogo: .atf),
         ])
 
         // === NEW: KZ/CIS Services ===

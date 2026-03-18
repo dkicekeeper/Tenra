@@ -244,7 +244,7 @@ private enum LogoItem: Identifiable {
         case .bank(let logo):
             return .bankLogo(logo)
         case .service(let entry):
-            return .brandService(entry.domain)
+            return entry.iconSource
         }
     }
 }
@@ -297,12 +297,12 @@ private struct SearchResultsView: View {
                 Section {
                     ForEach(results) { entry in
                         OnlineLogoRow(
-                            brandName: entry.domain,
+                            iconSource: entry.iconSource,
                             displayLabel: entry.displayName,
-                            isSelected: selectedSource == .brandService(entry.domain),
+                            isSelected: selectedSource == entry.iconSource,
                             onSelect: {
                                 HapticManager.selection()
-                                selectedSource = .brandService(entry.domain)
+                                selectedSource = entry.iconSource
                                 dismiss()
                             }
                         )
@@ -316,7 +316,7 @@ private struct SearchResultsView: View {
             Section {
                 if looksLikeDomain {
                     OnlineLogoRow(
-                        brandName: trimmedSearch,
+                        iconSource: .brandService(trimmedSearch),
                         displayLabel: trimmedSearch,
                         isSelected: selectedSource == .brandService(trimmedSearch),
                         onSelect: {
@@ -327,7 +327,7 @@ private struct SearchResultsView: View {
                     )
                 } else {
                     OnlineLogoRow(
-                        brandName: "\(trimmedSearch).com",
+                        iconSource: .brandService("\(trimmedSearch).com"),
                         displayLabel: "\(trimmedSearch).com",
                         isSelected: selectedSource == .brandService("\(trimmedSearch).com"),
                         onSelect: {
@@ -337,7 +337,7 @@ private struct SearchResultsView: View {
                         }
                     )
                     OnlineLogoRow(
-                        brandName: "\(trimmedSearch).kz",
+                        iconSource: .brandService("\(trimmedSearch).kz"),
                         displayLabel: "\(trimmedSearch).kz",
                         isSelected: selectedSource == .brandService("\(trimmedSearch).kz"),
                         onSelect: {
@@ -362,7 +362,7 @@ private struct SearchResultsView: View {
 // MARK: - Online Logo Row
 
 private struct OnlineLogoRow: View {
-    let brandName: String
+    let iconSource: IconSource
     let displayLabel: String
     let isSelected: Bool
     let onSelect: () -> Void
@@ -371,7 +371,7 @@ private struct OnlineLogoRow: View {
         Button(action: onSelect) {
             HStack(spacing: AppSpacing.md) {
                 IconView(
-                    source: .brandService(brandName),
+                    source: iconSource,
                     size: AppIconSize.xxl
                 )
 

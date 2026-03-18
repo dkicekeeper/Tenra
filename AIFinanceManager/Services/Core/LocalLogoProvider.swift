@@ -37,6 +37,9 @@ nonisolated final class LocalLogoProvider: LogoProvider {
             ("icbc.kz", .icbc),
             ("shinhan.kz", .shinhan),
             ("atfbank.kz", .atf),
+            ("altynbank.kz", .altyn),
+            ("kazpost.kz", .kazPost),
+            ("alataucitybank.kz", .alatauCityBank),
         ]
         return Dictionary(uniqueKeysWithValues: mappings)
     }()

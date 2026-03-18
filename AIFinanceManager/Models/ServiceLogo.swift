@@ -121,11 +121,41 @@ nonisolated enum ServiceLogoRegistry {
             ServiceLogoEntry(domain: "play.google.com", displayName: "Google Play", category: .services, aliases: ["гугл плей"]),
         ])
 
+        // === Banks (from BankLogo assets) ===
+        entries.append(contentsOf: [
+            ServiceLogoEntry(domain: "alataucitybank.kz", displayName: "Alatau City Bank", category: .banks, aliases: ["алатау"]),
+            ServiceLogoEntry(domain: "halykbank.kz", displayName: "Halyk Bank", category: .banks, aliases: ["халык", "halyk"]),
+            ServiceLogoEntry(domain: "kaspi.kz", displayName: "Kaspi", category: .banks, aliases: ["каспи", "kaspi"]),
+            ServiceLogoEntry(domain: "homecredit.kz", displayName: "Home Credit Bank", category: .banks, aliases: ["хоум кредит"]),
+            ServiceLogoEntry(domain: "eubank.kz", displayName: "Eurasian Bank", category: .banks, aliases: ["евразийский"]),
+            ServiceLogoEntry(domain: "forte.kz", displayName: "Forte Bank", category: .banks, aliases: ["форте"]),
+            ServiceLogoEntry(domain: "jusan.kz", displayName: "Jusan Bank", category: .banks, aliases: ["жусан"]),
+            ServiceLogoEntry(domain: "hcsbk.kz", displayName: "Otbasy Bank", category: .banks, aliases: ["отбасы"]),
+            ServiceLogoEntry(domain: "bcc.kz", displayName: "Bank Center Credit", category: .banks, aliases: ["центркредит", "цк"]),
+            ServiceLogoEntry(domain: "berekebank.kz", displayName: "Bereke Bank", category: .banks, aliases: ["береке"]),
+            ServiceLogoEntry(domain: "alfabank.kz", displayName: "Alfa Bank", category: .banks, aliases: ["альфа банк", "альфа"]),
+            ServiceLogoEntry(domain: "ffin.kz", displayName: "Freedom Bank", category: .banks, aliases: ["фридом"]),
+            ServiceLogoEntry(domain: "sberbank.kz", displayName: "Sber", category: .banks, aliases: ["сбер", "сбербанк"]),
+            ServiceLogoEntry(domain: "vtb.kz", displayName: "VTB", category: .banks, aliases: ["втб"]),
+            ServiceLogoEntry(domain: "tbank.kz", displayName: "T Bank", category: .banks, aliases: ["т банк", "тинькофф банк"]),
+            ServiceLogoEntry(domain: "rbk.kz", displayName: "Bank RBK", category: .banks, aliases: ["рбк"]),
+            ServiceLogoEntry(domain: "nurbank.kz", displayName: "Nur Bank", category: .banks, aliases: ["нур банк"]),
+            ServiceLogoEntry(domain: "asiacreditbank.kz", displayName: "Asia Credit Bank", category: .banks, aliases: ["азия кредит"]),
+            ServiceLogoEntry(domain: "tengribank.kz", displayName: "Tengri Bank", category: .banks, aliases: ["тенгри"]),
+            ServiceLogoEntry(domain: "kdb.kz", displayName: "BRK Bank", category: .banks, aliases: ["брк"]),
+            ServiceLogoEntry(domain: "altynbank.kz", displayName: "Altyn Bank", category: .banks, aliases: ["алтын", "altyn"]),
+            ServiceLogoEntry(domain: "kazpost.kz", displayName: "Qazpost Bank", category: .banks, aliases: ["казпочта", "казпост", "qazpost"]),
+            ServiceLogoEntry(domain: "citibank.kz", displayName: "Citibank", category: .banks, aliases: ["сити"]),
+            ServiceLogoEntry(domain: "bank-china.kz", displayName: "Bank of China", category: .banks, aliases: []),
+            ServiceLogoEntry(domain: "icbc.kz", displayName: "ICBC", category: .banks, aliases: []),
+            ServiceLogoEntry(domain: "shinhan.kz", displayName: "Shinhan Bank", category: .banks, aliases: []),
+            ServiceLogoEntry(domain: "atfbank.kz", displayName: "ATF Bank", category: .banks, aliases: ["атф"]),
+        ])
+
         // === NEW: KZ/CIS Services ===
 
         // Local Services (Kazakhstan)
         entries.append(contentsOf: [
-            ServiceLogoEntry(domain: "kaspi.kz", displayName: "Kaspi.kz", category: .localServices, aliases: ["каспи", "kaspi", "каспий"]),
             ServiceLogoEntry(domain: "kolesa.kz", displayName: "Kolesa.kz", category: .localServices, aliases: ["колеса", "колёса"]),
             ServiceLogoEntry(domain: "krisha.kz", displayName: "Krisha.kz", category: .localServices, aliases: ["крыша"]),
             ServiceLogoEntry(domain: "olx.kz", displayName: "OLX.kz", category: .localServices, aliases: ["олх", "оликс"]),
@@ -423,6 +453,7 @@ enum ServiceLogo: String, CaseIterable, Identifiable {
 }
 
 enum ServiceCategory: String, CaseIterable {
+    case banks
     case streaming
     case productivity
     case social
@@ -450,6 +481,8 @@ enum ServiceCategory: String, CaseIterable {
             return String(localized: "iconPicker.devTools")
         case .services:
             return String(localized: "iconPicker.services")
+        case .banks:
+            return String(localized: "iconPicker.banks")
         case .localServices:
             return String(localized: "iconPicker.localServices")
         case .telecom:

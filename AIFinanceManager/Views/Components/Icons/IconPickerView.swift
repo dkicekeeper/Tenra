@@ -148,15 +148,6 @@ private struct LogosTabView: View {
 
     @State private var searchText = ""
 
-    private let banks: [BankLogo] = [
-        .alatauCityBank, .halykBank, .kaspi, .homeCredit,
-        .eurasian, .forte, .jusan, .otbasy, .centerCredit,
-        .bereke, .alfaBank, .freedom, .sber, .vtb,
-        .tbank, .rbk, .nurBank, .asiaCredit,
-        .tengri, .brk, .citi, .ebr, .bankOfChina,
-        .moscowBank, .icbc, .shinhan, .kbo, .atf
-    ]
-
     private var isSearching: Bool {
         !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
@@ -176,12 +167,6 @@ private struct LogosTabView: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppSpacing.xxl) {
-                        LogoCategorySection(
-                            title: String(localized: "iconPicker.banks"),
-                            items: banks.map { .bank($0) },
-                            selectedSource: $selectedSource
-                        )
-
                         ForEach(ServiceCategory.allCases, id: \.rawValue) { category in
                             let entries = ServiceLogoRegistry.services(for: category)
                             if !entries.isEmpty {

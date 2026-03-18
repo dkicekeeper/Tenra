@@ -298,7 +298,7 @@ struct TransactionCard: View {
 
 #Preview("Expense") {
     let coordinator = AppCoordinator()
-    let kaspi = Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000)
+    let kaspi = Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .brandService("kaspi.kz"), initialBalance: 150000)
     let sampleTransaction = Transaction(
         id: "preview-expense",
         date: DateFormatters.dateFormatter.string(from: Date()),
@@ -329,7 +329,7 @@ struct TransactionCard: View {
 
 #Preview("Income") {
     let coordinator = AppCoordinator()
-    let halyk = Account(id: "acc-halyk", name: "Halyk Bank", currency: "KZT", iconSource: .bankLogo(.halykBank), initialBalance: 500000)
+    let halyk = Account(id: "acc-halyk", name: "Halyk Bank", currency: "KZT", iconSource: .brandService("halykbank.kz"), initialBalance: 500000)
     let sampleTransaction = Transaction(
         id: "preview-income",
         date: DateFormatters.dateFormatter.string(from: Date()),
@@ -360,8 +360,8 @@ struct TransactionCard: View {
 
 #Preview("Transfer") {
     let coordinator = AppCoordinator()
-    let src = Account(id: "acc-src", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000)
-    let tgt = Account(id: "acc-tgt", name: "Halyk Bank", currency: "KZT", iconSource: .bankLogo(.halykBank), initialBalance: 250000)
+    let src = Account(id: "acc-src", name: "Kaspi Gold", currency: "KZT", iconSource: .brandService("kaspi.kz"), initialBalance: 150000)
+    let tgt = Account(id: "acc-tgt", name: "Halyk Bank", currency: "KZT", iconSource: .brandService("halykbank.kz"), initialBalance: 250000)
     let sampleTransaction = Transaction(
         id: "preview-transfer",
         date: DateFormatters.dateFormatter.string(from: Date()),
@@ -394,7 +394,7 @@ struct TransactionCard: View {
 
 #Preview("Recurring") {
     let coordinator = AppCoordinator()
-    let kaspi = Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000)
+    let kaspi = Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .brandService("kaspi.kz"), initialBalance: 150000)
     let sampleTransaction = Transaction(
         id: "preview-recurring",
         date: DateFormatters.dateFormatter.string(from: Date()),

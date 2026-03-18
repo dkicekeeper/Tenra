@@ -269,8 +269,8 @@ struct TransactionEditView: View {
 #Preview("Edit Expense") {
     let coordinator = AppCoordinator()
     let mockAccounts = [
-        Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .bankLogo(.kaspi), initialBalance: 150000),
-        Account(id: "acc-halyk", name: "Halyk Bank", currency: "KZT", iconSource: .bankLogo(.halykBank), initialBalance: 80000)
+        Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .brandService("kaspi.kz"), initialBalance: 150000),
+        Account(id: "acc-halyk", name: "Halyk Bank", currency: "KZT", iconSource: .brandService("halykbank.kz"), initialBalance: 80000)
     ]
     let sampleTransaction = Transaction(
         id: "test",
@@ -300,7 +300,7 @@ struct TransactionEditView: View {
 #Preview("Edit Income") {
     let coordinator = AppCoordinator()
     let mockAccounts = [
-        Account(id: "acc-halyk", name: "Halyk Bank", currency: "KZT", iconSource: .bankLogo(.halykBank), initialBalance: 500000)
+        Account(id: "acc-halyk", name: "Halyk Bank", currency: "KZT", iconSource: .brandService("halykbank.kz"), initialBalance: 500000)
     ]
     let sampleTransaction = Transaction(
         id: "test-income",

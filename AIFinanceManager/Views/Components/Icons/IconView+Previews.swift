@@ -25,9 +25,9 @@ import SwiftUI
             PresetSection(
                 title: "Bank Logos",
                 examples: [
-                    (.bankLogo(.kaspi), IconStyle.bankLogo()),
-                    (.bankLogo(.halykBank), IconStyle.bankLogo(size: AppIconSize.avatar)),
-                    (.bankLogo(.tbank), IconStyle.bankLogoLarge())
+                    (.brandService("kaspi.kz"), IconStyle.roundedLogo()),
+                    (.brandService("halykbank.kz"), IconStyle.roundedLogo(size: AppIconSize.avatar)),
+                    (.brandService("tbank.kz"), IconStyle.roundedLogoLarge())
                 ]
             )
 
@@ -174,7 +174,7 @@ import SwiftUI
 
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .bankLogo(.kaspi), size: 60)
+                        IconView(source: .brandService("kaspi.kz"), size: 60)
                             .background(AppColors.surface)
                         Text("Kaspi")
                             .font(AppTypography.caption)
@@ -182,7 +182,7 @@ import SwiftUI
                     }
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .bankLogo(.halykBank), size: 60)
+                        IconView(source: .brandService("halykbank.kz"), size: 60)
                             .background(AppColors.surface)
                         Text("Halyk")
                             .font(AppTypography.caption)
@@ -190,7 +190,7 @@ import SwiftUI
                     }
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .bankLogo(.tbank), size: 60)
+                        IconView(source: .brandService("tbank.kz"), size: 60)
                             .background(AppColors.surface)
                         Text("T-Bank")
                             .font(AppTypography.caption)
@@ -266,7 +266,7 @@ import SwiftUI
 
                     VStack(spacing: AppSpacing.xs) {
                         IconView(
-                            source: .bankLogo(.kaspi),
+                            source: .brandService("kaspi.kz"),
                             style: .roundedSquare(size: 60, padding: 10)
                         )
                         .background(AppColors.surface)

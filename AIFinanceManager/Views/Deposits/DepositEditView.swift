@@ -262,7 +262,7 @@ extension DepositEditView {
         id: "test",
         name: "Halyk Deposit",
         currency: "KZT",
-        iconSource: .bankLogo(.halykBank),
+        iconSource: .brandService("halykbank.kz"),
         depositInfo: DepositInfo(
             bankName: "Halyk Bank",
             principalBalance: Decimal(1000000),

@@ -352,21 +352,21 @@ struct AccountsManagementView: View {
             id: "preview-1",
             name: "Kaspi Gold",
             currency: "KZT",
-            iconSource: .bankLogo(.kaspi),
+            iconSource: .brandService("kaspi.kz"),
             initialBalance: 500000
         ),
         Account(
             id: "preview-2",
             name: "Main Savings",
             currency: "USD",
-            iconSource: .bankLogo(.halykBank),
+            iconSource: .brandService("halykbank.kz"),
             initialBalance: 15000
         ),
         Account(
             id: "preview-3",
             name: "Halyk Deposit",
             currency: "KZT",
-            iconSource: .bankLogo(.halykBank),
+            iconSource: .brandService("halykbank.kz"),
             depositInfo: DepositInfo(
                 bankName: "Halyk Bank",
                 principalBalance: Decimal(1000000),
@@ -380,14 +380,14 @@ struct AccountsManagementView: View {
             id: "preview-4",
             name: "EUR Account",
             currency: "EUR",
-            iconSource: .bankLogo(.alatauCityBank),
+            iconSource: .brandService("alataucitybank.kz"),
             initialBalance: 2500
         ),
         Account(
             id: "preview-5",
             name: "Jusan Deposit",
             currency: "KZT",
-            iconSource: .bankLogo(.jusan),
+            iconSource: .brandService("jusan.kz"),
             depositInfo: DepositInfo(
                 bankName: "Jusan Bank",
                 principalBalance: Decimal(2000000),

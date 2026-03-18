@@ -365,7 +365,7 @@ private extension Account {
 // MARK: - TransactionInfoView Previews
 
 #Preview("Info — Expense with account") {
-    let account = Account.preview(id: "acc-1", name: "Kaspi Gold", iconSource: .bankLogo(.kaspi))
+    let account = Account.preview(id: "acc-1", name: "Kaspi Gold", iconSource: .brandService("kaspi.kz"))
     TransactionInfoView(
         transaction: .preview(
             description: "Supermarket",
@@ -429,8 +429,8 @@ private extension Account {
 // MARK: - TransferAccountInfo Previews
 
 #Preview("TransferAccountInfo — Both accounts exist") {
-    let source = Account.preview(id: "src", name: "Kaspi Gold", iconSource: .bankLogo(.kaspi))
-    let target = Account.preview(id: "tgt", name: "Halyk Bank", iconSource: .bankLogo(.halykBank))
+    let source = Account.preview(id: "src", name: "Kaspi Gold", iconSource: .brandService("kaspi.kz"))
+    let target = Account.preview(id: "tgt", name: "Halyk Bank", iconSource: .brandService("halykbank.kz"))
     TransferAccountInfo(
         transaction: .preview(type: .internalTransfer, category: "Transfer", accountId: "src", targetAccountId: "tgt"),
         accounts: [source, target]
@@ -459,7 +459,7 @@ private extension Account {
 }
 
 #Preview("TransferAccountInfo — One account missing") {
-    let source = Account.preview(id: "src", name: "Kaspi Gold", iconSource: .bankLogo(.kaspi))
+    let source = Account.preview(id: "src", name: "Kaspi Gold", iconSource: .brandService("kaspi.kz"))
     TransferAccountInfo(
         transaction: Transaction(
             id: "t1",
@@ -481,7 +481,7 @@ private extension Account {
 // MARK: - RegularAccountInfo Previews
 
 #Preview("RegularAccountInfo — Account exists") {
-    let account = Account.preview(id: "acc-1", name: "Kaspi Gold", iconSource: .bankLogo(.kaspi))
+    let account = Account.preview(id: "acc-1", name: "Kaspi Gold", iconSource: .brandService("kaspi.kz"))
     RegularAccountInfo(
         transaction: .preview(accountId: "acc-1"),
         accounts: [account]

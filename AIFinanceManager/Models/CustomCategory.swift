@@ -11,7 +11,7 @@ import SwiftUI
 struct CustomCategory: Identifiable, Codable, Equatable {
     let id: String
     var name: String
-    var iconSource: IconSource // Unified icon source (SF Symbol, BankLogo, logo.dev)
+    var iconSource: IconSource // Unified icon source (SF Symbol, brandService/logo.dev)
     var colorHex: String
     var type: TransactionType
     var order: Int? // Order for displaying categories

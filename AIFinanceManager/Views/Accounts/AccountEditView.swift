@@ -121,7 +121,7 @@ struct AccountEditView: View {
         id: "preview",
         name: "Test Account",
         currency: "USD",
-        iconSource: .bankLogo(.kaspi),
+        iconSource: .brandService("kaspi.kz"),
         initialBalance: 10000
     )
 

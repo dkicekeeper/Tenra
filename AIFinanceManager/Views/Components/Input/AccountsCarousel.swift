@@ -48,7 +48,7 @@ struct AccountsCarousel: View {
                     id: "1",
                     name: "Kaspi Bank",
                     currency: "KZT",
-                    iconSource: .bankLogo(.kaspi),
+                    iconSource: .brandService("kaspi.kz"),
                     depositInfo: nil,
                     initialBalance: 150000
                 ),
@@ -56,7 +56,7 @@ struct AccountsCarousel: View {
                     id: "2",
                     name: "Halyk Bank",
                     currency: "KZT",
-                    iconSource: .bankLogo(.halykBank),
+                    iconSource: .brandService("halykbank.kz"),
                     depositInfo: nil,
                     initialBalance: 250000
                 )

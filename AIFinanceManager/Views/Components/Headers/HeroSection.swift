@@ -97,7 +97,7 @@ struct HeroSection: View {
             )
             Divider()
             HeroSection(
-                iconSource: .bankLogo(.kaspi),
+                iconSource: .brandService("kaspi.kz"),
                 title: "Kaspi Gold"
             )
         }

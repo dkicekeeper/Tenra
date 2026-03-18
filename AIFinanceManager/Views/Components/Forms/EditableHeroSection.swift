@@ -170,7 +170,7 @@ struct EditableHeroSection: View {
 // MARK: - Previews
 
 #Preview("Account Hero") {
-    @Previewable @State var icon: IconSource? = .bankLogo(.kaspi)
+    @Previewable @State var icon: IconSource? = .brandService("kaspi.kz")
     @Previewable @State var title = "Kaspi Gold"
     @Previewable @State var balance = "125000.50"
     @Previewable @State var currency = "KZT"
@@ -276,7 +276,7 @@ struct EditableHeroSection: View {
 
                     Button("Account Hero") {
                         selectedConfig = .accountHero
-                        icon = .bankLogo(.kaspi)
+                        icon = .brandService("kaspi.kz")
                     }
                     .buttonStyle(.borderedProminent)
 

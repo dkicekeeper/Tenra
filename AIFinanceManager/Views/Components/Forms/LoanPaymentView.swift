@@ -168,7 +168,7 @@ struct LoanPaymentView: View {
         id: "preview-loan",
         name: "Car Loan",
         currency: "KZT",
-        iconSource: .bankLogo(.halykBank),
+        iconSource: .brandService("halykbank.kz"),
         loanInfo: LoanInfo(
             bankName: "Halyk Bank",
             loanType: .annuity,

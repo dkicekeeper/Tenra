@@ -57,15 +57,20 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
         private var lastFetch: Date?
         private var isFetching = false
 
-        /// Get the index, fetching if needed (max once per day)
+        /// Get the index, fetching if needed (max once per day for non-empty, retry every 60s for empty)
         func getIndex() async -> [String: String] {
-            // Return cached if fresh (< 24h)
-            if let index, let lastFetch, Date().timeIntervalSince(lastFetch) < 86400 {
+            // Return cached if fresh and non-empty
+            if let index, !index.isEmpty, let lastFetch, Date().timeIntervalSince(lastFetch) < 86400 {
                 return index
             }
 
-            // Try disk cache first
-            if index == nil, let diskIndex = loadFromDisk() {
+            // Empty index? Retry after 60s (not 24h) — likely a transient failure
+            if let index, index.isEmpty, let lastFetch, Date().timeIntervalSince(lastFetch) < 60 {
+                return index
+            }
+
+            // Try disk cache first (only if non-empty)
+            if index == nil, let diskIndex = loadFromDisk(), !diskIndex.index.isEmpty {
                 self.index = diskIndex.index
                 self.lastFetch = diskIndex.date
                 if Date().timeIntervalSince(diskIndex.date) < 86400 {
@@ -83,7 +88,10 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
             if let freshIndex = await fetchBucketIndex() {
                 self.index = freshIndex
                 self.lastFetch = Date()
-                saveToDisk(freshIndex)
+                // Only cache non-empty index to disk
+                if !freshIndex.isEmpty {
+                    saveToDisk(freshIndex)
+                }
                 return freshIndex
             }
 

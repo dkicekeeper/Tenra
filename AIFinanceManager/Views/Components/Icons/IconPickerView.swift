@@ -148,7 +148,6 @@ private struct LogosTabView: View {
 
     @State private var searchText = ""
 
-    // Банки
     private let banks: [BankLogo] = [
         .alatauCityBank, .halykBank, .kaspi, .homeCredit,
         .eurasian, .forte, .jusan, .otbasy, .centerCredit,
@@ -162,32 +161,36 @@ private struct LogosTabView: View {
         !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    private var searchResults: [ServiceLogoEntry] {
+        ServiceLogoRegistry.search(query: searchText)
+    }
+
     var body: some View {
         Group {
             if isSearching {
-                // Результаты поиска logo.dev
-                OnlineSearchResultsView(
+                SearchResultsView(
                     searchText: searchText,
+                    results: Array(searchResults.prefix(8)),
                     selectedSource: $selectedSource
                 )
             } else {
-                // Grid логотипов
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppSpacing.xxl) {
-                        // Банки
                         LogoCategorySection(
                             title: String(localized: "iconPicker.banks"),
                             items: banks.map { .bank($0) },
                             selectedSource: $selectedSource
                         )
 
-                        // Сервисы по категориям
                         ForEach(ServiceCategory.allCases, id: \.rawValue) { category in
-                            LogoCategorySection(
-                                title: category.localizedTitle,
-                                items: category.services().map { .service($0) },
-                                selectedSource: $selectedSource
-                            )
+                            let entries = ServiceLogoRegistry.services(for: category)
+                            if !entries.isEmpty {
+                                LogoCategorySection(
+                                    title: category.localizedTitle,
+                                    items: entries.map { .service($0) },
+                                    selectedSource: $selectedSource
+                                )
+                            }
                         }
                     }
                     .padding(.vertical, AppSpacing.lg)
@@ -240,14 +243,14 @@ private struct LogoCategorySection: View {
 
 private enum LogoItem: Identifiable {
     case bank(BankLogo)
-    case service(ServiceLogo)
+    case service(ServiceLogoEntry)
 
     var id: String {
         switch self {
         case .bank(let logo):
             return "bank_\(logo.rawValue)"
-        case .service(let logo):
-            return "service_\(logo.rawValue)"
+        case .service(let entry):
+            return "service_\(entry.domain)"
         }
     }
 
@@ -255,8 +258,8 @@ private enum LogoItem: Identifiable {
         switch self {
         case .bank(let logo):
             return .bankLogo(logo)
-        case .service(let logo):
-            return .brandService(logo.rawValue)
+        case .service(let entry):
+            return .brandService(entry.domain)
         }
     }
 }
@@ -286,10 +289,12 @@ private struct LogoItemButton: View {
     }
 }
 
-// MARK: - Online Search Results View
+// MARK: - Search Results View
 
-private struct OnlineSearchResultsView: View {
+/// Two-phase search: local suggestions + online domain fallback
+private struct SearchResultsView: View {
     let searchText: String
+    let results: [ServiceLogoEntry]
     @Binding var selectedSource: IconSource?
     @Environment(\.dismiss) private var dismiss
 
@@ -297,24 +302,71 @@ private struct OnlineSearchResultsView: View {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
+    private var looksLikeDomain: Bool {
+        trimmedSearch.contains(".")
+    }
+
     var body: some View {
         List {
-            Section {
-                // Показываем preview логотипа для введенного текста
-                OnlineLogoRow(
-                    brandName: trimmedSearch,
-                    isSelected: selectedSource == .brandService(trimmedSearch),
-                    onSelect: {
-                        HapticManager.selection()
-                        selectedSource = .brandService(trimmedSearch)
-                        dismiss()
+            if !results.isEmpty {
+                Section {
+                    ForEach(results) { entry in
+                        OnlineLogoRow(
+                            brandName: entry.domain,
+                            displayLabel: entry.displayName,
+                            isSelected: selectedSource == .brandService(entry.domain),
+                            onSelect: {
+                                HapticManager.selection()
+                                selectedSource = .brandService(entry.domain)
+                                dismiss()
+                            }
+                        )
                     }
-                )
+                } header: {
+                    Text(String(localized: "iconPicker.suggestions"))
+                        .foregroundStyle(AppColors.textPrimary)
+                }
+            }
+
+            Section {
+                if looksLikeDomain {
+                    OnlineLogoRow(
+                        brandName: trimmedSearch,
+                        displayLabel: trimmedSearch,
+                        isSelected: selectedSource == .brandService(trimmedSearch),
+                        onSelect: {
+                            HapticManager.selection()
+                            selectedSource = .brandService(trimmedSearch)
+                            dismiss()
+                        }
+                    )
+                } else {
+                    OnlineLogoRow(
+                        brandName: "\(trimmedSearch).com",
+                        displayLabel: "\(trimmedSearch).com",
+                        isSelected: selectedSource == .brandService("\(trimmedSearch).com"),
+                        onSelect: {
+                            HapticManager.selection()
+                            selectedSource = .brandService("\(trimmedSearch).com")
+                            dismiss()
+                        }
+                    )
+                    OnlineLogoRow(
+                        brandName: "\(trimmedSearch).kz",
+                        displayLabel: "\(trimmedSearch).kz",
+                        isSelected: selectedSource == .brandService("\(trimmedSearch).kz"),
+                        onSelect: {
+                            HapticManager.selection()
+                            selectedSource = .brandService("\(trimmedSearch).kz")
+                            dismiss()
+                        }
+                    )
+                }
             } header: {
-                Text(String(localized: "iconPicker.searchResults"))
+                Text(String(localized: "iconPicker.onlineSearch"))
                     .foregroundStyle(AppColors.textPrimary)
             } footer: {
-                Text(String(localized: "iconPicker.brandDomainHint", defaultValue: "Введите домен бренда (например: netflix.com)"))
+                Text(String(localized: "iconPicker.brandDomainHint"))
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.textSecondary)
             }
@@ -326,19 +378,19 @@ private struct OnlineSearchResultsView: View {
 
 private struct OnlineLogoRow: View {
     let brandName: String
+    let displayLabel: String
     let isSelected: Bool
     let onSelect: () -> Void
 
     var body: some View {
         Button(action: onSelect) {
             HStack(spacing: AppSpacing.md) {
-                // Logo preview
                 IconView(
                     source: .brandService(brandName),
                     size: AppIconSize.xxl
                 )
 
-                Text(brandName)
+                Text(displayLabel)
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textPrimary)
 

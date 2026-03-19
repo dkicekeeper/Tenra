@@ -184,13 +184,13 @@ struct SettingsView: View {
             NavigationLink {
                 ExperimentsListView()
             } label: {
-                Label("Эксперименты", systemImage: "flask")
+                Label(String(localized: "settings.experiments"), systemImage: "flask")
             }
             #if DEBUG
             NavigationLink {
                 NotificationDebugView()
             } label: {
-                Label("Notification Debug", systemImage: "bell.badge")
+                Label(String(localized: "settings.notificationDebug"), systemImage: "bell.badge")
             }
             #endif
         }

@@ -19,6 +19,7 @@ struct VoiceInputView: View {
     var embeddedInTab: Bool = false
 
     @State private var showingPermissionAlert = false
+    @State private var isPermissionDenied = false
     @State private var permissionMessage = ""
     @State private var recognizedEntities: [RecognizedEntity] = []
     @State private var showingErrorAlert = false
@@ -183,8 +184,8 @@ struct VoiceInputView: View {
         Button(String(localized: "voice.ok")) {
             if !embeddedInTab { dismiss() }
         }
-        if permissionMessage.contains("Доступ") || permissionMessage.contains("разрешени") {
-            Button("Открыть Настройки") {
+        if isPermissionDenied {
+            Button(String(localized: "voice.openSettings")) {
                 if let url = URL(string: UIApplication.openSettingsURLString),
                    UIApplication.shared.canOpenURL(url) {
                     UIApplication.shared.open(url)
@@ -229,6 +230,7 @@ struct VoiceInputView: View {
                     showingPermissionAlert = true
                 }
             } else {
+                isPermissionDenied = true
                 showingPermissionAlert = true
             }
         }

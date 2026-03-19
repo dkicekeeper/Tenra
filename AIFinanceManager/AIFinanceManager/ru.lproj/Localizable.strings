@@ -985,3 +985,16 @@
 "iconPicker.suggestions" = "Предложения";
 "iconPicker.onlineSearch" = "Онлайн";
 "iconPicker.brandDomainHint" = "Введите домен бренда (например: netflix.com)";
+
+// MARK: - Settings (extras)
+"settings.experiments" = "Эксперименты";
+"settings.notificationDebug" = "Отладка уведомлений";
+
+// MARK: - Voice (extras)
+"voice.openSettings" = "Открыть Настройки";
+
+// MARK: - PDF Errors
+"pdf.error.invalidDocument" = "Не удалось открыть PDF документ. Убедитесь, что файл является валидным PDF.";
+"pdf.error.noTextFound" = "Не удалось извлечь текст из PDF. Возможно, документ повреждён или пуст.";
+"pdf.error.unsupportedFormat" = "Неподдерживаемый формат PDF.";
+"pdf.error.ocr %@" = "Ошибка при распознавании текста: %@";

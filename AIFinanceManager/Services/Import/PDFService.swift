@@ -702,13 +702,13 @@ enum PDFError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidDocument:
-            return NSLocalizedString("Не удалось открыть PDF документ. Убедитесь, что файл является валидным PDF.", comment: "PDF error")
+            return String(localized: "pdf.error.invalidDocument")
         case .noTextFound:
-            return NSLocalizedString("Не удалось извлечь текст из PDF. Возможно, документ поврежден или пуст.", comment: "PDF error")
+            return String(localized: "pdf.error.noTextFound")
         case .unsupportedFormat:
-            return NSLocalizedString("Неподдерживаемый формат PDF.", comment: "PDF error")
+            return String(localized: "pdf.error.unsupportedFormat")
         case .ocrError(let message):
-            return NSLocalizedString("Ошибка при распознавании текста: \(message)", comment: "OCR error")
+            return String(localized: "pdf.error.ocr \(message)")
         }
     }
 }

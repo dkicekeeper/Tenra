@@ -985,3 +985,16 @@
 "iconPicker.suggestions" = "Suggestions";
 "iconPicker.onlineSearch" = "Online";
 "iconPicker.brandDomainHint" = "Enter brand domain (e.g. netflix.com)";
+
+// MARK: - Settings (extras)
+"settings.experiments" = "Experiments";
+"settings.notificationDebug" = "Notification Debug";
+
+// MARK: - Voice (extras)
+"voice.openSettings" = "Open Settings";
+
+// MARK: - PDF Errors
+"pdf.error.invalidDocument" = "Could not open PDF document. Make sure the file is a valid PDF.";
+"pdf.error.noTextFound" = "Could not extract text from PDF. The document may be corrupted or empty.";
+"pdf.error.unsupportedFormat" = "Unsupported PDF format.";
+"pdf.error.ocr %@" = "Text recognition error: %@";

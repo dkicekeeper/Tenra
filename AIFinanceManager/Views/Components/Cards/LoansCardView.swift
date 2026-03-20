@@ -57,7 +57,6 @@ struct LoansCardView: View {
 
             if !loans.isEmpty {
                 loanIcons
-                    .frame(width: AppSize.subscriptionCardWidth, alignment: .top)
             }
         }
         .animation(AppAnimation.gentleSpring, value: loans.isEmpty)

@@ -164,7 +164,7 @@ private struct PackedOverflowBadge: View {
         }
         .frame(width: diameter, height: diameter)
         .overlay(Circle().stroke(.background, lineWidth: borderWidth))
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
         .staggeredEntrance(delay: animationDelay)
     }
 }

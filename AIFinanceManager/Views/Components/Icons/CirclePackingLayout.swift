@@ -75,63 +75,24 @@ enum CirclePackingLayout {
                 continue
             }
 
-            // Generate candidate positions: tangent to each placed circle
-            var bestPos: (x: CGFloat, y: CGFloat)? = nil
-            var bestDist: CGFloat = .greatestFiniteMagnitude
-
-            // Candidates: tangent to one placed circle at 24 angles
-            let angleSteps = 24
-            for p in placed {
-                let touchDist = p.r + r
-                for step in 0..<angleSteps {
-                    let angle = CGFloat(step) * (2 * .pi / CGFloat(angleSteps))
-                    let cx = p.x + touchDist * cos(angle)
-                    let cy = p.y + touchDist * sin(angle)
-
-                    // Check bounds
-                    guard cx - r >= -halfW, cx + r <= halfW,
-                          cy - r >= -halfH, cy + r <= halfH else { continue }
-
-                    // Check no overlap with any placed circle
-                    let overlaps = placed.contains { other in
-                        let dx = cx - other.x
-                        let dy = cy - other.y
-                        let minDist = other.r + r
-                        return dx * dx + dy * dy < minDist * minDist - 0.01
-                    }
-                    guard !overlaps else { continue }
-
-                    // Prefer position closest to center
-                    let dist = cx * cx + cy * cy
-                    if dist < bestDist {
-                        bestDist = dist
-                        bestPos = (cx, cy)
-                    }
-                }
-            }
-
-            // Tangent to two placed circles (tighter packing)
-            for i in 0..<placed.count {
-                for j in (i + 1)..<placed.count {
-                    let positions = tangentToTwo(
-                        c1: placed[i], c2: placed[j], r: r,
-                        halfW: halfW, halfH: halfH, placed: placed
-                    )
-                    for pos in positions {
-                        let dist = pos.x * pos.x + pos.y * pos.y
-                        if dist < bestDist {
-                            bestDist = dist
-                            bestPos = pos
-                        }
-                    }
-                }
-            }
-
-            if let pos = bestPos {
+            if let pos = findPosition(r: r, placed: placed, halfW: halfW, halfH: halfH) {
                 placed.append((pos.x, pos.y, r))
                 result.append((originalIndex, PackedCircle(id: id, x: pos.x, y: pos.y, diameter: diameter)))
+            } else {
+                // Shrink by 10% and retry (up to 3 attempts)
+                var shrunkR = r
+                var retryPos: (x: CGFloat, y: CGFloat)? = nil
+                for _ in 0..<3 {
+                    shrunkR *= 0.9
+                    retryPos = findPosition(r: shrunkR, placed: placed, halfW: halfW, halfH: halfH)
+                    if retryPos != nil { break }
+                }
+                if let pos = retryPos {
+                    let shrunkDiameter = shrunkR * 2
+                    placed.append((pos.x, pos.y, shrunkR))
+                    result.append((originalIndex, PackedCircle(id: id, x: pos.x, y: pos.y, diameter: shrunkDiameter)))
+                }
             }
-            // If no valid position found, skip this circle (shouldn't happen with 6 circles in 120×100)
         }
 
         // Restore original order
@@ -139,6 +100,59 @@ enum CirclePackingLayout {
     }
 
     // MARK: - Private
+
+    /// Find best position for a circle of given radius among placed circles.
+    private static func findPosition(
+        r: CGFloat,
+        placed: [(x: CGFloat, y: CGFloat, r: CGFloat)],
+        halfW: CGFloat,
+        halfH: CGFloat
+    ) -> (x: CGFloat, y: CGFloat)? {
+        var bestPos: (x: CGFloat, y: CGFloat)? = nil
+        var bestDist: CGFloat = .greatestFiniteMagnitude
+
+        let angleSteps = 24
+        for p in placed {
+            let touchDist = p.r + r
+            for step in 0..<angleSteps {
+                let angle = CGFloat(step) * (2 * .pi / CGFloat(angleSteps))
+                let cx = p.x + touchDist * cos(angle)
+                let cy = p.y + touchDist * sin(angle)
+                guard cx - r >= -halfW, cx + r <= halfW,
+                      cy - r >= -halfH, cy + r <= halfH else { continue }
+                let overlaps = placed.contains { other in
+                    let dx = cx - other.x
+                    let dy = cy - other.y
+                    let minDist = other.r + r
+                    return dx * dx + dy * dy < minDist * minDist - 0.01
+                }
+                guard !overlaps else { continue }
+                let dist = cx * cx + cy * cy
+                if dist < bestDist {
+                    bestDist = dist
+                    bestPos = (cx, cy)
+                }
+            }
+        }
+
+        for i in 0..<placed.count {
+            for j in (i + 1)..<placed.count {
+                let positions = tangentToTwo(
+                    c1: placed[i], c2: placed[j], r: r,
+                    halfW: halfW, halfH: halfH, placed: placed
+                )
+                for pos in positions {
+                    let dist = pos.x * pos.x + pos.y * pos.y
+                    if dist < bestDist {
+                        bestDist = dist
+                        bestPos = pos
+                    }
+                }
+            }
+        }
+
+        return bestPos
+    }
 
     /// Find positions tangent to two existing circles simultaneously.
     private static func tangentToTwo(

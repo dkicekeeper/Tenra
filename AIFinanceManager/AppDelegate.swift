@@ -18,9 +18,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         UNUserNotificationCenter.current().delegate = self
 
 
-        // Post notification to reschedule all subscriptions
-        // This will be handled by TransactionStore
-        NotificationCenter.default.post(name: .applicationDidBecomeActive, object: nil)
+        // Note: applicationDidBecomeActive fires naturally after launch completes —
+        // no need to post it manually here (it fired before TransactionStore existed).
 
         return true
     }

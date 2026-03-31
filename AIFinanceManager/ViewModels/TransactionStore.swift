@@ -126,6 +126,10 @@ final class TransactionStore {
     // Lifecycle observer token for cleanup in deinit
     @ObservationIgnored private var lifecycleObserver: NSObjectProtocol?
 
+    // Reentrancy guard: prevents concurrent extendAllActiveSeriesHorizons() calls
+    // (loadData + applicationDidBecomeActive can race on startup)
+    @ObservationIgnored internal var isExtendingHorizons = false
+
     // Coordinator for syncing changes to ViewModels (with @Observable we need manual sync)
     @ObservationIgnored weak var coordinator: AppCoordinator?
 
@@ -160,10 +164,13 @@ final class TransactionStore {
             queue: .main
         ) { [weak self] _ in
             Task {
-                await self?.rescheduleSubscriptionNotifications()
+                guard let self else { return }
+                // Skip if data hasn't been loaded yet — loadData() will extend horizons itself
+                guard !self.accounts.isEmpty else { return }
+                await self.rescheduleSubscriptionNotifications()
                 // Extend recurring horizons: any series whose future occurrence date has
                 // arrived (or was never generated) gets a new next occurrence added.
-                await self?.extendAllActiveSeriesHorizons()
+                await self.extendAllActiveSeriesHorizons()
             }
         }
     }

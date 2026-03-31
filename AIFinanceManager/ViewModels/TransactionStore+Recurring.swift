@@ -354,6 +354,16 @@ extension TransactionStore {
     ///   - If a future transaction already exists → skip (invariant satisfied)
     ///   - Otherwise → generateUpToNextFuture: fills in missing past occurrences + creates 1 future
     func extendAllActiveSeriesHorizons() async {
+        // Reentrancy guard: loadData() and applicationDidBecomeActive can both trigger this
+        // concurrently on startup. Without the guard, two interleaving calls generate duplicate
+        // transactions (each takes a snapshot before the other's apply() completes).
+        guard !isExtendingHorizons else {
+            Self.recurringLogger.debug("extendAllActiveSeriesHorizons: skipped — already running")
+            return
+        }
+        isExtendingHorizons = true
+        defer { isExtendingHorizons = false }
+
         let activeSeries = recurringSeries.filter { $0.isActive }
         guard !activeSeries.isEmpty else { return }
 

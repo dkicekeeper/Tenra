@@ -201,12 +201,12 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         Section(header: Text(String(localized: "settings.about"))) {
-            if let url = URL(string: "https://dauletkydrali.github.io/AIFinanceManager/privacy-policy.html") {
+            if let url = URL(string: "https://dkicekeeper.github.io/AIFinanceManager/privacy-policy.html") {
                 Link(destination: url) {
                     Label(String(localized: "settings.privacyPolicy"), systemImage: "hand.raised")
                 }
             }
-            if let url = URL(string: "https://dauletkydrali.github.io/AIFinanceManager/terms-of-use.html") {
+            if let url = URL(string: "https://dkicekeeper.github.io/AIFinanceManager/terms-of-use.html") {
                 Link(destination: url) {
                     Label(String(localized: "settings.termsOfUse"), systemImage: "doc.text")
                 }

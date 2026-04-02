@@ -112,9 +112,34 @@ final class CoreDataStack: @unchecked Sendable {
 
     /// Configures and loads a new persistent container. Does NOT acquire containerLock —
     /// callers are responsible for holding the lock when needed.
+    /// If NSPersistentCloudKitContainer fails to load (e.g. model incompatible with CloudKit),
+    /// automatically falls back to NSPersistentContainer to prevent data loss.
     private func createAndLoadContainer() -> NSPersistentContainer {
         let container = createContainer()
+        let loaded = configureAndLoad(container)
 
+        if loaded {
+            return container
+        }
+
+        // CloudKit container failed — fall back to plain NSPersistentContainer to prevent data loss
+        if container is NSPersistentCloudKitContainer {
+            CoreDataStack.logger.error("⚠️ CloudKit container failed to load — falling back to local-only NSPersistentContainer")
+            UserDefaults.standard.set(false, forKey: "iCloudSyncEnabled")
+            let fallback = NSPersistentContainer(name: "Tenra")
+            let fallbackLoaded = configureAndLoad(fallback)
+            if !fallbackLoaded {
+                CoreDataStack.logger.critical("❌ Fallback NSPersistentContainer also failed to load")
+            }
+            return fallback
+        }
+
+        return container
+    }
+
+    /// Configures store descriptions and loads persistent stores on the given container.
+    /// Returns true if the store loaded successfully.
+    private func configureAndLoad(_ container: NSPersistentContainer) -> Bool {
         let description = container.persistentStoreDescriptions.first
         description?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
@@ -136,9 +161,11 @@ final class CoreDataStack: @unchecked Sendable {
             )
         }
 
+        var loadSuccess = true
         container.loadPersistentStores { [self] storeDescription, error in
             if let error = error as NSError? {
                 CoreDataStack.logger.critical("Persistent store failed to load: \(error), \(error.userInfo)")
+                loadSuccess = false
                 self.isCoreDataAvailable = false
                 if error.code == NSPersistentStoreIncompatibleVersionHashError ||
                    error.code == NSMigrationMissingSourceModelError {
@@ -150,6 +177,8 @@ final class CoreDataStack: @unchecked Sendable {
                 CoreDataStack.logger.info("✅ [CoreDataStack] Persistent store loaded: \(storeDescription.url?.lastPathComponent ?? "unknown", privacy: .public)")
             }
         }
+
+        guard loadSuccess else { return false }
 
         // CloudKit schema init (DEBUG only, gated by UserDefaults flag)
         if let cloudContainer = container as? NSPersistentCloudKitContainer {
@@ -179,7 +208,7 @@ final class CoreDataStack: @unchecked Sendable {
         // Undo manager for view context (optional, can be disabled for performance)
         container.viewContext.undoManager = nil
 
-        return container
+        return true
     }
 
     // MARK: - Persistent Container

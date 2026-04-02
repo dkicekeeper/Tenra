@@ -91,6 +91,22 @@ final class CloudSyncViewModel {
         isSyncEnabled = true
         syncState = .initialSync
         coreDataStack.reloadContainer()
+
+        // Check if CloudKit container actually loaded (fallback resets the flag)
+        guard UserDefaults.standard.bool(forKey: "iCloudSyncEnabled") else {
+            // CloudKit container failed — fallback to local already happened
+            syncState = .error("CoreData model is not yet CloudKit-compatible")
+            CloudSyncViewModel.logger.error("CloudKit container failed to load — sync disabled automatically")
+            return
+        }
+
+        // Reload in-memory data from the new container
+        if let coordinator = appCoordinator {
+            try? await coordinator.transactionStore.loadData()
+            coordinator.syncTransactionStoreToViewModels(batchMode: true)
+            await coordinator.balanceCoordinator.registerAccounts(coordinator.transactionStore.accounts)
+        }
+
         syncService.startMonitoring()
         settingsService.startListening()
         settingsService.pushAllToCloud()
@@ -104,6 +120,15 @@ final class CloudSyncViewModel {
         syncService.stopMonitoring()
         settingsService.stopListening()
         coreDataStack.reloadContainer()
+
+        // Reload in-memory data from the new (non-CloudKit) container
+        if let coordinator = appCoordinator {
+            Task {
+                try? await coordinator.transactionStore.loadData()
+                coordinator.syncTransactionStoreToViewModels(batchMode: true)
+                await coordinator.balanceCoordinator.registerAccounts(coordinator.transactionStore.accounts)
+            }
+        }
 
         CloudSyncViewModel.logger.info("iCloud sync disabled")
     }

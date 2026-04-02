@@ -143,7 +143,7 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     // MARK: - Restore Backup
 
     /// Current model version — must match backup to allow restore
-    private nonisolated static let currentModelVersion = "v6"
+    private nonisolated static let currentModelVersion = "v7"
 
     /// Restores a backup by swapping the persistent store.
     /// Rejects backups with incompatible model versions.

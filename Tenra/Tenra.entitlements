@@ -10,6 +10,8 @@
 	<array>
 		<string>iCloud.dakacom.Tenra</string>
 	</array>
+	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
+	<string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>
 	<key>aps-environment</key>
 	<string>development</string>
 </dict>

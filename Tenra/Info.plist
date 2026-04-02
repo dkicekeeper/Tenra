@@ -53,8 +53,8 @@
 		<string>Inter-VariableFont_opsz,wght.ttf</string>
 		<string>Inter-Italic-VariableFont_opsz,wght.ttf</string>
 	</array>
-	<key>UILaunchScreen</key>
-	<dict/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

@@ -95,7 +95,7 @@
         <attribute name="subcategory" optional="YES" attributeType="String"/>
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="recurringSeries" inverseEntity="AccountEntity"/>
         <relationship name="occurrences" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="RecurringOccurrenceEntity" inverseName="series" inverseEntity="RecurringOccurrenceEntity"/>
-        <relationship name="transactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TransactionEntity" inverseName="recurringSeries" inverseEntity="RecurringSeriesEntity"/>
+        <relationship name="transactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TransactionEntity" inverseName="recurringSeries" inverseEntity="TransactionEntity"/>
     </entity>
     <entity name="SubcategoryEntity" representedClassName=".SubcategoryEntity" syncable="YES">
         <attribute name="iconName" optional="YES" attributeType="String"/>

@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import CloudKit
 import UIKit
 import os
 
@@ -41,13 +42,13 @@ final class CoreDataStack: @unchecked Sendable {
     private init() {
         setupNotifications()
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-    
+
     // MARK: - Notifications
-    
+
     private func setupNotifications() {
         // Save context when app goes to background
         NotificationCenter.default.addObserver(
@@ -56,7 +57,7 @@ final class CoreDataStack: @unchecked Sendable {
             name: UIApplication.willResignActiveNotification,
             object: nil
         )
-        
+
         // Save context before app terminates
         NotificationCenter.default.addObserver(
             self,
@@ -65,7 +66,7 @@ final class CoreDataStack: @unchecked Sendable {
             object: nil
         )
     }
-    
+
     @objc private func saveOnBackground() {
         saveContextSync()
     }
@@ -85,7 +86,7 @@ final class CoreDataStack: @unchecked Sendable {
             }
         }
     }
-    
+
     // MARK: - Pre-Warm
 
     /// Touch persistentContainer on a background thread so loadPersistentStores()
@@ -95,6 +96,90 @@ final class CoreDataStack: @unchecked Sendable {
         Task.detached(priority: .userInitiated) {
             _ = CoreDataStack.shared.persistentContainer
         }
+    }
+
+    // MARK: - Container Creation
+
+    /// Creates either an NSPersistentCloudKitContainer or NSPersistentContainer
+    /// depending on the user's iCloud sync preference.
+    private func createContainer() -> NSPersistentContainer {
+        if UserDefaults.standard.bool(forKey: "iCloudSyncEnabled") {
+            return NSPersistentCloudKitContainer(name: "Tenra")
+        } else {
+            return NSPersistentContainer(name: "Tenra")
+        }
+    }
+
+    /// Configures and loads a new persistent container. Does NOT acquire containerLock —
+    /// callers are responsible for holding the lock when needed.
+    private func createAndLoadContainer() -> NSPersistentContainer {
+        let container = createContainer()
+
+        let description = container.persistentStoreDescriptions.first
+        description?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        description?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+
+        // Use .completeUntilFirstUserAuthentication instead of .complete so the store
+        // remains accessible during background fetches (e.g. CloudKit sync pushes).
+        // .complete would block access while the device is locked, breaking background sync.
+        description?.setOption(FileProtectionType.completeUntilFirstUserAuthentication as NSObject,
+                                forKey: NSPersistentStoreFileProtectionKey)
+
+        // Enable automatic lightweight migration
+        description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+        description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
+
+        // Configure CloudKit container options if using NSPersistentCloudKitContainer
+        if container is NSPersistentCloudKitContainer {
+            description?.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+                containerIdentifier: "iCloud.dakacom.Tenra"
+            )
+        }
+
+        container.loadPersistentStores { [self] storeDescription, error in
+            if let error = error as NSError? {
+                CoreDataStack.logger.critical("Persistent store failed to load: \(error), \(error.userInfo)")
+                self.isCoreDataAvailable = false
+                if error.code == NSPersistentStoreIncompatibleVersionHashError ||
+                   error.code == NSMigrationMissingSourceModelError {
+                    self.initializationError = String(localized: "error.coredata.migrationFailed")
+                } else {
+                    self.initializationError = String(localized: "error.coredata.initializationFailed")
+                }
+            } else {
+                CoreDataStack.logger.info("✅ [CoreDataStack] Persistent store loaded: \(storeDescription.url?.lastPathComponent ?? "unknown", privacy: .public)")
+            }
+        }
+
+        // CloudKit schema init (DEBUG only, gated by UserDefaults flag)
+        if let cloudContainer = container as? NSPersistentCloudKitContainer {
+            let hasInitialized = UserDefaults.standard.bool(forKey: "CloudKitSchemaInitialized")
+            if !hasInitialized {
+                do {
+                    #if DEBUG
+                    try cloudContainer.initializeCloudKitSchema(options: [])
+                    UserDefaults.standard.set(true, forKey: "CloudKitSchemaInitialized")
+                    CoreDataStack.logger.info("CloudKit schema initialized (development)")
+                    #else
+                    try cloudContainer.initializeCloudKitSchema(options: [.dryRun])
+                    CoreDataStack.logger.info("CloudKit schema validated (production)")
+                    #endif
+                } catch {
+                    CoreDataStack.logger.error("CloudKit schema initialization failed: \(error.localizedDescription)")
+                }
+            }
+        }
+
+        // Automatic merge from parent context
+        container.viewContext.automaticallyMergesChangesFromParent = true
+
+        // Use constraint merge policy to handle unique constraint violations
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
+        // Undo manager for view context (optional, can be disabled for performance)
+        container.viewContext.undoManager = nil
+
+        return container
     }
 
     // MARK: - Persistent Container
@@ -110,57 +195,23 @@ final class CoreDataStack: @unchecked Sendable {
             return existing
         }
 
-        let container = NSPersistentContainer(name: "Tenra")
-
-        // Configure container
-        let description = container.persistentStoreDescriptions.first
-        description?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        description?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-
-        // Protect financial data at rest: file is inaccessible while device is locked
-        description?.setOption(FileProtectionType.complete as NSObject,
-                                forKey: NSPersistentStoreFileProtectionKey)
-
-        // Enable automatic lightweight migration
-        description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
-        description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
-
-        container.loadPersistentStores { [self] storeDescription, error in
-            if let error = error as NSError? {
-                CoreDataStack.logger.critical("Persistent store failed to load: \(error), \(error.userInfo)")
-                self.isCoreDataAvailable = false
-                if error.code == NSPersistentStoreIncompatibleVersionHashError ||
-                   error.code == NSMigrationMissingSourceModelError {
-                    self.initializationError = String(localized: "error.coredata.migrationFailed")
-                } else {
-                    self.initializationError = String(localized: "error.coredata.initializationFailed")
-                }
-            } else {
-                CoreDataStack.logger.info("✅ [CoreDataStack] Persistent store loaded: \(storeDescription.url?.lastPathComponent ?? "unknown", privacy: .public)")
-                CoreDataStack.logger.info("✅ [CoreDataStack] File protection: .complete enabled")
-            }
-        }
-
-        // Automatic merge from parent context
-        container.viewContext.automaticallyMergesChangesFromParent = true
-
-        // Use constraint merge policy to handle unique constraint violations
-        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-
-        // Undo manager for view context (optional, can be disabled for performance)
-        container.viewContext.undoManager = nil
-
+        let container = createAndLoadContainer()
         _persistentContainer = container
         return container
     }
-    
+
+    /// URL of the primary persistent store file.
+    nonisolated var persistentStoreURL: URL? {
+        persistentContainer.persistentStoreDescriptions.first?.url
+    }
+
     // MARK: - Contexts
-    
+
     /// Main view context - use for UI operations on main thread
     nonisolated var viewContext: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
-    
+
     /// Create new background context for heavy operations
     nonisolated func newBackgroundContext() -> NSManagedObjectContext {
         let context = persistentContainer.newBackgroundContext()
@@ -168,9 +219,9 @@ final class CoreDataStack: @unchecked Sendable {
         context.undoManager = nil
         return context
     }
-    
+
     // MARK: - Save Operations
-    
+
     /// Save context if it has changes
     /// - Parameter context: The context to save
     func saveContext(_ context: NSManagedObjectContext) {
@@ -184,7 +235,7 @@ final class CoreDataStack: @unchecked Sendable {
             }
         }
     }
-    
+
     /// Save context synchronously (use carefully, can block thread)
     /// - Parameter context: The context to save
     func saveContextSync(_ context: NSManagedObjectContext) throws {
@@ -193,9 +244,9 @@ final class CoreDataStack: @unchecked Sendable {
             try context.save()
         }
     }
-    
+
     // MARK: - Batch Operations
-    
+
     /// Execute batch delete request
     /// - Parameter fetchRequest: The fetch request defining objects to delete
     func batchDelete<T: NSManagedObject>(_ fetchRequest: NSFetchRequest<T>) throws {
@@ -265,6 +316,21 @@ final class CoreDataStack: @unchecked Sendable {
     /// must tear down stale references and re-fetch from the new store.
     nonisolated static let storeDidResetNotification = Notification.Name("CoreDataStack.storeDidReset")
 
+    /// Tears down the current container and creates a fresh one, picking up any changes
+    /// to iCloudSyncEnabled. Posts storeDidResetNotification so FRC holders can rebuild.
+    func reloadContainer() {
+        containerLock.lock()
+        if let container = _persistentContainer {
+            for store in container.persistentStoreCoordinator.persistentStores {
+                try? container.persistentStoreCoordinator.remove(store)
+            }
+        }
+        let newContainer = createAndLoadContainer()
+        _persistentContainer = newContainer
+        containerLock.unlock()
+        NotificationCenter.default.post(name: Self.storeDidResetNotification, object: self)
+    }
+
     /// Delete all data from persistent store (use for testing/debugging)
     nonisolated func resetAllData() throws {
         let coordinator = persistentContainer.persistentStoreCoordinator
@@ -275,8 +341,9 @@ final class CoreDataStack: @unchecked Sendable {
                 // Restore all store options on the recreated store — passing nil would drop them.
                 // Without re-applying these, persistent history tracking and remote change
                 // notifications are silently disabled until the next app restart.
+                // Use .completeUntilFirstUserAuthentication to allow background sync access.
                 let storeOptions: [String: Any] = [
-                    NSPersistentStoreFileProtectionKey: FileProtectionType.complete,
+                    NSPersistentStoreFileProtectionKey: FileProtectionType.completeUntilFirstUserAuthentication,
                     NSPersistentHistoryTrackingKey: true as NSNumber,
                     NSPersistentStoreRemoteChangeNotificationPostOptionKey: true as NSNumber
                 ]
@@ -296,15 +363,66 @@ final class CoreDataStack: @unchecked Sendable {
         // FRC is rebuilt BEFORE any subsequent save+merge triggers its delegate.
         NotificationCenter.default.post(name: Self.storeDidResetNotification, object: self)
     }
-    
+
+    // MARK: - Store Swap
+
+    enum CloudBackupError: Error, LocalizedError {
+        case noActiveStore
+        case copyFailed(Error)
+        case incompatibleVersion(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .noActiveStore: return "No active persistent store"
+            case .copyFailed(let error): return "Failed to copy backup: \(error.localizedDescription)"
+            case .incompatibleVersion(let version): return "Backup model version \(version) is incompatible"
+            }
+        }
+    }
+
+    /// Replaces the current persistent store with a backup file. Used for restoring
+    /// from cloud backups. Posts storeDidResetNotification on success.
+    func swapStore(from backupURL: URL) throws {
+        containerLock.lock()
+        defer { containerLock.unlock() }
+
+        guard let container = _persistentContainer,
+              let store = container.persistentStoreCoordinator.persistentStores.first,
+              let storeURL = store.url else { throw CloudBackupError.noActiveStore }
+
+        let options = store.options as? [String: Any]
+
+        try container.persistentStoreCoordinator.remove(store)
+
+        let fm = FileManager.default
+        if fm.fileExists(atPath: storeURL.path) { try fm.removeItem(at: storeURL) }
+        let walURL = URL(fileURLWithPath: storeURL.path + "-wal")
+        let shmURL = URL(fileURLWithPath: storeURL.path + "-shm")
+        try? fm.removeItem(at: walURL)
+        try? fm.removeItem(at: shmURL)
+
+        do {
+            try fm.copyItem(at: backupURL, to: storeURL)
+        } catch {
+            // Recovery: re-add the store at the original URL (now empty) to avoid a crash
+            try? container.persistentStoreCoordinator.addPersistentStore(type: .sqlite, at: storeURL, options: options)
+            throw CloudBackupError.copyFailed(error)
+        }
+
+        try container.persistentStoreCoordinator.addPersistentStore(type: .sqlite, at: storeURL, options: options)
+        container.viewContext.reset()
+
+        NotificationCenter.default.post(name: Self.storeDidResetNotification, object: self)
+    }
+
     // MARK: - Performance Monitoring
-    
+
     /// Get persistent store file size
     var storeSize: String {
         guard let storeURL = persistentContainer.persistentStoreDescriptions.first?.url else {
             return "Unknown"
         }
-        
+
         do {
             let attributes = try FileManager.default.attributesOfItem(atPath: storeURL.path)
             if let fileSize = attributes[.size] as? Int64 {
@@ -313,7 +431,7 @@ final class CoreDataStack: @unchecked Sendable {
         } catch {
             CoreDataStack.logger.error("Error getting store size: \(error)")
         }
-        
+
         return "Unknown"
     }
 }
@@ -321,7 +439,7 @@ final class CoreDataStack: @unchecked Sendable {
 // MARK: - Convenience Extensions
 
 extension NSManagedObjectContext {
-    
+
     /// Perform operation and save if successful
     func performAndSave(_ block: @escaping () throws -> Void) {
         perform {

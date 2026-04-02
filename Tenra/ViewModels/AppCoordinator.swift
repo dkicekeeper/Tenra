@@ -31,6 +31,7 @@ class AppCoordinator {
     @ObservationIgnored let transactionsViewModel: TransactionsViewModel
     @ObservationIgnored let settingsViewModel: SettingsViewModel  // NEW: Phase 1 - Settings refactoring
     @ObservationIgnored let insightsViewModel: InsightsViewModel  // NEW: Phase 17 - Financial Insights
+    @ObservationIgnored let cloudSyncViewModel: CloudSyncViewModel
 
     // MARK: - New Architecture (Phase 7)
 
@@ -181,6 +182,18 @@ class AppCoordinator {
             transactionsViewModel: self.transactionsViewModel
         )
 
+        // iCloud Sync services
+        let cloudSyncService = CloudSyncService()
+        let cloudSyncSettingsService = CloudSyncSettingsService()
+        let cloudBackupService = CloudBackupService()
+
+        self.cloudSyncViewModel = CloudSyncViewModel(
+            syncService: cloudSyncService,
+            settingsService: cloudSyncSettingsService,
+            backupService: cloudBackupService
+        )
+        self.cloudSyncViewModel.appCoordinator = self
+
         // @Observable handles change propagation automatically - no manual observer setup needed
 
         // ✅ CATEGORY REFACTORING: Setup Single Source of Truth for categories
@@ -321,6 +334,9 @@ class AppCoordinator {
         Task(priority: .background) {
             CoreDataStack.shared.purgeHistory(olderThan: 7)
         }
+
+        // Initialize iCloud sync if enabled
+        await cloudSyncViewModel.initializeIfNeeded()
 
         PerformanceProfiler.end("AppCoordinator.initialize")
     }

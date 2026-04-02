@@ -17,14 +17,14 @@
 			containerPortal = D62A09892F0D7B0D004AF1FA /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D62A09902F0D7B0D004AF1FA;
-			remoteInfo = AIFinanceManager;
+			remoteInfo = Tenra;
 		};
 		D62A09A92F0D7B0E004AF1FA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D62A09892F0D7B0D004AF1FA /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D62A09902F0D7B0D004AF1FA;
-			remoteInfo = AIFinanceManager;
+			remoteInfo = Tenra;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -37,7 +37,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D6DFB38A2F0E6253005C3348 /* Exceptions for "AIFinanceManager" folder in "Tenra" target */ = {
+		D6DFB38A2F0E6253005C3348 /* Exceptions for "Tenra" folder in "Tenra" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -47,22 +47,22 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		D62A09932F0D7B0D004AF1FA /* AIFinanceManager */ = {
+		D62A09932F0D7B0D004AF1FA /* Tenra */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				D6DFB38A2F0E6253005C3348 /* Exceptions for "AIFinanceManager" folder in "Tenra" target */,
+				D6DFB38A2F0E6253005C3348 /* Exceptions for "Tenra" folder in "Tenra" target */,
 			);
-			path = AIFinanceManager;
+			path = Tenra;
 			sourceTree = "<group>";
 		};
-		D62A09A12F0D7B0E004AF1FA /* AIFinanceManagerTests */ = {
+		D62A09A12F0D7B0E004AF1FA /* TenraTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AIFinanceManagerTests;
+			path = TenraTests;
 			sourceTree = "<group>";
 		};
-		D62A09AB2F0D7B0E004AF1FA /* AIFinanceManagerUITests */ = {
+		D62A09AB2F0D7B0E004AF1FA /* TenraUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AIFinanceManagerUITests;
+			path = TenraUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -96,9 +96,9 @@
 			isa = PBXGroup;
 			children = (
 				D69F99D72F477D4A0010A953 /* Fonts */,
-				D62A09932F0D7B0D004AF1FA /* AIFinanceManager */,
-				D62A09A12F0D7B0E004AF1FA /* AIFinanceManagerTests */,
-				D62A09AB2F0D7B0E004AF1FA /* AIFinanceManagerUITests */,
+				D62A09932F0D7B0D004AF1FA /* Tenra */,
+				D62A09A12F0D7B0E004AF1FA /* TenraTests */,
+				D62A09AB2F0D7B0E004AF1FA /* TenraUITests */,
 				D62A09922F0D7B0D004AF1FA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -138,12 +138,12 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				D62A09932F0D7B0D004AF1FA /* AIFinanceManager */,
+				D62A09932F0D7B0D004AF1FA /* Tenra */,
 			);
 			name = Tenra;
 			packageProductDependencies = (
 			);
-			productName = AIFinanceManager;
+			productName = Tenra;
 			productReference = D62A09912F0D7B0D004AF1FA /* Tenra.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -161,12 +161,12 @@
 				D62A09A02F0D7B0E004AF1FA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				D62A09A12F0D7B0E004AF1FA /* AIFinanceManagerTests */,
+				D62A09A12F0D7B0E004AF1FA /* TenraTests */,
 			);
 			name = TenraTests;
 			packageProductDependencies = (
 			);
-			productName = AIFinanceManagerTests;
+			productName = TenraTests;
 			productReference = D62A099E2F0D7B0E004AF1FA /* TenraTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
@@ -184,12 +184,12 @@
 				D62A09AA2F0D7B0E004AF1FA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				D62A09AB2F0D7B0E004AF1FA /* AIFinanceManagerUITests */,
+				D62A09AB2F0D7B0E004AF1FA /* TenraUITests */,
 			);
 			name = TenraUITests;
 			packageProductDependencies = (
 			);
-			productName = AIFinanceManagerUITests;
+			productName = TenraUITests;
 			productReference = D62A09A82F0D7B0E004AF1FA /* TenraUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
@@ -431,7 +431,7 @@
 				DEVELOPMENT_TEAM = SY2L2VMQP7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = AIFinanceManager/Info.plist;
+				INFOPLIST_FILE = Tenra/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -465,7 +465,7 @@
 				DEVELOPMENT_TEAM = SY2L2VMQP7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = AIFinanceManager/Info.plist;
+				INFOPLIST_FILE = Tenra/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -550,7 +550,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = AIFinanceManager;
+				TEST_TARGET_NAME = Tenra;
 			};
 			name = Debug;
 		};
@@ -571,7 +571,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = AIFinanceManager;
+				TEST_TARGET_NAME = Tenra;
 			};
 			name = Release;
 		};

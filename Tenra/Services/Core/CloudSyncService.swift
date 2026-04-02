@@ -49,7 +49,7 @@ nonisolated final class CloudSyncService: @unchecked Sendable {
 
     /// Callback to update SyncState on MainActor.
     /// nonisolated(unsafe): written once at init time by CloudSyncViewModel, then only read — accepted race.
-    var onSyncStateChanged: (@Sendable (SyncState) -> Void)?
+    nonisolated(unsafe) var onSyncStateChanged: (@Sendable (SyncState) -> Void)?
 
     init(coreDataStack: CoreDataStack = .shared) {
         self.coreDataStack = coreDataStack

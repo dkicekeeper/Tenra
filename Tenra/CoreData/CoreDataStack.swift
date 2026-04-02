@@ -403,6 +403,15 @@ final class CoreDataStack: @unchecked Sendable {
 
         do {
             try fm.copyItem(at: backupURL, to: storeURL)
+            // Also copy WAL and SHM from the backup directory if present
+            let backupWalURL = URL(fileURLWithPath: backupURL.path + "-wal")
+            let backupShmURL = URL(fileURLWithPath: backupURL.path + "-shm")
+            if fm.fileExists(atPath: backupWalURL.path) {
+                try? fm.copyItem(at: backupWalURL, to: walURL)
+            }
+            if fm.fileExists(atPath: backupShmURL.path) {
+                try? fm.copyItem(at: backupShmURL, to: shmURL)
+            }
         } catch {
             // Recovery: re-add the store at the original URL (now empty) to avoid a crash
             try? container.persistentStoreCoordinator.addPersistentStore(type: .sqlite, at: storeURL, options: options)

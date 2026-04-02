@@ -14,7 +14,7 @@ import os
 @MainActor
 final class CloudSyncViewModel {
 
-    private static let logger = Logger(subsystem: "Tenra", category: "CloudSyncViewModel")
+    private nonisolated static let logger = Logger(subsystem: "Tenra", category: "CloudSyncViewModel")
 
     // MARK: - Observable State
 
@@ -136,8 +136,14 @@ final class CloudSyncViewModel {
         isRestoringBackup = true
         do {
             try await backupService.restoreBackup(metadata)
+            // swapStore posts storeDidResetNotification (FRC rebuilds) but in-memory
+            // stores (TransactionStore, BalanceCoordinator, etc.) need a full reload.
+            if let coordinator = appCoordinator {
+                try? await coordinator.transactionStore.loadData()
+                coordinator.syncTransactionStoreToViewModels(batchMode: true)
+                await coordinator.balanceCoordinator.registerAccounts(coordinator.transactionStore.accounts)
+            }
             await showSuccess(String(localized: "settings.cloud.restoreSuccess"))
-            // AppCoordinator will handle re-initialization via storeDidResetNotification
         } catch {
             await showError(error.localizedDescription)
         }

@@ -82,6 +82,8 @@ final class CloudSyncViewModel {
     }
 
     func enableSync() async {
+        syncState = .initialSync
+
         let hasAccount = await syncService.checkiCloudAccountStatus()
         guard hasAccount else {
             syncState = .noAccount
@@ -89,12 +91,16 @@ final class CloudSyncViewModel {
         }
 
         isSyncEnabled = true
-        syncState = .initialSync
-        coreDataStack.reloadContainer()
+
+        // Reload container off main thread — CoreDataStack is thread-safe (NSLock).
+        // This prevents UI freeze during loadPersistentStores + CloudKit schema init.
+        let stack = coreDataStack
+        await Task.detached {
+            stack.reloadContainer()
+        }.value
 
         // Check if CloudKit container actually loaded (fallback resets the flag)
         guard UserDefaults.standard.bool(forKey: "iCloudSyncEnabled") else {
-            // CloudKit container failed — fallback to local already happened
             syncState = .error("CoreData model is not yet CloudKit-compatible")
             CloudSyncViewModel.logger.error("CloudKit container failed to load — sync disabled automatically")
             return
@@ -119,11 +125,15 @@ final class CloudSyncViewModel {
         syncState = .disabled
         syncService.stopMonitoring()
         settingsService.stopListening()
-        coreDataStack.reloadContainer()
 
-        // Reload in-memory data from the new (non-CloudKit) container
-        if let coordinator = appCoordinator {
-            Task {
+        // Reload container off main thread + reload data
+        let stack = coreDataStack
+        Task {
+            await Task.detached {
+                stack.reloadContainer()
+            }.value
+
+            if let coordinator = self.appCoordinator {
                 try? await coordinator.transactionStore.loadData()
                 coordinator.syncTransactionStoreToViewModels(batchMode: true)
                 await coordinator.balanceCoordinator.registerAccounts(coordinator.transactionStore.accounts)

@@ -160,6 +160,8 @@ extension InsightsService {
         let dormantAccounts: [AccountInsightItem] = accounts.compactMap { account in
             let balance = balanceFor(account.id)
             guard balance > 0 else { return nil }
+            // Deposit/savings accounts are expected to be inactive — don't flag them
+            guard !account.isDeposit else { return nil }
             guard let last = lastDates[account.id], last < thirtyDaysAgo else { return nil }
             return AccountInsightItem(
                 id: account.id,

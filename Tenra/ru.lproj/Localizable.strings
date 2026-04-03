@@ -842,7 +842,6 @@
 "insights.balanceRunway" = "Запас баланса";
 "insights.balanceRunway.months" = "месяцев хватит";
 "insights.yearOverYear" = "Год к году";
-"insights.incomeSeasonality" = "Сезонность доходов";
 "insights.incomeSourceBreakdown" = "Источники дохода";
 
 // Phase 24 — Health Score & Behavioral

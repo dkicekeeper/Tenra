@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Phase 38: Extracted from InsightsService monolith (2832 LOC → domain files).
-//  Responsible for: spending forecast, balance runway, year-over-year, income seasonality,
+//  Responsible for: spending forecast, balance runway, year-over-year, 
 //                   income source breakdown.
 //
 
@@ -25,7 +25,7 @@ extension InsightsService {
     ) -> [Insight] {
         var insights: [Insight] = []
 
-        // SpendingForecast, BalanceRunway, YoY, IncomeSeasonality
+        // SpendingForecast, BalanceRunway, YoY
         // are granularity-independent — skip when shared insights already provided
         if !skipSharedGenerators {
             if let forecast = generateSpendingForecast(transactions: snapshot.transactions, recurringSeries: snapshot.recurringSeries, categories: snapshot.categories, baseCurrency: baseCurrency, preAggregated: preAggregated) {
@@ -36,9 +36,6 @@ extension InsightsService {
             }
             if let yoy = generateYearOverYear(transactions: snapshot.transactions, baseCurrency: baseCurrency, preAggregated: preAggregated) {
                 insights.append(yoy)
-            }
-            if let seasonality = generateIncomeSeasonality(transactions: snapshot.transactions, baseCurrency: baseCurrency, preAggregated: preAggregated) {
-                insights.append(seasonality)
             }
         }
         // IncomeSourceBreakdown is granularity-dependent (uses currentBucketForForecasting) — always compute
@@ -229,63 +226,6 @@ extension InsightsService {
         )
     }
 
-    /// Identifies which calendar month historically generates the highest income.
-    private nonisolated func generateIncomeSeasonality(transactions: [Transaction], baseCurrency: String, preAggregated: PreAggregatedData? = nil) -> Insight? {
-        let calendar = Calendar.current
-        let now = Date()
-        guard let fiveYearsAgo = calendar.date(byAdding: .year, value: -5, to: now) else { return nil }
-
-        // Phase 42: Use preAggregated O(M) lookup when available; fall back to O(N) scan
-        let allAggregates: [InMemoryMonthlyTotal]
-        if let preAggregated {
-            allAggregates = preAggregated.monthlyTotalsInRange(from: fiveYearsAgo, to: now)
-        } else {
-            allAggregates = Self.computeMonthlyTotals(
-                from: transactions, from: fiveYearsAgo, to: now, baseCurrency: baseCurrency
-            )
-        }
-        guard allAggregates.count >= 12 else { return nil }
-
-        var incomeByMonth = [Int: [Double]]()
-        for agg in allAggregates where agg.totalIncome > 0 {
-            incomeByMonth[agg.month, default: []].append(agg.totalIncome)
-        }
-        guard incomeByMonth.count >= 6 else { return nil }
-
-        let avgByMonth: [(month: Int, avg: Double)] = incomeByMonth.map { month, incomes in
-            (month: month, avg: incomes.reduce(0, +) / Double(incomes.count))
-        }
-        let overallAvg = avgByMonth.reduce(0.0) { $0 + $1.avg } / Double(avgByMonth.count)
-        guard overallAvg > 0 else { return nil }
-
-        guard let peak = avgByMonth.max(by: { $0.avg < $1.avg }) else { return nil }
-        let peakPercent = ((peak.avg - overallAvg) / overallAvg) * 100
-        guard peakPercent > 10 else { return nil }
-
-        let monthDate = calendar.date(from: DateComponents(year: 2024, month: peak.month, day: 1)) ?? now
-        let monthFormatter = DateFormatter()
-        monthFormatter.dateFormat = "MMMM"
-        monthFormatter.locale = .current
-        let monthName = monthFormatter.string(from: monthDate)
-
-        Self.logger.debug("🌊 [Insights] IncomeSeasonality — peak month \(peak.month) (\(monthName, privacy: .public)), +\(String(format: "%.0f%%", peakPercent), privacy: .public) above avg")
-        return Insight(
-            id: "income_seasonality",
-            type: .incomeSeasonality,
-            title: String(localized: "insights.incomeSeasonality"),
-            subtitle: monthName,
-            metric: InsightMetric(
-                value: peakPercent,
-                formattedValue: String(format: "+%.0f%%", peakPercent),
-                currency: nil,
-                unit: nil
-            ),
-            trend: nil,
-            severity: .neutral,
-            category: .forecasting,
-            detailData: nil
-        )
-    }
 
 
     // MARK: - Income Source Breakdown

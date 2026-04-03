@@ -26,7 +26,7 @@ final class SettingsValidationService: SettingsValidationServiceProtocol {
     }
 
     func validateCurrency(_ currency: String) throws {
-        guard AppSettings.availableCurrencies.contains(currency) else {
+        guard CurrencyInfo.find(currency) != nil else {
             throw SettingsValidationError.invalidCurrency(currency)
         }
     }

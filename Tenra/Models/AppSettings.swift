@@ -40,13 +40,12 @@ class AppSettings: Codable {
     // MARK: - Constants
 
     nonisolated static let defaultCurrency = "KZT"
-    nonisolated static let availableCurrencies = ["KZT", "USD", "EUR", "RUB", "GBP", "CNY", "JPY"]
 
     // MARK: - Computed Properties
 
     /// Validate if current settings are valid
     var isValid: Bool {
-        Self.availableCurrencies.contains(baseCurrency)
+        CurrencyInfo.find(baseCurrency) != nil
     }
 
     // MARK: - Initialization

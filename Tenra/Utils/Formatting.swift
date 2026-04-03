@@ -23,7 +23,14 @@ nonisolated struct Formatting {
     /// - Parameter currency: Код валюты (например, "USD", "KZT")
     /// - Returns: Символ валюты (например, "$", "₸") или код валюты, если символ не найден
     static func currencySymbol(for currency: String) -> String {
-        return currencySymbols[currency.uppercased()] ?? currency
+        if let symbol = currencySymbols[currency.uppercased()] {
+            return symbol
+        }
+        // Fallback: use CurrencyInfo lookup (covers all ISO currencies)
+        if let info = CurrencyInfo.find(currency.uppercased()) {
+            return info.symbol
+        }
+        return currency
     }
 
     /// Форматирует сумму с символом валюты (старая версия, всегда показывает .00)

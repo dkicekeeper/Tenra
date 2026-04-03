@@ -758,6 +758,7 @@
 "insights.vsAverage" = "к среднему";
 "insights.budgetOver" = "Превышение бюджета";
 "insights.budgetUnder" = "В рамках бюджета";
+"insights.budgetHeadroom" = "Запас бюджета";
 "insights.projectedOverspend" = "Прогноз перерасхода";
 "insights.categoriesOverBudget" = "%d категорий с перерасходом";
 "insights.categoriesAtRisk" = "%d категорий под угрозой";

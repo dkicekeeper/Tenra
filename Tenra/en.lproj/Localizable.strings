@@ -758,6 +758,7 @@
 "insights.vsAverage" = "vs average";
 "insights.budgetOver" = "Over Budget";
 "insights.budgetUnder" = "Under Budget";
+"insights.budgetHeadroom" = "Budget Headroom";
 "insights.projectedOverspend" = "Projected Overspend";
 "insights.categoriesOverBudget" = "%d categories over budget";
 "insights.categoriesAtRisk" = "%d categories at risk";

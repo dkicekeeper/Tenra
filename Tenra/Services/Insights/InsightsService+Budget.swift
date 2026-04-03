@@ -127,16 +127,17 @@ extension InsightsService {
         }
 
         if !underBudgetItems.isEmpty {
+            let totalHeadroom = underBudgetItems.reduce(0.0) { $0 + ($1.budgetAmount - $1.spent) }
             insights.append(Insight(
                 id: "budget_under",
                 type: .budgetUnderutilized,
-                title: String(localized: "insights.budgetUnder"),
+                title: String(localized: "insights.budgetHeadroom"),
                 subtitle: String(format: String(localized: "insights.categoriesUnderBudget"), underBudgetItems.count),
                 metric: InsightMetric(
-                    value: Double(underBudgetItems.count),
-                    formattedValue: "\(underBudgetItems.count)",
-                    currency: nil,
-                    unit: String(localized: "insights.categoriesUnit")
+                    value: totalHeadroom,
+                    formattedValue: Formatting.formatCurrencySmart(totalHeadroom, currency: baseCurrency),
+                    currency: baseCurrency,
+                    unit: nil
                 ),
                 trend: nil,
                 severity: .positive,

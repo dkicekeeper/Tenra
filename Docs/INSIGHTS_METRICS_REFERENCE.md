@@ -1,7 +1,7 @@
 # Insights Metrics Reference
 
-**Last Updated:** 2026-02-23
-**Phase coverage:** Phase 17–27 (all metrics)
+**Last Updated:** 2026-04-03
+**Phase coverage:** Phase 17–27 (all metrics, post-audit)
 
 ## Легенда
 
@@ -43,13 +43,13 @@
 ### `spendingSpike` *(Phase 24)*
 - **Что считает:** категория, у которой расходы в текущем месяце > 1.5× среднего за 3 мес
 - **Данные:** `CategoryAggregateService` — фиксированный lookback 3 мес
-- **Порог:** multiplier ≥ 1.5×; severity Critical если > 2×
+- **Порог:** multiplier ≥ 1.5×; severity Critical если > 2×. Дополнительно: категория должна составлять ≥1% от общих расходов (относительный порог вместо абсолютного 100)
 - **Гранулярность:** 🔒
 
 ### `categoryTrend` *(Phase 24)*
-- **Что считает:** категория, у которой расходы растут 2+ месяцев подряд
+- **Что считает:** категория, у которой расходы растут 3+ месяцев подряд
 - **Данные:** `CategoryAggregateService` — фиксированный lookback 6 мес
-- **Streak:** минимум 2 месяца роста, минимум 3 записи по категории
+- **Streak:** минимум 3 месяца роста (было 2), минимум 3 записи по категории
 - **Гранулярность:** 🔒
 
 ---
@@ -86,10 +86,10 @@
 - **Детализация:** `budgetProgressList`, sorted by % utilization desc
 - **Гранулярность:** ✅
 
-### `budgetUnderutilized`
-- **Что считает:** категории, использовавшие < 80% бюджета (позитивный инсайт)
+### `budgetHeadroom` *(was `budgetUnderutilized`)*
+- **Что считает:** суммарный оставшийся бюджет в валюте (сумма `budget - spent` по всем категориям с `0 < percentage < 80`)
 - **Данные:** то же, что `budgetOverspend`
-- **Условие:** `0 < percentage < 80`
+- **Условие:** `0 < percentage < 80`; значение — общая оставшаяся сумма в baseCurrency (не количество категорий)
 - **Гранулярность:** ✅
 
 ### `projectedOverspend`
@@ -142,8 +142,8 @@
 - **Гранулярность:** ✅
 
 ### `projectedBalance`
-- **Что считает:** текущий баланс + месячный нетто recurring (impact подписок)
-- **Данные:** `transactionStore.accounts` (current balances) + `recurringSeries` (active)
+- **Что считает:** текущий баланс + месячный нетто recurring + средние нерекуррентные расходы за последние 3 периода
+- **Данные:** `transactionStore.accounts` (current balances) + `recurringSeries` (active) + средние non-recurring monthly expenses (из последних 3 периодов)
 - **Гранулярность:** ❌ — текущее состояние
 
 ---
@@ -167,6 +167,7 @@
 ### `accountDormancy` *(Phase 24)*
 - **Что считает:** счета с положительным балансом, без активности 30+ дней
 - **Данные:** `allTransactions` — O(A×N) scan для поиска последней даты по каждому счёту
+- **Исключения:** deposit-счета (`account.isDeposit`) исключены из анализа
 - **Гранулярность:** ❌ — всегда 30 дней от сегодня
 
 ---
@@ -183,13 +184,11 @@
 - **Что считает:** `totalBalance / avgMonthlyExpenses` — сколько месяцев можно прожить без дохода
 - **Данные:** `balanceFor()` + `MonthlyAggregateService.fetchLast(3)`
 - **Severity:** Positive ≥3 мес, Warning ≥1 мес, Critical <1 мес
+- **Health Score baseline:** 3 месяца (было 6) — используется для gradient scoring в Health Score
 - **Гранулярность:** 🔒 — lookback 3 мес
 
-### `savingsMomentum`
-- **Что считает:** норма сбережений текущего месяца vs среднее за 3 предыдущих
-- **Данные:** `MonthlyAggregateService.fetchLast(4)`
-- **Порог:** показывается только если |delta| > 1%
-- **Гранулярность:** 🔒 — lookback 4 мес
+### `savingsMomentum` — REMOVED
+> **Причина удаления:** дублировал `savingsRate`. Momentum показывал delta savings rate vs 3-month average — эту функцию полностью покрывает `savingsRate` с trend arrow.
 
 ---
 
@@ -214,35 +213,28 @@
 - **Severity:** Positive ≤−10%, Warning ≥+15%, Neutral otherwise
 - **Гранулярность:** 🔒 — конкретные calendar-даты
 
-### `incomeSeasonality`
-- **Что считает:** какой calendar-месяц исторически приносит наибольший доход (за 5 лет)
-- **Данные:** `MonthlyAggregateService.fetchRange(5 years back → now)` — группировка по номеру месяца (1–12)
-- **Порог:** пиковый месяц > 10% выше среднего; ≥12 месяцев данных; ≥6 разных calendar-месяцев
-- **Гранулярность:** 🔒 — lookback 5 лет
+### `incomeSeasonality` — REMOVED
+> **Причина удаления:** требовал 5 лет данных для корректной работы, что нереалистично для большинства пользователей. Порог входа (≥12 мес данных, ≥6 calendar-месяцев) отсеивал почти всех.
 
-### `spendingVelocity`
-- **Что считает:** текущий дневной темп расходов относительно прошлого месяца
-- **Формула:** `(spentSoFar / dayOfMonth) / (lastMonthTotal / lastMonthDays)`
-- **Данные:** `MonthlyAggregateService.fetchLast(2)`
-- **Порог:** |ratio − 1.0| > 0.1 (только если >10% разница); dayOfMonth > 3
-- **Гранулярность:** 🔒 — lookback 2 мес
+### `spendingVelocity` — REMOVED
+> **Причина удаления:** дублировал `averageDailySpending`. Velocity показывал текущий daily rate vs прошлый месяц — `averageDailySpending` с trend arrow покрывает этот use case.
 
 ---
 
-## Сводная таблица
+## Сводная таблица (27 метрик)
 
 | Метрика | Категория | Гранулярность | Источник данных |
 |---------|-----------|:---:|---|
 | `topSpendingCategory` | spending | ✅ current bucket | CategoryAggregateService (current bucket) / O(N) fallback |
 | `monthOverMonthChange` | spending | ✅ (skip allTime) | periodPoints currentPeriodKey/previousPeriodKey |
 | `averageDailySpending` | spending | ✅ | periodSummary (windowed) |
-| `spendingSpike` | spending | 🔒 3mo | CategoryAggregateService |
-| `categoryTrend` | spending | 🔒 6mo | CategoryAggregateService |
+| `spendingSpike` | spending | 🔒 3mo | CategoryAggregateService (порог ≥1% от total expenses) |
+| `categoryTrend` | spending | 🔒 6mo | CategoryAggregateService (streak ≥3 мес) |
 | `incomeGrowth` | income | ✅ (skip allTime) | periodPoints currentPeriodKey/previousPeriodKey |
 | `incomeVsExpenseRatio` | income | ✅ | periodSummary (windowed) |
 | `incomeSourceBreakdown` | income | ✅ current bucket | filteredTransactions (current bucket) |
 | `budgetOverspend` | budget | ✅ | BudgetSpendingCacheService O(1) |
-| `budgetUnderutilized` | budget | ✅ | BudgetSpendingCacheService O(1) |
+| `budgetHeadroom` | budget | ✅ | BudgetSpendingCacheService O(1) (сумма в валюте) |
 | `projectedOverspend` | budget | ✅ | windowedTransactions + day calc |
 | `totalRecurringCost` | recurring | ❌ current | recurringSeries (active) |
 | `subscriptionGrowth` | recurring | 🔒 3mo | recurringSeries by startDate |
@@ -250,34 +242,58 @@
 | `netCashFlow` | cashFlow | ✅ | MonthlyAggregateService (fast) / O(N×M) fallback |
 | `bestMonth` | cashFlow | ✅ | periodPoints |
 | `worstMonth` | cashFlow | ✅ | periodPoints |
-| `projectedBalance` | cashFlow | ❌ current | accounts + recurringSeries |
+| `projectedBalance` | cashFlow | ❌ current | accounts + recurringSeries + avg non-recurring expenses (3 periods) |
 | `totalWealth` | wealth | ⚠️ | balanceFor() + periodPoints |
 | `wealthGrowth` | wealth | ✅ | periodPoints (cumulative) |
-| `accountDormancy` | wealth | ❌ 30d | allTransactions O(A×N) |
+| `accountDormancy` | wealth | ❌ 30d | allTransactions O(A×N), excludes deposit accounts |
 | `savingsRate` | savings | ✅ | windowedIncome / windowedExpenses |
 | `emergencyFund` | savings | 🔒 3mo | balanceFor() + MonthlyAggregateService |
-| `savingsMomentum` | savings | 🔒 4mo | MonthlyAggregateService |
 | `spendingForecast` | forecasting | 🔒 30d | CategoryAggregateService + MonthlyAggregateService |
 | `balanceRunway` | forecasting | 🔒 3mo | balanceFor() + MonthlyAggregateService |
 | `yearOverYear` | forecasting | 🔒 calendar | MonthlyAggregateService (2 точки) |
-| `incomeSeasonality` | forecasting | 🔒 5yr | MonthlyAggregateService |
-| `spendingVelocity` | forecasting | 🔒 2mo | MonthlyAggregateService |
+
+**Удалённые метрики (audit 2026-04):** `incomeSeasonality` (нереалистичный 5yr lookback), `spendingVelocity` (дубль `averageDailySpending`), `savingsMomentum` (дубль `savingsRate`)
 
 ---
 
 ## Итоговые группы
 
-### ✅ Полностью следуют гранулярности (15 метрик)
-`topSpendingCategory` (current bucket), `monthOverMonthChange` (skip allTime), `averageDailySpending`, `incomeGrowth` (skip allTime), `incomeVsExpenseRatio`, `incomeSourceBreakdown` (current bucket), `budgetOverspend`, `budgetUnderutilized`, `projectedOverspend`, `netCashFlow`, `bestMonth`, `worstMonth`, `wealthGrowth`, `savingsRate`
+### ✅ Полностью следуют гранулярности (14 метрик)
+`topSpendingCategory` (current bucket), `monthOverMonthChange` (skip allTime), `averageDailySpending`, `incomeGrowth` (skip allTime), `incomeVsExpenseRatio`, `incomeSourceBreakdown` (current bucket), `budgetOverspend`, `budgetHeadroom`, `projectedOverspend`, `netCashFlow`, `bestMonth`, `worstMonth`, `wealthGrowth`, `savingsRate`
 
 ### ⚠️ Значение текущее, trend arrow window-aware (1 метрика)
 `totalWealth` — баланс счетов всегда текущий; trend направление вычисляется из `currentPeriodKey vs previousPeriodKey`
 
-### 🔒 Фиксированный lookback по дизайну (10 метрик)
-`spendingSpike` (3mo), `categoryTrend` (6mo), `subscriptionGrowth` (3mo), `emergencyFund` (3mo), `savingsMomentum` (4mo), `spendingForecast` (30d+current month), `balanceRunway` (3mo), `yearOverYear` (calendar), `incomeSeasonality` (5yr), `spendingVelocity` (2mo)
+### 🔒 Фиксированный lookback по дизайну (8 метрик)
+`spendingSpike` (3mo), `categoryTrend` (6mo), `subscriptionGrowth` (3mo), `emergencyFund` (3mo), `spendingForecast` (30d+current month), `balanceRunway` (3mo), `yearOverYear` (calendar)
 
 ### ❌ Не привязаны ко времени — текущее состояние (4 метрики)
-`totalRecurringCost`, `duplicateSubscriptions`, `projectedBalance`, `accountDormancy` (30 дней от сегодня)
+`totalRecurringCost`, `duplicateSubscriptions`, `projectedBalance`, `accountDormancy` (30 дней от сегодня, excludes deposits)
+
+---
+
+## Severity Sorting (Audit 2026-04)
+
+`InsightsViewModel` теперь сортирует инсайты по severity внутри каждой секции: `critical → warning → neutral → positive`. Это обеспечивает показ наиболее важных инсайтов первыми.
+
+---
+
+## Health Score
+
+Составной скор финансового здоровья (0–100). 5 компонентов с весами:
+
+| Компонент | Вес (default) | Вес (no budgets) | Логика |
+|-----------|:---:|:---:|---|
+| Savings Rate | 33.3% | 40% | gradient 0–100 based on savings rate % |
+| Recurring Load | 20% | 26.7% | gradient based on recurring/income ratio |
+| Emergency Fund | 16.7% | 20% | baseline **3 месяца** (было 6); gradient 0–100 based on months of runway |
+| Cash Flow | 10% | 13.3% | **gradient 0–100** based on `netFlow / income` ratio (было binary 0/100) |
+| Budget Adherence | 20% | excluded | based on % categories within budget; **when no budgets set — component excluded, weight redistributed** to remaining 4 |
+
+**Изменения (audit 2026-04):**
+- Cash Flow: заменён binary scoring (0 или 100) на gradient (0–100 по ratio net flow / income)
+- Emergency Fund: baseline снижен с 6 до 3 месяцев — более реалистичная оценка
+- Budget Adherence: при отсутствии бюджетов компонент исключается, веса перераспределяются пропорционально
 
 ---
 

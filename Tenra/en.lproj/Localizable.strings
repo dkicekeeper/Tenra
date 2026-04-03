@@ -88,6 +88,9 @@
 "currency.popular" = "Popular";
 "currency.all" = "All Currencies";
 "currency.searchPrompt" = "Search currency";
+"currency.customize" = "Customize Currencies";
+"currency.accountCurrencies" = "Account Currencies";
+"currency.customizeAction" = "Customize...";
 "settings.wallpaper" = "Home Wallpaper";
 "settings.background" = "Background";
 "settings.background.none" = "No Background";

@@ -88,6 +88,9 @@
 "currency.popular" = "Популярные";
 "currency.all" = "Все валюты";
 "currency.searchPrompt" = "Поиск валюты";
+"currency.customize" = "Настроить валюты";
+"currency.accountCurrencies" = "Валюты счетов";
+"currency.customizeAction" = "Настроить...";
 "settings.wallpaper" = "Обои на главной";
 "settings.background" = "Фон";
 "settings.background.none" = "Без фона";

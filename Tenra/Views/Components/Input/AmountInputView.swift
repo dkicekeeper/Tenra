@@ -13,6 +13,8 @@ struct AmountInputView: View {
     @Binding var selectedCurrency: String
     let errorMessage: String?
     let baseCurrency: String
+    let accountCurrencies: Set<String>
+    let appSettings: AppSettings
     var onAmountChange: ((String) -> Void)? = nil
 
     // MARK: - Currency Conversion
@@ -35,7 +37,11 @@ struct AmountInputView: View {
                 .animation(AppAnimation.gentleSpring, value: shouldShowConversion)
 
             // Currency selector (centred)
-            CurrencySelectorView(selectedCurrency: $selectedCurrency)
+            CurrencySelectorView(
+                selectedCurrency: $selectedCurrency,
+                accountCurrencies: accountCurrencies,
+                appSettings: appSettings
+            )
 
             // Validation error
             if let error = errorMessage {
@@ -177,7 +183,9 @@ struct AmountInputView: View {
         amount: $amount,
         selectedCurrency: $currency,
         errorMessage: nil,
-        baseCurrency: "KZT"
+        baseCurrency: "KZT",
+        accountCurrencies: ["KZT"],
+        appSettings: .makeDefault()
     )
 }
 
@@ -189,7 +197,9 @@ struct AmountInputView: View {
         amount: $amount,
         selectedCurrency: $currency,
         errorMessage: nil,
-        baseCurrency: "KZT"
+        baseCurrency: "KZT",
+        accountCurrencies: ["KZT"],
+        appSettings: .makeDefault()
     )
 }
 
@@ -201,6 +211,8 @@ struct AmountInputView: View {
         amount: $amount,
         selectedCurrency: $currency,
         errorMessage: "Введите корректную сумму",
-        baseCurrency: "KZT"
+        baseCurrency: "KZT",
+        accountCurrencies: ["KZT"],
+        appSettings: .makeDefault()
     )
 }

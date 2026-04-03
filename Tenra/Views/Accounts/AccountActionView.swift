@@ -54,7 +54,9 @@ struct AccountActionView: View {
                     amount: $viewModel.amountText,
                     selectedCurrency: $viewModel.selectedCurrency,
                     errorMessage: viewModel.showingError ? viewModel.errorMessage : nil,
-                    baseCurrency: transactionsViewModel.appSettings.baseCurrency
+                    baseCurrency: transactionsViewModel.appSettings.baseCurrency,
+                    accountCurrencies: Set(accountsViewModel.accounts.map(\.currency)),
+                    appSettings: transactionsViewModel.appSettings
                 )
 
                 // 3. Счет

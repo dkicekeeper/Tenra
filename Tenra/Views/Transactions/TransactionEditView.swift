@@ -74,7 +74,9 @@ struct TransactionEditView: View {
                             amount: $bindableCoordinator.formData.amountText,
                             selectedCurrency: $bindableCoordinator.formData.selectedCurrency,
                             errorMessage: nil,
-                            baseCurrency: coordinator.transactionsViewModel.appSettings.baseCurrency
+                            baseCurrency: coordinator.transactionsViewModel.appSettings.baseCurrency,
+                            accountCurrencies: Set(_accounts.map(\.currency)),
+                            appSettings: coordinator.transactionsViewModel.appSettings
                         )
 
                         // 2. Account(s)

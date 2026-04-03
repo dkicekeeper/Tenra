@@ -27,30 +27,39 @@ struct QuickAccessCurrencyPickerView: View {
         }
     }
 
-    private var accountCurrencyInfos: [CurrencyInfo] {
-        accountCurrencies.compactMap { CurrencyInfo.find($0) }
+    /// All selected currencies (account + user-picked), sorted by name.
+    private var selectedCurrencyInfos: [CurrencyInfo] {
+        let allSelected = accountCurrencies.union(selectedCurrencyCodes)
+        return allSelected
+            .compactMap { CurrencyInfo.find($0) }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
-    private var showAccountSection: Bool {
-        searchText.isEmpty && !accountCurrencies.isEmpty
+    private var showSelectedSection: Bool {
+        searchText.isEmpty && !selectedCurrencyInfos.isEmpty
     }
 
     // MARK: - Body
 
     var body: some View {
         List {
-            if showAccountSection {
-                Section(header: Text(String(localized: "currency.accountCurrencies"))) {
-                    ForEach(accountCurrencyInfos) { currency in
-                        lockedRow(currency)
+            if showSelectedSection {
+                Section(header: Text(String(localized: "currency.selected"))) {
+                    ForEach(selectedCurrencyInfos) { currency in
+                        if accountCurrencies.contains(currency.code) {
+                            lockedRow(currency)
+                        } else {
+                            toggleRow(currency)
+                        }
                     }
                 }
             }
 
             Section(header: Text(String(localized: "currency.all"))) {
                 ForEach(filteredCurrencies) { currency in
-                    if !showAccountSection || !accountCurrencies.contains(currency.code) {
+                    let isInSelectedSection = showSelectedSection
+                        && (accountCurrencies.contains(currency.code) || selectedCurrencyCodes.contains(currency.code))
+                    if !isInSelectedSection {
                         toggleRow(currency)
                     }
                 }

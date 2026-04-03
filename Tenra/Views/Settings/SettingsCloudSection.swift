@@ -19,19 +19,19 @@ struct SettingsCloudSection: View {
     var body: some View {
         Section(header: SettingsSectionHeaderView(title: String(localized: "settings.cloud"))) {
             // Sync toggle
-            UniversalRow(
-                config: .settings,
-                leadingIcon: .sfSymbol("icloud", color: AppColors.accent, size: AppIconSize.md)
-            ) {
-                Text(String(localized: "settings.cloud.sync"))
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-            } trailing: {
-                Toggle("", isOn: Binding(
-                    get: { isSyncEnabled },
-                    set: { onToggleSync($0) }
-                ))
-                .labelsHidden()
+            Toggle(isOn: Binding(
+                get: { isSyncEnabled },
+                set: { onToggleSync($0) }
+            )) {
+                HStack(spacing: AppSpacing.md) {
+                    IconView(
+                        source: .sfSymbol("icloud"),
+                        style: .circle(size: AppIconSize.md, tint: .monochrome(AppColors.accent))
+                    )
+                    Text(String(localized: "settings.cloud.sync"))
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppColors.textPrimary)
+                }
             }
 
             // Status row (hidden when disabled)

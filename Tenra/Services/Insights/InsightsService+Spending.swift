@@ -432,7 +432,7 @@ extension InsightsService {
                     break
                 }
             }
-            if streak >= 2 && streak > bestStreak {
+            if streak >= 3 && streak > bestStreak {
                 bestStreak = streak
                 bestCategory = catName
                 bestLatestAmount = sorted.last?.totalExpenses ?? 0

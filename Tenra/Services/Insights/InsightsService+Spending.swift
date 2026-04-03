@@ -345,6 +345,8 @@ extension InsightsService {
 
         let byCategory = Dictionary(grouping: monthlyAggregates, by: { $0.categoryName })
 
+        let totalExpensesInWindow = monthlyAggregates.reduce(0.0) { $0 + $1.totalExpenses }
+
         var spikeCategory: String? = nil
         var spikeAmount: Double = 0
         var spikeMultiplier: Double = 1.5
@@ -355,7 +357,7 @@ extension InsightsService {
             guard let currentAmount = current?.totalExpenses, currentAmount > 0, !historical.isEmpty else { continue }
 
             let histAvg = historical.reduce(0.0) { $0 + $1.totalExpenses } / Double(historical.count)
-            guard histAvg > 100 else { continue }
+            guard totalExpensesInWindow > 0, histAvg / totalExpensesInWindow > 0.01 else { continue }
 
             let multiplier = currentAmount / histAvg
             if multiplier > spikeMultiplier {

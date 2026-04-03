@@ -59,7 +59,7 @@ extension InsightsService {
         let totalBudgetCount = categoriesWithBudget.count
         let budgetAdherenceScore = totalBudgetCount > 0
             ? Int((Double(onBudgetCount) / Double(totalBudgetCount) * 100).rounded())
-            : 50 // neutral when no budgets set
+            : -1 // sentinel: exclude from weighted total when no budgets
 
         // --- Component 3: Recurring Ratio (weight 0.20) ---
         let recurringCost = recurringSeries
@@ -83,7 +83,7 @@ extension InsightsService {
             ? totalExpenses / 12
             : last3Months.reduce(0.0) { $0 + $1.totalExpenses } / Double(last3Months.count)
         let monthsCovered = avgMonthlyExpenses > 0 ? totalBalance / avgMonthlyExpenses : 0
-        let emergencyFundScore = Int(min(monthsCovered / 6.0 * 100, 100).rounded())
+        let emergencyFundScore = Int(min(monthsCovered / 3.0 * 100, 100).rounded())
 
         // --- Component 5: Cash Flow (weight 0.10) ---
         let cashflowScore: Int
@@ -96,11 +96,20 @@ extension InsightsService {
         }
 
         // --- Weighted Total ---
-        let total = Double(savingsRateScore)     * 0.30
+        let total: Double
+        if budgetAdherenceScore >= 0 {
+            total = Double(savingsRateScore)     * 0.30
                   + Double(budgetAdherenceScore) * 0.25
                   + Double(recurringRatioScore)  * 0.20
                   + Double(emergencyFundScore)   * 0.15
                   + Double(cashflowScore)        * 0.10
+        } else {
+            // No budgets — redistribute 25% proportionally
+            total = Double(savingsRateScore)     * 0.40
+                  + Double(recurringRatioScore)  * 0.267
+                  + Double(emergencyFundScore)   * 0.20
+                  + Double(cashflowScore)        * 0.133
+        }
         let score = Int(total.rounded())
 
         let (grade, gradeColor): (String, Color)
@@ -116,7 +125,7 @@ extension InsightsService {
             grade: grade,
             gradeColor: gradeColor,
             savingsRateScore:     max(0, min(savingsRateScore, 100)),
-            budgetAdherenceScore: max(0, min(budgetAdherenceScore, 100)),
+            budgetAdherenceScore: budgetAdherenceScore >= 0 ? max(0, min(budgetAdherenceScore, 100)) : 0,
             recurringRatioScore:  max(0, min(recurringRatioScore, 100)),
             emergencyFundScore:   max(0, min(emergencyFundScore, 100)),
             cashflowScore:        cashflowScore

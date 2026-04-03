@@ -239,9 +239,16 @@ extension InsightsService {
             ))
         }
 
-        // 4. Projected balance — recurring delta scaled to granularity period.
+        // 4. Projected balance — recurring delta + average expenses scaled to granularity period.
         let currentBalance = snapshot.accounts.reduce(0.0) { $0 + snapshot.balanceFor($1.id) }
         let recurringNet = monthlyRecurringNet(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries, categories: snapshot.categories)
+
+        // Average monthly expenses from the last 3 period data points for a realistic projection.
+        let avgMonthlyExpenses: Double = {
+            let recentPoints = Array(periodPoints.suffix(3))
+            guard !recentPoints.isEmpty else { return 0 }
+            return recentPoints.reduce(0.0) { $0 + $1.expenses } / Double(recentPoints.count)
+        }()
 
         let projectedPeriodMultiplier: Double
         let projectedPeriodUnit: String
@@ -259,27 +266,29 @@ extension InsightsService {
             projectedPeriodMultiplier = 1.0
             projectedPeriodUnit       = String(localized: "insights.perMonth")
         }
-        let periodRecurringNet  = recurringNet * projectedPeriodMultiplier
-        let projectedBalance    = currentBalance + periodRecurringNet
-        let projectedMetricFormatted = periodRecurringNet >= 0
-            ? "+" + Formatting.formatCurrencySmart(periodRecurringNet, currency: baseCurrency)
-            : Formatting.formatCurrencySmart(periodRecurringNet, currency: baseCurrency)
+        let periodRecurringNet    = recurringNet * projectedPeriodMultiplier
+        let periodAvgExpenses     = avgMonthlyExpenses * projectedPeriodMultiplier
+        let projectedNetChange    = periodRecurringNet - periodAvgExpenses
+        let projectedBalance      = currentBalance + projectedNetChange
+        let projectedMetricFormatted = projectedNetChange >= 0
+            ? "+" + Formatting.formatCurrencySmart(projectedNetChange, currency: baseCurrency)
+            : Formatting.formatCurrencySmart(projectedNetChange, currency: baseCurrency)
 
         insights.append(Insight(
             id: "projected_balance",
             type: .projectedBalance,
             title: String(localized: "insights.projectedBalance"),
-            subtitle: projectedPeriodUnit,
+            subtitle: String(localized: "insights.recurringAndExpenses"),
             metric: InsightMetric(
-                value: periodRecurringNet,
+                value: projectedNetChange,
                 formattedValue: projectedMetricFormatted,
                 currency: baseCurrency,
                 unit: projectedPeriodUnit
             ),
             trend: InsightTrend(
-                direction: periodRecurringNet >= 0 ? .up : .down,
-                changePercent: currentBalance > 0 ? (periodRecurringNet / currentBalance) * 100 : nil,
-                changeAbsolute: periodRecurringNet,
+                direction: projectedNetChange >= 0 ? .up : .down,
+                changePercent: currentBalance > 0 ? (projectedNetChange / currentBalance) * 100 : nil,
+                changeAbsolute: projectedNetChange,
                 comparisonPeriod: String(localized: "insights.currentBalance") + ": "
                     + Formatting.formatCurrencySmart(currentBalance, currency: baseCurrency)
             ),

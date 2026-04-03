@@ -789,6 +789,7 @@
 "insights.worstPeriod.allTime" = "Худший период";
 "insights.projectedBalance" = "Прогноз баланса";
 "insights.in30Days" = "через 30 дней";
+"insights.recurringAndExpenses" = "Подписки + ср. расходы";
 "insights.projected" = "прогнозируемое изменение";
 "insights.currentBalance" = "Текущий баланс";
 "insights.cashFlowTrend" = "Тренд денежных потоков";

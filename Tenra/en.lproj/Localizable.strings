@@ -84,6 +84,10 @@
 "settings.title" = "Settings";
 "settings.general" = "General Settings";
 "settings.baseCurrency" = "Base Currency";
+"currency.title" = "Currency";
+"currency.popular" = "Popular";
+"currency.all" = "All Currencies";
+"currency.searchPrompt" = "Search currency";
 "settings.wallpaper" = "Home Wallpaper";
 "settings.background" = "Background";
 "settings.background.none" = "No Background";

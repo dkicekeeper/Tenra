@@ -753,7 +753,7 @@
 "insights.avgDailySpending" = "Среднедневные расходы";
 "insights.days" = "дней";
 "insights.incomeGrowth" = "Тренд доходов";
-"insights.incomeVsExpense" = "Доходы vs Расходы";
+"insights.incomeVsExpense" = "Доходы и расходы";
 "insights.vsPreviousPeriod" = "к прошлому периоду";
 "insights.vsAverage" = "к среднему";
 "insights.budgetOver" = "Превышение бюджета";
@@ -789,7 +789,7 @@
 "insights.worstPeriod.allTime" = "Худший период";
 "insights.projectedBalance" = "Прогноз баланса";
 "insights.in30Days" = "через 30 дней";
-"insights.recurringAndExpenses" = "Подписки + ср. расходы";
+"insights.recurringAndExpenses" = "Подписки + средние расходы";
 "insights.projected" = "прогнозируемое изменение";
 "insights.currentBalance" = "Текущий баланс";
 "insights.cashFlowTrend" = "Тренд денежных потоков";
@@ -813,10 +813,10 @@
 "insights.granularity.quarter.short" = "Кв";
 "insights.granularity.year.short" = "Год";
 "insights.granularity.allTime.short" = "Всё";
-"insights.granularity.prev.week" = "к пред. неделе";
-"insights.granularity.prev.month" = "к пред. месяцу";
-"insights.granularity.prev.quarter" = "к пред. кварталу";
-"insights.granularity.prev.year" = "к пред. году";
+"insights.granularity.prev.week" = "к предыдущей неделе";
+"insights.granularity.prev.month" = "к предыдущему месяцу";
+"insights.granularity.prev.quarter" = "к предыдущему кварталу";
+"insights.granularity.prev.year" = "к предыдущему году";
 
 // Phase 18 — Wealth card
 "insights.wealth" = "Капитал";

@@ -789,7 +789,7 @@
 "insights.worstPeriod.allTime" = "Worst Period";
 "insights.projectedBalance" = "Projected Balance";
 "insights.in30Days" = "in 30 days";
-"insights.recurringAndExpenses" = "Recurring + avg expenses";
+"insights.recurringAndExpenses" = "Recurring + average expenses";
 "insights.projected" = "projected change";
 "insights.currentBalance" = "Current balance";
 "insights.cashFlowTrend" = "Cash Flow Trend";
@@ -813,10 +813,10 @@
 "insights.granularity.quarter.short" = "Quarter";
 "insights.granularity.year.short" = "Year";
 "insights.granularity.allTime.short" = "All";
-"insights.granularity.prev.week" = "vs prev. week";
-"insights.granularity.prev.month" = "vs prev. month";
-"insights.granularity.prev.quarter" = "vs prev. quarter";
-"insights.granularity.prev.year" = "vs prev. year";
+"insights.granularity.prev.week" = "vs previous week";
+"insights.granularity.prev.month" = "vs previous month";
+"insights.granularity.prev.quarter" = "vs previous quarter";
+"insights.granularity.prev.year" = "vs previous year";
 
 // Phase 18 — Wealth card
 "insights.wealth" = "Capital";

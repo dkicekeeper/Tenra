@@ -31,12 +31,8 @@ struct InsightsCardView<BottomChart: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            // Header: icon + title + conditional mini-chart overlay
+            // Header: title + conditional mini-chart overlay
             HStack(alignment: .top, spacing: AppSpacing.sm) {
-                Image(systemName: insight.category.icon)
-                    .font(.system(size: AppIconSize.md))
-                    .foregroundStyle(insight.severity.color)
-
                 Text(insight.title)
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textSecondary)
@@ -58,11 +54,21 @@ struct InsightsCardView<BottomChart: View>: View {
                 .lineLimit(1)
 
             HStack(spacing: AppSpacing.sm) {
-                // Large metric
-                Text(insight.metric.formattedValue)
-                    .font(AppTypography.h2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(AppColors.textPrimary)
+                // Large metric — use FormattedAmountText for currency amounts
+                if let currency = insight.metric.currency {
+                    FormattedAmountText(
+                        amount: insight.metric.value,
+                        currency: currency,
+                        fontSize: AppTypography.h2,
+                        fontWeight: .bold,
+                        color: AppColors.textPrimary
+                    )
+                } else {
+                    Text(insight.metric.formattedValue)
+                        .font(AppTypography.h2)
+                        .fontWeight(.bold)
+                        .foregroundStyle(AppColors.textPrimary)
+                }
 
                 // Trend indicator
                 if let trend = insight.trend {

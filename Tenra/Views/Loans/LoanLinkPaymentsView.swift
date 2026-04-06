@@ -101,11 +101,11 @@ struct LoanLinkPaymentsView: View {
                     }
                 }
                 .padding(.vertical, AppSpacing.sm)
-                .background(.ultraThinMaterial)
             }
             .safeAreaInset(edge: .bottom) {
                 actionBar
             }
+            .toolbar(.hidden, for: .tabBar)
             .task {
                 loadCandidates()
             }
@@ -246,7 +246,6 @@ struct LoanLinkPaymentsView: View {
             .primaryButton(disabled: selectedIds.isEmpty || isLinking)
             .padding(AppSpacing.lg)
         }
-        .background(.ultraThinMaterial)
         .overlay(alignment: .top) {
             if showError {
                 MessageBanner.error(errorMessage)

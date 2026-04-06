@@ -356,11 +356,7 @@ nonisolated enum LoanPaymentService {
     ) {
         loanInfo.paymentsMade = linkedPaymentCount
         loanInfo.lastPaymentDate = linkedPaymentDates.last
-        loanInfo.lastReconciliationDate = {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            return formatter.string(from: Date())
-        }()
+        loanInfo.lastReconciliationDate = DateFormatters.dateFormatter.string(from: Date())
 
         if loanInfo.loanType == .installment {
             let totalPaid = loanInfo.monthlyPayment * Decimal(linkedPaymentCount)

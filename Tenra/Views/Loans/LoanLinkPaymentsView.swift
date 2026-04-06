@@ -261,14 +261,15 @@ struct LoanLinkPaymentsView: View {
                     transactions: selectedTransactions,
                     transactionStore: transactionStore
                 )
+                isLinking = false
                 dismiss()
             } catch {
+                isLinking = false
                 errorMessage = error.localizedDescription
                 withAnimation(AppAnimation.contentSpring) {
                     showError = true
                 }
             }
-            isLinking = false
         }
     }
 }

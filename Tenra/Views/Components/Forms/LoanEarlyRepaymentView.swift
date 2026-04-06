@@ -157,6 +157,8 @@ struct LoanEarlyRepaymentView: View {
                 label: String(localized: "loan.termReduction", defaultValue: "Term reduced by"),
                 value: String(format: String(localized: "loan.monthsValue", defaultValue: "%d months"), loanInfo.termMonths - preview.termMonths)
             )
+            .padding(.horizontal, AppSpacing.lg)
+            .padding(.vertical, AppSpacing.sm)
             Divider()
                 .padding(.leading, AppSpacing.lg)
             InfoRow(
@@ -164,12 +166,16 @@ struct LoanEarlyRepaymentView: View {
                 label: String(localized: "loan.newEndDate", defaultValue: "New end date"),
                 value: formatDateString(preview.endDate)
             )
+            .padding(.horizontal, AppSpacing.lg)
+            .padding(.vertical, AppSpacing.sm)
         case .reducePayment:
             InfoRow(
                 icon: "arrow.down.circle",
                 label: String(localized: "loan.paymentReduction", defaultValue: "Payment reduced by"),
                 value: Formatting.formatCurrency(NSDecimalNumber(decimal: loanInfo.monthlyPayment - preview.monthlyPayment).doubleValue, currency: account.currency)
             )
+            .padding(.horizontal, AppSpacing.lg)
+            .padding(.vertical, AppSpacing.sm)
             Divider()
                 .padding(.leading, AppSpacing.lg)
             InfoRow(
@@ -177,6 +183,8 @@ struct LoanEarlyRepaymentView: View {
                 label: String(localized: "loan.newMonthlyPayment", defaultValue: "New monthly payment"),
                 value: Formatting.formatCurrency(NSDecimalNumber(decimal: preview.monthlyPayment).doubleValue, currency: account.currency)
             )
+            .padding(.horizontal, AppSpacing.lg)
+            .padding(.vertical, AppSpacing.sm)
         }
     }
 

@@ -117,12 +117,16 @@ struct LoanPaymentView: View {
                                 label: String(localized: "loan.interestPortion", defaultValue: "Interest"),
                                 value: Formatting.formatCurrency(NSDecimalNumber(decimal: breakdown.interest).doubleValue, currency: account.currency)
                             )
+                            .padding(.horizontal, AppSpacing.lg)
+                            .padding(.vertical, AppSpacing.sm)
                             Divider().padding(.leading, AppSpacing.lg)
                             InfoRow(
                                 icon: "arrow.down.to.line",
                                 label: String(localized: "loan.principalPortion", defaultValue: "Principal"),
                                 value: Formatting.formatCurrency(NSDecimalNumber(decimal: breakdown.principal).doubleValue, currency: account.currency)
                             )
+                            .padding(.horizontal, AppSpacing.lg)
+                            .padding(.vertical, AppSpacing.sm)
                         }
                     }
                 }

@@ -92,12 +92,16 @@ struct LoanRateChangeView: View {
                                 label: String(localized: "loan.newMonthlyPayment", defaultValue: "New monthly payment"),
                                 value: Formatting.formatCurrency(NSDecimalNumber(decimal: newPayment).doubleValue, currency: account.currency)
                             )
+                            .padding(.horizontal, AppSpacing.lg)
+                            .padding(.vertical, AppSpacing.sm)
                             Divider().padding(.leading, AppSpacing.lg)
                             InfoRow(
                                 icon: diff > 0 ? "arrow.up" : "arrow.down",
                                 label: String(localized: "loan.paymentChange", defaultValue: "Change"),
                                 value: String(format: "%@%@", diff > 0 ? "+" : "", Formatting.formatCurrency(NSDecimalNumber(decimal: diff).doubleValue, currency: account.currency))
                             )
+                            .padding(.horizontal, AppSpacing.lg)
+                            .padding(.vertical, AppSpacing.sm)
                         }
                     }
                 }

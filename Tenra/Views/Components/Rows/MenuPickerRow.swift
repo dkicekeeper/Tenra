@@ -57,7 +57,7 @@ struct MenuPickerRow<T: Hashable>: View {
                         .foregroundStyle(AppColors.textPrimary)
                         .padding(.horizontal, AppSpacing.lg)
                         .padding(.vertical, AppSpacing.sm)
-                        .background(Color(.tertiarySystemFill))
+                        .background(Color(.systemFill))
                         .clipShape(Capsule())
                 }
             }

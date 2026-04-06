@@ -54,11 +54,15 @@ struct LoanEarlyRepaymentView: View {
 
                     // Amount + Date + Strategy + Note in one card
                     FormSection {
-                        FormLabeledRow(
-                            icon: "banknote",
-                            label: String(localized: "loan.amountLabel", defaultValue: "Amount"),
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("banknote", color: AppColors.textSecondary, size: AppIconSize.md),
                             hint: remainingHint
                         ) {
+                            Text(String(localized: "loan.amountLabel", defaultValue: "Amount"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             HStack(spacing: AppSpacing.xs) {
                                 TextField(
                                     String(localized: "loan.amountPlaceholder", defaultValue: "Amount"),
@@ -99,7 +103,14 @@ struct LoanEarlyRepaymentView: View {
 
                         Divider().padding(.leading, AppSpacing.lg)
 
-                        FormLabeledRow(icon: "note.text", label: String(localized: "loan.noteLabel", defaultValue: "Note")) {
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("note.text", color: AppColors.textSecondary, size: AppIconSize.md)
+                        ) {
+                            Text(String(localized: "loan.noteLabel", defaultValue: "Note"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             TextField(
                                 String(localized: "loan.notePlaceholder", defaultValue: "Optional"),
                                 text: $noteText,

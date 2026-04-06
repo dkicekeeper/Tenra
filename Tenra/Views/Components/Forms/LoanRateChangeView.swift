@@ -30,10 +30,14 @@ struct LoanRateChangeView: View {
                 VStack(spacing: AppSpacing.lg) {
                     // Rate + Date + Note in one card
                     FormSection {
-                        FormLabeledRow(
-                            icon: "percent",
-                            label: String(localized: "loan.rateLabel", defaultValue: "Annual rate")
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("percent", color: AppColors.textSecondary, size: AppIconSize.md)
                         ) {
+                            Text(String(localized: "loan.rateLabel", defaultValue: "Annual rate"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             HStack(spacing: AppSpacing.xs) {
                                 TextField("0.0", text: $rateText)
                                     .keyboardType(.decimalPad)
@@ -57,7 +61,14 @@ struct LoanRateChangeView: View {
 
                         Divider().padding(.leading, AppSpacing.lg)
 
-                        FormLabeledRow(icon: "note.text", label: String(localized: "loan.noteLabel", defaultValue: "Note")) {
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("note.text", color: AppColors.textSecondary, size: AppIconSize.md)
+                        ) {
+                            Text(String(localized: "loan.noteLabel", defaultValue: "Note"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             TextField(
                                 String(localized: "loan.notePlaceholder", defaultValue: "Optional"),
                                 text: $noteText,

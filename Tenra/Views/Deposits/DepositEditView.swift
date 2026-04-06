@@ -50,10 +50,14 @@ struct DepositEditView: View {
 
                     // Bank name + interest rate grouped in one card
                     FormSection(header: String(localized: "deposit.bankDetails", defaultValue: "Bank & Rate")) {
-                        FormLabeledRow(
-                            icon: "building.columns",
-                            label: String(localized: "deposit.bank")
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("building.columns", color: AppColors.textSecondary, size: AppIconSize.md)
                         ) {
+                            Text(String(localized: "deposit.bank"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             TextField(
                                 String(localized: "deposit.bankNamePlaceholder"),
                                 text: $bankName
@@ -64,10 +68,14 @@ struct DepositEditView: View {
 
                         Divider()
 
-                        FormLabeledRow(
-                            icon: "percent",
-                            label: String(localized: "deposit.interestRate")
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("percent", color: AppColors.textSecondary, size: AppIconSize.md)
                         ) {
+                            Text(String(localized: "deposit.interestRate"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             HStack(spacing: AppSpacing.xs) {
                                 TextField("0.0", text: $interestRateText)
                                     .keyboardType(.decimalPad)
@@ -83,10 +91,14 @@ struct DepositEditView: View {
 
                     // Posting day + capitalization grouped in one card
                     FormSection(header: String(localized: "deposit.schedule", defaultValue: "Schedule")) {
-                        FormLabeledRow(
-                            icon: "calendar.badge.clock",
-                            label: String(localized: "deposit.dayOfMonth")
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("calendar.badge.clock", color: AppColors.textSecondary, size: AppIconSize.md)
                         ) {
+                            Text(String(localized: "deposit.dayOfMonth"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             HStack(spacing: AppSpacing.sm) {
                                 Text("\(interestPostingDay)")
                                     .font(AppTypography.bodySmall)
@@ -100,11 +112,15 @@ struct DepositEditView: View {
 
                         Divider()
 
-                        FormLabeledRow(
-                            icon: "arrow.triangle.2.circlepath",
-                            label: String(localized: "deposit.enableCapitalization"),
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("arrow.triangle.2.circlepath", color: AppColors.textSecondary, size: AppIconSize.md),
                             hint: String(localized: "deposit.capitalizationHint")
                         ) {
+                            Text(String(localized: "deposit.enableCapitalization"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             Toggle("", isOn: $capitalizationEnabled)
                                 .labelsHidden()
                         }

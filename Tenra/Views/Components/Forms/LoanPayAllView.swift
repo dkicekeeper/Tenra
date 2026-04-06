@@ -65,7 +65,14 @@ struct LoanPayAllView: View {
 
                         Divider().padding(.leading, AppSpacing.lg)
 
-                        FormLabeledRow(icon: "sum", label: String(localized: "loan.payAllTotal", defaultValue: "Total")) {
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("sum", color: AppColors.textSecondary, size: AppIconSize.md)
+                        ) {
+                            Text(String(localized: "loan.payAllTotal", defaultValue: "Total"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             FormattedAmountText(
                                 amount: NSDecimalNumber(decimal: totalPayment).doubleValue,
                                 currency: currency,
@@ -78,7 +85,14 @@ struct LoanPayAllView: View {
                     // Source account + Date in one card
                     FormSection(header: String(localized: "loan.paymentSection", defaultValue: "Payment")) {
                         if availableAccounts.isEmpty {
-                            FormLabeledRow(icon: "building.columns", label: String(localized: "loan.sourceAccount", defaultValue: "From account")) {
+                            UniversalRow(
+                                config: .standard,
+                                leadingIcon: .sfSymbol("building.columns", color: AppColors.textSecondary, size: AppIconSize.md)
+                            ) {
+                                Text(String(localized: "loan.sourceAccount", defaultValue: "From account"))
+                                    .font(AppTypography.bodySmall)
+                                    .foregroundStyle(AppColors.textPrimary)
+                            } trailing: {
                                 Text(String(localized: "loan.noSourceAccounts", defaultValue: "No accounts"))
                                     .font(AppTypography.bodySmall)
                                     .foregroundStyle(AppColors.textSecondary)

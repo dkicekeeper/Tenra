@@ -81,10 +81,14 @@ struct LoanEditView: View {
 
                     // Loan details: bank, type, interest rate
                     FormSection(header: String(localized: "loan.detailsSection", defaultValue: "Loan Details")) {
-                        FormLabeledRow(
-                            icon: "building.columns",
-                            label: String(localized: "loan.bankPlaceholder", defaultValue: "Bank")
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("building.columns", color: AppColors.textSecondary, size: AppIconSize.md)
                         ) {
+                            Text(String(localized: "loan.bankPlaceholder", defaultValue: "Bank"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             TextField(
                                 String(localized: "loan.bankPlaceholder", defaultValue: "Bank name"),
                                 text: $bankName
@@ -120,10 +124,14 @@ struct LoanEditView: View {
                         if loanType == .annuity {
                             Divider()
 
-                            FormLabeledRow(
-                                icon: "percent",
-                                label: String(localized: "loan.rateAnnual", defaultValue: "Interest rate")
+                            UniversalRow(
+                                config: .standard,
+                                leadingIcon: .sfSymbol("percent", color: AppColors.textSecondary, size: AppIconSize.md)
                             ) {
+                                Text(String(localized: "loan.rateAnnual", defaultValue: "Interest rate"))
+                                    .font(AppTypography.bodySmall)
+                                    .foregroundStyle(AppColors.textPrimary)
+                            } trailing: {
                                 HStack(spacing: AppSpacing.xs) {
                                     TextField("0.0", text: $interestRateText)
                                         .keyboardType(.decimalPad)
@@ -140,10 +148,14 @@ struct LoanEditView: View {
 
                     // Loan schedule: term, payment day, start date
                     FormSection(header: String(localized: "loan.scheduleSection", defaultValue: "Schedule")) {
-                        FormLabeledRow(
-                            icon: "clock",
-                            label: String(localized: "loan.termLabel", defaultValue: "Term")
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("clock", color: AppColors.textSecondary, size: AppIconSize.md)
                         ) {
+                            Text(String(localized: "loan.termLabel", defaultValue: "Term"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             HStack(spacing: AppSpacing.xs) {
                                 TextField("0", text: $termMonthsText)
                                     .keyboardType(.numberPad)
@@ -158,10 +170,14 @@ struct LoanEditView: View {
 
                         Divider()
 
-                        FormLabeledRow(
-                            icon: "calendar.badge.clock",
-                            label: String(localized: "loan.paymentDay", defaultValue: "Payment day")
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("calendar.badge.clock", color: AppColors.textSecondary, size: AppIconSize.md)
                         ) {
+                            Text(String(localized: "loan.paymentDay", defaultValue: "Payment day"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             HStack(spacing: AppSpacing.sm) {
                                 Text("\(paymentDay)")
                                     .font(AppTypography.bodySmall)

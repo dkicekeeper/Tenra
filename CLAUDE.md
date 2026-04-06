@@ -494,7 +494,6 @@ Generic row with `IconConfig` leading icons. Presets: `.standard`, `.settings`, 
 - **Arbitrary content** (VStack, HStack, custom cards) must add `.padding(AppSpacing.lg)` explicitly before `.cardStyle()`
 - **`.info` H:0**: InfoRow always lives inside a container with `.padding(.lg)` — adding own H padding would double it to 32pt
 - **`.settings` H:0**: `List`/`Form` apply `listRowInsets` (16pt leading/trailing) automatically — rows inside must NOT add H padding
-- **`FormLabeledRow`**: V:12 H:16 — matches `.standard` for consistency inside `FormSection(.card)`
 - **Dividers inside cards**: `.padding(.leading, AppSpacing.lg)` (16pt) to align with row content start
 
 **Design system files** (`Utils/`):

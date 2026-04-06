@@ -49,11 +49,15 @@ struct LoanPaymentView: View {
 
                     // Amount + Source + Date in one card
                     FormSection {
-                        FormLabeledRow(
-                            icon: "banknote",
-                            label: String(localized: "loan.amountLabel", defaultValue: "Amount"),
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("banknote", color: AppColors.textSecondary, size: AppIconSize.md),
                             hint: scheduledHint
                         ) {
+                            Text(String(localized: "loan.amountLabel", defaultValue: "Amount"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
                             HStack(spacing: AppSpacing.xs) {
                                 TextField(
                                     String(localized: "loan.amountPlaceholder", defaultValue: "Amount"),
@@ -72,7 +76,14 @@ struct LoanPaymentView: View {
                         Divider().padding(.leading, AppSpacing.lg)
 
                         if availableAccounts.isEmpty {
-                            FormLabeledRow(icon: "building.columns", label: String(localized: "loan.sourceAccount", defaultValue: "From account")) {
+                            UniversalRow(
+                                config: .standard,
+                                leadingIcon: .sfSymbol("building.columns", color: AppColors.textSecondary, size: AppIconSize.md)
+                            ) {
+                                Text(String(localized: "loan.sourceAccount", defaultValue: "From account"))
+                                    .font(AppTypography.bodySmall)
+                                    .foregroundStyle(AppColors.textPrimary)
+                            } trailing: {
                                 Text(String(localized: "loan.noSourceAccounts", defaultValue: "No accounts"))
                                     .font(AppTypography.bodySmall)
                                     .foregroundStyle(AppColors.textSecondary)

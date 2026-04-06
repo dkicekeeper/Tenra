@@ -67,20 +67,27 @@ struct UniversalRow<Content: View, Trailing: View>: View {
 
     let config: RowConfiguration
     let leadingIcon: IconConfig?
+    let hint: String?
 
     @ViewBuilder let content: () -> Content
     @ViewBuilder let trailing: () -> Trailing
+
+    private var hintLeadingPad: CGFloat {
+        leadingIcon != nil ? AppIconSize.md + config.spacing : 0
+    }
 
     // MARK: - Initializer
 
     init(
         config: RowConfiguration = .standard,
         leadingIcon: IconConfig? = nil,
+        hint: String? = nil,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder trailing: @escaping () -> Trailing
     ) {
         self.config = config
         self.leadingIcon = leadingIcon
+        self.hint = hint
         self.content = content
         self.trailing = trailing
     }
@@ -88,23 +95,34 @@ struct UniversalRow<Content: View, Trailing: View>: View {
     // MARK: - Body
 
     var body: some View {
-        HStack(spacing: config.spacing) {
-            // Leading icon через IconView
-            if let iconConfig = leadingIcon {
-                IconView(
-                    source: iconConfig.source,
-                    style: iconConfig.style
-                )
+        VStack(alignment: .leading, spacing: hint != nil ? AppSpacing.xs : 0) {
+            HStack(spacing: config.spacing) {
+                // Leading icon via IconView
+                if let iconConfig = leadingIcon {
+                    IconView(
+                        source: iconConfig.source,
+                        style: iconConfig.style
+                    )
+                }
+
+                // Content expands to fill available space, pushing trailing to the right edge.
+                // Using frame(maxWidth:) instead of a Spacer avoids competing spacers when
+                // content itself contains an inner Spacer (e.g. infoRow HStack).
+                content()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                // Trailing element
+                trailing()
             }
 
-            // Content expands to fill available space, pushing trailing to the right edge.
-            // Using frame(maxWidth:) instead of a Spacer avoids competing spacers when
-            // content itself contains an inner Spacer (e.g. infoRow HStack).
-            content()
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            // Trailing element
-            trailing()
+            if let hint {
+                Text(hint)
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.leading, hintLeadingPad)
+                    .padding(.bottom, AppSpacing.xxs)
+            }
         }
         .padding(.vertical, config.verticalPadding)
         .padding(.horizontal, config.horizontalPadding)
@@ -305,10 +323,12 @@ extension UniversalRow where Trailing == EmptyView {
     init(
         config: RowConfiguration = .standard,
         leadingIcon: IconConfig? = nil,
+        hint: String? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.config = config
         self.leadingIcon = leadingIcon
+        self.hint = hint
         self.content = content
         self.trailing = { EmptyView() }
     }
@@ -320,11 +340,13 @@ extension UniversalRow where Content == Text, Trailing == EmptyView {
     init(
         config: RowConfiguration = .standard,
         leadingIcon: IconConfig? = nil,
+        hint: String? = nil,
         title: String,
         titleColor: Color = AppColors.textPrimary
     ) {
         self.config = config
         self.leadingIcon = leadingIcon
+        self.hint = hint
         self.content = {
             Text(title)
                 .font(AppTypography.body)

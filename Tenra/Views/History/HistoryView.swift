@@ -87,7 +87,7 @@ struct HistoryView: View {
                 )
             }
         }
-        .safeAreaBar(edge: .top) {
+        .safeAreaInset(edge: .top) {
             HistoryFilterSection(
                 timeFilterDisplayName: timeFilterManager.currentFilter.displayName,
                 accounts: accountsViewModel.accounts,

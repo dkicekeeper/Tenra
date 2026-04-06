@@ -142,7 +142,7 @@ struct CategoriesManagementView: View {
                 }
             }
         }
-        .safeAreaBar(edge: .top) {
+        .safeAreaInset(edge: .top) {
             SegmentedPickerView(
                 title: "",
                 selection: $selectedType,

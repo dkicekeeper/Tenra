@@ -80,6 +80,18 @@ struct LoanLinkPaymentsView: View {
 
     var body: some View {
         transactionList
+            .safeAreaBar(edge: .top) {
+                VStack(spacing: AppSpacing.sm) {
+                    searchBar
+                    if uniqueAccountIds.count > 1 {
+                        accountFilter
+                    }
+                }
+                .padding(.vertical, AppSpacing.sm)
+            }
+            .safeAreaBar(edge: .bottom) {
+                actionBar
+            }
             .navigationTitle(String(localized: "loan.linkPayments.title", defaultValue: "Link Payments"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -92,18 +104,6 @@ struct LoanLinkPaymentsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-            }
-            .safeAreaInset(edge: .top) {
-                VStack(spacing: AppSpacing.sm) {
-                    searchBar
-                    if uniqueAccountIds.count > 1 {
-                        accountFilter
-                    }
-                }
-                .padding(.vertical, AppSpacing.sm)
-            }
-            .safeAreaInset(edge: .bottom) {
-                actionBar
             }
             .toolbar(.hidden, for: .tabBar)
             .task {

@@ -222,7 +222,7 @@ struct LoanDetailView: View {
                 )
             }
         }
-        .sheet(isPresented: $showingLinkPayments) {
+        .navigationDestination(isPresented: $showingLinkPayments) {
             if let account = account {
                 LoanLinkPaymentsView(
                     loan: account,

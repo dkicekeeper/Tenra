@@ -2,7 +2,7 @@
 //  LoanLinkPaymentsView.swift
 //  Tenra
 //
-//  Sheet view for selecting existing transactions to link to a loan.
+//  Full-screen view for selecting existing transactions to link to a loan.
 //  Uses LoanTransactionMatcher for auto-matching and LoansViewModel
 //  for conversion on confirm.
 //
@@ -31,13 +31,12 @@ struct LoanLinkPaymentsView: View {
     // MARK: - Computed Properties
 
     /// When search is empty — show auto-matched candidates.
-    /// When search is active — search ALL transactions globally and merge with candidates.
+    /// When search is active — search ALL transactions globally.
     private var filteredCandidates: [Transaction] {
         var result: [Transaction]
         if searchText.isEmpty {
             result = candidates
         } else {
-            // Global search across all transactions
             let query = searchText.lowercased()
             let allTx = transactionStore.transactions.filter { tx in
                 tx.type == .expense && tx.currency == loan.currency
@@ -80,43 +79,36 @@ struct LoanLinkPaymentsView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                summarySection
-                searchBar
-                if uniqueAccountIds.count > 1 {
-                    accountFilter
-                }
-                transactionList
-                actionBar
-            }
+        transactionList
             .navigationTitle(String(localized: "loan.linkPayments.title", defaultValue: "Link Payments"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "common.cancel")) {
-                        dismiss()
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 0) {
+                        Text(String(localized: "loan.linkPayments.title", defaultValue: "Link Payments"))
+                            .font(AppTypography.body.weight(.semibold))
+                        Text(String(format: String(localized: "loan.linkPayments.selectedWithAmount", defaultValue: "%d selected · %@"), selectedIds.count, Formatting.formatCurrency(selectedTotal, currency: loan.currency)))
+                            .font(AppTypography.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
+            }
+            .safeAreaInset(edge: .top) {
+                VStack(spacing: AppSpacing.sm) {
+                    searchBar
+                    if uniqueAccountIds.count > 1 {
+                        accountFilter
+                    }
+                }
+                .padding(.vertical, AppSpacing.sm)
+                .background(.ultraThinMaterial)
+            }
+            .safeAreaInset(edge: .bottom) {
+                actionBar
             }
             .task {
                 loadCandidates()
             }
-        }
-    }
-
-    // MARK: - Summary Section
-
-    private var summarySection: some View {
-        VStack(spacing: AppSpacing.xs) {
-            Text(String(format: String(localized: "loan.linkPayments.selected", defaultValue: "%d selected"), selectedIds.count))
-                .font(AppTypography.h4)
-            Text(Formatting.formatCurrency(selectedTotal, currency: loan.currency))
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textSecondaryAccessible)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(AppSpacing.lg)
     }
 
     // MARK: - Search Bar
@@ -169,7 +161,6 @@ struct LoanLinkPaymentsView: View {
             }
             .padding(.horizontal, AppSpacing.lg)
         }
-        .padding(.vertical, AppSpacing.sm)
     }
 
     // MARK: - Transaction List
@@ -255,6 +246,7 @@ struct LoanLinkPaymentsView: View {
             .primaryButton(disabled: selectedIds.isEmpty || isLinking)
             .padding(AppSpacing.lg)
         }
+        .background(.ultraThinMaterial)
         .overlay(alignment: .top) {
             if showError {
                 MessageBanner.error(errorMessage)

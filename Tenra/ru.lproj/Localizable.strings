@@ -1061,6 +1061,7 @@
 "loan.linkPayments" = "Привязать платежи";
 "loan.linkPayments.title" = "Привязать платежи";
 "loan.linkPayments.selected" = "%d выбрано";
+"loan.linkPayments.selectedWithAmount" = "%d выбрано · %@";
 "loan.linkPayments.search" = "Поиск по описанию или сумме";
 "loan.linkPayments.link" = "Привязать %d платежей";
 "loan.linkPayments.empty" = "Подходящие транзакции не найдены";

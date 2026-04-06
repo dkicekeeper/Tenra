@@ -1061,6 +1061,7 @@
 "loan.linkPayments" = "Link Payments";
 "loan.linkPayments.title" = "Link Payments";
 "loan.linkPayments.selected" = "%d selected";
+"loan.linkPayments.selectedWithAmount" = "%d selected · %@";
 "loan.linkPayments.search" = "Search by description or amount";
 "loan.linkPayments.link" = "Link %d Payments";
 "loan.linkPayments.empty" = "No matching transactions";

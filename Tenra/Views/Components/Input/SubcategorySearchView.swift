@@ -139,7 +139,7 @@ struct SubcategorySearchView: View {
                 : String(localized: "navigation.subcategorySearch"))
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: String(localized: "subcategorySearch.searchPrompt"))
-            .safeAreaInset(edge: .bottom) {
+            .safeAreaBar(edge: .bottom) {
                 // Кнопка создания внизу над полем поиска
                 if canCreateFromSearch {
                     let subcategoryName = searchText.trimmingCharacters(in: .whitespaces)

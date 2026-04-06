@@ -37,7 +37,7 @@ struct IconPickerView: View {
                     LogosTabView(selectedSource: $selectedSource)
                 }
             }
-            .safeAreaInset(edge: .top) {
+            .safeAreaBar(edge: .top) {
                 if allowLogos {
                     SegmentedPickerView(
                         title: "",

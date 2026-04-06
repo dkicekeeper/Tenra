@@ -93,7 +93,7 @@ struct AccountActionView: View {
                 )
             }
         }
-        .safeAreaInset(edge: .top) {
+        .safeAreaBar(edge: .top) {
             if !account.isDeposit {
                 SegmentedPickerView(
                     title: String(localized: "common.type"),

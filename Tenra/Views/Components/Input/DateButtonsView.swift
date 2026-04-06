@@ -137,7 +137,7 @@ extension View {
         isDisabled: Bool = false,
         onSave: @escaping (Date) -> Void
     ) -> some View {
-        self.safeAreaInset(edge: .bottom) {
+        self.safeAreaBar(edge: .bottom) {
             DateButtonsContentWrapper(
                 selectedDate: selectedDate,
                 isDisabled: isDisabled,

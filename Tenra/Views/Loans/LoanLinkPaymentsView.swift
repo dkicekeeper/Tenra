@@ -81,17 +81,15 @@ struct LoanLinkPaymentsView: View {
     var body: some View {
         transactionList
             .safeAreaBar(edge: .top) {
-                VStack(spacing: AppSpacing.sm) {
-                    searchBar
-                    if uniqueAccountIds.count > 1 {
-                        accountFilter
-                    }
+                if uniqueAccountIds.count > 1 {
+                    accountFilter
+                        .padding(.vertical, AppSpacing.sm)
                 }
-                .padding(.vertical, AppSpacing.sm)
             }
             .safeAreaBar(edge: .bottom) {
                 actionBar
             }
+            .searchable(text: $searchText, prompt: String(localized: "loan.linkPayments.search", defaultValue: "Search by description or amount"))
             .navigationTitle(String(localized: "loan.linkPayments.title", defaultValue: "Link Payments"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -109,32 +107,6 @@ struct LoanLinkPaymentsView: View {
             .task {
                 loadCandidates()
             }
-    }
-
-    // MARK: - Search Bar
-
-    private var searchBar: some View {
-        HStack(spacing: AppSpacing.sm) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-            TextField(
-                String(localized: "loan.linkPayments.search", defaultValue: "Search by description or amount"),
-                text: $searchText
-            )
-            .textFieldStyle(.plain)
-            if !searchText.isEmpty {
-                Button {
-                    searchText = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .padding(AppSpacing.sm)
-        .padding(.horizontal, AppSpacing.sm)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: AppRadius.md))
-        .padding(.horizontal, AppSpacing.lg)
     }
 
     // MARK: - Account Filter
@@ -231,7 +203,6 @@ struct LoanLinkPaymentsView: View {
 
     private var actionBar: some View {
         VStack(spacing: 0) {
-            Divider()
             Button {
                 linkSelected()
             } label: {

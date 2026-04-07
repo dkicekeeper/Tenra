@@ -19,7 +19,9 @@ struct CategoriesManagementView: View {
     @State private var editingCategory: CustomCategory?
     @State private var categoryToDelete: CustomCategory?
     @State private var showingDeleteDialog = false
-    @State private var isReordering = false
+    @State private var mode: ManagementMode = .normal
+    @State private var selection: Set<String> = []
+    @State private var showingBulkDeleteDialog = false
     
     // Precompute budget progress once per view update to avoid O(N) × O(rows) per-row computation
     private var budgetProgressMap: [String: BudgetProgress] {
@@ -88,23 +90,34 @@ struct CategoriesManagementView: View {
                     }
                 )
             } else {
-                List {
+                List(selection: mode.isSelecting ? $selection : nil) {
                     ForEach(filteredCategories) { category in
                         CategoryRow(
                             category: category,
                             isDefault: false,
                             budgetProgress: budgetProgressMap[category.id],
                             currency: transactionsViewModel.appSettings.baseCurrency,
-                            onEdit: { editingCategory = category },
+                            onEdit: {
+                                guard !mode.isSelecting else { return }
+                                editingCategory = category
+                            },
                             onDelete: {
                                 categoryToDelete = category
                                 showingDeleteDialog = true
                             }
                         )
+                        .onLongPressGesture {
+                            guard mode == .normal else { return }
+                            HapticManager.selectionChanged()
+                            withAnimation(AppAnimation.contentSpring) {
+                                mode = .selecting
+                                selection.insert(category.id)
+                            }
+                        }
                     }
-                    .onMove(perform: isReordering ? moveCategory : nil)
+                    .onMove(perform: mode.isReordering ? moveCategory : nil)
                 }
-                .environment(\.editMode, isReordering ? .constant(.active) : .constant(.inactive))
+                .environment(\.editMode, .constant(mode.editMode))
             }
         }
         .animation(AppAnimation.contentSpring, value: selectedType)
@@ -112,18 +125,42 @@ struct CategoriesManagementView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if isReordering {
+                switch mode {
+                case .normal:
                     Button {
                         HapticManager.light()
-                        withAnimation { isReordering.toggle() }
+                        withAnimation(AppAnimation.contentSpring) { mode = .selecting }
+                    } label: {
+                        Image(systemName: "checkmark.circle")
+                    }
+                    .accessibilityLabel(String(localized: "bulk.select"))
+                case .selecting:
+                    Button {
+                        HapticManager.light()
+                        withAnimation(AppAnimation.contentSpring) {
+                            mode = .normal
+                            selection.removeAll()
+                        }
+                    } label: {
+                        Text(String(localized: "bulk.done"))
+                    }
+                    .glassProminentButton()
+                case .reordering:
+                    Button {
+                        HapticManager.light()
+                        withAnimation(AppAnimation.contentSpring) { mode = .normal }
                     } label: {
                         Image(systemName: "checkmark")
                     }
                     .glassProminentButton()
-                } else {
+                }
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
+                if mode == .normal {
                     Button {
                         HapticManager.light()
-                        withAnimation { isReordering.toggle() }
+                        withAnimation(AppAnimation.contentSpring) { mode = .reordering }
                     } label: {
                         Image(systemName: "arrow.up.arrow.down")
                     }
@@ -131,7 +168,7 @@ struct CategoriesManagementView: View {
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
             ToolbarItem(placement: .topBarTrailing) {
-                if !isReordering {
+                if mode == .normal {
                     Button {
                         HapticManager.light()
                         showingAddCategory = true
@@ -139,6 +176,20 @@ struct CategoriesManagementView: View {
                         Image(systemName: "plus")
                     }
                     .glassProminentButton()
+                } else if mode.isSelecting {
+                    Button {
+                        HapticManager.selection()
+                        let filteredIds = Set(filteredCategories.map(\.id))
+                        if selection == filteredIds {
+                            selection.removeAll()
+                        } else {
+                            selection = filteredIds
+                        }
+                    } label: {
+                        Text(selection.count == filteredCategories.count
+                             ? String(localized: "bulk.deselectAll")
+                             : String(localized: "bulk.selectAll"))
+                    }
                 }
             }
         }
@@ -156,6 +207,7 @@ struct CategoriesManagementView: View {
             .background(Color(.clear))
             .onChange(of: selectedType) { _, _ in
                 HapticManager.selection()
+                selection.removeAll()
             }
         }
         .sheet(isPresented: $showingAddCategory) {
@@ -191,6 +243,45 @@ struct CategoriesManagementView: View {
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
+        }
+        .overlay(alignment: .bottom) {
+            if mode.isSelecting && !selection.isEmpty {
+                BulkDeleteButton(count: selection.count) {
+                    showingBulkDeleteDialog = true
+                }
+                .animation(AppAnimation.contentSpring, value: selection.count)
+            }
+        }
+        .alert(
+            String(format: String(localized: "bulk.deleteCategories.title"), selection.count),
+            isPresented: $showingBulkDeleteDialog
+        ) {
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+            Button(String(localized: "bulk.deleteCategories.onlyCategories"), role: .destructive) {
+                let ids = selection
+                Task {
+                    await categoriesViewModel.deleteCategories(ids, deleteTransactions: false)
+                    transactionsViewModel.clearAndRebuildAggregateCache()
+                }
+                withAnimation(AppAnimation.contentSpring) {
+                    selection.removeAll()
+                    mode = .normal
+                }
+            }
+            Button(String(localized: "bulk.deleteCategories.withTransactions"), role: .destructive) {
+                let ids = selection
+                Task {
+                    await categoriesViewModel.deleteCategories(ids, deleteTransactions: true)
+                    transactionsViewModel.recalculateAccountBalances()
+                    transactionsViewModel.clearAndRebuildAggregateCache()
+                }
+                withAnimation(AppAnimation.contentSpring) {
+                    selection.removeAll()
+                    mode = .normal
+                }
+            }
+        } message: {
+            Text(String(localized: "bulk.deleteCategories.message"))
         }
         .alert(String(localized: "category.deleteTitle"), isPresented: $showingDeleteDialog, presenting: categoryToDelete) { category in
             Button(String(localized: "button.cancel"), role: .cancel) {

@@ -75,6 +75,16 @@ extension TransactionStore {
 
     }
 
+    /// Delete multiple categories — single persist at the end
+    func deleteCategories(_ ids: Set<String>) {
+        categories.removeAll { ids.contains($0.id) }
+        persistCategoriesToRepository()
+
+        for id in ids {
+            CategoryOrderManager.shared.removeOrder(for: id)
+        }
+    }
+
     // MARK: - Subcategory CRUD Operations
 
     /// Add a new subcategory

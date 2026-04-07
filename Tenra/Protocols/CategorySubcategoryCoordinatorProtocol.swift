@@ -26,6 +26,10 @@ protocol CategorySubcategoryCoordinatorProtocol {
     /// - Parameter subcategoryId: ID of the subcategory to delete
     func deleteSubcategory(_ subcategoryId: String)
 
+    /// Delete multiple subcategories — batch operation with single persist
+    /// - Parameter ids: Set of subcategory IDs to delete
+    func deleteSubcategories(_ ids: Set<String>)
+
     /// Search subcategories by query
     /// - Parameter query: Search query
     /// - Returns: Matching subcategories

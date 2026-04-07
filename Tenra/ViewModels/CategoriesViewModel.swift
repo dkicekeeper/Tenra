@@ -146,9 +146,8 @@ class CategoriesViewModel {
             }
         }
 
-        for category in categoriesToDelete {
-            deleteCategory(category, deleteTransactions: deleteTransactions)
-        }
+        // Single batch delete + single persist (avoids savingInProgress race)
+        transactionStore?.deleteCategories(ids)
     }
 
     // MARK: - Category Rules Operations
@@ -191,9 +190,7 @@ class CategoriesViewModel {
     }
 
     func deleteSubcategories(_ ids: Set<String>) {
-        for id in ids {
-            deleteSubcategory(id)
-        }
+        subcategoryCoordinator.deleteSubcategories(ids)
     }
 
     func searchSubcategories(query: String) -> [Subcategory] {

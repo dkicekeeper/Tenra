@@ -126,16 +126,21 @@ class AccountsViewModel {
     }
 
     func deleteAccounts(_ ids: Set<String>, deleteTransactions: Bool) async {
-        let accountsToDelete = accounts.filter { ids.contains($0.id) }
-
         if deleteTransactions {
+            let accountsToDelete = accounts.filter { ids.contains($0.id) }
             for account in accountsToDelete {
                 await transactionStore?.deleteTransactions(forAccountId: account.id)
             }
         }
 
-        for account in accountsToDelete {
-            deleteAccount(account)
+        // Single batch delete + single persist (avoids savingInProgress race)
+        transactionStore?.deleteAccounts(ids)
+
+        // Remove all from BalanceCoordinator
+        if let coordinator = balanceCoordinator {
+            for id in ids {
+                await coordinator.removeAccount(id)
+            }
         }
     }
 

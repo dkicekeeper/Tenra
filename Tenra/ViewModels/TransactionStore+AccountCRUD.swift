@@ -69,6 +69,19 @@ extension TransactionStore {
 
     }
 
+    /// Delete multiple accounts — single persist at the end
+    func deleteAccounts(_ ids: Set<String>) {
+        accounts.removeAll { ids.contains($0.id) }
+
+        if !isImporting {
+            persistAccountsToRepository()
+
+            for id in ids {
+                AccountOrderManager.shared.removeOrder(for: id)
+            }
+        }
+    }
+
     /// Deletes all transactions associated with an account (where accountId or targetAccountId matches).
     /// Call this before deleteAccount when you want to remove an account with all its transactions.
     /// Each deletion goes through apply(.deleted) so aggregates, cache, and persistence are all updated.

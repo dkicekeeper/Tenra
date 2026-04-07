@@ -103,6 +103,29 @@ final class CategorySubcategoryCoordinator: CategorySubcategoryCoordinatorProtoc
 
     }
 
+    /// Delete multiple subcategories — all in-memory mutations first, single persist at the end
+    func deleteSubcategories(_ ids: Set<String>) {
+        guard let delegate = delegate else {
+            return
+        }
+
+        // Remove all links and subcategories in bulk
+        delegate.categorySubcategoryLinks.removeAll { ids.contains($0.subcategoryId) }
+        delegate.transactionSubcategoryLinks.removeAll { ids.contains($0.subcategoryId) }
+        delegate.subcategories.removeAll { ids.contains($0.id) }
+
+        // Single persist for each data type
+        if let transactionStore = delegate.transactionStore {
+            transactionStore.updateSubcategories(delegate.subcategories)
+            transactionStore.updateCategorySubcategoryLinks(delegate.categorySubcategoryLinks)
+            transactionStore.updateTransactionSubcategoryLinks(delegate.transactionSubcategoryLinks)
+        } else {
+            repository.saveSubcategories(delegate.subcategories)
+            repository.saveCategorySubcategoryLinks(delegate.categorySubcategoryLinks)
+            repository.saveTransactionSubcategoryLinks(delegate.transactionSubcategoryLinks)
+        }
+    }
+
     func searchSubcategories(query: String) -> [Subcategory] {
         guard let delegate = delegate else { return [] }
 

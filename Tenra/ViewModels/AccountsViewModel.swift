@@ -124,7 +124,21 @@ class AccountsViewModel {
             }
         }
     }
-    
+
+    func deleteAccounts(_ ids: Set<String>, deleteTransactions: Bool) async {
+        let accountsToDelete = accounts.filter { ids.contains($0.id) }
+
+        if deleteTransactions {
+            for account in accountsToDelete {
+                await transactionStore?.deleteTransactions(forAccountId: account.id)
+            }
+        }
+
+        for account in accountsToDelete {
+            deleteAccount(account)
+        }
+    }
+
     // MARK: - Account Balance Management
 
     func getInitialBalance(for accountId: String) -> Double? {

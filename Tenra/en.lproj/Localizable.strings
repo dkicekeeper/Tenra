@@ -881,12 +881,14 @@
 "loan.typeAnnuityShort" = "Credit";
 "loan.typeInstallmentShort" = "Installment";
 "loan.of" = "of";
-"loan.remainingShort" = "%d left";
+"loan.remainingShort" = "%d left to pay";
 "loan.notFound" = "Loan not found";
 "loan.title" = "Loan";
 "loan.edit" = "Edit Loan";
 "loan.changeRate" = "Change Rate";
 "loan.earlyRepayment" = "Early Repayment";
+"loan.history" = "Payment History";
+"loan.actions" = "Loan Actions";
 "loan.delete" = "Delete Loan";
 "loan.deleteTitle" = "Delete Loan?";
 "loan.deleteMessage" = "All loan data and payment history will be deleted.";
@@ -921,6 +923,7 @@
 "loan.nameHeader" = "Name";
 "loan.namePlaceholder" = "e.g. Car Loan";
 "loan.bankHeader" = "Bank";
+"loan.bankLabel" = "Bank";
 "loan.bankPlaceholder" = "Bank name";
 "loan.typeHeader" = "Loan Type";
 "loan.typePicker" = "Type";
@@ -930,7 +933,8 @@
 "loan.principalHeader" = "Loan Amount";
 "loan.principalPlaceholder" = "Total loan amount";
 "loan.interestRateHeader" = "Interest Rate";
-"loan.rateAnnual" = "% annual";
+"loan.interestRateLabel" = "Interest rate";
+"loan.rateAnnualSuffix" = "% annual";
 "loan.termHeader" = "Term";
 "loan.termPlaceholder" = "Number of months";
 "loan.months" = "months";

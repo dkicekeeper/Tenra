@@ -85,7 +85,7 @@ struct LoanEditView: View {
                             config: .standard,
                             leadingIcon: .sfSymbol("building.columns", color: AppColors.accent, size: AppIconSize.lg)
                         ) {
-                            Text(String(localized: "loan.bankPlaceholder", defaultValue: "Bank"))
+                            Text(String(localized: "loan.bankLabel", defaultValue: "Bank"))
                                 .font(AppTypography.body)
                                 .foregroundStyle(AppColors.textPrimary)
                         } trailing: {
@@ -110,15 +110,15 @@ struct LoanEditView: View {
                             if isEditing {
                                 Text(String(localized: "loan.typeLockedHint", defaultValue: "Loan type cannot be changed after creation"))
                                     .font(AppTypography.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(AppColors.textSecondary)
                             } else if loanType == .installment {
                                 Text(String(localized: "loan.installmentHint", defaultValue: "Installment = 0% interest, equal payments"))
                                     .font(AppTypography.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(AppColors.textSecondary)
                             }
                         }
                         .padding(.vertical, AppSpacing.sm)
-                        .padding(.horizontal, AppSpacing.md)
+                        .padding(.horizontal, AppSpacing.lg)
 
                         if loanType == .annuity {
                             Divider()
@@ -127,14 +127,14 @@ struct LoanEditView: View {
                                 config: .standard,
                                 leadingIcon: .sfSymbol("percent", color: AppColors.accent, size: AppIconSize.lg)
                             ) {
-                                Text(String(localized: "loan.rateAnnual", defaultValue: "Interest rate"))
+                                Text(String(localized: "loan.interestRateLabel", defaultValue: "Interest rate"))
                                     .font(AppTypography.body)
                                     .foregroundStyle(AppColors.textPrimary)
                             } trailing: {
                                 HStack(spacing: AppSpacing.xs) {
                                     TextField("0.0", text: $interestRateText)
                                         .inlineFieldStyle(keyboard: .decimalPad, maxWidth: 80)
-                                    Text(String(localized: "loan.rateAnnual", defaultValue: "% annual"))
+                                    Text(String(localized: "loan.rateAnnualSuffix", defaultValue: "% annual"))
                                         .font(AppTypography.caption)
                                         .foregroundStyle(AppColors.textSecondary)
                                 }

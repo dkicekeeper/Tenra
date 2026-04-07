@@ -79,7 +79,7 @@ struct LoansListView: View {
                         // Loan cards
                         ForEach(Array(filteredLoans.enumerated()), id: \.element.id) { index, loan in
                             NavigationLink(value: HomeDestination.loanDetail(loan.id)) {
-                                loanCard(loan)
+                                LoanCard(loan: loan)
                             }
                             .buttonStyle(.plain)
                             .chartAppear(delay: Double(index) * 0.05)
@@ -92,7 +92,7 @@ struct LoansListView: View {
         }
         .navigationTitle(String(localized: "loan.listTitle", defaultValue: "Loans"))
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: AppSpacing.md) {
                     if !activeLoans.isEmpty {
                         Button {
@@ -146,117 +146,37 @@ struct LoansListView: View {
         let primaryCurrency = loansViewModel.loans.first?.currency ?? "KZT"
 
         return VStack(alignment: .leading, spacing: AppSpacing.md) {
-            HStack {
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text(String(localized: "loan.totalDebt", defaultValue: "Total Debt"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                     FormattedAmountText(
                         amount: NSDecimalNumber(decimal: totalDebt).doubleValue,
                         currency: primaryCurrency,
-                        fontSize: AppTypography.h2
+                        fontSize: AppTypography.h3
                     )
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: AppSpacing.xs) {
                     Text(String(localized: "loan.monthlyTotal", defaultValue: "Monthly"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                     FormattedAmountText(
                         amount: NSDecimalNumber(decimal: totalMonthlyPayment).doubleValue,
                         currency: primaryCurrency,
-                        fontSize: AppTypography.h4,
+                        fontSize: AppTypography.h3,
                         color: AppColors.expense
                     )
                 }
             }
 
             Text(String(format: String(localized: "loan.activeCount", defaultValue: "%d active loans"), loansViewModel.loans.count))
-                .font(AppTypography.caption)
-                .foregroundStyle(.secondary)
+                .font(AppTypography.bodySmall)
+                .foregroundStyle(AppColors.textSecondary)
         }
         .padding(AppSpacing.lg)
         .cardStyle()
-    }
-
-    // MARK: - Loan Card
-
-    @ViewBuilder
-    private func loanCard(_ loan: Account) -> some View {
-        if let loanInfo = loan.loanInfo {
-            let progress = LoanPaymentService.progressPercentage(loanInfo: loanInfo)
-            let nextDate = LoanPaymentService.nextPaymentDate(loanInfo: loanInfo)
-            let remaining = LoanPaymentService.remainingPayments(loanInfo: loanInfo)
-
-            VStack(alignment: .leading, spacing: AppSpacing.md) {
-                // Header: icon + name + bank + type badge
-                HStack {
-                    IconView(source: loan.iconSource, size: AppIconSize.lg)
-
-                    VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                        Text(loan.name)
-                            .font(AppTypography.bodyEmphasis)
-                        Text(loanInfo.bankName)
-                            .font(AppTypography.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    Text(loanInfo.loanType == .annuity
-                         ? String(localized: "loan.typeAnnuityShort", defaultValue: "Credit")
-                         : String(localized: "loan.typeInstallmentShort", defaultValue: "Installment"))
-                        .font(AppTypography.caption)
-                        .padding(.horizontal, AppSpacing.sm)
-                        .padding(.vertical, AppSpacing.xxs)
-                        .background(loanInfo.loanType == .annuity ? AppColors.expense.opacity(0.15) : AppColors.planned.opacity(0.15))
-                        .clipShape(Capsule())
-                }
-
-                // Progress
-                VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                    HStack {
-                        Text(Formatting.formatCurrency(NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue, currency: loan.currency))
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondaryAccessible)
-                        Text(String(localized: "loan.of", defaultValue: "of"))
-                            .font(AppTypography.caption)
-                            .foregroundStyle(.secondary)
-                        Text(Formatting.formatCurrency(NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue, currency: loan.currency))
-                            .font(AppTypography.caption)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text(String(format: "%.0f%%", progress * 100))
-                            .font(AppTypography.bodySmall.weight(.medium))
-                            .foregroundStyle(AppColors.income)
-                    }
-                    ProgressView(value: progress)
-                        .tint(AppColors.income)
-                }
-
-                // Footer: next payment + remaining
-                HStack {
-                    if let nextDate = nextDate {
-                        HStack(spacing: AppSpacing.xs) {
-                            Image(systemName: "calendar")
-                                .font(AppTypography.caption)
-                                .foregroundStyle(.secondary)
-                            Text(DateFormatters.displayDateFormatter.string(from: nextDate))
-                                .font(AppTypography.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    Spacer()
-
-                    Text(String(format: String(localized: "loan.remainingShort", defaultValue: "%d left"), remaining))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(AppSpacing.lg)
-            .cardStyle()
-        }
     }
 
     private var hasMultipleTypes: Bool {

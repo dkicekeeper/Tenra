@@ -881,12 +881,14 @@
 "loan.typeAnnuityShort" = "Кредит";
 "loan.typeInstallmentShort" = "Рассрочка";
 "loan.of" = "из";
-"loan.remainingShort" = "осталось %d";
+"loan.remainingShort" = "осталось %d платежей";
 "loan.notFound" = "Кредит не найден";
 "loan.title" = "Кредит";
 "loan.edit" = "Редактировать";
 "loan.changeRate" = "Изменить ставку";
 "loan.earlyRepayment" = "Досрочное погашение";
+"loan.history" = "История платежей";
+"loan.actions" = "Действия с кредитом";
 "loan.delete" = "Удалить кредит";
 "loan.deleteTitle" = "Удалить кредит?";
 "loan.deleteMessage" = "Все данные кредита и история платежей будут удалены.";
@@ -921,6 +923,7 @@
 "loan.nameHeader" = "Название";
 "loan.namePlaceholder" = "напр. Автокредит";
 "loan.bankHeader" = "Банк";
+"loan.bankLabel" = "Банк";
 "loan.bankPlaceholder" = "Название банка";
 "loan.typeHeader" = "Тип кредита";
 "loan.typePicker" = "Тип";
@@ -930,7 +933,8 @@
 "loan.principalHeader" = "Сумма кредита";
 "loan.principalPlaceholder" = "Общая сумма кредита";
 "loan.interestRateHeader" = "Процентная ставка";
-"loan.rateAnnual" = "% годовых";
+"loan.interestRateLabel" = "Процентная ставка";
+"loan.rateAnnualSuffix" = "% годовых";
 "loan.termHeader" = "Срок";
 "loan.termPlaceholder" = "Количество месяцев";
 "loan.months" = "мес.";

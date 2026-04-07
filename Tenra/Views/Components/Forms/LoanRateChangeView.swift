@@ -42,7 +42,7 @@ struct LoanRateChangeView: View {
                                 TextField("0.0", text: $rateText)
                                     .inlineFieldStyle(keyboard: .decimalPad, maxWidth: 80)
                                     .focused($isRateFocused)
-                                Text(String(localized: "loan.rateAnnual", defaultValue: "% annual"))
+                                Text(String(localized: "loan.rateAnnualSuffix", defaultValue: "% annual"))
                                     .font(AppTypography.caption)
                                     .foregroundStyle(AppColors.textSecondary)
                             }

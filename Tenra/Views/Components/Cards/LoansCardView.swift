@@ -25,7 +25,7 @@ struct LoansCardView: View {
             VStack(alignment: .leading, spacing: AppSpacing.lg) {
                 Text(String(localized: "loan.listTitle", defaultValue: "Loans"))
                     .font(AppTypography.h3)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(AppColors.textPrimary)
 
                 if loans.isEmpty {
                     EmptyStateView(

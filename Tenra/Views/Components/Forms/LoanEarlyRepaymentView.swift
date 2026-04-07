@@ -96,8 +96,8 @@ struct LoanEarlyRepaymentView: View {
                                 .font(AppTypography.caption)
                                 .foregroundStyle(AppColors.textSecondary)
                         }
-                        .padding(.vertical, AppSpacing.lg)
-                        .padding(.horizontal, AppSpacing.md)
+                        .padding(.vertical, AppSpacing.sm)
+                        .padding(.horizontal, AppSpacing.lg)
 
                         Divider().padding(.leading, AppSpacing.lg)
 

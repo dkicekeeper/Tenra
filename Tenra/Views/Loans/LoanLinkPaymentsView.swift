@@ -99,7 +99,7 @@ struct LoanLinkPaymentsView: View {
                             .font(AppTypography.body.weight(.semibold))
                         Text(String(format: String(localized: "loan.linkPayments.selectedWithAmount", defaultValue: "%d selected · %@"), selectedIds.count, Formatting.formatCurrency(selectedTotal, currency: loan.currency)))
                             .font(AppTypography.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(AppColors.textSecondary)
                     }
                 }
             }
@@ -228,27 +228,8 @@ struct LoanLinkPaymentsView: View {
 
     // MARK: - Helpers
 
-    private static let isoParser: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.locale = Locale(identifier: "en_US_POSIX")
-        return f
-    }()
-
-    private static let shortDisplay: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "d MMMM"
-        return f
-    }()
-
-    private static let longDisplay: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "d MMMM yyyy"
-        return f
-    }()
-
     private func displayDateKey(from isoDate: String) -> String {
-        guard let date = Self.isoParser.date(from: isoDate) else { return isoDate }
+        guard let date = DateFormatters.dateFormatter.date(from: isoDate) else { return isoDate }
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let sectionDay = calendar.startOfDay(for: date)
@@ -263,9 +244,9 @@ struct LoanLinkPaymentsView: View {
         let currentYear = calendar.component(.year, from: Date())
         let sectionYear = calendar.component(.year, from: date)
         if sectionYear == currentYear {
-            return Self.shortDisplay.string(from: date)
+            return DateFormatters.displayDateFormatter.string(from: date)
         }
-        return Self.longDisplay.string(from: date)
+        return DateFormatters.displayDateWithYearFormatter.string(from: date)
     }
 
     // MARK: - Actions

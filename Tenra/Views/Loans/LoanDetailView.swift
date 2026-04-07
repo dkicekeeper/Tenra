@@ -26,7 +26,7 @@ struct LoanDetailView: View {
     @State private var showingHistory = false
     @State private var showFullSchedule = false
     @State private var reconciliationError: String? = nil
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
 
     private let logger = Logger(subsystem: "Tenra", category: "LoanDetailView")
@@ -92,6 +92,7 @@ struct LoanDetailView: View {
                 } label: {
                     Image(systemName: "clock.arrow.circlepath")
                 }
+                .accessibilityLabel(String(localized: "loan.history", defaultValue: "Payment History"))
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
             ToolbarItem(placement: .topBarTrailing) {
@@ -135,6 +136,7 @@ struct LoanDetailView: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
+                .accessibilityLabel(String(localized: "loan.actions", defaultValue: "Loan Actions"))
             }
         }
         .sheet(isPresented: $showingHistory) {
@@ -284,13 +286,7 @@ struct LoanDetailView: View {
                         Text(loanInfo.bankName)
                             .font(AppTypography.bodySmall)
                             .foregroundStyle(AppColors.textSecondaryAccessible)
-                        Text("·")
-                            .foregroundStyle(AppColors.textSecondaryAccessible)
-                        Text(loanInfo.loanType == .annuity
-                             ? String(localized: "loan.typeAnnuityShort", defaultValue: "Credit")
-                             : String(localized: "loan.typeInstallmentShort", defaultValue: "Installment"))
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondaryAccessible)
+                        LoanTypeBadge(loanType: loanInfo.loanType)
                     }
                 }
                 Spacer()
@@ -302,7 +298,7 @@ struct LoanDetailView: View {
                 HStack {
                     Text(String(localized: "loan.paidOff", defaultValue: "Paid off"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.textSecondary)
                     Spacer()
                     Text(String(format: "%.0f%%", progress * 100))
                         .font(AppTypography.bodySmall.weight(.medium))
@@ -310,6 +306,7 @@ struct LoanDetailView: View {
                 }
                 ProgressView(value: progress)
                     .tint(AppColors.income)
+                    .accessibilityValue(String(format: "%.0f%%", progress * 100))
             }
 
             Divider()
@@ -318,7 +315,7 @@ struct LoanDetailView: View {
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
                 Text(String(localized: "loan.remainingPrincipal", defaultValue: "Remaining"))
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
                 FormattedAmountText(
                     amount: NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue,
                     currency: account.currency,
@@ -363,7 +360,7 @@ struct LoanDetailView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.xs) {
                         Text(String(localized: "loan.principalPortion", defaultValue: "Principal"))
                             .font(AppTypography.bodySmall)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(AppColors.textSecondary)
                         FormattedAmountText(
                             amount: NSDecimalNumber(decimal: breakdown.principal).doubleValue,
                             currency: account.currency,
@@ -375,7 +372,7 @@ struct LoanDetailView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.xs) {
                         Text(String(localized: "loan.interestPortion", defaultValue: "Interest"))
                             .font(AppTypography.bodySmall)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(AppColors.textSecondary)
                         FormattedAmountText(
                             amount: NSDecimalNumber(decimal: breakdown.interest).doubleValue,
                             currency: account.currency,
@@ -391,22 +388,17 @@ struct LoanDetailView: View {
                 let total = breakdown.principal + breakdown.interest
                 if total > 0 {
                     let principalRatio = NSDecimalNumber(decimal: breakdown.principal / total).doubleValue
-                    GeometryReader { geo in
-                        HStack(spacing: AppSpacing.xxs) {
-                            RoundedRectangle(cornerRadius: AppRadius.xs)
-                                .fill(AppColors.income)
-                                .frame(width: geo.size.width * principalRatio)
-                            RoundedRectangle(cornerRadius: AppRadius.xs)
-                                .fill(AppColors.expense)
-                        }
-                    }
-                    .frame(height: 8)
+                    ProportionBar(
+                        ratio: principalRatio,
+                        leftColor: AppColors.income,
+                        rightColor: AppColors.expense
+                    )
                 }
             } else {
                 // Installment — no interest
                 Text(String(localized: "loan.noInterest", defaultValue: "Installment — no interest charged"))
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
             }
         }
         .padding(AppSpacing.lg)
@@ -497,7 +489,7 @@ struct LoanDetailView: View {
             if schedule.isEmpty {
                 Text(String(localized: "loan.noSchedule", defaultValue: "No schedule available"))
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
             } else {
                 ForEach(displayedEntries) { entry in
                     amortizationRow(entry: entry)
@@ -527,7 +519,7 @@ struct LoanDetailView: View {
                     .font(AppTypography.bodySmall.weight(.medium))
                 Text(formatDateString(entry.date))
                     .font(AppTypography.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
             }
 
             Spacer()
@@ -543,7 +535,7 @@ struct LoanDetailView: View {
 
             // Paid indicator
             Image(systemName: entry.isPaid ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(entry.isPaid ? AppColors.income : .secondary)
+                .foregroundStyle(entry.isPaid ? AppColors.income : AppColors.textSecondary)
                 .font(AppTypography.body)
         }
         .futureTransactionStyle(isFuture: !entry.isPaid)

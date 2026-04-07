@@ -137,6 +137,20 @@ class CategoriesViewModel {
         transactionStore?.deleteCategory(category.id)
     }
 
+    func deleteCategories(_ ids: Set<String>, deleteTransactions: Bool) async {
+        let categoriesToDelete = customCategories.filter { ids.contains($0.id) }
+
+        if deleteTransactions {
+            for category in categoriesToDelete {
+                await transactionStore?.deleteTransactions(forCategoryName: category.name, type: category.type)
+            }
+        }
+
+        for category in categoriesToDelete {
+            deleteCategory(category, deleteTransactions: deleteTransactions)
+        }
+    }
+
     // MARK: - Category Rules Operations
 
     func addRule(_ rule: CategoryRule) {
@@ -174,6 +188,12 @@ class CategoriesViewModel {
 
     func deleteSubcategory(_ subcategoryId: String) {
         subcategoryCoordinator.deleteSubcategory(subcategoryId)
+    }
+
+    func deleteSubcategories(_ ids: Set<String>) {
+        for id in ids {
+            deleteSubcategory(id)
+        }
     }
 
     func searchSubcategories(query: String) -> [Subcategory] {

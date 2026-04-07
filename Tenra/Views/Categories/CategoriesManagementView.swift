@@ -106,14 +106,6 @@ struct CategoriesManagementView: View {
                                 showingDeleteDialog = true
                             }
                         )
-                        .onLongPressGesture {
-                            guard mode == .normal else { return }
-                            HapticManager.selection()
-                            withAnimation(AppAnimation.contentSpring) {
-                                mode = .selecting
-                                selection.insert(category.id)
-                            }
-                        }
                     }
                     .onMove(perform: mode.isReordering ? moveCategory : nil)
                 }

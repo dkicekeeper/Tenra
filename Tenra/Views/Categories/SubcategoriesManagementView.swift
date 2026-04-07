@@ -33,14 +33,6 @@ struct SubcategoriesManagementView: View {
                 categoriesViewModel.deleteSubcategory(subcategory.id)
             }
         )
-        .onLongPressGesture {
-            guard mode == .normal else { return }
-            HapticManager.selection()
-            withAnimation(AppAnimation.contentSpring) {
-                mode = .selecting
-                selection.insert(subcategory.id)
-            }
-        }
     }
 
     var body: some View {

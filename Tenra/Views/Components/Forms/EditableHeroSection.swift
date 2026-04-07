@@ -166,11 +166,7 @@ struct EditableHeroSection: View {
                         Image(systemName: "chevron.right")
                             .font(.system(size: AppIconSize.sm))
                     }
-                    .foregroundStyle(AppColors.textSecondary)
-                    .padding(.horizontal, AppSpacing.lg)
-                    .padding(.vertical, AppSpacing.sm)
-                    .background(AppColors.secondaryBackground)
-                    .clipShape(Capsule())
+                    .filterChipStyle(isSelected: false)
                 }
                 .buttonStyle(.plain)
             }

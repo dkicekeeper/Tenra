@@ -102,14 +102,6 @@ struct AccountsManagementView: View {
                                 Label(String(localized: "button.delete"), systemImage: "trash")
                             }
                         }
-                        .onLongPressGesture {
-                            guard mode == .normal else { return }
-                            HapticManager.selection()
-                            withAnimation(AppAnimation.contentSpring) {
-                                mode = .selecting
-                                selection.insert(account.id)
-                            }
-                        }
                     }
                     .onMove(perform: mode.isReordering ? moveAccount : nil)
                 }

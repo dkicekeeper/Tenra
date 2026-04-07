@@ -20,7 +20,9 @@ struct AccountsManagementView: View {
     @State private var accountToDelete: Account?
     @State private var showingAccountDeleteDialog = false
     @State private var convertingAccount: Account?
-    @State private var isReordering = false
+    @State private var mode: ManagementMode = .normal
+    @State private var selection: Set<String> = []
+    @State private var showingBulkDeleteDialog = false
 
     // Кешируем baseCurrency для оптимизации
     private var baseCurrency: String {
@@ -59,11 +61,14 @@ struct AccountsManagementView: View {
                     }
                 )
             } else if let coordinator = accountsViewModel.balanceCoordinator {
-                List {
+                List(selection: mode.isSelecting ? $selection : nil) {
                     ForEach(sortedAccounts) { account in
                         AccountRow(
                             account: account,
-                            onEdit: { editingAccount = account },
+                            onEdit: {
+                                guard !mode.isSelecting else { return }
+                                editingAccount = account
+                            },
                             onDelete: {
                                 HapticManager.warning()
                                 accountToDelete = account
@@ -97,10 +102,18 @@ struct AccountsManagementView: View {
                                 Label(String(localized: "button.delete"), systemImage: "trash")
                             }
                         }
+                        .onLongPressGesture {
+                            guard mode == .normal else { return }
+                            HapticManager.selectionChanged()
+                            withAnimation(AppAnimation.contentSpring) {
+                                mode = .selecting
+                                selection.insert(account.id)
+                            }
+                        }
                     }
-                    .onMove(perform: isReordering ? moveAccount : nil)
+                    .onMove(perform: mode.isReordering ? moveAccount : nil)
                 }
-                .environment(\.editMode, isReordering ? .constant(.active) : .constant(.inactive))
+                .environment(\.editMode, .constant(mode.editMode))
             } else {
                 // balanceCoordinator not yet initialized — show loading state
                 VStack(spacing: AppSpacing.md) {
@@ -132,19 +145,43 @@ struct AccountsManagementView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if isReordering {
+                switch mode {
+                case .normal:
                     Button {
                         HapticManager.light()
-                        withAnimation { isReordering.toggle() }
+                        withAnimation(AppAnimation.contentSpring) { mode = .selecting }
+                    } label: {
+                        Image(systemName: "checkmark.circle")
+                    }
+                    .accessibilityLabel(String(localized: "bulk.select"))
+                case .selecting:
+                    Button {
+                        HapticManager.light()
+                        withAnimation(AppAnimation.contentSpring) {
+                            mode = .normal
+                            selection.removeAll()
+                        }
+                    } label: {
+                        Text(String(localized: "bulk.done"))
+                    }
+                    .glassProminentButton()
+                case .reordering:
+                    Button {
+                        HapticManager.light()
+                        withAnimation(AppAnimation.contentSpring) { mode = .normal }
                     } label: {
                         Image(systemName: "checkmark")
                     }
                     .glassProminentButton()
                     .accessibilityLabel(String(localized: "accessibility.accounts.doneReordering"))
-                } else {
+                }
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
+                if mode == .normal {
                     Button {
                         HapticManager.light()
-                        withAnimation { isReordering.toggle() }
+                        withAnimation(AppAnimation.contentSpring) { mode = .reordering }
                     } label: {
                         Image(systemName: "arrow.up.arrow.down")
                     }
@@ -153,7 +190,7 @@ struct AccountsManagementView: View {
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
             ToolbarItem(placement: .topBarTrailing) {
-                if !isReordering {
+                if mode == .normal {
                     Menu {
                         Button(action: {
                             HapticManager.light()
@@ -171,6 +208,19 @@ struct AccountsManagementView: View {
                         Image(systemName: "plus")
                     }
                     .accessibilityLabel(String(localized: "accessibility.accounts.addMenu"))
+                } else if mode.isSelecting {
+                    Button {
+                        HapticManager.selection()
+                        if selection.count == sortedAccounts.count {
+                            selection.removeAll()
+                        } else {
+                            selection = Set(sortedAccounts.map(\.id))
+                        }
+                    } label: {
+                        Text(selection.count == sortedAccounts.count
+                             ? String(localized: "bulk.deselectAll")
+                             : String(localized: "bulk.selectAll"))
+                    }
                 }
             }
         }
@@ -265,6 +315,50 @@ struct AccountsManagementView: View {
                     convertingAccount = nil
                 }
             )
+        }
+        .overlay(alignment: .bottom) {
+            if mode.isSelecting && !selection.isEmpty {
+                BulkDeleteButton(count: selection.count) {
+                    showingBulkDeleteDialog = true
+                }
+                .animation(AppAnimation.contentSpring, value: selection.count)
+            }
+        }
+        .alert(
+            String(format: String(localized: "bulk.deleteAccounts.title"), selection.count),
+            isPresented: $showingBulkDeleteDialog
+        ) {
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+            Button(String(localized: "bulk.deleteAccounts.onlyAccounts"), role: .destructive) {
+                let ids = selection
+                Task {
+                    await accountsViewModel.deleteAccounts(ids, deleteTransactions: false)
+                    for id in ids {
+                        transactionsViewModel.cleanupDeletedAccount(id)
+                    }
+                    transactionsViewModel.syncAccountsFrom(accountsViewModel)
+                }
+                withAnimation(AppAnimation.contentSpring) {
+                    selection.removeAll()
+                    mode = .normal
+                }
+            }
+            Button(String(localized: "bulk.deleteAccounts.withTransactions"), role: .destructive) {
+                let ids = selection
+                Task {
+                    await accountsViewModel.deleteAccounts(ids, deleteTransactions: true)
+                    for id in ids {
+                        transactionsViewModel.cleanupDeletedAccount(id)
+                    }
+                    transactionsViewModel.clearAndRebuildAggregateCache()
+                }
+                withAnimation(AppAnimation.contentSpring) {
+                    selection.removeAll()
+                    mode = .normal
+                }
+            }
+        } message: {
+            Text(String(localized: "bulk.deleteAccounts.message"))
         }
         .alert(String(localized: "account.deleteTitle"), isPresented: $showingAccountDeleteDialog, presenting: accountToDelete) { account in
             Button(String(localized: "button.cancel"), role: .cancel) {

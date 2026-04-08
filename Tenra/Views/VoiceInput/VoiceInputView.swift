@@ -23,6 +23,8 @@ struct VoiceInputView: View {
     @State private var recognizedEntities: [RecognizedEntity] = []
     @State private var showingErrorAlert = false
     @State private var errorAlertMessage = ""
+    @State private var parseDebounceTask: Task<Void, Never>?
+    @State private var stopTask: Task<Void, Never>?
 
     var body: some View {
         if embeddedInTab {
@@ -52,8 +54,14 @@ struct VoiceInputView: View {
             Spacer()
             transcriptionSection
             vadToggleSection
-            waveSection
             stopButtonSection
+        }
+        .overlay {
+            if voiceService.isRecording {
+                SiriWaveRecordingView(amplitudeRef: voiceService.amplitudeRef)
+                    .ignoresSafeArea()
+                    .transition(.opacity.animation(AppAnimation.gentleSpring))
+            }
         }
         .navigationTitle(String(localized: "voice.title"))
         .navigationBarTitleDisplayMode(.inline)
@@ -84,14 +92,22 @@ struct VoiceInputView: View {
             }
         }
         .onChange(of: voiceService.transcribedText) { _, newText in
-            recognizedEntities = parser.parseEntitiesLive(from: newText)
-            // Announce transcription updates to VoiceOver users
-            if !newText.isEmpty {
-                UIAccessibility.post(notification: .announcement, argument: newText)
+            // Debounce parsing to avoid heavy regex work on every partial result
+            parseDebounceTask?.cancel()
+            parseDebounceTask = Task {
+                try? await Task.sleep(for: .milliseconds(300))
+                guard !Task.isCancelled else { return }
+                recognizedEntities = parser.parseEntitiesLive(from: newText)
+                // Announce only debounced final text to avoid flooding VoiceOver
+                if !newText.isEmpty {
+                    UIAccessibility.post(notification: .announcement, argument: newText)
+                }
             }
         }
         .onAppear { startRecordingOnAppear() }
         .onDisappear {
+            parseDebounceTask?.cancel()
+            stopTask?.cancel()
             if voiceService.isRecording { voiceService.stopRecording() }
         }
     }
@@ -138,14 +154,6 @@ struct VoiceInputView: View {
                     .padding(.horizontal, AppSpacing.lg)
             }
             .padding(.vertical, AppSpacing.md)
-        }
-    }
-
-    @ViewBuilder
-    private var waveSection: some View {
-        if voiceService.isRecording {
-            SiriWaveRecordingView(amplitudeRef: voiceService.amplitudeRef)
-                .padding(.bottom, AppSpacing.xl)
         }
     }
 
@@ -198,21 +206,21 @@ struct VoiceInputView: View {
 
     private func handleStopTap() {
         voiceService.stopRecording()
-        Task {
+        stopTask?.cancel()
+        stopTask = Task {
             try? await Task.sleep(for: .milliseconds(VoiceInputConstants.finalizationDelayMs))
-            await MainActor.run {
-                if let errorMsg = voiceService.errorMessage, !errorMsg.isEmpty {
-                    errorAlertMessage = errorMsg
-                    showingErrorAlert = true
-                    return
-                }
-                let finalText = voiceService.getFinalText()
-                if !finalText.isEmpty {
-                    onComplete(finalText)
-                } else {
-                    errorAlertMessage = String(localized: "voice.emptyText")
-                    showingErrorAlert = true
-                }
+            guard !Task.isCancelled else { return }
+            if let errorMsg = voiceService.errorMessage, !errorMsg.isEmpty {
+                errorAlertMessage = errorMsg
+                showingErrorAlert = true
+                return
+            }
+            let finalText = voiceService.getFinalText()
+            if !finalText.isEmpty {
+                onComplete(finalText)
+            } else {
+                errorAlertMessage = String(localized: "voice.emptyText")
+                showingErrorAlert = true
             }
         }
     }
@@ -248,7 +256,7 @@ struct RecordingIndicatorView: View {
                 .animation(
                     AppAnimation.isReduceMotionEnabled
                         ? nil
-                        : .easeInOut(duration: 0.6).repeatForever(autoreverses: true),
+                        : AppAnimation.gentleSpring.repeatForever(autoreverses: true),
                     value: isAnimating
                 )
 

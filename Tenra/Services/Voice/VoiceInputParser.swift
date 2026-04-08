@@ -64,20 +64,16 @@ class VoiceInputParser {
         accountsViewModel?.accounts ?? []
     }
 
-    /// Smart default account based on usage statistics
-    /// Falls back to first account if no transactions exist
-    private var defaultAccount: Account? {
-        getSmartDefaultAccount()
-    }
+    /// Cached smart default account — computed once per parse() call
+    private var cachedDefaultAccount: Account?
 
     /// Live transactions for usage analysis
     private var liveTransactions: [Transaction] {
         transactionsViewModel?.allTransactions ?? []
     }
 
-    /// Category keyword mapping for entity detection
-    private var categoryMap: [String: (category: String, subcategory: String?)] {
-        [
+    /// Category keyword mapping for entity detection — cached to avoid re-allocation per call
+    private lazy var categoryMap: [String: (category: String, subcategory: String?)] = [
             // Транспорт - сначала подкатегории
             "такси": ("Транспорт", "Такси"),
             "uber": ("Транспорт", "Такси"),
@@ -153,17 +149,14 @@ class VoiceInputParser {
             "услуги": ("Услуги", nil),
             "ремонт": ("Услуги", nil)
         ]
-    }
 
-    /// Income keywords for entity detection
-    private var incomeKeywords: [String] {
+    /// Income keywords for entity detection — cached
+    private lazy var incomeKeywords: [String] =
         ["пришло", "пришел", "пришла", "получил", "получила", "получил", "зачисление", "доход", "зарплата"]
-    }
 
-    /// Expense keywords for entity detection
-    private var expenseKeywords: [String] {
+    /// Expense keywords for entity detection — cached
+    private lazy var expenseKeywords: [String] =
         ["потратил", "потратила", "купил", "купила", "оплатил", "оплатила", "расход", "списали"]
-    }
 
     // MARK: - Pre-compiled регулярные выражения для производительности
 
@@ -300,11 +293,14 @@ class VoiceInputParser {
 
         let normalizedText = normalizeText(text)
 
+        // Compute default account once per parse() — avoids iterating all transactions multiple times
+        cachedDefaultAccount = getSmartDefaultAccount()
+
         #if DEBUG
         if VoiceInputConstants.enableParsingDebugLogs {
         }
         #endif
-        
+
         var operation = ParsedOperation(note: text)
         
         // 1. Определяем дату
@@ -363,8 +359,8 @@ class VoiceInputParser {
             if let accountId = operation.accountId,
                let account = liveAccounts.first(where: { $0.id == accountId }) {
                 operation.currencyCode = account.currency
-            } else if let defaultAccount = defaultAccount {
-                operation.currencyCode = defaultAccount.currency
+            } else if let cachedDefaultAccount = cachedDefaultAccount {
+                operation.currencyCode = cachedDefaultAccount.currency
             } else {
                 operation.currencyCode = "KZT" // По умолчанию тенге
             }
@@ -372,7 +368,7 @@ class VoiceInputParser {
         
         // Если счет не найден, используем счет по умолчанию
         if operation.accountId == nil {
-            operation.accountId = defaultAccount?.id
+            operation.accountId = cachedDefaultAccount?.id
         }
         
         return operation
@@ -749,7 +745,8 @@ class VoiceInputParser {
         
         // Если не нашли, возвращаем "Другое"
         if foundCategory == nil {
-            foundCategory = liveCategories.first { normalizeText($0.name) == normalizeText("Другое") }?.name ?? "Другое"
+            let otherName = String(localized: "category.other")
+            foundCategory = liveCategories.first { normalizeText($0.name) == normalizeText(otherName) }?.name ?? otherName
         }
         
         return (foundCategory, foundSubcategories)

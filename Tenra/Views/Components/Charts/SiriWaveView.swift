@@ -73,8 +73,9 @@ struct SiriWaveView: View {
 
 // MARK: - SiriWaveRecordingView
 
-/// Aurora recording indicator.
+/// Apple Intelligence–style edge glow overlay.
 /// Pass `amplitudeRef` from `VoiceInputService` — renderer reads `.value` directly every frame.
+/// Designed to be used as a full-screen `.overlay()` — passes through all touches.
 struct SiriWaveRecordingView: View {
 
     var amplitudeRef: AudioLevelRef
@@ -84,7 +85,7 @@ struct SiriWaveRecordingView: View {
             amplitudeRef: amplitudeRef,
             isPaused: AppAnimation.isReduceMotionEnabled
         )
-        .frame(height: 80)
+        .allowsHitTesting(false)
     }
 }
 
@@ -98,24 +99,35 @@ private extension Float {
 
 // MARK: - Previews
 
-#Preview("Single Wave") {
-    VStack(spacing: 40) {
-        Text("Aurora Wave")
-            .font(AppTypography.bodyEmphasis)
-
+#Preview("Static Wave") {
+    ZStack {
+        VStack(spacing: 40) {
+            Text("Static Wave (Legacy)")
+                .font(AppTypography.bodyEmphasis)
+        }
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .overlay {
         SiriWaveView(amplitude: 30, frequency: 4, color: .blue)
-            .frame(height: 80)
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
     }
 }
 
-#Preview("Recording Indicator") {
+#Preview("Edge Glow") {
     let ref = AudioLevelRef()
     ref.value = 0.7
-    return VStack(spacing: 40) {
-        Text("Aurora Recording")
-            .font(AppTypography.bodyEmphasis)
-
+    return ZStack {
+        VStack(spacing: 40) {
+            Text("Edge Glow Recording")
+                .font(AppTypography.bodyEmphasis)
+            Text("Amplitude: 0.7")
+                .font(AppTypography.caption)
+        }
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .overlay {
         SiriWaveRecordingView(amplitudeRef: ref)
-            .padding()
+            .ignoresSafeArea()
     }
 }

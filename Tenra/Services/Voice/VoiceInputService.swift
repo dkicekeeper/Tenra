@@ -10,6 +10,9 @@ import Speech
 import AVFoundation
 import AVFAudio
 import Observation
+import os
+
+private let logger = Logger(subsystem: "com.tenra.app", category: "VoiceInput")
 
 enum VoiceInputError: LocalizedError {
     case speechRecognitionNotAvailable
@@ -17,19 +20,19 @@ enum VoiceInputError: LocalizedError {
     case speechRecognitionRestricted
     case audioEngineError(String)
     case recognitionError(String)
-    
+
     var errorDescription: String? {
         switch self {
         case .speechRecognitionNotAvailable:
-            return "Распознавание речи недоступно на этом устройстве"
+            return String(localized: "voiceError.speechNotAvailable")
         case .speechRecognitionDenied:
-            return "Доступ к распознаванию речи запрещен. Разрешите доступ в Настройках"
+            return String(localized: "voiceError.speechDenied")
         case .speechRecognitionRestricted:
-            return "Доступ к распознаванию речи ограничен"
+            return String(localized: "voiceError.speechRestricted")
         case .audioEngineError(let message):
-            return "Ошибка аудио: \(message)"
+            return String(localized: "voiceError.audio \(message)")
         case .recognitionError(let message):
-            return "Ошибка распознавания: \(message)"
+            return String(localized: "voiceError.recognition \(message)")
         }
     }
 }
@@ -41,23 +44,23 @@ class VoiceInputService: NSObject {
     var transcribedText = ""
     var errorMessage: String?
 
-    private var audioEngine: AVAudioEngine?
-    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
-    private var recognitionTask: SFSpeechRecognitionTask?
-    private let speechRecognizer: SFSpeechRecognizer?
-    private var finalTranscription: String = ""
-    private var isStopping: Bool = false // Флаг для предотвращения множественных вызовов stop
+    @ObservationIgnored private var audioEngine: AVAudioEngine?
+    @ObservationIgnored private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    @ObservationIgnored private var recognitionTask: SFSpeechRecognitionTask?
+    @ObservationIgnored private let speechRecognizer: SFSpeechRecognizer?
+    @ObservationIgnored private var finalTranscription: String = ""
+    @ObservationIgnored private var isStopping: Bool = false
 
     // MARK: - Audio Level (for wave visualization)
 
     /// Shared amplitude reference. Audio tap writes to `.value` on main thread;
     /// Metal renderer reads it directly every frame — bypasses SwiftUI update cycle.
-    let amplitudeRef: AudioLevelRef = AudioLevelRef()
+    @ObservationIgnored let amplitudeRef: AudioLevelRef = AudioLevelRef()
 
     // MARK: - Voice Activity Detection
 
     /// Silence detector for automatic stop
-    private var silenceDetector: SilenceDetector?
+    @ObservationIgnored private var silenceDetector: SilenceDetector?
 
     /// VAD enabled flag (can be toggled by user)
     var isVADEnabled: Bool = VoiceInputConstants.vadEnabled
@@ -98,7 +101,7 @@ class VoiceInputService: NSObject {
             }
         }
         guard micStatus else {
-            errorMessage = "Доступ к микрофону запрещен. Разрешите доступ в Настройках"
+            errorMessage = String(localized: "voiceError.microphoneDenied")
             return false
         }
         
@@ -119,10 +122,10 @@ class VoiceInputService: NSObject {
             errorMessage = VoiceInputError.speechRecognitionRestricted.errorDescription
             return false
         case .notDetermined:
-            errorMessage = "Разрешение на распознавание речи не получено"
+            errorMessage = String(localized: "voiceError.speechNotDetermined")
             return false
         @unknown default:
-            errorMessage = "Неизвестная ошибка разрешений"
+            errorMessage = String(localized: "voiceError.unknownPermission")
             return false
         }
     }
@@ -226,6 +229,12 @@ class VoiceInputService: NSObject {
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
 
+        // Capture VAD state and refs BEFORE the closure to avoid reading
+        // @MainActor-isolated properties from the audio render thread.
+        let vadEnabled = isVADEnabled
+        let detector = silenceDetector
+        let ref = amplitudeRef
+
         inputNode.installTap(onBus: 0, bufferSize: VoiceInputConstants.audioBufferSize, format: recordingFormat) { [weak self] buffer, _ in
             // Send buffer to speech recognition
             recognitionRequest.append(buffer)
@@ -242,26 +251,17 @@ class VoiceInputService: NSObject {
             // Normalize: typical speech peaks ~0.05–0.3 raw RMS → map to 0.2–1.0 range
             let targetLevel = min(rms * 8.0, 1.0)
             // Write to ref on main thread — renderer reads it directly, no SwiftUI hop needed
-            let ref = self?.amplitudeRef
             DispatchQueue.main.async {
-                guard let ref else { return }
                 // Exponential smoothing: fast attack (~45%), slow decay
                 ref.value = ref.value * 0.55 + max(targetLevel, 0.15) * 0.45
             }
 
             // Analyze for silence detection if VAD is enabled
-            if let self = self, self.isVADEnabled, let detector = self.silenceDetector {
-                Task { @MainActor in
+            if vadEnabled, let detector {
+                Task { @MainActor [weak self] in
                     let silenceDetected = detector.analyzeSample(buffer)
-
                     if silenceDetected {
-                        #if DEBUG
-                        if VoiceInputConstants.enableParsingDebugLogs {
-                        }
-                        #endif
-
-                        // Auto-stop recording
-                        self.stopRecording()
+                        self?.stopRecording()
                     }
                 }
             }
@@ -366,6 +366,7 @@ class VoiceInputService: NSObject {
         do {
             try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         } catch {
+            logger.warning("Failed to deactivate audio session: \(error.localizedDescription)")
         }
 
         // Reset silence detector
@@ -449,7 +450,7 @@ extension VoiceInputService: SFSpeechRecognizerDelegate {
     nonisolated func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
         Task { @MainActor in
             if !available && isRecording {
-                errorMessage = "Распознавание речи стало недоступно"
+                errorMessage = String(localized: "voiceError.speechBecameUnavailable")
                 stopRecording()
             }
         }

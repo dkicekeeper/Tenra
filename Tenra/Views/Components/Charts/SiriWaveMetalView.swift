@@ -7,14 +7,33 @@
 
 import SwiftUI
 import MetalKit
+import os
 
 // MARK: - AudioLevelRef
 
 /// Shared mutable amplitude state updated by the audio tap (main thread)
 /// and read directly by the Metal renderer in draw(in:) — no SwiftUI cycle needed.
-final class AudioLevelRef {
-    /// Normalized mic amplitude 0–1. Write on main thread only.
-    var value: Float = 0.3
+/// Uses os_unfair_lock for thread-safe access between main and render threads.
+final class AudioLevelRef: @unchecked Sendable {
+    private var _value: Float = 0.3
+    // nonisolated(unsafe): lock accessed from both main thread and Metal render thread;
+    // guarded by os_unfair_lock itself — no Swift concurrency protection needed.
+    nonisolated(unsafe) private var lock = os_unfair_lock()
+
+    /// Normalized mic amplitude 0–1. Thread-safe read/write.
+    var value: Float {
+        get {
+            os_unfair_lock_lock(&lock)
+            let v = _value
+            os_unfair_lock_unlock(&lock)
+            return v
+        }
+        set {
+            os_unfair_lock_lock(&lock)
+            _value = newValue
+            os_unfair_lock_unlock(&lock)
+        }
+    }
 }
 
 // MARK: - WaveUniforms (layout must match SiriWaveShader.metal exactly)
@@ -24,6 +43,7 @@ private struct WaveUniforms {
     var amplitude: Float
     var resW:      Float
     var resH:      Float
+    var cornerR:   Float  // device screen corner radius in pixels
 }
 
 // MARK: - Renderer
@@ -64,7 +84,7 @@ private final class SiriWaveRenderer: NSObject, MTKViewDelegate {
         ) else { return nil }
         vertexBuffer = vBuf
 
-        var empty = WaveUniforms(time: 0, amplitude: 0.3, resW: 1, resH: 1)
+        var empty = WaveUniforms(time: 0, amplitude: 0.3, resW: 1, resH: 1, cornerR: 47)
         guard let uBuf = device.makeBuffer(
             bytes: &empty,
             length: MemoryLayout<WaveUniforms>.stride,
@@ -112,11 +132,13 @@ private final class SiriWaveRenderer: NSObject, MTKViewDelegate {
         descriptor.colorAttachments[0].clearColor = MTLClearColorMake(0, 0, 0, 0)
 
         let sz = view.drawableSize
+        let scale = Float(view.contentScaleFactor)
         var uni = WaveUniforms(
             time:      Float(CACurrentMediaTime() - startTime),
             amplitude: amplitudeRef.value,   // reads live value every frame — no SwiftUI lag
             resW:      Float(sz.width),
-            resH:      Float(sz.height)
+            resH:      Float(sz.height),
+            cornerR:   47.0 * scale          // iPhone screen corner radius in pixels
         )
         memcpy(uniformsBuffer.contents(), &uni, MemoryLayout<WaveUniforms>.stride)
 

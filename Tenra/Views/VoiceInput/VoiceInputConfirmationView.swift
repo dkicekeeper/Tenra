@@ -32,6 +32,7 @@ struct VoiceInputConfirmationView: View {
     @State private var accountWarning: String?
     @State private var amountWarning: String?
     @State private var categoryWarning: String?
+    @State private var saveErrorMessage: String?
 
     // Debounce tasks для предотвращения избыточных вызовов валидации
     @State private var amountValidationTask: Task<Void, Never>?
@@ -118,16 +119,18 @@ struct VoiceInputConfirmationView: View {
                     )
                     
                     // 3. Счет
-                    AccountSelectorView(
-                        accounts: accountsViewModel.accounts,
-                        selectedAccountId: $selectedAccountId,
-                        onSelectionChange: { _ in
-                            validateAccount()
-                        },
-                        emptyStateMessage: String(localized: "voiceConfirmation.noAccounts"),
-                        warningMessage: accountWarning,
-                        balanceCoordinator: accountsViewModel.balanceCoordinator!
-                    )
+                    if let balanceCoordinator = accountsViewModel.balanceCoordinator {
+                        AccountSelectorView(
+                            accounts: accountsViewModel.accounts,
+                            selectedAccountId: $selectedAccountId,
+                            onSelectionChange: { _ in
+                                validateAccount()
+                            },
+                            emptyStateMessage: String(localized: "voiceConfirmation.noAccounts"),
+                            warningMessage: accountWarning,
+                            balanceCoordinator: balanceCoordinator
+                        )
+                    }
                     
                     // 4. Категория
                     CategorySelectorView(
@@ -266,6 +269,14 @@ struct VoiceInputConfirmationView: View {
                 accountValidationTask?.cancel()
                 categoryValidationTask?.cancel()
             }
+            .alert(String(localized: "voiceConfirmation.saveError"), isPresented: Binding(
+                get: { saveErrorMessage != nil },
+                set: { if !$0 { saveErrorMessage = nil } }
+            )) {
+                Button(String(localized: "voice.ok")) { saveErrorMessage = nil }
+            } message: {
+                Text(saveErrorMessage ?? "")
+            }
         }
     }
 
@@ -325,7 +336,7 @@ struct VoiceInputConfirmationView: View {
         if selectedCategoryName == nil {
             categoryWarning = String(localized: "voiceConfirmation.warning.categoryNotRecognized")
             // Устанавливаем категорию "Другое"
-            let otherCategoryName = selectedType == .expense ? "Другое" : "Другое"
+            let otherCategoryName = String(localized: "category.other")
             if let otherCategory = categoriesViewModel.customCategories.first(where: { $0.name == otherCategoryName && $0.type == selectedType }) {
                 selectedCategoryName = otherCategory.name
             } else {
@@ -381,7 +392,7 @@ struct VoiceInputConfirmationView: View {
         } else {
             categoryWarning = String(localized: "voiceConfirmation.warning.selectCategory")
             // Устанавливаем категорию "Другое", если не выбрана
-            let otherCategoryName = "Другое"
+            let otherCategoryName = String(localized: "category.other")
             if let otherCategory = categoriesViewModel.customCategories.first(where: { $0.name == otherCategoryName && $0.type == selectedType }) {
                 selectedCategoryName = otherCategory.name
                 categoryName = otherCategory.name
@@ -436,23 +447,13 @@ struct VoiceInputConfirmationView: View {
             )
             
             do {
-                _ = try await transactionStore.add(transaction)
+                let addedTransaction = try await transactionStore.add(transaction)
 
                 await MainActor.run {
-                    // Получаем ID транзакции после добавления из TransactionStore
-                    let addedTransaction = transactionStore.transactions.first { tx in
-                        tx.date == dateString &&
-                        tx.description == (noteText.isEmpty ? originalText : noteText) &&
-                        tx.amount == amount &&
-                        tx.category == categoryName &&
-                        tx.accountId == accountId &&
-                        tx.type == selectedType
-                    }
-
-                    // Связываем подкатегории с транзакцией
-                    if let transactionId = addedTransaction?.id, !selectedSubcategoryIds.isEmpty {
+                    // Link subcategories using the returned transaction's ID
+                    if !addedTransaction.id.isEmpty, !selectedSubcategoryIds.isEmpty {
                         categoriesViewModel.linkSubcategoriesToTransaction(
-                            transactionId: transactionId,
+                            transactionId: addedTransaction.id,
                             subcategoryIds: Array(selectedSubcategoryIds)
                         )
                     }
@@ -461,7 +462,7 @@ struct VoiceInputConfirmationView: View {
                 }
             } catch {
                 await MainActor.run {
-                    // TODO: Show error alert to user
+                    saveErrorMessage = error.localizedDescription
                     HapticManager.error()
                 }
             }

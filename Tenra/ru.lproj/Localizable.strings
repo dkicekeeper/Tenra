@@ -1101,6 +1101,18 @@
 "voice.stopRecording" = "Остановить запись";
 "voice.tapToFinish" = "Нажмите для завершения";
 
+// MARK: - Voice Input Errors
+"voiceError.speechNotAvailable" = "Распознавание речи недоступно на этом устройстве";
+"voiceError.speechDenied" = "Доступ к распознаванию речи запрещён. Разрешите доступ в Настройках";
+"voiceError.speechRestricted" = "Доступ к распознаванию речи ограничен";
+"voiceError.audio %@" = "Ошибка аудио: %@";
+"voiceError.recognition %@" = "Ошибка распознавания: %@";
+"voiceError.microphoneDenied" = "Доступ к микрофону запрещён. Разрешите доступ в Настройках";
+"voiceError.speechNotDetermined" = "Разрешение на распознавание речи не получено";
+"voiceError.unknownPermission" = "Неизвестная ошибка разрешений";
+"voiceError.speechBecameUnavailable" = "Распознавание речи стало недоступно";
+"voiceConfirmation.saveError" = "Ошибка сохранения";
+
 // MARK: - Progress
 "progress.loadingAccounts" = "Загрузка счетов";
 "progress.loadingTransactions" = "Загрузка транзакций";

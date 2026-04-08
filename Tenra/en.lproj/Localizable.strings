@@ -1101,6 +1101,18 @@
 "voice.stopRecording" = "Stop recording";
 "voice.tapToFinish" = "Tap to finish";
 
+// MARK: - Voice Input Errors
+"voiceError.speechNotAvailable" = "Speech recognition is not available on this device";
+"voiceError.speechDenied" = "Speech recognition access denied. Please enable it in Settings";
+"voiceError.speechRestricted" = "Speech recognition access is restricted";
+"voiceError.audio %@" = "Audio error: %@";
+"voiceError.recognition %@" = "Recognition error: %@";
+"voiceError.microphoneDenied" = "Microphone access denied. Please enable it in Settings";
+"voiceError.speechNotDetermined" = "Speech recognition permission not granted";
+"voiceError.unknownPermission" = "Unknown permissions error";
+"voiceError.speechBecameUnavailable" = "Speech recognition became unavailable";
+"voiceConfirmation.saveError" = "Save error";
+
 // MARK: - Progress
 "progress.loadingAccounts" = "Loading accounts";
 "progress.loadingTransactions" = "Loading transactions";

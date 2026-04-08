@@ -89,13 +89,19 @@ class AccountUsageTracker {
 
     // MARK: - Private Helpers
 
+    /// Cached DateFormatter — DateFormatter is Sendable on iOS 26+ target
+    private static let recencyDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
     /// Calculate recency score based on transaction dates
     /// - Parameter transactions: Transactions to analyze
     /// - Returns: Recency score (0-100 per transaction)
     private func calculateRecencyScore(for transactions: [Transaction]) -> Double {
         let now = Date()
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateFormatter = Self.recencyDateFormatter
 
         var totalRecencyScore: Double = 0
 

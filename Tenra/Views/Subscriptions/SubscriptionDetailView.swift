@@ -20,17 +20,37 @@ struct SubscriptionDetailView: View {
     @State private var cachedTransactions: [Transaction] = []
     @Environment(\.dismiss) var dismiss
 
+    /// Live subscription from the store — reflects pause/resume/edit changes in real time.
+    private var liveSubscription: RecurringSeries {
+        transactionStore.recurringSeries.first(where: { $0.id == subscription.id }) ?? subscription
+    }
+
     private func refreshTransactions() async {
-        // Use only the transactions already in the store — the single-next-occurrence
-        // model guarantees exactly 1 future transaction exists for active series.
-        // No horizon-based generation needed (that was the old 3-month approach).
         cachedTransactions = transactionStore.transactions
             .filter { $0.recurringSeriesId == subscription.id }
-            .sorted { $0.date < $1.date }
+            .sorted { $0.date > $1.date }
     }
 
     private var nextChargeDate: Date? {
-        transactionStore.nextChargeDate(for: subscription.id)
+        transactionStore.nextChargeDate(for: liveSubscription.id)
+    }
+
+    private var transactionDateSections: [(date: String, displayLabel: String, transactions: [Transaction])] {
+        let grouped = Dictionary(grouping: cachedTransactions) { $0.date }
+        return grouped.sorted { $0.key > $1.key }.map { key, txs in
+            (date: key, displayLabel: formatTransactionDate(key), transactions: txs)
+        }
+    }
+
+    private func formatTransactionDate(_ isoDate: String) -> String {
+        guard let date = DateFormatters.dateFormatter.date(from: isoDate) else { return isoDate }
+        let cal = Calendar.current
+        if cal.isDateInToday(date) { return String(localized: "common.today", defaultValue: "Today") }
+        if cal.isDateInYesterday(date) { return String(localized: "common.yesterday", defaultValue: "Yesterday") }
+        if cal.component(.year, from: date) == cal.component(.year, from: Date()) {
+            return DateFormatters.displayDateFormatter.string(from: date)
+        }
+        return DateFormatters.displayDateWithYearFormatter.string(from: date)
     }
     
     var body: some View {
@@ -63,21 +83,21 @@ struct SubscriptionDetailView: View {
                         Label(String(localized: "subscriptions.edit"), systemImage: "pencil")
                     }
                     
-                    if subscription.subscriptionStatus == .active {
+                    if liveSubscription.subscriptionStatus == .active {
                         Button {
                             Task {
-                                try await transactionStore.pauseSubscription(id: subscription.id)
+                                try await transactionStore.pauseSubscription(id: liveSubscription.id)
                             }
                         } label: {
                             Label(String(localized: "subscriptions.pause"), systemImage: "pause.circle")
                         }
-                    } else if subscription.subscriptionStatus == .paused {
+                    } else if liveSubscription.subscriptionStatus == .paused {
                         Button {
                             Task {
                                 // Find subcategory IDs from any existing transaction in this series
                                 // to apply them to newly generated occurrences after resume.
                                 let existingTx = transactionStore.transactions.first {
-                                    $0.recurringSeriesId == subscription.id
+                                    $0.recurringSeriesId == liveSubscription.id
                                 }
                                 let subcategoryIds = existingTx.map {
                                     categoriesViewModel.getSubcategoriesForTransaction($0.id).map { $0.id }
@@ -85,7 +105,7 @@ struct SubscriptionDetailView: View {
 
                                 let idsBefore = Set(transactionStore.transactions.map { $0.id })
 
-                                try await transactionStore.resumeSubscription(id: subscription.id)
+                                try await transactionStore.resumeSubscription(id: liveSubscription.id)
 
                                 if !subcategoryIds.isEmpty {
                                     let idsAfter = Set(transactionStore.transactions.map { $0.id })
@@ -119,7 +139,7 @@ struct SubscriptionDetailView: View {
             SubscriptionEditView(
                 transactionStore: transactionStore,
                 transactionsViewModel: transactionsViewModel,
-                subscription: subscription
+                subscription: liveSubscription
             )
         }
         .alert(String(localized: "subscriptions.deleteConfirmTitle"), isPresented: $showingDeleteConfirmation) {
@@ -143,7 +163,7 @@ struct SubscriptionDetailView: View {
         }
         .navigationDestination(isPresented: $showingLinkPayments) {
             SubscriptionLinkPaymentsView(
-                subscription: subscription,
+                subscription: liveSubscription,
                 categoriesViewModel: categoriesViewModel,
                 accountsViewModel: accountsViewModel
             )
@@ -160,20 +180,30 @@ struct SubscriptionDetailView: View {
         VStack(alignment: .center, spacing: AppSpacing.md) {
             VStack(spacing: AppSpacing.md) {
                 IconView(
-                    source: subscription.iconSource,
+                    source: liveSubscription.iconSource,
                     style: .glassHero()
                 )
-                
+
                 VStack(alignment: .center, spacing: AppSpacing.xs) {
-                    Text(subscription.description)
+                    Text(liveSubscription.description)
                         .font(AppTypography.h1)
                     
                     FormattedAmountText(
-                        amount: NSDecimalNumber(decimal: subscription.amount).doubleValue,
-                        currency: subscription.currency,
+                        amount: NSDecimalNumber(decimal: liveSubscription.amount).doubleValue,
+                        currency: liveSubscription.currency,
                         fontSize: AppTypography.h4,
                         color: .secondary
                     )
+
+                    if liveSubscription.currency != transactionsViewModel.appSettings.baseCurrency {
+                        ConvertedAmountView(
+                            amount: NSDecimalNumber(decimal: liveSubscription.amount).doubleValue,
+                            fromCurrency: liveSubscription.currency,
+                            toCurrency: transactionsViewModel.appSettings.baseCurrency,
+                            fontSize: AppTypography.caption,
+                            color: .secondary.opacity(0.7)
+                        )
+                    }
                 }
                 Spacer()
             }
@@ -184,14 +214,14 @@ struct SubscriptionDetailView: View {
                     label: String(
                         localized: "subscriptions.category"
                     ),
-                    value: subscription.category
+                    value: liveSubscription.category
                 )
                 InfoRow(
                     icon: "repeat",
                     label: String(
                         localized: "subscriptions.frequency"
                     ),
-                    value: subscription.frequency.displayName
+                    value: liveSubscription.frequency.displayName
                 )
                 
                 if let nextDate = nextChargeDate {
@@ -206,7 +236,7 @@ struct SubscriptionDetailView: View {
                     )
                 }
                 
-                if let accountId = subscription.accountId,
+                if let accountId = liveSubscription.accountId,
                    let account = transactionsViewModel.accounts.first(
                     where: {
                         $0.id == accountId
@@ -234,7 +264,7 @@ struct SubscriptionDetailView: View {
     }
     
     private var statusText: String {
-        switch subscription.subscriptionStatus {
+        switch liveSubscription.subscriptionStatus {
         case .active:
             return String(localized: "subscriptions.status.active")
         case .paused:
@@ -251,29 +281,38 @@ struct SubscriptionDetailView: View {
             Text(String(localized: "subscriptions.transactionHistory"))
                 .font(AppTypography.h4)
 
-            VStack(spacing: AppSpacing.sm) {
-                ForEach(cachedTransactions) { transaction in
-                    let styleData = CategoryStyleHelper.cached(
-                        category: transaction.category,
-                        type: transaction.type,
-                        customCategories: categoriesViewModel.customCategories
-                    )
-                    let sourceAccount = transactionsViewModel.accounts.first { $0.id == transaction.accountId }
-                    let targetAccount = transaction.targetAccountId.flatMap { tid in
-                        transactionsViewModel.accounts.first { $0.id == tid }
-                    }
+            VStack(spacing: 0) {
+                ForEach(transactionDateSections, id: \.date) { section in
+                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                        Text(section.displayLabel)
+                            .font(AppTypography.bodySmall)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, AppSpacing.sm)
 
-                    TransactionCard(
-                        transaction: transaction,
-                        currency: subscription.currency,
-                        styleData: styleData,
-                        sourceAccount: sourceAccount,
-                        targetAccount: targetAccount,
-                        viewModel: nil,
-                        categoriesViewModel: nil,
-                        accountsViewModel: nil,
-                        balanceCoordinator: nil
-                    )
+                        ForEach(section.transactions) { transaction in
+                            let styleData = CategoryStyleHelper.cached(
+                                category: transaction.category,
+                                type: transaction.type,
+                                customCategories: categoriesViewModel.customCategories
+                            )
+                            let sourceAccount = transactionsViewModel.accounts.first { $0.id == transaction.accountId }
+                            let targetAccount = transaction.targetAccountId.flatMap { tid in
+                                transactionsViewModel.accounts.first { $0.id == tid }
+                            }
+
+                            TransactionCard(
+                                transaction: transaction,
+                                currency: liveSubscription.currency,
+                                styleData: styleData,
+                                sourceAccount: sourceAccount,
+                                targetAccount: targetAccount,
+                                viewModel: transactionsViewModel,
+                                categoriesViewModel: categoriesViewModel,
+                                accountsViewModel: accountsViewModel,
+                                balanceCoordinator: accountsViewModel.balanceCoordinator
+                            )
+                        }
+                    }
                 }
             }
         }

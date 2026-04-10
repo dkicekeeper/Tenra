@@ -109,7 +109,8 @@ struct SubscriptionsListView: View {
                 NavigationLink(value: subscription) {
                     SubscriptionCard(
                         subscription: subscription,
-                        nextChargeDate: nextChargeDate
+                        nextChargeDate: nextChargeDate,
+                        baseCurrency: transactionsViewModel.appSettings.baseCurrency
                     )
                     .matchedTransitionSource(id: subscription.id, in: subscriptionNamespace)
                 }

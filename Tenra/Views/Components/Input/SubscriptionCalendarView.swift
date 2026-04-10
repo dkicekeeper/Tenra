@@ -100,16 +100,15 @@ struct SubscriptionCalendarView: View {
                 .animation(.easeInOut(duration: AppAnimation.standard), value: isExpanded)
             }
 
-            Button(action: toggleExpanded) {
-                Image(systemName: "chevron.down")
-                    .font(AppTypography.bodySmall.weight(.semibold))
-                    .foregroundStyle(AppColors.textSecondary)
-                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                    .animation(AppAnimation.contentSpring, value: isExpanded)
-            }
-            .buttonStyle(.plain)
+            Image(systemName: "chevron.down")
+                .font(AppTypography.bodySmall.weight(.semibold))
+                .foregroundStyle(AppColors.textSecondary)
+                .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                .animation(AppAnimation.contentSpring, value: isExpanded)
         }
         .padding(.vertical, AppSpacing.sm)
+        .contentShape(Rectangle())
+        .onTapGesture { toggleExpanded() }
     }
 
     // MARK: - Weekday Headers (static, shared by both modes)
@@ -186,7 +185,7 @@ struct SubscriptionCalendarView: View {
                     dateCell(for: date)
                 } else {
                     Color.clear
-                        .frame(height: 60)
+                        .frame(height: 80)
                 }
             }
         }
@@ -231,7 +230,7 @@ struct SubscriptionCalendarView: View {
                 Spacer().frame(height: AppIconSize.md)
             }
         }
-        .frame(height: 64)
+        .frame(height: 80)
     }
 
     private func logoView(for sub: RecurringSeries, size: CGFloat) -> some View {
@@ -294,7 +293,7 @@ struct SubscriptionCalendarView: View {
     // MARK: - Height
 
     private var compactHeight: CGFloat {
-        60 + AppSpacing.md
+        80 + AppSpacing.md
     }
 
     private func calculateCalendarHeight() -> CGFloat {
@@ -302,7 +301,7 @@ struct SubscriptionCalendarView: View {
         let days = calendarDays(for: currentMonth)
         let weeksCount = ceil(Double(days.count) / 7.0)
 
-        let cellHeight: CGFloat = 60
+        let cellHeight: CGFloat = 80
         let rowSpacing: CGFloat = AppSpacing.xs * (weeksCount - 1)
         let gridHeight = (cellHeight * weeksCount) + rowSpacing
         let topPadding: CGFloat = AppSpacing.md

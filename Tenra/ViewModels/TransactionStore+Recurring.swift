@@ -429,6 +429,14 @@ extension TransactionStore {
 
         try await updateSeries(updated)
 
+        // Delete future transactions since series is now paused
+        let today = DateFormatters.dateFormatter.string(from: Date())
+        let futureTxs = transactions.filter { tx in
+            tx.recurringSeriesId == seriesId && tx.date > today
+        }
+        for tx in futureTxs {
+            try await apply(TransactionEvent.deleted(tx))
+        }
     }
 
     /// Resume a subscription (subscription-specific convenience method)

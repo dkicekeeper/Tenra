@@ -10,6 +10,7 @@ import SwiftUI
 struct SubscriptionCard: View {
     let subscription: RecurringSeries
     let nextChargeDate: Date?
+    var baseCurrency: String = ""
 
     var body: some View {
         HStack(spacing: AppSpacing.md) {
@@ -29,7 +30,17 @@ struct SubscriptionCard: View {
                     fontSize: AppTypography.body,
                     color: .secondary
                 )
-                
+
+                if !baseCurrency.isEmpty, subscription.currency != baseCurrency {
+                    ConvertedAmountView(
+                        amount: NSDecimalNumber(decimal: subscription.amount).doubleValue,
+                        fromCurrency: subscription.currency,
+                        toCurrency: baseCurrency,
+                        fontSize: AppTypography.caption,
+                        color: .secondary.opacity(0.7)
+                    )
+                }
+
                 if let nextChargeDate = nextChargeDate {
                     Text(String(format: String(localized: "subscriptions.nextChargeOn"), formatDate(nextChargeDate)))
                         .font(AppTypography.caption)

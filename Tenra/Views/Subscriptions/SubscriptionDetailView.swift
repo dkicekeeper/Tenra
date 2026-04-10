@@ -11,10 +11,12 @@ struct SubscriptionDetailView: View {
     let transactionStore: TransactionStore
     let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
+    let accountsViewModel: AccountsViewModel
     @Environment(TimeFilterManager.self) private var timeFilterManager
     let subscription: RecurringSeries
     @State private var showingEditView = false
     @State private var showingDeleteConfirmation = false
+    @State private var showingLinkPayments = false
     @State private var cachedTransactions: [Transaction] = []
     @Environment(\.dismiss) var dismiss
 
@@ -49,6 +51,12 @@ struct SubscriptionDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    Button {
+                        showingLinkPayments = true
+                    } label: {
+                        Label(String(localized: "subscription.linkPayments.title", defaultValue: "Link Payments"), systemImage: "link.badge.plus")
+                    }
+
                     Button {
                         showingEditView = true
                     } label: {
@@ -132,6 +140,13 @@ struct SubscriptionDetailView: View {
             }
         } message: {
             Text(String(localized: "subscriptions.deleteConfirmMessage"))
+        }
+        .navigationDestination(isPresented: $showingLinkPayments) {
+            SubscriptionLinkPaymentsView(
+                subscription: subscription,
+                categoriesViewModel: categoriesViewModel,
+                accountsViewModel: accountsViewModel
+            )
         }
         .task(id: subscription.id) {
             await refreshTransactions()
@@ -280,6 +295,7 @@ struct SubscriptionDetailView: View {
             transactionStore: coordinator.transactionStore,
             transactionsViewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
             subscription: RecurringSeries(
                 amount: 9.99,
                 currency: "USD",
@@ -305,6 +321,7 @@ struct SubscriptionDetailView: View {
             transactionStore: coordinator.transactionStore,
             transactionsViewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
             subscription: RecurringSeries(
                 amount: 14.99,
                 currency: "USD",
@@ -330,6 +347,7 @@ struct SubscriptionDetailView: View {
             transactionStore: coordinator.transactionStore,
             transactionsViewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
             subscription: RecurringSeries(
                 amount: 4.99,
                 currency: "USD",

@@ -1071,6 +1071,14 @@
 "loan.linkPayments.link" = "Привязать %d платежей";
 "loan.linkPayments.empty" = "Подходящие транзакции не найдены";
 
+// Привязка платежей к подписке
+"subscription.linkPayments.title" = "Привязать платежи";
+"subscription.linkPayments.search" = "Поиск по описанию или сумме";
+"subscription.linkPayments.selectedWithAmount" = "%d выбрано \u00B7 %@";
+"subscription.linkPayments.link" = "Привязать %d платежей";
+"subscription.linkPayments.empty" = "Нет подходящих транзакций";
+"subscription.filterAll" = "Все";
+
 // MARK: - Accounts (Types & Actions)
 "account.convertToDeposit" = "Конвертировать в депозит";
 "account.postingWithInterest" = "Начисление: %@ · ";

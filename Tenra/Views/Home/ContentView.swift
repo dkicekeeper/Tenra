@@ -318,7 +318,8 @@ struct ContentView: View {
         SubscriptionsListView(
             transactionStore: transactionStore,
             transactionsViewModel: viewModel,
-            categoriesViewModel: categoriesViewModel
+            categoriesViewModel: categoriesViewModel,
+            accountsViewModel: accountsViewModel
         )
         .environment(timeFilterManager)
     }

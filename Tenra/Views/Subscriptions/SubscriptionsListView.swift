@@ -11,6 +11,7 @@ struct SubscriptionsListView: View {
     let transactionStore: TransactionStore
     let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
+    let accountsViewModel: AccountsViewModel
     @Environment(TimeFilterManager.self) private var timeFilterManager
     @Namespace private var subscriptionNamespace
     private enum SubscriptionSheetItem: Identifiable {
@@ -54,6 +55,7 @@ struct SubscriptionsListView: View {
                 transactionStore: transactionStore,
                 transactionsViewModel: transactionsViewModel,
                 categoriesViewModel: categoriesViewModel,
+                accountsViewModel: accountsViewModel,
                 subscription: subscription
             )
             .environment(timeFilterManager)
@@ -126,7 +128,8 @@ struct SubscriptionsListView: View {
         SubscriptionsListView(
             transactionStore: coordinator.transactionStore,
             transactionsViewModel: coordinator.transactionsViewModel,
-            categoriesViewModel: coordinator.categoriesViewModel
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel
         )
         .environment(TimeFilterManager())
     }

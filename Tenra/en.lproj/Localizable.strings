@@ -1080,6 +1080,8 @@
 "subscription.linkPayments.empty" = "No matching transactions";
 "subscription.linkPayments.amountExact" = "Exact";
 "subscription.linkPayments.amountTolerance" = "±10%";
+"subscription.linkPayments.subcategories" = "Subcategories";
+"subscription.linkPayments.subcategoriesCount" = "%d subcategories";
 "subscription.filterAll" = "All";
 
 // MARK: - Accounts (Types & Actions)

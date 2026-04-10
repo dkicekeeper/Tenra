@@ -554,7 +554,10 @@ extension TransactionStore {
                 recurringOccurrenceId: tx.recurringOccurrenceId,
                 createdAt: tx.createdAt
             )
-            try await update(updated)
+            // Use apply() directly — skips validate() which would reject
+            // transactions whose category was renamed/deleted since creation.
+            // Safe because we only change recurringSeriesId on existing transactions.
+            try await apply(TransactionEvent.updated(old: tx, new: updated))
         }
     }
 }

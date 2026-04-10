@@ -28,9 +28,22 @@ struct SubscriptionLinkPaymentsView: View {
     @State private var filterAccountId: String?
     @State private var useExactAmount = false
     @State private var filterCategoryNames: Set<String>?
+    @State private var filterSubcategoryNames: Set<String>?
     @State private var showingCategoryFilter = false
 
     // MARK: - Computed Properties
+
+    /// Resolve account name from live accounts or fallback to transaction.accountName
+    private func resolveAccountName(for accountId: String) -> String {
+        if let account = transactionStore.accounts.first(where: { $0.id == accountId }) {
+            return account.name
+        }
+        // Deleted account — find name from any candidate transaction
+        if let tx = candidates.first(where: { $0.accountId == accountId }) {
+            return tx.accountName ?? accountId
+        }
+        return accountId
+    }
 
     /// When search is empty — show auto-matched candidates.
     /// When search is active — search ALL unlinked expense transactions globally.
@@ -59,6 +72,12 @@ struct SubscriptionLinkPaymentsView: View {
         if let categoryNames = filterCategoryNames {
             result = result.filter { categoryNames.contains($0.category) }
         }
+        if let subcategoryNames = filterSubcategoryNames {
+            result = result.filter { tx in
+                guard let sub = tx.subcategory else { return false }
+                return subcategoryNames.contains(sub)
+            }
+        }
         return result
     }
 
@@ -74,9 +93,14 @@ struct SubscriptionLinkPaymentsView: View {
         Array(Set(candidates.compactMap(\.accountId))).sorted()
     }
 
-    /// Unique expense category names from candidates for the category filter sheet
+    /// Unique expense category names from candidates
     private var candidateExpenseCategories: [String] {
         Array(Set(candidates.map(\.category))).sorted()
+    }
+
+    /// Unique subcategory names from candidates (non-nil only)
+    private var candidateSubcategories: [String] {
+        Array(Set(candidates.compactMap(\.subcategory))).sorted()
     }
 
     // MARK: - Date Sections
@@ -116,6 +140,9 @@ struct SubscriptionLinkPaymentsView: View {
                 loadCandidates()
             }
             .onChange(of: useExactAmount) { _, _ in
+                loadCandidates()
+            }
+            .onChange(of: filterCategoryNames) { _, _ in
                 loadCandidates()
             }
             .sheet(isPresented: $showingCategoryFilter) {
@@ -182,7 +209,7 @@ struct SubscriptionLinkPaymentsView: View {
                     UniversalFilterButton(
                         title: filterAccountId == nil
                             ? String(localized: "subscription.filterAll", defaultValue: "All")
-                            : (transactionStore.accounts.first(where: { $0.id == filterAccountId })?.name ?? String(localized: "subscription.filterAll", defaultValue: "All")),
+                            : resolveAccountName(for: filterAccountId!),
                         isSelected: filterAccountId != nil,
                         showChevron: true
                     ) {
@@ -194,11 +221,10 @@ struct SubscriptionLinkPaymentsView: View {
                             Label(String(localized: "subscription.filterAll", defaultValue: "All"), systemImage: filterAccountId == nil ? "checkmark" : "")
                         }
                         ForEach(uniqueAccountIds, id: \.self) { accountId in
-                            let name = transactionStore.accounts.first(where: { $0.id == accountId })?.name ?? accountId
                             Button {
                                 filterAccountId = accountId
                             } label: {
-                                Label(name, systemImage: filterAccountId == accountId ? "checkmark" : "")
+                                Label(resolveAccountName(for: accountId), systemImage: filterAccountId == accountId ? "checkmark" : "")
                             }
                         }
                     }
@@ -216,9 +242,52 @@ struct SubscriptionLinkPaymentsView: View {
                         incomeCategories: []
                     )
                 }
+
+                // Subcategory filter
+                if !candidateSubcategories.isEmpty {
+                    UniversalFilterButton(
+                        title: subcategoryFilterTitle,
+                        isSelected: filterSubcategoryNames != nil,
+                        showChevron: true
+                    ) {
+                        Image(systemName: "tag")
+                    } menuContent: {
+                        Button {
+                            filterSubcategoryNames = nil
+                        } label: {
+                            Label(String(localized: "subscription.filterAll", defaultValue: "All"), systemImage: filterSubcategoryNames == nil ? "checkmark" : "")
+                        }
+                        ForEach(candidateSubcategories, id: \.self) { subcategory in
+                            Button {
+                                if filterSubcategoryNames == nil {
+                                    filterSubcategoryNames = [subcategory]
+                                } else if filterSubcategoryNames!.contains(subcategory) {
+                                    filterSubcategoryNames!.remove(subcategory)
+                                    if filterSubcategoryNames!.isEmpty {
+                                        filterSubcategoryNames = nil
+                                    }
+                                } else {
+                                    filterSubcategoryNames!.insert(subcategory)
+                                }
+                            } label: {
+                                Label(subcategory, systemImage: filterSubcategoryNames?.contains(subcategory) == true ? "checkmark" : "")
+                            }
+                        }
+                    }
+                }
             }
         }
         .padding(.vertical, AppSpacing.sm)
+    }
+
+    private var subcategoryFilterTitle: String {
+        guard let names = filterSubcategoryNames else {
+            return String(localized: "subscription.linkPayments.subcategories", defaultValue: "Subcategories")
+        }
+        if names.count == 1 {
+            return names.first ?? String(localized: "subscription.linkPayments.subcategories", defaultValue: "Subcategories")
+        }
+        return String(format: String(localized: "subscription.linkPayments.subcategoriesCount", defaultValue: "%d subcategories"), names.count)
     }
 
     // MARK: - Transaction List
@@ -291,26 +360,40 @@ struct SubscriptionLinkPaymentsView: View {
     // MARK: - Action Bar
 
     private var actionBar: some View {
-        VStack(spacing: 0) {
-            Button {
-                linkSelected()
-            } label: {
-                if isLinking {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                } else {
-                    Text(String(format: String(localized: "subscription.linkPayments.link", defaultValue: "Link %d Payments"), selectedIds.count))
-                        .frame(maxWidth: .infinity)
+        ZStack(alignment: .top) {
+            // Button at bottom
+            VStack(spacing: 0) {
+                Button {
+                    linkSelected()
+                } label: {
+                    if isLinking {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Text(String(format: String(localized: "subscription.linkPayments.link", defaultValue: "Link %d Payments"), selectedIds.count))
+                            .frame(maxWidth: .infinity)
+                    }
                 }
+                .primaryButton(disabled: selectedIds.isEmpty || isLinking)
+                .padding(AppSpacing.lg)
             }
-            .primaryButton(disabled: selectedIds.isEmpty || isLinking)
-            .padding(AppSpacing.lg)
-        }
-        .overlay(alignment: .top) {
+
+            // Error banner above the button
             if showError {
                 MessageBanner.error(errorMessage)
                     .padding(.horizontal, AppSpacing.lg)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .onTapGesture {
+                        withAnimation(AppAnimation.contentSpring) {
+                            showError = false
+                        }
+                    }
+                    .task {
+                        try? await Task.sleep(for: .seconds(4))
+                        withAnimation(AppAnimation.contentSpring) {
+                            showError = false
+                        }
+                    }
             }
         }
     }
@@ -341,11 +424,15 @@ struct SubscriptionLinkPaymentsView: View {
     // MARK: - Actions
 
     private func loadCandidates() {
-        let matched = SubscriptionTransactionMatcher.findCandidates(
+        var matched = SubscriptionTransactionMatcher.findCandidates(
             for: subscription,
             in: transactionStore.transactions,
             exactMatch: useExactAmount
         )
+        // Apply category filter at candidate level so selection reflects filter
+        if let categoryNames = filterCategoryNames {
+            matched = matched.filter { categoryNames.contains($0.category) }
+        }
         candidates = matched
         selectedIds = Set(matched.map(\.id))
     }

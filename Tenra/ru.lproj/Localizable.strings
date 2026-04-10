@@ -1080,6 +1080,8 @@
 "subscription.linkPayments.empty" = "Нет подходящих транзакций";
 "subscription.linkPayments.amountExact" = "Точная сумма";
 "subscription.linkPayments.amountTolerance" = "±10%";
+"subscription.linkPayments.subcategories" = "Подкатегории";
+"subscription.linkPayments.subcategoriesCount" = "%d подкатегорий";
 "subscription.filterAll" = "Все";
 
 // MARK: - Accounts (Types & Actions)

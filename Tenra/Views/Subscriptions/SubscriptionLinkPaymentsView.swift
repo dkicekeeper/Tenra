@@ -188,12 +188,14 @@ struct SubscriptionLinkPaymentsView: View {
         }
         .listStyle(.plain)
         .overlay {
-            if candidates.isEmpty {
-                ContentUnavailableView {
-                    Label(String(localized: "subscription.linkPayments.empty", defaultValue: "No matching transactions"), systemImage: "doc.text.magnifyingglass")
+            if filteredCandidates.isEmpty {
+                if searchText.isEmpty {
+                    ContentUnavailableView {
+                        Label(String(localized: "subscription.linkPayments.empty", defaultValue: "No matching transactions"), systemImage: "doc.text.magnifyingglass")
+                    }
+                } else {
+                    ContentUnavailableView.search(text: searchText)
                 }
-            } else if filteredCandidates.isEmpty {
-                ContentUnavailableView.search(text: searchText)
             }
         }
     }

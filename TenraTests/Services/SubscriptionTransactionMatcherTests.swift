@@ -85,7 +85,7 @@ struct SubscriptionTransactionMatcherTests {
         #expect(candidates[0].type == .expense)
     }
 
-    @Test func findCandidates_excludesBeforeStartDate() {
+    @Test func findCandidates_includesTransactionsBeforeStartDate() {
         let sub = makeSubscription(startDate: "2024-06-01")
         let transactions = [
             makeTransaction(date: "2024-05-01", amount: 9.99),
@@ -94,8 +94,10 @@ struct SubscriptionTransactionMatcherTests {
 
         let candidates = SubscriptionTransactionMatcher.findCandidates(for: sub, in: transactions)
 
-        #expect(candidates.count == 1)
-        #expect(candidates[0].date == "2024-07-01")
+        // No date filter — retroactive linking finds old transactions too
+        #expect(candidates.count == 2)
+        #expect(candidates[0].date == "2024-05-01")
+        #expect(candidates[1].date == "2024-07-01")
     }
 
     @Test func findCandidates_excludesDifferentCurrency() {

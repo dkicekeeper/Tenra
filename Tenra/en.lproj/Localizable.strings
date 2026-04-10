@@ -1074,7 +1074,7 @@
 // Subscription Link Payments
 "subscription.linkPayments.title" = "Link Payments";
 "subscription.linkPayments.search" = "Search by description or amount";
-"subscription.linkPayments.selectedWithAmount" = "%d selected \u00B7 %@";
+"subscription.linkPayments.selectedWithAmount" = "%d selected · %@";
 "subscription.linkPayments.link" = "Link %d Payments";
 "subscription.linkPayments.empty" = "No matching transactions";
 "subscription.filterAll" = "All";

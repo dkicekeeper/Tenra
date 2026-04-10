@@ -15,8 +15,9 @@ nonisolated enum SubscriptionTransactionMatcher {
     static let defaultTolerance: Double = 0.10
 
     /// Returns expense transactions whose amount falls within `tolerance` of
-    /// the subscription's amount, dated after the subscription start, matching
-    /// the subscription currency, and not already linked to any recurring series.
+    /// the subscription's amount, matching the subscription currency, and not
+    /// already linked to any recurring series. No date filter — retroactive
+    /// linking needs to find transactions from before the subscription was created.
     /// Results are sorted chronologically.
     static func findCandidates(
         for subscription: RecurringSeries,
@@ -26,7 +27,6 @@ nonisolated enum SubscriptionTransactionMatcher {
         let amount = NSDecimalNumber(decimal: subscription.amount).doubleValue
         let lowerBound = amount * (1.0 - tolerance)
         let upperBound = amount * (1.0 + tolerance)
-        let startDate = subscription.startDate
         let currency = subscription.currency
 
         return transactions
@@ -34,7 +34,6 @@ nonisolated enum SubscriptionTransactionMatcher {
                 guard tx.type == .expense else { return false }
                 guard tx.currency == currency else { return false }
                 guard tx.amount >= lowerBound && tx.amount <= upperBound else { return false }
-                guard tx.date >= startDate else { return false }
                 guard tx.recurringSeriesId == nil else { return false }
                 return true
             }

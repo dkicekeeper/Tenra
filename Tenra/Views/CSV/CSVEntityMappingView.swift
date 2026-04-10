@@ -38,7 +38,7 @@ struct CSVEntityMappingView: View {
         NavigationStack {
             Form {
                 if !uniqueAccounts.isEmpty {
-                    Section(header: Text("Сопоставление счетов")) {
+                    Section(header: Text(String(localized: "csvMapping.accountsSection", defaultValue: "Account Mapping"))) {
                         ForEach(uniqueAccounts, id: \.self) { accountValue in
                             NavigationLink(value: CSVMappingDestination.account(accountValue)) {
                                 HStack {
@@ -49,7 +49,7 @@ struct CSVEntityMappingView: View {
                                         Text(account.name)
                                             .foregroundStyle(.secondary)
                                     } else {
-                                        Text("Не выбрано")
+                                        Text(String(localized: "csvMapping.notSelected", defaultValue: "Not Selected"))
                                             .foregroundStyle(AppColors.warning)
                                     }
                                 }
@@ -59,7 +59,7 @@ struct CSVEntityMappingView: View {
                 }
                 
                 if mapping.categoryColumn != nil, !uniqueCategories.isEmpty {
-                    Section(header: Text("Сопоставление категорий")) {
+                    Section(header: Text(String(localized: "csvMapping.categoriesSection", defaultValue: "Category Mapping"))) {
                         ForEach(uniqueCategories, id: \.self) { categoryValue in
                             NavigationLink(value: CSVMappingDestination.expenseCategory(categoryValue)) {
                                 HStack {
@@ -69,7 +69,7 @@ struct CSVEntityMappingView: View {
                                         Text(categoryName)
                                             .foregroundStyle(.secondary)
                                     } else {
-                                        Text("Не выбрано")
+                                        Text(String(localized: "csvMapping.notSelected", defaultValue: "Not Selected"))
                                             .foregroundStyle(AppColors.warning)
                                     }
                                 }
@@ -79,7 +79,7 @@ struct CSVEntityMappingView: View {
                 }
                 
                 if !uniqueIncomeCategories.isEmpty {
-                    Section(header: Text("Сопоставление категорий доходов")) {
+                    Section(header: Text(String(localized: "csvMapping.incomeCategoriesSection", defaultValue: "Income Category Mapping"))) {
                         ForEach(uniqueIncomeCategories, id: \.self) { categoryValue in
                             NavigationLink(value: CSVMappingDestination.incomeCategory(categoryValue)) {
                                 HStack {
@@ -89,7 +89,7 @@ struct CSVEntityMappingView: View {
                                         Text(categoryName)
                                             .foregroundStyle(.secondary)
                                     } else {
-                                        Text("Не выбрано")
+                                        Text(String(localized: "csvMapping.notSelected", defaultValue: "Not Selected"))
                                             .foregroundStyle(AppColors.warning)
                                     }
                                 }
@@ -140,7 +140,7 @@ struct CSVEntityMappingView: View {
                     )
                 }
             }
-            .navigationTitle("Сопоставление сущностей")
+            .navigationTitle(String(localized: "csvMapping.title", defaultValue: "Entity Mapping"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -269,7 +269,7 @@ struct AccountMappingDetailView: View {
     
     var body: some View {
         Form {
-            Section(header: Text("Выберите счет для \"\(csvValue)\"")) {
+            Section(header: Text("csvMapping.selectAccount \(csvValue)")) {
                 ForEach(accounts.sortedByOrder()) { account in
                     Button(action: {
                         selectedAccountId = account.id
@@ -291,12 +291,12 @@ struct AccountMappingDetailView: View {
                 Button(action: onCreateNew) {
                     HStack {
                         Image(systemName: "plus.circle")
-                        Text("Создать новый счет \"\(csvValue)\"")
+                        Text("csvMapping.createAccount \(csvValue)")
                     }
                 }
             }
         }
-        .navigationTitle("Сопоставление счета")
+        .navigationTitle(String(localized: "csvMapping.accountMappingTitle", defaultValue: "Account Mapping"))
     }
 }
 
@@ -308,12 +308,14 @@ struct CategoryMappingDetailView: View {
     let onCreateNew: () -> Void
     
     private var categoryLabel: String {
-        categoryType == .income ? "категорию дохода" : "категорию"
+        categoryType == .income
+            ? String(localized: "csvMapping.incomeCategoryLabel", defaultValue: "income category")
+            : String(localized: "csvMapping.categoryLabel", defaultValue: "category")
     }
     
     var body: some View {
         Form {
-            Section(header: Text("Выберите \(categoryLabel) для \"\(csvValue)\"")) {
+            Section(header: Text("csvMapping.selectCategory \(categoryLabel) \(csvValue)")) {
                 ForEach(categories, id: \.name) { category in
                     Button(action: {
                         selectedCategoryName = category.name
@@ -340,12 +342,14 @@ struct CategoryMappingDetailView: View {
                 Button(action: onCreateNew) {
                     HStack {
                         Image(systemName: "plus.circle")
-                        Text("Создать новую \(categoryLabel) \"\(csvValue)\"")
+                        Text("csvMapping.createCategory \(categoryLabel) \(csvValue)")
                     }
                 }
             }
         }
-        .navigationTitle(categoryType == .income ? "Сопоставление категории дохода" : "Сопоставление категории")
+        .navigationTitle(categoryType == .income
+            ? String(localized: "csvMapping.incomeCategoryMappingTitle", defaultValue: "Income Category Mapping")
+            : String(localized: "csvMapping.categoryMappingTitle", defaultValue: "Category Mapping"))
     }
 }
 

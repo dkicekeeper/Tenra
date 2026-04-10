@@ -300,7 +300,7 @@ struct VoiceInputView: View {
             } label: {
                 HStack(spacing: AppSpacing.sm) {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(AppTypography.bodyEmphasis)
                     Text(String(localized: "voiceConfirmation.confirm"))
                 }
                 .frame(maxWidth: .infinity)

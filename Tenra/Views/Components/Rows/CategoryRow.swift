@@ -63,16 +63,16 @@ struct CategoryRow: View {
                                         amount: progress.spent,
                                         currency: currency,
                                         fontSize: AppTypography.bodySmall,
-                                        color: progress.isOverBudget ? .red : .secondary
+                                        color: progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary
                                     )
                                     Text(" / ")
                                         .font(AppTypography.bodySmall)
-                                        .foregroundStyle(progress.isOverBudget ? .red : .secondary)
+                                        .foregroundStyle(progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary)
                                     FormattedAmountText(
                                         amount: progress.budgetAmount,
                                         currency: currency,
                                         fontSize: AppTypography.bodySmall,
-                                        color: progress.isOverBudget ? .red : .secondary
+                                        color: progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary
                                     )
                                 }
 

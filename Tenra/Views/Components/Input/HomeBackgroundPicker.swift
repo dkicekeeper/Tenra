@@ -168,7 +168,7 @@ struct HomeBackgroundPicker: View {
                     .fill(Color(.tertiarySystemGroupedBackground))
                     .overlay(
                         Image(systemName: "photo")
-                            .font(.system(size: 28, weight: .ultraLight))
+                            .font(AppTypography.h2.weight(.ultraLight))
                             .foregroundStyle(Color(.tertiaryLabel))
                     )
             }

@@ -34,6 +34,7 @@ struct TransactionCard: View {
     }
 
     @State private var showingStopRecurringConfirmation = false
+    @State private var showingDeleteConfirmation = false
     @State private var showingEditModal = false
     @State private var showingDeleteError = false
     @State private var deleteErrorMessage = ""
@@ -143,7 +144,7 @@ struct TransactionCard: View {
                 }
             }
         }
-        .opacity(isFutureDate ? 0.5 : 1.0)
+        .futureTransactionStyle(isFuture: isFutureDate)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityText)
@@ -152,21 +153,7 @@ struct TransactionCard: View {
             // Удаление
             Button(role: .destructive) {
                 HapticManager.warning()
-
-                // NEW: Use TransactionStore for delete
-                Task {
-                    do {
-                        try await transactionStore.delete(transaction)
-                        HapticManager.success()
-                    } catch {
-                        // Handle error
-                        await MainActor.run {
-                            deleteErrorMessage = error.localizedDescription
-                            showingDeleteError = true
-                            HapticManager.error()
-                        }
-                    }
-                }
+                showingDeleteConfirmation = true
             } label: {
                 Label(String(localized: "button.delete"), systemImage: "trash")
             }
@@ -179,7 +166,7 @@ struct TransactionCard: View {
                 } label: {
                     Label(String(localized: "transaction.recurring"), systemImage: "arrow.clockwise")
                 }
-                .tint(.blue)
+                .tint(AppColors.accent)
                 .accessibilityLabel(String(localized: "accessibility.stopRecurring"))
             }
 
@@ -226,7 +213,7 @@ struct TransactionCard: View {
                 } label: {
                     Label(String(localized: "transaction.resumeRecurring", defaultValue: "Resume"), systemImage: "play.circle")
                 }
-                .tint(.green)
+                .tint(AppColors.success)
                 .accessibilityLabel(String(localized: "transaction.resumeRecurring", defaultValue: "Resume Recurring"))
             }
         }
@@ -241,13 +228,31 @@ struct TransactionCard: View {
         } message: {
             Text(String(localized: "transaction.stopRecurring.message"))
         }
-        .alert("Error", isPresented: $showingDeleteError) {
-            Button("OK", role: .cancel) {}
+        .confirmationDialog(
+            String(localized: "transaction.deleteConfirmation.title", defaultValue: "Delete Transaction?"),
+            isPresented: $showingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "button.delete", defaultValue: "Delete"), role: .destructive) {
+                Task {
+                    do {
+                        try await transactionStore.delete(transaction)
+                        HapticManager.success()
+                    } catch {
+                        deleteErrorMessage = error.localizedDescription
+                        showingDeleteError = true
+                        HapticManager.error()
+                    }
+                }
+            }
+        }
+        .alert(String(localized: "error.generic.title", defaultValue: "Error"), isPresented: $showingDeleteError) {
+            Button(String(localized: "button.ok"), role: .cancel) {}
         } message: {
             Text(deleteErrorMessage)
         }
-        .alert("Error", isPresented: $showingResumeError) {
-            Button("OK", role: .cancel) {}
+        .alert(String(localized: "error.generic.title", defaultValue: "Error"), isPresented: $showingResumeError) {
+            Button(String(localized: "button.ok"), role: .cancel) {}
         } message: {
             Text(resumeErrorMessage)
         }

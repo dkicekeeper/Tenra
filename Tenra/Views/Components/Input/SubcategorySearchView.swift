@@ -112,7 +112,7 @@ struct SubcategorySearchView: View {
                                     Spacer()
                                     if selectionMode == .multiple && selectedSubcategoryIds.contains(subcategory.id) {
                                         Image(systemName: "checkmark")
-                                            .foregroundStyle(.blue)
+                                            .foregroundStyle(AppColors.accent)
                                     }
                                 }
                             }
@@ -127,7 +127,7 @@ struct SubcategorySearchView: View {
                                     } label: {
                                         Label(String(localized: "subcategorySearch.unlink"), systemImage: "link.badge.minus")
                                     }
-                                    .tint(.orange)
+                                    .tint(AppColors.warning)
                                 }
                             }
                         }

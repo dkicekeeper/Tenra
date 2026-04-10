@@ -127,6 +127,7 @@
 "progress.parsingStatement" = "Парсинг выписки...";
 
 // MARK: - Errors
+"error.generic.title" = "Ошибка";
 "error.loadTextFailed" = "Ошибка загрузки текста";
 "error.tryAgain" = "Попробуйте еще раз";
 "error.noTransactionsFound" = "Не удалось найти транзакции в распознанном тексте. Убедитесь, что текст содержит таблицу транзакций выписки.";
@@ -216,6 +217,7 @@
 "transactionType.transfer" = "Перевод";
 
 // MARK: - Transaction Recurring
+"transaction.deleteConfirmation.title" = "Удалить транзакцию?";
 "transaction.stopRecurring.title" = "Прекратить повторение?";
 "transaction.stopRecurring.message" = "Это прекратит повторение операции. Все будущие транзакции будут удалены.";
 "transaction.stopRecurring.confirm" = "Прекратить повторение";
@@ -625,6 +627,22 @@
 "csvImport.result.successRate" = "Успешность";
 "csvImport.result.errors" = "Ошибки";
 "csvImport.result.moreErrors" = "... и ещё %d ошибок";
+
+// MARK: - CSV Entity Mapping
+"csvMapping.title" = "Сопоставление сущностей";
+"csvMapping.accountsSection" = "Сопоставление счетов";
+"csvMapping.categoriesSection" = "Сопоставление категорий";
+"csvMapping.incomeCategoriesSection" = "Сопоставление категорий доходов";
+"csvMapping.notSelected" = "Не выбрано";
+"csvMapping.selectAccount %@" = "Выберите счет для \"%@\"";
+"csvMapping.createAccount %@" = "Создать новый счет \"%@\"";
+"csvMapping.accountMappingTitle" = "Сопоставление счета";
+"csvMapping.categoryLabel" = "категорию";
+"csvMapping.incomeCategoryLabel" = "категорию дохода";
+"csvMapping.selectCategory %@ %@" = "Выберите %1$@ для \"%2$@\"";
+"csvMapping.createCategory %@ %@" = "Создать новую %1$@ \"%2$@\"";
+"csvMapping.categoryMappingTitle" = "Сопоставление категории";
+"csvMapping.incomeCategoryMappingTitle" = "Сопоставление категории дохода";
 
 // MARK: - Settings Errors (Phase 1 - 2026-02-04)
 "error.settings.loadFailed" = "Не удалось загрузить настройки: %@";

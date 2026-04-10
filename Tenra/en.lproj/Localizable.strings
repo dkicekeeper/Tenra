@@ -127,6 +127,7 @@
 "progress.parsingStatement" = "Parsing statement...";
 
 // MARK: - Errors
+"error.generic.title" = "Error";
 "error.loadTextFailed" = "Failed to load text";
 "error.tryAgain" = "Try again";
 "error.noTransactionsFound" = "No transactions found in recognized text. Make sure the text contains a transaction table.";
@@ -216,6 +217,7 @@
 "transactionType.transfer" = "Transfer";
 
 // MARK: - Transaction Recurring
+"transaction.deleteConfirmation.title" = "Delete Transaction?";
 "transaction.stopRecurring.title" = "Stop Recurring?";
 "transaction.stopRecurring.message" = "This will stop the recurring transaction. All future transactions will be deleted.";
 "transaction.stopRecurring.confirm" = "Stop Recurring";
@@ -625,6 +627,22 @@
 "csvImport.result.successRate" = "Success Rate";
 "csvImport.result.errors" = "Errors";
 "csvImport.result.moreErrors" = "... and %d more errors";
+
+// MARK: - CSV Entity Mapping
+"csvMapping.title" = "Entity Mapping";
+"csvMapping.accountsSection" = "Account Mapping";
+"csvMapping.categoriesSection" = "Category Mapping";
+"csvMapping.incomeCategoriesSection" = "Income Category Mapping";
+"csvMapping.notSelected" = "Not Selected";
+"csvMapping.selectAccount %@" = "Select account for \"%@\"";
+"csvMapping.createAccount %@" = "Create new account \"%@\"";
+"csvMapping.accountMappingTitle" = "Account Mapping";
+"csvMapping.categoryLabel" = "category";
+"csvMapping.incomeCategoryLabel" = "income category";
+"csvMapping.selectCategory %@ %@" = "Select %1$@ for \"%2$@\"";
+"csvMapping.createCategory %@ %@" = "Create new %1$@ \"%2$@\"";
+"csvMapping.categoryMappingTitle" = "Category Mapping";
+"csvMapping.incomeCategoryMappingTitle" = "Income Category Mapping";
 
 // MARK: - Settings Errors (Phase 1 - 2026-02-04)
 "error.settings.loadFailed" = "Failed to load settings: %@";

@@ -62,11 +62,11 @@ struct SettingsHomeBackgroundView: View {
                     if wallpaperImage != nil {
                         UniversalRow(
                             config: .settings,
-                            leadingIcon: .sfSymbol("trash", color: .red, size: AppIconSize.md)
+                            leadingIcon: .sfSymbol("trash", color: AppColors.destructive, size: AppIconSize.md)
                         ) {
                             Text(String(localized: "settings.background.removePhoto"))
                                 .font(AppTypography.body)
-                                .foregroundStyle(.red)
+                                .foregroundStyle(AppColors.destructive)
                         } trailing: {
                             EmptyView()
                         }

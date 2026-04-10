@@ -63,7 +63,7 @@ struct AnimatedTitleInput: View {
 
                     BlinkingCursor(height: AppSize.cursorHeightLarge)
                         .opacity(showCursor ? 1 : 0)
-                        .animation(.easeInOut(duration: 0.15), value: showCursor)
+                        .animation(AppAnimation.fastAnimation, value: showCursor)
                 }
                 if alignment == .center { Spacer() }
             }

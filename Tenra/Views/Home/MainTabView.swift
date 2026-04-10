@@ -129,7 +129,7 @@ struct MainTabView: View {
         // User tapped + or ×
         HapticManager.light()
 
-        withAnimation(.spring(response: 0.38, dampingFraction: 0.75)) {
+        withAnimation(AppAnimation.contentSpring) {
             if tabBarMode == .normal {
                 tabBarMode = .expanded
                 selectedTab = .voice          // Default expanded selection

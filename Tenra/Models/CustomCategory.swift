@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct CustomCategory: Identifiable, Codable, Equatable {
+struct CustomCategory: Identifiable, Codable, Equatable, Hashable {
     let id: String
     var name: String
     var iconSource: IconSource // Unified icon source (SF Symbol, brandService/logo.dev)

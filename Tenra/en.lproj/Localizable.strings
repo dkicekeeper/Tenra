@@ -1240,3 +1240,17 @@
 "accounts.type.regular" = "Account";
 "common.edit" = "Edit";
 "common.delete" = "Delete";
+
+// Category Detail
+"category.detail.actions.addTransaction" = "Add transaction";
+"category.detail.totalSpent" = "Total spent";
+"category.detail.totalEarned" = "Total earned";
+"category.detail.avgMonthly" = "Avg. per month";
+"category.detail.budget" = "Budget";
+"category.detail.subcategories" = "Subcategories";
+"category.detail.transactionCount" = "Transactions";
+"category.detail.manageSubcategories" = "Manage subcategories";
+"category.detail.delete.confirmTitle" = "Delete category?";
+"category.detail.delete.confirmMessage" = "This will delete the category.";
+"category.detail.type.expense" = "Expense";
+"category.detail.type.income" = "Income";

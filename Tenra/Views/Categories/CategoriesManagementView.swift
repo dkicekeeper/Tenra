@@ -14,11 +14,14 @@ struct CategoriesManagementView: View {
     let categoriesViewModel: CategoriesViewModel
     let transactionsViewModel: TransactionsViewModel
     @Environment(\.dismiss) var dismiss
+    @Environment(TransactionStore.self) private var transactionStore
+    @Environment(AppCoordinator.self) private var appCoordinator
     @State private var selectedType: TransactionType = .expense
     @State private var showingAddCategory = false
     @State private var editingCategory: CustomCategory?
     @State private var categoryToDelete: CustomCategory?
     @State private var showingDeleteDialog = false
+    @State private var navigatingCategory: CustomCategory?
     @State private var mode: ManagementMode = .normal
     @State private var selection: Set<String> = []
     @State private var showingBulkDeleteDialog = false
@@ -99,13 +102,28 @@ struct CategoriesManagementView: View {
                             currency: transactionsViewModel.appSettings.baseCurrency,
                             onEdit: {
                                 guard !mode.isSelecting else { return }
-                                editingCategory = category
+                                navigatingCategory = category
                             },
                             onDelete: {
                                 categoryToDelete = category
                                 showingDeleteDialog = true
                             }
                         )
+                        .contextMenu {
+                            Button {
+                                editingCategory = category
+                            } label: {
+                                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                            }
+
+                            Button(role: .destructive) {
+                                HapticManager.warning()
+                                categoryToDelete = category
+                                showingDeleteDialog = true
+                            } label: {
+                                Label(String(localized: "button.delete"), systemImage: "trash")
+                            }
+                        }
                     }
                     .onMove(perform: mode.isReordering ? moveCategory : nil)
                 }
@@ -201,6 +219,15 @@ struct CategoriesManagementView: View {
                 HapticManager.selection()
                 selection.removeAll()
             }
+        }
+        .navigationDestination(item: $navigatingCategory) { category in
+            CategoryDetailView(
+                transactionStore: transactionStore,
+                transactionsViewModel: transactionsViewModel,
+                categoriesViewModel: categoriesViewModel,
+                accountsViewModel: appCoordinator.accountsViewModel,
+                category: category
+            )
         }
         .sheet(isPresented: $showingAddCategory) {
             CategoryEditView(

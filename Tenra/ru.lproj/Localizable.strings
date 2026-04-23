@@ -1240,3 +1240,17 @@
 "accounts.type.regular" = "Счёт";
 "common.edit" = "Изменить";
 "common.delete" = "Удалить";
+
+// Category Detail
+"category.detail.actions.addTransaction" = "Добавить транзакцию";
+"category.detail.totalSpent" = "Всего потрачено";
+"category.detail.totalEarned" = "Всего заработано";
+"category.detail.avgMonthly" = "В среднем за месяц";
+"category.detail.budget" = "Бюджет";
+"category.detail.subcategories" = "Подкатегории";
+"category.detail.transactionCount" = "Транзакций";
+"category.detail.manageSubcategories" = "Управлять подкатегориями";
+"category.detail.delete.confirmTitle" = "Удалить категорию?";
+"category.detail.delete.confirmMessage" = "Категория будет удалена.";
+"category.detail.type.expense" = "Расход";
+"category.detail.type.income" = "Доход";

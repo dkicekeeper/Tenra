@@ -18,6 +18,19 @@ struct CategoryStyleData: Equatable {
     let iconName: String
 }
 
+extension CategoryStyleData {
+    /// Neutral grey fallback used by EntityDetailScaffold's default styleHelper
+    /// when no per-transaction style is provided by the caller.
+    static let fallback = CategoryStyleData(
+        coinColor: .gray.opacity(0.3),
+        coinBorderColor: .gray.opacity(0.6),
+        iconColor: .gray,
+        primaryColor: .gray,
+        lightBackgroundColor: .gray.opacity(0.15),
+        iconName: "questionmark.circle.fill"
+    )
+}
+
 /// Singleton cache for category styles
 @MainActor
 final class CategoryStyleCache {

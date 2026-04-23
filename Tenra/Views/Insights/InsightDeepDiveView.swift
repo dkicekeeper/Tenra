@@ -78,7 +78,7 @@ struct InsightDeepDiveView: View {
 
     private var headerSection: some View {
         VStack(spacing: AppSpacing.sm) {
-            HeroSection(
+            SimpleHeroSection(
                 iconSource: iconSource,
                 title: categoryName
             )

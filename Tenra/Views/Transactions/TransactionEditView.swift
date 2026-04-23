@@ -58,7 +58,7 @@ struct TransactionEditView: View {
             ScrollView {
                 VStack(spacing: AppSpacing.lg) {
                         // Hero: category icon + name (or transfer icon)
-                        HeroSection(
+                        SimpleHeroSection(
                             iconSource: heroIconSource,
                             title: heroTitle
                         )

@@ -153,6 +153,7 @@
 // MARK: - Analytics
 "analytics.history" = "История";
 "analytics.planned" = "В планах";
+"history.section.title" = "История";
 
 // MARK: - Transaction Form
 "transaction.account" = "Счёт";

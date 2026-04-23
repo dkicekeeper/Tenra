@@ -120,7 +120,7 @@ struct TransactionAddModal: View {
 
         return ScrollView {
             VStack(spacing: AppSpacing.lg) {
-                HeroSection(
+                SimpleHeroSection(
                     iconSource: categoryData?.iconSource,
                     title: coordinator.formData.category
                 )

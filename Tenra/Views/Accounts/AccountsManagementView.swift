@@ -126,18 +126,21 @@ struct AccountsManagementView: View {
         .navigationTitle(String(localized: "settings.accounts"))
         .navigationBarTitleDisplayMode(.large)
         .task {
+            // Reconcile all deposits — collect then batch-persist
+            var depositTransactions: [Transaction] = []
             depositsViewModel.reconcileAllDeposits(
                 allTransactions: transactionsViewModel.allTransactions,
                 onTransactionCreated: { transaction in
-                    Task {
-                        do {
-                            _ = try await transactionStore.add(transaction)
-                        } catch {
-                            logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
-                        }
-                    }
+                    depositTransactions.append(transaction)
                 }
             )
+            for tx in depositTransactions {
+                do {
+                    _ = try await transactionStore.add(tx)
+                } catch {
+                    logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
+                }
+            }
 
             // Reconcile all loans — collect then batch-persist
             var loanTransactions: [Transaction] = []
@@ -285,18 +288,22 @@ struct AccountsManagementView: View {
                     guard account.isDeposit else { return }
                     HapticManager.success()
                     accountsViewModel.addDepositAccount(account)
+                    var depositTransactions: [Transaction] = []
                     depositsViewModel.reconcileAllDeposits(
                         allTransactions: transactionsViewModel.allTransactions,
                         onTransactionCreated: { transaction in
-                            Task {
-                                do {
-                                    _ = try await transactionStore.add(transaction)
-                                } catch {
-                                    logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
-                                }
-                            }
+                            depositTransactions.append(transaction)
                         }
                     )
+                    Task {
+                        for tx in depositTransactions {
+                            do {
+                                _ = try await transactionStore.add(tx)
+                            } catch {
+                                logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
+                            }
+                        }
+                    }
                     showingAddDeposit = false
                 }
             )
@@ -366,18 +373,22 @@ struct AccountsManagementView: View {
                 onSave: { updatedAccount in
                     HapticManager.success()
                     accountsViewModel.updateDeposit(updatedAccount)
+                    var depositTransactions: [Transaction] = []
                     depositsViewModel.reconcileAllDeposits(
                         allTransactions: transactionsViewModel.allTransactions,
                         onTransactionCreated: { transaction in
-                            Task {
-                                do {
-                                    _ = try await transactionStore.add(transaction)
-                                } catch {
-                                    logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
-                                }
-                            }
+                            depositTransactions.append(transaction)
                         }
                     )
+                    Task {
+                        for tx in depositTransactions {
+                            do {
+                                _ = try await transactionStore.add(tx)
+                            } catch {
+                                logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
+                            }
+                        }
+                    }
                     convertingAccount = nil
                 }
             )

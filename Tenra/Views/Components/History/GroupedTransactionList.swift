@@ -19,6 +19,9 @@ struct GroupedTransactionList<Overlay: View>: View {
     let categoriesViewModel: CategoriesViewModel?
     let accountsViewModel: AccountsViewModel?
     let balanceCoordinator: BalanceCoordinator?
+    /// When non-nil, replaces the default row tap (open edit sheet) with the provided closure.
+    /// Used by selection UIs like `LinkPaymentsView` to toggle selection on tap.
+    let tapAction: ((Transaction) -> Void)?
     let rowOverlay: (Transaction) -> Overlay
 
     @State private var visibleLimit: Int
@@ -35,6 +38,7 @@ struct GroupedTransactionList<Overlay: View>: View {
         categoriesViewModel: CategoriesViewModel? = nil,
         accountsViewModel: AccountsViewModel? = nil,
         balanceCoordinator: BalanceCoordinator? = nil,
+        tapAction: ((Transaction) -> Void)? = nil,
         @ViewBuilder rowOverlay: @escaping (Transaction) -> Overlay
     ) {
         self.transactions = transactions
@@ -47,6 +51,7 @@ struct GroupedTransactionList<Overlay: View>: View {
         self.categoriesViewModel = categoriesViewModel
         self.accountsViewModel = accountsViewModel
         self.balanceCoordinator = balanceCoordinator
+        self.tapAction = tapAction
         self.rowOverlay = rowOverlay
         self._visibleLimit = State(initialValue: pageSize)
     }
@@ -107,7 +112,8 @@ struct GroupedTransactionList<Overlay: View>: View {
                                     viewModel: viewModel,
                                     categoriesViewModel: categoriesViewModel,
                                     accountsViewModel: accountsViewModel,
-                                    balanceCoordinator: balanceCoordinator
+                                    balanceCoordinator: balanceCoordinator,
+                                    tapAction: tapAction.map { outer in { outer(transaction) } }
                                 )
                                 rowOverlay(transaction)
                             }
@@ -150,7 +156,8 @@ extension GroupedTransactionList where Overlay == EmptyView {
         viewModel: TransactionsViewModel? = nil,
         categoriesViewModel: CategoriesViewModel? = nil,
         accountsViewModel: AccountsViewModel? = nil,
-        balanceCoordinator: BalanceCoordinator? = nil
+        balanceCoordinator: BalanceCoordinator? = nil,
+        tapAction: ((Transaction) -> Void)? = nil
     ) {
         self.init(
             transactions: transactions,
@@ -163,6 +170,7 @@ extension GroupedTransactionList where Overlay == EmptyView {
             categoriesViewModel: categoriesViewModel,
             accountsViewModel: accountsViewModel,
             balanceCoordinator: balanceCoordinator,
+            tapAction: tapAction,
             rowOverlay: { _ in EmptyView() }
         )
     }

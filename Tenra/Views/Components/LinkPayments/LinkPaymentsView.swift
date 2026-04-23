@@ -79,7 +79,6 @@ struct LinkPaymentsView: View {
 
     // Cached derived data — rebuilt via `rebuildDerivedCaches()` on input changes only.
     @State private var cachedFilteredCandidates: [Transaction] = []
-    @State private var cachedDateSections: [(date: String, displayLabel: String, transactions: [Transaction])] = []
     @State private var cachedAreAllFilteredSelected: Bool = false
     @State private var cachedAccountById: [String: Account] = [:]
     @State private var cachedSelectedTotalInBaseCurrency: Double = 0
@@ -317,59 +316,46 @@ struct LinkPaymentsView: View {
     // MARK: - Transaction List
 
     private var transactionList: some View {
-        List {
-            ForEach(cachedDateSections, id: \.date) { section in
-                Section {
-                    ForEach(section.transactions) { transaction in
-                        let isSelected = selectedIds.contains(transaction.id)
-                        let styleData = CategoryStyleHelper.cached(
-                            category: transaction.category,
-                            type: transaction.type,
+        ScrollView {
+            if !cachedFilteredCandidates.isEmpty {
+                GroupedTransactionList(
+                    transactions: cachedFilteredCandidates,
+                    displayCurrency: displayCurrency,
+                    accountsById: cachedAccountById,
+                    styleHelper: { tx in
+                        CategoryStyleHelper.cached(
+                            category: tx.category,
+                            type: tx.type,
                             customCategories: categoriesViewModel.customCategories
                         )
-                        let sourceAccount = transaction.accountId.flatMap { cachedAccountById[$0] }
-                        let targetAccount = transaction.targetAccountId.flatMap { cachedAccountById[$0] }
-
-                        Button {
-                            if isSelected {
-                                selectedIds.remove(transaction.id)
-                            } else {
-                                selectedIds.insert(transaction.id)
-                            }
-                            HapticManager.selection()
-                        } label: {
-                            HStack(spacing: AppSpacing.md) {
-                                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(isSelected ? AppColors.accent : .secondary)
-                                    .font(.system(size: AppIconSize.md))
-
-                                TransactionCard(
-                                    transaction: transaction,
-                                    currency: displayCurrency,
-                                    styleData: styleData,
-                                    sourceAccount: sourceAccount,
-                                    targetAccount: targetAccount,
-                                    categoriesViewModel: categoriesViewModel
-                                )
-                                .allowsHitTesting(false)
-                            }
-                            .contentShape(Rectangle())
+                    },
+                    pageSize: 100,
+                    showCountBadge: true,
+                    categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel,
+                    balanceCoordinator: accountsViewModel.balanceCoordinator,
+                    tapAction: { tx in
+                        if selectedIds.contains(tx.id) {
+                            selectedIds.remove(tx.id)
+                        } else {
+                            selectedIds.insert(tx.id)
                         }
-                        .buttonStyle(.plain)
-                        .listRowInsets(EdgeInsets(
-                            top: AppSpacing.sm,
-                            leading: AppSpacing.lg,
-                            bottom: AppSpacing.sm,
-                            trailing: AppSpacing.lg
-                        ))
+                        HapticManager.selection()
+                    },
+                    rowOverlay: { tx in
+                        HStack {
+                            Spacer()
+                            Image(systemName: selectedIds.contains(tx.id) ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(selectedIds.contains(tx.id) ? AppColors.accent : .secondary)
+                                .font(.system(size: AppIconSize.md))
+                                .padding(.trailing, AppSpacing.lg)
+                        }
+                        .allowsHitTesting(false)
                     }
-                } header: {
-                    SectionHeaderView(section.displayLabel, style: .compact)
-                        .padding(.top, AppSpacing.sm)
-                }
+                )
+                .screenPadding()
             }
         }
-        .listStyle(.plain)
         .scrollDismissesKeyboard(.interactively)
         .overlay {
             if isBaselineLoading && cachedFilteredCandidates.isEmpty {
@@ -430,29 +416,6 @@ struct LinkPaymentsView: View {
                     }
             }
         }
-    }
-
-    // MARK: - Date labels
-
-    private func displayDateKey(from isoDate: String) -> String {
-        guard let date = DateFormatters.dateFormatter.date(from: isoDate) else { return isoDate }
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let sectionDay = calendar.startOfDay(for: date)
-
-        if sectionDay == today {
-            return String(localized: "common.today", defaultValue: "Today")
-        }
-        if let diff = calendar.dateComponents([.day], from: sectionDay, to: today).day, diff == 1 {
-            return String(localized: "common.yesterday", defaultValue: "Yesterday")
-        }
-
-        let currentYear = calendar.component(.year, from: Date())
-        let sectionYear = calendar.component(.year, from: date)
-        if sectionYear == currentYear {
-            return DateFormatters.displayDateFormatter.string(from: date)
-        }
-        return DateFormatters.displayDateWithYearFormatter.string(from: date)
     }
 
     // MARK: - Pipeline
@@ -519,11 +482,6 @@ struct LinkPaymentsView: View {
             filtered = candidates
         }
         cachedFilteredCandidates = filtered
-
-        let grouped = Dictionary(grouping: filtered) { $0.date }
-        cachedDateSections = grouped
-            .sorted { $0.key > $1.key }
-            .map { (date: $0.key, displayLabel: displayDateKey(from: $0.key), transactions: $0.value) }
 
         cachedAreAllFilteredSelected = !filtered.isEmpty && filtered.allSatisfy { selectedIds.contains($0.id) }
 

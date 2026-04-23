@@ -24,6 +24,10 @@ struct TransactionCard: View {
     let categoriesViewModel: CategoriesViewModel?
     let accountsViewModel: AccountsViewModel?
     let balanceCoordinator: BalanceCoordinator?  // Optional - can't use @ObservedObject with optionals
+    /// When non-nil, replaces the default tap-opens-edit-sheet behavior.
+    /// Callers that render the card as a selectable row (e.g. `LinkPaymentsView`)
+    /// inject their selection toggle here.
+    let tapAction: (() -> Void)?
 
     // MARK: - Convenience
 
@@ -80,7 +84,8 @@ struct TransactionCard: View {
         viewModel: TransactionsViewModel? = nil,
         categoriesViewModel: CategoriesViewModel? = nil,
         accountsViewModel: AccountsViewModel? = nil,
-        balanceCoordinator: BalanceCoordinator? = nil
+        balanceCoordinator: BalanceCoordinator? = nil,
+        tapAction: (() -> Void)? = nil
     ) {
         self.transaction = transaction
         self.currency = currency
@@ -91,6 +96,7 @@ struct TransactionCard: View {
         self.categoriesViewModel = categoriesViewModel
         self.accountsViewModel = accountsViewModel
         self.balanceCoordinator = balanceCoordinator
+        self.tapAction = tapAction
     }
     
     // MARK: - Display Helpers
@@ -148,7 +154,10 @@ struct TransactionCard: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityText)
-        .accessibilityHint(String(localized: "accessibility.swipeForOptions"))
+        .accessibilityHint(tapAction == nil
+            ? Text(String(localized: "accessibility.swipeForOptions"))
+            : Text("")
+        )
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             // Удаление — НЕ используем role: .destructive, т.к. он заставляет
             // SwiftUI анимированно удалить строку сразу по тапу, что дизмиссит
@@ -261,8 +270,12 @@ struct TransactionCard: View {
             Text(resumeErrorMessage)
         }
         .onTapGesture {
-            HapticManager.selection()
-            showingEditModal = true
+            if let tapAction {
+                tapAction()
+            } else {
+                HapticManager.selection()
+                showingEditModal = true
+            }
         }
         .sheet(isPresented: $showingEditModal) {
             if let viewModel = viewModel,

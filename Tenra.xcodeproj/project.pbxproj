@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		AA0003002F477D4A0010A953 /* Inter-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001002F477D4A0010A953 /* Inter-VariableFont_opsz,wght.ttf */; };
 		AA0004002F477D4A0010A953 /* Inter-Italic-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0002002F477D4A0010A953 /* Inter-Italic-VariableFont_opsz,wght.ttf */; };
+		D611C2E02F9A628F003980D9 /* PhosphorSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D611C2DF2F9A628F003980D9 /* PhosphorSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D611C2E02F9A628F003980D9 /* PhosphorSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -142,6 +144,7 @@
 			);
 			name = Tenra;
 			packageProductDependencies = (
+				D611C2DF2F9A628F003980D9 /* PhosphorSwift */,
 			);
 			productName = Tenra;
 			productReference = D62A09912F0D7B0D004AF1FA /* Tenra.app */;
@@ -226,6 +229,9 @@
 			);
 			mainGroup = D62A09882F0D7B0D004AF1FA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D611C2DE2F9A628F003980D9 /* XCRemoteSwiftPackageReference "swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D62A09922F0D7B0D004AF1FA /* Products */;
 			projectDirPath = "";
@@ -619,6 +625,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D611C2DE2F9A628F003980D9 /* XCRemoteSwiftPackageReference "swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/phosphor-icons/swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D611C2DF2F9A628F003980D9 /* PhosphorSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D611C2DE2F9A628F003980D9 /* XCRemoteSwiftPackageReference "swift" */;
+			productName = PhosphorSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D62A09892F0D7B0D004AF1FA /* Project object */;
 }

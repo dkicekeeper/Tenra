@@ -69,7 +69,9 @@ struct SubscriptionDetailView: View {
         let accountsById = Dictionary(uniqueKeysWithValues: transactionsViewModel.accounts.map { ($0.id, $0) })
 
         EntityDetailScaffold(
-            navigationTitle: "",
+            navigationTitle: liveSubscription.description,
+            navigationAmount: NSDecimalNumber(decimal: liveSubscription.amount).doubleValue,
+            navigationCurrency: liveSubscription.currency,
             infoRows: infoRowConfigs(),
             transactions: cachedTransactions,
             historyCurrency: liveSubscription.currency,

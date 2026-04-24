@@ -98,6 +98,8 @@ struct DepositDetailView: View {
 
         EntityDetailScaffold(
             navigationTitle: account.name,
+            navigationAmount: balanceCoordinator.balances[account.id] ?? account.balance,
+            navigationCurrency: account.currency,
             primaryAction: ActionConfig(
                 title: String(localized: "deposit.topUp"),
                 systemImage: "plus",

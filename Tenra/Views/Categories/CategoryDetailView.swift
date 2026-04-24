@@ -87,6 +87,8 @@ struct CategoryDetailView: View {
 
         EntityDetailScaffold(
             navigationTitle: liveCategory.name,
+            navigationAmount: aggregates.amountInPeriod,
+            navigationCurrency: baseCurrency,
             primaryAction: ActionConfig(
                 title: String(localized: "category.detail.actions.addTransaction", defaultValue: "Add transaction"),
                 systemImage: "plus",

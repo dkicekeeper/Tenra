@@ -27,8 +27,11 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
     let toolbarMenu: MenuContent
     /// Title shown in the nav bar AFTER the hero scrolls out of view.
     let navigationTitle: String
-    /// Optional subtitle shown under `navigationTitle` in the nav bar once the hero scrolls out.
-    let navigationSubtitle: String?
+    /// Optional amount shown under `navigationTitle` (formatted with `navigationCurrency`)
+    /// once the hero scrolls out. Typically mirrors the hero's `primaryAmount`.
+    let navigationAmount: Double?
+    /// Currency for `navigationAmount`. Ignored if amount is nil.
+    let navigationCurrency: String?
 
     /// Tracks whether the hero has scrolled past the nav bar. Drives the inline
     /// title/subtitle fade-in inside `.toolbar(.principal)`.
@@ -36,7 +39,8 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
 
     init(
         navigationTitle: String = "",
-        navigationSubtitle: String? = nil,
+        navigationAmount: Double? = nil,
+        navigationCurrency: String? = nil,
         primaryAction: ActionConfig? = nil,
         secondaryAction: ActionConfig? = nil,
         infoRows: [InfoRowConfig] = [],
@@ -56,7 +60,8 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
         @ViewBuilder toolbarMenu: () -> MenuContent
     ) {
         self.navigationTitle = navigationTitle
-        self.navigationSubtitle = navigationSubtitle
+        self.navigationAmount = navigationAmount
+        self.navigationCurrency = navigationCurrency
         self.primaryAction = primaryAction
         self.secondaryAction = secondaryAction
         self.infoRows = infoRows
@@ -79,14 +84,6 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
             VStack(spacing: AppSpacing.lg) {
                 hero
                     .screenPadding()
-                    .background(
-                        GeometryReader { proxy in
-                            Color.clear.preference(
-                                key: HeroMaxYPreferenceKey.self,
-                                value: proxy.frame(in: .named(entityDetailScrollSpace)).maxY
-                            )
-                        }
-                    )
 
                 if primaryAction != nil || secondaryAction != nil {
                     actionsBar.screenPadding()
@@ -115,31 +112,30 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
             }
             .padding(.vertical, AppSpacing.md)
         }
-        .coordinateSpace(.named(entityDetailScrollSpace))
-        .onPreferenceChange(HeroMaxYPreferenceKey.self) { maxY in
-            let shouldShow = maxY < entityDetailNavTitleThreshold
-            guard shouldShow != isNavTitleVisible else { return }
-            withAnimation(.smooth(duration: 0.2)) {
-                isNavTitleVisible = shouldShow
-            }
+        .onScrollGeometryChange(for: Bool.self) { geo in
+            geo.contentOffset.y > entityDetailNavTitleThreshold
+        } action: { _, shouldShow in
+            isNavTitleVisible = shouldShow
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                if isNavTitleVisible, !navigationTitle.isEmpty {
-                    VStack(spacing: 2) {
-                        Text(navigationTitle)
-                            .font(AppTypography.bodyEmphasis)
-                            .lineLimit(1)
-                        if let navigationSubtitle, !navigationSubtitle.isEmpty {
-                            Text(navigationSubtitle)
-                                .font(AppTypography.caption)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
+                VStack(spacing: 2) {
+                    Text(navigationTitle)
+                        .font(AppTypography.bodyEmphasis)
+                        .lineLimit(1)
+                    if let navigationAmount, let navigationCurrency {
+                        FormattedAmountText(
+                            amount: navigationAmount,
+                            currency: navigationCurrency,
+                            fontSize: AppTypography.caption,
+                            color: .secondary
+                        )
+                        .lineLimit(1)
                     }
-                    .transition(.opacity)
                 }
+                .opacity(isNavTitleVisible ? 1 : 0)
+                .animation(.smooth(duration: 0.2), value: isNavTitleVisible)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -207,18 +203,10 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
 
 // MARK: - Scroll Tracking
 
-/// Named coordinate space for the scaffold's ScrollView — hero measures its bottom here.
-private let entityDetailScrollSpace = "entityDetailScroll"
-/// When hero's `maxY` in scroll space falls below this value, the inline nav title fades in.
-/// ~40pt accounts for the top safe area / nav bar so the title replaces the hero as it exits.
-private let entityDetailNavTitleThreshold: CGFloat = 40
-
-private struct HeroMaxYPreferenceKey: PreferenceKey {
-    static let defaultValue: CGFloat = .infinity
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
+/// When the ScrollView's vertical content offset exceeds this value, the inline nav title
+/// fades in. Tuned to approximate typical hero height (icon + title + amount ≈ 160pt minus
+/// the nav bar). Tune per-screen in the future if heroes diverge significantly.
+private let entityDetailNavTitleThreshold: CGFloat = 120
 
 // MARK: - Convenience overloads for optional generic slots
 //
@@ -229,7 +217,8 @@ private struct HeroMaxYPreferenceKey: PreferenceKey {
 extension EntityDetailScaffold where CustomSections == EmptyView, HistoryOverlay == EmptyView {
     init(
         navigationTitle: String = "",
-        navigationSubtitle: String? = nil,
+        navigationAmount: Double? = nil,
+        navigationCurrency: String? = nil,
         primaryAction: ActionConfig? = nil,
         secondaryAction: ActionConfig? = nil,
         infoRows: [InfoRowConfig] = [],
@@ -248,7 +237,8 @@ extension EntityDetailScaffold where CustomSections == EmptyView, HistoryOverlay
     ) {
         self.init(
             navigationTitle: navigationTitle,
-            navigationSubtitle: navigationSubtitle,
+            navigationAmount: navigationAmount,
+            navigationCurrency: navigationCurrency,
             primaryAction: primaryAction,
             secondaryAction: secondaryAction,
             infoRows: infoRows,
@@ -271,7 +261,8 @@ extension EntityDetailScaffold where CustomSections == EmptyView, HistoryOverlay
 extension EntityDetailScaffold where CustomSections == EmptyView {
     init(
         navigationTitle: String = "",
-        navigationSubtitle: String? = nil,
+        navigationAmount: Double? = nil,
+        navigationCurrency: String? = nil,
         primaryAction: ActionConfig? = nil,
         secondaryAction: ActionConfig? = nil,
         infoRows: [InfoRowConfig] = [],
@@ -291,7 +282,8 @@ extension EntityDetailScaffold where CustomSections == EmptyView {
     ) {
         self.init(
             navigationTitle: navigationTitle,
-            navigationSubtitle: navigationSubtitle,
+            navigationAmount: navigationAmount,
+            navigationCurrency: navigationCurrency,
             primaryAction: primaryAction,
             secondaryAction: secondaryAction,
             infoRows: infoRows,
@@ -314,7 +306,8 @@ extension EntityDetailScaffold where CustomSections == EmptyView {
 extension EntityDetailScaffold where HistoryOverlay == EmptyView {
     init(
         navigationTitle: String = "",
-        navigationSubtitle: String? = nil,
+        navigationAmount: Double? = nil,
+        navigationCurrency: String? = nil,
         primaryAction: ActionConfig? = nil,
         secondaryAction: ActionConfig? = nil,
         infoRows: [InfoRowConfig] = [],
@@ -334,7 +327,8 @@ extension EntityDetailScaffold where HistoryOverlay == EmptyView {
     ) {
         self.init(
             navigationTitle: navigationTitle,
-            navigationSubtitle: navigationSubtitle,
+            navigationAmount: navigationAmount,
+            navigationCurrency: navigationCurrency,
             primaryAction: primaryAction,
             secondaryAction: secondaryAction,
             infoRows: infoRows,

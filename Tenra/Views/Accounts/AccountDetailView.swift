@@ -60,6 +60,8 @@ struct AccountDetailView: View {
 
         EntityDetailScaffold(
             navigationTitle: liveAccount.name,
+            navigationAmount: liveAccount.balance,
+            navigationCurrency: liveAccount.currency,
             primaryAction: ActionConfig(
                 title: String(localized: "account.detail.actions.addTransaction", defaultValue: "Add transaction"),
                 systemImage: "plus",

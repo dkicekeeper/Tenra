@@ -78,6 +78,10 @@ struct LoanDetailView: View {
 
         EntityDetailScaffold(
             navigationTitle: account.name,
+            navigationAmount: account.loanInfo.map {
+                NSDecimalNumber(decimal: $0.remainingPrincipal).doubleValue
+            },
+            navigationCurrency: account.currency,
             primaryAction: ActionConfig(
                 title: String(localized: "loan.makePayment", defaultValue: "Make Payment"),
                 systemImage: "banknote",

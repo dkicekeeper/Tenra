@@ -25,10 +25,18 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
     let balanceCoordinator: BalanceCoordinator?
     let historyRowOverlay: (Transaction) -> HistoryOverlay
     let toolbarMenu: MenuContent
+    /// Title shown in the nav bar AFTER the hero scrolls out of view.
     let navigationTitle: String
+    /// Optional subtitle shown under `navigationTitle` in the nav bar once the hero scrolls out.
+    let navigationSubtitle: String?
+
+    /// Tracks whether the hero has scrolled past the nav bar. Drives the inline
+    /// title/subtitle fade-in inside `.toolbar(.principal)`.
+    @State private var isNavTitleVisible: Bool = false
 
     init(
         navigationTitle: String = "",
+        navigationSubtitle: String? = nil,
         primaryAction: ActionConfig? = nil,
         secondaryAction: ActionConfig? = nil,
         infoRows: [InfoRowConfig] = [],
@@ -48,6 +56,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
         @ViewBuilder toolbarMenu: () -> MenuContent
     ) {
         self.navigationTitle = navigationTitle
+        self.navigationSubtitle = navigationSubtitle
         self.primaryAction = primaryAction
         self.secondaryAction = secondaryAction
         self.infoRows = infoRows
@@ -68,7 +77,16 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
     var body: some View {
         ScrollView {
             VStack(spacing: AppSpacing.lg) {
-                hero.screenPadding()
+                hero
+                    .screenPadding()
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear.preference(
+                                key: HeroMaxYPreferenceKey.self,
+                                value: proxy.frame(in: .named(entityDetailScrollSpace)).maxY
+                            )
+                        }
+                    )
 
                 if primaryAction != nil || secondaryAction != nil {
                     actionsBar.screenPadding()
@@ -97,9 +115,32 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
             }
             .padding(.vertical, AppSpacing.md)
         }
+        .coordinateSpace(.named(entityDetailScrollSpace))
+        .onPreferenceChange(HeroMaxYPreferenceKey.self) { maxY in
+            let shouldShow = maxY < entityDetailNavTitleThreshold
+            guard shouldShow != isNavTitleVisible else { return }
+            withAnimation(.smooth(duration: 0.2)) {
+                isNavTitleVisible = shouldShow
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(navigationTitle)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                if isNavTitleVisible, !navigationTitle.isEmpty {
+                    VStack(spacing: 2) {
+                        Text(navigationTitle)
+                            .font(AppTypography.bodyEmphasis)
+                            .lineLimit(1)
+                        if let navigationSubtitle, !navigationSubtitle.isEmpty {
+                            Text(navigationSubtitle)
+                                .font(AppTypography.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+                    .transition(.opacity)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     toolbarMenu
@@ -110,35 +151,26 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
         }
     }
 
+
     @ViewBuilder
     private var actionsBar: some View {
         HStack(spacing: AppSpacing.md) {
             if let primaryAction {
-                Button(role: primaryAction.role, action: primaryAction.action) {
-                    actionLabel(primaryAction)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                EntityActionButton(
+                    title: primaryAction.title,
+                    systemImage: primaryAction.systemImage,
+                    role: primaryAction.role,
+                    action: primaryAction.action
+                )
             }
             if let secondaryAction {
-                Button(role: secondaryAction.role, action: secondaryAction.action) {
-                    actionLabel(secondaryAction)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
+                EntityActionButton(
+                    title: secondaryAction.title,
+                    systemImage: secondaryAction.systemImage,
+                    role: secondaryAction.role,
+                    action: secondaryAction.action
+                )
             }
-        }
-    }
-
-    @ViewBuilder
-    private func actionLabel(_ cfg: ActionConfig) -> some View {
-        HStack(spacing: AppSpacing.xs) {
-            if let systemImage = cfg.systemImage {
-                Image(systemName: systemImage)
-            }
-            Text(cfg.title)
         }
     }
 
@@ -173,6 +205,21 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
     }
 }
 
+// MARK: - Scroll Tracking
+
+/// Named coordinate space for the scaffold's ScrollView — hero measures its bottom here.
+private let entityDetailScrollSpace = "entityDetailScroll"
+/// When hero's `maxY` in scroll space falls below this value, the inline nav title fades in.
+/// ~40pt accounts for the top safe area / nav bar so the title replaces the hero as it exits.
+private let entityDetailNavTitleThreshold: CGFloat = 40
+
+private struct HeroMaxYPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = .infinity
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 // MARK: - Convenience overloads for optional generic slots
 //
 // Swift can't infer the CustomSections / HistoryOverlay generics from default
@@ -182,6 +229,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
 extension EntityDetailScaffold where CustomSections == EmptyView, HistoryOverlay == EmptyView {
     init(
         navigationTitle: String = "",
+        navigationSubtitle: String? = nil,
         primaryAction: ActionConfig? = nil,
         secondaryAction: ActionConfig? = nil,
         infoRows: [InfoRowConfig] = [],
@@ -200,6 +248,7 @@ extension EntityDetailScaffold where CustomSections == EmptyView, HistoryOverlay
     ) {
         self.init(
             navigationTitle: navigationTitle,
+            navigationSubtitle: navigationSubtitle,
             primaryAction: primaryAction,
             secondaryAction: secondaryAction,
             infoRows: infoRows,
@@ -222,6 +271,7 @@ extension EntityDetailScaffold where CustomSections == EmptyView, HistoryOverlay
 extension EntityDetailScaffold where CustomSections == EmptyView {
     init(
         navigationTitle: String = "",
+        navigationSubtitle: String? = nil,
         primaryAction: ActionConfig? = nil,
         secondaryAction: ActionConfig? = nil,
         infoRows: [InfoRowConfig] = [],
@@ -241,6 +291,7 @@ extension EntityDetailScaffold where CustomSections == EmptyView {
     ) {
         self.init(
             navigationTitle: navigationTitle,
+            navigationSubtitle: navigationSubtitle,
             primaryAction: primaryAction,
             secondaryAction: secondaryAction,
             infoRows: infoRows,
@@ -263,6 +314,7 @@ extension EntityDetailScaffold where CustomSections == EmptyView {
 extension EntityDetailScaffold where HistoryOverlay == EmptyView {
     init(
         navigationTitle: String = "",
+        navigationSubtitle: String? = nil,
         primaryAction: ActionConfig? = nil,
         secondaryAction: ActionConfig? = nil,
         infoRows: [InfoRowConfig] = [],
@@ -282,6 +334,7 @@ extension EntityDetailScaffold where HistoryOverlay == EmptyView {
     ) {
         self.init(
             navigationTitle: navigationTitle,
+            navigationSubtitle: navigationSubtitle,
             primaryAction: primaryAction,
             secondaryAction: secondaryAction,
             infoRows: infoRows,
@@ -298,5 +351,46 @@ extension EntityDetailScaffold where HistoryOverlay == EmptyView {
             historyRowOverlay: { _ in EmptyView() },
             toolbarMenu: toolbarMenu
         )
+    }
+}
+
+
+// MARK: - Previews
+
+#Preview("EntityDetailScaffold") {
+    let coordinator = AppCoordinator()
+
+    NavigationStack {
+        EntityDetailScaffold(
+            navigationTitle: "Sample Entity",
+            primaryAction: ActionConfig(title: "Add", systemImage: "plus") {},
+            secondaryAction: ActionConfig(title: "Edit", systemImage: "pencil") {},
+            infoRows: [
+                InfoRowConfig(icon: "calendar", label: "Created", value: "Jan 1, 2026"),
+                InfoRowConfig(icon: "number", label: "Transactions", value: "42"),
+                InfoRowConfig(icon: "arrow.up.circle", label: "Income", value: "250 000 ₸", iconColor: .green),
+                InfoRowConfig(icon: "arrow.down.circle", label: "Expense", value: "80 000 ₸", iconColor: .red)
+            ],
+            transactions: [],
+            historyCurrency: "KZT",
+            viewModel: coordinator.transactionsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
+            balanceCoordinator: coordinator.balanceCoordinator,
+            hero: {
+                HeroSection(
+                    icon: .sfSymbol("star.fill"),
+                    title: "Sample Entity",
+                    primaryAmount: 170_000,
+                    primaryCurrency: "KZT"
+                )
+            },
+            toolbarMenu: {
+                Button("Delete", role: .destructive) {}
+            }
+        )
+        .environment(coordinator)
+        .environment(coordinator.transactionStore)
+        .environment(TimeFilterManager())
     }
 }

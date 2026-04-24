@@ -25,7 +25,15 @@ struct GroupedTransactionList<Overlay: View>: View {
     let rowOverlay: (Transaction) -> Overlay
 
     @State private var visibleLimit: Int
-    @State private var cachedSections: [(date: String, displayLabel: String, transactions: [Transaction])] = []
+    @State private var cachedSections: [DaySection] = []
+
+    private struct DaySection: Identifiable {
+        let date: String
+        let displayLabel: String
+        let transactions: [Transaction]
+        let dayExpenseTotal: Double
+        var id: String { date }
+    }
 
     init(
         transactions: [Transaction],
@@ -62,7 +70,16 @@ struct GroupedTransactionList<Overlay: View>: View {
         cachedSections = grouped
             .sorted { $0.key > $1.key }
             .map { key, txs in
-                (date: key, displayLabel: Self.formatDateKey(key), transactions: txs)
+                let expenseTotal = txs.reduce(0.0) { acc, tx in
+                    guard tx.type == .expense else { return acc }
+                    return acc + (tx.convertedAmount ?? tx.amount)
+                }
+                return DaySection(
+                    date: key,
+                    displayLabel: Self.formatDateKey(key),
+                    transactions: txs,
+                    dayExpenseTotal: expenseTotal
+                )
             }
     }
 
@@ -85,37 +102,74 @@ struct GroupedTransactionList<Overlay: View>: View {
                 Spacer()
                 if showCountBadge, !transactions.isEmpty {
                     Text("\(transactions.count)")
-                        .font(AppTypography.caption)
+                        .font(AppTypography.h4)
                         .foregroundStyle(.secondary)
                 }
             }
 
-            LazyVStack(spacing: 0, pinnedViews: []) {
-                ForEach(cachedSections, id: \.date) { section in
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        DateSectionHeaderView(dateKey: section.displayLabel)
-                            .padding(.top, AppSpacing.sm)
+            if transactions.isEmpty {
+                EmptyStateView(
+                    icon: "doc.text",
+                    title: String(localized: "emptyState.noTransactions", defaultValue: "No transactions"),
+                    description: String(localized: "emptyState.startTracking", defaultValue: "Start tracking to see your activity here")
+                )
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, AppSpacing.xxl)
+            } else {
+                transactionsList
+            }
+        }
+    }
 
-                        ForEach(section.transactions) { transaction in
+    @ViewBuilder
+    private var transactionsList: some View {
+        LazyVStack(spacing: AppSpacing.md, pinnedViews: []) {
+                ForEach(cachedSections) { section in
+                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                        DateSectionHeaderView(
+                            dateKey: section.displayLabel,
+                            amount: section.dayExpenseTotal > 0 ? section.dayExpenseTotal : nil,
+                            currency: displayCurrency
+                        )
+
+                        ForEach(Array(section.transactions.enumerated()), id: \.element.id) { index, transaction in
                             let sourceAccount = transaction.accountId.flatMap { accountsById[$0] }
                             let targetAccount = transaction.targetAccountId.flatMap { accountsById[$0] }
                             let style = styleHelper(transaction)
                             let rowCurrency = displayCurrency ?? transaction.currency
+                            let linkedSubs = categoriesViewModel?.getSubcategoriesForTransaction(transaction.id) ?? []
 
                             ZStack {
-                                TransactionCard(
-                                    transaction: transaction,
-                                    currency: rowCurrency,
-                                    styleData: style,
-                                    sourceAccount: sourceAccount,
-                                    targetAccount: targetAccount,
-                                    viewModel: viewModel,
-                                    categoriesViewModel: categoriesViewModel,
-                                    accountsViewModel: accountsViewModel,
-                                    balanceCoordinator: balanceCoordinator,
-                                    tapAction: tapAction.map { outer in { outer(transaction) } }
-                                )
+                                if let tapAction {
+                                    // Pure-UI path: caller owns the tap (selection, etc.)
+                                    TransactionCardView(
+                                        transaction: transaction,
+                                        currency: rowCurrency,
+                                        styleData: style,
+                                        sourceAccount: sourceAccount,
+                                        targetAccount: targetAccount,
+                                        linkedSubcategories: linkedSubs
+                                    )
+                                    .onTapGesture { tapAction(transaction) }
+                                } else {
+                                    TransactionCard(
+                                        transaction: transaction,
+                                        currency: rowCurrency,
+                                        styleData: style,
+                                        sourceAccount: sourceAccount,
+                                        targetAccount: targetAccount,
+                                        viewModel: viewModel,
+                                        categoriesViewModel: categoriesViewModel,
+                                        accountsViewModel: accountsViewModel,
+                                        balanceCoordinator: balanceCoordinator
+                                    )
+                                }
                                 rowOverlay(transaction)
+                            }
+
+                            if index < section.transactions.count - 1 {
+                                Divider()
+                                    .padding(.leading, AppIconSize.xxl + AppSpacing.md)
                             }
                         }
                     }
@@ -136,7 +190,6 @@ struct GroupedTransactionList<Overlay: View>: View {
                 rebuildSections()
             }
             .onChange(of: visibleLimit) { _, _ in rebuildSections() }
-        }
     }
 }
 
@@ -173,5 +226,91 @@ extension GroupedTransactionList where Overlay == EmptyView {
             tapAction: tapAction,
             rowOverlay: { _ in EmptyView() }
         )
+    }
+}
+
+
+// MARK: - Previews
+
+private enum GroupedTransactionListPreviewFactory {
+    static func makeSampleData() -> (transactions: [Transaction], accountsById: [String: Account]) {
+        let cash = Account(id: "acc-cash", name: "Cash", currency: "KZT",
+                           iconSource: .sfSymbol("banknote"), balance: 250_000)
+        let card = Account(id: "acc-card", name: "Kaspi Gold", currency: "KZT",
+                           iconSource: .sfSymbol("creditcard.fill"), balance: 540_000)
+
+        let formatter = DateFormatters.dateFormatter
+        let cal = Calendar.current
+        let today = Date()
+        func iso(_ offsetDays: Int) -> String {
+            formatter.string(from: cal.date(byAdding: .day, value: offsetDays, to: today) ?? today)
+        }
+
+        let transactions: [Transaction] = [
+            Transaction(id: "t1", date: iso(0), description: "Magnum",
+                        amount: 12_500, currency: "KZT", type: .expense,
+                        category: "Groceries", accountId: card.id),
+            Transaction(id: "t2", date: iso(0), description: "Coffee",
+                        amount: 1_800, currency: "KZT", type: .expense,
+                        category: "Cafes", accountId: cash.id),
+            Transaction(id: "t3", date: iso(-1), description: "Salary",
+                        amount: 450_000, currency: "KZT", type: .income,
+                        category: "Salary", accountId: card.id),
+            Transaction(id: "t4", date: iso(-1), description: "Taxi",
+                        amount: 2_200, currency: "KZT", type: .expense,
+                        category: "Transport", accountId: card.id),
+            Transaction(id: "t5", date: iso(-3), description: "Pharmacy",
+                        amount: 4_300, currency: "KZT", type: .expense,
+                        category: "Health", accountId: cash.id),
+            Transaction(id: "t6", date: iso(-7), description: "Transfer to Cash",
+                        amount: 50_000, currency: "KZT", type: .internalTransfer,
+                        category: "Transfer", accountId: card.id, targetAccountId: cash.id,
+                        targetCurrency: "KZT", targetAmount: 50_000)
+        ]
+
+        return (transactions, [cash.id: cash, card.id: card])
+    }
+}
+
+#Preview("GroupedTransactionList") {
+    let coordinator = AppCoordinator()
+    let sample = GroupedTransactionListPreviewFactory.makeSampleData()
+
+    NavigationStack {
+        ScrollView {
+            GroupedTransactionList(
+                transactions: sample.transactions,
+                displayCurrency: "KZT",
+                accountsById: sample.accountsById,
+                styleHelper: { _ in CategoryStyleData.fallback },
+                viewModel: coordinator.transactionsViewModel,
+                categoriesViewModel: coordinator.categoriesViewModel,
+                accountsViewModel: coordinator.accountsViewModel,
+                balanceCoordinator: coordinator.balanceCoordinator
+            )
+            .padding()
+        }
+        .environment(coordinator)
+        .environment(coordinator.transactionStore)
+        .environment(TimeFilterManager())
+    }
+}
+
+#Preview("GroupedTransactionList — Empty") {
+    let coordinator = AppCoordinator()
+
+    NavigationStack {
+        ScrollView {
+            GroupedTransactionList(
+                transactions: [],
+                displayCurrency: "KZT",
+                accountsById: [:],
+                styleHelper: { _ in CategoryStyleData.fallback }
+            )
+            .padding()
+        }
+        .environment(coordinator)
+        .environment(coordinator.transactionStore)
+        .environment(TimeFilterManager())
     }
 }

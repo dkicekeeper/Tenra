@@ -102,8 +102,8 @@ struct IconView: View {
         switch style.size {
         case ..<24:   return style.size * 0   // малые: минимальный отступ, символ заметнее
         case 24..<44: return style.size * 0.10   // средние: сбалансированно
-        case 44..<64: return style.size * 0.15   // крупные: пространство для дыхания
-        default:      return style.size * 0.18   // героические (64pt+): щедрый отступ
+        case 44..<64: return style.size * 0.20   // крупные: пространство для дыхания
+        default:      return style.size * 0.25   // героические (64pt+): щедрый отступ
         }
     }
 

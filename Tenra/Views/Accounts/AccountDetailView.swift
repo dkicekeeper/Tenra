@@ -229,3 +229,26 @@ struct AccountDetailView: View {
         }
     }
 }
+
+
+// MARK: - Previews
+
+#Preview("Account Detail View") {
+    let coordinator = AppCoordinator()
+    let timeFilterManager = TimeFilterManager()
+    let sampleAccount = coordinator.transactionStore.accounts.first(where: { !$0.isDeposit && $0.loanInfo == nil })
+        ?? Account(name: "Cash", currency: "KZT", iconSource: .sfSymbol("banknote"), balance: 150_000)
+
+    NavigationStack {
+        AccountDetailView(
+            transactionStore: coordinator.transactionStore,
+            transactionsViewModel: coordinator.transactionsViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            account: sampleAccount
+        )
+        .environment(coordinator)
+        .environment(coordinator.transactionStore)
+        .environment(timeFilterManager)
+    }
+}

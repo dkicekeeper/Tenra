@@ -2,12 +2,11 @@
 //  HeroSection.swift
 //  Tenra
 //
-//  Standard hero for all entity-detail screens:
-//  icon + title + primary amount + optional subtitle + optional progress + optional base-currency conversion.
-//
-//  NOTE: The older simpler icon+title hero is now named `SimpleHeroSection`
-//  (see Views/Components/Headers/SimpleHeroSection.swift). It is still used by
-//  TransactionAddModal, TransactionEditView, and InsightDeepDiveView.
+//  Unified read-only hero section for entity-detail screens AND simpler
+//  icon+title contexts (TransactionAddModal, TransactionEditView, InsightDeepDiveView).
+//  - Amount / subtitle / progress / currency-conversion are all optional.
+//  - Icon animates in with a spring scale-up on appear.
+//  - For edit flows with bindings + IconPicker use `EditableHeroSection` instead.
 //
 
 import SwiftUI
@@ -15,18 +14,20 @@ import SwiftUI
 struct HeroSection: View {
     let icon: IconSource?
     let title: String
-    let primaryAmount: Double
+    let primaryAmount: Double?
     let primaryCurrency: String
     let subtitle: String?
     let progress: ProgressConfig?
     let showBaseConversion: Bool
     let baseCurrency: String
 
+    @State private var iconScale: CGFloat = 0
+
     init(
         icon: IconSource?,
         title: String,
-        primaryAmount: Double,
-        primaryCurrency: String,
+        primaryAmount: Double? = nil,
+        primaryCurrency: String = "",
         subtitle: String? = nil,
         progress: ProgressConfig? = nil,
         showBaseConversion: Bool = false,
@@ -42,30 +43,52 @@ struct HeroSection: View {
         self.baseCurrency = baseCurrency
     }
 
+    /// Diameter of the progress ring that wraps the hero icon.
+    /// Icon is `AppIconSize.ultra` (80pt); ring sits 6pt outside.
+    private static let ringSize: CGFloat = AppIconSize.ultra + 12
+
     var body: some View {
         VStack(spacing: AppSpacing.md) {
-            IconView(source: icon, style: .glassHero())
+            ZStack {
+                if let progress {
+                    BudgetProgressCircle(
+                        progress: progress.fraction,
+                        size: Self.ringSize,
+                        lineWidth: 4,
+                        isOverBudget: progress.fraction > 1.0
+                    )
+                }
+                IconView(source: icon, style: .glassHero())
+            }
+            .scaleEffect(iconScale)
+            .onAppear {
+                withAnimation(AppAnimation.heroSpring) {
+                    iconScale = 1.0
+                }
+            }
 
             VStack(alignment: .center, spacing: AppSpacing.xs) {
                 Text(title)
                     .font(AppTypography.h1)
                     .multilineTextAlignment(.center)
 
-                FormattedAmountText(
-                    amount: primaryAmount,
-                    currency: primaryCurrency,
-                    fontSize: AppTypography.h4,
-                    color: .secondary
-                )
-
-                if showBaseConversion, !baseCurrency.isEmpty, primaryCurrency != baseCurrency {
-                    ConvertedAmountView(
+                if let primaryAmount, !primaryCurrency.isEmpty {
+                    FormattedAmountText(
                         amount: primaryAmount,
-                        fromCurrency: primaryCurrency,
-                        toCurrency: baseCurrency,
-                        fontSize: AppTypography.caption,
-                        color: .secondary.opacity(0.7)
+                        currency: primaryCurrency,
+                        fontSize: AppTypography.h4,
+                        color: .secondary
                     )
+
+                    if showBaseConversion, !baseCurrency.isEmpty, primaryCurrency != baseCurrency {
+                        ConvertedAmountView(
+                            amount: primaryAmount,
+                            fromCurrency: primaryCurrency,
+                            toCurrency: baseCurrency,
+                            fontSize: AppTypography.caption,
+                            color: .secondary.opacity(0.7)
+                        )
+                    }
                 }
 
                 if let subtitle {
@@ -74,46 +97,31 @@ struct HeroSection: View {
                         .foregroundStyle(.secondary)
                         .padding(.top, AppSpacing.xs)
                 }
-            }
 
-            if let progress {
-                progressBar(progress)
-                    .padding(.top, AppSpacing.sm)
-                    .padding(.horizontal, AppSpacing.md)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func progressBar(_ cfg: ProgressConfig) -> some View {
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            if let label = cfg.label {
-                HStack {
-                    Text(label)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text("\(Int((cfg.fraction * 100).rounded()))%")
-                        .font(AppTypography.caption)
-                        .foregroundStyle(.secondary)
+                if let progress, let label = progress.label {
+                    HStack(spacing: AppSpacing.xs) {
+                        Text(label)
+                        Text("·")
+                        Text("\(Int((progress.fraction * 100).rounded()))%")
+                    }
+                    .font(AppTypography.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, AppSpacing.xs)
                 }
             }
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: AppRadius.xs)
-                        .fill(cfg.color.opacity(0.15))
-                    RoundedRectangle(cornerRadius: AppRadius.xs)
-                        .fill(cfg.color)
-                        .frame(width: geo.size.width * cfg.fraction)
-                        .animation(AppAnimation.progressBarSpring, value: cfg.fraction)
-                }
-            }
-            .frame(height: 6)
         }
     }
 }
 
-#Preview("No progress") {
+#Preview("Icon + Title only") {
+    HeroSection(
+        icon: .sfSymbol("fork.knife"),
+        title: "Food & Drinks"
+    )
+    .padding()
+}
+
+#Preview("With amount") {
     HeroSection(
         icon: .sfSymbol("creditcard.fill"),
         title: "Kaspi Gold",
@@ -133,6 +141,22 @@ struct HeroSection: View {
         primaryCurrency: "KZT",
         subtitle: "This month",
         progress: ProgressConfig(current: 185_000, total: 250_000, label: "Budget", color: .orange)
+    )
+    .padding()
+}
+
+#Preview("Brand logo, no amount") {
+    HeroSection(
+        icon: .brandService("kaspi.kz"),
+        title: "Kaspi Gold"
+    )
+    .padding()
+}
+
+#Preview("Nil icon") {
+    HeroSection(
+        icon: nil,
+        title: "Unknown Category"
     )
     .padding()
 }

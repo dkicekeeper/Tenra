@@ -325,3 +325,32 @@ struct CategoryDetailView: View {
         }
     }
 }
+
+
+// MARK: - Previews
+
+#Preview("Category Detail View") {
+    let coordinator = AppCoordinator()
+    let timeFilterManager = TimeFilterManager()
+    let sampleCategory = coordinator.categoriesViewModel.customCategories.first(where: { $0.type == .expense })
+        ?? CustomCategory(
+            name: "Groceries",
+            iconSource: .sfSymbol("cart.fill"),
+            colorHex: "#34C759",
+            type: .expense,
+            budgetAmount: 120_000
+        )
+
+    NavigationStack {
+        CategoryDetailView(
+            transactionStore: coordinator.transactionStore,
+            transactionsViewModel: coordinator.transactionsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
+            category: sampleCategory
+        )
+        .environment(coordinator)
+        .environment(coordinator.transactionStore)
+        .environment(timeFilterManager)
+    }
+}

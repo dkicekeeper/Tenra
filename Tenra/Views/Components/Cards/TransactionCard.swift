@@ -2,7 +2,12 @@
 //  TransactionCard.swift
 //  Tenra
 //
-//  Reusable transaction card component for displaying transactions in lists
+//  Interactive transaction row: tap → edit sheet, swipe → delete / stop-resume recurring.
+//  Thin wrapper over `TransactionCardView` (pure UI). Resolves recurring-series state
+//  from `TransactionStore` and subcategories from `CategoriesViewModel`.
+//
+//  For read-only / selection UIs use `TransactionCardView` directly — it has no env
+//  dependencies and no side effects.
 //
 
 import SwiftUI
@@ -10,32 +15,13 @@ import SwiftUI
 struct TransactionCard: View {
     let transaction: Transaction
     let currency: String
-    /// Pre-resolved style data for this transaction's category.
-    /// Passed pre-computed from the call site so that changes to other categories
-    /// do not force a re-render of rows whose category is unaffected.
     let styleData: CategoryStyleData
-    /// The account referenced by `transaction.accountId` (nil if deleted or unknown).
-    /// Passed pre-resolved so that balance updates to other accounts do not trigger
-    /// a re-render of rows that reference a different account.
     let sourceAccount: Account?
-    /// The target account for internal transfers (`transaction.targetAccountId`). Nil otherwise.
     let targetAccount: Account?
     let viewModel: TransactionsViewModel?
     let categoriesViewModel: CategoriesViewModel?
     let accountsViewModel: AccountsViewModel?
-    let balanceCoordinator: BalanceCoordinator?  // Optional - can't use @ObservedObject with optionals
-    /// When non-nil, replaces the default tap-opens-edit-sheet behavior.
-    /// Callers that render the card as a selectable row (e.g. `LinkPaymentsView`)
-    /// inject their selection toggle here.
-    let tapAction: (() -> Void)?
-
-    // MARK: - Convenience
-
-    /// Small [Account] array built from pre-resolved source/target for subviews
-    /// that still accept [Account] (TransactionInfoView, accessibilityText).
-    private var resolvedAccounts: [Account] {
-        [sourceAccount, targetAccount].compactMap { $0 }
-    }
+    let balanceCoordinator: BalanceCoordinator?
 
     @State private var showingStopRecurringConfirmation = false
     @State private var showingDeleteConfirmation = false
@@ -45,35 +31,7 @@ struct TransactionCard: View {
     @State private var showingResumeError = false
     @State private var resumeErrorMessage = ""
 
-    // TransactionStore for delete and edit operations
     @Environment(TransactionStore.self) private var transactionStore
-
-    /// Icon source from the subscription series linked to this transaction (nil for generic recurring)
-    private var subscriptionIconSource: IconSource? {
-        guard let seriesId = transaction.recurringSeriesId else { return nil }
-        let series = transactionStore.recurringSeries.first(where: { $0.id == seriesId })
-        guard series?.kind == .subscription else { return nil }
-        return series?.iconSource
-    }
-
-    /// Badge is shown only for future transactions whose recurring series is still active.
-    /// Past/executed transactions and stopped series never show the badge.
-    private var showRecurringBadge: Bool {
-        guard let seriesId = transaction.recurringSeriesId else { return false }
-        guard isFutureDate else { return false }
-        return transactionStore.recurringSeries.first(where: { $0.id == seriesId })?.isActive ?? false
-    }
-
-    /// The recurring series linked to this transaction, if it still exists in the store.
-    private var linkedRecurringSeries: RecurringSeries? {
-        guard let seriesId = transaction.recurringSeriesId else { return nil }
-        return transactionStore.recurringSeries.first(where: { $0.id == seriesId })
-    }
-
-    /// True when the linked series exists and is currently active (generates future transactions).
-    private var isSeriesActive: Bool {
-        linkedRecurringSeries?.isActive ?? false
-    }
 
     init(
         transaction: Transaction,
@@ -84,8 +42,7 @@ struct TransactionCard: View {
         viewModel: TransactionsViewModel? = nil,
         categoriesViewModel: CategoriesViewModel? = nil,
         accountsViewModel: AccountsViewModel? = nil,
-        balanceCoordinator: BalanceCoordinator? = nil,
-        tapAction: (() -> Void)? = nil
+        balanceCoordinator: BalanceCoordinator? = nil
     ) {
         self.transaction = transaction
         self.currency = currency
@@ -96,73 +53,51 @@ struct TransactionCard: View {
         self.categoriesViewModel = categoriesViewModel
         self.accountsViewModel = accountsViewModel
         self.balanceCoordinator = balanceCoordinator
-        self.tapAction = tapAction
     }
-    
-    // MARK: - Display Helpers
 
     private var isFutureDate: Bool {
         TransactionDisplayHelper.isFutureDate(transaction.date)
     }
-    
-    var body: some View {
-        HStack(spacing: AppSpacing.md) {
-            // Transaction icon
-            TransactionIconView(
-                transaction: transaction,
-                styleData: styleData,
-                subscriptionIconSource: subscriptionIconSource,
-                showRecurringBadge: showRecurringBadge
-            )
-            
-            // Transaction info
-            TransactionInfoView(
-                transaction: transaction,
-                accounts: resolvedAccounts,
-                linkedSubcategories: categoriesViewModel?.getSubcategoriesForTransaction(transaction.id) ?? []
-            )
-            
-            Spacer()
-            
-            // Amount
-            VStack(alignment: .trailing, spacing: AppSpacing.xs) {
-                if transaction.type == .internalTransfer {
-                    transferAmountView
-                } else {
-                    FormattedAmountView(
-                        amount: transaction.amount,
-                        currency: transaction.currency,
-                        prefix: amountPrefix,
-                        color: amountColor
-                    )
 
-                    // Если есть вторая валюта (мультивалютные транзакции)
-                    if let targetCurrency = transaction.targetCurrency,
-                       let targetAmount = transaction.targetAmount,
-                       targetCurrency != transaction.currency {
-                        FormattedAmountView(
-                            amount: targetAmount,
-                            currency: targetCurrency,
-                            prefix: "",
-                            color: amountColor.opacity(0.7)
-                        )
-                    }
-                }
-            }
-        }
-        .futureTransactionStyle(isFuture: isFutureDate)
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(accessibilityText)
-        .accessibilityHint(tapAction == nil
-            ? Text(String(localized: "accessibility.swipeForOptions"))
-            : Text("")
+    private var linkedRecurringSeries: RecurringSeries? {
+        guard let seriesId = transaction.recurringSeriesId else { return nil }
+        return transactionStore.recurringSeries.first(where: { $0.id == seriesId })
+    }
+
+    private var isSeriesActive: Bool {
+        linkedRecurringSeries?.isActive ?? false
+    }
+
+    private var subscriptionIconSource: IconSource? {
+        guard let series = linkedRecurringSeries, series.kind == .subscription else { return nil }
+        return series.iconSource
+    }
+
+    private var showRecurringBadge: Bool {
+        guard transaction.recurringSeriesId != nil, isFutureDate else { return false }
+        return isSeriesActive
+    }
+
+    private var linkedSubcategories: [Subcategory] {
+        categoriesViewModel?.getSubcategoriesForTransaction(transaction.id) ?? []
+    }
+
+    var body: some View {
+        TransactionCardView(
+            transaction: transaction,
+            currency: currency,
+            styleData: styleData,
+            sourceAccount: sourceAccount,
+            targetAccount: targetAccount,
+            subscriptionIconSource: subscriptionIconSource,
+            showRecurringBadge: showRecurringBadge,
+            linkedSubcategories: linkedSubcategories
         )
+        .accessibilityHint(Text(String(localized: "accessibility.swipeForOptions")))
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             // Удаление — НЕ используем role: .destructive, т.к. он заставляет
             // SwiftUI анимированно удалить строку сразу по тапу, что дизмиссит
-            // confirmationDialog до того, как пользователь подтвердит. В итоге
-            // транзакция "удаляется" визуально, но delete() не вызывается.
+            // confirmationDialog до того, как пользователь подтвердит.
             Button {
                 HapticManager.warning()
                 showingDeleteConfirmation = true
@@ -172,7 +107,6 @@ struct TransactionCard: View {
             .tint(.red)
             .accessibilityLabel(String(localized: "accessibility.deleteTransaction"))
 
-            // Stop Recurring — shown only when series exists and is active
             if isSeriesActive {
                 Button {
                     showingStopRecurringConfirmation = true
@@ -183,46 +117,10 @@ struct TransactionCard: View {
                 .accessibilityLabel(String(localized: "accessibility.stopRecurring"))
             }
 
-            // Resume Recurring — shown when series exists but was stopped
             if !isSeriesActive, linkedRecurringSeries != nil {
                 Button {
                     HapticManager.selection()
-                    Task {
-                        do {
-                            guard let seriesId = transaction.recurringSeriesId else { return }
-
-                            // Read subcategory IDs from the current transaction — they serve
-                            // as the template for any newly generated occurrences.
-                            let subcategoryIds = categoriesViewModel?
-                                .getSubcategoriesForTransaction(transaction.id)
-                                .map { $0.id } ?? []
-
-                            // Snapshot IDs before resume so we can find newly generated txs.
-                            let idsBefore = Set(transactionStore.transactions.map { $0.id })
-
-                            try await transactionStore.resumeSeries(id: seriesId)
-
-                            // Link subcategories to every newly generated transaction.
-                            if !subcategoryIds.isEmpty, let catVM = categoriesViewModel {
-                                let idsAfter = Set(transactionStore.transactions.map { $0.id })
-                                let newIds = idsAfter.subtracting(idsBefore)
-                                for id in newIds {
-                                    catVM.linkSubcategoriesToTransaction(
-                                        transactionId: id,
-                                        subcategoryIds: subcategoryIds
-                                    )
-                                }
-                            }
-
-                            HapticManager.success()
-                        } catch {
-                            await MainActor.run {
-                                resumeErrorMessage = error.localizedDescription
-                                showingResumeError = true
-                                HapticManager.error()
-                            }
-                        }
-                    }
+                    Task { await resumeRecurringSeries() }
                 } label: {
                     Label(String(localized: "transaction.resumeRecurring", defaultValue: "Resume"), systemImage: "play.circle")
                 }
@@ -270,12 +168,8 @@ struct TransactionCard: View {
             Text(resumeErrorMessage)
         }
         .onTapGesture {
-            if let tapAction {
-                tapAction()
-            } else {
-                HapticManager.selection()
-                showingEditModal = true
-            }
+            HapticManager.selection()
+            showingEditModal = true
         }
         .sheet(isPresented: $showingEditModal) {
             if let viewModel = viewModel,
@@ -288,56 +182,72 @@ struct TransactionCard: View {
                     categoriesViewModel: catVM,
                     accountsViewModel: accVM,
                     transactionStore: transactionStore,
-                    accounts: accVM.accounts,             // full list — only read when sheet opens
+                    accounts: accVM.accounts,
                     customCategories: catVM.customCategories,
                     balanceCoordinator: balanceCoordinator
                 )
             }
         }
     }
-    
-    private var accessibilityText: String {
-        TransactionDisplayHelper.accessibilityText(for: transaction, accounts: resolvedAccounts)
-    }
 
-    private var amountColor: Color {
-        TransactionDisplayHelper.amountColor(for: transaction.type)
-    }
+    private func resumeRecurringSeries() async {
+        do {
+            guard let seriesId = transaction.recurringSeriesId else { return }
 
-    private var amountPrefix: String {
-        TransactionDisplayHelper.amountPrefix(for: transaction.type)
-    }
-    
-    private var transferAmountView: some View {
-        TransferAmountView(
-            transaction: transaction,
-            sourceAccount: sourceAccount,
-            targetAccount: targetAccount,
-            depositAccountId: nil
-        )
+            let subcategoryIds = categoriesViewModel?
+                .getSubcategoriesForTransaction(transaction.id)
+                .map { $0.id } ?? []
+
+            let idsBefore = Set(transactionStore.transactions.map { $0.id })
+
+            try await transactionStore.resumeSeries(id: seriesId)
+
+            if !subcategoryIds.isEmpty, let catVM = categoriesViewModel {
+                let idsAfter = Set(transactionStore.transactions.map { $0.id })
+                let newIds = idsAfter.subtracting(idsBefore)
+                for id in newIds {
+                    catVM.linkSubcategoriesToTransaction(
+                        transactionId: id,
+                        subcategoryIds: subcategoryIds
+                    )
+                }
+            }
+
+            HapticManager.success()
+        } catch {
+            await MainActor.run {
+                resumeErrorMessage = error.localizedDescription
+                showingResumeError = true
+                HapticManager.error()
+            }
+        }
     }
 }
 
+
+// MARK: - Previews
+
 #Preview("Expense") {
     let coordinator = AppCoordinator()
-    let kaspi = Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .brandService("kaspi.kz"), initialBalance: 150000)
-    let sampleTransaction = Transaction(
+    let kaspi = Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT",
+                        iconSource: .brandService("kaspi.kz"), initialBalance: 150_000)
+    let tx = Transaction(
         id: "preview-expense",
         date: DateFormatters.dateFormatter.string(from: Date()),
         description: "Кофе и перекус",
-        amount: 2500,
+        amount: 2_500,
         currency: "KZT",
         type: .expense,
         category: "Food",
         accountId: "acc-kaspi"
     )
-    let styleData = CategoryStyleHelper.cached(category: sampleTransaction.category, type: sampleTransaction.type, customCategories: [])
+    let style = CategoryStyleHelper.cached(category: tx.category, type: tx.type, customCategories: [])
 
     List {
         TransactionCard(
-            transaction: sampleTransaction,
+            transaction: tx,
             currency: "KZT",
-            styleData: styleData,
+            styleData: style,
             sourceAccount: kaspi,
             viewModel: coordinator.transactionsViewModel,
             categoriesViewModel: coordinator.categoriesViewModel,
@@ -345,63 +255,34 @@ struct TransactionCard: View {
             balanceCoordinator: coordinator.accountsViewModel.balanceCoordinator
         )
     }
-    .listStyle(PlainListStyle())
-    .environment(coordinator.transactionStore)
-}
-
-#Preview("Income") {
-    let coordinator = AppCoordinator()
-    let halyk = Account(id: "acc-halyk", name: "Halyk Bank", currency: "KZT", iconSource: .brandService("halykbank.kz"), initialBalance: 500000)
-    let sampleTransaction = Transaction(
-        id: "preview-income",
-        date: DateFormatters.dateFormatter.string(from: Date()),
-        description: "Зарплата",
-        amount: 450000,
-        currency: "KZT",
-        type: .income,
-        category: "Salary",
-        accountId: "acc-halyk"
-    )
-    let styleData = CategoryStyleHelper.cached(category: sampleTransaction.category, type: sampleTransaction.type, customCategories: [])
-
-    List {
-        TransactionCard(
-            transaction: sampleTransaction,
-            currency: "KZT",
-            styleData: styleData,
-            sourceAccount: halyk,
-            viewModel: coordinator.transactionsViewModel,
-            categoriesViewModel: coordinator.categoriesViewModel,
-            accountsViewModel: coordinator.accountsViewModel,
-            balanceCoordinator: coordinator.accountsViewModel.balanceCoordinator
-        )
-    }
-    .listStyle(PlainListStyle())
+    .listStyle(.plain)
     .environment(coordinator.transactionStore)
 }
 
 #Preview("Transfer") {
     let coordinator = AppCoordinator()
-    let src = Account(id: "acc-src", name: "Kaspi Gold", currency: "KZT", iconSource: .brandService("kaspi.kz"), initialBalance: 150000)
-    let tgt = Account(id: "acc-tgt", name: "Halyk Bank", currency: "KZT", iconSource: .brandService("halykbank.kz"), initialBalance: 250000)
-    let sampleTransaction = Transaction(
+    let src = Account(id: "acc-src", name: "Kaspi Gold", currency: "KZT",
+                      iconSource: .brandService("kaspi.kz"), initialBalance: 150_000)
+    let tgt = Account(id: "acc-tgt", name: "Halyk Bank", currency: "KZT",
+                      iconSource: .brandService("halykbank.kz"), initialBalance: 250_000)
+    let tx = Transaction(
         id: "preview-transfer",
         date: DateFormatters.dateFormatter.string(from: Date()),
-        description: "Перевод между счетами",
-        amount: 50000,
+        description: "Перевод",
+        amount: 50_000,
         currency: "KZT",
         type: .internalTransfer,
         category: "Transfer",
         accountId: "acc-src",
         targetAccountId: "acc-tgt"
     )
-    let styleData = CategoryStyleHelper.cached(category: sampleTransaction.category, type: sampleTransaction.type, customCategories: [])
+    let style = CategoryStyleHelper.cached(category: tx.category, type: tx.type, customCategories: [])
 
     List {
         TransactionCard(
-            transaction: sampleTransaction,
+            transaction: tx,
             currency: "KZT",
-            styleData: styleData,
+            styleData: style,
             sourceAccount: src,
             targetAccount: tgt,
             viewModel: coordinator.transactionsViewModel,
@@ -410,38 +291,6 @@ struct TransactionCard: View {
             balanceCoordinator: coordinator.accountsViewModel.balanceCoordinator
         )
     }
-    .listStyle(PlainListStyle())
-    .environment(coordinator.transactionStore)
-}
-
-#Preview("Recurring") {
-    let coordinator = AppCoordinator()
-    let kaspi = Account(id: "acc-kaspi", name: "Kaspi Gold", currency: "KZT", iconSource: .brandService("kaspi.kz"), initialBalance: 150000)
-    let sampleTransaction = Transaction(
-        id: "preview-recurring",
-        date: DateFormatters.dateFormatter.string(from: Date()),
-        description: "Netflix",
-        amount: 4990,
-        currency: "KZT",
-        type: .expense,
-        category: "Subscriptions",
-        accountId: "acc-kaspi",
-        recurringSeriesId: "series-1"
-    )
-    let styleData = CategoryStyleHelper.cached(category: sampleTransaction.category, type: sampleTransaction.type, customCategories: [])
-
-    List {
-        TransactionCard(
-            transaction: sampleTransaction,
-            currency: "KZT",
-            styleData: styleData,
-            sourceAccount: kaspi,
-            viewModel: coordinator.transactionsViewModel,
-            categoriesViewModel: coordinator.categoriesViewModel,
-            accountsViewModel: coordinator.accountsViewModel,
-            balanceCoordinator: coordinator.accountsViewModel.balanceCoordinator
-        )
-    }
-    .listStyle(PlainListStyle())
+    .listStyle(.plain)
     .environment(coordinator.transactionStore)
 }

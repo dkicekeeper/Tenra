@@ -67,15 +67,11 @@ final class OnboardingViewModel {
     /// Test-only convenience: builds a VM with no coordinator. The commit pipeline
     /// is a no-op in this mode (just toggles state). All draft logic still works.
     static func makeForTesting() -> OnboardingViewModel {
-        OnboardingViewModel.__forTesting()
+        OnboardingViewModel()
     }
 
     private init() {
         self.coordinator = nil
-    }
-
-    private static func __forTesting() -> OnboardingViewModel {
-        OnboardingViewModel()
     }
 
     // MARK: - Derived UI helpers
@@ -137,7 +133,7 @@ final class OnboardingViewModel {
 
     // MARK: - Final commit
 
-    func finish() async {
+    func finish() {
         guard let coordinator, !isFinishing else { return }
         isFinishing = true
         defer { isFinishing = false }

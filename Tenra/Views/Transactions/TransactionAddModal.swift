@@ -64,51 +64,51 @@ struct TransactionAddModal: View {
     var body: some View {
         @Bindable var bindableCoordinator = coordinator
 
-        NavigationStack {
-            VStack(spacing: 0) {
-                formContent
-                    .sheet(isPresented: $showingSubcategorySearch) {
-                        subcategorySearchSheet
-                    }
-                    .sheet(isPresented: $showingSubcategoryReorder) {
-                        if let categoryId {
-                            SubcategoryReorderView(
-                                categoriesViewModel: coordinator.categoriesViewModel,
-                                categoryId: categoryId
-                            )
-                            .presentationDetents([.medium])
-                            .presentationDragIndicator(.visible)
-                        }
-                    }
-            }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                toolbarContent
-            }
-            .dateButtonsSafeArea(
-                selectedDate: $bindableCoordinator.formData.selectedDate,
-                isDisabled: isSaving,
-                onSave: { date in
-                    coordinator.formData.selectedDate = date
-                    Task { await saveTransaction() }
+        // No NavigationStack here — this view is pushed as a navigationDestination
+        // from TransactionCategoryPickerView (and inherits the surrounding stack).
+        VStack(spacing: 0) {
+            formContent
+                .sheet(isPresented: $showingSubcategorySearch) {
+                    subcategorySearchSheet
                 }
-            )
-            .overlay(overlayContent)
-            .navigationDestination(isPresented: $showingCategoryHistory) {
-                categoryHistoryDestination
+                .sheet(isPresented: $showingSubcategoryReorder) {
+                    if let categoryId {
+                        SubcategoryReorderView(
+                            categoriesViewModel: coordinator.categoriesViewModel,
+                            categoryId: categoryId
+                        )
+                        .presentationDetents([.medium])
+                        .presentationDragIndicator(.visible)
+                    }
+                }
+        }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            toolbarContent
+        }
+        .dateButtonsSafeArea(
+            selectedDate: $bindableCoordinator.formData.selectedDate,
+            isDisabled: isSaving,
+            onSave: { date in
+                coordinator.formData.selectedDate = date
+                Task { await saveTransaction() }
             }
-            .onChange(of: coordinator.formData.accountId) { _, _ in
+        )
+        .overlay(overlayContent)
+        .navigationDestination(isPresented: $showingCategoryHistory) {
+            categoryHistoryDestination
+        }
+        .onChange(of: coordinator.formData.accountId) { _, _ in
+            coordinator.updateCurrencyForSelectedAccount()
+        }
+        .task {
+            // SwiftUI's .task{} automatically handles lifecycle
+            if coordinator.formData.accountId == nil {
+                coordinator.formData.accountId = await coordinator.suggestedAccountId()
                 coordinator.updateCurrencyForSelectedAccount()
-            }
-            .task {
-                // SwiftUI's .task{} automatically handles lifecycle
-                if coordinator.formData.accountId == nil {
-                    coordinator.formData.accountId = await coordinator.suggestedAccountId()
-                    coordinator.updateCurrencyForSelectedAccount()
-                } else {
-                    coordinator.updateCurrencyForSelectedAccount()
-                }
+            } else {
+                coordinator.updateCurrencyForSelectedAccount()
             }
         }
     }
@@ -305,34 +305,38 @@ struct TransactionAddModal: View {
 
 #Preview("Expense - Food") {
     let coordinator = AppCoordinator()
-    TransactionAddModal(
-        category: "Food",
-        type: .expense,
-        currency: coordinator.transactionsViewModel.appSettings.baseCurrency,
-        accounts: coordinator.accountsViewModel.accounts,
-        transactionsViewModel: coordinator.transactionsViewModel,
-        categoriesViewModel: coordinator.categoriesViewModel,
-        accountsViewModel: coordinator.accountsViewModel,
-        transactionStore: coordinator.transactionStore,
-        onDismiss: {}
-    )
+    NavigationStack {
+        TransactionAddModal(
+            category: "Food",
+            type: .expense,
+            currency: coordinator.transactionsViewModel.appSettings.baseCurrency,
+            accounts: coordinator.accountsViewModel.accounts,
+            transactionsViewModel: coordinator.transactionsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
+            transactionStore: coordinator.transactionStore,
+            onDismiss: {}
+        )
+    }
     .environment(coordinator)
     .environment(TimeFilterManager())
 }
 
 #Preview("Income - Salary") {
     let coordinator = AppCoordinator()
-    TransactionAddModal(
-        category: "Salary",
-        type: .income,
-        currency: coordinator.transactionsViewModel.appSettings.baseCurrency,
-        accounts: coordinator.accountsViewModel.accounts,
-        transactionsViewModel: coordinator.transactionsViewModel,
-        categoriesViewModel: coordinator.categoriesViewModel,
-        accountsViewModel: coordinator.accountsViewModel,
-        transactionStore: coordinator.transactionStore,
-        onDismiss: {}
-    )
+    NavigationStack {
+        TransactionAddModal(
+            category: "Salary",
+            type: .income,
+            currency: coordinator.transactionsViewModel.appSettings.baseCurrency,
+            accounts: coordinator.accountsViewModel.accounts,
+            transactionsViewModel: coordinator.transactionsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
+            transactionStore: coordinator.transactionStore,
+            onDismiss: {}
+        )
+    }
     .environment(coordinator)
     .environment(TimeFilterManager())
 }

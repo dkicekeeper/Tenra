@@ -115,30 +115,20 @@ struct AccountDetailView: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
-        .sheet(isPresented: $showingAddTransaction) {
-            // TODO: pre-fill accountId once add-transaction supports it.
-            // The existing add flow is category-first (TransactionCategoryPickerView →
-            // TransactionAddModal). No pre-fill mechanism exists for the source account,
-            // so we present the standard picker and let the user pick category + account.
-            NavigationStack {
-                TransactionCategoryPickerView(
-                    transactionsViewModel: transactionsViewModel,
-                    categoriesViewModel: categoriesViewModel,
-                    accountsViewModel: accountsViewModel,
-                    transactionStore: transactionStore,
-                    timeFilterManager: timeFilterManager
-                )
-                .environment(timeFilterManager)
-                .navigationTitle(String(localized: "account.detail.actions.addTransaction", defaultValue: "Add transaction"))
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(String(localized: "quickAdd.cancel")) {
-                            showingAddTransaction = false
-                        }
-                    }
-                }
-            }
+        .navigationDestination(isPresented: $showingAddTransaction) {
+            // Push the category picker into the navigation stack so the entry point
+            // matches the Transfer flow (also a navigationDestination) — back-navigation
+            // via swipe/back-button replaces the modal Cancel button.
+            TransactionCategoryPickerView(
+                transactionsViewModel: transactionsViewModel,
+                categoriesViewModel: categoriesViewModel,
+                accountsViewModel: accountsViewModel,
+                transactionStore: transactionStore,
+                timeFilterManager: timeFilterManager
+            )
+            .environment(timeFilterManager)
+            .navigationTitle(String(localized: "account.detail.actions.addTransaction", defaultValue: "Add transaction"))
+            .navigationBarTitleDisplayMode(.inline)
         }
         .navigationDestination(isPresented: $showingTransfer) {
             AccountActionView(

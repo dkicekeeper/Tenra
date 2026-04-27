@@ -11,7 +11,8 @@ import SwiftUI
 import Observation
 
 /// Stable identity for category selection — uses category name, not UUID.
-struct CategorySelection: Identifiable {
+/// Hashable so it can drive `.navigationDestination(item:)` in addition to `.sheet(item:)`.
+struct CategorySelection: Identifiable, Hashable {
     var id: String { "\(category)_\(type.rawValue)" }
     let category: String
     let type: TransactionType

@@ -2,7 +2,7 @@
 //  DepositRateChangeView.swift
 //  Tenra
 //
-//  Reusable deposit rate change component
+//  Reusable deposit rate change component (matches LoanRateChangeView pattern).
 //
 
 import SwiftUI
@@ -22,26 +22,59 @@ struct DepositRateChangeView: View {
         EditSheetContainer(
             title: String(localized: "deposit.changeRateTitle"),
             isSaveDisabled: rateText.isEmpty,
+            wrapInForm: false,
             onSave: { saveRateChange() },
             onCancel: { dismiss() }
         ) {
-            Section(header: Text(String(localized: "deposit.newRate"))) {
-                HStack {
-                    TextField("0.0", text: $rateText)
-                        .keyboardType(.decimalPad)
-                        .focused($isRateFocused)
-                    Text(String(localized: "deposit.rateAnnual"))
-                        .foregroundStyle(AppColors.textSecondary)
+            ScrollView {
+                VStack(spacing: AppSpacing.lg) {
+                    FormSection {
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("percent", color: AppColors.accent, size: AppIconSize.lg)
+                        ) {
+                            Text(String(localized: "deposit.newRate"))
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
+                            HStack(spacing: AppSpacing.xs) {
+                                TextField("0.0", text: $rateText)
+                                    .inlineFieldStyle(keyboard: .decimalPad, maxWidth: 80)
+                                    .focused($isRateFocused)
+                                Text(String(localized: "deposit.rateAnnual"))
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(AppColors.textSecondary)
+                            }
+                        }
+
+                        Divider().padding(.leading, AppSpacing.lg)
+
+                        DatePickerRow(
+                            icon: "calendar",
+                            title: String(localized: "deposit.effectiveDate"),
+                            selection: $effectiveFromDate
+                        )
+
+                        Divider().padding(.leading, AppSpacing.lg)
+
+                        UniversalRow(
+                            config: .standard,
+                            leadingIcon: .sfSymbol("note.text", color: AppColors.accent, size: AppIconSize.lg)
+                        ) {
+                            Text(String(localized: "deposit.note"))
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
+                            TextField(
+                                String(localized: "loan.notePlaceholder", defaultValue: "Optional"),
+                                text: $noteText,
+                                axis: .vertical
+                            )
+                            .inlineNoteStyle()
+                        }
+                    }
                 }
-            }
-
-            Section(header: Text(String(localized: "deposit.effectiveDate"))) {
-                DatePicker(String(localized: "deposit.date"), selection: $effectiveFromDate, displayedComponents: .date)
-            }
-
-            Section(header: Text(String(localized: "deposit.note"))) {
-                TextField(String(localized: "deposit.note"), text: $noteText, axis: .vertical)
-                    .lineLimit(3...6)
+                .padding(AppSpacing.lg)
             }
         }
         .onAppear {

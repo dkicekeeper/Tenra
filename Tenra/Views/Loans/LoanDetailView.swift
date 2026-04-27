@@ -310,7 +310,11 @@ struct LoanDetailView: View {
             }
 
             if let loanInfo = account.loanInfo {
-                paymentBreakdownCard(loanInfo: loanInfo, account: account)
+                // Payment breakdown is meaningless for installments (0% interest, fixed
+                // principal-only splits) — hide it entirely for that loan type.
+                if loanInfo.loanType != .installment {
+                    paymentBreakdownCard(loanInfo: loanInfo, account: account)
+                }
                 statsCard(loanInfo: loanInfo, account: account)
                 amortizationSection(loanInfo: loanInfo, account: account)
             }
@@ -528,19 +532,18 @@ struct LoanDetailView: View {
             Label(String(localized: "loan.edit", defaultValue: "Edit Loan"), systemImage: "pencil")
         }
 
-        Button {
-            HapticManager.selection()
-            showingRateChange = true
-        } label: {
-            Label(String(localized: "loan.changeRate", defaultValue: "Change Rate"), systemImage: "chart.line.uptrend.xyaxis")
+        // Rate changes don't apply to installments (always 0% by definition).
+        if liveAccount?.loanInfo?.loanType != .installment {
+            Button {
+                HapticManager.selection()
+                showingRateChange = true
+            } label: {
+                Label(String(localized: "loan.changeRate", defaultValue: "Change Rate"), systemImage: "chart.line.uptrend.xyaxis")
+            }
         }
 
-        Button {
-            HapticManager.selection()
-            showingEarlyRepayment = true
-        } label: {
-            Label(String(localized: "loan.earlyRepayment", defaultValue: "Early Repayment"), systemImage: "bolt.fill")
-        }
+        // Early Repayment intentionally omitted here — surfaced as the secondary
+        // action button on the detail scaffold to avoid duplication.
 
         Button {
             HapticManager.selection()

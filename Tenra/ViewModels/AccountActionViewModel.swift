@@ -22,13 +22,15 @@ final class AccountActionViewModel {
     var showingError: Bool = false
     var errorMessage: String = ""
     var shouldDismiss: Bool = false
+    /// User-toggleable for deposits (top-up vs withdrawal).
+    /// Initial value is set from the entry point; toggling rebuilds nav title and save path.
+    var transferDirection: DepositTransferDirection?
 
     // MARK: - Dependencies (@ObservationIgnored per Phase 23 — let deps in @Observable must be ignored)
 
     @ObservationIgnored let account: Account
     @ObservationIgnored let accountsViewModel: AccountsViewModel
     @ObservationIgnored let transactionsViewModel: TransactionsViewModel
-    @ObservationIgnored let transferDirection: DepositTransferDirection?
     @ObservationIgnored private let logger = Logger(subsystem: "Tenra", category: "AccountActionViewModel")
 
     // MARK: - Nested Types

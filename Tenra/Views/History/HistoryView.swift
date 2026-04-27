@@ -249,10 +249,18 @@ struct HistoryView: View {
         }
         historyLogger.debug("🔎 [History] timeFilter=.\(timeFilter.preset.rawValue) resolvedDateRange=\(resolvedDateRange != nil ? "set" : "nil→allTime(no predicate)")")
 
+        // Resolve transaction IDs whose linked subcategories match the search query —
+        // FRC predicate can't traverse TransactionSubcategoryLinkEntity (no inverse),
+        // so we do an in-memory join here and pass the matching IDs to the controller.
+        let matchedSubcategoryTxIds = resolveSubcategoryMatchingTxIds(
+            query: filterCoordinator.debouncedSearchText
+        )
+
         // Single atomic update — triggers exactly one performFetch + rebuildSections
         // instead of four (one per property assignment).
         paginationController.batchUpdateFilters(
             searchQuery: filterCoordinator.debouncedSearchText,
+            searchMatchedTransactionIds: .some(matchedSubcategoryTxIds),
             selectedAccountId: .some(filterCoordinator.selectedAccountFilter),
             selectedCategoryId: .some(transactionsViewModel.selectedCategories?.first),
             dateRange: .some(resolvedDateRange)
@@ -277,10 +285,35 @@ struct HistoryView: View {
         //     (if the time filter hasn't changed), so History opens in 0ms additional work
         paginationController.batchUpdateFilters(
             searchQuery: "",
+            searchMatchedTransactionIds: .some(nil),
             selectedAccountId: .some(nil),
             selectedCategoryId: .some(nil),
             selectedType: .some(nil)
             // dateRange: intentionally NOT reset — see comment above
+        )
+    }
+
+    /// Resolves transaction IDs whose linked subcategories contain the search text.
+    /// Returns nil for empty queries (no filter applied) or when no subcategory matches.
+    /// Case-insensitive to match the FRC predicate's `[cd]` semantics.
+    private func resolveSubcategoryMatchingTxIds(query: String) -> Set<String>? {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let needle = trimmed.lowercased()
+
+        let matchingSubIds = Set(
+            categoriesViewModel.subcategories
+                .lazy
+                .filter { $0.name.lowercased().contains(needle) }
+                .map(\.id)
+        )
+        guard !matchingSubIds.isEmpty else { return nil }
+
+        return Set(
+            categoriesViewModel.transactionSubcategoryLinks
+                .lazy
+                .filter { matchingSubIds.contains($0.subcategoryId) }
+                .map(\.transactionId)
         )
     }
 }

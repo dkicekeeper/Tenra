@@ -94,7 +94,23 @@ struct AccountActionView: View {
             }
         }
         .safeAreaBar(edge: .top) {
-            if !account.isDeposit {
+            if account.isDeposit {
+                // Deposits: single entry point, user picks direction here.
+                SegmentedPickerView(
+                    title: String(localized: "common.type"),
+                    selection: Binding(
+                        get: { viewModel.transferDirection ?? .toDeposit },
+                        set: { viewModel.transferDirection = $0 }
+                    ),
+                    options: [
+                        (label: String(localized: "transactionForm.depositTopUp"), value: DepositTransferDirection.toDeposit),
+                        (label: String(localized: "transactionForm.depositWithdrawal"), value: DepositTransferDirection.fromDeposit)
+                    ]
+                )
+                .padding(.horizontal, AppSpacing.lg)
+                .padding(.vertical, AppSpacing.md)
+                .background(Color.clear)
+            } else {
                 SegmentedPickerView(
                     title: String(localized: "common.type"),
                     selection: $viewModel.selectedAction,

@@ -138,35 +138,25 @@ struct CategoryDetailView: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
-        .sheet(isPresented: $showingAddTransaction) {
-            // TODO: pre-fill category once add-transaction supports it.
-            // The existing add flow is category-first (TransactionCategoryPickerView →
-            // TransactionAddModal). Pre-filling the category into the picker is possible
-            // in principle but the picker currently owns category selection. We present
-            // the standard picker and let the user confirm the category.
-            NavigationStack {
-                TransactionCategoryPickerView(
-                    transactionsViewModel: transactionsViewModel,
-                    categoriesViewModel: categoriesViewModel,
-                    accountsViewModel: accountsViewModel,
-                    transactionStore: transactionStore,
-                    timeFilterManager: timeFilterManager
-                )
-                .environment(timeFilterManager)
-                .navigationTitle(String(localized: "category.detail.actions.addTransaction", defaultValue: "Add transaction"))
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(String(localized: "quickAdd.cancel")) {
-                            showingAddTransaction = false
-                        }
-                    }
-                }
-            }
+        .navigationDestination(isPresented: $showingAddTransaction) {
+            // Push the category picker into the navigation stack so the entry point
+            // matches the Transfer flow (also a navigationDestination) — back-navigation
+            // via swipe/back-button replaces the modal Cancel button.
+            TransactionCategoryPickerView(
+                transactionsViewModel: transactionsViewModel,
+                categoriesViewModel: categoriesViewModel,
+                accountsViewModel: accountsViewModel,
+                transactionStore: transactionStore,
+                timeFilterManager: timeFilterManager
+            )
+            .environment(timeFilterManager)
+            .navigationTitle(String(localized: "category.detail.actions.addTransaction", defaultValue: "Add transaction"))
+            .navigationBarTitleDisplayMode(.inline)
         }
         .navigationDestination(isPresented: $showingSubcategories) {
-            SubcategoriesManagementView(
-                categoriesViewModel: categoriesViewModel
+            CategorySubcategoriesView(
+                categoriesViewModel: categoriesViewModel,
+                category: liveCategory
             )
         }
         .confirmationDialog(
@@ -277,13 +267,6 @@ struct CategoryDetailView: View {
             icon: "calendar",
             label: String(localized: "category.detail.avgMonthly", defaultValue: "Avg. per month"),
             value: Formatting.formatCurrency(aggregates.avgMonthlyLast6, currency: baseCurrency)
-        ))
-
-        // Total transactions
-        rows.append(InfoRowConfig(
-            icon: "number",
-            label: String(localized: "category.detail.transactionCount", defaultValue: "Transactions"),
-            value: "\(aggregates.totalTransactions)"
         ))
 
         // Total amount, all time

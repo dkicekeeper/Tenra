@@ -101,19 +101,13 @@ struct DepositDetailView: View {
             navigationAmount: balanceCoordinator.balances[account.id] ?? account.balance,
             navigationCurrency: account.currency,
             primaryAction: ActionConfig(
-                title: String(localized: "deposit.topUp"),
-                systemImage: "plus",
-                action: {
-                    HapticManager.light()
-                    activeTransferDirection = .toDeposit
-                }
-            ),
-            secondaryAction: ActionConfig(
                 title: String(localized: "deposit.transferToAccount"),
                 systemImage: "arrow.left.arrow.right",
                 action: {
                     HapticManager.light()
-                    activeTransferDirection = .fromDeposit
+                    // Default to top-up direction; the AccountActionView picker lets
+                    // the user toggle between top-up and withdrawal.
+                    activeTransferDirection = .toDeposit
                 }
             ),
             infoRows: [],
@@ -270,7 +264,7 @@ struct DepositDetailView: View {
                             amount: NSDecimalNumber(decimal: interestToToday).doubleValue,
                             currency: account.currency,
                             fontSize: AppTypography.h4,
-                            color: AppColors.planned
+                            color: AppColors.accent
                         )
                     }
 
@@ -280,10 +274,9 @@ struct DepositDetailView: View {
                     InfoRow(
                         icon: "percent",
                         label: String(localized: "deposit.rate"),
-                        value: String(
-                            format: String(localized: "deposit.rateAnnual"),
-                            formatRate(depositInfo.interestRateAnnual)
-                        )
+                        // `deposit.rateAnnual` is a plain suffix ("% годовых" / "% annual"),
+                        // NOT a printf format — concatenate to avoid String(format:) dropping the rate.
+                        value: "\(formatRate(depositInfo.interestRateAnnual))\(String(localized: "deposit.rateAnnual"))"
                     )
                     InfoRow(
                         icon: "arrow.triangle.2.circlepath",

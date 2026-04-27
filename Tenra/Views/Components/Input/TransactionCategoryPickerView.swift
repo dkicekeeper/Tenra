@@ -54,17 +54,20 @@ struct TransactionCategoryPickerView: View {
             emptyStateAction: coordinator.handleAddCategory,
             sourceNamespace: categoryNamespace
         )
-        .sheet(item: $coordinator.activeSelection) { selection in
-            addTransactionSheet(for: selection.category, type: selection.type)
+        // Push the add-transaction form into the surrounding NavigationStack instead
+        // of presenting it as a sheet — this avoids the modal-on-pushed-view scroll bug
+        // when the picker itself is a navigationDestination (account/category details).
+        .navigationDestination(item: $coordinator.activeSelection) { selection in
+            addTransactionDestination(for: selection.category, type: selection.type)
         }
         .sheet(isPresented: $coordinator.showingAddCategory) {
             categoryEditSheet
         }
     }
 
-    // MARK: - Sheets
+    // MARK: - Destinations
 
-    private func addTransactionSheet(for category: String, type: TransactionType) -> some View {
+    private func addTransactionDestination(for category: String, type: TransactionType) -> some View {
         TransactionAddModal(
             category: category,
             type: type,

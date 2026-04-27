@@ -269,10 +269,11 @@ struct SubscriptionEditView: View {
     }
 
     /// True if any field that would propagate to generated transactions has changed.
+    /// `description` (name) is intentionally excluded — name renames are auto-propagated
+    /// to all linked transactions in `performSave`, no scope prompt needed.
     private func hasPropagatableChange(old: RecurringSeries, new: RecurringSeries) -> Bool {
         old.amount != new.amount
             || old.currency != new.currency
-            || old.description != new.description
             || old.category != new.category
             || old.accountId != new.accountId
             || old.iconSource != new.iconSource
@@ -312,8 +313,20 @@ struct SubscriptionEditView: View {
                 // 3. Determine which transactions should receive propagated field updates + subcategory link.
                 let oldSeries = subscription
                 let scopedTxs = transactionsToUpdate(for: series, scope: scope)
+                let didRename = oldSeries.map { $0.description != series.description } ?? false
 
-                // 4. For edit with propagation → rewrite fields on linked transactions.
+                // 4a. Auto-propagate name rename to ALL linked transactions, regardless of scope.
+                //     Renaming a subscription is a relabeling of the entity itself, so historical
+                //     occurrences should reflect the new name without prompting the user.
+                if didRename {
+                    let allLinked = transactionStore.transactions.filter { $0.recurringSeriesId == series.id }
+                    for tx in allLinked where tx.description != series.description {
+                        let renamed = renameTransactionDescription(tx, to: series.description)
+                        try await transactionStore.update(renamed)
+                    }
+                }
+
+                // 4b. For edit with propagation → rewrite remaining fields on scoped transactions.
                 if let oldSeries = oldSeries, scope != .seriesOnly {
                     let changes = propagatableChanges(old: oldSeries, new: series)
                     for tx in scopedTxs {
@@ -324,9 +337,12 @@ struct SubscriptionEditView: View {
                     }
                 }
 
-                // 5. Link subcategory to all scoped transactions + always to all current series transactions on create.
+                // 5. Link subcategory to relevant transactions:
+                //    - On create: all current series transactions
+                //    - On rename: all linked transactions (subcategory mirrors the new name)
+                //    - Otherwise: just the scoped set
                 let txsToLink: [Transaction]
-                if isCreate {
+                if isCreate || didRename {
                     txsToLink = transactionStore.transactions.filter { $0.recurringSeriesId == series.id }
                 } else {
                     txsToLink = scopedTxs
@@ -367,16 +383,15 @@ struct SubscriptionEditView: View {
     private struct PropagatableChanges {
         var amount: Bool
         var currency: Bool
-        var description: Bool
         var category: Bool
         var accountId: Bool
+        // description is auto-propagated unconditionally (see performSave step 4a).
     }
 
     private func propagatableChanges(old: RecurringSeries, new: RecurringSeries) -> PropagatableChanges {
         PropagatableChanges(
             amount: old.amount != new.amount,
             currency: old.currency != new.currency,
-            description: old.description != new.description,
             category: old.category != new.category,
             accountId: old.accountId != new.accountId
         )
@@ -385,13 +400,12 @@ struct SubscriptionEditView: View {
     private func applyChanges(to tx: Transaction, changes: PropagatableChanges, newSeries series: RecurringSeries) -> Transaction {
         let newAmount = changes.amount ? NSDecimalNumber(decimal: series.amount).doubleValue : tx.amount
         let newCurrency = changes.currency ? series.currency : tx.currency
-        let newDescription = changes.description ? series.description : tx.description
         let newCategory = changes.category ? series.category : tx.category
         let newAccountId = changes.accountId ? (series.accountId ?? tx.accountId) : tx.accountId
         return Transaction(
             id: tx.id,
             date: tx.date,
-            description: newDescription,
+            description: tx.description,
             amount: newAmount,
             currency: newCurrency,
             convertedAmount: tx.convertedAmount,
@@ -399,6 +413,31 @@ struct SubscriptionEditView: View {
             category: newCategory,
             subcategory: tx.subcategory,
             accountId: newAccountId,
+            targetAccountId: tx.targetAccountId,
+            accountName: tx.accountName,
+            targetAccountName: tx.targetAccountName,
+            targetCurrency: tx.targetCurrency,
+            targetAmount: tx.targetAmount,
+            recurringSeriesId: tx.recurringSeriesId,
+            recurringOccurrenceId: tx.recurringOccurrenceId,
+            createdAt: tx.createdAt
+        )
+    }
+
+    /// Returns a copy of `tx` with `description` swapped out — used by the auto-rename pass
+    /// so historical occurrences match the subscription's current name.
+    private func renameTransactionDescription(_ tx: Transaction, to newDescription: String) -> Transaction {
+        Transaction(
+            id: tx.id,
+            date: tx.date,
+            description: newDescription,
+            amount: tx.amount,
+            currency: tx.currency,
+            convertedAmount: tx.convertedAmount,
+            type: tx.type,
+            category: tx.category,
+            subcategory: tx.subcategory,
+            accountId: tx.accountId,
             targetAccountId: tx.targetAccountId,
             accountName: tx.accountName,
             targetAccountName: tx.targetAccountName,

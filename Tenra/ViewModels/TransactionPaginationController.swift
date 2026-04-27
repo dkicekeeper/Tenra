@@ -82,6 +82,14 @@ final class TransactionPaginationController: NSObject {
         didSet { if searchQuery != oldValue { scheduleFilterUpdate() } }
     }
 
+    /// Pre-resolved transaction IDs whose linked subcategories match the current search.
+    /// HistoryView computes this from in-memory `transactionSubcategoryLinks` + `subcategories`
+    /// because the FRC predicate can't traverse those tables (no inverse on TransactionEntity).
+    /// OR'd into the search clause alongside descriptionText/category/subcategory matches.
+    var searchMatchedTransactionIds: Set<String>? {
+        didSet { if searchMatchedTransactionIds != oldValue { scheduleFilterUpdate() } }
+    }
+
     var selectedAccountId: String? {
         didSet { if selectedAccountId != oldValue { scheduleFilterUpdate() } }
     }
@@ -223,6 +231,7 @@ final class TransactionPaginationController: NSObject {
     /// are assigned sequentially (each didSet triggers scheduleFilterUpdate).
     func batchUpdateFilters(
         searchQuery: String? = nil,
+        searchMatchedTransactionIds: Set<String>?? = nil,
         selectedAccountId: String?? = nil,
         selectedCategoryId: String?? = nil,
         selectedType: TransactionType?? = nil,
@@ -231,6 +240,7 @@ final class TransactionPaginationController: NSObject {
         isBatchUpdating = true
 
         if let q = searchQuery { self.searchQuery = q }
+        if let ids = searchMatchedTransactionIds { self.searchMatchedTransactionIds = ids }
         if let a = selectedAccountId { self.selectedAccountId = a }
         if let c = selectedCategoryId { self.selectedCategoryId = c }
         if let t = selectedType { self.selectedType = t }
@@ -248,10 +258,18 @@ final class TransactionPaginationController: NSObject {
 
         if !searchQuery.isEmpty {
             let q = searchQuery
-            predicates.append(NSPredicate(
-                format: "descriptionText CONTAINS[cd] %@ OR category CONTAINS[cd] %@",
-                q, q
-            ))
+            var orPredicates: [NSPredicate] = [
+                NSPredicate(format: "descriptionText CONTAINS[cd] %@", q),
+                NSPredicate(format: "category CONTAINS[cd] %@", q),
+                // Legacy single-subcategory field on TransactionEntity (still written by repos).
+                NSPredicate(format: "subcategory CONTAINS[cd] %@", q),
+            ]
+            // Linked subcategories (real source) — IDs pre-resolved by the caller because
+            // TransactionEntity has no inverse to TransactionSubcategoryLinkEntity.
+            if let ids = searchMatchedTransactionIds, !ids.isEmpty {
+                orPredicates.append(NSPredicate(format: "id IN %@", ids))
+            }
+            predicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: orPredicates))
         }
 
         if let accountId = selectedAccountId {

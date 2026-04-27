@@ -59,6 +59,10 @@ class AppCoordinator {
     private(set) var isFastPathDone = false       // accounts + categories ready (~50ms)
     private(set) var isFullyInitialized = false   // transactions + all data ready (~1-3s)
 
+    // TEMP — Task 5: Replaced by real onboarding gate implementation in Task 5.
+    private(set) var needsOnboarding: Bool = false
+    func completeOnboarding() { /* stub — Task 5 adds real impl */ }
+
     // MARK: - Initialization
 
     init(repository: DataRepositoryProtocol? = nil) {

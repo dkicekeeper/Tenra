@@ -335,14 +335,10 @@ struct LinkPaymentsView: View {
                         HapticManager.selection()
                     },
                     rowOverlay: { tx in
-                        HStack {
-                            Spacer()
-                            Image(systemName: selectedIds.contains(tx.id) ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(selectedIds.contains(tx.id) ? AppColors.accent : .secondary)
-                                .font(.system(size: AppIconSize.md))
-                                .padding(.trailing, AppSpacing.lg)
-                        }
-                        .allowsHitTesting(false)
+                        Image(systemName: selectedIds.contains(tx.id) ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(selectedIds.contains(tx.id) ? AppColors.accent : .secondary)
+                            .font(.system(size: AppIconSize.md))
+                            .padding(.leading, AppSpacing.md)
                     }
                 )
                 .screenPadding()

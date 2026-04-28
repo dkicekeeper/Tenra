@@ -139,9 +139,12 @@ struct GroupedTransactionList<Overlay: View>: View {
                             let rowCurrency = displayCurrency ?? transaction.currency
                             let linkedSubs = categoriesViewModel?.getSubcategoriesForTransaction(transaction.id) ?? []
 
-                            ZStack {
-                                if let tapAction {
-                                    // Pure-UI path: caller owns the tap (selection, etc.)
+                            // Inline HStack (not ZStack overlay) so the rowOverlay accessory
+                            // sits beside the card's amount instead of stacking on top of it.
+                            // For backward compatibility, callers that don't supply a real
+                            // accessory pass `EmptyView()` — produces no visual artifact.
+                            if let tapAction {
+                                HStack(spacing: 0) {
                                     TransactionCardView(
                                         transaction: transaction,
                                         currency: rowCurrency,
@@ -150,8 +153,12 @@ struct GroupedTransactionList<Overlay: View>: View {
                                         targetAccount: targetAccount,
                                         linkedSubcategories: linkedSubs
                                     )
-                                    .onTapGesture { tapAction(transaction) }
-                                } else {
+                                    rowOverlay(transaction)
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture { tapAction(transaction) }
+                            } else {
+                                HStack(spacing: 0) {
                                     TransactionCard(
                                         transaction: transaction,
                                         currency: rowCurrency,
@@ -163,8 +170,8 @@ struct GroupedTransactionList<Overlay: View>: View {
                                         accountsViewModel: accountsViewModel,
                                         balanceCoordinator: balanceCoordinator
                                     )
+                                    rowOverlay(transaction)
                                 }
-                                rowOverlay(transaction)
                             }
 
                             if index < section.transactions.count - 1 {

@@ -80,7 +80,7 @@ extension InsightsService {
             .reduce(0.0) { total, series in
                 guard let startDate = df.date(from: series.startDate) else { return total }
                 if startDate > now { return total }
-                return total + seriesMonthlyEquivalent(series, baseCurrency: baseCurrency)
+                return total + seriesMonthlyEquivalent(series, baseCurrency: baseCurrency, cache: preAggregated?.seriesMonthlyEquivalents)
             }
 
         // Use preAggregated O(M) lookup when available; fall back to O(N) scan

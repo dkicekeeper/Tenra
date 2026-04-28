@@ -23,6 +23,12 @@ final class RecurringStore {
     /// All recurring series (subscriptions and generic recurring transactions)
     private(set) var recurringSeries: [RecurringSeries] = []
 
+    /// Pre-maintained id → RecurringSeries map for O(1) lookups.
+    /// Replaces `recurringSeries.first(where: { $0.id == seriesId })` scans called from
+    /// every transaction-card render and from many places in TransactionStore+Recurring.
+    /// Sync rule: every mutation in `load`/`handleSeries*` MUST update both arrays together.
+    @ObservationIgnored private(set) var seriesById: [String: RecurringSeries] = [:]
+
     /// All recurring occurrences — tracks which transactions were generated from which series
     private(set) var recurringOccurrences: [RecurringOccurrence] = []
 
@@ -48,6 +54,7 @@ final class RecurringStore {
     /// Called by TransactionStore.loadData() as part of the background load.
     func load(series: [RecurringSeries], occurrences: [RecurringOccurrence]) {
         recurringSeries = series
+        seriesById = Dictionary(uniqueKeysWithValues: series.map { ($0.id, $0) })
         recurringOccurrences = occurrences
     }
 
@@ -55,12 +62,14 @@ final class RecurringStore {
 
     func handleSeriesCreated(_ series: RecurringSeries) {
         recurringSeries.append(series)
+        seriesById[series.id] = series
     }
 
     func handleSeriesUpdated(old: RecurringSeries, new: RecurringSeries) {
         if let index = recurringSeries.firstIndex(where: { $0.id == old.id }) {
             recurringSeries[index] = new
         }
+        seriesById[new.id] = new
         // Note: Transaction regeneration is handled in TransactionStore+Recurring.updateSeries()
     }
 
@@ -74,6 +83,7 @@ final class RecurringStore {
                 updatedSeries.status = .paused
             }
             recurringSeries[index] = updatedSeries
+            seriesById[seriesId] = updatedSeries
         }
         // Transaction cleanup is performed in TransactionStore+Recurring.stopSeries()
         // BEFORE apply(.seriesStopped) is called — via individual apply(.deleted) events.
@@ -98,6 +108,7 @@ final class RecurringStore {
 
     func handleSeriesDeleted(seriesId: String) {
         recurringSeries.removeAll { $0.id == seriesId }
+        seriesById.removeValue(forKey: seriesId)
         // Note: Transaction cleanup is handled in TransactionStore+Recurring.deleteSeries() before calling apply()
     }
 

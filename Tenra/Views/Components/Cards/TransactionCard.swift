@@ -59,23 +59,12 @@ struct TransactionCard: View {
         TransactionDisplayHelper.isFutureDate(transaction.date)
     }
 
+    /// Single source of truth for the optional linked series — resolved ONCE per body
+    /// re-eval. Was previously 5 separate dict lookups (subscriptionIconSource +
+    /// showRecurringBadge + isSeriesActive + 2× swipe actions).
     private var linkedRecurringSeries: RecurringSeries? {
         guard let seriesId = transaction.recurringSeriesId else { return nil }
-        return transactionStore.recurringSeries.first(where: { $0.id == seriesId })
-    }
-
-    private var isSeriesActive: Bool {
-        linkedRecurringSeries?.isActive ?? false
-    }
-
-    private var subscriptionIconSource: IconSource? {
-        guard let series = linkedRecurringSeries, series.kind == .subscription else { return nil }
-        return series.iconSource
-    }
-
-    private var showRecurringBadge: Bool {
-        guard transaction.recurringSeriesId != nil, isFutureDate else { return false }
-        return isSeriesActive
+        return transactionStore.seriesById[seriesId]
     }
 
     private var linkedSubcategories: [Subcategory] {
@@ -83,7 +72,14 @@ struct TransactionCard: View {
     }
 
     var body: some View {
-        TransactionCardView(
+        // Hoist the lookup once — 5 downstream consumers (icon, badge, swipe Stop, swipe Resume,
+        // alert binding) all read from the same `series` value below.
+        let series = linkedRecurringSeries
+        let isSeriesActive = series?.isActive ?? false
+        let subscriptionIconSource: IconSource? = (series?.kind == .subscription) ? series?.iconSource : nil
+        let showRecurringBadge = transaction.recurringSeriesId != nil && isFutureDate && isSeriesActive
+
+        return TransactionCardView(
             transaction: transaction,
             currency: currency,
             styleData: styleData,
@@ -117,7 +113,7 @@ struct TransactionCard: View {
                 .accessibilityLabel(String(localized: "accessibility.stopRecurring"))
             }
 
-            if !isSeriesActive, linkedRecurringSeries != nil {
+            if !isSeriesActive, series != nil {
                 Button {
                     HapticManager.selection()
                     Task { await resumeRecurringSeries() }

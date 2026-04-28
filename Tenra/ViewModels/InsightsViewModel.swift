@@ -277,8 +277,14 @@ final class InsightsViewModel {
             Self.logger.debug("🔧 [InsightsVM] Background recompute START (detached)")
 
             // Build PreAggregatedData once — single O(N) pass for all granularities.
+            // Pass `recurringSnapshot` so the build pre-computes `seriesMonthlyEquivalents`
+            // (otherwise HealthScore + Recurring + Forecasting each call CurrencyConverter.convertSync per series).
             let preAggStart = ContinuousClock.now
-            let preAggregated = InsightsService.PreAggregatedData.build(from: allTransactions, baseCurrency: currency)
+            let preAggregated = InsightsService.PreAggregatedData.build(
+                from: allTransactions,
+                baseCurrency: currency,
+                recurringSeries: recurringSnapshot
+            )
             let preAggDur = preAggStart.duration(to: .now)
             let preAggMs = Int(preAggDur.components.seconds * 1000) + Int(preAggDur.components.attoseconds / 1_000_000_000_000_000)
             Self.logger.debug("⏱ [InsightsVM] PreAggregatedData.build(): \(preAggMs)ms")

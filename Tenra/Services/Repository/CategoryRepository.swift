@@ -139,23 +139,20 @@ nonisolated final class CategoryRepository: CategoryRepositoryProtocol, @uncheck
 
             await bgContext.perform {
                 do {
-                    // 1. Batch delete all existing rules
-                    let deleteRequest = NSBatchDeleteRequest(
-                        fetchRequest: NSFetchRequest<NSFetchRequestResult>(entityName: "CategoryRuleEntity")
-                    )
-                    deleteRequest.resultType = .resultTypeObjectIDs
-                    let deleteResult = try bgContext.execute(deleteRequest) as? NSBatchDeleteResult
-                    let deletedIDs = deleteResult?.result as? [NSManagedObjectID] ?? []
-                    if !deletedIDs.isEmpty {
-                        Task { @MainActor [weak self] in
-                            guard let self else { return }
-                            NSManagedObjectContext.mergeChanges(
-                                fromRemoteContextSave: [NSDeletedObjectsKey: deletedIDs],
-                                into: [self.stack.viewContext]
-                            )
-                        }
+                    // 1. Delete all existing rules using context.delete + save (replaces
+                    // NSBatchDeleteRequest + async Task merge).
+                    // WHY: NSBatchDeleteRequest bypasses the context lifecycle and the
+                    // previous code dispatched the viewContext merge via `Task { @MainActor }` —
+                    // an async hop that left a window where FRC consumers could read
+                    // stale objects ("persistent store is not reachable" crash).
+                    // CategoryRule sets are small (typically <100 entries) so per-entity
+                    // delete + save is cheap, and `automaticallyMergesChangesFromParent`
+                    // synchronizes the viewContext through the standard save notification.
+                    let fetchRequest = NSFetchRequest<CategoryRuleEntity>(entityName: "CategoryRuleEntity")
+                    let existing = try bgContext.fetch(fetchRequest)
+                    for entity in existing {
+                        bgContext.delete(entity)
                     }
-                    bgContext.reset()
 
                     // 2. Create new rules
                     for rule in rules {

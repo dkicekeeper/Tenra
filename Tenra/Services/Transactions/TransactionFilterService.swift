@@ -42,6 +42,26 @@ nonisolated class TransactionFilterService {
         }
     }
 
+    /// Same as `filterByTimeRange(_:start:end:)` but uses a pre-built `[String: Date]` map
+    /// to skip the expensive `DateFormatter.date(from:)` parse (~16μs/tx).
+    /// `txDateMap` is keyed by `Transaction.date` (ISO string). InsightsService already
+    /// builds it once in `PreAggregatedData.build` — pass that down to avoid 6× O(N)
+    /// re-parse passes per insights recompute on 19k transactions.
+    func filterByTimeRange(
+        _ transactions: [Transaction],
+        start: Date,
+        end: Date,
+        txDateMap: [String: Date]
+    ) -> [Transaction] {
+        return transactions.filter { transaction in
+            guard let transactionDate = txDateMap[transaction.date]
+                ?? dateFormatter.date(from: transaction.date) else {
+                return false
+            }
+            return transactionDate >= start && transactionDate < end
+        }
+    }
+
     /// Filter transactions that occurred on or before a specific date
     /// - Parameters:
     ///   - transactions: Array of transactions to filter

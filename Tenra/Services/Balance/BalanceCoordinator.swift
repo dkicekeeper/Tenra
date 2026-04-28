@@ -407,8 +407,13 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
     ) async {
         var newBalances: [String: Double] = [:]
 
+        // Build accounts dict ONCE before the loop — replaces O(K×N) `accounts.first(where:)`
+        // scan per accountId with O(N + K) total. Critical when currency change or bulk
+        // import triggers recalc on dozens of accounts at once.
+        let accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
+
         for accountId in accountIds {
-            guard let account = accounts.first(where: { $0.id == accountId }) else {
+            guard let account = accountById[accountId] else {
                 continue
             }
 

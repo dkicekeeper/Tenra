@@ -97,7 +97,8 @@ nonisolated final class InsightsService {
         baseCurrency: String,
         cacheManager: TransactionCacheManager, // kept for call-site compatibility; unused inside
         currencyService: TransactionCurrencyService,
-        anchorDate: Date? = nil
+        anchorDate: Date? = nil,
+        txDateMap: [String: Date]? = nil
     ) -> [PeriodDataPoint] {
         let anchor   = anchorDate ?? Date()
         let calendar = Calendar.current
@@ -111,7 +112,14 @@ nonisolated final class InsightsService {
                 let monthEnd   = calendar.date(byAdding: .month, value: 1, to: monthStart)
             else { continue }
 
-            let monthTx = filterService.filterByTimeRange(transactions, start: monthStart, end: monthEnd)
+            // Use txDateMap fast path (O(1) per tx) when available — avoids `months` O(N)
+            // DateFormatter passes (16μs/tx × 19k × 12 = ~3.6s on cold path).
+            let monthTx: [Transaction]
+            if let txDateMap {
+                monthTx = filterService.filterByTimeRange(transactions, start: monthStart, end: monthEnd, txDateMap: txDateMap)
+            } else {
+                monthTx = filterService.filterByTimeRange(transactions, start: monthStart, end: monthEnd)
+            }
             let (inc, exp) = calculateMonthlySummary(
                 transactions: monthTx,
                 baseCurrency: baseCurrency
@@ -316,7 +324,8 @@ nonisolated final class InsightsService {
             cacheManager: cacheManager,
             currencyService: currencyService,
             granularity: granularity,
-            periodPoints: periodPoints
+            periodPoints: periodPoints,
+            txDateMap: dateMap
         ))
 
         insights.append(contentsOf: generateBudgetInsights(
@@ -404,11 +413,12 @@ nonisolated final class InsightsService {
             if let trend = generateCategoryTrend(baseCurrency: baseCurrency, transactions: allTransactions, preAggregated: preAggregated) {
                 insights.append(trend)
             }
-            // Recurring behavioral
-            if let growth = generateSubscriptionGrowth(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries) {
+            // Recurring behavioral — pass pre-computed monthly equivalents from PreAggregatedData
+            // so generators skip the per-series CurrencyConverter.convertSync call.
+            if let growth = generateSubscriptionGrowth(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries, seriesMonthlyEquivalents: preAggregated?.seriesMonthlyEquivalents) {
                 insights.append(growth)
             }
-            if let duplicates = generateDuplicateSubscriptions(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries) {
+            if let duplicates = generateDuplicateSubscriptions(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries, seriesMonthlyEquivalents: preAggregated?.seriesMonthlyEquivalents) {
                 insights.append(duplicates)
             }
             if let dormancy = generateAccountDormancy(allTransactions: allTransactions, balanceFor: snapshot.balanceFor, preAggregated: preAggregated, accounts: snapshot.accounts) {
@@ -850,6 +860,12 @@ nonisolated final class InsightsService {
         /// Total expense per category across ALL transactions. O(1) lookup
         /// for .allTime generator — replaces O(N) Dictionary(grouping:) + map { resolveAmount }.
         let categoryTotals: [String: Double]
+        /// Pre-computed monthly equivalent per recurring series id, in `baseCurrency`.
+        /// Built when `recurringSeries` is passed to `build`. Empty otherwise — callers
+        /// then fall back to `seriesMonthlyEquivalent(_:baseCurrency:)`.
+        /// Eliminates N×CurrencyConverter.convertSync calls in HealthScore / Recurring /
+        /// Forecasting generators (each runs on every insights recompute).
+        let seriesMonthlyEquivalents: [String: Double]
 
         // MARK: Helpers (O(M) dictionary lookups, not O(N) scans)
 
@@ -912,7 +928,11 @@ nonisolated final class InsightsService {
 
         // MARK: Builder
 
-        static func build(from transactions: [Transaction], baseCurrency: String) -> PreAggregatedData {
+        static func build(
+            from transactions: [Transaction],
+            baseCurrency: String,
+            recurringSeries: [RecurringSeries] = []
+        ) -> PreAggregatedData {
             let calendar = Calendar.current
             let df = DateFormatters.dateFormatter
             var monthly = [MonthKey: MonthTotals]()
@@ -970,6 +990,15 @@ nonisolated final class InsightsService {
                 }
             }
 
+            // Pre-compute monthly equivalent per recurring series. CurrencyConverter.convertSync
+            // is called O(K) times here (K = recurring series count, typically 5–30) instead
+            // of K × G times across G generators (HealthScore + Recurring + Forecasting).
+            var seriesMonthly = [String: Double]()
+            seriesMonthly.reserveCapacity(recurringSeries.count)
+            for series in recurringSeries {
+                seriesMonthly[series.id] = InsightsService.computeSeriesMonthlyEquivalent(series, baseCurrency: baseCurrency)
+            }
+
             return PreAggregatedData(
                 monthlyTotals: monthly,
                 categoryMonthExpenses: categoryMonth,
@@ -978,7 +1007,8 @@ nonisolated final class InsightsService {
                 txDateMap: dateMap,
                 accountTransactionCounts: accountCounts,
                 lastAccountDates: lastAccountDates,
-                categoryTotals: categoryTotals
+                categoryTotals: categoryTotals,
+                seriesMonthlyEquivalents: seriesMonthly
             )
         }
     }
@@ -1044,7 +1074,21 @@ nonisolated final class InsightsService {
     }
 
     /// Converts a recurring series amount to monthly equivalent in baseCurrency.
-    nonisolated func seriesMonthlyEquivalent(_ series: RecurringSeries, baseCurrency: String) -> Double {
+    /// Pass `cache` (typically `preAggregated.seriesMonthlyEquivalents`) to skip the
+    /// CurrencyConverter.convertSync call — pre-computed once during PreAggregatedData.build.
+    nonisolated func seriesMonthlyEquivalent(
+        _ series: RecurringSeries,
+        baseCurrency: String,
+        cache: [String: Double]? = nil
+    ) -> Double {
+        if let cached = cache?[series.id] { return cached }
+        return Self.computeSeriesMonthlyEquivalent(series, baseCurrency: baseCurrency)
+    }
+
+    /// Static equivalent of `seriesMonthlyEquivalent` so it can be reused both as the
+    /// instance method (legacy callers) and as the seed for `PreAggregatedData`'s
+    /// pre-computed cache. Pure function — no `self` access — safe from any thread.
+    nonisolated static func computeSeriesMonthlyEquivalent(_ series: RecurringSeries, baseCurrency: String) -> Double {
         let amount = NSDecimalNumber(decimal: series.amount).doubleValue
         let rawMonthly: Double
         switch series.frequency {

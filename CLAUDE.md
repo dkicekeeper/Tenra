@@ -129,6 +129,12 @@ Tenra/
 - Handles subscriptions and recurring transactions
 - `apply()` pipeline: `updateState` → `updateBalances` → `invalidateCache` → `persistIncremental`
 - **⚠️ `allTransactions` setter is a no-op** — to delete, use `TransactionStore.deleteTransactions(for...)` which routes through `apply(.deleted)`
+- **O(1) lookup indexes** (maintained alongside the canonical arrays — read-only, never mutate from outside):
+  - `transactionById: [String: Transaction]` — synced inside `updateState()` for every event (added/updated/deleted/bulkAdded). Use this instead of `transactions.first(where: { $0.id == ... })` on the 19k-element array.
+  - `accountById: [String: Account]` — rebuilt by `rebuildAccountById()` whenever `accounts` mutates (load/add/update/delete/reorder in `TransactionStore+AccountCRUD.swift`). Adding new account-mutation paths MUST call `rebuildAccountById()`.
+  - `seriesById: [String: RecurringSeries]` (forwarded from `RecurringStore`) — synced inside RecurringStore's `handleSeries*` helpers.
+  - `accountsMutationVersion: Int` — bumped by `rebuildAccountById()`. Downstream caches (e.g. `AccountsViewModel.regularAccounts/depositAccounts/loanAccounts`) compare this against their last-seen value to detect invalidation cheaply.
+- **`updateState .deleted` uses index-based removal**: `firstIndex(where:) + remove(at:)` instead of `removeAll{ $0.id == tx.id }`. The latter never short-circuits and was the silent quadratic source for batch deletes.
 
 #### InsightsService — nonisolated, Background Computation
 - `nonisolated final class` — explicitly opts out of implicit MainActor, runs on background thread via `Task.detached` in InsightsViewModel
@@ -143,6 +149,8 @@ Tenra/
 - **`spendingSpike`**: uses relative threshold (1.5x category average) not absolute amount
 - **`accountDormancy`**: excludes deposit accounts (they accrue interest without transactions)
 - **Health Score components**: Cash Flow score uses gradient 0-100 (not binary); Emergency Fund baseline is 3 months (not 6); Budget Adherence excluded and weight redistributed when no budgets exist
+- **`PreAggregatedData.seriesMonthlyEquivalents`**: pre-computed `[seriesId: monthlyEquivalent]` map built once in `PreAggregatedData.build(…, recurringSeries:)`. Generators (HealthScore, Recurring growth/duplicates, Forecasting) pass it via `seriesMonthlyEquivalent(_:baseCurrency:cache:)` to skip per-series `CurrencyConverter.convertSync` calls. **⚠️ When adding a new generator that calls `seriesMonthlyEquivalent`, always pass `cache: preAggregated?.seriesMonthlyEquivalents`**.
+- **`filterByTimeRange(_:start:end:txDateMap:)` overload**: legacy MoM paths (Spending/Income) and `computeMonthlyPeriodDataPoints` accept an optional `txDateMap` to skip `DateFormatter.date(from:)` (~16μs/tx). Always thread `preAggregated?.txDateMap` through new generators that filter by date range.
 
 #### BalanceCoordinator
 - Single entry point for balance operations
@@ -194,7 +202,7 @@ Tenra/
 - **⚠️ IconStyle rename**: `.bankLogo()` → `.roundedLogo()`, `.bankLogoLarge()` → `.roundedLogoLarge()`
 
 ### Current State
-- CoreData v6 model (`depositInfoData`, `isLoan`, `loanInfoData` on AccountEntity, `recurringSeriesId` String on `TransactionEntity`)
+- **CoreData v8 model** (lightweight migration). v6 added `depositInfoData`/`isLoan`/`loanInfoData` on AccountEntity + `recurringSeriesId` String on TransactionEntity. v7 reorganised aggregate entities. v8 (perf-only) adds `byIdIndex` to TransactionEntity/AccountEntity/RecurringSeriesEntity, `byAccountIdIndex`/`byRecurringSeriesIdIndex` to TransactionEntity, `bySeriesIdIndex`/`byTransactionIdIndex` to RecurringOccurrenceEntity. Without `byIdIndex`, every `id == %@` predicate (insertTransaction/updateTransactionFields/deleteTransactionImmediately) was a full table scan over 19k rows.
 - Old aggregate entities (`MonthlyAggregateEntity`, `CategoryAggregateEntity`) remain in `.xcdatamodeld` but are not read/written
 - ContentView reactivity via `.task(id: SummaryTrigger)` — no manual `onChange` chains
 - Per-element staggered fade-in during initialization (`ContentRevealModifier` — preserves view identity, no layout recalc spike)
@@ -689,6 +697,6 @@ Historical docs (301 files) archived to `docs/archive/`.
 
 ---
 
-**Last Updated**: 2026-03-20
+**Last Updated**: 2026-04-28
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

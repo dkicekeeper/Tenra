@@ -29,6 +29,19 @@ class AccountsViewModel {
 
     @ObservationIgnored private let repository: DataRepositoryProtocol
 
+    /// Cache for `suggestedAccount(forCategory:)`. Keyed by category, valid only for a specific
+    /// `TransactionStore.mutationVersion`. On version mismatch the whole map is dropped.
+    /// Cuts repeated form-open suggestions from O(N) over 19k tx to O(1).
+    @ObservationIgnored private var suggestionCache: [String: String] = [:]
+    @ObservationIgnored private var suggestionCacheVersion: Int = -1
+
+    /// Cached filtered accounts (regular / deposit / loan). Versioned against
+    /// `TransactionStore.accountsMutationVersion`; refilled on first read after invalidation.
+    @ObservationIgnored private var cachedRegularAccounts: [Account] = []
+    @ObservationIgnored private var cachedDepositAccounts: [Account] = []
+    @ObservationIgnored private var cachedLoanAccounts: [Account] = []
+    @ObservationIgnored private var filterCacheVersion: Int = -1
+
     // MARK: - Initialization
 
     init(repository: DataRepositoryProtocol = UserDefaultsRepository()) {
@@ -304,14 +317,59 @@ class AccountsViewModel {
         }
     }
 
-    /// Получить счет по ID
+    /// Получить счет по ID — O(1) via TransactionStore.accountById index.
+    /// Falls back to a linear scan only if the store hasn't been wired yet (e.g. tests).
     func getAccount(by id: String) -> Account? {
+        if let store = transactionStore {
+            return store.accountById[id]
+        }
         return accounts.first { $0.id == id }
     }
     
-    /// Получить все обычные счета (не депозиты и не кредиты)
+    /// Получить все обычные счета (не депозиты и не кредиты).
+    /// Кешируется по `TransactionStore.accountsMutationVersion` — пересчёт только при
+    /// реальном изменении массива accounts, а не на каждый body re-eval вьюшки.
     var regularAccounts: [Account] {
-        return accounts.filter { !$0.isDeposit && !$0.isLoan }
+        ensureFilterCachesValid()
+        return cachedRegularAccounts
+    }
+
+    /// Все депозитные счета. См. `regularAccounts` про правило кеша.
+    var depositAccounts: [Account] {
+        ensureFilterCachesValid()
+        return cachedDepositAccounts
+    }
+
+    /// Все кредитные счета. См. `regularAccounts` про правило кеша.
+    var loanAccounts: [Account] {
+        ensureFilterCachesValid()
+        return cachedLoanAccounts
+    }
+
+    /// Refills the regular/deposit/loan caches if `accountsMutationVersion` advanced
+    /// since the last refill. Single O(N=accounts.count) pass replaces three separate
+    /// `.filter` walks per access (and per body re-eval).
+    private func ensureFilterCachesValid() {
+        let currentVersion = transactionStore?.accountsMutationVersion ?? 0
+        guard currentVersion != filterCacheVersion else { return }
+        filterCacheVersion = currentVersion
+        let all = accounts
+        var regular: [Account] = []
+        var deposits: [Account] = []
+        var loans: [Account] = []
+        regular.reserveCapacity(all.count)
+        for account in all {
+            if account.isDeposit {
+                deposits.append(account)
+            } else if account.isLoan {
+                loans.append(account)
+            } else {
+                regular.append(account)
+            }
+        }
+        cachedRegularAccounts = regular
+        cachedDepositAccounts = deposits
+        cachedLoanAccounts = loans
     }
 
     // MARK: - Intelligent Account Ranking
@@ -341,10 +399,11 @@ class AccountsViewModel {
         return AccountRankingService.rankAccounts(
             accounts: accounts,
             transactions: transactions,
+            transactionsByAccount: transactionStore?.transactionsByAccount,
             context: context
         )
     }
-    
+
     /// Получить рекомендуемый счет для категории (адаптивное автоподставление)
     /// - Parameters:
     ///   - category: Категория транзакции
@@ -356,12 +415,32 @@ class AccountsViewModel {
         transactions: [Transaction],
         amount: Double? = nil
     ) -> Account? {
-        return AccountRankingService.suggestedAccount(
+        // Cache only the no-amount path. The amount-aware path needs to recheck balances,
+        // which can change without a tx mutation (FX rate refreshes, etc.).
+        let canCache = amount == nil
+        if canCache, let store = transactionStore {
+            if store.mutationVersion != suggestionCacheVersion {
+                suggestionCache.removeAll(keepingCapacity: true)
+                suggestionCacheVersion = store.mutationVersion
+            }
+            if let cachedId = suggestionCache[category],
+               let cached = store.accountById[cachedId] {
+                return cached
+            }
+        }
+
+        let result = AccountRankingService.suggestedAccount(
             forCategory: category,
             accounts: accounts,
             transactions: transactions,
+            transactionsByAccount: transactionStore?.transactionsByAccount,
             amount: amount
         )
+
+        if canCache, let id = result?.id {
+            suggestionCache[category] = id
+        }
+        return result
     }
 
     // MARK: - Private Helpers

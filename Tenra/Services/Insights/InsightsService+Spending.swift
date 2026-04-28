@@ -116,10 +116,18 @@ extension InsightsService {
                 ? (top.total / topTotalExpenses) * 100
                 : 0
 
+            // Index categories by name once — replaces O(M²) scan (sortedCategories × categories)
+            // with O(M) build + O(1) lookup per breakdown item.
+            var categoryByName: [String: CustomCategory] = [:]
+            categoryByName.reserveCapacity(categories.count)
+            for cat in categories {
+                categoryByName[cat.name] = cat
+            }
+
             // Show ALL categories in breakdown
             let breakdownItems: [CategoryBreakdownItem] = sortedCategories.map { item in
                 let pct = topTotalExpenses > 0 ? (item.total / topTotalExpenses) * 100 : 0
-                let cat = categories.first { $0.name == item.key }
+                let cat = categoryByName[item.key]
                 let catColor = cat.map { Color(hex: $0.colorHex) } ?? AppColors.accent
                 let txns = categoryGroups[item.key] ?? []
 
@@ -221,12 +229,23 @@ extension InsightsService {
                let prevMonthEnd = calendar.date(byAdding: .month, value: 1, to: prevMonthStart) {
                 var thisMonthTotal: Double = 0
                 var prevMonthTotal: Double = 0
-                let dateFormatter = DateFormatters.dateFormatter
-                for tx in allTransactions where tx.type == .expense {
-                    guard let txDate = dateFormatter.date(from: tx.date) else { continue }
-                    let amount = resolveAmount(tx, baseCurrency: baseCurrency)
-                    if txDate >= thisMonthStart && txDate < thisMonthEnd { thisMonthTotal += amount }
-                    else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevMonthTotal += amount }
+                // Use txDateMap fast path when available — eliminates DateFormatter parse
+                // (~16μs/tx × 19k = ~300ms saved per legacy MoM call).
+                if let map = txDateMap {
+                    for tx in allTransactions where tx.type == .expense {
+                        guard let txDate = map[tx.date] else { continue }
+                        let amount = resolveAmount(tx, baseCurrency: baseCurrency)
+                        if txDate >= thisMonthStart && txDate < thisMonthEnd { thisMonthTotal += amount }
+                        else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevMonthTotal += amount }
+                    }
+                } else {
+                    let dateFormatter = DateFormatters.dateFormatter
+                    for tx in allTransactions where tx.type == .expense {
+                        guard let txDate = dateFormatter.date(from: tx.date) else { continue }
+                        let amount = resolveAmount(tx, baseCurrency: baseCurrency)
+                        if txDate >= thisMonthStart && txDate < thisMonthEnd { thisMonthTotal += amount }
+                        else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevMonthTotal += amount }
+                    }
                 }
                 if prevMonthTotal > 0 {
                     let changePercent = ((thisMonthTotal - prevMonthTotal) / prevMonthTotal) * 100

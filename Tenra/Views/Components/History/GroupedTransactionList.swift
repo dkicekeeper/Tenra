@@ -184,8 +184,10 @@ struct GroupedTransactionList<Overlay: View>: View {
                         }
                 }
             }
-            .onAppear { rebuildSections() }
-            .onChange(of: transactions.count) { _, _ in
+            // `.task(id: transactions.count)` replaces `.onAppear`: prevents re-fire on
+            // back-navigation when the count is unchanged. SwiftUI cancels the previous task
+            // automatically. visibleLimit reset is handled here as well.
+            .task(id: transactions.count) {
                 visibleLimit = pageSize
                 rebuildSections()
             }

@@ -49,6 +49,8 @@ struct TransactionCardView: View {
         [sourceAccount, targetAccount].compactMap { $0 }
     }
 
+    /// Used only by the accessibility label below — TransactionInfoView/Transfer/RegularAccountInfo
+    /// now receive `sourceAccount`/`targetAccount` directly (pre-resolved, O(1)).
     private var isFutureDate: Bool {
         TransactionDisplayHelper.isFutureDate(transaction.date)
     }
@@ -72,7 +74,8 @@ struct TransactionCardView: View {
 
             TransactionInfoView(
                 transaction: transaction,
-                accounts: resolvedAccounts,
+                sourceAccount: sourceAccount,
+                targetAccount: targetAccount,
                 linkedSubcategories: linkedSubcategories
             )
 

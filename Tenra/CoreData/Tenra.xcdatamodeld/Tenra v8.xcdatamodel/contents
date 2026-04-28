@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24512" systemVersion="25C56" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="AccountEntity" representedClassName=".AccountEntity" syncable="YES">
+        <attribute name="balance" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="initialBalance" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="bankName" optional="YES" attributeType="String"/>
+        <attribute name="createdAt" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO"/>
+        <attribute name="currency" attributeType="String" defaultValueString="KZT"/>
+        <attribute name="depositInfoData" optional="YES" attributeType="Binary"/>
+        <attribute name="iconSourceData" optional="YES" attributeType="Binary"/>
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="isDeposit" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isLoan" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="loanInfoData" optional="YES" attributeType="Binary"/>
+        <attribute name="logo" optional="YES" attributeType="String"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="shouldCalculateFromTransactions" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="recurringSeries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="RecurringSeriesEntity" inverseName="account" inverseEntity="RecurringSeriesEntity"/>
+        <relationship name="targetTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TransactionEntity" inverseName="targetAccount" inverseEntity="TransactionEntity"/>
+        <relationship name="transactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TransactionEntity" inverseName="account" inverseEntity="TransactionEntity"/>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="CategoryAggregateEntity" representedClassName=".CategoryAggregateEntity" syncable="YES">
+        <attribute name="categoryName" attributeType="String" defaultValueString=""/>
+        <attribute name="currency" attributeType="String" defaultValueString="KZT"/>
+        <attribute name="day" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="lastTransactionDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastUpdated" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO"/>
+        <attribute name="month" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="subcategoryName" optional="YES" attributeType="String"/>
+        <attribute name="totalAmount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="transactionCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="year" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <fetchIndex name="byCategoryIndex">
+            <fetchIndexElement property="categoryName" type="Binary" order="ascending"/>
+            <fetchIndexElement property="year" type="Binary" order="descending"/>
+            <fetchIndexElement property="month" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="bySubcategoryIndex">
+            <fetchIndexElement property="categoryName" type="Binary" order="ascending"/>
+            <fetchIndexElement property="subcategoryName" type="Binary" order="ascending"/>
+            <fetchIndexElement property="year" type="Binary" order="descending"/>
+            <fetchIndexElement property="month" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="byLastUpdatedIndex">
+            <fetchIndexElement property="lastUpdated" type="Binary" order="descending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="CategoryRuleEntity" representedClassName=".CategoryRuleEntity" syncable="YES">
+        <attribute name="category" attributeType="String" defaultValueString=""/>
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="isEnabled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="pattern" attributeType="String" defaultValueString=""/>
+    </entity>
+    <entity name="CategorySubcategoryLinkEntity" representedClassName=".CategorySubcategoryLinkEntity" syncable="YES">
+        <attribute name="categoryId" attributeType="String" defaultValueString=""/>
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="subcategoryId" attributeType="String" defaultValueString=""/>
+    </entity>
+    <entity name="CustomCategoryEntity" representedClassName=".CustomCategoryEntity" syncable="YES">
+        <attribute name="budgetAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="budgetPeriod" attributeType="String" defaultValueString="monthly"/>
+        <attribute name="budgetResetDay" attributeType="Integer 64" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="budgetStartDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="colorHex" optional="YES" attributeType="String"/>
+        <attribute name="iconName" optional="YES" attributeType="String"/>
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="type" attributeType="String" defaultValueString="expense"/>
+        <attribute name="cachedSpentAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="cachedSpentUpdatedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="cachedSpentCurrency" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="RecurringOccurrenceEntity" representedClassName=".RecurringOccurrenceEntity" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="occurrenceDate" optional="YES" attributeType="String"/>
+        <attribute name="seriesId" optional="YES" attributeType="String"/>
+        <attribute name="transactionId" optional="YES" attributeType="String"/>
+        <relationship name="series" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RecurringSeriesEntity" inverseName="occurrences" inverseEntity="RecurringSeriesEntity"/>
+        <fetchIndex name="bySeriesIdIndex">
+            <fetchIndexElement property="seriesId" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byTransactionIdIndex">
+            <fetchIndexElement property="transactionId" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="RecurringSeriesEntity" representedClassName=".RecurringSeriesEntity" syncable="YES">
+        <attribute name="amount" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="brandId" optional="YES" attributeType="String"/>
+        <attribute name="brandLogo" optional="YES" attributeType="String"/>
+        <attribute name="category" attributeType="String" defaultValueString=""/>
+        <attribute name="currency" attributeType="String" defaultValueString="KZT"/>
+        <attribute name="descriptionText" attributeType="String" defaultValueString=""/>
+        <attribute name="frequency" attributeType="String" defaultValueString="monthly"/>
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="isActive" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="kind" attributeType="String" defaultValueString="generic"/>
+        <attribute name="lastGeneratedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="startDate" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO"/>
+        <attribute name="status" optional="YES" attributeType="String"/>
+        <attribute name="subcategory" optional="YES" attributeType="String"/>
+        <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="recurringSeries" inverseEntity="AccountEntity"/>
+        <relationship name="occurrences" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="RecurringOccurrenceEntity" inverseName="series" inverseEntity="RecurringOccurrenceEntity"/>
+        <relationship name="transactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TransactionEntity" inverseName="recurringSeries" inverseEntity="TransactionEntity"/>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="SubcategoryEntity" representedClassName=".SubcategoryEntity" syncable="YES">
+        <attribute name="iconName" optional="YES" attributeType="String"/>
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+    </entity>
+    <entity name="TransactionEntity" representedClassName=".TransactionEntity" syncable="YES">
+        <attribute name="dateSectionKey" optional="YES" attributeType="String" defaultValueString=""/>
+        <attribute name="accountId" optional="YES" attributeType="String"/>
+        <attribute name="accountName" optional="YES" attributeType="String"/>
+        <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="category" attributeType="String" defaultValueString=""/>
+        <attribute name="convertedAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="createdAt" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO"/>
+        <attribute name="currency" attributeType="String" defaultValueString="KZT"/>
+        <attribute name="date" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO"/>
+        <attribute name="descriptionText" attributeType="String" defaultValueString=""/>
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="recurringSeriesId" optional="YES" attributeType="String"/>
+        <attribute name="subcategory" optional="YES" attributeType="String"/>
+        <attribute name="targetAccountId" optional="YES" attributeType="String"/>
+        <attribute name="targetAccountName" optional="YES" attributeType="String"/>
+        <attribute name="targetAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="targetCurrency" optional="YES" attributeType="String"/>
+        <attribute name="type" attributeType="String" defaultValueString="expense"/>
+        <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="transactions" inverseEntity="AccountEntity"/>
+        <relationship name="recurringSeries" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RecurringSeriesEntity" inverseName="transactions" inverseEntity="RecurringSeriesEntity"/>
+        <relationship name="targetAccount" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AccountEntity" inverseName="targetTransactions" inverseEntity="AccountEntity"/>
+        <fetchIndex name="byDateSectionKeyIndex">
+            <fetchIndexElement property="dateSectionKey" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="byDateIndex">
+            <fetchIndexElement property="date" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="byCategoryIndex">
+            <fetchIndexElement property="category" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byTypeIndex">
+            <fetchIndexElement property="type" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byDateAndCategoryIndex">
+            <fetchIndexElement property="date" type="Binary" order="descending"/>
+            <fetchIndexElement property="category" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byDateAndTypeIndex">
+            <fetchIndexElement property="date" type="Binary" order="descending"/>
+            <fetchIndexElement property="type" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byCurrencyDateIndex">
+            <fetchIndexElement property="currency" type="Binary" order="ascending"/>
+            <fetchIndexElement property="date" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="byTypeCurrencyDateIndex">
+            <fetchIndexElement property="type" type="Binary" order="ascending"/>
+            <fetchIndexElement property="currency" type="Binary" order="ascending"/>
+            <fetchIndexElement property="date" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byAccountIdIndex">
+            <fetchIndexElement property="accountId" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byRecurringSeriesIdIndex">
+            <fetchIndexElement property="recurringSeriesId" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="TransactionSubcategoryLinkEntity" representedClassName=".TransactionSubcategoryLinkEntity" syncable="YES">
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="subcategoryId" attributeType="String" defaultValueString=""/>
+        <attribute name="transactionId" attributeType="String" defaultValueString=""/>
+    </entity>
+    <entity name="MonthlyAggregateEntity" representedClassName=".MonthlyAggregateEntity" syncable="YES">
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="year" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="month" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="currency" attributeType="String" defaultValueString="KZT"/>
+        <attribute name="totalIncome" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="totalExpenses" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="netFlow" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="transactionCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lastUpdated" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO"/>
+        <fetchIndex name="byYearMonthIndex">
+            <fetchIndexElement property="year" type="Binary" order="descending"/>
+            <fetchIndexElement property="month" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="byCurrencyIndex">
+            <fetchIndexElement property="currency" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+</model>

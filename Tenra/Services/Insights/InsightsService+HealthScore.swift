@@ -48,8 +48,15 @@ extension InsightsService {
             )
         }
         let categoriesWithBudget = categories.filter { ($0.budgetAmount ?? 0) > 0 }
+        // Index aggregates by category name once — replaces O(M²) scan
+        // (categoriesWithBudget × currentMonthAggregates) with O(M) build + O(M) lookups.
+        var expensesByCategoryName: [String: Double] = [:]
+        expensesByCategoryName.reserveCapacity(currentMonthAggregates.count)
+        for agg in currentMonthAggregates {
+            expensesByCategoryName[agg.categoryName] = agg.totalExpenses
+        }
         let onBudgetCount = categoriesWithBudget.filter { category in
-            let spent = currentMonthAggregates.first { $0.categoryName == category.name }?.totalExpenses ?? 0
+            let spent = expensesByCategoryName[category.name] ?? 0
             return spent <= (category.budgetAmount ?? 0)
         }.count
         let totalBudgetCount = categoriesWithBudget.count
@@ -58,11 +65,17 @@ extension InsightsService {
             : -1 // sentinel: exclude from weighted total when no budgets
 
         // --- Component 3: Recurring Ratio (weight 0.20) ---
+        // Index categories by name once — replaces `categories.first` per active series.
+        var categoryTypeByName: [String: TransactionType] = [:]
+        categoryTypeByName.reserveCapacity(categories.count)
+        for cat in categories {
+            categoryTypeByName[cat.name] = cat.type
+        }
         let recurringCost = recurringSeries
             .filter { $0.isActive }
             .reduce(0.0) { total, series in
-                let isExpense = categories.first { $0.name == series.category }?.type != .income
-                return isExpense ? total + seriesMonthlyEquivalent(series, baseCurrency: baseCurrency) : total
+                let isExpense = categoryTypeByName[series.category] != .income
+                return isExpense ? total + seriesMonthlyEquivalent(series, baseCurrency: baseCurrency, cache: preAggregated?.seriesMonthlyEquivalents) : total
             }
         let recurringRatioScore = Int(max(0, (1.0 - recurringCost / max(totalIncome, 1)) * 100).rounded())
 

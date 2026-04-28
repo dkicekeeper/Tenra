@@ -109,7 +109,11 @@ extension InsightsService {
     // MARK: - Subscription Growth
 
     /// Compares current monthly recurring total with the total 3 months ago.
-    nonisolated func generateSubscriptionGrowth(baseCurrency: String, recurringSeries: [RecurringSeries]) -> Insight? {
+    nonisolated func generateSubscriptionGrowth(
+        baseCurrency: String,
+        recurringSeries: [RecurringSeries],
+        seriesMonthlyEquivalents: [String: Double]? = nil
+    ) -> Insight? {
         let activeSeries = recurringSeries.filter { $0.isActive }
         guard activeSeries.count >= 2 else { return nil }
 
@@ -119,12 +123,12 @@ extension InsightsService {
 
         let dateFormatter = DateFormatters.dateFormatter
 
-        let currentTotal = activeSeries.reduce(0.0) { $0 + seriesMonthlyEquivalent($1, baseCurrency: baseCurrency) }
+        let currentTotal = activeSeries.reduce(0.0) { $0 + seriesMonthlyEquivalent($1, baseCurrency: baseCurrency, cache: seriesMonthlyEquivalents) }
         let prevSeries = activeSeries.filter { series in
             guard let start = dateFormatter.date(from: series.startDate) else { return false }
             return start < threeMonthsAgo
         }
-        let prevTotal = prevSeries.reduce(0.0) { $0 + seriesMonthlyEquivalent($1, baseCurrency: baseCurrency) }
+        let prevTotal = prevSeries.reduce(0.0) { $0 + seriesMonthlyEquivalent($1, baseCurrency: baseCurrency, cache: seriesMonthlyEquivalents) }
 
         guard prevTotal > 0, currentTotal > 0 else { return nil }
         let changePercent = ((currentTotal - prevTotal) / prevTotal) * 100
@@ -160,7 +164,11 @@ extension InsightsService {
 
     /// Detects possible duplicate subscriptions — active series with the same category
     /// OR monthly cost within 15% of each other.
-    nonisolated func generateDuplicateSubscriptions(baseCurrency: String, recurringSeries: [RecurringSeries]) -> Insight? {
+    nonisolated func generateDuplicateSubscriptions(
+        baseCurrency: String,
+        recurringSeries: [RecurringSeries],
+        seriesMonthlyEquivalents: [String: Double]? = nil
+    ) -> Insight? {
         let activeSeries = recurringSeries.filter { $0.isActive && $0.kind == .subscription }
         guard activeSeries.count >= 2 else { return nil }
 
@@ -170,7 +178,7 @@ extension InsightsService {
         guard !duplicateGroups.isEmpty else { return nil }
 
         let duplicateCost = duplicateGroups.values.flatMap { $0 }
-            .reduce(0.0) { $0 + seriesMonthlyEquivalent($1, baseCurrency: baseCurrency) }
+            .reduce(0.0) { $0 + seriesMonthlyEquivalent($1, baseCurrency: baseCurrency, cache: seriesMonthlyEquivalents) }
         let categoryNames = duplicateGroups.keys.prefix(3).joined(separator: ", ")
         return Insight(
             id: "duplicateSubscriptions",

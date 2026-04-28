@@ -80,6 +80,35 @@ final class TransactionStore {
     /// Pre-maintained set of transaction IDs for O(1) lookups (avoids O(N) Set construction)
     @ObservationIgnored internal var transactionIdSet: Set<String> = []
 
+    /// Pre-maintained id → Transaction map, maintained alongside `transactions` array.
+    /// Lets hot-path operations (update/delete/edit) skip the O(N) `.first(where:)` scan
+    /// across 19k transactions. Sync rule: every mutation in `updateState()` MUST update
+    /// both `transactions` and `transactionById` together.
+    @ObservationIgnored private(set) var transactionById: [String: Transaction] = [:]
+
+    /// Pre-maintained id → Account map, maintained alongside the `accounts` array.
+    /// Replaces the pervasive `accounts.first(where: { $0.id == … })` linear scans in
+    /// validation, transfers, balance recalculation, and recurring generation.
+    /// Sync rule: every mutation of `accounts` (add/update/delete/reorder/load) MUST
+    /// call `rebuildAccountById()` immediately after.
+    @ObservationIgnored private(set) var accountById: [String: Account] = [:]
+
+    /// Per-account transaction index, maintained incrementally by `apply()`.
+    /// Lets `AccountRankingService.rankAccounts` skip the O(N) pre-grouping pass.
+    /// Includes both `accountId` and `targetAccountId` references (transfers appear under both).
+    @ObservationIgnored private(set) var transactionsByAccount: [String: [Transaction]] = [:]
+
+    /// Bumps on every `apply()` call. Consumers (e.g. AccountsViewModel suggestion cache)
+    /// use it as a cache key to detect when invalidation is needed without observing every
+    /// transaction property. Also bumps for recurring-series events because those mutate
+    /// generated transactions through `bulkAdded`, but we keep one counter for simplicity.
+    @ObservationIgnored private(set) var mutationVersion: Int = 0
+
+    /// Bumps on every `accounts` mutation (load/add/update/delete/reorder). Used by
+    /// AccountsViewModel to invalidate cached filtered slices (regular/deposit/loan)
+    /// without observing the whole `accounts` array.
+    @ObservationIgnored private(set) var accountsMutationVersion: Int = 0
+
     /// All accounts - managed alongside transactions for balance updates
     var accounts: [Account] = []
 
@@ -111,6 +140,10 @@ final class TransactionStore {
     // MARK: - Recurring Forwarders
     // Extensions and callers use these to access RecurringStore state without knowing the indirection.
     var recurringSeries: [RecurringSeries] { recurringStore.recurringSeries }
+    /// O(1) recurring series lookup. Forwarded from RecurringStore so callers don't
+    /// need to know about the indirection. Used by TransactionCard, TransactionStore+Recurring,
+    /// and views that resolve a series from a transaction's `recurringSeriesId`.
+    var seriesById: [String: RecurringSeries] { recurringStore.seriesById }
     var recurringOccurrences: [RecurringOccurrence] { recurringStore.recurringOccurrences }
     internal var recurringGenerator: RecurringTransactionGenerator { recurringStore.recurringGenerator }
     internal var recurringValidator: RecurringValidationService { recurringStore.recurringValidator }
@@ -213,9 +246,12 @@ final class TransactionStore {
 
         // Back on @MainActor — single assignment cycle triggers one @Observable update.
         accounts  = AccountOrderManager.shared.applyOrders(to: loadedAccs)
+        rebuildAccountById()
         transactions = loadedTxs
         transactionsCount = loadedTxs.count
         transactionIdSet = Set(loadedTxs.map { $0.id })
+        transactionById = Dictionary(uniqueKeysWithValues: loadedTxs.map { ($0.id, $0) })
+        rebuildAccountIndex(from: loadedTxs)
         categories = CategoryOrderManager.shared.applyOrders(to: loadedCats)
         subcategories = loadedSubs
         categorySubcategoryLinks = loadedCatLinks
@@ -242,6 +278,7 @@ final class TransactionStore {
             return (accs, cats)
         }
         accounts = AccountOrderManager.shared.applyOrders(to: accs)
+        rebuildAccountById()
         categories = CategoryOrderManager.shared.applyOrders(to: cats)
     }
 
@@ -409,7 +446,7 @@ final class TransactionStore {
 
     /// Update an existing transaction
     func update(_ transaction: Transaction) async throws {
-        guard let old = transactions.first(where: { $0.id == transaction.id }) else {
+        guard let old = transactionById[transaction.id] else {
             throw TransactionStoreError.transactionNotFound
         }
 
@@ -436,7 +473,7 @@ final class TransactionStore {
 
     /// Delete a transaction
     func delete(_ transaction: Transaction) async throws {
-        guard transactions.contains(where: { $0.id == transaction.id }) else {
+        guard transactionById[transaction.id] != nil else {
             throw TransactionStoreError.transactionNotFound
         }
 
@@ -464,12 +501,12 @@ final class TransactionStore {
         date: String,
         description: String
     ) async throws {
-        // Validate accounts exist
-        guard accounts.contains(where: { $0.id == sourceId }) else {
+        // Validate accounts exist (O(1) via accountById)
+        guard accountById[sourceId] != nil else {
             throw TransactionStoreError.accountNotFound
         }
 
-        guard accounts.contains(where: { $0.id == targetId }) else {
+        guard accountById[targetId] != nil else {
             throw TransactionStoreError.targetAccountNotFound
         }
 
@@ -500,6 +537,7 @@ final class TransactionStore {
     internal func apply(_ event: TransactionEvent) async throws {
         // 1. Update state (SSOT)
         updateState(event)
+        mutationVersion &+= 1
 
         // 2. Update balances (incremental, awaited for consistency)
         await updateBalances(for: event)
@@ -531,22 +569,35 @@ final class TransactionStore {
             transactions.append(tx)
             transactionsCount = transactions.count
             transactionIdSet.insert(tx.id)
+            transactionById[tx.id] = tx
+            indexAdd(tx)
 
         case .updated(let old, let new):
             if let index = transactions.firstIndex(where: { $0.id == old.id }) {
                 transactions[index] = new
             }
             // IDs don't change on update
+            transactionById[new.id] = new
+            indexUpdate(old: old, new: new)
 
         case .deleted(let tx):
-            transactions.removeAll { $0.id == tx.id }
+            // O(1) removal via index lookup; replaces O(N) `removeAll { $0.id == tx.id }`.
+            if let index = transactions.firstIndex(where: { $0.id == tx.id }) {
+                transactions.remove(at: index)
+            }
             transactionsCount = transactions.count
             transactionIdSet.remove(tx.id)
+            transactionById.removeValue(forKey: tx.id)
+            indexRemove(tx)
 
         case .bulkAdded(let txs):
             transactions.append(contentsOf: txs)
             transactionsCount = transactions.count
             transactionIdSet.formUnion(txs.map { $0.id })
+            for tx in txs {
+                transactionById[tx.id] = tx
+                indexAdd(tx)
+            }
 
         // MARK: - Recurring Series Events (delegated to RecurringStore)
 
@@ -600,17 +651,17 @@ final class TransactionStore {
             throw TransactionStoreError.invalidAmount
         }
 
-        // Account exists (if specified)
+        // Account exists (if specified) — O(1) via accountById dict
         // Allow transactions without accountId (e.g., recurring subscriptions without account)
         if let accountId = transaction.accountId, !accountId.isEmpty {
-            guard accounts.contains(where: { $0.id == accountId }) else {
+            guard accountById[accountId] != nil else {
                 throw TransactionStoreError.accountNotFound
             }
         }
 
-        // Target account exists (for transfers)
+        // Target account exists (for transfers) — O(1) via accountById dict
         if let targetId = transaction.targetAccountId, !targetId.isEmpty {
-            guard accounts.contains(where: { $0.id == targetId }) else {
+            guard accountById[targetId] != nil else {
                 throw TransactionStoreError.targetAccountNotFound
             }
         }
@@ -745,7 +796,69 @@ final class TransactionStore {
         }
     }
 
+    // MARK: - Account Index Maintenance
 
+    /// Rebuild `accountById` from the current `accounts` array.
+    /// Called from `loadData`, `loadAccountsOnly`, and every account CRUD operation
+    /// in TransactionStore+AccountCRUD.swift. The accounts array is small (~50 entries)
+    /// so a full rebuild is cheap and easier to reason about than incremental sync.
+    /// Also bumps `accountsMutationVersion` so downstream caches (AccountsViewModel
+    /// regular/deposit/loan filters) can detect invalidation cheaply.
+    internal func rebuildAccountById() {
+        accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
+        accountsMutationVersion &+= 1
+    }
+
+    // MARK: - Per-Account Index Maintenance
+
+    private func rebuildAccountIndex(from txs: [Transaction]) {
+        var index: [String: [Transaction]] = [:]
+        index.reserveCapacity(accounts.count)
+        for tx in txs {
+            if let id = tx.accountId { index[id, default: []].append(tx) }
+            if let id = tx.targetAccountId { index[id, default: []].append(tx) }
+        }
+        transactionsByAccount = index
+    }
+
+    private func indexAdd(_ tx: Transaction) {
+        if let id = tx.accountId { transactionsByAccount[id, default: []].append(tx) }
+        if let id = tx.targetAccountId { transactionsByAccount[id, default: []].append(tx) }
+    }
+
+    private func indexRemove(_ tx: Transaction) {
+        // Index-based removal — replaces O(N) `removeAll` with O(N) scan + O(1) remove.
+        // For per-account buckets (typically 100–500 entries) this halves the work
+        // since we stop scanning at the first match instead of walking the whole array.
+        if let id = tx.accountId,
+           let i = transactionsByAccount[id]?.firstIndex(where: { $0.id == tx.id }) {
+            transactionsByAccount[id]?.remove(at: i)
+            if transactionsByAccount[id]?.isEmpty == true { transactionsByAccount.removeValue(forKey: id) }
+        }
+        if let id = tx.targetAccountId,
+           let i = transactionsByAccount[id]?.firstIndex(where: { $0.id == tx.id }) {
+            transactionsByAccount[id]?.remove(at: i)
+            if transactionsByAccount[id]?.isEmpty == true { transactionsByAccount.removeValue(forKey: id) }
+        }
+    }
+
+    private func indexUpdate(old: Transaction, new: Transaction) {
+        // Account links may change on edit — remove from old buckets, insert into new ones.
+        if old.accountId != new.accountId || old.targetAccountId != new.targetAccountId {
+            indexRemove(old)
+            indexAdd(new)
+            return
+        }
+        // Same buckets — replace in place to keep the latest tx fields (date/amount/category/etc.)
+        if let id = new.accountId,
+           let i = transactionsByAccount[id]?.firstIndex(where: { $0.id == new.id }) {
+            transactionsByAccount[id]?[i] = new
+        }
+        if let id = new.targetAccountId,
+           let i = transactionsByAccount[id]?.firstIndex(where: { $0.id == new.id }) {
+            transactionsByAccount[id]?[i] = new
+        }
+    }
 }
 
 // MARK: - Debug Helpers

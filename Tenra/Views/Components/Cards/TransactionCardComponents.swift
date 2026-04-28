@@ -59,9 +59,13 @@ struct TransactionIconView: View {
 
 struct TransactionInfoView: View {
     let transaction: Transaction
-    let accounts: [Account]
+    /// Pre-resolved source account — caller does the O(1) lookup once and passes the result.
+    /// Was previously `accounts: [Account]` with internal `.first(where:)` linear scans.
+    let sourceAccount: Account?
+    /// Pre-resolved target account (for transfers).
+    let targetAccount: Account?
     let linkedSubcategories: [Subcategory]
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
             // Category name
@@ -69,21 +73,21 @@ struct TransactionInfoView: View {
                  ? String(localized: "transactionType.transfer")
                  : transaction.category)
                 .font(AppTypography.h4)
-            
+
             // Subcategories
             if !linkedSubcategories.isEmpty {
                 Text(linkedSubcategories.map { $0.name }.joined(separator: ", "))
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(.primary)
             }
-            
+
             // Account info or transfer info
             if transaction.type == .internalTransfer {
-                TransferAccountInfo(transaction: transaction, accounts: accounts)
+                TransferAccountInfo(transaction: transaction, sourceAccount: sourceAccount, targetAccount: targetAccount)
             } else {
-                RegularAccountInfo(transaction: transaction, accounts: accounts)
+                RegularAccountInfo(transaction: transaction, account: sourceAccount)
             }
-            
+
             // Description
             if !transaction.description.isEmpty {
                 Text(transaction.description)
@@ -98,14 +102,14 @@ struct TransactionInfoView: View {
 
 struct TransferAccountInfo: View {
     let transaction: Transaction
-    let accounts: [Account]
+    /// Pre-resolved by caller — eliminates per-render linear scans across 50+ accounts.
+    let sourceAccount: Account?
+    let targetAccount: Account?
 
     var body: some View {
         HStack(spacing: AppSpacing.xs) {
             // Source account
-            if let sourceId = transaction.accountId,
-               let sourceAccount = accounts.first(where: { $0.id == sourceId }) {
-                // Account exists - show with logo
+            if let sourceAccount {
                 HStack(spacing: AppSpacing.xs) {
                     IconView(source: sourceAccount.iconSource, size: AppIconSize.sm)
                     Text(sourceAccount.name)
@@ -125,9 +129,7 @@ struct TransferAccountInfo: View {
                 .foregroundStyle(.secondary)
 
             // Target account
-            if let targetId = transaction.targetAccountId,
-               let targetAccount = accounts.first(where: { $0.id == targetId }) {
-                // Account exists - show with logo
+            if let targetAccount {
                 HStack(spacing: AppSpacing.xs) {
                     IconView(source: targetAccount.iconSource, size: AppIconSize.sm)
                     Text(targetAccount.name)
@@ -149,12 +151,11 @@ struct TransferAccountInfo: View {
 
 struct RegularAccountInfo: View {
     let transaction: Transaction
-    let accounts: [Account]
+    /// Pre-resolved by caller — was previously `accounts: [Account]` with `.first(where:)` per render.
+    let account: Account?
 
     var body: some View {
-        if let accountId = transaction.accountId,
-           let account = accounts.first(where: { $0.id == accountId }) {
-            // Account exists - show with logo
+        if let account {
             HStack(spacing: AppSpacing.xs) {
                 IconView(source: account.iconSource, size: AppIconSize.sm)
                 Text(account.name)
@@ -373,7 +374,8 @@ private extension Account {
             category: "Food",
             accountId: "acc-1"
         ),
-        accounts: [account],
+        sourceAccount: account,
+        targetAccount: nil,
         linkedSubcategories: []
     )
     .padding()
@@ -392,7 +394,8 @@ private extension Account {
             category: "Food",
             accountId: "acc-1"
         ),
-        accounts: [account],
+        sourceAccount: account,
+        targetAccount: nil,
         linkedSubcategories: subcategories
     )
     .padding()
@@ -411,7 +414,8 @@ private extension Account {
             accountId: "deleted-id",
             accountName: "Deleted Account"
         ),
-        accounts: [],   // пустой — аккаунт удалён
+        sourceAccount: nil,
+        targetAccount: nil,
         linkedSubcategories: []
     )
     .padding()
@@ -420,7 +424,8 @@ private extension Account {
 #Preview("Info — No description, no account") {
     TransactionInfoView(
         transaction: .preview(description: "", type: .income, category: "Salary"),
-        accounts: [],
+        sourceAccount: nil,
+        targetAccount: nil,
         linkedSubcategories: []
     )
     .padding()
@@ -433,7 +438,8 @@ private extension Account {
     let target = Account.preview(id: "tgt", name: "Halyk Bank", iconSource: .brandService("halykbank.kz"))
     TransferAccountInfo(
         transaction: .preview(type: .internalTransfer, category: "Transfer", accountId: "src", targetAccountId: "tgt"),
-        accounts: [source, target]
+        sourceAccount: source,
+        targetAccount: target
     )
     .padding()
 }
@@ -453,7 +459,8 @@ private extension Account {
             accountName: "Old Account A",
             targetAccountName: "Old Account B"
         ),
-        accounts: []    // оба удалены
+        sourceAccount: nil,
+        targetAccount: nil
     )
     .padding()
 }
@@ -473,7 +480,8 @@ private extension Account {
             targetAccountId: "missing",
             targetAccountName: "Deleted Target"
         ),
-        accounts: [source]
+        sourceAccount: source,
+        targetAccount: nil
     )
     .padding()
 }
@@ -484,7 +492,7 @@ private extension Account {
     let account = Account.preview(id: "acc-1", name: "Kaspi Gold", iconSource: .brandService("kaspi.kz"))
     RegularAccountInfo(
         transaction: .preview(accountId: "acc-1"),
-        accounts: [account]
+        account: account
     )
     .padding()
 }
@@ -502,7 +510,7 @@ private extension Account {
             accountId: "deleted-id",
             accountName: "My Old Card"
         ),
-        accounts: []    // аккаунт удалён
+        account: nil
     )
     .padding()
 }
@@ -510,7 +518,7 @@ private extension Account {
 #Preview("RegularAccountInfo — No account at all") {
     RegularAccountInfo(
         transaction: .preview(accountId: nil),
-        accounts: []
+        account: nil
     )
     .padding()
     .overlay { Text("(empty — nothing renders)").font(.caption).foregroundStyle(.secondary) }

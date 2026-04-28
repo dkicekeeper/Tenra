@@ -79,7 +79,7 @@ extension TransactionStore {
     /// - Throws: TransactionStoreError if series not found or validation fails
     func updateSeries(_ series: RecurringSeries) async throws {
         // 1. Find existing series
-        guard let old = recurringSeries.first(where: { $0.id == series.id }) else {
+        guard let old = seriesById[series.id] else {
             throw TransactionStoreError.seriesNotFound
         }
 
@@ -287,7 +287,7 @@ extension TransactionStore {
 
 
         // 2. Cache miss: find series
-        guard let series = recurringSeries.first(where: { $0.id == seriesId }) else {
+        guard let series = seriesById[seriesId] else {
             return []
         }
 
@@ -314,7 +314,7 @@ extension TransactionStore {
     /// - Parameter seriesId: The subscription ID
     /// - Returns: Next charge date or nil if not found
     func nextChargeDate(for seriesId: String) -> Date? {
-        guard let series = recurringSeries.first(where: { $0.id == seriesId }) else {
+        guard let series = seriesById[seriesId] else {
             return nil
         }
 
@@ -428,7 +428,7 @@ extension TransactionStore {
     /// - Throws: TransactionStoreError if series not found or not a subscription
     func pauseSubscription(id seriesId: String) async throws {
         // 1. Find series
-        guard let series = recurringSeries.first(where: { $0.id == seriesId }) else {
+        guard let series = seriesById[seriesId] else {
             throw TransactionStoreError.seriesNotFound
         }
 
@@ -460,7 +460,7 @@ extension TransactionStore {
     /// - Parameter seriesId: The subscription ID to resume
     /// - Throws: TransactionStoreError if series not found or not a subscription
     func resumeSubscription(id seriesId: String) async throws {
-        guard let series = recurringSeries.first(where: { $0.id == seriesId }) else {
+        guard let series = seriesById[seriesId] else {
             throw TransactionStoreError.seriesNotFound
         }
         guard series.isSubscription else {
@@ -476,7 +476,7 @@ extension TransactionStore {
     /// - Throws: TransactionStoreError if series not found
     func resumeSeries(id seriesId: String) async throws {
         // 1. Find existing series
-        guard let series = recurringSeries.first(where: { $0.id == seriesId }) else {
+        guard let series = seriesById[seriesId] else {
             throw TransactionStoreError.seriesNotFound
         }
 

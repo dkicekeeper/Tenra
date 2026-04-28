@@ -24,7 +24,7 @@ struct SubscriptionDetailView: View {
 
     /// Live subscription from the store — reflects pause/resume/edit changes in real time.
     private var liveSubscription: RecurringSeries {
-        transactionStore.recurringSeries.first(where: { $0.id == subscription.id }) ?? subscription
+        transactionStore.seriesById[subscription.id] ?? subscription
     }
 
     /// Reactive trigger: cheap O(N) single pass on transactions (count only).

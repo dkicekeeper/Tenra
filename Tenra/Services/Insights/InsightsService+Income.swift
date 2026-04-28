@@ -22,7 +22,8 @@ extension InsightsService {
         cacheManager: TransactionCacheManager,
         currencyService: TransactionCurrencyService,
         granularity: InsightGranularity? = nil,
-        periodPoints: [PeriodDataPoint] = []
+        periodPoints: [PeriodDataPoint] = [],
+        txDateMap: [String: Date]? = nil
     ) -> [Insight] {
         var insights: [Insight] = []
         let incomeTransactions = filterService.filterByType(filtered, type: .income)
@@ -84,12 +85,23 @@ extension InsightsService {
                let prevMonthEnd = calendar.date(byAdding: .month, value: 1, to: prevMonthStart) {
                 var thisTotal: Double = 0
                 var prevTotal: Double = 0
-                let dateFormatter = DateFormatters.dateFormatter
-                for tx in allTransactions where tx.type == .income {
-                    guard let txDate = dateFormatter.date(from: tx.date) else { continue }
-                    let amount = resolveAmount(tx, baseCurrency: baseCurrency)
-                    if txDate >= thisMonthStart && txDate < thisMonthEnd { thisTotal += amount }
-                    else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevTotal += amount }
+                // Use txDateMap fast path when available — eliminates DateFormatter parse
+                // (~16μs/tx × 19k = ~300ms saved per legacy MoM income call).
+                if let map = txDateMap {
+                    for tx in allTransactions where tx.type == .income {
+                        guard let txDate = map[tx.date] else { continue }
+                        let amount = resolveAmount(tx, baseCurrency: baseCurrency)
+                        if txDate >= thisMonthStart && txDate < thisMonthEnd { thisTotal += amount }
+                        else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevTotal += amount }
+                    }
+                } else {
+                    let dateFormatter = DateFormatters.dateFormatter
+                    for tx in allTransactions where tx.type == .income {
+                        guard let txDate = dateFormatter.date(from: tx.date) else { continue }
+                        let amount = resolveAmount(tx, baseCurrency: baseCurrency)
+                        if txDate >= thisMonthStart && txDate < thisMonthEnd { thisTotal += amount }
+                        else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevTotal += amount }
+                    }
                 }
                 if prevTotal > 0 {
                     let changePercent = ((thisTotal - prevTotal) / prevTotal) * 100

@@ -82,6 +82,12 @@ struct LinkPaymentsView: View {
     @State private var cachedAreAllFilteredSelected: Bool = false
     @State private var cachedAccountById: [String: Account] = [:]
     @State private var cachedSelectedTotalInBaseCurrency: Double = 0
+    // Caches for filter-header / sheet-presented collections. Previously these were computed
+    // properties that ran 3 Set-allocations × O(candidates) on every body re-eval.
+    @State private var cachedUniqueAccountIds: [String] = []
+    @State private var cachedCandidateExpenseCategories: [String] = []
+    @State private var cachedCandidateSubcategories: [String] = []
+    @State private var cachedCandidateAccounts: [Account] = []
 
     @State private var searchDebounceTask: Task<Void, Never>? = nil
     @State private var isBaselineLoading = false
@@ -173,32 +179,18 @@ struct LinkPaymentsView: View {
             }
     }
 
-    // MARK: - Derived Data (Computed read-only accessors)
+    // MARK: - Derived Data (Cached @State accessors)
+    // These were previously computed properties — each body re-eval allocated 3+ Sets across
+    // up to ~1000 candidates. Now they're rebuilt once per `applyFilters()` call inside
+    // `rebuildDerivedCaches()` and read directly from @State.
 
-    private var uniqueAccountIds: [String] {
-        Array(Set(candidates.compactMap(\.accountId))).sorted()
-    }
-
-    private var candidateExpenseCategories: [String] {
-        Array(Set(candidates.map(\.category))).sorted()
-    }
-
-    private var candidateSubcategories: [String] {
-        Array(Set(candidates.compactMap(\.subcategory))).sorted()
-    }
+    private var uniqueAccountIds: [String] { cachedUniqueAccountIds }
+    private var candidateExpenseCategories: [String] { cachedCandidateExpenseCategories }
+    private var candidateSubcategories: [String] { cachedCandidateSubcategories }
+    private var candidateAccounts: [Account] { cachedCandidateAccounts }
 
     private var selectedTransactions: [Transaction] {
         cachedFilteredCandidates.filter { selectedIds.contains($0.id) }
-    }
-
-    private var candidateAccounts: [Account] {
-        uniqueAccountIds.map { id in
-            if let a = accountsViewModel.accounts.first(where: { $0.id == id }) { return a }
-            if let a = transactionStore.accounts.first(where: { $0.id == id }) { return a }
-            let name = resolveAccountName(for: id)
-            let currency = candidates.first(where: { $0.accountId == id })?.currency ?? displayCurrency
-            return Account(id: id, name: name, currency: currency)
-        }
     }
 
     private func resolveAccountName(for accountId: String) -> String {
@@ -485,9 +477,46 @@ struct LinkPaymentsView: View {
 
         cachedAreAllFilteredSelected = !filtered.isEmpty && filtered.allSatisfy { selectedIds.contains($0.id) }
 
-        cachedAccountById = Dictionary(uniqueKeysWithValues: accountsViewModel.accounts.map { ($0.id, $0) })
+        // Reuse the store's O(1) accountById index — no need to allocate a fresh dict on each
+        // filter change. Only sync if the store's account count changed since last rebuild.
+        if cachedAccountById.count != transactionStore.accountById.count {
+            cachedAccountById = transactionStore.accountById
+        }
 
+        rebuildCandidateCollectionCaches()
         recomputeSelectedTotal()
+    }
+
+    /// Rebuilds derived collections that depend on `candidates` only. Called from the same
+    /// path as `rebuildDerivedCaches()` so the two stay in sync.
+    private func rebuildCandidateCollectionCaches() {
+        var accountIdSet = Set<String>()
+        var categorySet = Set<String>()
+        var subcategorySet = Set<String>()
+        // First sighting per accountId for the fallback Account fabrication path
+        var firstCurrencyByAccountId: [String: String] = [:]
+        for tx in candidates {
+            if let aid = tx.accountId {
+                accountIdSet.insert(aid)
+                if firstCurrencyByAccountId[aid] == nil {
+                    firstCurrencyByAccountId[aid] = tx.currency
+                }
+            }
+            categorySet.insert(tx.category)
+            if let sub = tx.subcategory { subcategorySet.insert(sub) }
+        }
+        let sortedAccountIds = accountIdSet.sorted()
+        cachedUniqueAccountIds = sortedAccountIds
+        cachedCandidateExpenseCategories = categorySet.sorted()
+        cachedCandidateSubcategories = subcategorySet.sorted()
+        // Build candidate accounts using O(1) dict lookups — replaces 2× `accounts.first(where:)`
+        // per id (was O(N×M) where N=accounts, M=candidates).
+        cachedCandidateAccounts = sortedAccountIds.map { id in
+            if let a = transactionStore.accountById[id] { return a }
+            let name = resolveAccountName(for: id)
+            let currency = firstCurrencyByAccountId[id] ?? displayCurrency
+            return Account(id: id, name: name, currency: currency)
+        }
     }
 
     private func recomputeSelectedTotal() {

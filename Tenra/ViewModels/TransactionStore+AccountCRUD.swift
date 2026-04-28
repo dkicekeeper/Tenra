@@ -17,12 +17,13 @@ extension TransactionStore {
 
     /// Add a new account
     func addAccount(_ account: Account) {
-        // Check if account already exists
-        if accounts.contains(where: { $0.id == account.id }) {
+        // Check if account already exists — O(1) via accountById
+        if accountById[account.id] != nil {
             return
         }
 
         accounts.append(account)
+        rebuildAccountById()
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
@@ -44,6 +45,7 @@ extension TransactionStore {
         }
 
         accounts[index] = account
+        rebuildAccountById()
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
@@ -61,6 +63,7 @@ extension TransactionStore {
     /// Delete an account
     func deleteAccount(_ accountId: String) {
         accounts.removeAll { $0.id == accountId }
+        rebuildAccountById()
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
@@ -81,6 +84,7 @@ extension TransactionStore {
         // happening in CoreData later.
         accountCRUDLogger.log("🗑️ deleteAccounts START: removing \(ids.count) ids=\(Array(ids), privacy: .public) totalAccountsBefore=\(self.accounts.count)")
         accounts.removeAll { ids.contains($0.id) }
+        rebuildAccountById()
         for a in accounts {
             accountCRUDLogger.log("🗑️ deleteAccounts remaining: id=\(a.id, privacy: .public) name=\(a.name, privacy: .public) balance=\(a.balance) initial=\(a.initialBalance ?? -1) shouldCalc=\(a.shouldCalculateFromTransactions)")
         }
@@ -133,6 +137,7 @@ extension TransactionStore {
                 accounts[accountIndex].order = index
             }
         }
+        rebuildAccountById()
 
         persistAccountsToRepository()
         AccountOrderManager.shared.setOrders(orderMap)

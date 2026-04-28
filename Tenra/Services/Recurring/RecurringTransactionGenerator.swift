@@ -91,6 +91,9 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
         accounts: [Account],
         baseCurrency: String
     ) -> (transactions: [Transaction], occurrences: [RecurringOccurrence]) {
+        // Build accountById once — replaces O(N) `accounts.first(where:)` × 2 per occurrence
+        // (typical series generates 100–1000 occurrences over horizon).
+        let accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
         guard let startDate = dateFormatter.date(from: series.startDate) else {
             return ([], [])
         }
@@ -132,13 +135,9 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
                 if !existingTransactionIds.contains(transactionId) {
                     let occurrenceId = UUID().uuidString
 
-                    // Resolve account names
-                    let accountName = series.accountId.flatMap { accountId in
-                        accounts.first(where: { $0.id == accountId })?.name
-                    }
-                    let targetAccountName = series.targetAccountId.flatMap { targetAccountId in
-                        accounts.first(where: { $0.id == targetAccountId })?.name
-                    }
+                    // Resolve account names — O(1) via accountById
+                    let accountName = series.accountId.flatMap { accountById[$0]?.name }
+                    let targetAccountName = series.targetAccountId.flatMap { accountById[$0]?.name }
 
                     // Calculate target currency and amount for display
                     var targetCurrency: String? = nil
@@ -278,6 +277,9 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
 
         let today = calendar.startOfDay(for: Date())
 
+        // Build accountById once — replaces O(N) `accounts.first(where:)` × 2 per occurrence
+        let accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
+
         // Build fast lookup for existing occurrences of THIS series
         var existingOccurrenceKeys: Set<String> = []
         for occ in existingOccurrences where occ.seriesId == series.id {
@@ -338,12 +340,8 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
             if !existingTransactionIds.contains(transactionId) {
                 let occurrenceId = UUID().uuidString
 
-                let accountName = series.accountId.flatMap { id in
-                    accounts.first(where: { $0.id == id })?.name
-                }
-                let targetAccountName = series.targetAccountId.flatMap { id in
-                    accounts.first(where: { $0.id == id })?.name
-                }
+                let accountName = series.accountId.flatMap { accountById[$0]?.name }
+                let targetAccountName = series.targetAccountId.flatMap { accountById[$0]?.name }
 
                 var targetCurrency: String? = nil
                 var targetAmount: Double? = nil

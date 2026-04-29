@@ -200,3 +200,27 @@ struct DepositInterestServiceTests {
         #expect(result == priorAccrued, "Expected \(priorAccrued), got \(result)")
     }
 }
+
+@Suite("TransactionType.affectsDepositPrincipal")
+struct TransactionTypeDepositPrincipalTests {
+
+    @Test("deposit-principal types return true")
+    func depositPrincipalTypesReturnTrue() {
+        #expect(TransactionType.depositTopUp.affectsDepositPrincipal)
+        #expect(TransactionType.depositWithdrawal.affectsDepositPrincipal)
+        #expect(TransactionType.depositInterestAccrual.affectsDepositPrincipal)
+    }
+
+    @Test("income and expense return true")
+    func incomeAndExpenseReturnTrue() {
+        #expect(TransactionType.income.affectsDepositPrincipal)
+        #expect(TransactionType.expense.affectsDepositPrincipal)
+    }
+
+    @Test("transfers and loan types return false")
+    func transfersAndLoanReturnFalse() {
+        #expect(!TransactionType.internalTransfer.affectsDepositPrincipal)
+        #expect(!TransactionType.loanPayment.affectsDepositPrincipal)
+        #expect(!TransactionType.loanEarlyRepayment.affectsDepositPrincipal)
+    }
+}

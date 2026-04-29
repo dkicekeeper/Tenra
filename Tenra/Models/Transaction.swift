@@ -22,6 +22,20 @@ enum TransactionType: String, Codable, Sendable {
     nonisolated static let transferCategoryName = "Transfer"
     /// Locale-independent category name for loan payment transactions.
     nonisolated static let loanPaymentCategoryName = "Loan Payment"
+
+    /// `true` for transaction types that move a deposit's `principalBalance`
+    /// when the transaction lives on a deposit account. `.income/.expense` are
+    /// included so the new "Top-up from income category" flow on deposits is
+    /// reflected in the deposit's principal walk.
+    nonisolated var affectsDepositPrincipal: Bool {
+        switch self {
+        case .depositTopUp, .depositWithdrawal, .depositInterestAccrual,
+             .income, .expense:
+            return true
+        case .internalTransfer, .loanPayment, .loanEarlyRepayment:
+            return false
+        }
+    }
 }
 
 struct Transaction: Identifiable, Codable, Equatable, Sendable {

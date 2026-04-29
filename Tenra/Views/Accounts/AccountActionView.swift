@@ -2,8 +2,6 @@
 //  AccountActionView.swift
 //  Tenra
 //
-//  Created on 2024
-//
 
 import SwiftUI
 
@@ -26,7 +24,7 @@ struct AccountActionView: View {
         account: Account,
         namespace: Namespace.ID,
         categoriesViewModel: CategoriesViewModel,
-        transferDirection: DepositTransferDirection? = nil
+        defaultAction: AccountActionViewModel.ActionType? = nil
     ) {
         self.transactionsViewModel = transactionsViewModel
         self.accountsViewModel = accountsViewModel
@@ -37,7 +35,7 @@ struct AccountActionView: View {
             account: account,
             accountsViewModel: accountsViewModel,
             transactionsViewModel: transactionsViewModel,
-            transferDirection: transferDirection
+            defaultAction: defaultAction
         ))
     }
 
@@ -47,9 +45,8 @@ struct AccountActionView: View {
             VStack(spacing: AppSpacing.lg) {
                 Color.clear
                     .frame(height: 0)
-                    .glassEffectID("account-card-\(account.id)", in: namespace) // glass morph anchor
+                    .glassEffectID("account-card-\(account.id)", in: namespace)
 
-                // 2. Сумма с выбором валюты
                 AmountInputView(
                     amount: $viewModel.amountText,
                     selectedCurrency: $viewModel.selectedCurrency,
@@ -59,11 +56,8 @@ struct AccountActionView: View {
                     appSettings: transactionsViewModel.appSettings
                 )
 
-                // 3. Счет
-                if viewModel.selectedAction == .income && !account.isDeposit {
-                    // Для пополнения счет не нужен
-                    EmptyView()
-                } else {
+                // Target account picker — shown for Transfer mode only.
+                if viewModel.selectedAction == .transfer {
                     if let coordinator = accountsViewModel.balanceCoordinator {
                         AccountSelectorView(
                             accounts: viewModel.availableAccounts,
@@ -74,8 +68,8 @@ struct AccountActionView: View {
                     }
                 }
 
-                // 4. Категория (только для пополнения)
-                if viewModel.selectedAction == .income && !account.isDeposit {
+                // Income category picker — shown for Top-up mode only.
+                if viewModel.selectedAction == .income {
                     CategorySelectorView(
                         categories: viewModel.incomeCategories,
                         type: .income,
@@ -85,7 +79,6 @@ struct AccountActionView: View {
                     )
                 }
 
-                // 5. Описание
                 FormTextField(
                     text: $viewModel.descriptionText,
                     placeholder: String(localized: "transactionForm.descriptionPlaceholder"),
@@ -94,35 +87,17 @@ struct AccountActionView: View {
             }
         }
         .safeAreaBar(edge: .top) {
-            if account.isDeposit {
-                // Deposits: single entry point, user picks direction here.
-                SegmentedPickerView(
-                    title: String(localized: "common.type"),
-                    selection: Binding(
-                        get: { viewModel.transferDirection ?? .toDeposit },
-                        set: { viewModel.transferDirection = $0 }
-                    ),
-                    options: [
-                        (label: String(localized: "transactionForm.depositTopUp"), value: DepositTransferDirection.toDeposit),
-                        (label: String(localized: "transactionForm.depositWithdrawal"), value: DepositTransferDirection.fromDeposit)
-                    ]
-                )
-                .padding(.horizontal, AppSpacing.lg)
-                .padding(.vertical, AppSpacing.md)
-                .background(Color.clear)
-            } else {
-                SegmentedPickerView(
-                    title: String(localized: "common.type"),
-                    selection: $viewModel.selectedAction,
-                    options: [
-                        (label: String(localized: "transactionForm.transfer"), value: AccountActionViewModel.ActionType.transfer),
-                        (label: String(localized: "transactionForm.topUp"), value: AccountActionViewModel.ActionType.income)
-                    ]
-                )
-                .padding(.horizontal, AppSpacing.lg)
-                .padding(.vertical, AppSpacing.md)
-                .background(Color.clear)
-            }
+            SegmentedPickerView(
+                title: String(localized: "common.type"),
+                selection: $viewModel.selectedAction,
+                options: [
+                    (label: String(localized: "transactionForm.transfer"), value: AccountActionViewModel.ActionType.transfer),
+                    (label: String(localized: "transactionForm.topUp"), value: AccountActionViewModel.ActionType.income)
+                ]
+            )
+            .padding(.horizontal, AppSpacing.lg)
+            .padding(.vertical, AppSpacing.md)
+            .background(Color.clear)
         }
         .navigationTitle(viewModel.navigationTitleText)
         .navigationBarTitleDisplayMode(.inline)
@@ -161,133 +136,19 @@ struct AccountActionView: View {
     }
 }
 
-// CategoryRadioButton is now replaced by CategoryChip
-
-// MARK: - Previews
-
-private func makeDepositInfo(
-    bank: String = "Tenra Bank",
-    principal: Decimal = 100_000,
-    rate: Decimal = 12,
-    capitalization: Bool = true
-) -> DepositInfo {
-    DepositInfo(
-        bankName: bank,
-        principalBalance: principal,
-        capitalizationEnabled: capitalization,
-        interestRateAnnual: rate,
-        interestPostingDay: 15
-    )
-}
-
-@MainActor
-private func makePreviewWrapper(
-    account: Account,
-    transferDirection: DepositTransferDirection? = nil
-) -> some View {
+#Preview {
+    @Previewable @Namespace var ns
     let coordinator = AppCoordinator()
-    return AccountActionPreviewWrapper(
-        coordinator: coordinator,
-        account: account,
-        transferDirection: transferDirection
-    )
-}
-
-private struct AccountActionPreviewWrapper: View {
-    let coordinator: AppCoordinator
-    let account: Account
-    let transferDirection: DepositTransferDirection?
-    @Namespace private var ns
-
-    var body: some View {
-        NavigationStack {
-            AccountActionView(
-                transactionsViewModel: coordinator.transactionsViewModel,
-                accountsViewModel: coordinator.accountsViewModel,
-                account: account,
-                namespace: ns,
-                categoriesViewModel: coordinator.categoriesViewModel,
-                transferDirection: transferDirection
-            )
-        }
-        .environment(coordinator)
-        .environment(coordinator.transactionStore)
-        .environment(TimeFilterManager())
+    return NavigationStack {
+        AccountActionView(
+            transactionsViewModel: coordinator.transactionsViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
+            account: Account(name: "Main", currency: "USD", iconSource: nil, initialBalance: 1000),
+            namespace: ns,
+            categoriesViewModel: coordinator.categoriesViewModel
+        )
     }
-}
-
-#Preview("Regular account (USD)") {
-    makePreviewWrapper(
-        account: Account(
-            name: "Main Card",
-            currency: "USD",
-            iconSource: .sfSymbol("creditcard.fill"),
-            initialBalance: 1_234.56
-        )
-    )
-}
-
-#Preview("Regular account — brand logo") {
-    makePreviewWrapper(
-        account: Account(
-            name: "Revolut",
-            currency: "EUR",
-            iconSource: .brandService("revolut.com"),
-            initialBalance: 5_280
-        )
-    )
-}
-
-#Preview("Regular account — empty balance") {
-    makePreviewWrapper(
-        account: Account(
-            name: "New Wallet",
-            currency: "GBP",
-            iconSource: .sfSymbol("wallet.bifold.fill"),
-            initialBalance: 0
-        )
-    )
-}
-
-#Preview("Deposit — default (top-up)") {
-    makePreviewWrapper(
-        account: Account(
-            name: "12% Term Deposit",
-            currency: "USD",
-            iconSource: .sfSymbol("banknote.fill"),
-            depositInfo: makeDepositInfo(),
-            initialBalance: 100_000
-        )
-    )
-}
-
-#Preview("Deposit — withdrawal direction") {
-    makePreviewWrapper(
-        account: Account(
-            name: "12% Term Deposit",
-            currency: "USD",
-            iconSource: .sfSymbol("banknote.fill"),
-            depositInfo: makeDepositInfo(),
-            initialBalance: 100_000
-        ),
-        transferDirection: .fromDeposit
-    )
-}
-
-#Preview("Deposit — high-yield, no capitalization") {
-    makePreviewWrapper(
-        account: Account(
-            name: "Premium Savings",
-            currency: "EUR",
-            iconSource: .sfSymbol("star.circle.fill"),
-            depositInfo: makeDepositInfo(
-                bank: "Premium Bank",
-                principal: 500_000,
-                rate: 18,
-                capitalization: false
-            ),
-            initialBalance: 500_000
-        ),
-        transferDirection: .toDeposit
-    )
+    .environment(coordinator)
+    .environment(coordinator.transactionStore)
+    .environment(TimeFilterManager())
 }

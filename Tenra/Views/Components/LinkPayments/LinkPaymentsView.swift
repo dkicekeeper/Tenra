@@ -35,8 +35,8 @@ struct LinkPaymentsView: View {
 
         static let subscription = Options()
         static let loan = Options(
-            showCategoryFilter: false,
-            showSubcategoryFilter: false,
+            showCategoryFilter: true,
+            showSubcategoryFilter: true,
             defaultAmountMode: .tolerance,
             autoSelectOnInitialLoad: true
         )
@@ -308,7 +308,8 @@ struct LinkPaymentsView: View {
     // MARK: - Transaction List
 
     private var transactionList: some View {
-        ScrollView {
+        let baseCurrency = transactionStore.baseCurrency
+        return ScrollView {
             if !cachedFilteredCandidates.isEmpty {
                 GroupedTransactionList(
                     transactions: cachedFilteredCandidates,
@@ -333,6 +334,14 @@ struct LinkPaymentsView: View {
                             selectedIds.insert(tx.id)
                         }
                         HapticManager.selection()
+                    },
+                    summaryCurrencyOverride: baseCurrency,
+                    summaryAmountFor: { tx in
+                        if tx.currency == baseCurrency { return tx.amount }
+                        if let converted = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency) {
+                            return converted
+                        }
+                        return tx.convertedAmount ?? tx.amount
                     },
                     rowOverlay: { tx in
                         Image(systemName: selectedIds.contains(tx.id) ? "checkmark.circle.fill" : "circle")

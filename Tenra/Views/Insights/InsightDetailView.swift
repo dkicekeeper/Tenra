@@ -91,12 +91,12 @@ struct InsightDetailView<CategoryDestination: View>: View {
         Group {
             switch insight.detailData {
             case .categoryBreakdown(let items):
-                DonutChart(slices: DonutSlice.from(items), showLegend: false)
+                DonutChart(slices: DonutSlice.from(items))
             case .periodTrend(let points):
                 let gran = points.first?.granularity ?? .month
                 if insight.type == .bestMonth || insight.type == .worstMonth
                     || insight.type == .incomeGrowth || insight.type == .incomeVsExpenseRatio {
-                    PeriodBarChart(dataPoints: points, currency: currency, granularity: gran, mode: .full)
+                    PeriodChartSwitcher(dataPoints: points, currency: currency, granularity: gran, mode: .full)
                 } else {
                     PeriodLineChart(
                         dataPoints: points,

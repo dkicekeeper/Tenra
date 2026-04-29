@@ -93,15 +93,6 @@ struct AccountsManagementView: View {
                                 Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
                             }
 
-                            if !account.isDeposit {
-                                Button {
-                                    HapticManager.light()
-                                    convertingAccount = account
-                                } label: {
-                                    Label(String(localized: "account.convertToDeposit", defaultValue: "Convert to Deposit"), systemImage: "lock.square.stack.fill")
-                                }
-                            }
-
                             Button(role: .destructive) {
                                 HapticManager.warning()
                                 accountToDelete = account

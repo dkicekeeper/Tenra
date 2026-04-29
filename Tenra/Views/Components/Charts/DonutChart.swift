@@ -4,7 +4,7 @@
 //
 //  Phase 43 (chart merge): Unified donut (ring) chart component.
 //  Replaces two structurally identical components:
-//  - CategoryBreakdownChart   (multi-color sectors, compact/full modes, annotations, legend)
+//  - CategoryBreakdownChart   (multi-color sectors, compact/full modes, annotations)
 //  - SubcategoryBreakdownChart (monochromatic opacity-stepped sectors)
 //
 //  Behavioral differences are resolved at the call site via `DonutSlice` factory methods.
@@ -20,9 +20,9 @@ struct DonutSlice: Identifiable {
     let id: String
     let amount: Double
     let color: Color
-    /// Legend row label.
+    /// Display label (used for VoiceOver / external lists).
     let label: String
-    /// 0–100 percentage, used for in-sector annotation (shown when > 10%) and legend text.
+    /// 0–100 percentage, used for in-sector annotation (shown when > 10%).
     let percentage: Double
 }
 
@@ -52,13 +52,26 @@ extension DonutSlice {
 
     /// Converts `SubcategoryBreakdownItem` array to opacity-stepped slices of `baseColor`.
     ///
-    /// Opacity formula: `index × 0.15 + 0.3` (matches previous `SubcategoryBreakdownChart` logic).
+    /// Opacity is distributed linearly between 0.95 (first item) and 0.40 (last item),
+    /// regardless of count. This avoids the previous bug where the legacy formula
+    /// `index × 0.15 + 0.3` saturated at 1.0 starting from index 5, making all 6th+
+    /// subcategories visually identical.
     static func from(_ items: [SubcategoryBreakdownItem], baseColor: Color) -> [DonutSlice] {
-        items.enumerated().map { index, item in
-            DonutSlice(
+        let count = items.count
+        let maxOpacity = 0.95
+        let minOpacity = 0.40
+        return items.enumerated().map { index, item in
+            let opacity: Double
+            if count <= 1 {
+                opacity = maxOpacity
+            } else {
+                let t = Double(index) / Double(count - 1)
+                opacity = maxOpacity - (maxOpacity - minOpacity) * t
+            }
+            return DonutSlice(
                 id: item.id,
                 amount: item.amount,
-                color: baseColor.opacity(Double(index) * 0.15 + 0.3),
+                color: baseColor.opacity(opacity),
                 label: item.name,
                 percentage: item.percentage
             )
@@ -70,32 +83,40 @@ extension DonutSlice {
 
 /// Unified donut (ring) chart for any `DonutSlice` series.
 ///
-/// Supports compact sparkline mode (60 pt, no annotations or legend) and full detail
-/// mode (200 pt or 240 pt with legend).  Appearance and update animations are built in.
+/// Supports compact sparkline mode (60 pt) and full detail mode (200 pt).
+/// Appearance and update animations are built in.
 ///
 /// Usage:
 /// ```swift
-/// // Category breakdown (multi-color, with annotations + legend)
+/// // Category breakdown (multi-color, with overlay annotations)
 /// DonutChart(slices: DonutSlice.from(items))
 ///
-/// // Subcategory breakdown (monochromatic, no annotations or legend)
+/// // Subcategory breakdown (monochromatic, no annotations)
 /// DonutChart(slices: DonutSlice.from(subcategories, baseColor: color),
-///            showAnnotations: false, showLegend: false)
+///            showAnnotations: false)
 ///
 /// // Compact sparkline
 /// DonutChart(slices: DonutSlice.from(items), mode: .compact)
+///
+/// // Full mode with center label (total amount, selected slice, etc.)
+/// DonutChart(slices: DonutSlice.from(items)) {
+///     VStack(spacing: 2) {
+///         Text("Total").font(.caption).foregroundStyle(.secondary)
+///         Text("125 000 ₸").font(.title3.weight(.semibold))
+///     }
+/// }
 /// ```
-struct DonutChart: View {
+struct DonutChart<CenterContent: View>: View {
     let slices: [DonutSlice]
     var mode: ChartDisplayMode = .full
     /// Show percentage labels inside sectors larger than 10 % (full mode only).
     var showAnnotations: Bool = true
-    /// Show 2-column grid legend below the chart (full mode only).
-    var showLegend: Bool = true
+    /// Optional content rendered in the donut hole (full mode only).
+    @ViewBuilder var centerContent: () -> CenterContent
 
     private var isCompact: Bool { mode == .compact }
-    /// Chart ring height: 60 compact / 200 full-no-legend / 240 full-with-legend.
-    private var ringHeight: CGFloat { isCompact ? 60 : (showLegend ? 240 : 200) }
+    /// Chart ring height: 60 compact / 200 full.
+    private var ringHeight: CGFloat { isCompact ? 60 : 200 }
 
     // MARK: Body
 
@@ -112,6 +133,13 @@ struct DonutChart: View {
         }
     }
 
+    /// Adaptive corner radius for sectors.
+    /// Sectors smaller than 5 % get a tighter radius (4 pt) so they don't visually
+    /// collapse into a circle; larger sectors keep the original 12 pt rounding.
+    private func cornerRadius(for percentage: Double) -> CGFloat {
+        percentage < 5 ? AppRadius.xs : AppRadius.md
+    }
+
     // MARK: - Compact chart
 
     private var compactChart: some View {
@@ -121,18 +149,8 @@ struct DonutChart: View {
                 innerRadius: .ratio(0.6),
                 angularInset: 1
             )
-            .cornerRadius(AppRadius.md)
-            .shadow(color: slice.color.opacity(0.5), radius: 4)
-            .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                slice.color.opacity(1),
-                                slice.color.opacity(0.5)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+            .cornerRadius(cornerRadius(for: slice.percentage))
+            .foregroundStyle(slice.color)
         }
         .animation(AppAnimation.chartUpdateAnimation, value: slices.count)
         .frame(height: 60)
@@ -142,67 +160,47 @@ struct DonutChart: View {
     // MARK: - Full chart
 
     private var fullChart: some View {
-        VStack(spacing: AppSpacing.lg) {
+        ZStack {
             Chart(slices) { slice in
                 SectorMark(
                     angle: .value("Amount", slice.amount),
                     innerRadius: .ratio(0.5),
                     angularInset: 2
                 )
-                .cornerRadius(AppRadius.md)
-                .shadow(color: slice.color.opacity(0.7), radius: 8)
-                .foregroundStyle(
-                            LinearGradient(
-                                colors: [
-                                    slice.color.opacity(1),
-                                    slice.color.opacity(0.5)
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
+                .cornerRadius(cornerRadius(for: slice.percentage))
+                .foregroundStyle(slice.color)
                 .annotation(position: .overlay) {
                     if showAnnotations && slice.percentage > 10 {
                         Text(String(format: "%.0f%%", slice.percentage))
                             .font(AppTypography.bodyEmphasis)
                             .foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.5), radius: 2)
                     }
                 }
             }
             .animation(AppAnimation.chartUpdateAnimation, value: slices.count)
-            .frame(height: ringHeight)
             .chartLegend(.hidden)
 
-            if showLegend {
-                legend
-            }
+            centerContent()
+                .allowsHitTesting(false)
         }
+        .frame(height: ringHeight)
     }
+}
 
-    // MARK: - Legend
+// MARK: - Convenience init (no center content)
 
-    private var legend: some View {
-        LazyVGrid(
-            columns: [GridItem(.flexible()), GridItem(.flexible())],
-            spacing: AppSpacing.sm
-        ) {
-            ForEach(slices) { slice in
-                HStack(spacing: AppSpacing.xs) {
-                    Circle()
-                        .fill(slice.color)
-                        .frame(width: 8, height: 8)
-                    Text(slice.label)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textSecondary)
-                        .lineLimit(1)
-                    Spacer()
-                    Text(String(format: "%.0f%%", slice.percentage))
-                        .font(AppTypography.captionEmphasis)
-                        .foregroundStyle(AppColors.textPrimary)
-                }
-            }
-        }
+extension DonutChart where CenterContent == EmptyView {
+    /// Convenience initializer for the common case of a donut without a center label.
+    /// Preserves source-compatibility with existing call sites.
+    init(
+        slices: [DonutSlice],
+        mode: ChartDisplayMode = .full,
+        showAnnotations: Bool = true
+    ) {
+        self.slices = slices
+        self.mode = mode
+        self.showAnnotations = showAnnotations
+        self.centerContent = { EmptyView() }
     }
 }
 
@@ -222,8 +220,7 @@ struct DonutChart: View {
     ]
     DonutChart(
         slices: DonutSlice.from(items, baseColor: AppColors.warning),
-        showAnnotations: false,
-        showLegend: false
+        showAnnotations: false
     )
     .screenPadding()
     .padding(.vertical, AppSpacing.md)

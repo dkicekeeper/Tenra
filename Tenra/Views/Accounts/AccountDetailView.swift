@@ -6,6 +6,7 @@
 //  Built on EntityDetailScaffold — mirrors SubscriptionDetailView's composition.
 //
 
+import OSLog
 import SwiftUI
 
 struct AccountDetailView: View {
@@ -19,11 +20,15 @@ struct AccountDetailView: View {
     @State private var showingDeleteConfirm = false
     @State private var showingAddTransaction = false
     @State private var showingTransfer = false
+    @State private var convertingAccount: Account?
     @State private var cachedTransactions: [Transaction] = []
     @State private var aggregates = AccountAggregates(totalTransactions: 0, totalIncome: 0, totalExpense: 0)
     @Namespace private var transferNamespace
     @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
+    @Environment(AppCoordinator.self) private var appCoordinator
+
+    private let logger = Logger(subsystem: "Tenra", category: "AccountDetailView")
 
     /// Live account lookup — reflects edits without re-navigation.
     private var liveAccount: Account {
@@ -139,6 +144,34 @@ struct AccountDetailView: View {
                 categoriesViewModel: categoriesViewModel
             )
         }
+        .sheet(item: $convertingAccount) { converting in
+            DepositEditView(
+                depositsViewModel: appCoordinator.depositsViewModel,
+                account: converting,
+                onSave: { updatedAccount in
+                    HapticManager.success()
+                    accountsViewModel.updateDeposit(updatedAccount)
+                    var depositTransactions: [Transaction] = []
+                    appCoordinator.depositsViewModel.reconcileAllDeposits(
+                        allTransactions: transactionsViewModel.allTransactions,
+                        onTransactionCreated: { transaction in
+                            depositTransactions.append(transaction)
+                        }
+                    )
+                    Task {
+                        for tx in depositTransactions {
+                            do {
+                                _ = try await transactionStore.add(tx)
+                            } catch {
+                                logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
+                            }
+                        }
+                    }
+                    convertingAccount = nil
+                    dismiss()
+                }
+            )
+        }
         .alert(
             String(localized: "account.detail.delete.confirmTitle", defaultValue: "Delete account?"),
             isPresented: $showingDeleteConfirm
@@ -210,6 +243,18 @@ struct AccountDetailView: View {
             showingEdit = true
         } label: {
             Label(String(localized: "common.edit", defaultValue: "Edit"), systemImage: "pencil")
+        }
+
+        if !liveAccount.isDeposit && !liveAccount.isLoan {
+            Button {
+                HapticManager.light()
+                convertingAccount = liveAccount
+            } label: {
+                Label(
+                    String(localized: "account.convertToDeposit", defaultValue: "Convert to Deposit"),
+                    systemImage: "lock.square.stack.fill"
+                )
+            }
         }
 
         Divider()

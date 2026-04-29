@@ -62,13 +62,18 @@ enum SummaryCalculator {
         for tx in filtered {
             // Mirror TransactionCurrencyService logic:
             // if the transaction currency matches baseCurrency, use amount directly;
-            // otherwise use the pre-computed convertedAmount (stored at creation time),
-            // falling back to the raw amount if no conversion was stored.
+            // otherwise prefer pre-computed convertedAmount (stored at creation time),
+            // then sync FX (handles future/recurring-generated tx that have convertedAmount=nil),
+            // then fall back to raw amount.
             let amountInBase: Double
             if tx.currency == baseCurrency {
                 amountInBase = tx.amount
+            } else if let converted = tx.convertedAmount {
+                amountInBase = converted
+            } else if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency) {
+                amountInBase = fx
             } else {
-                amountInBase = tx.convertedAmount ?? tx.amount
+                amountInBase = tx.amount
             }
 
             guard let txDate = dateFormatter.date(from: tx.date) else { continue }

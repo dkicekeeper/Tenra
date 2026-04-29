@@ -103,8 +103,7 @@ struct InsightDeepDiveView: View {
 
             DonutChart(
                 slices: DonutSlice.from(subcategories, baseColor: color),
-                showAnnotations: false,
-                showLegend: false
+                showAnnotations: false
             )
             
 

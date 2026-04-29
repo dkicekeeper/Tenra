@@ -101,13 +101,22 @@ struct DepositDetailView: View {
             navigationAmount: balanceCoordinator.balances[account.id] ?? account.balance,
             navigationCurrency: account.currency,
             primaryAction: ActionConfig(
-                title: String(localized: "deposit.transferToAccount"),
+                title: String(localized: "account.detail.actions.addTransaction", defaultValue: "Add transaction"),
+                systemImage: "plus",
+                action: {
+                    HapticManager.light()
+                    // Open the action sheet defaulted to top-up — user can toggle
+                    // to withdrawal via the segmented picker inside.
+                    activeTransferDirection = .toDeposit
+                }
+            ),
+            secondaryAction: ActionConfig(
+                title: String(localized: "account.detail.actions.transfer", defaultValue: "Transfer"),
                 systemImage: "arrow.left.arrow.right",
                 action: {
                     HapticManager.light()
-                    // Default to top-up direction; the AccountActionView picker lets
-                    // the user toggle between top-up and withdrawal.
-                    activeTransferDirection = .toDeposit
+                    // Open the same action sheet but defaulted to withdrawal direction.
+                    activeTransferDirection = .fromDeposit
                 }
             ),
             infoRows: [],

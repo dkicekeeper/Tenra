@@ -12,8 +12,13 @@ import SwiftUI
 
 /// Circular arc representing how much of a budget period has been consumed.
 ///
-/// - Progress ≤ 100 %  → success green arc
-/// - Progress  > 100 %  → destructive red arc
+/// Three-tier color palette:
+/// - Progress < 80 %                       → `AppColors.success` (green)
+/// - 80 % ≤ Progress ≤ 100 %, not over     → `AppColors.warning` (orange) — early warning
+/// - Over budget OR Progress > 100 %        → `AppColors.destructive` (red)
+///
+/// The early-warning band catches the user *before* they breach the limit, instead
+/// of jumping from "everything fine" green directly to red on overspend.
 ///
 /// The ring starts at the 12-o'clock position (−90° rotation) and sweeps
 /// clockwise.
@@ -55,8 +60,7 @@ struct BudgetProgressCircle: View {
     var lineWidth: CGFloat = 3
 
     /// Whether spending exceeds the budget limit.
-    /// When `true` the arc is rendered in `AppColors.destructive` instead of
-    /// `AppColors.success`.
+    /// When `true` the arc is rendered in `AppColors.destructive`.
     var isOverBudget: Bool = false
 
     /// Метка для VoiceOver. Когда `nil` — элемент скрыт из accessibility дерева
@@ -64,16 +68,31 @@ struct BudgetProgressCircle: View {
     /// VoiceOver читает её и помечает элемент `.updatesFrequently`.
     var accessibilityLabel: String? = nil
 
+    /// Threshold (0.0–1.0) at which the arc switches from `success` green to
+    /// `warning` orange as an early-warning band before over-budget.
+    private static let warningThreshold: Double = 0.8
+
+    private var arcColor: Color {
+        if isOverBudget || progress > 1.0 {
+            return AppColors.destructive
+        }
+        if progress >= Self.warningThreshold {
+            return AppColors.warning
+        }
+        return AppColors.success
+    }
+
     var body: some View {
         let arc = Circle()
             .trim(from: 0, to: min(progress, 1.0))
             .stroke(
-                isOverBudget ? AppColors.destructive : AppColors.success,
+                arcColor,
                 style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
             )
             .rotationEffect(.degrees(-90))
             .frame(width: size, height: size)
             .animation(.easeInOut(duration: AppAnimation.standard), value: progress)
+            .animation(.easeInOut(duration: AppAnimation.standard), value: arcColor)
 
         if let label = accessibilityLabel {
             arc

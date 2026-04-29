@@ -1,40 +1,21 @@
 //
-//  PeriodBarChart.swift
+//  IncomeExpenseLineChart.swift
 //  Tenra
 //
-//  Phase 43 (chart merge): Unified granularity-aware income/expense grouped bar chart.
-//  Replaces PeriodIncomeExpenseChart.
+//  Two-line area chart that overlays income (green) and expenses (red) on the
+//  same `PeriodDataPoint` series. Companion to `PeriodBarChart` — both visualise
+//  the same data, used together by `PeriodChartSwitcher`.
 //
-//  Phase 43 additions:
-//  - chartAppear() entrance animation (opacity + scale from bottom)
-//  - chartUpdateAnimation on Chart view (bars animate when data changes)
-//  - Native Apple Charts horizontal scrolling, sticky leading Y-axis,
-//    pinch zoom on the visible window, and X range selection that
-//    surfaces the income/expense totals for the chosen interval.
+//  Same interaction model as `PeriodLineChart`:
+//  - native horizontal scrolling via `chartScrollableAxes`
+//  - pinch zoom on the visible window (`chartXVisibleDomain`)
+//  - long-press-and-drag X range selection with summary banner
 //
 
 import SwiftUI
 import Charts
 
-// MARK: - PeriodBarChart
-
-/// Granularity-aware income/expense grouped bar chart.
-///
-/// Full mode uses native Apple Charts horizontal scrolling
-/// (`chartScrollableAxes`) with a sticky Y-axis. The visible window is
-/// controlled by `zoomScale` (1.0 = default), driven by a pinch gesture
-/// clamped to `[0.4, 4.0]`. Long-press-and-drag selects an X range — the
-/// chart shows a banner above with totals (income + expenses) for the
-/// chosen interval and a reset button.
-///
-/// Compact mode is a static sparkline — no scrolling, zoom, or selection.
-///
-/// Usage:
-/// ```swift
-/// PeriodBarChart(dataPoints: points, currency: "KZT", granularity: .month)
-/// PeriodBarChart(dataPoints: points, currency: "KZT", granularity: .week, mode: .compact)
-/// ```
-struct PeriodBarChart: View {
+struct IncomeExpenseLineChart: View {
     let dataPoints: [PeriodDataPoint]
     let currency: String
     let granularity: InsightGranularity
@@ -51,8 +32,8 @@ struct PeriodBarChart: View {
     private var basePointWidth: CGFloat { isCompact ? 30 : granularity.pointWidth }
     private var effectivePointWidth: CGFloat { basePointWidth * zoomScale }
     private var chartHeight: CGFloat { isCompact ? 60 : 200 }
+    private var lineWidth: CGFloat { isCompact ? 1.5 : 2 }
 
-    /// Maximum Y value across the **entire** dataset — used by compact sparkline only.
     private var staticYMax: Double {
         dataPoints.flatMap { [$0.income, $0.expenses] }.max() ?? 1
     }
@@ -63,7 +44,6 @@ struct PeriodBarChart: View {
         return max(1, min(dataPoints.count, raw))
     }
 
-    /// Points currently visible (driven by zoom + scroll position).
     private var visibleDataPoints: [PeriodDataPoint] {
         guard !dataPoints.isEmpty, containerWidth > 0 else { return dataPoints }
         let visible = visibleCount(for: containerWidth)
@@ -76,7 +56,6 @@ struct PeriodBarChart: View {
         return Array(dataPoints[start...])
     }
 
-    /// Auto-fit Y max for the visible window.
     private var dynamicYMax: Double {
         let pts = visibleDataPoints
         guard !pts.isEmpty else { return staticYMax }
@@ -88,7 +67,6 @@ struct PeriodBarChart: View {
         return dataPoints.first(where: { $0.periodStart > now })?.label
     }
 
-    /// Points covered by the active selection (in array order, not lex order).
     private var selectionPoints: [PeriodDataPoint] {
         guard let range = selectedRange,
               let lo = dataPoints.firstIndex(where: { $0.label == range.lowerBound }),
@@ -105,8 +83,6 @@ struct PeriodBarChart: View {
         return dataPoints.first { $0.label == label }
     }
 
-    // MARK: Body
-
     var body: some View {
         if dataPoints.isEmpty {
             emptyState
@@ -114,7 +90,6 @@ struct PeriodBarChart: View {
         } else if isCompact {
             sparkline
                 .frame(height: chartHeight)
-                .padding(.top, 0)
                 .chartAppear()
         } else {
             VStack(spacing: AppSpacing.sm) {
@@ -147,7 +122,7 @@ struct PeriodBarChart: View {
 
     private var emptyState: some View {
         EmptyStateView(
-            icon: "chart.bar",
+            icon: "chart.xyaxis.line",
             title: String(localized: "insights.empty.title"),
             description: String(localized: "insights.empty.subtitle"),
             style: .compact
@@ -160,23 +135,23 @@ struct PeriodBarChart: View {
         let incomeLabel = String(localized: "insights.income")
         let expensesLabel = String(localized: "insights.expenses")
         return Chart(dataPoints) { point in
-            BarMark(
+            LineMark(
                 x: .value("Period", point.label),
                 y: .value(incomeLabel, point.income),
-                width: .fixed(6)
+                series: .value("Type", incomeLabel)
             )
-            .cornerRadius(AppRadius.xs)
-            .foregroundStyle(AppColors.success.opacity(0.85))
-            .position(by: .value("Type", incomeLabel))
+            .foregroundStyle(AppColors.success)
+            .interpolationMethod(.monotone)
+            .lineStyle(StrokeStyle(lineWidth: lineWidth))
 
-            BarMark(
+            LineMark(
                 x: .value("Period", point.label),
                 y: .value(expensesLabel, point.expenses),
-                width: .fixed(6)
+                series: .value("Type", expensesLabel)
             )
-            .cornerRadius(AppRadius.xs)
-            .foregroundStyle(AppColors.destructive.opacity(0.85))
-            .position(by: .value("Type", expensesLabel))
+            .foregroundStyle(AppColors.destructive)
+            .interpolationMethod(.monotone)
+            .lineStyle(StrokeStyle(lineWidth: lineWidth))
         }
         .chartYScale(domain: 0...staticYMax)
         .chartXAxis { AxisMarks { _ in } }
@@ -212,7 +187,6 @@ struct PeriodBarChart: View {
         let labelMap = ChartAxisHelpers.axisLabelMap(for: dataPoints)
         let yMaxNow = dynamicYMax
         return Chart {
-            // Translucent band highlighting the selected range.
             if let range = selectedRange {
                 RectangleMark(
                     xStart: .value("Start", range.lowerBound),
@@ -221,14 +195,12 @@ struct PeriodBarChart: View {
                 .foregroundStyle(AppColors.accent.opacity(0.15))
             }
 
-            // Single-point selection ruler.
             if let label = selectedValueLabel, selectionPoints.isEmpty {
                 RuleMark(x: .value("Selected", label))
                     .foregroundStyle(AppColors.textTertiary.opacity(0.4))
                     .lineStyle(StrokeStyle(lineWidth: 1))
             }
 
-            // Today / future boundary marker.
             if let today = todayLabel {
                 RuleMark(x: .value("Today", today))
                     .foregroundStyle(AppColors.accent.opacity(0.45))
@@ -241,21 +213,59 @@ struct PeriodBarChart: View {
             }
 
             ForEach(dataPoints) { point in
-                BarMark(
+                AreaMark(
+                    x: .value("Period", point.label),
+                    y: .value(incomeLabel, point.income),
+                    series: .value("Type", incomeLabel)
+                )
+                .foregroundStyle(LinearGradient(
+                    colors: [AppColors.success.opacity(0.25), AppColors.success.opacity(0.02)],
+                    startPoint: .top, endPoint: .bottom
+                ))
+                .interpolationMethod(.monotone)
+
+                LineMark(
+                    x: .value("Period", point.label),
+                    y: .value(incomeLabel, point.income),
+                    series: .value("Type", incomeLabel)
+                )
+                .foregroundStyle(AppColors.success)
+                .interpolationMethod(.monotone)
+                .lineStyle(StrokeStyle(lineWidth: lineWidth))
+
+                PointMark(
                     x: .value("Period", point.label),
                     y: .value(incomeLabel, point.income)
                 )
-                .cornerRadius(AppRadius.xs)
-                .foregroundStyle(AppColors.success.opacity(0.85))
-                .position(by: .value("Type", incomeLabel))
+                .foregroundStyle(AppColors.success)
+                .symbolSize(28)
 
-                BarMark(
+                AreaMark(
+                    x: .value("Period", point.label),
+                    y: .value(expensesLabel, point.expenses),
+                    series: .value("Type", expensesLabel)
+                )
+                .foregroundStyle(LinearGradient(
+                    colors: [AppColors.destructive.opacity(0.25), AppColors.destructive.opacity(0.02)],
+                    startPoint: .top, endPoint: .bottom
+                ))
+                .interpolationMethod(.monotone)
+
+                LineMark(
+                    x: .value("Period", point.label),
+                    y: .value(expensesLabel, point.expenses),
+                    series: .value("Type", expensesLabel)
+                )
+                .foregroundStyle(AppColors.destructive)
+                .interpolationMethod(.monotone)
+                .lineStyle(StrokeStyle(lineWidth: lineWidth))
+
+                PointMark(
                     x: .value("Period", point.label),
                     y: .value(expensesLabel, point.expenses)
                 )
-                .cornerRadius(AppRadius.xs)
-                .foregroundStyle(AppColors.destructive.opacity(0.85))
-                .position(by: .value("Type", expensesLabel))
+                .foregroundStyle(AppColors.destructive)
+                .symbolSize(28)
             }
         }
         .chartYScale(domain: 0...yMaxNow)
@@ -372,25 +382,12 @@ struct PeriodBarChart: View {
     }
 }
 
-// MARK: - Previews
-
-#Preview("PeriodBarChart — Monthly") {
-    PeriodBarChart(
+#Preview("IncomeExpenseLineChart — Monthly") {
+    IncomeExpenseLineChart(
         dataPoints: PeriodDataPoint.mockMonthly(),
         currency: "KZT",
         granularity: .month
     )
     .screenPadding()
     .padding(.vertical, AppSpacing.md)
-}
-
-#Preview("PeriodBarChart — Compact") {
-    PeriodBarChart(
-        dataPoints: PeriodDataPoint.mockMonthly(),
-        currency: "KZT",
-        granularity: .month,
-        mode: .compact
-    )
-    .screenPadding()
-    .frame(height: 80)
 }

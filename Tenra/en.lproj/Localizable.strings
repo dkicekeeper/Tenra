@@ -1156,6 +1156,17 @@
 
 // MARK: - Insights
 "insights.remaining" = "remaining";
+"insights.range.totalExpenses" = "Expenses for period";
+"insights.range.netFlow" = "Net flow for period";
+"insights.range.wealthChange" = "Wealth change";
+"insights.range.totalIncome" = "Income for period";
+"insights.range.reset" = "Reset";
+"insights.zoom.reset" = "Fit";
+"insights.chart.line" = "Line";
+"insights.chart.bar" = "Bars";
+"insights.today" = "Today";
+"insights.empty.title" = "No data yet";
+"insights.empty.subtitle" = "The chart will appear once you have some transaction history";
 
 // MARK: - Voice Input
 "voice.noTextRecognizedYet" = "No text recognized yet";

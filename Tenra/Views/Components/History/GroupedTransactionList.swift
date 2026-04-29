@@ -22,6 +22,13 @@ struct GroupedTransactionList<Overlay: View>: View {
     /// When non-nil, replaces the default row tap (open edit sheet) with the provided closure.
     /// Used by selection UIs like `LinkPaymentsView` to toggle selection on tap.
     let tapAction: ((Transaction) -> Void)?
+    /// When non-nil, overrides `displayCurrency` for the section-header daily total currency.
+    /// Used in mixed-currency contexts (LinkPaymentsView) to render the day total in the
+    /// app's base currency rather than the entity's display currency.
+    let summaryCurrencyOverride: String?
+    /// When non-nil, replaces the default `tx.convertedAmount ?? tx.amount` summation in
+    /// the section header. Should return the per-transaction amount in `summaryCurrencyOverride`.
+    let summaryAmountFor: ((Transaction) -> Double)?
     let rowOverlay: (Transaction) -> Overlay
 
     @State private var visibleLimit: Int
@@ -47,6 +54,8 @@ struct GroupedTransactionList<Overlay: View>: View {
         accountsViewModel: AccountsViewModel? = nil,
         balanceCoordinator: BalanceCoordinator? = nil,
         tapAction: ((Transaction) -> Void)? = nil,
+        summaryCurrencyOverride: String? = nil,
+        summaryAmountFor: ((Transaction) -> Double)? = nil,
         @ViewBuilder rowOverlay: @escaping (Transaction) -> Overlay
     ) {
         self.transactions = transactions
@@ -60,6 +69,8 @@ struct GroupedTransactionList<Overlay: View>: View {
         self.accountsViewModel = accountsViewModel
         self.balanceCoordinator = balanceCoordinator
         self.tapAction = tapAction
+        self.summaryCurrencyOverride = summaryCurrencyOverride
+        self.summaryAmountFor = summaryAmountFor
         self.rowOverlay = rowOverlay
         self._visibleLimit = State(initialValue: pageSize)
     }
@@ -67,11 +78,15 @@ struct GroupedTransactionList<Overlay: View>: View {
     private func rebuildSections() {
         let slice = Array(transactions.prefix(visibleLimit))
         let grouped = Dictionary(grouping: slice) { $0.date }
+        let amountFor = summaryAmountFor
         cachedSections = grouped
             .sorted { $0.key > $1.key }
             .map { key, txs in
                 let expenseTotal = txs.reduce(0.0) { acc, tx in
                     guard tx.type == .expense else { return acc }
+                    if let amountFor {
+                        return acc + amountFor(tx)
+                    }
                     return acc + (tx.convertedAmount ?? tx.amount)
                 }
                 return DaySection(
@@ -126,11 +141,23 @@ struct GroupedTransactionList<Overlay: View>: View {
         LazyVStack(spacing: AppSpacing.md, pinnedViews: []) {
                 ForEach(cachedSections) { section in
                     VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        DateSectionHeaderView(
-                            dateKey: section.displayLabel,
-                            amount: section.dayExpenseTotal > 0 ? section.dayExpenseTotal : nil,
-                            currency: displayCurrency
-                        )
+                        HStack {
+                            SectionHeaderView(section.displayLabel)
+                            Spacer()
+                            if section.dayExpenseTotal > 0,
+                               let headerCurrency = summaryCurrencyOverride ?? displayCurrency {
+                                FormattedAmountText(
+                                    amount: section.dayExpenseTotal,
+                                    currency: headerCurrency,
+                                    prefix: "-",
+                                    fontSize: AppTypography.bodySmall,
+                                    fontWeight: .semibold,
+                                    color: .gray
+                                )
+                            }
+                        }
+                        .padding(.horizontal, AppSpacing.lg)
+                        .padding(.top, AppSpacing.sm)
 
                         ForEach(Array(section.transactions.enumerated()), id: \.element.id) { index, transaction in
                             let sourceAccount = transaction.accountId.flatMap { accountsById[$0] }
@@ -219,7 +246,9 @@ extension GroupedTransactionList where Overlay == EmptyView {
         categoriesViewModel: CategoriesViewModel? = nil,
         accountsViewModel: AccountsViewModel? = nil,
         balanceCoordinator: BalanceCoordinator? = nil,
-        tapAction: ((Transaction) -> Void)? = nil
+        tapAction: ((Transaction) -> Void)? = nil,
+        summaryCurrencyOverride: String? = nil,
+        summaryAmountFor: ((Transaction) -> Double)? = nil
     ) {
         self.init(
             transactions: transactions,
@@ -233,6 +262,8 @@ extension GroupedTransactionList where Overlay == EmptyView {
             accountsViewModel: accountsViewModel,
             balanceCoordinator: balanceCoordinator,
             tapAction: tapAction,
+            summaryCurrencyOverride: summaryCurrencyOverride,
+            summaryAmountFor: summaryAmountFor,
             rowOverlay: { _ in EmptyView() }
         )
     }

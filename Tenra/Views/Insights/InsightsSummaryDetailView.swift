@@ -76,7 +76,7 @@ struct InsightsSummaryDetailView: View {
             SectionHeaderView(String(localized: "insights.cashFlowTrend"), style: .large)
                 .padding(.top, AppSpacing.lg)
 
-            PeriodBarChart(
+            PeriodChartSwitcher(
                 dataPoints: periodDataPoints,
                 currency: currency,
                 granularity: granularity,

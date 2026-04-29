@@ -195,6 +195,21 @@ class LoansViewModel {
 
         // Convert each transaction to loanPayment
         for tx in sortedTransactions {
+            // Sanitize the source account reference — drop it if the account no longer
+            // exists, otherwise validate() throws targetAccountNotFound on stale ids
+            // (e.g. user picked an old expense whose source account was since deleted).
+            let resolvedTargetAccountId: String?
+            let resolvedTargetAccountName: String?
+            if let originalAccountId = tx.accountId,
+               !originalAccountId.isEmpty,
+               transactionStore.accountById[originalAccountId] != nil {
+                resolvedTargetAccountId = originalAccountId
+                resolvedTargetAccountName = tx.accountName
+            } else {
+                resolvedTargetAccountId = nil
+                resolvedTargetAccountName = nil
+            }
+
             let updated = Transaction(
                 id: tx.id,
                 date: tx.date,
@@ -206,9 +221,9 @@ class LoansViewModel {
                 category: TransactionType.loanPaymentCategoryName,
                 subcategory: tx.subcategory,
                 accountId: loanId,
-                targetAccountId: tx.accountId,
+                targetAccountId: resolvedTargetAccountId,
                 accountName: loanName,
-                targetAccountName: tx.accountName,
+                targetAccountName: resolvedTargetAccountName,
                 targetCurrency: tx.targetCurrency,
                 targetAmount: tx.targetAmount,
                 recurringSeriesId: tx.recurringSeriesId,

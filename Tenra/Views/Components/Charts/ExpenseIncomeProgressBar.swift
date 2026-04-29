@@ -40,14 +40,12 @@ struct ExpenseIncomeProgressBar: View {
                             .foregroundStyle(AppColors.destructive)
                             .frame(width: geometry.size.width * displayExpensePercent)
                             .clipShape(.rect(cornerRadius: AppRadius.sm))
-                            .shadow(color: AppColors.destructive.opacity(0.3), radius: 8)
                     }
                     if incomePercent > 0 || displayIncomePercent > 0 {
                         Rectangle()
                             .foregroundStyle(AppColors.income)
                             .frame(width: geometry.size.width * displayIncomePercent)
                             .clipShape(.rect(cornerRadius: AppRadius.sm))
-                            .shadow(color: AppColors.income.opacity(0.3), radius: 8)
                     }
                 }
                 .clipped()

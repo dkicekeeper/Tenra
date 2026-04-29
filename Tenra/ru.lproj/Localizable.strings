@@ -1156,6 +1156,17 @@
 
 // MARK: - Insights
 "insights.remaining" = "осталось";
+"insights.range.totalExpenses" = "Расходы за период";
+"insights.range.netFlow" = "Чистый поток за период";
+"insights.range.wealthChange" = "Изменение капитала";
+"insights.range.totalIncome" = "Доходы за период";
+"insights.range.reset" = "Сбросить";
+"insights.zoom.reset" = "По размеру";
+"insights.chart.line" = "Линия";
+"insights.chart.bar" = "Бары";
+"insights.today" = "Сегодня";
+"insights.empty.title" = "Нет данных";
+"insights.empty.subtitle" = "Здесь появится график, как только наберётся история транзакций";
 
 // MARK: - Voice Input
 "voice.noTextRecognizedYet" = "Текст пока не распознан";

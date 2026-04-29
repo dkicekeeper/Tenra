@@ -25,5 +25,6 @@ struct ProportionBar: View {
             }
         }
         .frame(height: height)
+        .animation(AppAnimation.gentleSpring, value: ratio)
     }
 }

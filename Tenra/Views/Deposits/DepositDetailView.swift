@@ -10,15 +10,6 @@
 import OSLog
 import SwiftUI
 
-// DepositTransferDirection is the shared enum for deposit transfer direction.
-// Defined here (primary consumer) and visible to AccountActionView via module scope.
-enum DepositTransferDirection: Identifiable {
-    case toDeposit
-    case fromDeposit
-
-    var id: Int { self == .toDeposit ? 0 : 1 }
-}
-
 struct DepositDetailView: View {
     let depositsViewModel: DepositsViewModel
     let transactionsViewModel: TransactionsViewModel
@@ -28,7 +19,7 @@ struct DepositDetailView: View {
     let accountId: String
     @Environment(TimeFilterManager.self) private var timeFilterManager
     @State private var showingEditView = false
-    @State private var activeTransferDirection: DepositTransferDirection? = nil
+    @State private var showingAction: Bool = false
     @State private var showingRateChange = false
     @State private var showingDeleteConfirmation = false
     @State private var showingLinkInterest = false
@@ -105,20 +96,10 @@ struct DepositDetailView: View {
                 systemImage: "plus",
                 action: {
                     HapticManager.light()
-                    // Open the action sheet defaulted to top-up — user can toggle
-                    // to withdrawal via the segmented picker inside.
-                    activeTransferDirection = .toDeposit
+                    showingAction = true
                 }
             ),
-            secondaryAction: ActionConfig(
-                title: String(localized: "account.detail.actions.transfer", defaultValue: "Transfer"),
-                systemImage: "arrow.left.arrow.right",
-                action: {
-                    HapticManager.light()
-                    // Open the same action sheet but defaulted to withdrawal direction.
-                    activeTransferDirection = .fromDeposit
-                }
-            ),
+            secondaryAction: nil,
             infoRows: [],
             transactions: cachedTransactions,
             historyCurrency: account.currency,
@@ -164,16 +145,14 @@ struct DepositDetailView: View {
                 }
             )
         }
-        // Unified transfer sheet — replaces separate showingTransferTo / showingTransferFrom
-        .sheet(item: $activeTransferDirection) { direction in
+        .sheet(isPresented: $showingAction) {
             NavigationStack {
                 AccountActionView(
                     transactionsViewModel: transactionsViewModel,
                     accountsViewModel: depositsViewModel.accountsViewModel,
                     account: account,
                     namespace: depositActionNamespace,
-                    categoriesViewModel: appCoordinator.categoriesViewModel,
-                    transferDirection: direction
+                    categoriesViewModel: appCoordinator.categoriesViewModel
                 )
                 .environment(timeFilterManager)
             }
@@ -220,11 +199,10 @@ struct DepositDetailView: View {
         .task(id: refreshTrigger) {
             await refreshTransactions()
         }
-        .task {
-            // Reconcile only this deposit — not all deposits (targeted, not global).
-            // Collect generated interest transactions synchronously in the callback,
-            // then batch-persist after reconciliation completes. Never spawn Task {}
-            // inside onTransactionCreated — it races on TransactionStore across days.
+        .task(id: refreshTrigger) {
+            // Reconcile re-runs whenever a deposit-relevant transaction is added/edited/deleted
+            // (refreshTrigger counts them). Reconcile is idempotent and recomputes
+            // principalBalance unconditionally — see DepositInterestService.reconcileDepositInterest.
             var interestTransactions: [Transaction] = []
             depositsViewModel.reconcileDepositInterest(
                 for: accountId,

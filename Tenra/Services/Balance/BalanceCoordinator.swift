@@ -326,11 +326,18 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
         if let accountId = new.accountId {
             let intermediateBalance = tempBalances[accountId] ?? (store.getAccount(accountId)?.currentBalance ?? 0.0)
 
+            // Read storedAccount once so isDeposit/depositInfo are forwarded into the temp
+            // instance — the engine's deposit gate (applyTransaction .income/.expense early-return)
+            // depends on account.isDeposit being accurate. Without this, editing an income tx on
+            // a deposit account bypasses the gate and inflates balances[id] until next reconcile.
+            let storedAccount = store.getAccount(accountId)
             let tempAccount = AccountBalance(
                 accountId: accountId,
                 currentBalance: intermediateBalance,
                 initialBalance: nil,
-                currency: store.getAccount(accountId)?.currency ?? "KZT"
+                depositInfo: storedAccount?.depositInfo,
+                currency: storedAccount?.currency ?? "KZT",
+                isDeposit: storedAccount?.isDeposit ?? false
             )
 
             let balanceAfterApply = engine.applyTransaction(new, to: intermediateBalance, for: tempAccount)
@@ -344,11 +351,16 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
            let targetAccountId = new.targetAccountId {
             let intermediateBalance = tempBalances[targetAccountId] ?? (store.getAccount(targetAccountId)?.currentBalance ?? 0.0)
 
+            // Same fix as Step 3: propagate isDeposit/depositInfo so the engine's deposit gate
+            // is respected for the target account side of an internal transfer update.
+            let storedTargetAccount = store.getAccount(targetAccountId)
             let tempAccount = AccountBalance(
                 accountId: targetAccountId,
                 currentBalance: intermediateBalance,
                 initialBalance: nil,
-                currency: store.getAccount(targetAccountId)?.currency ?? "KZT"
+                depositInfo: storedTargetAccount?.depositInfo,
+                currency: storedTargetAccount?.currency ?? "KZT",
+                isDeposit: storedTargetAccount?.isDeposit ?? false
             )
 
             let balanceAfterApply = engine.applyTransaction(

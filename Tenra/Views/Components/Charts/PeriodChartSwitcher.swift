@@ -5,9 +5,16 @@
 //  Wraps `PeriodBarChart` and `IncomeExpenseLineChart` with a 2-segment picker
 //  so the user can choose how to visualise the same income/expense series.
 //
-//  Use this in detail/section views where both representations make sense.
-//  Compact mode (sparkline) skips the picker and renders bars only — same as
-//  the previous standalone `PeriodBarChart` API.
+//  Layout (full mode):
+//  ┌──────────┐               ┌────┐ ┌────┐
+//  │ Bar/Line │  …            │  − │ │  + │       ← controls row
+//  └──────────┘               └────┘ └────┘
+//  ┌──────────────────────────────────────────┐
+//  │              chart content               │
+//  └──────────────────────────────────────────┘
+//
+//  Pinch-to-zoom is intentionally NOT used — it conflicts with the
+//  navigation swipe-to-go-back gesture on the parent view.
 //
 
 import SwiftUI
@@ -33,6 +40,50 @@ enum PeriodChartStyle: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - ChartZoomControls
+
+/// Reusable +/- zoom button pair. Used by `PeriodChartSwitcher` and `PeriodLineChart`.
+struct ChartZoomControls: View {
+    @Binding var zoomScale: CGFloat
+    let range: ClosedRange<CGFloat>
+    var step: CGFloat = 1.5
+
+    private var canZoomIn: Bool { zoomScale < range.upperBound - 0.001 }
+    private var canZoomOut: Bool { zoomScale > range.lowerBound + 0.001 }
+
+    var body: some View {
+        HStack(spacing: AppSpacing.xs) {
+            Button {
+                let next = max(range.lowerBound, zoomScale / step)
+                zoomScale = next
+            } label: {
+                Image(systemName: "minus.magnifyingglass")
+                    .font(.body.weight(.medium))
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+            .disabled(!canZoomOut)
+            .opacity(canZoomOut ? 1.0 : 0.4)
+            .accessibilityLabel(Text(verbatim: "Zoom out"))
+
+            Button {
+                let next = min(range.upperBound, zoomScale * step)
+                zoomScale = next
+            } label: {
+                Image(systemName: "plus.magnifyingglass")
+                    .font(.body.weight(.medium))
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+            .disabled(!canZoomIn)
+            .opacity(canZoomIn ? 1.0 : 0.4)
+            .accessibilityLabel(Text(verbatim: "Zoom in"))
+        }
+    }
+}
+
+// MARK: - PeriodChartSwitcher
+
 struct PeriodChartSwitcher: View {
     let dataPoints: [PeriodDataPoint]
     let currency: String
@@ -41,6 +92,7 @@ struct PeriodChartSwitcher: View {
     var initialStyle: PeriodChartStyle = .bar
 
     @State private var style: PeriodChartStyle
+    @State private var zoomScale: CGFloat = 1.0
 
     init(
         dataPoints: [PeriodDataPoint],
@@ -67,8 +119,10 @@ struct PeriodChartSwitcher: View {
                 mode: .compact
             )
         } else {
-            VStack(alignment: .trailing, spacing: AppSpacing.sm) {
-                picker
+            VStack(spacing: AppSpacing.sm) {
+                controlsRow
+                    .screenPadding()
+
                 Group {
                     switch style {
                     case .bar:
@@ -76,21 +130,35 @@ struct PeriodChartSwitcher: View {
                             dataPoints: dataPoints,
                             currency: currency,
                             granularity: granularity,
-                            mode: .full
+                            mode: .full,
+                            zoomScale: $zoomScale
                         )
                     case .line:
                         IncomeExpenseLineChart(
                             dataPoints: dataPoints,
                             currency: currency,
                             granularity: granularity,
-                            mode: .full
+                            mode: .full,
+                            zoomScale: $zoomScale
                         )
                     }
                 }
-                .id(style)        // force fresh state (zoom/range) on style change
+                .id(style)        // force fresh state (range) on style change
                 .transition(.opacity)
             }
             .animation(AppAnimation.gentleSpring, value: style)
+        }
+    }
+
+    // MARK: - Controls row
+
+    private var controlsRow: some View {
+        HStack(spacing: AppSpacing.md) {
+            picker
+
+            Spacer()
+
+            ChartZoomControls(zoomScale: $zoomScale, range: 0.4...4.0)
         }
     }
 
@@ -114,6 +182,5 @@ struct PeriodChartSwitcher: View {
         currency: "KZT",
         granularity: .month
     )
-    .screenPadding()
     .padding(.vertical, AppSpacing.md)
 }

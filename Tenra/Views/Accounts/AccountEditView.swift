@@ -83,7 +83,7 @@ struct AccountEditView: View {
             if let account = account {
                 name = account.name
                 // Show current balance (not initialBalance) so user sees real value
-                let formatted = AmountFormatter.format(Decimal(account.balance))
+                let formatted = AmountInputFormatting.bindingString(for: account.balance)
                 balanceText = formatted
                 initialBalanceText = formatted
                 currency = account.currency

@@ -33,24 +33,11 @@ struct AnalyticsTab: View {
     }
 }
 
-// MARK: - SettingsTab
+// MARK: - FinancesTab
 
-struct SettingsTab: View {
-    @Environment(AppCoordinator.self) private var coordinator
-
+struct FinancesTab: View {
     var body: some View {
-        NavigationStack {
-            SettingsView(
-                settingsViewModel: coordinator.settingsViewModel,
-                transactionsViewModel: coordinator.transactionsViewModel,
-                accountsViewModel: coordinator.accountsViewModel,
-                categoriesViewModel: coordinator.categoriesViewModel,
-                transactionStore: coordinator.transactionStore,
-                depositsViewModel: coordinator.depositsViewModel,
-                loansViewModel: coordinator.loansViewModel,
-                cloudSyncViewModel: coordinator.cloudSyncViewModel
-            )
-        }
+        FinancesView()
     }
 }
 

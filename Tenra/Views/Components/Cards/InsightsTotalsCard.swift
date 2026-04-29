@@ -91,17 +91,17 @@ struct InsightsTotalsCard: View {
 #Preview("Positive") {
     InsightsTotalsCard(income: 530_000, expenses: 320_000, netFlow: 210_000, currency: "KZT")
         .screenPadding()
-        .padding(.vertical)
+        .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Millions") {
     InsightsTotalsCard(income: 2_340_000, expenses: 1_500_000, netFlow: 840_000, currency: "KZT")
         .screenPadding()
-        .padding(.vertical)
+        .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Negative net flow") {
     InsightsTotalsCard(income: 280_000, expenses: 340_000, netFlow: -60_000, currency: "KZT")
         .screenPadding()
-        .padding(.vertical)
+        .padding(.vertical, AppSpacing.md)
 }

@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 /// Central logo service with waterfall provider chain.
-/// Chain: Supabase → LogoDev → GoogleFavicon → Lettermark
+/// Chain: jsDelivr → LogoDev → GoogleFavicon → Lettermark
 final class LogoService {
     static let shared = LogoService()
 
@@ -18,7 +18,7 @@ final class LogoService {
 
     // LogoService is NOT @Observable — no @ObservationIgnored needed
     private let providers: [any LogoProvider] = [
-        SupabaseLogoProvider(),
+        JsDelivrLogoProvider(),
         LogoDevProvider(),
         GoogleFaviconProvider(),
         LettermarkProvider(),
@@ -68,7 +68,7 @@ final class LogoService {
             memoryCache.setObject(result.image, forKey: cacheKey)
             // Only cache real logos to disk, NOT lettermarks.
             // Lettermarks are generated fallbacks — if a real logo becomes
-            // available later (uploaded to Supabase), we want to find it.
+            // available later (added to the assets repo), we want to find it.
             if result.shouldCacheToDisk {
                 diskCache.save(result.image, for: domain)
             }

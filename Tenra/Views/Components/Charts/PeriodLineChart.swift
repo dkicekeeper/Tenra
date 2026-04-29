@@ -205,11 +205,9 @@ struct PeriodLineChart: View {
     var mode: ChartDisplayMode = .full
 
     @State private var zoomScale: CGFloat = 1.0
-    @State private var pinchBaseScale: CGFloat = 1.0
     @State private var selectedRange: ClosedRange<String>?
     @State private var selectedValueLabel: String?
-    @State private var scrollPositionLabel: String = ""
-    @State private var containerWidth: CGFloat = 0
+    @State private var visibleLeftLabel: String?
 
     private var isCompact: Bool { mode == .compact }
     private var basePointWidth: CGFloat { isCompact ? 30 : granularity.pointWidth }
@@ -218,8 +216,40 @@ struct PeriodLineChart: View {
     private var lineWidth: CGFloat { isCompact ? 1.5 : series.fullLineWidth }
 
     private var values: [Double] { dataPoints.map { series.value(for: $0) } }
-    /// Y-domain over the **entire** dataset — used for compact sparkline only.
-    private var staticYDomain: ClosedRange<Double> { series.yDomain(values: values) }
+
+    /// Y-domain over the entire dataset (used by compact sparkline).
+    private var fullYDomain: ClosedRange<Double> { series.yDomain(values: values) }
+
+    /// Y-domain over the currently-visible window. Recomputed only when
+    /// `visibleLeftLabel` or `zoomScale` changes — NOT on every body call.
+    /// Apple Charts updates its scale smoothly without an explicit `.animation`,
+    /// so we deliberately avoid attaching a spring here (that was the lag source).
+    ///
+    /// **Frozen during active range selection** — otherwise dragging across periods
+    /// re-scales the Y axis mid-gesture, which makes bars/lines visually jump under
+    /// the user's finger. Selection is a frozen viewport: range stays visible against
+    /// a stable axis until the user resets it.
+    private func dynamicYDomain(visibleCount: Int) -> ClosedRange<Double> {
+        guard !dataPoints.isEmpty else { return fullYDomain }
+        if selectedRange != nil { return fullYDomain }
+        let leftIdx: Int
+        if let label = visibleLeftLabel,
+           let idx = dataPoints.firstIndex(where: { $0.label == label }) {
+            leftIdx = idx
+        } else {
+            leftIdx = max(0, dataPoints.count - visibleCount)
+        }
+        let endIdx = min(dataPoints.count - 1, leftIdx + visibleCount - 1)
+        let slice = dataPoints[leftIdx...endIdx]
+        return series.yDomain(values: slice.map { series.value(for: $0) })
+    }
+
+    /// Single-tap selected point (only valid when no range is active).
+    private var selectedSinglePoint: PeriodDataPoint? {
+        guard selectionPoints.isEmpty,
+              let label = selectedValueLabel else { return nil }
+        return dataPoints.first { $0.label == label }
+    }
 
     /// How many data points fit in the visible window for the current zoom.
     /// Smaller values = more zoomed-in; clamped between 1 and total count.
@@ -229,30 +259,7 @@ struct PeriodLineChart: View {
         return max(1, min(dataPoints.count, raw))
     }
 
-    /// Points currently inside the visible window (driven by zoom + scroll position).
-    /// Falls back to the trailing window when scroll position has not been reported yet.
-    private var visibleDataPoints: [PeriodDataPoint] {
-        guard !dataPoints.isEmpty, containerWidth > 0 else { return dataPoints }
-        let visible = visibleCount(for: containerWidth)
-        if !scrollPositionLabel.isEmpty,
-           let leftIdx = dataPoints.firstIndex(where: { $0.label == scrollPositionLabel }) {
-            let endIdx = min(dataPoints.count - 1, leftIdx + visible - 1)
-            return Array(dataPoints[leftIdx...endIdx])
-        }
-        let start = max(0, dataPoints.count - visible)
-        return Array(dataPoints[start...])
-    }
-
-    /// Y-domain that auto-fits to the visible window. Used in full mode so that
-    /// zooming in to a quiet stretch of the timeline doesn't squash bars/lines
-    /// against the bottom — the axis re-scales to the visible peaks.
-    private var dynamicYDomain: ClosedRange<Double> {
-        guard !visibleDataPoints.isEmpty else { return staticYDomain }
-        return series.yDomain(values: visibleDataPoints.map { series.value(for: $0) })
-    }
-
-    /// Label of the first point whose period starts in the future (inclusive boundary
-    /// drawn at this label). Nil if all data is in the past.
+    /// Label of the first point whose period starts in the future. Nil if all data is in the past.
     private var todayLabel: String? {
         let now = Date()
         return dataPoints.first(where: { $0.periodStart > now })?.label
@@ -269,13 +276,6 @@ struct PeriodLineChart: View {
         return Array(dataPoints[l...h])
     }
 
-    /// Single point selected by short tap (only valid when no range is active).
-    private var selectedSinglePoint: PeriodDataPoint? {
-        guard selectionPoints.isEmpty,
-              let label = selectedValueLabel else { return nil }
-        return dataPoints.first { $0.label == label }
-    }
-
     // MARK: Body
 
     var body: some View {
@@ -288,19 +288,18 @@ struct PeriodLineChart: View {
                 .chartAppear()
         } else {
             VStack(spacing: AppSpacing.sm) {
+                zoomToolbar
+                    .screenPadding()
+
                 if !selectionPoints.isEmpty {
                     rangeBanner
-                        .transition(.opacity.combined(with: .move(edge: .top)))
                 } else if let p = selectedSinglePoint {
                     singleBanner(point: p)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
                 interactiveChart
                     .frame(height: chartHeight)
             }
-            .animation(AppAnimation.gentleSpring, value: selectionPoints.count)
-            .animation(AppAnimation.gentleSpring, value: selectedValueLabel)
             .onChange(of: selectedRange) { _, new in
                 guard new != nil else { return }
                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
@@ -323,10 +322,19 @@ struct PeriodLineChart: View {
         )
     }
 
+    /// Trailing-aligned zoom controls. Pinch-to-zoom was removed because it
+    /// conflicted with the parent NavigationStack's swipe-to-go-back gesture.
+    private var zoomToolbar: some View {
+        HStack {
+            Spacer()
+            ChartZoomControls(zoomScale: $zoomScale, range: 0.4...4.0)
+        }
+    }
+
     // MARK: - Compact sparkline
 
     private var sparkline: some View {
-        let domain = staticYDomain
+        let domain = fullYDomain
         let lineFill = series.lineStyle(yDomain: domain)
         let areaFill = series.areaStyle(yDomain: domain)
         return Chart(dataPoints) { point in
@@ -351,29 +359,28 @@ struct PeriodLineChart: View {
     private var interactiveChart: some View {
         GeometryReader { proxy in
             let visible = visibleCount(for: proxy.size.width)
-            fullChart(visibleCount: visible)
-                .gesture(magnifyGesture)
-                .onAppear { containerWidth = proxy.size.width }
-                .onChange(of: proxy.size.width) { _, w in containerWidth = w }
+            let leftIdx = max(0, dataPoints.count - visible)
+            let initialLabel = dataPoints[leftIdx].label
+            fullChart(visibleCount: visible, initialLeftLabel: initialLabel)
         }
     }
 
-    private var magnifyGesture: some Gesture {
-        MagnifyGesture()
-            .onChanged { value in
-                let raw = pinchBaseScale * value.magnification
-                zoomScale = max(0.4, min(4.0, raw))
-            }
-            .onEnded { _ in pinchBaseScale = zoomScale }
-    }
-
-    private func fullChart(visibleCount: Int) -> some View {
-        let domain = dynamicYDomain
-        let labelMap = ChartAxisHelpers.axisLabelMap(for: dataPoints)
+    private func fullChart(visibleCount: Int, initialLeftLabel: String) -> some View {
+        let domain = dynamicYDomain(visibleCount: visibleCount)
         let lineFill = series.lineStyle(yDomain: domain)
         let areaFill = series.areaStyle(yDomain: domain)
+        // Bind scrollPosition through a non-optional String binding (Apple Charts requirement).
+        // Setter is **blocked while a range selection is active** so range-drag doesn't
+        // cause the chart to auto-pan or re-trigger Y-axis recompute mid-gesture.
+        let scrollBinding = Binding<String>(
+            get: { visibleLeftLabel ?? initialLeftLabel },
+            set: { newValue in
+                guard selectedRange == nil else { return }
+                visibleLeftLabel = newValue
+            }
+        )
         return Chart {
-            // Highlight the selected range as a translucent band.
+            // Translucent band highlighting the selected range.
             if let range = selectedRange {
                 RectangleMark(
                     xStart: .value("Start", range.lowerBound),
@@ -382,7 +389,7 @@ struct PeriodLineChart: View {
                 .foregroundStyle(AppColors.accent.opacity(0.15))
             }
 
-            // Single-point selection ruler.
+            // Single-tap selection ruler.
             if let label = selectedValueLabel, selectionPoints.isEmpty {
                 RuleMark(x: .value("Selected", label))
                     .foregroundStyle(AppColors.textTertiary.opacity(0.4))
@@ -424,14 +431,14 @@ struct PeriodLineChart: View {
         .chartYScale(domain: domain)
         .chartXVisibleDomain(length: visibleCount)
         .chartScrollableAxes(.horizontal)
-        .chartScrollPosition(x: $scrollPositionLabel)
+        .chartScrollPosition(x: scrollBinding)
         .chartXSelection(range: $selectedRange)
         .chartXSelection(value: $selectedValueLabel)
         .chartXAxis {
             AxisMarks { value in
-                AxisValueLabel {
+                AxisValueLabel(collisionResolution: .greedy(minimumSpacing: 6)) {
                     if let label = value.as(String.self) {
-                        Text(labelMap[label] ?? label)
+                        Text(axisLabelMap[label] ?? label)
                             .font(AppTypography.caption2)
                             .lineLimit(1)
                     }
@@ -450,18 +457,15 @@ struct PeriodLineChart: View {
             }
         }
         .chartLegend(.hidden)
-        .animation(AppAnimation.chartUpdateAnimation, value: dataPoints.count)
-        .animation(AppAnimation.gentleSpring, value: dynamicYDomain.upperBound)
     }
 
     // MARK: - Single-point banner
 
     private func singleBanner(point: PeriodDataPoint) -> some View {
-        let labelMap = ChartAxisHelpers.axisLabelMap(for: [point])
         let value = series.value(for: point)
         return HStack(spacing: AppSpacing.md) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(labelMap[point.label] ?? point.label)
+                Text(axisLabelMap[point.label] ?? point.label)
                     .font(AppTypography.caption2)
                     .foregroundStyle(AppColors.textSecondary)
                 Text(ChartAxisHelpers.formatCompact(value))
@@ -500,8 +504,7 @@ struct PeriodLineChart: View {
             }
             Spacer()
             if let first = pts.first?.label, let last = pts.last?.label {
-                let labelMap = ChartAxisHelpers.axisLabelMap(for: pts)
-                Text("\(labelMap[first] ?? first) – \(labelMap[last] ?? last)")
+                Text("\(axisLabelMap[first] ?? first) – \(axisLabelMap[last] ?? last)")
                     .font(AppTypography.caption2)
                     .foregroundStyle(AppColors.textSecondary)
             }
@@ -518,6 +521,15 @@ struct PeriodLineChart: View {
         .padding(.horizontal, AppSpacing.md)
         .padding(.vertical, AppSpacing.sm)
         .cardStyle()
+    }
+
+    // MARK: - Cached axis label map
+
+    /// Built once per `dataPoints` array — survives every body re-eval driven by
+    /// gesture/scroll state. Without this cache the dictionary was rebuilt at 60 fps
+    /// during pinch/scroll, which dominated the frame budget on real devices.
+    private var axisLabelMap: [String: String] {
+        ChartAxisLabelMapCache.shared.map(for: dataPoints)
     }
 }
 

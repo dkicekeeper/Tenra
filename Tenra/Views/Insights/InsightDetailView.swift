@@ -88,37 +88,39 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
     @ViewBuilder
     private var chartSection: some View {
-        Group {
-            switch insight.detailData {
-            case .categoryBreakdown(let items):
-                DonutChart(slices: DonutSlice.from(items))
-            case .periodTrend(let points):
-                let gran = points.first?.granularity ?? .month
-                if insight.type == .bestMonth || insight.type == .worstMonth
-                    || insight.type == .incomeGrowth || insight.type == .incomeVsExpenseRatio {
-                    PeriodChartSwitcher(dataPoints: points, currency: currency, granularity: gran, mode: .full)
-                } else {
-                    PeriodLineChart(
-                        dataPoints: points,
-                        series: insight.category == .wealth ? .wealth : .cashFlow,
-                        granularity: gran,
-                        mode: .full
-                    )
-                }
-            case .budgetProgressList(let items):
-                budgetChartSection(items)
-            case .recurringList:
-                EmptyView()
-            case .accountComparison:
-                EmptyView()
-            case .wealthBreakdown:
-                // Account balance list rendered in detailSection
-                EmptyView()
-            case nil:
-                EmptyView()
+        switch insight.detailData {
+        case .categoryBreakdown(let items):
+            DonutChart(slices: DonutSlice.from(items))
+                .screenPadding()
+        case .periodTrend(let points):
+            // Scrollable charts (line/bar) bleed edge-to-edge — no horizontal
+            // padding here, otherwise the visible plot area is offset from the
+            // screen left edge and the first datapoint appears clipped.
+            let gran = points.first?.granularity ?? .month
+            if insight.type == .bestMonth || insight.type == .worstMonth
+                || insight.type == .incomeGrowth || insight.type == .incomeVsExpenseRatio {
+                PeriodChartSwitcher(dataPoints: points, currency: currency, granularity: gran, mode: .full)
+            } else {
+                PeriodLineChart(
+                    dataPoints: points,
+                    series: insight.category == .wealth ? .wealth : .cashFlow,
+                    granularity: gran,
+                    mode: .full
+                )
             }
+        case .budgetProgressList(let items):
+            budgetChartSection(items)
+                .screenPadding()
+        case .recurringList:
+            EmptyView()
+        case .accountComparison:
+            EmptyView()
+        case .wealthBreakdown:
+            // Account balance list rendered in detailSection
+            EmptyView()
+        case nil:
+            EmptyView()
         }
-        .screenPadding()
     }
 
     // P22: LazyVStack eliminates upfront layout of all budget rows

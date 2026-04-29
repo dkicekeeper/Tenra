@@ -187,15 +187,15 @@ Tenra/
 - **Every financial mutation MUST create a transaction**: `makeManualPayment` → `.loanPayment`, `makeEarlyRepayment` → `.loanEarlyRepayment`. Both return `Transaction?` for the caller to persist.
 - **⚠️ `reconcileAllLoans` must be called globally** — not just per-loan in detail view. If user doesn't visit each loan's detail screen, reconciliation is skipped.
 
-#### Logo Provider Chain (Supabase → LogoDev → GoogleFavicon → Lettermark)
-- `SupabaseLogoProvider` auto-indexes bucket via Storage API, fuzzy-matches normalized filenames (strips spaces/underscores/hyphens/dots + common affixes like "bank"). Index cached to disk, refreshed daily. Empty index retries every 60s.
+#### Logo Provider Chain (jsDelivr → LogoDev → GoogleFavicon → Lettermark)
+- `JsDelivrLogoProvider` auto-indexes the `dkicekeeper/tenra-assets` GitHub repo via the jsDelivr packages API (`https://data.jsdelivr.com/v1/packages/gh/dkicekeeper/tenra-assets@main?structure=flat`), fuzzy-matches normalized filenames (strips spaces/underscores/hyphens/dots + common affixes like "bank"). Index cached to disk (`jsdelivr_logo_index.json`), refreshed daily. Empty index retries every 60s. Files served from `https://cdn.jsdelivr.net/gh/dkicekeeper/tenra-assets@main/logos/<file>`.
 - `LogoDevProvider` uses logo.dev API with 5s timeout, checks `LogoDevConfig.isAvailable` internally
 - `GoogleFaviconProvider` uses Google Favicon API (`sz=128`), rejects responses <1KB or images ≤16x16
 - `LettermarkProvider` generates letter icons with djb2 deterministic colors — **never cached to disk** (so real logos can override later)
 - `LogoProviderChain.fetch()` returns `LogoProviderResult` with `providerName` + `shouldCacheToDisk`
 - `LogoDiskCache` has `cacheVersion` — bump it to invalidate stale cache on next launch
-- Supabase bucket `logos` requires SELECT RLS policy for anon role to enable listing
-- Config: `SUPABASE_LOGOS_BASE_URL` + `SUPABASE_ANON_KEY` in Info.plist
+- Repo `dkicekeeper/tenra-assets` must stay public (jsDelivr serves only public GH repos). To force-refresh after edits use jsDelivr purge API; for full version pinning swap `@main` for a tag (`@v1`) in `JsDelivrLogoProvider.packageAPI` + `cdnBase`.
+- No auth/keys required — public CDN, no Info.plist entries.
 - `ServiceLogoRegistry` (`nonisolated enum`): `allServices` (170+), `domainMap`, `aliasMap`, `resolveDomain(from:)`, `search(query:)`
 - `ServiceLogoEntry`: `domain`, `displayName`, `category`, `aliases` — no logoFilename, no bankLogo
 - `ServiceCategory` has `.banks`, `.localServices`, `.telecom`, `.cis` + original 7 categories
@@ -465,6 +465,23 @@ New file needed?
 - **Don't profile under attached Xcode debugger** — `os.Logger.debug` flooding alone inflated a real <1s launch into a measured 4–6s. Use Instruments Time Profiler or detach debugger before measuring.
 - **Reading `.count`/`.isEmpty`/`dict[key]` on an `@Observable` collection subscribes the body to the whole collection** — for hot paths over 19k transactions, maintain a separate Observable scalar mirror (e.g. `TransactionStore.transactionsCount`) and read that instead.
 - **`PerformanceProfiler.start/end` uses `CACurrentMediaTime()` synchronously** — measurements reflect actual elapsed time at the call site. Older logs that captured time via queued `Task { @MainActor }` are not comparable.
+- **`String(localized:)` в hot-path body чарта = антипаттерн**: на каждом scroll-кадре пересоздаётся localized string. Кэшировать в `@State` / `static let` вне `body` или использовать stable string keys для `position(by:)` и т.п.
+- **Heavy axis-label maps кэшируются через `ChartAxisLabelMapCache`** (MainActor singleton, key=count+first+last). Любые новые heavy chart-формат-функции (`DateFormatter`, `Dictionary` builds) должны идти через аналогичный cache, иначе при scroll/zoom пересборка на 60fps доминирует frame budget.
+- **`.animation(value:)` на scroll/zoom-зависимом state = hot-path catastrophe**: каждое scroll-событие запускает spring → накопление анимаций → лаги. Apple Charts сами плавно интерполируют — не нужно spring'а сверху.
+
+## Swift Charts Patterns
+
+- **Native scroll, не SwiftUI ScrollView**: `chartScrollableAxes(.horizontal)` + `chartXVisibleDomain(length:)` + `chartScrollPosition(x:)`. Лучше per-frame, чем `ScrollView { Chart }` с `defaultScrollAnchor`.
+- **Scrollable charts должны быть bleed-to-edge** — без `.screenPadding()` на parent, иначе plot area обрезается и первая точка приклеивается к экранному отступу. Padding на header'ы / list'ы соседствующие с chart, не на chart.
+- **`MagnifyGesture` конфликтует с NavigationStack swipe-back** — на детальных страницах НЕ использовать pinch zoom, заменять на `+/-` кнопки. Если без MagnifyGesture никак, ставить `.simultaneousGesture(...)` чтобы native chart gestures (selection) не перехватывались.
+- **`chartXSelection(value:) + (range:) одновременно`** — value=tap, range=long-press-drag, не конфликтуют. НО оба binding'а должны быть установлены ОДНОВРЕМЕННО, иначе один перекрывает другой.
+- **`chartScrollPosition(x:)` требует non-optional `Plottable`** — для `String?` оборачивать через `Binding<String>` с fallback на initial label.
+- **Setter race во время range-selection**: Apple вызывает `chartScrollPosition.setter` во время `chartXSelection(range:)` drag → если scroll position управляет dynamic Y → бары прыгают. Решение: блокировать setter и **замораживать dynamic Y** пока `selectedRange != nil`.
+- **Multi-series `AreaMark` STACK по умолчанию** — для overlay (income vs expense) нужно `series:` ПЛЮС `stacking: .unstacked` вместе. Без `series:` две areas мерджатся в одну zigzag-серию между x-точками.
+- **`AxisValueLabel(collisionResolution: .greedy(minimumSpacing: 6))`** — стандартное прореживание налезающих дат. Применять везде где AxisMarks { } по String x.
+- **Initial trailing scroll**: вычислить `initialLeftLabel = dataPoints[max(0, count - visibleCount)].label` из GeometryReader proxy.size.width, передать в `chartScrollPosition(initialX:)`. Чарт по умолчанию открывается на leading.
+- **Reusable `ChartZoomControls(zoomScale: $zoomScale, range:)`** — `+/-` кнопки с `step ×1.5` через `Views/Components/Charts/PeriodChartSwitcher.swift`. Используется в `PeriodChartSwitcher` (picker слева, zoom справа в HStack) и в standalone `PeriodLineChart` (свой `zoomToolbar`).
+- **`AnyShapeStyle` для условных gradient/color** на `LineMark.foregroundStyle()` — allows switching между solid и `LinearGradient` без overload-конфликтов.
 
 ## SwiftUI Layout Gotchas
 

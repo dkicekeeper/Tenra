@@ -120,3 +120,33 @@ nonisolated enum ChartAxisHelpers {
         }
     }
 }
+
+// MARK: - ChartAxisLabelMapCache
+
+/// MainActor-bound cache for `axisLabelMap` results.
+///
+/// Why this exists: SwiftUI re-evaluates chart `body` on every gesture/scroll
+/// event. Without a cache, `axisLabelMap` rebuilds a `Dictionary` with
+/// `DateFormatter.string(from:)` calls at 60 fps during pinch/scroll, which
+/// dominates the frame budget on real devices. The cache key fingerprints
+/// the dataset by `(count, first.label, last.label)` — a new array shape
+/// invalidates automatically.
+@MainActor
+final class ChartAxisLabelMapCache {
+    static let shared = ChartAxisLabelMapCache()
+
+    private var cache: [String: [String: String]] = [:]
+    private let maxEntries = 8
+
+    private init() {}
+
+    func map(for points: [PeriodDataPoint]) -> [String: String] {
+        guard let first = points.first, let last = points.last else { return [:] }
+        let key = "\(points.count)|\(first.label)|\(last.label)"
+        if let cached = cache[key] { return cached }
+        let computed = ChartAxisHelpers.axisLabelMap(for: points)
+        if cache.count >= maxEntries { cache.removeAll(keepingCapacity: true) }
+        cache[key] = computed
+        return computed
+    }
+}

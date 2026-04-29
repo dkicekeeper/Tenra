@@ -1,24 +1,34 @@
 //
-//  SupabaseLogoProvider.swift
+//  JsDelivrLogoProvider.swift
 //  Tenra
 //
-//  Fetches logos from Supabase Storage with auto-indexing.
-//  Lists bucket contents once, builds fuzzy index, matches by normalized name.
+//  Fetches logos from jsDelivr CDN backed by the public GitHub repo
+//  `dkicekeeper/tenra-assets` (logos/<filename>.png).
+//
+//  On first request, indexes the repo via the jsDelivr packages API.
+//  Builds a normalized lookup: strips spaces/underscores/hyphens, lowercases.
+//  Matches domain, displayName, or aliases against the index.
+//  Index is cached to disk and refreshed once per day.
 //
 
 import UIKit
 import os
 
-/// Fetches brand logos from Supabase Storage public bucket.
-///
-/// On first request, indexes the entire bucket via Supabase Storage API.
-/// Builds a normalized lookup: strips spaces/underscores/hyphens, lowercases.
-/// Matches domain, displayName, or aliases against the index.
-/// Index is cached to disk and refreshed once per day.
-nonisolated final class SupabaseLogoProvider: LogoProvider {
-    let name = "supabase"
+nonisolated final class JsDelivrLogoProvider: LogoProvider {
+    let name = "jsdelivr"
 
-    private static let logger = Logger(subsystem: "Tenra", category: "SupabaseLogoProvider")
+    private static let logger = Logger(subsystem: "Tenra", category: "JsDelivrLogoProvider")
+
+    // MARK: - Endpoints
+
+    /// jsDelivr packages API — returns flat file list for the repo at given ref.
+    private static let packageAPI = "https://data.jsdelivr.com/v1/packages/gh/dkicekeeper/tenra-assets@main?structure=flat"
+
+    /// CDN base URL for actual logo downloads.
+    private static let cdnBase = "https://cdn.jsdelivr.net/gh/dkicekeeper/tenra-assets@main/logos"
+
+    /// Path prefix in the API response that flags entries as logos.
+    private static let logosPrefix = "/logos/"
 
     private static let session: URLSession = {
         let config = URLSessionConfiguration.default
@@ -27,29 +37,8 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
         return URLSession(configuration: config)
     }()
 
-    // MARK: - Config from Info.plist
-
-    private static let config: (baseURL: String, projectURL: String, anonKey: String)? = {
-        guard let path = Bundle.main.path(forResource: "Info", ofType: "plist"),
-              let plist = NSDictionary(contentsOfFile: path),
-              let baseURL = plist["SUPABASE_LOGOS_BASE_URL"] as? String, !baseURL.isEmpty,
-              let anonKey = plist["SUPABASE_ANON_KEY"] as? String, !anonKey.isEmpty else {
-            return nil
-        }
-        // Extract project URL from base URL: https://xxx.supabase.co/storage/v1/object/public/logos → https://xxx.supabase.co
-        let projectURL: String
-        if let range = baseURL.range(of: "/storage/") {
-            projectURL = String(baseURL[baseURL.startIndex..<range.lowerBound])
-        } else {
-            // Fallback: assume base URL IS the project URL
-            projectURL = baseURL
-        }
-        return (baseURL: baseURL, projectURL: projectURL, anonKey: anonKey)
-    }()
-
     // MARK: - Index (normalized name → actual filename with extension)
 
-    /// Actor to protect mutable index state
     private static let indexActor = IndexActor()
 
     actor IndexActor {
@@ -59,17 +48,15 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
 
         /// Get the index, fetching if needed (max once per day for non-empty, retry every 60s for empty)
         func getIndex() async -> [String: String] {
-            // Return cached if fresh and non-empty
             if let index, !index.isEmpty, let lastFetch, Date().timeIntervalSince(lastFetch) < 86400 {
                 return index
             }
 
-            // Empty index? Retry after 60s (not 24h) — likely a transient failure
+            // Empty index? Retry after 60s (not 24h) — likely a transient failure.
             if let index, index.isEmpty, let lastFetch, Date().timeIntervalSince(lastFetch) < 60 {
                 return index
             }
 
-            // Try disk cache first (only if non-empty)
             if index == nil, let diskIndex = loadFromDisk(), !diskIndex.index.isEmpty {
                 self.index = diskIndex.index
                 self.lastFetch = diskIndex.date
@@ -78,13 +65,13 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
                 }
             }
 
-            // Coalesce concurrent fetches: parallel callers await the same Task
+            // Coalesce concurrent fetches: parallel callers await the same Task.
             if let inFlightFetch {
                 return await inFlightFetch.value
             }
 
             let fetchTask = Task<[String: String], Never> { [weak self] in
-                let fetched = await self?.fetchBucketIndex() ?? nil
+                let fetched = await self?.fetchPackageIndex() ?? nil
                 let result = fetched ?? [:]
                 await self?.storeFetchResult(result)
                 return result
@@ -101,20 +88,18 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
                 self.lastFetch = Date()
                 saveToDisk(result)
             } else {
-                // Record empty fetch so the 60s retry gate applies
                 self.lastFetch = Date()
                 if self.index == nil { self.index = [:] }
             }
         }
 
-        /// Force refresh the index
         func refresh() async {
             if let inFlightFetch {
                 _ = await inFlightFetch.value
                 return
             }
             let fetchTask = Task<[String: String], Never> { [weak self] in
-                let fetched = await self?.fetchBucketIndex() ?? nil
+                let fetched = await self?.fetchPackageIndex() ?? nil
                 let result = fetched ?? [:]
                 await self?.storeFetchResult(result)
                 return result
@@ -124,53 +109,54 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
             inFlightFetch = nil
         }
 
-        // MARK: - Supabase Storage API
+        // MARK: - jsDelivr Packages API
 
-        private func fetchBucketIndex() async -> [String: String]? {
-            guard let config = SupabaseLogoProvider.config else { return nil }
-
-            let listURL = "\(config.projectURL)/storage/v1/object/list/logos"
-            guard let url = URL(string: listURL) else { return nil }
+        private func fetchPackageIndex() async -> [String: String]? {
+            guard let url = URL(string: JsDelivrLogoProvider.packageAPI) else { return nil }
 
             var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue(config.anonKey, forHTTPHeaderField: "apikey")
-            request.setValue("Bearer \(config.anonKey)", forHTTPHeaderField: "Authorization")
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = #"{"prefix":"","limit":1000,"sortBy":{"column":"name","order":"asc"}}"#.data(using: .utf8)
+            request.httpMethod = "GET"
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
 
             do {
-                let (data, response) = try await SupabaseLogoProvider.session.data(for: request)
+                let (data, response) = try await JsDelivrLogoProvider.session.data(for: request)
 
                 guard let httpResponse = response as? HTTPURLResponse,
                       httpResponse.statusCode == 200 else {
-                    SupabaseLogoProvider.logger.error("Bucket list failed: \((response as? HTTPURLResponse)?.statusCode ?? 0)")
+                    JsDelivrLogoProvider.logger.error("Package list failed: \((response as? HTTPURLResponse)?.statusCode ?? 0)")
                     return nil
                 }
 
-                // Parse JSON array of objects with "name" field
-                guard let items = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+                // Response shape: { "files": [ { "name": "/logos/kaspi.png", ... }, ... ] }
+                guard let payload = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let files = payload["files"] as? [[String: Any]] else {
                     return nil
                 }
 
                 var index: [String: String] = [:]
-                for item in items {
-                    guard let filename = item["name"] as? String else { continue }
+                for file in files {
+                    guard let path = file["name"] as? String,
+                          path.hasPrefix(JsDelivrLogoProvider.logosPrefix) else { continue }
 
-                    // Skip directories and non-png files
-                    guard filename.hasSuffix(".png") || filename.hasSuffix(".jpg") || filename.hasSuffix(".jpeg") else { continue }
+                    let filename = String(path.dropFirst(JsDelivrLogoProvider.logosPrefix.count))
+                    let lower = filename.lowercased()
+                    guard lower.hasSuffix(".png") || lower.hasSuffix(".jpg") || lower.hasSuffix(".jpeg") else { continue }
 
-                    // Normalize: strip extension, lowercase, remove separators
                     let nameWithoutExt = (filename as NSString).deletingPathExtension
                     let normalized = Self.normalize(nameWithoutExt)
+                    if normalized.isEmpty { continue }
 
-                    index[normalized] = filename
+                    // First match wins — keeps deterministic behavior when duplicates differ
+                    // only by extension.
+                    if index[normalized] == nil {
+                        index[normalized] = filename
+                    }
                 }
 
-                SupabaseLogoProvider.logger.info("Indexed \(index.count) logos from Supabase")
+                JsDelivrLogoProvider.logger.info("Indexed \(index.count) logos from jsDelivr")
                 return index
             } catch {
-                SupabaseLogoProvider.logger.error("Bucket list error: \(error.localizedDescription)")
+                JsDelivrLogoProvider.logger.error("Package list error: \(error.localizedDescription)")
                 return nil
             }
         }
@@ -179,7 +165,7 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
 
         private static let cacheURL: URL = {
             let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            return appSupport.appendingPathComponent("supabase_logo_index.json")
+            return appSupport.appendingPathComponent("jsdelivr_logo_index.json")
         }()
 
         private func saveToDisk(_ index: [String: String]) {
@@ -218,12 +204,9 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
     // MARK: - LogoProvider
 
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
-        guard let config = Self.config else { return nil }
-
         let index = await Self.indexActor.getIndex()
         guard !index.isEmpty else { return nil }
 
-        // Build search candidates from registry entry
         let entry = ServiceLogoRegistry.domainMap[domain.lowercased()]
         var candidates: [String] = []
 
@@ -260,14 +243,12 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
             }
         }
 
-        // Deduplicate
         var seen = Set<String>()
         let uniqueCandidates = candidates.filter { seen.insert($0).inserted }
 
-        // Find first match in index
         for candidate in uniqueCandidates {
             if let actualFilename = index[candidate] {
-                return await downloadLogo(filename: actualFilename, baseURL: config.baseURL)
+                return await downloadLogo(filename: actualFilename)
             }
         }
 
@@ -296,12 +277,12 @@ nonisolated final class SupabaseLogoProvider: LogoProvider {
 
     // MARK: - Download
 
-    private func downloadLogo(filename: String, baseURL: String) async -> UIImage? {
+    private func downloadLogo(filename: String) async -> UIImage? {
         guard let encoded = filename.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
             return nil
         }
 
-        let urlString = "\(baseURL)/\(encoded)"
+        let urlString = "\(Self.cdnBase)/\(encoded)"
         guard let url = URL(string: urlString) else { return nil }
 
         do {

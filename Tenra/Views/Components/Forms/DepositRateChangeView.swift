@@ -79,7 +79,7 @@ struct DepositRateChangeView: View {
         }
         .onAppear {
             if let depositInfo = account.depositInfo {
-                rateText = String(format: "%.2f", NSDecimalNumber(decimal: depositInfo.interestRateAnnual).doubleValue)
+                rateText = AmountInputFormatting.bindingString(for: depositInfo.interestRateAnnual)
             }
         }
         .task {

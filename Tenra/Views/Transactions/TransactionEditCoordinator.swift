@@ -132,7 +132,7 @@ final class TransactionEditCoordinator {
         let linkedSubcategoryIds = Set(linkedSubcategories.map { $0.id })
 
         self.formData = EditTransactionFormData(
-            amountText: String(format: "%.2f", transaction.amount),
+            amountText: AmountInputFormatting.bindingString(for: transaction.amount),
             descriptionText: transaction.description,
             selectedCategory: transaction.category,
             selectedSubcategoryIds: linkedSubcategoryIds,

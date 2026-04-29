@@ -892,11 +892,26 @@
 // MARK: - Tab Bar
 "tab.home" = "Home";
 "tab.analytics" = "Analytics";
+"tab.finances" = "Finances";
 "tab.settings" = "Settings";
 "tab.voice" = "Voice";
 "tab.ocr" = "Import";
 "tab.add" = "Add";
 "tab.close" = "Close";
+
+// MARK: - Finances
+"finances.title" = "Finances";
+"finances.accounts.title" = "Accounts";
+"finances.accounts.totalLabel" = "Total balance";
+"finances.accounts.count" = "%lld accounts";
+"finances.accounts.empty" = "No accounts";
+"finances.categories.title" = "Categories";
+"finances.categories.count" = "%lld categories";
+"finances.categories.empty" = "No categories";
+"finances.subcategories.title" = "Subcategories";
+"finances.subcategories.count" = "%lld subcategories";
+"finances.subcategories.linkedTo" = "Across %lld categories";
+"finances.subcategories.empty" = "No subcategories";
 
 // MARK: - Loans
 "loan.listTitle" = "Loans";

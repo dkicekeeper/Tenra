@@ -61,6 +61,11 @@ struct AmountDigitDisplay: View {
 
     /// Clean digit string — no space characters, stable positions for `.numericText()`.
     /// Preserves leading minus for negative amounts.
+    ///
+    /// Trailing-zero fractional parts must be stripped at the binding source via
+    /// `AmountInputFormatting.bindingString(for:)`, NOT here — stripping in the
+    /// display would desync the visible string from the underlying TextField
+    /// binding and make the first delete-key presses appear to do nothing.
     private var displayAmount: String {
         let cleaned = AmountInputFormatting.cleanAmountString(rawAmount)
         if cleaned.isEmpty || cleaned == "-" { return "0" }

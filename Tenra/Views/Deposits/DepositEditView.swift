@@ -145,10 +145,10 @@ struct DepositEditView: View {
                 // Editing existing deposit
                 name = account.name
                 bankName = depositInfo.bankName
-                principalBalanceText = String(format: "%.2f", NSDecimalNumber(decimal: depositInfo.principalBalance).doubleValue)
+                principalBalanceText = AmountInputFormatting.bindingString(for: depositInfo.principalBalance)
                 currency = account.currency
                 selectedIconSource = account.iconSource
-                interestRateText = String(format: "%.2f", NSDecimalNumber(decimal: depositInfo.interestRateAnnual).doubleValue)
+                interestRateText = AmountInputFormatting.bindingString(for: depositInfo.interestRateAnnual)
                 interestPostingDay = depositInfo.interestPostingDay
                 capitalizationEnabled = depositInfo.capitalizationEnabled
             } else if let account = account {
@@ -156,7 +156,7 @@ struct DepositEditView: View {
                 name = account.name
                 currency = account.currency
                 selectedIconSource = account.iconSource
-                principalBalanceText = String(format: "%.2f", account.balance)
+                principalBalanceText = AmountInputFormatting.bindingString(for: account.balance)
             } else {
                 // New deposit
                 currency = "KZT"

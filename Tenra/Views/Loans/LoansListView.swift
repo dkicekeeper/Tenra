@@ -78,7 +78,7 @@ struct LoansListView: View {
 
                         // Loan cards
                         ForEach(Array(filteredLoans.enumerated()), id: \.element.id) { index, loan in
-                            NavigationLink(value: HomeDestination.loanDetail(loan.id)) {
+                            NavigationLink(value: FinancesDestination.loanDetail(loan.id)) {
                                 LoanCard(loan: loan)
                             }
                             .buttonStyle(.plain)

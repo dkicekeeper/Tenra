@@ -16,14 +16,30 @@ struct SubcategoriesManagementView: View {
     @State private var selection: Set<String> = []
     @State private var showingBulkDeleteDialog = false
 
+    /// Precomputed per-subcategory stats. The previous implementation called
+    /// `subcategoryLastUsedDate` per row, which scanned all 19k transactions and
+    /// ran `DateFormatter.date(from:)` on each — that's O(N_subcats × N_tx) on
+    /// every list re-render. We instead build the table once per data change in
+    /// a single O(N_links + N_tx) pass on a background task.
+    @State private var stats: [String: SubcategoryStat] = [:]
+
+    /// Stable trigger for `.task(id:)` — recomputes stats only when the underlying
+    /// data actually changes, not on every body re-eval.
+    private var statsTrigger: StatsTrigger {
+        StatsTrigger(
+            subcategoriesCount: categoriesViewModel.subcategories.count,
+            linksCount: categoriesViewModel.transactionSubcategoryLinks.count,
+            transactionsCount: categoriesViewModel.transactionStore?.transactionsCount ?? 0
+        )
+    }
+
     @ViewBuilder
     private func subcategoryRow(for subcategory: Subcategory) -> some View {
-        let usageCount = categoriesViewModel.subcategoryUsageCount(for: subcategory.id)
-        let lastUsed = categoriesViewModel.subcategoryLastUsedDate(for: subcategory.id)
+        let stat = stats[subcategory.id]
         SubcategoryManagementRow(
             subcategory: subcategory,
-            usageCount: usageCount,
-            lastUsedDate: lastUsed,
+            usageCount: stat?.usageCount ?? 0,
+            lastUsedDate: stat?.lastUsedDate,
             onEdit: {
                 guard !mode.isSelecting else { return }
                 editingSubcategory = subcategory
@@ -161,7 +177,73 @@ struct SubcategoriesManagementView: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
+        .task(id: statsTrigger) {
+            await refreshStats()
+        }
     }
+
+    // MARK: - Stats Refresh
+
+    private func refreshStats() async {
+        // Snapshot Sendable scalars on MainActor before crossing the thread.
+        let linksSnapshot: [(subcategoryId: String, transactionId: String)] =
+            categoriesViewModel.transactionSubcategoryLinks.map {
+                (subcategoryId: $0.subcategoryId, transactionId: $0.transactionId)
+            }
+        let txDates: [(id: String, date: String)] =
+            categoriesViewModel.transactionStore?.transactions.map { (id: $0.id, date: $0.date) } ?? []
+
+        let computed = await Task.detached(priority: .userInitiated) {
+            Self.buildStats(links: linksSnapshot, txDates: txDates)
+        }.value
+
+        guard !Task.isCancelled else { return }
+        stats = computed
+    }
+
+    /// Single O(N_links + N_tx) build:
+    ///   1. tx-id → parsed Date map (one DateFormatter pass).
+    ///   2. walk links once — increment usage count and track max date per subcategory.
+    private nonisolated static func buildStats(
+        links: [(subcategoryId: String, transactionId: String)],
+        txDates: [(id: String, date: String)]
+    ) -> [String: SubcategoryStat] {
+        var dateById: [String: Date] = [:]
+        dateById.reserveCapacity(txDates.count)
+        for entry in txDates {
+            if let date = DateFormatters.dateFormatter.date(from: entry.date) {
+                dateById[entry.id] = date
+            }
+        }
+
+        var result: [String: SubcategoryStat] = [:]
+        for link in links {
+            var stat = result[link.subcategoryId] ?? SubcategoryStat(usageCount: 0, lastUsedDate: nil)
+            stat.usageCount += 1
+            if let txDate = dateById[link.transactionId] {
+                if let existing = stat.lastUsedDate {
+                    if txDate > existing { stat.lastUsedDate = txDate }
+                } else {
+                    stat.lastUsedDate = txDate
+                }
+            }
+            result[link.subcategoryId] = stat
+        }
+        return result
+    }
+}
+
+// MARK: - Stats Types
+
+private struct SubcategoryStat {
+    var usageCount: Int
+    var lastUsedDate: Date?
+}
+
+private struct StatsTrigger: Equatable {
+    let subcategoriesCount: Int
+    let linksCount: Int
+    let transactionsCount: Int
 }
 
 struct SubcategoryManagementRow: View {
@@ -185,7 +267,7 @@ struct SubcategoryManagementRow: View {
         } label: {
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
                 Text(subcategory.name)
-                    .font(AppTypography.body)
+                    .font(AppTypography.h4)
                 HStack(spacing: AppSpacing.sm) {
                     if usageCount > 0 {
                         Text(String(format: String(localized: "subcategory.usageCount"), usageCount))
@@ -197,8 +279,8 @@ struct SubcategoryManagementRow: View {
                         Text(String(localized: "subcategory.notUsed"))
                     }
                 }
-                .font(AppTypography.caption)
-                .foregroundStyle(.secondary)
+                .font(AppTypography.bodySmall)
+                .foregroundStyle(AppColors.textSecondary)
             }
         }
         .buttonStyle(.plain)

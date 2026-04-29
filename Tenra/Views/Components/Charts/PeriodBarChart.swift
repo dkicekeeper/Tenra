@@ -2,59 +2,84 @@
 //  PeriodBarChart.swift
 //  Tenra
 //
-//  Phase 43 (chart merge): Unified granularity-aware income/expense grouped bar chart.
-//  Replaces PeriodIncomeExpenseChart.
+//  Granularity-aware income/expense grouped bar chart.
 //
-//  Phase 43 additions:
-//  - chartAppear() entrance animation (opacity + scale from bottom)
-//  - chartUpdateAnimation on Chart view (bars animate when data changes)
-//  - Native Apple Charts horizontal scrolling, sticky leading Y-axis,
-//    pinch zoom on the visible window, and X range selection that
-//    surfaces the income/expense totals for the chosen interval.
+//  Performance notes (after audit):
+//  - X-domain is the full dataset; Y-domain is static across the entire dataset
+//    so Y-axis doesn't recompute on scroll/drag.
+//  - Long-press-and-drag selects a range via `chartXSelection(range:)`.
+//    Single-tap selection (`chartXSelection(value:)`) is intentionally NOT used
+//    because it conflicts with range selection on iOS 17/18 (range wins, single
+//    never fires). Pick one, not both.
+//  - Localized labels and the axis label map are cached / hoisted out of body
+//    to keep the per-frame body cost flat during scroll.
+//  - No animations on hot-path state (selection, scroll position, zoom).
 //
 
 import SwiftUI
 import Charts
 
-// MARK: - PeriodBarChart
-
-/// Granularity-aware income/expense grouped bar chart.
-///
-/// Full mode uses native Apple Charts horizontal scrolling
-/// (`chartScrollableAxes`) with a sticky Y-axis. The visible window is
-/// controlled by `zoomScale` (1.0 = default), driven by a pinch gesture
-/// clamped to `[0.4, 4.0]`. Long-press-and-drag selects an X range — the
-/// chart shows a banner above with totals (income + expenses) for the
-/// chosen interval and a reset button.
-///
-/// Compact mode is a static sparkline — no scrolling, zoom, or selection.
-///
-/// Usage:
-/// ```swift
-/// PeriodBarChart(dataPoints: points, currency: "KZT", granularity: .month)
-/// PeriodBarChart(dataPoints: points, currency: "KZT", granularity: .week, mode: .compact)
-/// ```
 struct PeriodBarChart: View {
     let dataPoints: [PeriodDataPoint]
     let currency: String
     let granularity: InsightGranularity
     var mode: ChartDisplayMode = .full
 
-    @State private var zoomScale: CGFloat = 1.0
-    @State private var pinchBaseScale: CGFloat = 1.0
+    /// External zoom binding — controlled by `PeriodChartSwitcher` toolbar.
+    /// Defaults to 1.0 when the chart is used standalone (no parent toolbar).
+    @Binding var zoomScale: CGFloat
+
     @State private var selectedRange: ClosedRange<String>?
     @State private var selectedValueLabel: String?
-    @State private var scrollPositionLabel: String = ""
-    @State private var containerWidth: CGFloat = 0
+    @State private var visibleLeftLabel: String?
+
+    init(
+        dataPoints: [PeriodDataPoint],
+        currency: String,
+        granularity: InsightGranularity,
+        mode: ChartDisplayMode = .full,
+        zoomScale: Binding<CGFloat> = .constant(1.0)
+    ) {
+        self.dataPoints = dataPoints
+        self.currency = currency
+        self.granularity = granularity
+        self.mode = mode
+        self._zoomScale = zoomScale
+    }
 
     private var isCompact: Bool { mode == .compact }
     private var basePointWidth: CGFloat { isCompact ? 30 : granularity.pointWidth }
     private var effectivePointWidth: CGFloat { basePointWidth * zoomScale }
     private var chartHeight: CGFloat { isCompact ? 60 : 200 }
 
-    /// Maximum Y value across the **entire** dataset — used by compact sparkline only.
-    private var staticYMax: Double {
+    /// Y max over the entire dataset (compact sparkline only).
+    private var fullYMax: Double {
         dataPoints.flatMap { [$0.income, $0.expenses] }.max() ?? 1
+    }
+
+    /// Y max for the currently-visible window — recomputed when scroll position
+    /// or zoom changes, so zooming into a quiet stretch doesn't squash bars.
+    /// **Frozen during active range selection** so the Y axis doesn't recompute
+    /// (and bars don't jump) while the user drags a selection.
+    private func dynamicYMax(visibleCount: Int) -> Double {
+        guard !dataPoints.isEmpty else { return fullYMax }
+        if selectedRange != nil { return fullYMax }
+        let leftIdx: Int
+        if let label = visibleLeftLabel,
+           let idx = dataPoints.firstIndex(where: { $0.label == label }) {
+            leftIdx = idx
+        } else {
+            leftIdx = max(0, dataPoints.count - visibleCount)
+        }
+        let endIdx = min(dataPoints.count - 1, leftIdx + visibleCount - 1)
+        let slice = dataPoints[leftIdx...endIdx]
+        return slice.flatMap { [$0.income, $0.expenses] }.max() ?? 1
+    }
+
+    private var selectedSinglePoint: PeriodDataPoint? {
+        guard selectionPoints.isEmpty,
+              let label = selectedValueLabel else { return nil }
+        return dataPoints.first { $0.label == label }
     }
 
     private func visibleCount(for containerWidth: CGFloat) -> Int {
@@ -63,32 +88,11 @@ struct PeriodBarChart: View {
         return max(1, min(dataPoints.count, raw))
     }
 
-    /// Points currently visible (driven by zoom + scroll position).
-    private var visibleDataPoints: [PeriodDataPoint] {
-        guard !dataPoints.isEmpty, containerWidth > 0 else { return dataPoints }
-        let visible = visibleCount(for: containerWidth)
-        if !scrollPositionLabel.isEmpty,
-           let leftIdx = dataPoints.firstIndex(where: { $0.label == scrollPositionLabel }) {
-            let endIdx = min(dataPoints.count - 1, leftIdx + visible - 1)
-            return Array(dataPoints[leftIdx...endIdx])
-        }
-        let start = max(0, dataPoints.count - visible)
-        return Array(dataPoints[start...])
-    }
-
-    /// Auto-fit Y max for the visible window.
-    private var dynamicYMax: Double {
-        let pts = visibleDataPoints
-        guard !pts.isEmpty else { return staticYMax }
-        return pts.flatMap { [$0.income, $0.expenses] }.max() ?? 1
-    }
-
     private var todayLabel: String? {
         let now = Date()
         return dataPoints.first(where: { $0.periodStart > now })?.label
     }
 
-    /// Points covered by the active selection (in array order, not lex order).
     private var selectionPoints: [PeriodDataPoint] {
         guard let range = selectedRange,
               let lo = dataPoints.firstIndex(where: { $0.label == range.lowerBound }),
@@ -99,39 +103,30 @@ struct PeriodBarChart: View {
         return Array(dataPoints[l...h])
     }
 
-    private var selectedSinglePoint: PeriodDataPoint? {
-        guard selectionPoints.isEmpty,
-              let label = selectedValueLabel else { return nil }
-        return dataPoints.first { $0.label == label }
+    private var axisLabelMap: [String: String] {
+        ChartAxisLabelMapCache.shared.map(for: dataPoints)
     }
 
     // MARK: Body
 
     var body: some View {
         if dataPoints.isEmpty {
-            emptyState
-                .frame(height: chartHeight)
+            emptyState.frame(height: chartHeight)
         } else if isCompact {
             sparkline
                 .frame(height: chartHeight)
-                .padding(.top, 0)
                 .chartAppear()
         } else {
             VStack(spacing: AppSpacing.sm) {
                 if !selectionPoints.isEmpty {
                     rangeBanner
-                        .transition(.opacity.combined(with: .move(edge: .top)))
                 } else if let p = selectedSinglePoint {
                     singleBanner(point: p)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
                 interactiveChart
                     .frame(height: chartHeight)
             }
-            .padding(.top, AppSpacing.sm)
-            .animation(AppAnimation.gentleSpring, value: selectionPoints.count)
-            .animation(AppAnimation.gentleSpring, value: selectedValueLabel)
             .onChange(of: selectedRange) { _, new in
                 guard new != nil else { return }
                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
@@ -157,28 +152,26 @@ struct PeriodBarChart: View {
     // MARK: - Compact sparkline
 
     private var sparkline: some View {
-        let incomeLabel = String(localized: "insights.income")
-        let expensesLabel = String(localized: "insights.expenses")
-        return Chart(dataPoints) { point in
+        Chart(dataPoints) { point in
             BarMark(
                 x: .value("Period", point.label),
-                y: .value(incomeLabel, point.income),
+                y: .value("Income", point.income),
                 width: .fixed(6)
             )
             .cornerRadius(AppRadius.xs)
             .foregroundStyle(AppColors.success.opacity(0.85))
-            .position(by: .value("Type", incomeLabel))
+            .position(by: .value("Type", "income"))
 
             BarMark(
                 x: .value("Period", point.label),
-                y: .value(expensesLabel, point.expenses),
+                y: .value("Expenses", point.expenses),
                 width: .fixed(6)
             )
             .cornerRadius(AppRadius.xs)
             .foregroundStyle(AppColors.destructive.opacity(0.85))
-            .position(by: .value("Type", expensesLabel))
+            .position(by: .value("Type", "expenses"))
         }
-        .chartYScale(domain: 0...staticYMax)
+        .chartYScale(domain: 0...fullYMax)
         .chartXAxis { AxisMarks { _ in } }
         .chartYAxis { AxisMarks { _ in } }
         .chartLegend(.hidden)
@@ -190,27 +183,22 @@ struct PeriodBarChart: View {
     private var interactiveChart: some View {
         GeometryReader { proxy in
             let visible = visibleCount(for: proxy.size.width)
-            fullChart(visibleCount: visible)
-                .gesture(magnifyGesture)
-                .onAppear { containerWidth = proxy.size.width }
-                .onChange(of: proxy.size.width) { _, w in containerWidth = w }
+            let leftIdx = max(0, dataPoints.count - visible)
+            let initialLabel = dataPoints[leftIdx].label
+            fullChart(visibleCount: visible, initialLeftLabel: initialLabel)
         }
     }
 
-    private var magnifyGesture: some Gesture {
-        MagnifyGesture()
-            .onChanged { value in
-                let raw = pinchBaseScale * value.magnification
-                zoomScale = max(0.4, min(4.0, raw))
+    private func fullChart(visibleCount: Int, initialLeftLabel: String) -> some View {
+        let yMaxNow = dynamicYMax(visibleCount: visibleCount)
+        // Setter blocked during active range selection — see PeriodLineChart for rationale.
+        let scrollBinding = Binding<String>(
+            get: { visibleLeftLabel ?? initialLeftLabel },
+            set: { newValue in
+                guard selectedRange == nil else { return }
+                visibleLeftLabel = newValue
             }
-            .onEnded { _ in pinchBaseScale = zoomScale }
-    }
-
-    private func fullChart(visibleCount: Int) -> some View {
-        let incomeLabel = String(localized: "insights.income")
-        let expensesLabel = String(localized: "insights.expenses")
-        let labelMap = ChartAxisHelpers.axisLabelMap(for: dataPoints)
-        let yMaxNow = dynamicYMax
+        )
         return Chart {
             // Translucent band highlighting the selected range.
             if let range = selectedRange {
@@ -221,7 +209,7 @@ struct PeriodBarChart: View {
                 .foregroundStyle(AppColors.accent.opacity(0.15))
             }
 
-            // Single-point selection ruler.
+            // Single-tap selection ruler.
             if let label = selectedValueLabel, selectionPoints.isEmpty {
                 RuleMark(x: .value("Selected", label))
                     .foregroundStyle(AppColors.textTertiary.opacity(0.4))
@@ -243,32 +231,34 @@ struct PeriodBarChart: View {
             ForEach(dataPoints) { point in
                 BarMark(
                     x: .value("Period", point.label),
-                    y: .value(incomeLabel, point.income)
+                    y: .value("Income", point.income)
                 )
                 .cornerRadius(AppRadius.xs)
                 .foregroundStyle(AppColors.success.opacity(0.85))
-                .position(by: .value("Type", incomeLabel))
+                .position(by: .value("Type", "income"))
 
                 BarMark(
                     x: .value("Period", point.label),
-                    y: .value(expensesLabel, point.expenses)
+                    y: .value("Expenses", point.expenses)
                 )
                 .cornerRadius(AppRadius.xs)
                 .foregroundStyle(AppColors.destructive.opacity(0.85))
-                .position(by: .value("Type", expensesLabel))
+                .position(by: .value("Type", "expenses"))
             }
         }
         .chartYScale(domain: 0...yMaxNow)
         .chartXVisibleDomain(length: visibleCount)
         .chartScrollableAxes(.horizontal)
-        .chartScrollPosition(x: $scrollPositionLabel)
+        .chartScrollPosition(x: scrollBinding)
         .chartXSelection(range: $selectedRange)
         .chartXSelection(value: $selectedValueLabel)
         .chartXAxis {
             AxisMarks { value in
-                AxisValueLabel {
+                // Greedy collision resolution prevents overlapping date labels
+                // when zoomed in (many ticks crammed into narrow visible window).
+                AxisValueLabel(collisionResolution: .greedy(minimumSpacing: 6)) {
                     if let label = value.as(String.self) {
-                        Text(labelMap[label] ?? label)
+                        Text(axisLabelMap[label] ?? label)
                             .font(AppTypography.caption2)
                             .lineLimit(1)
                     }
@@ -287,17 +277,14 @@ struct PeriodBarChart: View {
             }
         }
         .chartLegend(.hidden)
-        .animation(AppAnimation.chartUpdateAnimation, value: dataPoints.count)
-        .animation(AppAnimation.gentleSpring, value: yMaxNow)
     }
 
     // MARK: - Single-point banner
 
     private func singleBanner(point: PeriodDataPoint) -> some View {
-        let labelMap = ChartAxisHelpers.axisLabelMap(for: [point])
-        return HStack(alignment: .center, spacing: AppSpacing.lg) {
+        HStack(alignment: .center, spacing: AppSpacing.lg) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(labelMap[point.label] ?? point.label)
+                Text(axisLabelMap[point.label] ?? point.label)
                     .font(AppTypography.caption2)
                     .foregroundStyle(AppColors.textSecondary)
                 HStack(spacing: AppSpacing.md) {

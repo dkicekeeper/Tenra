@@ -59,7 +59,6 @@ struct SettingsView: View {
     private var settingsList: some View {
         ZStack(alignment: .top) {
             List {
-                dataManagementSection
                 generalSection
                 cloudSection
                 exportImportSection
@@ -158,26 +157,6 @@ struct SettingsView: View {
                 }
             )
             .task { await refreshBackgroundPreviewWeights() }
-        }
-    }
-
-    private var dataManagementSection: some View {
-        SettingsDataManagementSection {
-            CategoriesManagementView(
-                categoriesViewModel: categoriesViewModel,
-                transactionsViewModel: transactionsViewModel
-            )
-        } subcategoriesDestination: {
-            SubcategoriesManagementView(
-                categoriesViewModel: categoriesViewModel
-            )
-        } accountsDestination: {
-            AccountsManagementView(
-                accountsViewModel: accountsViewModel,
-                depositsViewModel: depositsViewModel,
-                loansViewModel: loansViewModel,
-                transactionsViewModel: transactionsViewModel
-            )
         }
     }
 

@@ -20,7 +20,7 @@ import SwiftUI
 enum AppTab: String, Hashable {
     case home
     case analytics
-    case settings
+    case finances
     case voice
     case ocr
     /// The action pseudo-tab — never "selected" in a navigation sense.
@@ -76,11 +76,11 @@ struct MainTabView: View {
                 }
 
                 Tab(
-                    String(localized: "tab.settings"),
-                    systemImage: "gear",
-                    value: AppTab.settings
+                    String(localized: "tab.finances"),
+                    systemImage: "wallet.bifold",
+                    value: AppTab.finances
                 ) {
-                    SettingsTab()
+                    FinancesTab()
                 }
             } else {
                 // ── Expanded mode tabs ────────────────────────────────────

@@ -75,7 +75,11 @@ struct InsightsSummaryDetailView: View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeaderView(String(localized: "insights.cashFlowTrend"), style: .large)
                 .padding(.top, AppSpacing.lg)
+                .screenPadding()
 
+            // Chart bleeds edge-to-edge so the scrollable plot area aligns
+            // with the screen edges. Apple Charts with chartScrollableAxes
+            // looks clipped if a horizontal padding is applied to the parent.
             PeriodChartSwitcher(
                 dataPoints: periodDataPoints,
                 currency: currency,
@@ -83,8 +87,6 @@ struct InsightsSummaryDetailView: View {
                 mode: .full
             )
         }
-//        .cardBackground(radius: AppRadius.xl)
-//        .screenPadding()
     }
 
     // MARK: - Period List
@@ -105,6 +107,7 @@ struct InsightsSummaryDetailView: View {
                 )
             }
         }
+        .screenPadding()
     }
 }
 

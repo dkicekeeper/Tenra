@@ -39,10 +39,6 @@
 	<string>This app needs access to speech recognition to add transactions by voice.</string>
 	<key>NSUserNotificationUsageDescription</key>
 	<string>Разрешите уведомления, чтобы получать напоминания о предстоящих списаниях по подпискам и не пропускать важные платежи.</string>
-	<key>SUPABASE_ANON_KEY</key>
-	<string>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ua2doZWxkanlna25qZ2hjcGd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDU3NzcsImV4cCI6MjA4OTQyMTc3N30.hjtxJD0mOeEVcq-rKpyqb6CUYpWtxgmr1kaS3JZ0TQE</string>
-	<key>SUPABASE_LOGOS_BASE_URL</key>
-	<string>https://mnkgheldjygknjghcpgy.supabase.co/storage/v1/object/public/logos</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Inter-VariableFont_opsz,wght.ttf</string>

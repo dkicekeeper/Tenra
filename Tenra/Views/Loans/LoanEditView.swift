@@ -200,11 +200,11 @@ struct LoanEditView: View {
                 // Editing existing loan
                 name = account.name
                 bankName = loanInfo.bankName
-                principalAmountText = String(format: "%.2f", NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue)
+                principalAmountText = AmountInputFormatting.bindingString(for: loanInfo.originalPrincipal)
                 currency = account.currency
                 selectedIconSource = account.iconSource
                 loanType = loanInfo.loanType
-                interestRateText = String(format: "%.2f", NSDecimalNumber(decimal: loanInfo.interestRateAnnual).doubleValue)
+                interestRateText = AmountInputFormatting.bindingString(for: loanInfo.interestRateAnnual)
                 termMonthsText = "\(loanInfo.termMonths)"
                 paymentDay = loanInfo.paymentDay
                 if let start = DateFormatters.dateFormatter.date(from: loanInfo.startDate) {
@@ -215,7 +215,7 @@ struct LoanEditView: View {
                 name = account.name
                 currency = account.currency
                 selectedIconSource = account.iconSource
-                principalAmountText = String(format: "%.2f", account.balance)
+                principalAmountText = AmountInputFormatting.bindingString(for: account.balance)
             } else {
                 // New loan
                 currency = "KZT"

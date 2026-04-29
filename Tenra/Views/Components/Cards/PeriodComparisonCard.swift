@@ -98,7 +98,7 @@ struct PeriodComparisonCard: View {
         currency: "KZT", isExpenseContext: true
     )
     .screenPadding()
-    .padding(.vertical)
+    .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Expense decrease (good)") {
@@ -108,7 +108,7 @@ struct PeriodComparisonCard: View {
         currency: "KZT", isExpenseContext: true
     )
     .screenPadding()
-    .padding(.vertical)
+    .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Income increase (good)") {
@@ -118,5 +118,5 @@ struct PeriodComparisonCard: View {
         currency: "KZT", isExpenseContext: false
     )
     .screenPadding()
-    .padding(.vertical)
+    .padding(.vertical, AppSpacing.md)
 }

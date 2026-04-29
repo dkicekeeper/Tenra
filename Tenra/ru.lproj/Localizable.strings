@@ -892,11 +892,26 @@
 // MARK: - Tab Bar
 "tab.home" = "Главная";
 "tab.analytics" = "Аналитика";
+"tab.finances" = "Финансы";
 "tab.settings" = "Настройки";
 "tab.voice" = "Голос";
 "tab.ocr" = "Импорт";
 "tab.add" = "Добавить";
 "tab.close" = "Закрыть";
+
+// MARK: - Finances
+"finances.title" = "Финансы";
+"finances.accounts.title" = "Счета";
+"finances.accounts.totalLabel" = "Общий баланс";
+"finances.accounts.count" = "%lld счетов";
+"finances.accounts.empty" = "Нет счетов";
+"finances.categories.title" = "Категории";
+"finances.categories.count" = "%lld категорий";
+"finances.categories.empty" = "Нет категорий";
+"finances.subcategories.title" = "Подкатегории";
+"finances.subcategories.count" = "%lld подкатегорий";
+"finances.subcategories.linkedTo" = "В %lld категориях";
+"finances.subcategories.empty" = "Нет подкатегорий";
 
 // MARK: - Loans
 "loan.listTitle" = "Кредиты";

@@ -33,6 +33,7 @@ struct BudgetSettingsSection: View {
                 }
 
                 Divider()
+                    .padding(.leading, AppSpacing.lg)
 
                 // Budget Period
                 MenuPickerRow(
@@ -48,6 +49,7 @@ struct BudgetSettingsSection: View {
 
                 if selectedPeriod == .monthly {
                     Divider()
+                        .padding(.leading, AppSpacing.lg)
 
                     // Reset Day
                     UniversalRow(

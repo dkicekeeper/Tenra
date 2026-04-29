@@ -110,7 +110,7 @@ struct LoanRateChangeView: View {
         }
         .onAppear {
             if let loanInfo = account.loanInfo {
-                rateText = String(format: "%.2f", NSDecimalNumber(decimal: loanInfo.interestRateAnnual).doubleValue)
+                rateText = AmountInputFormatting.bindingString(for: loanInfo.interestRateAnnual)
             }
         }
         .task {

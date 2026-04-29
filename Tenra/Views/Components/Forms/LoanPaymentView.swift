@@ -134,7 +134,7 @@ struct LoanPaymentView: View {
             }
         }
         .onAppear {
-            amountText = String(format: "%.2f", NSDecimalNumber(decimal: loanInfo.monthlyPayment).doubleValue)
+            amountText = AmountInputFormatting.bindingString(for: loanInfo.monthlyPayment)
             if selectedSourceAccountId.isEmpty, let first = availableAccounts.first {
                 selectedSourceAccountId = first.id
             }

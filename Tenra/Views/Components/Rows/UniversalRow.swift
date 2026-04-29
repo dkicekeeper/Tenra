@@ -261,16 +261,6 @@ struct RowConfiguration {
         backgroundColor: .clear,
         cornerRadius: 0
     )
-
-    /// Card row style — available for standalone rows outside FormSection context.
-    /// Currently unused in production.
-    static let card = RowConfiguration(
-        spacing: AppSpacing.md,
-        verticalPadding: AppSpacing.lg,
-        horizontalPadding: AppSpacing.lg,
-        backgroundColor: AppColors.surface,
-        cornerRadius: AppRadius.xl
-    )
 }
 
 // MARK: - Row Modifiers
@@ -535,46 +525,6 @@ extension UniversalRow where Content == Text, Trailing == EmptyView {
         }
     }
     .listStyle(.plain)
-}
-
-#Preview("Card Rows") {
-    VStack(spacing: AppSpacing.lg) {
-        UniversalRow(
-            config: .card,
-            leadingIcon: .sfSymbol("star.fill", color: .yellow, size: AppIconSize.lg)
-        ) {
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text("Premium Feature")
-                    .font(AppTypography.h4)
-                Text("Unlock advanced analytics")
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
-            }
-        } trailing: {
-            Image(systemName: "chevron.right")
-                .foregroundStyle(AppColors.textSecondary)
-        }
-        .actionRow {
-        }
-
-        UniversalRow(
-            config: .card,
-            leadingIcon: .brandService("netflix", size: AppIconSize.avatar)
-        ) {
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text("Netflix")
-                    .font(AppTypography.h4)
-                Text("Subscription")
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
-            }
-        } trailing: {
-            Text("$9.99")
-                .font(AppTypography.bodyEmphasis)
-                .fontWeight(.semibold)
-        }
-    }
-    .padding()
 }
 
 #Preview("Sheet List Rows") {

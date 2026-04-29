@@ -13,9 +13,6 @@ import ImageIO
 
 enum HomeDestination: Hashable {
     case history
-    case subscriptions
-    case loans
-    case loanDetail(String) // accountId
 }
 
 // MARK: - ContentView (Home Screen)
@@ -34,6 +31,7 @@ struct ContentView: View {
     @Namespace private var accountNamespace
     @State private var showingTimeFilter = false
     @State private var showingAddAccount = false
+    @State private var showingSettings = false
 
     // MARK: - Summary Trigger
     // Equatable snapshot of every input that drives the summary card.
@@ -89,23 +87,6 @@ struct ContentView: View {
                 switch dest {
                 case .history:
                     historyDestination
-                case .subscriptions:
-                    subscriptionsDestination
-                case .loans:
-                    LoansListView(
-                        loansViewModel: coordinator.loansViewModel,
-                        transactionsViewModel: viewModel,
-                        balanceCoordinator: coordinator.balanceCoordinator
-                    )
-                    .environment(timeFilterManager)
-                case .loanDetail(let accountId):
-                    LoanDetailView(
-                        loansViewModel: coordinator.loansViewModel,
-                        transactionsViewModel: viewModel,
-                        balanceCoordinator: coordinator.balanceCoordinator,
-                        accountId: accountId
-                    )
-                    .environment(timeFilterManager)
                 }
             }
             .navigationDestination(for: Account.self) { account in
@@ -123,6 +104,7 @@ struct ContentView: View {
             .toolbar { toolbarContent }
             .sheet(isPresented: $showingTimeFilter) { timeFilterSheet }
             .sheet(isPresented: $showingAddAccount) { addAccountSheet }
+            .sheet(isPresented: $showingSettings) { settingsSheet }
             .task {
                 await coordinator.initializeFastPath()
                 await coordinator.initialize()
@@ -217,10 +199,6 @@ struct ContentView: View {
                 if coordinator.isFullyInitialized {
                     historyNavigationLink
                         .transition(.opacity)
-                    subscriptionsNavigationLink
-                        .transition(.opacity)
-                    loansNavigationLink
-                        .transition(.opacity)
                 }
                 if coordinator.isFastPathDone {
                     categoriesSection
@@ -270,28 +248,6 @@ struct ContentView: View {
         .screenPadding()
     }
 
-    private var subscriptionsNavigationLink: some View {
-        NavigationLink(value: HomeDestination.subscriptions) {
-            SubscriptionsCardView(
-                transactionStore: transactionStore,
-                transactionsViewModel: viewModel
-            )
-        }
-        .buttonStyle(.bounce)
-        .screenPadding()
-    }
-
-    private var loansNavigationLink: some View {
-        NavigationLink(value: HomeDestination.loans) {
-            LoansCardView(
-                loansViewModel: coordinator.loansViewModel,
-                transactionsViewModel: viewModel
-            )
-        }
-        .buttonStyle(.bounce)
-        .screenPadding()
-    }
-
     private var categoriesSection: some View {
         TransactionCategoryPickerView(
             transactionsViewModel: viewModel,
@@ -320,16 +276,6 @@ struct ContentView: View {
             categoriesViewModel: categoriesViewModel,
             paginationController: coordinator.transactionPaginationController,
             initialCategory: nil
-        )
-        .environment(timeFilterManager)
-    }
-
-    private var subscriptionsDestination: some View {
-        SubscriptionsListView(
-            transactionStore: transactionStore,
-            transactionsViewModel: viewModel,
-            categoriesViewModel: categoriesViewModel,
-            accountsViewModel: accountsViewModel
         )
         .environment(timeFilterManager)
     }
@@ -369,10 +315,25 @@ struct ContentView: View {
 
     // MARK: - Toolbar
 
+    @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .navigationBarLeading) {
             timeFilterButton
         }
+        ToolbarItem(placement: .topBarTrailing) {
+            settingsButton
+        }
+    }
+
+    private var settingsButton: some View {
+        Button {
+            HapticManager.light()
+            showingSettings = true
+        } label: {
+            Image(systemName: "gearshape")
+                .foregroundStyle(.primary)
+        }
+        .accessibilityLabel(String(localized: "settings.title"))
     }
 
     private var timeFilterButton: some View {
@@ -410,6 +371,21 @@ struct ContentView: View {
                 showingAddAccount = false
             }
         )
+    }
+
+    private var settingsSheet: some View {
+        NavigationStack {
+            SettingsView(
+                settingsViewModel: coordinator.settingsViewModel,
+                transactionsViewModel: viewModel,
+                accountsViewModel: accountsViewModel,
+                categoriesViewModel: categoriesViewModel,
+                transactionStore: transactionStore,
+                depositsViewModel: coordinator.depositsViewModel,
+                loansViewModel: coordinator.loansViewModel,
+                cloudSyncViewModel: coordinator.cloudSyncViewModel
+            )
+        }
     }
 
     /// Decodes `fileURL` into a UIImage downsampled to `screenSize × scale` pixels.

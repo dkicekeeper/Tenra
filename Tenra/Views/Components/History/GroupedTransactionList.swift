@@ -156,7 +156,7 @@ struct GroupedTransactionList<Overlay: View>: View {
                                 )
                             }
                         }
-                        .padding(.horizontal, AppSpacing.lg)
+//                        .padding(.horizontal, AppSpacing.lg)
                         .padding(.top, AppSpacing.sm)
 
                         ForEach(Array(section.transactions.enumerated()), id: \.element.id) { index, transaction in

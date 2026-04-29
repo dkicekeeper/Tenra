@@ -3,13 +3,10 @@
 //  Tenra
 //
 //  Two-line area chart that overlays income (green) and expenses (red) on the
-//  same `PeriodDataPoint` series. Companion to `PeriodBarChart` — both visualise
-//  the same data, used together by `PeriodChartSwitcher`.
+//  same `PeriodDataPoint` series. Companion to `PeriodBarChart`.
 //
-//  Same interaction model as `PeriodLineChart`:
-//  - native horizontal scrolling via `chartScrollableAxes`
-//  - pinch zoom on the visible window (`chartXVisibleDomain`)
-//  - long-press-and-drag X range selection with summary banner
+//  Performance notes (after audit): see PeriodBarChart.swift header.
+//  Same rules: static Y, range-only selection, hot-path body kept lean.
 //
 
 import SwiftUI
@@ -21,12 +18,25 @@ struct IncomeExpenseLineChart: View {
     let granularity: InsightGranularity
     var mode: ChartDisplayMode = .full
 
-    @State private var zoomScale: CGFloat = 1.0
-    @State private var pinchBaseScale: CGFloat = 1.0
+    @Binding var zoomScale: CGFloat
+
     @State private var selectedRange: ClosedRange<String>?
     @State private var selectedValueLabel: String?
-    @State private var scrollPositionLabel: String = ""
-    @State private var containerWidth: CGFloat = 0
+    @State private var visibleLeftLabel: String?
+
+    init(
+        dataPoints: [PeriodDataPoint],
+        currency: String,
+        granularity: InsightGranularity,
+        mode: ChartDisplayMode = .full,
+        zoomScale: Binding<CGFloat> = .constant(1.0)
+    ) {
+        self.dataPoints = dataPoints
+        self.currency = currency
+        self.granularity = granularity
+        self.mode = mode
+        self._zoomScale = zoomScale
+    }
 
     private var isCompact: Bool { mode == .compact }
     private var basePointWidth: CGFloat { isCompact ? 30 : granularity.pointWidth }
@@ -34,32 +44,35 @@ struct IncomeExpenseLineChart: View {
     private var chartHeight: CGFloat { isCompact ? 60 : 200 }
     private var lineWidth: CGFloat { isCompact ? 1.5 : 2 }
 
-    private var staticYMax: Double {
+    private var fullYMax: Double {
         dataPoints.flatMap { [$0.income, $0.expenses] }.max() ?? 1
+    }
+
+    private func dynamicYMax(visibleCount: Int) -> Double {
+        guard !dataPoints.isEmpty else { return fullYMax }
+        if selectedRange != nil { return fullYMax }
+        let leftIdx: Int
+        if let label = visibleLeftLabel,
+           let idx = dataPoints.firstIndex(where: { $0.label == label }) {
+            leftIdx = idx
+        } else {
+            leftIdx = max(0, dataPoints.count - visibleCount)
+        }
+        let endIdx = min(dataPoints.count - 1, leftIdx + visibleCount - 1)
+        let slice = dataPoints[leftIdx...endIdx]
+        return slice.flatMap { [$0.income, $0.expenses] }.max() ?? 1
+    }
+
+    private var selectedSinglePoint: PeriodDataPoint? {
+        guard selectionPoints.isEmpty,
+              let label = selectedValueLabel else { return nil }
+        return dataPoints.first { $0.label == label }
     }
 
     private func visibleCount(for containerWidth: CGFloat) -> Int {
         guard effectivePointWidth > 0 else { return dataPoints.count }
         let raw = Int((containerWidth / effectivePointWidth).rounded())
         return max(1, min(dataPoints.count, raw))
-    }
-
-    private var visibleDataPoints: [PeriodDataPoint] {
-        guard !dataPoints.isEmpty, containerWidth > 0 else { return dataPoints }
-        let visible = visibleCount(for: containerWidth)
-        if !scrollPositionLabel.isEmpty,
-           let leftIdx = dataPoints.firstIndex(where: { $0.label == scrollPositionLabel }) {
-            let endIdx = min(dataPoints.count - 1, leftIdx + visible - 1)
-            return Array(dataPoints[leftIdx...endIdx])
-        }
-        let start = max(0, dataPoints.count - visible)
-        return Array(dataPoints[start...])
-    }
-
-    private var dynamicYMax: Double {
-        let pts = visibleDataPoints
-        guard !pts.isEmpty else { return staticYMax }
-        return pts.flatMap { [$0.income, $0.expenses] }.max() ?? 1
     }
 
     private var todayLabel: String? {
@@ -77,16 +90,13 @@ struct IncomeExpenseLineChart: View {
         return Array(dataPoints[l...h])
     }
 
-    private var selectedSinglePoint: PeriodDataPoint? {
-        guard selectionPoints.isEmpty,
-              let label = selectedValueLabel else { return nil }
-        return dataPoints.first { $0.label == label }
+    private var axisLabelMap: [String: String] {
+        ChartAxisLabelMapCache.shared.map(for: dataPoints)
     }
 
     var body: some View {
         if dataPoints.isEmpty {
-            emptyState
-                .frame(height: chartHeight)
+            emptyState.frame(height: chartHeight)
         } else if isCompact {
             sparkline
                 .frame(height: chartHeight)
@@ -95,18 +105,13 @@ struct IncomeExpenseLineChart: View {
             VStack(spacing: AppSpacing.sm) {
                 if !selectionPoints.isEmpty {
                     rangeBanner
-                        .transition(.opacity.combined(with: .move(edge: .top)))
                 } else if let p = selectedSinglePoint {
                     singleBanner(point: p)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
                 interactiveChart
                     .frame(height: chartHeight)
             }
-            .padding(.top, AppSpacing.sm)
-            .animation(AppAnimation.gentleSpring, value: selectionPoints.count)
-            .animation(AppAnimation.gentleSpring, value: selectedValueLabel)
             .onChange(of: selectedRange) { _, new in
                 guard new != nil else { return }
                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
@@ -132,13 +137,11 @@ struct IncomeExpenseLineChart: View {
     // MARK: - Compact sparkline
 
     private var sparkline: some View {
-        let incomeLabel = String(localized: "insights.income")
-        let expensesLabel = String(localized: "insights.expenses")
-        return Chart(dataPoints) { point in
+        Chart(dataPoints) { point in
             LineMark(
                 x: .value("Period", point.label),
-                y: .value(incomeLabel, point.income),
-                series: .value("Type", incomeLabel)
+                y: .value("Income", point.income),
+                series: .value("Type", "income")
             )
             .foregroundStyle(AppColors.success)
             .interpolationMethod(.monotone)
@@ -146,14 +149,14 @@ struct IncomeExpenseLineChart: View {
 
             LineMark(
                 x: .value("Period", point.label),
-                y: .value(expensesLabel, point.expenses),
-                series: .value("Type", expensesLabel)
+                y: .value("Expenses", point.expenses),
+                series: .value("Type", "expenses")
             )
             .foregroundStyle(AppColors.destructive)
             .interpolationMethod(.monotone)
             .lineStyle(StrokeStyle(lineWidth: lineWidth))
         }
-        .chartYScale(domain: 0...staticYMax)
+        .chartYScale(domain: 0...fullYMax)
         .chartXAxis { AxisMarks { _ in } }
         .chartYAxis { AxisMarks { _ in } }
         .chartLegend(.hidden)
@@ -165,27 +168,21 @@ struct IncomeExpenseLineChart: View {
     private var interactiveChart: some View {
         GeometryReader { proxy in
             let visible = visibleCount(for: proxy.size.width)
-            fullChart(visibleCount: visible)
-                .gesture(magnifyGesture)
-                .onAppear { containerWidth = proxy.size.width }
-                .onChange(of: proxy.size.width) { _, w in containerWidth = w }
+            let leftIdx = max(0, dataPoints.count - visible)
+            let initialLabel = dataPoints[leftIdx].label
+            fullChart(visibleCount: visible, initialLeftLabel: initialLabel)
         }
     }
 
-    private var magnifyGesture: some Gesture {
-        MagnifyGesture()
-            .onChanged { value in
-                let raw = pinchBaseScale * value.magnification
-                zoomScale = max(0.4, min(4.0, raw))
+    private func fullChart(visibleCount: Int, initialLeftLabel: String) -> some View {
+        let yMaxNow = dynamicYMax(visibleCount: visibleCount)
+        let scrollBinding = Binding<String>(
+            get: { visibleLeftLabel ?? initialLeftLabel },
+            set: { newValue in
+                guard selectedRange == nil else { return }
+                visibleLeftLabel = newValue
             }
-            .onEnded { _ in pinchBaseScale = zoomScale }
-    }
-
-    private func fullChart(visibleCount: Int) -> some View {
-        let incomeLabel = String(localized: "insights.income")
-        let expensesLabel = String(localized: "insights.expenses")
-        let labelMap = ChartAxisHelpers.axisLabelMap(for: dataPoints)
-        let yMaxNow = dynamicYMax
+        )
         return Chart {
             if let range = selectedRange {
                 RectangleMark(
@@ -213,10 +210,18 @@ struct IncomeExpenseLineChart: View {
             }
 
             ForEach(dataPoints) { point in
+                // Both `series:` AND `stacking: .unstacked` are required:
+                //   • `series:` ensures Apple Charts treats income and expenses as
+                //     two distinct lines/areas (without it, alternating x-values
+                //     would merge into a single zig-zag).
+                //   • `stacking: .unstacked` keeps each area baseline at y=0 instead
+                //     of stacking expense on top of income (which would inflate
+                //     the visible expense area beyond its actual value).
                 AreaMark(
                     x: .value("Period", point.label),
-                    y: .value(incomeLabel, point.income),
-                    series: .value("Type", incomeLabel)
+                    y: .value("Amount", point.income),
+                    series: .value("Type", "income"),
+                    stacking: .unstacked
                 )
                 .foregroundStyle(LinearGradient(
                     colors: [AppColors.success.opacity(0.25), AppColors.success.opacity(0.02)],
@@ -226,8 +231,8 @@ struct IncomeExpenseLineChart: View {
 
                 LineMark(
                     x: .value("Period", point.label),
-                    y: .value(incomeLabel, point.income),
-                    series: .value("Type", incomeLabel)
+                    y: .value("Amount", point.income),
+                    series: .value("Type", "income")
                 )
                 .foregroundStyle(AppColors.success)
                 .interpolationMethod(.monotone)
@@ -235,15 +240,16 @@ struct IncomeExpenseLineChart: View {
 
                 PointMark(
                     x: .value("Period", point.label),
-                    y: .value(incomeLabel, point.income)
+                    y: .value("Amount", point.income)
                 )
                 .foregroundStyle(AppColors.success)
                 .symbolSize(28)
 
                 AreaMark(
                     x: .value("Period", point.label),
-                    y: .value(expensesLabel, point.expenses),
-                    series: .value("Type", expensesLabel)
+                    y: .value("Amount", point.expenses),
+                    series: .value("Type", "expenses"),
+                    stacking: .unstacked
                 )
                 .foregroundStyle(LinearGradient(
                     colors: [AppColors.destructive.opacity(0.25), AppColors.destructive.opacity(0.02)],
@@ -253,8 +259,8 @@ struct IncomeExpenseLineChart: View {
 
                 LineMark(
                     x: .value("Period", point.label),
-                    y: .value(expensesLabel, point.expenses),
-                    series: .value("Type", expensesLabel)
+                    y: .value("Amount", point.expenses),
+                    series: .value("Type", "expenses")
                 )
                 .foregroundStyle(AppColors.destructive)
                 .interpolationMethod(.monotone)
@@ -262,7 +268,7 @@ struct IncomeExpenseLineChart: View {
 
                 PointMark(
                     x: .value("Period", point.label),
-                    y: .value(expensesLabel, point.expenses)
+                    y: .value("Amount", point.expenses)
                 )
                 .foregroundStyle(AppColors.destructive)
                 .symbolSize(28)
@@ -271,14 +277,14 @@ struct IncomeExpenseLineChart: View {
         .chartYScale(domain: 0...yMaxNow)
         .chartXVisibleDomain(length: visibleCount)
         .chartScrollableAxes(.horizontal)
-        .chartScrollPosition(x: $scrollPositionLabel)
+        .chartScrollPosition(x: scrollBinding)
         .chartXSelection(range: $selectedRange)
         .chartXSelection(value: $selectedValueLabel)
         .chartXAxis {
             AxisMarks { value in
-                AxisValueLabel {
+                AxisValueLabel(collisionResolution: .greedy(minimumSpacing: 6)) {
                     if let label = value.as(String.self) {
-                        Text(labelMap[label] ?? label)
+                        Text(axisLabelMap[label] ?? label)
                             .font(AppTypography.caption2)
                             .lineLimit(1)
                     }
@@ -297,17 +303,14 @@ struct IncomeExpenseLineChart: View {
             }
         }
         .chartLegend(.hidden)
-        .animation(AppAnimation.chartUpdateAnimation, value: dataPoints.count)
-        .animation(AppAnimation.gentleSpring, value: yMaxNow)
     }
 
     // MARK: - Single-point banner
 
     private func singleBanner(point: PeriodDataPoint) -> some View {
-        let labelMap = ChartAxisHelpers.axisLabelMap(for: [point])
-        return HStack(alignment: .center, spacing: AppSpacing.lg) {
+        HStack(alignment: .center, spacing: AppSpacing.lg) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(labelMap[point.label] ?? point.label)
+                Text(axisLabelMap[point.label] ?? point.label)
                     .font(AppTypography.caption2)
                     .foregroundStyle(AppColors.textSecondary)
                 HStack(spacing: AppSpacing.md) {

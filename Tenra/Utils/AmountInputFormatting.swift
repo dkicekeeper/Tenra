@@ -44,6 +44,29 @@ enum AmountInputFormatting {
         return hasLeadingMinus ? "-" + digits : digits
     }
 
+    // MARK: - Binding Initialization
+
+    /// Produces a clean amount string suitable for initializing an AmountInput
+    /// `String` binding from a stored numeric value. Mirrors the design-system rule
+    /// (`displayFormatter.minimumFractionDigits = 0`) so a Double of 3500 becomes
+    /// "3500" instead of `String(format: "%.2f", …)`'s "3500.00", and 3500.5 becomes
+    /// "3500.5". Avoids the delete-key UX issue where the visible display shows no
+    /// trailing zeros but the binding holds them, making the first deletes invisible.
+    static func bindingString(for value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.usesGroupingSeparator = false
+        formatter.decimalSeparator = "."
+        return formatter.string(from: NSNumber(value: value)) ?? String(value)
+    }
+
+    /// Decimal overload of `bindingString(for:)`.
+    static func bindingString(for value: Decimal) -> String {
+        bindingString(for: NSDecimalNumber(decimal: value).doubleValue)
+    }
+
     // MARK: - Display Formatting
 
     /// Converts a raw amount string into a user-facing display string with grouping.

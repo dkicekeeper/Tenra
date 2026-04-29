@@ -88,12 +88,12 @@ struct CategoryRow: View {
 
                                 Text("(\(Int(progress.percentage))%)")
                                     .font(AppTypography.bodySmall)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(AppColors.textSecondary)
                             }
                         } else if category.type == .expense {
                             Text(String(localized: "category.noBudgetSet"))
                                 .font(AppTypography.bodySmall)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(AppColors.textSecondary)
                         }
                     }
                 }

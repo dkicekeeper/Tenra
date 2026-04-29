@@ -250,6 +250,157 @@ struct DepositInterestServiceTests {
         let delta = DepositInterestService.principalDelta(for: tx, capitalizationEnabled: true)
         #expect(delta == Decimal(-47_000))
     }
+
+    // MARK: - reconcileDepositInterest tests (Task 3)
+
+    /// Constructs a deposit-bearing Account for tests.
+    private func makeDepositAccount(
+        id: String = "d1",
+        currency: String = "KZT",
+        depositInfo: DepositInfo
+    ) -> Account {
+        Account(
+            id: id,
+            name: "Deposit",
+            currency: currency,
+            iconSource: nil,
+            depositInfo: depositInfo,
+            initialBalance: NSDecimalNumber(decimal: depositInfo.initialPrincipal).doubleValue
+        )
+    }
+
+    private func makeIncomeTx(
+        id: String = "i1",
+        amount: Double,
+        currency: String = "KZT",
+        convertedAmount: Double? = nil,
+        date: String,
+        accountId: String = "d1"
+    ) -> Transaction {
+        Transaction(
+            id: id, date: date, description: "Salary",
+            amount: amount, currency: currency, convertedAmount: convertedAmount,
+            type: .income, category: "Salary", subcategory: nil,
+            accountId: accountId, targetAccountId: nil
+        )
+    }
+
+    @Test("reconcile counts .income on deposit toward principal")
+    func reconcile_incomeAddsToPrincipal() {
+        // Deposit started 5 days ago at 100k, last reconciled yesterday.
+        var info = makeDepositInfo(
+            principal: 100_000,
+            annualRate: 0,            // disable interest accrual to isolate principal math
+            lastCalcDateOffset: -1,
+            accruedForPeriod: 0
+        )
+        info.initialPrincipal = 100_000
+        info.startDate = dateString(offsetDays: -5)
+
+        var account = makeDepositAccount(depositInfo: info)
+        // .income for 25k three days ago — must move principal to 125k.
+        let income = makeIncomeTx(amount: 25_000, date: dateString(offsetDays: -3))
+
+        DepositInterestService.reconcileDepositInterest(
+            account: &account,
+            allTransactions: [income],
+            onTransactionCreated: { _ in }
+        )
+
+        #expect(account.depositInfo?.principalBalance == Decimal(125_000))
+    }
+
+    @Test("reconcile counts .expense on deposit subtractively")
+    func reconcile_expenseSubtractsFromPrincipal() {
+        var info = makeDepositInfo(principal: 100_000, annualRate: 0, lastCalcDateOffset: -1)
+        info.initialPrincipal = 100_000
+        info.startDate = dateString(offsetDays: -5)
+
+        var account = makeDepositAccount(depositInfo: info)
+        let expense = Transaction(
+            id: "e1", date: dateString(offsetDays: -3), description: "",
+            amount: 10_000, currency: "KZT", convertedAmount: nil,
+            type: .expense, category: "Other", subcategory: nil,
+            accountId: "d1", targetAccountId: nil
+        )
+
+        DepositInterestService.reconcileDepositInterest(
+            account: &account,
+            allTransactions: [expense],
+            onTransactionCreated: { _ in }
+        )
+
+        #expect(account.depositInfo?.principalBalance == Decimal(90_000))
+    }
+
+    @Test("reconcile uses convertedAmount when income currency differs")
+    func reconcile_incomeUsesConvertedAmount() {
+        var info = makeDepositInfo(principal: 100_000, annualRate: 0, lastCalcDateOffset: -1)
+        info.initialPrincipal = 100_000
+        info.startDate = dateString(offsetDays: -5)
+
+        var account = makeDepositAccount(currency: "KZT", depositInfo: info) // deposit is KZT
+        // Source: USD 100; converted to deposit currency = 47k KZT.
+        let income = makeIncomeTx(
+            amount: 100, currency: "USD", convertedAmount: 47_000,
+            date: dateString(offsetDays: -2)
+        )
+
+        DepositInterestService.reconcileDepositInterest(
+            account: &account,
+            allTransactions: [income],
+            onTransactionCreated: { _ in }
+        )
+
+        #expect(account.depositInfo?.principalBalance == Decimal(147_000))
+    }
+
+    @Test("reconcile recomputes principalBalance even when already reconciled today")
+    func reconcile_sameDayPrincipalRecompute() {
+        // First pass: reconcile yesterday — sets lastCalcDate to today.
+        var info = makeDepositInfo(principal: 100_000, annualRate: 0, lastCalcDateOffset: -1)
+        info.initialPrincipal = 100_000
+        info.startDate = dateString(offsetDays: -5)
+
+        var account = makeDepositAccount(depositInfo: info)
+        DepositInterestService.reconcileDepositInterest(
+            account: &account, allTransactions: [], onTransactionCreated: { _ in }
+        )
+        // After first pass: principal == 100k, lastCalcDate == today.
+        #expect(account.depositInfo?.principalBalance == Decimal(100_000))
+
+        // Now user adds a same-day income transaction. Re-reconcile.
+        let todayIncome = makeIncomeTx(amount: 30_000, date: dateString(offsetDays: 0))
+        DepositInterestService.reconcileDepositInterest(
+            account: &account,
+            allTransactions: [todayIncome],
+            onTransactionCreated: { _ in }
+        )
+        #expect(account.depositInfo?.principalBalance == Decimal(130_000))
+    }
+
+    @Test("reconcile ignores .internalTransfer (filtered out by affectsDepositPrincipal)")
+    func reconcile_ignoresInternalTransfer() {
+        var info = makeDepositInfo(principal: 100_000, annualRate: 0, lastCalcDateOffset: -1)
+        info.initialPrincipal = 100_000
+        info.startDate = dateString(offsetDays: -5)
+
+        var account = makeDepositAccount(depositInfo: info)
+        let transfer = Transaction(
+            id: "t1", date: dateString(offsetDays: -2), description: "",
+            amount: 50_000, currency: "KZT", convertedAmount: nil,
+            type: .internalTransfer, category: TransactionType.transferCategoryName,
+            subcategory: nil, accountId: "other", targetAccountId: "d1"
+        )
+
+        DepositInterestService.reconcileDepositInterest(
+            account: &account,
+            allTransactions: [transfer],
+            onTransactionCreated: { _ in }
+        )
+        // Principal unchanged because .internalTransfer is not in affectsDepositPrincipal.
+        #expect(account.depositInfo?.principalBalance == Decimal(100_000))
+    }
 }
 
 @Suite("TransactionType.affectsDepositPrincipal")

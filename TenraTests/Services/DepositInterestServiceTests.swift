@@ -199,6 +199,57 @@ struct DepositInterestServiceTests {
         // lastCalcDate = today → start = tomorrow > today → loop body executes zero times
         #expect(result == priorAccrued, "Expected \(priorAccrued), got \(result)")
     }
+
+    // MARK: - principalDelta tests (Task 2)
+
+    @Test("principalDelta: income adds amount")
+    func principalDelta_income_addsAmount() {
+        let tx = Transaction(
+            id: "t1", date: dateString(offsetDays: -1), description: "",
+            amount: 1_000, currency: "KZT", convertedAmount: nil,
+            type: .income, category: "Salary", subcategory: nil,
+            accountId: "d1", targetAccountId: nil
+        )
+        let delta = DepositInterestService.principalDelta(for: tx, capitalizationEnabled: true)
+        #expect(delta == Decimal(1_000))
+    }
+
+    @Test("principalDelta: expense subtracts amount")
+    func principalDelta_expense_subtractsAmount() {
+        let tx = Transaction(
+            id: "t2", date: dateString(offsetDays: -1), description: "",
+            amount: 500, currency: "KZT", convertedAmount: nil,
+            type: .expense, category: "Other", subcategory: nil,
+            accountId: "d1", targetAccountId: nil
+        )
+        let delta = DepositInterestService.principalDelta(for: tx, capitalizationEnabled: true)
+        #expect(delta == Decimal(-500))
+    }
+
+    @Test("principalDelta: income prefers convertedAmount when present")
+    func principalDelta_income_usesConvertedAmount() {
+        // Source amount is in USD; convertedAmount is the value already in deposit currency.
+        let tx = Transaction(
+            id: "t3", date: dateString(offsetDays: -1), description: "",
+            amount: 100, currency: "USD", convertedAmount: 47_000,
+            type: .income, category: "Salary", subcategory: nil,
+            accountId: "d1", targetAccountId: nil
+        )
+        let delta = DepositInterestService.principalDelta(for: tx, capitalizationEnabled: true)
+        #expect(delta == Decimal(47_000))
+    }
+
+    @Test("principalDelta: expense prefers convertedAmount when present")
+    func principalDelta_expense_usesConvertedAmount() {
+        let tx = Transaction(
+            id: "t4", date: dateString(offsetDays: -1), description: "",
+            amount: 100, currency: "USD", convertedAmount: 47_000,
+            type: .expense, category: "Other", subcategory: nil,
+            accountId: "d1", targetAccountId: nil
+        )
+        let delta = DepositInterestService.principalDelta(for: tx, capitalizationEnabled: true)
+        #expect(delta == Decimal(-47_000))
+    }
 }
 
 @Suite("TransactionType.affectsDepositPrincipal")

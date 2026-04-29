@@ -117,12 +117,15 @@ nonisolated enum DepositInterestService {
     }
 
     /// Signed amount by which the given deposit-related transaction moves the running principal.
-    private static func principalDelta(for tx: Transaction, capitalizationEnabled: Bool) -> Decimal {
-        let amt = Decimal(tx.amount)
+    /// Uses `convertedAmount` when present (already in deposit currency) and falls back to
+    /// `amount`. Internal so unit tests can drive it directly.
+    static func principalDelta(for tx: Transaction, capitalizationEnabled: Bool) -> Decimal {
+        let raw = tx.convertedAmount ?? tx.amount
+        let amt = Decimal(raw)
         switch tx.type {
-        case .depositTopUp:
+        case .depositTopUp, .income:
             return amt
-        case .depositWithdrawal:
+        case .depositWithdrawal, .expense:
             return -amt
         case .depositInterestAccrual:
             return capitalizationEnabled ? amt : 0

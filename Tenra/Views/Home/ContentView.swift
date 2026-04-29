@@ -41,6 +41,7 @@ struct ContentView: View {
         let filterName: String  // displayName proxy — avoids Equatable requirement on TimeFilter
         let isImporting: Bool
         let isFullyInitialized: Bool
+        let ratesVersion: Int   // bumps when CurrencyConverter.prewarm lands fresh rates
     }
     private var summaryTrigger: SummaryTrigger {
         SummaryTrigger(
@@ -50,7 +51,8 @@ struct ContentView: View {
             txCount: transactionStore.transactionsCount,
             filterName: timeFilterManager.currentFilter.displayName,
             isImporting: transactionStore.isImporting,
-            isFullyInitialized: coordinator.isFullyInitialized
+            isFullyInitialized: coordinator.isFullyInitialized,
+            ratesVersion: transactionStore.currencyRatesVersion
         )
     }
 

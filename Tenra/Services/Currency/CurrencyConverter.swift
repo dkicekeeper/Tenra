@@ -2,225 +2,222 @@
 //  CurrencyConverter.swift
 //  Tenra
 //
-//  PURPOSE: Live / historical exchange-rate fetching from the National Bank of Kazakhstan.
+//  Static facade over `CurrencyRateStore` + `CurrencyRateProviderChain`.
 //
-//  RESPONSIBILITY SPLIT (do NOT confuse these two currency utilities):
+//  RESPONSIBILITY SPLIT (three currency utilities — do NOT confuse them):
 //  ─────────────────────────────────────────────────────────────────────
-//  CurrencyConverter  (THIS FILE)
-//      • Async network requests to https://nationalbank.kz/rss/get_rates.cfm
-//      • XML parsing of rate feed. 24-hour in-process cache for current rates.
-//      • Separate historical rates cache keyed by date string.
-//      • Used by: BalanceCalculationEngine for cross-currency account balance totals.
+//  CurrencyConverter (THIS FILE) — public API used everywhere
+//      • Static helpers: `convertSync`, `getExchangeRate`, `convert`,
+//        `getAllRates`, plus the new `prewarm` entry-point.
+//      • No state of its own — delegates to `CurrencyRateStore.shared`.
+//      • Backwards-compatible call sites: zero changes to existing callers.
 //
-//  TransactionCurrencyService  (Services/Utilities/TransactionCurrencyService.swift)
-//      • NO network calls. Reads the `convertedAmount` already stored on Transaction.
-//      • O(1) lookup via in-memory cache, O(N) precompute pass.
-//      • Used by: display layer (TransactionQueryService, InsightsService).
+//  CurrencyRateStore (Services/Currency/CurrencyRateStore.swift)
+//      • Lock-protected rate cache + UserDefaults persistence.
+//      • Survives app restarts so `convertSync` works at T=0 on warm launch.
+//      • Bumps `CurrencyRatesNotifier` (Observable) on every update so
+//        SwiftUI views re-render once rates arrive.
+//
+//  TransactionCurrencyService (Services/Transactions/)
+//      • NO network calls. Reads `Transaction.convertedAmount` already
+//        persisted on the entity. Used by display layer.
 //  ─────────────────────────────────────────────────────────────────────
 //
-//  NOTE: `convertSync` only works after at least one successful async `getExchangeRate` call
-//  has populated `cachedRates`. Do NOT call it on first launch without awaiting async load first.
+//  Provider chain order (fastest+widest first):
+//      1. JsDelivr (200+ currencies, public CDN, no auth, USD-pivot)
+//      2. NationalBankKZ (legacy, KZT-resident fallback, 8 currencies)
+//
+//  Public API contract unchanged:
+//      `convertSync(amount:from:to:)`        — cache-only sync conversion
+//      `getExchangeRate(for:on:)`            — async fetch with caching
+//      `convert(amount:from:to:on:)`         — async conversion
+//      `getAllRates()`                       — async snapshot
+//
+//  New API:
+//      `prewarm()`                            — fetch+populate on app start
+//      `currentRatesAreFresh`                 — read-only freshness flag
+//
 
 import Foundation
+import os
 
-nonisolated class CurrencyConverter: @unchecked Sendable {
-    private static let baseURL = "https://nationalbank.kz/rss/get_rates.cfm"
-    // nonisolated(unsafe): callers must ensure serialized access; known race accepted
-    private nonisolated(unsafe) static var cachedRates: [String: Double] = [:]
-    private nonisolated(unsafe) static var cacheDate: Date?
-    private static let cacheValidityHours: TimeInterval = 24 * 60 * 60 // 24 часа
+nonisolated final class CurrencyConverter: @unchecked Sendable {
 
-    // Кэш исторических курсов: [дата: [валюта: курс]]
-    private nonisolated(unsafe) static var historicalRatesCache: [String: [String: Double]] = [:]
+    // MARK: - Provider chain (lazy, shared)
 
-    // Получить курс валюты к тенге на конкретную дату
+    private static let logger = Logger(subsystem: "Tenra", category: "CurrencyConverter")
+
+    /// Default provider chain. jsDelivr first (broadest coverage), NBK as
+    /// last-resort fallback. Never call providers directly from outside —
+    /// always through this chain so retries and fallbacks fire.
+    nonisolated(unsafe) static var providerChain: CurrencyRateProviderChain = {
+        CurrencyRateProviderChain(providers: [
+            JsDelivrCurrencyProvider(apiBase: "USD"),
+            NationalBankKZProvider()
+        ])
+    }()
+
+    // MARK: - In-flight de-duplication
+
+    /// Coalesces concurrent `getExchangeRate(...)` callers waiting on the same
+    /// network fetch (e.g. UI components all asking for "today" at once).
+    /// Keyed by `dateKey` ("today" or "yyyy-MM-dd"). Cleared on completion.
+    nonisolated(unsafe) private static var inflight: [String: Task<ExchangeRates?, Never>] = [:]
+    private static let inflightLock = NSLock()
+
+    // MARK: - Public API (back-compat)
+
+    /// Get the rate for a single currency, KZT-pivot. `nil` on failure.
+    /// Caches every successful response in `CurrencyRateStore`.
     static func getExchangeRate(for currency: String, on date: Date? = nil) async -> Double? {
-        // KZT всегда равен 1
-        if currency == "KZT" {
-            return 1.0
-        }
+        if currency == "KZT" { return 1.0 }
 
-        let targetDate = date ?? Date()
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy"
-        let dateString = dateFormatter.string(from: targetDate)
+        let store = CurrencyRateStore.shared
+        let isHistorical = !(date == nil || Calendar.current.isDateInToday(date!))
 
-        // Для текущей даты используем обычный кэш
-        if date == nil || Calendar.current.isDateInToday(targetDate) {
-            // Проверяем кэш
-            if let cachedDate = cacheDate,
-               Date().timeIntervalSince(cachedDate) < cacheValidityHours,
-               let cachedRate = cachedRates[currency] {
-                return cachedRate
+        // Cache hit
+        if isHistorical {
+            let key = Self.dateKey(for: date!)
+            if let cached = store.historicalRate(for: currency, dateKey: key) {
+                return cached
             }
         } else {
-            // Для исторической даты проверяем исторический кэш
-            if let historicalRates = historicalRatesCache[dateString],
-               let rate = historicalRates[currency] {
-                return rate
+            if store.hasFreshRates, let cached = store.currentRate(for: currency) {
+                return cached
             }
         }
 
-        // Загружаем курсы с Нацбанка РК
-        // API требует параметр fdate в формате DD.MM.YYYY
-        guard let url = URL(string: "\(baseURL)?fdate=\(dateString)") else { return nil }
+        // Cache miss → fetch through provider chain (de-duped).
+        let snapshot = await fetchRatesDeduped(on: date)
+        if let snapshot {
+            return snapshot.normalized(toPivot: "KZT")?[currency]
+        }
 
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-
-            // Парсим XML
-            let parser = XMLParser(data: data)
-            let delegate = ExchangeRateParserDelegate()
-            parser.delegate = delegate
-            parser.parse()
-
-            // Обновляем соответствующий кэш
-            if date == nil || Calendar.current.isDateInToday(targetDate) {
-                cachedRates = delegate.rates
-                cacheDate = Date()
-            } else {
-                historicalRatesCache[dateString] = delegate.rates
-            }
-
-            return delegate.rates[currency]
-        } catch {
-            // Для исторических данных: если не удалось загрузить, возвращаем nil
-            // Для текущих данных: возвращаем кэшированное значение, если есть
-            if date == nil || Calendar.current.isDateInToday(targetDate) {
-                return cachedRates[currency]
-            }
-            return nil
+        // Provider failed → fall back to whatever is in cache (stale-while-revalidate).
+        if isHistorical {
+            return store.historicalRate(for: currency, dateKey: Self.dateKey(for: date!))
+        } else {
+            return store.currentRate(for: currency)
         }
     }
-    
-    // Конвертировать сумму из одной валюты в другую на конкретную дату
+
+    /// Async conversion. Tries cache-only first, then falls through to
+    /// `getExchangeRate(...)` which may hit the network.
     static func convert(amount: Double, from: String, to: String, on date: Date? = nil) async -> Double? {
-        // Если валюты одинаковые, возвращаем сумму без изменений
-        if from == to {
-            return amount
+        if from == to { return amount }
+
+        // Fast path — cache-only.
+        if date == nil, let result = convertSync(amount: amount, from: from, to: to) {
+            return result
         }
 
-        // Получаем курсы обеих валют к тенге на указанную дату
         guard let fromRate = await getExchangeRate(for: from, on: date),
-              let toRate = await getExchangeRate(for: to, on: date) else {
+              let toRate   = await getExchangeRate(for: to,   on: date),
+              toRate > 0 else {
             return nil
         }
+        return amount * fromRate / toRate
+    }
 
-        // Конвертируем через тенге
-        // Курсы показывают: 1 валюта = X KZT
-        // Шаг 1: Конвертируем from в KZT: amount * fromRate
-        // Шаг 2: Конвертируем KZT в to: amountInKZT / toRate
-        // Итоговая формула: amount * fromRate / toRate
-        let converted = amount * fromRate / toRate
-        return converted
-    }
-    
-    // Получить все доступные курсы
-    static func getAllRates() async -> [String: Double] {
-        _ = await getExchangeRate(for: "USD") // Загружаем курсы
-        return cachedRates
-    }
-    
-    // Синхронная конвертация через кэш (без сетевых запросов)
-    // Используется в recalculateAccountBalances() для конвертации валют переводов
+    /// Synchronous, cache-only conversion. Returns nil if either currency is
+    /// missing from the cache. Safe to call from any actor.
     static func convertSync(amount: Double, from: String, to: String) -> Double? {
-        // Если валюты одинаковые, возвращаем сумму без изменений
-        if from == to {
-            return amount
-        }
-
-        // KZT всегда равен 1
-        // Получаем курсы, проверяя наличие в кэше
-        let fromRate: Double?
-        if from == "KZT" {
-            fromRate = 1.0
-        } else {
-            fromRate = cachedRates[from]
-            // Если курса нет в кэше, возвращаем nil (нельзя конвертировать)
-            if fromRate == nil {
-                return nil
-            }
-        }
-
-        let toRate: Double?
-        if to == "KZT" {
-            toRate = 1.0
-        } else {
-            toRate = cachedRates[to]
-            // Если курса нет в кэше, возвращаем nil (нельзя конвертировать)
-            if toRate == nil {
-                return nil
-            }
-        }
-
-        // Убеждаемся, что оба курса получены
-        guard let fromRateValue = fromRate, let toRateValue = toRate else {
+        if from == to { return amount }
+        let store = CurrencyRateStore.shared
+        guard let fromRate = store.currentRate(for: from),
+              let toRate   = store.currentRate(for: to),
+              toRate > 0 else {
             return nil
         }
-
-        // Конвертируем через тенге
-        // Курсы показывают: 1 валюта = X KZT
-        // Шаг 1: Конвертируем from в KZT: amount * fromRate
-        // Шаг 2: Конвертируем KZT в to: amountInKZT / toRate
-        // Итоговая формула: amount * fromRate / toRate
-        let converted = amount * fromRateValue / toRateValue
-        return converted
-    }
-}
-
-// MARK: - XML Parser Delegate
-private nonisolated class ExchangeRateParserDelegate: NSObject, XMLParserDelegate {
-    var rates: [String: Double] = [:]
-    private var currentElement = ""
-    private var currentTitle = ""
-    private var currentDescription = ""
-    private var currentQuant = ""
-
-    nonisolated func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
-        currentElement = elementName
+        return amount * fromRate / toRate
     }
 
-    nonisolated func parser(_ parser: XMLParser, foundCharacters string: String) {
-        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty { return }
+    /// Snapshot of every cached rate (KZT-pivot). Triggers a fetch if cache is empty/stale.
+    static func getAllRates() async -> [String: Double] {
+        if !CurrencyRateStore.shared.hasFreshRates {
+            _ = await fetchRatesDeduped(on: nil)
+        }
+        return CurrencyRateStore.shared.cachedRates
+    }
 
-        switch currentElement {
-        case "title":
-            currentTitle += trimmed
-        case "description":
-            currentDescription += trimmed
-        case "quant":
-            currentQuant += trimmed
-        default:
-            break
+    // MARK: - New: Pre-warm
+
+    /// Pre-populate the rate cache. Call once during app startup (after the
+    /// fast-path UI is visible, in parallel with the heavy data load).
+    /// Idempotent: if cache is already fresh, returns immediately without
+    /// hitting the network. If cache is empty but a previous fetched-rate
+    /// snapshot was restored from disk, this does a background refresh.
+    static func prewarm() async {
+        let store = CurrencyRateStore.shared
+        if store.hasFreshRates {
+            logger.debug("prewarm skipped — cache fresh (provider=\(store.lastProviderName ?? "?", privacy: .public))")
+            return
+        }
+        await MainActor.run { CurrencyRatesNotifier.shared.setFetching(true) }
+        let result = await fetchRatesDeduped(on: nil)
+        await MainActor.run { CurrencyRatesNotifier.shared.setFetching(false) }
+
+        if let result {
+            logger.info("prewarm fetched \(result.rates.count, privacy: .public) rates from \(result.providerName, privacy: .public)")
+        } else if !store.cachedRates.isEmpty {
+            logger.debug("prewarm failed but disk cache present — using stale rates")
+        } else {
+            logger.error("prewarm failed and disk cache empty — convertSync will return nil")
         }
     }
 
-    nonisolated func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if elementName == "item" {
-            // Парсим курс из title, description и quant
-            // Формат: title содержит код валюты, description содержит курс, quant - количество единиц
-            if !currentTitle.isEmpty && !currentDescription.isEmpty {
-                // Ищем код валюты в title (например, "USD", "EUR")
-                let currencyCodes = ["USD", "EUR", "RUB", "GBP", "CNY", "JPY", "KGS", "UZS"]
-                for code in currencyCodes {
-                    if currentTitle.uppercased().contains(code) {
-                        if let rate = Double(currentDescription.replacingOccurrences(of: ",", with: ".")),
-                           let quant = Double(currentQuant.isEmpty ? "1" : currentQuant) {
-                            // Нормализуем курс: делим на количество единиц
-                            // Например, для JPY (quant=1): rate = 3.23 / 1 = 3.23
-                            // Для UZS (quant=100): rate = 4.21 / 100 = 0.0421 (за 1 UZS)
-                            let normalizedRate = rate / quant
-                            rates[code] = normalizedRate
-                        }
-                        break
-                    }
+    /// Whether the in-memory rate cache is non-empty AND <24h old.
+    static var currentRatesAreFresh: Bool {
+        CurrencyRateStore.shared.hasFreshRates
+    }
+
+    // MARK: - Internal helpers
+
+    /// Coalesces concurrent fetches for the same date. Stores both the
+    /// snapshot (current rates → store, historical → store) on success.
+    @discardableResult
+    private static func fetchRatesDeduped(on date: Date?) async -> ExchangeRates? {
+        let isHistorical = !(date == nil || Calendar.current.isDateInToday(date!))
+        let key = isHistorical ? Self.dateKey(for: date!) : "__today__"
+
+        inflightLock.lock()
+        if let existing = inflight[key] {
+            inflightLock.unlock()
+            return await existing.value
+        }
+
+        let task = Task<ExchangeRates?, Never> { @Sendable in
+            let snapshot: ExchangeRates?
+            do {
+                snapshot = try await providerChain.fetchRates(on: date)
+            } catch {
+                logger.error("provider chain failed: \(String(describing: error), privacy: .public)")
+                snapshot = nil
+            }
+
+            if let snapshot {
+                if isHistorical {
+                    CurrencyRateStore.shared.updateHistoricalRates(snapshot, dateKey: key)
+                } else {
+                    CurrencyRateStore.shared.updateCurrentRates(snapshot)
                 }
             }
-            currentTitle = ""
-            currentDescription = ""
-            currentQuant = ""
+            return snapshot
         }
-        currentElement = ""
+        inflight[key] = task
+        inflightLock.unlock()
+
+        let result = await task.value
+        inflightLock.lock()
+        inflight.removeValue(forKey: key)
+        inflightLock.unlock()
+        return result
+    }
+
+    private static func dateKey(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        return formatter.string(from: date)
     }
 }

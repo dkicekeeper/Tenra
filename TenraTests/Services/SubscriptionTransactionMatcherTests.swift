@@ -10,6 +10,15 @@ import Testing
 @MainActor
 struct SubscriptionTransactionMatcherTests {
 
+    init() {
+        // Hermetic isolation: `CurrencyRateStore` now persists rates to
+        // UserDefaults across app launches, so a previous run (or another
+        // suite) may have populated the singleton. The cross-currency test
+        // below relies on `convertSync` returning nil for USD→KZT — clear
+        // the store at the top of every test in this suite to guarantee that.
+        CurrencyRateStore.shared.clearAll()
+    }
+
     // MARK: - Helpers
 
     private func makeSubscription(

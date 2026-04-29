@@ -36,12 +36,13 @@ struct AccountDetailView: View {
     }
 
     /// Cheap O(N) single-pass counter; feeds `.task(id:)` so the expensive refresh runs
-    /// only when relevant transactions change.
+    /// only when relevant transactions change. Also incorporates the FX-rate version so
+    /// per-currency totals recompute once `CurrencyConverter.prewarm()` lands fresh rates.
     private var refreshTrigger: Int {
-        var n = 0
+        var n = transactionStore.currencyRatesVersion
         for tx in transactionStore.transactions
         where tx.accountId == account.id || tx.targetAccountId == account.id {
-            n += 1
+            n &+= 1
         }
         return n
     }

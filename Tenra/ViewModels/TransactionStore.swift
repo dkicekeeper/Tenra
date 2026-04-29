@@ -109,6 +109,19 @@ final class TransactionStore {
     /// without observing the whole `accounts` array.
     @ObservationIgnored private(set) var accountsMutationVersion: Int = 0
 
+    /// Bumps every time the FX-rate cache changes (prewarm finishes, manual
+    /// refresh, disk-restore on launch). Aggregator views that compute
+    /// equivalents via `CurrencyConverter.convertSync` read this in their
+    /// body so SwiftUI re-renders them once rates arrive. Mutated by
+    /// `AppCoordinator` after `CurrencyConverter.prewarm()`.
+    private(set) var currencyRatesVersion: Int = 0
+
+    /// Force-bump the version to trigger re-render of views that observe it.
+    /// Called from `AppCoordinator` after currency prewarm completes.
+    func bumpCurrencyRatesVersion() {
+        currencyRatesVersion &+= 1
+    }
+
     /// All accounts - managed alongside transactions for balance updates
     var accounts: [Account] = []
 

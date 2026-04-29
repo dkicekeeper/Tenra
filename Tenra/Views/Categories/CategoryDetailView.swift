@@ -42,6 +42,8 @@ struct CategoryDetailView: View {
 
     /// Cheap O(N) single-pass counter; feeds `.task(id:)` so the expensive refresh runs
     /// only when relevant transactions change or when the period filter changes.
+    /// Also incorporates `currencyRatesVersion` so KZT-pivot totals recompute when
+    /// `CurrencyConverter.prewarm()` lands fresh rates after launch.
     private var refreshTrigger: RefreshKey {
         var n = 0
         for tx in transactionStore.transactions where tx.category == liveCategory.name {
@@ -50,16 +52,19 @@ struct CategoryDetailView: View {
         return RefreshKey(
             count: n,
             filterHash: timeFilterManager.currentFilter.hashValue,
-            budgetAmount: liveCategory.budgetAmount ?? -1
+            budgetAmount: liveCategory.budgetAmount ?? -1,
+            ratesVersion: transactionStore.currencyRatesVersion
         )
     }
 
     /// Combined equatable trigger — changes when transactions matching this category
-    /// change, when the global period filter changes, or when the budget amount changes.
+    /// change, when the global period filter changes, when the budget amount changes,
+    /// or when the FX-rate cache is updated.
     private struct RefreshKey: Equatable {
         let count: Int
         let filterHash: Int
         let budgetAmount: Double
+        let ratesVersion: Int
     }
 
     private func refreshData() async {

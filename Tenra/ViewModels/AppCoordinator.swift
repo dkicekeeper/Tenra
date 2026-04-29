@@ -277,6 +277,13 @@ class AppCoordinator {
         let frcSetupTask = Task { @MainActor [weak self] in
             self?.transactionPaginationController.setup()
         }
+        // Pre-warm the currency rate cache in parallel with loadData(). Skipped
+        // if disk-restored cache is already <24h old. Runs on a detached task so
+        // it shares no MainActor time with the SwiftUI rendering work that just
+        // started rendering the home screen.
+        let prewarmTask = Task.detached(priority: .userInitiated) {
+            await CurrencyConverter.prewarm()
+        }
         let t0 = CACurrentMediaTime()
         try? await transactionStore.loadData()
         let t1 = CACurrentMediaTime()
@@ -323,6 +330,28 @@ class AppCoordinator {
         }
 
         PerformanceProfiler.end("AppCoordinator.initialize")
+
+        // Wait for the pre-warm fetch (started in parallel with loadData()) to
+        // finish so the first insights recompute uses fresh KZT-pivot rates.
+        // Cap the wait to keep startup responsive even if the network is slow:
+        // if rates haven't landed in 2.5s, fire insights with whatever cache we
+        // have and let the recompute trigger again on the rate-store update.
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await prewarmTask.value }
+            group.addTask {
+                try? await Task.sleep(for: .milliseconds(2500))
+            }
+            await group.next()
+            group.cancelAll()
+        }
+        let t6 = CACurrentMediaTime()
+        logger.debug("💱 [INIT] currency prewarm wait : \(String(format: "%.0f", (t6-t5)*1000))ms — fresh:\(CurrencyConverter.currentRatesAreFresh)")
+
+        // Bump rate version so views observing it re-render with fresh
+        // equivalents. Also invalidate VM caches that hold per-account /
+        // per-category KZT-pivot totals (rebuilt lazily on next access).
+        transactionStore.bumpCurrencyRatesVersion()
+        transactionsViewModel.invalidateCaches()
 
         // Insights recompute — non-essential for first frame; debounced internally.
         insightsViewModel.invalidateAndRecompute()

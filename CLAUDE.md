@@ -525,6 +525,8 @@ New file needed?
 - Test on multiple device sizes
 - **IconView vs Image(systemName:)**: Use `IconView` for entity/category icons with styled backgrounds (accounts, categories, subscriptions, brand logos). Use `Image(systemName:)` for semantic indicators (checkmark, chevron, xmark, toolbar actions). Selection state wraps IconView externally (`.frame + .background + .clipShape`), not via IconView params.
 - **Category icons MUST tint with `CustomCategory.color`**: For any category icon use explicit tint — `IconView(source: cat.iconSource, style: .circle(size:, tint: .monochrome(cat.color)))`, `IconConfig.custom(source:, style: .circle(... tint: .monochrome(cat.color)))`, `HeroSection(..., iconTint: .monochrome(cat.color))`. Convenience entry points default to accent and are wrong for categories: `IconView(source:size:)` → `.categoryIcon()` (accentMonochrome); `IconConfig.auto(...)` → same; `IconStyle.glassHero(size:)` default tint is `.original`. Source of truth: `CustomCategory.color` (decoded from `colorHex`); for budget-insight rows use the equivalent `BudgetInsightItem.color`.
+- **CategoryRow icon is `xxl` (44pt) inside `BudgetProgressCircle` (52pt) ring** — composed, not drift. Compact category contexts (BudgetProgressRow, InsightDetailView, CSV mapping) use `lg` (24pt). Don't "unify" them.
+- **IconStyle semantic presets in `Models/IconStyle.swift` are DS API** — `.toolbar`, `.inline`, `.roundedLogoLarge`, `.serviceLogoLarge`, `.glassService`, `.categoryCoin` may not be called in production but are intentional surface of the design system. Don't delete on dead-code grounds.
 - **UniversalRow for form rows**: All form rows inside `FormSection(.card)` must use `UniversalRow(config: .standard)`. Optional icons: `icon.map { .sfSymbol($0, color:, size:) }`. Wrapper components (InfoRow, MenuPickerRow, DatePickerRow) delegate to UniversalRow internally.
 - **`futureTransactionStyle(isFuture:)`**: Use this modifier instead of inline `.opacity(0.5)` for planned transactions.
 - **`TransactionCard` API**: Takes `styleData: CategoryStyleData` (not `customCategories: [CustomCategory]`) and `sourceAccount: Account?` + `targetAccount: Account?` (not `accounts: [Account]`). Pre-compute at ForEach call site.
@@ -650,6 +652,15 @@ Current branch: `main`
 - **Services/Import/**: PDF and statement text parsing
 - **Services/Cache/**: Caching coordinators and managers
 
+### Currency / FX Rates Architecture
+- **Three-file split**: `CurrencyConverter` (static facade, public API — `convertSync`/`getExchangeRate`/`convert`/`getAllRates`/`prewarm`) → `CurrencyRateStore` (lock-protected cache + UserDefaults persistence + `CurrencyRatesNotifier` for SwiftUI reactivity) → `Services/Currency/Providers/*` (`CurrencyRateProviderChain` over `JsDelivrCurrencyProvider` (primary, jsDelivr CDN + Cloudflare mirror, 200+ currencies, no auth) + `NationalBankKZProvider` (legacy XML fallback, 8 currencies)).
+- **Internal storage is always KZT-pivot**: `cachedRates[X] = "KZT per 1 X"`. KZT itself is implicit (1.0) and is NEVER a key in the dict. Providers with a different native pivot (jsDelivr=USD) re-pivot via `ExchangeRates.normalized(toPivot: "KZT")` before reaching the store. Adding a new provider — return whatever pivot is natural; the store handles re-pivoting.
+- **Persisted to UserDefaults** under `currency.rates.cache.v1`. `CurrencyRateStore.init()` restores synchronously so `convertSync` works at T=0 on warm-launch. Bump the key version when changing the on-disk format.
+- **Pre-warm**: `CurrencyConverter.prewarm()` runs in parallel with `loadData()` in `AppCoordinator.initialize()`. Idempotent — skipped when `hasFreshRates` (cache <24h). The wait is capped at 2.5s via `withTaskGroup` race so a slow network never blocks `isFullyInitialized`. **⚠️ Don't remove the cap** — the post-prewarm `invalidateAndRecompute()` re-fires once rates land asynchronously.
+- **Reactivity for `convertSync` consumers**: `transactionStore.currencyRatesVersion: Int` (Observable) bumps after prewarm. Aggregator views with `.task(id:)` (`ContentView.SummaryTrigger`, `AccountDetailView.refreshTrigger`, `CategoryDetailView.RefreshKey`) include it in their trigger so per-currency totals recompute when rates land. Adding a new aggregator that reads `convertSync` — fold `currencyRatesVersion` into its `.task(id:)` key.
+- **In-flight de-duplication**: concurrent `getExchangeRate` calls for the same date share one `Task` via the `inflight` dict keyed by date — never bypass this.
+- **⚠️ Test isolation**: `CurrencyRateStore.shared` persists across test runs via UserDefaults. Tests that assert `convertSync` returns nil (cross-currency matchers, e.g. `SubscriptionTransactionMatcherTests.findCandidates_matchesCrossCurrencyViaConvertedAmount`) MUST call `CurrencyRateStore.shared.clearAll()` in their suite `init()` — otherwise leaked rates from a previous suite cause spurious matches within the 30% default tolerance.
+
 ### Utils — Amount Formatting
 | File | Purpose | Decimal places |
 |------|---------|----------------|
@@ -692,6 +703,7 @@ When working with this project:
 - Don't add features without understanding context
 - Don't skip reading existing code before modifications
 - Don't use Combine when Observation framework is preferred
+- Don't flag `#Preview` block inconsistencies as production drifts in audits — distinguish preview-only from production usage when grep'ing
 
 ## Questions?
 

@@ -293,28 +293,15 @@ final class BalanceStore {
 
     // MARK: - Deposit Info Management
 
-    /// Update deposit info for account
+    /// Update deposit metadata (rate history, posting day, accrual markers, capitalization).
+    /// Does NOT touch the cached balance — the deposit balance is owned by the standard
+    /// transaction-driven pipeline like every other account, with `AccountEntity.balance`
+    /// as the canonical store. Reconciliation that posts new interest creates a
+    /// `.depositInterestAccrual` transaction; the standard pipeline picks it up.
     func updateDepositInfo(_ depositInfo: DepositInfo, for accountId: String) {
         guard var account = accounts[accountId] else { return }
-
         account.depositInfo = depositInfo
         accounts[accountId] = account
-
-        // Recalculate deposit balance
-        var totalBalance: Decimal = depositInfo.principalBalance
-        if !depositInfo.capitalizationEnabled {
-            totalBalance += depositInfo.interestAccruedNotCapitalized
-        }
-
-        let newBalance = NSDecimalNumber(decimal: totalBalance).doubleValue
-        balances[accountId] = newBalance
-
-        recordUpdate(BalanceStoreUpdate(
-            accountId: accountId,
-            newBalance: newBalance,
-            source: .deposit
-        ))
-
     }
 
     // MARK: - State Management

@@ -64,9 +64,6 @@ final class AccountActionViewModel {
 
     // MARK: - Init
 
-    /// `defaultAction == nil` selects a per-account default: deposits open in `.income`
-    /// (Top-up is the most common deposit operation); regular accounts open in `.transfer`
-    /// (matches the existing entry point from AccountDetailView's secondary "Transfer" button).
     init(
         account: Account,
         accountsViewModel: AccountsViewModel,
@@ -77,7 +74,7 @@ final class AccountActionViewModel {
         self.accountsViewModel = accountsViewModel
         self.transactionsViewModel = transactionsViewModel
         self.selectedCurrency = account.currency
-        self.selectedAction = defaultAction ?? (account.isDeposit ? .income : .transfer)
+        self.selectedAction = defaultAction ?? .transfer
     }
 
     // MARK: - Save

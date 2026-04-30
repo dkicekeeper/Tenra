@@ -208,74 +208,14 @@ struct BalanceCalculationTests {
     }
 
     // MARK: - Deposit Handling Tests
+    //
+    // The dedicated `applyTransactionToDeposit` path was removed when deposits were
+    // unified onto the standard balance engine. Deposit balance now flows through
+    // the same `applyTransaction`/`calculateBalance` paths as regular accounts —
+    // see `BalanceCalculationEngineTests` for the unified-pipeline suite.
 
-    @Test func testApplyTransactionToDepositWithdrawal() async throws {
-        let service = BalanceCalculationService()
-
-        let depositInfo = DepositInfo(
-            bankName: "Test Bank",
-            principalBalance: 10000.0,
-            capitalizationEnabled: false,
-            interestRateAnnual: 5.0,
-            interestPostingDay: 1
-        )
-
-        let transaction = Transaction(
-            id: "tx-1",
-            date: "2026-01-01",
-            description: "Withdrawal",
-            amount: 500.0,
-            currency: "USD",
-            convertedAmount: nil,
-            type: .internalTransfer,
-            category: "Transfer",
-            subcategory: nil,
-            accountId: "deposit-1",
-            targetAccountId: "account-1",
-            recurringSeriesId: nil,
-            recurringOccurrenceId: nil,
-            createdAt: Date()
-        )
-
-        let result = service.applyTransactionToDeposit(transaction, depositInfo: depositInfo, isSource: true)
-
-        #expect(result.depositInfo.principalBalance == 9500.0)
-        #expect(result.balance == 9500.0)
-    }
-
-    @Test func testApplyTransactionToDepositTopUp() async throws {
-        let service = BalanceCalculationService()
-
-        let depositInfo = DepositInfo(
-            bankName: "Test Bank",
-            principalBalance: 10000.0,
-            capitalizationEnabled: false,
-            interestRateAnnual: 5.0,
-            interestPostingDay: 1
-        )
-
-        let transaction = Transaction(
-            id: "tx-1",
-            date: "2026-01-01",
-            description: "Top Up",
-            amount: 500.0,
-            currency: "USD",
-            convertedAmount: nil,
-            type: .internalTransfer,
-            category: "Transfer",
-            subcategory: nil,
-            accountId: "account-1",
-            targetAccountId: "deposit-1",
-            recurringSeriesId: nil,
-            recurringOccurrenceId: nil,
-            createdAt: Date()
-        )
-
-        let result = service.applyTransactionToDeposit(transaction, depositInfo: depositInfo, isSource: false)
-
-        #expect(result.depositInfo.principalBalance == 10500.0)
-        #expect(result.balance == 10500.0)
-    }
+    @Test func testApplyTransactionToDepositWithdrawal_removed() async throws {}
+    @Test func testApplyTransactionToDepositTopUp_removed() async throws {}
 
     // MARK: - BalanceUpdateCoordinator Tests
 

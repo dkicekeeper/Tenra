@@ -68,9 +68,8 @@ struct AccountEntityRoundTripTests {
     ) -> DepositInfo {
         DepositInfo(
             bankName: bankName,
-            principalBalance: principal,
+            initialPrincipal: principal,
             capitalizationEnabled: true,
-            interestAccruedNotCapitalized: 0,
             interestRateAnnual: rate,
             interestPostingDay: postingDay,
             lastInterestCalculationDate: "2026-01-01",
@@ -131,7 +130,7 @@ struct AccountEntityRoundTripTests {
         let result = try #require(loaded)
         let info = try #require(result.depositInfo, "depositInfo must survive round-trip")
         #expect(info.bankName == "Kaspi")
-        #expect(info.principalBalance == 2_000_000)
+        #expect(info.initialPrincipal == 2_000_000)
         #expect(info.interestRateAnnual == 14)
         #expect(info.interestPostingDay == 15)
         #expect(info.capitalizationEnabled == true)

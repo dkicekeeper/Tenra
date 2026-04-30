@@ -42,7 +42,12 @@ struct DepositDetailView: View {
 
     /// Computed once per body evaluation — avoids repeated service calls inside nested functions.
     private var interestToToday: Decimal {
-        depositInfo.map { DepositInterestService.calculateInterestToToday(depositInfo: $0) } ?? 0
+        guard let depositInfo else { return 0 }
+        return DepositInterestService.calculateInterestToToday(
+            depositInfo: depositInfo,
+            accountId: accountId,
+            allTransactions: transactionStore.transactions
+        )
     }
 
     private var nextPosting: Date? {

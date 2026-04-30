@@ -49,11 +49,6 @@ struct BalanceCalculationEngine {
         transactions: [Transaction],
         mode: BalanceMode
     ) -> Double {
-        // Deposits have their own balance calculation
-        if account.isDeposit, let depositInfo = account.depositInfo {
-            return calculateDepositBalance(depositInfo: depositInfo)
-        }
-
         switch mode {
         case .preserveImported:
             // For imported accounts, balance is already correct
@@ -71,25 +66,31 @@ struct BalanceCalculationEngine {
                 initialBalance: initialBalance,
                 accountId: account.accountId,
                 accountCurrency: account.currency,
-                transactions: transactions
+                transactions: transactions,
+                depositStartDate: account.isDeposit ? account.depositInfo?.startDate : nil
             )
 
             return calculated
         }
     }
 
-    /// Calculate balance from initial balance + transactions
+    /// Calculate balance from initial balance + transactions.
+    /// `depositStartDate` (when set) skips events on/before that date — they are baked
+    /// into `initialBalance` for deposits and must not be double-counted.
     private func calculateBalanceFromInitial(
         initialBalance: Double,
         accountId: String,
         accountCurrency: String,
-        transactions: [Transaction]
+        transactions: [Transaction],
+        depositStartDate: String? = nil
     ) -> Double {
         let today = Calendar.current.startOfDay(for: Date())
         var balance = initialBalance
 
         for tx in transactions {
-            // Use cached date parsing if available
+            if let cutoff = depositStartDate, tx.date <= cutoff {
+                continue
+            }
             guard let txDate = parseDate(tx.date), txDate <= today else {
                 continue
             }
@@ -112,9 +113,15 @@ struct BalanceCalculationEngine {
                     balance += getTargetAmount(tx)
                 }
 
-            case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
-                // Handled by deposit-specific logic
-                break
+            case .depositTopUp, .depositInterestAccrual:
+                if tx.accountId == accountId {
+                    balance += getTransactionAmount(tx, for: accountCurrency)
+                }
+
+            case .depositWithdrawal:
+                if tx.accountId == accountId {
+                    balance -= getTransactionAmount(tx, for: accountCurrency)
+                }
 
             case .loanPayment, .loanEarlyRepayment:
                 // Loan payments reduce the loan account balance
@@ -129,15 +136,6 @@ struct BalanceCalculationEngine {
         }
 
         return balance
-    }
-
-    /// Calculate deposit balance from deposit info
-    func calculateDepositBalance(depositInfo: DepositInfo) -> Double {
-        var totalBalance: Decimal = depositInfo.principalBalance
-        if !depositInfo.capitalizationEnabled {
-            totalBalance += depositInfo.interestAccruedNotCapitalized
-        }
-        return NSDecimalNumber(decimal: totalBalance).doubleValue
     }
 
     // MARK: - Incremental Updates (O(1))
@@ -158,14 +156,9 @@ struct BalanceCalculationEngine {
     ) -> Double {
         switch transaction.type {
         case .income:
-            // For deposits, balance is sourced from `principalBalance` (kept fresh by
-            // `DepositInterestService.reconcileDepositInterest`). Skipping incremental
-            // updates here prevents double-counting.
-            if account.isDeposit { return currentBalance }
             return currentBalance + getTransactionAmount(transaction, for: account.currency)
 
         case .expense:
-            if account.isDeposit { return currentBalance }
             return currentBalance - getTransactionAmount(transaction, for: account.currency)
 
         case .internalTransfer:
@@ -175,8 +168,11 @@ struct BalanceCalculationEngine {
                 return currentBalance + getTargetAmount(transaction)
             }
 
-        case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
-            return currentBalance
+        case .depositTopUp, .depositInterestAccrual:
+            return currentBalance + getTransactionAmount(transaction, for: account.currency)
+
+        case .depositWithdrawal:
+            return currentBalance - getTransactionAmount(transaction, for: account.currency)
 
         case .loanPayment, .loanEarlyRepayment:
             if transaction.accountId == account.id || transaction.targetAccountId == account.id {
@@ -201,27 +197,23 @@ struct BalanceCalculationEngine {
     ) -> Double {
         switch transaction.type {
         case .income:
-            // For deposits, balance is sourced from `principalBalance` (kept fresh by
-            // `DepositInterestService.reconcileDepositInterest`). Skipping incremental
-            // updates here prevents double-counting.
-            if account.isDeposit { return currentBalance }
             return currentBalance - getTransactionAmount(transaction, for: account.currency)
 
         case .expense:
-            if account.isDeposit { return currentBalance }
             return currentBalance + getTransactionAmount(transaction, for: account.currency)
 
         case .internalTransfer:
             if isSource {
-                // Revert source - add back
                 return currentBalance + getSourceAmount(transaction)
             } else {
-                // Revert target - subtract
                 return currentBalance - getTargetAmount(transaction)
             }
 
-        case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
-            return currentBalance
+        case .depositTopUp, .depositInterestAccrual:
+            return currentBalance - getTransactionAmount(transaction, for: account.currency)
+
+        case .depositWithdrawal:
+            return currentBalance + getTransactionAmount(transaction, for: account.currency)
 
         case .loanPayment, .loanEarlyRepayment:
             if transaction.accountId == account.id || transaction.targetAccountId == account.id {
@@ -306,8 +298,15 @@ struct BalanceCalculationEngine {
                 return sign * getTargetAmount(transaction)
             }
 
-        case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
-            break
+        case .depositTopUp, .depositInterestAccrual:
+            if transaction.accountId == accountId {
+                return sign * getTransactionAmount(transaction, for: accountCurrency)
+            }
+
+        case .depositWithdrawal:
+            if transaction.accountId == accountId {
+                return -sign * getTransactionAmount(transaction, for: accountCurrency)
+            }
 
         case .loanPayment, .loanEarlyRepayment:
             // Loan payments reduce the loan account balance
@@ -321,47 +320,6 @@ struct BalanceCalculationEngine {
         }
 
         return 0
-    }
-
-    // MARK: - Deposit Operations
-
-    /// Apply transaction to deposit info
-    /// - Parameters:
-    ///   - transaction: The transaction
-    ///   - depositInfo: Current deposit info
-    ///   - isSource: true if this is source account for transfer
-    /// - Returns: Updated deposit info and new balance
-    func applyTransactionToDeposit(
-        _ transaction: Transaction,
-        depositInfo: DepositInfo,
-        isSource: Bool
-    ) -> (depositInfo: DepositInfo, balance: Double) {
-        var updatedInfo = depositInfo
-        let amount = Decimal(transaction.amount)
-
-        if isSource {
-            // Withdrawing from deposit
-            if !updatedInfo.capitalizationEnabled && updatedInfo.interestAccruedNotCapitalized > 0 {
-                // First withdraw from accrued interest
-                if amount <= updatedInfo.interestAccruedNotCapitalized {
-                    updatedInfo.interestAccruedNotCapitalized -= amount
-                } else {
-                    let remaining = amount - updatedInfo.interestAccruedNotCapitalized
-                    updatedInfo.interestAccruedNotCapitalized = 0
-                    updatedInfo.principalBalance -= remaining
-                }
-            } else {
-                updatedInfo.principalBalance -= amount
-            }
-        } else {
-            // Adding to deposit
-            updatedInfo.principalBalance += amount
-        }
-
-        // Calculate total balance
-        let newBalance = calculateDepositBalance(depositInfo: updatedInfo)
-
-        return (updatedInfo, newBalance)
     }
 
     // MARK: - Initial Balance Calculation

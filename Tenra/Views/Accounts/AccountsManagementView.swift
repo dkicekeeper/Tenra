@@ -529,7 +529,7 @@ struct AccountsManagementView: View {
             iconSource: .brandService("halykbank.kz"),
             depositInfo: DepositInfo(
                 bankName: "Halyk Bank",
-                principalBalance: Decimal(1000000),
+                initialPrincipal: Decimal(1000000),
                 capitalizationEnabled: true,
                 interestRateAnnual: Decimal(12.5),
                 interestPostingDay: 15
@@ -550,7 +550,7 @@ struct AccountsManagementView: View {
             iconSource: .brandService("jusan.kz"),
             depositInfo: DepositInfo(
                 bankName: "Jusan Bank",
-                principalBalance: Decimal(2000000),
+                initialPrincipal: Decimal(2000000),
                 capitalizationEnabled: false,
                 interestRateAnnual: Decimal(10.0),
                 interestPostingDay: 1

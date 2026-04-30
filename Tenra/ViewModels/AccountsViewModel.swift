@@ -179,7 +179,7 @@ class AccountsViewModel {
 
         transactionStore?.addAccount(account)
 
-        let balance = NSDecimalNumber(decimal: depositInfo.principalBalance).doubleValue
+        let balance = NSDecimalNumber(decimal: depositInfo.initialPrincipal).doubleValue
         if let coordinator = balanceCoordinator {
             Task {
                 await coordinator.registerAccounts([account])
@@ -195,55 +195,50 @@ class AccountsViewModel {
         currency: String,
         bankName: String,
         iconSource: IconSource? = nil,
-        principalBalance: Decimal,
+        initialPrincipal: Decimal,
         capitalizationEnabled: Bool,
         interestRateAnnual: Decimal,
         interestPostingDay: Int
     ) {
         let depositInfo = DepositInfo(
             bankName: bankName,
-            principalBalance: principalBalance,
+            initialPrincipal: initialPrincipal,
             capitalizationEnabled: capitalizationEnabled,
             interestRateAnnual: interestRateAnnual,
             interestPostingDay: interestPostingDay
         )
 
-        let balance = NSDecimalNumber(decimal: principalBalance).doubleValue
+        let initialBalance = NSDecimalNumber(decimal: initialPrincipal).doubleValue
         let account = Account(
             name: name,
             currency: currency,
             iconSource: iconSource,
             depositInfo: depositInfo,
-            shouldCalculateFromTransactions: false,  // Депозиты всегда manual
-            initialBalance: balance
+            shouldCalculateFromTransactions: false,
+            initialBalance: initialBalance
         )
 
         transactionStore?.addAccount(account)
 
-        // Register deposit with BalanceCoordinator
         if let coordinator = balanceCoordinator {
             Task {
                 await coordinator.registerAccounts([account])
-                await coordinator.setInitialBalance(balance, for: account.id)
+                await coordinator.setInitialBalance(initialBalance, for: account.id)
                 if let depositInfo = account.depositInfo {
                     await coordinator.updateDepositInfo(account, depositInfo: depositInfo)
                 }
             }
         }
     }
-    
+
     func updateDeposit(_ account: Account) {
         guard account.isDeposit else { return }
         if accounts.firstIndex(where: { $0.id == account.id }) != nil {
             transactionStore?.updateAccount(account)
 
-            // Update deposit in BalanceCoordinator
             if let coordinator = balanceCoordinator, let depositInfo = account.depositInfo {
-                let balance = NSDecimalNumber(decimal: depositInfo.principalBalance).doubleValue
                 Task {
-                    await coordinator.updateForAccount(account, newBalance: balance)
                     await coordinator.updateDepositInfo(account, depositInfo: depositInfo)
-                    await coordinator.setInitialBalance(balance, for: account.id)
                 }
             }
         }

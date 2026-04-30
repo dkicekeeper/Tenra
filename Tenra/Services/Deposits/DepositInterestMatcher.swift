@@ -35,9 +35,9 @@ nonisolated enum DepositInterestMatcher {
         let depositCurrency = deposit.currency
         let depositId = deposit.id
 
-        // Expected monthly interest ≈ principal × (annualRate / 100) / 12.
-        // Crude single-point estimate; actual payments vary as principal grows.
-        let principalD = NSDecimalNumber(decimal: info.principalBalance).doubleValue
+        // Expected monthly interest ≈ balance × (annualRate / 100) / 12.
+        // Crude single-point estimate; actual payments vary as balance grows.
+        let principalD = deposit.balance
         let rateD = NSDecimalNumber(decimal: info.interestRateAnnual).doubleValue
         let expectedMonthly = principalD * (rateD / 100.0) / 12.0
 

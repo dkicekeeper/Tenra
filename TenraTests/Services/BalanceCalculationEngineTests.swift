@@ -2,14 +2,15 @@
 //  BalanceCalculationEngineTests.swift
 //  TenraTests
 //
-//  Unit tests for BalanceCalculationEngine deposit gating.
+//  Verifies that deposit accounts flow through the standard balance pipeline,
+//  with no special-case gating on .income/.expense/.internalTransfer.
 //
 
 import Testing
 import Foundation
 @testable import Tenra
 
-@Suite("BalanceCalculationEngine deposit gating")
+@Suite("BalanceCalculationEngine — unified deposit pipeline")
 struct BalanceCalculationEngineTests {
 
     private let engine = BalanceCalculationEngine()
@@ -25,16 +26,14 @@ struct BalanceCalculationEngineTests {
             initialBalance: currentBalance,
             depositInfo: DepositInfo(
                 bankName: "T",
-                principalBalance: Decimal(currentBalance),
+                initialPrincipal: Decimal(currentBalance),
                 capitalizationEnabled: false,
-                interestAccruedNotCapitalized: 0,
                 interestRateAnnual: 0,
                 interestRateHistory: [RateChange(effectiveFrom: "2020-01-01", annualRate: 0)],
                 interestPostingDay: 1,
                 lastInterestCalculationDate: "2020-01-01",
                 lastInterestPostingMonth: "2020-01-01",
                 interestAccruedForCurrentPeriod: 0,
-                initialPrincipal: Decimal(currentBalance),
                 startDate: "2020-01-01"
             ),
             currency: currency,
@@ -65,48 +64,44 @@ struct BalanceCalculationEngineTests {
         )
     }
 
-    @Test("applyTransaction: .income on deposit is a no-op")
-    func applyIncome_onDeposit_noop() {
-        let acct = depositAccountBalance(currentBalance: 100_000)
-        let tx = incomeTx(amount: 25_000, accountId: acct.accountId)
-        let new = engine.applyTransaction(tx, to: acct.currentBalance, for: acct)
-        #expect(new == 100_000)
+    @Test("applyTransaction: .income behaves identically on deposit and regular account")
+    func applyIncome_unified() {
+        let deposit = depositAccountBalance(currentBalance: 100_000)
+        let regular = nonDepositAccountBalance(currentBalance: 100_000)
+        let txD = incomeTx(amount: 25_000, accountId: deposit.accountId)
+        let txR = incomeTx(amount: 25_000, accountId: regular.accountId)
+        #expect(engine.applyTransaction(txD, to: 100_000, for: deposit) == 125_000)
+        #expect(engine.applyTransaction(txR, to: 100_000, for: regular) == 125_000)
     }
 
-    @Test("applyTransaction: .income on regular account adds amount")
-    func applyIncome_onRegular_adds() {
-        let acct = nonDepositAccountBalance(currentBalance: 100_000)
-        let tx = incomeTx(amount: 25_000, accountId: acct.accountId)
-        let new = engine.applyTransaction(tx, to: acct.currentBalance, for: acct)
-        #expect(new == 125_000)
-    }
-
-    @Test("applyTransaction: .expense on deposit is a no-op")
-    func applyExpense_onDeposit_noop() {
-        let acct = depositAccountBalance(currentBalance: 100_000)
+    @Test("applyTransaction: internal transfer target adds for both deposit and regular")
+    func applyTransferTarget_unified() {
+        let deposit = depositAccountBalance(currentBalance: 100_000)
+        let regular = nonDepositAccountBalance(currentBalance: 100_000)
         let tx = Transaction(
-            id: "e", date: "2026-01-01", description: "",
-            amount: 10_000, currency: "KZT", convertedAmount: nil,
-            type: .expense, category: "Other", subcategory: nil,
-            accountId: acct.accountId, targetAccountId: nil
+            id: "t", date: "2026-01-01", description: "",
+            amount: 30_000, currency: "KZT", convertedAmount: nil,
+            type: .internalTransfer, category: "", subcategory: nil,
+            accountId: "src", targetAccountId: deposit.accountId,
+            targetAmount: 30_000
         )
-        let new = engine.applyTransaction(tx, to: acct.currentBalance, for: acct)
-        #expect(new == 100_000)
+        #expect(engine.applyTransaction(tx, to: 100_000, for: deposit, isSource: false) == 130_000)
+        let txR = Transaction(
+            id: "t2", date: "2026-01-01", description: "",
+            amount: 30_000, currency: "KZT", convertedAmount: nil,
+            type: .internalTransfer, category: "", subcategory: nil,
+            accountId: "src", targetAccountId: regular.accountId,
+            targetAmount: 30_000
+        )
+        #expect(engine.applyTransaction(txR, to: 100_000, for: regular, isSource: false) == 130_000)
     }
 
-    @Test("revertTransaction: .income on deposit is a no-op")
-    func revertIncome_onDeposit_noop() {
-        let acct = depositAccountBalance(currentBalance: 100_000)
-        let tx = incomeTx(amount: 25_000, accountId: acct.accountId)
-        let new = engine.revertTransaction(tx, from: acct.currentBalance, for: acct)
-        #expect(new == 100_000)
-    }
-
-    @Test("revertTransaction: .income on regular account subtracts amount")
-    func revertIncome_onRegular_subtracts() {
-        let acct = nonDepositAccountBalance(currentBalance: 125_000)
-        let tx = incomeTx(amount: 25_000, accountId: acct.accountId)
-        let new = engine.revertTransaction(tx, from: acct.currentBalance, for: acct)
-        #expect(new == 100_000)
+    @Test("revertTransaction: .income subtracts for both deposit and regular")
+    func revertIncome_unified() {
+        let deposit = depositAccountBalance(currentBalance: 125_000)
+        let regular = nonDepositAccountBalance(currentBalance: 125_000)
+        let tx = incomeTx(amount: 25_000, accountId: deposit.accountId)
+        #expect(engine.revertTransaction(tx, from: 125_000, for: deposit) == 100_000)
+        #expect(engine.revertTransaction(tx, from: 125_000, for: regular) == 100_000)
     }
 }

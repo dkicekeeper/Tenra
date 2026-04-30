@@ -145,7 +145,7 @@ struct DepositEditView: View {
                 // Editing existing deposit
                 name = account.name
                 bankName = depositInfo.bankName
-                principalBalanceText = AmountInputFormatting.bindingString(for: depositInfo.principalBalance)
+                principalBalanceText = AmountInputFormatting.bindingString(for: Decimal(account.balance))
                 currency = account.currency
                 selectedIconSource = account.iconSource
                 interestRateText = AmountInputFormatting.bindingString(for: depositInfo.interestRateAnnual)
@@ -197,15 +197,15 @@ extension DepositEditView {
 
         let depositInfo = DepositInfo(
             bankName: bankName,
-            principalBalance: principalBalance,
+            initialPrincipal: existingInfo?.initialPrincipal ?? principalBalance,
             capitalizationEnabled: capitalizationEnabled,
-            interestAccruedNotCapitalized: existingInfo?.interestAccruedNotCapitalized ?? 0,
             interestRateAnnual: interestRate,
             interestRateHistory: existingInfo?.interestRateHistory,
             interestPostingDay: interestPostingDay,
             lastInterestCalculationDate: lastCalcDate,
             lastInterestPostingMonth: lastPostingMonth,
-            interestAccruedForCurrentPeriod: existingInfo?.interestAccruedForCurrentPeriod ?? 0
+            interestAccruedForCurrentPeriod: existingInfo?.interestAccruedForCurrentPeriod ?? 0,
+            startDate: existingInfo?.startDate
         )
 
         let balance = NSDecimalNumber(decimal: principalBalance).doubleValue
@@ -289,7 +289,7 @@ extension DepositEditView {
         iconSource: .brandService("halykbank.kz"),
         depositInfo: DepositInfo(
             bankName: "Halyk Bank",
-            principalBalance: Decimal(1000000),
+            initialPrincipal: Decimal(1000000),
             capitalizationEnabled: true,
             interestRateAnnual: Decimal(12.5),
             interestPostingDay: 15

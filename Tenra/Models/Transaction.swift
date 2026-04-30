@@ -23,16 +23,15 @@ enum TransactionType: String, Codable, Sendable {
     /// Locale-independent category name for loan payment transactions.
     nonisolated static let loanPaymentCategoryName = "Loan Payment"
 
-    /// `true` for transaction types that move a deposit's `principalBalance`
-    /// when the transaction lives on a deposit account. `.income/.expense` are
-    /// included so the new "Top-up from income category" flow on deposits is
-    /// reflected in the deposit's principal walk.
+    /// `true` for transaction types that can change a deposit's running principal when
+    /// the deposit appears as either source or target. The reconcile walk uses this to
+    /// pre-filter events; `principalDelta` resolves the actual sign per side.
     nonisolated var affectsDepositPrincipal: Bool {
         switch self {
         case .depositTopUp, .depositWithdrawal, .depositInterestAccrual,
-             .income, .expense:
+             .income, .expense, .internalTransfer:
             return true
-        case .internalTransfer, .loanPayment, .loanEarlyRepayment:
+        case .loanPayment, .loanEarlyRepayment:
             return false
         }
     }
@@ -203,62 +202,58 @@ struct RateChange: Codable, Equatable, Hashable {
 
 struct DepositInfo: Codable, Equatable, Hashable {
     var bankName: String
-    var principalBalance: Decimal // Тело депозита
     var capitalizationEnabled: Bool
-    var interestAccruedNotCapitalized: Decimal // Начисленные, но не капитализированные проценты
-    var interestRateAnnual: Decimal // Текущая годовая ставка
-    var interestRateHistory: [RateChange] // История ставок
-    var interestPostingDay: Int // 1-31, день месяца для начисления
-    var lastInterestCalculationDate: String // YYYY-MM-DD, дата последнего расчета
-    var lastInterestPostingMonth: String // YYYY-MM-01, начало месяца последнего начисления
-    var interestAccruedForCurrentPeriod: Decimal // Накоплено за текущий период до начисления
-    var initialPrincipal: Decimal // Размер депозита на момент создания (не меняется)
-    var startDate: String // YYYY-MM-DD дата создания депозита (для исторического расчёта)
+    var interestRateAnnual: Decimal
+    var interestRateHistory: [RateChange]
+    var interestPostingDay: Int
+    var lastInterestCalculationDate: String // YYYY-MM-DD
+    var lastInterestPostingMonth: String // YYYY-MM-01
+    var interestAccruedForCurrentPeriod: Decimal // running daily accrual since last posting
+    var initialPrincipal: Decimal // creation-time amount (= Account.initialBalance)
+    var startDate: String // YYYY-MM-DD — events on/before this are baked into initialPrincipal
 
     enum CodingKeys: String, CodingKey {
-        case bankName, principalBalance, capitalizationEnabled, interestAccruedNotCapitalized
+        case bankName, capitalizationEnabled
         case interestRateAnnual, interestRateHistory, interestPostingDay
         case lastInterestCalculationDate, lastInterestPostingMonth, interestAccruedForCurrentPeriod
         case initialPrincipal, startDate
+        // Legacy keys retained for read-only migration of pre-unification payloads.
+        case principalBalance
+        case interestAccruedNotCapitalized
     }
 
     nonisolated init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         bankName = try container.decode(String.self, forKey: .bankName)
-        principalBalance = try container.decode(Decimal.self, forKey: .principalBalance)
         capitalizationEnabled = try container.decode(Bool.self, forKey: .capitalizationEnabled)
-        interestAccruedNotCapitalized = try container.decode(Decimal.self, forKey: .interestAccruedNotCapitalized)
         interestRateAnnual = try container.decode(Decimal.self, forKey: .interestRateAnnual)
         interestRateHistory = try container.decode([RateChange].self, forKey: .interestRateHistory)
         interestPostingDay = try container.decode(Int.self, forKey: .interestPostingDay)
         lastInterestCalculationDate = try container.decode(String.self, forKey: .lastInterestCalculationDate)
         lastInterestPostingMonth = try container.decode(String.self, forKey: .lastInterestPostingMonth)
         interestAccruedForCurrentPeriod = try container.decode(Decimal.self, forKey: .interestAccruedForCurrentPeriod)
-        // Migration: default initialPrincipal to current principalBalance if missing.
-        // Best-effort — existing deposits treat their current balance as "initial".
-        initialPrincipal = (try container.decodeIfPresent(Decimal.self, forKey: .initialPrincipal)) ?? principalBalance
-        // Migration: default startDate to lastInterestCalculationDate if missing.
+        // Pre-migration payloads have only `principalBalance`; treat it as the initial principal.
+        let legacyPrincipal = try container.decodeIfPresent(Decimal.self, forKey: .principalBalance)
+        initialPrincipal = (try container.decodeIfPresent(Decimal.self, forKey: .initialPrincipal))
+            ?? legacyPrincipal
+            ?? 0
         startDate = (try container.decodeIfPresent(String.self, forKey: .startDate)) ?? lastInterestCalculationDate
     }
 
     init(
         bankName: String,
-        principalBalance: Decimal,
+        initialPrincipal: Decimal,
         capitalizationEnabled: Bool = true,
-        interestAccruedNotCapitalized: Decimal = 0,
         interestRateAnnual: Decimal,
         interestRateHistory: [RateChange]? = nil,
         interestPostingDay: Int,
         lastInterestCalculationDate: String? = nil,
         lastInterestPostingMonth: String? = nil,
         interestAccruedForCurrentPeriod: Decimal = 0,
-        initialPrincipal: Decimal? = nil,
         startDate: String? = nil
     ) {
         self.bankName = bankName
-        self.principalBalance = principalBalance
         self.capitalizationEnabled = capitalizationEnabled
-        self.interestAccruedNotCapitalized = interestAccruedNotCapitalized
         self.interestRateAnnual = interestRateAnnual
         self.interestRateHistory = interestRateHistory ?? [RateChange(
             effectiveFrom: lastInterestCalculationDate ?? DateFormatters.dateFormatter.string(from: Date()),
@@ -270,7 +265,6 @@ struct DepositInfo: Codable, Equatable, Hashable {
         if let lastMonth = lastInterestPostingMonth {
             self.lastInterestPostingMonth = lastMonth
         } else {
-            // По умолчанию - начало текущего месяца
             let calendar = Calendar.current
             let components = calendar.dateComponents([.year, .month], from: Date())
             if let date = calendar.date(from: components) {
@@ -280,17 +274,14 @@ struct DepositInfo: Codable, Equatable, Hashable {
             }
         }
         self.interestAccruedForCurrentPeriod = interestAccruedForCurrentPeriod
-        // initialPrincipal defaults to principalBalance for new deposits — represents creation-time amount.
-        self.initialPrincipal = initialPrincipal ?? principalBalance
+        self.initialPrincipal = initialPrincipal
         self.startDate = startDate ?? lastInterestCalculationDate ?? today
     }
 
     nonisolated func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(bankName, forKey: .bankName)
-        try container.encode(principalBalance, forKey: .principalBalance)
         try container.encode(capitalizationEnabled, forKey: .capitalizationEnabled)
-        try container.encode(interestAccruedNotCapitalized, forKey: .interestAccruedNotCapitalized)
         try container.encode(interestRateAnnual, forKey: .interestRateAnnual)
         try container.encode(interestRateHistory, forKey: .interestRateHistory)
         try container.encode(interestPostingDay, forKey: .interestPostingDay)
@@ -301,6 +292,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
         try container.encode(startDate, forKey: .startDate)
     }
 }
+
 
 // MARK: - Loan Models
 

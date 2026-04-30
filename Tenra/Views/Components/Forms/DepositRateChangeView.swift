@@ -108,7 +108,7 @@ struct DepositRateChangeView: View {
         iconSource: .brandService("halykbank.kz"),
         depositInfo: DepositInfo(
             bankName: "Halyk Bank",
-            principalBalance: Decimal(1000000),
+            initialPrincipal: Decimal(1000000),
             capitalizationEnabled: true,
             interestRateAnnual: Decimal(12.5),
             interestPostingDay: 15

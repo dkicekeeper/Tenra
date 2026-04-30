@@ -50,9 +50,8 @@ struct DepositInterestServiceTests {
 
         return DepositInfo(
             bankName: "TestBank",
-            principalBalance: principal,
+            initialPrincipal: principal,
             capitalizationEnabled: false,
-            interestAccruedNotCapitalized: 0,
             interestRateAnnual: annualRate,
             interestRateHistory: history,
             interestPostingDay: 1,
@@ -70,7 +69,7 @@ struct DepositInterestServiceTests {
         let rate: Decimal = 12
         let info = makeDepositInfo(principal: principal, annualRate: rate, lastCalcDateOffset: -1)
 
-        let result = DepositInterestService.calculateInterestToToday(depositInfo: info)
+        let result = DepositInterestService.calculateInterestToToday(depositInfo: info, accountId: "d1", allTransactions: [])
 
         // Loop runs once (today), adding principal * rate/100 / 365
         let expected: Decimal = principal * (rate / 100) / 365
@@ -87,7 +86,7 @@ struct DepositInterestServiceTests {
         let rate: Decimal = 12
         let info = makeDepositInfo(principal: principal, annualRate: rate, lastCalcDateOffset: -5, accruedForPeriod: 0)
 
-        let result = DepositInterestService.calculateInterestToToday(depositInfo: info)
+        let result = DepositInterestService.calculateInterestToToday(depositInfo: info, accountId: "d1", allTransactions: [])
 
         // Loop runs 5 times (today - 4, ..., today)
         let dailyInterest: Decimal = principal * (rate / 100) / 365
@@ -110,7 +109,7 @@ struct DepositInterestServiceTests {
             accruedForPeriod: priorAccrued
         )
 
-        let result = DepositInterestService.calculateInterestToToday(depositInfo: info)
+        let result = DepositInterestService.calculateInterestToToday(depositInfo: info, accountId: "d1", allTransactions: [])
 
         let dailyInterest: Decimal = principal * (rate / 100) / 365
         let expected: Decimal = priorAccrued + dailyInterest
@@ -139,7 +138,7 @@ struct DepositInterestServiceTests {
             rateHistory: history
         )
 
-        let result = DepositInterestService.calculateInterestToToday(depositInfo: info)
+        let result = DepositInterestService.calculateInterestToToday(depositInfo: info, accountId: "d1", allTransactions: [])
 
         // Today is in 2026; rate effective from 2025-01-01 (20%) applies
         let expectedAt20Percent: Decimal = principal * (Decimal(20) / 100) / 365
@@ -161,9 +160,8 @@ struct DepositInterestServiceTests {
         let history = [RateChange(effectiveFrom: "2024-01-01", annualRate: 12)]
         var info = DepositInfo(
             bankName: "TestBank",
-            principalBalance: 100_000,
+            initialPrincipal: 100_000,
             capitalizationEnabled: false,
-            interestAccruedNotCapitalized: 0,
             interestRateAnnual: 12,
             interestRateHistory: history,
             interestPostingDay: 31,   // posting day = 31 (clamped to last day of month)
@@ -173,12 +171,12 @@ struct DepositInterestServiceTests {
         )
 
         // The function must not crash and must return a positive accumulated value
-        let result = DepositInterestService.calculateInterestToToday(depositInfo: info)
+        let result = DepositInterestService.calculateInterestToToday(depositInfo: info, accountId: "d1", allTransactions: [])
         #expect(result > 0, "Expected positive interest when crossing Feb 29, got \(result)")
 
         // Also verify that adding a RateChange with addRateChange doesn't crash
         DepositInterestService.addRateChange(depositInfo: &info, effectiveFrom: "2024-03-01", annualRate: 15)
-        let resultAfterRateChange = DepositInterestService.calculateInterestToToday(depositInfo: info)
+        let resultAfterRateChange = DepositInterestService.calculateInterestToToday(depositInfo: info, accountId: "d1", allTransactions: [])
         #expect(resultAfterRateChange > 0, "Still positive after rate change added")
     }
 
@@ -194,7 +192,7 @@ struct DepositInterestServiceTests {
             accruedForPeriod: priorAccrued
         )
 
-        let result = DepositInterestService.calculateInterestToToday(depositInfo: info)
+        let result = DepositInterestService.calculateInterestToToday(depositInfo: info, accountId: "d1", allTransactions: [])
 
         // lastCalcDate = today → start = tomorrow > today → loop body executes zero times
         #expect(result == priorAccrued, "Expected \(priorAccrued), got \(result)")
@@ -210,7 +208,7 @@ struct DepositInterestServiceTests {
             type: .income, category: "Salary", subcategory: nil,
             accountId: "d1", targetAccountId: nil
         )
-        let delta = DepositInterestService.principalDelta(for: tx, capitalizationEnabled: true)
+        let delta = DepositInterestService.principalDelta(for: tx, accountId: "d1", capitalizationEnabled: true)
         #expect(delta == Decimal(1_000))
     }
 
@@ -222,7 +220,7 @@ struct DepositInterestServiceTests {
             type: .expense, category: "Other", subcategory: nil,
             accountId: "d1", targetAccountId: nil
         )
-        let delta = DepositInterestService.principalDelta(for: tx, capitalizationEnabled: true)
+        let delta = DepositInterestService.principalDelta(for: tx, accountId: "d1", capitalizationEnabled: true)
         #expect(delta == Decimal(-500))
     }
 
@@ -235,7 +233,7 @@ struct DepositInterestServiceTests {
             type: .income, category: "Salary", subcategory: nil,
             accountId: "d1", targetAccountId: nil
         )
-        let delta = DepositInterestService.principalDelta(for: tx, capitalizationEnabled: true)
+        let delta = DepositInterestService.principalDelta(for: tx, accountId: "d1", capitalizationEnabled: true)
         #expect(delta == Decimal(47_000))
     }
 
@@ -247,7 +245,7 @@ struct DepositInterestServiceTests {
             type: .expense, category: "Other", subcategory: nil,
             accountId: "d1", targetAccountId: nil
         )
-        let delta = DepositInterestService.principalDelta(for: tx, capitalizationEnabled: true)
+        let delta = DepositInterestService.principalDelta(for: tx, accountId: "d1", capitalizationEnabled: true)
         #expect(delta == Decimal(-47_000))
     }
 
@@ -285,38 +283,41 @@ struct DepositInterestServiceTests {
         )
     }
 
-    @Test("reconcile counts .income on deposit toward principal")
-    func reconcile_incomeAddsToPrincipal() {
-        // Deposit started 5 days ago at 100k, last reconciled yesterday.
-        var info = makeDepositInfo(
-            principal: 100_000,
-            annualRate: 0,            // disable interest accrual to isolate principal math
-            lastCalcDateOffset: -1,
-            accruedForPeriod: 0
+    /// Helper: drive the engine over the given events and return the deposit's resulting balance.
+    private func depositBalance(account: Account, events: [Transaction]) -> Double {
+        let info = account.depositInfo
+        let bal = AccountBalance(
+            accountId: account.id,
+            currentBalance: 0,
+            initialBalance: NSDecimalNumber(decimal: info?.initialPrincipal ?? 0).doubleValue,
+            depositInfo: info,
+            currency: account.currency,
+            isDeposit: true
         )
-        info.initialPrincipal = 100_000
-        info.startDate = dateString(offsetDays: -5)
-
-        var account = makeDepositAccount(depositInfo: info)
-        // .income for 25k three days ago — must move principal to 125k.
-        let income = makeIncomeTx(amount: 25_000, date: dateString(offsetDays: -3))
-
-        DepositInterestService.reconcileDepositInterest(
-            account: &account,
-            allTransactions: [income],
-            onTransactionCreated: { _ in }
+        return BalanceCalculationEngine().calculateBalance(
+            account: bal, transactions: events, mode: .fromInitialBalance
         )
-
-        #expect(account.depositInfo?.principalBalance == Decimal(125_000))
     }
 
-    @Test("reconcile counts .expense on deposit subtractively")
-    func reconcile_expenseSubtractsFromPrincipal() {
-        var info = makeDepositInfo(principal: 100_000, annualRate: 0, lastCalcDateOffset: -1)
-        info.initialPrincipal = 100_000
+    @Test("balance walks .income on deposit (unified pipeline)")
+    func reconcile_incomeAddsToPrincipal() {
+        var info = makeDepositInfo(
+            principal: 100_000, annualRate: 0, lastCalcDateOffset: -1, accruedForPeriod: 0
+        )
         info.startDate = dateString(offsetDays: -5)
 
-        var account = makeDepositAccount(depositInfo: info)
+        let account = makeDepositAccount(depositInfo: info)
+        let income = makeIncomeTx(amount: 25_000, date: dateString(offsetDays: -3))
+
+        #expect(depositBalance(account: account, events: [income]) == 125_000)
+    }
+
+    @Test("balance walks .expense on deposit (unified pipeline)")
+    func reconcile_expenseSubtractsFromPrincipal() {
+        var info = makeDepositInfo(principal: 100_000, annualRate: 0, lastCalcDateOffset: -1)
+        info.startDate = dateString(offsetDays: -5)
+
+        let account = makeDepositAccount(depositInfo: info)
         let expense = Transaction(
             id: "e1", date: dateString(offsetDays: -3), description: "",
             amount: 10_000, currency: "KZT", convertedAmount: nil,
@@ -324,82 +325,49 @@ struct DepositInterestServiceTests {
             accountId: "d1", targetAccountId: nil
         )
 
-        DepositInterestService.reconcileDepositInterest(
-            account: &account,
-            allTransactions: [expense],
-            onTransactionCreated: { _ in }
-        )
-
-        #expect(account.depositInfo?.principalBalance == Decimal(90_000))
+        #expect(depositBalance(account: account, events: [expense]) == 90_000)
     }
 
-    @Test("reconcile uses convertedAmount when income currency differs")
+    @Test("balance uses convertedAmount when income currency differs")
     func reconcile_incomeUsesConvertedAmount() {
         var info = makeDepositInfo(principal: 100_000, annualRate: 0, lastCalcDateOffset: -1)
-        info.initialPrincipal = 100_000
         info.startDate = dateString(offsetDays: -5)
 
-        var account = makeDepositAccount(currency: "KZT", depositInfo: info) // deposit is KZT
-        // Source: USD 100; converted to deposit currency = 47k KZT.
+        let account = makeDepositAccount(currency: "KZT", depositInfo: info)
         let income = makeIncomeTx(
             amount: 100, currency: "USD", convertedAmount: 47_000,
             date: dateString(offsetDays: -2)
         )
 
-        DepositInterestService.reconcileDepositInterest(
-            account: &account,
-            allTransactions: [income],
-            onTransactionCreated: { _ in }
-        )
-
-        #expect(account.depositInfo?.principalBalance == Decimal(147_000))
+        #expect(depositBalance(account: account, events: [income]) == 147_000)
     }
 
-    @Test("reconcile recomputes principalBalance even when already reconciled today")
+    @Test("balance reflects same-day events without separate principal recompute")
     func reconcile_sameDayPrincipalRecompute() {
-        // First pass: reconcile yesterday — sets lastCalcDate to today.
         var info = makeDepositInfo(principal: 100_000, annualRate: 0, lastCalcDateOffset: -1)
-        info.initialPrincipal = 100_000
         info.startDate = dateString(offsetDays: -5)
 
-        var account = makeDepositAccount(depositInfo: info)
-        DepositInterestService.reconcileDepositInterest(
-            account: &account, allTransactions: [], onTransactionCreated: { _ in }
-        )
-        // After first pass: principal == 100k, lastCalcDate == today.
-        #expect(account.depositInfo?.principalBalance == Decimal(100_000))
-
-        // Now user adds a same-day income transaction. Re-reconcile.
+        let account = makeDepositAccount(depositInfo: info)
+        #expect(depositBalance(account: account, events: []) == 100_000)
         let todayIncome = makeIncomeTx(amount: 30_000, date: dateString(offsetDays: 0))
-        DepositInterestService.reconcileDepositInterest(
-            account: &account,
-            allTransactions: [todayIncome],
-            onTransactionCreated: { _ in }
-        )
-        #expect(account.depositInfo?.principalBalance == Decimal(130_000))
+        #expect(depositBalance(account: account, events: [todayIncome]) == 130_000)
     }
 
-    @Test("reconcile ignores .internalTransfer (filtered out by affectsDepositPrincipal)")
-    func reconcile_ignoresInternalTransfer() {
+    @Test("balance includes .internalTransfer target-side amount on deposit (regression)")
+    func reconcile_internalTransferTargetCounts() {
         var info = makeDepositInfo(principal: 100_000, annualRate: 0, lastCalcDateOffset: -1)
-        info.initialPrincipal = 100_000
         info.startDate = dateString(offsetDays: -5)
 
-        var account = makeDepositAccount(depositInfo: info)
-        let transfer = Transaction(
+        let account = makeDepositAccount(depositInfo: info)
+        let transferIn = Transaction(
             id: "t1", date: dateString(offsetDays: -2), description: "",
-            amount: 50_000, currency: "KZT", convertedAmount: nil,
+            amount: 50_000, currency: "KZT", convertedAmount: 50_000,
             type: .internalTransfer, category: TransactionType.transferCategoryName,
-            subcategory: nil, accountId: "d1", targetAccountId: "other"
+            subcategory: nil, accountId: "src", targetAccountId: "d1",
+            targetAmount: 50_000
         )
-
-        DepositInterestService.reconcileDepositInterest(
-            account: &account,
-            allTransactions: [transfer],
-            onTransactionCreated: { _ in }
-        )
-        // Principal unchanged because .internalTransfer is not in affectsDepositPrincipal.
-        #expect(account.depositInfo?.principalBalance == Decimal(100_000))
+        // The whole point of unification: transfer to deposit is reflected in balance.
+        #expect(depositBalance(account: account, events: [transferIn]) == 150_000)
     }
 
     // MARK: - calculateInterestToToday(allTransactions:) tests (Task 4)
@@ -435,37 +403,29 @@ struct DepositInterestServiceTests {
         #expect(walked > baseline)
     }
 
-    @Test("reconcile with capitalization+posting reflects posted interest in principalBalance")
+    @Test("reconcile with capitalization+posting creates a transaction that the engine folds into balance")
     func reconcile_capitalizedPostingDuringWalk_principalIncludesPosting() {
-        // Deposit started 35 days ago at 100k, 12% APR, capitalization ON,
-        // posting day = 1 of the month. Walking from 35 days ago to today
-        // crosses one or more month boundaries → at least one posting fires.
-        // The posted interest must be folded into `principalBalance` (not just
-        // into the local walk variable that gets discarded).
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let startDate = calendar.date(byAdding: .day, value: -35, to: today)!
         let startDateStr = DateFormatters.dateFormatter.string(from: startDate)
 
         let postingDay = 1
-        // last posting marker = month before startDate so first posting day after start fires
         let monthBeforeStart = calendar.date(byAdding: .month, value: -1, to: startDate)!
         let monthBeforeStartComps = calendar.dateComponents([.year, .month], from: monthBeforeStart)
         let monthBeforeStartFloor = calendar.date(from: monthBeforeStartComps)!
         let monthBeforeStartStr = DateFormatters.dateFormatter.string(from: monthBeforeStartFloor)
 
-        var info = DepositInfo(
+        let info = DepositInfo(
             bankName: "T",
-            principalBalance: 100_000,
+            initialPrincipal: 100_000,
             capitalizationEnabled: true,
-            interestAccruedNotCapitalized: 0,
             interestRateAnnual: 12,
             interestRateHistory: [RateChange(effectiveFrom: startDateStr, annualRate: 12)],
             interestPostingDay: postingDay,
             lastInterestCalculationDate: startDateStr,
             lastInterestPostingMonth: monthBeforeStartStr,
             interestAccruedForCurrentPeriod: 0,
-            initialPrincipal: 100_000,
             startDate: startDateStr
         )
         var account = makeDepositAccount(currency: "KZT", depositInfo: info)
@@ -477,18 +437,14 @@ struct DepositInterestServiceTests {
             onTransactionCreated: { posted.append($0) }
         )
 
-        // At least one posting must have fired.
         #expect(posted.count >= 1)
-        // Principal must be strictly greater than initialPrincipal (interest folded in).
-        let principal = account.depositInfo?.principalBalance ?? 0
-        #expect(principal > Decimal(100_000), "Expected principalBalance > 100k after capitalized posting; got \(principal)")
-        // And it must equal initialPrincipal + sum of posted amounts (capitalization on).
-        // Tolerance accounts for Decimal→Double→Decimal round-trip in Transaction.amount.
-        let totalPosted: Decimal = posted.reduce(Decimal(0)) { acc, tx in acc + Decimal(tx.amount) }
-        let expected = Decimal(100_000) + totalPosted
-        let diff = abs(principal - expected)
-        #expect(diff < Decimal(string: "0.01")!, "Principal \(principal) should ≈ \(expected); diff \(diff)")
-        _ = info  // suppress unused warning
+        // The unified pipeline: posted .depositInterestAccrual transactions feed the
+        // standard balance engine. Verify the engine folds them into balance.
+        let computed = depositBalance(account: account, events: posted)
+        #expect(computed > 100_000, "Expected balance > 100k after capitalized posting; got \(computed)")
+        let totalPosted = posted.reduce(0.0) { $0 + $1.amount }
+        let expected = 100_000.0 + totalPosted
+        #expect(abs(computed - expected) < 0.01, "Balance \(computed) should ≈ \(expected)")
     }
 }
 
@@ -508,9 +464,13 @@ struct TransactionTypeDepositPrincipalTests {
         #expect(TransactionType.expense.affectsDepositPrincipal)
     }
 
-    @Test("transfers and loan types return false")
-    func transfersAndLoanReturnFalse() {
-        #expect(!TransactionType.internalTransfer.affectsDepositPrincipal)
+    @Test("internalTransfer is principal-affecting (deposit may be source or target)")
+    func internalTransferReturnsTrue() {
+        #expect(TransactionType.internalTransfer.affectsDepositPrincipal)
+    }
+
+    @Test("loan types return false")
+    func loanReturnsFalse() {
         #expect(!TransactionType.loanPayment.affectsDepositPrincipal)
         #expect(!TransactionType.loanEarlyRepayment.affectsDepositPrincipal)
     }

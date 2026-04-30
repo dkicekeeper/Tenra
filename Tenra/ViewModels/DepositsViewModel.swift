@@ -42,18 +42,18 @@ class DepositsViewModel {
         currency: String,
         bankName: String,
         iconSource: IconSource?,
-        principalBalance: Decimal,
+        initialPrincipal: Decimal,
         interestRateAnnual: Decimal,
         interestPostingDay: Int,
         capitalizationEnabled: Bool = true
     ) {
         accountsViewModel.addDeposit(
             name: name,
-            balance: NSDecimalNumber(decimal: principalBalance).doubleValue,
+            balance: NSDecimalNumber(decimal: initialPrincipal).doubleValue,
             currency: currency,
             bankName: bankName,
             iconSource: iconSource,
-            principalBalance: principalBalance,
+            initialPrincipal: initialPrincipal,
             capitalizationEnabled: capitalizationEnabled,
             interestRateAnnual: interestRateAnnual,
             interestPostingDay: interestPostingDay
@@ -120,15 +120,15 @@ class DepositsViewModel {
         syncDepositBalance(account)
     }
 
-    /// Sync deposit balance to BalanceCoordinator after interest reconciliation.
-    /// Without this, BalanceCoordinator's in-memory state stays stale until next full recalculation.
+    /// Forward updated deposit metadata to BalanceCoordinator's cache.
+    /// Balance is owned by the standard transaction pipeline — any newly posted
+    /// `.depositInterestAccrual` transactions land via `BalanceCoordinator.processAddTransaction`
+    /// during the same `add()` call.
     private func syncDepositBalance(_ account: Account) {
         guard let depositInfo = account.depositInfo,
               let coordinator = balanceCoordinator else { return }
-        let newBalance = BalanceCalculationEngine().calculateDepositBalance(depositInfo: depositInfo)
         Task {
             await coordinator.updateDepositInfo(account, depositInfo: depositInfo)
-            await coordinator.updateForAccount(account, newBalance: newBalance)
         }
     }
 
@@ -167,8 +167,6 @@ class DepositsViewModel {
             }
         }
         info.interestAccruedForCurrentPeriod = 0
-        info.interestAccruedNotCapitalized = 0
-        info.principalBalance = info.initialPrincipal
 
         account.depositInfo = info
         accountsViewModel.updateAccount(account)
@@ -239,7 +237,12 @@ class DepositsViewModel {
     /// Calculate interest to today for a deposit account (for use in list rows)
     func interestToday(for account: Account) -> Double? {
         guard let depositInfo = account.depositInfo else { return nil }
-        let val = DepositInterestService.calculateInterestToToday(depositInfo: depositInfo)
+        let txs = accountsViewModel.transactionStore?.transactions ?? []
+        let val = DepositInterestService.calculateInterestToToday(
+            depositInfo: depositInfo,
+            accountId: account.id,
+            allTransactions: txs
+        )
         return val > 0 ? NSDecimalNumber(decimal: val).doubleValue : nil
     }
 
@@ -255,7 +258,12 @@ class DepositsViewModel {
               let depositInfo = account.depositInfo else {
             return nil
         }
-        return DepositInterestService.calculateInterestToToday(depositInfo: depositInfo)
+        let txs = accountsViewModel.transactionStore?.transactions ?? []
+        return DepositInterestService.calculateInterestToToday(
+            depositInfo: depositInfo,
+            accountId: accountId,
+            allTransactions: txs
+        )
     }
 
     /// Get next posting date for a deposit by ID

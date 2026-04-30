@@ -22,16 +22,14 @@ struct AccountActionViewModelTests {
             id: id, name: "Savings", currency: "KZT", iconSource: nil,
             depositInfo: DepositInfo(
                 bankName: "T",
-                principalBalance: 100_000,
+                initialPrincipal: 100_000,
                 capitalizationEnabled: false,
-                interestAccruedNotCapitalized: 0,
                 interestRateAnnual: 0,
                 interestRateHistory: [RateChange(effectiveFrom: "2020-01-01", annualRate: 0)],
                 interestPostingDay: 1,
                 lastInterestCalculationDate: "2020-01-01",
                 lastInterestPostingMonth: "2020-01-01",
                 interestAccruedForCurrentPeriod: 0,
-                initialPrincipal: 100_000,
                 startDate: "2020-01-01"
             ),
             initialBalance: 100_000
@@ -50,8 +48,8 @@ struct AccountActionViewModelTests {
         #expect(vm.selectedAction == .transfer)
     }
 
-    @Test("deposit defaults to .income when defaultAction is nil")
-    func depositAccount_defaultsToIncome() {
+    @Test("deposit defaults to .transfer when defaultAction is nil")
+    func depositAccount_defaultsToTransfer() {
         let coord = AppCoordinator()
         let vm = AccountActionViewModel(
             account: depositAccount(),
@@ -59,7 +57,7 @@ struct AccountActionViewModelTests {
             transactionsViewModel: coord.transactionsViewModel,
             defaultAction: nil
         )
-        #expect(vm.selectedAction == .income)
+        #expect(vm.selectedAction == .transfer)
     }
 
     @Test("explicit defaultAction overrides per-account default")

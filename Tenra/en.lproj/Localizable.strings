@@ -1335,7 +1335,7 @@
 "insights.health.howItWorks" = "How it's computed";
 "insights.health.explainer" = "A 0-100 weighted score across five aspects of financial health. Higher means more financial resilience.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "No budgets configured — the 25%% weight is redistributed across the other four components.";
+"insights.health.weights.redistributed" = "No budgets configured — the 25% weight is redistributed across the other four components.";
 
 "insights.health.component.savingsRate.title" = "Savings Rate";
 "insights.health.component.savingsRate.short" = "Savings";
@@ -1361,9 +1361,9 @@
 "insights.health.target" = "Target";
 "insights.health.scoreContribution" = "%d / 100";
 
-"insights.health.target.savingsRate" = "≥ 20%%";
-"insights.health.target.budgetAdherence" = "100%% of categories within budget";
-"insights.health.target.recurringRatio" = "< 50%% of income";
+"insights.health.target.savingsRate" = "≥ 20%";
+"insights.health.target.budgetAdherence" = "100% of categories within budget";
+"insights.health.target.recurringRatio" = "< 50% of income";
 "insights.health.target.emergencyFund" = "≥ 3 months";
 "insights.health.target.cashFlow" = "≥ 0";
 

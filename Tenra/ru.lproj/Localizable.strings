@@ -1335,7 +1335,7 @@
 "insights.health.howItWorks" = "Как считается";
 "insights.health.explainer" = "Скор от 0 до 100 — взвешенная оценка пяти аспектов финансового здоровья. Чем выше, тем устойчивее финансы.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "Бюджеты не настроены — вес 25%% перераспределён между четырьмя оставшимися компонентами.";
+"insights.health.weights.redistributed" = "Бюджеты не настроены — вес 25% перераспределён между четырьмя оставшимися компонентами.";
 
 "insights.health.component.savingsRate.title" = "Норма сбережений";
 "insights.health.component.savingsRate.short" = "Сбережения";
@@ -1361,9 +1361,9 @@
 "insights.health.target" = "Цель";
 "insights.health.scoreContribution" = "%d / 100";
 
-"insights.health.target.savingsRate" = "≥ 20%%";
-"insights.health.target.budgetAdherence" = "100%% категорий в рамках бюджета";
-"insights.health.target.recurringRatio" = "< 50%% дохода";
+"insights.health.target.savingsRate" = "≥ 20%";
+"insights.health.target.budgetAdherence" = "100% категорий в рамках бюджета";
+"insights.health.target.recurringRatio" = "< 50% дохода";
 "insights.health.target.emergencyFund" = "≥ 3 месяцев";
 "insights.health.target.cashFlow" = "≥ 0";
 

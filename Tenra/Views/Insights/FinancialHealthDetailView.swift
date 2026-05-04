@@ -44,7 +44,7 @@ struct FinancialHealthDetailView: View {
     // MARK: - Components
 
     private var componentsSection: some View {
-        LazyVStack(spacing: AppSpacing.lg) {
+        VStack(spacing: AppSpacing.lg) {
             HealthComponentCard(model: makeSavingsRateModel())
             HealthComponentCard(model: makeBudgetAdherenceModel())
             HealthComponentCard(model: makeRecurringRatioModel())

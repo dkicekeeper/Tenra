@@ -41,6 +41,7 @@ struct HealthScoreWeightingCard: View {
     }
 
     var body: some View {
+        let resolvedSegments = segments
         VStack(alignment: .leading, spacing: AppSpacing.md) {
             Text(String(localized: "insights.health.howItWorks"))
                 .font(AppTypography.bodyEmphasis)
@@ -51,12 +52,12 @@ struct HealthScoreWeightingCard: View {
                 .foregroundStyle(AppColors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            stackBar
+            stackBar(resolvedSegments)
                 .frame(height: 14)
                 .clipShape(RoundedRectangle(cornerRadius: 7))
 
             VStack(spacing: AppSpacing.sm) {
-                ForEach(segments) { segment in
+                ForEach(resolvedSegments) { segment in
                     legendRow(segment)
                 }
             }
@@ -72,10 +73,10 @@ struct HealthScoreWeightingCard: View {
         .cardStyle()
     }
 
-    private var stackBar: some View {
+    private func stackBar(_ resolvedSegments: [Segment]) -> some View {
         GeometryReader { proxy in
             HStack(spacing: 0) {
-                ForEach(segments) { segment in
+                ForEach(resolvedSegments) { segment in
                     Rectangle()
                         .fill(segment.color)
                         .frame(width: proxy.size.width * segment.weight / 100.0)

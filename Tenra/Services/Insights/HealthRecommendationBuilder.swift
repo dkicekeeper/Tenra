@@ -17,15 +17,20 @@ nonisolated enum HealthRecommendationBuilder {
             return String(localized: "insights.health.rec.savingsRate.healthy")
         }
 
+        // Compute the cumulative-window gap, then divide by the number of
+        // months in the data window. The recommendation says "per month";
+        // without dividing we'd quote the N-month total (e.g. 30M ₸ on a
+        // year of data even when the actual monthly target is 2.5M).
         let targetIncomeMinusExpense = 0.20 * score.totalIncomeWindow
         let currentDelta = score.totalIncomeWindow - score.totalExpensesWindow
         let gap = max(0, targetIncomeMinusExpense - currentDelta)
+        let months = Double(max(1, score.monthsInWindow))
 
-        // The user can close the gap by either cutting expenses by `gap`
-        // or growing income enough that 20% of the new income equals the
-        // new gap. Income-grow target = gap / (1 − 0.20) = gap / 0.8.
-        let cutExpenses = Formatting.formatCurrencySmart(gap, currency: score.baseCurrency)
-        let growIncome  = Formatting.formatCurrencySmart(gap / 0.8, currency: score.baseCurrency)
+        // Close the gap either by cutting expenses by `gap` or by growing
+        // income such that 20% of the new income equals the new gap. The
+        // income-grow target works out to `gap / (1 − 0.20)`.
+        let cutExpenses = Formatting.formatCurrencySmart(gap / months, currency: score.baseCurrency)
+        let growIncome  = Formatting.formatCurrencySmart((gap / 0.8) / months, currency: score.baseCurrency)
 
         let format = String(localized: "insights.health.rec.savingsRate.below")
         return String(format: format, cutExpenses, growIncome)

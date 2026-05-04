@@ -287,6 +287,7 @@ struct FinancialHealthScore {
     let totalExpensesWindow:     Double  // baseCurrency
     let baseCurrency:            String
     let isBudgetComponentActive: Bool    // mirrors budgetsTotal > 0
+    let monthsInWindow:          Int     // # of monthly aggregates the score is built from
 }
 
 extension FinancialHealthScore {
@@ -314,7 +315,8 @@ extension FinancialHealthScore {
             totalIncomeWindow: 0,
             totalExpensesWindow: 0,
             baseCurrency: "",
-            isBudgetComponentActive: false
+            isBudgetComponentActive: false,
+            monthsInWindow: 0
         )
     }
 }

@@ -320,10 +320,11 @@ extension PeriodDataPoint {
 
 // MARK: - Mock FinancialHealthScore
 //
-// Mock values are realistic snapshots for #Previews, not mathematically
-// derived. `netFlowPercent` reflects the latest period's net flow over
-// total income — it lives in a different time window than the cumulative
-// `totalIncomeWindow` / `totalExpensesWindow` and need not match them.
+// Mock values are realistic snapshots for #Previews. They simulate a
+// 6-month data window: `totalIncomeWindow` / `totalExpensesWindow` are
+// cumulative across those months, and per-month signals
+// (`recurringMonthlyTotal`, `netFlowPercent`) are normalised against
+// the window via `avgMonthlyIncome = totalIncomeWindow / monthsInWindow`.
 
 extension FinancialHealthScore {
     static func mockGood() -> FinancialHealthScore {
@@ -340,16 +341,17 @@ extension FinancialHealthScore {
             budgetsOnTrack: 8,
             budgetsTotal: 10,
             recurringMonthlyTotal: 220_000,
-            recurringPercentOfIncome: 35.0,
+            recurringPercentOfIncome: 36.7,
             monthsCovered: 1.8,
             avgMonthlyExpenses: 400_000,
             avgMonthlyNetFlow: 80_000,
             totalBalance: 720_000,
-            netFlowPercent: 13.0,
-            totalIncomeWindow: 600_000,
-            totalExpensesWindow: 510_000,
+            netFlowPercent: 15.0,
+            totalIncomeWindow: 3_600_000,
+            totalExpensesWindow: 3_060_000,
             baseCurrency: "KZT",
-            isBudgetComponentActive: true
+            isBudgetComponentActive: true,
+            monthsInWindow: 6
         )
     }
 
@@ -367,16 +369,17 @@ extension FinancialHealthScore {
             budgetsOnTrack: 4,
             budgetsTotal: 10,
             recurringMonthlyTotal: 350_000,
-            recurringPercentOfIncome: 58.0,
+            recurringPercentOfIncome: 58.3,
             monthsCovered: 0.9,
             avgMonthlyExpenses: 580_000,
             avgMonthlyNetFlow: -40_000,
             totalBalance: 520_000,
             netFlowPercent: -8.0,
-            totalIncomeWindow: 600_000,
-            totalExpensesWindow: 580_000,
+            totalIncomeWindow: 3_600_000,
+            totalExpensesWindow: 3_456_000,
             baseCurrency: "KZT",
-            isBudgetComponentActive: true
+            isBudgetComponentActive: true,
+            monthsInWindow: 6
         )
     }
 }

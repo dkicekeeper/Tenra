@@ -1334,6 +1334,8 @@
 
 "insights.health.howItWorks" = "How it's computed";
 "insights.health.explainer" = "A 0-100 weighted score across five aspects of financial health. Higher means more financial resilience.";
+"insights.health.periodContext.months" = "Based on the last %d months of activity. The granularity selector at the top changes other insights but not this score.";
+"insights.health.periodContext.singleMonth" = "Based on this month's activity. The granularity selector at the top changes other insights but not this score.";
 "insights.health.weightLabel" = "%d%%";
 "insights.health.weights.redistributed" = "No budgets configured — the 25% weight is redistributed across the other four components.";
 

@@ -34,5 +34,6 @@ struct FinancialHealthScoreTests {
         #expect(score.totalExpensesWindow == 0)
         #expect(score.baseCurrency == "")
         #expect(score.isBudgetComponentActive == false)
+        #expect(score.monthsInWindow == 0)
     }
 }

@@ -381,6 +381,7 @@ final class InsightsViewModel {
                 totalIncome: monthTotals?.income   ?? 0,
                 totalExpenses: monthTotals?.expenses ?? 0,
                 latestNetFlow: latestNetFlow,
+                monthsInWindow: monthPoints.count,
                 baseCurrency: currency,
                 balanceFor: { balanceSnapshot[$0] ?? 0 },
                 allTransactions: allTransactions,

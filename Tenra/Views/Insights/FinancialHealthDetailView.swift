@@ -21,8 +21,11 @@ struct FinancialHealthDetailView: View {
                 HealthScoreHeroCard(score: score, isAvailable: isAvailable)
                     .screenPadding()
 
-                HealthScoreWeightingCard(isBudgetComponentActive: score.isBudgetComponentActive)
-                    .screenPadding()
+                HealthScoreWeightingCard(
+                    isBudgetComponentActive: score.isBudgetComponentActive,
+                    monthsInWindow: score.monthsInWindow
+                )
+                .screenPadding()
 
                 if isAvailable {
                     componentsSection

@@ -11,6 +11,15 @@ import SwiftUI
 
 struct HealthScoreWeightingCard: View {
     let isBudgetComponentActive: Bool
+    let monthsInWindow: Int
+
+    private var periodContextText: String {
+        if monthsInWindow <= 1 {
+            return String(localized: "insights.health.periodContext.singleMonth")
+        }
+        let format = String(localized: "insights.health.periodContext.months")
+        return String(format: format, monthsInWindow)
+    }
 
     private struct Segment: Identifiable {
         let id: String
@@ -50,6 +59,11 @@ struct HealthScoreWeightingCard: View {
             Text(String(localized: "insights.health.explainer"))
                 .font(AppTypography.body)
                 .foregroundStyle(AppColors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(periodContextText)
+                .font(AppTypography.bodySmall)
+                .foregroundStyle(AppColors.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
 
             stackBar(resolvedSegments)
@@ -108,13 +122,13 @@ struct HealthScoreWeightingCard: View {
 // MARK: - Previews
 
 #Preview("With budgets") {
-    HealthScoreWeightingCard(isBudgetComponentActive: true)
+    HealthScoreWeightingCard(isBudgetComponentActive: true, monthsInWindow: 6)
         .screenPadding()
         .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Without budgets — 4 segments") {
-    HealthScoreWeightingCard(isBudgetComponentActive: false)
+    HealthScoreWeightingCard(isBudgetComponentActive: false, monthsInWindow: 1)
         .screenPadding()
         .padding(.vertical, AppSpacing.md)
 }

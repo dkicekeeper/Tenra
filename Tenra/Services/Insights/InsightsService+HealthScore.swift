@@ -19,6 +19,7 @@ extension InsightsService {
         totalIncome: Double,
         totalExpenses: Double,
         latestNetFlow: Double,
+        monthsInWindow: Int,
         baseCurrency: String,
         balanceFor: (String) -> Double,
         allTransactions: [Transaction],
@@ -31,6 +32,12 @@ extension InsightsService {
 
         let calendar = Calendar.current
         let now = Date()
+        // Average monthly income across the data window. Used by components that
+        // pair a per-month signal (recurring cost, latest net flow) with the
+        // cumulative income total — without this normalisation a multi-month
+        // window makes monthly signals look like a tiny fraction of "income".
+        let safeMonths = max(1, monthsInWindow)
+        let avgMonthlyIncome = totalIncome / Double(safeMonths)
 
         // --- Component 1: Savings Rate (weight 0.30) ---
         let savingsRate = (totalIncome - totalExpenses) / totalIncome * 100
@@ -77,7 +84,10 @@ extension InsightsService {
                 let isExpense = categoryTypeByName[series.category] != .income
                 return isExpense ? total + seriesMonthlyEquivalent(series, baseCurrency: baseCurrency, cache: preAggregated?.seriesMonthlyEquivalents) : total
             }
-        let recurringRatioScore = Int(max(0, (1.0 - recurringCost / max(totalIncome, 1)) * 100).rounded())
+        // Compare monthly recurring against the AVERAGE monthly income — using
+        // cumulative `totalIncome` here would silently divide a per-month signal
+        // by an N-month figure and round every score to ~100.
+        let recurringRatioScore = Int(max(0, (1.0 - recurringCost / max(avgMonthlyIncome, 1)) * 100).rounded())
 
         // --- Component 4: Emergency Fund (weight 0.15) ---
         let totalBalance = accounts.reduce(0.0) { $0 + balanceFor($1.id) }
@@ -95,10 +105,12 @@ extension InsightsService {
         let emergencyFundScore = Int(min(monthsCovered / 3.0 * 100, 100).rounded())
 
         // --- Component 5: Cash Flow (weight 0.10) ---
+        // latest month's net flow vs average monthly income — same per-month vs
+        // cumulative caveat as recurring ratio above. +20% or more = 100,
+        // 0% = 50, -20% or worse = 0.
         let cashflowScore: Int
-        if totalIncome > 0 {
-            // net flow as % of income: +20% or more = 100, 0% = 50, -20% or worse = 0
-            let netFlowRatio = latestNetFlow / totalIncome
+        if avgMonthlyIncome > 0 {
+            let netFlowRatio = latestNetFlow / avgMonthlyIncome
             cashflowScore = Int(min(100, max(0, (netFlowRatio + 0.2) / 0.4 * 100)).rounded())
         } else {
             cashflowScore = latestNetFlow >= 0 ? 50 : 0
@@ -129,7 +141,7 @@ extension InsightsService {
         default:       (grade, gradeColor) = (String(localized: "insights.healthGrade.needsAttention"), AppColors.destructive)
         }
 
-        let netFlowPercent = totalIncome > 0 ? (latestNetFlow / totalIncome) * 100 : 0
+        let netFlowPercent = avgMonthlyIncome > 0 ? (latestNetFlow / avgMonthlyIncome) * 100 : 0
 
         return FinancialHealthScore(
             score: score,
@@ -144,7 +156,7 @@ extension InsightsService {
             budgetsOnTrack:          onBudgetCount,
             budgetsTotal:            totalBudgetCount,
             recurringMonthlyTotal:   recurringCost,
-            recurringPercentOfIncome: totalIncome > 0 ? (recurringCost / totalIncome) * 100 : 0,
+            recurringPercentOfIncome: avgMonthlyIncome > 0 ? (recurringCost / avgMonthlyIncome) * 100 : 0,
             monthsCovered:           monthsCovered,
             avgMonthlyExpenses:      avgMonthlyExpenses,
             avgMonthlyNetFlow:       last3Months.isEmpty
@@ -155,7 +167,8 @@ extension InsightsService {
             totalIncomeWindow:       totalIncome,
             totalExpensesWindow:     totalExpenses,
             baseCurrency:            baseCurrency,
-            isBudgetComponentActive: totalBudgetCount > 0
+            isBudgetComponentActive: totalBudgetCount > 0,
+            monthsInWindow:          safeMonths
         )
     }
 }

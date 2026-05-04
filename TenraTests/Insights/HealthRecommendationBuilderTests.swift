@@ -23,7 +23,8 @@ struct HealthRecommendationBuilderTests {
         netFlowPercent: Double = 0,
         totalIncomeWindow: Double = 0,
         totalExpensesWindow: Double = 0,
-        isBudgetComponentActive: Bool = true
+        isBudgetComponentActive: Bool = true,
+        monthsInWindow: Int = 1
     ) -> FinancialHealthScore {
         FinancialHealthScore(
             score: 50, grade: "Fair", gradeColor: .gray,
@@ -42,7 +43,8 @@ struct HealthRecommendationBuilderTests {
             totalIncomeWindow: totalIncomeWindow,
             totalExpensesWindow: totalExpensesWindow,
             baseCurrency: "KZT",
-            isBudgetComponentActive: isBudgetComponentActive
+            isBudgetComponentActive: isBudgetComponentActive,
+            monthsInWindow: monthsInWindow
         )
     }
 
@@ -63,6 +65,23 @@ struct HealthRecommendationBuilderTests {
         // Must mention currency and not be the healthy string
         #expect(text.contains("KZT") || text.contains("₸"))
         #expect(text != String(localized: "insights.health.rec.savingsRate.healthy"))
+    }
+
+    // Regression: a 12-month window quoted the cumulative gap (e.g. 30M ₸)
+    // as "per month". Numbers must be normalised by `monthsInWindow`.
+    @Test("savingsRate below-target divides gap by monthsInWindow")
+    func testSavingsRateBelowDividesByMonths() {
+        // 12-month window: income 7.2M, expenses 6.48M → savings rate 10%.
+        // Cumulative gap = 0.20·7.2M − 0.72M = 0.72M. Per-month cut ≈ 60k.
+        let score = make(
+            savingsRatePercent: 10,
+            totalIncomeWindow: 7_200_000,
+            totalExpensesWindow: 6_480_000,
+            monthsInWindow: 12
+        )
+        let text = HealthRecommendationBuilder.savingsRateRecommendation(score)
+        // Result must include a 60k-style per-month figure, never 720k.
+        #expect(text.contains("60") && !text.contains("720 000"))
     }
 
     // MARK: - Budget Adherence

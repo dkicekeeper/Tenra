@@ -125,7 +125,7 @@ struct SubcategorySearchView: View {
                                             categoryId: categoryId
                                         )
                                     } label: {
-                                        Label(String(localized: "subcategorySearch.unlink"), systemImage: "link.badge.minus")
+                                        Label(String(localized: "subcategorySearch.unlink"), systemImage: "link.slash")
                                     }
                                     .tint(AppColors.warning)
                                 }

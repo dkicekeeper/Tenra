@@ -258,7 +258,7 @@ struct SubscriptionDetailView: View {
                 showingUnlinkAllConfirmation = true
             } label: {
                 Label(String(localized: "subscription.unlinkAll", defaultValue: "Unlink all transactions"),
-                      systemImage: "link.badge.minus")
+                      systemImage: "link.slash")
             }
         }
 

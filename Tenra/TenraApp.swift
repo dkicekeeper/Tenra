@@ -9,10 +9,12 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 @main
 struct TenraApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @Environment(\.scenePhase) private var scenePhase
     @State private var timeFilterManager = TimeFilterManager()
     @State private var coordinator: AppCoordinator? = nil
 
@@ -43,6 +45,18 @@ struct TenraApp: App {
                 }.value
                 // Now safe to create AppCoordinator — persistentContainer is already open.
                 coordinator = AppCoordinator()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                // Clear app icon badge whenever the app becomes active. SwiftUI's
+                // scenePhase fires reliably for both cold launch and background→foreground;
+                // AppDelegate's applicationDidBecomeActive can be skipped under
+                // @UIApplicationDelegateAdaptor in some launch paths. Also drop
+                // delivered notifications so iOS doesn't re-apply their badge.
+                if phase == .active {
+                    let center = UNUserNotificationCenter.current()
+                    center.setBadgeCount(0)
+                    center.removeAllDeliveredNotifications()
+                }
             }
         }
     }

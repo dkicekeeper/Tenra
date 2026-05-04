@@ -101,7 +101,39 @@ struct FinancesView: View {
                     SubcategoriesManagementView(categoriesViewModel: categoriesViewModel)
                 }
             }
+            // `initial: true` handles cold-launch: pending id is already populated
+            // when this view first mounts (set in AppCoordinator.init from the
+            // AppDelegate stash). Subsequent fires handle warm-launch (notification
+            // tap setting the coordinator's pending id) and `isFullyInitialized`
+            // flipping (subscriptions arrive after the deep link did).
+            .onChange(of: coordinator.pendingSubscriptionSeriesId, initial: true) {
+                navigateToPendingSubscriptionIfPossible()
+            }
+            .onChange(of: coordinator.isFullyInitialized) {
+                navigateToPendingSubscriptionIfPossible()
+            }
         }
+    }
+
+    /// Resolves a pending deep-link to a subscription detail. If the matching
+    /// series isn't loaded yet (cold launch before `isFullyInitialized`), the
+    /// pending id is left in place and we retry when state changes.
+    private func navigateToPendingSubscriptionIfPossible() {
+        guard let seriesId = coordinator.pendingSubscriptionSeriesId else { return }
+        guard let subscription = transactionStore.subscriptions.first(where: { $0.id == seriesId }) else {
+            // Subscriptions not loaded yet (or series no longer exists).
+            // Wait for next isFullyInitialized / pending-id change.
+            if coordinator.isFullyInitialized {
+                // Series is gone — drop the pending id so we don't loop.
+                coordinator.consumePendingSubscription()
+            }
+            return
+        }
+        var path = NavigationPath()
+        path.append(FinancesDestination.subscriptions)
+        path.append(subscription)
+        navigationPath = path
+        coordinator.consumePendingSubscription()
     }
 
     // MARK: - Cards

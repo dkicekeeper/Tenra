@@ -59,6 +59,27 @@ class AppCoordinator {
     private(set) var isFastPathDone = false       // accounts + categories ready (~50ms)
     private(set) var isFullyInitialized = false   // transactions + all data ready (~1-3s)
 
+    /// Deep-link target set when the user taps a subscription push notification.
+    /// FinancesView observes this and pushes the corresponding subscription detail
+    /// once `transactionStore.subscriptions` contains a matching series. Cleared
+    /// after navigation via `consumePendingSubscription()`.
+    private(set) var pendingSubscriptionSeriesId: String?
+
+    /// Cold-launch stash: when iOS launches the app from a notification tap, the
+    /// `userNotificationCenter(_:didReceive:)` handler runs BEFORE `AppCoordinator`
+    /// is constructed (the coordinator waits for CoreData prewarm). AppDelegate
+    /// writes here so `init()` can consume the deep-link as soon as the
+    /// coordinator exists. MainActor-isolated via the enclosing class isolation.
+    static var pendingDeepLinkSeriesIdOnLaunch: String?
+
+    func setPendingSubscription(seriesId: String) {
+        pendingSubscriptionSeriesId = seriesId
+    }
+
+    func consumePendingSubscription() {
+        pendingSubscriptionSeriesId = nil
+    }
+
     // MARK: - Onboarding gate
 
     /// True on first launch (until the user completes onboarding). Mutated by
@@ -221,6 +242,14 @@ class AppCoordinator {
         settingsViewModel.coordinator = self
 
         categoriesViewModel.setupTransactionStoreObserver()
+
+        // Cold-launch deep link: AppDelegate may have stashed a tapped subscription
+        // notification's seriesId before this coordinator existed. Pick it up so the
+        // first MainTabView render can react to it via .onChange(initial: true).
+        if let stashed = Self.pendingDeepLinkSeriesIdOnLaunch {
+            self.pendingSubscriptionSeriesId = stashed
+            Self.pendingDeepLinkSeriesIdOnLaunch = nil
+        }
 
         // No initial sync here — TransactionStore is empty at this point. The first
         // useful sync happens in initialize() after loadData() populates the store.

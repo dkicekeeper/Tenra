@@ -62,13 +62,16 @@ class SubscriptionNotificationScheduler {
         for offsetDays in reminderOffsets {
             guard offsetDays > 0 else { continue }
             
-            // Calculate notification date: nextChargeDate - offsetDays
-            guard let notificationDate = calendar.date(byAdding: .day, value: -offsetDays, to: nextChargeDate),
+            // Calculate notification date: nextChargeDate - offsetDays at 09:00 local time.
+            // nextChargeDate is normalized to startOfDay (00:00); without overriding hour/minute
+            // here the notification would fire at midnight.
+            guard let dayDate = calendar.date(byAdding: .day, value: -offsetDays, to: nextChargeDate),
+                  let notificationDate = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: dayDate),
                   notificationDate > Date() else {
                 // Skip if notification date is in the past
                 continue
             }
-            
+
             // Create date components for the notification
             let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: notificationDate)
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)

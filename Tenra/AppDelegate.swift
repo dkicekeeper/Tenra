@@ -26,6 +26,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 
     func applicationDidBecomeActive(_ application: UIApplication) {
 
+        // Clear any badge left over from delivered subscription notifications.
+        UNUserNotificationCenter.current().setBadgeCount(0)
+
+        // Also drop already-delivered notifications from the lock screen / NC so
+        // their badge counts don't re-add when iOS re-applies the badge.
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+
         // Post notification to reschedule all subscriptions
         NotificationCenter.default.post(name: .applicationDidBecomeActive, object: nil)
     }
@@ -58,9 +65,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             if components.count >= 3 {
                 let seriesId = components[1]
 
-
-                // TODO: Navigate to subscription detail view
-                // This could be implemented using deep linking or NotificationCenter
+                // Cold-launch path: coordinator may not exist yet — stash for init().
+                // Warm-launch path: post a Notification so MainTabView.onReceive
+                // can switch tabs and set the live coordinator's pending id.
+                AppCoordinator.pendingDeepLinkSeriesIdOnLaunch = seriesId
                 NotificationCenter.default.post(
                     name: .subscriptionNotificationTapped,
                     object: nil,

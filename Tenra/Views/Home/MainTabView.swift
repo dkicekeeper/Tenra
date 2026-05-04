@@ -40,6 +40,8 @@ struct MainTabView: View {
 
     // MARK: State
 
+    @Environment(AppCoordinator.self) private var coordinator
+
     @State private var selectedTab: AppTab = .home
     @State private var tabBarMode: TabBarMode = .normal
     /// Remembers which "real" tab was active before expanding,
@@ -112,6 +114,25 @@ struct MainTabView: View {
         }
         .onChange(of: selectedTab) { _, new in
             handleTabSelection(new)
+        }
+        // Warm-launch path: notification arrives while the app is already running.
+        // We update the coordinator; the .onChange(initial:) below switches the tab.
+        .onReceive(
+            NotificationCenter.default.publisher(for: .subscriptionNotificationTapped)
+        ) { notification in
+            guard let seriesId = notification.userInfo?["seriesId"] as? String else { return }
+            coordinator.setPendingSubscription(seriesId: seriesId)
+        }
+        // Single source of truth for "switch to Finances tab when a deep-link is pending".
+        // `initial: true` covers cold-launch: AppCoordinator.init() has already loaded the
+        // stashed seriesId from AppDelegate by the time this view first appears.
+        .onChange(of: coordinator.pendingSubscriptionSeriesId, initial: true) { _, new in
+            guard new != nil else { return }
+            if tabBarMode == .expanded {
+                tabBarMode = .normal
+            }
+            selectedTab = .finances
+            previousTab = .finances
         }
     }
 

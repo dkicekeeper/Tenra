@@ -35,4 +35,32 @@ struct FinancialHealthScoreTests {
         #expect(score.baseCurrency == "")
         #expect(score.isBudgetComponentActive == false)
     }
+
+    @Test("computeHealthScore populates raw fields from formula inputs")
+    func testComputeHealthScorePopulatesRawFields() {
+        let score = InsightsService.computeHealthScore(
+            totalIncome: 600_000,
+            totalExpenses: 510_000,
+            latestNetFlow: 90_000,
+            baseCurrency: "KZT",
+            balanceFor: { _ in 240_000 },
+            allTransactions: [],
+            categories: [],
+            recurringSeries: [],
+            accounts: [
+                Account(id: "a1", name: "A1", currency: "KZT", balance: 240_000)
+            ]
+        )
+
+        // 600k income, 510k expense → 15% rate
+        #expect(abs(score.savingsRatePercent - 15.0) < 0.01)
+        #expect(score.totalIncomeWindow == 600_000)
+        #expect(score.totalExpensesWindow == 510_000)
+        #expect(score.totalBalance == 240_000)
+        #expect(score.baseCurrency == "KZT")
+        #expect(score.isBudgetComponentActive == false)  // no budgets passed
+        #expect(score.budgetsTotal == 0)
+        // recurringPercentOfIncome should be 0 with no recurring series
+        #expect(score.recurringPercentOfIncome == 0)
+    }
 }

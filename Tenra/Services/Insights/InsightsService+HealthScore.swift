@@ -129,6 +129,8 @@ extension InsightsService {
         default:       (grade, gradeColor) = (String(localized: "insights.healthGrade.needsAttention"), AppColors.destructive)
         }
 
+        let netFlowPercent = totalIncome > 0 ? (latestNetFlow / totalIncome) * 100 : 0
+
         return FinancialHealthScore(
             score: score,
             grade: grade,
@@ -137,7 +139,23 @@ extension InsightsService {
             budgetAdherenceScore: budgetAdherenceScore >= 0 ? max(0, min(budgetAdherenceScore, 100)) : 0,
             recurringRatioScore:  max(0, min(recurringRatioScore, 100)),
             emergencyFundScore:   max(0, min(emergencyFundScore, 100)),
-            cashflowScore:        cashflowScore
+            cashflowScore:        cashflowScore,
+            savingsRatePercent:      savingsRate,
+            budgetsOnTrack:          onBudgetCount,
+            budgetsTotal:            totalBudgetCount,
+            recurringMonthlyTotal:   recurringCost,
+            recurringPercentOfIncome: totalIncome > 0 ? (recurringCost / totalIncome) * 100 : 0,
+            monthsCovered:           monthsCovered,
+            avgMonthlyExpenses:      avgMonthlyExpenses,
+            avgMonthlyNetFlow:       last3Months.isEmpty
+                                         ? 0
+                                         : last3Months.reduce(0.0) { $0 + $1.netFlow } / Double(last3Months.count),
+            totalBalance:            totalBalance,
+            netFlowPercent:          netFlowPercent,
+            totalIncomeWindow:       totalIncome,
+            totalExpensesWindow:     totalExpenses,
+            baseCurrency:            baseCurrency,
+            isBudgetComponentActive: totalBudgetCount > 0
         )
     }
 }

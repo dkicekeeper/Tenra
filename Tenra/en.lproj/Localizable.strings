@@ -1321,3 +1321,65 @@
 "onboarding.preset.pets" = "Pets";
 "onboarding.preset.services" = "Services";
 "onboarding.preset.other" = "Other";
+
+// MARK: - Financial Health Detail Page
+
+"insights.health.subtitle.excellent" = "Excellent shape — your finances are resilient.";
+"insights.health.subtitle.good" = "Solid finances with room to optimise.";
+"insights.health.subtitle.fair" = "Decent footing, but a few areas need attention.";
+"insights.health.subtitle.needsAttention" = "Several aspects of your finances need work.";
+
+"insights.health.unavailable.title" = "Not enough data";
+"insights.health.unavailable.message" = "Add income and expense transactions — we'll evaluate your financial health once enough data is available.";
+
+"insights.health.howItWorks" = "How it's computed";
+"insights.health.explainer" = "A 0-100 weighted score across five aspects of financial health. Higher means more financial resilience.";
+"insights.health.weightLabel" = "%d%%";
+"insights.health.weights.redistributed" = "No budgets configured — the 25%% weight is redistributed across the other four components.";
+
+"insights.health.component.savingsRate.title" = "Savings Rate";
+"insights.health.component.savingsRate.short" = "Savings";
+"insights.health.component.savingsRate.explainer" = "How much of your income you keep. A higher savings rate means more resilience.";
+
+"insights.health.component.budgetAdherence.title" = "Budget Adherence";
+"insights.health.component.budgetAdherence.short" = "Budgets";
+"insights.health.component.budgetAdherence.explainer" = "How many of your category budgets you stay within this month.";
+
+"insights.health.component.recurringRatio.title" = "Recurring Ratio";
+"insights.health.component.recurringRatio.short" = "Recurring";
+"insights.health.component.recurringRatio.explainer" = "Share of income locked into subscriptions and recurring payments. Lower means more flexibility.";
+
+"insights.health.component.emergencyFund.title" = "Emergency Fund";
+"insights.health.component.emergencyFund.short" = "Emergency";
+"insights.health.component.emergencyFund.explainer" = "How many months of expenses your account balances cover.";
+
+"insights.health.component.cashFlow.title" = "Cash Flow";
+"insights.health.component.cashFlow.short" = "Cash flow";
+"insights.health.component.cashFlow.explainer" = "How much your income exceeds your expenses in the latest period.";
+
+"insights.health.currentValue" = "Current value";
+"insights.health.target" = "Target";
+"insights.health.scoreContribution" = "%d / 100";
+
+"insights.health.target.savingsRate" = "≥ 20%%";
+"insights.health.target.budgetAdherence" = "100%% of categories within budget";
+"insights.health.target.recurringRatio" = "< 50%% of income";
+"insights.health.target.emergencyFund" = "≥ 3 months";
+"insights.health.target.cashFlow" = "≥ 0";
+
+"insights.health.rec.savingsRate.below" = "To reach 20%%, cut expenses by ≈ %@ per month or grow income by ≈ %@ per month.";
+"insights.health.rec.savingsRate.healthy" = "Excellent — keep the pace. 20%%+ is the recommended level for long-term resilience.";
+
+"insights.health.rec.budgetAdherence.empty" = "Budgets aren't configured. Set them up on your categories — this component will then count toward the score.";
+"insights.health.rec.budgetAdherence.partial" = "%d categories are over budget. Open them to find the source of overspend.";
+"insights.health.rec.budgetAdherence.full" = "Every category is within budget — excellent.";
+
+"insights.health.rec.recurringRatio.high" = "Subscriptions and recurring payments are %.0f%% of your income. Aim for under 50%% — review and cancel what you don't need.";
+"insights.health.rec.recurringRatio.healthy" = "%.0f%% of your income goes to recurring payments — a healthy level.";
+
+"insights.health.rec.emergencyFund.below" = "You need ≈ %@ more to cover 3 months of expenses.";
+"insights.health.rec.emergencyFund.belowWithProjection" = "You need ≈ %@ more to cover 3 months of expenses. At your current saving pace, that's about %.1f months away.";
+"insights.health.rec.emergencyFund.healthy" = "%.1f months of expenses on hand — enough cushion for the unexpected.";
+
+"insights.health.rec.cashFlow.negative" = "You're spending more than you earn (−%.1f%% of income this period). Cut expenses or find an additional income source.";
+"insights.health.rec.cashFlow.positive" = "Your income exceeds expenses by %.1f%% — a healthy positive flow.";

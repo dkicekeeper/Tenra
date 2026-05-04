@@ -1321,3 +1321,65 @@
 "onboarding.preset.pets" = "Питомцы";
 "onboarding.preset.services" = "Услуги";
 "onboarding.preset.other" = "Прочее";
+
+// MARK: - Financial Health Detail Page
+
+"insights.health.subtitle.excellent" = "Отличная форма — финансы устойчивы.";
+"insights.health.subtitle.good" = "Хорошее состояние, есть куда оптимизировать.";
+"insights.health.subtitle.fair" = "Неплохо, но есть аспекты, требующие внимания.";
+"insights.health.subtitle.needsAttention" = "Несколько направлений требуют работы.";
+
+"insights.health.unavailable.title" = "Недостаточно данных";
+"insights.health.unavailable.message" = "Добавьте транзакции дохода и расхода — после этого мы сможем оценить ваше финансовое здоровье.";
+
+"insights.health.howItWorks" = "Как считается";
+"insights.health.explainer" = "Скор от 0 до 100 — взвешенная оценка пяти аспектов финансового здоровья. Чем выше, тем устойчивее финансы.";
+"insights.health.weightLabel" = "%d%%";
+"insights.health.weights.redistributed" = "Бюджеты не настроены — вес 25%% перераспределён между четырьмя оставшимися компонентами.";
+
+"insights.health.component.savingsRate.title" = "Норма сбережений";
+"insights.health.component.savingsRate.short" = "Сбережения";
+"insights.health.component.savingsRate.explainer" = "Какую долю дохода вы откладываете. Чем выше, тем устойчивее финансы.";
+
+"insights.health.component.budgetAdherence.title" = "Соблюдение бюджета";
+"insights.health.component.budgetAdherence.short" = "Бюджеты";
+"insights.health.component.budgetAdherence.explainer" = "Сколько бюджетов категорий вы выдерживаете в этом месяце.";
+
+"insights.health.component.recurringRatio.title" = "Доля регулярных платежей";
+"insights.health.component.recurringRatio.short" = "Регулярные";
+"insights.health.component.recurringRatio.explainer" = "Какая часть дохода уходит на подписки и регулярные платежи. Меньше — больше свободы.";
+
+"insights.health.component.emergencyFund.title" = "Финансовая подушка";
+"insights.health.component.emergencyFund.short" = "Подушка";
+"insights.health.component.emergencyFund.explainer" = "Сколько месяцев расходов покрывают ваши счета.";
+
+"insights.health.component.cashFlow.title" = "Денежный поток";
+"insights.health.component.cashFlow.short" = "Поток";
+"insights.health.component.cashFlow.explainer" = "Насколько доходы превышают расходы в последнем периоде.";
+
+"insights.health.currentValue" = "Текущее значение";
+"insights.health.target" = "Цель";
+"insights.health.scoreContribution" = "%d / 100";
+
+"insights.health.target.savingsRate" = "≥ 20%%";
+"insights.health.target.budgetAdherence" = "100%% категорий в рамках бюджета";
+"insights.health.target.recurringRatio" = "< 50%% дохода";
+"insights.health.target.emergencyFund" = "≥ 3 месяцев";
+"insights.health.target.cashFlow" = "≥ 0";
+
+"insights.health.rec.savingsRate.below" = "Чтобы выйти на 20%%, сократите расходы на ≈ %@ в месяц или увеличьте доход на ≈ %@ в месяц.";
+"insights.health.rec.savingsRate.healthy" = "Отлично — сохраняйте темп. 20%%+ это рекомендованный уровень для долгосрочной устойчивости.";
+
+"insights.health.rec.budgetAdherence.empty" = "Бюджеты не настроены. Установите их в категориях — это включит этот компонент в скор.";
+"insights.health.rec.budgetAdherence.partial" = "%d категорий вышли за бюджет. Откройте их, чтобы понять, где перерасход.";
+"insights.health.rec.budgetAdherence.full" = "Все категории в рамках бюджета — превосходно.";
+
+"insights.health.rec.recurringRatio.high" = "Подписки и регулярные платежи — %.0f%% дохода. Целевой уровень меньше 50%%. Просмотрите подписки и отмените ненужные.";
+"insights.health.rec.recurringRatio.healthy" = "%.0f%% дохода уходит на регулярные платежи — здоровый уровень.";
+
+"insights.health.rec.emergencyFund.below" = "Чтобы покрыть 3 месяца расходов, нужно ещё ≈ %@.";
+"insights.health.rec.emergencyFund.belowWithProjection" = "Чтобы покрыть 3 месяца расходов, нужно ещё ≈ %@. При текущей скорости накоплений это около %.1f месяцев.";
+"insights.health.rec.emergencyFund.healthy" = "У вас %.1f месяцев расходов на счетах — этого достаточно для непредвиденных ситуаций.";
+
+"insights.health.rec.cashFlow.negative" = "Тратите больше, чем зарабатываете (−%.1f%% от дохода в этом периоде). Сократите расходы или найдите дополнительный источник.";
+"insights.health.rec.cashFlow.positive" = "Доход превышает расходы на %.1f%% — здоровый положительный поток.";

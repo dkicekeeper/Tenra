@@ -182,6 +182,14 @@ enum AppAnimation {
             : .spring(response: chartUpdateResponse, dampingFraction: chartUpdateDamping)
     }
 
+    /// Reduce-Motion-aware fade for chart selection banner appearance/dismissal.
+    /// Short duration to feel responsive to selection changes (drag across bars).
+    static var chartBannerFade: Animation {
+        isReduceMotionEnabled
+            ? .linear(duration: 0)
+            : .easeInOut(duration: 0.15)
+    }
+
     // MARK: - Reduce Motion Aware Animations
 
     /// `true` когда пользователь включил "Reduce Motion" в Настройках → Универсальный доступ.

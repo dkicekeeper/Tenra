@@ -52,35 +52,40 @@ struct ChartZoomControls: View {
     private var canZoomOut: Bool { zoomScale > range.lowerBound + 0.001 }
 
     var body: some View {
-        HStack(spacing: AppSpacing.sm) {
-            Button {
-                let next = max(range.lowerBound, zoomScale / step)
-                zoomScale = next
-            } label: {
-                Image(systemName: "minus.magnifyingglass")
-//                    .font(.body.weight(.medium))
-                    .font(AppTypography.h4.weight(.medium))
-                    .frame(width: 32, height: 32)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.glass)
-            .disabled(!canZoomOut)
-            .opacity(canZoomOut ? 1.0 : 0.4)
-            .accessibilityLabel(Text(verbatim: "Zoom out"))
+        GlassEffectContainer(spacing: AppSpacing.sm) {
+            HStack(spacing: 0) {
+                Button {
+                    HapticManager.light()
+                    let next = max(range.lowerBound, zoomScale / step)
+                    zoomScale = next
+                } label: {
+                    Image(systemName: "minus.magnifyingglass")
+                        .font(AppTypography.h4.weight(.medium))
+                        .frame(width: 36, height: 36)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+                .disabled(!canZoomOut)
+                .opacity(canZoomOut ? 1.0 : 0.4)
+                .accessibilityLabel(Text(verbatim: "Zoom out"))
 
-            Button {
-                let next = min(range.upperBound, zoomScale * step)
-                zoomScale = next
-            } label: {
-                Image(systemName: "plus.magnifyingglass")
-                    .font(AppTypography.h4.weight(.medium))
-                    .frame(width: 32, height: 32)
-                    .contentShape(Rectangle())
+                Button {
+                    HapticManager.light()
+                    let next = min(range.upperBound, zoomScale * step)
+                    zoomScale = next
+                } label: {
+                    Image(systemName: "plus.magnifyingglass")
+                        .font(AppTypography.h4.weight(.medium))
+                        .frame(width: 36, height: 36)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+                .disabled(!canZoomIn)
+                .opacity(canZoomIn ? 1.0 : 0.4)
+                .accessibilityLabel(Text(verbatim: "Zoom in"))
             }
-            .buttonStyle(.glass)
-            .disabled(!canZoomIn)
-            .opacity(canZoomIn ? 1.0 : 0.4)
-            .accessibilityLabel(Text(verbatim: "Zoom in"))
         }
     }
 }
@@ -91,7 +96,6 @@ struct PeriodChartSwitcher: View {
     let dataPoints: [PeriodDataPoint]
     let currency: String
     let granularity: InsightGranularity
-    var mode: ChartDisplayMode = .full
     var initialStyle: PeriodChartStyle = .bar
 
     @State private var style: PeriodChartStyle
@@ -101,56 +105,41 @@ struct PeriodChartSwitcher: View {
         dataPoints: [PeriodDataPoint],
         currency: String,
         granularity: InsightGranularity,
-        mode: ChartDisplayMode = .full,
         initialStyle: PeriodChartStyle = .bar
     ) {
         self.dataPoints = dataPoints
         self.currency = currency
         self.granularity = granularity
-        self.mode = mode
         self.initialStyle = initialStyle
         self._style = State(initialValue: initialStyle)
     }
 
     var body: some View {
-        if mode == .compact {
-            // No picker in compact sparklines — keep the cell uncluttered.
-            PeriodBarChart(
-                dataPoints: dataPoints,
-                currency: currency,
-                granularity: granularity,
-                mode: .compact
-            )
-        } else {
-            VStack(spacing: AppSpacing.sm) {
-                controlsRow
-                    .screenPadding()
+        VStack(spacing: AppSpacing.sm) {
+            controlsRow.screenPadding()
 
-                Group {
-                    switch style {
-                    case .bar:
-                        PeriodBarChart(
-                            dataPoints: dataPoints,
-                            currency: currency,
-                            granularity: granularity,
-                            mode: .full,
-                            zoomScale: $zoomScale
-                        )
-                    case .line:
-                        IncomeExpenseLineChart(
-                            dataPoints: dataPoints,
-                            currency: currency,
-                            granularity: granularity,
-                            mode: .full,
-                            zoomScale: $zoomScale
-                        )
-                    }
+            Group {
+                switch style {
+                case .bar:
+                    PeriodBarChart(
+                        dataPoints: dataPoints,
+                        currency: currency,
+                        granularity: granularity,
+                        zoomScale: $zoomScale
+                    )
+                case .line:
+                    IncomeExpenseLineChart(
+                        dataPoints: dataPoints,
+                        currency: currency,
+                        granularity: granularity,
+                        zoomScale: $zoomScale
+                    )
                 }
-                .id(style)        // force fresh state (range) on style change
-                .transition(.opacity)
             }
-            .animation(AppAnimation.gentleSpring, value: style)
+            .id(style)        // force fresh state (range) on style change
+            .transition(.opacity)
         }
+        .animation(AppAnimation.gentleSpring, value: style)
     }
 
     // MARK: - Controls row
@@ -174,8 +163,12 @@ struct PeriodChartSwitcher: View {
             }
         }
         .pickerStyle(.segmented)
+        .controlSize(.large)
         .frame(maxWidth: 120)
         .accessibilityLabel(Text(verbatim: "Chart style"))
+        .onChange(of: style) { _, _ in
+            HapticManager.selection()
+        }
     }
 }
 

@@ -107,14 +107,13 @@ struct InsightDetailView<CategoryDestination: View>: View {
             let gran = points.first?.granularity ?? .month
             if insight.type == .bestMonth || insight.type == .worstMonth
                 || insight.type == .incomeGrowth || insight.type == .incomeVsExpenseRatio {
-                PeriodChartSwitcher(dataPoints: points, currency: currency, granularity: gran, mode: .full)
+                PeriodChartSwitcher(dataPoints: points, currency: currency, granularity: gran)
             } else {
                 PeriodLineChart(
                     dataPoints: points,
                     series: insight.category == .wealth ? .wealth : .cashFlow,
                     granularity: gran,
-                    currency: currency,
-                    mode: .full
+                    currency: currency
                 )
             }
         case .budgetProgressList(let items):

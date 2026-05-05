@@ -215,7 +215,7 @@ extension UniversalFilterButton where Icon == EmptyView {
         // "All accounts" option
         Button(action: { selectedAccountId = nil }) {
             HStack {
-                Text("Все счета")
+                Text(String(localized: "filter.allAccounts"))
                 Spacer()
                 if selectedAccountId == nil {
                     Image(systemName: "checkmark")

@@ -10,7 +10,7 @@
 //    body-redraw amplifier, plus the dual `chartXSelection(value:) + (range:)`
 //    pair forced two state writes per gesture.
 //  - Y-domain is dynamic for the visible window. Lookups use a cached
-//    `[label: index]` map (`PeriodBarChartCache`) — replaces O(N)
+//    `[label: index]` map (`PeriodChartCache`) — replaces O(N)
 //    `firstIndex(where:)` that fired on every scroll frame.
 //  - Scroll-position binding throttles same-value writes (Apple Charts emits
 //    redundant updates during settle).
@@ -22,52 +22,38 @@
 import SwiftUI
 import Charts
 
-/// Per-instance label→index cache. See `PeriodLineChartCache` header for the
-/// rationale (avoids O(N) `firstIndex(where:)` on every horizontal-scroll frame).
-@MainActor
-private final class PeriodBarChartCache {
-    var labelToIndex: [String: Int] = [:]
-    var labelIndexIdentity: String = ""
-}
-
 struct PeriodBarChart: View {
     let dataPoints: [PeriodDataPoint]
     let currency: String
     let granularity: InsightGranularity
-    var mode: ChartDisplayMode = .full
 
     /// External zoom binding — controlled by `PeriodChartSwitcher` toolbar.
     /// Defaults to 1.0 when the chart is used standalone (no parent toolbar).
     @Binding var zoomScale: CGFloat
 
     @State private var selectedValueLabel: String?
-    @State private var cache = PeriodBarChartCache()
+    @State private var cache = PeriodChartCache()
 
     init(
         dataPoints: [PeriodDataPoint],
         currency: String,
         granularity: InsightGranularity,
-        mode: ChartDisplayMode = .full,
         zoomScale: Binding<CGFloat> = .constant(1.0)
     ) {
         self.dataPoints = dataPoints
         self.currency = currency
         self.granularity = granularity
-        self.mode = mode
         self._zoomScale = zoomScale
     }
 
-    private var isCompact: Bool { mode == .compact }
-    private var basePointWidth: CGFloat { isCompact ? 30 : granularity.pointWidth }
+    private var basePointWidth: CGFloat { granularity.pointWidth }
     private var effectivePointWidth: CGFloat { basePointWidth * zoomScale }
-    private var chartHeight: CGFloat { isCompact ? 60 : 200 }
+    private let chartHeight: CGFloat = 200
 
     /// Static Y max over the entire dataset. Replaces the previous dynamic
     /// per-window recompute (which caused bars to visually jump when scrolling
     /// across stretches with different magnitudes).
-    private var fullYMax: Double {
-        dataPoints.flatMap { [$0.income, $0.expenses] }.max() ?? 1
-    }
+    private var fullYMax: Double { cache.yMax }
 
     private var selectedSinglePoint: PeriodDataPoint? {
         guard let label = selectedValueLabel,
@@ -82,24 +68,12 @@ struct PeriodBarChart: View {
         return max(1, min(dataPoints.count, raw))
     }
 
-    private var todayLabel: String? {
-        let now = Date()
-        return dataPoints.first(where: { $0.periodStart > now })?.label
-    }
+    private var todayLabel: String? { cache.todayLabel }
 
-    private var dataPointsIdentity: String {
-        guard let first = dataPoints.first, let last = dataPoints.last else { return "" }
-        return "\(dataPoints.count)|\(first.label)|\(last.label)"
-    }
-
-    private func rebuildLabelIndexIfNeeded() {
-        let identity = dataPointsIdentity
-        guard cache.labelIndexIdentity != identity else { return }
-        var map = [String: Int]()
-        map.reserveCapacity(dataPoints.count)
-        for (i, p) in dataPoints.enumerated() { map[p.label] = i }
-        cache.labelToIndex = map
-        cache.labelIndexIdentity = identity
+    private func rebuildCacheIfNeeded() {
+        rebuildPeriodCacheIfNeeded(cache, dataPoints: dataPoints) { p in
+            [p.income, p.expenses]
+        }
     }
 
     private var axisLabelMap: [String: String] {
@@ -109,40 +83,42 @@ struct PeriodBarChart: View {
     // MARK: Body
 
     var body: some View {
+        // Prime per-dataset caches before any cache-reading getter fires.
+        let _ = rebuildCacheIfNeeded()
         if dataPoints.isEmpty {
             emptyState.frame(height: chartHeight)
-        } else if isCompact {
-            // See PeriodLineChart — `.chartAppear()` removed for compact (scroll cost).
-            sparkline
-                .frame(height: chartHeight)
         } else {
             VStack(spacing: AppSpacing.sm) {
                 bannerSlot
-
-                fullChart
-                    .frame(height: chartHeight)
+                fullChart.frame(height: chartHeight)
             }
-            .onChange(of: selectedValueLabel) { _, new in
-                guard new != nil else { return }
-                UISelectionFeedbackGenerator().selectionChanged()
-            }
-            .onAppear { rebuildLabelIndexIfNeeded() }
-            .onChange(of: dataPointsIdentity) { _, _ in rebuildLabelIndexIfNeeded() }
             .chartAppear()
         }
     }
 
-    /// Fixed-height slot — see PeriodLineChart.bannerSlot for rationale.
     private var bannerSlot: some View {
         ZStack {
             if let p = selectedSinglePoint {
-                singleBanner(point: p)
-                    .transition(.opacity)
+                ChartSelectionBanner(
+                    title: granularity.bannerLabel(for: p.key),
+                    currency: currency,
+                    content: .dual(income: p.income, expenses: p.expenses)
+                )
+                .transition(.opacity)
             }
         }
-        .frame(height: 56)
-        .screenPadding()
-        .animation(.easeInOut(duration: 0.15), value: selectedSinglePoint?.label)
+        .chartBannerSlotStyle(animationKey: selectedSinglePoint?.label)
+        .chartSelectionAnnouncement(announcementText)
+    }
+
+    private var announcementText: String? {
+        guard let p = selectedSinglePoint else { return nil }
+        return chartBannerAnnouncementText(
+            title: granularity.bannerLabel(for: p.key),
+            income: p.income,
+            expenses: p.expenses,
+            currency: currency
+        )
     }
 
     private var emptyState: some View {
@@ -152,35 +128,6 @@ struct PeriodBarChart: View {
             description: String(localized: "insights.empty.subtitle"),
             style: .compact
         )
-    }
-
-    // MARK: - Compact sparkline
-
-    private var sparkline: some View {
-        Chart(dataPoints) { point in
-            BarMark(
-                x: .value("Period", point.label),
-                y: .value("Income", point.income),
-                width: .fixed(6)
-            )
-            .cornerRadius(AppRadius.xs)
-            .foregroundStyle(AppColors.success.opacity(0.85))
-            .position(by: .value("Type", "income"))
-
-            BarMark(
-                x: .value("Period", point.label),
-                y: .value("Expenses", point.expenses),
-                width: .fixed(6)
-            )
-            .cornerRadius(AppRadius.xs)
-            .foregroundStyle(AppColors.destructive.opacity(0.85))
-            .position(by: .value("Type", "expenses"))
-        }
-        .chartYScale(domain: 0...fullYMax)
-        .chartXAxis { AxisMarks { _ in } }
-        .chartYAxis { AxisMarks { _ in } }
-        .chartLegend(.hidden)
-        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Interactive full chart
@@ -223,8 +170,8 @@ struct PeriodBarChart: View {
             }
 
             // Selection emphasis last — drawn on top.
-            // For bar chart: a translucent vertical band highlighting the column,
-            // plus a stronger ruler on top of the band centre.
+            // Translucent vertical band highlighting the column, plus a stronger
+            // ruler on top of the band centre.
             if let label = selectedValueLabel {
                 RectangleMark(x: .value("SelBand", label))
                     .foregroundStyle(AppColors.accent.opacity(0.10))
@@ -240,82 +187,11 @@ struct PeriodBarChart: View {
         .chartScrollableAxes(.horizontal)
         // Trailing anchor — see PeriodLineChart.
         .chartScrollPosition(initialX: trailingAnchorLabel)
-        // Framework-supported selection — coexists with `chartScrollableAxes`.
-        .chartXSelection(value: $selectedValueLabel)
-        .chartXAxis {
-            AxisMarks { value in
-                // Greedy collision resolution prevents overlapping date labels
-                // when zoomed in (many ticks crammed into narrow visible window).
-                AxisValueLabel(collisionResolution: .greedy(minimumSpacing: 6)) {
-                    if let label = value.as(String.self) {
-                        Text(axisLabelMap[label] ?? label)
-                            .font(AppTypography.caption2)
-                            .lineLimit(1)
-                    }
-                }
-            }
-        }
-        .chartYAxis {
-            AxisMarks(position: .leading) { value in
-                AxisGridLine()
-                AxisValueLabel {
-                    if let amount = value.as(Double.self) {
-                        Text(ChartAxisHelpers.formatCompact(amount))
-                            .font(AppTypography.caption2)
-                    }
-                }
-            }
-        }
+        .chartXLabelSelectionWithFeedback($selectedValueLabel)
+        .periodChartXAxis(labelMap: axisLabelMap)
+        .periodChartYAxis()
         .chartLegend(.hidden)
     }
-
-    // MARK: - Single-point banner
-
-    /// Selection banner. No close button — auto-hides on tap-off / scroll.
-    /// Date is emphasised; income/expenses shown side by side beneath.
-    private func singleBanner(point: PeriodDataPoint) -> some View {
-        HStack(alignment: .center, spacing: AppSpacing.lg) {
-            VStack(alignment: .leading, spacing: 2) {
-                // Use the granularity's full banner label — bypasses the axis
-                // dedup map which produces compact "ЯНВ" / "W03" / "Q1" forms.
-                Text(granularity.bannerLabel(for: point.key))
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
-                HStack(spacing: AppSpacing.md) {
-                    HStack(spacing: 4) {
-                        Circle().fill(AppColors.success).frame(width: 8, height: 8)
-                        FormattedAmountText(
-                            amount: point.income,
-                            currency: currency,
-                            fontSize: AppTypography.body,
-                            fontWeight: .regular,
-                            color: AppColors.success
-                        )
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                    }
-                    HStack(spacing: 4) {
-                        Circle().fill(AppColors.destructive).frame(width: 8, height: 8)
-                        FormattedAmountText(
-                            amount: point.expenses,
-                            currency: currency,
-                            fontSize: AppTypography.body,
-                            fontWeight: .regular,
-                            color: AppColors.destructive
-                        )
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                    }
-                }
-            }
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, AppSpacing.md)
-        .padding(.vertical, AppSpacing.sm)
-        .cardStyle()
-    }
-
 }
 
 // MARK: - Previews
@@ -328,15 +204,4 @@ struct PeriodBarChart: View {
     )
     .screenPadding()
     .padding(.vertical, AppSpacing.md)
-}
-
-#Preview("PeriodBarChart — Compact") {
-    PeriodBarChart(
-        dataPoints: PeriodDataPoint.mockMonthly(),
-        currency: "KZT",
-        granularity: .month,
-        mode: .compact
-    )
-    .screenPadding()
-    .frame(height: 80)
 }

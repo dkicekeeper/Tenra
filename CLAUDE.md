@@ -496,6 +496,10 @@ New file needed?
 - **Custom tap selection blocks scroll on `chartScrollableAxes` charts**: `chartOverlay { Color.clear.contentShape(...) ... }` absorbs touches at SwiftUI hit-testing layer, before gesture arbitration — `simultaneousGesture` / `onTapGesture(coordinateSpace:)` don't help. For tap selection on scrollable charts use **only** `chartXSelection(value:)`.
 - **`chartScrollPosition(initialX:)` is stable** for one-shot trailing-anchor when no other re-anchor sources exist (static yDomain, no `chartScrollPosition(x: $binding)`). The `x: $binding` form re-anchors viewport on body re-eval — caused "x-axis flips on tap" bug.
 - **Selection banner anti-jump**: wrap conditional banner in fixed-height `ZStack` (e.g. `.frame(height: 56)`) with opacity transition. Banner placed directly in VStack shifts chart vertically on selection appear/disappear.
+- **Period charts share `Views/Components/Charts/PeriodChartHelpers.swift`** — `PeriodChartCache` (label→index + yMin/yMax + todayLabel + identity fingerprint), `rebuildPeriodCacheIfNeeded(_:dataPoints:values:)`, `.periodChartXAxis(labelMap:)` / `.periodChartYAxis()`, `.chartXLabelSelectionWithFeedback($selectedValueLabel)` (haptic via `HapticManager.selection()`), `.chartBannerSlotStyle(animationKey:)`, `.chartSelectionAnnouncement(_:)` + `chartBannerAnnouncementText(...)`. New `PeriodDataPoint`-driven charts plug into these — don't reimplement inline.
+- **Body-time cache priming**: `let _ = rebuildCacheIfNeeded()` at the top of `body` runs synchronously before any cache-reading getter. `.onAppear` fires AFTER the first body-eval — cold cache returns defaults on the first frame.
+- **No compact mode** on `PeriodBarChart` / `IncomeExpenseLineChart` / `PeriodLineChart` / `PeriodChartSwitcher`. For insight-feed compact charts use Canvas-based `MiniSparkline` / `MiniDonut` (~50× cheaper to instantiate than Apple Charts). `ChartDisplayMode` enum still applies to `DonutChart`.
+- **Chart selection banner is `ChartSelectionBanner`** (`Views/Components/Charts/ChartSelectionBanner.swift`) — `.dual(income:expenses:)` or `.single(value:color:)`. Capitalises the title's first char; falls back to `formatCompact` when `currency` is empty.
 
 ## SwiftUI Layout Gotchas
 
@@ -511,6 +515,9 @@ New file needed?
 - **Extra toolbar items in `EditSheetContainer`**: container uses `.cancellationAction` (xmark) + `.confirmationAction` (Save). Child views nest `.toolbar { ToolbarItem(placement: .primaryAction) { ... } }` inside the content closure — iOS auto-places `.primaryAction` items LEFT of `.confirmationAction`. Do NOT use `.topBarTrailing` / `.navigationBarTrailing` — they land on the wrong side of Save.
 - **`.contentReveal(isReady:)` only hides via opacity — it does NOT skip body evaluation, layout, or render.** For genuinely deferred rendering of heavy sections (glass cards, PackedCircleIconsView, large grids), gate them behind an `if` condition instead.
 - **iOS 26 TabView lazy-renders non-active tab content** — verified: `AnalyticsTab.body` and `SettingsTab.body` don't fire on launch when `.home` is selected. Don't worry about non-active tab init being on the launch critical path.
+- **`.frame(height:)` doesn't resize a segmented `Picker`** — `Picker(.segmented)` has fixed intrinsic height. Use `.controlSize(.large)` (~36pt) or `.controlSize(.extraLarge)` (~44pt) to match adjacent button heights.
+- **`.localizedCapitalized` capitalizes EVERY word** — wrong for date-range strings like `"3 янв – 9 янв"` → `"3 Янв – 9 Янв"`. For first-char-only capitalization: `first.uppercased() + dropFirst()`.
+- **Liquid Glass merged button group**: `GlassEffectContainer(spacing: AppSpacing.sm) { HStack(spacing: 0) { Button { … }.buttonStyle(.glass).buttonBorderShape(.circle) } }`. `HStack(spacing: 0)` is intentional — adjacent glass shapes blend into a continuous merged look. For separated round glass buttons use HStack with non-zero spacing.
 
 ## Common Tasks
 
@@ -591,6 +598,7 @@ All animations must use `AppAnimation` constants. Never use inline `.spring(resp
 | Facepile icon entrance | `AppAnimation.facepileSpring` |
 | Chart entrance (opacity+scale) | `AppAnimation.chartAppearAnimation` |
 | Chart data updates | `AppAnimation.chartUpdateAnimation` |
+| Chart selection banner | `AppAnimation.chartBannerFade` |
 | Section fade-in on init | `AppAnimation.contentRevealAnimation` |
 | Progress bar expansion | `AppAnimation.progressBarSpring` |
 | Bounce effects | `AppAnimation.spring` |
@@ -615,6 +623,9 @@ if items.isEmpty {
 
 #### Reduce Motion
 All decorative animations respect `UIAccessibility.isReduceMotionEnabled`. Use `AppAnimation.isReduceMotionEnabled` to check. Reduce Motion-aware variants (`adaptiveSpring`, `fastAnimation`, etc.) return `.linear(duration: 0)` when enabled.
+
+#### Haptic Feedback — `HapticManager` Only
+All haptics go through `Utils/HapticManager.swift`. Never call `UISelectionFeedbackGenerator()` / `UIImpactFeedbackGenerator(style:)` directly. Use `HapticManager.selection()` / `.light()` / `.medium()` / `.heavy()` / `.success()` / `.warning()` / `.error()`.
 
 ## Testing
 
@@ -741,6 +752,6 @@ Historical docs (301 files) archived to `docs/archive/`.
 
 ---
 
-**Last Updated**: 2026-04-28
+**Last Updated**: 2026-05-05
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

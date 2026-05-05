@@ -98,8 +98,7 @@ struct InsightsSummaryDetailView: View {
             PeriodChartSwitcher(
                 dataPoints: periodDataPoints,
                 currency: currency,
-                granularity: granularity,
-                mode: .full
+                granularity: granularity
             )
         }
     }

@@ -193,16 +193,14 @@ struct InsightsCardView<BottomChart: View>: View {
                 PeriodLineChart(
                     dataPoints: PeriodDataPoint.mockMonthly(),
                     series: .cashFlow,
-                    granularity: .month,
-                    mode: .full
+                    granularity: .month
                 )
             }
             InsightsCardView(insight: .mockPeriodTrend()) {
                 PeriodLineChart(
                     dataPoints: PeriodDataPoint.mockMonthly(),
                     series: .cashFlow,
-                    granularity: .month,
-                    mode: .full
+                    granularity: .month
                 )
             }
         }

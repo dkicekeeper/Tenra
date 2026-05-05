@@ -4,8 +4,9 @@
 //
 //  Phase 18: Financial Insights Feature
 //  Full-screen detail view shown when the InsightsSummaryHeader is tapped.
-//  Displays income, expenses, net flow for all time and the
-//  period-by-period income/expense trend chart with a breakdown list.
+//  Displays income, expenses, net flow for the current bucket (with MoM delta)
+//  AND the all-time chart-window totals, plus the period-by-period income/expense
+//  trend chart with a breakdown list.
 //
 
 import SwiftUI
@@ -14,6 +15,13 @@ struct InsightsSummaryDetailView: View {
     let totalIncome: Double
     let totalExpenses: Double
     let netFlow: Double
+    let currentBucketIncome: Double
+    let currentBucketExpenses: Double
+    let currentBucketNetFlow: Double
+    let previousBucketIncome: Double
+    let previousBucketExpenses: Double
+    let previousBucketNetFlow: Double
+    let bucketLabel: String
     let currency: String
     let periodDataPoints: [PeriodDataPoint]
     let granularity: InsightGranularity
@@ -22,6 +30,13 @@ struct InsightsSummaryDetailView: View {
         totalIncome: Double,
         totalExpenses: Double,
         netFlow: Double,
+        currentBucketIncome: Double,
+        currentBucketExpenses: Double,
+        currentBucketNetFlow: Double,
+        previousBucketIncome: Double,
+        previousBucketExpenses: Double,
+        previousBucketNetFlow: Double,
+        bucketLabel: String,
         currency: String,
         periodDataPoints: [PeriodDataPoint],
         granularity: InsightGranularity
@@ -29,6 +44,13 @@ struct InsightsSummaryDetailView: View {
         self.totalIncome = totalIncome
         self.totalExpenses = totalExpenses
         self.netFlow = netFlow
+        self.currentBucketIncome = currentBucketIncome
+        self.currentBucketExpenses = currentBucketExpenses
+        self.currentBucketNetFlow = currentBucketNetFlow
+        self.previousBucketIncome = previousBucketIncome
+        self.previousBucketExpenses = previousBucketExpenses
+        self.previousBucketNetFlow = previousBucketNetFlow
+        self.bucketLabel = bucketLabel
         self.currency = currency
         self.periodDataPoints = periodDataPoints
         self.granularity = granularity
@@ -37,8 +59,13 @@ struct InsightsSummaryDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppSpacing.xl) {
-                // Period totals
-                periodTotalsSection
+                // Current bucket — primary
+                currentBucketSection
+
+                // All-time (chart window) — secondary
+                if granularity != .allTime {
+                    chartWindowTotalsSection
+                }
 
                 // Full-size income/expense chart
                 if periodDataPoints.count >= 2 {
@@ -56,17 +83,39 @@ struct InsightsSummaryDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: - Period Totals
+    // MARK: - Current Bucket
 
-    private var periodTotalsSection: some View {
+    private var currentBucketSection: some View {
         InsightsTotalsCard(
-            income: totalIncome,
-            expenses: totalExpenses,
-            netFlow: netFlow,
-            currency: currency
+            income: currentBucketIncome,
+            expenses: currentBucketExpenses,
+            netFlow: currentBucketNetFlow,
+            currency: currency,
+            periodLabel: bucketLabel,
+            previousIncome: previousBucketIncome,
+            previousExpenses: previousBucketExpenses,
+            previousNetFlow: previousBucketNetFlow
         )
-        .cardStyle(radius: AppRadius.xl)
         .screenPadding()
+    }
+
+    // MARK: - Chart Window Totals
+
+    private var chartWindowTotalsSection: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xs) {
+            Text(String(localized: "insights.summary.windowTotalsLabel"))
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColors.textTertiary)
+                .textCase(.uppercase)
+                .padding(.horizontal, AppSpacing.lg)
+            InsightsTotalsCard(
+                income: totalIncome,
+                expenses: totalExpenses,
+                netFlow: netFlow,
+                currency: currency
+            )
+            .screenPadding()
+        }
     }
 
     // MARK: - Chart
@@ -119,6 +168,13 @@ struct InsightsSummaryDetailView: View {
             totalIncome: 5_450_387,
             totalExpenses: 1_904_618,
             netFlow: 3_545_769,
+            currentBucketIncome: 530_000,
+            currentBucketExpenses: 320_000,
+            currentBucketNetFlow: 210_000,
+            previousBucketIncome: 480_000,
+            previousBucketExpenses: 350_000,
+            previousBucketNetFlow: 130_000,
+            bucketLabel: "May 2026",
             currency: "KZT",
             periodDataPoints: PeriodDataPoint.mockMonthly(),
             granularity: .month
@@ -132,6 +188,13 @@ struct InsightsSummaryDetailView: View {
             totalIncome: 1_200_000,
             totalExpenses: 840_000,
             netFlow: 360_000,
+            currentBucketIncome: 100_000,
+            currentBucketExpenses: 78_000,
+            currentBucketNetFlow: 22_000,
+            previousBucketIncome: 95_000,
+            previousBucketExpenses: 80_000,
+            previousBucketNetFlow: 15_000,
+            bucketLabel: "Last 7 days",
             currency: "KZT",
             periodDataPoints: PeriodDataPoint.mockWeekly(),
             granularity: .week
@@ -139,15 +202,22 @@ struct InsightsSummaryDetailView: View {
     }
 }
 
-#Preview("Quarterly") {
+#Preview("All time") {
     NavigationStack {
         InsightsSummaryDetailView(
-            totalIncome: 5_450_387,
-            totalExpenses: 1_904_618,
-            netFlow: 3_545_769,
+            totalIncome: 12_400_000,
+            totalExpenses: 8_900_000,
+            netFlow: 3_500_000,
+            currentBucketIncome: 12_400_000,
+            currentBucketExpenses: 8_900_000,
+            currentBucketNetFlow: 3_500_000,
+            previousBucketIncome: 12_400_000,
+            previousBucketExpenses: 8_900_000,
+            previousBucketNetFlow: 3_500_000,
+            bucketLabel: "All time",
             currency: "KZT",
-            periodDataPoints: PeriodDataPoint.mockQuarterly(),
-            granularity: .quarter
+            periodDataPoints: PeriodDataPoint.mockMonthly(),
+            granularity: .allTime
         )
     }
 }

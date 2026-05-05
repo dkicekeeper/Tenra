@@ -120,15 +120,26 @@ struct InsightsView: View {
                 totalIncome: insightsViewModel.totalIncome,
                 totalExpenses: insightsViewModel.totalExpenses,
                 netFlow: insightsViewModel.netFlow,
+                currentBucketIncome: insightsViewModel.currentBucketIncome,
+                currentBucketExpenses: insightsViewModel.currentBucketExpenses,
+                currentBucketNetFlow: insightsViewModel.currentBucketNetFlow,
+                previousBucketIncome: insightsViewModel.previousBucketIncome,
+                previousBucketExpenses: insightsViewModel.previousBucketExpenses,
+                previousBucketNetFlow: insightsViewModel.previousBucketNetFlow,
+                bucketLabel: insightsViewModel.currentBucketLabel,
                 currency: insightsViewModel.baseCurrency,
                 periodDataPoints: insightsViewModel.periodDataPoints,
                 granularity: insightsViewModel.currentGranularity
             )) {
                 InsightsTotalsCard(
-                    income: insightsViewModel.totalIncome,
-                    expenses: insightsViewModel.totalExpenses,
-                    netFlow: insightsViewModel.netFlow,
-                    currency: insightsViewModel.baseCurrency
+                    income: insightsViewModel.currentBucketIncome,
+                    expenses: insightsViewModel.currentBucketExpenses,
+                    netFlow: insightsViewModel.currentBucketNetFlow,
+                    currency: insightsViewModel.baseCurrency,
+                    periodLabel: insightsViewModel.currentBucketLabel,
+                    previousIncome: insightsViewModel.previousBucketIncome,
+                    previousExpenses: insightsViewModel.previousBucketExpenses,
+                    previousNetFlow: insightsViewModel.previousBucketNetFlow
                 )
                 .contentShape(Rectangle())
             }

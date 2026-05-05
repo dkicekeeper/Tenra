@@ -845,6 +845,7 @@
 "insights.granularity.year.short" = "Год";
 "insights.granularity.allTime.short" = "Всё";
 "insights.bucket.week.label" = "Последние 7 дней";
+"insights.summary.windowTotalsLabel" = "За весь период графика";
 "insights.granularity.prev.week" = "к предыдущей неделе";
 "insights.granularity.prev.month" = "к предыдущему месяцу";
 "insights.granularity.prev.quarter" = "к предыдущему кварталу";

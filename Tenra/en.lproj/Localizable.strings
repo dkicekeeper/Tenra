@@ -845,6 +845,7 @@
 "insights.granularity.year.short" = "Year";
 "insights.granularity.allTime.short" = "All";
 "insights.bucket.week.label" = "Last 7 days";
+"insights.summary.windowTotalsLabel" = "Across the whole chart window";
 "insights.granularity.prev.week" = "vs previous week";
 "insights.granularity.prev.month" = "vs previous month";
 "insights.granularity.prev.quarter" = "vs previous quarter";

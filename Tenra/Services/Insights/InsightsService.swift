@@ -411,19 +411,22 @@ nonisolated final class InsightsService {
         // Compute only on first granularity; subsequent iterations
         // receive pre-computed results via sharedInsights parameter.
 
+        // categoryTrend + subscriptionGrowth are granularity-dependent (lookback scales) —
+        // always recompute. The remaining generators are still cached via sharedInsights.
+        if let trend = generateCategoryTrend(baseCurrency: baseCurrency, granularity: granularity, transactions: allTransactions, preAggregated: preAggregated) {
+            insights.append(trend)
+        }
+        if let growth = generateSubscriptionGrowth(baseCurrency: baseCurrency, granularity: granularity, recurringSeries: snapshot.recurringSeries, seriesMonthlyEquivalents: preAggregated?.seriesMonthlyEquivalents) {
+            insights.append(growth)
+        }
+
         if !hasShared {
             // Spending behavioral
             if let spike = generateSpendingSpike(baseCurrency: baseCurrency, transactions: allTransactions, preAggregated: preAggregated) {
                 insights.append(spike)
             }
-            if let trend = generateCategoryTrend(baseCurrency: baseCurrency, transactions: allTransactions, preAggregated: preAggregated) {
-                insights.append(trend)
-            }
             // Recurring behavioral — pass pre-computed monthly equivalents from PreAggregatedData
             // so generators skip the per-series CurrencyConverter.convertSync call.
-            if let growth = generateSubscriptionGrowth(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries, seriesMonthlyEquivalents: preAggregated?.seriesMonthlyEquivalents) {
-                insights.append(growth)
-            }
             if let duplicates = generateDuplicateSubscriptions(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries, seriesMonthlyEquivalents: preAggregated?.seriesMonthlyEquivalents) {
                 insights.append(duplicates)
             }
@@ -502,7 +505,7 @@ nonisolated final class InsightsService {
     /// These are computed once on the first granularity and reused for all subsequent ones.
     private static let sharedInsightIDs: Set<String> = [
         "spending_spike",
-        "subscription_growth",
+        // "subscription_growth" — now granularity-dependent (lookback scales)
         "duplicate_subscriptions",
         "accountDormancy",
         "emergency_fund",
@@ -512,11 +515,10 @@ nonisolated final class InsightsService {
     ]
 
     /// Extracts granularity-independent insights from a full insight array.
-    /// Handles both exact-match IDs and prefix-match for `category_trend_*`.
+    /// `category_trend_*` and `subscription_growth` were removed from the shared
+    /// set — they now scale their lookback by granularity and must regenerate.
     static func extractSharedInsights(from insights: [Insight]) -> [Insight] {
-        insights.filter { insight in
-            sharedInsightIDs.contains(insight.id) || insight.id.hasPrefix("category_trend_")
-        }
+        insights.filter { sharedInsightIDs.contains($0.id) }
     }
 
     /// Computes all insight granularities in a single call.

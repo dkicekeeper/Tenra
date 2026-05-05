@@ -77,23 +77,17 @@ struct InsightsTotalsCard: View {
                 .font(AppTypography.bodySmall)
                 .foregroundStyle(AppColors.textSecondary)
 
-            if abs(amount) >= 1_000_000 {
-                let symbol = Formatting.currencySymbol(for: currency)
-                Text(Self.compactAmount(amount) + " " + symbol)
-                    .font(amountFont)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(color)
-                    .contentTransition(.numericText())
-                    .animation(AppAnimation.gentleSpring, value: amount)
-            } else {
-                FormattedAmountText(
-                    amount: amount,
-                    currency: currency,
-                    fontSize: amountFont,
-                    fontWeight: .semibold,
-                    color: color
-                )
-            }
+            // Always render the full amount with currency symbol via the
+            // design-system formatter — no compact "1.2M" abbreviation.
+            FormattedAmountText(
+                amount: amount,
+                currency: currency,
+                fontSize: amountFont,
+                fontWeight: .semibold,
+                color: color
+            )
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
 
             if let prev = previous {
                 Self.deltaBadge(current: amount, previous: prev, upIsGood: upIsGood)
@@ -119,22 +113,6 @@ struct InsightsTotalsCard: View {
                 }
                 .foregroundStyle(color)
             }
-        }
-    }
-
-    /// Compact formatting for millions: 1M, 2.34M, -12.5M
-    private static func compactAmount(_ value: Double) -> String {
-        let absValue = abs(value)
-        let millions = absValue / 1_000_000
-        let sign = value < 0 ? "-" : ""
-
-        if millions == millions.rounded(.down) {
-            return "\(sign)\(Int(millions))M"
-        } else {
-            let formatted = String(format: "%.2f", millions)
-                .replacingOccurrences(of: "0+$", with: "", options: .regularExpression)
-                .replacingOccurrences(of: "\\.$", with: "", options: .regularExpression)
-            return "\(sign)\(formatted)M"
         }
     }
 }

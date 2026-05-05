@@ -47,8 +47,11 @@ nonisolated final class InsightsService {
 
     static let monthYearFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.dateFormat = "MMM yyyy"
+        // Locale-aware full-month-name template — renders "May 2026" / "май 2026"
+        // instead of the previous "MMM yyyy" abbreviation.
         f.locale = .current
+        f.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMMyyyy", options: 0, locale: .current)
+            ?? "MMMM yyyy"
         return f
     }()
 

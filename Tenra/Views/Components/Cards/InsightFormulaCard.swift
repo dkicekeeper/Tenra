@@ -77,15 +77,28 @@ struct InsightFormulaCard: View {
     @ViewBuilder
     private func formulaRow(_ row: InsightFormulaRow) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(String(localized: String.LocalizationValue(row.labelKey)))
+            Text(row.labelText ?? String(localized: String.LocalizationValue(row.labelKey)))
                 .font(row.isEmphasised ? AppTypography.bodyEmphasis : AppTypography.body)
                 .foregroundStyle(row.isEmphasised ? AppColors.textPrimary : AppColors.textSecondary)
             Spacer()
-            Text(formattedValue(row))
-                .font(row.isEmphasised ? AppTypography.bodyEmphasis : AppTypography.body)
-                .fontWeight(row.isEmphasised ? .bold : .semibold)
-                .foregroundStyle(row.isEmphasised ? model.color : AppColors.textPrimary)
-                .monospacedDigit()
+            // Currency rows go through the design-system formatter (FormattedAmountText)
+            // so symbol, grouping separators, and decimals match the rest of the app.
+            // Non-currency rows render the formatted value as a plain Text.
+            if case .currency = row.kind {
+                FormattedAmountText(
+                    amount: row.value,
+                    currency: model.baseCurrency,
+                    fontSize: row.isEmphasised ? AppTypography.bodyEmphasis : AppTypography.body,
+                    fontWeight: row.isEmphasised ? .bold : .semibold,
+                    color: row.isEmphasised ? model.color : AppColors.textPrimary
+                )
+            } else {
+                Text(formattedValue(row))
+                    .font(row.isEmphasised ? AppTypography.bodyEmphasis : AppTypography.body)
+                    .fontWeight(row.isEmphasised ? .bold : .semibold)
+                    .foregroundStyle(row.isEmphasised ? model.color : AppColors.textPrimary)
+                    .monospacedDigit()
+            }
         }
         .padding(.vertical, AppSpacing.xxs)
     }

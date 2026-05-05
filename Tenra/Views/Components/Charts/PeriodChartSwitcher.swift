@@ -52,16 +52,17 @@ struct ChartZoomControls: View {
     private var canZoomOut: Bool { zoomScale > range.lowerBound + 0.001 }
 
     var body: some View {
-        HStack(spacing: AppSpacing.xs) {
+        HStack(spacing: AppSpacing.sm) {
             Button {
                 let next = max(range.lowerBound, zoomScale / step)
                 zoomScale = next
             } label: {
                 Image(systemName: "minus.magnifyingglass")
                     .font(.body.weight(.medium))
-                    .frame(width: 32, height: 32)
+                    .frame(width: 40, height: 40)
+                    .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.glass)
             .disabled(!canZoomOut)
             .opacity(canZoomOut ? 1.0 : 0.4)
             .accessibilityLabel(Text(verbatim: "Zoom out"))
@@ -72,9 +73,10 @@ struct ChartZoomControls: View {
             } label: {
                 Image(systemName: "plus.magnifyingglass")
                     .font(.body.weight(.medium))
-                    .frame(width: 32, height: 32)
+                    .frame(width: 40, height: 40)
+                    .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.glass)
             .disabled(!canZoomIn)
             .opacity(canZoomIn ? 1.0 : 0.4)
             .accessibilityLabel(Text(verbatim: "Zoom in"))

@@ -22,14 +22,18 @@ struct InsightFormulaRow: Identifiable, Hashable, Sendable {
 
     let id: String
     let labelKey: String        // "insights.formula.<insight>.row.<name>"
+    /// Optional pre-formatted label that overrides `labelKey` (e.g., "May 2026").
+    /// Used when the row label is data-driven (date, category name) rather than fixed copy.
+    let labelText: String?
     let value: Double
     let kind: Kind
     /// Optional emphasis (e.g. true for the "= result" row).
     let isEmphasised: Bool
 
-    init(id: String, labelKey: String, value: Double, kind: Kind, isEmphasised: Bool = false) {
+    init(id: String, labelKey: String, labelText: String? = nil, value: Double, kind: Kind, isEmphasised: Bool = false) {
         self.id = id
         self.labelKey = labelKey
+        self.labelText = labelText
         self.value = value
         self.kind = kind
         self.isEmphasised = isEmphasised

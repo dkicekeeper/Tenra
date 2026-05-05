@@ -476,19 +476,19 @@ extension InsightsService {
         guard let catName = bestCategory else { return nil }
 
         // Build per-month rows for the formula breakdown — last 6 records max so the
-        // card stays scannable.
+        // card stays scannable. Month name on the left (full + year), amount on the
+        // right via the design-system currency formatter.
         let displayRecords = Array(bestSorted.suffix(6))
-        let monthFormatter = DateFormatter()
-        monthFormatter.dateFormat = "MMM yyyy"
         var formulaRows: [InsightFormulaRow] = displayRecords.map { rec in
             var comps = DateComponents(); comps.year = rec.year; comps.month = rec.month; comps.day = 1
             let date = calendar.date(from: comps) ?? Date()
-            let label = monthFormatter.string(from: date)
+            let label = Self.monthYearFormatter.string(from: date)
             return InsightFormulaRow(
                 id: "\(rec.year)-\(rec.month)",
                 labelKey: "insights.formula.categoryTrend.row.month",
+                labelText: label,
                 value: rec.totalExpenses,
-                kind: .rawText("\(label) — \(Formatting.formatCurrencySmart(rec.totalExpenses, currency: baseCurrency))")
+                kind: .currency
             )
         }
         formulaRows.append(InsightFormulaRow(

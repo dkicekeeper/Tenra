@@ -851,6 +851,7 @@
 "insights.formula.savingsRate.title" = "Норма сбережений";
 "insights.formula.savingsRate.heroLabel" = "С каждого заработанного остаётся";
 "insights.formula.savingsRate.formulaHeader" = "Как считается";
+"insights.formula.savingsRate.row.period" = "Период";
 "insights.formula.savingsRate.row.income" = "Доход";
 "insights.formula.savingsRate.row.expenses" = "Расходы";
 "insights.formula.savingsRate.row.saved" = "Сбережено (доход − расход)";

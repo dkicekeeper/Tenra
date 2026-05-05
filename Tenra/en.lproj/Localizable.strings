@@ -851,6 +851,7 @@
 "insights.formula.savingsRate.title" = "Savings Rate";
 "insights.formula.savingsRate.heroLabel" = "Of every dollar you earn, you keep";
 "insights.formula.savingsRate.formulaHeader" = "How it's computed";
+"insights.formula.savingsRate.row.period" = "Period";
 "insights.formula.savingsRate.row.income" = "Income";
 "insights.formula.savingsRate.row.expenses" = "Expenses";
 "insights.formula.savingsRate.row.saved" = "Saved (income − expenses)";

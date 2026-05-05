@@ -361,10 +361,16 @@ nonisolated final class InsightsService {
             accounts: snapshot.accounts
         ))
 
-        // SavingsRate is granularity-dependent; EmergencyFund is shared
+        // SavingsRate is granularity-dependent — narrow to the current bucket so
+        // the percentage answers "what fraction of THIS month/quarter/year/week
+        // did I keep" rather than the whole data window. EmergencyFund is shared.
+        let currentBucketPoint = periodPoints.first(where: { $0.key == granularity.currentPeriodKey })
+        let bucketIncome = currentBucketPoint?.income ?? windowedIncome
+        let bucketExpenses = currentBucketPoint?.expenses ?? windowedExpenses
         insights.append(contentsOf: generateSavingsInsights(
-            allIncome: windowedIncome,
-            allExpenses: windowedExpenses,
+            allIncome: bucketIncome,
+            allExpenses: bucketExpenses,
+            bucketLabel: granularity.currentBucketLabel(),
             baseCurrency: baseCurrency,
             balanceFor: snapshot.balanceFor,
             accounts: snapshot.accounts,

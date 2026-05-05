@@ -169,9 +169,30 @@ extension InsightsService {
         }
         guard !aggregates.isEmpty else { return nil }
 
-        let avgMonthlyNetFlow = aggregates.reduce(0.0) { $0 + $1.netFlow } / Double(aggregates.count)
+        let avgIncome = aggregates.reduce(0.0) { $0 + $1.totalIncome } / Double(aggregates.count)
+        let avgExpenses = aggregates.reduce(0.0) { $0 + $1.totalExpenses } / Double(aggregates.count)
+        let avgMonthlyNetFlow = avgIncome - avgExpenses
 
+        // Positive net flow → growing balance: not strictly a runway, but show the breakdown.
         if avgMonthlyNetFlow > 0 {
+            let model = InsightFormulaModel(
+                id: "balanceRunway",
+                titleKey: "insights.formula.balanceRunway.title",
+                icon: "fuelpump.fill",
+                color: AppColors.success,
+                heroValueText: "+" + Formatting.formatCurrencySmart(avgMonthlyNetFlow, currency: baseCurrency) + " / " + String(localized: "insights.perMonth"),
+                heroLabelKey: "insights.formula.balanceRunway.heroLabel.growing",
+                formulaHeaderKey: "insights.formula.balanceRunway.formulaHeader",
+                formulaRows: [
+                    InsightFormulaRow(id: "balance", labelKey: "insights.formula.balanceRunway.row.balance", value: currentBalance, kind: .currency),
+                    InsightFormulaRow(id: "avgIncome", labelKey: "insights.formula.balanceRunway.row.avgIncome", value: avgIncome, kind: .currency),
+                    InsightFormulaRow(id: "avgExpenses", labelKey: "insights.formula.balanceRunway.row.avgExpenses", value: avgExpenses, kind: .currency),
+                    InsightFormulaRow(id: "netFlow", labelKey: "insights.formula.balanceRunway.row.netFlow", value: avgMonthlyNetFlow, kind: .currency, isEmphasised: true)
+                ],
+                explainerKey: "insights.formula.balanceRunway.explainer.growing",
+                recommendation: String(localized: "insights.formula.balanceRunway.rec.growing"),
+                baseCurrency: baseCurrency
+            )
             return Insight(
                 id: "balance_runway",
                 type: .balanceRunway,
@@ -186,13 +207,48 @@ extension InsightsService {
                 trend: nil,
                 severity: .positive,
                 category: .forecasting,
-                detailData: nil
+                detailData: .formulaBreakdown(model)
             )
         }
 
-        let runway = currentBalance / abs(avgMonthlyNetFlow)
+        let burn = abs(avgMonthlyNetFlow)
+        let runway = currentBalance / burn
         let severity: InsightSeverity = runway >= 3 ? .positive : (runway >= 1 ? .warning : .critical)
-        Self.logger.debug("🛤 [Insights] BalanceRunway — balance=\(String(format: "%.0f", currentBalance), privacy: .public), burn=\(String(format: "%.0f", avgMonthlyNetFlow), privacy: .public)/mo, runway=\(String(format: "%.1f", runway), privacy: .public) months")
+
+        let recommendation: String
+        if runway >= 3 {
+            recommendation = String(localized: "insights.formula.balanceRunway.rec.long")
+        } else if runway >= 1 {
+            let neededReduction = burn - (currentBalance / 3)
+            recommendation = String(
+                format: String(localized: "insights.formula.balanceRunway.rec.short"),
+                Formatting.formatCurrencySmart(max(0, neededReduction), currency: baseCurrency)
+            )
+        } else {
+            recommendation = String(localized: "insights.formula.balanceRunway.rec.critical")
+        }
+
+        let model = InsightFormulaModel(
+            id: "balanceRunway",
+            titleKey: "insights.formula.balanceRunway.title",
+            icon: "fuelpump.fill",
+            color: severity.color,
+            heroValueText: String(format: String(localized: "insights.formula.value.months"), runway),
+            heroLabelKey: "insights.formula.balanceRunway.heroLabel",
+            formulaHeaderKey: "insights.formula.balanceRunway.formulaHeader",
+            formulaRows: [
+                InsightFormulaRow(id: "balance", labelKey: "insights.formula.balanceRunway.row.balance", value: currentBalance, kind: .currency),
+                InsightFormulaRow(id: "avgIncome", labelKey: "insights.formula.balanceRunway.row.avgIncome", value: avgIncome, kind: .currency),
+                InsightFormulaRow(id: "avgExpenses", labelKey: "insights.formula.balanceRunway.row.avgExpenses", value: avgExpenses, kind: .currency),
+                InsightFormulaRow(id: "burn", labelKey: "insights.formula.balanceRunway.row.burn", value: burn, kind: .currency),
+                InsightFormulaRow(id: "runway", labelKey: "insights.formula.balanceRunway.row.runway", value: runway, kind: .months, isEmphasised: true)
+            ],
+            explainerKey: "insights.formula.balanceRunway.explainer",
+            recommendation: recommendation,
+            baseCurrency: baseCurrency
+        )
+
+        Self.logger.debug("🛤 [Insights] BalanceRunway — balance=\(String(format: "%.0f", currentBalance), privacy: .public), burn=\(String(format: "%.0f", burn), privacy: .public)/mo, runway=\(String(format: "%.1f", runway), privacy: .public) months")
         return Insight(
             id: "balance_runway",
             type: .balanceRunway,
@@ -207,7 +263,7 @@ extension InsightsService {
             trend: nil,
             severity: severity,
             category: .forecasting,
-            detailData: nil
+            detailData: .formulaBreakdown(model)
         )
     }
 

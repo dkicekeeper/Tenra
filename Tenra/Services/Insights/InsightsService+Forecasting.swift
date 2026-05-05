@@ -94,9 +94,47 @@ extension InsightsService {
         let monthlyIncome = currentMonthData?.totalIncome ?? 0
 
         let pendingRecurring = max(0, (monthlyRecurringExpenses / Double(totalDaysInMonth)) * Double(daysRemaining))
-        let forecast = spentSoFar + (avgDailySpend * Double(daysRemaining)) + pendingRecurring
+        let projectedRemaining = avgDailySpend * Double(daysRemaining)
+        let forecast = spentSoFar + projectedRemaining + pendingRecurring
 
         let severity: InsightSeverity = monthlyIncome > 0 ? (forecast > monthlyIncome ? .warning : .positive) : .neutral
+
+        let recommendation: String
+        if monthlyIncome > 0 && forecast > monthlyIncome {
+            let overrun = forecast - monthlyIncome
+            recommendation = String(
+                format: String(localized: "insights.formula.spendingForecast.rec.overrun"),
+                Formatting.formatCurrencySmart(overrun, currency: baseCurrency)
+            )
+        } else if monthlyIncome > 0 {
+            let cushion = monthlyIncome - forecast
+            recommendation = String(
+                format: String(localized: "insights.formula.spendingForecast.rec.onTrack"),
+                Formatting.formatCurrencySmart(cushion, currency: baseCurrency)
+            )
+        } else {
+            recommendation = String(localized: "insights.formula.spendingForecast.rec.noIncome")
+        }
+
+        let model = InsightFormulaModel(
+            id: "spendingForecast",
+            titleKey: "insights.formula.spendingForecast.title",
+            icon: "calendar.badge.exclamationmark",
+            color: severity.color,
+            heroValueText: Formatting.formatCurrencySmart(forecast, currency: baseCurrency),
+            heroLabelKey: "insights.formula.spendingForecast.heroLabel",
+            formulaHeaderKey: "insights.formula.spendingForecast.formulaHeader",
+            formulaRows: [
+                InsightFormulaRow(id: "spentSoFar", labelKey: "insights.formula.spendingForecast.row.spentSoFar", value: spentSoFar, kind: .currency),
+                InsightFormulaRow(id: "avgDaily", labelKey: "insights.formula.spendingForecast.row.avgDaily", value: avgDailySpend, kind: .currency),
+                InsightFormulaRow(id: "daysLeft", labelKey: "insights.formula.spendingForecast.row.daysLeft", value: Double(daysRemaining), kind: .days),
+                InsightFormulaRow(id: "projectedRest", labelKey: "insights.formula.spendingForecast.row.projectedRest", value: projectedRemaining + pendingRecurring, kind: .currency),
+                InsightFormulaRow(id: "total", labelKey: "insights.formula.spendingForecast.row.total", value: forecast, kind: .currency, isEmphasised: true)
+            ],
+            explainerKey: "insights.formula.spendingForecast.explainer",
+            recommendation: recommendation,
+            baseCurrency: baseCurrency
+        )
 
         Self.logger.debug("🔮 [Insights] SpendingForecast — spentSoFar=\(String(format: "%.0f", spentSoFar), privacy: .public), avgDaily=\(String(format: "%.0f", avgDailySpend), privacy: .public), daysLeft=\(daysRemaining), forecast=\(String(format: "%.0f", forecast), privacy: .public) \(baseCurrency, privacy: .public)")
         return Insight(
@@ -113,7 +151,7 @@ extension InsightsService {
             trend: nil,
             severity: severity,
             category: .forecasting,
-            detailData: nil
+            detailData: .formulaBreakdown(model)
         )
     }
 

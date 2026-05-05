@@ -61,7 +61,7 @@ struct ChartZoomControls: View {
                 } label: {
                     Image(systemName: "minus.magnifyingglass")
                         .font(AppTypography.h4.weight(.medium))
-                        .frame(width: 36, height: 36)
+                        .frame(width: 44, height: 44)
                         .contentShape(Circle())
                 }
                 .buttonStyle(.glass)
@@ -77,7 +77,7 @@ struct ChartZoomControls: View {
                 } label: {
                     Image(systemName: "plus.magnifyingglass")
                         .font(AppTypography.h4.weight(.medium))
-                        .frame(width: 36, height: 36)
+                        .frame(width: 44, height: 44)
                         .contentShape(Circle())
                 }
                 .buttonStyle(.glass)

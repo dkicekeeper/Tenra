@@ -19,6 +19,7 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
 - **`.frame(height:)` doesn't resize a segmented `Picker`** — `Picker(.segmented)` has fixed intrinsic height. Use `.controlSize(.large)` (~36pt) or `.controlSize(.extraLarge)` (~44pt) to match adjacent button heights.
 - **`.localizedCapitalized` capitalizes EVERY word** — wrong for date-range strings like `"3 янв – 9 янв"` → `"3 Янв – 9 Янв"`. For first-char-only capitalization: `first.uppercased() + dropFirst()`.
 - **Liquid Glass merged button group**: `GlassEffectContainer(spacing: AppSpacing.sm) { HStack(spacing: 0) { Button { … }.buttonStyle(.glass).buttonBorderShape(.circle) } }`. `HStack(spacing: 0)` is intentional — adjacent glass shapes blend into a continuous merged look. For separated round glass buttons use HStack with non-zero spacing.
+- **Animated `AngularGradient` border — rotate the gradient, NOT the shape**: Using `.stroke(AngularGradient(...)).rotationEffect(.degrees(t))` tilts the entire stroked rectangle in space (you see a diagonal beam floating around the card). Correct: keep the shape fixed and pass the rotation into the gradient itself via `AngularGradient(gradient:center:angle: .degrees(t))`. The bright spot then travels along the perimeter as time advances. See `BorderBeamModifier`.
 
 ## Performance Hot-Paths
 

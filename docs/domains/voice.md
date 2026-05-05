@@ -51,3 +51,11 @@ Text-driven spikes via `onChange(of: transcribedText)` blended with `0.4/0.6`.
 `MeshGradient` (iOS 18+) with `TimelineView(.animation)`.
 
 ⚠️ **Read `amplitudeRef.value` directly each frame — no `@State` intermediary** (causes stale values).
+
+## Live Preview Card Border Beam
+
+`VoiceInputView.previewCard(for:)` applies `.borderBeam(isActive: voiceService.isRecording)` outside `.cardStyle()`. The beam is a visual cue that the card is updating live from speech; it stops when recording ends so the post-stop confirmation state stays calm.
+
+- The modifier is `TimelineView`-driven, so `isActive == false` removes the overlay entirely (no orphan animation while the confirmation sheet is open).
+- Match the modifier's `cornerRadius` to the card's — `cardStyle()` defaults to `AppRadius.xl`, which is also `borderBeam`'s default.
+- See [design-system.md](../design-system.md) for the modifier reference and [gotchas.md](../gotchas.md) for the AngularGradient rotation pitfall.

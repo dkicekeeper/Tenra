@@ -7,11 +7,14 @@
 
 import SwiftUI
 import UIKit
+import OSLog
+
+private let logger = Logger(subsystem: "Tenra", category: "ExportActivityView")
 
 struct ExportActivityView: UIViewControllerRepresentable {
     let transactionsViewModel: TransactionsViewModel
     @Environment(\.dismiss) var dismiss
-    
+
     func makeUIViewController(context: Context) -> UIActivityViewController {
         let csvContent = CSVExporter.exportTransactions(
             transactionsViewModel.allTransactions,
@@ -19,27 +22,29 @@ struct ExportActivityView: UIViewControllerRepresentable {
             subcategoryLinks: transactionsViewModel.transactionStore?.transactionSubcategoryLinks ?? [],
             subcategories: transactionsViewModel.transactionStore?.subcategories ?? []
         )
-        
-        // Создаем временный файл
+
         let fileName = "transactions_export_\(DateFormatter.exportFileNameFormatter.string(from: Date())).csv"
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-        
+
+        let activityItems: [Any]
         do {
             try csvContent.write(to: tempURL, atomically: true, encoding: .utf8)
+            activityItems = [tempURL]
         } catch {
+            logger.error("CSV file write failed: \(error.localizedDescription) — falling back to string share")
+            activityItems = [csvContent]
         }
-        
+
         let activityVC = UIActivityViewController(
-            activityItems: [tempURL],
+            activityItems: activityItems,
             applicationActivities: nil
         )
-        
+
         activityVC.completionWithItemsHandler = { _, _, _, _ in
-            // Удаляем временный файл после экспорта
             try? FileManager.default.removeItem(at: tempURL)
             dismiss()
         }
-        
+
         return activityVC
     }
     

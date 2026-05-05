@@ -19,6 +19,7 @@ struct LoansListView: View {
     @State private var showingAddLoan = false
     @State private var showingPayAll = false
     @State private var selectedFilter: LoanFilter = .all
+    @State private var payAllError: String? = nil
 
     private let logger = Logger(subsystem: "Tenra", category: "LoansListView")
 
@@ -134,6 +135,16 @@ struct LoansListView: View {
                 }
             )
         }
+        .overlay(alignment: .top) {
+            if let msg = payAllError {
+                MessageBanner.error(msg)
+                    .padding(.horizontal, AppSpacing.md)
+                    .padding(.top, AppSpacing.sm)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .zIndex(1)
+            }
+        }
+        .animation(AppAnimation.gentleSpring, value: payAllError)
     }
 
     // MARK: - Summary
@@ -196,6 +207,7 @@ struct LoansListView: View {
 
     private func payAllLoans(sourceAccountId: String, dateStr: String) {
         Task {
+            var failedLoanNames: [String] = []
             for loan in activeLoans {
                 guard let loanInfo = loan.loanInfo else { continue }
                 if let transaction = loansViewModel.makeManualPayment(
@@ -208,10 +220,16 @@ struct LoansListView: View {
                         _ = try await transactionStore.add(transaction)
                     } catch {
                         logger.error("Failed to add payment for \(loan.name): \(error.localizedDescription)")
+                        failedLoanNames.append(loan.name)
                     }
                 }
             }
             transactionsViewModel.recalculateAccountBalances()
+            if !failedLoanNames.isEmpty {
+                payAllError = String(localized: "loan.payAllPartialFailed", defaultValue: "Some payments failed: \(failedLoanNames.joined(separator: ", "))")
+                try? await Task.sleep(for: .seconds(4))
+                payAllError = nil
+            }
         }
     }
 }

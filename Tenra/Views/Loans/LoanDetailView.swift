@@ -28,6 +28,7 @@ struct LoanDetailView: View {
     @State private var cachedSchedule: [LoanPaymentService.AmortizationEntry] = []
     @State private var cachedTransactions: [Transaction] = []
     @State private var reconciliationError: String? = nil
+    @State private var paymentError: String? = nil
     @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
 
@@ -67,6 +68,24 @@ struct LoanDetailView: View {
                 )
                 .navigationTitle(String(localized: "loan.title", defaultValue: "Loan"))
             }
+        }
+        .overlay(alignment: .top) {
+            if let msg = paymentError {
+                MessageBanner.error(msg)
+                    .padding(.horizontal, AppSpacing.md)
+                    .padding(.top, AppSpacing.sm)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .zIndex(1)
+            }
+        }
+        .animation(AppAnimation.gentleSpring, value: paymentError)
+    }
+
+    private func showPaymentError(_ message: String) {
+        paymentError = message
+        Task {
+            try? await Task.sleep(for: .seconds(4))
+            paymentError = nil
         }
     }
 
@@ -164,6 +183,7 @@ struct LoanDetailView: View {
                                     transactionsViewModel.recalculateAccountBalances()
                                 } catch {
                                     logger.error("Failed to add loan payment: \(error.localizedDescription)")
+                                    showPaymentError(String(localized: "loan.paymentFailed", defaultValue: "Payment failed. Please try again."))
                                 }
                             }
                         }
@@ -192,6 +212,7 @@ struct LoanDetailView: View {
                                     transactionsViewModel.recalculateAccountBalances()
                                 } catch {
                                     logger.error("Failed to add early repayment transaction: \(error.localizedDescription)")
+                                    showPaymentError(String(localized: "loan.earlyRepaymentFailed", defaultValue: "Early repayment failed. Please try again."))
                                 }
                             }
                         }

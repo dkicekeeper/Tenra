@@ -46,7 +46,7 @@ struct ImportTransactionPreviewView: View {
                             selectedAccountId: accountMapping[transaction.id],
                             availableAccounts: accountsViewModel.accounts.filter { $0.currency == transaction.currency },
                             onToggle: {
-                                withAnimation(AppAnimation.spring) {
+                                withAnimation(AppAnimation.contentSpring) {
                                     if selectedTransactions.contains(transaction.id) {
                                         selectedTransactions.remove(transaction.id)
                                         accountMapping.removeValue(forKey: transaction.id)
@@ -69,7 +69,7 @@ struct ImportTransactionPreviewView: View {
                 // Action buttons — Select All / Deselect All
                 HStack(spacing: AppSpacing.md) {
                     Button {
-                        withAnimation(AppAnimation.spring) {
+                        withAnimation(AppAnimation.contentSpring) {
                             selectedTransactions = Set(transactions.map { $0.id })
                             for transaction in transactions {
                                 if let account = accountsViewModel.accounts.first(where: { $0.currency == transaction.currency }) {
@@ -88,7 +88,7 @@ struct ImportTransactionPreviewView: View {
                     .accessibilityLabel(String(localized: "transactionPreview.selectAll"))
 
                     Button {
-                        withAnimation(AppAnimation.spring) {
+                        withAnimation(AppAnimation.contentSpring) {
                             selectedTransactions.removeAll()
                             accountMapping.removeAll()
                         }
@@ -196,7 +196,7 @@ struct ImportTransactionPreviewRow: View {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .foregroundStyle(isSelected ? AppColors.accent : AppColors.textSecondary)
                         .font(AppTypography.h4)
-                        .animation(AppAnimation.spring, value: isSelected)
+                        .animation(AppAnimation.contentSpring, value: isSelected)
                 }
                 .accessibilityLabel(isSelected
                     ? String(localized: "button.select")

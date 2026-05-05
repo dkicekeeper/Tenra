@@ -63,7 +63,9 @@ struct SettingsView: View {
                 cloudSection
                 exportImportSection
                 dangerZoneSection
+                #if DEBUG
                 experimentsSection
+                #endif
                 aboutSection
             }
             .navigationTitle(String(localized: "settings.title"))
@@ -171,6 +173,7 @@ struct SettingsView: View {
         )
     }
 
+    #if DEBUG
     private var experimentsSection: some View {
         Section {
             NavigationSettingsRow(
@@ -179,16 +182,15 @@ struct SettingsView: View {
             ) {
                 ExperimentsListView()
             }
-            #if DEBUG
             NavigationSettingsRow(
                 icon: "bell.badge",
                 title: String(localized: "settings.notificationDebug")
             ) {
                 NotificationDebugView()
             }
-            #endif
         }
     }
+    #endif
 
     // MARK: - About Section
 

@@ -248,6 +248,7 @@ struct VoiceInputView: View {
             .cardStyle()
         }
         .buttonStyle(.plain)
+        .borderBeam(isActive: voiceService.isRecording)
     }
 
     private var transcriptionSection: some View {
@@ -286,7 +287,7 @@ struct VoiceInputView: View {
                             .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
                         Image(systemName: "stop.fill")
                             .font(.system(size: AppIconSize.xl))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AppColors.staticWhite)
                     }
                 }
                 .accessibilityLabel(String(localized: "voice.stopRecording"))

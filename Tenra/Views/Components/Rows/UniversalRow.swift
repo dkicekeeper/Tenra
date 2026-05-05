@@ -303,6 +303,8 @@ extension View {
         self
             .contentShape(Rectangle())
             .onTapGesture(perform: action)
+            .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+            .accessibilityRemoveTraits(isSelected ? [] : .isSelected)
     }
 }
 

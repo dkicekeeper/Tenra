@@ -140,15 +140,15 @@ private struct RestoreProgressOverlay: View {
             VStack(spacing: AppSpacing.md) {
                 ProgressView()
                     .controlSize(.large)
-                    .tint(.white)
+                    .tint(AppColors.accent)
 
                 Text(String(localized: "settings.cloud.restoring"))
                     .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(AppColors.textPrimary)
 
                 Text(String(localized: "settings.cloud.restoringSubtitle"))
                     .font(AppTypography.body)
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(AppColors.textSecondary)
                     .multilineTextAlignment(.center)
             }
             .padding(AppSpacing.xl)

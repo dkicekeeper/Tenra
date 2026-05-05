@@ -163,6 +163,7 @@ All have Reduce Motion-aware variants (`adaptiveSpring`, `fastAnimation`, etc.) 
 | `.chartAppear(delay:)` | Scale(0.94→1.0) + opacity entrance from bottom | Outermost chart container, scrollable list cards |
 | `.staggeredEntrance(delay:)` | Scale(0.5→1.0) + opacity pop-in with spring | Facepile icons, overlapping avatar stacks |
 | `.contentReveal(isReady:delay:)` | Opacity fade-in when ready | Staggered section reveals during initialization |
+| `.borderBeam(isActive:colors:cornerRadius:lineWidth:duration:)` | Animated glowing beam traveling around the border via rotating `AngularGradient`. Two-layer (sharp + blurred glow). `TimelineView`-driven; ticks only while `isActive == true`. Reduce-Motion aware | Highlighting cards during transient active states (voice recognition preview, focus, processing). Match `cornerRadius` to the underlying card |
 
 ### Button Styles (`AppButton`)
 
@@ -345,6 +346,8 @@ IconView(source: .bankLogo(.kaspi), style: .bankLogo(size: AppIconSize.xl))
 
 **When to use `Image(systemName:)` directly:** Semantic UI indicators — chevron, checkmark, xmark, toolbar actions, inline arrows.
 
+**Accessibility:** `IconView.body` has `accessibilityHidden(true)` — it is always decorative within its parent row/card. The parent element owns the accessibility label. Do not override this unless `IconView` is the sole content of an interactive element with no other text.
+
 **IconStyle presets:**
 
 | Preset | Shape | Context |
@@ -471,7 +474,29 @@ MessageBanner.warning("Low balance")
 MessageBanner.info("Sync completed")
 ```
 
-Show conditionally: `if showBanner { MessageBanner.success("...") }` inside `.animation {}` block. Overlay above main content in `ZStack`.
+Show conditionally via `.overlay(alignment: .top)` + `.animation(AppAnimation.gentleSpring, value: message)`. For auto-dismiss after N seconds, set the state to `nil` inside a `Task` after `Task.sleep`:
+
+```swift
+@State private var errorMessage: String? = nil
+
+// In catch block:
+errorMessage = "Payment failed."
+Task {
+    try? await Task.sleep(for: .seconds(4))
+    errorMessage = nil
+}
+
+// In body:
+.overlay(alignment: .top) {
+    if let msg = errorMessage {
+        MessageBanner.error(msg)
+            .padding(.horizontal, AppSpacing.md)
+            .padding(.top, AppSpacing.sm)
+            .transition(.move(edge: .top).combined(with: .opacity))
+    }
+}
+.animation(AppAnimation.gentleSpring, value: errorMessage)
+```
 
 #### `InlineStatusText`
 Persistent inline validation/hint text.
@@ -934,7 +959,7 @@ All animations must use `AppAnimation` constants. Never use inline `.spring(resp
 | Chart selection banner | `AppAnimation.chartBannerFade` |
 | Section fade-in on init | `AppAnimation.contentRevealAnimation` |
 | Progress bar expansion | `AppAnimation.progressBarSpring` |
-| Bounce effects | `AppAnimation.spring` |
+| Visible-overshoot entrance | `AppAnimation.bouncySpring` |
 
 ### Animation Modifiers
 

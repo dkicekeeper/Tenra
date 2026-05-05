@@ -73,6 +73,7 @@ struct IconView: View {
             contentView
                 .frame(width: contentSize, height: contentSize)
         }
+        .accessibilityHidden(true)
     }
 
     // MARK: - Computed Properties

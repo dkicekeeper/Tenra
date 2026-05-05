@@ -11,6 +11,9 @@
 import Foundation
 import CoreData
 import Observation
+import OSLog
+
+private let logger = Logger(subsystem: "Tenra", category: "TransactionStore")
 
 /// Errors that can occur during transaction operations
 enum TransactionStoreError: LocalizedError {
@@ -408,7 +411,7 @@ final class TransactionStore {
     /// Finish import mode and persist all changes
     func finishImport() async throws {
         let txCount = transactions.count
-        print("📥 [TransactionStore] finishImport START — tx:\(txCount) acc:\(accounts.count) cat:\(categories.count)")
+        logger.debug("finishImport START — tx:\(txCount) acc:\(self.accounts.count) cat:\(self.categories.count)")
 
         // CRITICAL: Use synchronous save to ensure data is persisted before returning
         // This prevents data loss if app is terminated immediately after import
@@ -416,18 +419,18 @@ final class TransactionStore {
         do {
             if let coreDataRepo = repository as? CoreDataRepository {
                 // Save accounts BEFORE transactions (required for Core Data relationships)
-                print("📥 [TransactionStore] finishImport: saving accounts…")
+                logger.debug("finishImport: saving accounts…")
                 try coreDataRepo.saveAccountsSync(accounts)
-                print("📥 [TransactionStore] finishImport: saving categories…")
+                logger.debug("finishImport: saving categories…")
                 try coreDataRepo.saveCategoriesSync(categories)
 
                 try coreDataRepo.saveSubcategoriesSync(subcategories)
                 try coreDataRepo.saveCategorySubcategoryLinksSync(categorySubcategoryLinks)
 
                 // Save transactions AFTER accounts (so account relationships can be established)
-                print("📥 [TransactionStore] finishImport: saving \(txCount) transactions via saveTransactionsSync…")
+                logger.debug("finishImport: saving \(txCount) transactions via saveTransactionsSync…")
                 try coreDataRepo.saveTransactionsSync(transactions)
-                print("📥 [TransactionStore] finishImport: saveTransactionsSync DONE")
+                logger.debug("finishImport: saveTransactionsSync DONE")
                 try coreDataRepo.saveTransactionSubcategoryLinksSync(transactionSubcategoryLinks)
             } else {
                 // Fallback to async save for non-CoreData repositories
@@ -446,7 +449,7 @@ final class TransactionStore {
             recurringStore.saveOccurrences()
 
         } catch {
-            print("❌ [TransactionStore] finishImport FAILED: \(error)")
+            logger.error("finishImport FAILED: \(error.localizedDescription)")
             throw TransactionStoreError.persistenceFailed(error)
         }
 
@@ -454,7 +457,7 @@ final class TransactionStore {
         // Setting this earlier would fire ContentView observers while CoreData writes are still in progress.
         isImporting = false
 
-        print("✅ [TransactionStore] finishImport DONE")
+        logger.debug("finishImport DONE")
     }
 
     /// Update an existing transaction

@@ -22,8 +22,8 @@ enum AppAnimation {
     /// Медленная анимация (modals, large transitions)
     static let slow: Double = 0.35
 
-    /// Spring animation для bounce эффекта (iOS 16+ style)
-    static let spring = Animation.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0)
+    /// Visible-overshoot spring. Prefer `contentSpring` (0.7) or `gentleSpring` (0.8) for most transitions.
+    static let bouncySpring = Animation.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0)
 
     /// Snappy content spring — for content transitions (amount inputs, list changes, toggles).
     /// response 0.3 + damping 0.7 = quick settle with minimal overshoot.
@@ -222,11 +222,11 @@ enum AppAnimation {
     }
 
     /// Spring-анимация с учётом Reduce Motion.
-    /// Замена для `AppAnimation.spring` в декоративных bounce-эффектах.
+    /// Замена для `AppAnimation.bouncySpring` в декоративных bounce-эффектах.
     static var adaptiveSpring: Animation {
         UIAccessibility.isReduceMotionEnabled
             ? .linear(duration: 0)
-            : spring
+            : bouncySpring
     }
 
 }

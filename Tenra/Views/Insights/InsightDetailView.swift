@@ -118,6 +118,9 @@ struct InsightDetailView<CategoryDestination: View>: View {
         case .wealthBreakdown:
             // Account balance list rendered in detailSection
             EmptyView()
+        case .formulaBreakdown:
+            // Rendered later via InsightFormulaCard — Task 8 wires this up.
+            EmptyView()
         case nil:
             EmptyView()
         }

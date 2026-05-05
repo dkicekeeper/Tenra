@@ -183,6 +183,7 @@ enum InsightDetailData: Hashable {
     case recurringList([RecurringInsightItem])
     case accountComparison([AccountInsightItem])
     case wealthBreakdown([AccountInsightItem])   // Per-account balances
+    case formulaBreakdown(InsightFormulaModel)   // Header + hero + formula rows + recommendation
 }
 
 // MARK: - Category Breakdown

@@ -119,6 +119,9 @@ struct InsightsCardView<BottomChart: View>: View {
         case .wealthBreakdown:
             // No mini chart for wealth breakdown (account list)
             EmptyView()
+        case .formulaBreakdown:
+            // No mini chart for formula breakdown — the hero metric is already in the card header
+            EmptyView()
         case nil:
             EmptyView()
         }

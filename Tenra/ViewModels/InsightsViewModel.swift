@@ -31,10 +31,17 @@ final class InsightsViewModel {
     @ObservationIgnored private var precomputedPeriodPoints: [InsightGranularity: [PeriodDataPoint]] = [:]
 
     /// Pre-computed period totals keyed by granularity.
-    private struct PeriodTotals {
+    private struct PeriodTotals: Sendable {
         let income: Double
         let expenses: Double
         let netFlow: Double
+        // Bucket-only slice (current + previous bucket).
+        let currentBucketIncome: Double
+        let currentBucketExpenses: Double
+        let currentBucketNetFlow: Double
+        let previousBucketIncome: Double
+        let previousBucketExpenses: Double
+        let previousBucketNetFlow: Double
     }
     @ObservationIgnored private var precomputedTotals: [InsightGranularity: PeriodTotals] = [:]
 
@@ -61,6 +68,18 @@ final class InsightsViewModel {
     private(set) var totalIncome: Double = 0
     private(set) var totalExpenses: Double = 0
     private(set) var netFlow: Double = 0
+    // Current bucket totals (the actual current period — e.g. this month).
+    // Distinct from totalIncome/totalExpenses/netFlow which are cumulative across
+    // the data window used by charts.
+    private(set) var currentBucketIncome: Double = 0
+    private(set) var currentBucketExpenses: Double = 0
+    private(set) var currentBucketNetFlow: Double = 0
+    // Previous bucket totals — same period, one bucket earlier — for MoM delta.
+    private(set) var previousBucketIncome: Double = 0
+    private(set) var previousBucketExpenses: Double = 0
+    private(set) var previousBucketNetFlow: Double = 0
+    /// Localised label for the current bucket ("May 2026", "Q2 2026", "Last 7 days").
+    private(set) var currentBucketLabel: String = ""
     /// Financial Health Score (computed once per recompute cycle, using .month granularity data)
     private(set) var healthScore: FinancialHealthScore? = nil
 
@@ -321,9 +340,21 @@ final class InsightsViewModel {
                 let pts = result.periodPoints
                 var income: Double = 0; var expenses: Double = 0
                 for p in pts { income += p.income; expenses += p.expenses }
+                let (curStart, curEnd) = gran.currentBucketRange()
+                let (prevStart, prevEnd) = gran.previousBucketRange()
+                let curTotals = Self.bucketTotals(in: pts, start: curStart, end: curEnd)
+                let prevTotals = Self.bucketTotals(in: pts, start: prevStart, end: prevEnd)
                 newInsights[gran] = result.insights
                 newPoints[gran]   = pts
-                newTotals[gran]   = PeriodTotals(income: income, expenses: expenses, netFlow: income - expenses)
+                newTotals[gran]   = PeriodTotals(
+                    income: income, expenses: expenses, netFlow: income - expenses,
+                    currentBucketIncome: curTotals.income,
+                    currentBucketExpenses: curTotals.expenses,
+                    currentBucketNetFlow: curTotals.income - curTotals.expenses,
+                    previousBucketIncome: prevTotals.income,
+                    previousBucketExpenses: prevTotals.expenses,
+                    previousBucketNetFlow: prevTotals.income - prevTotals.expenses
+                )
                 Self.logger.debug("🔧 [InsightsVM] Gran .\(gran.rawValue, privacy: .public) — \(result.insights.count) insights, \(pts.count) pts")
             }
             Self.logger.debug("⏱ [InsightsVM] Priority gran (.\(priorityGranularity.rawValue, privacy: .public)): \(p1Ms)ms — shared=\(sharedInsights.count)")
@@ -367,9 +398,21 @@ final class InsightsViewModel {
                 let pts = result.periodPoints
                 var income: Double = 0; var expenses: Double = 0
                 for p in pts { income += p.income; expenses += p.expenses }
+                let (curStart, curEnd) = gran.currentBucketRange()
+                let (prevStart, prevEnd) = gran.previousBucketRange()
+                let curTotals = Self.bucketTotals(in: pts, start: curStart, end: curEnd)
+                let prevTotals = Self.bucketTotals(in: pts, start: prevStart, end: prevEnd)
                 newInsights[gran] = result.insights
                 newPoints[gran]   = pts
-                newTotals[gran]   = PeriodTotals(income: income, expenses: expenses, netFlow: income - expenses)
+                newTotals[gran]   = PeriodTotals(
+                    income: income, expenses: expenses, netFlow: income - expenses,
+                    currentBucketIncome: curTotals.income,
+                    currentBucketExpenses: curTotals.expenses,
+                    currentBucketNetFlow: curTotals.income - curTotals.expenses,
+                    previousBucketIncome: prevTotals.income,
+                    previousBucketExpenses: prevTotals.expenses,
+                    previousBucketNetFlow: prevTotals.income - prevTotals.expenses
+                )
                 Self.logger.debug("🔧 [InsightsVM] Gran .\(gran.rawValue, privacy: .public) — \(result.insights.count) insights, \(pts.count) pts")
             }
 
@@ -433,8 +476,32 @@ final class InsightsViewModel {
             totalIncome      = totals?.income   ?? 0
             totalExpenses    = totals?.expenses ?? 0
             netFlow          = totals?.netFlow  ?? 0
+            currentBucketIncome   = totals?.currentBucketIncome   ?? 0
+            currentBucketExpenses = totals?.currentBucketExpenses ?? 0
+            currentBucketNetFlow  = totals?.currentBucketNetFlow  ?? 0
+            previousBucketIncome   = totals?.previousBucketIncome   ?? 0
+            previousBucketExpenses = totals?.previousBucketExpenses ?? 0
+            previousBucketNetFlow  = totals?.previousBucketNetFlow  ?? 0
+            currentBucketLabel = granularity.currentBucketLabel()
             isLoading        = false
         }
+    }
+
+    /// Sums income/expenses for points whose `[periodStart, periodEnd)` overlaps
+    /// the requested range. For `.month/.quarter/.year` granularities, periodPoints
+    /// are bucket-aligned, so a contained point fully attributes to that bucket.
+    private nonisolated static func bucketTotals(
+        in points: [PeriodDataPoint],
+        start: Date,
+        end: Date
+    ) -> (income: Double, expenses: Double) {
+        var inc: Double = 0
+        var exp: Double = 0
+        for p in points where p.periodStart >= start && p.periodStart < end {
+            inc += p.income
+            exp += p.expenses
+        }
+        return (inc, exp)
     }
 
     /// Captures a snapshot of account balances on MainActor for safe use on background thread.

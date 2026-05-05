@@ -74,7 +74,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
                 Spacer()
 
                 if let trend = insight.trend {
-                    InsightTrendBadge(trend: trend, style: .inline)
+                    InsightTrendBadge(trend: trend, style: .inline, colorOverride: insight.trendBadgeColorOverride)
                 }
             }
 

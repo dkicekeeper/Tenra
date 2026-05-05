@@ -72,7 +72,7 @@ struct InsightsCardView<BottomChart: View>: View {
 
                 // Trend indicator
                 if let trend = insight.trend {
-                    InsightTrendBadge(trend: trend, style: .pill)
+                    InsightTrendBadge(trend: trend, style: .pill, colorOverride: insight.trendBadgeColorOverride)
                 }
                 if let unit = insight.metric.unit {
                     Text(unit)

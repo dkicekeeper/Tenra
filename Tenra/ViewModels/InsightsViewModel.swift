@@ -340,10 +340,8 @@ final class InsightsViewModel {
                 let pts = result.periodPoints
                 var income: Double = 0; var expenses: Double = 0
                 for p in pts { income += p.income; expenses += p.expenses }
-                let (curStart, curEnd) = gran.currentBucketRange()
-                let (prevStart, prevEnd) = gran.previousBucketRange()
-                let curTotals = Self.bucketTotals(in: pts, start: curStart, end: curEnd)
-                let prevTotals = Self.bucketTotals(in: pts, start: prevStart, end: prevEnd)
+                let curTotals = Self.bucketTotals(in: pts, forKey: gran.currentPeriodKey)
+                let prevTotals = Self.bucketTotals(in: pts, forKey: gran.previousPeriodKey)
                 newInsights[gran] = result.insights
                 newPoints[gran]   = pts
                 newTotals[gran]   = PeriodTotals(
@@ -398,10 +396,8 @@ final class InsightsViewModel {
                 let pts = result.periodPoints
                 var income: Double = 0; var expenses: Double = 0
                 for p in pts { income += p.income; expenses += p.expenses }
-                let (curStart, curEnd) = gran.currentBucketRange()
-                let (prevStart, prevEnd) = gran.previousBucketRange()
-                let curTotals = Self.bucketTotals(in: pts, start: curStart, end: curEnd)
-                let prevTotals = Self.bucketTotals(in: pts, start: prevStart, end: prevEnd)
+                let curTotals = Self.bucketTotals(in: pts, forKey: gran.currentPeriodKey)
+                let prevTotals = Self.bucketTotals(in: pts, forKey: gran.previousPeriodKey)
                 newInsights[gran] = result.insights
                 newPoints[gran]   = pts
                 newTotals[gran]   = PeriodTotals(
@@ -487,21 +483,16 @@ final class InsightsViewModel {
         }
     }
 
-    /// Sums income/expenses for points whose `[periodStart, periodEnd)` overlaps
-    /// the requested range. For `.month/.quarter/.year` granularities, periodPoints
-    /// are bucket-aligned, so a contained point fully attributes to that bucket.
+    /// Returns the totals for the period point whose `key` matches.
+    /// Key-based lookup is robust across all granularities (including `.allTime`
+    /// whose key is "all" with `periodStart = .distantPast` — date filtering would
+    /// miss it). Same convention used elsewhere via `granularity.currentPeriodKey`.
     private nonisolated static func bucketTotals(
         in points: [PeriodDataPoint],
-        start: Date,
-        end: Date
+        forKey key: String
     ) -> (income: Double, expenses: Double) {
-        var inc: Double = 0
-        var exp: Double = 0
-        for p in points where p.periodStart >= start && p.periodStart < end {
-            inc += p.income
-            exp += p.expenses
-        }
-        return (inc, exp)
+        guard let p = points.first(where: { $0.key == key }) else { return (0, 0) }
+        return (p.income, p.expenses)
     }
 
     /// Captures a snapshot of account balances on MainActor for safe use on background thread.

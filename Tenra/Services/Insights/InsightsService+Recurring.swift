@@ -108,25 +108,40 @@ extension InsightsService {
 
     // MARK: - Subscription Growth
 
-    /// Compares current monthly recurring total with the total 3 months ago.
+    /// Compares current monthly recurring total with the total a granularity-scaled
+    /// lookback ago (week→1mo, month→3mo, quarter→6mo, year→12mo, allTime→12mo).
     nonisolated func generateSubscriptionGrowth(
         baseCurrency: String,
+        granularity: InsightGranularity,
         recurringSeries: [RecurringSeries],
         seriesMonthlyEquivalents: [String: Double]? = nil
     ) -> Insight? {
         let activeSeries = recurringSeries.filter { $0.isActive }
         guard activeSeries.count >= 2 else { return nil }
 
+        let lookbackMonths: Int
+        switch granularity {
+        case .week:    lookbackMonths = 1
+        case .month:   lookbackMonths = 3
+        case .quarter: lookbackMonths = 6
+        case .year:    lookbackMonths = 12
+        case .allTime: lookbackMonths = 12
+        }
+
         let calendar = Calendar.current
         let now = Date()
-        guard let threeMonthsAgo = calendar.date(byAdding: .month, value: -3, to: now) else { return nil }
+        guard let lookbackDate = calendar.date(byAdding: .month, value: -lookbackMonths, to: now) else { return nil }
 
         let dateFormatter = DateFormatters.dateFormatter
 
         let currentTotal = activeSeries.reduce(0.0) { $0 + seriesMonthlyEquivalent($1, baseCurrency: baseCurrency, cache: seriesMonthlyEquivalents) }
         let prevSeries = activeSeries.filter { series in
             guard let start = dateFormatter.date(from: series.startDate) else { return false }
-            return start < threeMonthsAgo
+            return start < lookbackDate
+        }
+        let newSeries = activeSeries.filter { series in
+            guard let start = dateFormatter.date(from: series.startDate) else { return false }
+            return start >= lookbackDate
         }
         let prevTotal = prevSeries.reduce(0.0) { $0 + seriesMonthlyEquivalent($1, baseCurrency: baseCurrency, cache: seriesMonthlyEquivalents) }
 
@@ -136,12 +151,55 @@ extension InsightsService {
 
         let direction: TrendDirection = changePercent > 0 ? .up : .down
         let severity: InsightSeverity = changePercent > 10 ? .warning : (changePercent < -10 ? .positive : .neutral)
-        Self.logger.debug("🔁 [Insights] SubscriptionGrowth — \(String(format: "%+.1f%%", changePercent), privacy: .public)")
+
+        let lookbackPhrase = String(
+            format: String(localized: "insights.subscriptionGrowth.compareAgo"),
+            lookbackMonths
+        )
+
+        let recommendation: String
+        if changePercent > 10 {
+            recommendation = String(
+                format: String(localized: "insights.formula.subscriptionGrowth.rec.growing"),
+                Formatting.formatCurrencySmart(currentTotal - prevTotal, currency: baseCurrency)
+            )
+        } else if changePercent < -10 {
+            recommendation = String(localized: "insights.formula.subscriptionGrowth.rec.shrinking")
+        } else {
+            recommendation = String(localized: "insights.formula.subscriptionGrowth.rec.stable")
+        }
+
+        let model = InsightFormulaModel(
+            id: "subscriptionGrowth",
+            titleKey: "insights.formula.subscriptionGrowth.title",
+            icon: "arrow.up.right.circle.fill",
+            color: severity.color,
+            heroValueText: String(format: "%+.1f%%", changePercent),
+            heroLabelKey: "insights.formula.subscriptionGrowth.heroLabel",
+            formulaHeaderKey: "insights.formula.subscriptionGrowth.formulaHeader",
+            formulaRows: [
+                InsightFormulaRow(
+                    id: "lookback",
+                    labelKey: "insights.formula.subscriptionGrowth.row.lookback",
+                    value: 0,
+                    kind: .rawText(lookbackPhrase)
+                ),
+                InsightFormulaRow(id: "previous", labelKey: "insights.formula.subscriptionGrowth.row.previous", value: prevTotal, kind: .currency),
+                InsightFormulaRow(id: "current", labelKey: "insights.formula.subscriptionGrowth.row.current", value: currentTotal, kind: .currency),
+                InsightFormulaRow(id: "addedCount", labelKey: "insights.formula.subscriptionGrowth.row.addedCount", value: Double(newSeries.count), kind: .rawText("\(newSeries.count)")),
+                InsightFormulaRow(id: "delta", labelKey: "insights.formula.subscriptionGrowth.row.delta", value: changePercent, kind: .percent, isEmphasised: true)
+            ],
+            explainerKey: "insights.formula.subscriptionGrowth.explainer",
+            recommendation: recommendation,
+            baseCurrency: baseCurrency
+        )
+
+        Self.logger.debug("🔁 [Insights] SubscriptionGrowth — \(String(format: "%+.1f%%", changePercent), privacy: .public), lookback=\(lookbackMonths)mo")
         return Insight(
             id: "subscription_growth",
             type: .subscriptionGrowth,
             title: String(localized: "insights.subscriptionGrowth"),
-            subtitle: String(localized: "insights.vsThreeMonthsAgo"),
+            subtitle: lookbackPhrase,
             metric: InsightMetric(
                 value: currentTotal,
                 formattedValue: Formatting.formatCurrencySmart(currentTotal, currency: baseCurrency),
@@ -152,18 +210,23 @@ extension InsightsService {
                 direction: direction,
                 changePercent: changePercent,
                 changeAbsolute: currentTotal - prevTotal,
-                comparisonPeriod: String(localized: "insights.vsThreeMonthsAgo")
+                comparisonPeriod: lookbackPhrase
             ),
             severity: severity,
             category: .recurring,
-            detailData: nil
+            detailData: .formulaBreakdown(model)
         )
     }
 
     // MARK: - Duplicate Subscriptions
 
-    /// Detects possible duplicate subscriptions — active series with the same category
-    /// OR monthly cost within 15% of each other.
+    /// Detects possible duplicate subscriptions using TWO signals together:
+    ///   • normalised name similarity (same first 4 letters of the description after
+    ///     stripping non-letters, lowercased) — catches "Spotify" vs "Spotify Family"
+    ///   • OR monthly cost within 5% of each other (catches services priced similarly,
+    ///     a stronger signal than category alone — most subscriptions cluster in
+    ///     "Entertainment" so category overlap was producing false positives).
+    /// Returns a list of duplicate *pairs* in detail.
     nonisolated func generateDuplicateSubscriptions(
         baseCurrency: String,
         recurringSeries: [RecurringSeries],
@@ -172,28 +235,78 @@ extension InsightsService {
         let activeSeries = recurringSeries.filter { $0.isActive && $0.kind == .subscription }
         guard activeSeries.count >= 2 else { return nil }
 
-        // Group by category; flag categories with 2+ subscriptions
-        let grouped = Dictionary(grouping: activeSeries, by: \.category)
-        let duplicateGroups = grouped.filter { $0.value.count >= 2 }
-        guard !duplicateGroups.isEmpty else { return nil }
+        // Pre-compute normalised name and monthly cost per series.
+        struct Probe {
+            let series: RecurringSeries
+            let normalisedName: String  // lowercased letters only
+            let monthly: Double
+        }
+        let probes: [Probe] = activeSeries.map { series in
+            let raw = series.description.isEmpty ? series.category : series.description
+            let normalised = raw.lowercased().filter { $0.isLetter }
+            let monthly = seriesMonthlyEquivalent(series, baseCurrency: baseCurrency, cache: seriesMonthlyEquivalents)
+            return Probe(series: series, normalisedName: normalised, monthly: monthly)
+        }
 
-        let duplicateCost = duplicateGroups.values.flatMap { $0 }
-            .reduce(0.0) { $0 + seriesMonthlyEquivalent($1, baseCurrency: baseCurrency, cache: seriesMonthlyEquivalents) }
-        let categoryNames = duplicateGroups.keys.prefix(3).joined(separator: ", ")
+        // Find candidate-duplicate pairs.
+        var pairedIds = Set<String>()
+        var pairs: [(Probe, Probe)] = []
+        for i in 0..<probes.count {
+            for j in (i + 1)..<probes.count {
+                let a = probes[i], b = probes[j]
+                let nameMatch: Bool
+                if a.normalisedName.count >= 4 && b.normalisedName.count >= 4 {
+                    nameMatch = a.normalisedName.prefix(4) == b.normalisedName.prefix(4)
+                } else {
+                    nameMatch = a.normalisedName == b.normalisedName && !a.normalisedName.isEmpty
+                }
+                let amountMatch: Bool
+                if a.monthly > 0 && b.monthly > 0 {
+                    let diff = abs(a.monthly - b.monthly) / max(a.monthly, b.monthly)
+                    amountMatch = diff < 0.05
+                } else {
+                    amountMatch = false
+                }
+                if nameMatch || amountMatch {
+                    pairs.append((a, b))
+                    pairedIds.insert(a.series.id)
+                    pairedIds.insert(b.series.id)
+                }
+            }
+        }
+
+        guard !pairs.isEmpty else { return nil }
+
+        // Build the detail list — one row per series that participated in any pair.
+        let dupSeries = activeSeries.filter { pairedIds.contains($0.id) }
+        let recurringItems: [RecurringInsightItem] = dupSeries.map { series in
+            let name = series.description.isEmpty ? series.category : series.description
+            let monthly = seriesMonthlyEquivalent(series, baseCurrency: baseCurrency, cache: seriesMonthlyEquivalents)
+            return RecurringInsightItem(
+                id: series.id, name: name, amount: series.amount, currency: series.currency,
+                frequency: series.frequency, kind: series.kind, status: series.status,
+                iconSource: series.iconSource, monthlyEquivalent: monthly
+            )
+        }.sorted { $0.monthlyEquivalent > $1.monthlyEquivalent }
+
+        let totalCost = recurringItems.reduce(0.0) { $0 + $1.monthlyEquivalent }
+        let pairCount = pairs.count
+
+        Self.logger.debug("🔁 [Insights] DuplicateSubscriptions — \(pairCount) pair(s), \(dupSeries.count) series")
         return Insight(
             id: "duplicateSubscriptions",
             type: .duplicateSubscriptions,
             title: String(localized: "insights.duplicateSubscriptions.title"),
-            subtitle: categoryNames,
+            subtitle: String(format: String(localized: "insights.duplicateSubscriptions.subtitle"), pairCount),
             metric: InsightMetric(
-                value: duplicateCost,
-                formattedValue: Formatting.formatCurrency(duplicateCost, currency: baseCurrency),
-                currency: baseCurrency, unit: nil
+                value: totalCost,
+                formattedValue: Formatting.formatCurrency(totalCost, currency: baseCurrency),
+                currency: baseCurrency, unit: String(localized: "insights.perMonth")
             ),
             trend: nil,
             severity: .warning,
             category: .recurring,
-            detailData: nil
+            detailData: .recurringList(recurringItems)
         )
     }
 }

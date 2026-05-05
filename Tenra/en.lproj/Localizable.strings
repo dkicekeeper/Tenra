@@ -851,6 +851,7 @@
 "insights.formula.savingsRate.title" = "Savings Rate";
 "insights.formula.savingsRate.heroLabel" = "Of every dollar you earn, you keep";
 "insights.formula.savingsRate.formulaHeader" = "How it's computed";
+"insights.formula.savingsRate.row.period" = "Period";
 "insights.formula.savingsRate.row.income" = "Income";
 "insights.formula.savingsRate.row.expenses" = "Expenses";
 "insights.formula.savingsRate.row.saved" = "Saved (income − expenses)";
@@ -918,6 +919,30 @@
 "insights.formula.projectedBalance.explainer" = "Current balance + (recurring net − avg non-recurring expenses) scaled to the selected period. Naïve linear projection — assumes the last 3 buckets represent what's coming. Use it for early warning, not as a precise forecast.";
 "insights.formula.projectedBalance.rec.growing" = "Projection trends upward — the current pattern adds to balance over the period.";
 "insights.formula.projectedBalance.rec.dropping" = "Projection drops by %@ over the period. Identify which categories pushed expenses up — those are where intervention compounds.";
+"insights.wealth.growth.compare" = "%@ vs %@";
+
+"insights.subscriptionGrowth.compareAgo" = "vs %d months ago";
+"insights.duplicateSubscriptions.subtitle" = "%d possible pair(s)";
+"insights.formula.subscriptionGrowth.title" = "Subscription Growth";
+"insights.formula.subscriptionGrowth.heroLabel" = "Change in monthly recurring spend";
+"insights.formula.subscriptionGrowth.formulaHeader" = "How it's computed";
+"insights.formula.subscriptionGrowth.row.lookback" = "Comparison window";
+"insights.formula.subscriptionGrowth.row.previous" = "Total then (monthly equivalent)";
+"insights.formula.subscriptionGrowth.row.current" = "Total now (monthly equivalent)";
+"insights.formula.subscriptionGrowth.row.addedCount" = "Subscriptions added since";
+"insights.formula.subscriptionGrowth.row.delta" = "Change";
+"insights.formula.subscriptionGrowth.explainer" = "Sums the monthly equivalent of every active subscription, then compares to the same total computed from only the subscriptions that already existed at the start of the lookback window. Lookback scales with the granularity selector.";
+"insights.formula.subscriptionGrowth.rec.growing" = "Recurring spend grew by %@/month. Audit the new subscriptions for ones you don't actively use — recurring lock-ins compound over years.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "You've trimmed recurring spend — keep the discipline as new services tempt you. Direct the freed cash flow to savings or debt.";
+"insights.formula.subscriptionGrowth.rec.stable" = "Recurring spend held roughly flat. The portfolio is stable; review periodically so unused services don't quietly stay.";
+
+"insights.formula.categoryTrend.title" = "Category Trend";
+"insights.formula.categoryTrend.heroLabel" = "Top rising spending category";
+"insights.formula.categoryTrend.formulaHeader" = "Recent monthly spend";
+"insights.formula.categoryTrend.row.month" = "Month";
+"insights.formula.categoryTrend.row.delta" = "Last vs previous month";
+"insights.formula.categoryTrend.explainer" = "We scan monthly category totals over the lookback window (which scales with granularity) and surface the category with the longest consecutive monthly increase. Useful for catching slow drift before it shows up as a budget overrun.";
+"insights.formula.categoryTrend.rec" = "%@ has been rising %d months in a row. Compare the latest transactions against earlier months — a single recurring transaction or a habit shift usually explains the streak.";
 "insights.granularity.prev.week" = "vs previous week";
 "insights.granularity.prev.month" = "vs previous month";
 "insights.granularity.prev.quarter" = "vs previous quarter";

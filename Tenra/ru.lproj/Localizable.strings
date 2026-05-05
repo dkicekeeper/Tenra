@@ -851,6 +851,7 @@
 "insights.formula.savingsRate.title" = "Норма сбережений";
 "insights.formula.savingsRate.heroLabel" = "С каждого заработанного остаётся";
 "insights.formula.savingsRate.formulaHeader" = "Как считается";
+"insights.formula.savingsRate.row.period" = "Период";
 "insights.formula.savingsRate.row.income" = "Доход";
 "insights.formula.savingsRate.row.expenses" = "Расходы";
 "insights.formula.savingsRate.row.saved" = "Сбережено (доход − расход)";
@@ -918,6 +919,30 @@
 "insights.formula.projectedBalance.explainer" = "Текущий баланс + (чистый поток подписок − средние непостоянные расходы), масштабированные на выбранный период. Простая линейная проекция — предполагает, что последние 3 периода повторятся. Используйте для раннего сигнала, не как точный прогноз.";
 "insights.formula.projectedBalance.rec.growing" = "Тренд вверх — текущий паттерн прибавляет к балансу за период.";
 "insights.formula.projectedBalance.rec.dropping" = "Просадка на %@ за период. Найдите категории, которые подняли расходы — там вмешательство даёт максимальный эффект.";
+"insights.wealth.growth.compare" = "%@ к %@";
+
+"insights.subscriptionGrowth.compareAgo" = "за %d мес.";
+"insights.duplicateSubscriptions.subtitle" = "%d возможных пар(ы)";
+"insights.formula.subscriptionGrowth.title" = "Рост подписок";
+"insights.formula.subscriptionGrowth.heroLabel" = "Изменение ежемесячного расхода на подписки";
+"insights.formula.subscriptionGrowth.formulaHeader" = "Как считается";
+"insights.formula.subscriptionGrowth.row.lookback" = "Окно сравнения";
+"insights.formula.subscriptionGrowth.row.previous" = "Тогда (мес. эквивалент)";
+"insights.formula.subscriptionGrowth.row.current" = "Сейчас (мес. эквивалент)";
+"insights.formula.subscriptionGrowth.row.addedCount" = "Подписок добавлено";
+"insights.formula.subscriptionGrowth.row.delta" = "Изменение";
+"insights.formula.subscriptionGrowth.explainer" = "Сумма месячного эквивалента всех активных подписок сравнивается с такой же суммой, посчитанной только по подпискам, существовавшим в начале окна. Длина окна меняется с гранулярностью.";
+"insights.formula.subscriptionGrowth.rec.growing" = "Регулярные расходы выросли на %@/мес. Проверьте новые подписки — те, которыми не пользуетесь, накапливаются годами.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "Вы сократили регулярные расходы — держите дисциплину при новых сервисах. Освободившийся денежный поток лучше направить в сбережения или на долги.";
+"insights.formula.subscriptionGrowth.rec.stable" = "Регулярные расходы держатся стабильно. Портфель устойчив — периодически проверяйте, не остались ли неиспользуемые сервисы.";
+
+"insights.formula.categoryTrend.title" = "Тренд категории";
+"insights.formula.categoryTrend.heroLabel" = "Топ растущая категория расходов";
+"insights.formula.categoryTrend.formulaHeader" = "Помесячные расходы";
+"insights.formula.categoryTrend.row.month" = "Месяц";
+"insights.formula.categoryTrend.row.delta" = "Последний к предыдущему месяцу";
+"insights.formula.categoryTrend.explainer" = "Сканируем помесячные итоги по категориям в окне (длина зависит от гранулярности) и показываем категорию с самой длинной серией роста подряд. Помогает поймать медленный дрейф до того, как он превратится в превышение бюджета.";
+"insights.formula.categoryTrend.rec" = "%@ растёт %d месяцев подряд. Сравните последние транзакции с более ранними — обычно одна новая регулярная подписка или смена привычек объясняет серию.";
 "insights.granularity.prev.week" = "к предыдущей неделе";
 "insights.granularity.prev.month" = "к предыдущему месяцу";
 "insights.granularity.prev.quarter" = "к предыдущему кварталу";

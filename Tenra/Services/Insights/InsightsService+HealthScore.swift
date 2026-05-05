@@ -90,7 +90,8 @@ extension InsightsService {
         let recurringRatioScore = Int(max(0, (1.0 - recurringCost / max(avgMonthlyIncome, 1)) * 100).rounded())
 
         // --- Component 4: Emergency Fund (weight 0.15) ---
-        let totalBalance = accounts.reduce(0.0) { $0 + balanceFor($1.id) }
+        // Loans are liabilities — exclude them from the asset side.
+        let totalBalance = accounts.filter { !$0.isLoan }.reduce(0.0) { $0 + balanceFor($1.id) }
         // Use preAggregated O(M) lookup when available; fall back to O(N) scan
         let last3Months: [InMemoryMonthlyTotal]
         if let preAggregated {

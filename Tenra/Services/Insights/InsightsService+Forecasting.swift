@@ -157,7 +157,8 @@ extension InsightsService {
 
     /// How many months the current balance will last at the current net-burn rate.
     private nonisolated func generateBalanceRunway(accounts: [Account], transactions: [Transaction], baseCurrency: String, balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil) -> Insight? {
-        let currentBalance = accounts.reduce(0.0) { $0 + balanceFor($1.id) }
+        // Loans are liabilities, not runway.
+        let currentBalance = accounts.filter { !$0.isLoan }.reduce(0.0) { $0 + balanceFor($1.id) }
         guard currentBalance > 0 else { return nil }
 
         // Use preAggregated O(M) lookup when available; fall back to O(N) scan

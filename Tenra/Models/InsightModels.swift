@@ -99,6 +99,43 @@ enum TrendDirection: Hashable {
     case up, down, flat
 }
 
+// MARK: - Trend Direction Semantics
+
+extension InsightType {
+    /// Whether an upward trend is *bad* for the user (e.g., expenses growing,
+    /// budget overshoot increasing). Used to colour the trend badge contextually:
+    /// when `true`, `.up` renders red and `.down` renders green — inverting the
+    /// default which assumes growth is good.
+    var upIsBadForUser: Bool {
+        switch self {
+        case .spendingSpike, .monthOverMonthChange, .averageDailySpending,
+             .categoryTrend, .totalRecurringCost, .subscriptionGrowth, .duplicateSubscriptions,
+             .budgetOverspend, .budgetUnderutilized, .projectedOverspend, .accountDormancy,
+             .yearOverYear, .spendingForecast:
+            return true
+        case .topSpendingCategory, .incomeGrowth, .incomeSourceBreakdown, .incomeVsExpenseRatio,
+             .netCashFlow, .bestMonth, .worstMonth, .projectedBalance, .accountActivity,
+             .totalWealth, .wealthGrowth, .savingsRate, .emergencyFund, .balanceRunway,
+             .subcategoryBreakdown:
+            return false
+        }
+    }
+}
+
+extension Insight {
+    /// Colour override for the trend badge — applied when `type.upIsBadForUser`
+    /// flips the default semantics. Returns `nil` when default colouring
+    /// (trend.direction → income/destructive) is correct.
+    var trendBadgeColorOverride: Color? {
+        guard let trend, type.upIsBadForUser else { return nil }
+        switch trend.direction {
+        case .up:   return AppColors.destructive
+        case .down: return AppColors.success
+        case .flat: return AppColors.textSecondary
+        }
+    }
+}
+
 // MARK: - Insight Severity
 
 enum InsightSeverity: String, Hashable {

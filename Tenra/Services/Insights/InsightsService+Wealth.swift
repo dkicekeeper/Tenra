@@ -24,10 +24,13 @@ extension InsightsService {
     ) -> [Insight] {
         guard !accounts.isEmpty else { return [] }
 
-        let totalWealth = accounts.reduce(0.0) { $0 + balanceFor($1.id) }
+        // Loans are liabilities — their balance represents debt remaining, not owned capital.
+        // Exclude them from total wealth and from the per-account breakdown.
+        let assetAccounts = accounts.filter { !$0.isLoan }
+        let totalWealth = assetAccounts.reduce(0.0) { $0 + balanceFor($1.id) }
 
         // Use pre-computed counts (O(1) lookup) instead of O(N*M) allTransactions.filter
-        let accountItems: [AccountInsightItem] = accounts.map { account in
+        let accountItems: [AccountInsightItem] = assetAccounts.map { account in
             let txCount: Int
             if let counts = accountTransactionCounts {
                 txCount = counts[account.id] ?? 0
@@ -101,11 +104,19 @@ extension InsightsService {
         // Wealth Growth
         if let pct = changePercent, abs(pct) > 1 {
             let wealthGrowthSeverity: InsightSeverity = currentPeriodNetFlow > 0 ? .positive : .warning
+            // Build an explicit comparison label "May 2026 vs April 2026" so the
+            // text doesn't depend on a granularity-keyed string elsewhere.
+            let curLabel = granularity.periodLabel(for: currentKey)
+            let prevLabel = granularity.periodLabel(for: prevKey)
+            let comparison = String(
+                format: String(localized: "insights.wealth.growth.compare"),
+                curLabel, prevLabel
+            )
             wealthInsights.append(Insight(
                 id: "wealth_growth",
                 type: .wealthGrowth,
                 title: String(localized: "insights.wealthGrowth"),
-                subtitle: granularity.comparisonPeriodName,
+                subtitle: comparison,
                 metric: InsightMetric(
                     value: currentPeriodNetFlow,
                     formattedValue: Formatting.formatCurrencySmart(currentPeriodNetFlow, currency: baseCurrency),
@@ -116,7 +127,7 @@ extension InsightsService {
                     direction: direction,
                     changePercent: pct,
                     changeAbsolute: nil,
-                    comparisonPeriod: granularity.comparisonPeriodName
+                    comparisonPeriod: comparison
                 ),
                 severity: wealthGrowthSeverity,
                 category: .wealth,

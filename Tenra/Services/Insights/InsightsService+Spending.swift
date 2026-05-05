@@ -415,18 +415,30 @@ extension InsightsService {
     // MARK: - Category Trend
 
     /// Finds the expense category that has been rising for the most consecutive months (min 2).
-    nonisolated func generateCategoryTrend(baseCurrency: String, transactions: [Transaction], preAggregated: PreAggregatedData? = nil) -> Insight? {
+    nonisolated func generateCategoryTrend(baseCurrency: String, granularity: InsightGranularity, transactions: [Transaction], preAggregated: PreAggregatedData? = nil) -> Insight? {
+        // Lookback window scales with granularity. Internal resolution stays monthly
+        // (streak detection at month grain is the most useful signal); granularity
+        // only changes how far back we look.
+        let lookbackMonths: Int
+        switch granularity {
+        case .week:    lookbackMonths = 3
+        case .month:   lookbackMonths = 6
+        case .quarter: lookbackMonths = 12
+        case .year:    lookbackMonths = 24
+        case .allTime: lookbackMonths = 12
+        }
+
         let calendar = Calendar.current
         let now = Date()
-        guard let sixMonthsAgo = calendar.date(byAdding: .month, value: -6, to: startOfMonth(calendar, for: now)) else { return nil }
+        guard let lookbackStart = calendar.date(byAdding: .month, value: -lookbackMonths, to: startOfMonth(calendar, for: now)) else { return nil }
 
         // Use preAggregated O(M) lookup when available; fall back to O(N) scan
         let monthlyAggregates: [InMemoryCategoryMonthTotal]
         if let preAggregated {
-            monthlyAggregates = preAggregated.categoryMonthTotalsInRange(from: sixMonthsAgo, to: now)
+            monthlyAggregates = preAggregated.categoryMonthTotalsInRange(from: lookbackStart, to: now)
         } else {
             monthlyAggregates = Self.computeCategoryMonthTotals(
-                from: transactions, from: sixMonthsAgo, to: now, baseCurrency: baseCurrency
+                from: transactions, from: lookbackStart, to: now, baseCurrency: baseCurrency
             )
         }
         guard monthlyAggregates.count >= 4 else { return nil }
@@ -437,6 +449,7 @@ extension InsightsService {
         var bestStreak = 1
         var bestLatestAmount: Double = 0
         var bestChangePercent: Double = 0
+        var bestSorted: [InMemoryCategoryMonthTotal] = []
 
         for (catName, records) in byCategory {
             guard records.count >= 3 else { continue }
@@ -456,11 +469,56 @@ extension InsightsService {
                 bestLatestAmount = sorted.last?.totalExpenses ?? 0
                 let prevAmount = sorted[max(0, sorted.count - 2)].totalExpenses
                 bestChangePercent = prevAmount > 0 ? ((bestLatestAmount - prevAmount) / prevAmount) * 100 : 0
+                bestSorted = sorted
             }
         }
 
         guard let catName = bestCategory else { return nil }
-        Self.logger.debug("📈 [Insights] CategoryTrend — '\(catName, privacy: .public)' rising for \(bestStreak + 1) months")
+
+        // Build per-month rows for the formula breakdown — last 6 records max so the
+        // card stays scannable.
+        let displayRecords = Array(bestSorted.suffix(6))
+        let monthFormatter = DateFormatter()
+        monthFormatter.dateFormat = "MMM yyyy"
+        var formulaRows: [InsightFormulaRow] = displayRecords.map { rec in
+            var comps = DateComponents(); comps.year = rec.year; comps.month = rec.month; comps.day = 1
+            let date = calendar.date(from: comps) ?? Date()
+            let label = monthFormatter.string(from: date)
+            return InsightFormulaRow(
+                id: "\(rec.year)-\(rec.month)",
+                labelKey: "insights.formula.categoryTrend.row.month",
+                value: rec.totalExpenses,
+                kind: .rawText("\(label) — \(Formatting.formatCurrencySmart(rec.totalExpenses, currency: baseCurrency))")
+            )
+        }
+        formulaRows.append(InsightFormulaRow(
+            id: "delta",
+            labelKey: "insights.formula.categoryTrend.row.delta",
+            value: bestChangePercent,
+            kind: .percent,
+            isEmphasised: true
+        ))
+
+        let recommendation = String(
+            format: String(localized: "insights.formula.categoryTrend.rec"),
+            catName, bestStreak + 1
+        )
+
+        let model = InsightFormulaModel(
+            id: "categoryTrend",
+            titleKey: "insights.formula.categoryTrend.title",
+            icon: "chart.line.uptrend.xyaxis",
+            color: AppColors.warning,
+            heroValueText: catName,
+            heroLabelKey: "insights.formula.categoryTrend.heroLabel",
+            formulaHeaderKey: "insights.formula.categoryTrend.formulaHeader",
+            formulaRows: formulaRows,
+            explainerKey: "insights.formula.categoryTrend.explainer",
+            recommendation: recommendation,
+            baseCurrency: baseCurrency
+        )
+
+        Self.logger.debug("📈 [Insights] CategoryTrend — '\(catName, privacy: .public)' rising \(bestStreak + 1) months, lookback=\(lookbackMonths)mo")
         return Insight(
             id: "category_trend_\(catName)",
             type: .categoryTrend,
@@ -480,7 +538,7 @@ extension InsightsService {
             ),
             severity: .warning,
             category: .spending,
-            detailData: nil
+            detailData: .formulaBreakdown(model)
         )
     }
 }

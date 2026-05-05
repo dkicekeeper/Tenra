@@ -59,13 +59,15 @@ struct InsightsSummaryDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppSpacing.xl) {
-                // Current bucket — primary
-                currentBucketSection
-
-                // All-time (chart window) — secondary
-                if granularity != .allTime {
-                    chartWindowTotalsSection
-                }
+                // Single totals card for the current bucket — no period label and
+                // no delta badges (the granularity title and the chart provide context).
+                InsightsTotalsCard(
+                    income: currentBucketIncome,
+                    expenses: currentBucketExpenses,
+                    netFlow: currentBucketNetFlow,
+                    currency: currency
+                )
+                .screenPadding()
 
                 // Full-size income/expense chart
                 if periodDataPoints.count >= 2 {
@@ -79,43 +81,8 @@ struct InsightsSummaryDetailView: View {
             }
             .padding(.vertical, AppSpacing.md)
         }
-        .navigationTitle(granularity.displayName)
+        .navigationTitle(bucketLabel.isEmpty ? granularity.displayName : bucketLabel)
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-    // MARK: - Current Bucket
-
-    private var currentBucketSection: some View {
-        InsightsTotalsCard(
-            income: currentBucketIncome,
-            expenses: currentBucketExpenses,
-            netFlow: currentBucketNetFlow,
-            currency: currency,
-            periodLabel: bucketLabel,
-            previousIncome: previousBucketIncome,
-            previousExpenses: previousBucketExpenses,
-            previousNetFlow: previousBucketNetFlow
-        )
-        .screenPadding()
-    }
-
-    // MARK: - Chart Window Totals
-
-    private var chartWindowTotalsSection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text(String(localized: "insights.summary.windowTotalsLabel"))
-                .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textTertiary)
-                .textCase(.uppercase)
-                .padding(.horizontal, AppSpacing.lg)
-            InsightsTotalsCard(
-                income: totalIncome,
-                expenses: totalExpenses,
-                netFlow: netFlow,
-                currency: currency
-            )
-            .screenPadding()
-        }
     }
 
     // MARK: - Chart

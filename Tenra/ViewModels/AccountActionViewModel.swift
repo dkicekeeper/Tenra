@@ -12,11 +12,14 @@ final class AccountActionViewModel {
 
     // MARK: - Observable State
 
-    var selectedAction: ActionType
+    var selectedAction: ActionType {
+        didSet { applyDefaultsForAction() }
+    }
     var amountText: String = ""
     var selectedCurrency: String
     var descriptionText: String = ""
     var selectedCategory: String? = nil
+    var selectedSourceAccountId: String? = nil
     var selectedTargetAccountId: String? = nil
     var selectedDate: Date = Date()
     var showingError: Bool = false
@@ -39,8 +42,21 @@ final class AccountActionViewModel {
 
     // MARK: - Computed Properties
 
-    var availableAccounts: [Account] {
-        accountsViewModel.accounts.filter { $0.id != account.id }
+    /// Source picker accounts for transfer mode — all accounts except the currently
+    /// selected target. Includes deposits in either role.
+    var availableSourceAccounts: [Account] {
+        accountsViewModel.accounts.filter { $0.id != selectedTargetAccountId }
+    }
+
+    /// Target picker accounts — all accounts except the currently selected source
+    /// (for transfer) or all accounts (for income top-up).
+    var availableTargetAccounts: [Account] {
+        switch selectedAction {
+        case .transfer:
+            return accountsViewModel.accounts.filter { $0.id != selectedSourceAccountId }
+        case .income:
+            return accountsViewModel.accounts
+        }
     }
 
     var incomeCategories: [String] {
@@ -75,6 +91,40 @@ final class AccountActionViewModel {
         self.transactionsViewModel = transactionsViewModel
         self.selectedCurrency = account.currency
         self.selectedAction = defaultAction ?? .transfer
+        applyDefaultsForAction()
+    }
+
+    /// Resets source/target selections to the action-appropriate defaults so that
+    /// the tapped account always lands in the meaningful slot:
+    /// - transfer: tapped account is the source; target is unselected.
+    /// - income:   tapped account is the target; source is a category.
+    private func applyDefaultsForAction() {
+        switch selectedAction {
+        case .transfer:
+            selectedSourceAccountId = account.id
+            selectedTargetAccountId = nil
+        case .income:
+            selectedSourceAccountId = nil
+            selectedTargetAccountId = account.id
+        }
+        selectedCurrency = account.currency
+    }
+
+    /// Called when the user picks a new account in the carousel that drives the
+    /// amount currency: source for transfer, target for income. Mirrors the
+    /// "currency follows account" behavior from `TransactionAddModal`.
+    func updateCurrencyForPrimaryAccount() {
+        let primaryId: String? = {
+            switch selectedAction {
+            case .transfer: return selectedSourceAccountId
+            case .income:   return selectedTargetAccountId
+            }
+        }()
+        guard let id = primaryId,
+              let account = accountsViewModel.accounts.first(where: { $0.id == id }) else {
+            return
+        }
+        selectedCurrency = account.currency
     }
 
     // MARK: - Save
@@ -127,12 +177,20 @@ final class AccountActionViewModel {
             return
         }
 
+        let targetAccountId = selectedTargetAccountId ?? account.id
+        guard let targetAccount = accountsViewModel.accounts.first(where: { $0.id == targetAccountId }) else {
+            errorMessage = String(localized: "transactionForm.accountNotFound")
+            showingError = true
+            HapticManager.error()
+            return
+        }
+
         var convertedAmount: Double? = nil
-        if selectedCurrency != account.currency {
+        if selectedCurrency != targetAccount.currency {
             guard let converted = await CurrencyConverter.convert(
                 amount: amount,
                 from: selectedCurrency,
-                to: account.currency
+                to: targetAccount.currency
             ) else {
                 errorMessage = String(localized: "currency.error.conversionFailed")
                 showingError = true
@@ -152,7 +210,7 @@ final class AccountActionViewModel {
             type: .income,
             category: category,
             subcategory: nil,
-            accountId: account.id,
+            accountId: targetAccount.id,
             targetAccountId: nil
         )
 
@@ -176,6 +234,8 @@ final class AccountActionViewModel {
         finalDescription: String,
         transactionStore: TransactionStore
     ) async {
+        let sourceId = selectedSourceAccountId ?? account.id
+
         guard let targetAccountId = selectedTargetAccountId else {
             errorMessage = String(localized: "transactionForm.selectTargetAccount")
             showingError = true
@@ -183,27 +243,30 @@ final class AccountActionViewModel {
             return
         }
 
-        guard targetAccountId != account.id else {
+        guard targetAccountId != sourceId else {
             errorMessage = String(localized: "transactionForm.cannotTransferToSame")
             showingError = true
             HapticManager.warning()
             return
         }
 
-        guard accountsViewModel.accounts.contains(where: { $0.id == targetAccountId }) else {
+        guard let sourceAccount = accountsViewModel.accounts.first(where: { $0.id == sourceId }) else {
             errorMessage = String(localized: "transactionForm.accountNotFound")
             showingError = true
             HapticManager.error()
             return
         }
 
-        // The current account is always the source — deposit transfers are always
-        // outgoing (Variant A). To put money INTO a deposit, the user goes from the
-        // source account's screen.
-        let sourceId = account.id
-        let targetId = targetAccountId
+        guard let targetAccount = accountsViewModel.accounts.first(where: { $0.id == targetAccountId }) else {
+            errorMessage = String(localized: "transactionForm.accountNotFound")
+            showingError = true
+            HapticManager.error()
+            return
+        }
 
-        let sourceCurrency = account.currency
+        let targetId = targetAccountId
+        let sourceCurrency = sourceAccount.currency
+        let targetCurrency = targetAccount.currency
 
         if selectedCurrency != sourceCurrency {
             guard await CurrencyConverter.convert(
@@ -218,9 +281,7 @@ final class AccountActionViewModel {
             }
         }
 
-        let targetAccount = accountsViewModel.accounts.first(where: { $0.id == targetId })
-        let targetCurrency = targetAccount?.currency ?? selectedCurrency
-        let currenciesToLoad = Set([selectedCurrency, account.currency, targetCurrency])
+        let currenciesToLoad = Set([selectedCurrency, sourceCurrency, targetCurrency])
 
         for currency in currenciesToLoad where currency != "KZT" {
             if await CurrencyConverter.getExchangeRate(for: currency) == nil {
@@ -231,8 +292,8 @@ final class AccountActionViewModel {
             }
         }
 
-        if selectedCurrency != account.currency {
-            guard await CurrencyConverter.convert(amount: amount, from: selectedCurrency, to: account.currency) != nil else {
+        if selectedCurrency != sourceCurrency {
+            guard await CurrencyConverter.convert(amount: amount, from: selectedCurrency, to: sourceCurrency) != nil else {
                 errorMessage = String(localized: "currency.error.sourceConversionFailed")
                 showingError = true
                 HapticManager.error()
@@ -249,8 +310,8 @@ final class AccountActionViewModel {
             }
         }
 
-        if account.currency != targetCurrency {
-            guard await CurrencyConverter.convert(amount: amount, from: account.currency, to: targetCurrency) != nil else {
+        if sourceCurrency != targetCurrency {
+            guard await CurrencyConverter.convert(amount: amount, from: sourceCurrency, to: targetCurrency) != nil else {
                 errorMessage = String(localized: "currency.error.crossConversionFailed")
                 showingError = true
                 HapticManager.error()

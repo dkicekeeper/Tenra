@@ -136,22 +136,6 @@ struct AccountsManagementView: View {
                     logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
                 }
             }
-
-            // Reconcile all loans — collect then batch-persist
-            var loanTransactions: [Transaction] = []
-            loansViewModel.reconcileAllLoans(
-                allTransactions: transactionsViewModel.allTransactions,
-                onTransactionCreated: { transaction in
-                    loanTransactions.append(transaction)
-                }
-            )
-            for tx in loanTransactions {
-                do {
-                    _ = try await transactionStore.add(tx)
-                } catch {
-                    logger.error("Failed to add loan payment transaction: \(error.localizedDescription)")
-                }
-            }
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

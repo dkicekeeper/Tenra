@@ -157,12 +157,12 @@ New file needed?
 | Per-metric formulas, granularity, severity behavior | [docs/INSIGHTS_METRICS_REFERENCE.md](docs/INSIGHTS_METRICS_REFERENCE.md) |
 | TransactionStore CRUD, FRC, addBatch, NSBatchDeleteRequest | [docs/domains/transactions.md](docs/domains/transactions.md) |
 | Deposits, DepositInfo, interest accrual, capitalization | [docs/domains/deposits.md](docs/domains/deposits.md) |
-| Loans, LoanInfo, LoanPaymentService, reconciliation | [docs/domains/loans.md](docs/domains/loans.md) |
+| Loans, LoanInfo, LoanPaymentService, manual payments, linking | [docs/domains/loans.md](docs/domains/loans.md) |
 | Recurring transactions, RecurringStore, series + occurrences | [docs/domains/recurring.md](docs/domains/recurring.md) |
 | Swift Charts (PeriodChart, IncomeExpense, scrollable, MiniSparkline) | [docs/domains/charts.md](docs/domains/charts.md) |
 | CSV import/export round-trip rules | [docs/domains/csv.md](docs/domains/csv.md) |
 | VoiceInput, speech recognition, SiriGlowView | [docs/domains/voice.md](docs/domains/voice.md) |
-| FX rates, currency conversion, prewarm, providers | [docs/domains/currency.md](docs/domains/currency.md) |
+| FX rates, currency conversion, prewarm, providers, base-currency aggregation (`convertSync` vs `convertedAmount`) | [docs/domains/currency.md](docs/domains/currency.md) |
 | Logo providers, ServiceLogoRegistry, jsDelivr | [docs/domains/logos.md](docs/domains/logos.md) |
 | Performance hot-paths, SwiftUI Layout gotchas, common cross-domain pitfalls | [docs/gotchas.md](docs/gotchas.md) |
 
@@ -177,6 +177,7 @@ These cause silent data corruption or crashes — internalize even without readi
 3. ⚠️ **NEVER use `NSBatchDeleteRequest` then `context.save()` on the SAME context** when deleted objects have inverse relationships. Use `context.delete()` instead. See [concurrency.md](docs/concurrency.md).
 4. ⚠️ **SwiftUI `List` with 500+ Sections = hard freeze.** Always slice via `Array(sections.prefix(visibleSectionLimit))` with infinite-scroll trigger. See [gotchas.md](docs/gotchas.md).
 5. ⚠️ **Generated recurring tx subcategories require explicit linking.** Always `await transactionStore.createSeries(series)` then call `categoriesViewModel.linkSubcategoriesToTransaction(...)`. See [domains/recurring.md](docs/domains/recurring.md).
+6. ⚠️ **`Transaction.convertedAmount` is in *account* currency, NOT base currency.** Never sum `convertedAmount ?? amount` across multi-currency transactions to get a base-currency total — bug shows as `$20 + $100 = "120 KZT"`. Always convert via `CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency)` with `convertedAmount ?? amount` as a cold-cache fallback only. See [domains/currency.md](docs/domains/currency.md).
 
 ## Common Tasks
 
@@ -271,7 +272,7 @@ Active reference docs in `docs/`:
 | [domains/transactions.md](docs/domains/transactions.md) | TransactionStore CRUD, FRC, batch ops |
 | [domains/insights.md](docs/domains/insights.md) | InsightsService architecture, DataSnapshot, PreAggregatedData |
 | [domains/deposits.md](docs/domains/deposits.md) | Interest accrual, capitalization, conversion |
-| [domains/loans.md](docs/domains/loans.md) | Payment tracking, reconciliation |
+| [domains/loans.md](docs/domains/loans.md) | Manual payments, linking, amortization |
 | [domains/recurring.md](docs/domains/recurring.md) | Series + occurrences, frequency cases |
 | [domains/charts.md](docs/domains/charts.md) | Swift Charts patterns, scrollable, mini-charts |
 | [domains/csv.md](docs/domains/csv.md) | CSV round-trip rules |

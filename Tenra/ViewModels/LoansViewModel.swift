@@ -148,36 +148,6 @@ class LoansViewModel {
         return transaction
     }
 
-    // MARK: - Reconciliation
-
-    /// Reconcile payments for all loans
-    func reconcileAllLoans(allTransactions: [Transaction], onTransactionCreated: @escaping (Transaction) -> Void) {
-        for account in accountsViewModel.accounts where account.isLoan {
-            var updatedAccount = account
-            LoanPaymentService.reconcileLoanPayments(
-                account: &updatedAccount,
-                allTransactions: allTransactions,
-                onTransactionCreated: onTransactionCreated
-            )
-            accountsViewModel.updateAccount(updatedAccount)
-        }
-    }
-
-    /// Reconcile payments for a specific loan
-    func reconcileLoanPayments(for accountId: String, allTransactions: [Transaction], onTransactionCreated: @escaping (Transaction) -> Void) {
-        guard var account = accountsViewModel.getAccount(by: accountId),
-              account.isLoan else {
-            return
-        }
-
-        LoanPaymentService.reconcileLoanPayments(
-            account: &account,
-            allTransactions: allTransactions,
-            onTransactionCreated: onTransactionCreated
-        )
-        accountsViewModel.updateAccount(account)
-    }
-
     // MARK: - Link Existing Transactions
 
     func linkTransactions(

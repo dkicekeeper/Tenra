@@ -79,6 +79,7 @@ struct GroupedTransactionList<Overlay: View>: View {
         let slice = Array(transactions.prefix(visibleLimit))
         let grouped = Dictionary(grouping: slice) { $0.date }
         let amountFor = summaryAmountFor
+        let headerCurrency = summaryCurrencyOverride ?? displayCurrency
         cachedSections = grouped
             .sorted { $0.key > $1.key }
             .map { key, txs in
@@ -87,7 +88,11 @@ struct GroupedTransactionList<Overlay: View>: View {
                     if let amountFor {
                         return acc + amountFor(tx)
                     }
-                    return acc + (tx.convertedAmount ?? tx.amount)
+                    // Convert each tx into the header's currency. `tx.convertedAmount`
+                    // is denominated in the *account*'s currency, not the header's,
+                    // so summing it directly produces wrong totals across multi-currency
+                    // accounts (e.g. $20 + $100 displayed as "120 KZT").
+                    return acc + Self.amountInHeaderCurrency(tx: tx, headerCurrency: headerCurrency)
                 }
                 return DaySection(
                     date: key,
@@ -96,6 +101,26 @@ struct GroupedTransactionList<Overlay: View>: View {
                     dayExpenseTotal: expenseTotal
                 )
             }
+    }
+
+    /// Converts a transaction's amount into the header's display currency using the
+    /// in-memory rate cache. Falls back to raw amount only when no header currency
+    /// is provided or rates are unavailable.
+    private static func amountInHeaderCurrency(tx: Transaction, headerCurrency: String?) -> Double {
+        guard let headerCurrency else {
+            return tx.convertedAmount ?? tx.amount
+        }
+        if tx.currency == headerCurrency {
+            return tx.amount
+        }
+        if let converted = CurrencyConverter.convertSync(
+            amount: tx.amount,
+            from: tx.currency,
+            to: headerCurrency
+        ) {
+            return converted
+        }
+        return tx.convertedAmount ?? tx.amount
     }
 
     private static func formatDateKey(_ isoDate: String) -> String {

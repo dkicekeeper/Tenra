@@ -535,6 +535,8 @@
 "transactionForm.topUp" = "Top Up";
 "transactionForm.toAccount" = "To Account";
 "transactionForm.fromAccount" = "From Account";
+"transactionForm.fromHeader" = "From";
+"transactionForm.toHeader" = "To";
 "transactionForm.noAccountsForTransfer" = "No other accounts for transfer";
 "transactionForm.enterPositiveAmount" = "Enter a positive amount";
 "transactionForm.selectCategoryIncome" = "Select income category";

@@ -56,7 +56,8 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
 - **PreAggregatedData "piggyback" pattern**: Add fields to `PreAggregatedData.build()` O(N) loop — never add separate O(N) loops when one already exists. See [domains/insights.md](domains/insights.md).
 - **`filterService.filterByTimeRange` is expensive** (~16μs/tx due to DateFormatter): use `txDateMap` inline filter when available. See [domains/insights.md](domains/insights.md).
 - **Subcategory CoreData relationship**: `Transaction.subcategory: String?` is legacy; real subcats live via `categoriesViewModel.linkSubcategoriesToTransaction(transactionId:subcategoryIds:)`. Generated recurring txs need explicit linking after creation. See [domains/recurring.md](domains/recurring.md).
-- **Reconciliation callback pattern**: Never spawn `Task {}` inside synchronous `onTransactionCreated` callbacks — collect into array, batch-persist after reconciliation completes. Applies to both deposits and loans. See [domains/deposits.md](domains/deposits.md) / [domains/loans.md](domains/loans.md).
+- **Reconciliation callback pattern (deposits only)**: Never spawn `Task {}` inside synchronous `onTransactionCreated` callbacks — collect into array, batch-persist after reconciliation completes. Loans no longer auto-reconcile (user-driven only). See [domains/deposits.md](domains/deposits.md).
+- ⚠️ **Don't sum `convertedAmount ?? amount` for base-currency totals**: `Transaction.convertedAmount` is in *account* currency, not base currency — summing it across multi-currency txs produces the `$20 + $100 = "120 KZT"` bug. Always convert via `CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency)`. See [domains/currency.md](domains/currency.md).
 
 ## Localization
 

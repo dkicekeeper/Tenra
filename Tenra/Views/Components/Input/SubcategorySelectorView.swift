@@ -32,9 +32,19 @@ struct SubcategorySelectorView: View {
         return allSubcategories
     }
 
+    /// First selected subcategory id in display order — used as the auto-scroll anchor
+    /// so that pre-selected subcategories are visible without horizontal scrubbing.
+    private var firstSelectedSubcategoryId: AnyHashable? {
+        availableSubcategories.first(where: { selectedSubcategoryIds.contains($0.id) })?.id
+            as AnyHashable?
+    }
+
     var body: some View {
         if !availableSubcategories.isEmpty {
-            UniversalCarousel(config: .filter) {
+            UniversalCarousel(
+                config: .filter,
+                scrollToId: .constant(firstSelectedSubcategoryId)
+            ) {
                 ForEach(availableSubcategories) { subcategory in
                     UniversalFilterButton(
                         title: subcategory.name,
@@ -49,6 +59,7 @@ struct SubcategorySelectorView: View {
                             HapticManager.selection()
                         }
                     )
+                    .id(subcategory.id)
                 }
 
                 // Кнопка поиска

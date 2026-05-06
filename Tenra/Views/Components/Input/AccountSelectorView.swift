@@ -89,16 +89,20 @@ struct AccountSelectorView: View {
         .scrollPosition(id: $scrollPosition, anchor: .center)
         .contentMargins(.horizontal, contentMargin, for: .scrollContent)
         .scrollClipDisabled()
+        // Defer the initial position to the next runloop tick. `containerRelativeFrame`
+        // doesn't have a measured width during the synchronous onAppear, and assigning
+        // `scrollPosition` before the scroll view has sized its content silently no-ops.
         .onAppear {
-            if scrollPosition != selectedAccountId {
-                scrollPosition = selectedAccountId
-            }
+            syncScrollToSelected(animated: false)
         }
-        .onChange(of: selectedAccountId) { _, newId in
-            guard scrollPosition != newId else { return }
-            withAnimation(.easeInOut(duration: 0.3)) {
-                scrollPosition = newId
-            }
+        .onChange(of: selectedAccountId) { _, _ in
+            syncScrollToSelected(animated: true)
+        }
+        // Re-sync when the accounts list itself changes (e.g. when a sibling carousel
+        // filters out the currently-selected id, or new accounts arrive). Without this,
+        // the scroll position can drift away from the selection after a list refresh.
+        .onChange(of: accounts.map(\.id)) { _, _ in
+            syncScrollToSelected(animated: false)
         }
         // Commit auto-selection only when scroll settles. During a tap-induced
         // animated scroll, `scrollPosition` momentarily reports every card the
@@ -112,6 +116,25 @@ struct AccountSelectorView: View {
             else { return }
             selectedAccountId = landedId
             onSelectionChange?(landedId)
+        }
+    }
+
+    /// Aligns the scroll position with the current `selectedAccountId`. Defers the
+    /// non-animated case to the next runloop tick so the scroll view has a measured
+    /// width when we assign `scrollPosition` — without the defer, the assignment
+    /// silently no-ops on first appear (and after the accounts list changes).
+    private func syncScrollToSelected(animated: Bool) {
+        let target = selectedAccountId
+        if animated {
+            guard scrollPosition != target else { return }
+            withAnimation(.easeInOut(duration: 0.3)) {
+                scrollPosition = target
+            }
+        } else {
+            DispatchQueue.main.async {
+                guard scrollPosition != target else { return }
+                scrollPosition = target
+            }
         }
     }
 }

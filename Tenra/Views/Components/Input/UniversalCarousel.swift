@@ -87,9 +87,13 @@ struct UniversalCarousel<Content: View>: View {
             ScrollViewReader { proxy in
                 scrollViewContent
                     .onAppear {
-                        guard let id = scrollBinding.wrappedValue else { return }
-                        // Immediate scroll without animation on initial appear
-                        proxy.scrollTo(id, anchor: .center)
+                        // Defer to the next runloop tick — `proxy.scrollTo` is a no-op
+                        // before the scroll view has measured its content, which happens
+                        // *after* the synchronous onAppear closure on first appear.
+                        DispatchQueue.main.async {
+                            guard let id = scrollBinding.wrappedValue else { return }
+                            proxy.scrollTo(id, anchor: .center)
+                        }
                     }
                     .onChange(of: scrollBinding.wrappedValue) { _, newId in
                         guard let newId else { return }

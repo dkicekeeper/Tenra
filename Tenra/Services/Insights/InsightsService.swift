@@ -1025,14 +1025,29 @@ nonisolated final class InsightsService {
     }
 
     /// Amount resolver for static helper methods (no `self` needed).
+    /// Converts `tx.amount` from `tx.currency` into `baseCurrency` via the live
+    /// FX cache. Uses `convertedAmount` (in *account* currency) only as a
+    /// last-resort fallback when rates are unavailable.
     static func resolveAmountStatic(_ tx: Transaction, baseCurrency: String) -> Double {
         guard tx.currency != baseCurrency else { return tx.amount }
+        if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency) {
+            return fx
+        }
         return tx.convertedAmount ?? tx.amount
     }
 
-    /// Returns the amount in baseCurrency. Uses cached convertedAmount when available.
+    /// Returns the amount in `baseCurrency` via `CurrencyConverter.convertSync`.
+    /// `convertedAmount` is denominated in the account's currency and is therefore
+    /// only a fallback for the cold-cache case.
     nonisolated func resolveAmount(_ transaction: Transaction, baseCurrency: String) -> Double {
         guard transaction.currency != baseCurrency else { return transaction.amount }
+        if let fx = CurrencyConverter.convertSync(
+            amount: transaction.amount,
+            from: transaction.currency,
+            to: baseCurrency
+        ) {
+            return fx
+        }
         return transaction.convertedAmount ?? transaction.amount
     }
 

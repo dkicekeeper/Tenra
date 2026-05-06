@@ -343,7 +343,6 @@ struct LoanInfo: Codable, Equatable, Hashable {
     var paymentDay: Int                 // 1-31, день месяца для платежа
     var paymentsMade: Int               // Количество совершённых платежей
     var lastPaymentDate: String?        // YYYY-MM-DD последнего платежа
-    var lastReconciliationDate: String  // YYYY-MM-DD — для идемпотентной сверки
 
     // Досрочные погашения
     var earlyRepayments: [EarlyRepayment]
@@ -352,7 +351,7 @@ struct LoanInfo: Codable, Equatable, Hashable {
         case bankName, loanType, originalPrincipal, remainingPrincipal
         case interestRateAnnual, interestRateHistory, totalInterestPaid
         case termMonths, startDate, endDate
-        case monthlyPayment, paymentDay, paymentsMade, lastPaymentDate, lastReconciliationDate
+        case monthlyPayment, paymentDay, paymentsMade, lastPaymentDate
         case earlyRepayments
     }
 
@@ -372,7 +371,6 @@ struct LoanInfo: Codable, Equatable, Hashable {
         paymentDay = try container.decode(Int.self, forKey: .paymentDay)
         paymentsMade = try container.decode(Int.self, forKey: .paymentsMade)
         lastPaymentDate = try container.decodeIfPresent(String.self, forKey: .lastPaymentDate)
-        lastReconciliationDate = try container.decode(String.self, forKey: .lastReconciliationDate)
         earlyRepayments = try container.decode([EarlyRepayment].self, forKey: .earlyRepayments)
     }
 
@@ -391,7 +389,6 @@ struct LoanInfo: Codable, Equatable, Hashable {
         paymentDay: Int,
         paymentsMade: Int = 0,
         lastPaymentDate: String? = nil,
-        lastReconciliationDate: String? = nil,
         earlyRepayments: [EarlyRepayment] = []
     ) {
         self.bankName = bankName
@@ -434,7 +431,6 @@ struct LoanInfo: Codable, Equatable, Hashable {
         self.paymentDay = paymentDay
         self.paymentsMade = paymentsMade
         self.lastPaymentDate = lastPaymentDate
-        self.lastReconciliationDate = lastReconciliationDate ?? DateFormatters.dateFormatter.string(from: Date())
         self.earlyRepayments = earlyRepayments
     }
 
@@ -454,7 +450,6 @@ struct LoanInfo: Codable, Equatable, Hashable {
         try container.encode(paymentDay, forKey: .paymentDay)
         try container.encode(paymentsMade, forKey: .paymentsMade)
         try container.encodeIfPresent(lastPaymentDate, forKey: .lastPaymentDate)
-        try container.encode(lastReconciliationDate, forKey: .lastReconciliationDate)
         try container.encode(earlyRepayments, forKey: .earlyRepayments)
     }
 }

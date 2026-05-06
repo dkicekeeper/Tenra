@@ -535,6 +535,8 @@
 "transactionForm.topUp" = "Пополнение";
 "transactionForm.toAccount" = "Счет получателя";
 "transactionForm.fromAccount" = "Счет источника";
+"transactionForm.fromHeader" = "Откуда";
+"transactionForm.toHeader" = "Куда";
 "transactionForm.noAccountsForTransfer" = "Нет других счетов для перевода";
 "transactionForm.enterPositiveAmount" = "Введите положительную сумму";
 "transactionForm.selectCategoryIncome" = "Выберите категорию дохода";

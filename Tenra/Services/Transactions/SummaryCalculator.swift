@@ -60,20 +60,17 @@ enum SummaryCalculator {
         var plannedExpenses: Double = 0
 
         for tx in filtered {
-            // Mirror TransactionCurrencyService logic:
-            // if the transaction currency matches baseCurrency, use amount directly;
-            // otherwise prefer pre-computed convertedAmount (stored at creation time),
-            // then sync FX (handles future/recurring-generated tx that have convertedAmount=nil),
-            // then fall back to raw amount.
+            // Convert tx.amount → baseCurrency via the live FX cache. `convertedAmount`
+            // is in the *account*'s currency, so it must NOT be preferred over
+            // `convertSync` — only used as a last-resort fallback when rates are
+            // unavailable.
             let amountInBase: Double
             if tx.currency == baseCurrency {
                 amountInBase = tx.amount
-            } else if let converted = tx.convertedAmount {
-                amountInBase = converted
             } else if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency) {
                 amountInBase = fx
             } else {
-                amountInBase = tx.amount
+                amountInBase = tx.convertedAmount ?? tx.amount
             }
 
             guard let txDate = dateFormatter.date(from: tx.date) else { continue }
@@ -152,6 +149,8 @@ enum SummaryCalculator {
             let amountInBase: Double
             if tx.currency == baseCurrency {
                 amountInBase = tx.amount
+            } else if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency) {
+                amountInBase = fx
             } else {
                 amountInBase = tx.convertedAmount ?? tx.amount
             }

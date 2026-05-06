@@ -21,19 +21,11 @@ Payment tracking, reconciliation, and amortization.
 
 ⚠️ **Pass `nil` to force recalculation** after principal/rate/term changes.
 
-## Reconciliation
+## No Auto-Reconciliation
 
-`reconcileLoanPayments` is **synchronous** with `onTransactionCreated` callback.
+Loan payments are **never** generated automatically. The user must record every payment manually via `makeManualPayment` (or link an existing expense via `LoanLinkPaymentsView`).
 
-⚠️ **Callers MUST collect transactions in array, then batch-persist via `transactionStore.add()` after reconciliation completes.**
-
-Do NOT spawn fire-and-forget `Task {}` inside the callback — creates race condition where loan state diverges from transaction records.
-
-## Centralized Reconciliation Point
-
-`AccountsManagementView` is the centralized reconciliation point for both loans AND deposits on `.task {}` appear.
-
-⚠️ **`reconcileAllLoans` must be called globally** — not just per-loan in detail view. If user doesn't visit each loan's detail screen, reconciliation is skipped.
+Rationale: real-world loan payments rarely match the calculated annuity exactly (users round up, pay early, vary amounts). Auto-generated phantom payments diverged from real bank withdrawals and confused state. Deposits still auto-reconcile interest accrual — only loans are user-driven.
 
 ## Every Financial Mutation Creates a Transaction
 

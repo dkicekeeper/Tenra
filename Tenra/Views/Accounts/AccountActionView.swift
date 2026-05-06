@@ -47,6 +47,10 @@ struct AccountActionView: View {
                     .frame(height: 0)
                     .glassEffectID("account-card-\(account.id)", in: namespace)
 
+                fromSection
+
+                toSection
+
                 AmountInputView(
                     amount: $viewModel.amountText,
                     selectedCurrency: $viewModel.selectedCurrency,
@@ -56,29 +60,6 @@ struct AccountActionView: View {
                     appSettings: transactionsViewModel.appSettings
                 )
 
-                // Target account picker — shown for Transfer mode only.
-                if viewModel.selectedAction == .transfer {
-                    if let coordinator = accountsViewModel.balanceCoordinator {
-                        AccountSelectorView(
-                            accounts: viewModel.availableAccounts,
-                            selectedAccountId: $viewModel.selectedTargetAccountId,
-                            emptyStateMessage: String(localized: "transactionForm.noAccountsForTransfer"),
-                            balanceCoordinator: coordinator
-                        )
-                    }
-                }
-
-                // Income category picker — shown for Top-up mode only.
-                if viewModel.selectedAction == .income {
-                    CategorySelectorView(
-                        categories: viewModel.incomeCategories,
-                        type: .income,
-                        customCategories: transactionsViewModel.customCategories,
-                        selectedCategory: $viewModel.selectedCategory,
-                        emptyStateMessage: String(localized: "transactionForm.noCategories")
-                    )
-                }
-
                 FormTextField(
                     text: $viewModel.descriptionText,
                     placeholder: String(localized: "transactionForm.descriptionPlaceholder"),
@@ -86,30 +67,10 @@ struct AccountActionView: View {
                 )
             }
         }
-        .safeAreaBar(edge: .top) {
-            SegmentedPickerView(
-                title: String(localized: "common.type"),
-                selection: $viewModel.selectedAction,
-                options: [
-                    (label: String(localized: "transactionForm.transfer"), value: AccountActionViewModel.ActionType.transfer),
-                    (label: String(localized: "transactionForm.topUp"), value: AccountActionViewModel.ActionType.income)
-                ]
-            )
-            .padding(.horizontal, AppSpacing.lg)
-            .padding(.vertical, AppSpacing.md)
-            .background(Color.clear)
-        }
+        .safeAreaBar(edge: .top) { topBar }
         .navigationTitle(viewModel.navigationTitleText)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    showingAccountHistory = true
-                }) {
-                    Image(systemName: "clock.arrow.circlepath")
-                }
-            }
-        }
+        .toolbar { toolbarContent }
         .dateButtonsSafeArea(selectedDate: $viewModel.selectedDate, onSave: { date in
             Task { await viewModel.saveTransaction(date: date, transactionStore: transactionStore) }
         })
@@ -132,6 +93,89 @@ struct AccountActionView: View {
             Button(String(localized: "voice.ok"), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage)
+        }
+    }
+
+    // MARK: - Sections
+
+    @ViewBuilder
+    private var fromSection: some View {
+        @Bindable var viewModel = viewModel
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            SectionHeaderView(String(localized: "transactionForm.fromHeader"))
+                .padding(.horizontal, AppSpacing.lg)
+
+            switch viewModel.selectedAction {
+            case .transfer:
+                if let coordinator = accountsViewModel.balanceCoordinator {
+                    AccountSelectorView(
+                        accounts: viewModel.availableSourceAccounts,
+                        selectedAccountId: $viewModel.selectedSourceAccountId,
+                        onSelectionChange: { _ in
+                            viewModel.updateCurrencyForPrimaryAccount()
+                        },
+                        emptyStateMessage: String(localized: "transactionForm.noAccountsForTransfer"),
+                        balanceCoordinator: coordinator
+                    )
+                }
+            case .income:
+                CategorySelectorView(
+                    categories: viewModel.incomeCategories,
+                    type: .income,
+                    customCategories: transactionsViewModel.customCategories,
+                    selectedCategory: $viewModel.selectedCategory,
+                    emptyStateMessage: String(localized: "transactionForm.noCategories")
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var toSection: some View {
+        @Bindable var viewModel = viewModel
+        if let coordinator = accountsViewModel.balanceCoordinator {
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                SectionHeaderView(String(localized: "transactionForm.toHeader"))
+                    .padding(.horizontal, AppSpacing.lg)
+
+                AccountSelectorView(
+                    accounts: viewModel.availableTargetAccounts,
+                    selectedAccountId: $viewModel.selectedTargetAccountId,
+                    onSelectionChange: { _ in
+                        viewModel.updateCurrencyForPrimaryAccount()
+                    },
+                    emptyStateMessage: String(localized: "transactionForm.noAccountsForTransfer"),
+                    balanceCoordinator: coordinator
+                )
+            }
+        }
+    }
+
+    // MARK: - Top bar / Toolbar
+
+    private var topBar: some View {
+        @Bindable var viewModel = viewModel
+        return SegmentedPickerView(
+            title: String(localized: "common.type"),
+            selection: $viewModel.selectedAction,
+            options: [
+                (label: String(localized: "transactionForm.transfer"), value: AccountActionViewModel.ActionType.transfer),
+                (label: String(localized: "transactionForm.topUp"), value: AccountActionViewModel.ActionType.income)
+            ]
+        )
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.vertical, AppSpacing.md)
+        .background(Color.clear)
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button(action: {
+                showingAccountHistory = true
+            }) {
+                Image(systemName: "clock.arrow.circlepath")
+            }
         }
     }
 }

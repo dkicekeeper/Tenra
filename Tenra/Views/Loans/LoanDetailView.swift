@@ -27,7 +27,6 @@ struct LoanDetailView: View {
     @State private var showFullSchedule = false
     @State private var cachedSchedule: [LoanPaymentService.AmortizationEntry] = []
     @State private var cachedTransactions: [Transaction] = []
-    @State private var reconciliationError: String? = nil
     @State private var paymentError: String? = nil
     @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
@@ -263,34 +262,7 @@ struct LoanDetailView: View {
             await refreshTransactions()
         }
         .task(id: accountId) {
-            // Build amortization schedule cache
             if let li = account.loanInfo {
-                cachedSchedule = LoanPaymentService.generateAmortizationSchedule(loanInfo: li)
-            }
-
-            // Reconcile only this loan's payments — collect synchronously, then batch-persist.
-            // Never spawn Task {} inside the onTransactionCreated callback — would race
-            // on TransactionStore and diverge loan state from transaction records (CLAUDE.md rule).
-            var createdTransactions: [Transaction] = []
-            loansViewModel.reconcileLoanPayments(
-                for: accountId,
-                allTransactions: transactionsViewModel.allTransactions,
-                onTransactionCreated: { transaction in
-                    createdTransactions.append(transaction)
-                }
-            )
-
-            for tx in createdTransactions {
-                do {
-                    _ = try await transactionStore.add(tx)
-                } catch {
-                    logger.error("Failed to add loan payment transaction: \(error.localizedDescription)")
-                    reconciliationError = error.localizedDescription
-                }
-            }
-
-            // Rebuild schedule after reconciliation (paymentsMade may have changed)
-            if !createdTransactions.isEmpty, let li = liveAccount?.loanInfo {
                 cachedSchedule = LoanPaymentService.generateAmortizationSchedule(loanInfo: li)
             }
         }
@@ -326,10 +298,6 @@ struct LoanDetailView: View {
     @ViewBuilder
     private func loanCustomSections(for account: Account) -> some View {
         VStack(spacing: AppSpacing.lg) {
-            if let error = reconciliationError {
-                InlineStatusText(message: error, type: .error)
-            }
-
             if let loanInfo = account.loanInfo {
                 // Payment breakdown is meaningless for installments (0% interest, fixed
                 // principal-only splits) — hide it entirely for that loan type.

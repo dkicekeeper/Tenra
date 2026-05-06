@@ -62,17 +62,26 @@ struct CategoryBudgetService {
                 return transactionDate >= periodStart && transactionDate <= periodEnd
             }
             .reduce(0) { sum, transaction in
-                // Convert to base currency if possible (nonisolated fallback path)
-                if let base = baseCurrency {
-                    if transaction.currency == base {
-                        return sum + transaction.amount
-                    } else {
-                        return sum + (transaction.convertedAmount ?? transaction.amount)
-                    }
-                } else {
-                    // Fallback: use amount without conversion
+                // Convert to base currency via the live FX cache. `convertedAmount`
+                // is denominated in the *account*'s currency, not the base currency,
+                // so it can't be used directly as a base-currency proxy across
+                // multi-currency transactions.
+                guard let base = baseCurrency else {
                     return sum + transaction.amount
                 }
+                if transaction.currency == base {
+                    return sum + transaction.amount
+                }
+                if let fx = CurrencyConverter.convertSync(
+                    amount: transaction.amount,
+                    from: transaction.currency,
+                    to: base
+                ) {
+                    return sum + fx
+                }
+                // Last-resort fallback: rate cache cold. Wrong unit, but matches
+                // historical behaviour and self-corrects once rates load.
+                return sum + (transaction.convertedAmount ?? transaction.amount)
             }
     }
 

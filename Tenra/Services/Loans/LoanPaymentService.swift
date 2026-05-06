@@ -306,87 +306,6 @@ nonisolated enum LoanPaymentService {
         return (transaction, updated)
     }
 
-    // MARK: - Reconciliation
-
-    /// Сверка: создаёт запланированные транзакции платежей на прошедшие даты.
-    /// Идемпотентная: можно вызывать многократно без дублирования.
-    static func reconcileLoanPayments(
-        account: inout Account,
-        allTransactions: [Transaction],
-        onTransactionCreated: (Transaction) -> Void
-    ) {
-        guard var loanInfo = account.loanInfo,
-              loanInfo.remainingPrincipal > 0 else { return }
-
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        guard let lastReconcDate = DateFormatters.dateFormatter.date(from: loanInfo.lastReconciliationDate) else {
-            return
-        }
-        let lastReconcNormalized = calendar.startOfDay(for: lastReconcDate)
-
-        if lastReconcNormalized >= today { return }
-
-        var checkDate = calendar.date(byAdding: .day, value: 1, to: lastReconcNormalized)!
-
-        while checkDate <= today && loanInfo.remainingPrincipal > 0 {
-            if isPaymentDay(date: checkDate, paymentDay: loanInfo.paymentDay, loanInfo: loanInfo) {
-                // Идемпотентность: проверяем, был ли уже создан платёж за этот месяц
-                let monthStart = monthStartString(for: checkDate)
-                let alreadyPaid = allTransactions.contains { tx in
-                    tx.accountId == account.id
-                    && tx.type == .loanPayment
-                    && tx.date >= monthStart
-                    && tx.date < nextMonthStartString(for: checkDate)
-                }
-
-                if !alreadyPaid {
-                    let (interest, principalPart) = paymentBreakdown(
-                        remainingPrincipal: loanInfo.remainingPrincipal,
-                        annualRate: loanInfo.interestRateAnnual,
-                        monthlyPayment: loanInfo.monthlyPayment
-                    )
-
-                    let actualPrincipal = min(principalPart, loanInfo.remainingPrincipal)
-                    let actualPayment = actualPrincipal + interest
-
-                    let dateString = DateFormatters.dateFormatter.string(from: checkDate)
-                    let transactionId = generateLoanPaymentTransactionID(
-                        loanId: account.id,
-                        month: monthStart,
-                        amount: NSDecimalNumber(decimal: actualPayment).doubleValue,
-                        currency: account.currency
-                    )
-
-                    let transaction = Transaction(
-                        id: transactionId,
-                        date: dateString,
-                        description: String(localized: "loan.payment.description", defaultValue: "Loan payment"),
-                        amount: NSDecimalNumber(decimal: actualPayment).doubleValue,
-                        currency: account.currency,
-                        type: .loanPayment,
-                        category: TransactionType.loanPaymentCategoryName,
-                        accountId: account.id
-                    )
-
-                    onTransactionCreated(transaction)
-
-                    // Обновляем состояние кредита
-                    loanInfo.remainingPrincipal -= actualPrincipal
-                    loanInfo.totalInterestPaid += interest
-                    loanInfo.paymentsMade += 1
-                    loanInfo.lastPaymentDate = dateString
-                }
-            }
-
-            checkDate = calendar.date(byAdding: .day, value: 1, to: checkDate)!
-        }
-
-        loanInfo.lastReconciliationDate = DateFormatters.dateFormatter.string(from: today)
-        account.loanInfo = loanInfo
-    }
-
     // MARK: - Link Existing Payments
 
     /// Recalculates loan state after linking existing transactions.
@@ -397,7 +316,6 @@ nonisolated enum LoanPaymentService {
     ) {
         loanInfo.paymentsMade = linkedPaymentCount
         loanInfo.lastPaymentDate = linkedPaymentDates.last
-        loanInfo.lastReconciliationDate = DateFormatters.dateFormatter.string(from: Date())
 
         if loanInfo.loanType == .installment {
             let totalPaid = loanInfo.monthlyPayment * Decimal(linkedPaymentCount)
@@ -425,48 +343,6 @@ nonisolated enum LoanPaymentService {
     }
 
     // MARK: - Private Helpers
-
-    private static func isPaymentDay(date: Date, paymentDay: Int, loanInfo: LoanInfo) -> Bool {
-        let calendar = Calendar.current
-        let day = calendar.component(.day, from: date)
-        let maxDay = daysInMonth(date: date)
-        let effectivePaymentDay = min(paymentDay, maxDay)
-
-        guard day == effectivePaymentDay else { return false }
-
-        // Проверяем, что этот месяц после начала кредита
-        let dateStr = DateFormatters.dateFormatter.string(from: date)
-        return dateStr > loanInfo.startDate
-    }
-
-    /// Deterministic ID (djb2 hash) — зеркалит DepositInterestService
-    private static func generateLoanPaymentTransactionID(
-        loanId: String, month: String, amount: Double, currency: String
-    ) -> String {
-        let normalizedAmount = String(format: "%.2f", amount)
-        let normalizedCurrency = currency.trimmingCharacters(in: .whitespaces).uppercased()
-        let key = "loan_payment|\(loanId)|\(month)|\(normalizedAmount)|\(normalizedCurrency)"
-        var hash: UInt64 = 5381
-        for byte in key.utf8 {
-            hash = hash &* 31 &+ UInt64(byte)
-        }
-        return String(format: "lp_%016llx", hash)
-    }
-
-    private static func monthStartString(for date: Date) -> String {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month], from: date)
-        let monthStart = calendar.date(from: components)!
-        return DateFormatters.dateFormatter.string(from: monthStart)
-    }
-
-    private static func nextMonthStartString(for date: Date) -> String {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month], from: date)
-        let monthStart = calendar.date(from: components)!
-        let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
-        return DateFormatters.dateFormatter.string(from: nextMonth)
-    }
 
     private static func daysInMonth(date: Date) -> Int {
         let calendar = Calendar.current

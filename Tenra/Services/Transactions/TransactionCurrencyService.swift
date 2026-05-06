@@ -2,27 +2,30 @@
 //  TransactionCurrencyService.swift
 //  Tenra
 //
-//  PURPOSE: In-memory cache of pre-computed currency amounts for display.
+//  PURPOSE: In-memory cache of per-transaction amounts converted to a base currency
+//  for display and aggregation.
 //
 //  RESPONSIBILITY SPLIT (do NOT confuse these two currency utilities):
 //  ─────────────────────────────────────────────────────────────────────
 //  TransactionCurrencyService  (THIS FILE)
-//      • Reads the `convertedAmount` field already stored on each Transaction.
-//      • NO network calls, NO exchange-rate fetching.
-//      • Provides O(1) lookup after a single O(N) precompute pass.
-//      • Used by: TransactionQueryService, InsightsService (display layer).
+//      • Converts each `Transaction.amount` from `tx.currency` to a target base
+//        currency via `CurrencyConverter.convertSync` (cache-only, no network).
+//      • Stores the result in an O(1) lookup keyed by "<txId>_<baseCurrency>".
+//      • NEVER returns raw `convertedAmount` as a base-currency proxy — that field
+//        is denominated in the *account*'s currency, not the base currency.
+//      • Used by: TransactionQueryService, InsightsService, DateSectionExpensesCache.
 //
-//  CurrencyConverter  (Services/Utilities/CurrencyConverter.swift)
+//  CurrencyConverter  (Services/Currency/CurrencyConverter.swift)
 //      • Fetches live / historical exchange rates from the National Bank of Kazakhstan API.
 //      • Async network calls, XML parsing, 24-hour cache.
-//      • Used by: BalanceCalculationEngine for cross-currency balance recalculation.
+//      • `convertSync` reads the same in-memory rate cache used here.
 //  ─────────────────────────────────────────────────────────────────────
 
 import Foundation
 
-/// In-memory display cache for pre-computed transaction amounts in base currency.
-/// Reads only from `Transaction.convertedAmount` (set at import/creation time).
-/// For live exchange-rate conversion use `CurrencyConverter`.
+/// In-memory display cache for per-transaction amounts converted to a target base currency.
+/// Uses `CurrencyConverter.convertSync` (cache-only, no network) so summation across
+/// multi-currency transactions is correct without async hops.
 @MainActor
 class TransactionCurrencyService {
 
@@ -39,7 +42,11 @@ class TransactionCurrencyService {
     }
 
     /// Precompute converted amounts for all transactions in `baseCurrency`.
-    /// Uses only pre-stored `convertedAmount` — no network requests.
+    /// Reads exchange rates from `CurrencyConverter`'s cache (populated at startup
+    /// via `prewarm`). When a rate is unavailable, falls back to the per-transaction
+    /// `convertedAmount` (in *account* currency) — wrong unit but better than a
+    /// runtime hole; sums will visually re-correct once rates load and the cache
+    /// is invalidated.
     func precompute(transactions: [Transaction], baseCurrency: String) {
         guard isInvalidated else { return }
 
@@ -50,11 +57,7 @@ class TransactionCurrencyService {
 
         for tx in transactions {
             let key = "\(tx.id)_\(baseCurrency)"
-            if tx.currency == baseCurrency {
-                newCache[key] = tx.amount
-            } else {
-                newCache[key] = tx.convertedAmount ?? tx.amount
-            }
+            newCache[key] = convertedValue(for: tx, to: baseCurrency)
         }
 
         self.cache = newCache
@@ -68,14 +71,33 @@ class TransactionCurrencyService {
         return cache[key]
     }
 
-    /// Get converted amount from cache, falling back to transaction data
+    /// Get converted amount from cache, falling back to a fresh `convertSync` call
+    /// (rates are cached, so this is still O(1) on the synchronous path).
     func getConvertedAmountOrCompute(transaction: Transaction, to baseCurrency: String) -> Double {
         if let cached = getConvertedAmount(transactionId: transaction.id, to: baseCurrency) {
             return cached
         }
-        if transaction.currency == baseCurrency {
-            return transaction.amount
+        return convertedValue(for: transaction, to: baseCurrency)
+    }
+
+    // MARK: - Private
+
+    /// Single source of truth for `tx.amount` → `baseCurrency` conversion. Used by
+    /// both `precompute` and the on-demand fallback path.
+    private func convertedValue(for tx: Transaction, to baseCurrency: String) -> Double {
+        if tx.currency == baseCurrency {
+            return tx.amount
         }
-        return transaction.convertedAmount ?? transaction.amount
+        if let converted = CurrencyConverter.convertSync(
+            amount: tx.amount,
+            from: tx.currency,
+            to: baseCurrency
+        ) {
+            return converted
+        }
+        // Last-resort fallback: rates not yet loaded. `convertedAmount` is in
+        // account currency, not baseCurrency — wrong unit, but matches the
+        // historical behaviour and self-corrects on rate-load + invalidate.
+        return tx.convertedAmount ?? tx.amount
     }
 }

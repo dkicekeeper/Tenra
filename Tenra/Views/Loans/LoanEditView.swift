@@ -299,7 +299,6 @@ struct LoanEditView: View {
             paymentDay: paymentDay,
             paymentsMade: existingInfo?.paymentsMade ?? 0,
             lastPaymentDate: existingInfo?.lastPaymentDate,
-            lastReconciliationDate: existingInfo?.lastReconciliationDate,
             earlyRepayments: existingInfo?.earlyRepayments ?? []
         )
 

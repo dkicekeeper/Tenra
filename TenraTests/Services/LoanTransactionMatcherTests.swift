@@ -33,8 +33,7 @@ struct LoanTransactionMatcherTests {
             startDate: startDate,
             monthlyPayment: monthlyPayment,
             paymentDay: 15,
-            paymentsMade: 0,
-            lastReconciliationDate: startDate
+            paymentsMade: 0
         )
         return account
     }

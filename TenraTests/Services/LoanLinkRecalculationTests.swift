@@ -23,8 +23,7 @@ struct LoanLinkRecalculationTests {
             startDate: "2021-06-15",
             monthlyPayment: 340_000,
             paymentDay: 15,
-            paymentsMade: 0,
-            lastReconciliationDate: "2021-06-15"
+            paymentsMade: 0
         )
 
         let paymentDates = ["2021-07-15", "2021-08-15", "2021-09-15"]
@@ -52,8 +51,7 @@ struct LoanLinkRecalculationTests {
             startDate: "2021-06-15",
             monthlyPayment: 340_000,
             paymentDay: 15,
-            paymentsMade: 0,
-            lastReconciliationDate: "2021-06-15"
+            paymentsMade: 0
         )
 
         let paymentDates = ["2021-07-15", "2021-08-15", "2021-09-15"]

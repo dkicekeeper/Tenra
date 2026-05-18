@@ -26,28 +26,22 @@ struct BorderBeamModifier: ViewModifier {
         content
             .overlay {
                 if isActive && !AppAnimation.isReduceMotionEnabled {
+                    // Display-synced redraw — at 60–120 Hz the gradient sweep
+                    // looks fluid. The per-tick work is now a single
+                    // un-blurred stroke; the static halo is provided by the
+                    // companion `borderGlow` modifier so we no longer pay for
+                    // a full-overlay Gaussian on every frame.
                     TimelineView(.animation) { context in
                         let phase = context.date.timeIntervalSinceReferenceDate
                             .truncatingRemainder(dividingBy: duration) / duration
                         let degrees = phase * 360
 
-                        ZStack {
-                            beamStroke(width: lineWidth + 4, blur: lineWidth * 2, opacity: 0.45, rotation: degrees)
-                            beamStroke(width: lineWidth, blur: 0, opacity: 1.0, rotation: degrees)
-                        }
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(beamGradient(rotation: degrees), lineWidth: lineWidth)
                     }
+                    .allowsHitTesting(false)
                 }
             }
-    }
-
-    @ViewBuilder
-    private func beamStroke(width: CGFloat, blur: CGFloat, opacity: Double, rotation: Double) -> some View {
-        // Shape stays fixed — only the gradient rotates via its `angle:` parameter.
-        // This makes the bright spot travel along the rect's perimeter instead of tilting the rect itself.
-        RoundedRectangle(cornerRadius: cornerRadius)
-            .stroke(beamGradient(rotation: rotation), lineWidth: width)
-            .blur(radius: blur)
-            .opacity(opacity)
     }
 
     // Beam spans ~20% of the arc (0→0.20); the rest is .clear.
@@ -72,6 +66,49 @@ struct BorderBeamModifier: ViewModifier {
             gradient: Gradient(stops: stops),
             center: .center,
             angle: .degrees(rotation)
+        )
+    }
+}
+
+// MARK: - BorderGlowModifier
+
+/// Static, non-animated halo around a view's border. Designed to layer with
+/// `BorderBeamModifier` so the card always reads as "lit up" even before the
+/// traveling beam reaches a given edge.
+struct BorderGlowModifier: ViewModifier {
+    var isActive: Bool
+    var colors: [Color]
+    var cornerRadius: CGFloat
+    var lineWidth: CGFloat
+    var glowRadius: CGFloat
+    var opacity: Double
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                if isActive {
+                    ZStack {
+                        // Outer soft halo — wider, heavily blurred.
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(gradient, lineWidth: lineWidth + 2)
+                            .blur(radius: glowRadius)
+                            .opacity(opacity)
+                        // Inner crisp ring — anchors the glow against the card edge.
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(gradient.opacity(0.6), lineWidth: lineWidth)
+                            .blur(radius: max(0, glowRadius * 0.25))
+                    }
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+                }
+            }
+    }
+
+    private var gradient: AngularGradient {
+        let palette = colors.isEmpty ? [AppColors.accent] : colors
+        return AngularGradient(
+            gradient: Gradient(colors: palette + [palette[0]]),
+            center: .center
         )
     }
 }
@@ -103,26 +140,75 @@ extension View {
             duration: duration
         ))
     }
+
+    /// Adds a static (non-animated) glowing halo around this view's border.
+    /// Pairs well with `borderBeam` — the halo provides constant edge
+    /// presence while the beam sweeps through.
+    ///
+    /// - Parameter isActive: Halo is rendered only while `true`; the overlay
+    ///   is removed entirely otherwise. Default: `true`.
+    func borderGlow(
+        isActive: Bool = true,
+        colors: [Color] = [AppColors.accent, .purple, .pink],
+        cornerRadius: CGFloat = AppRadius.xl,
+        lineWidth: CGFloat = 1,
+        glowRadius: CGFloat = 6,
+        opacity: Double = 0.55
+    ) -> some View {
+        modifier(BorderGlowModifier(
+            isActive: isActive,
+            colors: colors,
+            cornerRadius: cornerRadius,
+            lineWidth: lineWidth,
+            glowRadius: glowRadius,
+            opacity: opacity
+        ))
+    }
 }
 
 // MARK: - Preview
 
 #Preview("Border Beam") {
     VStack(spacing: AppSpacing.xxl) {
-        RoundedRectangle(cornerRadius: AppRadius.xl)
-            .fill(AppColors.secondaryBackground)
-            .frame(height: 80)
-            .borderBeam()
+        labeled("Beam only") {
+            RoundedRectangle(cornerRadius: AppRadius.xl)
+                .fill(AppColors.secondaryBackground)
+                .frame(height: 80)
+                .borderBeam()
+        }
 
-        RoundedRectangle(cornerRadius: AppRadius.xl)
-            .fill(AppColors.secondaryBackground)
-            .frame(height: 80)
-            .borderBeam(colors: [.green, .teal, .cyan], duration: 2.0)
+        labeled("Glow only (static)") {
+            RoundedRectangle(cornerRadius: AppRadius.xl)
+                .fill(AppColors.secondaryBackground)
+                .frame(height: 80)
+                .borderGlow()
+        }
 
-        RoundedRectangle(cornerRadius: AppRadius.xl)
-            .fill(AppColors.secondaryBackground)
-            .frame(height: 80)
-            .borderBeam(colors: [.orange, .yellow], lineWidth: 2.5, duration: 4.0)
+        labeled("Glow + beam (VoiceInput card)") {
+            RoundedRectangle(cornerRadius: AppRadius.xl)
+                .fill(AppColors.secondaryBackground)
+                .frame(height: 80)
+                .borderGlow()
+                .borderBeam()
+        }
+
+        labeled("Green/teal beam, faster") {
+            RoundedRectangle(cornerRadius: AppRadius.xl)
+                .fill(AppColors.secondaryBackground)
+                .frame(height: 80)
+                .borderGlow(colors: [.green, .teal, .cyan])
+                .borderBeam(colors: [.green, .teal, .cyan], duration: 2.0)
+        }
     }
     .padding(AppSpacing.pageHorizontal)
+}
+
+@ViewBuilder
+private func labeled<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        Text(title)
+            .font(AppTypography.caption)
+            .foregroundStyle(.secondary)
+        content()
+    }
 }

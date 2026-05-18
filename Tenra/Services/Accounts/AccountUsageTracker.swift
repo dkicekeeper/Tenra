@@ -31,60 +31,97 @@ class AccountUsageTracker {
 
     // MARK: - Smart Default Selection
 
-    /// Get the smart default account based on usage statistics
-    /// - Returns: The most appropriate account, or nil if no accounts exist
+    /// Activity window for "is this account still in use?" decision.
+    /// Accounts with no transactions in this window are skipped entirely so
+    /// dormant accounts can't win on accumulated historical volume.
+    private static let activityWindowDays: Int = 90
+
+    /// Get the smart default account based on usage statistics.
+    /// - Parameter category: Optional category name. When provided, only
+    ///   transactions in that category contribute to scoring — so e.g.
+    ///   "Транспорт" returns the account most-used for transport in the
+    ///   last 90 days, not the globally most-used account.
+    /// - Returns: The most appropriate account, or nil if no accounts exist.
     ///
     /// Algorithm:
-    /// - Usage Score (70%): Number of transactions for each account
-    /// - Recency Score (30%): Recent transactions are weighted higher
-    ///   - Last 24 hours: 100 points
-    ///   - Last 7 days: 70 points
-    ///   - Last 30 days: 40 points
-    ///   - Older: 10 points
-    func getSmartDefaultAccount() -> Account? {
+    /// 1. Filter each account's transactions to a rolling 90-day window
+    ///    AND (if requested) to a single category. Accounts with zero
+    ///    matching transactions are dropped — a dormant account, or an
+    ///    account never used for this category, can never be the "smart
+    ///    default" no matter how many transactions it accumulated.
+    /// 2. For each remaining account, compute:
+    ///    - Volume (40%): count of matching transactions.
+    ///    - Freshness (60%): the MAX recency points across those
+    ///      transactions (NOT the sum). Using max prevents accounts from
+    ///      stacking recency by having many semi-old transactions.
+    ///      Recency points: ≤24h = 100, ≤7d = 70, ≤30d = 40, else = 10.
+    /// 3. If no account matches in this category, fall back to the global
+    ///    smart default (no category filter), then to the most-recently-used
+    ///    account ever, then to `accounts.first`.
+    func getSmartDefaultAccount(forCategory category: String? = nil) -> Account? {
         guard !accounts.isEmpty else { return nil }
         guard !transactions.isEmpty else { return accounts.first }
 
-        // Calculate scores for each account
-        var accountScores: [String: Double] = [:]
+        if let scored = scoreAccounts(forCategory: category),
+           let topId = scored.max(by: { $0.value < $1.value })?.key,
+           let account = accounts.first(where: { $0.id == topId }) {
+            return account
+        }
 
-        // 1. Group transactions by accountId
-        let accountUsage = Dictionary(grouping: transactions) { $0.accountId }
+        // Per-category scoring produced nothing — fall back through the
+        // ladder: global smart default → most-recent ever → first account.
+        if category != nil,
+           let global = getSmartDefaultAccount(forCategory: nil) {
+            return global
+        }
+        return getMostRecentAccount() ?? accounts.first
+    }
 
-        // 2. Calculate score for each account
-        for (accountId, accountTransactions) in accountUsage {
+    /// Score each candidate account inside the activity window.
+    /// Returns nil if no account had any matching transactions.
+    private func scoreAccounts(forCategory category: String?) -> [String: Double]? {
+        let dateFormatter = Self.recencyDateFormatter
+        let now = Date()
+        let cutoff = Calendar.current.date(byAdding: .day, value: -Self.activityWindowDays, to: now) ?? now
+        let normalizedCategory = category?.lowercased()
+
+        var scores: [String: Double] = [:]
+        let grouped = Dictionary(grouping: transactions) { $0.accountId }
+
+        for (accountId, accountTransactions) in grouped {
             guard let accountId = accountId else { continue }
 
-            // Usage Score: count of transactions (70% weight)
-            let usageScore = Double(accountTransactions.count) * 0.7
-
-            // Recency Score: boost recent transactions (30% weight)
-            let recencyScore = calculateRecencyScore(for: accountTransactions) * 0.3
-
-            accountScores[accountId] = usageScore + recencyScore
-
-            #if DEBUG
-            if VoiceInputConstants.enableParsingDebugLogs {
-                _ = accountId  // Debug log placeholder
+            let matching = accountTransactions.filter { tx in
+                guard let date = dateFormatter.date(from: tx.date), date >= cutoff else { return false }
+                if let needle = normalizedCategory {
+                    return tx.category.lowercased() == needle
+                }
+                return true
             }
-            #endif
+            guard !matching.isEmpty else { continue }
+
+            let volumeScore = Double(matching.count) * 0.4
+            let freshnessScore = matching
+                .map { recencyPoints(for: $0, now: now, dateFormatter: dateFormatter) }
+                .max() ?? 0
+
+            scores[accountId] = volumeScore + freshnessScore * 0.6
         }
 
-        // 3. Find account with highest score
-        guard let topAccountId = accountScores.max(by: { $0.value < $1.value })?.key else {
-            return accounts.first // Fallback
+        return scores.isEmpty ? nil : scores
+    }
+
+    /// Recency points for a single transaction. Pulled out so
+    /// `getSmartDefaultAccount` can take the max instead of the sum.
+    private func recencyPoints(for transaction: Transaction, now: Date, dateFormatter: DateFormatter) -> Double {
+        guard let date = dateFormatter.date(from: transaction.date) else { return 0 }
+        let days = Calendar.current.dateComponents([.day], from: date, to: now).day ?? 999
+        switch days {
+        case 0...1: return 100
+        case 2...7: return 70
+        case 8...30: return 40
+        default: return 10
         }
-
-        // 4. Return the account object
-        let smartDefault = accounts.first { $0.id == topAccountId }
-
-        #if DEBUG
-        if VoiceInputConstants.enableParsingDebugLogs, let _ = smartDefault {
-            // Debug log placeholder
-        }
-        #endif
-
-        return smartDefault ?? accounts.first
     }
 
     // MARK: - Private Helpers

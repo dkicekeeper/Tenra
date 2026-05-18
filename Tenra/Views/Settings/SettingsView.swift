@@ -32,6 +32,7 @@ struct SettingsView: View {
     @State private var showingResetConfirmation = false
     @State private var showingExportSheet = false
     @State private var showingImportPicker = false
+    @State private var showingVoiceLearningResetConfirmation = false
 
     /// Cached expense-category weights for the home background preview.
     /// Refreshed when this view appears so the gradient preview reflects current data.
@@ -62,6 +63,7 @@ struct SettingsView: View {
                 generalSection
                 cloudSection
                 exportImportSection
+                voiceSection
                 dangerZoneSection
                 #if DEBUG
                 experimentsSection
@@ -104,6 +106,17 @@ struct SettingsView: View {
             Button(String(localized: "alert.deleteAllData.cancel"), role: .cancel) {}
         } message: {
             Text(String(localized: "alert.deleteAllData.message"))
+        }
+        .alert(
+            "Сбросить голосовые предпочтения?",
+            isPresented: $showingVoiceLearningResetConfirmation
+        ) {
+            Button("Сбросить", role: .destructive) {
+                VoiceLearningStore.shared.reset()
+            }
+            Button(String(localized: "alert.deleteAllData.cancel"), role: .cancel) {}
+        } message: {
+            Text("Парсер забудет, какой счёт вы обычно выбираете для каждой категории. Это не удалит сами транзакции.")
         }
         .sheet(isPresented: $showingExportSheet) {
             ExportActivityView(transactionsViewModel: transactionsViewModel)
@@ -265,6 +278,14 @@ struct SettingsView: View {
         SettingsDangerZoneSection(
             onResetData: {
                 showingResetConfirmation = true
+            }
+        )
+    }
+
+    private var voiceSection: some View {
+        SettingsVoiceSection(
+            onResetLearning: {
+                showingVoiceLearningResetConfirmation = true
             }
         )
     }

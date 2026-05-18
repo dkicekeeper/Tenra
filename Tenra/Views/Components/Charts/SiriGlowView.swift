@@ -5,39 +5,55 @@
 //  Apple Intelligence–style edge glow using MeshGradient.
 //  5×7 grid: more vertical rows for even side color density on tall screens.
 //
+//  Time-only driver (no audio amplitude) — keeps render cost predictable.
+//  Renders at ~30 fps via a periodic timeline, flattens into one Metal
+//  texture per frame with drawingGroup(), and uses a light blur instead
+//  of the full-screen Gaussian pass that previously dominated render time.
+//
 
 import SwiftUI
 
 struct SiriGlowView: View {
 
-    var amplitudeRef: AudioLevelRef
+    /// Throttled redraw cadence. 30 fps is indistinguishable from 60 fps for
+    /// the slow ambient motion this view shows.
+    private static let frameInterval: TimeInterval = 1.0 / 30.0
+
+    /// Blur radius. Kept small because the outer cells are already saturated
+    /// color — a heavy Gaussian over a full-screen mesh was the previous hot
+    /// path.
+    private static let blurRadius: CGFloat = 14
+
+    @State private var aspect: Double = 1.0
 
     var body: some View {
-        GeometryReader { geo in
-            TimelineView(.animation) { timeline in
-                let t = timeline.date.timeIntervalSinceReferenceDate
-                let a = Double(amplitudeRef.value)
-                let aspect = geo.size.width / max(geo.size.height, 1)
-                meshGlow(t: t, amp: a, aspect: aspect)
+        TimelineView(.periodic(from: .now, by: Self.frameInterval)) { timeline in
+            meshGlow(t: timeline.date.timeIntervalSinceReferenceDate)
+        }
+        .onGeometryChange(for: Double.self) { proxy in
+            proxy.size.width / max(proxy.size.height, 1)
+        } action: { newAspect in
+            if abs(newAspect - aspect) > 0.01 {
+                aspect = newAspect
             }
         }
     }
 
     @ViewBuilder
-    private func meshGlow(t: Double, amp: Double, aspect: Double) -> some View {
-        let points = buildPoints(t: t, amp: amp, aspect: aspect)
-        let colors = buildColors(t: t, amp: amp)
+    private func meshGlow(t: Double) -> some View {
+        let points = buildPoints(t: t, aspect: aspect)
+        let colors = buildColors(t: t)
 
-        // width=5 cols, height=7 rows → 35 points
         MeshGradient(width: 5, height: 7, points: points, colors: colors)
-            .blur(radius: 30 + CGFloat(amp) * 20)
-            .opacity(0.75 + amp * 0.25)
+            .blur(radius: Self.blurRadius)
+            .opacity(0.9)
+            .drawingGroup()
             .allowsHitTesting(false)
     }
 
     // MARK: - Colors: 5×7 = 35 colors
 
-    private func buildColors(t: Double, amp: Double) -> [Color] {
+    private func buildColors(t: Double) -> [Color] {
         func hue(phase: Double) -> Color {
             let slow = t * 0.18 + phase
             let r = 0.55 + 0.45 * sin(slow)
@@ -46,9 +62,9 @@ struct SiriGlowView: View {
             return Color(red: r, green: g, blue: b)
         }
 
-        let sa = 0.4 + amp * 0.5 // side alpha
+        // Slow time-driven breathing replaces the old amplitude-driven side alpha.
+        let sa = 0.55 + 0.25 * sin(t * 0.6)
 
-        // 7 rows × 5 cols. Left/right cols vivid, center 3 cols transparent.
         return [
             // Row 0 — top edge
             hue(phase: 0.0), hue(phase: 1.5), hue(phase: 3.0), hue(phase: 4.5), hue(phase: 6.0),
@@ -69,9 +85,9 @@ struct SiriGlowView: View {
 
     // MARK: - Points: 5×7 grid, aspect-corrected
 
-    private func buildPoints(t: Double, amp: Double, aspect: Double) -> [SIMD2<Float>] {
-        let a2 = amp * amp
-        let glowFraction = 0.15 + a2 * 0.30
+    private func buildPoints(t: Double, aspect: Double) -> [SIMD2<Float>] {
+        // Fixed glow fraction now that amplitude no longer modulates it.
+        let glowFraction = 0.18
 
         let insetX = Float(glowFraction)
         let insetY = Float(glowFraction * min(aspect, 1.0))
@@ -79,8 +95,7 @@ struct SiriGlowView: View {
         // 5 columns
         let colX: [Float] = [0.0, insetX, 0.5, 1.0 - insetX, 1.0]
 
-        // 7 rows: evenly distributed for uniform side color density
-        // Rows 0,6 = outer edges. Rows 1-5 = inner, evenly spaced between insetY and 1-insetY.
+        // 7 rows: outer edges + 5 inner rows evenly spaced.
         let innerSpan = 1.0 - 2.0 * Double(insetY)
         var rowY: [Float] = [0.0]
         rowY.append(insetY)
@@ -89,11 +104,13 @@ struct SiriGlowView: View {
         }
         rowY.append(1.0 - insetY)
         rowY.append(1.0)
-        // rowY now has 7 entries: [0, insetY, 25%, 50%, 75%, 1-insetY, 1]
 
         let rows = 7
         let cols = 5
         var pts = [SIMD2<Float>](repeating: .zero, count: rows * cols)
+
+        // Inner-cell wobble range. No more amplitude² boost — purely time-driven.
+        let range = 0.05
 
         for row in 0..<rows {
             for col in 0..<cols {
@@ -107,19 +124,12 @@ struct SiriGlowView: View {
                 if isOuterRow || isOuterCol {
                     pts[idx] = SIMD2<Float>(Float(x), Float(y))
                 } else {
-                    // Inner points: wobble + voice
                     let seed = Double(idx) * 1.7
                     let s1 = 0.3 + seed.truncatingRemainder(dividingBy: 0.4)
                     let s2 = 0.25 + (seed * 1.3).truncatingRemainder(dividingBy: 0.35)
 
-                    let range = 0.02 + a2 * 0.15
-                    var px = x + sin(t * s1 + seed) * range
-                    var py = y + cos(t * s2 + seed * 1.4) * range
-
-                    let shake = a2 * amp * 0.04
-                    px += sin(t * 7.0 + seed * 2.1) * shake
-                    py += cos(t * 6.0 + seed * 3.3) * shake
-
+                    let px = x + sin(t * s1 + seed) * range
+                    let py = y + cos(t * s2 + seed * 1.4) * range
                     pts[idx] = SIMD2<Float>(Float(px), Float(py))
                 }
             }
@@ -130,11 +140,9 @@ struct SiriGlowView: View {
 }
 
 #Preview("Siri Glow") {
-    let ref = AudioLevelRef()
-    ref.value = 0.4
-    return ZStack {
+    ZStack {
         Color.white
         Text("Siri Glow").font(.title2)
     }
-    .overlay { SiriGlowView(amplitudeRef: ref).ignoresSafeArea() }
+    .overlay { SiriGlowView().ignoresSafeArea() }
 }

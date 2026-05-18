@@ -51,12 +51,6 @@ class VoiceInputService: NSObject {
     @ObservationIgnored private var finalTranscription: String = ""
     @ObservationIgnored private var isStopping: Bool = false
 
-    // MARK: - Audio Level (for wave visualization)
-
-    /// Shared amplitude reference. Audio tap writes to `.value` on main thread;
-    /// the wave visualization reads it directly every frame — bypasses SwiftUI update cycle.
-    @ObservationIgnored let amplitudeRef: AudioLevelRef = AudioLevelRef()
-
     // MARK: - Voice Activity Detection (always-on)
 
     /// Silence detector for automatic stop
@@ -216,40 +210,11 @@ class VoiceInputService: NSObject {
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
 
-        // Capture refs BEFORE the closure to avoid reading
-        // @MainActor-isolated properties from the audio render thread.
-        let detector = silenceDetector
-        let ref = amplitudeRef
-
-        inputNode.installTap(onBus: 0, bufferSize: VoiceInputConstants.audioBufferSize, format: recordingFormat) { [weak self] buffer, _ in
-            // Send buffer to speech recognition
+        inputNode.installTap(onBus: 0, bufferSize: VoiceInputConstants.audioBufferSize, format: recordingFormat) { buffer, _ in
+            // Forward the buffer to speech recognition. The wave visualization
+            // is time-driven and no longer needs an amplitude side channel,
+            // which previously dispatched ~43 main-thread writes per second.
             recognitionRequest.append(buffer)
-
-            // Compute RMS amplitude for wave visualization
-            let rms: Float = {
-                guard let data = buffer.floatChannelData?[0] else { return 0 }
-                let n = Int(buffer.frameLength)
-                guard n > 0 else { return 0 }
-                var sum: Float = 0
-                for i in 0..<n { sum += data[i] * data[i] }
-                return sqrt(sum / Float(n))
-            }()
-            // Normalize: typical speech 0.01-0.15 RMS → amplify aggressively for visual response
-            let targetLevel = min(rms * 18.0, 1.0)
-            // Write to ref on main thread — renderer reads it directly, no SwiftUI hop needed
-            DispatchQueue.main.async {
-                let current = ref.value
-                if targetLevel > current {
-                    // Smooth attack: ramp up over ~3 buffers
-                    ref.value = current * 0.4 + targetLevel * 0.6
-                } else {
-                    // Gentle decay: ~0.5s fade-out for smooth visuals
-                    ref.value = current * 0.92 + targetLevel * 0.08
-                }
-            }
-
-            // Audio VAD disabled — silence detection is text-based (in VoiceInputView)
-            // SilenceDetector kept for potential future use but not auto-stopping here.
         }
         
         // Запускаем аудио engine

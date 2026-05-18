@@ -67,6 +67,14 @@ class VoiceInputParser {
     /// Cached smart default account — computed once per parse() call
     private var cachedDefaultAccount: Account?
 
+    /// Per-parse cache of category → smart default. parseMulti() may resolve
+    /// several different categories in one utterance; each lookup hits the
+    /// tracker once and we reuse the result for subsequent clauses.
+    private var cachedDefaultsByCategory: [String: Account] = [:]
+
+    /// External hook for tests. Production code uses `VoiceLearningStore.shared`.
+    var learningStore: VoiceLearningStore = .shared
+
     /// Live transactions for usage analysis
     private var liveTransactions: [Transaction] {
         transactionsViewModel?.allTransactions ?? []
@@ -295,6 +303,7 @@ class VoiceInputParser {
 
         // Compute default account once per parse() — avoids iterating all transactions multiple times
         cachedDefaultAccount = getSmartDefaultAccount()
+        cachedDefaultsByCategory.removeAll(keepingCapacity: true)
 
         #if DEBUG
         if VoiceInputConstants.enableParsingDebugLogs {
@@ -366,14 +375,97 @@ class VoiceInputParser {
             }
         }
         
-        // Если счет не найден, используем счет по умолчанию
+        // Если счет не найден, используем счет с учётом категории. Сначала
+        // спрашиваем learning-store, затем usage-tracker — и только потом
+        // глобальный дефолт.
         if operation.accountId == nil {
-            operation.accountId = cachedDefaultAccount?.id
+            if let categoryDefault = smartDefaultAccount(forCategory: operation.categoryName) {
+                operation.accountId = categoryDefault.id
+                if operation.currencyCode == nil {
+                    operation.currencyCode = categoryDefault.currency
+                }
+            } else {
+                operation.accountId = cachedDefaultAccount?.id
+            }
         }
-        
+
         return operation
     }
-    
+
+    /// Parses one or more operations from a single utterance.
+    /// Splits the text into clauses via `VoiceInputSegmenter`, parses each in
+    /// isolation, then forward-fills inherited fields (currency, account,
+    /// type) from the previous clause. Returns an empty array if no clause
+    /// contains a recognizable amount.
+    func parseMulti(_ text: String) -> [ParsedOperation] {
+        let clauses = VoiceInputSegmenter.segment(text)
+        guard !clauses.isEmpty else { return [] }
+
+        // Compute global default once for the whole utterance — used when the
+        // category-aware lookup has nothing to say. Cleared after the loop so
+        // we never carry stale state into a subsequent call.
+        cachedDefaultAccount = getSmartDefaultAccount(forCategory: nil)
+        cachedDefaultsByCategory.removeAll(keepingCapacity: true)
+        defer {
+            cachedDefaultAccount = nil
+            cachedDefaultsByCategory.removeAll(keepingCapacity: true)
+        }
+
+        var operations: [ParsedOperation] = []
+        var lastType: TransactionType = .expense
+        var lastCurrency: String?
+        var lastAccountId: String?
+
+        for clause in clauses {
+            let normalized = normalizeText(clause)
+
+            guard let amount = parseAmount(from: normalized) else {
+                // No amount in this clause — drop it. Forward-fill state is
+                // unchanged so subsequent clauses still inherit from the
+                // last *valid* operation.
+                continue
+            }
+
+            let explicitType = parseTypeOptional(from: normalized)
+            let explicitCurrency = parseCurrency(from: normalized)
+            let explicitAccountId = findAccount(from: normalized).accountId
+            let (categoryName, subcategoryNames) = parseCategory(from: normalized)
+
+            // Per-category smart default: prefer the account most-used for
+            // this category (or the user's confirmed preference, if any)
+            // BEFORE falling back to the previous clause's account.
+            let categoryDefault = smartDefaultAccount(forCategory: categoryName)
+
+            let type = explicitType ?? lastType
+            let accountId = explicitAccountId
+                ?? categoryDefault?.id
+                ?? lastAccountId
+                ?? cachedDefaultAccount?.id
+            let currency = explicitCurrency
+                ?? lastCurrency
+                ?? liveAccounts.first(where: { $0.id == accountId })?.currency
+                ?? cachedDefaultAccount?.currency
+                ?? "KZT"
+
+            var op = ParsedOperation(note: clause)
+            op.date = parseDate(from: normalized)
+            op.type = type
+            op.amount = amount
+            op.currencyCode = currency
+            op.accountId = accountId
+            op.categoryName = categoryName
+            op.subcategoryNames = subcategoryNames
+
+            operations.append(op)
+
+            lastType = type
+            lastCurrency = currency
+            lastAccountId = accountId
+        }
+
+        return operations
+    }
+
     // MARK: - Private Methods
     
     private func normalizeText(_ text: String) -> String {
@@ -406,42 +498,47 @@ class VoiceInputParser {
         return today
     }
     
+    /// Verbs that mark a clause as an expense.
+    private static let expenseKeywords: [String] = [
+        "потратил", "потратила", "потратили", "потратило",
+        "заплатил", "заплатила", "заплатили", "заплатило",
+        "купил", "купила", "купили", "купило",
+        "расход", "расходы",
+        "оплатил", "оплатила", "оплатили",
+        "списал", "списала", "списали",
+        "покупка", "покупки",
+    ]
+
+    /// Verbs that mark a clause as income.
+    private static let incomeKeywords: [String] = [
+        "получил", "получила", "получили", "получило",
+        "пришло", "пришла", "пришли",
+        "заработал", "заработала", "заработали",
+        "доход", "доходы",
+        "пополнил", "пополнила", "пополнили",
+        "пополнение", "пополнения",
+        "начислил", "начислила", "начислили",
+        "зарплата", "зарплату", "зарплаты",
+        "оклад", "премия", "премию",
+    ]
+
     // 2. Парсинг типа операции
     private func parseType(from text: String) -> TransactionType {
-        let expenseKeywords = [
-            "потратил", "потратила", "потратили", "потратило",
-            "заплатил", "заплатила", "заплатили", "заплатило",
-            "купил", "купила", "купили", "купило",
-            "расход", "расходы",
-            "оплатил", "оплатила", "оплатили",
-            "списал", "списала", "списали",
-            "покупка", "покупки"
-        ]
-        let incomeKeywords = [
-            "получил", "получила", "получили", "получило",
-            "пришло", "пришла", "пришли",
-            "заработал", "заработала", "заработали",
-            "доход", "доходы",
-            "пополнил", "пополнила", "пополнили",
-            "пополнение", "пополнения",
-            "начислил", "начислила", "начислили",
-            "зарплата", "зарплату", "зарплаты",
-            "оклад", "премия", "премию"
-        ]
-        
-        for keyword in expenseKeywords {
-            if text.contains(keyword) {
-                return .expense
-            }
+        parseTypeOptional(from: text) ?? .expense
+    }
+
+    /// Same matcher as `parseType` but returns `nil` when no expense/income
+    /// keyword was present. Used by `parseMulti` so subsequent clauses can
+    /// inherit the type from the previous clause instead of always
+    /// defaulting to `.expense`.
+    private func parseTypeOptional(from text: String) -> TransactionType? {
+        for keyword in Self.expenseKeywords where text.contains(keyword) {
+            return .expense
         }
-        
-        for keyword in incomeKeywords {
-            if text.contains(keyword) {
-                return .income
-            }
+        for keyword in Self.incomeKeywords where text.contains(keyword) {
+            return .income
         }
-        
-        return .expense // По умолчанию расход
+        return nil
     }
     
     // 3. Парсинг суммы (с поддержкой слов)
@@ -761,10 +858,9 @@ class VoiceInputParser {
         var entities: [RecognizedEntity] = []
         let nsText = text as NSString
 
-        // 1. Detect Amount
-        if let amountEntity = detectAmountEntity(in: text, nsText: nsText) {
-            entities.append(amountEntity)
-        }
+        // 1. Detect amounts. Multi-clause input ("500 такси и 1000 продукты")
+        //    has multiple amounts — we want every one of them highlighted.
+        entities.append(contentsOf: detectAmountEntities(in: text, nsText: nsText))
 
         // 2. Detect Currency
         if let currencyEntity = detectCurrencyEntity(in: text, nsText: nsText) {
@@ -791,25 +887,34 @@ class VoiceInputParser {
 
     // MARK: - Entity Detection Methods
 
-    private func detectAmountEntity(in text: String, nsText: NSString) -> RecognizedEntity? {
-        // Try to find amount with currency first (high confidence)
-        for regex in amountRegexes.prefix(2) { // First 2 patterns have currency
-            if let match = regex.firstMatch(in: text, range: NSRange(location: 0, length: nsText.length)) {
-                let matchedText = nsText.substring(with: match.range)
-                let hasCurrency = matchedText.lowercased().contains("тенге") ||
-                                 matchedText.lowercased().contains("тг") ||
-                                 matchedText.contains("₸")
+    private func detectAmountEntities(in text: String, nsText: NSString) -> [RecognizedEntity] {
+        // First two regex patterns capture amounts WITH a currency token;
+        // they're high-confidence so we surface every match.
+        var entities: [RecognizedEntity] = []
+        var consumedRanges: [NSRange] = []
+        let fullRange = NSRange(location: 0, length: nsText.length)
 
-                return RecognizedEntity(
+        for regex in amountRegexes.prefix(2) {
+            let matches = regex.matches(in: text, range: fullRange)
+            for match in matches {
+                // Avoid double-counting when two regexes overlap on the same span.
+                if consumedRanges.contains(where: { NSIntersectionRange($0, match.range).length > 0 }) {
+                    continue
+                }
+                let matchedText = nsText.substring(with: match.range)
+                let lowered = matchedText.lowercased()
+                let hasCurrency = lowered.contains("тенге") || lowered.contains("тг") || matchedText.contains("₸")
+                entities.append(RecognizedEntity(
                     type: .amount,
                     range: match.range,
                     value: matchedText,
                     confidence: hasCurrency ? 0.9 : 0.7
-                )
+                ))
+                consumedRanges.append(match.range)
             }
         }
 
-        return nil
+        return entities
     }
 
     private func detectCurrencyEntity(in text: String, nsText: NSString) -> RecognizedEntity? {
@@ -907,31 +1012,49 @@ class VoiceInputParser {
 
     // MARK: - Smart Default Account Selection
 
-    /// Get smart default account based on usage statistics
-    /// - Returns: Account with highest usage score, or first account as fallback
-    private func getSmartDefaultAccount() -> Account? {
+    /// Get smart default account based on usage statistics.
+    /// - Parameter category: Optional category to bias the lookup toward
+    ///   accounts most-used for transactions in that category.
+    private func getSmartDefaultAccount(forCategory category: String? = nil) -> Account? {
         guard !liveAccounts.isEmpty else { return nil }
+        guard !liveTransactions.isEmpty else { return liveAccounts.first }
 
-        // If no transactions, use first account
-        guard !liveTransactions.isEmpty else {
-            #if DEBUG
-            if VoiceInputConstants.enableParsingDebugLogs {
-            }
-            #endif
-            return liveAccounts.first
-        }
-
-        // Use AccountUsageTracker to get smart default
         let tracker = AccountUsageTracker(transactions: liveTransactions, accounts: liveAccounts)
-        let smartDefault = tracker.getSmartDefaultAccount()
+        let preferred = tracker.getSmartDefaultAccount(forCategory: category)
 
-        #if DEBUG
-        if VoiceInputConstants.enableParsingDebugLogs {
-            if smartDefault != nil {
-            }
+        // Filter out loan/deposit accounts — voice quick-save targets only
+        // regular accounts.
+        if let preferred, !preferred.isLoan, !preferred.isDeposit {
+            return preferred
         }
-        #endif
+        return liveAccounts.first(where: { !$0.isLoan && !$0.isDeposit })
+            ?? liveAccounts.first
+    }
 
-        return smartDefault
+    /// Resolve the best-guess account for a clause whose category is `category`.
+    /// Composes user-learned preferences (highest priority) with usage stats
+    /// (fallback). Result is cached per-category for the current parse.
+    private func smartDefaultAccount(forCategory category: String?) -> Account? {
+        let cacheKey = category?.lowercased() ?? ""
+        if let cached = cachedDefaultsByCategory[cacheKey] {
+            return cached
+        }
+
+        // 1. User's learned preference, if confident and the account is
+        //    still a regular (non-loan / non-deposit) account.
+        if let preferredId = learningStore.preferredAccountID(forCategory: category, where: { id in
+            liveAccounts.contains(where: { $0.id == id && !$0.isLoan && !$0.isDeposit })
+        }),
+        let preferred = liveAccounts.first(where: { $0.id == preferredId }) {
+            cachedDefaultsByCategory[cacheKey] = preferred
+            return preferred
+        }
+
+        // 2. Usage-based per-category default.
+        if let usageBased = getSmartDefaultAccount(forCategory: category) {
+            cachedDefaultsByCategory[cacheKey] = usageBased
+            return usageBased
+        }
+        return nil
     }
 }

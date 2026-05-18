@@ -511,6 +511,13 @@ struct VoiceInputConfirmationView: View {
                             subcategoryIds: Array(selectedSubcategoryIds)
                         )
                     }
+                    // Feed the learning store with the user's confirmed
+                    // (category → account) choice so the parser can prefer
+                    // it for the next voice input in this category.
+                    VoiceLearningStore.shared.recordSave(
+                        category: addedTransaction.category,
+                        accountId: addedTransaction.accountId
+                    )
                     HapticManager.success()
                     dismiss()
                 }

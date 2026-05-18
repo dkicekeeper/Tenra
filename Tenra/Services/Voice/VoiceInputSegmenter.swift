@@ -48,10 +48,12 @@ enum VoiceInputSegmenter {
         var clauses: [String] = []
         var cursor = trimmed.startIndex
         for split in candidates {
+            // Skip boundaries that fall inside an already-consumed prefix.
+            guard split.range.lowerBound >= cursor else { continue }
             let left = String(trimmed[cursor..<split.range.lowerBound])
-                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .trimmingCharacters(in: Self.fragmentTrim)
             let right = String(trimmed[split.range.upperBound...])
-                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .trimmingCharacters(in: Self.fragmentTrim)
 
             // Both sides need a plausible amount, otherwise this boundary
             // is decorative ("на молоко и хлеб") not structural.
@@ -62,11 +64,15 @@ enum VoiceInputSegmenter {
         }
 
         let tail = String(trimmed[cursor...])
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: Self.fragmentTrim)
         if !tail.isEmpty { clauses.append(tail) }
 
         return clauses.isEmpty ? [trimmed] : clauses
     }
+
+    /// Fragments are trimmed not just of whitespace but of any leftover
+    /// punctuation/comma from the boundary itself ("500 на такси, " → "500 на такси").
+    private static let fragmentTrim: CharacterSet = .whitespacesAndNewlines.union(.punctuationCharacters)
 
     // MARK: - Candidate boundaries
 
@@ -88,6 +94,15 @@ enum VoiceInputSegmenter {
     }()
 
     private static func candidateSplits(in text: String) -> [Candidate] {
+        let conjunctionCandidates = conjunctionBoundaries(in: text)
+        let amountAnchored = amountAnchoredBoundaries(in: text)
+        var merged = conjunctionCandidates + amountAnchored
+        merged.sort { $0.range.lowerBound < $1.range.lowerBound }
+        return merged
+    }
+
+    /// Conjunction-/punctuation-based boundaries (original behavior).
+    private static func conjunctionBoundaries(in text: String) -> [Candidate] {
         let ns = text as NSString
         let matches = boundaryRegex.matches(in: text, range: NSRange(location: 0, length: ns.length))
         return matches.compactMap { match -> Candidate? in
@@ -95,6 +110,80 @@ enum VoiceInputSegmenter {
             return Candidate(range: range)
         }
     }
+
+    /// Zero-width boundaries placed right before each amount expression after
+    /// the first. Catches natural speech like "500 на такси 100 на такси"
+    /// where users don't say "и"/"потом" between operations.
+    ///
+    /// Adjacent amount-token matches (e.g. "пятьсот тысяч") are collapsed
+    /// into one "cluster" so they aren't mistakenly split mid-expression.
+    private static func amountAnchoredBoundaries(in text: String) -> [Candidate] {
+        let ns = text as NSString
+        let matches = amountStartRegex
+            .matches(in: text, range: NSRange(location: 0, length: ns.length))
+            .compactMap { tokenRange(of: $0) }
+            .sorted { $0.location < $1.location }
+
+        var clusterStarts: [Int] = []
+        // `nil` until the first match — avoids `start - Int.min` overflow on
+        // the very first iteration (signed subtraction traps on underflow).
+        var prevEnd: Int? = nil
+        for tokenRange in matches {
+            let start = tokenRange.location
+            let end = start + tokenRange.length
+            // Same logical amount expression if the previous match ended at
+            // (or one space before) where this one starts. Otherwise it's a
+            // new amount and qualifies as a clause anchor.
+            if prevEnd == nil || start - prevEnd! > 1 {
+                clusterStarts.append(start)
+            }
+            prevEnd = end
+        }
+
+        var result: [Candidate] = []
+        for (idx, start) in clusterStarts.enumerated() where idx > 0 {
+            let nsRange = NSRange(location: start, length: 0)
+            if let range = Range(nsRange, in: text) {
+                result.append(Candidate(range: range))
+            }
+        }
+        return result
+    }
+
+    /// Picks whichever capture group of `amountStartRegex` actually matched —
+    /// group 1 for a digit amount, group 2 for a word amount. The returned
+    /// range starts exactly at the amount token (no leading non-letter).
+    private static func tokenRange(of match: NSTextCheckingResult) -> NSRange? {
+        let digit = match.range(at: 1)
+        if digit.location != NSNotFound { return digit }
+        let word = match.range(at: 2)
+        if word.location != NSNotFound { return word }
+        return nil
+    }
+
+    /// Anchored at the START of an amount token. Uses two capture groups so
+    /// the match's "token range" begins exactly at the amount's first char,
+    /// with no leading non-letter "consumed" inside the group.
+    private static let amountStartRegex: NSRegularExpression = {
+        // Stems for Russian quantity words. Each accepts any letter suffix.
+        // "тыщ" is the colloquial sibling of "тысяч" — both must be matched.
+        let stems = [
+            "тысяч", "тыщ", "миллион",
+            "сто", "двести", "триста", "четыреста", "пятьсот",
+            "шестьсот", "семьсот", "восемьсот", "девятьсот",
+            "десят", "двадцат", "тридцат", "сорок", "пятьдесят",
+            "шестьдесят", "семьдесят", "восемьдесят", "девяност",
+            "один", "одна", "два", "две", "три", "четыре",
+            "пять", "шесть", "семь", "восемь", "девять",
+            "полтор",
+        ]
+        let stemAlt = stems.joined(separator: "|")
+        // Group 1: digit amount. Group 2: word amount. Leading non-letter
+        // for the word branch is consumed OUTSIDE group 2, so group 2's
+        // location is the first letter of the word stem.
+        let pattern = #"(\d+(?:[.,]\d+)?)|(?:^|[^\p{L}])((?:"# + stemAlt + #")\p{L}*)"#
+        return try! NSRegularExpression(pattern: pattern, options: [.caseInsensitive])
+    }()
 
     // MARK: - Amount-shaped probe
 
@@ -105,7 +194,7 @@ enum VoiceInputSegmenter {
     /// drop clauses that fail to produce a real amount.
     private static let amountProbeRegex: NSRegularExpression = {
         let words = [
-            "тысяч", "миллион",
+            "тысяч", "тыщ", "миллион",
             "сто", "двести", "триста", "четыреста", "пятьсот",
             "шестьсот", "семьсот", "восемьсот", "девятьсот",
             "десять", "двадцать", "тридцать", "сорок", "пятьдесят",

@@ -105,11 +105,19 @@ class VoiceInputParser {
             "еда": ("Еда", nil),
             "столовая": ("Еда", nil),
             "доставка": ("Еда", "Доставка"),
+            "доставку": ("Еда", "Доставка"),
+            "доставки": ("Еда", "Доставка"),
+            "доставке": ("Еда", "Доставка"),
+            "курьер": ("Еда", "Доставка"),
+            "курьера": ("Еда", "Доставка"),
             "еда доставка": ("Еда", "Доставка"),
 
             // Продукты
             "продукты": ("Продукты", nil),
+            "продуктов": ("Продукты", nil),
+            "продукт": ("Продукты", nil),
             "магазин": ("Покупки", nil),
+            "маркет": ("Продукты", nil),
             "супермаркет": ("Продукты", nil),
             "гипермаркет": ("Продукты", nil),
 
@@ -157,6 +165,13 @@ class VoiceInputParser {
             "услуги": ("Услуги", nil),
             "ремонт": ("Услуги", nil)
         ]
+
+    /// `categoryMap.keys` sorted by length descending. Computed once and
+    /// reused so `parseCategory` doesn't pay the sort cost per call. Used
+    /// instead of iterating `categoryMap` directly because Dictionary
+    /// iteration is intentionally randomized in Swift.
+    private lazy var sortedCategoryKeys: [String] =
+        categoryMap.keys.sorted { $0.count > $1.count }
 
     /// Income keywords for entity detection — cached
     private lazy var incomeKeywords: [String] =
@@ -273,7 +288,9 @@ class VoiceInputParser {
         "семьсот": 700,
         "восемьсот": 800,
         "девятьсот": 900,
-        "тысяча": 1000, "тысячи": 1000, "тысяч": 1000
+        "тысяча": 1000, "тысячи": 1000, "тысяч": 1000,
+        // Colloquial sibling — very common in speech.
+        "тыща": 1000, "тыщи": 1000, "тыщ": 1000,
     ]
     
     // MARK: - Initialization
@@ -377,19 +394,31 @@ class VoiceInputParser {
         
         // Если счет не найден, используем счет с учётом категории. Сначала
         // спрашиваем learning-store, затем usage-tracker — и только потом
-        // глобальный дефолт.
-        if operation.accountId == nil {
-            if let categoryDefault = smartDefaultAccount(forCategory: operation.categoryName) {
-                operation.accountId = categoryDefault.id
-                if operation.currencyCode == nil {
-                    operation.currencyCode = categoryDefault.currency
-                }
-            } else {
-                operation.accountId = cachedDefaultAccount?.id
-            }
+        // глобальный дефолт. Каждая ступень дополнительно прогоняется через
+        // фильтр regular-аккаунтов, чтобы депозит/кредит никогда не попал
+        // в превью голосовой транзакции.
+        operation.accountId = regularAccountId(operation.accountId)
+            ?? regularAccountId(smartDefaultAccount(forCategory: operation.categoryName)?.id)
+            ?? regularAccountId(cachedDefaultAccount?.id)
+            ?? liveAccounts.first(where: { !$0.isLoan && !$0.isDeposit })?.id
+        if operation.currencyCode == nil,
+           let id = operation.accountId,
+           let account = liveAccounts.first(where: { $0.id == id }) {
+            operation.currencyCode = account.currency
         }
 
         return operation
+    }
+
+    /// Returns `id` only if it points to a regular (non-loan, non-deposit)
+    /// account that still exists in the live list. Used as a uniform filter
+    /// at every account-resolution fallback so voice quick-save never
+    /// targets credit lines or savings deposits.
+    private func regularAccountId(_ id: String?) -> String? {
+        guard let id, !id.isEmpty else { return nil }
+        guard let account = liveAccounts.first(where: { $0.id == id }) else { return nil }
+        guard !account.isLoan, !account.isDeposit else { return nil }
+        return id
     }
 
     /// Parses one or more operations from a single utterance.
@@ -432,15 +461,21 @@ class VoiceInputParser {
             let (categoryName, subcategoryNames) = parseCategory(from: normalized)
 
             // Per-category smart default: prefer the account most-used for
-            // this category (or the user's confirmed preference, if any)
-            // BEFORE falling back to the previous clause's account.
+            // this category (or the user's confirmed preference, if any).
             let categoryDefault = smartDefaultAccount(forCategory: categoryName)
 
             let type = explicitType ?? lastType
-            let accountId = explicitAccountId
-                ?? categoryDefault?.id
-                ?? lastAccountId
-                ?? cachedDefaultAccount?.id
+            // Continuity wins inside one utterance: if the previous clause
+            // landed on a regular account, the next clause stays on it
+            // unless the user explicitly named a different one. Only when
+            // there's no prior clause do we fall to the category-default.
+            // Every candidate is run through `regularAccountId` so a
+            // loan/deposit can never survive the cascade.
+            let accountId = regularAccountId(explicitAccountId)
+                ?? regularAccountId(lastAccountId)
+                ?? regularAccountId(categoryDefault?.id)
+                ?? regularAccountId(cachedDefaultAccount?.id)
+                ?? liveAccounts.first(where: { !$0.isLoan && !$0.isDeposit })?.id
             let currency = explicitCurrency
                 ?? lastCurrency
                 ?? liveAccounts.first(where: { $0.id == accountId })?.currency
@@ -498,6 +533,13 @@ class VoiceInputParser {
         return today
     }
     
+    /// Tokens that map a preceding number to "× 1000" in word-form parsing.
+    /// Includes both proper "тысяча/тысячи/тысяч" and colloquial "тыща/тыщи/тыщ".
+    private static let thousandTokens: Set<String> = [
+        "тысяча", "тысячи", "тысяч",
+        "тыща", "тыщи", "тыщ",
+    ]
+
     /// Verbs that mark a clause as an expense.
     private static let expenseKeywords: [String] = [
         "потратил", "потратила", "потратили", "потратило",
@@ -654,7 +696,7 @@ class VoiceInputParser {
                         currentNumber = currentNumber * 10 + number
                     }
                 }
-            } else if lowercased == "тысяч" || lowercased == "тысячи" || lowercased == "тысяча" {
+            } else if Self.thousandTokens.contains(lowercased) {
                 if currentNumber > 0 {
                     result += currentNumber * 1000
                     currentNumber = 0
@@ -816,8 +858,14 @@ class VoiceInputParser {
         // Сначала ищем подкатегории, потом категории
         var foundSubcategories: [String] = []
         var foundCategory: String?
-        
-        for (keyword, (category, subcategory)) in categoryMap {
+
+        // Sort keys by length desc so longer phrases ("еда доставка") win over
+        // their substrings ("еда"), and so the iteration is deterministic —
+        // Swift's `Dictionary` iteration order is intentionally randomized,
+        // which previously made identical input produce different categories
+        // across runs.
+        for keyword in sortedCategoryKeys {
+            guard let (category, subcategory) = categoryMap[keyword] else { continue }
             if text.contains(keyword) {
                 // Сначала проверяем подкатегорию
                 if let subcategory = subcategory {

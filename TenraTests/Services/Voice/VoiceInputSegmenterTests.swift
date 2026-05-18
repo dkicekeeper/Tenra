@@ -107,4 +107,53 @@ final class VoiceInputSegmenterTests: XCTestCase {
         XCTAssertEqual(clauses[0], "500 на такси")
         XCTAssertEqual(clauses[1], "3000 на продукты")
     }
+
+    // MARK: - Amount-anchored splits (no conjunctions)
+
+    func testSplitsOnBackToBackAmountsWithoutConjunctions() {
+        // Real screenshot case: user dictates 5 transactions in a row
+        // without ever saying "и" or "потом".
+        let clauses = VoiceInputSegmenter.segment(
+            "500 тенге на такси 100 тенге на такси 300 тенге на такси 400 тенге на такси 200 тенге на такси"
+        )
+        XCTAssertEqual(clauses.count, 5)
+        XCTAssertEqual(clauses[0], "500 тенге на такси")
+        XCTAssertEqual(clauses[1], "100 тенге на такси")
+        XCTAssertEqual(clauses[2], "300 тенге на такси")
+        XCTAssertEqual(clauses[3], "400 тенге на такси")
+        XCTAssertEqual(clauses[4], "200 тенге на такси")
+    }
+
+    func testSplitsOnDigitAfterWordAmount() {
+        // Mixed: word amount then digit amount.
+        let clauses = VoiceInputSegmenter.segment("тысяча на еду 500 на такси")
+        XCTAssertEqual(clauses.count, 2)
+        XCTAssertEqual(clauses[0], "тысяча на еду")
+        XCTAssertEqual(clauses[1], "500 на такси")
+    }
+
+    func testCompoundWordAmountStaysOneClause() {
+        // "пятьсот тысяч" is one amount (500_000), NOT two clauses.
+        let clauses = VoiceInputSegmenter.segment("пятьсот тысяч на машину")
+        XCTAssertEqual(clauses, ["пятьсот тысяч на машину"])
+    }
+
+    func testWordAmountWithThousandSuffixStaysOneClause() {
+        // "три тысячи" = 3000, single expression.
+        let clauses = VoiceInputSegmenter.segment("три тысячи на продукты")
+        XCTAssertEqual(clauses, ["три тысячи на продукты"])
+    }
+
+    // MARK: - Colloquial "тыща"
+
+    func testColloquialThousandIsRecognized() {
+        // "тыща" is the colloquial form of "тысяча" — segmenter must see it
+        // as an amount marker, otherwise "500 такси тыща продукты" stays
+        // as one clause and the second transaction is lost.
+        let clauses = VoiceInputSegmenter.segment("500 на такси тыща на доставку три тыщи на продукты")
+        XCTAssertEqual(clauses.count, 3)
+        XCTAssertEqual(clauses[0], "500 на такси")
+        XCTAssertEqual(clauses[1], "тыща на доставку")
+        XCTAssertEqual(clauses[2], "три тыщи на продукты")
+    }
 }

@@ -90,9 +90,19 @@ struct CategoriesManagementView: View {
         HapticManager.selection()
     }
 
+    /// Empty state is gated on the **source of truth** (store.categories), not
+    /// on `filteredCategories` which is a @State snapshot populated by `.task(id:)`.
+    /// Otherwise the very first body render shows EmptyStateView for one frame
+    /// before the task fires — a visible flash on every open.
+    /// O(N_cat) check, N_cat ≤ ~30. Subscribes to `categories` which triggers
+    /// .task via listKey on changes — correct behaviour.
+    private var hasCategoriesForCurrentType: Bool {
+        transactionStore.categories.contains { $0.type == selectedType }
+    }
+
     var body: some View {
         Group {
-            if filteredCategories.isEmpty {
+            if !hasCategoriesForCurrentType {
                 EmptyStateView(
                     icon: "folder",
                     title: String(localized: "emptyState.noCategories"),
@@ -121,6 +131,7 @@ struct CategoriesManagementView: View {
                             transitionSourceID: category.id,
                             transitionNamespace: categoryNamespace
                         )
+                        .equatable()
                         .contextMenu {
                             Button {
                                 editingCategory = category

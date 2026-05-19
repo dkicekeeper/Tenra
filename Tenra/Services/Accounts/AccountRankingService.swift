@@ -135,11 +135,22 @@ class AccountRankingService {
         accounts: [Account],
         transactions: [Transaction],
         transactionsByAccount: [String: [Transaction]]? = nil,
+        /// Pre-built index from `TransactionStore.transactionsByCategoryName`.
+        /// When provided, the per-category candidate scan becomes O(M) (M = tx
+        /// in this category) instead of O(N_tx). Optional for back-compat with
+        /// the prior call sites that pass an array snapshot directly.
+        transactionsByCategoryName: [String: [Transaction]]? = nil,
         amount: Double? = nil,
         balances: [String: Double] = [:]
     ) -> Account? {
-        let categoryTransactions = transactions.filter {
-            $0.category == category && $0.type == .expense
+        let categoryTransactions: [Transaction]
+        if let indexed = transactionsByCategoryName?[category] {
+            // Already bucketed by name; just filter the bucket by type.
+            categoryTransactions = indexed.filter { $0.type == .expense }
+        } else {
+            categoryTransactions = transactions.filter {
+                $0.category == category && $0.type == .expense
+            }
         }
 
         guard !categoryTransactions.isEmpty else {
@@ -185,9 +196,13 @@ class AccountRankingService {
             return (decayScore[a.accountId] ?? 0) > (decayScore[b.accountId] ?? 0)
         }
 
+        // Build a one-shot accountById map for the linear `first(where:)` calls below.
+        // O(N_accounts) once; replaces O(N_accounts) per candidate.
+        let accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
+
         // Find first candidate that passes the balance filter.
         for entry in sorted {
-            guard let account = accounts.first(where: { $0.id == entry.accountId }) else { continue }
+            guard let account = accountById[entry.accountId] else { continue }
             if let amount = amount {
                 let bal = balances[account.id] ?? 0
                 if bal < amount { continue }
@@ -197,7 +212,7 @@ class AccountRankingService {
 
         // Nothing passed balance filter → return top of pool anyway, the form will surface the warning.
         if let topId = sorted.first?.accountId,
-           let account = accounts.first(where: { $0.id == topId }) {
+           let account = accountById[topId] {
             return account
         }
 

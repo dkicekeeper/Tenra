@@ -77,6 +77,10 @@ private final class MockAccountRepository: AccountRepositoryProtocol {
     }
 
     func loadAllAccountBalances() -> [String: Double] { [:] }
+
+    // Schema v9: account aggregates persistence (no-op for mock).
+    func loadAccountAggregates() -> [String: AccountAggregates] { [:] }
+    func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) {}
 }
 
 // MARK: - Mock-Based Behaviour Tests

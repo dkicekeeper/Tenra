@@ -416,7 +416,15 @@ class TransactionsViewModel {
     }
 
     func getCategory(name: String, type: TransactionType) -> CustomCategory? {
-        customCategories.first { $0.name.lowercased() == name.lowercased() && $0.type == type }
+        // O(1) via TransactionStore.categoryIdByName, falls back to the legacy
+        // linear scan only when the store reference hasn't been wired up yet.
+        if let store = transactionStore,
+           let id = store.categoryIdByName[name.lowercased()],
+           let cat = store.categoryById[id],
+           cat.type == type {
+            return cat
+        }
+        return customCategories.first { $0.name.lowercased() == name.lowercased() && $0.type == type }
     }
 
     func cleanupDeletedAccount(_ accountId: String) {

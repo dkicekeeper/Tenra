@@ -319,7 +319,8 @@ struct SubscriptionEditView: View {
                 //     Renaming a subscription is a relabeling of the entity itself, so historical
                 //     occurrences should reflect the new name without prompting the user.
                 if didRename {
-                    let allLinked = transactionStore.transactions.filter { $0.recurringSeriesId == series.id }
+                    // O(1) bucket lookup; previously full O(N_tx) scan.
+                    let allLinked = transactionStore.transactionsBySeriesId[series.id] ?? []
                     for tx in allLinked where tx.description != series.description {
                         let renamed = renameTransactionDescription(tx, to: series.description)
                         try await transactionStore.update(renamed)
@@ -343,7 +344,7 @@ struct SubscriptionEditView: View {
                 //    - Otherwise: just the scoped set
                 let txsToLink: [Transaction]
                 if isCreate || didRename {
-                    txsToLink = transactionStore.transactions.filter { $0.recurringSeriesId == series.id }
+                    txsToLink = transactionStore.transactionsBySeriesId[series.id] ?? []
                 } else {
                     txsToLink = scopedTxs
                 }
@@ -368,7 +369,8 @@ struct SubscriptionEditView: View {
     }
 
     private func transactionsToUpdate(for series: RecurringSeries, scope: PropagationScope) -> [Transaction] {
-        let all = transactionStore.transactions.filter { $0.recurringSeriesId == series.id }
+        // O(1) lookup via store index, was an O(N_tx) full-array filter.
+        let all = transactionStore.transactionsBySeriesId[series.id] ?? []
         switch scope {
         case .seriesOnly:
             return []
@@ -464,8 +466,10 @@ struct SubscriptionEditView: View {
     }
 
     private func ensureSubcategoryLinkedToCategory(subcategoryId: String, categoryName: String) {
-        guard let categoryId = transactionsViewModel.customCategories.first(where: { $0.name == categoryName })?.id
-        else { return }
+        // O(1) via index, fallback to legacy scan if store isn't wired up.
+        let categoryId: String? = transactionsViewModel.transactionStore?.categoryIdByName[categoryName.lowercased()]
+            ?? transactionsViewModel.customCategories.first(where: { $0.name == categoryName })?.id
+        guard let categoryId else { return }
         let alreadyLinked = categoriesViewModel.categorySubcategoryLinks.contains {
             $0.subcategoryId == subcategoryId && $0.categoryId == categoryId
         }

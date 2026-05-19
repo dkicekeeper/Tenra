@@ -130,6 +130,9 @@ final class TransactionStore {
         currencyRatesVersion &+= 1
         if aggregatesAreFXStale {
             rebuildCategoryIndexes()
+            // Account aggregates also depend on FX conversion (cross-currency
+            // sources / targets). Rebuild together so they self-heal in one pass.
+            rebuildAccountAggregates()
             categoriesMutationVersion &+= 1
         }
     }
@@ -206,6 +209,30 @@ final class TransactionStore {
     /// Bumps on every subcategory or link mutation. Use as a `.task(id:)` trigger.
     internal(set) var subcategoriesMutationVersion: Int = 0
 
+    // MARK: - Series / Date / Account Aggregate Indexes (O(1) lookups)
+    // Same pattern as the category indexes above. See docs/domains/transactions.md
+    // for the full read/write contract.
+
+    /// Pre-built id → parsed Date map. Filling once in `loadData()` and maintaining
+    /// incrementally on every tx mutation removes the per-call
+    /// `DateFormatter.date(from:)` cost (~16 µs × 19k = ~300 ms per filter pass)
+    /// from `TransactionFilterService.filterByTimeRange`, deposit reconcile walks,
+    /// budget services, etc.
+    @ObservationIgnored internal(set) var parsedDateById: [String: Date] = [:]
+
+    /// Per-recurring-series transaction index. Mirrors `transactionsByAccount`/
+    /// `transactionsByCategoryName`. Used by SubscriptionEditView, SubscriptionDetailView,
+    /// and any "show me linked payments" UI path. Replaces the
+    /// `transactions.filter { $0.recurringSeriesId == X }` full scan.
+    @ObservationIgnored internal(set) var transactionsBySeriesId: [String: [Transaction]] = [:]
+
+    /// Pre-aggregated income/expense/count per account. Mirrors
+    /// `categoryAggregatesByKey` for the account domain — patched on every tx mutation
+    /// in `accountAggregatesApplyDelta`. Drives AccountDetailView reads in O(1).
+    /// All amounts are in the OWNING account's currency, not base currency — accounts
+    /// can have heterogeneous currencies and each detail view shows its own currency.
+    @ObservationIgnored internal(set) var accountAggregatesByAccountId: [String: AccountAggregates] = [:]
+
     // MARK: - Dependencies
 
     @ObservationIgnored internal let repository: DataRepositoryProtocol
@@ -242,6 +269,17 @@ final class TransactionStore {
     // tx mutations (e.g. CSV import, recurring generation) into one CoreData
     // save instead of one per delta.
     @ObservationIgnored internal var aggregatePersistDebounceTask: Task<Void, Never>?
+
+    // Debounce tasks for subcategory link tables. The transaction edit screen
+    // commits a Set<String> of subcategory ids on every keystroke, which used
+    // to write the entire link table each time. Both maps coalesce now.
+    @ObservationIgnored internal var categorySubcategoryLinksPersistTask: Task<Void, Never>?
+    @ObservationIgnored internal var transactionSubcategoryLinksPersistTask: Task<Void, Never>?
+
+    /// Debounced AccountAggregateEntity persistence — same 500ms pattern as
+    /// `aggregatePersistDebounceTask` for categories. Coalesces a burst of
+    /// account aggregate patches into one CoreData write.
+    @ObservationIgnored internal var accountAggregatePersistTask: Task<Void, Never>?
 
     // Lifecycle observer token for cleanup in deinit
     @ObservationIgnored private var lifecycleObserver: NSObjectProtocol?
@@ -328,9 +366,11 @@ final class TransactionStore {
         // Cold-load pre-aggregated CategoryAggregateEntity rows. Empty on a
         // fresh install / schema migration — handled below by a one-shot rebuild.
         async let aggregates = Task.detached(priority: .userInitiated) { repo.loadAggregates(year: nil, month: nil, limit: nil) }.value
+        // Warm-start AccountAggregateEntity rows (Schema v9+). Same fallback.
+        async let accountAggregates = Task.detached(priority: .userInitiated) { repo.loadAccountAggregates() }.value
 
-        let (loadedTxs, loadedAccs, loadedCats, loadedSubs, loadedCatLinks, loadedTxLinks, loadedSeries, loadedOcc, loadedAggregates) =
-            await (txs, accs, cats, subs, catLinks, txLinks, series, occurrences, aggregates)
+        let (loadedTxs, loadedAccs, loadedCats, loadedSubs, loadedCatLinks, loadedTxLinks, loadedSeries, loadedOcc, loadedAggregates, loadedAccountAggregates) =
+            await (txs, accs, cats, subs, catLinks, txLinks, series, occurrences, aggregates, accountAggregates)
 
         // Back on @MainActor — single assignment cycle triggers one @Observable update.
         accounts  = AccountOrderManager.shared.applyOrders(to: loadedAccs)
@@ -362,6 +402,20 @@ final class TransactionStore {
             rebuildCategoryIndexes()
             scheduleAggregatePersist()  // first launch — write the rebuilt snapshot
         }
+
+        // Series / parsed-date indexes are derived from the already-loaded
+        // `transactions` array — cheap O(N_tx) sweep runs once.
+        rebuildSeriesAndDateIndexes()
+
+        // Account aggregates: warm-start from CoreData when a snapshot exists,
+        // else rebuild + persist (first launch on Schema v9, or after manual reset).
+        if !loadedAccountAggregates.isEmpty {
+            seedAccountAggregates(from: loadedAccountAggregates)
+        } else {
+            rebuildAccountAggregates()
+            scheduleAccountAggregatePersist()
+        }
+
         categoriesMutationVersion &+= 1
         subcategoriesMutationVersion &+= 1
 
@@ -564,6 +618,17 @@ final class TransactionStore {
         // warm-starts from CoreData instead of doing the O(N_tx) rebuild.
         await flushAggregatePersist()
 
+        // Subcategory link persists are debounced on the hot path; flush any
+        // pending writes synchronously so the import is fully durable.
+        flushSubcategoryLinkPersist()
+
+        // Same for recurring series + occurrences persistence.
+        recurringStore.flushPersist()
+
+        // Account aggregates were maintained in-memory via per-tx deltas; persist
+        // final state so the next launch warm-starts.
+        await flushAccountAggregatePersist()
+
         logger.debug("finishImport DONE")
     }
 
@@ -696,6 +761,8 @@ final class TransactionStore {
             indexAdd(tx)
             categoryIndexAdd(tx)
             subcategoryIndexAdd(tx)
+            seriesIndexAdd(tx)
+            accountAggregatesAdd(tx)
 
         case .updated(let old, let new):
             if let index = transactions.firstIndex(where: { $0.id == old.id }) {
@@ -706,6 +773,8 @@ final class TransactionStore {
             indexUpdate(old: old, new: new)
             categoryIndexUpdate(old: old, new: new)
             subcategoryIndexUpdate(old: old, new: new)
+            seriesIndexUpdate(old: old, new: new)
+            accountAggregatesUpdate(old: old, new: new)
 
         case .deleted(let tx):
             // O(1) removal via index lookup; replaces O(N) `removeAll { $0.id == tx.id }`.
@@ -718,6 +787,8 @@ final class TransactionStore {
             indexRemove(tx)
             categoryIndexRemove(tx)
             subcategoryIndexRemove(tx)
+            seriesIndexRemove(tx)
+            accountAggregatesRemove(tx)
 
         case .bulkAdded(let txs):
             transactions.append(contentsOf: txs)
@@ -728,6 +799,8 @@ final class TransactionStore {
                 indexAdd(tx)
                 categoryIndexAdd(tx)
                 subcategoryIndexAdd(tx)
+                seriesIndexAdd(tx)
+                accountAggregatesAdd(tx)
             }
 
         // MARK: - Recurring Series Events (delegated to RecurringStore)

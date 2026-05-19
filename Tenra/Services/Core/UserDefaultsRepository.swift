@@ -138,6 +138,9 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol, @uncheck
     func loadAggregates(year: Int16?, month: Int16?, limit: Int?) -> [CategoryAggregate] { [] }
     func saveAggregates(_ aggregates: [CategoryAggregate]) {}
 
+    func loadAccountAggregates() -> [String: AccountAggregates] { [:] }
+    func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) {}
+
     // MARK: - Category Rules
     
     func loadCategoryRules() -> [CategoryRule] {

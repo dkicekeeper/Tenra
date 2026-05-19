@@ -32,6 +32,11 @@ final class RecurringStore {
     /// All recurring occurrences — tracks which transactions were generated from which series
     private(set) var recurringOccurrences: [RecurringOccurrence] = []
 
+    /// O(1) per-series occurrence lookup. Maintained alongside the `recurringOccurrences`
+    /// array on every mutation. Replaces `recurringOccurrences.filter { $0.seriesId == X }`
+    /// and `recurringOccurrences.removeAll { $0.seriesId == X }` full scans across N_occ.
+    @ObservationIgnored private(set) var occurrencesBySeriesId: [String: [RecurringOccurrence]] = [:]
+
     // MARK: - Dependencies
 
     @ObservationIgnored let recurringGenerator: RecurringTransactionGenerator
@@ -56,6 +61,19 @@ final class RecurringStore {
         recurringSeries = series
         seriesById = Dictionary(uniqueKeysWithValues: series.map { ($0.id, $0) })
         recurringOccurrences = occurrences
+        rebuildOccurrencesBySeriesId()
+    }
+
+    /// One-shot O(N_occ) rebuild from the canonical `recurringOccurrences` array.
+    /// Kept internal so the cold-start in `load(...)` and any future
+    /// migration paths can use the same code.
+    internal func rebuildOccurrencesBySeriesId() {
+        var grouped: [String: [RecurringOccurrence]] = [:]
+        grouped.reserveCapacity(seriesById.count)
+        for occ in recurringOccurrences {
+            grouped[occ.seriesId, default: []].append(occ)
+        }
+        occurrencesBySeriesId = grouped
     }
 
     // MARK: - State Mutation Helpers (called by TransactionStore.updateState)
@@ -92,17 +110,32 @@ final class RecurringStore {
     /// Remove future occurrences for a series after the given cutoff date (exclusive).
     /// Called by TransactionStore.stopSeries() before apply(.seriesStopped) so that
     /// persistIncremental's saveOccurrences() persists the pruned list.
+    /// O(M) in the series's occurrences, not O(N_occ).
     func removeOccurrences(seriesId: String, afterDate cutoff: Date) {
+        guard let seriesBucket = occurrencesBySeriesId[seriesId], !seriesBucket.isEmpty else { return }
         let formatter = DateFormatters.dateFormatter
-        recurringOccurrences.removeAll { occ in
-            guard occ.seriesId == seriesId else { return false }
+        let kept = seriesBucket.filter { occ in
+            guard let date = formatter.date(from: occ.occurrenceDate) else { return true }
+            return date <= cutoff
+        }
+        guard kept.count != seriesBucket.count else { return }
+        // Persist back to canonical array (O(N_occ) walk to drop the removed ids).
+        let removedIds = Set(seriesBucket.filter { occ in
             guard let date = formatter.date(from: occ.occurrenceDate) else { return false }
             return date > cutoff
+        }.map { $0.id })
+        recurringOccurrences.removeAll { removedIds.contains($0.id) }
+        if kept.isEmpty {
+            occurrencesBySeriesId.removeValue(forKey: seriesId)
+        } else {
+            occurrencesBySeriesId[seriesId] = kept
         }
     }
 
     /// Remove all occurrences for a series (used by deleteSeries).
+    /// O(M) lookup + O(N_occ) array filter (rare operation).
     func removeAllOccurrences(for seriesId: String) {
+        guard occurrencesBySeriesId.removeValue(forKey: seriesId) != nil else { return }
         recurringOccurrences.removeAll { $0.seriesId == seriesId }
     }
 
@@ -114,14 +147,46 @@ final class RecurringStore {
 
     func appendOccurrences(_ occurrences: [RecurringOccurrence]) {
         recurringOccurrences.append(contentsOf: occurrences)
+        for occ in occurrences {
+            occurrencesBySeriesId[occ.seriesId, default: []].append(occ)
+        }
     }
 
+    // MARK: - Persistence (debounced)
+    //
+    // Both `saveOccurrences` and `saveSeries` write the full table on every call.
+    // A single recurring-series edit can trigger N append/delete/regenerate cycles
+    // (TransactionStore+Recurring) and each one ends with `saveOccurrences()`.
+    // Coalesce them into one CoreData write per 300ms burst.
+
+    private var occurrencesPersistTask: Task<Void, Never>?
+    private var seriesPersistTask: Task<Void, Never>?
+
     func saveOccurrences() {
+        occurrencesPersistTask?.cancel()
+        occurrencesPersistTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard let self, !Task.isCancelled else { return }
+            self.repository.saveRecurringOccurrences(self.recurringOccurrences)
+        }
+    }
+
+    /// Synchronously flush any pending writes. Called from
+    /// `TransactionStore.finishImport()` so bulk imports persist deterministically.
+    func flushPersist() {
+        occurrencesPersistTask?.cancel()
+        seriesPersistTask?.cancel()
         repository.saveRecurringOccurrences(recurringOccurrences)
+        repository.saveRecurringSeries(recurringSeries)
     }
 
     func saveSeries() {
-        repository.saveRecurringSeries(recurringSeries)
+        seriesPersistTask?.cancel()
+        seriesPersistTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard let self, !Task.isCancelled else { return }
+            self.repository.saveRecurringSeries(self.recurringSeries)
+        }
     }
 
     func invalidateCacheFor(seriesId: String) {

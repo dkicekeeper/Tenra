@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CategoryRow: View {
+struct CategoryRow: View, Equatable {
     let category: CustomCategory
     let isDefault: Bool
     let budgetProgress: BudgetProgress?
@@ -20,6 +20,19 @@ struct CategoryRow: View {
     /// `.navigationTransition(.zoom(...))` on the destination detail view.
     var transitionSourceID: String? = nil
     var transitionNamespace: Namespace.ID? = nil
+
+    /// Equatable conformance compares the rendering-affecting inputs only —
+    /// closures are intentionally ignored (their captured state changes don't
+    /// alter the rendered output). With `.equatable()` applied at the call site,
+    /// SwiftUI can skip body re-evals when neither the category nor its budget
+    /// progress changed.
+    static func == (lhs: CategoryRow, rhs: CategoryRow) -> Bool {
+        lhs.category == rhs.category
+            && lhs.isDefault == rhs.isDefault
+            && lhs.budgetProgress == rhs.budgetProgress
+            && lhs.currency == rhs.currency
+            && lhs.transitionSourceID == rhs.transitionSourceID
+    }
 
     private var categoryAccessibilityLabel: String {
         var parts = [category.name]

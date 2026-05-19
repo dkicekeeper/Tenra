@@ -202,12 +202,18 @@ final class CategorySubcategoryCoordinator: CategorySubcategoryCoordinatorProtoc
     func reorderSubcategories(categoryId: String, orderedSubcategoryIds: [String]) {
         guard let delegate = delegate else { return }
 
-        for (index, subcategoryId) in orderedSubcategoryIds.enumerated() {
-            if let linkIndex = delegate.categorySubcategoryLinks.firstIndex(where: {
-                $0.categoryId == categoryId && $0.subcategoryId == subcategoryId
-            }) {
-                delegate.categorySubcategoryLinks[linkIndex].sortOrder = index
-            }
+        // Build a `(subcategoryId) → linkIndex` map for this category once,
+        // then assign `sortOrder` in O(M) total instead of O(M × N_links).
+        var indexBySubId: [String: Int] = [:]
+        indexBySubId.reserveCapacity(orderedSubcategoryIds.count)
+        for (i, link) in delegate.categorySubcategoryLinks.enumerated()
+        where link.categoryId == categoryId {
+            indexBySubId[link.subcategoryId] = i
+        }
+
+        for (newOrder, subId) in orderedSubcategoryIds.enumerated() {
+            guard let linkIndex = indexBySubId[subId] else { continue }
+            delegate.categorySubcategoryLinks[linkIndex].sortOrder = newOrder
         }
 
         if let transactionStore = delegate.transactionStore {

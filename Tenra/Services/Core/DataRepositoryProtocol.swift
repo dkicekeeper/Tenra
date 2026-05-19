@@ -49,6 +49,12 @@ protocol DataRepositoryProtocol: Sendable {
     nonisolated func loadCategories() -> [CustomCategory]
     nonisolated func saveCategories(_ categories: [CustomCategory])
 
+    // MARK: - Account Aggregates
+    /// Pre-aggregated income/expense/count per account in the account's own currency.
+    /// Warm-start snapshot for `TransactionStore.accountAggregatesByAccountId`.
+    nonisolated func loadAccountAggregates() -> [String: AccountAggregates]
+    nonisolated func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String])
+
     // MARK: - Category Aggregates
     /// Pre-aggregated category totals (daily/monthly/yearly/all-time).
     /// Warm-start fast path for `TransactionStore.categoryAggregatesByKey`.

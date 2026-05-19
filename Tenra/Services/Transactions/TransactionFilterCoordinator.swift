@@ -98,8 +98,12 @@ class TransactionFilterCoordinator: TransactionFilterCoordinatorProtocol {
 
     // MARK: - Private Helpers
 
-    /// Filter recurring transactions to show only the nearest transaction for each active series
-    /// Extracted from TransactionsViewModel.filterRecurringTransactions
+    /// Filter recurring transactions to show only the nearest transaction for each active series.
+    /// Extracted from TransactionsViewModel.filterRecurringTransactions.
+    ///
+    /// Parses each tx date exactly once into a local `dateCache` instead of the
+    /// previous 3-4 `DateFormatter.date(from:)` calls per recurring tx (once in
+    /// the compactMap, twice per comparison in the final sort).
     private func filterRecurringTransactions(
         _ transactions: [Transaction],
         series: [RecurringSeries]
@@ -112,7 +116,7 @@ class TransactionFilterCoordinator: TransactionFilterCoordinatorProtocol {
         var regularTransactions: [Transaction] = []
         var recurringTransactionsBySeries: [String: [Transaction]] = [:]
 
-        // Separate recurring from regular transactions
+        // Separate recurring from regular transactions.
         for transaction in transactions {
             if let seriesId = transaction.recurringSeriesId {
                 recurringTransactionsBySeries[seriesId, default: []].append(transaction)
@@ -123,41 +127,44 @@ class TransactionFilterCoordinator: TransactionFilterCoordinatorProtocol {
 
         result.append(contentsOf: regularTransactions)
 
-        // For each active recurring series, find the next upcoming transaction
+        // Pre-parse dates for everything we might touch — recurring buckets are
+        // visited here AND in the final sort. Build the cache once, share it.
+        var dateCache: [String: Date] = [:]
+        dateCache.reserveCapacity(transactions.count)
+        @inline(__always) func cachedDate(for tx: Transaction) -> Date? {
+            if let cached = dateCache[tx.id] { return cached }
+            guard let parsed = dateFormatter.date(from: tx.date) else { return nil }
+            dateCache[tx.id] = parsed
+            return parsed
+        }
+
+        // For each active recurring series, find the next upcoming transaction.
         for activeSeries in series where activeSeries.isActive {
-            if recurringSeriesShown.contains(activeSeries.id) {
-                continue
-            }
+            if recurringSeriesShown.contains(activeSeries.id) { continue }
+            guard let seriesTransactions = recurringTransactionsBySeries[activeSeries.id] else { continue }
 
-            guard let seriesTransactions = recurringTransactionsBySeries[activeSeries.id] else {
-                continue
-            }
-
-            // Find the nearest future transaction for this series
             let nextTransaction = seriesTransactions
-                .compactMap { transaction -> (Transaction, Date)? in
-                    guard let date = dateFormatter.date(from: transaction.date) else {
-                        return nil
-                    }
-                    return (transaction, date)
+                .compactMap { tx -> (Transaction, Date)? in
+                    guard let date = cachedDate(for: tx) else { return nil }
+                    return (tx, date)
                 }
                 .filter { $0.1 >= today }
                 .min(by: { $0.1 < $1.1 })
                 .map { $0.0 }
 
-            if let nextTransaction = nextTransaction {
+            if let nextTransaction {
                 result.append(nextTransaction)
                 recurringSeriesShown.insert(activeSeries.id)
             }
         }
 
-        // Sort by date descending
+        // Sort by date descending — comparator reads the cache, O(1) per access.
         return result.sorted { tx1, tx2 in
-            guard let date1 = dateFormatter.date(from: tx1.date),
-                  let date2 = dateFormatter.date(from: tx2.date) else {
+            guard let d1 = cachedDate(for: tx1),
+                  let d2 = cachedDate(for: tx2) else {
                 return false
             }
-            return date1 > date2
+            return d1 > d2
         }
     }
 

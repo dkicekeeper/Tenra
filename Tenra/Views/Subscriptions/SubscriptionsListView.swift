@@ -114,6 +114,7 @@ struct SubscriptionsListView: View {
                         nextChargeDate: nextChargeDate,
                         baseCurrency: transactionsViewModel.appSettings.baseCurrency
                     )
+                    .equatable()
                     .matchedTransitionSource(id: subscription.id, in: subscriptionNamespace)
                 }
                 .buttonStyle(PlainButtonStyle())

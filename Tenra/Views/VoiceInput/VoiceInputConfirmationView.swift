@@ -165,7 +165,9 @@ struct VoiceInputConfirmationView: View {
                     
                     // 5. Подкатегории
                     if let categoryName = selectedCategoryName,
-                       let category = categoriesViewModel.customCategories.first(where: { $0.name == categoryName }) {
+                       let category = (categoriesViewModel.transactionStore.flatMap { store in
+                        store.categoryIdByName[categoryName.lowercased()].flatMap { store.categoryById[$0] }
+                    } ?? categoriesViewModel.customCategories.first(where: { $0.name == categoryName })) {
                         SubcategorySelectorView(
                             categoriesViewModel: categoriesViewModel,
                             categoryId: category.id,
@@ -217,7 +219,9 @@ struct VoiceInputConfirmationView: View {
             }
             .sheet(isPresented: $showingSubcategorySearch) {
                 if let categoryName = selectedCategoryName,
-                   let category = categoriesViewModel.customCategories.first(where: { $0.name == categoryName }) {
+                   let category = (categoriesViewModel.transactionStore.flatMap { store in
+                        store.categoryIdByName[categoryName.lowercased()].flatMap { store.categoryById[$0] }
+                    } ?? categoriesViewModel.customCategories.first(where: { $0.name == categoryName })) {
                     SubcategorySearchView(
                         categoriesViewModel: categoriesViewModel,
                         categoryId: category.id,
@@ -230,7 +234,9 @@ struct VoiceInputConfirmationView: View {
             }
             .sheet(isPresented: $showingSubcategoryReorder) {
                 if let categoryName = selectedCategoryName,
-                   let category = categoriesViewModel.customCategories.first(where: { $0.name == categoryName }) {
+                   let category = (categoriesViewModel.transactionStore.flatMap { store in
+                        store.categoryIdByName[categoryName.lowercased()].flatMap { store.categoryById[$0] }
+                    } ?? categoriesViewModel.customCategories.first(where: { $0.name == categoryName })) {
                     SubcategoryReorderView(
                         categoriesViewModel: categoriesViewModel,
                         categoryId: category.id

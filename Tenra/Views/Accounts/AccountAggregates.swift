@@ -3,7 +3,11 @@
 //  Tenra
 //
 //  Pure value-type aggregates for AccountDetailView.
-//  Lives in a `nonisolated enum` so the computation can run off MainActor if needed.
+//
+//  Read path: O(1) lookup against `TransactionStore.accountAggregatesByAccountId`,
+//  which is maintained incrementally by `TransactionStore+AccountAggregates`.
+//  Legacy O(N_tx) full-scan path stays as a `nonisolated static` helper for
+//  background actors (Insights) that cannot read MainActor-isolated store indexes.
 //
 
 import Foundation
@@ -14,14 +18,22 @@ struct AccountAggregates: Equatable, Sendable {
     let totalExpense: Double     // in account currency
 }
 
-nonisolated enum AccountAggregatesCalculator {
-    /// Computes transaction count, total income, and total expense for a given account
-    /// over the provided transaction list. Amounts are converted into `accountCurrency`
-    /// when the transaction currency differs.
-    ///
-    /// Cases are enumerated explicitly (no `@unknown default`) so the compiler forces an
-    /// update whenever `TransactionType` gains a new case.
-    static func compute(
+@MainActor
+enum AccountAggregatesCalculator {
+
+    /// O(1) read from the pre-maintained store index.
+    /// Returns zeros for an unknown account id (or an account with no transactions).
+    static func compute(accountId: String, store: TransactionStore) -> AccountAggregates {
+        store.accountAggregatesByAccountId[accountId]
+            ?? AccountAggregates(totalTransactions: 0, totalIncome: 0, totalExpense: 0)
+    }
+
+    // MARK: - Legacy array-based API
+    //
+    // For consumers that work on a `[Transaction]` snapshot (background services,
+    // Insights, tests). Same byte-for-byte output as the original implementation.
+
+    nonisolated static func compute(
         accountId: String,
         accountCurrency: String,
         transactions: [Transaction]
@@ -35,9 +47,6 @@ nonisolated enum AccountAggregatesCalculator {
             guard isSource || isTarget else { continue }
             count += 1
 
-            // For internal transfers, the incoming leg must be valued in the TARGET
-            // currency using `targetAmount` when available (the source-currency amount
-            // may be in a different currency from this account).
             let amount: Double
             if tx.type == .internalTransfer, isTarget,
                let targetAmount = tx.targetAmount,
@@ -66,24 +75,15 @@ nonisolated enum AccountAggregatesCalculator {
                 if isTarget { income += amount }
                 if isSource { expense += amount }
             case .depositTopUp:
-                // Top-up: source account (funding side) loses money, target deposit gains money.
                 if isSource { expense += amount }
                 if isTarget { income += amount }
             case .depositWithdrawal:
-                // Withdrawal from deposit: source deposit decreases, target destination increases.
                 if isSource { expense += amount }
                 if isTarget { income += amount }
             case .depositInterestAccrual:
-                // Interest is credited to the deposit account (source on most records).
                 if isSource { income += amount }
                 if isTarget { income += amount }
             case .loanPayment, .loanEarlyRepayment:
-                // Post-orientation-flip: accountId = source bank, targetAccountId = loan.
-                // Both sides are outflows from the user's mental model — the bank
-                // loses cash AND the loan's balance (remaining principal) shrinks
-                // with each payment. Treating both as `expense` produces a coherent
-                // "money paid toward this loan" total on the loan-detail screen
-                // rather than misleading "income" on the obligation account.
                 if isSource { expense += amount }
                 if isTarget { expense += amount }
             }
@@ -95,7 +95,7 @@ nonisolated enum AccountAggregatesCalculator {
         )
     }
 
-    private static func convertIfNeeded(
+    private nonisolated static func convertIfNeeded(
         amount: Double,
         from: String,
         to: String,

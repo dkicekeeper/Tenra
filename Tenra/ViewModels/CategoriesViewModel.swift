@@ -311,9 +311,8 @@ class CategoriesViewModel {
         period: CustomCategory.BudgetPeriod = .monthly,
         resetDay: Int = 1
     ) {
-        guard let index = customCategories.firstIndex(where: { $0.id == categoryId }) else { return }
-
-        var category = customCategories[index]
+        // O(1) — was `firstIndex(where:)` over the categories array.
+        guard var category = transactionStore?.categoryById[categoryId] else { return }
         category.budgetAmount = amount
         category.budgetPeriod = period
         category.budgetStartDate = Date()
@@ -323,9 +322,7 @@ class CategoriesViewModel {
     }
 
     func removeBudget(for categoryId: String) {
-        guard let index = customCategories.firstIndex(where: { $0.id == categoryId }) else { return }
-
-        var category = customCategories[index]
+        guard var category = transactionStore?.categoryById[categoryId] else { return }
         category.budgetAmount = nil
         category.budgetStartDate = nil
 

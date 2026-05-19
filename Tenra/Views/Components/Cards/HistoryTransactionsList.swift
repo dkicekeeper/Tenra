@@ -155,6 +155,7 @@ struct HistoryTransactionsList: View {
                                 accountsViewModel: accountsViewModel,
                                 balanceCoordinator: accountsViewModel.balanceCoordinator
                             )
+                            .equatable()
                             .listRowInsets(EdgeInsets(
                                 top: AppSpacing.sm,
                                 leading: AppSpacing.lg,

@@ -108,6 +108,16 @@ nonisolated final class CoreDataRepository: DataRepositoryProtocol, @unchecked S
         return accountRepository.loadAllAccountBalances()
     }
 
+    // MARK: - Account Aggregates (Delegated to AccountRepository)
+
+    func loadAccountAggregates() -> [String: AccountAggregates] {
+        return accountRepository.loadAccountAggregates()
+    }
+
+    func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) {
+        accountRepository.saveAccountAggregates(aggregates, currencyByAccountId: currencyByAccountId)
+    }
+
     // MARK: - Categories (Delegated to CategoryRepository)
 
     func loadCategories() -> [CustomCategory] {

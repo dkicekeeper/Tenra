@@ -79,8 +79,8 @@ struct HeroSection: View {
                     FormattedAmountText(
                         amount: primaryAmount,
                         currency: primaryCurrency,
-                        fontSize: AppTypography.h4,
-                        color: .secondary
+                        fontSize: AppTypography.h3,
+                        color: AppColors.textSecondary
                     )
 
                     if showBaseConversion, !baseCurrency.isEmpty, primaryCurrency != baseCurrency {
@@ -88,16 +88,16 @@ struct HeroSection: View {
                             amount: primaryAmount,
                             fromCurrency: primaryCurrency,
                             toCurrency: baseCurrency,
-                            fontSize: AppTypography.caption,
-                            color: .secondary.opacity(0.7)
+                            fontSize: AppTypography.h3,
+                            color: AppColors.textSecondary.opacity(0.7)
                         )
                     }
                 }
 
                 if let subtitle {
                     Text(subtitle)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(.secondary)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppColors.textSecondary)
                         .padding(.top, AppSpacing.xs)
                 }
 
@@ -107,8 +107,8 @@ struct HeroSection: View {
                         Text("·")
                         Text("\(Int((progress.fraction * 100).rounded()))%")
                     }
-                    .font(AppTypography.caption)
-                    .foregroundStyle(.secondary)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColors.textSecondary)
                     .padding(.top, AppSpacing.xs)
                 }
             }

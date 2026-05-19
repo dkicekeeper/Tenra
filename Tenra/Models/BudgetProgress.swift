@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BudgetProgress {
+struct BudgetProgress: Equatable {
     let budgetAmount: Double
     let spent: Double
     let remaining: Double

@@ -5,6 +5,19 @@
 //  Finds existing transactions that match a subscription's payment pattern.
 //  Used to retroactively link manually entered transactions to a subscription.
 //
+//  Complexity note: this is intrinsically O(N_tx) — we have to consider every
+//  unlinked expense to test amount/currency match (FX conversion per tx).
+//  This is acceptable because:
+//   1. The caller (`LinkPaymentsView.reloadBaseline`) runs it in
+//      `Task.detached(priority: .userInitiated)` with a spinner — never blocks UI.
+//   2. The screen is one-shot, user-initiated. Not a 60 fps hot path.
+//   3. Adding a dedicated `unlinkedExpenseIds` index would yield ≤2× speedup but
+//      cost permanent maintenance in `updateState` and edge cases for
+//      loan/deposit pseudo-expenses. Not worth the long-term tax.
+//
+//  See docs/domains/accounts.md for the broader O(1) index family used by
+//  other consumers (`transactionsByAccount`, `transactionsBySeriesId`, etc.).
+//
 
 import Foundation
 

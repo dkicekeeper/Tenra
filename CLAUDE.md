@@ -108,8 +108,9 @@ Tenra/
 - **AppCoordinator** — central DI container; two-phase startup (fastPath → full)
 - **TransactionStore** — single source of truth for transactions, accounts, categories; in-memory all 19k tx
 - **BalanceCoordinator** — single entry point for balance ops + caching
-- **Repository pattern** — `DataRepositoryProtocol` facade over 5 specialized repos in `Services/Repository/`
-- **InsightsService** — `nonisolated final class`, runs on background via `Task.detached`
+- **Repository pattern** — `DataRepositoryProtocol` facade over 5 specialized repos in `Services/Repository/`. **Three places to update when extending the protocol or a sub-protocol** (e.g. `AccountRepositoryProtocol`): production impl (e.g. `AccountRepository`), `UserDefaultsRepository` (previews), and any test mock (e.g. `MockAccountRepository` in `TenraTests/Services/AccountRepositoryTests.swift`). Missing the test mock breaks `xcodebuild test` even though `xcodebuild build` passes.
+- **InsightsService** — `nonisolated final class`, runs on background via `Task.detached`. Cannot read MainActor-isolated `TransactionStore` indexes (e.g. `categoryAggregatesByKey`); uses legacy O(N) snapshot-based APIs instead — see `CategoryBudgetService.budgetProgress(for:transactions:baseCurrency:)` static helper.
+- **TransactionStore indexes** (`categoryById`, `subcategoryIdsByCategoryId`, `transactionsByCategoryName`, etc.) — declared `@ObservationIgnored internal(set) var`, NOT `private(set)`. Maintenance lives in extension files of the same module; `private(set)` would block setters across files. See [TransactionStore.swift](Tenra/ViewModels/TransactionStore.swift).
 
 For deep details see [docs/architecture.md](docs/architecture.md).
 
@@ -166,6 +167,7 @@ New file needed?
 | Per-metric formulas, granularity, severity behavior | [docs/INSIGHTS_METRICS_REFERENCE.md](docs/INSIGHTS_METRICS_REFERENCE.md) |
 | TransactionStore CRUD, FRC, addBatch, NSBatchDeleteRequest | [docs/domains/transactions.md](docs/domains/transactions.md) |
 | Categories, subcategories, budgets, category/subcategory indexes, style cache, reorder | [docs/domains/categories.md](docs/domains/categories.md) |
+| Accounts indexes (accountAggregatesByAccountId, transactionsBySeriesId, parsedDateById), AccountDetailView, ranking | [docs/domains/accounts.md](docs/domains/accounts.md) |
 | Deposits, DepositInfo, interest accrual, capitalization | [docs/domains/deposits.md](docs/domains/deposits.md) |
 | Loans, LoanInfo, LoanPaymentService, manual payments, linking | [docs/domains/loans.md](docs/domains/loans.md) |
 | Recurring transactions, RecurringStore, series + occurrences | [docs/domains/recurring.md](docs/domains/recurring.md) |
@@ -212,6 +214,31 @@ These cause silent data corruption or crashes — internalize even without readi
 - Reusable components live in `Views/Components/`
 - See [design-system.md](docs/design-system.md) for tokens, components, decision trees, padding contract
 
+### Snapshot `@State` driven by store mutation versions
+Pattern used in CategoriesManagementView, CategoryDetailView, CategorySubcategoriesView for O(1) reads with controlled invalidation.
+- `@ObservationIgnored` data (e.g. `store.subcategoryIdsByCategoryId`) read in `body` does NOT register a SwiftUI subscription. Touch a sibling Observable scalar (`store.categoriesMutationVersion`, `mutationVersion`, etc.) — even as `_ = store.xxx` — so the body re-evaluates when the index changes.
+- `@State` snapshot populated via `.task(id: key)` is empty on first render. NEVER gate `if snapshot.isEmpty { EmptyState }` on it — the user sees an empty-state flash. Gate on source-of-truth instead: `if !store.categories.contains { $0.type == selectedType }`. Precedent: `CategoriesManagementView.hasCategoriesForCurrentType`.
+
+## CoreData Schema Bumps
+
+`Tenra.xcdatamodeld` is currently at v9. Bump checklist when adding an entity (additive — lightweight migration auto-handles):
+1. `cp -r Tenra/CoreData/Tenra.xcdatamodeld/Tenra\ vN.xcdatamodel Tenra/CoreData/Tenra.xcdatamodeld/Tenra\ vN+1.xcdatamodel`, edit `contents` XML.
+2. Update `Tenra/CoreData/Tenra.xcdatamodeld/.xccurrentversion` plist to point to vN+1.
+3. Create `Tenra/CoreData/Entities/<Entity>+CoreDataClass.swift` + `<Entity>+CoreDataProperties.swift` (mirror `AccountAggregateEntity` for aggregate-style entities).
+4. Add load/save to the matching `Services/Repository/<Domain>Repository.swift`, then forward in `CoreDataRepository.swift`, then add no-op stubs in `UserDefaultsRepository.swift` and any test mocks.
+
+Lightweight migration only works for ADDITIVE changes (new entity, new optional attribute). Removing/renaming requires a mapping model — none in this project yet.
+
+## iOS Simulator — System Warnings to Ignore
+
+The following appear routinely in Xcode console on Simulator runs and are NOT bugs in our code. Don't try to fix them — none have application-side resolution:
+- `Unable to simultaneously satisfy constraints ... TUIKeyplane.right.width == -1.5` — Apple's keyboard layout calculation in Simulator only. Doesn't appear on physical device.
+- `Reading from public effective user settings` — informational from system Settings access.
+- `Reporter disconnected { function=sendMessage, ... }` — telemetry/Instruments transport.
+- `containerToPush is nil, will not push anything to candidate receiver` — SiriIntent candidate-receiver framework, no user-facing impact.
+
+If a real symptom appears (UI freeze, missing label, broken constraint affecting layout), look at the stack trace — if it doesn't pass through `Tenra.` symbols, it's still not us.
+
 ## Testing
 
 - Unit tests: `TenraTests/`
@@ -220,6 +247,7 @@ These cause silent data corruption or crashes — internalize even without readi
 - Test CoreData operations with in-memory stores
 - ⚠️ Currency conversion tests must call `CurrencyRateStore.shared.clearAll()` in suite `init()` — see [domains/currency.md](docs/domains/currency.md)
 - ⚠️ `xcodebuild test -only-testing:...` does NOT skip compilation — one broken test file fails the whole target. When a test file's API has drifted, wrap it in `#if false` / `#endif` with a header comment (existing precedent: `TenraTests/Onboarding/OnboardingViewModelTests.swift`, `TenraTests/Services/Voice/VoiceInputParserTests.swift`).
+- ⚠️ Swift filenames must be unique within a target. Xcode rejects two `.swift` files with the same name even in different directories of the same target. When replacing a legacy test file with a fresh-API rewrite, rename the new one (precedent: `CategoryBudgetServiceStoreBackedTests.swift` replaces the legacy `CategoryBudgetServiceTests.swift`).
 - Extract crash details from `.xcresult`: `xcrun xcresulttool get test-results tests --path <bundle.xcresult> --filter-by-test-id 'TenraTests/<Suite>/<test>'`
 
 ## Git Workflow
@@ -283,6 +311,7 @@ Active reference docs in `docs/`:
 | [INSIGHTS_METRICS_REFERENCE.md](docs/INSIGHTS_METRICS_REFERENCE.md) | Per-metric reference for InsightsService |
 | [domains/transactions.md](docs/domains/transactions.md) | TransactionStore CRUD, FRC, batch ops |
 | [domains/categories.md](docs/domains/categories.md) | Category / subcategory / budget aggregate indexes (O(1) reads), style cache invalidation, reorder |
+| [domains/accounts.md](docs/domains/accounts.md) | Account / series / parsed-date indexes, AccountDetailView read contract, ranking helpers |
 | [domains/insights.md](docs/domains/insights.md) | InsightsService architecture, DataSnapshot, PreAggregatedData |
 | [domains/deposits.md](docs/domains/deposits.md) | Interest accrual, capitalization, conversion |
 | [domains/loans.md](docs/domains/loans.md) | Manual payments, linking, amortization |

@@ -32,6 +32,10 @@ struct CategoryDetailView: View {
         totalTransactions: 0
     )
 
+    /// Pre-built account lookup. Refreshed only when accounts mutate
+    /// (via `accountsMutationVersion`), not on every body re-eval.
+    @State private var accountsById: [String: Account] = [:]
+
     @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
 
@@ -87,9 +91,6 @@ struct CategoryDetailView: View {
     }
 
     var body: some View {
-        let accountsById = Dictionary(
-            uniqueKeysWithValues: transactionsViewModel.accounts.map { ($0.id, $0) }
-        )
         let baseCurrency = transactionsViewModel.appSettings.baseCurrency
 
         EntityDetailScaffold(
@@ -190,6 +191,9 @@ struct CategoryDetailView: View {
         }
         .task(id: refreshTrigger) {
             await refreshData()
+        }
+        .task(id: transactionStore.accountsMutationVersion) {
+            accountsById = Dictionary(uniqueKeysWithValues: transactionStore.accounts.map { ($0.id, $0) })
         }
     }
 

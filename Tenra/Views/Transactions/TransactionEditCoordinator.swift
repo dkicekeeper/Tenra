@@ -87,7 +87,12 @@ final class TransactionEditCoordinator {
     // MARK: - Computed: Category ID
 
     var categoryId: String? {
-        categoriesViewModel.customCategories.first { $0.name == formData.selectedCategory }?.id
+        // O(1) via index; legacy linear scan kept as fallback for preview/test contexts.
+        if let store = categoriesViewModel.transactionStore,
+           let id = store.categoryIdByName[formData.selectedCategory.lowercased()] {
+            return id
+        }
+        return categoriesViewModel.customCategories.first { $0.name == formData.selectedCategory }?.id
     }
 
     // MARK: - Computed: Available Subcategories

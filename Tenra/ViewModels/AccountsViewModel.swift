@@ -460,6 +460,7 @@ class AccountsViewModel {
             accounts: accounts,
             transactions: transactions,
             transactionsByAccount: transactionStore?.transactionsByAccount,
+            transactionsByCategoryName: transactionStore?.transactionsByCategoryName,
             amount: amount
         )
 

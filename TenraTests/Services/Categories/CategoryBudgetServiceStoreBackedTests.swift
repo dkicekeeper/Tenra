@@ -189,4 +189,116 @@ struct CategoryBudgetServiceTests {
         let progress = CategoryBudgetService(store: store).budgetProgress(for: cat)
         #expect(progress?.spent == 0)
     }
+
+    // MARK: - Limit semantics
+
+    @Test("spent equal to budget reports isOverBudget=false and 100%")
+    func spentEqualsBudgetNotOver() async throws {
+        let store = Self.makeStore()
+        let (y, m) = Self.currentYearMonth()
+        store.seedCategoryAggregates(from: [
+            Self.aggregate(category: "Food", year: y, month: m, day: 0, total: 200)
+        ])
+        let cat = CustomCategory(
+            id: "id-food", name: "Food",
+            iconSource: .sfSymbol("fork.knife"), colorHex: "#FF0000",
+            type: .expense, budgetAmount: 200,
+            budgetPeriod: .monthly, budgetResetDay: 1
+        )
+        let progress = CategoryBudgetService(store: store).budgetProgress(for: cat)
+        #expect(progress?.spent == 200)
+        #expect(progress?.percentage == 100)
+        #expect(progress?.isOverBudget == false)
+    }
+
+    @Test("spent above budget reports negative remaining and isOverBudget=true")
+    func spentAboveBudget() async throws {
+        let store = Self.makeStore()
+        let (y, m) = Self.currentYearMonth()
+        store.seedCategoryAggregates(from: [
+            Self.aggregate(category: "Food", year: y, month: m, day: 0, total: 350)
+        ])
+        let cat = CustomCategory(
+            id: "id-food", name: "Food",
+            iconSource: .sfSymbol("fork.knife"), colorHex: "#FF0000",
+            type: .expense, budgetAmount: 200,
+            budgetPeriod: .monthly, budgetResetDay: 1
+        )
+        let progress = CategoryBudgetService(store: store).budgetProgress(for: cat)
+        #expect(progress?.isOverBudget == true)
+        #expect(progress?.remaining == -150)
+    }
+
+    // MARK: - Category isolation
+
+    @Test("buckets for unrelated category do not bleed into result")
+    func onlyMatchingCategoryCounted() async throws {
+        let store = Self.makeStore()
+        let (y, m) = Self.currentYearMonth()
+        store.seedCategoryAggregates(from: [
+            Self.aggregate(category: "Food",   year: y, month: m, day: 0, total: 150),
+            Self.aggregate(category: "Travel", year: y, month: m, day: 0, total: 900_000)
+        ])
+        let cat = CustomCategory(
+            id: "id-food", name: "Food",
+            iconSource: .sfSymbol("fork.knife"), colorHex: "#FF0000",
+            type: .expense, budgetAmount: 200,
+            budgetPeriod: .monthly, budgetResetDay: 1
+        )
+        let progress = CategoryBudgetService(store: store).budgetProgress(for: cat)
+        #expect(progress?.spent == 150, "Travel must not bleed into Food")
+    }
+
+    // MARK: - Reset-day semantics
+
+    @Test("budgetPeriodStart returns reset day in current or previous month")
+    func budgetPeriodStartHonoursResetDay() async throws {
+        let svc = CategoryBudgetService(store: nil)
+        let resetDay = 15
+        let cat = CustomCategory(
+            id: "id-rs", name: "RS",
+            iconSource: .sfSymbol("calendar"), colorHex: "#888888",
+            type: .expense, budgetAmount: 1000,
+            budgetPeriod: .monthly, budgetResetDay: resetDay
+        )
+        let cal = Calendar.current
+        let start = svc.budgetPeriodStart(for: cat)
+        let startDay = cal.component(.day, from: start)
+        let startMonth = cal.component(.month, from: start)
+        let thisMonth = cal.component(.month, from: Date())
+        let currentDay = cal.component(.day, from: Date())
+
+        #expect(startDay == resetDay)
+        if currentDay >= resetDay {
+            #expect(startMonth == thisMonth, "Period starts this month when today >= resetDay")
+        } else {
+            let previousMonth = thisMonth == 1 ? 12 : thisMonth - 1
+            #expect(startMonth == previousMonth, "Period started in previous month")
+        }
+    }
+
+    // MARK: - Weekly
+
+    @Test("weekly budget sums daily buckets within current week")
+    func weeklyBudgetReadsDailyBuckets() async throws {
+        let store = Self.makeStore()
+        let cal = Calendar.current
+        let now = Date()
+        let comps = cal.dateComponents([.year, .month, .day], from: now)
+        store.seedCategoryAggregates(from: [
+            Self.aggregate(category: "Coffee",
+                           year: Int16(comps.year ?? 0),
+                           month: Int16(comps.month ?? 0),
+                           day: Int16(comps.day ?? 0),
+                           total: 750)
+        ])
+        let cat = CustomCategory(
+            id: "id-coffee", name: "Coffee",
+            iconSource: .sfSymbol("cup.and.saucer"), colorHex: "#AA8855",
+            type: .expense, budgetAmount: 3000,
+            budgetPeriod: .weekly, budgetResetDay: 1
+        )
+        let progress = CategoryBudgetService(store: store).budgetProgress(for: cat)
+        #expect(progress?.spent == 750)
+    }
 }

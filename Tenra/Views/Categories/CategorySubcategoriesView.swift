@@ -18,13 +18,39 @@ struct CategorySubcategoriesView: View {
     @State private var editingSubcategory: Subcategory?
     @State private var linkSearchText = ""
 
-    private var linkedSubcategories: [Subcategory] {
-        categoriesViewModel.getSubcategoriesForCategory(category.id)
+    /// Cached list of linked subcategories. Refreshed only when the underlying
+    /// subcategory data actually changes (tracked via `subcategoriesMutationVersion`).
+    /// Was previously a `computed` property that called `getSubcategoriesForCategory`
+    /// twice per body — fine after the O(1) refactor, but `.task(id:)` removes
+    /// even that work from the render path.
+    @State private var linkedSubcategories: [Subcategory] = []
+
+    private struct SubcatKey: Equatable {
+        let categoryId: String
+        let mutationVersion: Int
+    }
+    private var subcatKey: SubcatKey {
+        SubcatKey(
+            categoryId: category.id,
+            mutationVersion: categoriesViewModel.transactionStore?.subcategoriesMutationVersion ?? 0
+        )
+    }
+
+    /// Gate empty state on the store index, not on the `.task(id:)`-populated
+    /// `linkedSubcategories` snapshot. Otherwise the first body render flashes
+    /// EmptyStateView before the task fires.
+    /// Reads `subcategoriesMutationVersion` (Observable scalar) to register a
+    /// subscription — `subcategoryIdsByCategoryId` itself is `@ObservationIgnored`,
+    /// so without the scalar touch the body wouldn't re-evaluate on link changes.
+    private var hasLinkedSubcategories: Bool {
+        guard let store = categoriesViewModel.transactionStore else { return false }
+        _ = store.subcategoriesMutationVersion
+        return !(store.subcategoryIdsByCategoryId[category.id]?.isEmpty ?? true)
     }
 
     var body: some View {
         Group {
-            if linkedSubcategories.isEmpty {
+            if !hasLinkedSubcategories {
                 EmptyStateView(
                     icon: "tag",
                     title: String(localized: "category.subcategories.empty.title", defaultValue: "No subcategories linked"),
@@ -126,6 +152,9 @@ struct CategorySubcategoriesView: View {
             }
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
+        }
+        .task(id: subcatKey) {
+            linkedSubcategories = categoriesViewModel.getSubcategoriesForCategory(category.id)
         }
     }
 

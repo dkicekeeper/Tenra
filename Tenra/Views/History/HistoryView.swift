@@ -125,14 +125,18 @@ struct HistoryView: View {
         .onChange(of: filterCoordinator.debouncedSearchText) { _, _ in
             applyFiltersToController()
         }
-        .onChange(of: transactionsViewModel.accounts) { _, _ in
+        // Subscribe to a scalar mutation counter instead of the full `accounts`
+        // array — scalar subscription is cheap and doesn't drag the body into
+        // the observable-array dependency graph.
+        .onChange(of: transactionsViewModel.transactionStore?.accountsMutationVersion ?? 0) { _, _ in
             applyFiltersToController()
         }
         .onChange(of: transactionsViewModel.selectedCategories) { _, _ in
             filterCoordinator.applyCategoryFilterChange()
             applyFiltersToController()
         }
-        .onChange(of: transactionsViewModel.allTransactions) { _, _ in
+        // Scalar mutation counter, not the 19k-element transactions array.
+        .onChange(of: transactionsViewModel.transactionStore?.mutationVersion ?? 0) { _, _ in
             expensesCache.invalidate()
         }
         .onChange(of: transactionsViewModel.appSettings.baseCurrency) { _, _ in

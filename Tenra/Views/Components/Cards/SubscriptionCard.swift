@@ -7,10 +7,19 @@
 
 import SwiftUI
 
-struct SubscriptionCard: View {
+struct SubscriptionCard: View, Equatable {
     let subscription: RecurringSeries
     let nextChargeDate: Date?
     var baseCurrency: String = ""
+
+    /// Equatable compares only rendering-affecting fields. Same pattern as `CategoryRow`.
+    /// Apply at call sites via `.equatable()` to let SwiftUI skip body re-evals when
+    /// the underlying subscription / next-charge-date / base currency didn't change.
+    static func == (lhs: SubscriptionCard, rhs: SubscriptionCard) -> Bool {
+        lhs.subscription == rhs.subscription
+            && lhs.nextChargeDate == rhs.nextChargeDate
+            && lhs.baseCurrency == rhs.baseCurrency
+    }
 
     var body: some View {
         HStack(spacing: AppSpacing.md) {

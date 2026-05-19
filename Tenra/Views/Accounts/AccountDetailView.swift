@@ -23,6 +23,7 @@ struct AccountDetailView: View {
     @State private var convertingAccount: Account?
     @State private var cachedTransactions: [Transaction] = []
     @State private var aggregates = AccountAggregates(totalTransactions: 0, totalIncome: 0, totalExpense: 0)
+    @State private var accountsById: [String: Account] = [:]
     @Namespace private var transferNamespace
     @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
@@ -31,38 +32,42 @@ struct AccountDetailView: View {
     private let logger = Logger(subsystem: "Tenra", category: "AccountDetailView")
 
     /// Live account lookup — reflects edits without re-navigation.
+    /// O(1) via the `accountById` index.
     private var liveAccount: Account {
-        transactionsViewModel.accounts.first(where: { $0.id == account.id }) ?? account
+        transactionStore.accountById[account.id] ?? account
     }
 
-    /// Cheap O(N) single-pass counter; feeds `.task(id:)` so the expensive refresh runs
-    /// only when relevant transactions change. Also incorporates the FX-rate version so
-    /// per-currency totals recompute once `CurrencyConverter.prewarm()` lands fresh rates.
-    private var refreshTrigger: Int {
-        var n = transactionStore.currencyRatesVersion
-        for tx in transactionStore.transactions
-        where tx.accountId == account.id || tx.targetAccountId == account.id {
-            n &+= 1
-        }
-        return n
+    /// Combined equatable trigger — composed of scalar mutation versions so the
+    /// body doesn't subscribe to the entire 19k-tx array. Mirrors the
+    /// `CategoryDetailView` refresh trigger.
+    private var refreshTrigger: RefreshKey {
+        RefreshKey(
+            mutationVersion: transactionStore.mutationVersion,
+            accountsVersion: transactionStore.accountsMutationVersion,
+            ratesVersion: transactionStore.currencyRatesVersion,
+            accountId: account.id
+        )
+    }
+
+    private struct RefreshKey: Equatable {
+        let mutationVersion: Int
+        let accountsVersion: Int
+        let ratesVersion: Int
+        let accountId: String
     }
 
     private func refreshData() async {
-        let filtered = transactionStore.transactions
-            .filter { $0.accountId == account.id || $0.targetAccountId == account.id }
-            .sorted { $0.date > $1.date }
-        cachedTransactions = filtered
+        // O(1) bucket lookup from the maintained index.
+        let bucket = transactionStore.transactionsByAccount[account.id] ?? []
+        cachedTransactions = bucket.sorted { $0.date > $1.date }
+        // O(1) aggregate read — pre-computed by `TransactionStore+AccountAggregates`.
         aggregates = AccountAggregatesCalculator.compute(
             accountId: account.id,
-            accountCurrency: liveAccount.currency,
-            transactions: filtered
+            store: transactionStore
         )
     }
 
     var body: some View {
-        let accountsById = Dictionary(
-            uniqueKeysWithValues: transactionsViewModel.accounts.map { ($0.id, $0) }
-        )
 
         EntityDetailScaffold(
             navigationTitle: liveAccount.name,
@@ -193,6 +198,9 @@ struct AccountDetailView: View {
         }
         .task(id: refreshTrigger) {
             await refreshData()
+        }
+        .task(id: transactionStore.accountsMutationVersion) {
+            accountsById = Dictionary(uniqueKeysWithValues: transactionStore.accounts.map { ($0.id, $0) })
         }
     }
 

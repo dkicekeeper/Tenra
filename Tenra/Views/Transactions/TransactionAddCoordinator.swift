@@ -92,12 +92,11 @@ final class TransactionAddCoordinator {
 
     /// Get available subcategories for current category
     func availableSubcategories() -> [Subcategory] {
-        guard let categoryId = categoriesViewModel.customCategories.first(where: {
-            $0.name == formData.category
-        })?.id else {
+        // O(1) via categoryIdByName.
+        guard let categoryId = categoriesViewModel.transactionStore?
+                .categoryIdByName[formData.category.lowercased()] else {
             return []
         }
-
         return categoriesViewModel.getSubcategoriesForCategory(categoryId)
     }
 
@@ -235,8 +234,9 @@ final class TransactionAddCoordinator {
     }
 
     private func linkSubcategories(to transaction: Transaction) async {
-        // First, ensure subcategories are linked to the category
-        if let categoryId = categoriesViewModel.customCategories.first(where: { $0.name == formData.category })?.id {
+        // First, ensure subcategories are linked to the category — O(1) via index.
+        if let categoryId = categoriesViewModel.transactionStore?
+            .categoryIdByName[formData.category.lowercased()] {
             for subcategoryId in formData.subcategoryIds {
                 categoriesViewModel.linkSubcategoryToCategory(
                     subcategoryId: subcategoryId,

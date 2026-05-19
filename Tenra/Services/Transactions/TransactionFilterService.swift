@@ -111,6 +111,16 @@ nonisolated class TransactionFilterService {
         }
     }
 
+    /// O(1) lookup via the pre-maintained `TransactionStore.transactionsByAccount`
+    /// index. Use this when the store is reachable; falls back to the array scan
+    /// only at cold/preview/test contexts.
+    func filterByAccount(
+        accountId: String,
+        transactionsByAccount: [String: [Transaction]]
+    ) -> [Transaction] {
+        return transactionsByAccount[accountId] ?? []
+    }
+
     /// Filter transactions by multiple account IDs
     /// - Parameters:
     ///   - transactions: Array of transactions to filter

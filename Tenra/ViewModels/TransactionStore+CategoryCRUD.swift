@@ -172,7 +172,9 @@ extension TransactionStore {
 
     }
 
-    /// Update category-subcategory links (for bulk operations)
+    /// Update category-subcategory links (for bulk operations).
+    /// Persists are debounced (300ms) so rapid edits collapse to one CoreData
+    /// write instead of one-per-keystroke.
     func updateCategorySubcategoryLinks(_ newLinks: [CategorySubcategoryLink]) {
         categorySubcategoryLinks = newLinks
         rebuildSubcategoryIdsByCategoryId()
@@ -180,12 +182,14 @@ extension TransactionStore {
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
-            persistCategorySubcategoryLinksToRepository()
+            scheduleCategorySubcategoryLinksPersist()
         }
 
     }
 
-    /// Update transaction-subcategory links (for bulk operations)
+    /// Update transaction-subcategory links (for bulk operations).
+    /// Debounced (300ms). Heavy hitter — the tx edit screen used to write the
+    /// full link table on every check-mark toggle in the subcategory picker.
     func updateTransactionSubcategoryLinks(_ newLinks: [TransactionSubcategoryLink]) {
         transactionSubcategoryLinks = newLinks
         rebuildSubcategoryIdsByTransactionId()
@@ -194,9 +198,40 @@ extension TransactionStore {
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
-            persistTransactionSubcategoryLinksToRepository()
+            scheduleTransactionSubcategoryLinksPersist()
         }
 
+    }
+
+    // MARK: - Debounced Link Persistence
+
+    /// 300ms debounce window for `categorySubcategoryLinks`. Reset on every
+    /// new mutation; the last write wins.
+    internal func scheduleCategorySubcategoryLinksPersist() {
+        categorySubcategoryLinksPersistTask?.cancel()
+        categorySubcategoryLinksPersistTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard let self, !Task.isCancelled else { return }
+            self.persistCategorySubcategoryLinksToRepository()
+        }
+    }
+
+    internal func scheduleTransactionSubcategoryLinksPersist() {
+        transactionSubcategoryLinksPersistTask?.cancel()
+        transactionSubcategoryLinksPersistTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard let self, !Task.isCancelled else { return }
+            self.persistTransactionSubcategoryLinksToRepository()
+        }
+    }
+
+    /// Synchronously flush any pending link persist tasks. Called from
+    /// `finishImport()` so the bulk-import path doesn't lose pending writes.
+    internal func flushSubcategoryLinkPersist() {
+        categorySubcategoryLinksPersistTask?.cancel()
+        transactionSubcategoryLinksPersistTask?.cancel()
+        persistCategorySubcategoryLinksToRepository()
+        persistTransactionSubcategoryLinksToRepository()
     }
 
     // MARK: - Category Synchronization

@@ -12,7 +12,7 @@
 
 import SwiftUI
 
-struct TransactionCard: View {
+struct TransactionCard: View, Equatable {
     let transaction: Transaction
     let currency: String
     let styleData: CategoryStyleData
@@ -22,6 +22,21 @@ struct TransactionCard: View {
     let categoriesViewModel: CategoriesViewModel?
     let accountsViewModel: AccountsViewModel?
     let balanceCoordinator: BalanceCoordinator?
+
+    /// Equatable compares only the inputs that affect what the body renders.
+    /// ViewModels are deliberately excluded — they're @Observable reference types
+    /// whose own change-tracking already triggers re-renders through SwiftUI's
+    /// dependency graph. Comparing them by reference identity here would either
+    /// over-invalidate (every ViewModel mutation re-renders every visible card)
+    /// or short-circuit incorrectly. The card reads ViewModels only inside event
+    /// handlers (delete, stop recurring) — not inside the body's data path.
+    static func == (lhs: TransactionCard, rhs: TransactionCard) -> Bool {
+        lhs.transaction == rhs.transaction
+            && lhs.currency == rhs.currency
+            && lhs.styleData == rhs.styleData
+            && lhs.sourceAccount == rhs.sourceAccount
+            && lhs.targetAccount == rhs.targetAccount
+    }
 
     @State private var showingStopRecurringConfirmation = false
     @State private var showingDeleteConfirmation = false

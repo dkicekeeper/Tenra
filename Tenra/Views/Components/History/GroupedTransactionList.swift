@@ -222,6 +222,7 @@ struct GroupedTransactionList<Overlay: View>: View {
                                         accountsViewModel: accountsViewModel,
                                         balanceCoordinator: balanceCoordinator
                                     )
+                                    .equatable()
                                     rowOverlay(transaction)
                                 }
                             }

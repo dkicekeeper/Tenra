@@ -20,6 +20,12 @@ protocol AccountRepositoryProtocol: Sendable {
     /// Synchronously (awaited) persist multiple balances — safe to call from async context.
     nonisolated func updateAccountBalancesSync(_ balances: [String: Double]) async
     nonisolated func loadAllAccountBalances() -> [String: Double]
+
+    /// Pre-aggregated income/expense per account — warm-start snapshot for
+    /// `TransactionStore.accountAggregatesByAccountId`. Persisted in CoreData
+    /// via `AccountAggregateEntity` (Schema v9+).
+    nonisolated func loadAccountAggregates() -> [String: AccountAggregates]
+    nonisolated func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String])
 }
 
 /// CoreData implementation of AccountRepositoryProtocol
@@ -262,6 +268,81 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
         for entity in existingEntities {
             if let id = entity.id, !keptIds.contains(id) {
                 Self.logger.log("🔍 saveAccountsInternal: deleting entity id=\(id, privacy: .public) balance=\(entity.balance) (not in keptIds)")
+                context.delete(entity)
+            }
+        }
+    }
+
+    // MARK: - Account Aggregates (Schema v9+)
+
+    func loadAccountAggregates() -> [String: AccountAggregates] {
+        let bg = stack.newBackgroundContext()
+        var result: [String: AccountAggregates] = [:]
+        bg.performAndWait {
+            let request = AccountAggregateEntity.fetchRequest()
+            if let entities = try? bg.fetch(request) {
+                for entity in entities {
+                    if let snap = entity.toSnapshot() {
+                        result[snap.accountId] = snap.aggregate
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) {
+        Task.detached(priority: .utility) { [weak self] in
+            guard let self else { return }
+            do {
+                try await self.saveCoordinator.performSave(operation: "saveAccountAggregates") { context in
+                    try self.saveAccountAggregatesInternal(
+                        aggregates,
+                        currencyByAccountId: currencyByAccountId,
+                        context: context
+                    )
+                }
+            } catch {
+                Self.logger.error("saveAccountAggregates failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private nonisolated func saveAccountAggregatesInternal(
+        _ aggregates: [String: AccountAggregates],
+        currencyByAccountId: [String: String],
+        context: NSManagedObjectContext
+    ) throws {
+        let request = AccountAggregateEntity.fetchRequest()
+        let existing = try context.fetch(request)
+        var byId: [String: AccountAggregateEntity] = [:]
+        for entity in existing {
+            if let id = entity.accountId { byId[id] = entity }
+        }
+        var kept = Set<String>()
+
+        for (accountId, agg) in aggregates {
+            kept.insert(accountId)
+            let currency = currencyByAccountId[accountId] ?? "KZT"
+            if let entity = byId[accountId] {
+                entity.totalTransactions = Int32(agg.totalTransactions)
+                entity.totalIncome = agg.totalIncome
+                entity.totalExpense = agg.totalExpense
+                entity.currency = currency
+                entity.lastUpdated = Date()
+            } else {
+                _ = AccountAggregateEntity.from(
+                    accountId: accountId,
+                    aggregate: agg,
+                    currency: currency,
+                    context: context
+                )
+            }
+        }
+
+        // Drop entries for accounts that no longer have aggregates (e.g. deleted account).
+        for entity in existing {
+            if let id = entity.accountId, !kept.contains(id) {
                 context.delete(entity)
             }
         }

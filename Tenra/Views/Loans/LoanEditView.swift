@@ -43,6 +43,10 @@ struct LoanEditView: View {
     /// needed to enumerate subcategory options.
     private var defaultCategoryId: String? {
         guard let name = defaultCategory else { return nil }
+        // O(1) via index.
+        if let store = appCoordinator.categoriesViewModel.transactionStore {
+            return store.categoryIdByName[name.lowercased()]
+        }
         return appCoordinator.categoriesViewModel.customCategories.first { $0.name == name }?.id
     }
 

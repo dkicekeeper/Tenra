@@ -8,12 +8,27 @@
 import Foundation
 
 enum CategoryIcon {
+    /// O(1) — looks up the custom category through TransactionStore.categoryIdByName.
+    /// Use this overload on the hot path; the legacy `customCategories: [CustomCategory]`
+    /// overload below stays for cold/preview contexts.
+    @MainActor
+    static func iconName(for category: String, type: TransactionType, store: TransactionStore) -> String {
+        if type == .internalTransfer { return "arrow.left.arrow.right" }
+        if let id = store.categoryIdByName[category.lowercased()],
+           let custom = store.categoryById[id],
+           custom.type == type,
+           case .sfSymbol(let symbolName) = custom.iconSource {
+            return symbolName
+        }
+        return defaultIconName(for: category, type: type)
+    }
+
     static func iconName(for category: String, type: TransactionType, customCategories: [CustomCategory] = []) -> String {
         // Для операций перевода всегда возвращаем arrow.left.arrow.right
         if type == .internalTransfer {
             return "arrow.left.arrow.right"
         }
-        
+
         // Сначала проверяем пользовательские категории
         if let custom = customCategories.first(where: { $0.name.lowercased() == category.lowercased() && $0.type == type }) {
             if case .sfSymbol(let symbolName) = custom.iconSource {
@@ -21,7 +36,12 @@ enum CategoryIcon {
             }
         }
         
-        // Затем дефолтные (поддержка английских и русских названий)
+        return defaultIconName(for: category, type: type)
+    }
+
+    /// Default icon resolution by name keyword — extracted so both the legacy
+    /// array overload and the new store-backed overload can share the same map.
+    private static func defaultIconName(for category: String, type: TransactionType) -> String {
         let key = category.lowercased()
         let map: [String: String] = [
             // Английские
@@ -137,7 +157,7 @@ enum CategoryIcon {
                 return iconName
             }
         }
-        
+
         return type == .income ? "dollarsign.circle.fill" : "banknote.fill"
     }
 }

@@ -64,6 +64,9 @@ final class CategoryBudgetCoordinator: CategoryBudgetCoordinatorProtocol {
             return
         }
 
+        // Coordinator only sees the delegate-exposed list; this is a one-shot
+        // budget edit (cold path), O(N_cat ≤ 30) is microseconds. The hot-path
+        // mutators in CategoriesViewModel already use the O(1) `categoryById`.
         guard let index = delegate.customCategories.firstIndex(where: { $0.id == categoryId }) else {
             return
         }

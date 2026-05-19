@@ -223,9 +223,10 @@ class LoansViewModel {
 
         // Count ALL loanPayment transactions for this loan (including pre-existing ones).
         // Loan is the targetAccountId after orientation flip.
-        let allLoanPayments = transactionStore.transactions.filter {
-            $0.targetAccountId == loanId && $0.type == .loanPayment
-        }.sorted { $0.date < $1.date }
+        // O(M) via `transactionsByAccount` index instead of O(N_tx) full scan.
+        let allLoanPayments = (transactionStore.transactionsByAccount[loanId] ?? [])
+            .filter { $0.type == .loanPayment }
+            .sorted { $0.date < $1.date }
 
         let allDates = allLoanPayments.map(\.date)
         LoanPaymentService.recalculateAfterLinking(

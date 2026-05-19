@@ -118,12 +118,26 @@ struct CategoryColors {
         }
     }()
 
-    /// Возвращает цвет по палитре с учётом пользовательских категорий
+    /// Возвращает цвет по палитре с учётом пользовательских категорий.
+    /// Legacy O(N_cat) path — still used in cold/preview contexts. Prefer the
+    /// store-backed overload below on the hot path.
     static func hexColor(for category: String, opacity: Double = 1.0, customCategories: [CustomCategory] = []) -> Color {
         if let custom = customCategories.first(where: { $0.name.lowercased() == category.lowercased() }) {
             return custom.color.opacity(opacity)
         }
 
+        let index = abs(category.hashValue) % palette.count
+        return palette[index].opacity(opacity)
+    }
+
+    /// O(1) — looks up the custom category through TransactionStore.categoryIdByName
+    /// and falls back to the deterministic palette by name hash.
+    @MainActor
+    static func hexColor(for category: String, opacity: Double = 1.0, store: TransactionStore) -> Color {
+        if let id = store.categoryIdByName[category.lowercased()],
+           let custom = store.categoryById[id] {
+            return custom.color.opacity(opacity)
+        }
         let index = abs(category.hashValue) % palette.count
         return palette[index].opacity(opacity)
     }

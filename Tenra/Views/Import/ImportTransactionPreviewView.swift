@@ -35,7 +35,7 @@ struct ImportTransactionPreviewView: View {
                 }
                 .cardContentPadding()
                 .frame(maxWidth: .infinity)
-                .background(AppColors.surface)
+                .background(AppColors.bgCard)
 
                 // Transaction list
                 List {
@@ -96,7 +96,7 @@ struct ImportTransactionPreviewView: View {
                         Text("transactionPreview.deselectAll")
                             .frame(maxWidth: .infinity)
                             .padding(AppSpacing.md)
-                            .background(AppColors.secondaryBackground)
+                            .background(AppColors.bgMuted)
                             .foregroundStyle(AppColors.textSecondary)
                             .clipShape(.rect(cornerRadius: AppRadius.button))
                     }
@@ -111,7 +111,7 @@ struct ImportTransactionPreviewView: View {
                     Text(String(format: String(localized: "transactionPreview.addSelected"), selectedTransactions.count))
                         .frame(maxWidth: .infinity)
                         .padding(AppSpacing.md)
-                        .background(selectedTransactions.isEmpty ? AppColors.secondaryBackground : AppColors.accent)
+                        .background(selectedTransactions.isEmpty ? AppColors.bgMuted : AppColors.accent)
                         .foregroundStyle(.white)
                         .clipShape(.rect(cornerRadius: AppRadius.button))
                 }

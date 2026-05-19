@@ -132,7 +132,7 @@ private struct IconButton: View {
                 )
             )
             .frame(width: AppIconSize.mega, height: AppIconSize.mega)
-            .background(isSelected ? AppColors.accent : AppColors.surface)
+            .background(isSelected ? AppColors.accent : AppColors.bgCard)
             .clipShape(.rect(cornerRadius: AppRadius.lg))
         }
         .buttonStyle(.plain)
@@ -256,7 +256,7 @@ private struct LogoItemButton: View {
                 size: AppIconSize.xxxl
             )
             .frame(width: AppIconSize.mega, height: AppIconSize.mega)
-            .background(isSelected ? AppColors.accent.opacity(0.1) : AppColors.surface)
+            .background(isSelected ? AppColors.accent.opacity(0.1) : AppColors.bgCard)
             .clipShape(.rect(cornerRadius: AppRadius.lg))
             .overlay(
                 RoundedRectangle(cornerRadius: AppRadius.lg)

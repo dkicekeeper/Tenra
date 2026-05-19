@@ -77,7 +77,7 @@ struct CategoryChip: View {
                             )
                     } else {
                         Circle()
-                            .fill(isSelected ? styleData.coinColor.opacity(0.2) : AppColors.secondaryBackground)
+                            .fill(isSelected ? styleData.coinColor.opacity(0.2) : AppColors.bgMuted)
                             .frame(width: AppIconSize.mega, height: AppIconSize.mega)
                             .overlay(
                                 Image(systemName: styleData.iconName)

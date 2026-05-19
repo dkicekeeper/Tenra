@@ -123,7 +123,7 @@ struct EditableHeroSection: View {
                     style: .circle(
                         size: AppIconSize.ultra,
                         tint: .monochrome(Color(hex: tintHex)),
-                        backgroundColor: AppColors.surface
+                        backgroundColor: AppColors.bgCard
                     )
                 )
             } else {

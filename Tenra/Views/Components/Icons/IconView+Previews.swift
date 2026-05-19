@@ -143,7 +143,7 @@ import SwiftUI
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: .sfSymbol("star.fill"), size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("star.fill")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -151,7 +151,7 @@ import SwiftUI
 
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: .sfSymbol("heart.fill"), size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("heart.fill")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -159,7 +159,7 @@ import SwiftUI
 
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: .sfSymbol("cart.fill"), size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("cart.fill")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -175,7 +175,7 @@ import SwiftUI
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: .brandService("kaspi.kz"), size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("Kaspi")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -183,7 +183,7 @@ import SwiftUI
 
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: .brandService("halykbank.kz"), size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("Halyk")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -191,7 +191,7 @@ import SwiftUI
 
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: .brandService("tbank.kz"), size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("T-Bank")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -207,7 +207,7 @@ import SwiftUI
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: .brandService("netflix"), size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("Netflix")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -215,7 +215,7 @@ import SwiftUI
 
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: .brandService("spotify"), size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("Spotify")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -223,7 +223,7 @@ import SwiftUI
 
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: .brandService("notion"), size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("Notion")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -239,7 +239,7 @@ import SwiftUI
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
                         IconView(source: nil, size: 60)
-                            .background(AppColors.surface)
+                            .background(AppColors.bgCard)
                         Text("nil source")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -258,7 +258,7 @@ import SwiftUI
                             source: .sfSymbol("star.fill"),
                             style: .circle(size: 60, tint: .accentMonochrome, padding: 5)
                         )
-                        .background(AppColors.surface)
+                        .background(AppColors.bgCard)
                         Text("Custom 5pt")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
@@ -269,7 +269,7 @@ import SwiftUI
                             source: .brandService("kaspi.kz"),
                             style: .roundedSquare(size: 60, padding: 10)
                         )
-                        .background(AppColors.surface)
+                        .background(AppColors.bgCard)
                         Text("Logo + 10pt")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)

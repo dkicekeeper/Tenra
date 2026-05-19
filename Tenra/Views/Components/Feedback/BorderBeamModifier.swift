@@ -172,21 +172,21 @@ extension View {
     VStack(spacing: AppSpacing.xxl) {
         labeled("Beam only") {
             RoundedRectangle(cornerRadius: AppRadius.xl)
-                .fill(AppColors.secondaryBackground)
+                .fill(AppColors.bgMuted)
                 .frame(height: 80)
                 .borderBeam()
         }
 
         labeled("Glow only (static)") {
             RoundedRectangle(cornerRadius: AppRadius.xl)
-                .fill(AppColors.secondaryBackground)
+                .fill(AppColors.bgMuted)
                 .frame(height: 80)
                 .borderGlow()
         }
 
         labeled("Glow + beam (VoiceInput card)") {
             RoundedRectangle(cornerRadius: AppRadius.xl)
-                .fill(AppColors.secondaryBackground)
+                .fill(AppColors.bgMuted)
                 .frame(height: 80)
                 .borderGlow()
                 .borderBeam()
@@ -194,7 +194,7 @@ extension View {
 
         labeled("Green/teal beam, faster") {
             RoundedRectangle(cornerRadius: AppRadius.xl)
-                .fill(AppColors.secondaryBackground)
+                .fill(AppColors.bgMuted)
                 .frame(height: 80)
                 .borderGlow(colors: [.green, .teal, .cyan])
                 .borderBeam(colors: [.green, .teal, .cyan], duration: 2.0)

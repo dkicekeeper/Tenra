@@ -30,7 +30,7 @@ import SwiftUI
 ///     style: .circle(
 ///         size: AppIconSize.xl,
 ///         tint: .monochrome(.red),
-///         backgroundColor: AppColors.surface
+///         backgroundColor: AppColors.bgCard
 ///     )
 /// )
 /// ```

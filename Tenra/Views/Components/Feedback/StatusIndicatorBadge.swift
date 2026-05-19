@@ -31,9 +31,9 @@ enum EntityStatus {
 
     var tintColor: Color {
         switch self {
-        case .active:   return AppColors.statusActive
-        case .paused:   return AppColors.statusPaused
-        case .archived: return AppColors.statusArchived
+        case .active:   return AppColors.success
+        case .paused:   return AppColors.warning
+        case .archived: return Color(.systemGray)
         case .pending:  return AppColors.accent
         }
     }

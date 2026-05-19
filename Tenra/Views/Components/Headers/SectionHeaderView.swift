@@ -113,7 +113,7 @@ struct SectionHeaderView: View {
             ) {
                 ForEach(0..<8) { _ in
                     RoundedRectangle(cornerRadius: AppRadius.md)
-                        .fill(AppColors.surface)
+                        .fill(AppColors.bgCard)
                         .frame(height: 60)
                 }
             }

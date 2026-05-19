@@ -47,7 +47,7 @@ struct TransactionIconView: View {
                     .font(.system(size: AppIconSize.sm))
                     .foregroundStyle(.primary)
                     .padding(AppSpacing.xs)
-                    .background(AppColors.backgroundPrimary)
+                    .background(AppColors.bgBase)
                     .clipShape(Circle())
                     .offset(x: -8, y: -8)
             }

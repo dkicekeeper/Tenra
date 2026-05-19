@@ -32,7 +32,7 @@ struct RecognizedTextView: View {
                 }
                 .cardContentPadding()
                 .frame(maxWidth: .infinity)
-                .background(AppColors.surface)
+                .background(AppColors.bgCard)
 
                 // Текст
                 ScrollView {
@@ -86,7 +86,7 @@ struct RecognizedTextView: View {
                             Label(String(localized: "button.copy"), systemImage: "doc.on.doc")
                                 .frame(maxWidth: .infinity)
                                 .padding(AppSpacing.md)
-                                .background(AppColors.secondaryBackground)
+                                .background(AppColors.bgMuted)
                                 .foregroundStyle(AppColors.textPrimary)
                                 .clipShape(.rect(cornerRadius: AppRadius.button))
                         }
@@ -95,7 +95,7 @@ struct RecognizedTextView: View {
                             Text(String(localized: "button.close"))
                                 .frame(maxWidth: .infinity)
                                 .padding(AppSpacing.md)
-                                .background(AppColors.secondaryBackground)
+                                .background(AppColors.bgMuted)
                                 .foregroundStyle(AppColors.textPrimary)
                                 .clipShape(.rect(cornerRadius: AppRadius.button))
                         }
@@ -107,11 +107,11 @@ struct RecognizedTextView: View {
             .navigationBarTitleDisplayMode(.inline)
             .overlay {
                 if isParsing {
-                    AppColors.backgroundPrimary.opacity(0.6)
+                    AppColors.bgBase.opacity(0.6)
                         .ignoresSafeArea()
                     ProgressView(String(localized: "progress.parsingStatement"))
                         .cardContentPadding()
-                        .background(AppColors.backgroundPrimary)
+                        .background(AppColors.bgBase)
                         .clipShape(.rect(cornerRadius: AppRadius.card))
                 }
             }

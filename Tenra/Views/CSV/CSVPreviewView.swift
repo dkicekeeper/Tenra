@@ -72,7 +72,7 @@ struct CSVPreviewView: View {
             }
         }
         .cardContentPadding()
-        .background(AppColors.surface)
+        .background(AppColors.bgCard)
         .clipShape(.rect(cornerRadius: AppRadius.card))
     }
 
@@ -136,7 +136,7 @@ struct CSVPreviewView: View {
                     }
                     .padding(AppSpacing.compact)
                     .frame(width: AppSize.subscriptionCardWidth, alignment: .leading)
-                    .background(AppColors.surface)
+                    .background(AppColors.bgCard)
                     .clipShape(.rect(cornerRadius: AppRadius.xs))
                 }
             }

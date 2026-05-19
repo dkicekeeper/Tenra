@@ -158,7 +158,7 @@ struct EmptyStateView: View {
                 if let description = description {
                     Text(description)
                         .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textSecondaryAccessible)
+                        .foregroundStyle(AppColors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
             }

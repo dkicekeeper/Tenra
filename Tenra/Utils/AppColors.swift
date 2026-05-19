@@ -12,40 +12,28 @@ import SwiftUI
 /// Семантические цвета приложения (дополняют существующую систему)
 enum AppColors {
     // MARK: Backgrounds
+    //
+    // Три уровня иерархии — base → card → muted.
+    // bgBase   — фон самого экрана.
+    // bgCard   — приподнятая поверхность (карточки, fallback под cardStyle на iOS<26).
+    // bgMuted  — "утопленный" слой внутри карточек (треки прогресс-баров, фон чипов).
 
-    /// Фон primary экрана
-    static let backgroundPrimary = Color(.systemBackground)
+    /// Фон самого экрана.
+    static let bgBase = Color(.systemBackground)
 
-    /// Фон surface (карточки, elevated elements)
-    static let surface = Color(.secondarySystemBackground)
+    /// Приподнятая поверхность — карточки, elevated containers.
+    static let bgCard = Color(.secondarySystemBackground)
 
-    /// Фон вторичных элементов (chips, secondary buttons)
-    static let secondaryBackground = Color(.systemGray5)
-
-    /// Фон сгруппированных экранов (List/Form с .grouped style)
-    static let groupedBackground = Color(.systemGroupedBackground)
-
-    /// Фон вторичных секций внутри сгруппированных экранов
-    static let groupedBackgroundSecondary = Color(.secondarySystemGroupedBackground)
+    /// "Утопленный" фон — chips, прогресс-бар треки, secondary buttons.
+    static let bgMuted = Color(.systemGray5)
 
     // MARK: Text Colors
 
     /// Primary text (используй системный .primary для auto light/dark)
     static let textPrimary = Color.primary
 
-    /// Secondary text — системный адаптивный цвет.
-    /// Light mode: ~2.5:1 контраст на белом фоне — допустимо для вспомогательного текста
-    /// (временны́е метки, описания, подписи). Для критических данных используй `textSecondaryAccessible`.
+    /// Secondary text — системный адаптивный цвет (.secondary).
     static let textSecondary = Color.secondary
-
-    /// Secondary text с гарантированным контрастом ≥ 4.5:1 (WCAG AA).
-    /// Light: #595959 (7:1 на белом) | Dark: white 75% (5.5:1 на чёрном).
-    /// Используй для secondary-текста, который несёт важную информацию (суммы, статусы).
-    static let textSecondaryAccessible = Color(UIColor { trait in
-        trait.userInterfaceStyle == .dark
-            ? UIColor.white.withAlphaComponent(0.75)
-            : UIColor(red: 89/255, green: 89/255, blue: 89/255, alpha: 1)
-    })
 
     /// Tertiary text (используй системный .gray для мета-информации)
     static let textTertiary = Color.gray
@@ -77,7 +65,14 @@ enum AppColors {
     /// Не зависит от `success`: если дизайн меняет success, income не изменится.
     static let income = Color(red: 0.13, green: 0.70, blue: 0.37)
 
-    /// Expense transactions
+    /// Expense transactions.
+    /// Сознательно НЕ красный (как могло бы подсказать "destructive"-чтение расхода):
+    /// если бы расходы рендерились красным, всё приложение визуально кричало бы
+    /// тревогой — большинство транзакций это расходы. Чёрный (`.primary`) даёт
+    /// нейтральный baseline, а контраст создаётся через `income` (зелёный)
+    /// и `transfer` (cyan). Резолвится в тот же цвет, что и `textPrimary`,
+    /// но семантически это отдельный токен — менять расход на другой цвет
+    /// (если когда-нибудь понадобится) можно будет в одной точке.
     static let expense = Color.primary
 
     /// Transfer / internal transactions (distinct cyan-teal, not accent blue)
@@ -86,16 +81,6 @@ enum AppColors {
     /// Planned / future / scheduled transactions
     static let planned = Color.blue
 
-    // MARK: Status Colors (explicit aliases)
-
-    /// Active status (alias for success)
-    nonisolated static let statusActive = success
-
-    /// Paused status (alias for warning)
-    nonisolated static let statusPaused = warning
-
-    /// Archived / inactive status
-    static let statusArchived = Color(.systemGray)
 }
 
 // MARK: - Category Color Palette

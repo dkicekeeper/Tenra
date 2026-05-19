@@ -91,7 +91,7 @@ struct OnboardingPageContainer<Content: View>: View {
             // collide with the scroll content above. Material alone (без opaque
             // overlay) пропускает свечение снизу.
             Rectangle()
-                .fill(AppColors.backgroundPrimary)
+                .fill(AppColors.bgBase)
                 .mask(
                     LinearGradient(
                         stops: [

@@ -44,7 +44,7 @@ struct BudgetProgressBar: View {
     var body: some View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: AppRadius.xs)
-                .fill(AppColors.secondaryBackground)
+                .fill(AppColors.bgMuted)
                 .frame(maxWidth: .infinity)
                 .frame(height: height)
 

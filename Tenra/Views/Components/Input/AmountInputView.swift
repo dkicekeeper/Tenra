@@ -77,14 +77,14 @@ struct AmountInputView: View {
                     Text(formatConvertedAmount(converted))
                         .font(AppTypography.h4)
                         .fontWeight(.medium)
-                        .foregroundStyle(AppColors.textSecondaryAccessible)
+                        .foregroundStyle(AppColors.textSecondary)
                         .contentTransition(.numericText())
                         .animation(AppAnimation.gentleSpring, value: converted)
 
                     Text(Formatting.currencySymbol(for: baseCurrency))
                         .font(AppTypography.h4)
                         .fontWeight(.medium)
-                        .foregroundStyle(AppColors.textSecondaryAccessible)
+                        .foregroundStyle(AppColors.textSecondary)
                         .contentTransition(.numericText())
                 } else {
                     ProgressView()

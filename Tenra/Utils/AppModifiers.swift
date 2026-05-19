@@ -40,7 +40,7 @@ extension View {
                 .background(
                     isSelected
                     ? AppColors.accent.opacity(0.2)
-                    : AppColors.secondaryBackground,
+                    : AppColors.bgMuted,
                     in: RoundedRectangle(cornerRadius: AppRadius.xl)
                 )
                 .animation(AppAnimation.contentSpring, value: isSelected)

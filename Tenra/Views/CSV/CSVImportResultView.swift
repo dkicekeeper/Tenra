@@ -133,7 +133,7 @@ struct CSVImportResultView: View {
             }
         }
         .cardContentPadding()
-        .background(AppColors.surface)
+        .background(AppColors.bgCard)
         .clipShape(.rect(cornerRadius: AppRadius.card))
     }
 
@@ -165,7 +165,7 @@ struct CSVImportResultView: View {
             }
         }
         .cardContentPadding()
-        .background(AppColors.surface)
+        .background(AppColors.bgCard)
         .clipShape(.rect(cornerRadius: AppRadius.card))
     }
 
@@ -207,7 +207,7 @@ struct CSVImportResultView: View {
             .frame(maxHeight: AppSize.resultListHeight)
         }
         .cardContentPadding()
-        .background(AppColors.surface)
+        .background(AppColors.bgCard)
         .clipShape(.rect(cornerRadius: AppRadius.card))
     }
 

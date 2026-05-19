@@ -79,7 +79,7 @@ struct CurrencyListContent: View {
                 }
             }
             .background(
-                AppColors.groupedBackground,
+                AppColors.bgCard,
                 in: RoundedRectangle(cornerRadius: AppRadius.xl, style: .continuous)
             )
         }

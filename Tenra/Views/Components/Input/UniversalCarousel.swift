@@ -220,7 +220,7 @@ private let carouselPreviewItems = [
                         Text(item.title).font(AppTypography.body)
                     }
                     .padding(AppSpacing.sm)
-                    .background(AppColors.surface)
+                    .background(AppColors.bgCard)
                     .clipShape(RoundedRectangle(cornerRadius: AppRadius.xs))
                 }
             }

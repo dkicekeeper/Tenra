@@ -223,7 +223,7 @@ struct SubscriptionCalendarView: View {
                 HStack(spacing: -AppSpacing.xs) {
                     ForEach(occurrences.prefix(3), id: \.id) { sub in
                         logoView(for: sub, size: AppIconSize.md)
-                            .background(Circle().fill(AppColors.backgroundPrimary))
+                            .background(Circle().fill(AppColors.bgBase))
                             .clipShape(Circle())
                             .transition(.scale.combined(with: .opacity))
                     }
@@ -232,7 +232,7 @@ struct SubscriptionCalendarView: View {
                             .font(.system(size: AppIconSize.sm, weight: .bold))
                             .foregroundStyle(AppColors.textSecondary)
                             .frame(width: AppIconSize.md, height: AppIconSize.md)
-                            .background(Circle().fill(AppColors.surface))
+                            .background(Circle().fill(AppColors.bgCard))
                             .transition(.scale.combined(with: .opacity))
                     }
                 }

@@ -55,7 +55,7 @@ private struct GranularityChip: View {
                     if isSelected {
                         AppColors.accent
                     } else {
-                        AppColors.surface
+                        AppColors.bgCard
                     }
                 }
                 .clipShape(Capsule())

@@ -177,7 +177,7 @@ struct IconStyle: Equatable, Hashable {
         .circle(
             size: size,
             tint: .accentMonochrome,
-            backgroundColor: AppColors.surface
+            backgroundColor: AppColors.bgCard
         )
     }
 
@@ -226,7 +226,7 @@ struct IconStyle: Equatable, Hashable {
             size: size,
             cornerRadius: size * 0.2,
             tint: .secondaryMonochrome,
-            backgroundColor: AppColors.surface
+            backgroundColor: AppColors.bgCard
         )
     }
 

@@ -37,7 +37,7 @@ enum IconShape: Equatable, Hashable {
     }
 
     static var chipShape: IconShape {
-        .roundedSquare(cornerRadius: AppRadius.chip)
+        .roundedSquare(cornerRadius: 8)
     }
 }
 

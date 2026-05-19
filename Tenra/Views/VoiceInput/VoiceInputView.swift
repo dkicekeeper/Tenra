@@ -327,7 +327,7 @@ struct VoiceInputView: View {
                     ZStack {
                         Circle()
                             .fill(AppColors.destructive)
-                            .frame(width: AppSize.buttonXL, height: AppSize.buttonXL)
+                            .frame(width: 80, height: 80)
                             .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
                         Image(systemName: "stop.fill")
                             .font(.system(size: AppIconSize.xl))
@@ -575,7 +575,7 @@ struct RecordingIndicatorView: View {
         HStack(spacing: AppSpacing.sm) {
             Circle()
                 .fill(AppColors.destructive)
-                .frame(width: AppSize.dotLargeSize, height: AppSize.dotLargeSize)
+                .frame(width: 12, height: 12)
                 .opacity(isAnimating ? 0.3 : 1.0)
                 .animation(
                     AppAnimation.isReduceMotionEnabled

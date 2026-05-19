@@ -124,7 +124,7 @@ struct TransactionCardView: View {
                 }
             }
         }
-        .padding(.vertical, AppSpacing.compact)
+        .padding(.vertical, 6)
         .futureTransactionStyle(isFuture: isFutureDate)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)

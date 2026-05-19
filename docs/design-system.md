@@ -27,82 +27,75 @@ All tokens live in `Utils/`. Never use raw values — always reference the token
 
 ### Colors (`AppColors`)
 
+Background hierarchy: `bgBase` → `bgCard` → `bgMuted` (base screen → elevated card → sunken control).
+
 | Token | Value | Use For |
 |-------|-------|---------|
-| `backgroundPrimary` | `.systemBackground` | Screen backgrounds |
-| `surface` / `cardBackground` | `.secondarySystemBackground` | Card fill (pre-iOS 26 fallback) |
-| `secondaryBackground` | `.systemGray5` | Secondary surfaces, card backgrounds |
+| `bgBase` | `.systemBackground` | Screen-level background |
+| `bgCard` | `.secondarySystemBackground` | Elevated cards, `cardStyle` pre-iOS-26 fallback |
+| `bgMuted` | `.systemGray5` | Chips, progress-bar tracks, sunken controls |
 | `textPrimary` | `.primary` | Main text |
 | `textSecondary` | `.secondary` | Subtitles, metadata |
-| `textSecondaryAccessible` | Custom adaptive | WCAG AA 4.5:1 secondary text |
 | `textTertiary` | `.gray` | Hints, placeholders |
-| `accent` | `.blue` | Interactive elements, links |
+| `accent` | `.indigo` | Interactive elements, primary CTA tint |
 | `destructive` | `.red` | Delete, errors |
-| `success` | `.green` | Positive feedback |
-| `warning` | `.orange` | Caution feedback |
-| `income` | `.green` | Income amounts |
-| `expense` | `.primary` | Expense amounts |
+| `success` | `.green` | Positive UI feedback (active status, success banners) |
+| `warning` | `.orange` | Caution feedback (paused status, warning banners) |
+| `staticWhite` | `.white` | Text on dark/coloured fills — does NOT adapt to theme |
+| `income` | RGB(0.13, 0.70, 0.37) | Income amounts (deliberately distinct from `success`) |
+| `expense` | `.primary` | Expense amounts — deliberately NOT red (see comment in AppColors.swift) |
 | `transfer` | Cyan-teal | Internal transfer amounts |
 | `planned` | `.blue` | Future/planned transactions |
-| `divider` | `.separator` | Row dividers |
-| `border` | `.systemGray4` | Input borders, selection rings |
-| `statusActive` | `success` | Active entity badge |
-| `statusPaused` | `warning` | Paused entity badge |
-| `statusArchived` | `.systemGray` | Archived entity badge |
 
-**Category colors:** Use `CategoryColors.hexColor(for:opacity:customCategories:)` — 14-color hex palette with custom category override.
+For archived/inactive UI use `Color(.systemGray)` directly — there is no dedicated token.
+
+**Category colors:** Use `CategoryColors.hexColor(for:opacity:customCategories:)` (or the store-backed `@MainActor` overload for O(1) lookup) — 14-color hex palette with custom category override.
 
 ### Spacing (`AppSpacing`)
 
-4pt grid system:
+4pt grid system. Token names are numeric only — no semantic aliases.
 
 | Token | Value | Use For |
 |-------|-------|---------|
 | `xxs` | 2 | Minimum micro spacing |
 | `xs` | 4 | Icon-to-text inline gaps |
-| `compact` | 6 | Tight chip/button padding |
 | `sm` | 8 | Row vertical padding, small gaps |
 | `md` | 12 | Default VStack/HStack spacing, card internal padding |
-| `lg` | 16 | Screen horizontal padding, between-card spacing |
+| `lg` | 16 | Screen horizontal padding (used by `.screenPadding()`), between-card spacing |
 | `xl` | 20 | Between major sections |
 | `xxl` | 24 | Between screen sections |
 | `xxxl` | 32 | Large screen margins |
-
-**Semantic aliases:** `pageHorizontal` (16), `sectionVertical` (24), `cardPadding` (12), `listRowSpacing` (8), `iconText` (4), `labelValue` (12).
 
 ### Corner Radius (`AppRadius`)
 
 | Token | Value | Use For |
 |-------|-------|---------|
 | `xs` | 4 | Badges, indicators |
-| `compact` | 6 | Compact chips |
-| `sm` / `chip` | 8 | Chips, small buttons |
-| `md` / `card` / `button` | 10 | Standard cards and buttons |
-| `lg` / `sheet` | 12 | Large cards, sheets |
+| `md` / `card` / `button` | 12 | Standard cards and buttons |
+| `lg` | 16 | Large cards |
 | `xl` | 20 | Pills, filter chips, `.cardStyle()` default |
-| `circle` | `.infinity` | Avatars, icon backgrounds |
+
+For full circles use `.infinity` inline (rare — only avatars/icon backgrounds use it). For values between tokens (8pt chips, 6pt compact corners) inline the numeric literal — no token.
 
 ### Icon Sizes (`AppIconSize`)
 
 | Token | Value | Use For |
 |-------|-------|---------|
-| `xs` | 12 | Micro icons |
-| `indicator` | 14 | Small dots/badges |
 | `sm` | 16 | Inline icons in text |
 | `md` | 20 | Toolbar, list default |
 | `lg` | 24 | Emphasized list icons, `UniversalRow` leading icons |
 | `xl` | 32 | Bank logos in rows |
 | `avatar` | 40 | Subscription icons in rows |
 | `xxl` | 44 | Category circles (QuickAdd) |
+| `xxxl` | 48 | Hero icons (empty states) |
 | `categoryIcon` | 52 | Category row icons |
-| `fab` | 56 | Floating action buttons |
-| `coin` | 64 | Category coins |
-| `budgetRing` | 72 | Budget ring |
-| `largeButton` | 80 | Voice input button |
+| `mega` | 64 | Category coins, large display icons |
+| `budgetRing` | 72 | Budget ring (coin + 8pt stroke space) |
+| `ultra` | 80 | Hero icons, large action buttons (voice input) |
 
-### Container Sizes (`AppSize`)
+### Container Sizes
 
-Key tokens: `rowHeight` (60), `chartHeightLarge` (200), `chartHeightSmall` (80), `skeletonHeight` (16), `cursorHeight` (36), `cursorHeightLarge` (44), `buttonSmall` (40), `buttonMedium` (56), `buttonLarge` (64).
+There is no `AppSize` enum. Component-local sizes (cursor height/width, voice button diameter, CSV preview heights, etc.) live as numeric literals at use-site or as `private` constants in the component file. This is deliberate — global tokens are for 3+ shared use sites; everything else is local.
 
 ### Typography (`AppTypography`)
 
@@ -110,40 +103,40 @@ All use Inter variable font with Dynamic Type scaling:
 
 | Token | Size | Weight | Use For |
 |-------|------|--------|---------|
-| `h1` / `screenTitle` | 34 | bold | Screen titles |
+| `h1` | 34 | bold | Screen titles |
 | `h2` | 28 | semibold | Detail view balances |
 | `h3` | 24 | semibold | Section titles (Insights) |
 | `h4` | 20 | semibold | Card headers, `EmptyStateView` titles |
-| `bodyEmphasis` | 18 | medium | Row names, button labels, section subheaders |
-| `body` / `bodyPrimary` | 18 | regular | Default text |
-| `bodySmall` / `bodySecondary` | 16 | regular | Secondary text, subtitles |
-| `label` | 16 | medium | Form labels |
-| `amount` | 18 | semibold | Inline amounts |
-| `caption` / `sectionHeader` | 14 | regular/medium | Timestamps, metadata, section headers |
-| `captionEmphasis` | 14 | medium | Important helper text |
+| `bodyEmphasis` | 18 | semibold | Row names, button labels, section subheaders |
+| `body` | 18 | regular | Default text |
+| `bodySmall` | 16 | regular | Secondary text, subtitles |
+| `caption` | 14 | regular | Timestamps, metadata, section headers |
 | `caption2` | 12 | regular | Non-critical decorative text only |
+
+For dynamic-size amount inputs use `Font.custom(AppTypography.fontFamily, …)` directly — that's the one place the family name is exposed.
 
 ### Animations (`AppAnimation`)
 
 | Token | Type | Use For |
 |-------|------|---------|
-| `spring` | response:0.3 damping:0.6 | Bounce effects |
 | `contentSpring` | response:0.3 damping:0.7 | Content transitions, toggles, validation errors |
 | `gentleSpring` | response:0.4 damping:0.8 | Smooth value animations, amounts, empty↔loaded |
 | `heroSpring` | response:0.6 damping:0.7 | Hero icon entrance (slower, dramatic) |
 | `facepileSpring` | response:0.4 damping:0.7 | Staggered facepile icon pop-in |
 | `progressBarSpring` | response:0.55 damping:0.72 | Animated bar width changes |
 | `contentRevealAnimation` | easeOut(0.35) | Section fade-in during initialization |
-| `fast` | 0.1s | Button press |
-| `standard` | 0.25s | State changes |
-| `slow` | 0.35s | Modals |
-| `chartAppearAnimation` | spring(0.55, 0.82) | Chart entrance |
-| `chartUpdateAnimation` | spring(0.5, 0.85) | Chart data updates |
-| `chartBannerFade` | (see source) | Chart selection banner appear/disappear |
+| `fast` | 0.1s | Button press (raw `Double`) |
+| `standard` | 0.25s | State changes (raw `Double`) |
+| `slow` | 0.35s | Modals (raw `Double`) |
+| `chartAppearAnimation` | spring(0.55, 0.82), reduce-motion aware | Chart entrance |
+| `chartUpdateAnimation` | spring(0.5, 0.85), reduce-motion aware | Chart data updates |
+| `chartBannerFade` | easeInOut(0.15), reduce-motion aware | Chart selection banner appear/disappear |
 
-**Magic numbers:** `facepileHiddenScale` (0.5), `facepileStagger` (0.06s per icon), `chartHiddenScale` (0.94).
+**Magic numbers:** `facepileHiddenScale` (0.5), `facepileStagger` (0.06s per icon), `chartHiddenScale` (0.94), `chartAppearDelay` (0.05s).
 
-All have Reduce Motion-aware variants (`adaptiveSpring`, `fastAnimation`, etc.) that return `.linear(duration: 0)` when enabled.
+**Reduce-motion-aware:** `fastAnimation` (replaces `easeInOut(fast)`), `adaptiveSpring` (overshoot spring used by `BounceButtonStyle`). Check `isReduceMotionEnabled` flag directly when rolling your own.
+
+**Component-local animation constants** live as `private enum` inside the component file (precedent: `BannerAnimation` in `MessageBanner.swift`, `Orb.opacity/blur` in `CategoryGradientBackground.swift`). Don't pull single-component tunables back into `AppAnimation`.
 
 **`BounceButtonStyle`:** `scaleEffect(0.96)` + `brightness(-0.05)` on press. Apply via `.buttonStyle(.bounce)`.
 
@@ -158,8 +151,8 @@ All have Reduce Motion-aware variants (`adaptiveSpring`, `fastAnimation`, etc.) 
 | `.cardStyle(radius:)` | Liquid Glass (iOS 26+) or `.ultraThinMaterial` card background. Default radius: `AppRadius.xl` (20pt) | **Display cards only.** Account/Loan/Health hero cards, list cards, detail-view cards — anything without interactive `Picker(.menu)` / `Menu` inside |
 | `.formCardStyle(radius:)` | `.ultraThinMaterial` card background on every iOS. Same shape/padding contract as `cardStyle`. | **Form-section cards.** `FormSection`, `BudgetSettingsSection` — any card that wraps `MenuPickerRow` / `Picker(.menu)` / `Menu`. iOS 26's `glassEffect` becomes the morph-source for menus, so single-row form sections would collapse the whole row into the popover at tap. `formCardStyle` uses Material to side-step that |
 | `.filterChipStyle(isSelected:)` | Glass chip styling with accent tint when selected. Animated selection transition | Filter buttons, `UniversalFilterButton` |
-| `.screenPadding()` | `.padding(.horizontal, AppSpacing.pageHorizontal)` (16pt) | Screen-level horizontal insets |
-| `.cardContentPadding()` | `.padding(AppSpacing.cardPadding)` (12pt) | Internal card content padding |
+| `.screenPadding()` | `.padding(.horizontal, AppSpacing.lg)` (16pt) | Screen-level horizontal insets |
+| `.cardContentPadding()` | `.padding(AppSpacing.md)` (12pt) | Internal card content padding |
 | `.futureTransactionStyle(isFuture:)` | `.opacity(0.55)` when future | Planned/future transaction rows |
 | `.chartAppear(delay:)` | Scale(0.94→1.0) + opacity entrance from bottom | Outermost chart container, scrollable list cards |
 | `.staggeredEntrance(delay:)` | Scale(0.5→1.0) + opacity pop-in with spring | Facepile icons, overlapping avatar stacks |
@@ -1086,7 +1079,7 @@ All animations must use `AppAnimation` constants. Never use inline `.spring(resp
 | Chart selection banner | `AppAnimation.chartBannerFade` |
 | Section fade-in on init | `AppAnimation.contentRevealAnimation` |
 | Progress bar expansion | `AppAnimation.progressBarSpring` |
-| Visible-overshoot entrance | `AppAnimation.bouncySpring` |
+| Visible-overshoot bounce (button press) | `AppAnimation.adaptiveSpring` |
 
 ### Animation Modifiers
 

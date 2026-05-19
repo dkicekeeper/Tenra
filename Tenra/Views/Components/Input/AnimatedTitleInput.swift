@@ -63,7 +63,7 @@ struct AnimatedTitleInput: View {
                         .contentTransition(.interpolate)
                         .animation(AppAnimation.contentSpring, value: text)
 
-                    BlinkingCursor(height: AppSize.cursorHeightLarge)
+                    BlinkingCursor(height: 44)
                         .opacity(showCursor ? 1 : 0)
                         .animation(AppAnimation.fastAnimation, value: showCursor)
                 }

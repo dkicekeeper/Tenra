@@ -72,7 +72,7 @@ struct UniversalFilterButton<Icon: View, MenuContent: View>: View {
             // Optional chevron
             if showChevron {
                 Image(systemName: "chevron.down")
-                    .font(.system(size: AppIconSize.xs))
+                    .font(.system(size: 12))
             }
         }
         .filterChipStyle(isSelected: isSelected)

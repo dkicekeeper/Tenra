@@ -204,7 +204,7 @@ struct CSVImportResultView: View {
                     }
                 }
             }
-            .frame(maxHeight: AppSize.resultListHeight)
+            .frame(maxHeight: 150)
         }
         .cardContentPadding()
         .background(AppColors.bgCard)

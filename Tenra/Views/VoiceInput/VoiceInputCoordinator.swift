@@ -55,7 +55,7 @@ struct VoiceInputCoordinator: View {
             Image(systemName: "mic.fill")
                 .font(.system(size: AppIconSize.lg))
                 .fontWeight(.semibold)
-                .frame(width: AppSize.buttonLarge, height: AppSize.buttonLarge)
+                .frame(width: 64, height: 64)
         }
         .buttonStyle(.glass)
         .accessibilityLabel(String(localized: "accessibility.voiceInput"))

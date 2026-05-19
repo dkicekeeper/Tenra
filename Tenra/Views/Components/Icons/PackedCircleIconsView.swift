@@ -31,7 +31,7 @@ struct PackedCircleItem: Identifiable {
 struct PackedCircleIconsView: View {
     let items: [PackedCircleItem]
     var maxVisible: Int = 5
-    var containerWidth: CGFloat = AppSize.subscriptionCardWidth
+    var containerWidth: CGFloat = 120
 
     private let containerHeight: CGFloat = 100
     private let borderWidth: CGFloat = 1

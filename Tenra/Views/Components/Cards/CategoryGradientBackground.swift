@@ -10,6 +10,18 @@
 
 import SwiftUI
 
+private enum Orb {
+    /// Opacity for gradient orbs — weight=1.0 → 0.45, weight=0.4 → 0.25.
+    static func opacity(weight: CGFloat) -> Double {
+        0.25 + Double(weight) * 0.20
+    }
+
+    /// Blur radius per layer. Back layer = deeper blur (farther), front = sharper (closer).
+    static func blur(isBackLayer: Bool) -> CGFloat {
+        isBackLayer ? 44 : 28
+    }
+}
+
 /// Renders soft, heavily-blurred colour orbs that represent the user's top
 /// expense categories by spend proportion.
 ///
@@ -68,7 +80,7 @@ struct CategoryGradientBackground: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [color.opacity(AppAnimation.orbOpacity(weight: weight)),
+                        colors: [color.opacity(Orb.opacity(weight: weight)),
                                  color.opacity(0.0)],
                         center: .center,
                         startRadius: 0,
@@ -77,7 +89,7 @@ struct CategoryGradientBackground: View {
                 )
                 .frame(width: diameter, height: diameter)
                 .offset(x: baseOffset.x, y: baseOffset.y)
-                .blur(radius: AppAnimation.orbBlur(isBackLayer: isBackLayer))
+                .blur(radius: Orb.blur(isBackLayer: isBackLayer))
         }
     }
 

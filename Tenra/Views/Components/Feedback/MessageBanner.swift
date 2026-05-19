@@ -8,6 +8,16 @@
 
 import SwiftUI
 
+private enum BannerAnimation {
+    static let entranceResponse: Double = 0.6
+    static let entranceDamping: Double = 0.7
+    static let iconResponse: Double = 0.5
+    static let iconDamping: Double = 0.6
+    static let iconDelay: Double = 0.1
+    static let hiddenScale: CGFloat = 0.85
+    static let hiddenOffset: CGFloat = -20
+}
+
 /// Universal message banner component supporting multiple message types
 /// Consolidates ErrorMessageView and SuccessMessageView patterns
 struct MessageBanner: View {
@@ -59,23 +69,23 @@ struct MessageBanner: View {
             }
         }
         .shadow(color: type.tintColor.opacity(0.3), radius: 8, x: 0, y: 4)
-        .scaleEffect(isVisible ? 1 : AppAnimation.bannerHiddenScale)
+        .scaleEffect(isVisible ? 1 : BannerAnimation.hiddenScale)
         .opacity(isVisible ? 1 : 0)
-        .offset(y: isVisible ? 0 : AppAnimation.bannerHiddenOffset)
+        .offset(y: isVisible ? 0 : BannerAnimation.hiddenOffset)
         .onAppear {
             withAnimation(.spring(
-                response: AppAnimation.bannerEntranceResponse,
-                dampingFraction: AppAnimation.bannerEntranceDamping,
+                response: BannerAnimation.entranceResponse,
+                dampingFraction: BannerAnimation.entranceDamping,
                 blendDuration: 0
             )) {
                 isVisible = true
             }
 
             withAnimation(.spring(
-                response: AppAnimation.bannerIconResponse,
-                dampingFraction: AppAnimation.bannerIconDamping,
+                response: BannerAnimation.iconResponse,
+                dampingFraction: BannerAnimation.iconDamping,
                 blendDuration: 0
-            ).delay(AppAnimation.bannerIconDelay)) {
+            ).delay(BannerAnimation.iconDelay)) {
                 iconScale = 1.0
             }
 
@@ -90,8 +100,8 @@ struct MessageBanner: View {
                 .foregroundStyle(type.tintColor)
                 .scaleEffect(iconScale)
                 .animation(.spring(
-                    response: AppAnimation.bannerIconResponse,
-                    dampingFraction: AppAnimation.bannerIconDamping,
+                    response: BannerAnimation.iconResponse,
+                    dampingFraction: BannerAnimation.iconDamping,
                     blendDuration: 0
                 ), value: iconScale)
 

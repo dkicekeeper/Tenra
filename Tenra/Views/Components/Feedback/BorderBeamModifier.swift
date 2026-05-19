@@ -200,7 +200,7 @@ extension View {
                 .borderBeam(colors: [.green, .teal, .cyan], duration: 2.0)
         }
     }
-    .padding(AppSpacing.pageHorizontal)
+    .padding(AppSpacing.lg)
 }
 
 @ViewBuilder

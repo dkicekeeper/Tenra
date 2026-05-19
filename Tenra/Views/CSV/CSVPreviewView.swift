@@ -87,7 +87,7 @@ struct CSVPreviewView: View {
                         .font(AppTypography.caption)
                         .padding(AppSpacing.sm)
                         .background(AppColors.accent.opacity(0.2))
-                        .clipShape(.rect(cornerRadius: AppRadius.compact))
+                        .clipShape(.rect(cornerRadius: 6))
                 }
             }
         }
@@ -109,7 +109,7 @@ struct CSVPreviewView: View {
                     }
                 }
             }
-            .frame(maxHeight: AppSize.previewScrollHeight)
+            .frame(maxHeight: 300)
         }
         .cardContentPadding()
     }
@@ -134,8 +134,8 @@ struct CSVPreviewView: View {
                         .font(AppTypography.caption)
                         .lineLimit(2)
                     }
-                    .padding(AppSpacing.compact)
-                    .frame(width: AppSize.subscriptionCardWidth, alignment: .leading)
+                    .padding(6)
+                    .frame(width: 120, alignment: .leading)
                     .background(AppColors.bgCard)
                     .clipShape(.rect(cornerRadius: AppRadius.xs))
                 }

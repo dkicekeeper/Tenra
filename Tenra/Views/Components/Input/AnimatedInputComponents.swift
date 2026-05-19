@@ -16,7 +16,7 @@ import SwiftUI
 
 /// Animated blinking cursor shown when input is focused.
 struct BlinkingCursor: View {
-    var height: CGFloat = AppSize.cursorHeight
+    var height: CGFloat = 36
 
     @State private var opacity: Double = 1.0
 
@@ -25,7 +25,7 @@ struct BlinkingCursor: View {
     var body: some View {
         Rectangle()
             .fill(AppColors.textPrimary)
-            .frame(width: AppSize.cursorWidth, height: height)
+            .frame(width: 2, height: height)
             .opacity(opacity)
             .onAppear {
                 guard !reduceMotion else { return }
@@ -57,7 +57,7 @@ struct AmountDigitDisplay: View {
     var baseFontSize: CGFloat = 56
     var color: Color = AppColors.textPrimary
     var isFocused: Bool = false
-    var cursorHeight: CGFloat = AppSize.cursorHeight
+    var cursorHeight: CGFloat = 36
 
     /// Clean digit string — no space characters, stable positions for `.numericText()`.
     /// Preserves leading minus for negative amounts.
@@ -149,7 +149,7 @@ struct AmountInput: View {
     var color: Color = AppColors.textPrimary
     /// Color when amount is empty/zero. When nil, uses `color`.
     var placeholderColor: Color? = nil
-    var cursorHeight: CGFloat = AppSize.cursorHeight
+    var cursorHeight: CGFloat = 36
     var autoFocus: Bool = false
     var showContextMenu: Bool = false
     var onAmountChange: ((String) -> Void)? = nil

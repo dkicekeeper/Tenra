@@ -60,9 +60,6 @@ enum AppTypography {
     /// Caption - Helper text, timestamps, metadata (14pt regular, scales with caption)
     static let caption = Font.custom(AppInterFont.family, size: 14, relativeTo: .caption).weight(.regular)
 
-    /// Caption Emphasis - Important helper text (14pt medium, scales with caption)
-    static let captionEmphasis = Font.custom(AppInterFont.family, size: 14, relativeTo: .caption).weight(.semibold)
-
     /// Caption 2 - Very small text (12pt regular, scales with caption2).
     /// Примечание: системный iOS caption2 = 11pt; наши 12pt намеренно выше минимума.
     /// Применяй только для не-критичного декоративного текста (бейджи, мета-информация).

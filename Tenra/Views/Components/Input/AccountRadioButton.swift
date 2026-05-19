@@ -41,7 +41,7 @@ struct AccountRadioButton: View {
             .cardStyle()
             .overlay {
                 RoundedRectangle(cornerRadius: AppRadius.xl, style: .continuous)
-                    .stroke(AppColors.accent, lineWidth: AppSize.selectedBorderWidth)
+                    .stroke(AppColors.accent, lineWidth: 2)
                     .opacity(isSelected ? 1 : 0)
                     .animation(AppAnimation.gentleSpring, value: isSelected)
             }

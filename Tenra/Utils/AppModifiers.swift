@@ -96,7 +96,7 @@ extension View {
 extension View {
     /// Стандартный horizontal padding для экранов
     func screenPadding() -> some View {
-        self.padding(.horizontal, AppSpacing.pageHorizontal)
+        self.padding(.horizontal, AppSpacing.lg)
     }
 
     /// Визуально приглушает view для будущих / запланированных транзакций.
@@ -107,7 +107,7 @@ extension View {
 
     /// Card padding (внутренний padding карточек)
     func cardContentPadding() -> some View {
-        self.padding(AppSpacing.cardPadding)
+        self.padding(AppSpacing.md)
     }
 }
 

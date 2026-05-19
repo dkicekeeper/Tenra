@@ -22,9 +22,6 @@ enum AppAnimation {
     /// Медленная анимация (modals, large transitions)
     static let slow: Double = 0.35
 
-    /// Visible-overshoot spring. Prefer `contentSpring` (0.7) or `gentleSpring` (0.8) for most transitions.
-    static let bouncySpring = Animation.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0)
-
     /// Snappy content spring — for content transitions (amount inputs, list changes, toggles).
     /// response 0.3 + damping 0.7 = quick settle with minimal overshoot.
     static let contentSpring = Animation.spring(response: 0.3, dampingFraction: 0.7)
@@ -51,43 +48,8 @@ enum AppAnimation {
     /// Delay increment per facepile icon (each icon delays by `index * facepileStagger`).
     static let facepileStagger: Double = 0.06
 
-    // MARK: - Gradient Background Orbs
-
-    /// Opacity for gradient orbs — weight=1.0 → 0.45, weight=0.4 → 0.25.
-    static func orbOpacity(weight: CGFloat) -> Double {
-        0.25 + Double(weight) * 0.20
-    }
-
-    /// Blur radius per layer. Back layer = deeper blur (farther), front = sharper (closer).
-    static func orbBlur(isBackLayer: Bool) -> CGFloat {
-        isBackLayer ? 44 : 28
-    }
-
     /// Content reveal animation — for staggered section fade-in during initialization.
     static let contentRevealAnimation = Animation.easeOut(duration: 0.35)
-
-    // MARK: - MessageBanner
-
-    /// Banner entrance spring response
-    static let bannerEntranceResponse: Double = 0.6
-
-    /// Banner entrance spring damping fraction
-    static let bannerEntranceDamping: Double = 0.7
-
-    /// Icon bounce spring response
-    static let bannerIconResponse: Double = 0.5
-
-    /// Icon bounce spring damping fraction
-    static let bannerIconDamping: Double = 0.6
-
-    /// Icon bounce animation delay (after banner entrance)
-    static let bannerIconDelay: Double = 0.1
-
-    /// Banner scale when hidden (entrance starts from this value)
-    static let bannerHiddenScale: CGFloat = 0.85
-
-    /// Banner Y-offset when hidden (slides in from above)
-    static let bannerHiddenOffset: CGFloat = -20
 
     // MARK: - Chart Animations
 
@@ -147,35 +109,12 @@ enum AppAnimation {
             : .easeInOut(duration: fast)
     }
 
-    /// `Animation` для стандартных переходов с учётом Reduce Motion.
-    /// Замена для `.easeInOut(duration: AppAnimation.standard)`.
-    static var standardAnimation: Animation {
-        UIAccessibility.isReduceMotionEnabled
-            ? .linear(duration: 0)
-            : .easeInOut(duration: standard)
-    }
-
-    /// `Animation` для медленных переходов (модальные экраны) с учётом Reduce Motion.
-    static var slowAnimation: Animation {
-        UIAccessibility.isReduceMotionEnabled
-            ? .linear(duration: 0)
-            : .easeInOut(duration: slow)
-    }
-
-    /// Spring-анимация с учётом Reduce Motion.
-    /// Замена для `AppAnimation.bouncySpring` в декоративных bounce-эффектах.
+    /// Spring-анимация с visible overshoot и учётом Reduce Motion.
+    /// Используется в декоративных bounce-эффектах (BounceButtonStyle и т.п.).
     static var adaptiveSpring: Animation {
         UIAccessibility.isReduceMotionEnabled
             ? .linear(duration: 0)
-            : bouncySpring
-    }
-
-    /// Onboarding step transition — bouncy spring with a dramatic, visible settle.
-    /// Reduce-Motion-aware: collapses to an instant transition.
-    static var onboardingTransition: Animation {
-        isReduceMotionEnabled
-            ? .linear(duration: 0)
-            : .spring(response: 0.5, dampingFraction: 0.68)
+            : .spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0)
     }
 
 }

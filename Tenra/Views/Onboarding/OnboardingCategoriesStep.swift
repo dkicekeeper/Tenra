@@ -25,6 +25,9 @@ struct OnboardingCategoriesStep: View {
             primaryButtonEnabled: vm.canFinish,
             onPrimaryTap: {
                 vm.finish()
+            },
+            onSkip: {
+                Task { await vm.skip() }
             }
         ) {
             ScrollView {

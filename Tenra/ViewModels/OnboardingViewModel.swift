@@ -127,6 +127,22 @@ final class OnboardingViewModel {
         logger.info("onboarding_step_completed step=account")
     }
 
+    // MARK: - Skip
+
+    /// User tapped the trailing «✕» button. Applies the currently selected
+    /// base currency and completes onboarding immediately — no account, no
+    /// categories. The user starts on an empty Home and can add everything
+    /// later from the main UI.
+    func skip() async {
+        guard let coordinator, !isFinishing else { return }
+        isFinishing = true
+        defer { isFinishing = false }
+
+        await coordinator.settingsViewModel.updateBaseCurrency(draftCurrency)
+        coordinator.completeOnboarding()
+        logger.info("onboarding_skipped")
+    }
+
     // MARK: - Final commit
 
     func finish() {

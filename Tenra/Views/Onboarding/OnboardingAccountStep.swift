@@ -28,6 +28,9 @@ struct OnboardingAccountStep: View {
             primaryButtonEnabled: vm.canAdvanceFromAccountStep,
             onPrimaryTap: {
                 Task { await vm.advanceToCategoriesStep() }
+            },
+            onSkip: {
+                Task { await vm.skip() }
             }
         ) {
             ScrollView {

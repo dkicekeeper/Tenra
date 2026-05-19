@@ -5,18 +5,15 @@
 //  Reusable currency picker. Uses `ScrollView + VStack` (not `List`) so the
 //  parent surface — including the onboarding accent-glow background — shows
 //  through without being painted over by `List`'s grouped-background grey.
-//  `.searchable` is attached in nav-bar drawer placement; the `searchDisplayMode`
-//  parameter controls whether the search field stays pinned (`.always`, for
-//  onboarding) or hides on scroll (`.automatic`, for Settings).
+//  `.searchable` is attached in nav-bar drawer placement (.automatic) — drawer
+//  hides on scroll and reveals on pull-down, same pattern for both Settings
+//  and onboarding (the onboarding-specific tweaks live in the parent container).
 //
 
 import SwiftUI
 
 struct CurrencyListContent: View {
     let selectedCurrency: String
-    /// Когда `.always` — нативный search всегда виден под toolbar (для онбординга).
-    /// `.automatic` (по умолчанию) — search скрывается при скролле (Settings).
-    var searchDisplayMode: SearchFieldPlacement.NavigationBarDrawerDisplayMode = .automatic
     let onTap: (String) -> Void
 
     @State private var searchText = ""
@@ -55,7 +52,7 @@ struct CurrencyListContent: View {
         }
         .searchable(
             text: $searchText,
-            placement: .navigationBarDrawer(displayMode: searchDisplayMode),
+            placement: .navigationBarDrawer(displayMode: .automatic),
             prompt: String(localized: "currency.searchPrompt")
         )
     }
@@ -82,7 +79,7 @@ struct CurrencyListContent: View {
                 }
             }
             .background(
-                AppColors.secondaryBackground,
+                AppColors.groupedBackground,
                 in: RoundedRectangle(cornerRadius: AppRadius.xl, style: .continuous)
             )
         }

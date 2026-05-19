@@ -18,6 +18,20 @@ extension TransactionStore {
             return
         }
 
+        // Also dedupe by (name, type). Onboarding can be re-run via the debug
+        // "Relaunch Onboarding" entry — that path only resets the UserDefaults
+        // flag, not the persisted categories, so a fresh `finish()` would
+        // otherwise insert a second "Продукты" / "Groceries" with a new UUID
+        // and crash CategoryDisplayDataMapper's `Dictionary(uniqueKeysWithValues:)`.
+        let trimmed = category.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if categories.contains(where: {
+            $0.type == category.type
+                && $0.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                    .caseInsensitiveCompare(trimmed) == .orderedSame
+        }) {
+            return
+        }
+
         // Assign order if not set
         var categoryToAdd = category
         if categoryToAdd.order == nil {

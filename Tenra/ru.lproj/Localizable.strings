@@ -1406,6 +1406,7 @@
 "onboarding.cta.start" = "Начать";
 "onboarding.cta.done" = "Готово";
 "onboarding.cta.doneWithCount" = "Готово • выбрано %d";
+"onboarding.cta.skip" = "Пропустить";
 "onboarding.stepIndicator.label" = "Шаг %d из %d";
 
 "onboarding.currency.title" = "Выберите основную валюту";

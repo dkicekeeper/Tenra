@@ -1406,6 +1406,7 @@
 "onboarding.cta.start" = "Get started";
 "onboarding.cta.done" = "Done";
 "onboarding.cta.doneWithCount" = "Done • %d selected";
+"onboarding.cta.skip" = "Skip";
 "onboarding.stepIndicator.label" = "Step %d of %d";
 
 "onboarding.currency.title" = "Choose your base currency";

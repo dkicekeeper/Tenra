@@ -32,10 +32,13 @@ extension Array where Element == String {
     /// Sort category names by custom order using the provided customCategories array
     func sortedByCustomOrder(customCategories: [CustomCategory], type: TransactionType) -> [String] {
         // Create a lookup for category order
-        let orderLookup = Dictionary(uniqueKeysWithValues: customCategories.compactMap { category -> (String, Int)? in
-            guard category.type == type, let order = category.order else { return nil }
-            return (category.name, order)
-        })
+        let orderLookup = Dictionary(
+            customCategories.compactMap { category -> (String, Int)? in
+                guard category.type == type, let order = category.order else { return nil }
+                return (category.name, order)
+            },
+            uniquingKeysWith: { first, _ in first }
+        )
 
         return self.sorted { name1, name2 in
             let order1 = orderLookup[name1]

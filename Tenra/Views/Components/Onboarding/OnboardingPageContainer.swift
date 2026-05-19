@@ -18,6 +18,10 @@ struct OnboardingPageContainer<Content: View>: View {
     let primaryButtonTitle: String
     let primaryButtonEnabled: Bool
     let onPrimaryTap: () -> Void
+    /// Optional trailing «Skip» action. When provided, a text button is added
+    /// to `.topBarTrailing` — used on data-collection steps so the user can
+    /// bail out to MainTabView with defaults applied.
+    var onSkip: (() -> Void)? = nil
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -29,10 +33,29 @@ struct OnboardingPageContainer<Content: View>: View {
                 ToolbarItem(placement: .principal) {
                     OnboardingStepIndicator(currentStep: progressStep)
                 }
+                if let onSkip {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: onSkip) {
+                            Image(systemName: "xmark")
+                        }
+                        .accessibilityLabel(String(localized: "onboarding.cta.skip"))
+                        .tint(AppColors.textSecondary)
+                    }
+                }
             }
-            // Hide the navigation bar background so the accent-glow under
-            // the screen shows through behind the toolbar step indicator.
-            .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+            // iOS 26 native way to make the toolbar background follow the
+            // Liquid Glass soft-gradient blur instead of an opaque material.
+            // Replaces `.toolbarBackgroundVisibility(.hidden, for: .navigationBar)`,
+            // which doesn't override the scroll-edge effect that `.searchable`
+            // adds on the currency step.
+            .scrollEdgeEffectStyle(.soft, for: .top)
+            // Inline title + empty navigationTitle is required so `.searchable`
+            // inside the step content anchors its drawer under the toolbar
+            // instead of falling back to the iOS 26 bottom-dock `.toolbar`
+            // placement. The principal ToolbarItem (step indicator) visually
+            // replaces the empty title.
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
     }
 
     private var bottomChrome: some View {

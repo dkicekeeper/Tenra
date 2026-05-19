@@ -20,12 +20,12 @@ struct OnboardingCurrencyStep: View {
             primaryButtonEnabled: true,
             onPrimaryTap: {
                 Task { await vm.advanceToAccountStep() }
+            },
+            onSkip: {
+                Task { await vm.skip() }
             }
         ) {
-            CurrencyListContent(
-                selectedCurrency: vm.draftCurrency,
-                searchDisplayMode: .always
-            ) { code in
+            CurrencyListContent(selectedCurrency: vm.draftCurrency) { code in
                 vm.draftCurrency = code
             }
             .padding(.top, AppSpacing.md)

@@ -105,11 +105,17 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
             )
         }
 
-        // Create a lookup for category order
-        let orderLookup = Dictionary(uniqueKeysWithValues: filteredCategories.compactMap { category -> (String, Int)? in
-            guard let order = category.order else { return nil }
-            return (category.name, order)
-        })
+        // Create a lookup for category order. `uniquingKeysWith` (not `uniqueKeysWithValues`)
+        // because two categories of the same `type` can briefly share a name during
+        // import / re-seeded onboarding — the strict initializer crashes the whole
+        // app instead of just degrading the sort.
+        let orderLookup = Dictionary(
+            filteredCategories.compactMap { category -> (String, Int)? in
+                guard let order = category.order else { return nil }
+                return (category.name, order)
+            },
+            uniquingKeysWith: { first, _ in first }
+        )
 
         // Sort by custom order if available, otherwise by name
         let result = displayData.sorted { category1, category2 in

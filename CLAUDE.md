@@ -42,6 +42,9 @@ xcodebuild test \
 xcodebuild build -scheme Tenra \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' 2>&1 | grep -E "error:" | head -30
 
+# If xcodebuild reports "accessing build database ... database is locked", another
+# xcodebuild instance is still finishing — wait ~5s and retry, no other action needed.
+
 # Profiling on real device (xctrace, requires unlocked iPhone)
 # Open Xcode → Window → Devices and Simulators to prime the connection.
 # Disable iPhone auto-lock during recording. Performance perf needs a real
@@ -97,6 +100,8 @@ Tenra/
 ├── Utils/               # Helper utilities and formatters
 └── CoreData/            # CoreData stack and entities
 ```
+
+**Note:** `Account`, `Transaction`, and several related structs (`DepositInfo`, `LoanInfo`, summaries) all live in `Tenra/Models/Transaction.swift` — don't grep for `Models/Account.swift`, it doesn't exist.
 
 ## Architecture at a Glance
 
@@ -213,6 +218,8 @@ These cause silent data corruption or crashes — internalize even without readi
 - Test ViewModels with mock repositories
 - Test CoreData operations with in-memory stores
 - ⚠️ Currency conversion tests must call `CurrencyRateStore.shared.clearAll()` in suite `init()` — see [domains/currency.md](docs/domains/currency.md)
+- ⚠️ `xcodebuild test -only-testing:...` does NOT skip compilation — one broken test file fails the whole target. When a test file's API has drifted, wrap it in `#if false` / `#endif` with a header comment (existing precedent: `TenraTests/Onboarding/OnboardingViewModelTests.swift`, `TenraTests/Services/Voice/VoiceInputParserTests.swift`).
+- Extract crash details from `.xcresult`: `xcrun xcresulttool get test-results tests --path <bundle.xcresult> --filter-by-test-id 'TenraTests/<Suite>/<test>'`
 
 ## Git Workflow
 

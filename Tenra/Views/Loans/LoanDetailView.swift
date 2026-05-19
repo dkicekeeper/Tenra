@@ -496,7 +496,8 @@ struct LoanDetailView: View {
             InfoRow(
                 icon: "banknote",
                 label: String(localized: "loan.originalAmount", defaultValue: "Original Amount"),
-                value: Formatting.formatCurrency(NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue, currency: account.currency)
+                amount: NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue,
+                currency: account.currency
             )
 
             if loanInfo.interestRateAnnual > 0 {
@@ -509,14 +510,16 @@ struct LoanDetailView: View {
                 InfoRow(
                     icon: "chart.bar.fill",
                     label: String(localized: "loan.totalInterestPaid", defaultValue: "Interest Paid"),
-                    value: Formatting.formatCurrency(NSDecimalNumber(decimal: loanInfo.totalInterestPaid).doubleValue, currency: account.currency)
+                    amount: NSDecimalNumber(decimal: loanInfo.totalInterestPaid).doubleValue,
+                    currency: account.currency
                 )
 
                 let totalInterest = cachedSchedule.reduce(Decimal(0)) { $0 + $1.interest }
                 InfoRow(
                     icon: "chart.line.uptrend.xyaxis",
                     label: String(localized: "loan.projectedTotalInterest", defaultValue: "Total Interest (projected)"),
-                    value: Formatting.formatCurrency(NSDecimalNumber(decimal: totalInterest).doubleValue, currency: account.currency)
+                    amount: NSDecimalNumber(decimal: totalInterest).doubleValue,
+                    currency: account.currency
                 )
             }
 
@@ -608,7 +611,7 @@ struct LoanDetailView: View {
             VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
                 FormattedAmountText(amount: NSDecimalNumber(decimal: entry.payment).doubleValue, currency: account.currency, fontSize: AppTypography.bodySmall)
                 if entry.interest > 0 {
-                    Text(String(format: String(localized: "loan.interestShort", defaultValue: "int: %@"), Formatting.formatCurrency(NSDecimalNumber(decimal: entry.interest).doubleValue, currency: account.currency)))
+                    Text(String(format: String(localized: "loan.interestShort", defaultValue: "int: %@"), Formatting.formatCurrencySmart(NSDecimalNumber(decimal: entry.interest).doubleValue, currency: account.currency)))
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColors.expense)
                 }

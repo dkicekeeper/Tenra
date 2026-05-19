@@ -185,8 +185,19 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                             .font(AppTypography.body)
                             .foregroundStyle(AppColors.textSecondary)
                         Spacer()
-                        Text(row.value)
-                            .font(AppTypography.bodyEmphasis)
+                        if let display = row.amountDisplay {
+                            FormattedAmountText(
+                                amount: display.amount,
+                                currency: display.currency,
+                                prefix: display.prefix,
+                                fontSize: AppTypography.bodyEmphasis,
+                                fontWeight: .semibold,
+                                color: AppColors.textPrimary
+                            )
+                        } else {
+                            Text(row.value)
+                                .font(AppTypography.bodyEmphasis)
+                        }
                     }
                 } trailing: {
                     row.trailing ?? AnyView(EmptyView())

@@ -226,12 +226,14 @@ struct AccountDetailView: View {
         rows.append(InfoRowConfig(
             icon: "arrow.down.circle",
             label: String(localized: "account.detail.totalIncome", defaultValue: "Total income"),
-            value: Formatting.formatCurrency(aggregates.totalIncome, currency: liveAccount.currency)
+            amount: aggregates.totalIncome,
+            currency: liveAccount.currency
         ))
         rows.append(InfoRowConfig(
             icon: "arrow.up.circle",
             label: String(localized: "account.detail.totalExpense", defaultValue: "Total expense"),
-            value: Formatting.formatCurrency(aggregates.totalExpense, currency: liveAccount.currency)
+            amount: aggregates.totalExpense,
+            currency: liveAccount.currency
         ))
         return rows
     }

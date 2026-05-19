@@ -38,13 +38,21 @@ struct LoanCard: View {
                 // Progress
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     HStack {
-                        Text(Formatting.formatCurrency(NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue, currency: loan.currency))
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textSecondary)
+                        FormattedAmountText(
+                            amount: NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue,
+                            currency: loan.currency,
+                            fontSize: AppTypography.body,
+                            fontWeight: .regular,
+                            color: AppColors.textSecondary
+                        )
                         Spacer()
-                        Text(Formatting.formatCurrency(NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue, currency: loan.currency))
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textSecondary)
+                        FormattedAmountText(
+                            amount: NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue,
+                            currency: loan.currency,
+                            fontSize: AppTypography.body,
+                            fontWeight: .regular,
+                            color: AppColors.textSecondary
+                        )
                     }
                     ProgressView(value: progress)
                         .tint(AppColors.income)

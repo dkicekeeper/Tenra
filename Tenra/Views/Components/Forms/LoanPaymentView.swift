@@ -84,7 +84,7 @@ struct LoanPaymentView: View {
     /// Subtitle shown under the hero: scheduled monthly payment as reference so
     /// the user can compare what the formula expects vs what they're entering.
     private var heroSubtitle: String {
-        let scheduled = Formatting.formatCurrency(
+        let scheduled = Formatting.formatCurrencySmart(
             NSDecimalNumber(decimal: loanInfo.monthlyPayment).doubleValue,
             currency: account.currency
         )
@@ -243,10 +243,8 @@ struct LoanPaymentView: View {
                 InfoRow(
                     icon: "percent",
                     label: String(localized: "loan.interestPortion", defaultValue: "Interest"),
-                    value: Formatting.formatCurrency(
-                        NSDecimalNumber(decimal: breakdown.interest).doubleValue,
-                        currency: account.currency
-                    )
+                    amount: NSDecimalNumber(decimal: breakdown.interest).doubleValue,
+                    currency: account.currency
                 )
                 .padding(.horizontal, AppSpacing.lg)
                 .padding(.vertical, AppSpacing.sm)
@@ -254,10 +252,8 @@ struct LoanPaymentView: View {
                 InfoRow(
                     icon: "arrow.down.to.line",
                     label: String(localized: "loan.principalPortion", defaultValue: "Principal"),
-                    value: Formatting.formatCurrency(
-                        NSDecimalNumber(decimal: breakdown.principal).doubleValue,
-                        currency: account.currency
-                    )
+                    amount: NSDecimalNumber(decimal: breakdown.principal).doubleValue,
+                    currency: account.currency
                 )
                 .padding(.horizontal, AppSpacing.lg)
                 .padding(.vertical, AppSpacing.sm)

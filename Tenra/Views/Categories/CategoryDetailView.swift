@@ -264,8 +264,8 @@ struct CategoryDetailView: View {
 
         // Budget (expense only, when set)
         if liveCategory.type == .expense, let budget = liveCategory.budgetAmount, budget > 0 {
-            let spent = Formatting.formatCurrency(aggregates.amountInPeriod, currency: baseCurrency)
-            let total = Formatting.formatCurrency(budget, currency: baseCurrency)
+            let spent = Formatting.formatCurrencySmart(aggregates.amountInPeriod, currency: baseCurrency)
+            let total = Formatting.formatCurrencySmart(budget, currency: baseCurrency)
             let pct = Int((min(max(aggregates.amountInPeriod / budget, 0), 1) * 100).rounded())
             rows.append(InfoRowConfig(
                 icon: "chart.pie",
@@ -278,7 +278,8 @@ struct CategoryDetailView: View {
         rows.append(InfoRowConfig(
             icon: "calendar",
             label: String(localized: "category.detail.avgMonthly", defaultValue: "Avg. per month"),
-            value: Formatting.formatCurrency(aggregates.avgMonthlyLast6, currency: baseCurrency)
+            amount: aggregates.avgMonthlyLast6,
+            currency: baseCurrency
         ))
 
         // Total amount, all time
@@ -288,7 +289,8 @@ struct CategoryDetailView: View {
         rows.append(InfoRowConfig(
             icon: "sum",
             label: totalLabel,
-            value: Formatting.formatCurrency(aggregates.amountAllTime, currency: baseCurrency)
+            amount: aggregates.amountAllTime,
+            currency: baseCurrency
         ))
 
         return rows

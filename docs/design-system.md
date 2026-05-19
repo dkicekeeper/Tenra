@@ -921,15 +921,73 @@ No data to show?
 
 ### Amount Formatting
 
-| Context | Function | Decimals |
-|---------|----------|----------|
-| Display (smart) | `Formatting.formatCurrencySmart(_:currency:)` | 0 or 2 |
-| Display (always .00) | `Formatting.formatCurrency(_:currency:)` | Always 2 |
-| Storage/validation | `AmountFormatter.format(_:)` / `.parse(_:)` | Always 2 |
-| Input component | `AmountInputFormatting.displayAmount(for:)` | 0-2 |
-| List/ForEach hot path | `AmountDisplayConfiguration.formatter` (cached) | Configured |
+#### Hard rule
+**A money value MUST never reach the user without a canonical formatter.** No exceptions for "temporary" code, debug screens, prototypes, or previews that get committed. If you are about to render a `Double`/`Decimal` that represents money, use one of the entries in the decision tree below — nothing else.
+
+#### Decision tree — what to use
+
+```
+Rendering a money amount?
+├── Standalone view (card, header, list row's trailing amount, chart label)?
+│   └── → FormattedAmountText(amount:currency:prefix:fontSize:fontWeight:color:)
+│
+├── Inside InfoRow / InfoRowConfig (label-value row in detail screens)?
+│   └── → InfoRow(... amount: X, currency: Y, prefix: "")
+│       → InfoRowConfig(... amount: X, currency: Y, prefix: "")
+│       (renders FormattedAmountText internally, with `value:` fallback for VoiceOver)
+│
+├── Need a plain String (HeroSection.subtitle, composed sentence like "Scheduled: %@",
+│   "X / Y (Z%)", accessibilityLabel)?
+│   └── → Formatting.formatCurrencySmart(amount, currency:)
+│
+├── Input component (user typing an amount)?
+│   └── → AmountInputView / AmountInput / AmountDigitDisplay / AnimatedAmountInput
+│       (these use AmountInputFormatting internally — do not bypass)
+│
+├── Compact chart axis label?
+│   └── → ChartAxisHelpers.formatCompact(amount)
+│
+├── Storage, CSV, search-match key, persistence?
+│   └── → AmountFormatter.format(_:) / .parse(_:)
+│
+└── Hot-path List/ForEach where you need a NumberFormatter object?
+    └── → AmountDisplayConfiguration.formatter (CACHED — never call .makeNumberFormatter())
+```
+
+#### Forbidden patterns (will be flagged in code review)
+
+| Pattern | Why forbidden | Fix |
+|---------|---------------|-----|
+| `Text("\(amount) \(currency)")` | No grouping separator, no symbol lookup, no smart decimals | `FormattedAmountText(amount:currency:)` |
+| `Text(String(format: "%.2f", amount))` | No currency, locale-deaf | `FormattedAmountText` or `formatCurrencySmart` |
+| `Text(String(format: "%@%@", "+", Formatting.formatCurrency(...)))` | Manual sign composition | `FormattedAmountText(... prefix: "+")` or `formatCurrencySmart` + read sign from value |
+| `NumberFormatter()` allocated inside `body`/`List`/`ForEach` | Per-frame allocation in hot path | `AmountDisplayConfiguration.formatter` |
+| `Formatting.formatCurrency(...)` **for display** | Always shows `.00` ("14 924 515.00 ₸") — looks broken for round numbers | `formatCurrencySmart` (or `FormattedAmountText`). `formatCurrency` is reserved for accessibilityLabel and storage |
+| `Decimal` / `NSDecimalNumber` rendered via interpolation | Same — no symbol, no grouping | Convert with `NSDecimalNumber(decimal:).doubleValue` and pass to a formatter |
+
+#### Reference table
+
+| Context | Function / Component | Decimals |
+|---------|----------------------|----------|
+| Standalone view display | **`FormattedAmountText`** | Smart (hides `.00`, dims `.XX`) |
+| InfoRow / InfoRowConfig | **`init(... amount: currency:)`** | Smart (delegates to `FormattedAmountText`) |
+| Composed display string | **`Formatting.formatCurrencySmart(_:currency:)`** | Smart (0 or 2) |
+| Accessibility / VoiceOver / CSV | `Formatting.formatCurrency(_:currency:)` | Always 2 (legacy compat — DO NOT use for display) |
+| Storage / parse | `AmountFormatter.format(_:)` / `.parse(_:)` | Always 2 |
+| User typing | `AmountInputFormatting.displayAmount(for:)` | 0–2 |
+| Chart axis (compact) | `ChartAxisHelpers.formatCompact(_:)` | Compact ("12K", "1.2M") |
+| `NumberFormatter` instance in hot path | `AmountDisplayConfiguration.formatter` (cached) | Configured |
 
 **Never call `AmountDisplayConfiguration.makeNumberFormatter()` in List/ForEach** — use `.formatter` (cached).
+
+#### Sign and prefix
+
+For signed deltas ("+1 200 ₸" / "−500 ₸"):
+- **Negative is automatic** — `NumberFormatter` and `FormattedAmountText` already render `"-1 200 ₸"` for negative `Double`.
+- **Positive needs explicit `prefix: "+"`** — pass `prefix: diff > 0 ? "+" : ""` to `FormattedAmountText` or `InfoRow(... amount:currency:prefix:)`.
+- DO NOT compose with `String(format: "%@%@", "+", Formatting.formatCurrency(...))`.
+
+For income/expense `+`/`−` styling in transaction lists, use `TransactionDisplayHelper.amountPrefix(for:)` + `TransactionDisplayHelper.amountColor(for:)` and pass results to `FormattedAmountText`.
 
 ### Currency Symbols
 

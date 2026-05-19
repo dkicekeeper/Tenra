@@ -67,7 +67,7 @@ struct LoanEarlyRepaymentView: View {
     /// Subtitle shown under the hero: remaining principal so the user knows
     /// the maximum allowable repayment without scrolling away.
     private var heroSubtitle: String {
-        let remaining = Formatting.formatCurrency(
+        let remaining = Formatting.formatCurrencySmart(
             NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue,
             currency: account.currency
         )
@@ -281,10 +281,8 @@ struct LoanEarlyRepaymentView: View {
             InfoRow(
                 icon: "arrow.down.circle",
                 label: String(localized: "loan.paymentReduction", defaultValue: "Payment reduced by"),
-                value: Formatting.formatCurrency(
-                    NSDecimalNumber(decimal: loanInfo.monthlyPayment - preview.monthlyPayment).doubleValue,
-                    currency: account.currency
-                )
+                amount: NSDecimalNumber(decimal: loanInfo.monthlyPayment - preview.monthlyPayment).doubleValue,
+                currency: account.currency
             )
             .padding(.horizontal, AppSpacing.lg)
             .padding(.vertical, AppSpacing.sm)
@@ -292,10 +290,8 @@ struct LoanEarlyRepaymentView: View {
             InfoRow(
                 icon: "banknote",
                 label: String(localized: "loan.newMonthlyPayment", defaultValue: "New monthly payment"),
-                value: Formatting.formatCurrency(
-                    NSDecimalNumber(decimal: preview.monthlyPayment).doubleValue,
-                    currency: account.currency
-                )
+                amount: NSDecimalNumber(decimal: preview.monthlyPayment).doubleValue,
+                currency: account.currency
             )
             .padding(.horizontal, AppSpacing.lg)
             .padding(.vertical, AppSpacing.sm)

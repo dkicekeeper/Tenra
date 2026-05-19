@@ -14,11 +14,28 @@ struct InfoRow: View {
     let icon: String?
     let label: String
     let value: String
+    let amountDisplay: InfoRowAmount?
 
     init(icon: String? = nil, label: String, value: String) {
         self.icon = icon
         self.label = label
         self.value = value
+        self.amountDisplay = nil
+    }
+
+    /// Money variant: trailing renders via FormattedAmountText (smart decimal hiding +
+    /// dimmed `.XX`). `value` is computed via `formatCurrencySmart` as accessibility fallback.
+    init(
+        icon: String? = nil,
+        label: String,
+        amount: Double,
+        currency: String,
+        prefix: String = ""
+    ) {
+        self.icon = icon
+        self.label = label
+        self.value = prefix + Formatting.formatCurrencySmart(amount, currency: currency)
+        self.amountDisplay = InfoRowAmount(amount: amount, currency: currency, prefix: prefix)
     }
 
     var body: some View {
@@ -31,8 +48,19 @@ struct InfoRow: View {
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textSecondary)
                 Spacer()
-                Text(value)
-                    .font(AppTypography.bodyEmphasis)
+                if let display = amountDisplay {
+                    FormattedAmountText(
+                        amount: display.amount,
+                        currency: display.currency,
+                        prefix: display.prefix,
+                        fontSize: AppTypography.bodyEmphasis,
+                        fontWeight: .semibold,
+                        color: AppColors.textPrimary
+                    )
+                } else {
+                    Text(value)
+                        .font(AppTypography.bodyEmphasis)
+                }
             }
         } trailing: {
             EmptyView()

@@ -23,6 +23,15 @@ struct ActionConfig: Identifiable {
     }
 }
 
+/// Money payload for InfoRowConfig. When set, the row renders via FormattedAmountText
+/// so the trailing zero decimals collapse ("300 $" vs "300.00 $") and non-zero decimals
+/// render at lighter opacity. `value` is still populated as a fallback (e.g. for VoiceOver).
+struct InfoRowAmount {
+    let amount: Double
+    let currency: String
+    let prefix: String
+}
+
 /// Declarative info row (wraps UniversalRow(.info) at render time).
 /// Use `icon` for SF Symbol; brand/custom icons pass through `iconConfig` escape hatch.
 struct InfoRowConfig: Identifiable {
@@ -32,6 +41,7 @@ struct InfoRowConfig: Identifiable {
     let value: String
     let iconColor: Color
     let trailing: AnyView?
+    let amountDisplay: InfoRowAmount?
 
     init(
         icon: String? = nil,
@@ -45,6 +55,26 @@ struct InfoRowConfig: Identifiable {
         self.value = value
         self.iconColor = iconColor
         self.trailing = trailing
+        self.amountDisplay = nil
+    }
+
+    /// Money variant: trailing renders via FormattedAmountText (smart decimal hiding +
+    /// dimmed `.XX`). `value` is computed via `formatCurrencySmart` as accessibility fallback.
+    init(
+        icon: String? = nil,
+        label: String,
+        amount: Double,
+        currency: String,
+        prefix: String = "",
+        iconColor: Color = AppColors.accent,
+        trailing: AnyView? = nil
+    ) {
+        self.icon = icon
+        self.label = label
+        self.value = prefix + Formatting.formatCurrencySmart(amount, currency: currency)
+        self.iconColor = iconColor
+        self.trailing = trailing
+        self.amountDisplay = InfoRowAmount(amount: amount, currency: currency, prefix: prefix)
     }
 }
 

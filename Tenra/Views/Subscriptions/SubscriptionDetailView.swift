@@ -275,11 +275,11 @@ struct SubscriptionDetailView: View {
         let subCurrency = liveSubscription.currency
         let baseCurrency = transactionsViewModel.appSettings.baseCurrency
         let subTotal = cachedSpentAllTimeInSubCurrency
-        let primary = Formatting.formatCurrency(subTotal, currency: subCurrency)
+        let primary = Formatting.formatCurrencySmart(subTotal, currency: subCurrency)
 
         if subCurrency != baseCurrency,
            let baseTotal = CurrencyConverter.convertSync(amount: subTotal, from: subCurrency, to: baseCurrency) {
-            return primary + " · " + Formatting.formatCurrency(baseTotal, currency: baseCurrency)
+            return primary + " · " + Formatting.formatCurrencySmart(baseTotal, currency: baseCurrency)
         }
         return primary
     }

@@ -932,9 +932,17 @@ Rendering a money amount?
 │   └── → FormattedAmountText(amount:currency:prefix:fontSize:fontWeight:color:)
 │
 ├── Inside InfoRow / InfoRowConfig (label-value row in detail screens)?
-│   └── → InfoRow(... amount: X, currency: Y, prefix: "")
-│       → InfoRowConfig(... amount: X, currency: Y, prefix: "")
-│       (renders FormattedAmountText internally, with `value:` fallback for VoiceOver)
+│   ├── Single amount → InfoRow(... amount: X, currency: Y, prefix: "")
+│   │                 → InfoRowConfig(... amount: X, currency: Y, prefix: "")
+│   │   (renders FormattedAmountText internally, with `value:` fallback for VoiceOver)
+│   │
+│   └── Composite value ("X / Y (Z%)", "spent / budget", "+A · −B")?
+│       → InfoRowConfig(... value: "<accessibility-fallback>", valueContent: AnyView(
+│             HStack { FormattedAmountText(...); Text("/"); FormattedAmountText(...); ... }
+│         ))
+│       NEVER inline composite money rows as plain `Text("\(spent) / \(total)")` — the
+│       individual amounts lose smart-decimal collapse and dimmed `.XX` styling, looking
+│       inconsistent with adjacent rows.
 │
 ├── Need a plain String (HeroSection.subtitle, composed sentence like "Scheduled: %@",
 │   "X / Y (Z%)", accessibilityLabel)?

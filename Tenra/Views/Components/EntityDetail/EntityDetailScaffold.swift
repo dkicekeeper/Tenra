@@ -194,6 +194,8 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                                 fontWeight: .semibold,
                                 color: AppColors.textPrimary
                             )
+                        } else if let custom = row.valueContent {
+                            custom
                         } else {
                             Text(row.value)
                                 .font(AppTypography.bodyEmphasis)

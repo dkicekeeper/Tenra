@@ -90,18 +90,24 @@ private struct CategoryGridItem: View {
                 transitionNamespace: sourceNamespace
             )
 
-            if let totalText = category.formattedTotal(currency: baseCurrency) {
-                Text(totalText)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-            }
+            FormattedAmountText(
+                amount: category.total,
+                currency: baseCurrency,
+                fontSize: AppTypography.bodySmall,
+                fontWeight: .regular,
+                color: .primary
+            )
+            .lineLimit(1)
 
-            if let budgetText = category.formattedBudget(currency: baseCurrency) {
-                Text(budgetText)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+            if let budget = category.budgetAmount {
+                FormattedAmountText(
+                    amount: budget,
+                    currency: baseCurrency,
+                    fontSize: AppTypography.bodySmall,
+                    fontWeight: .regular,
+                    color: .secondary
+                )
+                .lineLimit(1)
             }
             Spacer()
         }

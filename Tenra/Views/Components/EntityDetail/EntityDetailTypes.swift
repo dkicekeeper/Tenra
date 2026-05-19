@@ -42,13 +42,19 @@ struct InfoRowConfig: Identifiable {
     let iconColor: Color
     let trailing: AnyView?
     let amountDisplay: InfoRowAmount?
+    /// Custom trailing content that replaces the default value `Text`. Use when the row
+    /// shows a composite value (e.g. "X / Y (Z%)") where individual amounts must each go
+    /// through `FormattedAmountText` to keep the dimmed-decimal styling consistent.
+    /// `value` is still populated for VoiceOver fallback.
+    let valueContent: AnyView?
 
     init(
         icon: String? = nil,
         label: String,
         value: String,
         iconColor: Color = AppColors.accent,
-        trailing: AnyView? = nil
+        trailing: AnyView? = nil,
+        valueContent: AnyView? = nil
     ) {
         self.icon = icon
         self.label = label
@@ -56,6 +62,7 @@ struct InfoRowConfig: Identifiable {
         self.iconColor = iconColor
         self.trailing = trailing
         self.amountDisplay = nil
+        self.valueContent = valueContent
     }
 
     /// Money variant: trailing renders via FormattedAmountText (smart decimal hiding +
@@ -75,6 +82,7 @@ struct InfoRowConfig: Identifiable {
         self.iconColor = iconColor
         self.trailing = trailing
         self.amountDisplay = InfoRowAmount(amount: amount, currency: currency, prefix: prefix)
+        self.valueContent = nil
     }
 }
 

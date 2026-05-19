@@ -28,18 +28,6 @@ struct CategoryDisplayData: Identifiable, Hashable {
     /// Whether category has a budget set
     var hasBudget: Bool { budgetAmount != nil }
 
-    /// Formatted total for display
-    /// Always returns a value, even if total is 0
-    func formattedTotal(currency: String) -> String? {
-        return Formatting.formatCurrencySmart(total, currency: currency)
-    }
-
-    /// Formatted budget for display
-    func formattedBudget(currency: String) -> String? {
-        guard let budget = budgetAmount else { return nil }
-        return Formatting.formatCurrencySmart(budget, currency: currency)
-    }
-
     // MARK: - Hashable
 
     func hash(into hasher: inout Hasher) {

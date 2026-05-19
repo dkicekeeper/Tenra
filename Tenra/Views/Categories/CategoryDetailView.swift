@@ -267,10 +267,35 @@ struct CategoryDetailView: View {
             let spent = Formatting.formatCurrencySmart(aggregates.amountInPeriod, currency: baseCurrency)
             let total = Formatting.formatCurrencySmart(budget, currency: baseCurrency)
             let pct = Int((min(max(aggregates.amountInPeriod / budget, 0), 1) * 100).rounded())
+            let spentAmount = aggregates.amountInPeriod
             rows.append(InfoRowConfig(
                 icon: "chart.pie",
                 label: String(localized: "category.detail.budget", defaultValue: "Budget"),
-                value: "\(spent) / \(total) (\(pct)%)"
+                value: "\(spent) / \(total) (\(pct)%)",
+                valueContent: AnyView(
+                    HStack(spacing: AppSpacing.xxs) {
+                        FormattedAmountText(
+                            amount: spentAmount,
+                            currency: baseCurrency,
+                            fontSize: AppTypography.bodyEmphasis,
+                            fontWeight: .semibold,
+                            color: AppColors.textPrimary
+                        )
+                        Text("/")
+                            .font(AppTypography.bodyEmphasis)
+                            .foregroundStyle(AppColors.textTertiary)
+                        FormattedAmountText(
+                            amount: budget,
+                            currency: baseCurrency,
+                            fontSize: AppTypography.bodyEmphasis,
+                            fontWeight: .semibold,
+                            color: AppColors.textPrimary
+                        )
+                        Text("(\(pct)%)")
+                            .font(AppTypography.bodyEmphasis)
+                            .foregroundStyle(AppColors.textSecondary)
+                    }
+                )
             ))
         }
 

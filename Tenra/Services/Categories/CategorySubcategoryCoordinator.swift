@@ -185,14 +185,17 @@ final class CategorySubcategoryCoordinator: CategorySubcategoryCoordinatorProtoc
 
     func getSubcategoriesForCategory(_ categoryId: String) -> [Subcategory] {
         guard let delegate = delegate else { return [] }
-
+        // Fast path — pre-sorted ids from TransactionStore index.
+        if let store = delegate.transactionStore,
+           let orderedIds = store.subcategoryIdsByCategoryId[categoryId] {
+            return orderedIds.compactMap { store.subcategoryById[$0] }
+        }
+        // Cold path (no store yet — happens only before setupTransactionStoreObserver runs).
         let links = delegate.categorySubcategoryLinks
             .filter { $0.categoryId == categoryId }
             .sorted { $0.sortOrder < $1.sortOrder }
-
         let orderedIds = links.map { $0.subcategoryId }
         let subcategoryMap = Dictionary(uniqueKeysWithValues: delegate.subcategories.map { ($0.id, $0) })
-
         return orderedIds.compactMap { subcategoryMap[$0] }
     }
 
@@ -218,11 +221,15 @@ final class CategorySubcategoryCoordinator: CategorySubcategoryCoordinatorProtoc
 
     func getSubcategoriesForTransaction(_ transactionId: String) -> [Subcategory] {
         guard let delegate = delegate else { return [] }
-
+        // Fast path — pre-built id list from the maintained index. O(M) where M ≤ ~5.
+        if let store = delegate.transactionStore,
+           let ids = store.subcategoryIdsByTransactionId[transactionId] {
+            return ids.compactMap { store.subcategoryById[$0] }
+        }
+        // Cold path.
         let linkedSubcategoryIds = delegate.transactionSubcategoryLinks
             .filter { $0.transactionId == transactionId }
             .map { $0.subcategoryId }
-
         return delegate.subcategories.filter { linkedSubcategoryIds.contains($0.id) }
     }
 

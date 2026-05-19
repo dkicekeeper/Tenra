@@ -34,12 +34,20 @@ extension InsightsService {
         var overBudgetCount = 0
 
         for category in categoriesWithBudget {
-            guard let progress = budgetService.budgetProgress(for: category, transactions: transactions) else {
+            // Insights runs nonisolated on a background actor; it cannot read the
+            // MainActor-isolated aggregate indexes, so it uses the legacy array-scan
+            // path against the snapshot we were handed. This intentionally does
+            // O(N_tx) work — Insights is async/background and not on a hot path.
+            guard let progress = CategoryBudgetService.budgetProgress(
+                for: category,
+                transactions: transactions,
+                baseCurrency: baseCurrency
+            ) else {
                 Self.logger.debug("   💼 \(category.name, privacy: .public): budgetProgress returned nil — SKIPPED")
                 continue
             }
 
-            let periodStart = budgetService.budgetPeriodStart(for: category)
+            let periodStart = CategoryBudgetService.legacyBudgetPeriodStart(for: category)
             let daysElapsed = max(1, calendar.dateComponents([.day], from: periodStart, to: now).day ?? 1)
 
             let totalDays: Int

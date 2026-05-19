@@ -121,8 +121,17 @@ final class TransactionStore {
 
     /// Force-bump the version to trigger re-render of views that observe it.
     /// Called from `AppCoordinator` after currency prewarm completes.
+    ///
+    /// If any aggregate bucket was filled while the FX-rate cache was cold
+    /// (`aggregatesAreFXStale == true`), rebuild the category indexes once now
+    /// that rates are available. Rebuild stays O(N_tx) but only runs on the
+    /// first successful prewarm of each session.
     func bumpCurrencyRatesVersion() {
         currencyRatesVersion &+= 1
+        if aggregatesAreFXStale {
+            rebuildCategoryIndexes()
+            categoriesMutationVersion &+= 1
+        }
     }
 
     /// All accounts - managed alongside transactions for balance updates
@@ -141,6 +150,61 @@ final class TransactionStore {
 
     /// Links between transactions and subcategories
     var transactionSubcategoryLinks: [TransactionSubcategoryLink] = []
+
+    // MARK: - Category Indexes (O(1) lookups)
+    // Mirror the `transactionsByAccount` pattern: maintained incrementally inside
+    // `updateState(_:)` and the CategoryCRUD funnel so every View can ask
+    // "give me X for category Y" in constant time.
+
+    /// O(1) category-by-id lookup — eliminates `customCategories.first(where:)` linear scans.
+    /// Sync rule: every mutation of `categories` MUST keep `categoryById` in sync.
+    @ObservationIgnored internal(set) var categoryById: [String: CustomCategory] = [:]
+
+    /// Case-folded name → category id. Lets style/icon/color resolvers find a custom
+    /// category by name in O(1) without scanning the array with lowercased() per call.
+    @ObservationIgnored internal(set) var categoryIdByName: [String: String] = [:]
+
+    /// Per-category-name transaction index — mirrors `transactionsByAccount`.
+    /// Lets CategoryDetailView skip the O(N_tx) filter when fetching its history,
+    /// and lets aggregate rebuilds run as O(M) where M is the category's own size.
+    /// Includes both expense and income transactions; consumers filter by type if needed.
+    @ObservationIgnored internal(set) var transactionsByCategoryName: [String: [Transaction]] = [:]
+
+    /// Pre-aggregated category spending, keyed by `CategoryAggregate.makeId(...)`.
+    /// 4 granularities per category: daily (last ~90 days) / monthly / yearly / all-time.
+    /// Base currency only — conversion happens at apply-time, never at read-time.
+    /// See CLAUDE.md ⚠️ #6 — DO NOT use `Transaction.convertedAmount` as a base-currency proxy.
+    @ObservationIgnored internal(set) var categoryAggregatesByKey: [String: CategoryAggregate] = [:]
+
+    /// True when at least one tx was added to aggregates while the FX-rate cache was cold.
+    /// Cleared after `reconcileCategoryAggregatesForFX()` runs on the next `bumpCurrencyRatesVersion()`.
+    @ObservationIgnored internal var aggregatesAreFXStale: Bool = false
+
+    /// Bumps on every `categories` mutation (add/update/delete/rename/reorder). Used by Views
+    /// as a cheap scalar Observable cache key — subscribing to this instead of the entire
+    /// `categories` array prevents body re-eval on unrelated transaction mutations.
+    internal(set) var categoriesMutationVersion: Int = 0
+
+    // MARK: - Subcategory Indexes (O(1) lookups)
+
+    /// O(1) subcategory-by-id lookup.
+    @ObservationIgnored internal(set) var subcategoryById: [String: Subcategory] = [:]
+
+    /// Ordered subcategory ids per category, sorted by `CategorySubcategoryLink.sortOrder`.
+    @ObservationIgnored internal(set) var subcategoryIdsByCategoryId: [String: [String]] = [:]
+
+    /// Subcategory ids linked to a given transaction.
+    @ObservationIgnored internal(set) var subcategoryIdsByTransactionId: [String: [String]] = [:]
+
+    /// O(1) usage count per subcategory — pre-maintained on every tx-subcategory link mutation.
+    @ObservationIgnored internal(set) var subcategoryUsageCountById: [String: Int] = [:]
+
+    /// O(1) last-used date per subcategory — pre-maintained on tx mutations.
+    /// `Date.distantPast` if no linked transactions are known yet.
+    @ObservationIgnored internal(set) var subcategoryLastUsedById: [String: Date] = [:]
+
+    /// Bumps on every subcategory or link mutation. Use as a `.task(id:)` trigger.
+    internal(set) var subcategoriesMutationVersion: Int = 0
 
     // MARK: - Dependencies
 
@@ -173,6 +237,11 @@ final class TransactionStore {
 
     // Debounce task for coalescing rapid mutations into single sync
     private var syncDebounceTask: Task<Void, Never>?
+
+    // Debounce task for category-aggregate persistence. Coalesces a burst of
+    // tx mutations (e.g. CSV import, recurring generation) into one CoreData
+    // save instead of one per delta.
+    @ObservationIgnored internal var aggregatePersistDebounceTask: Task<Void, Never>?
 
     // Lifecycle observer token for cleanup in deinit
     @ObservationIgnored private var lifecycleObserver: NSObjectProtocol?
@@ -256,9 +325,12 @@ final class TransactionStore {
         async let txLinks    = Task.detached(priority: .userInitiated) { repo.loadTransactionSubcategoryLinks() }.value
         async let series     = Task.detached(priority: .userInitiated) { repo.loadRecurringSeries() }.value
         async let occurrences = Task.detached(priority: .userInitiated) { repo.loadRecurringOccurrences() }.value
+        // Cold-load pre-aggregated CategoryAggregateEntity rows. Empty on a
+        // fresh install / schema migration — handled below by a one-shot rebuild.
+        async let aggregates = Task.detached(priority: .userInitiated) { repo.loadAggregates(year: nil, month: nil, limit: nil) }.value
 
-        let (loadedTxs, loadedAccs, loadedCats, loadedSubs, loadedCatLinks, loadedTxLinks, loadedSeries, loadedOcc) =
-            await (txs, accs, cats, subs, catLinks, txLinks, series, occurrences)
+        let (loadedTxs, loadedAccs, loadedCats, loadedSubs, loadedCatLinks, loadedTxLinks, loadedSeries, loadedOcc, loadedAggregates) =
+            await (txs, accs, cats, subs, catLinks, txLinks, series, occurrences, aggregates)
 
         // Back on @MainActor — single assignment cycle triggers one @Observable update.
         accounts  = AccountOrderManager.shared.applyOrders(to: loadedAccs)
@@ -273,6 +345,25 @@ final class TransactionStore {
         categorySubcategoryLinks = loadedCatLinks
         transactionSubcategoryLinks = loadedTxLinks
         recurringStore.load(series: loadedSeries, occurrences: loadedOcc)
+
+        // Cold-rebuild O(1) lookup tables. Subcategory link tables must populate
+        // *before* aggregate maintenance walks the tx array, because subcategory
+        // counters read `subcategoryIdsByTransactionId`.
+        rebuildCategoryLookups()
+        rebuildAllSubcategoryIndexes()
+
+        // Aggregates: warm-start from CoreData if we have a saved snapshot, else
+        // do a one-shot rebuild from the 19k tx array and immediately persist.
+        // Warm-start is O(N_aggregates) typical ≤3000 → micro-cost vs. the
+        // 19k-tx rebuild on every launch.
+        if !loadedAggregates.isEmpty {
+            seedCategoryAggregates(from: loadedAggregates)
+        } else {
+            rebuildCategoryIndexes()
+            scheduleAggregatePersist()  // first launch — write the rebuilt snapshot
+        }
+        categoriesMutationVersion &+= 1
+        subcategoriesMutationVersion &+= 1
 
         // Note: baseCurrency will be set via updateBaseCurrency() from AppCoordinator
 
@@ -296,12 +387,23 @@ final class TransactionStore {
         accounts = AccountOrderManager.shared.applyOrders(to: accs)
         rebuildAccountById()
         categories = CategoryOrderManager.shared.applyOrders(to: cats)
+        rebuildCategoryLookups()
+        categoriesMutationVersion &+= 1
     }
 
     /// Update base currency (for currency conversions)
     func updateBaseCurrency(_ currency: String) {
+        let changed = baseCurrency != currency
         baseCurrency = currency
         cache.invalidateAll() // Currency change affects all cached calculations
+
+        if changed {
+            // Aggregates are stored in `baseCurrency`. The old totals are now in
+            // the wrong unit, so rebuild from scratch — O(N_tx) but only happens
+            // when the user explicitly flips the base currency, not on hot paths.
+            rebuildCategoryIndexes()
+            categoriesMutationVersion &+= 1
+        }
 
         // Currency change requires full balance recalculation in BalanceCoordinator
         Task {
@@ -457,6 +559,11 @@ final class TransactionStore {
         // Setting this earlier would fire ContentView observers while CoreData writes are still in progress.
         isImporting = false
 
+        // Aggregate index was maintained in-memory throughout the import via
+        // `categoryIndexAdd`; persist the final snapshot now so the next launch
+        // warm-starts from CoreData instead of doing the O(N_tx) rebuild.
+        await flushAggregatePersist()
+
         logger.debug("finishImport DONE")
     }
 
@@ -587,6 +694,8 @@ final class TransactionStore {
             transactionIdSet.insert(tx.id)
             transactionById[tx.id] = tx
             indexAdd(tx)
+            categoryIndexAdd(tx)
+            subcategoryIndexAdd(tx)
 
         case .updated(let old, let new):
             if let index = transactions.firstIndex(where: { $0.id == old.id }) {
@@ -595,6 +704,8 @@ final class TransactionStore {
             // IDs don't change on update
             transactionById[new.id] = new
             indexUpdate(old: old, new: new)
+            categoryIndexUpdate(old: old, new: new)
+            subcategoryIndexUpdate(old: old, new: new)
 
         case .deleted(let tx):
             // O(1) removal via index lookup; replaces O(N) `removeAll { $0.id == tx.id }`.
@@ -605,6 +716,8 @@ final class TransactionStore {
             transactionIdSet.remove(tx.id)
             transactionById.removeValue(forKey: tx.id)
             indexRemove(tx)
+            categoryIndexRemove(tx)
+            subcategoryIndexRemove(tx)
 
         case .bulkAdded(let txs):
             transactions.append(contentsOf: txs)
@@ -613,6 +726,8 @@ final class TransactionStore {
             for tx in txs {
                 transactionById[tx.id] = tx
                 indexAdd(tx)
+                categoryIndexAdd(tx)
+                subcategoryIndexAdd(tx)
             }
 
         // MARK: - Recurring Series Events (delegated to RecurringStore)

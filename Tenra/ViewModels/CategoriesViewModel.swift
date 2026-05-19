@@ -47,7 +47,9 @@ class CategoriesViewModel {
     @ObservationIgnored private let budgetCoordinator: CategoryBudgetCoordinatorProtocol
 
     /// Budget service for category budget management
-    @ObservationIgnored private let budgetService: CategoryBudgetService
+    /// Mutable so we can rebind once `transactionStore` is set during setup.
+    /// Reads only — view-facing API stays through `budgetProgress(for:)`.
+    @ObservationIgnored private var budgetService: CategoryBudgetService
 
     // MARK: - Initialization
 
@@ -68,10 +70,11 @@ class CategoriesViewModel {
             currencyService: currencyService,
             appSettings: appSettings
         )
-        self.budgetService = CategoryBudgetService(
-            currencyService: currencyService,
-            appSettings: appSettings
-        )
+        // Budget service is store-backed: it reads pre-aggregated totals from
+        // TransactionStore.categoryAggregatesByKey for O(1) lookups. The store
+        // reference is wired in `setupTransactionStoreObserver()` (called by
+        // AppCoordinator after the store is attached).
+        self.budgetService = CategoryBudgetService(store: nil)
 
         self.categoryRules = repository.loadCategoryRules()
         self.subcategories = repository.loadSubcategories()
@@ -97,6 +100,9 @@ class CategoriesViewModel {
         self.subcategories = transactionStore.subcategories
         self.categorySubcategoryLinks = transactionStore.categorySubcategoryLinks
         self.transactionSubcategoryLinks = transactionStore.transactionSubcategoryLinks
+        // Rebind budget service to the live store so reads go through
+        // categoryAggregatesByKey (O(1)) instead of the legacy O(N_tx) path.
+        self.budgetService = CategoryBudgetService(store: transactionStore)
     }
 
     /// Sync subcategory data from TransactionStore.
@@ -258,23 +264,34 @@ class CategoriesViewModel {
 
     // MARK: - Subcategory Statistics
 
+    /// O(1) — counter maintained by TransactionStore on every tx/link mutation.
+    /// Falls back to a linear scan only if the store isn't attached yet (e.g. previews).
     func subcategoryUsageCount(for subcategoryId: String) -> Int {
-        transactionSubcategoryLinks.filter { $0.subcategoryId == subcategoryId }.count
+        if let count = transactionStore?.subcategoryUsageCountById[subcategoryId] {
+            return count
+        }
+        return transactionSubcategoryLinks.filter { $0.subcategoryId == subcategoryId }.count
     }
 
+    /// O(1) — last-used date maintained alongside the usage counter.
+    /// `Date.distantPast` is the canonical "never used" marker; we normalise that to nil
+    /// so existing UI predicates (`if let lastUsed = ...`) continue to work.
     func subcategoryLastUsedDate(for subcategoryId: String) -> Date? {
+        if let store = transactionStore {
+            let d = store.subcategoryLastUsedById[subcategoryId]
+            return (d == nil || d == .distantPast) ? nil : d
+        }
+        // Cold-path fallback — only hit before the store is attached.
         let linkedTransactionIds = Set(
             transactionSubcategoryLinks
                 .filter { $0.subcategoryId == subcategoryId }
                 .map { $0.transactionId }
         )
         guard !linkedTransactionIds.isEmpty else { return nil }
-
         let latestDateString = transactionStore?.transactions
             .filter { linkedTransactionIds.contains($0.id) }
             .map { $0.date }
             .max()
-
         guard let dateString = latestDateString else { return nil }
         return DateFormatters.dateFormatter.date(from: dateString)
     }
@@ -315,8 +332,11 @@ class CategoriesViewModel {
         updateCategory(category)
     }
 
-    func budgetProgress(for category: CustomCategory, transactions: [Transaction]) -> BudgetProgress? {
-        return budgetService.budgetProgress(for: category, transactions: transactions)
+    /// O(≤31) read from `TransactionStore.categoryAggregatesByKey`.
+    /// `transactions` parameter is ignored — kept on the signature so existing
+    /// call-sites compile; will be removed in a follow-up cleanup pass.
+    func budgetProgress(for category: CustomCategory, transactions: [Transaction] = []) -> BudgetProgress? {
+        return budgetService.budgetProgress(for: category)
     }
 
 }

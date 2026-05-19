@@ -127,7 +127,17 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol, @uncheck
 
         }
     }
-    
+
+    // MARK: - Category Aggregates
+    //
+    // UserDefaults isn't used as the aggregate snapshot store — `TransactionStore`
+    // rebuilds the in-memory index from the tx array when this path is hit
+    // (preview/test contexts). Return empty / no-op so the protocol is satisfied
+    // without bloating UserDefaults with 3000+ rows of derived data.
+
+    func loadAggregates(year: Int16?, month: Int16?, limit: Int?) -> [CategoryAggregate] { [] }
+    func saveAggregates(_ aggregates: [CategoryAggregate]) {}
+
     // MARK: - Category Rules
     
     func loadCategoryRules() -> [CategoryRule] {

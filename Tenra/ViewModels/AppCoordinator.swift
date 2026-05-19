@@ -194,11 +194,11 @@ class AppCoordinator {
         let insightsFilterService = TransactionFilterService(dateFormatter: DateFormatters.dateFormatter)
         let insightsQueryService = TransactionQueryService()
 
-        // Budget cache removed — direct O(N) scan on all-time transactions is fast enough.
-        let insightsBudgetService = CategoryBudgetService(
-            currencyService: transactionsViewModel.currencyService,
-            appSettings: transactionsViewModel.appSettings
-        )
+        // Insights uses CategoryBudgetService only as a namespace for static
+        // array-scan helpers (legacy path). It runs nonisolated on background
+        // and cannot read the MainActor-isolated aggregate indexes; the store
+        // reference is therefore unused here.
+        let insightsBudgetService = CategoryBudgetService(store: nil)
         let insightsService = InsightsService(
             transactionStore: self.transactionStore,
             filterService: insightsFilterService,

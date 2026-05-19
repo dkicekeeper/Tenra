@@ -36,43 +36,45 @@ struct CategoryDetailView: View {
     @Environment(TimeFilterManager.self) private var timeFilterManager
 
     /// Live category lookup — reflects edits (e.g. budget changes) without re-navigation.
+    /// O(1) via `categoryById`; falls back to the navigation-time snapshot if the
+    /// category was deleted while detail is on screen.
     private var liveCategory: CustomCategory {
-        categoriesViewModel.customCategories.first(where: { $0.id == category.id }) ?? category
+        transactionStore.categoryById[category.id] ?? category
     }
 
-    /// Cheap O(N) single-pass counter; feeds `.task(id:)` so the expensive refresh runs
-    /// only when relevant transactions change or when the period filter changes.
-    /// Also incorporates `currencyRatesVersion` so KZT-pivot totals recompute when
-    /// `CurrencyConverter.prewarm()` lands fresh rates after launch.
+    /// Combined equatable trigger — changes when transactions mutate, when the
+    /// global period filter changes, when the budget amount changes, or when the
+    /// FX-rate cache is updated.
+    ///
+    /// Reads scalar `mutationVersion`/`categoriesMutationVersion`/`currencyRatesVersion`
+    /// counters instead of subscribing to the entire 19k transactions array —
+    /// the body re-evals only when something actually relevant changed.
     private var refreshTrigger: RefreshKey {
-        var n = 0
-        for tx in transactionStore.transactions where tx.category == liveCategory.name {
-            n += 1
-        }
-        return RefreshKey(
-            count: n,
+        RefreshKey(
+            mutationVersion: transactionStore.mutationVersion,
+            categoriesVersion: transactionStore.categoriesMutationVersion,
+            ratesVersion: transactionStore.currencyRatesVersion,
             filterHash: timeFilterManager.currentFilter.hashValue,
-            budgetAmount: liveCategory.budgetAmount ?? -1,
-            ratesVersion: transactionStore.currencyRatesVersion
+            categoryId: category.id,
+            budgetAmount: liveCategory.budgetAmount ?? -1
         )
     }
 
-    /// Combined equatable trigger — changes when transactions matching this category
-    /// change, when the global period filter changes, when the budget amount changes,
-    /// or when the FX-rate cache is updated.
     private struct RefreshKey: Equatable {
-        let count: Int
-        let filterHash: Int
-        let budgetAmount: Double
+        let mutationVersion: Int
+        let categoriesVersion: Int
         let ratesVersion: Int
+        let filterHash: Int
+        let categoryId: String
+        let budgetAmount: Double
     }
 
     private func refreshData() async {
         let name = liveCategory.name
-        let filtered = transactionStore.transactions
-            .filter { $0.category == name }
-            .sorted { $0.date > $1.date }
-        cachedTransactions = filtered
+
+        // O(1) lookup via maintained index — no full-array scan.
+        let bucket = transactionStore.transactionsByCategoryName[name] ?? []
+        cachedTransactions = bucket.sorted { $0.date > $1.date }
 
         let range = timeFilterManager.currentFilter.dateRange()
         aggregates = CategoryAggregatesCalculator.compute(
@@ -80,7 +82,7 @@ struct CategoryDetailView: View {
             periodStart: range.start,
             periodEnd: range.end,
             baseCurrency: transactionsViewModel.appSettings.baseCurrency,
-            transactions: transactionStore.transactions
+            store: transactionStore
         )
     }
 

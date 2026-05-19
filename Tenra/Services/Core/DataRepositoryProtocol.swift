@@ -49,6 +49,12 @@ protocol DataRepositoryProtocol: Sendable {
     nonisolated func loadCategories() -> [CustomCategory]
     nonisolated func saveCategories(_ categories: [CustomCategory])
 
+    // MARK: - Category Aggregates
+    /// Pre-aggregated category totals (daily/monthly/yearly/all-time).
+    /// Warm-start fast path for `TransactionStore.categoryAggregatesByKey`.
+    nonisolated func loadAggregates(year: Int16?, month: Int16?, limit: Int?) -> [CategoryAggregate]
+    nonisolated func saveAggregates(_ aggregates: [CategoryAggregate])
+
     // MARK: - Category Rules
     nonisolated func loadCategoryRules() -> [CategoryRule]
     nonisolated func saveCategoryRules(_ rules: [CategoryRule])

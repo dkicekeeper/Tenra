@@ -2,8 +2,22 @@
 //  CategoryStyleCache.swift
 //  Tenra
 //
-//  Global singleton cache for CategoryStyleHelper to avoid recreating on every render
-//  OPTIMIZATION: Reduces object creation from 60fps × N categories to O(1) lookups
+//  Process-wide cache of per-category visual data (colours + icon name).
+//
+//  Read path is O(1):
+//   • Hit:  one hashmap lookup, returns the pre-computed `CategoryStyleData`.
+//   • Miss: one O(N_cat) lookup into the passed `customCategories` (still
+//           bounded — N ≤ ~30), then memoise.
+//
+//  Invalidation is explicit and surgical: `TransactionStore.updateCategory`
+//  decides whether a mutation actually touched a visual property
+//  (icon / color / name / type) and calls `invalidate(name:type:)` accordingly.
+//  Pure budget edits do NOT thrash the cache.
+//
+//  The pre-refactor version rebuilt a `Set<String>` snapshot on EVERY
+//  `getStyleData` call to detect external mutations — O(N_cat) allocs per
+//  row render. That logic is gone; callers that change categories must call
+//  `invalidate(...)` (TransactionStore does this for them).
 //
 
 import SwiftUI
@@ -31,91 +45,70 @@ extension CategoryStyleData {
     )
 }
 
-/// Singleton cache for category styles
+/// Singleton cache for category styles.
 @MainActor
 final class CategoryStyleCache {
 
     // MARK: - Singleton
 
     static let shared = CategoryStyleCache()
-
     private init() {}
 
     // MARK: - Cache
 
-    /// Cache key: "categoryName_transactionType"
+    /// Cache key: "categoryName_transactionType".
     private var cache: [String: CategoryStyleData] = [:]
-
-    /// ✅ OPTIMIZATION: Categories snapshot using Set for stable comparison
-    /// Avoids false invalidations from array order changes
-    private var cachedCategoriesSnapshot: Set<String> = []
 
     // MARK: - Public Methods
 
-    /// Get or compute style data for a category
+    /// Get or compute style data for a category.
     /// - Parameters:
-    ///   - category: Category name
-    ///   - type: Transaction type
-    ///   - customCategories: All custom categories
-    /// - Returns: Pre-computed style data
+    ///   - category: Category name (case-preserved).
+    ///   - type: Transaction type.
+    ///   - customCategories: All custom categories — used only on cache miss.
+    /// - Returns: Pre-computed style data.
     func getStyleData(
         category: String,
         type: TransactionType,
         customCategories: [CustomCategory]
     ) -> CategoryStyleData {
-        // ✅ OPTIMIZATION: Check if categories actually changed using Set comparison
-        // This avoids false invalidations from array reordering.
-        // ✅ FIX: Use displayIdentifier instead of String(describing:) for deterministic
-        // strings — guaranteed to change when icon or color is updated.
-        let currentSnapshot = Set(customCategories.map { "\($0.id)_\($0.colorHex)_\($0.iconSource.displayIdentifier)" })
-        if currentSnapshot != cachedCategoriesSnapshot {
-            cache.removeAll()
-            cachedCategoriesSnapshot = currentSnapshot
-        }
+        let key = Self.cacheKey(category: category, type: type)
+        if let cached = cache[key] { return cached }
 
-        // Generate cache key
-        let key = "\(category)_\(type.rawValue)"
-
-        // Return from cache if exists
-        if let cached = cache[key] {
-            return cached
-        }
-
-        // Compute style data
         let styleData = computeStyleData(
             category: category,
             type: type,
             customCategories: customCategories
         )
-
-        // Cache it
         cache[key] = styleData
-
-
         return styleData
     }
 
-    /// Invalidate entire cache (call when categories change)
+    /// Drop every cached entry. Called when the categories array is wholesale
+    /// reloaded (e.g. CSV import, syncCategories) — the cheap nuclear option.
     func invalidateCache() {
-        _ = cache.count
         cache.removeAll()
-        cachedCategoriesSnapshot.removeAll()
-
     }
 
-    /// Invalidate specific category
-    /// - Parameters:
-    ///   - category: Category name
-    ///   - type: Transaction type
-    func invalidateCategory(_ category: String, type: TransactionType) {
-        let key = "\(category)_\(type.rawValue)"
-        cache.removeValue(forKey: key)
+    /// Drop a single category's cached style — used by TransactionStore.updateCategory
+    /// when icon / colour / name / type changes for a specific category.
+    /// Both rawValue casts are O(1).
+    func invalidate(name: String, type: TransactionType) {
+        cache.removeValue(forKey: Self.cacheKey(category: name, type: type))
+    }
 
+    /// Legacy single-key invalidation. Retained for callers in unrelated codepaths;
+    /// internally just forwards to the modern overload.
+    func invalidateCategory(_ category: String, type: TransactionType) {
+        invalidate(name: category, type: type)
     }
 
     // MARK: - Private Helpers
 
-    /// Compute style data from scratch
+    private static func cacheKey(category: String, type: TransactionType) -> String {
+        "\(category)_\(type.rawValue)"
+    }
+
     private func computeStyleData(
         category: String,
         type: TransactionType,
@@ -195,8 +188,8 @@ final class CategoryStyleCache {
 // MARK: - CategoryStyleHelper Extension
 
 extension CategoryStyleHelper {
-    /// Create helper with cached style data
-    /// OPTIMIZATION: Use this instead of direct init for repeated renders
+    /// Create helper with cached style data.
+    /// OPTIMIZATION: Use this instead of direct init for repeated renders.
     static func cached(
         category: String,
         type: TransactionType,

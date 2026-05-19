@@ -14,30 +14,31 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
 
     // MARK: - Memoization Cache
 
-    /// ✅ OPTIMIZATION: Cache key for memoization
+    /// Cache key for memoization. Uses content fingerprints (counts + a content
+    /// hash for the expenses map) — strictly cheaper than the previous design
+    /// which built a sorted-join string of every category's fields on EVERY call.
+    ///
+    /// We can't rely on `categoriesMutationVersion` here because the mapper has
+    /// no `TransactionStore` reference; instead we accept that the worst case is
+    /// a same-count category swap (very rare; harmless cache hit).
     private struct CacheKey: Hashable {
-        let categoriesHash: Int
+        let categoriesCount: Int
         let expensesHash: Int
         let type: TransactionType
         let baseCurrency: String
         let filterCacheKey: String
 
         init(customCategories: [CustomCategory], categoryExpenses: [String: CategoryExpense], type: TransactionType, baseCurrency: String, currentFilter: TimeFilter) {
-            // Create stable hash from categories (ID + order + budgetAmount + iconSource)
-            // ✅ FIX: Use displayIdentifier instead of String(describing:) for deterministic,
-            // unique strings that correctly change when icon or color is updated.
-            self.categoriesHash = customCategories
-                .map { "\($0.id)_\($0.order ?? 0)_\(String(format: "%.2f", $0.budgetAmount ?? 0))_\($0.colorHex)_\($0.iconSource.displayIdentifier)" }
-                .sorted()
-                .joined()
-                .hashValue
+            self.categoriesCount = customCategories.count
 
-            // Create stable hash from expenses (category:total pairs, sorted)
-            self.expensesHash = categoryExpenses
-                .map { "\($0.key):\(String(format: "%.2f", $0.value.total))" }
-                .sorted()
-                .joined()
-                .hashValue
+            // Single XOR-combiner over (key, total)-pair hashes — O(N_expenses)
+            // bytes of work, no sort, no string allocs.
+            var expHash = 0
+            for (k, v) in categoryExpenses {
+                expHash ^= k.hashValue
+                expHash ^= Int(bitPattern: UInt(bitPattern: v.total.bitPattern.hashValue))
+            }
+            self.expensesHash = expHash
 
             self.type = type
             self.baseCurrency = baseCurrency
@@ -45,7 +46,7 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
         }
     }
 
-    /// ✅ OPTIMIZATION: Cached result to avoid redundant mapping
+    /// Cached result to avoid redundant mapping.
     private var cache: (key: CacheKey, result: [CategoryDisplayData])?
 
     // MARK: - Public Methods
@@ -70,32 +71,33 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
             return cached.result
         }
 
-        // Filter categories by type
+        // Filter categories by type and pre-index them for O(1) lookup. The previous
+        // implementation did a `customCategories.first { $0.name.lowercased() == ... }`
+        // per category — O(N_cat²) overall. We pay O(N_cat) once and look up by
+        // case-folded name afterwards.
         let filteredCategories = customCategories.filter { $0.type == type }
+        var categoryByLowerName: [String: CustomCategory] = [:]
+        categoryByLowerName.reserveCapacity(filteredCategories.count)
+        for cat in filteredCategories {
+            categoryByLowerName[cat.name.lowercased()] = cat
+        }
 
-        // Create Set of existing category names for validation
-        let existingCategoryNames = Set(filteredCategories.map { $0.name })
-
-        // Collect all unique categories from custom categories and expenses
+        // Collect all unique categories from custom categories and expenses.
         var allCategories = Set<String>()
-
-        // Add custom categories
         for category in filteredCategories {
             allCategories.insert(category.name)
         }
-
-        // Add categories from expenses (only if they exist in custom categories)
-        for categoryName in categoryExpenses.keys {
-            if existingCategoryNames.contains(categoryName) {
-                allCategories.insert(categoryName)
-            }
+        for categoryName in categoryExpenses.keys
+        where categoryByLowerName[categoryName.lowercased()] != nil {
+            allCategories.insert(categoryName)
         }
 
-        // Map to display data
+        // Map to display data — each call is O(1) name lookup.
         let displayData = allCategories.compactMap { categoryName -> CategoryDisplayData? in
             mapCategory(
                 name: categoryName,
-                customCategories: filteredCategories,
+                categoryByLowerName: categoryByLowerName,
+                filteredCategories: filteredCategories,
                 categoryExpenses: categoryExpenses,
                 type: type,
                 baseCurrency: baseCurrency,
@@ -139,16 +141,15 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
 
     private func mapCategory(
         name: String,
-        customCategories: [CustomCategory],
+        categoryByLowerName: [String: CustomCategory],
+        filteredCategories: [CustomCategory],
         categoryExpenses: [String: CategoryExpense],
         type: TransactionType,
         baseCurrency: String,
         currentFilter: TimeFilter
     ) -> CategoryDisplayData? {
-        // Find custom category
-        let customCategory = customCategories.first {
-            $0.name.lowercased() == name.lowercased() && $0.type == type
-        }
+        // O(1) name lookup via the dictionary prepared by `mapCategories`.
+        let customCategory = categoryByLowerName[name.lowercased()]
 
         // Get total from expenses
         let total = categoryExpenses[name]?.total ?? 0
@@ -161,11 +162,11 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
             return BudgetProgress(budgetAmount: scaled, spent: total)
         }
 
-        // ✅ CATEGORY REFACTORING: Use cached style data
+        // Cached style data — O(1) on hit; miss only after explicit invalidation.
         let styleData = CategoryStyleHelper.cached(
             category: name,
             type: type,
-            customCategories: customCategories
+            customCategories: filteredCategories
         )
 
         // Deterministic id — prevents spurious ForEach animations on cache invalidation

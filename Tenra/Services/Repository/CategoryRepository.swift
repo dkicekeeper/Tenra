@@ -614,6 +614,7 @@ nonisolated final class CategoryRepository: CategoryRepositoryProtocol, @uncheck
                 existing.subcategoryName = aggregate.subcategoryName
                 existing.year = aggregate.year
                 existing.month = aggregate.month
+                existing.day = aggregate.day  // FIX: previously omitted — caused daily-bucket aggregates to collide on update.
                 existing.totalAmount = aggregate.totalAmount
                 existing.transactionCount = aggregate.transactionCount
                 existing.currency = aggregate.currency

@@ -28,39 +28,56 @@ struct CategoriesManagementView: View {
 
     @Namespace private var categoryNamespace
 
-    // Precompute budget progress once per view update to avoid O(N) × O(rows) per-row computation
-    private var budgetProgressMap: [String: BudgetProgress] {
+    /// Pre-computed snapshots, refreshed only when an upstream observable scalar
+    /// (categories mutation version, transactions mutation version, fx rates,
+    /// segmented type) actually changes. This prevents the body from doing the
+    /// O(N_cat × N_tx) walk that caused the post-budget-set lag.
+    @State private var budgetProgressMap: [String: BudgetProgress] = [:]
+    @State private var filteredCategories: [CustomCategory] = []
+
+    /// Scalar refresh key for the snapshot rebuild.
+    private struct CategoryListKey: Equatable {
+        let categoriesVersion: Int
+        let mutationVersion: Int
+        let ratesVersion: Int
+        let baseCurrency: String
+        let type: TransactionType
+    }
+
+    private var listKey: CategoryListKey {
+        CategoryListKey(
+            categoriesVersion: transactionStore.categoriesMutationVersion,
+            mutationVersion: transactionStore.mutationVersion,
+            ratesVersion: transactionStore.currencyRatesVersion,
+            baseCurrency: transactionsViewModel.appSettings.baseCurrency,
+            type: selectedType
+        )
+    }
+
+    /// Rebuild the cached snapshots. Both passes are O(N_categories) — they read
+    /// pre-aggregated totals via CategoryBudgetService (O(≤31) hashmap lookups
+    /// per category) instead of scanning all transactions.
+    private func rebuildCategorySnapshots() {
+        let sorted = transactionStore.categories
+            .filter { $0.type == selectedType }
+            .sorted { cat1, cat2 in
+                switch (cat1.order, cat2.order) {
+                case let (a?, b?): return a < b
+                case (_?, nil):    return true
+                case (nil, _?):    return false
+                default:           return cat1.name < cat2.name
+                }
+            }
+        filteredCategories = sorted
+
         var map: [String: BudgetProgress] = [:]
-        let transactions = transactionsViewModel.allTransactions
-        for category in filteredCategories where category.type == .expense {
-            if let progress = categoriesViewModel.budgetProgress(for: category, transactions: transactions) {
+        map.reserveCapacity(sorted.count)
+        for category in sorted where category.type == .expense {
+            if let progress = categoriesViewModel.budgetProgress(for: category) {
                 map[category.id] = progress
             }
         }
-        return map
-    }
-
-    // Кешируем отфильтрованные категории для оптимизации
-    private var filteredCategories: [CustomCategory] {
-        let filtered = categoriesViewModel.customCategories
-            .filter { $0.type == selectedType }
-
-        // Sort by custom order if available, otherwise by name
-        return filtered.sorted { cat1, cat2 in
-            // If both have order, sort by order
-            if let order1 = cat1.order, let order2 = cat2.order {
-                return order1 < order2
-            }
-            // If only one has order, it goes first
-            if cat1.order != nil {
-                return true
-            }
-            if cat2.order != nil {
-                return false
-            }
-            // If neither has order, sort by name
-            return cat1.name < cat2.name
-        }
+        budgetProgressMap = map
     }
 
     // MARK: - Methods
@@ -68,17 +85,8 @@ struct CategoriesManagementView: View {
     private func moveCategory(from source: IndexSet, to destination: Int) {
         var updatedCategories = filteredCategories
         updatedCategories.move(fromOffsets: source, toOffset: destination)
-
-        // Update order for all categories of this type
-        for (index, category) in updatedCategories.enumerated() {
-            var updatedCategory = category
-            updatedCategory.order = index
-            categoriesViewModel.updateCategory(updatedCategory)
-        }
-
-        // Invalidate caches to ensure the new order is reflected everywhere
-        transactionsViewModel.invalidateCaches()
-
+        // Atomic reorder + single CoreData persist; was N× saveCategoriesSync.
+        transactionStore.reorderCategories(orderedIds: updatedCategories.map { $0.id })
         HapticManager.selection()
     }
 
@@ -137,6 +145,7 @@ struct CategoriesManagementView: View {
         .animation(AppAnimation.contentSpring, value: selectedType)
         .navigationTitle(String(localized: "navigation.categories"))
         .navigationBarTitleDisplayMode(.large)
+        .task(id: listKey) { rebuildCategorySnapshots() }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 switch mode {

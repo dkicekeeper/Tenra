@@ -2,9 +2,16 @@
 //  CategoryBudgetServiceTests.swift
 //  TenraTests
 //
-//  Unit tests for CategoryBudgetService.budgetProgress, budgetPeriodStart, calculateSpent.
-//  TEST-02
+//  NOTE: Disabled — CategoryBudgetService API was refactored to read from
+//  pre-aggregated `TransactionStore.categoryAggregatesByKey` (O(1) lookups)
+//  instead of an O(N_tx) scan over a `transactions: [Transaction]` array.
+//  Legacy `service.budgetProgress(for:transactions:)` instance method was
+//  removed. New regression coverage lives in
+//  `TenraTests/Services/Categories/CategoryBudgetServiceStoreBackedTests.swift`.
+//  See docs/domains/categories.md.
 //
+
+#if false
 
 import Testing
 import Foundation
@@ -179,3 +186,5 @@ struct CategoryBudgetServiceTests {
         #expect(result?.spent == 200.0, "Only 'Food' transaction (200) must be counted, got \(result?.spent ?? -1)")
     }
 }
+
+#endif

@@ -84,7 +84,7 @@ struct VoiceInputView: View {
             VStack(spacing: 0) {
                 transcriptionSection
                     .padding(.top, AppSpacing.xl)
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
                 Spacer(minLength: AppSpacing.lg)
                 previewSection
                 buttonSection
@@ -210,7 +210,7 @@ struct VoiceInputView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
             .padding(.bottom, AppSpacing.lg)
             .task {
                 // Let the entrance spring settle before lighting up the
@@ -348,7 +348,7 @@ struct VoiceInputView: View {
                     .frame(maxWidth: .infinity)
             }
             .primaryButton()
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
             .padding(.bottom, AppSpacing.xl)
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }

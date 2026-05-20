@@ -24,7 +24,7 @@ struct OnboardingCategoriesStep: View {
             primaryButtonTitle: doneTitle,
             primaryButtonEnabled: vm.canFinish,
             onPrimaryTap: {
-                vm.finish()
+                Task { await vm.finish() }
             },
             onSkip: {
                 Task { await vm.skip() }
@@ -32,7 +32,7 @@ struct OnboardingCategoriesStep: View {
         ) {
             ScrollView {
                 OnboardingCategoryGrid(presets: $vm.draftCategories)
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
                     .padding(.top, AppSpacing.md)
             }
         }

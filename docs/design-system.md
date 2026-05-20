@@ -152,7 +152,7 @@ For dynamic-size amount inputs use `Font.custom(AppTypography.fontFamily, …)` 
 | `.formCardStyle(radius:)` | `.ultraThinMaterial` card background on every iOS. Same shape/padding contract as `cardStyle`. | **Form-section cards.** `FormSection`, `BudgetSettingsSection` — any card that wraps `MenuPickerRow` / `Picker(.menu)` / `Menu`. iOS 26's `glassEffect` becomes the morph-source for menus, so single-row form sections would collapse the whole row into the popover at tap. `formCardStyle` uses Material to side-step that |
 | `.filterChipStyle(isSelected:)` | Glass chip styling with accent tint when selected. Animated selection transition | Filter buttons, `UniversalFilterButton` |
 | `.screenPadding()` | `.padding(.horizontal, AppSpacing.lg)` (16pt) | Screen-level horizontal insets |
-| `.cardContentPadding()` | `.padding(AppSpacing.md)` (12pt) | Internal card content padding |
+| `.cardContentPadding()` | `.padding(AppSpacing.lg)` (16pt) | Internal card content padding — canonical, matches §10 |
 | `.futureTransactionStyle(isFuture:)` | `.opacity(0.55)` when future | Planned/future transaction rows |
 | `.chartAppear(delay:)` | Scale(0.94→1.0) + opacity entrance from bottom | Outermost chart container, scrollable list cards |
 | `.staggeredEntrance(delay:)` | Scale(0.5→1.0) + opacity pop-in with spring | Facepile icons, overlapping avatar stacks |
@@ -1126,7 +1126,7 @@ All decorative animations respect `UIAccessibility.isReduceMotionEnabled`. Use `
 
 ### Arbitrary content
 
-VStack, HStack, custom cards must add `.padding(AppSpacing.lg)` explicitly before `.cardStyle()`.
+VStack, HStack, custom cards must add `.padding(AppSpacing.lg)` (or the equivalent `.cardContentPadding()` helper) explicitly before `.cardStyle()`. Both are 16pt — there is no separate "compact card" inset.
 
 ### Why H:0 for `.info` and `.settings`
 

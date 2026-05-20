@@ -5,8 +5,7 @@
 //  Shared layout for onboarding data-collection steps. Mirrors the welcome
 //  screen's vertical rhythm: content lives at the top under the toolbar step
 //  indicator, then title + subtitle sit just above the primary CTA at the
-//  bottom. No forced page background — the accent-glow background shows
-//  through.
+//  bottom. No forced page background — the accent-glow background shows through.
 //
 
 import SwiftUI
@@ -43,17 +42,11 @@ struct OnboardingPageContainer<Content: View>: View {
                     }
                 }
             }
-            // iOS 26 native way to make the toolbar background follow the
-            // Liquid Glass soft-gradient blur instead of an opaque material.
-            // Replaces `.toolbarBackgroundVisibility(.hidden, for: .navigationBar)`,
-            // which doesn't override the scroll-edge effect that `.searchable`
-            // adds on the currency step.
-            .scrollEdgeEffectStyle(.soft, for: .top)
-            // Inline title + empty navigationTitle is required so `.searchable`
-            // inside the step content anchors its drawer under the toolbar
-            // instead of falling back to the iOS 26 bottom-dock `.toolbar`
-            // placement. The principal ToolbarItem (step indicator) visually
-            // replaces the empty title.
+            // Empty inline navigationTitle: the principal ToolbarItem (step indicator)
+            // visually replaces the title, and inline display mode keeps the bar compact.
+            // The transparent nav bar (no scroll-edge plate over the accent-glow) is
+            // achieved by the step content wrapping CurrencyListContent in its own
+            // ScrollView — see OnboardingCurrencyStep.
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
     }
@@ -73,7 +66,7 @@ struct OnboardingPageContainer<Content: View>: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
 
             Button(action: onPrimaryTap) {
                 Text(primaryButtonTitle)
@@ -81,7 +74,7 @@ struct OnboardingPageContainer<Content: View>: View {
             }
             .primaryButton()
             .disabled(!primaryButtonEnabled)
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
         }
         .padding(.top, AppSpacing.xl)
         .padding(.bottom, AppSpacing.sm)

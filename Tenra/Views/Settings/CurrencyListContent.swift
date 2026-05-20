@@ -5,9 +5,8 @@
 //  Reusable currency picker. Uses `ScrollView + VStack` (not `List`) so the
 //  parent surface — including the onboarding accent-glow background — shows
 //  through without being painted over by `List`'s grouped-background grey.
-//  `.searchable` is attached in nav-bar drawer placement (.automatic) — drawer
-//  hides on scroll and reveals on pull-down, same pattern for both Settings
-//  and onboarding (the onboarding-specific tweaks live in the parent container).
+//  `.searchable` is attached in nav-bar drawer placement (.automatic) — the drawer
+//  hides on scroll and reveals on pull-down, same pattern for Settings and onboarding.
 //
 
 import SwiftUI
@@ -42,12 +41,23 @@ struct CurrencyListContent: View {
                         items: CurrencyInfo.popularCurrencies
                     )
                 }
-                section(
-                    title: String(localized: "currency.all"),
-                    items: filteredCurrencies
-                )
+                // `filteredCurrencies` is only empty while searching (an empty query
+                // returns every currency), so this branch is the no-search-results state.
+                if filteredCurrencies.isEmpty {
+                    EmptyStateView(
+                        icon: "magnifyingglass",
+                        title: String(localized: "currency.noResults.title"),
+                        description: String(localized: "currency.noResults.description")
+                    )
+                    .padding(.top, AppSpacing.xxxl)
+                } else {
+                    section(
+                        title: String(localized: "currency.all"),
+                        items: filteredCurrencies
+                    )
+                }
             }
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
             .padding(.vertical, AppSpacing.md)
         }
         .searchable(

@@ -103,7 +103,7 @@ struct AccountActionView: View {
         @Bindable var viewModel = viewModel
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             SectionHeaderView(String(localized: "transactionForm.fromHeader"))
-                .padding(.horizontal, AppSpacing.lg)
+                .screenPadding()
 
             switch viewModel.selectedAction {
             case .transfer:
@@ -136,7 +136,7 @@ struct AccountActionView: View {
         if let coordinator = accountsViewModel.balanceCoordinator {
             VStack(alignment: .leading, spacing: AppSpacing.sm) {
                 SectionHeaderView(String(localized: "transactionForm.toHeader"))
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
 
                 AccountSelectorView(
                     accounts: viewModel.availableTargetAccounts,
@@ -163,7 +163,7 @@ struct AccountActionView: View {
                 (label: String(localized: "transactionForm.topUp"), value: AccountActionViewModel.ActionType.income)
             ]
         )
-        .padding(.horizontal, AppSpacing.lg)
+        .screenPadding()
         .padding(.vertical, AppSpacing.md)
         .background(Color.clear)
     }

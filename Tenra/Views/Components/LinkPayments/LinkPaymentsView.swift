@@ -402,7 +402,7 @@ struct LinkPaymentsView: View {
 
             if showError {
                 MessageBanner.error(errorMessage)
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .onTapGesture {
                         withAnimation(AppAnimation.contentSpring) { showError = false }

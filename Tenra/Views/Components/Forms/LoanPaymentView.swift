@@ -106,7 +106,7 @@ struct LoanPaymentView: View {
 
                     if let error = validationError {
                         InlineStatusText(message: error, type: .error)
-                            .padding(.horizontal, AppSpacing.lg)
+                            .screenPadding()
                     }
 
                     AmountInputView(
@@ -158,7 +158,7 @@ struct LoanPaymentView: View {
     private var fromSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             SectionHeaderView(String(localized: "transactionForm.fromHeader"))
-                .padding(.horizontal, AppSpacing.lg)
+                .screenPadding()
 
             AccountSelectorView(
                 accounts: availableAccounts,
@@ -197,7 +197,7 @@ struct LoanPaymentView: View {
         if let categoriesVM = categoriesViewModel, !availableCategories.isEmpty {
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
                 SectionHeaderView(String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"))
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
 
                 if selectedCategoryId != nil {
                     SubcategorySelectorView(
@@ -215,7 +215,7 @@ struct LoanPaymentView: View {
                     ))
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.textSecondary)
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
                 }
             }
         }

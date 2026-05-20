@@ -64,7 +64,7 @@ struct CloudBackupsView: View {
             }
             .primaryButton()
             .disabled(cloudSyncViewModel.isCreatingBackup)
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
             .padding(.vertical, AppSpacing.md)
         }
         .toolbar(.hidden, for: .tabBar)

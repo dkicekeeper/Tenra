@@ -146,7 +146,7 @@ struct SubscriptionEditView: View {
                         )
                     }
                 }
-                .padding(.horizontal, AppSpacing.lg)
+                .screenPadding()
             }
         }
         .onAppear {

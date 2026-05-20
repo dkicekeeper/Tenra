@@ -250,6 +250,7 @@ If a real symptom appears (UI freeze, missing label, broken constraint affecting
 - ⚠️ `xcodebuild test -only-testing:...` does NOT skip compilation — one broken test file fails the whole target. When a test file's API has drifted, wrap it in `#if false` / `#endif` with a header comment (existing precedent: `TenraTests/Onboarding/OnboardingViewModelTests.swift`, `TenraTests/Services/Voice/VoiceInputParserTests.swift`).
 - ⚠️ Swift filenames must be unique within a target. Xcode rejects two `.swift` files with the same name even in different directories of the same target. When replacing a legacy test file with a fresh-API rewrite, rename the new one (precedent: `CategoryBudgetServiceStoreBackedTests.swift` replaces the legacy `CategoryBudgetServiceTests.swift`).
 - Extract crash details from `.xcresult`: `xcrun xcresulttool get test-results tests --path <bundle.xcresult> --filter-by-test-id 'TenraTests/<Suite>/<test>'`
+- Re-test onboarding: `OnboardingState.reset()` clears the `hasCompletedOnboarding` UserDefaults key (a fresh Simulator install also resets it). Flow: `OnboardingFlowView` → welcome (`Начать`) → currency/account/categories steps.
 
 ## Git Workflow
 
@@ -287,6 +288,7 @@ When working with this project:
 - Don't use Combine when Observation framework is preferred
 - Don't flag `#Preview` block inconsistencies as production drifts in audits — distinguish preview-only from production usage when grep'ing
 - Don't write CLAUDE.md inline rules for things that fit in a domain doc — keep this file thin
+- Don't auto build/install/launch/screenshot the Simulator to verify UI changes — the user verifies visually. Build only to confirm compilation, then report what to check. (White-on-white plates are invisible in screenshots — `xcrun simctl ui <dev> appearance dark` exposes them.)
 
 ## Questions?
 

@@ -63,7 +63,7 @@ struct PeriodBreakdownRow: View {
 
             if showDivider {
                 Divider()
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
             }
         }
     }

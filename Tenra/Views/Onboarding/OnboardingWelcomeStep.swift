@@ -82,7 +82,7 @@ struct OnboardingWelcomeStep: View {
                         .foregroundStyle(AppColors.textSecondary)
                         .multilineTextAlignment(.center)
                 }
-                .padding(.horizontal, AppSpacing.lg)
+                .screenPadding()
                 .id(index)
                 .transition(LoopOnboardingTextTransition())
                 .padding(.bottom, AppSpacing.xl)
@@ -94,7 +94,7 @@ struct OnboardingWelcomeStep: View {
                         .frame(maxWidth: .infinity)
                 }
                 .primaryButton()
-                .padding(.horizontal, AppSpacing.lg)
+                .screenPadding()
                 .padding(.bottom, AppSpacing.lg)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

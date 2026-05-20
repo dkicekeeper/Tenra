@@ -61,7 +61,7 @@ struct SectionHeaderView: View {
             .foregroundStyle(AppColors.textSecondary)
             .textCase(.uppercase)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
     }
 
     private var largeStyle: some View {
@@ -75,7 +75,7 @@ struct SectionHeaderView: View {
                 .foregroundStyle(AppColors.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, AppSpacing.lg)
+        .screenPadding()
     }
 }
 

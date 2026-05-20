@@ -95,7 +95,7 @@ struct LoanEarlyRepaymentView: View {
 
                     if let error = validationError {
                         InlineStatusText(message: error, type: .error)
-                            .padding(.horizontal, AppSpacing.lg)
+                            .screenPadding()
                     }
 
                     AmountInputView(
@@ -149,7 +149,7 @@ struct LoanEarlyRepaymentView: View {
     private var fromSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             SectionHeaderView(String(localized: "transactionForm.fromHeader"))
-                .padding(.horizontal, AppSpacing.lg)
+                .screenPadding()
 
             AccountSelectorView(
                 accounts: availableAccounts,
@@ -164,7 +164,7 @@ struct LoanEarlyRepaymentView: View {
     private var strategySection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             SectionHeaderView(String(localized: "loan.strategy", defaultValue: "Strategy"))
-                .padding(.horizontal, AppSpacing.lg)
+                .screenPadding()
 
             VStack(alignment: .leading, spacing: AppSpacing.sm) {
                 Picker(String(localized: "loan.strategy", defaultValue: "Strategy"), selection: $repaymentType) {
@@ -209,7 +209,7 @@ struct LoanEarlyRepaymentView: View {
         if let categoriesVM = categoriesViewModel, !availableCategories.isEmpty {
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
                 SectionHeaderView(String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"))
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
 
                 if selectedCategoryId != nil {
                     SubcategorySelectorView(
@@ -227,7 +227,7 @@ struct LoanEarlyRepaymentView: View {
                     ))
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.textSecondary)
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
                 }
             }
         }

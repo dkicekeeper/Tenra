@@ -88,6 +88,8 @@
 "currency.popular" = "Популярные";
 "currency.all" = "Все валюты";
 "currency.searchPrompt" = "Поиск валюты";
+"currency.noResults.title" = "Валюта не найдена";
+"currency.noResults.description" = "Попробуйте другое название или код.";
 "currency.customize" = "Настроить валюты";
 "currency.accountCurrencies" = "Валюты счетов";
 "currency.customizeAction" = "Настроить...";

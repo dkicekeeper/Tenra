@@ -42,10 +42,6 @@ final class OnboardingViewModel {
     /// Step 2: account form draft.
     var draftAccount: AccountDraft = AccountDraft()
 
-    /// Set to the created account's id once Step 2 is committed for the first time.
-    /// Subsequent re-entries update the existing account in place.
-    var createdAccountId: String?
-
     /// Step 3: preset list with toggle state. All selected by default.
     var draftCategories: [SelectablePreset] = CategoryPreset.defaultExpense.map {
         $0.makeSelectable(isSelected: true)
@@ -100,29 +96,9 @@ final class OnboardingViewModel {
     }
 
     func advanceToCategoriesStep() async {
-        guard let coordinator else { return }
-        let trimmedName = draftAccount.name.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        if let existingId = createdAccountId,
-           let existing = coordinator.accountsViewModel.accounts.first(where: { $0.id == existingId }) {
-            // Update branch — user came back to this step.
-            var updated = existing
-            updated.name = trimmedName
-            updated.iconSource = draftAccount.iconSource
-            updated.initialBalance = draftAccount.balance
-            updated.balance = draftAccount.balance
-            coordinator.accountsViewModel.updateAccount(updated)
-        } else {
-            await coordinator.accountsViewModel.addAccount(
-                name: trimmedName,
-                initialBalance: draftAccount.balance,
-                currency: draftCurrency,
-                iconSource: draftAccount.iconSource,
-                shouldCalculateFromTransactions: false
-            )
-            // Last-added account id (AccountsViewModel appends to the end of the array).
-            createdAccountId = coordinator.accountsViewModel.accounts.last?.id
-        }
+        // No persistence here — the account is created in `finish()` so that
+        // skipping at any later step creates nothing. We only navigate; the form
+        // values live in `draftAccount` and survive back/forward navigation.
         path.append(.categories)
         logger.info("onboarding_step_completed step=account")
     }
@@ -145,10 +121,23 @@ final class OnboardingViewModel {
 
     // MARK: - Final commit
 
-    func finish() {
+    func finish() async {
         guard let coordinator, !isFinishing else { return }
         isFinishing = true
         defer { isFinishing = false }
+
+        // Account — deferred from Step 2 so that skipping any step creates nothing.
+        // Only the final "Done" tap persists the drafted account.
+        let trimmedName = draftAccount.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedName.isEmpty {
+            await coordinator.accountsViewModel.addAccount(
+                name: trimmedName,
+                initialBalance: draftAccount.balance,
+                currency: draftCurrency,
+                iconSource: draftAccount.iconSource,
+                shouldCalculateFromTransactions: false
+            )
+        }
 
         for selectable in draftCategories where selectable.isSelected {
             let preset = selectable.preset

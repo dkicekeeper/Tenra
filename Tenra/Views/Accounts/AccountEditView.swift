@@ -62,7 +62,7 @@ struct AccountEditView: View {
                             .padding(.horizontal, AppSpacing.lg)
                     }
                 }
-                .padding(.horizontal, AppSpacing.lg)
+                .screenPadding()
                 .padding(.top, AppSpacing.md)
             }
             .toolbar {

@@ -23,7 +23,7 @@ struct BulkDeleteButton: View {
         .tint(AppColors.destructive)
         .buttonBorderShape(.capsule)
         .controlSize(.large)
-        .padding(.horizontal, AppSpacing.lg)
+        .screenPadding()
         .padding(.bottom, AppSpacing.lg)
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }

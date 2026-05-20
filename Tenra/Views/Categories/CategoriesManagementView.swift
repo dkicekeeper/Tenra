@@ -236,7 +236,7 @@ struct CategoriesManagementView: View {
                     (label: String(localized: "transactionType.income"), value: TransactionType.income)
                 ]
             )
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
             .padding(.vertical, AppSpacing.md)
             .background(Color(.clear))
             .onChange(of: selectedType) { _, _ in

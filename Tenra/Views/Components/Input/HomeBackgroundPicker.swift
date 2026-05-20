@@ -71,7 +71,7 @@ struct HomeBackgroundPicker: View {
                 }
             }
         }
-        .padding(.horizontal, AppSpacing.lg)
+        .screenPadding()
         .padding(.vertical, AppSpacing.sm)
         .animation(AppAnimation.gentleSpring, value: currentMode)
     }

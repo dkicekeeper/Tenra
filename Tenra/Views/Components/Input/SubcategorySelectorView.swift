@@ -91,7 +91,7 @@ struct SubcategorySelectorView: View {
             }
             .filterChipStyle()
             .accessibilityLabel(String(localized: "transactionForm.addSubcategory"))
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
         }
     }
 }

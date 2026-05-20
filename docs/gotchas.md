@@ -26,6 +26,7 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
   1. **Keyboard does NOT dismiss on Menu tap.** `Menu` uses UIControl-level event handling that absorbs touches *before* SwiftUI's gesture chain resolves, so `.simultaneousGesture(TapGesture())` never fires. `DatePicker` gets dismissal for free via sheet presentation; `Menu` does not. Users have to dismiss the keyboard themselves before tapping a picker.
   2. **Open-morph clips mixed-width options.** SwiftUI `Button`s inside `Menu` are converted to `UIMenuItem` at the UIKit layer; SwiftUI `.frame(minWidth:)` modifiers are ignored. Apple's canonical workaround — `Picker` inside `Menu` — gives uniform `UIMenuItem` rendering but the visible morph animation still clips on iOS 26 today.
   3. **`.menuIndicator(.visible)` is ignored when the `Menu` label is a custom `View`** (only works with plain `Text` label). Bake the chevron into the label `HStack` manually with `Image(systemName: "chevron.up.chevron.down")`.
+- **iOS 26: a *visible* nav bar always paints a scroll-edge plate over scrolling content.** `.toolbarBackground(.hidden, for: .navigationBar)` does NOT remove it; `.scrollEdgeEffectStyle` only restyles it (`.automatic`/`.soft`/`.hard` — no "off", and `.soft` adds a *more* visible veil); `.searchable` in the nav bar forces the bar opaque, overriding `.hidden`. The plate is invisible over a neutral page (≈ page color) but visible over a colored/glow background. To get a truly transparent bar over color: hide the nav bar (`.toolbar(.hidden, for: .navigationBar)`, render chrome yourself — see welcome onboarding step) OR wrap content in an extra outer `ScrollView` (nesting absorbs the edge effect — see OnboardingCurrencyStep).
 
 ## Performance Hot-Paths
 
@@ -71,3 +72,4 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
 ## Localization
 
 - **NEVER delete `.lproj` files** — they're used via `String(localized:)` even without explicit pbxproj refs.
+- **Add new keys to BOTH `Tenra/en.lproj` and `Tenra/ru.lproj/Localizable.strings`** — the app ships RU + EN.

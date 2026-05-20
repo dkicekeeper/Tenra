@@ -105,9 +105,9 @@ extension View {
         self.opacity(isFuture ? 0.55 : 1.0)
     }
 
-    /// Card padding (внутренний padding карточек)
+    /// Card padding (внутренний padding карточек) — 16pt, канон для контента карточек (см. design-system §10)
     func cardContentPadding() -> some View {
-        self.padding(AppSpacing.md)
+        self.padding(AppSpacing.lg)
     }
 }
 

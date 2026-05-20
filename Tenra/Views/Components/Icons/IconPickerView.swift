@@ -44,7 +44,7 @@ struct IconPickerView: View {
                         selection: $pickerMode,
                         options: PickerMode.allCases.map { (label: $0.localizedTitle, value: $0) }
                     )
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
                     .padding(.vertical, AppSpacing.md)
                     .background(Color.clear)
                 }
@@ -106,7 +106,7 @@ private struct IconsTabView: View {
                                 )
                             }
                         }
-                        .padding(.horizontal, AppSpacing.lg)
+                        .screenPadding()
                     }
                 }
             }
@@ -217,7 +217,7 @@ private struct LogoCategorySection: View {
                     )
                 }
             }
-            .padding(.horizontal, AppSpacing.lg)
+            .screenPadding()
         }
     }
 }

@@ -108,7 +108,7 @@ struct DepositEditView: View {
                         }
                     }
                 }
-                .padding(.horizontal, AppSpacing.lg)
+                .screenPadding()
                 .padding(.top, AppSpacing.md)
             }
             .toolbar {

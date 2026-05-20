@@ -152,7 +152,7 @@ struct SubcategorySearchView: View {
                                 .background(.ultraThinMaterial)
                         }
                     }
-                    .padding(.horizontal, AppSpacing.lg)
+                    .screenPadding()
                 }
             }
             .toolbar {

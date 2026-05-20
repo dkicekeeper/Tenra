@@ -67,7 +67,7 @@ struct TransactionEditView: View {
                         // Error banner
                         if let error = coordinator.errorMessage {
                             InlineStatusText(message: error, type: .error)
-                                .padding(.horizontal, AppSpacing.lg)
+                                .screenPadding()
                         }
 
                         // 1. Amount + currency

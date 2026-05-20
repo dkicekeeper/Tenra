@@ -72,6 +72,78 @@ struct HistoryView: View {
     // MARK: - Body
 
     var body: some View {
+        historyEventContent
+            .sheet(isPresented: $filterCoordinator.showingCategoryFilter) {
+                CategoryFilterView(
+                    expenseCategories: transactionsViewModel.expenseCategories,
+                    incomeCategories: transactionsViewModel.incomeCategories,
+                    customCategories: categoriesViewModel.customCategories,
+                    currentFilter: transactionsViewModel.selectedCategories,
+                    onFilterChanged: { newFilter in
+                        transactionsViewModel.selectedCategories = newFilter
+                    }
+                )
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showingTimeFilter) {
+                TimeFilterView(filterManager: timeFilterManager)
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $filterCoordinator.showingAccountFilter) {
+                AccountFilterView(
+                    accounts: accountsViewModel.accounts,
+                    selectedAccountId: $filterCoordinator.selectedAccountFilter,
+                    balanceCoordinator: accountsViewModel.balanceCoordinator
+                )
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+            }
+    }
+
+    private var historyEventContent: some View {
+        historyContent
+            .onChange(of: timeFilterManager.currentFilter) { _, _ in
+                HapticManager.selection()
+                applyFiltersToController()
+            }
+            .onChange(of: filterCoordinator.selectedAccountFilter) { _, _ in
+                filterCoordinator.applyAccountFilter()
+                applyFiltersToController()
+            }
+            .onChange(of: filterCoordinator.searchText) { _, newValue in
+                filterCoordinator.applySearch(newValue)
+            }
+            .onChange(of: filterCoordinator.debouncedSearchText) { _, _ in
+                applyFiltersToController()
+            }
+            // Subscribe to a scalar mutation counter instead of the full `accounts`
+            // array — scalar subscription is cheap and doesn't drag the body into
+            // the observable-array dependency graph.
+            .onChange(of: transactionsViewModel.transactionStore?.accountsMutationVersion ?? 0) { _, _ in
+                applyFiltersToController()
+            }
+            .onChange(of: transactionsViewModel.selectedCategories) { _, _ in
+                filterCoordinator.applyCategoryFilterChange()
+                applyFiltersToController()
+            }
+            // Scalar mutation counter, not the 19k-element transactions array.
+            .onChange(of: transactionsViewModel.transactionStore?.mutationVersion ?? 0) { _, _ in
+                expensesCache.invalidate()
+            }
+            .onChange(of: transactionsViewModel.appSettings.baseCurrency) { _, _ in
+                expensesCache.invalidate()
+            }
+            .onChange(of: paginationController.sections.count) { oldCount, newCount in
+                historyLogger.debug("🔄 [History] sections.count: \(oldCount)→\(newCount) (totalCount:\(self.paginationController.totalCount))")
+            }
+            .onDisappear {
+                resetFilters()
+            }
+    }
+
+    private var historyContent: some View {
         Group {
             if isHistoryListReady {
                 HistoryTransactionsList(
@@ -108,72 +180,9 @@ struct HistoryView: View {
             isPresented: $filterCoordinator.isSearchActive,
             prompt: searchPrompt
         )
+        .searchToolbarBehavior(.minimize)
         .onAppear {
             handleOnAppear()
-        }
-        .onChange(of: timeFilterManager.currentFilter) { _, _ in
-            HapticManager.selection()
-            applyFiltersToController()
-        }
-        .onChange(of: filterCoordinator.selectedAccountFilter) { _, _ in
-            filterCoordinator.applyAccountFilter()
-            applyFiltersToController()
-        }
-        .onChange(of: filterCoordinator.searchText) { _, newValue in
-            filterCoordinator.applySearch(newValue)
-        }
-        .onChange(of: filterCoordinator.debouncedSearchText) { _, _ in
-            applyFiltersToController()
-        }
-        // Subscribe to a scalar mutation counter instead of the full `accounts`
-        // array — scalar subscription is cheap and doesn't drag the body into
-        // the observable-array dependency graph.
-        .onChange(of: transactionsViewModel.transactionStore?.accountsMutationVersion ?? 0) { _, _ in
-            applyFiltersToController()
-        }
-        .onChange(of: transactionsViewModel.selectedCategories) { _, _ in
-            filterCoordinator.applyCategoryFilterChange()
-            applyFiltersToController()
-        }
-        // Scalar mutation counter, not the 19k-element transactions array.
-        .onChange(of: transactionsViewModel.transactionStore?.mutationVersion ?? 0) { _, _ in
-            expensesCache.invalidate()
-        }
-        .onChange(of: transactionsViewModel.appSettings.baseCurrency) { _, _ in
-            expensesCache.invalidate()
-        }
-        .onChange(of: paginationController.sections.count) { oldCount, newCount in
-            historyLogger.debug("🔄 [History] sections.count: \(oldCount)→\(newCount) (totalCount:\(self.paginationController.totalCount))")
-        }
-        .onDisappear {
-            resetFilters()
-        }
-        .sheet(isPresented: $filterCoordinator.showingCategoryFilter) {
-            CategoryFilterView(
-                expenseCategories: transactionsViewModel.expenseCategories,
-                incomeCategories: transactionsViewModel.incomeCategories,
-                customCategories: categoriesViewModel.customCategories,
-                currentFilter: transactionsViewModel.selectedCategories,
-                onFilterChanged: { newFilter in
-                    transactionsViewModel.selectedCategories = newFilter
-                }
-            )
-            .presentationDetents([.medium])
-            .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $showingTimeFilter) {
-            TimeFilterView(filterManager: timeFilterManager)
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $filterCoordinator.showingAccountFilter) {
-            AccountFilterView(
-                accounts: accountsViewModel.accounts,
-                selectedAccountId: $filterCoordinator.selectedAccountFilter,
-                balanceCoordinator: accountsViewModel.balanceCoordinator
-            )
-            .presentationDetents([.medium])
-            .presentationDragIndicator(.visible)
         }
     }
 

@@ -60,11 +60,13 @@ For archived/inactive UI use `Color(.systemGray)` directly — there is no dedic
 | `xxs` | 2 | Minimum micro spacing |
 | `xs` | 4 | Icon-to-text inline gaps |
 | `sm` | 8 | Row vertical padding, small gaps |
-| `md` | 12 | Default VStack/HStack spacing, card internal padding |
-| `lg` | 16 | Screen horizontal padding (used by `.screenPadding()`), between-card spacing |
+| `md` | 12 | Default VStack/HStack spacing |
+| `lg` | 16 | Screen horizontal padding (`.screenPadding()`), card content padding (`.cardContentPadding()`), between-card spacing |
 | `xl` | 20 | Between major sections |
 | `xxl` | 24 | Between screen sections |
 | `xxxl` | 32 | Large screen margins |
+
+**Horizontal-inset convention:** screen-edge insets use `.screenPadding()`; card content uses `.cardContentPadding()` (both 16pt). A bare `.padding(.horizontal, AppSpacing.lg)` that remains is *intentional internal/component spacing* (chips, rows inside cards, doubled banner insets) — do not mass-migrate it.
 
 ### Corner Radius (`AppRadius`)
 

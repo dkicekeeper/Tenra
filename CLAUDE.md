@@ -53,6 +53,10 @@ xcodebuild build -scheme Tenra \
 xcrun xctrace record --template SwiftUI \
   --output ~/Desktop/session.trace \
   --device "Dkicekeeper 17" --attach Tenra
+
+# Verify an iOS 26 SDK API name (WWDC/docs names can be wrong — e.g. it's .minimize, NOT .minimizable)
+grep -n "searchToolbarBehavior" \
+  "$(xcrun --sdk iphoneos --show-sdk-path)/System/Library/Frameworks/SwiftUI.framework/Modules/SwiftUI.swiftmodule/arm64e-apple-ios.swiftinterface"
 ```
 
 ## Project Overview

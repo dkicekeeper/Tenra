@@ -21,7 +21,7 @@ struct CategoryDetailView: View {
     let category: CustomCategory
 
     @State private var showingEdit = false
-    @State private var showingSubcategories = false
+    @State private var showingSubcategoryManager = false
     @State private var showingDeleteConfirm = false
     @State private var showingAddTransaction = false
     @State private var cachedTransactions: [Transaction] = []
@@ -102,6 +102,11 @@ struct CategoryDetailView: View {
                 systemImage: "plus",
                 action: { showingAddTransaction = true }
             ),
+            secondaryAction: ActionConfig(
+                title: String(localized: "subcategory.reorder", defaultValue: "Subcategories"),
+                systemImage: "list.bullet",
+                action: { showingSubcategoryManager = true }
+            ),
             infoRows: infoRowConfigs(),
             transactions: cachedTransactions,
             historyCurrency: baseCurrency,
@@ -144,7 +149,7 @@ struct CategoryDetailView: View {
                 },
                 onCancel: { showingEdit = false }
             )
-            .presentationDetents([.medium, .large])
+            .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
         .navigationDestination(isPresented: $showingAddTransaction) {
@@ -162,11 +167,13 @@ struct CategoryDetailView: View {
             .navigationTitle(String(localized: "category.detail.actions.addTransaction", defaultValue: "Add transaction"))
             .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationDestination(isPresented: $showingSubcategories) {
-            CategorySubcategoriesView(
+        .sheet(isPresented: $showingSubcategoryManager) {
+            SubcategoryReorderView(
                 categoriesViewModel: categoriesViewModel,
-                category: liveCategory
+                categoryId: liveCategory.id
             )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .confirmationDialog(
             String(localized: "category.deleteTitle", defaultValue: "Delete category?"),
@@ -229,13 +236,14 @@ struct CategoryDetailView: View {
     // MARK: - Budget progress
 
     private func budgetProgress() -> ProgressConfig? {
-        guard liveCategory.type == .expense else { return nil }
-        guard let budget = liveCategory.budgetAmount, budget > 0 else { return nil }
-        let utilization = aggregates.amountInPeriod / budget
+        guard let total = scaledBudgetTotal() else { return nil }
+        let utilization = total > 0 ? aggregates.amountInPeriod / total : 0
+        // label intentionally nil — the budget % is already shown in the info rows,
+        // so rendering it under the hero would duplicate it. The ring still shows.
         return ProgressConfig(
             current: aggregates.amountInPeriod,
-            total: budget,
-            label: String(localized: "category.detail.budget", defaultValue: "Budget"),
+            total: total,
+            label: nil,
             color: budgetColor(for: utilization)
         )
     }
@@ -244,6 +252,47 @@ struct CategoryDetailView: View {
         if utilization <= 0.75 { return .green }
         if utilization <= 1.0 { return .orange }
         return .red
+    }
+
+    /// The budget limit scaled to the currently selected time-filter period.
+    ///
+    /// A budget is defined per `budgetPeriod` (weekly / monthly / yearly). When the user
+    /// scopes the detail screen to a different period (e.g. "This year"), the limit is
+    /// scaled to match so the "spent / limit" comparison stays meaningful. Returns nil
+    /// when there's no budget, or for the unbounded "All time" filter where a scaled
+    /// limit is meaningless.
+    private func scaledBudgetTotal() -> Double? {
+        guard liveCategory.type == .expense,
+              let budget = liveCategory.budgetAmount, budget > 0 else { return nil }
+        let preset = timeFilterManager.currentFilter.preset
+        guard preset != .allTime else { return nil }
+        return budget * budgetPeriodMultiplier(preset: preset, budgetPeriod: liveCategory.budgetPeriod)
+    }
+
+    private func budgetPeriodMultiplier(
+        preset: TimeFilterPreset,
+        budgetPeriod: CustomCategory.BudgetPeriod
+    ) -> Double {
+        // Exact multipliers when the selected range aligns with the budget unit —
+        // avoids the day-count drift that would make "This month" read e.g. 101.8%.
+        switch (budgetPeriod, preset) {
+        case (.monthly, .thisMonth), (.monthly, .lastMonth): return 1
+        case (.monthly, .thisYear), (.monthly, .lastYear): return 12
+        case (.weekly, .thisWeek): return 1
+        case (.yearly, .thisYear), (.yearly, .lastYear): return 1
+        default: break
+        }
+        // Otherwise scale by the ratio of days in the selected range to days in the
+        // budget unit (e.g. weekly budget viewed over "This year").
+        let range = timeFilterManager.currentFilter.dateRange()
+        let periodDays = max(range.end.timeIntervalSince(range.start) / 86_400, 1)
+        let budgetPeriodDays: Double
+        switch budgetPeriod {
+        case .weekly: budgetPeriodDays = 7
+        case .monthly: budgetPeriodDays = 30.4375
+        case .yearly: budgetPeriodDays = 365.25
+        }
+        return periodDays / budgetPeriodDays
     }
 
     // MARK: - Info rows
@@ -262,11 +311,11 @@ struct CategoryDetailView: View {
             value: typeLabel
         ))
 
-        // Budget (expense only, when set)
-        if liveCategory.type == .expense, let budget = liveCategory.budgetAmount, budget > 0 {
+        // Budget (expense only, when set) — scaled to the selected period.
+        if let budgetTotal = scaledBudgetTotal() {
             let spent = Formatting.formatCurrencySmart(aggregates.amountInPeriod, currency: baseCurrency)
-            let total = Formatting.formatCurrencySmart(budget, currency: baseCurrency)
-            let pct = Int((min(max(aggregates.amountInPeriod / budget, 0), 1) * 100).rounded())
+            let total = Formatting.formatCurrencySmart(budgetTotal, currency: baseCurrency)
+            let pct = Int((min(max(aggregates.amountInPeriod / budgetTotal, 0), 1) * 100).rounded())
             let spentAmount = aggregates.amountInPeriod
             rows.append(InfoRowConfig(
                 icon: "chart.pie",
@@ -285,7 +334,7 @@ struct CategoryDetailView: View {
                             .font(AppTypography.bodyEmphasis)
                             .foregroundStyle(AppColors.textTertiary)
                         FormattedAmountText(
-                            amount: budget,
+                            amount: budgetTotal,
                             currency: baseCurrency,
                             fontSize: AppTypography.bodyEmphasis,
                             fontWeight: .semibold,
@@ -329,15 +378,6 @@ struct CategoryDetailView: View {
             showingEdit = true
         } label: {
             Label(String(localized: "common.edit", defaultValue: "Edit"), systemImage: "pencil")
-        }
-
-        Button {
-            showingSubcategories = true
-        } label: {
-            Label(
-                String(localized: "category.detail.manageSubcategories", defaultValue: "Manage subcategories"),
-                systemImage: "tag.fill"
-            )
         }
 
         Divider()

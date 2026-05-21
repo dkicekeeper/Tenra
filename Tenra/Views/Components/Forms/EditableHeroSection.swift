@@ -117,14 +117,11 @@ struct EditableHeroSection: View {
             showingIconPicker = true
         } label: {
             if let tintHex = iconTintColor {
-                // Tinted circle icon (e.g. categories)
+                // Glass hero icon tinted with the category color (matches the
+                // read-only category detail hero).
                 IconView(
                     source: iconSource ?? .sfSymbol("star.fill"),
-                    style: .circle(
-                        size: AppIconSize.ultra,
-                        tint: .monochrome(Color(hex: tintHex)),
-                        backgroundColor: AppColors.bgCard
-                    )
+                    style: .glassHero(tint: .monochrome(Color(hex: tintHex)))
                 )
             } else {
                 // Glass hero icon (e.g. accounts, subscriptions)

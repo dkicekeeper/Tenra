@@ -141,7 +141,7 @@ struct GroupedTransactionList<Overlay: View>: View {
                     .font(AppTypography.h4)
                 Spacer()
                 if showCountBadge, !transactions.isEmpty {
-                    Text("\(transactions.count)")
+                    Text(String(format: NSLocalizedString("history.count", comment: "Transaction count in history header"), transactions.count))
                         .font(AppTypography.h4)
                         .foregroundStyle(.secondary)
                 }

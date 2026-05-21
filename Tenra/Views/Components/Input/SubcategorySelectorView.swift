@@ -40,6 +40,10 @@ struct SubcategorySelectorView: View {
     }
 
     var body: some View {
+        // Observe the subcategory mutation counter so the carousel re-reads its order
+        // immediately after a reorder (the underlying index is @ObservationIgnored, so
+        // without this touch the new order only appears once the reorder sheet closes).
+        let _ = categoriesViewModel.transactionStore?.subcategoriesMutationVersion
         if !availableSubcategories.isEmpty {
             UniversalCarousel(
                 config: .filter,

@@ -268,7 +268,7 @@ struct CategoriesManagementView: View {
                 },
                 onCancel: { showingAddCategory = false }
             )
-            .presentationDetents([.medium, .large])
+            .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
         .sheet(item: $editingCategory) { category in
@@ -285,7 +285,7 @@ struct CategoriesManagementView: View {
                 },
                 onCancel: { editingCategory = nil }
             )
-            .presentationDetents([.medium, .large])
+            .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
         .overlay(alignment: .bottom) {

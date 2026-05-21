@@ -29,6 +29,17 @@ struct ColorPickerRow: View {
         self.palette = palette
     }
 
+    /// Palette to render. If the current color isn't one of the presets (custom color,
+    /// or a stored color in a different case), it's prepended so the user can see and
+    /// keep their current selection instead of nothing appearing selected.
+    private var displayPalette: [String] {
+        let selected = selectedColorHex.lowercased()
+        if palette.contains(where: { $0.lowercased() == selected }) {
+            return palette
+        }
+        return [selectedColorHex] + palette
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             // Title
@@ -41,10 +52,10 @@ struct ColorPickerRow: View {
 
             // Color swatches using UniversalCarousel
             UniversalCarousel(config: .compact) {
-                ForEach(palette, id: \.self) { colorHex in
+                ForEach(displayPalette, id: \.self) { colorHex in
                     ColorSwatch(
                         colorHex: colorHex,
-                        isSelected: selectedColorHex == colorHex,
+                        isSelected: selectedColorHex.lowercased() == colorHex.lowercased(),
                         onTap: {
                             HapticManager.selection()
                             selectedColorHex = colorHex

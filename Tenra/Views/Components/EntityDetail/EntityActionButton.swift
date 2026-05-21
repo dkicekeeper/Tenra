@@ -57,9 +57,9 @@ struct EntityActionButton: View {
             .padding(.vertical, AppSpacing.md)
             .padding(.horizontal, AppSpacing.sm)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.glassProminent)
         .tint(tint)
-        .controlSize(.large)
+//        .controlSize(.large)
         .buttonBorderShape(.roundedRectangle(radius: AppRadius.lg))
         .accessibilityLabel(title)
     }

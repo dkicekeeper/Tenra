@@ -68,7 +68,6 @@ struct MessageBanner: View {
                     )
             }
         }
-        .shadow(color: type.tintColor.opacity(0.3), radius: 8, x: 0, y: 4)
         .scaleEffect(isVisible ? 1 : BannerAnimation.hiddenScale)
         .opacity(isVisible ? 1 : 0)
         .offset(y: isVisible ? 0 : BannerAnimation.hiddenOffset)
@@ -107,7 +106,7 @@ struct MessageBanner: View {
 
             Text(message)
                 .font(AppTypography.body)
-                .foregroundStyle(.primary)
+                .foregroundStyle(AppColors.textPrimary)
                 .lineLimit(3)
                 .fixedSize(horizontal: false, vertical: true)
         }

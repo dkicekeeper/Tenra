@@ -171,6 +171,8 @@ For dynamic-size amount inputs use `Font.custom(AppTypography.fontFamily, …)` 
 
 ⚠️ **For destructive buttons, do NOT use `.primaryButton()`** — it forces `.tint(AppColors.accent)` which silently overrides `role: .destructive` (button looks accent-colored instead of red). Use native directly: `.buttonStyle(.glassProminent).tint(AppColors.destructive).controlSize(.large)` with `Button(role: .destructive, ...)`. See [BulkDeleteButton.swift](../Tenra/Views/Components/Input/BulkDeleteButton.swift) and [EntityActionButton.swift](../Tenra/Views/Components/EntityDetail/EntityActionButton.swift).
 
+**Group adjacent glass elements in `GlassEffectContainer`** (glass can't sample other glass → inconsistent rendering otherwise). Use it for rows of `.glass`/`.glassProminent` buttons or clusters of `.glassEffect()` views; set its `spacing:` to match the stack spacing. Used ungated in app code (app target = iOS 26). Precedents: `EntityDetailScaffold` action bar, `DateButtonsView`, `PeriodChartSwitcher`. Leaf components that still support pre-iOS-26 (`CategoryChip`, `SegmentedPickerView`) gate glass with `#available(iOS 26)` + `.ultraThinMaterial` fallback.
+
 ---
 
 ## 3. Shared Components

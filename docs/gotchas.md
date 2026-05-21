@@ -76,3 +76,5 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
 
 - **NEVER delete `.lproj` files** — they're used via `String(localized:)` even without explicit pbxproj refs.
 - **Add new keys to BOTH `Tenra/en.lproj` and `Tenra/ru.lproj/Localizable.strings`** — the app ships RU + EN.
+- Localization is classic `.lproj/Localizable.strings` (NOT `.xcstrings`/String Catalog).
+- **Count strings use a single genitive-plural form, no plural rules** (e.g. `"%d категорий"`, `"%d транзакций"`). For grammatically correct plurals, add `Localizable.stringsdict` to BOTH `.lproj` (ru needs one/few/many/other) and render via `String(format: NSLocalizedString("key", comment: ""), count)` — `String(localized:)` won't apply the stringsdict rules. Precedent: `history.count`.

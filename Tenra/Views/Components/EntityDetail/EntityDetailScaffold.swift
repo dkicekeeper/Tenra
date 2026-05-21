@@ -150,22 +150,26 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
 
     @ViewBuilder
     private var actionsBar: some View {
-        HStack(spacing: AppSpacing.md) {
-            if let primaryAction {
-                EntityActionButton(
-                    title: primaryAction.title,
-                    systemImage: primaryAction.systemImage,
-                    role: primaryAction.role,
-                    action: primaryAction.action
-                )
-            }
-            if let secondaryAction {
-                EntityActionButton(
-                    title: secondaryAction.title,
-                    systemImage: secondaryAction.systemImage,
-                    role: secondaryAction.role,
-                    action: secondaryAction.action
-                )
+        // Group the glass buttons so they share one sampling region (glass can't
+        // sample other glass). Container spacing matches the HStack spacing.
+        GlassEffectContainer(spacing: AppSpacing.md) {
+            HStack(spacing: AppSpacing.md) {
+                if let primaryAction {
+                    EntityActionButton(
+                        title: primaryAction.title,
+                        systemImage: primaryAction.systemImage,
+                        role: primaryAction.role,
+                        action: primaryAction.action
+                    )
+                }
+                if let secondaryAction {
+                    EntityActionButton(
+                        title: secondaryAction.title,
+                        systemImage: secondaryAction.systemImage,
+                        role: secondaryAction.role,
+                        action: secondaryAction.action
+                    )
+                }
             }
         }
     }

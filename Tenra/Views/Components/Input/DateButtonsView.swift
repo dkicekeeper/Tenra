@@ -41,43 +41,46 @@ private struct DateButtonsContent: View {
     }
     
     var body: some View {
-        HStack(spacing: AppSpacing.md) {
-            // Yesterday - left
-            Button(action: {
-                if let yesterday = yesterday {
-                    selectedDate = yesterday
-                    onSave(yesterday)
+        // Group the three glass buttons so they share one sampling region.
+        GlassEffectContainer(spacing: AppSpacing.md) {
+            HStack(spacing: AppSpacing.md) {
+                // Yesterday - left
+                Button(action: {
+                    if let yesterday = yesterday {
+                        selectedDate = yesterday
+                        onSave(yesterday)
+                    }
+                }) {
+                    Text(String(localized: "date.yesterday"))
+                        .padding(AppSpacing.sm)
+                        .frame(maxWidth: .infinity)
                 }
-            }) {
-                Text(String(localized: "date.yesterday"))
-                    .padding(AppSpacing.sm)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.glass)
-            .disabled(isDisabled)
+                .buttonStyle(.glass)
+                .disabled(isDisabled)
 
-            // Today - center
-            Button(action: {
-                selectedDate = today
-                onSave(today)
-            }) {
-                Text(String(localized: "date.today"))
-                    .padding(AppSpacing.sm)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.glass)
-            .disabled(isDisabled)
+                // Today - center
+                Button(action: {
+                    selectedDate = today
+                    onSave(today)
+                }) {
+                    Text(String(localized: "date.today"))
+                        .padding(AppSpacing.sm)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glass)
+                .disabled(isDisabled)
 
-            // Calendar - right
-            Button(action: {
-                showingDatePicker = true
-            }) {
-                Text(String(localized: "date.selectDate"))
-                    .padding(AppSpacing.sm)
-                    .frame(maxWidth: .infinity)
+                // Calendar - right
+                Button(action: {
+                    showingDatePicker = true
+                }) {
+                    Text(String(localized: "date.selectDate"))
+                        .padding(AppSpacing.sm)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glass)
+                .disabled(isDisabled)
             }
-            .buttonStyle(.glass)
-            .disabled(isDisabled)
         }
         .padding(AppSpacing.md)
         .sheet(isPresented: $showingDatePicker) {

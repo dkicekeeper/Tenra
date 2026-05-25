@@ -391,6 +391,12 @@ class AppCoordinator {
         transactionStore.bumpCurrencyRatesVersion()
         transactionsViewModel.invalidateCaches()
 
+        // Post any deposit interest that came due while the app was closed. This used to
+        // run only when a deposit screen appeared, so interest could be late if the user
+        // didn't open it on the posting day. Idempotent — posts nothing when nothing is due.
+        // Runs before the recalc below so newly-posted interest is folded into balances.
+        await reconcileDepositsOnLaunch()
+
         // Maturation + one-time repair: if the day advanced since the last run (or this
         // is the first launch after update), recompute realized balances/aggregates so
         // newly-matured future transactions are folded in and any pre-existing drift is
@@ -420,6 +426,22 @@ class AppCoordinator {
     }
     
     // MARK: - Private Methods
+
+    /// Reconcile all deposits at launch so interest that came due while the app was
+    /// closed is posted promptly (previously only happened when a deposit view appeared).
+    /// Collects the generated `.depositInterestAccrual` transactions and persists them
+    /// through the standard pipeline, which updates the deposit balance incrementally.
+    private func reconcileDepositsOnLaunch() async {
+        guard transactionStore.accounts.contains(where: { $0.isDeposit }) else { return }
+        var created: [Transaction] = []
+        depositsViewModel.reconcileAllDeposits(
+            allTransactions: transactionStore.transactions,
+            onTransactionCreated: { created.append($0) }
+        )
+        for tx in created {
+            _ = try? await transactionStore.add(tx)
+        }
+    }
 
     /// REMOVED: setupViewModelObservers() - not needed with @Observable
     /// @Observable automatically notifies SwiftUI of changes, no manual propagation needed

@@ -195,6 +195,7 @@ These cause silent data corruption or crashes — internalize even without readi
 5. ⚠️ **Generated recurring tx subcategories require explicit linking.** Always `await transactionStore.createSeries(series)` then call `categoriesViewModel.linkSubcategoriesToTransaction(...)`. See [domains/recurring.md](docs/domains/recurring.md).
 6. ⚠️ **`Transaction.convertedAmount` is in *account* currency, NOT base currency.** Never sum `convertedAmount ?? amount` across multi-currency transactions to get a base-currency total — bug shows as `$20 + $100 = "120 KZT"`. Always convert via `CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency)` with `convertedAmount ?? amount` as a cold-cache fallback only. See [domains/currency.md](docs/domains/currency.md).
 7. ⚠️ **NEVER render a money amount without a canonical formatter.** Forbidden in UI code: `Text("\(amount) \(currency)")`, `Text(String(format: "%.2f", amount))`, ad-hoc `NumberFormatter()` inside `body`/`List`/`ForEach`, raw `Formatting.formatCurrency(...)` for display (it always shows `.00`). Required: `FormattedAmountText` for standalone views, `InfoRow(... amount: currency:)` / `InfoRowConfig(... amount: currency:)` for info rows, `Formatting.formatCurrencySmart(_:currency:)` only when a `String` is needed (composed strings, hero subtitles). See [design-system.md §6 Amount Formatting](docs/design-system.md).
+8. ⚠️ **All balance / account-&-category aggregate / budget money math derives from one rule: `BalanceCalculationEngine.contribution(of:to:policy:)` + `LedgerPolicyRule.isRealized`.** Realized figures exclude future-dated tx (`txDate <= today`); forecasts include them. Don't re-implement per-type sign tables. Loan account balance derives from `loanInfo.remainingPrincipal` (never sum loan legs into balance); `DepositInterestService.principalDelta` is intentionally separate (capitalization gate) — don't merge it. See [docs/DATA_INTEGRITY_AUDIT.md](docs/DATA_INTEGRITY_AUDIT.md).
 
 ## Common Tasks
 
@@ -228,7 +229,7 @@ Pattern used in CategoriesManagementView, CategoryDetailView, CategorySubcategor
 
 ⚠️ **The Xcode project uses file-system-synchronized groups (`PBXFileSystemSynchronizedRootGroup`).** Adding, deleting, or renaming files (`.swift`, `.stringsdict`, etc.) needs NO `project.pbxproj` edits — just create/`rm` on disk and they're auto-included in the target. (Verified: deleted a view + added `.stringsdict` files, both picked up by the build.)
 
-`Tenra.xcdatamodeld` is currently at v10. Bump checklist when adding an entity (additive — lightweight migration auto-handles):
+`Tenra.xcdatamodeld` is currently at v10 (v10 added `CategoryAggregateEntity.expenseAmount` for expense-only budget "spent"). Bump checklist when adding an entity (additive — lightweight migration auto-handles):
 1. `cp -r Tenra/CoreData/Tenra.xcdatamodeld/Tenra\ vN.xcdatamodel Tenra/CoreData/Tenra.xcdatamodeld/Tenra\ vN+1.xcdatamodel`, edit `contents` XML.
 2. Update `Tenra/CoreData/Tenra.xcdatamodeld/.xccurrentversion` plist to point to vN+1.
 3. Create `Tenra/CoreData/Entities/<Entity>+CoreDataClass.swift` + `<Entity>+CoreDataProperties.swift` (mirror `AccountAggregateEntity` for aggregate-style entities).
@@ -252,7 +253,10 @@ If a real symptom appears (UI freeze, missing label, broken constraint affecting
 - UI tests: `TenraUITests/`
 - Test ViewModels with mock repositories
 - Test CoreData operations with in-memory stores
-- ⚠️ Currency conversion tests must call `CurrencyRateStore.shared.clearAll()` in suite `init()` — see [domains/currency.md](docs/domains/currency.md)
+- ⚠️ Currency conversion tests must call `CurrencyRateStore.shared.clearAll()` in suite `init()`, AND any suite that mutates `CurrencyRateStore.shared` must be `@MainActor` so its synchronous tests serialize on the main actor (else they race other suites' rate writes → intermittent failures). See [domains/currency.md](docs/domains/currency.md)
+- ⚠️ swift-testing `-only-testing:TenraTests/Suite/method()` runs **0 tests** but still prints `** TEST SUCCEEDED **` — method-level filtering doesn't work; filter at the **suite** level (`-only-testing:TenraTests/Suite`).
+- ⚠️ Parse test results reliably with `grep -aE "Test case .* (passed|failed)|\*\* TEST (SUCCEEDED|FAILED)"` — do NOT grep `expect`, it matches `#expect` compiler warnings.
+- ⚠️ Tests that build a `TransactionStore` must **retain** it — `AccountsViewModel.transactionStore` is `weak`, so `accounts` (= `transactionStore?.accounts`) goes empty once the store deallocates.
 - ⚠️ `xcodebuild test -only-testing:...` does NOT skip compilation — one broken test file fails the whole target. When a test file's API has drifted, wrap it in `#if false` / `#endif` with a header comment (existing precedent: `TenraTests/Onboarding/OnboardingViewModelTests.swift`, `TenraTests/Services/Voice/VoiceInputParserTests.swift`).
 - ⚠️ Swift filenames must be unique within a target. Xcode rejects two `.swift` files with the same name even in different directories of the same target. When replacing a legacy test file with a fresh-API rewrite, rename the new one (precedent: `CategoryBudgetServiceStoreBackedTests.swift` replaces the legacy `CategoryBudgetServiceTests.swift`).
 - Extract crash details from `.xcresult`: `xcrun xcresulttool get test-results tests --path <bundle.xcresult> --filter-by-test-id 'TenraTests/<Suite>/<test>'`
@@ -314,6 +318,7 @@ Active reference docs in `docs/`:
 | File | Purpose |
 |------|---------|
 | [architecture.md](docs/architecture.md) | MVVM+Coordinator deep dive, TransactionStore, BalanceCoordinator, Repository, CoreData v8 |
+| [DATA_INTEGRITY_AUDIT.md](docs/DATA_INTEGRITY_AUDIT.md) | Cross-domain data-integrity audit, the unified `contribution`/`LedgerPolicyRule` model, realized-vs-forecast policy, phased refactor progress |
 | [concurrency.md](docs/concurrency.md) | Swift 6 concurrency, CoreData threading, @Observable rules |
 | [design-system.md](docs/design-system.md) | Design tokens, components, animations, padding contract, amount formatting |
 | [gotchas.md](docs/gotchas.md) | SwiftUI Layout, Performance hot-paths, code hygiene |

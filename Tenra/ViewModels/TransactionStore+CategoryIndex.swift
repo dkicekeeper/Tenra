@@ -229,6 +229,10 @@ extension TransactionStore {
     /// launch can skip the O(N_tx) rebuild.
     private func applyAggregateDelta(tx: Transaction, sign: Int) {
         guard let date = DateFormatters.dateFormatter.date(from: tx.date) else { return }
+        // Realized actuals only: exclude future-dated tx so budget "spent" and category
+        // totals match the balance/account-aggregate policy. The day-change repair
+        // (rebuildCategoryIndexes) folds a transaction in once its date arrives.
+        guard LedgerPolicyRule.isRealized(date) else { return }
 
         let conversion = CategoryBudgetCurrency.toBase(amount: tx.amount, from: tx.currency, base: baseCurrency)
         if conversion.usedStaleFallback { aggregatesAreFXStale = true }

@@ -196,7 +196,9 @@ extension CategoryBudgetService {
     }
 
     nonisolated static func legacyBudgetPeriodStart(for category: CustomCategory) -> Date {
-        guard category.budgetStartDate != nil else { return Date() }
+        // NB: do NOT short-circuit to `now` when budgetStartDate is nil (legacy data can
+        // have a budget without a stored start date). The period is derived from the
+        // reset day / calendar like the store path, so the two agree.
         let cal = Calendar.current
         let now = Date()
         switch category.budgetPeriod {

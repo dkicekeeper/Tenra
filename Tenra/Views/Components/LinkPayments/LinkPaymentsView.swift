@@ -124,7 +124,7 @@ struct LinkPaymentsView: View {
                     VStack(spacing: 0) {
                         Text(title)
                             .font(AppTypography.body.weight(.semibold))
-                        Text(String(format: String(localized: "subscription.linkPayments.selectedWithAmount", defaultValue: "%d selected \u{00B7} %@"), selectedIds.count, Formatting.formatCurrency(cachedSelectedTotalInBaseCurrency, currency: transactionStore.baseCurrency)))
+                        Text(String(format: String(localized: "subscription.linkPayments.selectedWithAmount", defaultValue: "%d selected \u{00B7} %@"), selectedIds.count, Formatting.formatCurrencySmart(cachedSelectedTotalInBaseCurrency, currency: transactionStore.baseCurrency)))
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
                     }

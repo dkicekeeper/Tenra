@@ -4,13 +4,15 @@ Round-trip rules for CSV export/import via `CSVImportCoordinator`, `CSVExporter`
 
 ## TransactionType Coverage
 
-All **6 TransactionTypes** must export/import:
+All **8 TransactionTypes** must export/import (names match `CSVExporter.exportTypeName`):
 - `expense`
 - `income`
 - `internal`
 - `deposit_topup`
 - `deposit_withdrawal`
 - `deposit_interest`
+- `loan_payment`
+- `loan_early_repayment`
 
 Mappings live in `CSVColumnMapping.typeMappings`.
 

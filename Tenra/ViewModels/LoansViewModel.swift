@@ -95,6 +95,12 @@ class LoansViewModel {
         note: String? = nil,
         category: String? = nil
     ) -> Transaction? {
+        // A payment can't be dated in the future: it reduces remainingPrincipal (and the
+        // loan balance, via C-3) synchronously, which would drop the debt before the money
+        // actually leaves the bank. Realized-excludes-future (M-3).
+        guard LedgerPolicyRule.isRealized(DateFormatters.dateFormatter.date(from: date)) else {
+            return nil
+        }
         guard var account = accountsViewModel.getAccount(by: accountId),
               let loanInfo = account.loanInfo else {
             return nil
@@ -133,6 +139,10 @@ class LoansViewModel {
         description: String? = nil,
         category: String? = nil
     ) -> Transaction? {
+        // No future-dated payments — see makeEarlyRepayment (M-3).
+        guard LedgerPolicyRule.isRealized(DateFormatters.dateFormatter.date(from: date)) else {
+            return nil
+        }
         guard var account = accountsViewModel.getAccount(by: accountId),
               let loanInfo = account.loanInfo else {
             return nil

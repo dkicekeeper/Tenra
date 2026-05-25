@@ -28,6 +28,9 @@ struct DateButtonsView: View {
 private struct DateButtonsContent: View {
     @Binding var selectedDate: Date
     var isDisabled: Bool = false
+    /// When set, the calendar picker cannot select a date after this (e.g. loan
+    /// payments can't be future-dated — M-3). Quick buttons are yesterday/today only.
+    var maxDate: Date? = nil
     let onSave: (Date) -> Void
     @Binding var showingDatePicker: Bool
     
@@ -86,6 +89,7 @@ private struct DateButtonsContent: View {
         .sheet(isPresented: $showingDatePicker) {
             DateButtonsDatePickerSheet(
                 selectedDate: $selectedDate,
+                maxDate: maxDate,
                 onDateSelected: { date in
                     onSave(date)
                     showingDatePicker = false
@@ -98,16 +102,31 @@ private struct DateButtonsContent: View {
 // MARK: - DatePicker Sheet Component
 private struct DateButtonsDatePickerSheet: View {
     @Binding var selectedDate: Date
+    var maxDate: Date? = nil
     let onDateSelected: (Date) -> Void
     @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        NavigationStack {
+
+    @ViewBuilder
+    private var picker: some View {
+        if let maxDate {
+            DatePicker(
+                String(localized: "date.choose"),
+                selection: $selectedDate,
+                in: ...maxDate,
+                displayedComponents: .date
+            )
+        } else {
             DatePicker(
                 String(localized: "date.choose"),
                 selection: $selectedDate,
                 displayedComponents: .date
             )
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            picker
             .datePickerStyle(.graphical)
             .padding()
             .navigationTitle(String(localized: "date.choose"))
@@ -138,12 +157,14 @@ extension View {
     func dateButtonsSafeArea(
         selectedDate: Binding<Date>,
         isDisabled: Bool = false,
+        maxDate: Date? = nil,
         onSave: @escaping (Date) -> Void
     ) -> some View {
         self.safeAreaBar(edge: .bottom) {
             DateButtonsContentWrapper(
                 selectedDate: selectedDate,
                 isDisabled: isDisabled,
+                maxDate: maxDate,
                 onSave: onSave
             )
         }
@@ -154,13 +175,15 @@ extension View {
 private struct DateButtonsContentWrapper: View {
     @Binding var selectedDate: Date
     var isDisabled: Bool = false
+    var maxDate: Date? = nil
     let onSave: (Date) -> Void
     @State private var showingDatePicker = false
-    
+
     var body: some View {
         DateButtonsContent(
             selectedDate: $selectedDate,
             isDisabled: isDisabled,
+            maxDate: maxDate,
             onSave: onSave,
             showingDatePicker: $showingDatePicker
         )

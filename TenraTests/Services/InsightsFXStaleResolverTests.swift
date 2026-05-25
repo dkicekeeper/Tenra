@@ -14,7 +14,12 @@ import Testing
 import Foundation
 @testable import Tenra
 
+// @MainActor so these synchronous tests serialize on the main actor with the other
+// suites that mutate the process-wide `CurrencyRateStore.shared` (the persistence and
+// matcher suites are already @MainActor) — otherwise a concurrent write/clear here
+// races their assertions.
 @Suite("Insights FX-stale resolver (H-7 residual)", .serialized)
+@MainActor
 struct InsightsFXStaleResolverTests {
 
     private let base = "KZT"

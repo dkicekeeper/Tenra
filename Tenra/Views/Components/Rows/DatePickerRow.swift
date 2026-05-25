@@ -15,17 +15,22 @@ struct DatePickerRow: View {
     let title: String
     @Binding var selection: Date
     let displayedComponents: DatePickerComponents
+    /// When set, the picker cannot select a date after this (e.g. loan payments
+    /// can't be future-dated — M-3).
+    let maxDate: Date?
 
     init(
         icon: String? = nil,
         title: String = String(localized: "common.startDate"),
         selection: Binding<Date>,
-        displayedComponents: DatePickerComponents = .date
+        displayedComponents: DatePickerComponents = .date,
+        maxDate: Date? = nil
     ) {
         self.icon = icon
         self.title = title
         self._selection = selection
         self.displayedComponents = displayedComponents
+        self.maxDate = maxDate
     }
 
     var body: some View {
@@ -33,11 +38,20 @@ struct DatePickerRow: View {
             config: .standard,
             leadingIcon: icon.map { .sfSymbol($0, color: AppColors.accent, size: AppIconSize.lg) }
         ) {
-            DatePicker(
-                title,
-                selection: $selection,
-                displayedComponents: displayedComponents
-            )
+            if let maxDate {
+                DatePicker(
+                    title,
+                    selection: $selection,
+                    in: ...maxDate,
+                    displayedComponents: displayedComponents
+                )
+            } else {
+                DatePicker(
+                    title,
+                    selection: $selection,
+                    displayedComponents: displayedComponents
+                )
+            }
         } trailing: {
             EmptyView()
         }

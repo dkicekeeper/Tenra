@@ -131,7 +131,7 @@ struct LoanPaymentView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
-            .dateButtonsSafeArea(selectedDate: $paymentDate, isDisabled: !isFormValid) { _ in
+            .dateButtonsSafeArea(selectedDate: $paymentDate, isDisabled: !isFormValid, maxDate: Date()) { _ in
                 savePayment()
             }
             .sheet(isPresented: $showingSubcategorySearch) {

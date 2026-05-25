@@ -122,7 +122,7 @@ struct LoanEarlyRepaymentView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
-            .dateButtonsSafeArea(selectedDate: $repaymentDate, isDisabled: !isFormValid) { _ in
+            .dateButtonsSafeArea(selectedDate: $repaymentDate, isDisabled: !isFormValid, maxDate: Date()) { _ in
                 saveRepayment()
             }
             .sheet(isPresented: $showingSubcategorySearch) {

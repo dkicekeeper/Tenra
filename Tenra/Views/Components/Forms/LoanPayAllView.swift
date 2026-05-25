@@ -128,7 +128,8 @@ struct LoanPayAllView: View {
                         DatePickerRow(
                             icon: "calendar",
                             title: String(localized: "loan.date", defaultValue: "Date"),
-                            selection: $paymentDate
+                            selection: $paymentDate,
+                            maxDate: Date()
                         )
                     }
                 }

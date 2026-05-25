@@ -54,6 +54,8 @@ protocol DataRepositoryProtocol: Sendable {
     /// Warm-start snapshot for `TransactionStore.accountAggregatesByAccountId`.
     nonisolated func loadAccountAggregates() -> [String: AccountAggregates]
     nonisolated func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String])
+    /// Awaited variant — ordered after the raw-tx save in the import/rebuild flush (M-14).
+    nonisolated func saveAccountAggregatesSync(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) async
 
     // MARK: - Category Aggregates
     /// Pre-aggregated category totals (daily/monthly/yearly/all-time).

@@ -118,6 +118,10 @@ nonisolated final class CoreDataRepository: DataRepositoryProtocol, @unchecked S
         accountRepository.saveAccountAggregates(aggregates, currencyByAccountId: currencyByAccountId)
     }
 
+    func saveAccountAggregatesSync(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) async {
+        await accountRepository.saveAccountAggregatesSync(aggregates, currencyByAccountId: currencyByAccountId)
+    }
+
     // MARK: - Categories (Delegated to CategoryRepository)
 
     func loadCategories() -> [CustomCategory] {

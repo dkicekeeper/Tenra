@@ -26,6 +26,11 @@ protocol AccountRepositoryProtocol: Sendable {
     /// via `AccountAggregateEntity` (Schema v9+).
     nonisolated func loadAccountAggregates() -> [String: AccountAggregates]
     nonisolated func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String])
+    /// Synchronously (awaited) persist account aggregates — guaranteed to finish
+    /// before returning. Used by the import/rebuild flush so the aggregate write
+    /// is ordered after the raw-transaction save (M-14): a kill between the two
+    /// would otherwise leave warm-start aggregates lagging the persisted tx.
+    nonisolated func saveAccountAggregatesSync(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) async
 }
 
 /// CoreData implementation of AccountRepositoryProtocol
@@ -283,17 +288,26 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
     func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) {
         Task.detached(priority: .utility) { [weak self] in
             guard let self else { return }
-            do {
-                try await self.saveCoordinator.performSave(operation: "saveAccountAggregates") { context in
-                    try self.saveAccountAggregatesInternal(
-                        aggregates,
-                        currencyByAccountId: currencyByAccountId,
-                        context: context
-                    )
-                }
-            } catch {
-                Self.logger.error("saveAccountAggregates failed: \(error.localizedDescription)")
+            await self.saveAccountAggregatesSync(aggregates, currencyByAccountId: currencyByAccountId)
+        }
+    }
+
+    /// Awaited (non-fire-and-forget) account-aggregate persist. Uses a unique
+    /// operation name per call so it never collides with an in-flight debounced
+    /// `saveAccountAggregates` (the duplicate-operation guard would otherwise
+    /// reject it and silently skip the write). See M-14.
+    func saveAccountAggregatesSync(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) async {
+        let operationId = "saveAccountAggregatesSync_\(UUID().uuidString)"
+        do {
+            try await self.saveCoordinator.performSave(operation: operationId) { context in
+                try self.saveAccountAggregatesInternal(
+                    aggregates,
+                    currencyByAccountId: currencyByAccountId,
+                    context: context
+                )
             }
+        } catch {
+            Self.logger.error("saveAccountAggregatesSync failed: \(error.localizedDescription)")
         }
     }
 

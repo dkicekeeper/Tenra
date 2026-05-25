@@ -140,6 +140,7 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol, @uncheck
 
     func loadAccountAggregates() -> [String: AccountAggregates] { [:] }
     func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) {}
+    func saveAccountAggregatesSync(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) async {}
 
     // MARK: - Category Rules
     

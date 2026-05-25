@@ -68,12 +68,17 @@ extension TransactionStore {
     }
 
     /// Immediate persist (use after wholesale rebuild and from `finishImport()`).
+    /// Awaits the actual CoreData write so it is ordered after the raw-transaction
+    /// save in `finishImport` — a kill in between would otherwise leave warm-start
+    /// aggregates lagging the persisted transactions (M-14). This runs once at
+    /// import/rebuild end (after `isImporting = false`), NOT in the per-row hot
+    /// loop, so awaiting it does not affect the import hot path.
     internal func flushAccountAggregatePersist() async {
         let snapshot = accountAggregatesByAccountId
         var currencyById: [String: String] = [:]
         currencyById.reserveCapacity(accounts.count)
         for acc in accounts { currencyById[acc.id] = acc.currency }
-        repository.saveAccountAggregates(snapshot, currencyByAccountId: currencyById)
+        await repository.saveAccountAggregatesSync(snapshot, currencyByAccountId: currencyById)
     }
 
     // MARK: - Cold Rebuild

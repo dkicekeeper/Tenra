@@ -19,7 +19,10 @@
 //  Performance notes:
 //  - Static DateFormatters avoid allocations inside loops
 //  - calculateMonthlySummary bypasses global cacheManager cache (avoids cross-filter contamination)
-//  - resolveAmount delegates to convertedAmount (already cached by TransactionCurrencyService)
+//  - resolveAmount converts tx.amount via the live FX cache (convertSync); on a
+//    cross-currency cold-cache miss it SKIPS the tx (0) + flags FX-stale rather
+//    than blending account-currency convertedAmount as base (H-7/M-7). See
+//    resolveAmountToBase.
 //
 
 import CoreData

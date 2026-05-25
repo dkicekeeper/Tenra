@@ -602,7 +602,10 @@ nonisolated final class InsightsService {
             } else {
                 txDate = dateFormatter.date(from: tx.date)
             }
-            guard let date = txDate, date >= windowStart, date < windowEnd else { continue }
+            // Realized period totals exclude future-dated tx (consistent with the
+            // pre-aggregated path and calculateMonthlySummary).
+            guard let date = txDate, date >= windowStart, date < windowEnd,
+                  LedgerPolicyRule.isRealized(date) else { continue }
             let key = granularity.groupingKey(for: date)
             let amount = resolveAmount(tx, baseCurrency: baseCurrency)
             switch tx.type {
@@ -981,6 +984,11 @@ nonisolated final class InsightsService {
                 }
 
                 guard tx.type == .income || tx.type == .expense else { continue }
+                // Realized money totals exclude future-dated tx (incl. generated recurring),
+                // matching balance/aggregates. Projections add future explicitly elsewhere
+                // (e.g. CashFlow recurringNet), so they must not be folded in here.
+                // Structural fields above (txDateMap, account counts, first/last date) keep all tx.
+                guard LedgerPolicyRule.isRealized(txDate) else { continue }
                 let comps = calendar.dateComponents([.year, .month], from: txDate)
                 guard let year = comps.year, let month = comps.month else { continue }
                 let monthKey = MonthKey(year: year, month: month)

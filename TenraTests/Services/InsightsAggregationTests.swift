@@ -90,6 +90,26 @@ struct InsightsAggregationTests {
     private func jan2026Start() -> Date { utcDate(year: 2026, month: 1, day: 1) }
     private func apr2026Start() -> Date { utcDate(year: 2026, month: 4, day: 1) }
 
+    // MARK: - Future-date exclusion (H-5: realized metrics)
+
+    @Test("PreAggregatedData.build excludes future-dated transactions from monthly totals")
+    func buildExcludesFutureTransactions() {
+        let df = DateFormatters.dateFormatter
+        let pastDate = df.string(from: Calendar.current.date(byAdding: .day, value: -5, to: Date())!)
+        let futureDate = df.string(from: Calendar.current.date(byAdding: .day, value: 40, to: Date())!)
+        let txs = [
+            makeTx(date: pastDate, amount: 1_000, type: .income),
+            makeTx(date: futureDate, amount: 5_000, type: .income),
+            makeTx(date: pastDate, amount: 300, type: .expense),
+            makeTx(date: futureDate, amount: 900, type: .expense),
+        ]
+        let pre = InsightsService.PreAggregatedData.build(from: txs, baseCurrency: kCurrency)
+        let totalIncome = pre.monthlyTotals.values.reduce(0) { $0 + $1.income }
+        let totalExpenses = pre.monthlyTotals.values.reduce(0) { $0 + $1.expenses }
+        #expect(totalIncome == 1_000)
+        #expect(totalExpenses == 300)
+    }
+
     // MARK: - computeMonthlyTotals
 
     @Test("computeMonthlyTotals: correct totals for 3 months")

@@ -453,6 +453,13 @@ extension TransactionStore {
         for tx in futureTxs {
             try await apply(TransactionEvent.deleted(tx))
         }
+
+        // Prune future occurrences too (M-5). updateSeries only prunes occurrences
+        // when the schedule changes; a pause leaves them orphaned, so resume could
+        // skip a period or gap. Mirror stopSeries: drop occurrences after today and
+        // persist the pruned list.
+        recurringStore.removeOccurrences(seriesId: seriesId, afterDate: today)
+        recurringStore.saveOccurrences()
     }
 
     /// Resume a subscription (subscription-specific convenience method)

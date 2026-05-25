@@ -37,6 +37,14 @@ struct AccountDetailView: View {
         transactionStore.accountById[account.id] ?? account
     }
 
+    /// Live balance from the BalanceCoordinator (the same source the accounts list
+    /// reads). The Account entity's cached `.balance` field doesn't re-read here after
+    /// a transaction/transfer until re-navigation; `balances` is @Observable, so reading
+    /// it keeps the hero and navigation-bar amount current.
+    private var liveBalance: Double {
+        accountsViewModel.balanceCoordinator?.balances[account.id] ?? liveAccount.balance
+    }
+
     /// Combined equatable trigger — composed of scalar mutation versions so the
     /// body doesn't subscribe to the entire 19k-tx array. Mirrors the
     /// `CategoryDetailView` refresh trigger.
@@ -71,7 +79,7 @@ struct AccountDetailView: View {
 
         EntityDetailScaffold(
             navigationTitle: liveAccount.name,
-            navigationAmount: liveAccount.balance,
+            navigationAmount: liveBalance,
             navigationCurrency: liveAccount.currency,
             primaryAction: ActionConfig(
                 title: String(localized: "account.detail.actions.addTransaction", defaultValue: "Add transaction"),
@@ -102,7 +110,7 @@ struct AccountDetailView: View {
                 HeroSection(
                     icon: liveAccount.iconSource,
                     title: liveAccount.name,
-                    primaryAmount: liveAccount.balance,
+                    primaryAmount: liveBalance,
                     primaryCurrency: liveAccount.currency,
                     showBaseConversion: true,
                     baseCurrency: transactionsViewModel.appSettings.baseCurrency

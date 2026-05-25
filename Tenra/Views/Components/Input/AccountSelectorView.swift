@@ -98,10 +98,13 @@ struct AccountSelectorView: View {
         .onChange(of: selectedAccountId) { _, _ in
             syncScrollToSelected(animated: true)
         }
-        // Re-sync when the accounts list itself changes (e.g. when a sibling carousel
-        // filters out the currently-selected id, or new accounts arrive). Without this,
-        // the scroll position can drift away from the selection after a list refresh.
-        .onChange(of: accounts.map(\.id)) { _, _ in
+        // The accounts list can change because a *sibling* selector re-filtered it
+        // (transfer screen: the source list excludes the chosen target and vice-versa).
+        // Only re-align the scroll when our own selection actually fell out of the new
+        // list — re-syncing on every list change visibly scrolls this carousel when the
+        // user is interacting with the other selector.
+        .onChange(of: accounts.map(\.id)) { _, newIDs in
+            guard let selectedAccountId, !newIDs.contains(selectedAccountId) else { return }
             syncScrollToSelected(animated: false)
         }
         // Commit auto-selection only when scroll settles. During a tap-induced

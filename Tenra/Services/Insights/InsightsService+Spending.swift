@@ -73,6 +73,22 @@ extension InsightsService {
                 topExpenses = filterService.filterByTimeRange(expenses, start: cp.periodStart, end: cp.periodEnd)
             }
             topTotalExpenses = cp.expenses
+        } else if let gran = granularity, gran != .allTime {
+            // No precomputed period point, but a finite granularity is selected — scope to
+            // the current bucket's date range directly. Without this the top-category card
+            // fell back to the full window below and showed all-time figures under e.g. month.
+            let key = gran.currentPeriodKey
+            let start = gran.periodStart(for: key)
+            let end = gran.periodEnd(for: key)
+            if let map = txDateMap {
+                topExpenses = expenses.filter { tx in
+                    guard let d = map[tx.date], d >= start, d < end else { return false }
+                    return true
+                }
+            } else {
+                topExpenses = filterService.filterByTimeRange(expenses, start: start, end: end)
+            }
+            topTotalExpenses = topExpenses.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
         } else {
             _ = timeFilter.dateRange() // topRange was unused
             topExpenses = expenses

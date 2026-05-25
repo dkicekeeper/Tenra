@@ -46,7 +46,13 @@ final class InsightsViewModel {
     @ObservationIgnored private var precomputedTotals: [InsightGranularity: PeriodTotals] = [:]
 
     /// Background recompute task handle — cancelled and replaced on each data change.
+    /// Non-nil means a full recompute is in flight (every granularity will be populated).
     @ObservationIgnored private var recomputeTask: Task<Void, Never>?
+
+    /// Monotonic token identifying the current recompute. MainActor writes from a detached
+    /// task only land if their captured generation still matches — so a superseded/cancelled
+    /// task can never clobber the cache with stale data.
+    @ObservationIgnored private var computeGeneration = 0
 
     /// Debounce task — coalesces rapid mutation bursts into a single recompute.
     @ObservationIgnored private var debounceTask: Task<Void, Never>?
@@ -92,6 +98,13 @@ final class InsightsViewModel {
             Self.logger.debug("🧠 [InsightsVM] granularity → \(self.currentGranularity.rawValue, privacy: .public)")
             if precomputedInsights[self.currentGranularity] != nil {
                 self.applyPrecomputed(for: self.currentGranularity)
+            } else if recomputeTask != nil {
+                // A full recompute is already in flight — it computes EVERY granularity and
+                // applies the current one on completion. Just show loading and wait. Starting a
+                // new load here (the old behaviour) cancelled the in-flight phase 2 that
+                // populates the other granularities, so rapid switching left the cache
+                // perpetually incomplete and the cards lagged a step behind / showed all-time.
+                self.isLoading = true
             } else {
                 self.loadInsightsBackground()
             }
@@ -242,6 +255,18 @@ final class InsightsViewModel {
         // All transactions in memory — no window check needed.
         let allTransactions = Array(transactionStore.transactions)
 
+        // Build txId → primary linked-subcategory name from the store indexes (MainActor).
+        // The deep-dive groups by this because the add flow records subcategories only in
+        // the link table, leaving the legacy `tx.subcategory` string nil.
+        var subcategoryNameByTxId: [String: String] = [:]
+        for tx in allTransactions where tx.category == categoryName {
+            if let ids = transactionStore.subcategoryIdsByTransactionId[tx.id],
+               let firstId = ids.first,
+               let name = transactionStore.subcategoryById[firstId]?.name {
+                subcategoryNameByTxId[tx.id] = name
+            }
+        }
+
         return insightsService.generateCategoryDeepDive(
             categoryName: categoryName,
             allTransactions: allTransactions,
@@ -249,7 +274,8 @@ final class InsightsViewModel {
             comparisonFilter: prevFilter,
             baseCurrency: baseCurrency,
             cacheManager: transactionsViewModel.cacheManager,
-            currencyService: transactionsViewModel.currencyService
+            currencyService: transactionsViewModel.currencyService,
+            subcategoryNameByTxId: subcategoryNameByTxId
         )
     }
 
@@ -265,6 +291,8 @@ final class InsightsViewModel {
         debounceTask?.cancel()
         isLoading = true
         recomputeTask?.cancel()
+        computeGeneration &+= 1
+        let myGen = computeGeneration
 
         // Capture everything needed on the background thread while on MainActor
         let currency = baseCurrency
@@ -290,7 +318,9 @@ final class InsightsViewModel {
         recomputeTask = Task.detached(priority: .userInitiated) { [weak self] in
             defer {
                 Task { @MainActor [weak self] in
-                    guard let self, self.isLoading else { return }
+                    // Only the current generation clears loading — a superseded task must not
+                    // flip isLoading while a newer recompute is running.
+                    guard let self, self.computeGeneration == myGen, self.isLoading else { return }
                     self.isLoading = false
                 }
             }
@@ -364,10 +394,14 @@ final class InsightsViewModel {
             let phase1Points   = newPoints
             let phase1Totals   = newTotals
             await MainActor.run { [weak self] in
-                guard let self else { return }
-                self.precomputedInsights     = phase1Insights
-                self.precomputedPeriodPoints = phase1Points
-                self.precomputedTotals       = phase1Totals
+                // Skip if this task was superseded — writing would clobber the newer task's cache.
+                guard let self, self.computeGeneration == myGen else { return }
+                // Merge, don't replace: replacing wiped the other granularities' precomputed
+                // data until phase 2 finished, so switching granularity mid-flight showed
+                // empty/stale cards. Merging keeps already-computed granularities available.
+                self.precomputedInsights.merge(phase1Insights) { _, new in new }
+                self.precomputedPeriodPoints.merge(phase1Points) { _, new in new }
+                self.precomputedTotals.merge(phase1Totals) { _, new in new }
                 self.applyPrecomputed(for: self.currentGranularity)
                 Self.logger.debug("🔧 [InsightsVM] Priority gran done — .\(priorityGranularity.rawValue, privacy: .public) shown early")
             }
@@ -443,11 +477,14 @@ final class InsightsViewModel {
             let finalPoints   = newPoints
             let finalTotals   = newTotals
             await MainActor.run { [weak self] in
-                guard let self else { return }
-                self.precomputedInsights     = finalInsights
-                self.precomputedPeriodPoints = finalPoints
-                self.precomputedTotals       = finalTotals
+                guard let self, self.computeGeneration == myGen else { return }
+                self.precomputedInsights.merge(finalInsights) { _, new in new }
+                self.precomputedPeriodPoints.merge(finalPoints) { _, new in new }
+                self.precomputedTotals.merge(finalTotals) { _, new in new }
                 self.healthScore             = computedHealthScore
+                // All granularities are now cached — mark the recompute finished so subsequent
+                // granularity switches read the cache synchronously instead of waiting.
+                self.recomputeTask = nil
                 self.applyPrecomputed(for: self.currentGranularity)
                 Self.logger.debug("🔧 [InsightsVM] Background recompute END — total \(totalMs)ms — UI updated for .\(self.currentGranularity.rawValue, privacy: .public)")
             }
@@ -465,8 +502,15 @@ final class InsightsViewModel {
     /// opacity transition) override this transaction for their specific tracked value — their
     /// animations fire normally. Only background implicit transitions are suppressed.
     private func applyPrecomputed(for granularity: InsightGranularity) {
+        // Don't apply a granularity that isn't computed yet — that would flash empty cards
+        // (or leave the previous granularity's data in place). Keep showing loading; the
+        // in-flight recompute re-applies the current granularity when it lands.
+        guard let granInsights = precomputedInsights[granularity] else {
+            isLoading = true
+            return
+        }
         withTransaction(SwiftUI.Transaction(animation: nil)) {
-            insights         = precomputedInsights[granularity] ?? []
+            insights         = granInsights
             periodDataPoints = precomputedPeriodPoints[granularity] ?? []
             let totals       = precomputedTotals[granularity]
             totalIncome      = totals?.income   ?? 0

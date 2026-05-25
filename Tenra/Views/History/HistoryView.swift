@@ -180,7 +180,9 @@ struct HistoryView: View {
             isPresented: $filterCoordinator.isSearchActive,
             prompt: searchPrompt
         )
-        .searchToolbarBehavior(.minimize)
+        // No `.searchToolbarBehavior(.minimize)` — minimize merges the input capsule and
+        // the dismiss control into one bubble. Omitting it gives separate input + × bubbles,
+        // matching the subcategory search (SubcategorySearchView).
         .onAppear {
             handleOnAppear()
         }
@@ -268,12 +270,17 @@ struct HistoryView: View {
         let matchedSubcategoryTxIds = resolveSubcategoryMatchingTxIds(
             query: filterCoordinator.debouncedSearchText
         )
+        let matchedAmountTxIds = resolveAmountMatchingTxIds(
+            query: filterCoordinator.debouncedSearchText
+        )
+        // Both feed the predicate's `id IN %@` OR clause. nil → no id-based matches.
+        let matchedTxIds = unionOptionalSets(matchedSubcategoryTxIds, matchedAmountTxIds)
 
         // Single atomic update — triggers exactly one performFetch + rebuildSections
         // instead of four (one per property assignment).
         paginationController.batchUpdateFilters(
             searchQuery: filterCoordinator.debouncedSearchText,
-            searchMatchedTransactionIds: .some(matchedSubcategoryTxIds),
+            searchMatchedTransactionIds: .some(matchedTxIds),
             selectedAccountId: .some(filterCoordinator.selectedAccountFilter),
             selectedCategoryId: .some(transactionsViewModel.selectedCategories?.first),
             dateRange: .some(resolvedDateRange)
@@ -328,6 +335,52 @@ struct HistoryView: View {
                 .filter { matchingSubIds.contains($0.subcategoryId) }
                 .map(\.transactionId)
         )
+    }
+
+    /// Resolves transaction IDs whose amount's canonical decimal string *starts with*
+    /// the typed digits — so "15" finds 15, 150, 1500, 15.50 (prefix, not contains).
+    /// Returns nil for empty or non-numeric queries (so text searches skip the scan).
+    /// Accepts a comma as a decimal separator (RU keyboards).
+    private func resolveAmountMatchingTxIds(query: String) -> Set<String>? {
+        let needle = query
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: ".")
+        guard !needle.isEmpty,
+              needle.contains(where: \.isNumber),
+              needle.allSatisfy({ $0.isNumber || $0 == "." }),
+              needle.filter({ $0 == "." }).count <= 1
+        else { return nil }
+
+        let transactions = transactionsViewModel.transactionStore?.transactions ?? []
+        let matched = Set(
+            transactions
+                .lazy
+                .filter { Self.amountPrefixString($0.amount).hasPrefix(needle) }
+                .map(\.id)
+        )
+        return matched.isEmpty ? nil : matched
+    }
+
+    /// Canonical, grouping-free decimal string of an amount for prefix matching:
+    /// 1500 → "1500", 15.5 → "15.5", -42 → "42". Rounded to currency precision (2 dp).
+    private static func amountPrefixString(_ amount: Double) -> String {
+        var s = String(format: "%.2f", abs(amount))
+        if s.contains(".") {
+            while s.hasSuffix("0") { s.removeLast() }
+            if s.hasSuffix(".") { s.removeLast() }
+        }
+        return s
+    }
+
+    /// Union of two optional id sets. nil when both are nil; otherwise the union of
+    /// whichever are present (each input is already nil-when-empty).
+    private func unionOptionalSets(_ a: Set<String>?, _ b: Set<String>?) -> Set<String>? {
+        switch (a, b) {
+        case (nil, nil): return nil
+        case let (x?, nil): return x
+        case let (nil, y?): return y
+        case let (x?, y?): return x.union(y)
+        }
     }
 }
 

@@ -23,16 +23,18 @@ extension CategorySubcategoryLinkEntity {
         return CategorySubcategoryLink(
             id: id ?? UUID().uuidString,
             categoryId: categoryId ?? "",
-            subcategoryId: subcategoryId ?? ""
+            subcategoryId: subcategoryId ?? "",
+            sortOrder: Int(sortOrder)
         )
     }
-    
+
     /// Create from domain model
     nonisolated static func from(_ link: CategorySubcategoryLink, context: NSManagedObjectContext) -> CategorySubcategoryLinkEntity {
         let entity = CategorySubcategoryLinkEntity(context: context)
         entity.id = link.id
         entity.categoryId = link.categoryId
         entity.subcategoryId = link.subcategoryId
+        entity.sortOrder = Int64(link.sortOrder)
         return entity
     }
 }

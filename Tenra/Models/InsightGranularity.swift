@@ -444,7 +444,10 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
             let df = DateFormatter()
             df.locale = locale
             df.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMMyyyy", options: 0, locale: locale)
-            return df.string(from: now)
+            // Locales like Russian return lowercase month names ("май 2026"); the
+            // summary card wants a capitalized first letter ("Май 2026").
+            let raw = df.string(from: now)
+            return raw.prefix(1).uppercased() + raw.dropFirst()
         case .quarter:
             let m = calendar.component(.month, from: now)
             let q = (m - 1) / 3 + 1

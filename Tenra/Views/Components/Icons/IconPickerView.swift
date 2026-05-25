@@ -183,7 +183,6 @@ private struct LogosTabView: View {
         }
         .searchable(
             text: $searchText,
-            placement: .toolbar,
             prompt: String(localized: "iconPicker.searchOnline")
         )
     }

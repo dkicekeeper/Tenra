@@ -112,14 +112,14 @@ struct AccountActionView: View {
                         accounts: viewModel.availableSourceAccounts,
                         selectedAccountId: $viewModel.selectedSourceAccountId,
                         onSelectionChange: { _ in
-                            viewModel.updateCurrencyForPrimaryAccount()
+                            viewModel.handleSourceSelectionChange()
                         },
                         emptyStateMessage: String(localized: "transactionForm.noAccountsForTransfer"),
                         balanceCoordinator: coordinator
                     )
                 }
             case .income:
-                CategorySelectorView(
+                CategoryCardSelectorView(
                     categories: viewModel.incomeCategories,
                     type: .income,
                     customCategories: transactionsViewModel.customCategories,
@@ -142,7 +142,7 @@ struct AccountActionView: View {
                     accounts: viewModel.availableTargetAccounts,
                     selectedAccountId: $viewModel.selectedTargetAccountId,
                     onSelectionChange: { _ in
-                        viewModel.updateCurrencyForPrimaryAccount()
+                        viewModel.handleTargetSelectionChange()
                     },
                     emptyStateMessage: String(localized: "transactionForm.noAccountsForTransfer"),
                     balanceCoordinator: coordinator

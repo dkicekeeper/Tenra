@@ -22,9 +22,22 @@ struct Insight: Identifiable, Hashable {
     let category: InsightCategory
     let detailData: InsightDetailData?
 
-    // Custom Hashable/Equatable: hash and compare by id only.
-    // detailData contains Color values which are not Hashable.
-    static func == (lhs: Insight, rhs: Insight) -> Bool { lhs.id == rhs.id }
+    // Hash by id only (detailData holds non-Hashable Colors). Equality is VALUE-BASED on the
+    // display-affecting fields, though — insight ids are stable across granularities
+    // (e.g. "top_spending_Дом" when "Дом" tops every period), so id-only equality made
+    // SwiftUI treat a new granularity's card as unchanged and skip re-rendering, leaving stale
+    // numbers. Comparing the rendered fields lets SwiftUI detect the change. (Hashable contract
+    // holds: equal values share an id, hence the same hash.)
+    static func == (lhs: Insight, rhs: Insight) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.type == rhs.type &&
+        lhs.title == rhs.title &&
+        lhs.subtitle == rhs.subtitle &&
+        lhs.metric == rhs.metric &&
+        lhs.trend == rhs.trend &&
+        lhs.severity == rhs.severity &&
+        lhs.category == rhs.category
+    }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 

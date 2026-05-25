@@ -21,6 +21,7 @@ extension CategorySubcategoryLinkEntity {
     @NSManaged public nonisolated var id: String?
     @NSManaged public nonisolated var categoryId: String?
     @NSManaged public nonisolated var subcategoryId: String?
+    @NSManaged public nonisolated var sortOrder: Int64
 
 }
 

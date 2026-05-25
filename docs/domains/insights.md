@@ -94,3 +94,11 @@ critical > warning > neutral > positive
 5. If adding new aggregations — piggyback on `PreAggregatedData.build()` O(N) pass
 6. Return value-type Sendable struct — no class instances threaded through
 7. If insight is severity-sortable, ensure `severity` field is set
+
+## Granularity switching — gotchas (hard-won)
+
+- **`Insight` equality MUST stay value-based** (`Models/InsightModels.swift`). Insight ids are stable across granularities (e.g. `top_spending_<category>` when the same category tops every period). With id-only `==`, SwiftUI diffing treats a new granularity's card as unchanged and skips re-render → cards show the previous period's numbers. `==` compares rendered fields; `hash` stays id-only. Do NOT revert to id-only `==`.
+- **Granularity switches must NOT cancel the in-flight recompute.** `loadInsightsBackground` is two-phase (priority gran first, then the rest); MainActor writes are generation-guarded and MERGE into the cache (never replace). `currentGranularity.didSet` applies from cache if present, else sets `isLoading` and waits — starting a competing load cancels phase 2 and leaves the cache incomplete → cards lag / show the wrong granularity.
+- **`applyPrecomputed` never applies a missing granularity** — it keeps `isLoading=true` instead of flashing empty/stale cards.
+- **The summary card shows the CURRENT bucket.** For `.week` the current week is often empty (totals = 0) while the 52-week window total is non-zero — correct, not a bug.
+- **Deep-dive subcategory breakdown reads the LINKED subcategory** (`TransactionSubcategoryLink` via store indexes), passed as `subcategoryNameByTxId`. The add flow leaves `tx.subcategory` nil, so grouping by `tx.subcategory` dumps everything into "no subcategory".

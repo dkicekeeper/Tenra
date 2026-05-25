@@ -201,6 +201,7 @@ struct AccountsManagementView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .primaryButton()
                     .accessibilityLabel(String(localized: "accessibility.accounts.addMenu"))
                 } else if mode.isSelecting {
                     Button {

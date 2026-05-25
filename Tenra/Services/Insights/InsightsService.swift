@@ -156,7 +156,12 @@ nonisolated final class InsightsService {
         comparisonFilter: TimeFilter? = nil,
         baseCurrency: String,
         cacheManager: TransactionCacheManager,
-        currencyService: TransactionCurrencyService
+        currencyService: TransactionCurrencyService,
+        /// Maps transaction id → its (primary) linked subcategory name. The linked-
+        /// subcategory table is the source of truth; the legacy `tx.subcategory` string is
+        /// left nil by the add flow, so without this map every linked tx falls into the
+        /// "no subcategory" bucket. Built on MainActor by the caller from the store indexes.
+        subcategoryNameByTxId: [String: String] = [:]
     ) -> (subcategories: [SubcategoryBreakdownItem], prevBucketTotal: Double) {
         // All category expense transactions (used for prev-bucket comparison)
         let allCategoryTransactions = allTransactions.filter { $0.category == categoryName && $0.type == .expense }
@@ -167,8 +172,11 @@ nonisolated final class InsightsService {
 
         let totalAmount = periodCategoryTransactions.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
 
-        // Subcategory breakdown — scoped to the selected time period
-        let subcategories = Dictionary(grouping: periodCategoryTransactions, by: { $0.subcategory ?? String(localized: "insights.noSubcategory") })
+        // Subcategory breakdown — scoped to the selected time period. Prefer the linked-
+        // subcategory name (real source) over the legacy `tx.subcategory` string field.
+        let subcategories = Dictionary(grouping: periodCategoryTransactions, by: {
+            subcategoryNameByTxId[$0.id] ?? $0.subcategory ?? String(localized: "insights.noSubcategory")
+        })
             .map { key, txns -> SubcategoryBreakdownItem in
                 let amount = txns.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
                 return SubcategoryBreakdownItem(

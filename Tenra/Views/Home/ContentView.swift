@@ -209,9 +209,22 @@ struct ContentView: View {
                 errorSection
             }
             .padding(.vertical, AppSpacing.md)
-            .animation(AppAnimation.contentRevealAnimation, value: coordinator.isFastPathDone)
-            .animation(AppAnimation.contentRevealAnimation, value: coordinator.isFullyInitialized)
+            // Single keyed animation instead of two chained `.animation` modifiers — the
+            // latter re-evaluate the transition on every dependency and can double up the
+            // reveal work while heavy subtrees (carousel, adaptive grid, glass) lay out.
+            .animation(
+                AppAnimation.contentRevealAnimation,
+                value: RevealState(
+                    fastPath: coordinator.isFastPathDone,
+                    full: coordinator.isFullyInitialized
+                )
+            )
         }
+    }
+
+    private struct RevealState: Equatable {
+        let fastPath: Bool
+        let full: Bool
     }
 
     // MARK: - Sections

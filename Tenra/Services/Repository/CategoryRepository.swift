@@ -536,6 +536,7 @@ nonisolated final class CategoryRepository: CategoryRepositoryProtocol, @uncheck
                 // Direct mutation — caller is already inside perform/performAndWait
                 existing.categoryId = link.categoryId
                 existing.subcategoryId = link.subcategoryId
+                existing.sortOrder = Int64(link.sortOrder)
             } else {
                 // Create new
                 _ = CategorySubcategoryLinkEntity.from(link, context: context)

@@ -19,8 +19,6 @@ struct InsightDeepDiveView: View {
     @State private var subcategories: [SubcategoryBreakdownItem] = []
     /// Previous-bucket total for the comparison card.
     @State private var prevBucketAmount: Double = 0
-    /// Precomputed index map — eliminates O(n^2) firstIndex(where:) in ForEach.
-    @State private var subcategoryIndexMap: [String: Int] = [:]
 
     private static let logger = Logger(subsystem: "Tenra", category: "CategoryDeepDive")
 
@@ -51,9 +49,6 @@ struct InsightDeepDiveView: View {
         self.viewModel = nil
         _subcategories = State(initialValue: subcategories)
         _prevBucketAmount = State(initialValue: prevBucketAmount)
-        _subcategoryIndexMap = State(initialValue: Dictionary(
-            uniqueKeysWithValues: subcategories.enumerated().map { ($1.id, $0) }
-        ))
     }
 
     var body: some View {
@@ -98,20 +93,24 @@ struct InsightDeepDiveView: View {
     // MARK: - Subcategories
 
     private var subcategorySection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.lg) {
+        // Build slices once so the chart and the list draw each subcategory in the
+        // exact same color — keyed by id, not by a separate per-view index formula.
+        let slices = DonutSlice.from(subcategories, baseColor: color)
+        let colorByID = Dictionary(uniqueKeysWithValues: slices.map { ($0.id, $0.color) })
+        return VStack(alignment: .leading, spacing: AppSpacing.lg) {
 //            SectionHeaderView(String(localized: "insights.subcategories"), style: .default)
 
             DonutChart(
-                slices: DonutSlice.from(subcategories, baseColor: color),
+                slices: slices,
                 showAnnotations: false
             )
-            
+
 
             // List
             ForEach(subcategories) { item in
                 HStack (alignment:.top){
                     Circle()
-                        .fill(color.opacity(Double(subcategoryIndexMap[item.id] ?? 0) * 0.15 + 0.3))
+                        .fill(colorByID[item.id] ?? color)
                         .frame(width: 24, height: 24)
 
                     Text(item.name)
@@ -169,10 +168,6 @@ struct InsightDeepDiveView: View {
         // Write results (already on MainActor)
         subcategories    = result.subcategories
         prevBucketAmount = result.prevBucketTotal
-        // Build index map once to avoid O(n²) firstIndex(where:) in body (P16 fix)
-        subcategoryIndexMap = Dictionary(
-            uniqueKeysWithValues: subcategories.enumerated().map { ($1.id, $0) }
-        )
 
         let totalAmount = subcategories.reduce(0.0) { $0 + $1.amount }
         Self.logger.debug("🔍 [CategoryDeepDive] LOADED — subcategories=\(subcategories.count), prevBucket=\(String(format: "%.0f", prevBucketAmount), privacy: .public), total=\(String(format: "%.0f", totalAmount), privacy: .public)")

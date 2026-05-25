@@ -94,25 +94,26 @@ struct LoansListView: View {
         .navigationTitle(String(localized: "loan.listTitle", defaultValue: "Loans"))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: AppSpacing.md) {
-                    if !activeLoans.isEmpty && canPayAll {
-                        Button {
-                            HapticManager.light()
-                            showingPayAll = true
-                        } label: {
-                            Image(systemName: "creditcard")
-                        }
-                        .accessibilityLabel(String(localized: "loan.payAll", defaultValue: "Pay All"))
-                    }
-
+                if !activeLoans.isEmpty && canPayAll {
                     Button {
                         HapticManager.light()
-                        showingAddLoan = true
+                        showingPayAll = true
                     } label: {
-                        Image(systemName: "plus")
+                        Image(systemName: "creditcard")
                     }
-                    .primaryButton()
+                    .accessibilityLabel(String(localized: "loan.payAll", defaultValue: "Pay All"))
                 }
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    HapticManager.light()
+                    showingAddLoan = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .primaryButton()
+                .accessibilityLabel(String(localized: "loan.add", defaultValue: "Add Loan"))
             }
         }
         .sheet(isPresented: $showingAddLoan) {

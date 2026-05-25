@@ -42,21 +42,17 @@ final class AccountActionViewModel {
 
     // MARK: - Computed Properties
 
-    /// Source picker accounts for transfer mode — all accounts except the currently
-    /// selected target. Includes deposits in either role.
+    /// Source picker accounts. Shows ALL accounts (no cross-filter against the target).
+    /// Cross-filtering mutated this list whenever the target changed, which re-laid out
+    /// the source carousel and visibly scrolled it; the same-account case is caught by
+    /// the save-time guard instead. Includes deposits in either role.
     var availableSourceAccounts: [Account] {
-        accountsViewModel.accounts.filter { $0.id != selectedTargetAccountId }
+        accountsViewModel.accounts
     }
 
-    /// Target picker accounts — all accounts except the currently selected source
-    /// (for transfer) or all accounts (for income top-up).
+    /// Target picker accounts — all accounts (same reasoning as `availableSourceAccounts`).
     var availableTargetAccounts: [Account] {
-        switch selectedAction {
-        case .transfer:
-            return accountsViewModel.accounts.filter { $0.id != selectedSourceAccountId }
-        case .income:
-            return accountsViewModel.accounts
-        }
+        accountsViewModel.accounts
     }
 
     var incomeCategories: [String] {
@@ -102,12 +98,52 @@ final class AccountActionViewModel {
         switch selectedAction {
         case .transfer:
             selectedSourceAccountId = account.id
-            selectedTargetAccountId = nil
+            // Default the target to the source's neighbor in the carousel so it starts with a
+            // selection (centered = selected, matching the source) and the two never begin equal.
+            selectedTargetAccountId = neighborAccountId(of: account.id)
         case .income:
             selectedSourceAccountId = nil
             selectedTargetAccountId = account.id
+            // Default the income category so its carousel also shows a selection on appear.
+            if selectedCategory == nil {
+                selectedCategory = incomeCategories.first
+            }
         }
         selectedCurrency = account.currency
+    }
+
+    /// Source picker changed (user tap/scroll). Keeps the amount currency in sync and, for
+    /// transfers, nudges the target off the source if they'd clash — the carousels no longer
+    /// cross-filter (that caused scroll jumps), so equality is prevented here instead.
+    func handleSourceSelectionChange() {
+        updateCurrencyForPrimaryAccount()
+        guard selectedAction == .transfer,
+              let source = selectedSourceAccountId,
+              source == selectedTargetAccountId else { return }
+        selectedTargetAccountId = neighborAccountId(of: source)
+    }
+
+    /// Target picker changed. For transfers, nudges the source off the target if they clash.
+    func handleTargetSelectionChange() {
+        updateCurrencyForPrimaryAccount()
+        guard selectedAction == .transfer,
+              let target = selectedTargetAccountId,
+              target == selectedSourceAccountId else { return }
+        selectedSourceAccountId = neighborAccountId(of: target)
+    }
+
+    /// The account adjacent to `accountId` in the carousel's display order (the same
+    /// `sortedByOrder()` the selector uses). Prefers the next card, falling back to the
+    /// previous one at the end — so a clash shifts to the neighbor instead of jumping
+    /// to the first account.
+    private func neighborAccountId(of accountId: String) -> String? {
+        let ordered = accountsViewModel.accounts.sortedByOrder()
+        guard let idx = ordered.firstIndex(where: { $0.id == accountId }) else {
+            return ordered.first(where: { $0.id != accountId })?.id
+        }
+        if idx + 1 < ordered.count { return ordered[idx + 1].id }
+        if idx - 1 >= 0 { return ordered[idx - 1].id }
+        return nil
     }
 
     /// Called when the user picks a new account in the carousel that drives the

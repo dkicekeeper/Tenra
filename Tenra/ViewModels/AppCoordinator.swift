@@ -426,6 +426,10 @@ class AppCoordinator {
 
         // Keep reconciling on any FX-rate change after the initial prewarm bump above.
         startObservingCurrencyRateChanges()
+        // Recompute Insights when categories/budgets change — e.g. a newly added budget
+        // should immediately count toward the health score's budget-adherence component
+        // instead of reading "not configured" until the next launch.
+        startObservingCategoryChanges()
     }
 
     // MARK: - Private Methods
@@ -445,6 +449,21 @@ class AppCoordinator {
                 self.transactionsViewModel.invalidateCaches()
                 self.insightsViewModel.invalidateAndRecompute()
                 self.startObservingCurrencyRateChanges()  // re-arm for the next change
+            }
+        }
+    }
+
+    /// Observe category mutations (add/edit/delete, including budget changes) so the
+    /// Insights feed — notably the budget-adherence health component — recomputes without
+    /// waiting for the next launch. Re-arms after each change.
+    private func startObservingCategoryChanges() {
+        withObservationTracking {
+            _ = transactionStore.categoriesMutationVersion
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                self.insightsViewModel.invalidateAndRecompute()
+                self.startObservingCategoryChanges()  // re-arm for the next change
             }
         }
     }

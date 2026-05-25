@@ -171,6 +171,12 @@ struct InsightsView: View {
         // isLoading). While loading, filteredInsights is empty, so insightSections resolves to
         // the "no insights" empty view — this is discarded in favour of the skeleton. Accepted trade-off.
         insightSections
+            // Force the card subtree to rebuild on granularity change. `Insight.==` is id-only
+            // (detailData holds non-Hashable Colors) and insight ids are STABLE across
+            // granularities — so SwiftUI's ForEach diffing treats a new granularity's cards as
+            // unchanged and skips re-rendering, leaving stale data ("shows wrong granularity").
+            // Keying by granularity gives the cards fresh identity each switch.
+            .id(insightsViewModel.currentGranularity)
             .contentReveal(isReady: !insightsViewModel.isLoading, delay: 0.1)
     }
 

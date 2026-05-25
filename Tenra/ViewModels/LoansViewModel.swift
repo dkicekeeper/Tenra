@@ -232,11 +232,23 @@ class LoansViewModel {
             .filter { $0.type == .loanPayment }
             .sorted { $0.date < $1.date }
 
-        let allDates = allLoanPayments.map(\.date)
+        // Pass actual payment amounts (converted to the loan's currency) so the principal
+        // is reduced by what was really paid, not by the annuity monthlyPayment.
+        let loanCurrency = freshLoan.currency
+        let linkedPayments: [(date: String, amount: Decimal)] = allLoanPayments.map { tx in
+            let amountInLoanCurrency: Double
+            if tx.currency == loanCurrency {
+                amountInLoanCurrency = tx.amount
+            } else if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: loanCurrency) {
+                amountInLoanCurrency = fx
+            } else {
+                amountInLoanCurrency = tx.convertedAmount ?? tx.amount
+            }
+            return (date: tx.date, amount: Decimal(amountInLoanCurrency))
+        }
         LoanPaymentService.recalculateAfterLinking(
             loanInfo: &loanInfo,
-            linkedPaymentCount: allLoanPayments.count,
-            linkedPaymentDates: allDates
+            linkedPayments: linkedPayments
         )
 
         freshLoan.loanInfo = loanInfo

@@ -338,30 +338,34 @@ nonisolated enum LoanPaymentService {
     // MARK: - Link Existing Payments
 
     /// Recalculates loan state after linking existing transactions.
+    /// `linkedPayments` are the actual payments (chronological), each with its amount in
+    /// the loan's currency — the principal is reduced by the ACTUAL amounts paid, not by
+    /// the annuity `monthlyPayment` (linked transactions are arbitrary and rarely equal it).
     static func recalculateAfterLinking(
         loanInfo: inout LoanInfo,
-        linkedPaymentCount: Int,
-        linkedPaymentDates: [String]
+        linkedPayments: [(date: String, amount: Decimal)]
     ) {
-        loanInfo.paymentsMade = linkedPaymentCount
-        loanInfo.lastPaymentDate = linkedPaymentDates.last
+        loanInfo.paymentsMade = linkedPayments.count
+        loanInfo.lastPaymentDate = linkedPayments.last?.date
 
         if loanInfo.loanType == .installment {
-            let totalPaid = loanInfo.monthlyPayment * Decimal(linkedPaymentCount)
-            loanInfo.remainingPrincipal = loanInfo.originalPrincipal - totalPaid
+            // No interest split — principal drops by the sum of the actual amounts paid.
+            let totalPaid = linkedPayments.reduce(Decimal(0)) { $0 + $1.amount }
+            loanInfo.remainingPrincipal = max(loanInfo.originalPrincipal - totalPaid, 0)
             loanInfo.totalInterestPaid = 0
             return
         }
 
-        // Annuity: walk payments chronologically, compute interest/principal split
+        // Annuity: split each ACTUAL payment into interest (on the current remaining) and
+        // principal, walking chronologically.
         var remaining = loanInfo.originalPrincipal
         var totalInterest: Decimal = 0
 
-        for _ in 0..<linkedPaymentCount {
+        for payment in linkedPayments {
             let breakdown = paymentBreakdown(
                 remainingPrincipal: remaining,
                 annualRate: loanInfo.interestRateAnnual,
-                monthlyPayment: loanInfo.monthlyPayment
+                monthlyPayment: payment.amount
             )
             remaining -= breakdown.principal
             totalInterest += breakdown.interest

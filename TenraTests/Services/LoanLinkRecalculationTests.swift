@@ -26,12 +26,13 @@ struct LoanLinkRecalculationTests {
             paymentsMade: 0
         )
 
-        let paymentDates = ["2021-07-15", "2021-08-15", "2021-09-15"]
+        let payments: [(date: String, amount: Decimal)] = [
+            ("2021-07-15", 340_000), ("2021-08-15", 340_000), ("2021-09-15", 340_000)
+        ]
 
         LoanPaymentService.recalculateAfterLinking(
             loanInfo: &loanInfo,
-            linkedPaymentCount: paymentDates.count,
-            linkedPaymentDates: paymentDates
+            linkedPayments: payments
         )
 
         #expect(loanInfo.paymentsMade == 3)
@@ -54,12 +55,13 @@ struct LoanLinkRecalculationTests {
             paymentsMade: 0
         )
 
-        let paymentDates = ["2021-07-15", "2021-08-15", "2021-09-15"]
+        let payments: [(date: String, amount: Decimal)] = [
+            ("2021-07-15", 340_000), ("2021-08-15", 340_000), ("2021-09-15", 340_000)
+        ]
 
         LoanPaymentService.recalculateAfterLinking(
             loanInfo: &loanInfo,
-            linkedPaymentCount: 3,
-            linkedPaymentDates: paymentDates
+            linkedPayments: payments
         )
 
         #expect(loanInfo.paymentsMade == 3)

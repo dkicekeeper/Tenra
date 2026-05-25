@@ -195,15 +195,6 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
         let fetchRequest = NSFetchRequest<AccountEntity>(entityName: "AccountEntity")
         let existingEntities = try context.fetch(fetchRequest)
 
-        // 🔍 DIAG [balance-zero-bug]: log snapshot of persisted state at save entry
-        let incomingIds = accounts.map { $0.id }
-        let existingIds = existingEntities.compactMap { $0.id }
-        Self.logger.log("🔍 saveAccountsInternal: incoming=\(incomingIds.count) existing=\(existingIds.count) incomingIds=\(incomingIds, privacy: .public) existingIds=\(existingIds, privacy: .public)")
-        for entity in existingEntities {
-            let id = entity.id ?? "<nil>"
-            Self.logger.log("🔍 saveAccountsInternal: fetched entity id=\(id, privacy: .public) balance=\(entity.balance) initialBalance=\(entity.initialBalance) shouldCalc=\(entity.shouldCalculateFromTransactions)")
-        }
-
         var existingDict: [String: AccountEntity] = [:]
         for entity in existingEntities {
             let entityId = entity.id ?? ""
@@ -257,10 +248,8 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
                     existing.loanInfoData = nil
                 }
             } else {
-                // 🔍 DIAG [balance-zero-bug]: creating a NEW entity for an account already in memory
-                // is the suspected root cause — it forces balance back to initialBalance (=0 for
-                // shouldCalculateFromTransactions accounts).
-                Self.logger.error("🛑 saveAccountsInternal: CREATING NEW AccountEntity (existingDict MISS) id=\(account.id, privacy: .public) name=\(account.name, privacy: .public) initialBalance=\(account.initialBalance ?? 0) incomingBalance=\(account.balance) shouldCalc=\(account.shouldCalculateFromTransactions) — this will zero `balance` in CoreData!")
+                // New entity. AccountEntity.from now preserves account.balance, so a
+                // create-miss for an existing account no longer zeroes its running balance.
                 _ = AccountEntity.from(account, context: context)
             }
         }

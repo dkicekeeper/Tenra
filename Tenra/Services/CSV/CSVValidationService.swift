@@ -295,19 +295,23 @@ nonisolated class CSVValidationService: CSVValidationServiceProtocol {
         }
     }
 
-    private func parseType(_ typeString: String, mappings: [String: TransactionType]) -> TransactionType? {
+    func parseType(_ typeString: String, mappings: [String: TransactionType]) -> TransactionType? {
         let normalized = typeString.lowercased().trimmingCharacters(in: .whitespaces)
 
-        // Check exact mapping
+        // 1. Exact match — covers canonical export names AND short aliases ("in", "+", "-", "out").
         if let type = mappings[normalized] {
             return type
         }
 
-        // Check partial match
-        for (key, type) in mappings {
-            if normalized.contains(key) || key.contains(normalized) {
-                return type
-            }
+        // 2. Fuzzy fallback for hand-authored cells: the cell CONTAINS a canonical key.
+        //    Longest keys first so "internal"/"transfer" win, and only keys longer than 3
+        //    chars qualify — otherwise short aliases like "in" match inside unrelated words
+        //    ("internal transfer" must NOT resolve to income). The old code also tested
+        //    key.contains(normalized) in nondeterministic dict order, which made the result
+        //    flaky and could misclassify transfer/deposit/loan rows as income.
+        for key in mappings.keys.filter({ $0.count > 3 }).sorted(by: { $0.count > $1.count })
+        where normalized.contains(key) {
+            return mappings[key]
         }
 
         return nil

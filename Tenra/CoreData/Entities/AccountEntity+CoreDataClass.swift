@@ -17,9 +17,6 @@ public class AccountEntity: NSManagedObject {
 
 }
 
-// 🔍 DIAG [balance-zero-bug]
-private let accountEntityDiagLogger = Logger(subsystem: "Tenra", category: "AccountEntity")
-
 // MARK: - Conversion Methods
 extension AccountEntity {
     /// Convert to domain model
@@ -79,13 +76,12 @@ extension AccountEntity {
         let entity = AccountEntity(context: context)
         entity.id = account.id
         entity.name = account.name
-        // On creation: balance = initialBalance (no transactions yet)
-        let startingBalance = account.initialBalance ?? 0
-        // 🔍 DIAG [balance-zero-bug]: log every AccountEntity creation so we can see whether
-        // remaining accounts get re-created (and zeroed) during a bulk delete.
-        accountEntityDiagLogger.log("🟡 AccountEntity.from: id=\(account.id, privacy: .public) name=\(account.name, privacy: .public) startingBalance=\(startingBalance) incomingBalance=\(account.balance) shouldCalc=\(account.shouldCalculateFromTransactions)")
-        entity.balance = startingBalance
-        entity.initialBalance = startingBalance  // Stored separately — never overwritten after creation
+        // Preserve the running balance. For a brand-new account this equals initialBalance;
+        // for an existing account being re-persisted (e.g. a save that missed the existing-
+        // entity dict) it keeps the real balance instead of zeroing it — that reset was the
+        // balance-zero bug for `shouldCalculateFromTransactions` accounts (initialBalance == 0).
+        entity.balance = account.balance
+        entity.initialBalance = account.initialBalance ?? 0  // Stored separately — never overwritten after creation
         entity.currency = account.currency
 
         // Save full iconSource as JSON data (new approach)

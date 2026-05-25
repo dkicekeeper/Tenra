@@ -258,6 +258,36 @@ struct AccountEntityRoundTripTests {
         }
     }
 
+    // MARK: - Test H: running balance preserved on create (C-7)
+
+    @Test("Test H: create preserves running balance for calc-from-tx accounts (C-7)")
+    func testRunningBalancePreservedOnCreate() throws {
+        let container = try makeContainer()
+        let ctx = container.viewContext
+        // A calc-from-transactions account whose running balance has diverged from its
+        // (zero) initial balance — the case the create-path used to silently zero.
+        let account = Account(
+            id: "acc-running", name: "Bank", currency: "KZT",
+            createdDate: Date(), shouldCalculateFromTransactions: true,
+            initialBalance: nil, balance: 5_000
+        )
+        #expect(account.balance == 5_000)        // domain model carries the running balance
+        #expect(account.initialBalance == 0)     // calc-from-tx → initial is 0
+
+        var loaded: Account?
+        ctx.performAndWait {
+            _ = AccountEntity.from(account, context: ctx)
+            try? ctx.save()
+            ctx.reset()
+            let req = AccountEntity.fetchRequest()
+            req.predicate = NSPredicate(format: "id == %@", account.id)
+            loaded = (try? ctx.fetch(req))?.first?.toAccount()
+        }
+
+        let result = try #require(loaded)
+        #expect(abs(result.balance - 5_000) < 0.01, "create must not zero the running balance")
+    }
+
     // MARK: - Test G: DepositInfo rate history preserved
 
     @Test("Test G: DepositInfo.interestRateHistory array survives round-trip")

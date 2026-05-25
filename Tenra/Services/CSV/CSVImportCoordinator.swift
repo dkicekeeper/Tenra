@@ -276,6 +276,15 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
             }
         }
 
+        // Whether the imported transactions were durably written to CoreData.
+        // When finishImport() throws, the rows live only in memory — so we must
+        // NOT persist balances derived from them (H-10): the balance write is NOT
+        // gated by isImporting, so recalculateAll/setInitialBalance below would
+        // persist a balance reflecting transactions that aren't on disk →
+        // warm-start overcount. Aggregate persistence is already safe (the
+        // finishImport re-throw runs before its flush* calls, and the debounced
+        // schedulers are isImporting-gated).
+        var transactionsPersisted = true
         if let transactionStore = transactionsViewModel.transactionStore {
             do {
                 try await transactionStore.finishImport()
@@ -283,6 +292,7 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
                 // Capture persistence failure so the result screen can warn the user.
                 // Imported data is in-memory but may not have been written to CoreData.
                 stats.persistenceError = error.localizedDescription
+                transactionsPersisted = false
             }
         }
 
@@ -293,8 +303,12 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
         transactionsViewModel.rebuildIndexes()
         transactionsViewModel.precomputeCurrencyConversions()
 
-        // Register accounts in BalanceCoordinator
-        if let accountsVM = accountsViewModel,
+        // Register accounts in BalanceCoordinator — but only persist balances when
+        // the transactions they're derived from were durably written. Persisting a
+        // balance for non-durable tx leaves the next launch with a balance that
+        // overcounts transactions absent from CoreData (H-10).
+        if Self.mayPersistBalances(transactionsPersisted: transactionsPersisted),
+           let accountsVM = accountsViewModel,
            let balanceCoordinator = transactionsViewModel.balanceCoordinator {
             await balanceCoordinator.registerAccounts(accountsVM.accounts)
 
@@ -313,6 +327,8 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
                 accounts: accountsVM.accounts,
                 transactions: transactionsViewModel.allTransactions
             )
+        } else if !transactionsPersisted {
+            logger.error("⚠️ [CSVImport] finishImport failed — skipping balance recalc/persist to avoid warm-start overcount (H-10)")
         }
 
         // Rebuild aggregate cache
@@ -333,6 +349,22 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
         }
 
         return stats.build(duration: duration)
+    }
+
+    // MARK: - Import Durability (H-10)
+
+    /// THE rule for whether balances may be persisted after an import attempt.
+    ///
+    /// Balance persistence is NOT gated by `isImporting` (unlike the aggregate
+    /// schedulers), so if `finishImport()` failed to write the transactions to
+    /// CoreData, recalculating and persisting balances from those in-memory rows
+    /// would leave the next launch with a balance that overcounts transactions
+    /// absent from disk. Only persist balances when the tx write was durable.
+    ///
+    /// Pure + static so the decision is unit-testable without the full import
+    /// integration harness.
+    nonisolated static func mayPersistBalances(transactionsPersisted: Bool) -> Bool {
+        transactionsPersisted
     }
 
     // MARK: - Private Helpers

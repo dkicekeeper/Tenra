@@ -11,11 +11,12 @@ import Testing
 struct SubscriptionTransactionMatcherTests {
 
     init() {
-        // Hermetic isolation: `CurrencyRateStore` now persists rates to
-        // UserDefaults across app launches, so a previous run (or another
-        // suite) may have populated the singleton. The cross-currency test
-        // below relies on `convertSync` returning nil for USD→KZT — clear
-        // the store at the top of every test in this suite to guarantee that.
+        // General hygiene: `CurrencyRateStore` persists rates to UserDefaults
+        // and is a process-wide singleton, so a previous run (or another
+        // suite) may have populated it. Clearing here keeps the same-/different-
+        // currency tests deterministic. NOTE: this is NOT sufficient on its own
+        // for `findCandidates_matchesCrossCurrencyViaConvertedAmount` — see the
+        // clear inside that test body for why.
         CurrencyRateStore.shared.clearAll()
     }
 
@@ -169,6 +170,15 @@ struct SubscriptionTransactionMatcherTests {
     }
 
     @Test func findCandidates_matchesCrossCurrencyViaConvertedAmount() {
+        // This test exercises the `convertedAmount` fallback, which only fires
+        // when `convertSync(USD→KZT)` returns nil — i.e. when NO USD↔KZT rate is
+        // cached. The suite `init()` clears the singleton, but Swift Testing can
+        // run a sibling @MainActor suite (e.g. CurrencyRateStorePersistenceTests)
+        // that re-populates `CurrencyRateStore.shared` AFTER this init() and
+        // BEFORE the matcher call below. Clear again right before the assertion so
+        // the miss path is guaranteed regardless of inter-suite ordering.
+        CurrencyRateStore.shared.clearAll()
+
         // Subscription is $100 USD, transaction is in KZT with convertedAmount = 100
         let sub = makeSubscription(amount: 100, currency: "USD")
         let kztTransaction = Transaction(

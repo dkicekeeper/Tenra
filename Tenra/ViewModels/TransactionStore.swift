@@ -376,6 +376,11 @@ final class TransactionStore {
             await (txs, accs, cats, subs, catLinks, txLinks, series, occurrences, aggregates, accountAggregates)
 
         // Back on @MainActor — single assignment cycle triggers one @Observable update.
+        // Prune any order keys for accounts that no longer exist (M-13): the order
+        // map (UserDefaults) and accounts (CoreData) can drift, e.g. an account
+        // deleted while importing skips removeOrder. Reconcile against the
+        // authoritative loaded set before applying.
+        AccountOrderManager.shared.reconcile(withAccountIds: Set(loadedAccs.map { $0.id }))
         accounts  = AccountOrderManager.shared.applyOrders(to: loadedAccs)
         rebuildAccountById()
         transactions = loadedTxs

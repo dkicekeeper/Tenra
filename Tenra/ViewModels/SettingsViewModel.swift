@@ -122,6 +122,16 @@ final class SettingsViewModel {
             // Save to storage
             try await storageService.saveSettings(settings)
 
+            // Propagate to the data layer. Without this the change is cosmetic: the store
+            // keeps computing category aggregates / insights in the OLD base currency
+            // (they are stored in base currency), so every per-category and insight figure
+            // would be shown in the new currency's label but the old currency's value.
+            if let coordinator {
+                coordinator.transactionStore.updateBaseCurrency(currency)
+                coordinator.transactionsViewModel.invalidateCaches()
+                coordinator.insightsViewModel.invalidateAndRecompute()
+            }
+
             await showSuccess(String(localized: "success.settings.currencyUpdated", defaultValue: "Currency updated successfully"))
 
         } catch {

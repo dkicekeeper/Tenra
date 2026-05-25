@@ -329,6 +329,9 @@ final class TransactionStore {
                 // Extend recurring horizons: any series whose future occurrence date has
                 // arrived (or was never generated) gets a new next occurrence added.
                 await self.extendAllActiveSeriesHorizons()
+                // If the day rolled over while backgrounded, fold any now-matured
+                // future transactions into realized balances/aggregates.
+                await self.recalculateLedgerIfDayChanged()
             }
         }
     }
@@ -419,7 +422,8 @@ final class TransactionStore {
         categoriesMutationVersion &+= 1
         subcategoriesMutationVersion &+= 1
 
-        // Note: baseCurrency will be set via updateBaseCurrency() from AppCoordinator
+        // baseCurrency is synced from settings by AppCoordinator (fast path / initialize)
+        // before this point; the day-change repair rebuilds aggregates if it changed.
 
         // Extend recurring horizons in background: generates the next future occurrence
         // for any active series that has no future transaction (e.g. yearly series, or any
@@ -463,6 +467,30 @@ final class TransactionStore {
         Task {
             await balanceCoordinator.recalculateAll(accounts: accounts, transactions: transactions)
         }
+    }
+
+    private static let lastLedgerRecalcKey = "lastLedgerRecalcDate"
+
+    /// Recompute realized balances + aggregates when the calendar day has advanced
+    /// since the last run (and once on first launch after install/update — which also
+    /// repairs balances that drifted before the unified ledger path landed).
+    ///
+    /// Realized figures exclude future-dated transactions (incl. generated recurring
+    /// occurrences); this is the trigger that folds them in once their date arrives.
+    /// Idempotent and cheap to call repeatedly — gated to run at most once per day.
+    func recalculateLedgerIfDayChanged(now: Date = Date(), defaults: UserDefaults = .standard) async {
+        guard !accounts.isEmpty else { return }
+        let last = defaults.string(forKey: Self.lastLedgerRecalcKey)
+        guard LedgerMaturation.shouldRecalculate(now: now, lastRecalcKey: last) else { return }
+
+        // Realized aggregates exclude future tx — a matured tx must now be counted.
+        rebuildAccountAggregates()
+        rebuildCategoryIndexes()
+        categoriesMutationVersion &+= 1
+        // Balances recomputed from initialBalance + realized tx (also repairs drift).
+        await balanceCoordinator.recalculateAll(accounts: accounts, transactions: transactions)
+
+        defaults.set(LedgerMaturation.dayKey(for: now), forKey: Self.lastLedgerRecalcKey)
     }
 
     // MARK: - CRUD Operations

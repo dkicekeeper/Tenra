@@ -223,158 +223,78 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
 
     // MARK: - Private Processing
 
-    /// Process add transaction
+    /// Accounts whose balance a transaction can move: its own account plus, for
+    /// transfers and loan payments, the target account. Order-preserving, de-duplicated.
+    private func affectedAccountIds(of tx: Transaction) -> [String] {
+        var ids: [String] = []
+        if let a = tx.accountId { ids.append(a) }
+        if let t = tx.targetAccountId, t != tx.accountId { ids.append(t) }
+        return ids
+    }
+
+    /// Process add transaction.
+    /// Applies the unified `contribution` to every affected account leg (source,
+    /// transfer target, AND loan target — the latter was previously skipped). The
+    /// future-date and deposit-startDate gates live inside `contribution(policy:)`,
+    /// so this path matches full recalculation by construction.
     private func processAddTransaction(_ transaction: Transaction) async {
         var updatedBalances = self.balances
 
-        // Process source account
-        if let accountId = transaction.accountId,
-           let account = store.getAccount(accountId) {
-            let currentBalance = account.currentBalance
-            let newBalance = engine.applyTransaction(transaction, to: currentBalance, for: account)
+        for accountId in affectedAccountIds(of: transaction) {
+            guard let account = store.getAccount(accountId) else { continue }
+            let delta = engine.contribution(of: transaction, to: account, policy: .currentBalance)
+            guard delta != 0 else { continue }
 
+            let newBalance = account.currentBalance + delta
             store.setBalance(newBalance, for: accountId, source: .transaction(transaction.id))
             updatedBalances[accountId] = newBalance
             persistBalance(newBalance, for: accountId)
         }
 
-        // For internal transfers, also process target account
-        if transaction.type == .internalTransfer,
-           let targetAccountId = transaction.targetAccountId,
-           let targetAccount = store.getAccount(targetAccountId) {
-            let currentBalance = targetAccount.currentBalance
-            let newBalance = engine.applyTransaction(
-                transaction,
-                to: currentBalance,
-                for: targetAccount,
-                isSource: false  // Target account receives money
-            )
-
-            store.setBalance(newBalance, for: targetAccountId, source: .transaction(transaction.id))
-            updatedBalances[targetAccountId] = newBalance
-            persistBalance(newBalance, for: targetAccountId)
-        }
-
-        // Publish entire dictionary to trigger SwiftUI update
         self.balances = updatedBalances
     }
 
-    /// Process remove transaction
+    /// Process remove transaction — the exact inverse of add (subtract the contribution).
     private func processRemoveTransaction(_ transaction: Transaction) async {
         var updatedBalances = self.balances
 
-        // Process source account
-        if let accountId = transaction.accountId,
-           let account = store.getAccount(accountId) {
-            let currentBalance = account.currentBalance
-            let newBalance = engine.revertTransaction(transaction, from: currentBalance, for: account)
+        for accountId in affectedAccountIds(of: transaction) {
+            guard let account = store.getAccount(accountId) else { continue }
+            let delta = engine.contribution(of: transaction, to: account, policy: .currentBalance)
+            guard delta != 0 else { continue }
 
+            let newBalance = account.currentBalance - delta
             store.setBalance(newBalance, for: accountId, source: .recalculation)
             updatedBalances[accountId] = newBalance
             persistBalance(newBalance, for: accountId)
         }
 
-        // For internal transfers, also process target account
-        if transaction.type == .internalTransfer,
-           let targetAccountId = transaction.targetAccountId,
-           let targetAccount = store.getAccount(targetAccountId) {
-            let currentBalance = targetAccount.currentBalance
-            let newBalance = engine.revertTransaction(
-                transaction,
-                from: currentBalance,
-                for: targetAccount,
-                isSource: false  // Target account reverting received money
-            )
-
-            store.setBalance(newBalance, for: targetAccountId, source: .recalculation)
-            updatedBalances[targetAccountId] = newBalance
-            persistBalance(newBalance, for: targetAccountId)
-        }
-
-        // Publish entire dictionary to trigger SwiftUI update
         self.balances = updatedBalances
     }
 
-    /// Process update transaction
+    /// Process update transaction: for every account either revision touches, apply
+    /// `contribution(new) − contribution(old)`. Each `contribution` independently
+    /// applies the future/deposit gates, so edits that cross the today boundary are
+    /// handled correctly (a future→past edit applies without a phantom revert, and
+    /// vice-versa) with no special-casing.
     private func processUpdateTransaction(old: Transaction, new: Transaction) async {
         var updatedBalances = self.balances
-        var tempBalances: [String: Double] = [:]
 
-        // Step 1: Revert old transaction from source account
-        if let accountId = old.accountId,
-           let account = store.getAccount(accountId) {
-            let currentBalance = account.currentBalance
-            let balanceAfterRevert = engine.revertTransaction(old, from: currentBalance, for: account)
-            tempBalances[accountId] = balanceAfterRevert
+        var seen = Set<String>()
+        let ids = (affectedAccountIds(of: old) + affectedAccountIds(of: new)).filter { seen.insert($0).inserted }
+
+        for accountId in ids {
+            guard let account = store.getAccount(accountId) else { continue }
+            let delta = engine.contribution(of: new, to: account, policy: .currentBalance)
+                      - engine.contribution(of: old, to: account, policy: .currentBalance)
+            guard delta != 0 else { continue }
+
+            let newBalance = account.currentBalance + delta
+            store.setBalance(newBalance, for: accountId, source: .transaction(new.id))
+            updatedBalances[accountId] = newBalance
+            persistBalance(newBalance, for: accountId)
         }
 
-        // Step 2: Revert old transaction from target account (for internal transfers)
-        if old.type == .internalTransfer,
-           let targetAccountId = old.targetAccountId,
-           let targetAccount = store.getAccount(targetAccountId) {
-            let currentBalance = targetAccount.currentBalance
-            let balanceAfterRevert = engine.revertTransaction(
-                old,
-                from: currentBalance,
-                for: targetAccount,
-                isSource: false
-            )
-            tempBalances[targetAccountId] = balanceAfterRevert
-        }
-
-        // Step 3: Apply new transaction to source account
-        if let accountId = new.accountId {
-            let intermediateBalance = tempBalances[accountId] ?? (store.getAccount(accountId)?.currentBalance ?? 0.0)
-
-            // Read storedAccount once so isDeposit/depositInfo are forwarded into the temp
-            // instance — the engine's deposit gate (applyTransaction .income/.expense early-return)
-            // depends on account.isDeposit being accurate. Without this, editing an income tx on
-            // a deposit account bypasses the gate and inflates balances[id] until next reconcile.
-            let storedAccount = store.getAccount(accountId)
-            let tempAccount = AccountBalance(
-                accountId: accountId,
-                currentBalance: intermediateBalance,
-                initialBalance: nil,
-                depositInfo: storedAccount?.depositInfo,
-                currency: storedAccount?.currency ?? "KZT",
-                isDeposit: storedAccount?.isDeposit ?? false
-            )
-
-            let balanceAfterApply = engine.applyTransaction(new, to: intermediateBalance, for: tempAccount)
-
-            store.setBalance(balanceAfterApply, for: accountId, source: .transaction(new.id))
-            updatedBalances[accountId] = balanceAfterApply
-        }
-
-        // Step 4: Apply new transaction to target account (for internal transfers)
-        if new.type == .internalTransfer,
-           let targetAccountId = new.targetAccountId {
-            let intermediateBalance = tempBalances[targetAccountId] ?? (store.getAccount(targetAccountId)?.currentBalance ?? 0.0)
-
-            // Same fix as Step 3: propagate isDeposit/depositInfo so the engine's deposit gate
-            // is respected for the target account side of an internal transfer update.
-            let storedTargetAccount = store.getAccount(targetAccountId)
-            let tempAccount = AccountBalance(
-                accountId: targetAccountId,
-                currentBalance: intermediateBalance,
-                initialBalance: nil,
-                depositInfo: storedTargetAccount?.depositInfo,
-                currency: storedTargetAccount?.currency ?? "KZT",
-                isDeposit: storedTargetAccount?.isDeposit ?? false
-            )
-
-            let balanceAfterApply = engine.applyTransaction(
-                new,
-                to: intermediateBalance,
-                for: tempAccount,
-                isSource: false
-            )
-
-            store.setBalance(balanceAfterApply, for: targetAccountId, source: .transaction(new.id))
-            updatedBalances[targetAccountId] = balanceAfterApply
-        }
-
-        // Publish entire dictionary ONCE to trigger SwiftUI update
         self.balances = updatedBalances
     }
 

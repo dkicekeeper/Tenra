@@ -10,6 +10,20 @@
 
 import Foundation
 
+// MARK: - Realized-Date Rule (single source of truth)
+
+/// The one definition of "realized" used across the data layer: a transaction
+/// affects current/realized figures (balance AND account/category aggregates)
+/// iff its date is on or before today. Future-dated rows (incl. generated
+/// recurring occurrences) are excluded until their date arrives. Centralised here
+/// so balance and every aggregate path apply the exact same cutoff.
+enum LedgerPolicyRule {
+    static func isRealized(_ date: Date?) -> Bool {
+        guard let date else { return false }
+        return date <= Calendar.current.startOfDay(for: Date())
+    }
+}
+
 // MARK: - Update Operation
 
 /// Represents a transaction update operation
@@ -62,80 +76,90 @@ struct BalanceCalculationEngine {
                 return account.currentBalance
             }
 
-            let calculated = calculateBalanceFromInitial(
-                initialBalance: initialBalance,
-                accountId: account.accountId,
-                accountCurrency: account.currency,
-                transactions: transactions,
-                depositStartDate: account.isDeposit ? account.depositInfo?.startDate : nil
-            )
-
-            return calculated
+            // Full recalc is just Σ of the SAME per-transaction contribution the
+            // incremental path applies — so the two cannot diverge by construction.
+            var balance = initialBalance
+            for tx in transactions {
+                balance += contribution(of: tx, to: account, policy: .currentBalance)
+            }
+            return balance
         }
     }
 
-    /// Calculate balance from initial balance + transactions.
-    /// `depositStartDate` (when set) skips events on/before that date — they are baked
-    /// into `initialBalance` for deposits and must not be double-counted.
-    private func calculateBalanceFromInitial(
-        initialBalance: Double,
-        accountId: String,
-        accountCurrency: String,
-        transactions: [Transaction],
-        depositStartDate: String? = nil
+    // MARK: - Future-Date Gate
+
+    /// Whether a transaction should affect the *current* balance.
+    ///
+    /// Mirrors the `txDate <= today` guard in `calculateBalanceFromInitial`: future-dated
+    /// transactions are excluded from the current balance. The incremental add/remove/update
+    /// callers MUST consult this before applying a delta — otherwise a future tx that full
+    /// recalculation excluded can still be added/reverted incrementally, silently shifting
+    /// the balance (e.g. deleting an imported future expense inflates the account).
+    /// Unparseable dates are excluded too, matching the recalc guard.
+    func affectsCurrentBalance(_ transaction: Transaction) -> Bool {
+        LedgerPolicyRule.isRealized(parseDate(transaction.date))
+    }
+
+    // MARK: - Transaction Contribution (single source of truth)
+
+    /// Eligibility policy for a transaction's contribution to a balance.
+    enum LedgerPolicy {
+        /// Realized / current balance: exclude future-dated tx and deposit events
+        /// on/before the deposit's startDate (baked into the initial principal).
+        case currentBalance
+        /// Raw arithmetic with no temporal gating.
+        case allTime
+    }
+
+    /// THE single definition of how one transaction moves one account's balance.
+    ///
+    /// Every balance path — full recalculation and incremental add/remove/update —
+    /// derives from this one function, so they cannot disagree. The per-type signed
+    /// table and the eligibility gates (`txDate <= today`, deposit `startDate` cutoff)
+    /// live here exactly once. Returns 0 when the transaction does not touch `account`
+    /// or is gated out by `policy`.
+    func contribution(
+        of tx: Transaction,
+        to account: AccountBalance,
+        policy: LedgerPolicy
     ) -> Double {
-        let today = Calendar.current.startOfDay(for: Date())
-        var balance = initialBalance
-
-        for tx in transactions {
-            if let cutoff = depositStartDate, tx.date <= cutoff {
-                continue
-            }
-            guard let txDate = parseDate(tx.date), txDate <= today else {
-                continue
-            }
-
-            switch tx.type {
-            case .income:
-                if tx.accountId == accountId {
-                    balance += getTransactionAmount(tx, for: accountCurrency)
-                }
-
-            case .expense:
-                if tx.accountId == accountId {
-                    balance -= getTransactionAmount(tx, for: accountCurrency)
-                }
-
-            case .internalTransfer:
-                if tx.accountId == accountId {
-                    balance -= getSourceAmount(tx)
-                } else if tx.targetAccountId == accountId {
-                    balance += getTargetAmount(tx)
-                }
-
-            case .depositTopUp, .depositInterestAccrual:
-                if tx.accountId == accountId {
-                    balance += getTransactionAmount(tx, for: accountCurrency)
-                }
-
-            case .depositWithdrawal:
-                if tx.accountId == accountId {
-                    balance -= getTransactionAmount(tx, for: accountCurrency)
-                }
-
-            case .loanPayment, .loanEarlyRepayment:
-                // Loan payments reduce the loan account balance
-                if tx.accountId == accountId {
-                    balance -= getTransactionAmount(tx, for: accountCurrency)
-                }
-                // Manual payments also reduce the source bank account balance
-                if let targetId = tx.targetAccountId, targetId == accountId {
-                    balance -= getTransactionAmount(tx, for: accountCurrency)
-                }
+        if policy == .currentBalance {
+            guard affectsCurrentBalance(tx) else { return 0 }
+            // Deposit events on/before startDate are already in initialPrincipal.
+            if account.isDeposit, let cutoff = account.depositInfo?.startDate, tx.date <= cutoff {
+                return 0
             }
         }
 
-        return balance
+        let accountId = account.accountId
+        let currency = account.currency
+
+        switch tx.type {
+        case .income:
+            return tx.accountId == accountId ? getTransactionAmount(tx, for: currency) : 0
+
+        case .expense:
+            return tx.accountId == accountId ? -getTransactionAmount(tx, for: currency) : 0
+
+        case .internalTransfer:
+            if tx.accountId == accountId { return -getSourceAmount(tx) }
+            if tx.targetAccountId == accountId { return getTargetAmount(tx) }
+            return 0
+
+        case .depositTopUp, .depositInterestAccrual:
+            return tx.accountId == accountId ? getTransactionAmount(tx, for: currency) : 0
+
+        case .depositWithdrawal:
+            return tx.accountId == accountId ? -getTransactionAmount(tx, for: currency) : 0
+
+        case .loanPayment, .loanEarlyRepayment:
+            // Reduces the loan account (target leg) AND the source bank (source leg).
+            // For a single account only one branch matches.
+            var delta = 0.0
+            if tx.accountId == accountId { delta -= getTransactionAmount(tx, for: currency) }
+            if tx.targetAccountId == accountId { delta -= getTransactionAmount(tx, for: currency) }
+            return delta
+        }
     }
 
     // MARK: - Incremental Updates (O(1))
@@ -154,32 +178,9 @@ struct BalanceCalculationEngine {
         for account: AccountBalance,
         isSource: Bool = true
     ) -> Double {
-        switch transaction.type {
-        case .income:
-            return currentBalance + getTransactionAmount(transaction, for: account.currency)
-
-        case .expense:
-            return currentBalance - getTransactionAmount(transaction, for: account.currency)
-
-        case .internalTransfer:
-            if isSource {
-                return currentBalance - getSourceAmount(transaction)
-            } else {
-                return currentBalance + getTargetAmount(transaction)
-            }
-
-        case .depositTopUp, .depositInterestAccrual:
-            return currentBalance + getTransactionAmount(transaction, for: account.currency)
-
-        case .depositWithdrawal:
-            return currentBalance - getTransactionAmount(transaction, for: account.currency)
-
-        case .loanPayment, .loanEarlyRepayment:
-            if transaction.accountId == account.id || transaction.targetAccountId == account.id {
-                return currentBalance - getTransactionAmount(transaction, for: account.currency)
-            }
-            return currentBalance
-        }
+        // Pure arithmetic helper: apply the contribution unconditionally (no temporal
+        // gating). Source/target is resolved by account-id matching inside `contribution`.
+        return currentBalance + contribution(of: transaction, to: account, policy: .allTime)
     }
 
     /// Revert a transaction from a balance (undo operation)
@@ -195,32 +196,7 @@ struct BalanceCalculationEngine {
         for account: AccountBalance,
         isSource: Bool = true
     ) -> Double {
-        switch transaction.type {
-        case .income:
-            return currentBalance - getTransactionAmount(transaction, for: account.currency)
-
-        case .expense:
-            return currentBalance + getTransactionAmount(transaction, for: account.currency)
-
-        case .internalTransfer:
-            if isSource {
-                return currentBalance + getSourceAmount(transaction)
-            } else {
-                return currentBalance - getTargetAmount(transaction)
-            }
-
-        case .depositTopUp, .depositInterestAccrual:
-            return currentBalance - getTransactionAmount(transaction, for: account.currency)
-
-        case .depositWithdrawal:
-            return currentBalance + getTransactionAmount(transaction, for: account.currency)
-
-        case .loanPayment, .loanEarlyRepayment:
-            if transaction.accountId == account.id || transaction.targetAccountId == account.id {
-                return currentBalance + getTransactionAmount(transaction, for: account.currency)
-            }
-            return currentBalance
-        }
+        return currentBalance - contribution(of: transaction, to: account, policy: .allTime)
     }
 
     /// Calculate delta for incremental update
@@ -276,50 +252,9 @@ struct BalanceCalculationEngine {
         accountCurrency: String,
         isAdding: Bool
     ) -> Double {
-        let sign: Double = isAdding ? 1.0 : -1.0
-
-        switch transaction.type {
-        case .income:
-            if transaction.accountId == accountId {
-                return sign * getTransactionAmount(transaction, for: accountCurrency)
-            }
-
-        case .expense:
-            if transaction.accountId == accountId {
-                return -sign * getTransactionAmount(transaction, for: accountCurrency)
-            }
-
-        case .internalTransfer:
-            if transaction.accountId == accountId {
-                // Source - subtract
-                return -sign * getSourceAmount(transaction)
-            } else if transaction.targetAccountId == accountId {
-                // Target - add
-                return sign * getTargetAmount(transaction)
-            }
-
-        case .depositTopUp, .depositInterestAccrual:
-            if transaction.accountId == accountId {
-                return sign * getTransactionAmount(transaction, for: accountCurrency)
-            }
-
-        case .depositWithdrawal:
-            if transaction.accountId == accountId {
-                return -sign * getTransactionAmount(transaction, for: accountCurrency)
-            }
-
-        case .loanPayment, .loanEarlyRepayment:
-            // Loan payments reduce the loan account balance
-            if transaction.accountId == accountId {
-                return -sign * getTransactionAmount(transaction, for: accountCurrency)
-            }
-            // Manual payments also reduce the source bank account balance
-            if transaction.targetAccountId == accountId {
-                return -sign * getTransactionAmount(transaction, for: accountCurrency)
-            }
-        }
-
-        return 0
+        let account = AccountBalance(accountId: accountId, currentBalance: 0, currency: accountCurrency)
+        let delta = contribution(of: transaction, to: account, policy: .allTime)
+        return isAdding ? delta : -delta
     }
 
     // MARK: - Initial Balance Calculation

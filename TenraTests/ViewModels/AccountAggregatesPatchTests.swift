@@ -81,6 +81,59 @@ struct AccountAggregatesPatchTests {
         return true
     }
 
+    // MARK: - Future-date exclusion (realized actuals)
+
+    private static func futureDateString(daysAhead: Int = 20) -> String {
+        DateFormatters.dateFormatter.string(
+            from: Calendar.current.date(byAdding: .day, value: daysAhead, to: Date())!
+        )
+    }
+
+    @Test("future-dated transaction is excluded from account aggregates")
+    func futureTxExcludedFromAggregates() async throws {
+        let store = Self.makeStore()
+        Self.setupAccounts(store)
+        let future = Transaction(
+            id: "f1", date: Self.futureDateString(), description: "t",
+            amount: 500, currency: "KZT", type: .expense, category: "Food",
+            accountId: "a1", targetAccountId: nil
+        )
+        let past = Self.tx(id: "p1", amount: 200, type: .expense) // dated 2026-05-01 (past)
+
+        store.accountAggregatesAdd(future)
+        store.accountAggregatesAdd(past)
+
+        let agg = store.accountAggregatesByAccountId["a1"]
+        #expect(agg?.totalExpense == 200)
+        #expect(agg?.totalTransactions == 1)
+    }
+
+    // MARK: - Per-type sign table (store-index path; replaces legacy calculator tests)
+
+    @Test("loan payment counts as expense on both source bank and loan account")
+    func loanPaymentExpenseBuckets() async throws {
+        let store = Self.makeStore()
+        store.accounts = [
+            Account(id: "a1", name: "Bank", currency: "KZT", createdDate: Date(), balance: 0),
+            Account(id: "loan1", name: "Loan", currency: "KZT", createdDate: Date(), balance: 0)
+        ]
+        store.rebuildAccountById()
+        let pay = Self.tx(id: "lp1", amount: 250, type: .loanPayment, accountId: "a1", targetAccountId: "loan1")
+        store.accountAggregatesAdd(pay)
+        #expect(store.accountAggregatesByAccountId["a1"]?.totalExpense == 250)
+        #expect(store.accountAggregatesByAccountId["loan1"]?.totalExpense == 250)
+    }
+
+    @Test("internal transfer is expense on source, income on target")
+    func transferDualPerspective() async throws {
+        let store = Self.makeStore()
+        Self.setupAccounts(store)
+        let xfer = Self.tx(id: "x1", amount: 500, type: .internalTransfer, accountId: "a1", targetAccountId: "a2")
+        store.accountAggregatesAdd(xfer)
+        #expect(store.accountAggregatesByAccountId["a1"]?.totalExpense == 500)
+        #expect(store.accountAggregatesByAccountId["a2"]?.totalIncome == 500)
+    }
+
     // MARK: - Add-only sequence
 
     @Test("incremental adds match cold rebuild")

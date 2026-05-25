@@ -96,6 +96,12 @@ extension TransactionStore {
     /// but applied as a delta. Income / expense semantics per transaction type stay
     /// identical so the resulting aggregates are byte-for-byte equivalent.
     private func applyAccountAggregateDelta(tx: Transaction, sign: Int) {
+        // Realized actuals only: exclude future-dated tx so the income/expense
+        // totals stay consistent with the balance (which also excludes them).
+        // Same single rule as `BalanceCalculationEngine.affectsCurrentBalance`.
+        let parsedDate = parsedDateById[tx.id] ?? DateFormatters.dateFormatter.date(from: tx.date)
+        guard LedgerPolicyRule.isRealized(parsedDate) else { return }
+
         let signD = Double(sign)
         let sourceId = tx.accountId
         let targetId = tx.targetAccountId

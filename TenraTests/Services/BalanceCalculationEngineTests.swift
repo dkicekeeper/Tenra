@@ -100,8 +100,9 @@ struct BalanceCalculationEngineTests {
     func revertIncome_unified() {
         let deposit = depositAccountBalance(currentBalance: 125_000)
         let regular = nonDepositAccountBalance(currentBalance: 125_000)
-        let tx = incomeTx(amount: 25_000, accountId: deposit.accountId)
-        #expect(engine.revertTransaction(tx, from: 125_000, for: deposit) == 100_000)
-        #expect(engine.revertTransaction(tx, from: 125_000, for: regular) == 100_000)
+        let txD = incomeTx(amount: 25_000, accountId: deposit.accountId)
+        let txR = incomeTx(amount: 25_000, accountId: regular.accountId)
+        #expect(engine.revertTransaction(txD, from: 125_000, for: deposit) == 100_000)
+        #expect(engine.revertTransaction(txR, from: 125_000, for: regular) == 100_000)
     }
 }

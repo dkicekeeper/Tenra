@@ -273,6 +273,12 @@ class AppCoordinator {
         async let settingsLoad: Void = self.settingsViewModel.loadSettingsOnly()
         _ = await (accountsLoad, settingsLoad)
 
+        // Sync the store's base currency from settings. It was previously hardcoded to
+        // "KZT" and never updated, so non-KZT users had aggregates/insights computed in
+        // the wrong currency. Set before loadData()/maturation so any (re)build uses the
+        // correct unit; the day-change repair then rebuilds any stale persisted snapshot.
+        transactionStore.baseCurrency = settingsViewModel.settings.baseCurrency
+
         // Calling without transactions so accounts briefly show their persisted balance.
         // initialize() will register accounts again after full transaction load.
         await balanceCoordinator.registerAccounts(transactionStore.accounts)
@@ -357,6 +363,9 @@ class AppCoordinator {
         if !isFastPathStarted {
             await settingsViewModel.loadSettingsOnly()
         }
+        // Defensive: ensure the store's base currency matches settings even if the
+        // fast path was skipped (it loads settings only above in that case).
+        transactionStore.baseCurrency = settingsViewModel.settings.baseCurrency
 
         PerformanceProfiler.end("AppCoordinator.initialize")
 
@@ -381,6 +390,12 @@ class AppCoordinator {
         // per-category KZT-pivot totals (rebuilt lazily on next access).
         transactionStore.bumpCurrencyRatesVersion()
         transactionsViewModel.invalidateCaches()
+
+        // Maturation + one-time repair: if the day advanced since the last run (or this
+        // is the first launch after update), recompute realized balances/aggregates so
+        // newly-matured future transactions are folded in and any pre-existing drift is
+        // healed. Runs after the prewarm wait so multi-currency conversion uses fresh FX.
+        await transactionStore.recalculateLedgerIfDayChanged()
 
         // Insights recompute — non-essential for first frame; debounced internally.
         insightsViewModel.invalidateAndRecompute()

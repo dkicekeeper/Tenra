@@ -86,3 +86,13 @@ Deterministic djb2 hash of `(depositId, month, amount, currency)`. Survives proc
 ## Where Reconciliation Runs
 
 `AccountsManagementView` is the centralized reconciliation point for both deposits AND loans on `.task {}` appear.
+
+## ⚠️ principalDelta vs BalanceCalculationEngine.contribution (M-1 — intentionally NOT unified)
+
+`DepositInterestService.principalDelta` defines how a tx moves the deposit's **running principal** (interest-accrual input). It is a SEPARATE definition from `BalanceCalculationEngine.contribution` (which moves the account **balance**), and the data-integrity refactor deliberately left them apart — they have genuinely different semantics and unifying risks corrupting accrued interest. The exact divergences are pinned by `DepositPrincipalDeltaCharacterizationTests` and listed in the `principalDelta` doc-comment:
+
+1. **Eligible types / amount source.** `principalDelta` counts `.income`/`.expense` on the deposit and uses `convertedAmount ?? amount`; `contribution` prefers `targetAmount` for cross-currency — so cross-currency inflows can differ.
+2. **`.depositInterestAccrual` capitalization gate.** `principalDelta` adds interest to the running principal ONLY when `capitalizationEnabled`; `contribution` always adds the accrual to the balance.
+3. **`.internalTransfer` source leg asymmetry.** `principalDelta` uses `-amount` (raw deposit-currency) on the source side while using `+convertedAmount ?? amount` on the target side; `contribution` uses `-(convertedAmount ?? amount)` on the source.
+
+If you ever unify these, do it as a deliberate, separately-reviewed change and update the characterization tests in lock-step. Do NOT "fix" `principalDelta` to look like `contribution` as a drive-by.

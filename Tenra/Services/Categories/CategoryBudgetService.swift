@@ -113,7 +113,10 @@ struct CategoryBudgetService {
 
     private func readBucket(category: String, y: Int16, m: Int16, d: Int16, store: TransactionStore) -> Double {
         let key = CategoryAggregate.makeId(category: category, year: y, month: m, day: d)
-        return store.categoryAggregatesByKey[key]?.totalAmount ?? 0
+        // Budget "spent" is EXPENSE-only (C-6): a non-expense tx tagged to a
+        // budgeted expense category must not inflate it. Read `expenseAmount`,
+        // not `totalAmount` (which sums all aggregatable types).
+        return store.categoryAggregatesByKey[key]?.expenseAmount ?? 0
     }
 
     /// Sum daily buckets between the two dates, inclusive of start, exclusive of end+1day.

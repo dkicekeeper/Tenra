@@ -196,6 +196,7 @@ extension TransactionStore {
                 month: agg.month,
                 day: agg.day,
                 totalAmount: agg.totalAmount,
+                expenseAmount: agg.expenseAmount,
                 transactionCount: agg.transactionCount,
                 currency: agg.currency,
                 lastUpdated: Date(),
@@ -237,16 +238,19 @@ extension TransactionStore {
         let conversion = CategoryBudgetCurrency.toBase(amount: tx.amount, from: tx.currency, base: baseCurrency)
         if conversion.usedStaleFallback { aggregatesAreFXStale = true }
         let signedAmount = conversion.amount * Double(sign)
+        // Expense-only contribution: budget "spent" reads `expenseAmount` so a
+        // non-expense tx tagged to a budgeted expense category does not inflate it (C-6).
+        let signedExpense = tx.type == .expense ? signedAmount : 0
 
         let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
         let y = Int16(comps.year ?? 0)
         let m = Int16(comps.month ?? 0)
         let d = Int16(comps.day ?? 0)
 
-        patchBucket(category: tx.category, y: y, m: m, d: d, signedAmount: signedAmount, sign: sign, lastDate: date)
-        patchBucket(category: tx.category, y: y, m: m, d: 0, signedAmount: signedAmount, sign: sign, lastDate: date)
-        patchBucket(category: tx.category, y: y, m: 0, d: 0, signedAmount: signedAmount, sign: sign, lastDate: date)
-        patchBucket(category: tx.category, y: 0, m: 0, d: 0, signedAmount: signedAmount, sign: sign, lastDate: date)
+        patchBucket(category: tx.category, y: y, m: m, d: d, signedAmount: signedAmount, signedExpense: signedExpense, sign: sign, lastDate: date)
+        patchBucket(category: tx.category, y: y, m: m, d: 0, signedAmount: signedAmount, signedExpense: signedExpense, sign: sign, lastDate: date)
+        patchBucket(category: tx.category, y: y, m: 0, d: 0, signedAmount: signedAmount, signedExpense: signedExpense, sign: sign, lastDate: date)
+        patchBucket(category: tx.category, y: 0, m: 0, d: 0, signedAmount: signedAmount, signedExpense: signedExpense, sign: sign, lastDate: date)
 
         scheduleAggregatePersist()
     }
@@ -255,12 +259,14 @@ extension TransactionStore {
         category: String,
         y: Int16, m: Int16, d: Int16,
         signedAmount: Double,
+        signedExpense: Double,
         sign: Int,
         lastDate: Date
     ) {
         let key = CategoryAggregate.makeId(category: category, year: y, month: m, day: d)
         let existing = categoryAggregatesByKey[key]
         let newTotal = (existing?.totalAmount ?? 0) + signedAmount
+        let newExpense = (existing?.expenseAmount ?? 0) + signedExpense
         let newCount = Int32((existing?.transactionCount ?? 0)) + Int32(sign)
 
         // Drop empty buckets to keep the map compact. Use a tiny epsilon to absorb
@@ -286,6 +292,7 @@ extension TransactionStore {
             subcategoryName: nil,
             year: y, month: m, day: d,
             totalAmount: newTotal,
+            expenseAmount: newExpense,
             transactionCount: max(newCount, 0),
             currency: baseCurrency,
             lastUpdated: Date(),

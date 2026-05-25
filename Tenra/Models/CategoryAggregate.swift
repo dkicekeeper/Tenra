@@ -20,7 +20,13 @@ struct CategoryAggregate: Identifiable, Equatable {
     let year: Int16 // 0 = all-time
     let month: Int16 // 0 = yearly или all-time
     let day: Int16 // 0 = monthly/yearly/all-time, >0 = daily (1-31)
-    let totalAmount: Double // В базовой валюте
+    let totalAmount: Double // В базовой валюте — sum of ALL aggregatable types
+    /// Expense-only total in base currency. Budget "spent" reads THIS, not
+    /// `totalAmount`, so an income/loan/deposit tx tagged to a budgeted expense
+    /// category does not inflate the budget (C-6 residual). Defaults to
+    /// `totalAmount` for legacy rows that predate this field (expense categories'
+    /// totalAmount is overwhelmingly expense anyway).
+    let expenseAmount: Double
     let transactionCount: Int32
     let currency: String // Базовая валюта для агрегата
     let lastUpdated: Date
@@ -33,6 +39,7 @@ struct CategoryAggregate: Identifiable, Equatable {
         month: Int16,
         day: Int16 = 0,
         totalAmount: Double,
+        expenseAmount: Double? = nil,
         transactionCount: Int32,
         currency: String,
         lastUpdated: Date = Date(),
@@ -44,6 +51,7 @@ struct CategoryAggregate: Identifiable, Equatable {
         self.month = month
         self.day = day
         self.totalAmount = totalAmount
+        self.expenseAmount = expenseAmount ?? totalAmount
         self.transactionCount = transactionCount
         self.currency = currency
         self.lastUpdated = lastUpdated

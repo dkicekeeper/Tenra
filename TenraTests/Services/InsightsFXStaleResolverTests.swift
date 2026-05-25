@@ -74,17 +74,25 @@ struct InsightsFXStaleResolverTests {
     @Test("warm cache: cross-currency converts via convertSync, not stale")
     func warmCacheConverts() {
         let store = CurrencyRateStore.shared
-        store.clearAll()
-        store.updateCurrentRates(ExchangeRates(
-            pivot: "KZT",
-            rates: ["USD": 442.5],
-            date: Date(),
-            providerName: "test"
-        ))
         defer { store.clearAll() }
 
         let tx = makeTx(amount: 100, currency: "USD", convertedAmount: 999, date: pastDateString())
-        let result = InsightsService.resolveAmountToBase(tx, baseCurrency: base)
+
+        // `CurrencyRateStore.shared` is a global singleton; a parallel currency suite can
+        // call clearAll() between our rate-set and our read (CLAUDE.md documents this
+        // shared-state hazard). Re-establish the rate until the conversion sees it, so the
+        // test is deterministic without serializing across suites.
+        var result = InsightsService.resolveAmountToBase(tx, baseCurrency: base)
+        for _ in 0..<100 where result.usedStaleFallback {
+            store.updateCurrentRates(ExchangeRates(
+                pivot: "KZT",
+                rates: ["USD": 442.5],
+                date: Date(),
+                providerName: "test"
+            ))
+            result = InsightsService.resolveAmountToBase(tx, baseCurrency: base)
+        }
+
         #expect(result.usedStaleFallback == false)
         #expect(abs(result.amount - 100 * 442.5) < 0.001)
     }

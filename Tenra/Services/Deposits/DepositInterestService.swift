@@ -112,23 +112,17 @@ nonisolated enum DepositInterestService {
     /// target's currency); falls back to `amount` for the source side (deposit IS source,
     /// so amount is in deposit currency).
     ///
-    /// ⚠️ TODO (M-1, data-integrity refactor): this is a SECOND definition of "how a tx
-    /// moves a deposit", divergent from `BalanceCalculationEngine.contribution`. It is
-    /// deliberately NOT unified — the two have genuinely different, interest-accrual-
-    /// critical semantics, so unifying risks corrupting accrued interest. Divergences
-    /// pinned by `DepositPrincipalDeltaCharacterizationTests`:
-    ///   1. Eligible types: principalDelta counts `.income`/`.expense` (a deposit can
-    ///      receive income / be spent from); `contribution` also handles them, but for
-    ///      ANY account, and prefers `targetAmount` (cross-currency) where this uses
-    ///      `convertedAmount ?? amount` — so cross-currency inflows can differ.
-    ///   2. `.depositInterestAccrual`: gated here by `capitalizationEnabled` (running
-    ///      principal only grows on capitalization); `contribution` always adds it to
-    ///      the balance (no capitalization gate).
-    ///   3. `.internalTransfer` SOURCE leg: this uses `-amount` (raw, deposit currency);
-    ///      `contribution` uses `-(convertedAmount ?? amount)` — asymmetric with this
-    ///      function's own target leg (`+convertedAmount ?? amount`).
-    /// Any unification must be a deliberate, separately-reviewed decision with the
-    /// characterization tests updated in lock-step. See docs/domains/deposits.md.
+    /// NOTE (M-1, data-integrity refactor): this is intentionally a SEPARATE definition
+    /// from `BalanceCalculationEngine.contribution`. They model DIFFERENT quantities —
+    /// `principalDelta` builds the interest-bearing principal; `contribution` builds the
+    /// displayed balance (principal + interest). They must NOT be merged. The essential
+    /// divergence is `.depositInterestAccrual`: it is gated here by `capitalizationEnabled`
+    /// (the principal only grows when interest compounds), whereas `contribution` always
+    /// adds it to the balance (the interest is the client's either way). Unifying would
+    /// make non-capitalizing deposits compound incorrectly.
+    /// Behavior is pinned by `DepositPrincipalDeltaCharacterizationTests`; the cross-
+    /// currency transfer inflow now uses `targetAmount` (deposit currency) — see
+    /// `DepositCrossCurrencyTransferTests` and docs/domains/deposits.md.
     static func principalDelta(for tx: Transaction, accountId: String, capitalizationEnabled: Bool) -> Decimal {
         switch tx.type {
         case .depositTopUp, .income:
@@ -142,9 +136,14 @@ nonisolated enum DepositInterestService {
             return Decimal(tx.convertedAmount ?? tx.amount)
         case .internalTransfer:
             if tx.targetAccountId == accountId {
-                return Decimal(tx.convertedAmount ?? tx.amount)
+                // Inflow: credit the TARGET-side amount, which is in the deposit's own
+                // currency. Using source-side convertedAmount here would add a wrong-
+                // currency amount to the principal for cross-currency top-ups.
+                return Decimal(tx.targetAmount ?? tx.convertedAmount ?? tx.amount)
             }
             if tx.accountId == accountId {
+                // Outflow: deposit is the source, so `amount` is already in the deposit's
+                // currency.
                 return -Decimal(tx.amount)
             }
             return 0

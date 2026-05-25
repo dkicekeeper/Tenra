@@ -89,10 +89,13 @@ Deterministic djb2 hash of `(depositId, month, amount, currency)`. Survives proc
 
 ## ⚠️ principalDelta vs BalanceCalculationEngine.contribution (M-1 — intentionally NOT unified)
 
-`DepositInterestService.principalDelta` defines how a tx moves the deposit's **running principal** (interest-accrual input). It is a SEPARATE definition from `BalanceCalculationEngine.contribution` (which moves the account **balance**), and the data-integrity refactor deliberately left them apart — they have genuinely different semantics and unifying risks corrupting accrued interest. The exact divergences are pinned by `DepositPrincipalDeltaCharacterizationTests` and listed in the `principalDelta` doc-comment:
+`DepositInterestService.principalDelta` defines how a tx moves the deposit's **running principal** (interest-accrual input). It is a SEPARATE definition from `BalanceCalculationEngine.contribution` (which moves the account **balance** = principal + interest). These model different quantities and must NOT be merged. Behavior is pinned by `DepositPrincipalDeltaCharacterizationTests` (+ `DepositCrossCurrencyTransferTests`).
 
-1. **Eligible types / amount source.** `principalDelta` counts `.income`/`.expense` on the deposit and uses `convertedAmount ?? amount`; `contribution` prefers `targetAmount` for cross-currency — so cross-currency inflows can differ.
-2. **`.depositInterestAccrual` capitalization gate.** `principalDelta` adds interest to the running principal ONLY when `capitalizationEnabled`; `contribution` always adds the accrual to the balance.
-3. **`.internalTransfer` source leg asymmetry.** `principalDelta` uses `-amount` (raw deposit-currency) on the source side while using `+convertedAmount ?? amount` on the target side; `contribution` uses `-(convertedAmount ?? amount)` on the source.
+**The essential, by-design divergence — keep it:**
+- **`.depositInterestAccrual` capitalization gate.** `principalDelta` grows the running principal ONLY when `capitalizationEnabled` (interest compounds); `contribution` always adds the accrual to the balance. Merging would make non-capitalizing deposits compound incorrectly.
 
-If you ever unify these, do it as a deliberate, separately-reviewed change and update the characterization tests in lock-step. Do NOT "fix" `principalDelta` to look like `contribution` as a drive-by.
+**Resolved (M-1):**
+- The cross-currency `.internalTransfer` **inflow** leg now credits `targetAmount` (in the deposit's currency), matching `contribution`'s `getTargetAmount` — previously it used the source-side `convertedAmount`, adding a wrong-currency amount to the principal for cross-currency top-ups.
+- The `.internalTransfer` **outflow** leg uses `-amount`, which is correct because the deposit is the source so `amount` is already in the deposit's currency (not an asymmetry to "fix").
+
+Do NOT collapse `principalDelta` into `contribution` — the capitalization gate above is the reason they exist separately.

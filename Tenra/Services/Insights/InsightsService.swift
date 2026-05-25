@@ -880,6 +880,12 @@ nonisolated final class InsightsService {
         /// Eliminates N×CurrencyConverter.convertSync calls in HealthScore / Recurring /
         /// Forecasting generators (each runs on every insights recompute).
         let seriesMonthlyEquivalents: [String: Double]
+        /// True when at least one cross-currency tx could not be converted to
+        /// `baseCurrency` because the FX cache was cold during `build`. Those tx are
+        /// EXCLUDED from the money totals (never blended as the wrong unit, CLAUDE.md ⚠️ #6).
+        /// The consuming Insights computation must recompute once rates land — M-9 wires
+        /// CurrencyRatesNotifier.version → InsightsViewModel.invalidateAndRecompute() so it does.
+        let fxStale: Bool
 
         // MARK: Helpers (O(M) dictionary lookups, not O(N) scans)
 
@@ -957,6 +963,7 @@ nonisolated final class InsightsService {
             var accountCounts = [String: Int]()
             var lastAccountDates = [String: Date]()
             var categoryTotals = [String: Double]()
+            var fxStale = false
 
             for tx in transactions {
                 // Cache date parsing — each unique date string parsed exactly once
@@ -992,7 +999,9 @@ nonisolated final class InsightsService {
                 let comps = calendar.dateComponents([.year, .month], from: txDate)
                 guard let year = comps.year, let month = comps.month else { continue }
                 let monthKey = MonthKey(year: year, month: month)
-                let amount = resolveAmountStatic(tx, baseCurrency: baseCurrency)
+                let resolved = resolveAmountToBase(tx, baseCurrency: baseCurrency)
+                if resolved.usedStaleFallback { fxStale = true }
+                let amount = resolved.amount
 
                 switch tx.type {
                 case .income:
@@ -1027,36 +1036,57 @@ nonisolated final class InsightsService {
                 accountTransactionCounts: accountCounts,
                 lastAccountDates: lastAccountDates,
                 categoryTotals: categoryTotals,
-                seriesMonthlyEquivalents: seriesMonthly
+                seriesMonthlyEquivalents: seriesMonthly,
+                fxStale: fxStale
             )
         }
     }
 
-    /// Amount resolver for static helper methods (no `self` needed).
-    /// Converts `tx.amount` from `tx.currency` into `baseCurrency` via the live
-    /// FX cache. Uses `convertedAmount` (in *account* currency) only as a
-    /// last-resort fallback when rates are unavailable.
-    static func resolveAmountStatic(_ tx: Transaction, baseCurrency: String) -> Double {
-        guard tx.currency != baseCurrency else { return tx.amount }
-        if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency) {
-            return fx
-        }
-        return tx.convertedAmount ?? tx.amount
+    /// Result of resolving a transaction amount into `baseCurrency`.
+    /// Mirrors `CategoryBudgetCurrency.ConversionResult` so the Insights snapshot
+    /// path applies the SAME unit-safety rule as the store aggregate path.
+    struct ResolvedAmount {
+        /// Amount in `baseCurrency`. `0` when the rate cache is cold for a
+        /// cross-currency tx (the tx is SKIPPED, never blended as the wrong unit).
+        let amount: Double
+        /// True when a cross-currency rate was unavailable. The consuming snapshot
+        /// must be marked FX-stale and recomputed on the next FX-version bump
+        /// (M-9 unified that trigger via CurrencyRatesNotifier → invalidateAndRecompute).
+        let usedStaleFallback: Bool
     }
 
-    /// Returns the amount in `baseCurrency` via `CurrencyConverter.convertSync`.
-    /// `convertedAmount` is denominated in the account's currency and is therefore
-    /// only a fallback for the cold-cache case.
-    nonisolated func resolveAmount(_ transaction: Transaction, baseCurrency: String) -> Double {
-        guard transaction.currency != baseCurrency else { return transaction.amount }
-        if let fx = CurrencyConverter.convertSync(
-            amount: transaction.amount,
-            from: transaction.currency,
-            to: baseCurrency
-        ) {
-            return fx
+    /// THE single Insights amount resolver: converts `tx.amount` from `tx.currency`
+    /// into `baseCurrency` via the live FX cache.
+    ///
+    /// ⚠️ On a cross-currency `convertSync` miss it returns `amount: 0` + `usedStaleFallback: true`
+    /// — it does NOT fall back to `tx.convertedAmount` (which is denominated in the
+    /// *account* currency, CLAUDE.md ⚠️ #6). Summing account-currency values as
+    /// base currency produces a wrong-unit total (e.g. $20 + $100 = "120 KZT").
+    /// Skipping the tx keeps the cold-cache total unit-correct (under-counts only
+    /// the unconvertible rows) until rates land and the snapshot is rebuilt.
+    static func resolveAmountToBase(_ tx: Transaction, baseCurrency: String) -> ResolvedAmount {
+        guard tx.currency != baseCurrency else {
+            return ResolvedAmount(amount: tx.amount, usedStaleFallback: false)
         }
-        return transaction.convertedAmount ?? transaction.amount
+        if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency) {
+            return ResolvedAmount(amount: fx, usedStaleFallback: false)
+        }
+        // Cold cache, cross-currency: skip (0) and flag stale. Never blend the
+        // account-currency convertedAmount into a base-currency total.
+        return ResolvedAmount(amount: 0, usedStaleFallback: true)
+    }
+
+    /// Amount resolver for static helper methods (no `self` needed).
+    /// Returns the base-currency amount, or `0` for an unconvertible cross-currency
+    /// tx on a cold cache (see `resolveAmountToBase` — never blends mismatched units).
+    static func resolveAmountStatic(_ tx: Transaction, baseCurrency: String) -> Double {
+        resolveAmountToBase(tx, baseCurrency: baseCurrency).amount
+    }
+
+    /// Returns the amount in `baseCurrency` via `CurrencyConverter.convertSync`,
+    /// or `0` for an unconvertible cross-currency tx on a cold cache.
+    nonisolated func resolveAmount(_ transaction: Transaction, baseCurrency: String) -> Double {
+        Self.resolveAmountToBase(transaction, baseCurrency: baseCurrency).amount
     }
 
     /// Inline helper to avoid Calendar extension conflicts with Date+Helpers.swift.

@@ -423,9 +423,31 @@ class AppCoordinator {
         Task(priority: .background) {
             CoreDataStack.shared.purgeHistory(olderThan: 7)
         }
+
+        // Keep reconciling on any FX-rate change after the initial prewarm bump above.
+        startObservingCurrencyRateChanges()
     }
-    
+
     // MARK: - Private Methods
+
+    /// Observe the single FX-rate notifier so EVERY rate change — a late prewarm landing
+    /// (past the 2.5s wait), a manual refresh, or a second provider response — bumps the
+    /// store's currency version. That reconciles FX-stale aggregates and refreshes Insights;
+    /// previously only the one post-prewarm bump did this, so late rates left multi-currency
+    /// aggregates/insights stale until the next launch (M-9). Re-arms after each change.
+    private func startObservingCurrencyRateChanges() {
+        withObservationTracking {
+            _ = CurrencyRatesNotifier.shared.version
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                self.transactionStore.bumpCurrencyRatesVersion()
+                self.transactionsViewModel.invalidateCaches()
+                self.insightsViewModel.invalidateAndRecompute()
+                self.startObservingCurrencyRateChanges()  // re-arm for the next change
+            }
+        }
+    }
 
     /// Reconcile all deposits at launch so interest that came due while the app was
     /// closed is posted promptly (previously only happened when a deposit view appeared).

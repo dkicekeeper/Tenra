@@ -108,6 +108,10 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol, @uncheck
         // UserDefaults implementation: noop
     }
 
+    func updateAccountBalancesSync(_ balances: [String: Double]) async {
+        // UserDefaults implementation: noop (balance persistence is a CoreData-only path)
+    }
+
     // MARK: - Categories
     
     func loadCategories() -> [CustomCategory] {

@@ -397,25 +397,21 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
 
     // MARK: - Persistence
 
-    /// Persist balance to Core Data after balance calculation
+    /// Persist balance to Core Data after balance calculation.
+    /// Goes through the `DataRepositoryProtocol` facade — the awaited
+    /// `updateAccountBalancesSync` is now part of the protocol, so no downcast
+    /// to `CoreDataRepository` is needed (M-10). On non-CoreData repositories
+    /// (UserDefaults preview/fallback) this is a no-op by design.
     private func persistBalance(_ balance: Double, for accountId: String) {
-        guard let coreDataRepo = repository as? CoreDataRepository else {
-            Self.logger.warning("persistBalance: repository is not CoreDataRepository — balance not persisted for \(accountId, privacy: .public)")
-            return
-        }
-
+        let repo = repository
         Task.detached(priority: .userInitiated) {
-            await coreDataRepo.updateAccountBalancesSync([accountId: balance])
+            await repo.updateAccountBalancesSync([accountId: balance])
         }
     }
 
-    /// Persist multiple balances to Core Data after batch recalculation
+    /// Persist multiple balances to Core Data after batch recalculation.
     private func persistBalances(_ balances: [String: Double]) {
-        guard let coreDataRepo = repository as? CoreDataRepository else {
-            return
-        }
-
-        coreDataRepo.updateAccountBalances(balances)
+        repository.updateAccountBalances(balances)
     }
 }
 

@@ -44,6 +44,9 @@ protocol DataRepositoryProtocol: Sendable {
     nonisolated func saveAccounts(_ accounts: [Account])
     nonisolated func updateAccountBalance(accountId: String, balance: Double)
     nonisolated func updateAccountBalances(_ balances: [String: Double])
+    /// Awaited balance persist — lets `BalanceCoordinator.persistBalance` go through
+    /// the facade instead of downcasting to `CoreDataRepository` (M-10).
+    nonisolated func updateAccountBalancesSync(_ balances: [String: Double]) async
 
     // MARK: - Categories
     nonisolated func loadCategories() -> [CustomCategory]

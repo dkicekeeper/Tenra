@@ -79,7 +79,9 @@ class LoansViewModel {
         }
 
         account.loanInfo = loanInfo
-        accountsViewModel.updateAccount(account)
+        // updateLoan (not updateAccount) so the loan account balance re-syncs to
+        // remainingPrincipal — the single source of truth for loan debt.
+        accountsViewModel.updateLoan(account)
     }
 
     // MARK: - Early Repayment
@@ -113,7 +115,8 @@ class LoansViewModel {
         )
 
         account.loanInfo = updatedLoanInfo
-        accountsViewModel.updateAccount(account)
+        // updateLoan re-syncs the loan account balance to the new remainingPrincipal.
+        accountsViewModel.updateLoan(account)
 
         return transaction
     }
@@ -149,7 +152,8 @@ class LoansViewModel {
         )
 
         account.loanInfo = updatedLoanInfo
-        accountsViewModel.updateAccount(account)
+        // updateLoan re-syncs the loan account balance to the new remainingPrincipal.
+        accountsViewModel.updateLoan(account)
 
         return transaction
     }

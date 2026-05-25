@@ -50,6 +50,14 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
         self.engine = BalanceCalculationEngine(cacheManager: cacheManager)
     }
 
+    /// The outstanding debt for a loan account — its balance derives from this single
+    /// source (loanInfo.remainingPrincipal), not from summing payment transactions.
+    /// Returns nil for non-loan accounts.
+    private static func loanDebt(of account: Account) -> Double? {
+        guard account.isLoan, let info = account.loanInfo else { return nil }
+        return NSDecimalNumber(decimal: info.remainingPrincipal).doubleValue
+    }
+
     // MARK: - Account Management
 
     /// Register accounts and compute initial balances using persisted `account.balance`.
@@ -71,9 +79,10 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
                 isDeposit: account.isDeposit
             )
             accountBalancesByID[account.id] = ab
-            // Use persisted `account.balance` — updated synchronously by persistIncremental()
-            // on every mutation, so it is always accurate between launches.
-            phase1Balances[account.id] = account.balance
+            // Loan accounts: balance IS the outstanding debt (remainingPrincipal), never the
+            // persisted running balance. Other accounts use persisted `account.balance`,
+            // kept accurate by persistIncremental() on every mutation.
+            phase1Balances[account.id] = Self.loanDebt(of: account) ?? account.balance
         }
 
         store.registerAccounts(Array(accountBalancesByID.values))
@@ -311,6 +320,12 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
                 continue
             }
 
+            // Loan accounts: balance is the outstanding debt, not a tx-derived sum.
+            if let debt = Self.loanDebt(of: account) {
+                newBalances[account.id] = debt
+                continue
+            }
+
             let mode = store.getCalculationMode(for: account.id)
 
             let calculatedBalance = engine.calculateBalance(
@@ -350,6 +365,12 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
             }
 
             guard let accountBalance = store.getAccount(account.id) else {
+                continue
+            }
+
+            // Loan accounts: balance is the outstanding debt, not a tx-derived sum.
+            if let debt = Self.loanDebt(of: account) {
+                newBalances[account.id] = debt
                 continue
             }
 

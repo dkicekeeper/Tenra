@@ -153,12 +153,16 @@ struct BalanceCalculationEngine {
             return tx.accountId == accountId ? -getTransactionAmount(tx, for: currency) : 0
 
         case .loanPayment, .loanEarlyRepayment:
-            // Reduces the loan account (target leg) AND the source bank (source leg).
-            // For a single account only one branch matches.
-            var delta = 0.0
-            if tx.accountId == accountId { delta -= getTransactionAmount(tx, for: currency) }
-            if tx.targetAccountId == accountId { delta -= getTransactionAmount(tx, for: currency) }
-            return delta
+            // Source bank leg: the full payment (principal + interest) left this account.
+            if tx.accountId == accountId {
+                return -getTransactionAmount(tx, for: currency)
+            }
+            // Loan (target) leg contributes nothing: the loan account's balance is the
+            // outstanding debt (loanInfo.remainingPrincipal), which a payment reduces only
+            // by its principal portion — interest is a bank expense, not debt reduction.
+            // The debt is sourced from remainingPrincipal in recalc / registerAccounts,
+            // not from summing payment legs. See BalanceCoordinator loan handling.
+            return 0
         }
     }
 

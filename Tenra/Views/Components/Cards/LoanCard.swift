@@ -20,7 +20,7 @@ struct LoanCard: View {
             VStack(alignment: .leading, spacing: AppSpacing.md) {
                 // Header: icon + name + bank + type badge
                 HStack(alignment: .top) {
-                    IconView(source: loan.iconSource, size: AppIconSize.xl)
+                    IconView(source: loan.iconSource, size: AppIconSize.xxl)
 
                     VStack(alignment: .leading, spacing: AppSpacing.xs) {
                         Text(loan.name)

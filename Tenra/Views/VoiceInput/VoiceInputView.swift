@@ -441,11 +441,11 @@ struct VoiceInputView: View {
         let mod100 = count % 100
         let suffix: String
         if mod10 == 1, mod100 != 11 {
-            suffix = "транзакцию"
+            suffix = "операцию"
         } else if (2...4).contains(mod10), !(12...14).contains(mod100) {
-            suffix = "транзакции"
+            suffix = "операции"
         } else {
-            suffix = "транзакций"
+            suffix = "операций"
         }
         return "Подтвердить \(count) \(suffix)"
     }

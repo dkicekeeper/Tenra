@@ -165,10 +165,13 @@ struct IconStyle: Equatable, Hashable {
 
     /// Стандартная иконка категории (круг, accent цвет)
     /// Используется в: CategoryRow, CategoryChip, CategorySelectorView
-    static func categoryIcon(size: CGFloat = AppIconSize.lg) -> IconStyle {
+    /// - Parameter backgroundColor: опциональный фон контейнера. Для SF Symbols по умолчанию `AppColors.bgCard`,
+    ///   для категорий пробрасывается `category.color.opacity(0.15)`.
+    static func categoryIcon(size: CGFloat = AppIconSize.lg, backgroundColor: Color? = AppColors.bgCard) -> IconStyle {
         .circle(
             size: size,
-            tint: .accentMonochrome
+            tint: .accentMonochrome,
+            backgroundColor: backgroundColor
         )
     }
 
@@ -181,50 +184,45 @@ struct IconStyle: Equatable, Hashable {
         )
     }
 
-    /// Стандартный логотип с скругленным квадратом
+    /// Стандартный логотип (круг)
     /// Используется в: AccountRow, AccountCard, AccountEditView
     static func roundedLogo(size: CGFloat = AppIconSize.xl) -> IconStyle {
-        .roundedSquare(
+        .circle(
             size: size,
-            cornerRadius: AppRadius.md,
             tint: .original
         )
     }
 
-    /// Крупный логотип для карточек счетов
+    /// Крупный логотип для карточек счетов (круг)
     static func roundedLogoLarge(size: CGFloat = AppIconSize.avatar) -> IconStyle {
-        .roundedSquare(
+        .circle(
             size: size,
-            cornerRadius: AppRadius.lg,
             tint: .original
         )
     }
 
-    /// Стандартная иконка подписки/сервиса
+    /// Стандартная иконка подписки/сервиса (круг)
     /// Используется в: SubscriptionCard, IconPickerView
     static func serviceLogo(size: CGFloat = AppIconSize.xl) -> IconStyle {
-        .roundedSquare(
+        .circle(
             size: size,
-            cornerRadius: AppRadius.md,
             tint: .original
         )
     }
 
-    /// Крупная иконка сервиса для карточек подписок
+    /// Крупная иконка сервиса для карточек подписок (круг)
     static func serviceLogoLarge(size: CGFloat = AppIconSize.avatar) -> IconStyle {
-        .roundedSquare(
+        .circle(
             size: size,
-            cornerRadius: AppRadius.lg,
             tint: .original
         )
     }
 
-    /// Placeholder стиль (серый фон, secondary цвет)
+    /// Placeholder стиль (круг, серый фон, secondary цвет)
     /// Используется когда iconSource == nil
     static func placeholder(size: CGFloat) -> IconStyle {
-        .roundedSquare(
+        .circle(
             size: size,
-            cornerRadius: size * 0.2,
             tint: .secondaryMonochrome,
             backgroundColor: AppColors.bgCard
         )
@@ -266,11 +264,10 @@ struct IconStyle: Equatable, Hashable {
         )
     }
 
-    /// Стеклянная иконка сервиса с rounded square
+    /// Стеклянная иконка сервиса (круг)
     static func glassService(size: CGFloat = AppIconSize.avatar) -> IconStyle {
-        .roundedSquare(
+        .circle(
             size: size,
-            cornerRadius: AppRadius.lg,
             tint: .original,
             hasGlassEffect: true
         )
@@ -286,7 +283,7 @@ struct IconStyle: Equatable, Hashable {
             return String(localized: "iconStyle.preset.categoryIcon")
         }
 
-        if case .roundedSquare = shape,
+        if case .circle = shape,
            case .original = tint,
            (size == AppIconSize.xl || size == AppIconSize.avatar) {
             return String(localized: "iconStyle.preset.serviceLogo")

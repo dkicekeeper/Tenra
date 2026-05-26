@@ -67,16 +67,19 @@ struct TransactionCategoryPickerView: View {
     // MARK: - Body
 
     var body: some View {
-        CategoryGridView(
-            categories: coordinator.categories,
-            baseCurrency: coordinator.baseCurrency,
-            gridColumns: nil, // Adaptive
-            onCategoryTap: { category, type in
-                coordinator.handleCategorySelected(category, type: type)
-            },
-            emptyStateAction: coordinator.handleAddCategory,
-            sourceNamespace: categoryNamespace
-        )
+        ScrollView {
+            CategoryGridView(
+                categories: coordinator.categories,
+                baseCurrency: coordinator.baseCurrency,
+                gridColumns: nil, // Adaptive
+                onCategoryTap: { category, type in
+                    coordinator.handleCategorySelected(category, type: type)
+                },
+                emptyStateAction: coordinator.handleAddCategory,
+                sourceNamespace: categoryNamespace
+            )
+            .padding(.horizontal, AppSpacing.md)
+        }
         // Push the add-transaction form into the surrounding NavigationStack instead
         // of presenting it as a sheet — this avoids the modal-on-pushed-view scroll bug
         // when the picker itself is a navigationDestination (account/category details).

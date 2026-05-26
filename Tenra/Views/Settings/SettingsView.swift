@@ -116,7 +116,7 @@ struct SettingsView: View {
             }
             Button(String(localized: "alert.deleteAllData.cancel"), role: .cancel) {}
         } message: {
-            Text("Парсер забудет, какой счёт вы обычно выбираете для каждой категории. Это не удалит сами транзакции.")
+            Text("Парсер забудет, какой счёт вы обычно выбираете для каждой категории. Это не удалит сами операции.")
         }
         .sheet(isPresented: $showingExportSheet) {
             ExportActivityView(transactionsViewModel: transactionsViewModel)

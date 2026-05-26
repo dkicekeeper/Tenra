@@ -95,7 +95,7 @@ nonisolated class MLDataExporter {
         let minCategoriesPerClass = 5  // Минимум примеров на категорию
 
         guard transactions.count >= minTransactions else {
-            return (false, "Недостаточно транзакций. Нужно минимум \(minTransactions), есть \(transactions.count)")
+            return (false, "Недостаточно операций. Нужно минимум \(minTransactions), есть \(transactions.count)")
         }
 
         let categoryGroups = Dictionary(grouping: transactions) { $0.category }

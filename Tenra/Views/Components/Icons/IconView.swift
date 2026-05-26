@@ -51,8 +51,8 @@ struct IconView: View {
     /// Convenience initializer с автоматическим выбором стиля по типу источника
     /// - Parameters:
     ///   - source: Источник иконки (IconSource)
-    ///   - size: Размер иконки (по умолчанию AppIconSize.xl из Design System)
-    init(source: IconSource?, size: CGFloat = AppIconSize.xl) {
+    ///   - size: Размер иконки (по умолчанию AppIconSize.xxl=44pt из Design System)
+    init(source: IconSource?, size: CGFloat = AppIconSize.xxl) {
         self.source = source
 
         // Автоматический выбор стиля в зависимости от типа источника

@@ -44,7 +44,7 @@ struct AccountRow: View {
             Button(action: onEdit) {
                 HStack(spacing: AppSpacing.md) {
                     // Логотип банка
-                    IconView(source: account.iconSource, size: AppIconSize.xl)
+                    IconView(source: account.iconSource, size: AppIconSize.xxl)
                         .matchedTransitionSourceIfPresent(
                             id: transitionSourceID,
                             namespace: transitionNamespace

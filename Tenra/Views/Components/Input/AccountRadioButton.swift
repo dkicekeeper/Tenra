@@ -20,7 +20,7 @@ struct AccountRadioButton: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: AppSpacing.md) {
-                IconView(source: account.iconSource, size: AppIconSize.xl)
+                IconView(source: account.iconSource, size: AppIconSize.xxl)
 
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text(account.name)

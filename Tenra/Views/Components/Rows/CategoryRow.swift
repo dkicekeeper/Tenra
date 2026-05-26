@@ -60,12 +60,13 @@ struct CategoryRow: View, Equatable {
                             )
                         }
 
-                        // Иконка с цветом категории
+                        // Иконка с цветом категории на мягком фоне
                         IconView(
                             source: category.iconSource,
                             style: .circle(
                                 size: AppIconSize.xxl,
-                                tint: .monochrome(category.color)
+                                tint: .monochrome(category.color),
+                                backgroundColor: category.color.opacity(0.15)
                             )
                         )
                     }

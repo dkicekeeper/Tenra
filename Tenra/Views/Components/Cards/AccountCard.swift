@@ -19,7 +19,7 @@ struct AccountCard: View {
     var body: some View {
         NavigationLink(value: account) {
             HStack(spacing: AppSpacing.sm) {
-                IconView(source: account.iconSource, size: AppIconSize.xl)
+                IconView(source: account.iconSource, size: AppIconSize.xxl)
 
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text(account.name)

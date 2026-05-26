@@ -14,11 +14,11 @@
 "navigation.logoSearch" = "Поиск логотипа";
 "navigation.entityMapping" = "Сопоставление сущностей";
 "navigation.csvPreview" = "Превью CSV";
-"navigation.transactionPreview" = "Предпросмотр транзакций";
+"navigation.transactionPreview" = "Предпросмотр операций";
 
 // MARK: - Transaction Preview (Phase 16)
-"transactionPreview.found" = "Найдено: %d транзакций";
-"transactionPreview.selectHint" = "Выберите транзакции для добавления";
+"transactionPreview.found" = "Найдено: %d операций";
+"transactionPreview.selectHint" = "Выберите операции для добавления";
 "transactionPreview.selectAll" = "Выбрать все";
 "transactionPreview.deselectAll" = "Снять выбор";
 "transactionPreview.addSelected" = "Добавить выбранные (%d)";
@@ -135,8 +135,8 @@
 "error.generic.title" = "Ошибка";
 "error.loadTextFailed" = "Ошибка загрузки текста";
 "error.tryAgain" = "Попробуйте еще раз";
-"error.noTransactionsFound" = "Не удалось найти транзакции в распознанном тексте. Убедитесь, что текст содержит таблицу транзакций выписки.";
-"error.noTransactionsStructured" = "Не удалось найти транзакции в структурированных данных. Возможно, формат выписки отличается от ожидаемого.";
+"error.noTransactionsFound" = "Не удалось найти операции в распознанном тексте. Убедитесь, что текст содержит таблицу операций выписки.";
+"error.noTransactionsStructured" = "Не удалось найти операции в структурированных данных. Возможно, формат выписки отличается от ожидаемого.";
 "error.pdfExtraction" = "Не удалось извлечь текст из PDF. Возможно, документ поврежден или пуст.";
 "error.importFailed" = "Ошибка импорта";
 "error.coredata.migrationFailed" = "Миграция данных не удалась. Пожалуйста, перезапустите приложение или обратитесь в поддержку.";
@@ -169,7 +169,7 @@
 "transaction.currency" = "Валюта";
 
 // MARK: - Transaction Actions
-"transaction.importTransactions" = "Импортировать транзакции";
+"transaction.importTransactions" = "Импортировать операции";
 "transaction.addNew" = "Добавить операцию";
 "transaction.edit" = "Редактировать операцию";
 "transaction.new" = "Новая операция";
@@ -180,7 +180,7 @@
 
 // MARK: - Modals
 "modal.recognizedText.title" = "Распознанный текст";
-"modal.recognizedText.message" = "Текст успешно распознан. Вы можете импортировать транзакции или скопировать текст.";
+"modal.recognizedText.message" = "Текст успешно распознан. Вы можете импортировать операции или скопировать текст.";
 "modal.newAccount" = "Новый счёт";
 "modal.editAccount" = "Редактировать счёт";
 "modal.newCategory" = "Новая категория";
@@ -224,13 +224,13 @@
 "transactionType.transfer" = "Перевод";
 
 // MARK: - Transaction Recurring
-"transaction.deleteConfirmation.title" = "Удалить транзакцию?";
+"transaction.deleteConfirmation.title" = "Удалить операцию?";
 "transaction.stopRecurring.title" = "Прекратить повторение?";
-"transaction.stopRecurring.message" = "Это прекратит повторение операции. Все будущие транзакции будут удалены.";
+"transaction.stopRecurring.message" = "Это прекратит повторение операции. Все будущие операции будут удалены.";
 "transaction.stopRecurring.confirm" = "Прекратить повторение";
 "transaction.stopRecurring.cancel" = "Отмена";
-"accessibility.deleteTransaction" = "Удалить транзакцию";
-"accessibility.stopRecurring" = "Прекратить повторение транзакции";
+"accessibility.deleteTransaction" = "Удалить операцию";
+"accessibility.stopRecurring" = "Прекратить повторение операции";
 "accessibility.swipeForOptions" = "Смахните влево для опций";
 
 // MARK: - Accounts Management
@@ -245,9 +245,9 @@
 "account.newDeposit" = "Новый депозит";
 "account.namePlaceholder" = "Название счёта";
 "account.deleteTitle" = "Удалить счет";
-"account.deleteMessage" = "Что сделать с транзакциями счета '%@'?";
+"account.deleteMessage" = "Что сделать с операциями счета '%@'?";
 "account.deleteOnlyAccount" = "Удалить только счет";
-"account.deleteAccountAndTransactions" = "Удалить счет и транзакции";
+"account.deleteAccountAndTransactions" = "Удалить счет и операции";
 "common.currency" = "Валюта";
 "common.balancePlaceholder" = "0.00";
 "common.error" = "Ошибка";
@@ -259,7 +259,7 @@
 "deposit.changeRate" = "Изменить ставку";
 "deposit.delete" = "Удалить депозит";
 "deposit.deleteTitle" = "Удалить депозит?";
-"deposit.deleteMessage" = "Все данные депозита и связанные транзакции будут удалены.";
+"deposit.deleteMessage" = "Все данные депозита и связанные операции будут удалены.";
 "deposit.balance" = "Баланс";
 "deposit.interestToday" = "Проценты на сегодня";
 "deposit.rate" = "Ставка";
@@ -369,11 +369,11 @@
 
 // MARK: - Accessibility Labels
 "accessibility.voiceInput" = "Голосовой ввод";
-"accessibility.voiceInputHint" = "Записать транзакцию голосом";
+"accessibility.voiceInputHint" = "Записать операцию голосом";
 "accessibility.importStatement" = "Импорт выписки";
-"accessibility.importStatementHint" = "Импортировать транзакции из PDF или CSV файла";
+"accessibility.importStatementHint" = "Импортировать операции из PDF или CSV файла";
 "accessibility.calendar" = "Календарь";
-"accessibility.calendarHint" = "Выбрать диапазон дат для фильтрации транзакций";
+"accessibility.calendarHint" = "Выбрать диапазон дат для фильтрации операций";
 "accessibility.settings" = "Настройки";
 "accessibility.settingsHint" = "Открыть настройки приложения";
 
@@ -432,14 +432,14 @@
 "subscriptions.emptyDescription" = "Добавьте подписку, чтобы отслеживать регулярные платежи";
 "subscriptions.addSubscription" = "Добавить подписку";
 "subscriptions.deleteConfirmTitle" = "Удалить подписку?";
-"subscriptions.deleteConfirmMessage" = "Все данные подписки и связанные транзакции будут удалены.";
+"subscriptions.deleteConfirmMessage" = "Все данные подписки и связанные операции будут удалены.";
 "subscriptions.delete" = "Удалить";
 "subscriptions.deleteOnlySubscription" = "Удалить только подписку";
-"subscriptions.deleteSubscriptionAndTransactions" = "Удалить подписку и транзакции";
+"subscriptions.deleteSubscriptionAndTransactions" = "Удалить подписку и операции";
 "subscriptions.edit" = "Редактировать";
 "subscriptions.pause" = "Приостановить";
 "subscriptions.resume" = "Возобновить";
-"subscriptions.transactionHistory" = "История транзакций";
+"subscriptions.transactionHistory" = "История операций";
 "subscriptions.category" = "Категория";
 "subscriptions.frequency" = "Частота";
 "subscriptions.nextCharge" = "Следующее списание";
@@ -558,7 +558,7 @@
 "transactionForm.searchAndAddSubcategories" = "Поиск и добавление подкатегорий";
 "transactionForm.searchOrCreateSubcategory" = "Найти или создать подкатегорию";
 // MARK: - Recurring Transactions Errors
-"recurring.error.seriesNotFound" = "Повторяющаяся транзакция не найдена";
+"recurring.error.seriesNotFound" = "Повторяющаяся операция не найдена";
 "recurring.error.invalidFrequency" = "Выбрана неверная частота";
 "recurring.error.invalidAmount" = "Сумма должна быть больше нуля";
 "recurring.error.invalidStartDate" = "Неверная дата начала";
@@ -578,7 +578,7 @@
 "csvImport.error.invalidAmount" = "Неверная сумма в строке %d: %@";
 "csvImport.error.invalidType" = "Неверный тип операции в строке %d: %@";
 "csvImport.error.emptyValue" = "Пустое значение в строке %d, колонка '%@'";
-"csvImport.error.duplicateTransaction" = "Дубликат транзакции в строке %d";
+"csvImport.error.duplicateTransaction" = "Дубликат операции в строке %d";
 "csvImport.error.fileAccessDenied" = "Нет доступа к файлу";
 "csvImport.error.invalidEncoding" = "Неверная кодировка файла (требуется UTF-8)";
 "csvImport.error.emptyFile" = "Файл пуст";
@@ -587,7 +587,7 @@
 "csvImport.error.persistenceFailed" = "Данные импорта не удалось сохранить в базу данных.";
 "csvImport.progress.parsing" = "Парсинг CSV файла...";
 "csvImport.progress.validating" = "Валидация строк...";
-"csvImport.progress.importing" = "Импорт транзакций...";
+"csvImport.progress.importing" = "Импорт операций...";
 "csvImport.progress.finalizing" = "Завершение импорта...";
 "csvImport.result.imported" = "%d импортировано";
 "csvImport.result.skipped" = "%d пропущено";
@@ -686,7 +686,7 @@
 
 // MARK: - Alert Titles (Settings)
 "alert.recalculateBalances.title" = "Пересчитать балансы?";
-"alert.recalculateBalances.message" = "Это пересчитает балансы всех счетов с нуля на основе транзакций. Используйте это, если балансы отображаются неправильно.";
+"alert.recalculateBalances.message" = "Это пересчитает балансы всех счетов с нуля на основе операций. Используйте это, если балансы отображаются неправильно.";
 "alert.recalculateBalances.confirm" = "Пересчитать";
 "alert.selectWallpaper.title" = "Выбрать обои";
 "alert.removeWallpaper.title" = "Удалить обои?";
@@ -694,7 +694,7 @@
 "alert.exportSuccess.title" = "Экспорт завершен";
 "alert.exportSuccess.message" = "Данные экспортированы в %@";
 "alert.importSuccess.title" = "Импорт завершен";
-"alert.importSuccess.message" = "Импортировано транзакций: %d";
+"alert.importSuccess.message" = "Импортировано операций: %d";
 
 // MARK: - Settings Labels (Additional)
 "settings.recalculateBalances" = "Пересчитать балансы счетов";
@@ -719,15 +719,15 @@
 "progress.importing" = "Импорт...";
 
 // MARK: - TransactionStore Errors (Phase 7 - 2026-02-05)
-"error.transaction.invalidAmount" = "Неверная сумма транзакции";
+"error.transaction.invalidAmount" = "Неверная сумма операции";
 "error.transaction.accountNotFound" = "Счёт-источник не найден";
 "error.transaction.targetAccountNotFound" = "Счёт-получатель не найден";
 "error.transaction.categoryNotFound" = "Категория не найдена";
-"error.transaction.notFound" = "Транзакция не найдена";
-"error.transaction.idMismatch" = "Несовпадение ID транзакции";
-"error.transaction.cannotRemoveRecurring" = "Невозможно удалить повторяющуюся серию из транзакции";
-"error.transaction.cannotDeleteDepositInterest" = "Невозможно удалить транзакцию начисления процентов";
-"error.transaction.persistenceFailed" = "Не удалось сохранить транзакцию";
+"error.transaction.notFound" = "Операция не найдена";
+"error.transaction.idMismatch" = "Несовпадение ID операции";
+"error.transaction.cannotRemoveRecurring" = "Невозможно удалить повторяющуюся серию из операции";
+"error.transaction.cannotDeleteDepositInterest" = "Невозможно удалить операцию начисления процентов";
+"error.transaction.persistenceFailed" = "Не удалось сохранить операцию";
 
 // MARK: - Currency Conversion
 "currency.conversion.approximate" = "≈";
@@ -776,7 +776,7 @@
 "insights.ratio" = "Соотношение доходов/расходов";
 "insights.loading" = "Анализируем ваши финансы...";
 "insights.emptyState.title" = "Пока нет аналитики";
-"insights.emptyState.description" = "Добавьте транзакции, чтобы увидеть финансовую аналитику";
+"insights.emptyState.description" = "Добавьте операции, чтобы увидеть финансовую аналитику";
 "insights.noInsightsForFilter" = "Нет данных для этой категории";
 "insights.topCategory" = "Топ категория расходов";
 "insights.ofTotal" = "от общих расходов";
@@ -910,7 +910,7 @@
 "insights.formula.yearOverYear.row.absDelta" = "Абсолютное изменение";
 "insights.formula.yearOverYear.row.delta" = "Изменение в %%";
 "insights.formula.yearOverYear.explainer" = "Сравнение общих расходов за текущий месяц и тот же месяц год назад. Помогает отличить реальный сдвиг от сезонности — декабрь всегда «дороже», но именно этот декабрь тяжелее прошлого?";
-"insights.formula.yearOverYear.rec.down" = "Расходы заметно ниже год к году. Если это случайно — проверьте, не пропущена ли регулярная транзакция; иногда она «прячется» именно так.";
+"insights.formula.yearOverYear.rec.down" = "Расходы заметно ниже год к году. Если это случайно — проверьте, не пропущена ли регулярная операция; иногда она «прячется» именно так.";
 "insights.formula.yearOverYear.rec.up" = "Рост на %@. Сравните топ-категории обоих месяцев — обычно скачок объясняется одной новой подпиской, дополнительным циклом аренды или крупной покупкой.";
 "insights.formula.yearOverYear.rec.flat" = "Изменение умеренное — ваш паттерн расходов стабилен. Проверьте тот же показатель в следующем месяце для отслеживания дрейфа.";
 "insights.formula.projectedBalance.title" = "Прогноз баланса";
@@ -947,7 +947,7 @@
 "insights.formula.categoryTrend.row.month" = "Месяц";
 "insights.formula.categoryTrend.row.delta" = "Последний к предыдущему месяцу";
 "insights.formula.categoryTrend.explainer" = "Сканируем помесячные итоги по категориям в окне (длина зависит от гранулярности) и показываем категорию с самой длинной серией роста подряд. Помогает поймать медленный дрейф до того, как он превратится в превышение бюджета.";
-"insights.formula.categoryTrend.rec" = "%@ растёт %d месяцев подряд. Сравните последние транзакции с более ранними — обычно одна новая регулярная подписка или смена привычек объясняет серию.";
+"insights.formula.categoryTrend.rec" = "%@ растёт %d месяцев подряд. Сравните последние операции с более ранними — обычно одна новая регулярная подписка или смена привычек объясняет серию.";
 "insights.granularity.prev.week" = "к предыдущей неделе";
 "insights.granularity.prev.month" = "к предыдущему месяцу";
 "insights.granularity.prev.quarter" = "к предыдущему кварталу";
@@ -1191,7 +1191,7 @@
 "settings.cloud.delete" = "Удалить";
 "settings.cloud.storage" = "Хранилище";
 "settings.cloud.storageUsed" = "%@ из %@";
-"settings.cloud.backupMetadata" = "%d счетов · %d транзакций · %@";
+"settings.cloud.backupMetadata" = "%d счетов · %d операций · %@";
 "alert.restore.title" = "Восстановить данные?";
 "alert.restore.message" = "Все текущие данные будут заменены копией от %@.";
 "alert.restore.confirm" = "Восстановить";
@@ -1225,7 +1225,7 @@
 "loan.linkPayments.selectedWithAmount" = "%d выбрано · %@";
 "loan.linkPayments.search" = "Поиск по описанию или сумме";
 "loan.linkPayments.link" = "Привязать %d платежей";
-"loan.linkPayments.empty" = "Подходящие транзакции не найдены";
+"loan.linkPayments.empty" = "Подходящие операции не найдены";
 
 // Привязка платежей к подписке
 "subscription.linkPayments.title" = "Привязать платежи";
@@ -1233,7 +1233,7 @@
 "subscription.linkPayments.searchPlaceholder" = "Поиск";
 "subscription.linkPayments.selectedWithAmount" = "%d выбрано · %@";
 "subscription.linkPayments.link" = "Привязать %d";
-"subscription.linkPayments.empty" = "Нет подходящих транзакций";
+"subscription.linkPayments.empty" = "Нет подходящих операций";
 "subscription.linkPayments.amountExact" = "Точная сумма";
 "subscription.linkPayments.amountTolerance" = "±30%";
 "subscription.linkPayments.amountAll" = "Все";
@@ -1244,15 +1244,15 @@
 "subscription.linkPayments.selectAll" = "Выбрать все";
 "subscription.linkPayments.deselectAll" = "Снять выбор";
 "subscriptions.spentAllTime" = "Потрачено за всё время";
-"subscription.edit.propagate.title" = "Обновить связанные транзакции?";
-"subscription.edit.propagate.message" = "Применить изменения к существующим транзакциям этой подписки?";
+"subscription.edit.propagate.title" = "Обновить связанные операции?";
+"subscription.edit.propagate.message" = "Применить изменения к существующим операциям этой подписки?";
 "subscription.edit.propagate.seriesOnly" = "Только подписку";
-"subscription.edit.propagate.future" = "Будущие транзакции";
-"subscription.edit.propagate.all" = "Все транзакции";
-"subscription.unlinkAll" = "Отвязать все транзакции";
-"subscription.unlinkAll.title" = "Отвязать все транзакции?";
+"subscription.edit.propagate.future" = "Будущие операции";
+"subscription.edit.propagate.all" = "Все операции";
+"subscription.unlinkAll" = "Отвязать все операции";
+"subscription.unlinkAll.title" = "Отвязать все операции?";
 "subscription.unlinkAll.confirm" = "Отвязать";
-"subscription.unlinkAll.message" = "Убрать связь с подпиской у %d транзакций? Сами транзакции останутся.";
+"subscription.unlinkAll.message" = "Убрать связь с подпиской у %d операций? Сами операции останутся.";
 "subscription.linkPayments.subcategories" = "Подкатегории";
 "subscription.linkPayments.subcategoriesCount" = "%d подкатегорий";
 "subscription.filterAll" = "Все";
@@ -1298,7 +1298,7 @@
 "insights.chart.bar" = "Бары";
 "insights.today" = "Сегодня";
 "insights.empty.title" = "Нет данных";
-"insights.empty.subtitle" = "Здесь появится график, как только наберётся история транзакций";
+"insights.empty.subtitle" = "Здесь появится график, как только наберётся история операций";
 
 // MARK: - Voice Input
 "voice.noTextRecognizedYet" = "Текст пока не распознан";
@@ -1319,7 +1319,7 @@
 
 // MARK: - Progress
 "progress.loadingAccounts" = "Загрузка счетов";
-"progress.loadingTransactions" = "Загрузка транзакций";
+"progress.loadingTransactions" = "Загрузка операций";
 "progress.saving" = "Сохранение";
 
 // MARK: - UI (Misc)
@@ -1340,7 +1340,7 @@
 "accessibility.deposit.moreActions" = "Дополнительные действия";
 "accessibility.insights.granularityPicker" = "Выбор периода";
 "accessibility.insights.granularityPickerHint" = "Выберите детализацию: месяц, квартал или год";
-"accessibility.transaction.history" = "История транзакций";
+"accessibility.transaction.history" = "История операций";
 
 // MARK: - Bulk Selection
 "bulk.select" = "Выбрать";
@@ -1351,26 +1351,26 @@
 
 // MARK: - Bulk Delete Accounts
 "bulk.deleteAccounts.title" = "Удалить счетов: %d?";
-"bulk.deleteAccounts.message" = "Что делать со связанными транзакциями?";
+"bulk.deleteAccounts.message" = "Что делать со связанными операциями?";
 "bulk.deleteAccounts.onlyAccounts" = "Удалить только счета";
-"bulk.deleteAccounts.withTransactions" = "Удалить с транзакциями";
+"bulk.deleteAccounts.withTransactions" = "Удалить с операциями";
 
 // MARK: - Bulk Delete Categories
 "bulk.deleteCategories.title" = "Удалить категорий: %d?";
-"bulk.deleteCategories.message" = "Что делать со связанными транзакциями?";
+"bulk.deleteCategories.message" = "Что делать со связанными операциями?";
 "bulk.deleteCategories.onlyCategories" = "Удалить только категории";
-"bulk.deleteCategories.withTransactions" = "Удалить с транзакциями";
+"bulk.deleteCategories.withTransactions" = "Удалить с операциями";
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "Удалить подкатегорий: %d?";
 "bulk.deleteSubcategories.confirm" = "Удалить";
 
 // MARK: - Account Detail View
-"account.detail.actions.addTransaction" = "Добавить транзакцию";
+"account.detail.actions.addTransaction" = "Добавить операцию";
 "account.detail.actions.transfer" = "Перевод";
 "account.detail.totalIncome" = "Всего доходов";
 "account.detail.totalExpense" = "Всего расходов";
-"account.detail.transactionCount" = "Транзакций";
+"account.detail.transactionCount" = "Операций";
 "account.detail.delete.confirmTitle" = "Удалить счёт?";
 "account.detail.delete.confirmMessage" = "Счёт будет удалён навсегда.";
 "accounts.type" = "Тип";
@@ -1382,13 +1382,13 @@
 "common.delete" = "Удалить";
 
 // Category Detail
-"category.detail.actions.addTransaction" = "Добавить транзакцию";
+"category.detail.actions.addTransaction" = "Добавить операцию";
 "category.detail.totalSpent" = "Всего потрачено";
 "category.detail.totalEarned" = "Всего заработано";
 "category.detail.avgMonthly" = "В среднем за месяц";
 "category.detail.budget" = "Бюджет";
 "category.detail.subcategories" = "Подкатегории";
-"category.detail.transactionCount" = "Транзакций";
+"category.detail.transactionCount" = "Операций";
 "category.detail.manageSubcategories" = "Управлять подкатегориями";
 "category.detail.delete.confirmTitle" = "Удалить категорию?";
 "category.detail.delete.confirmMessage" = "Категория будет удалена.";
@@ -1399,7 +1399,7 @@
 
 "onboarding.welcome.page1.title" = "Все финансы в одном месте";
 "onboarding.welcome.page1.subtitle" = "Счета, депозиты, кредиты, подписки и категории трат — всё в одном приложении с понятной аналитикой.";
-"onboarding.welcome.page2.title" = "Добавляйте транзакции голосом";
+"onboarding.welcome.page2.title" = "Добавляйте операции голосом";
 "onboarding.welcome.page2.subtitle" = "Скажите «Кофе 800 тенге» — Tenra поймёт сумму, валюту и категорию. Или импортируйте выписку из PDF/CSV.";
 "onboarding.welcome.page3.title" = "Ваши данные — только ваши";
 "onboarding.welcome.page3.subtitle" = "Всё хранится локально на устройстве. iCloud-бэкап опциональный. Никаких аккаунтов и регистраций.";
@@ -1449,7 +1449,7 @@
 "insights.health.subtitle.needsAttention" = "Несколько направлений требуют работы.";
 
 "insights.health.unavailable.title" = "Недостаточно данных";
-"insights.health.unavailable.message" = "Добавьте транзакции дохода и расхода — после этого мы сможем оценить ваше финансовое здоровье.";
+"insights.health.unavailable.message" = "Добавьте операции дохода и расхода — после этого мы сможем оценить ваше финансовое здоровье.";
 
 "insights.health.howItWorks" = "Как считается";
 "insights.health.explainer" = "Скор от 0 до 100 — взвешенная оценка пяти аспектов финансового здоровья. Чем выше, тем устойчивее финансы.";

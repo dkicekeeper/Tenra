@@ -28,6 +28,29 @@ When you need to do heavy computation off MainActor, bundle MainActor-isolated d
 
 Example: [InsightsService.DataSnapshot](../Tenra/Services/Insights/InsightsService.swift) bundles transactions, categories, recurringSeries, accounts, and `balanceFor` closure — built on MainActor before `Task.detached`, threaded through the entire computation chain.
 
+### Load-time snapshot builder (`TransactionStore.loadData`)
+
+For "build N derived indexes from one array of 19k value-types" workloads, the established pattern is:
+
+1. Define `Sendable` snapshot struct (e.g. [`TransactionStore.LoadedIndexSnapshot`](../Tenra/ViewModels/TransactionStore+LoadSnapshot.swift)).
+2. `nonisolated static func` builder, pure over `Sendable` inputs — duplicates predicate helpers locally (e.g. `isAggregatableForLoad`) to avoid `MainActor`-isolated instance methods.
+3. On MainActor: capture inputs as `Sendable` copies (`baseCurrency`, `accountsCurrencyById`, …), call `Task.detached(priority: .userInitiated)`, await the snapshot, then **only assign** the hash-maps. No per-tx loops on MainActor.
+4. Optional fields on the snapshot for cold-start variants (e.g. `coldStartCategoryAggregates`) — same one-pass builder handles both warm and cold paths.
+
+### Sendable conformance is opt-in for data structs
+
+Even with all-value-type fields, structs don't auto-conform to `Sendable` if the source file doesn't declare it. When introducing a struct that will cross actor boundaries, add `: Sendable` explicitly. Precedents from this codebase: `Transaction`, `CategoryAggregate`, `AccountAggregates`, `CategoryExpense`.
+
+Symptom of forgetting: `Task.detached` returning a `[String: YourType]` fails to compile with "captured value of non-sendable type ... in a `@Sendable` closure".
+
+### Render-frame yield after Observable mutations
+
+When a SwiftUI reveal/transition is keyed off an Observable flag (e.g. `isFullyInitialized`), insert `try? await Task.sleep(for: .milliseconds(16))` **immediately after** the mutation if the next MainActor work is heavy. Without the yield, the new render and the heavy work both land in the same render cycle, stuttering the transition. 16 ms ≈ one 60fps frame. Precedent: [`AppCoordinator.initialize`](../Tenra/ViewModels/AppCoordinator.swift) after `isFullyInitialized = true`.
+
+### Default isolation gotcha
+
+`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` means plain `enum`/`class`/`struct static func` declarations are implicitly MainActor. Pure helpers called from `Task.detached` need explicit `nonisolated`. Precedent: `LedgerPolicyRule.isRealized` is `nonisolated static`. Symptom of forgetting: Swift 6 warning "call to main actor-isolated static method in a synchronous nonisolated context".
+
 ## CoreData Entity Mutations
 
 All CoreData entity property mutations MUST be wrapped in `context.perform { }`:

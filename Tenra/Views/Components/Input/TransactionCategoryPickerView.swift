@@ -41,6 +41,29 @@ struct TransactionCategoryPickerView: View {
         ))
     }
 
+    // MARK: - Reactive Refresh Trigger
+
+    /// Equatable bundle of every observable input that affects `coordinator.categories`.
+    /// `.task(id:)` cancels and restarts the snapshot recompute whenever this changes.
+    /// Kept narrow so unrelated mutations (e.g. account renames) don't refire.
+    private struct RefreshTrigger: Equatable {
+        let filterName: String
+        let txVersion: Int
+        let categoriesVersion: Int
+        let ratesVersion: Int
+        let baseCurrency: String
+    }
+
+    private var refreshTrigger: RefreshTrigger {
+        RefreshTrigger(
+            filterName: timeFilterManager.currentFilter.displayName,
+            txVersion: coordinator.transactionStore.mutationVersion,
+            categoriesVersion: coordinator.transactionStore.categoriesMutationVersion,
+            ratesVersion: coordinator.transactionStore.currencyRatesVersion,
+            baseCurrency: coordinator.baseCurrency
+        )
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -62,6 +85,12 @@ struct TransactionCategoryPickerView: View {
         }
         .sheet(isPresented: $coordinator.showingAddCategory) {
             categoryEditSheet
+        }
+        // Recompute the display snapshot off-MainActor whenever an input changes.
+        // First fire (implicit on appear) replaces the synchronous `total = 0` seed
+        // produced in the coordinator's init with real per-category amounts.
+        .task(id: refreshTrigger) {
+            await coordinator.recompute()
         }
     }
 

@@ -13,7 +13,7 @@ import Foundation
 /// - Monthly: year > 0, month > 0, day = 0 (all months)
 /// - Yearly: year > 0, month = 0, day = 0 (all years)
 /// - All-time: year = 0, month = 0, day = 0 (total)
-struct CategoryAggregate: Identifiable, Equatable {
+struct CategoryAggregate: Identifiable, Equatable, Sendable {
     let id: String // Формат: "{category}_{subcategory}_{year}_{month}_{day}"
     let categoryName: String
     let subcategoryName: String? // nil для агрегата категории без подкатегории

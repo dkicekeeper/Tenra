@@ -516,7 +516,7 @@ class TransactionsViewModel {
 
 // MARK: - Supporting Types
 
-struct CategoryExpense: Equatable {
+struct CategoryExpense: Equatable, Sendable {
     var total: Double
     var subcategories: [String: Double]
 }

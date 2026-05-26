@@ -110,12 +110,12 @@ extension TransactionStore {
     /// Also rebuilds `transactionsByCategoryName` because that index isn't
     /// persisted in CoreData — but it's O(N_tx) without the FX conversion or
     /// per-bucket arithmetic, so it stays cheap.
+    ///
+    /// Use this when `transactionsByCategoryName` is NOT already populated.
+    /// `loadData()` builds that map off-MainActor (see TransactionStore+LoadSnapshot.swift)
+    /// and calls `seedCategoryAggregateBuckets(from:)` to skip the inner sweep.
     internal func seedCategoryAggregates(from snapshot: [CategoryAggregate]) {
-        var byKey: [String: CategoryAggregate] = [:]
-        byKey.reserveCapacity(snapshot.count)
-        for agg in snapshot { byKey[agg.id] = agg }
-        categoryAggregatesByKey = byKey
-        aggregatesAreFXStale = false
+        seedCategoryAggregateBuckets(from: snapshot)
 
         // Rebuild the in-memory transactions-by-category bucket index without
         // touching aggregate totals (those came from CoreData).
@@ -124,6 +124,17 @@ extension TransactionStore {
         for tx in transactions where isAggregatable(tx) {
             transactionsByCategoryName[tx.category, default: []].append(tx)
         }
+    }
+
+    /// Seed only the `categoryAggregatesByKey` map — does NOT rebuild
+    /// `transactionsByCategoryName`. Use when that bucket map is already
+    /// populated (e.g. by `buildLoadSnapshot` during `loadData()`).
+    internal func seedCategoryAggregateBuckets(from snapshot: [CategoryAggregate]) {
+        var byKey: [String: CategoryAggregate] = [:]
+        byKey.reserveCapacity(snapshot.count)
+        for agg in snapshot { byKey[agg.id] = agg }
+        categoryAggregatesByKey = byKey
+        aggregatesAreFXStale = false
     }
 
     /// Debounced persistence of `categoryAggregatesByKey` to CoreData.

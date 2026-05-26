@@ -108,7 +108,10 @@ struct ContentView: View {
             .sheet(isPresented: $showingAddAccount) { addAccountSheet }
             .sheet(isPresented: $showingSettings) { settingsSheet }
             .task {
-                await coordinator.initializeFastPath()
+                // initializeFastPath() ran in TenraApp before the coordinator was
+                // published, so accounts + categories are already in place. Only the
+                // full initialize() — which loads all 19k transactions and warms FRC —
+                // still needs to run here.
                 await coordinator.initialize()
             }
             // Reactive summary
@@ -188,43 +191,26 @@ struct ContentView: View {
     private var mainContent: some View {
         ScrollView {
             VStack(spacing: AppSpacing.lg) {
-                // Sections are gated by `if` — not `.contentReveal` opacity — so SwiftUI
-                // doesn't pay the cost of evaluating their bodies, laying them out, and
-                // rendering glass effects during the first render before data is ready.
-                // Profiling showed the initial ContentView render was blocking MainActor
-                // for ~2.4 s, which delayed fastPath's `await` from delivering accounts
-                // and prevented the user from interacting with anything for ~6 s total.
-                if coordinator.isFastPathDone {
-                    accountsSection
-                        .transition(.opacity)
-                }
+                // accountsSection + categoriesSection render unconditionally: the fast
+                // path completes before the coordinator is published (see TenraApp.swift),
+                // so accounts/categories are always available by the time this body runs.
+                // historyNavigationLink still depends on the full load — the summary
+                // card it shows needs all transactions counted/converted.
+                accountsSection
                 if coordinator.isFullyInitialized {
                     historyNavigationLink
                         .transition(.opacity)
                 }
-                if coordinator.isFastPathDone {
-                    categoriesSection
-                        .transition(.opacity)
-                }
+                categoriesSection
                 errorSection
             }
             .padding(.vertical, AppSpacing.md)
-            // Single keyed animation instead of two chained `.animation` modifiers — the
-            // latter re-evaluate the transition on every dependency and can double up the
-            // reveal work while heavy subtrees (carousel, adaptive grid, glass) lay out.
+            // Single keyed animation drives the one remaining reveal (history link).
             .animation(
                 AppAnimation.contentRevealAnimation,
-                value: RevealState(
-                    fastPath: coordinator.isFastPathDone,
-                    full: coordinator.isFullyInitialized
-                )
+                value: coordinator.isFullyInitialized
             )
         }
-    }
-
-    private struct RevealState: Equatable {
-        let fastPath: Bool
-        let full: Bool
     }
 
     // MARK: - Sections
@@ -309,13 +295,20 @@ struct ContentView: View {
             // Category orbs fill the full screen behind all Liquid Glass cards.
             // Opacity is user-configurable in Settings (default 0.35) so that the
             // glass layer remains legible at conservative values but can be dialed up.
+            //
+            // NOTE: previously had `.animation(gentleSpring, value: cachedCategoryWeights)`.
+            // Removed — the empty→first-result transition fired in parallel with the
+            // home reveal animation while MainActor was still wrapping up initialize().
+            // The orbs are mostly hidden behind blur + glass; the spring was barely
+            // perceptible yet contributed to the visible jank between fastPath and
+            // isFullyInitialized. Subsequent weight changes (filter switch) update
+            // instantly, which feels more responsive than a slow spring.
             CategoryGradientBackground(
                 weights: homeState.cachedCategoryWeights,
                 customCategories: coordinator.categoriesViewModel.customCategories
             )
             .opacity(viewModel.appSettings.homeBackgroundOpacity)
             .ignoresSafeArea(.all, edges: .all)
-            .animation(AppAnimation.gentleSpring, value: homeState.cachedCategoryWeights)
 
         case .wallpaper:
             if let wallpaperImage = homeState.wallpaperImage {

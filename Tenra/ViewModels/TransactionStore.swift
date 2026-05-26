@@ -375,52 +375,94 @@ final class TransactionStore {
         let (loadedTxs, loadedAccs, loadedCats, loadedSubs, loadedCatLinks, loadedTxLinks, loadedSeries, loadedOcc, loadedAggregates, loadedAccountAggregates) =
             await (txs, accs, cats, subs, catLinks, txLinks, series, occurrences, aggregates, accountAggregates)
 
-        // Back on @MainActor — single assignment cycle triggers one @Observable update.
         // Prune any order keys for accounts that no longer exist (M-13): the order
         // map (UserDefaults) and accounts (CoreData) can drift, e.g. an account
         // deleted while importing skips removeOrder. Reconcile against the
         // authoritative loaded set before applying.
         AccountOrderManager.shared.reconcile(withAccountIds: Set(loadedAccs.map { $0.id }))
-        accounts  = AccountOrderManager.shared.applyOrders(to: loadedAccs)
-        rebuildAccountById()
+        let orderedAccounts = AccountOrderManager.shared.applyOrders(to: loadedAccs)
+        let orderedCategories = CategoryOrderManager.shared.applyOrders(to: loadedCats)
+
+        // Capture MainActor-bound state once, before detaching.
+        let currentBaseCurrency = self.baseCurrency
+        var accountsCurrencyById: [String: String] = [:]
+        accountsCurrencyById.reserveCapacity(orderedAccounts.count)
+        for acc in orderedAccounts { accountsCurrencyById[acc.id] = acc.currency }
+        let needsColdStartCategoryAggregates = loadedAggregates.isEmpty
+        let needsColdStartAccountAggregates = loadedAccountAggregates.isEmpty
+
+        // Build every pure value-indexed structure off the main actor in one pass.
+        // Previously this lived as 5+ separate sweeps over `loadedTxs` on MainActor
+        // (Set, Dictionary, rebuildAccountIndex, rebuildAllSubcategoryIndexes,
+        // rebuildSeriesAndDateIndexes, transactionsByCategoryName loop) and ran in
+        // parallel with the home screen's reveal animation — see TransactionStore+LoadSnapshot.swift.
+        //
+        // When CoreData has no warm-start aggregates (first launch / schema migration),
+        // the cold rebuild of `categoryAggregatesByKey` + `accountAggregatesByAccountId`
+        // is also done inside the detached task. Those rebuilds depend on
+        // `baseCurrency` + per-account currency + FX cache — all captured above
+        // as Sendable values; `CurrencyConverter.convertSync` is actor-safe.
+        let snapshot = await Task.detached(priority: .userInitiated) {
+            Self.buildLoadSnapshot(
+                transactions: loadedTxs,
+                categories: orderedCategories,
+                subcategories: loadedSubs,
+                categorySubcategoryLinks: loadedCatLinks,
+                transactionSubcategoryLinks: loadedTxLinks,
+                baseCurrency: currentBaseCurrency,
+                accountsCurrencyById: accountsCurrencyById,
+                needsColdStartCategoryAggregates: needsColdStartCategoryAggregates,
+                needsColdStartAccountAggregates: needsColdStartAccountAggregates
+            )
+        }.value
+
+        // Back on @MainActor — only assignments now, no per-tx loops.
+        accounts = orderedAccounts
+        rebuildAccountById()  // O(N_accounts), tiny
         transactions = loadedTxs
         transactionsCount = loadedTxs.count
-        transactionIdSet = Set(loadedTxs.map { $0.id })
-        transactionById = Dictionary(uniqueKeysWithValues: loadedTxs.map { ($0.id, $0) })
-        rebuildAccountIndex(from: loadedTxs)
-        categories = CategoryOrderManager.shared.applyOrders(to: loadedCats)
+        transactionIdSet = snapshot.transactionIdSet
+        transactionById = snapshot.transactionById
+        transactionsByAccount = snapshot.transactionsByAccount
+        categories = orderedCategories
         subcategories = loadedSubs
         categorySubcategoryLinks = loadedCatLinks
         transactionSubcategoryLinks = loadedTxLinks
         recurringStore.load(series: loadedSeries, occurrences: loadedOcc)
 
-        // Cold-rebuild O(1) lookup tables. Subcategory link tables must populate
-        // *before* aggregate maintenance walks the tx array, because subcategory
-        // counters read `subcategoryIdsByTransactionId`.
-        rebuildCategoryLookups()
-        rebuildAllSubcategoryIndexes()
+        // Lookup tables — moved off MainActor, just assign.
+        categoryById = snapshot.categoryById
+        categoryIdByName = snapshot.categoryIdByName
+        subcategoryById = snapshot.subcategoryById
+        subcategoryIdsByCategoryId = snapshot.subcategoryIdsByCategoryId
+        subcategoryIdsByTransactionId = snapshot.subcategoryIdsByTransactionId
+        subcategoryUsageCountById = snapshot.subcategoryUsageCountById
+        subcategoryLastUsedById = snapshot.subcategoryLastUsedById
+        parsedDateById = snapshot.parsedDateById
+        transactionsBySeriesId = snapshot.transactionsBySeriesId
+        transactionsByCategoryName = snapshot.transactionsByCategoryName
 
         // Aggregates: warm-start from CoreData if we have a saved snapshot, else
-        // do a one-shot rebuild from the 19k tx array and immediately persist.
-        // Warm-start is O(N_aggregates) typical ≤3000 → micro-cost vs. the
-        // 19k-tx rebuild on every launch.
+        // use the cold rebuild performed inside the detached snapshot builder.
+        // Either path is now MainActor-cheap — only hash-map assignment + persist
+        // scheduling, no per-tx loops.
         if !loadedAggregates.isEmpty {
-            seedCategoryAggregates(from: loadedAggregates)
-        } else {
-            rebuildCategoryIndexes()
+            // `transactionsByCategoryName` is already populated from the snapshot,
+            // so the inner loop in `seedCategoryAggregates` is redundant — seed the
+            // aggregate map directly to avoid a second O(N_tx) walk on MainActor.
+            seedCategoryAggregateBuckets(from: loadedAggregates)
+        } else if let coldStart = snapshot.coldStartCategoryAggregates {
+            categoryAggregatesByKey = coldStart
+            aggregatesAreFXStale = snapshot.coldStartCategoryAggregatesAreFXStale
             scheduleAggregatePersist()  // first launch — write the rebuilt snapshot
         }
 
-        // Series / parsed-date indexes are derived from the already-loaded
-        // `transactions` array — cheap O(N_tx) sweep runs once.
-        rebuildSeriesAndDateIndexes()
-
         // Account aggregates: warm-start from CoreData when a snapshot exists,
-        // else rebuild + persist (first launch on Schema v9, or after manual reset).
+        // else use the cold rebuild from the detached task.
         if !loadedAccountAggregates.isEmpty {
             seedAccountAggregates(from: loadedAccountAggregates)
-        } else {
-            rebuildAccountAggregates()
+        } else if let coldStart = snapshot.coldStartAccountAggregates {
+            accountAggregatesByAccountId = coldStart
             scheduleAccountAggregatePersist()
         }
 

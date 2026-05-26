@@ -316,6 +316,11 @@ class AppCoordinator {
         // if disk-restored cache is already <24h old. Runs on a detached task so
         // it shares no MainActor time with the SwiftUI rendering work that just
         // started rendering the home screen.
+        //
+        // Capture the freshness snapshot BEFORE kicking off prewarm so we can gate
+        // the post-wait `bumpCurrencyRatesVersion()` on whether rates actually
+        // changed during this launch (see Phase 5.3 in audit report).
+        let ratesFreshBeforePrewarm = CurrencyConverter.currentRatesAreFresh
         let prewarmTask = Task.detached(priority: .userInitiated) {
             await CurrencyConverter.prewarm()
         }
@@ -357,6 +362,15 @@ class AppCoordinator {
         let t5 = CACurrentMediaTime()
         logger.debug("✅ [INIT] isFullyInitialized=true: total so far \(String(format: "%.0f", (t5-t_init_start)*1000))ms")
 
+        // Yield one render frame so SwiftUI commits the history-link reveal animation
+        // BEFORE we hammer MainActor with the rest of the work (prewarm wait, FX bump,
+        // deposit reconcile, ledger maturation, insights recompute). Without this
+        // yield those mutations can land on the same render cycle as the reveal,
+        // causing a visible stutter in the easeOut(0.35) transition.
+        // 16ms ≈ one 60fps frame — slightly conservative for the ProMotion 120fps
+        // display but cheap enough that the latency cost is unnoticeable.
+        try? await Task.sleep(for: .milliseconds(16))
+
         // 5. Load settings (only if fast path hasn't already loaded them).
         // Wallpaper image decode is intentionally NOT loaded here — SettingsView's
         // own .task handles it lazily when the user navigates there.
@@ -385,11 +399,21 @@ class AppCoordinator {
         let t6 = CACurrentMediaTime()
         logger.debug("💱 [INIT] currency prewarm wait : \(String(format: "%.0f", (t6-t5)*1000))ms — fresh:\(CurrencyConverter.currentRatesAreFresh)")
 
-        // Bump rate version so views observing it re-render with fresh
-        // equivalents. Also invalidate VM caches that hold per-account /
-        // per-category KZT-pivot totals (rebuilt lazily on next access).
-        transactionStore.bumpCurrencyRatesVersion()
-        transactionsViewModel.invalidateCaches()
+        // Bump rate version only when prewarm actually moved the rate cache —
+        // i.e. when the disk-restored cache was cold/stale at launch and prewarm
+        // brought new data. If rates were already fresh at start, prewarm is a
+        // documented no-op (`CurrencyConverter.prewarm()` returns early on
+        // `hasFreshRates`), so bumping here would invalidate every FX-dependent
+        // cache (TransactionsVM, Insights) for no reason — and triggers a wave
+        // of re-renders right when the home screen has just settled.
+        //
+        // Future rate changes (manual refresh, late provider response) are
+        // handled by `startObservingCurrencyRateChanges()` below, so we don't
+        // lose any reactivity by gating this initial bump.
+        if !ratesFreshBeforePrewarm {
+            transactionStore.bumpCurrencyRatesVersion()
+            transactionsViewModel.invalidateCaches()
+        }
 
         // Post any deposit interest that came due while the app was closed. This used to
         // run only when a deposit screen appeared, so interest could be late if the user

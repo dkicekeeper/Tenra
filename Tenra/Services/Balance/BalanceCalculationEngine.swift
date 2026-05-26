@@ -18,7 +18,12 @@ import Foundation
 /// recurring occurrences) are excluded until their date arrives. Centralised here
 /// so balance and every aggregate path apply the exact same cutoff.
 enum LedgerPolicyRule {
-    static func isRealized(_ date: Date?) -> Bool {
+    /// Pure, no shared mutable state — safe to call from any actor.
+    /// Marked `nonisolated` explicitly because the project default isolation is
+    /// MainActor; without this annotation, background-thread callers (the
+    /// detached snapshot builder in TransactionStore+LoadSnapshot, InsightsService
+    /// nonisolated paths) trigger Swift 6 isolation warnings on every call.
+    nonisolated static func isRealized(_ date: Date?) -> Bool {
         guard let date else { return false }
         return date <= Calendar.current.startOfDay(for: Date())
     }

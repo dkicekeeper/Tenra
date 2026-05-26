@@ -7,6 +7,30 @@
 
 import SwiftUI
 
+enum SubcategorySortOrder: String, CaseIterable, Identifiable {
+    case alphabetical
+    case lastUsed
+    case usageCount
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .alphabetical: return String(localized: "subcategory.sort.alphabetical")
+        case .lastUsed:     return String(localized: "subcategory.sort.lastUsed")
+        case .usageCount:   return String(localized: "subcategory.sort.usageCount")
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .alphabetical: return "textformat"
+        case .lastUsed:     return "clock"
+        case .usageCount:   return "number"
+        }
+    }
+}
+
 struct SubcategoriesManagementView: View {
     let categoriesViewModel: CategoriesViewModel
     @Environment(\.dismiss) var dismiss
@@ -15,6 +39,37 @@ struct SubcategoriesManagementView: View {
     @State private var mode: ManagementMode = .normal
     @State private var selection: Set<String> = []
     @State private var showingBulkDeleteDialog = false
+    @State private var sortOrder: SubcategorySortOrder = .alphabetical
+
+    private func handleSortOrderChange(_ newValue: SubcategorySortOrder) {
+        HapticManager.selection()
+    }
+
+    private var sortedSubcategories: [Subcategory] {
+        let subs = categoriesViewModel.subcategories
+        switch sortOrder {
+        case .alphabetical:
+            return subs.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .lastUsed:
+            return subs.sorted { lhs, rhs in
+                let lDate = categoriesViewModel.subcategoryLastUsedDate(for: lhs.id)
+                let rDate = categoriesViewModel.subcategoryLastUsedDate(for: rhs.id)
+                switch (lDate, rDate) {
+                case let (l?, r?): return l > r
+                case (_?, nil):    return true
+                case (nil, _?):    return false
+                case (nil, nil):   return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+                }
+            }
+        case .usageCount:
+            return subs.sorted { lhs, rhs in
+                let lCount = categoriesViewModel.subcategoryUsageCount(for: lhs.id)
+                let rCount = categoriesViewModel.subcategoryUsageCount(for: rhs.id)
+                if lCount != rCount { return lCount > rCount }
+                return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+            }
+        }
+    }
 
     /// Row stats now come straight from `TransactionStore.subcategoryUsageCountById`
     /// and `subcategoryLastUsedById`, which are O(1) reads maintained
@@ -52,7 +107,7 @@ struct SubcategoriesManagementView: View {
                 )
             } else {
                 List(selection: mode.isSelecting ? $selection : nil) {
-                    ForEach(categoriesViewModel.subcategories) { subcategory in
+                    ForEach(sortedSubcategories) { subcategory in
                         subcategoryRow(for: subcategory)
                     }
                 }
@@ -62,6 +117,23 @@ struct SubcategoriesManagementView: View {
         .navigationTitle(String(localized: "settings.subcategories"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if mode == .normal {
+                    Menu {
+                        Picker("", selection: $sortOrder) {
+                            ForEach(SubcategorySortOrder.allCases) { order in
+                                Label(order.label, systemImage: order.icon)
+                                    .tag(order)
+                            }
+                        }
+                        .pickerStyle(.inline)
+                    } label: {
+                        Image(systemName: "arrow.up.arrow.down")
+                    }
+                    .accessibilityLabel(String(localized: "subcategory.sort.title"))
+                }
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
             ToolbarItem(placement: .topBarTrailing) {
                 switch mode {
                 case .normal:
@@ -100,19 +172,22 @@ struct SubcategoriesManagementView: View {
                 } else if mode.isSelecting {
                     Button {
                         HapticManager.selection()
-                        let allIds = Set(categoriesViewModel.subcategories.map(\.id))
+                        let allIds = Set(sortedSubcategories.map(\.id))
                         if selection == allIds {
                             selection.removeAll()
                         } else {
                             selection = allIds
                         }
                     } label: {
-                        Text(selection.count == categoriesViewModel.subcategories.count
+                        Text(selection.count == sortedSubcategories.count
                              ? String(localized: "bulk.deselectAll")
                              : String(localized: "bulk.selectAll"))
                     }
                 }
             }
+        }
+        .onChange(of: sortOrder) { _, newValue in
+            handleSortOrderChange(newValue)
         }
         .overlay(alignment: .bottom) {
             if mode.isSelecting && !selection.isEmpty {

@@ -325,6 +325,10 @@
 "subcategory.usageCount" = "Used %d times";
 "subcategory.notUsed" = "Not used yet";
 "subcategory.reorder" = "Subcategories";
+"subcategory.sort.title" = "Sort";
+"subcategory.sort.alphabetical" = "Alphabetical";
+"subcategory.sort.lastUsed" = "Last used";
+"subcategory.sort.usageCount" = "Most used";
 
 // MARK: - Subcategory Search (2026-02-25)
 "subcategorySearch.titleSingle" = "Select Subcategory";

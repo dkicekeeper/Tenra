@@ -325,6 +325,10 @@
 "subcategory.usageCount" = "Использовано %d раз";
 "subcategory.notUsed" = "Ещё не использовалась";
 "subcategory.reorder" = "Подкатегории";
+"subcategory.sort.title" = "Сортировка";
+"subcategory.sort.alphabetical" = "По алфавиту";
+"subcategory.sort.lastUsed" = "По дате использования";
+"subcategory.sort.usageCount" = "По количеству использований";
 
 // MARK: - Subcategory Search (2026-02-25)
 "subcategorySearch.titleSingle" = "Выберите подкатегорию";

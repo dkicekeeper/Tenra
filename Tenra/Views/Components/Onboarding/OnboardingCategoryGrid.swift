@@ -20,7 +20,7 @@ struct OnboardingCategoryGrid: View {
                 count: columns
             )
         }
-        return [GridItem(.adaptive(minimum: 100, maximum: 180), spacing: AppSpacing.md)]
+        return [GridItem(.adaptive(minimum: 70, maximum: 120), spacing: AppSpacing.md)]
     }
 
     var body: some View {

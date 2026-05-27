@@ -114,26 +114,17 @@ final class CategoryStyleCache {
         type: TransactionType,
         customCategories: [CustomCategory]
     ) -> CategoryStyleData {
-        // Special case: income
-        if type == .income {
-            return CategoryStyleData(
-                coinColor: AppColors.income.opacity(0.3),
-                coinBorderColor: AppColors.income.opacity(0.6),
-                iconColor: AppColors.income,
-                primaryColor: AppColors.income,
-                lightBackgroundColor: AppColors.income.opacity(0.15),
-                iconName: CategoryIcon.iconName(for: category, type: type, customCategories: customCategories)
-            )
-        }
-
-        // System types fall back to a clean expense-coloured style with a typed
-        // SF Symbol when the user hasn't picked a real category. If a custom
-        // category IS selected, the regular branch below picks up its color/icon.
+        // System types fall back to a clean typed style with an SF Symbol when the user
+        // hasn't picked a real category. If a custom category IS selected, the regular
+        // branch below picks up its color/icon.
         if let systemStyle = systemTypeStyle(category: category, type: type, customCategories: customCategories) {
             return systemStyle
         }
 
-        // Regular category
+        // Regular category — both income and expense use the per-category color
+        // (resolved from customCategories, or a deterministic palette hash for
+        // unknown names). Previously income was forced to a single green tint,
+        // which collapsed every income card's icon to the same color.
         let baseColor = CategoryColors.hexColor(for: category, opacity: 1.0, customCategories: customCategories)
 
         return CategoryStyleData(

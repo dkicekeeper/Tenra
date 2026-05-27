@@ -125,6 +125,33 @@ struct TransactionCard: View, Equatable {
             transitionNamespace: editNamespace
         )
         .accessibilityHint(Text(String(localized: "accessibility.swipeForOptions")))
+        // Context menu mirrors swipeActions for non-List parents (entity detail screens
+        // render this card inside a LazyVStack where `.swipeActions` has no effect).
+        .contextMenu {
+            Button(role: .destructive) {
+                HapticManager.warning()
+                showingDeleteConfirmation = true
+            } label: {
+                Label(String(localized: "button.delete"), systemImage: "trash")
+            }
+
+            if isSeriesActive {
+                Button {
+                    showingStopRecurringConfirmation = true
+                } label: {
+                    Label(String(localized: "transaction.recurring"), systemImage: "arrow.clockwise")
+                }
+            }
+
+            if !isSeriesActive, series != nil {
+                Button {
+                    HapticManager.selection()
+                    Task { await resumeRecurringSeries() }
+                } label: {
+                    Label(String(localized: "transaction.resumeRecurring", defaultValue: "Resume"), systemImage: "play.circle")
+                }
+            }
+        }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             // Удаление — НЕ используем role: .destructive, т.к. он заставляет
             // SwiftUI анимированно удалить строку сразу по тапу, что дизмиссит

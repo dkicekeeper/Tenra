@@ -47,7 +47,7 @@ struct CategoryGridView: View {
                 )
             }
         }
-        .padding(AppSpacing.xxs)
+//        .padding(AppSpacing.lg)
     }
 
     // MARK: - Adaptive Columns
@@ -55,15 +55,13 @@ struct CategoryGridView: View {
     private var adaptiveColumns: [GridItem] {
         if let columns = gridColumns {
             return Array(
-                repeating: GridItem(.flexible(), spacing: AppSpacing.md),
+                repeating: GridItem(.flexible(), spacing: AppSpacing.lg),
                 count: columns
             )
         }
 
-        // Use adaptive column without relying on UIScreen.main (deprecated in iOS 26)
-        // SwiftUI's adaptive GridItem automatically adjusts based on available space
-        // Minimum 100 allows 3 columns on standard iPhone screens
-        return [GridItem(.adaptive(minimum: 100, maximum: 180), spacing: AppSpacing.md)]
+        // 4 columns on standard iPhone; adaptive minimum keeps iPad layouts sensible.
+        return [GridItem(.adaptive(minimum: 120, maximum: 180), spacing: AppSpacing.lg)]
     }
 }
 

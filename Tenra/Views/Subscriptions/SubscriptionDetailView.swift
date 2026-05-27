@@ -37,6 +37,25 @@ struct SubscriptionDetailView: View {
         return n
     }
 
+    /// Combined refresh key — bumps on any transaction mutation (add/update/delete),
+    /// not just count changes. Editing a linked transaction's amount keeps the count
+    /// constant but bumps `mutationVersion`, so the cached list refreshes immediately
+    /// instead of waiting for re-navigation.
+    private struct RefreshKey: Equatable {
+        let mutationVersion: Int
+        let seriesId: String
+    }
+
+    private var refreshTrigger: RefreshKey {
+        // Touch the observable transactions array so the body re-evaluates on any
+        // tx mutation (mutationVersion is @ObservationIgnored on its own).
+        _ = transactionStore.transactions.count
+        return RefreshKey(
+            mutationVersion: transactionStore.mutationVersion,
+            seriesId: subscription.id
+        )
+    }
+
     private func refreshTransactions() async {
         let linked = transactionStore.transactions
             .filter { $0.recurringSeriesId == subscription.id }
@@ -106,6 +125,7 @@ struct SubscriptionDetailView: View {
                 transactionStore: transactionStore,
                 transactionsViewModel: transactionsViewModel,
                 categoriesViewModel: categoriesViewModel,
+                accountsViewModel: accountsViewModel,
                 subscription: liveSubscription
             )
         }
@@ -152,7 +172,7 @@ struct SubscriptionDetailView: View {
                 accountsViewModel: accountsViewModel
             )
         }
-        .task(id: linkedTransactionCount) {
+        .task(id: refreshTrigger) {
             await refreshTransactions()
         }
     }

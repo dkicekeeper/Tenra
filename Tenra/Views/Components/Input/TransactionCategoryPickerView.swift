@@ -78,7 +78,6 @@ struct TransactionCategoryPickerView: View {
                 emptyStateAction: coordinator.handleAddCategory,
                 sourceNamespace: categoryNamespace
             )
-            .padding(.horizontal, AppSpacing.md)
         }
         // Push the add-transaction form into the surrounding NavigationStack instead
         // of presenting it as a sheet — this avoids the modal-on-pushed-view scroll bug

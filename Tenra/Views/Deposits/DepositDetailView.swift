@@ -54,15 +54,22 @@ struct DepositDetailView: View {
         depositInfo.flatMap { DepositInterestService.nextPostingDate(depositInfo: $0) }
     }
 
-    /// Cheap O(N) single-pass counter; feeds `.task(id:)` so the expensive refresh
-    /// runs only when relevant transactions change.
-    private var refreshTrigger: Int {
-        var n = 0
-        for tx in transactionStore.transactions
-        where tx.accountId == accountId || tx.targetAccountId == accountId {
-            n += 1
-        }
-        return n
+    /// Refresh key bumps on ANY transaction mutation (add/update/delete), not just
+    /// count changes — so editing a linked transaction's amount refreshes the cached
+    /// list immediately instead of waiting for re-navigation.
+    private struct RefreshKey: Equatable {
+        let mutationVersion: Int
+        let accountId: String
+    }
+
+    private var refreshTrigger: RefreshKey {
+        // Touch the observable transactions array so the body re-evaluates on any
+        // tx mutation (mutationVersion is @ObservationIgnored on its own).
+        _ = transactionStore.transactions.count
+        return RefreshKey(
+            mutationVersion: transactionStore.mutationVersion,
+            accountId: accountId
+        )
     }
 
     private func refreshTransactions() async {

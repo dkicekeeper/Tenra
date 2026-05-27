@@ -129,9 +129,17 @@ private struct CategoryCardButton: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: AppSpacing.md) {
+                // Match the canonical category icon (CategoryRow): xxl circle with
+                // category-color tint over a soft category-color background. The
+                // carousel previously used `xl` with no background, which read as a
+                // smaller, washed-out icon next to AccountRadioButton in the same flow.
                 IconView(
                     source: .sfSymbol(style.iconName),
-                    style: .circle(size: AppIconSize.xl, tint: .monochrome(style.iconColor))
+                    style: .circle(
+                        size: AppIconSize.xxl,
+                        tint: .monochrome(style.iconColor),
+                        backgroundColor: style.iconColor.opacity(0.15)
+                    )
                 )
 
                 Text(category)

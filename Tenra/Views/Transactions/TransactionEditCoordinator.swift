@@ -300,57 +300,54 @@ final class TransactionEditCoordinator {
 
     // MARK: - Private: Recurring Series
 
-    /// Manages recurring series creation/update. Returns the final recurringSeriesId.
-    /// Async so we can await series creation and then link subcategories to generated transactions.
+    /// Manages recurring series creation when the user enables recurring on a previously
+    /// one-off transaction. Returns the final recurringSeriesId.
+    ///
+    /// Editing a transaction that is ALREADY linked to a series must NOT propagate
+    /// the edit back to the series — the series carries the canonical subscription
+    /// price/currency/cadence and is edited through `SubscriptionEditView`, which has
+    /// its own propagation prompt. Previously this method overwrote `series.amount`,
+    /// `series.category`, `series.description`, `series.accountId`, `series.frequency`,
+    /// and `series.isActive` with the edited transaction's values on every save —
+    /// so changing one occurrence's amount silently rewrote the subscription's
+    /// canonical amount, and resumed paused series as a side effect.
     private func handleRecurringSeries(amount: Double, dateString: String) async -> String? {
         guard case .frequency(let freq) = formData.recurring else {
             return nil
         }
 
-        if transaction.recurringSeriesId == nil {
-            // Create new series — await so generated transactions are in the store
-            let series = RecurringSeries(
-                amount: Decimal(amount),
-                currency: formData.selectedCurrency,
-                category: formData.selectedCategory,
-                subcategory: nil,
-                description: formData.descriptionText.isEmpty ? formData.selectedCategory : formData.descriptionText,
-                accountId: formData.selectedAccountId,
-                targetAccountId: formData.selectedTargetAccountId,
-                frequency: freq,
-                startDate: dateString
-            )
-            try? await transactionStore.createSeries(series)
-
-            // Link selected subcategories to all generated transactions (backfill + future)
-            if !formData.selectedSubcategoryIds.isEmpty {
-                let generated = transactionStore.transactions.filter {
-                    $0.recurringSeriesId == series.id
-                }
-                for tx in generated {
-                    categoriesViewModel.linkSubcategoriesToTransaction(
-                        transactionId: tx.id,
-                        subcategoryIds: Array(formData.selectedSubcategoryIds)
-                    )
-                }
-            }
-            return series.id
-        } else {
-            // Update existing series
-            if let seriesId = transaction.recurringSeriesId,
-               let idx = transactionsViewModel.recurringSeries.firstIndex(where: { $0.id == seriesId }) {
-                var series = transactionsViewModel.recurringSeries[idx]
-                series.amount = Decimal(amount)
-                series.category = formData.selectedCategory
-                series.description = formData.descriptionText.isEmpty ? formData.selectedCategory : formData.descriptionText
-                series.accountId = formData.selectedAccountId
-                series.targetAccountId = formData.selectedTargetAccountId
-                series.frequency = freq
-                series.isActive = true
-                transactionsViewModel.updateRecurringSeries(series)
-            }
-            return transaction.recurringSeriesId
+        // Already linked — leave the series untouched.
+        if let existingSeriesId = transaction.recurringSeriesId {
+            return existingSeriesId
         }
+
+        // Create new series — await so generated transactions are in the store
+        let series = RecurringSeries(
+            amount: Decimal(amount),
+            currency: formData.selectedCurrency,
+            category: formData.selectedCategory,
+            subcategory: nil,
+            description: formData.descriptionText.isEmpty ? formData.selectedCategory : formData.descriptionText,
+            accountId: formData.selectedAccountId,
+            targetAccountId: formData.selectedTargetAccountId,
+            frequency: freq,
+            startDate: dateString
+        )
+        try? await transactionStore.createSeries(series)
+
+        // Link selected subcategories to all generated transactions (backfill + future)
+        if !formData.selectedSubcategoryIds.isEmpty {
+            let generated = transactionStore.transactions.filter {
+                $0.recurringSeriesId == series.id
+            }
+            for tx in generated {
+                categoriesViewModel.linkSubcategoriesToTransaction(
+                    transactionId: tx.id,
+                    subcategoryIds: Array(formData.selectedSubcategoryIds)
+                )
+            }
+        }
+        return series.id
     }
 
     // MARK: - Private: Currency Conversion

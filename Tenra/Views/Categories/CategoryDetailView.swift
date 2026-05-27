@@ -153,19 +153,20 @@ struct CategoryDetailView: View {
             .presentationDragIndicator(.visible)
         }
         .navigationDestination(isPresented: $showingAddTransaction) {
-            // Push the category picker into the navigation stack so the entry point
-            // matches the Transfer flow (also a navigationDestination) — back-navigation
-            // via swipe/back-button replaces the modal Cancel button.
-            TransactionCategoryPickerView(
+            // Category is already known — push the add-transaction form directly
+            // with the category preselected, skipping the picker grid.
+            TransactionAddModal(
+                category: liveCategory.name,
+                type: liveCategory.type,
+                currency: transactionsViewModel.appSettings.baseCurrency,
+                accounts: accountsViewModel.accounts,
                 transactionsViewModel: transactionsViewModel,
                 categoriesViewModel: categoriesViewModel,
                 accountsViewModel: accountsViewModel,
                 transactionStore: transactionStore,
-                timeFilterManager: timeFilterManager
+                onDismiss: { showingAddTransaction = false }
             )
             .environment(timeFilterManager)
-            .navigationTitle(String(localized: "category.detail.actions.addTransaction", defaultValue: "Add transaction"))
-            .navigationBarTitleDisplayMode(.inline)
         }
         .sheet(isPresented: $showingSubcategoryManager) {
             SubcategoryReorderView(

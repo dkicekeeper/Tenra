@@ -12,6 +12,7 @@ struct SubscriptionEditView: View {
     let transactionStore: TransactionStore
     let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
+    let accountsViewModel: AccountsViewModel
     let subscription: RecurringSeries?
 
     @Environment(\.dismiss) private var dismiss
@@ -166,9 +167,19 @@ struct SubscriptionEditView: View {
             } else {
                 currency = transactionsViewModel.appSettings.baseCurrency
                 selectedCategory = availableCategories.first ?? ""
-                // Set first account as default
-                if !transactionsViewModel.accounts.isEmpty {
-                    selectedAccountId = transactionsViewModel.accounts[0].id
+                // Match the regular add-transaction flow: prefer the user's adaptive
+                // suggested account (recent/frequent for this category), fall back to
+                // the first regular account. Avoids hardcoding "Cash KZT" when the
+                // user actually transacts on a card.
+                let suggested = accountsViewModel.suggestedAccount(
+                    forCategory: selectedCategory,
+                    transactions: transactionsViewModel.allTransactions,
+                    amount: nil
+                )
+                if let suggested, !suggested.isLoan, !suggested.isDeposit {
+                    selectedAccountId = suggested.id
+                } else {
+                    selectedAccountId = accountsViewModel.regularAccounts.first?.id
                 }
             }
         }
@@ -498,6 +509,7 @@ struct SubscriptionEditView: View {
         transactionStore: coordinator.transactionStore,
         transactionsViewModel: coordinator.transactionsViewModel,
         categoriesViewModel: coordinator.categoriesViewModel,
+        accountsViewModel: coordinator.accountsViewModel,
         subscription: nil
     )
 }

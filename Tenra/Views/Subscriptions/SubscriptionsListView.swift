@@ -78,6 +78,7 @@ struct SubscriptionsListView: View {
                     transactionStore: transactionStore,
                     transactionsViewModel: transactionsViewModel,
                     categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel,
                     subscription: nil
                 )
             case .edit(let subscription):
@@ -85,6 +86,7 @@ struct SubscriptionsListView: View {
                     transactionStore: transactionStore,
                     transactionsViewModel: transactionsViewModel,
                     categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel,
                     subscription: subscription
                 )
             }

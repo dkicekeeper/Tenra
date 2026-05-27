@@ -197,6 +197,7 @@ These cause silent data corruption or crashes — internalize even without readi
 7. ⚠️ **NEVER render a money amount without a canonical formatter.** Forbidden in UI code: `Text("\(amount) \(currency)")`, `Text(String(format: "%.2f", amount))`, ad-hoc `NumberFormatter()` inside `body`/`List`/`ForEach`, raw `Formatting.formatCurrency(...)` for display (it always shows `.00`). Required: `FormattedAmountText` for standalone views, `InfoRow(... amount: currency:)` / `InfoRowConfig(... amount: currency:)` for info rows, `Formatting.formatCurrencySmart(_:currency:)` only when a `String` is needed (composed strings, hero subtitles). See [design-system.md §6 Amount Formatting](docs/design-system.md).
 8. ⚠️ **All balance / account-&-category aggregate / budget money math derives from one rule: `BalanceCalculationEngine.contribution(of:to:policy:)` + `LedgerPolicyRule.isRealized`.** Realized figures exclude future-dated tx (`txDate <= today`); forecasts include them. Don't re-implement per-type sign tables. Loan account balance derives from `loanInfo.remainingPrincipal` (never sum loan legs into balance); `DepositInterestService.principalDelta` is intentionally separate (capitalization gate) — don't merge it. See [docs/DATA_INTEGRITY_AUDIT.md](docs/DATA_INTEGRITY_AUDIT.md).
 9. ⚠️ **Heavy `loadData()`-style post-processing (per-tx Sets, Dictionaries, per-account/category/series grouping, DateFormatter sweeps, cold-rebuild aggregates) MUST go off MainActor via `Task.detached` + a `Sendable` snapshot struct.** Precedents: [`InsightsService.DataSnapshot`](Tenra/Services/Insights/InsightsService.swift), [`TransactionStore+LoadSnapshot.swift`](Tenra/ViewModels/TransactionStore+LoadSnapshot.swift) (load), [`SummaryCalculator`](Tenra/Services/Transactions/SummaryCalculator.swift) (per-filter). Direct on-MainActor sweeps over 19k tx stall the home-screen reveal animation. See [docs/concurrency.md](docs/concurrency.md) §DataSnapshot.
+10. ⚠️ **Editing a linked transaction must NEVER mutate its parent `RecurringSeries`.** `RecurringSeries.amount/currency/category/description/frequency/isActive` are canonical — series edits go through [SubscriptionEditView](Tenra/Views/Subscriptions/SubscriptionEditView.swift) (with its propagation prompt). `TransactionEditCoordinator.handleRecurringSeries` only creates a series when converting a one-off tx into a recurring one; it must NOT write to an existing series. Past symptom: editing today's subscription tx silently rewrote the subscription's hero amount and resumed paused series.
 
 ## Common Tasks
 
@@ -225,6 +226,12 @@ These cause silent data corruption or crashes — internalize even without readi
 Pattern used in CategoriesManagementView, CategoryDetailView, CategorySubcategoriesView for O(1) reads with controlled invalidation.
 - `@ObservationIgnored` data (e.g. `store.subcategoryIdsByCategoryId`) read in `body` does NOT register a SwiftUI subscription. Touch a sibling Observable scalar (`store.categoriesMutationVersion`, `mutationVersion`, etc.) — even as `_ = store.xxx` — so the body re-evaluates when the index changes.
 - `@State` snapshot populated via `.task(id: key)` is empty on first render. NEVER gate `if snapshot.isEmpty { EmptyState }` on it — the user sees an empty-state flash. Gate on source-of-truth instead: `if !store.categories.contains { $0.type == selectedType }`. Precedent: `CategoriesManagementView.hasCategoriesForCurrentType`.
+
+### Entity detail view refresh trigger
+Account/Category/Subscription/Deposit/Loan detail views cache `[Transaction]` via `@State` and refresh through `.task(id: refreshTrigger)`. The trigger MUST key on `transactionStore.mutationVersion` (bumps on every add/update/delete) — NOT on a count of linked tx, which stays constant when an existing tx is edited and silently skips the refresh (visible bug: user edits tx → UI stale until re-navigation). Because `mutationVersion` is `@ObservationIgnored`, the trigger property must also touch the observable `transactions` array (`_ = transactionStore.transactions.count`) so the body re-evaluates on tx mutations. Precedents: [AccountDetailView](Tenra/Views/Accounts/AccountDetailView.swift), [CategoryDetailView](Tenra/Views/Categories/CategoryDetailView.swift), [SubscriptionDetailView](Tenra/Views/Subscriptions/SubscriptionDetailView.swift).
+
+### SwiftUI `.swipeActions` requires `List`
+Outside a `List` (e.g. `LazyVStack`, `ScrollView`), `.swipeActions` silently no-ops. [GroupedTransactionList](Tenra/Views/Components/History/GroupedTransactionList.swift) renders in `LazyVStack`, so entity-detail screens get their delete/recurring actions via [`TransactionCard`](Tenra/Views/Components/Cards/TransactionCard.swift)'s `.contextMenu` (long press). Keep `.contextMenu` and `.swipeActions` mirrored when adding new actions.
 
 ## CoreData Schema Bumps
 
@@ -341,6 +348,6 @@ Historical docs (305 files) archived to `docs/archive/`.
 
 ---
 
-**Last Updated**: 2026-05-05
+**Last Updated**: 2026-05-27
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

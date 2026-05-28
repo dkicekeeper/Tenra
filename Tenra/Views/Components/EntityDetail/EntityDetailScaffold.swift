@@ -17,6 +17,11 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
     let customSections: CustomSections
     let transactions: [Transaction]
     let historyCurrency: String?
+    /// When non-nil, the history day-section header totals render in this currency
+    /// (converting each tx from its own currency) instead of `historyCurrency`.
+    /// Used by SubscriptionDetailView to show daily totals in the base currency
+    /// while the per-row cards stay in the subscription's native currency.
+    let historySummaryCurrencyOverride: String?
     let accountsById: [String: Account]
     let styleHelper: (Transaction) -> CategoryStyleData
     let viewModel: TransactionsViewModel?
@@ -46,6 +51,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
         infoRows: [InfoRowConfig] = [],
         transactions: [Transaction] = [],
         historyCurrency: String? = nil,
+        historySummaryCurrencyOverride: String? = nil,
         accountsById: [String: Account] = [:],
         styleHelper: @escaping (Transaction) -> CategoryStyleData = { _ in
             CategoryStyleData.fallback
@@ -69,6 +75,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
         self.customSections = customSections()
         self.transactions = transactions
         self.historyCurrency = historyCurrency
+        self.historySummaryCurrencyOverride = historySummaryCurrencyOverride
         self.accountsById = accountsById
         self.styleHelper = styleHelper
         self.viewModel = viewModel
@@ -105,6 +112,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                         categoriesViewModel: categoriesViewModel,
                         accountsViewModel: accountsViewModel,
                         balanceCoordinator: balanceCoordinator,
+                        summaryCurrencyOverride: historySummaryCurrencyOverride,
                         rowOverlay: historyRowOverlay
                     )
                     .screenPadding()
@@ -184,11 +192,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                         .sfSymbol($0, color: row.iconColor, size: AppIconSize.lg)
                     }
                 ) {
-                    HStack {
-                        Text(row.label)
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textSecondary)
-                        Spacer()
+                    InfoRowLayout(label: row.label) {
                         if let display = row.amountDisplay {
                             FormattedAmountText(
                                 amount: display.amount,
@@ -203,6 +207,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                         } else {
                             Text(row.value)
                                 .font(AppTypography.bodyEmphasis)
+                                .multilineTextAlignment(.trailing)
                         }
                     }
                 } trailing: {
@@ -241,6 +246,7 @@ extension EntityDetailScaffold where CustomSections == EmptyView, HistoryOverlay
         infoRows: [InfoRowConfig] = [],
         transactions: [Transaction] = [],
         historyCurrency: String? = nil,
+        historySummaryCurrencyOverride: String? = nil,
         accountsById: [String: Account] = [:],
         styleHelper: @escaping (Transaction) -> CategoryStyleData = { _ in
             CategoryStyleData.fallback
@@ -261,6 +267,7 @@ extension EntityDetailScaffold where CustomSections == EmptyView, HistoryOverlay
             infoRows: infoRows,
             transactions: transactions,
             historyCurrency: historyCurrency,
+            historySummaryCurrencyOverride: historySummaryCurrencyOverride,
             accountsById: accountsById,
             styleHelper: styleHelper,
             viewModel: viewModel,
@@ -285,6 +292,7 @@ extension EntityDetailScaffold where CustomSections == EmptyView {
         infoRows: [InfoRowConfig] = [],
         transactions: [Transaction] = [],
         historyCurrency: String? = nil,
+        historySummaryCurrencyOverride: String? = nil,
         accountsById: [String: Account] = [:],
         styleHelper: @escaping (Transaction) -> CategoryStyleData = { _ in
             CategoryStyleData.fallback
@@ -306,6 +314,7 @@ extension EntityDetailScaffold where CustomSections == EmptyView {
             infoRows: infoRows,
             transactions: transactions,
             historyCurrency: historyCurrency,
+            historySummaryCurrencyOverride: historySummaryCurrencyOverride,
             accountsById: accountsById,
             styleHelper: styleHelper,
             viewModel: viewModel,
@@ -330,6 +339,7 @@ extension EntityDetailScaffold where HistoryOverlay == EmptyView {
         infoRows: [InfoRowConfig] = [],
         transactions: [Transaction] = [],
         historyCurrency: String? = nil,
+        historySummaryCurrencyOverride: String? = nil,
         accountsById: [String: Account] = [:],
         styleHelper: @escaping (Transaction) -> CategoryStyleData = { _ in
             CategoryStyleData.fallback
@@ -351,6 +361,7 @@ extension EntityDetailScaffold where HistoryOverlay == EmptyView {
             infoRows: infoRows,
             transactions: transactions,
             historyCurrency: historyCurrency,
+            historySummaryCurrencyOverride: historySummaryCurrencyOverride,
             accountsById: accountsById,
             styleHelper: styleHelper,
             viewModel: viewModel,

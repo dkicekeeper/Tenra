@@ -26,11 +26,18 @@ nonisolated enum DepositInterestService {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
-        guard let lastCalcDate = DateFormatters.dateFormatter.date(from: depositInfo.lastInterestCalculationDate) else {
+        // Anchor the walk at the START of the current (unposted) period rather than
+        // at `lastInterestCalculationDate`. The current period is always recomputed
+        // from scratch, so principal changes backdated into the open period (e.g. a
+        // transfer recorded after a prior reconcile already advanced the calc date)
+        // are picked up. Previously the calc date marched ahead of such days and the
+        // interest for them was lost forever.
+        let periodStart = currentPeriodStart(depositInfo: depositInfo)
+        guard periodStart < today else {
+            depositInfo.lastInterestCalculationDate = DateFormatters.dateFormatter.string(from: today)
+            account.depositInfo = depositInfo
             return
         }
-        let lastCalcDateNormalized = calendar.startOfDay(for: lastCalcDate)
-        guard lastCalcDateNormalized < today else { return }
 
         // Events that move the running principal: anything that touches the deposit
         // account (as source or target) and is principal-affecting. Events on/before
@@ -44,9 +51,12 @@ nonisolated enum DepositInterestService {
             }
             .sorted { $0.date < $1.date }
 
-        let walkStart = calendar.date(byAdding: .day, value: 1, to: lastCalcDateNormalized)!
+        let walkStart = calendar.date(byAdding: .day, value: 1, to: periodStart)!
         let walkStartStr = DateFormatters.dateFormatter.string(from: walkStart)
 
+        // Seed the principal as it stood at `periodStart` — including any interest
+        // capitalized by earlier postings (their `.depositInterestAccrual` events are
+        // dated on/before the period start, so they fold into the seed here).
         var runningPrincipal: Decimal = depositInfo.initialPrincipal
         var eventIdx = 0
         while eventIdx < events.count && events[eventIdx].date < walkStartStr {
@@ -59,7 +69,7 @@ nonisolated enum DepositInterestService {
         }
 
         var currentDate = walkStart
-        var totalAccrued: Decimal = depositInfo.interestAccruedForCurrentPeriod
+        var totalAccrued: Decimal = 0
 
         while currentDate < today {
             let currentDateStr = DateFormatters.dateFormatter.string(from: currentDate)
@@ -77,11 +87,7 @@ nonisolated enum DepositInterestService {
             let dailyInterest = runningPrincipal * (rate / 100) / 365
             totalAccrued += dailyInterest
 
-            if shouldPostInterest(
-                date: currentDate,
-                postingDay: depositInfo.interestPostingDay,
-                lastPostingMonth: depositInfo.lastInterestPostingMonth
-            ) {
+            if isPostingDay(date: currentDate, postingDay: depositInfo.interestPostingDay) {
                 let postingAmount = totalAccrued
                 if postingAmount > 0 {
                     let posted = postInterest(
@@ -181,10 +187,12 @@ nonisolated enum DepositInterestService {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
-        guard let lastCalcDate = DateFormatters.dateFormatter.date(from: depositInfo.lastInterestCalculationDate) else {
-            return depositInfo.interestAccruedForCurrentPeriod
-        }
-        let lastCalcDateNormalized = calendar.startOfDay(for: lastCalcDate)
+        // Recompute the current period's accrual fresh from its start (see
+        // reconcileDepositInterest). Anchoring at the period start — not at the
+        // persisted `lastInterestCalculationDate`/`interestAccruedForCurrentPeriod` —
+        // means backdated/late principal changes are always reflected.
+        let periodStart = currentPeriodStart(depositInfo: depositInfo)
+        guard periodStart < today else { return 0 }
 
         let events = allTransactions
             .filter { tx in
@@ -194,7 +202,7 @@ nonisolated enum DepositInterestService {
             }
             .sorted { $0.date < $1.date }
 
-        let walkStart = calendar.date(byAdding: .day, value: 1, to: lastCalcDateNormalized)!
+        let walkStart = calendar.date(byAdding: .day, value: 1, to: periodStart)!
         let walkStartStr = DateFormatters.dateFormatter.string(from: walkStart)
 
         var runningPrincipal: Decimal = depositInfo.initialPrincipal
@@ -209,7 +217,7 @@ nonisolated enum DepositInterestService {
         }
 
         var currentDate = walkStart
-        var totalAccrued: Decimal = depositInfo.interestAccruedForCurrentPeriod
+        var totalAccrued: Decimal = 0
 
         while currentDate <= today {
             let currentDateStr = DateFormatters.dateFormatter.string(from: currentDate)
@@ -291,33 +299,43 @@ nonisolated enum DepositInterestService {
         return applicableRate > 0 ? applicableRate : (history.first?.annualRate ?? 0)
     }
 
-    /// Проверяет, нужно ли начислить проценты в эту дату
-    private static func shouldPostInterest(date: Date, postingDay: Int, lastPostingMonth: String) -> Bool {
+    /// Start of the current (unposted) interest period — the posting date in
+    /// `lastInterestPostingMonth`, clamped to the month's length, but never earlier
+    /// than `startDate`. Accrual is recomputed from here on every reconcile/display
+    /// call, so principal changes backdated into the open period are always picked up.
+    /// (The previous incremental design advanced `lastInterestCalculationDate` past
+    /// such days and could never re-accrue them — the root cause of "interest = 0".)
+    private static func currentPeriodStart(depositInfo: DepositInfo) -> Date {
         let calendar = Calendar.current
-        let dateNormalized = calendar.startOfDay(for: date)
+        let startDate = DateFormatters.dateFormatter.date(from: depositInfo.startDate)
+            .map { calendar.startOfDay(for: $0) }
 
-        let day = calendar.component(.day, from: dateNormalized)
+        guard let lastPostingMonth = DateFormatters.dateFormatter.date(from: depositInfo.lastInterestPostingMonth) else {
+            return startDate ?? calendar.startOfDay(for: Date())
+        }
+        var comps = calendar.dateComponents([.year, .month], from: lastPostingMonth)
+        let monthDate = calendar.date(from: comps) ?? lastPostingMonth
+        let daysInMonth = calendar.range(of: .day, in: .month, for: monthDate)?.count ?? depositInfo.interestPostingDay
+        comps.day = min(depositInfo.interestPostingDay, daysInMonth)
+        let postingDate = calendar.date(from: comps).map { calendar.startOfDay(for: $0) } ?? monthDate
 
+        if let s = startDate, s > postingDate { return s }
+        return postingDate
+    }
+
+    /// `true` when `date` falls on the deposit's monthly interest-posting day
+    /// (clamped to the last day of months shorter than `postingDay`). Within a single
+    /// forward walk each posting day is a distinct month, so no month-tracking is
+    /// needed — the walk anchors after the last posted period.
+    private static func isPostingDay(date: Date, postingDay: Int) -> Bool {
+        let calendar = Calendar.current
+        let normalized = calendar.startOfDay(for: date)
+        let day = calendar.component(.day, from: normalized)
         var targetDay = postingDay
-        if let lastDayOfMonth = calendar.range(of: .day, in: .month, for: dateNormalized)?.upperBound {
-            if postingDay >= lastDayOfMonth {
-                targetDay = lastDayOfMonth - 1
-            }
+        if let daysInMonth = calendar.range(of: .day, in: .month, for: normalized)?.count, postingDay > daysInMonth {
+            targetDay = daysInMonth
         }
-
-        guard day == targetDay else {
-            return false
-        }
-
-        guard let lastPostingDate = DateFormatters.dateFormatter.date(from: lastPostingMonth) else {
-            return true
-        }
-
-        let lastPostingComponents = calendar.dateComponents([.year, .month], from: lastPostingDate)
-        let currentComponents = calendar.dateComponents([.year, .month], from: dateNormalized)
-
-        return lastPostingComponents.year != currentComponents.year ||
-               lastPostingComponents.month != currentComponents.month
+        return day == targetDay
     }
 
     /// Posts interest as a `.depositInterestAccrual` transaction. Returns `true` when a

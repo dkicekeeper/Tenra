@@ -8,6 +8,30 @@
 
 import SwiftUI
 
+/// Label + trailing-value layout for info rows.
+///
+/// Single line: the trailing value keeps its full intrinsic width (higher layout
+/// priority), and the leading label truncates with an ellipsis when the two can't
+/// both fit. This keeps money amounts intact and never breaks the value onto a
+/// second line.
+struct InfoRowLayout<Value: View>: View {
+    let label: String
+    @ViewBuilder let value: () -> Value
+
+    var body: some View {
+        HStack(spacing: AppSpacing.md) {
+            Text(label)
+                .font(AppTypography.body)
+                .foregroundStyle(AppColors.textSecondary)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Spacer(minLength: AppSpacing.sm)
+            value()
+                .layoutPriority(1)
+        }
+    }
+}
+
 /// Info row component for displaying label + value pairs
 /// Now built on top of UniversalRow for consistency
 struct InfoRow: View {
@@ -43,11 +67,7 @@ struct InfoRow: View {
             config: .info,
             leadingIcon: icon.map { .sfSymbol($0, color: AppColors.accent, size: AppIconSize.lg) }
         ) {
-            HStack {
-                Text(label)
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
-                Spacer()
+            InfoRowLayout(label: label) {
                 if let display = amountDisplay {
                     FormattedAmountText(
                         amount: display.amount,
@@ -60,6 +80,7 @@ struct InfoRow: View {
                 } else {
                     Text(value)
                         .font(AppTypography.bodyEmphasis)
+                        .multilineTextAlignment(.trailing)
                 }
             }
         } trailing: {

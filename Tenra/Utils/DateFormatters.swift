@@ -49,6 +49,17 @@ enum DateFormatters {
         return formatter
     }()
 
+    /// Display a date as "d MMMM", appending the year ("d MMMM yyyy") only when it
+    /// falls outside the current calendar year. Keeps same-year dates uncluttered
+    /// while disambiguating future/past dates (e.g. a next-charge date in 2027).
+    static func displayDateOmittingCurrentYear(_ date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.component(.year, from: date) == calendar.component(.year, from: Date()) {
+            return displayDateFormatter.string(from: date)
+        }
+        return displayDateWithYearFormatter.string(from: date)
+    }
+
     /// Convert "yyyy-MM-dd" string to display format "d MMMM".
     /// Returns the original string if parsing fails.
     static func displayString(from isoDateString: String) -> String {

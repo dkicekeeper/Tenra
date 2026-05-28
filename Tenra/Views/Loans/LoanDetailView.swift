@@ -62,6 +62,14 @@ struct LoanDetailView: View {
             .sorted { $0.date > $1.date }
     }
 
+    /// Drives amortization-schedule regeneration: bumps whenever any loan field
+    /// that affects the schedule (or its paid markers) changes — so marking a
+    /// payment paid re-renders the rows without re-navigation.
+    private var scheduleKey: String {
+        guard let li = liveAccount?.loanInfo else { return accountId }
+        return "\(accountId)|\(li.paymentsMade)|\(li.remainingPrincipal)|\(li.termMonths)|\(li.monthlyPayment)|\(li.interestRateAnnual)|\(li.earlyRepayments.count)"
+    }
+
     /// Most recent loan-payment for this loan — feeds the LoanPaymentView defaults
     /// (amount + previously-used category). Real-world payments are usually rounded
     /// above the calculated annuity (e.g. 340 000 vs 336 829), so the prior actual
@@ -380,7 +388,7 @@ struct LoanDetailView: View {
         .task(id: refreshTrigger) {
             await refreshTransactions()
         }
-        .task(id: accountId) {
+        .task(id: scheduleKey) {
             if let li = account.loanInfo {
                 cachedSchedule = LoanPaymentService.generateAmortizationSchedule(loanInfo: li)
             }
@@ -583,7 +591,10 @@ struct LoanDetailView: View {
                     .foregroundStyle(AppColors.textSecondary)
             } else {
                 ForEach(displayedEntries) { entry in
-                    amortizationRow(entry: entry, account: account)
+                    AmortizationScheduleRow(entry: entry, currency: account.currency)
+                        .contextMenu {
+                            scheduleRowMenu(entry: entry, accountId: account.id)
+                        }
                 }
 
                 if schedule.count > 6 && !showFullSchedule {
@@ -603,33 +614,32 @@ struct LoanDetailView: View {
         .cardStyle()
     }
 
-    private func amortizationRow(entry: LoanPaymentService.AmortizationEntry, account: Account) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                Text("#\(entry.paymentNumber)")
-                    .font(AppTypography.bodySmall.weight(.medium))
-                Text(formatDateString(entry.date))
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
+    /// Long-press menu on a schedule row. Marking a payment paid also marks every
+    /// earlier one (loan installments can't skip prior payments); the inverse
+    /// clears this payment and all later ones.
+    @ViewBuilder
+    private func scheduleRowMenu(entry: LoanPaymentService.AmortizationEntry, accountId: String) -> some View {
+        if entry.isPaid {
+            Button {
+                HapticManager.light()
+                loansViewModel.markPaymentsPaid(accountId: accountId, upToPaymentNumber: entry.paymentNumber - 1)
+            } label: {
+                Label(
+                    String(localized: "loan.markUnpaid", defaultValue: "Отметить неоплаченным"),
+                    systemImage: "circle"
+                )
             }
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
-                FormattedAmountText(amount: NSDecimalNumber(decimal: entry.payment).doubleValue, currency: account.currency, fontSize: AppTypography.bodySmall)
-                if entry.interest > 0 {
-                    Text(String(format: String(localized: "loan.interestShort", defaultValue: "int: %@"), Formatting.formatCurrencySmart(NSDecimalNumber(decimal: entry.interest).doubleValue, currency: account.currency)))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.expense)
-                }
+        } else {
+            Button {
+                HapticManager.light()
+                loansViewModel.markPaymentsPaid(accountId: accountId, upToPaymentNumber: entry.paymentNumber)
+            } label: {
+                Label(
+                    String(localized: "loan.markPaid", defaultValue: "Отметить оплаченным"),
+                    systemImage: "checkmark.circle.fill"
+                )
             }
-
-            // Paid indicator
-            Image(systemName: entry.isPaid ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(entry.isPaid ? AppColors.income : AppColors.textSecondary)
-                .font(AppTypography.body)
         }
-        .futureTransactionStyle(isFuture: !entry.isPaid)
     }
 
     // MARK: - Toolbar menu

@@ -94,18 +94,6 @@ struct LoansListView: View {
         .navigationTitle(String(localized: "loan.listTitle", defaultValue: "Loans"))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if !activeLoans.isEmpty && canPayAll {
-                    Button {
-                        HapticManager.light()
-                        showingPayAll = true
-                    } label: {
-                        Image(systemName: "creditcard")
-                    }
-                    .accessibilityLabel(String(localized: "loan.payAll", defaultValue: "Pay All"))
-                }
-            }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     HapticManager.light()
                     showingAddLoan = true

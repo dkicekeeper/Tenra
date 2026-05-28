@@ -1069,7 +1069,7 @@
 "loan.amortizationSchedule" = "Amortization Schedule";
 "loan.noSchedule" = "No schedule available";
 "loan.showAllPayments" = "Show all %d payments";
-"loan.interestShort" = "int: %@";
+"loan.interestShort" = "Interest: %@";
 "loan.makeEarlyRepayment" = "Early Repayment";
 "loan.convertTitle" = "Convert to Loan";
 "loan.editTitle" = "Edit Loan";

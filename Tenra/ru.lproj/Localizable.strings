@@ -1069,7 +1069,7 @@
 "loan.amortizationSchedule" = "График платежей";
 "loan.noSchedule" = "График недоступен";
 "loan.showAllPayments" = "Показать все %d платежей";
-"loan.interestShort" = "проц: %@";
+"loan.interestShort" = "Процент: %@";
 "loan.makeEarlyRepayment" = "Досрочное погашение";
 "loan.convertTitle" = "Конвертировать в кредит";
 "loan.editTitle" = "Редактировать кредит";

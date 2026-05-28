@@ -75,8 +75,7 @@ struct SubscriptionCard: View, Equatable {
     }
     
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatters.displayDateFormatter
-        return formatter.string(from: date)
+        DateFormatters.displayDateOmittingCurrentYear(date)
     }
 }
 

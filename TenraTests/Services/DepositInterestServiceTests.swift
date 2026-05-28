@@ -95,10 +95,14 @@ struct DepositInterestServiceTests {
         #expect(diff < Decimal(string: "0.01")!, "Expected ~\(expected), got \(result)")
     }
 
-    // MARK: - Test C: Accumulated prior interest is preserved
+    // MARK: - Test C: Current period is recomputed (persisted accrual NOT added)
 
-    @Test("Pre-accrued interest is added to single-day result")
-    func testAccumulatedPriorInterest() {
+    @Test("Persisted interestAccruedForCurrentPeriod is recomputed, not added on top")
+    func testAccruedRecomputedNotAdded() {
+        // The current period is always recomputed fresh from its start, so a stale
+        // `interestAccruedForCurrentPeriod` value must NOT be added to the result
+        // (the old incremental model added it — the source of the backdated-principal
+        // bug). startDate defaults to lastCalc (yesterday), so this is a 1-day period.
         let principal: Decimal = 100_000
         let rate: Decimal = 12
         let priorAccrued: Decimal = 50
@@ -112,9 +116,8 @@ struct DepositInterestServiceTests {
         let result = DepositInterestService.calculateInterestToToday(depositInfo: info, accountId: "d1", allTransactions: [])
 
         let dailyInterest: Decimal = principal * (rate / 100) / 365
-        let expected: Decimal = priorAccrued + dailyInterest
-        let diff = abs(result - expected)
-        #expect(diff < Decimal(string: "0.001")!, "Expected ~\(expected), got \(result)")
+        let diff = abs(result - dailyInterest)
+        #expect(diff < Decimal(string: "0.001")!, "Expected ~\(dailyInterest) (1 day, stored 50 ignored), got \(result)")
     }
 
     // MARK: - Test D: Rate history selection
@@ -180,22 +183,23 @@ struct DepositInterestServiceTests {
         #expect(resultAfterRateChange > 0, "Still positive after rate change added")
     }
 
-    // MARK: - Test F: Up-to-date deposit (no extra day)
+    // MARK: - Test F: Period starts today → zero accrual
 
-    @Test("Deposit up-to-date today: returns interestAccruedForCurrentPeriod unchanged")
+    @Test("Deposit whose current period starts today accrues 0 (recompute, stored value ignored)")
     func testUpToDateDeposit() {
         let priorAccrued: Decimal = 42
         let info = makeDepositInfo(
             principal: 100_000,
             annualRate: 12,
-            lastCalcDateOffset: 0,   // lastCalcDate = today
+            lastCalcDateOffset: 0,   // startDate defaults to today → period starts today
             accruedForPeriod: priorAccrued
         )
 
         let result = DepositInterestService.calculateInterestToToday(depositInfo: info, accountId: "d1", allTransactions: [])
 
-        // lastCalcDate = today → start = tomorrow > today → loop body executes zero times
-        #expect(result == priorAccrued, "Expected \(priorAccrued), got \(result)")
+        // periodStart == today → no completed days → fresh recompute returns 0
+        // (the stored 42 is intentionally not surfaced anymore).
+        #expect(result == 0, "Expected 0, got \(result)")
     }
 
     // MARK: - principalDelta tests (Task 2)

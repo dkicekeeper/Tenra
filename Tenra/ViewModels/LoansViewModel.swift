@@ -168,6 +168,39 @@ class LoansViewModel {
         return transaction
     }
 
+    // MARK: - Mark Payments Paid (no transactions)
+
+    /// Marks the loan as paid up to and including `paymentNumber` — and every
+    /// payment before it, since loan installments can't skip earlier ones. Pass
+    /// `0` to reset to "nothing paid". Derives `remainingPrincipal`,
+    /// `totalInterestPaid`, and `lastPaymentDate` from the amortization schedule
+    /// so the result matches the row the user tapped. Creates NO transactions —
+    /// for payments made outside the app (e.g. combined bank withdrawals that
+    /// can't be linked 1:1 to this loan).
+    func markPaymentsPaid(accountId: String, upToPaymentNumber paymentNumber: Int) {
+        guard var account = accountsViewModel.getAccount(by: accountId),
+              var loanInfo = account.loanInfo else { return }
+
+        let schedule = LoanPaymentService.generateAmortizationSchedule(loanInfo: loanInfo)
+        let target = max(0, min(paymentNumber, schedule.count))
+
+        loanInfo.paymentsMade = target
+        if target == 0 {
+            loanInfo.remainingPrincipal = loanInfo.originalPrincipal
+            loanInfo.totalInterestPaid = 0
+            loanInfo.lastPaymentDate = nil
+        } else {
+            let entry = schedule[target - 1]
+            loanInfo.remainingPrincipal = entry.remainingBalance
+            loanInfo.totalInterestPaid = schedule.prefix(target).reduce(Decimal(0)) { $0 + $1.interest }
+            loanInfo.lastPaymentDate = entry.date
+        }
+
+        account.loanInfo = loanInfo
+        // updateLoan re-syncs the loan account balance to the new remainingPrincipal.
+        accountsViewModel.updateLoan(account)
+    }
+
     // MARK: - Link Existing Transactions
 
     func linkTransactions(

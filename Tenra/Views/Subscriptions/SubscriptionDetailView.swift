@@ -94,6 +94,7 @@ struct SubscriptionDetailView: View {
             infoRows: infoRowConfigs(),
             transactions: cachedTransactions,
             historyCurrency: liveSubscription.currency,
+            historySummaryCurrencyOverride: transactionsViewModel.appSettings.baseCurrency,
             accountsById: accountsById,
             styleHelper: { tx in
                 CategoryStyleHelper.cached(
@@ -318,7 +319,7 @@ struct SubscriptionDetailView: View {
     }
 
     private func formatDate(_ date: Date) -> String {
-        DateFormatters.displayDateFormatter.string(from: date)
+        DateFormatters.displayDateOmittingCurrentYear(date)
     }
 }
 

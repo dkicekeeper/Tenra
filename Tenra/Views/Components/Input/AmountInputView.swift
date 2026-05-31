@@ -15,6 +15,10 @@ struct AmountInputView: View {
     let baseCurrency: String
     let accountCurrencies: Set<String>
     let appSettings: AppSettings
+    /// When set, the amount is entered via the in-app calculator keypad instead of the
+    /// system keyboard: the large display reads from this model (the host owns it and
+    /// mirrors `model.amountText` into `amount`). The keypad itself is placed by the host.
+    var calculatorModel: CalculatorInputModel? = nil
     var onAmountChange: ((String) -> Void)? = nil
 
     // MARK: - Currency Conversion
@@ -23,14 +27,18 @@ struct AmountInputView: View {
 
     var body: some View {
         VStack(spacing: AppSpacing.md) {
-            AmountInput(
-                amount: $amount,
-                baseFontSize: 56,
-                color: errorMessage != nil ? AppColors.destructive : AppColors.textPrimary,
-                autoFocus: true,
-                showContextMenu: true,
-                onAmountChange: onAmountChange
-            )
+            if let calculatorModel {
+                CalculatorAmountDisplay(model: calculatorModel)
+            } else {
+                AmountInput(
+                    amount: $amount,
+                    baseFontSize: 56,
+                    color: errorMessage != nil ? AppColors.destructive : AppColors.textPrimary,
+                    autoFocus: true,
+                    showContextMenu: true,
+                    onAmountChange: onAmountChange
+                )
+            }
 
             // Converted amount in base currency
             convertedAmountView

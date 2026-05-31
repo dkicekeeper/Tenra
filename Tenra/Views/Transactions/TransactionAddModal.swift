@@ -23,6 +23,9 @@ struct TransactionAddModal: View {
 
     @State private var validationError: String?
     @State private var isSaving = false
+    /// Drives the in-app calculator keypad. The expense-by-category form enters amounts
+    /// with the calculator instead of the system keyboard (no keyboard-raise animation).
+    @State private var calc = CalculatorInputModel()
     @State private var showingSubcategorySearch = false
     @State private var subcategorySearchText = ""
     @State private var showingSubcategoryReorder = false
@@ -95,6 +98,17 @@ struct TransactionAddModal: View {
                 Task { await saveTransaction() }
             }
         )
+        .safeAreaInset(edge: .bottom) {
+            // Calculator keypad sits at the very bottom (where the system keyboard used to
+            // be); the date/save buttons float just above it.
+            CalculatorKeypad(model: calc)
+                .background(AppColors.bgBase)
+        }
+        .onChange(of: calc.amountText) { _, newValue in
+            // Mirror the evaluated amount into the form so validation / save / currency
+            // conversion keep working off the existing `formData.amountText`.
+            coordinator.formData.amountText = newValue
+        }
         .overlay(overlayContent)
         .navigationDestination(isPresented: $showingCategoryHistory) {
             categoryHistoryDestination
@@ -133,6 +147,7 @@ struct TransactionAddModal: View {
                     baseCurrency: coordinator.transactionsViewModel.appSettings.baseCurrency,
                     accountCurrencies: Set(coordinator.accountsViewModel.accounts.map(\.currency)),
                     appSettings: coordinator.transactionsViewModel.appSettings,
+                    calculatorModel: calc,
                     onAmountChange: { _ in
                         validationError = nil
                     }

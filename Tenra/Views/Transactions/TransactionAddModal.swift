@@ -26,6 +26,9 @@ struct TransactionAddModal: View {
     /// Drives the in-app calculator keypad. The expense-by-category form enters amounts
     /// with the calculator instead of the system keyboard (no keyboard-raise animation).
     @State private var calc = CalculatorInputModel()
+    /// Focus of the description field. While it's focused the system keyboard is up and the
+    /// calculator keypad is hidden — only one keyboard is shown at a time.
+    @FocusState private var descriptionFocused: Bool
     @State private var showingSubcategorySearch = false
     @State private var subcategorySearchText = ""
     @State private var showingSubcategoryReorder = false
@@ -87,6 +90,7 @@ struct TransactionAddModal: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
         .toolbar {
             toolbarContent
         }
@@ -100,9 +104,12 @@ struct TransactionAddModal: View {
         )
         .safeAreaInset(edge: .bottom) {
             // Calculator keypad sits at the very bottom (where the system keyboard used to
-            // be); the date/save buttons float just above it.
-            CalculatorKeypad(model: calc)
-                .background(AppColors.bgBase)
+            // be); the date/save buttons float just above it. Hidden while the description
+            // field is focused so its system keyboard takes the bottom instead.
+            if !descriptionFocused {
+                CalculatorKeypad(model: calc)
+                    .background(AppColors.bgBase)
+            }
         }
         .onChange(of: calc.amountText) { _, newValue in
             // Mirror the evaluated amount into the form so validation / save / currency
@@ -148,6 +155,7 @@ struct TransactionAddModal: View {
                     accountCurrencies: Set(coordinator.accountsViewModel.accounts.map(\.currency)),
                     appSettings: coordinator.transactionsViewModel.appSettings,
                     calculatorModel: calc,
+                    onCalculatorTap: { descriptionFocused = false },
                     onAmountChange: { _ in
                         validationError = nil
                     }
@@ -180,7 +188,8 @@ struct TransactionAddModal: View {
                 FormTextField(
                     text: $bindableCoordinator.formData.description,
                     placeholder: String(localized: "quickAdd.descriptionPlaceholder"),
-                    style: .multiline(min: 2, max: 6)
+                    style: .multiline(min: 2, max: 6),
+                    externalFocus: $descriptionFocused
                 )
                 .screenPadding()
             }

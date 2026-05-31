@@ -17,6 +17,8 @@ struct AccountActionView: View {
     @Environment(TimeFilterManager.self) private var timeFilterManager
     @State private var viewModel: AccountActionViewModel
     @State private var showingAccountHistory = false
+    @State private var calc = CalculatorInputModel()
+    @FocusState private var descriptionFocused: Bool
 
     init(
         transactionsViewModel: TransactionsViewModel,
@@ -57,13 +59,16 @@ struct AccountActionView: View {
                     errorMessage: viewModel.showingError ? viewModel.errorMessage : nil,
                     baseCurrency: transactionsViewModel.appSettings.baseCurrency,
                     accountCurrencies: Set(accountsViewModel.accounts.map(\.currency)),
-                    appSettings: transactionsViewModel.appSettings
+                    appSettings: transactionsViewModel.appSettings,
+                    calculatorModel: calc,
+                    onCalculatorTap: { descriptionFocused = false }
                 )
 
                 FormTextField(
                     text: $viewModel.descriptionText,
                     placeholder: String(localized: "transactionForm.descriptionPlaceholder"),
-                    style: .multiline(min: 2, max: 6)
+                    style: .multiline(min: 2, max: 6),
+                    externalFocus: $descriptionFocused
                 )
             }
         }
@@ -74,6 +79,16 @@ struct AccountActionView: View {
         .dateButtonsSafeArea(selectedDate: $viewModel.selectedDate, onSave: { date in
             Task { await viewModel.saveTransaction(date: date, transactionStore: transactionStore) }
         })
+        .toolbar(.hidden, for: .tabBar)
+        .safeAreaInset(edge: .bottom) {
+            if !descriptionFocused {
+                CalculatorKeypad(model: calc)
+                    .background(AppColors.bgBase)
+            }
+        }
+        .onChange(of: calc.amountText) { _, newValue in
+            viewModel.amountText = newValue
+        }
         .sheet(isPresented: $showingAccountHistory) {
             NavigationStack {
                 HistoryView(

@@ -27,6 +27,29 @@ final class CalculatorInputModel {
 
     private static let operatorChars = "+-*/"
 
+    /// Seeds the model from an existing amount string (e.g. when editing a transaction or
+    /// a pre-filled payment). A non-positive / unparseable value starts empty.
+    init(seed: String = "") {
+        expression = Self.canonicalize(seed)
+        refresh()
+    }
+
+    /// Resets the expression to a seeded amount (for forms whose default value is computed
+    /// after init, e.g. in `onAppear`). A non-positive / unparseable value clears it.
+    func seed(_ amount: String) {
+        expression = Self.canonicalize(amount)
+        lastValidResult = nil
+        refresh()
+    }
+
+    /// Normalises an amount string to a clean canonical operand ("3 500.00" → "3500",
+    /// "12,5" → "12.5"); returns "" for empty / zero / unparseable input.
+    private static func canonicalize(_ amount: String) -> String {
+        let cleaned = AmountInputFormatting.cleanAmountString(amount)
+        guard let value = Decimal(string: cleaned), value > 0 else { return "" }
+        return AmountInputFormatting.bindingString(for: value)
+    }
+
     // MARK: - Intents
 
     func tapDigit(_ digit: Character) {

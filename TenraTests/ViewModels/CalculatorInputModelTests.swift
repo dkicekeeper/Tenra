@@ -168,4 +168,57 @@ struct CalculatorInputModelTests {
         type(m, "3")
         #expect(m.amountText == "333.33")
     }
+
+    // MARK: - Seeding
+
+    @Test("seeding from an existing amount populates the expression")
+    func seedFromAmount() {
+        let m = CalculatorInputModel(seed: "1550")
+        #expect(m.expression == "1550")
+        #expect(m.amountText == "1550")
+        #expect(m.hasOperator == false)
+    }
+
+    @Test("seeding strips trailing zeros and grouping")
+    func seedNormalizes() {
+        #expect(CalculatorInputModel(seed: "3500.00").expression == "3500")
+        #expect(CalculatorInputModel(seed: "1 234.50").expression == "1234.5")
+    }
+
+    @Test("seeding with empty / zero / invalid starts empty")
+    func seedEmptyOrZero() {
+        #expect(CalculatorInputModel(seed: "").expression == "")
+        #expect(CalculatorInputModel(seed: "0").expression == "")
+        #expect(CalculatorInputModel(seed: "abc").expression == "")
+    }
+
+    @Test("a seeded value can be continued with operators")
+    func seedThenContinue() {
+        let m = CalculatorInputModel(seed: "1550")
+        m.tapOperator(.add)
+        type(m, "50")
+        #expect(m.expression == "1550+50")
+        #expect(m.result == Decimal(1600))
+    }
+
+    @Test("default init is still empty")
+    func defaultInitEmpty() {
+        #expect(CalculatorInputModel().expression == "")
+    }
+
+    @Test("seed(_:) resets a fresh model to the amount")
+    func seedMethodSetsAmount() {
+        let m = model()
+        m.seed("2500.00")
+        #expect(m.expression == "2500")
+        #expect(m.amountText == "2500")
+    }
+
+    @Test("seed(_:) clears the expression for an empty amount")
+    func seedMethodClears() {
+        let m = model()
+        type(m, "999")
+        m.seed("")
+        #expect(m.expression == "")
+    }
 }

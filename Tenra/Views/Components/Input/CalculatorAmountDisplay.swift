@@ -11,8 +11,17 @@ import SwiftUI
 struct CalculatorAmountDisplay: View {
     let model: CalculatorInputModel
     var baseFontSize: CGFloat = 56
+    /// Called when the display is tapped — hosts use this to re-activate the keypad
+    /// (and dismiss the system keyboard if a sibling text field had focus).
+    var onTap: (() -> Void)? = nil
 
     var body: some View {
+        content
+            .contentShape(Rectangle())
+            .onTapGesture { onTap?() }
+    }
+
+    private var content: some View {
         VStack(spacing: AppSpacing.xxs) {
             // Secondary line — the raw expression, only once an operator is present.
             if model.hasOperator {

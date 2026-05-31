@@ -51,6 +51,8 @@ struct LoanPaymentView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var amountText: String = ""
+    @State private var calc = CalculatorInputModel()
+    @FocusState private var descriptionFocused: Bool
     @State private var selectedCurrency: String = ""
     @State private var paymentDate: Date = Date()
     @State private var selectedSourceAccountId: String? = nil
@@ -115,7 +117,9 @@ struct LoanPaymentView: View {
                         errorMessage: nil,
                         baseCurrency: baseCurrency,
                         accountCurrencies: Set([account.currency]),
-                        appSettings: appSettings
+                        appSettings: appSettings,
+                        calculatorModel: calc,
+                        onCalculatorTap: { descriptionFocused = false }
                     )
 
                     fromSection
@@ -133,6 +137,15 @@ struct LoanPaymentView: View {
             .toolbar { toolbarContent }
             .dateButtonsSafeArea(selectedDate: $paymentDate, isDisabled: !isFormValid, maxDate: Date()) { _ in
                 savePayment()
+            }
+            .safeAreaInset(edge: .bottom) {
+                if !descriptionFocused {
+                    CalculatorKeypad(model: calc)
+                        .background(AppColors.bgBase)
+                }
+            }
+            .onChange(of: calc.amountText) { _, newValue in
+                amountText = newValue
             }
             .sheet(isPresented: $showingSubcategorySearch) {
                 if let categoriesVM = categoriesViewModel,
@@ -226,7 +239,8 @@ struct LoanPaymentView: View {
         FormTextField(
             text: $noteText,
             placeholder: String(localized: "transactionForm.descriptionPlaceholder"),
-            style: .multiline(min: 2, max: 6)
+            style: .multiline(min: 2, max: 6),
+            externalFocus: $descriptionFocused
         )
         .screenPadding()
     }
@@ -294,6 +308,7 @@ struct LoanPaymentView: View {
         // (e.g. 336 829) and the prior actual is the better suggestion.
         let defaultAmount = lastPaidAmount ?? loanInfo.monthlyPayment
         amountText = AmountInputFormatting.bindingString(for: defaultAmount)
+        calc.seed(amountText)
         selectedCurrency = account.currency
         if selectedSourceAccountId == nil, let first = availableAccounts.first {
             selectedSourceAccountId = first.id

@@ -14,6 +14,8 @@ struct TransactionEditView: View {
     // MARK: - Coordinator
 
     @State private var coordinator: TransactionEditCoordinator
+    @State private var calc: CalculatorInputModel
+    @FocusState private var descriptionFocused: Bool
 
     // MARK: - Environment
 
@@ -41,6 +43,11 @@ struct TransactionEditView: View {
         self._accounts = accounts
         self._customCategories = customCategories
         self._balanceCoordinator = balanceCoordinator
+        // Seed the calculator with the transaction's existing amount so editing starts
+        // from the current value.
+        _calc = State(initialValue: CalculatorInputModel(
+            seed: AmountInputFormatting.bindingString(for: transaction.amount)
+        ))
     }
 
     // MARK: - Stored Properties (passed from parent, used for UI components)
@@ -77,7 +84,9 @@ struct TransactionEditView: View {
                             errorMessage: nil,
                             baseCurrency: coordinator.transactionsViewModel.appSettings.baseCurrency,
                             accountCurrencies: Set(_accounts.map(\.currency)),
-                            appSettings: coordinator.transactionsViewModel.appSettings
+                            appSettings: coordinator.transactionsViewModel.appSettings,
+                            calculatorModel: calc,
+                            onCalculatorTap: { descriptionFocused = false }
                         )
 
                         // 2. Account(s)
@@ -141,7 +150,8 @@ struct TransactionEditView: View {
                         FormTextField(
                             text: $bindableCoordinator.formData.descriptionText,
                             placeholder: String(localized: "transactionForm.descriptionPlaceholder"),
-                            style: .multiline(min: 2, max: 6)
+                            style: .multiline(min: 2, max: 6),
+                            externalFocus: $descriptionFocused
                         )
                         .screenPadding()
                     }
@@ -155,6 +165,15 @@ struct TransactionEditView: View {
             .dateButtonsSafeArea(selectedDate: $bindableCoordinator.formData.selectedDate) { date in
                 coordinator.formData.selectedDate = date
                 coordinator.save { dismiss() }
+            }
+            .safeAreaInset(edge: .bottom) {
+                if !descriptionFocused {
+                    CalculatorKeypad(model: calc)
+                        .background(AppColors.bgBase)
+                }
+            }
+            .onChange(of: calc.amountText) { _, newValue in
+                coordinator.formData.amountText = newValue
             }
             .sheet(isPresented: $bindableCoordinator.formData.showingSubcategorySearch) {
                 SubcategorySearchView(

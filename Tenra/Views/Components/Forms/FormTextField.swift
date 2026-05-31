@@ -37,7 +37,16 @@ struct FormTextField: View {
     /// When true, the field auto-focuses shortly after appearing. Replaces the
     /// ad-hoc `@FocusState … .task { isFocused = true }` pattern at call sites.
     let autofocus: Bool
+    /// Optional external focus binding for coordinating with a sibling input (e.g. the
+    /// calculator keypad): when provided, the host owns focus and can show/dismiss the
+    /// system keyboard. Defaults to the internal state — existing call sites are unchanged.
+    private let externalFocus: FocusState<Bool>.Binding?
     @FocusState private var isFocused: Bool
+
+    /// The binding the TextField actually uses — external if the host provided one.
+    private var focusBinding: FocusState<Bool>.Binding { externalFocus ?? $isFocused }
+    /// Current focus value for styling (reads the external binding when present).
+    private var isFieldFocused: Bool { externalFocus?.wrappedValue ?? isFocused }
 
     enum Style {
         /// Standard single-line text field with filled background.
@@ -65,7 +74,8 @@ struct FormTextField: View {
         errorMessage: String? = nil,
         helpText: String? = nil,
         isDisabled: Bool = false,
-        autofocus: Bool = false
+        autofocus: Bool = false,
+        externalFocus: FocusState<Bool>.Binding? = nil
     ) {
         self._text = text
         self.placeholder = placeholder
@@ -75,6 +85,7 @@ struct FormTextField: View {
         self.helpText = helpText
         self.isDisabled = isDisabled
         self.autofocus = autofocus
+        self.externalFocus = externalFocus
     }
 
     /// True when the active style is one of the compact `.inline*` variants —
@@ -110,7 +121,7 @@ struct FormTextField: View {
                 }
             }
         }
-        .animation(AppAnimation.fastAnimation, value: isFocused)
+        .animation(AppAnimation.fastAnimation, value: isFieldFocused)
         .animation(AppAnimation.fastAnimation, value: errorMessage != nil)
         .task {
             guard autofocus else { return }
@@ -118,7 +129,7 @@ struct FormTextField: View {
             // come up — without this the focus is silently dropped on first
             // present (observed in deposit/loan rate-change sheets).
             await Task.yield()
-            isFocused = true
+            focusBinding.wrappedValue = true
         }
     }
 
@@ -160,14 +171,14 @@ struct FormTextField: View {
     private var standardField: some View {
         TextField(placeholder, text: $text)
             .keyboardType(keyboardType)
-            .focused($isFocused)
+            .focused(focusBinding)
             .font(AppTypography.body)
     }
 
     private func multilineField(min: Int, max: Int) -> some View {
         TextField(placeholder, text: $text, axis: .vertical)
             .lineLimit(min...max)
-            .focused($isFocused)
+            .focused(focusBinding)
             .font(AppTypography.body)
     }
 
@@ -177,7 +188,7 @@ struct FormTextField: View {
     private var inlineField: some View {
         TextField(placeholder, text: $text)
             .keyboardType(keyboardType)
-            .focused($isFocused)
+            .focused(focusBinding)
             .font(AppTypography.body)
             .foregroundStyle(AppColors.textPrimary)
             .multilineTextAlignment(.trailing)
@@ -188,7 +199,7 @@ struct FormTextField: View {
     private func inlineMultilineField(min: Int, max: Int) -> some View {
         TextField(placeholder, text: $text, axis: .vertical)
             .lineLimit(min...max)
-            .focused($isFocused)
+            .focused(focusBinding)
             .font(AppTypography.body)
             .foregroundStyle(AppColors.textPrimary)
             .multilineTextAlignment(.trailing)
@@ -201,7 +212,7 @@ struct FormTextField: View {
             return AppColors.bgCard.opacity(0.3)
         } else if errorMessage != nil {
             return AppColors.destructive.opacity(0.05)
-        } else if isFocused {
+        } else if isFieldFocused {
             return AppColors.accent.opacity(0.04)
         } else {
             return AppColors.bgCard.opacity(0.5)
@@ -211,7 +222,7 @@ struct FormTextField: View {
     private var borderForState: Color {
         if errorMessage != nil {
             return AppColors.destructive.opacity(0.45)
-        } else if isFocused {
+        } else if isFieldFocused {
             return AppColors.accent.opacity(0.55)
         } else {
             return .clear
@@ -219,7 +230,7 @@ struct FormTextField: View {
     }
 
     private var borderWidth: CGFloat {
-        errorMessage != nil || isFocused ? 1 : 0
+        errorMessage != nil || isFieldFocused ? 1 : 0
     }
 
     // MARK: - Sub-views

@@ -108,4 +108,29 @@ measurable effect.
 - `ExpressionEvaluatorTests` — precedence, separator normalisation, trailing operator,
   divide-by-zero, 2-dp rounding, garbage input.
 - `CalculatorInputModelTests` — button sequences → expected `expression` / `result` /
-  `resultText`; backspace and clear behaviour; operator/separator guards.
+  `resultText`; backspace and clear behaviour; operator/separator guards; seeding.
+
+## Addendum (2026-05-31) — rollout + focus coordination
+
+Rolled out to all five amount-entry forms that share the "form + date/save buttons"
+pattern: `TransactionAddModal`, `AccountActionView`, `TransactionEditView`,
+`LoanPaymentView`, `LoanEarlyRepaymentView`. (Skipped: `VoiceInputConfirmationView` and the
+`EditableHeroSection` entity-edit heroes — entity forms, not amount calculators.)
+
+**Focus coordination (one keyboard at a time).** Every one of these forms also has an
+inline description `FormTextField` (system keyboard). A permanently-pinned keypad would
+stack two keyboards. Resolved with a shared-focus contract:
+- `FormTextField` gained an optional `externalFocus: FocusState<Bool>.Binding?` (default
+  `nil` → unchanged for all existing call sites).
+- Each host owns `@FocusState private var descriptionFocused`, passes it to the description
+  field, and shows the keypad only `if !descriptionFocused`.
+- `CalculatorAmountDisplay` is tappable (`onTap`) → host sets `descriptionFocused = false`,
+  dismissing the system keyboard and restoring the keypad.
+- Result: form opens on the calculator; tap description → system keyboard; tap the amount →
+  back to the calculator.
+
+**Seeding.** `CalculatorInputModel(seed:)` / `seed(_:)` populate the expression from an
+existing amount. Used by `TransactionEditView` (seed at init from the edited tx) and
+`LoanPaymentView` (seed in `applyDefaults`). `AccountActionView` /
+`LoanEarlyRepaymentView` start empty (no seed). The `focusImmediately` experiment was
+reverted (moot once the system keyboard is gone).

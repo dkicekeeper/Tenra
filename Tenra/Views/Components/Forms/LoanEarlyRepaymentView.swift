@@ -40,6 +40,8 @@ struct LoanEarlyRepaymentView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var amountText: String = ""
+    @State private var calc = CalculatorInputModel()
+    @FocusState private var descriptionFocused: Bool
     @State private var selectedCurrency: String = ""
     @State private var repaymentDate: Date = Date()
     @State private var repaymentType: EarlyRepaymentType = .reduceTerm
@@ -104,7 +106,9 @@ struct LoanEarlyRepaymentView: View {
                         errorMessage: nil,
                         baseCurrency: baseCurrency,
                         accountCurrencies: Set([account.currency]),
-                        appSettings: appSettings
+                        appSettings: appSettings,
+                        calculatorModel: calc,
+                        onCalculatorTap: { descriptionFocused = false }
                     )
 
                     fromSection
@@ -124,6 +128,15 @@ struct LoanEarlyRepaymentView: View {
             .toolbar { toolbarContent }
             .dateButtonsSafeArea(selectedDate: $repaymentDate, isDisabled: !isFormValid, maxDate: Date()) { _ in
                 saveRepayment()
+            }
+            .safeAreaInset(edge: .bottom) {
+                if !descriptionFocused {
+                    CalculatorKeypad(model: calc)
+                        .background(AppColors.bgBase)
+                }
+            }
+            .onChange(of: calc.amountText) { _, newValue in
+                amountText = newValue
             }
             .sheet(isPresented: $showingSubcategorySearch) {
                 if let categoriesVM = categoriesViewModel,
@@ -238,7 +251,8 @@ struct LoanEarlyRepaymentView: View {
         FormTextField(
             text: $noteText,
             placeholder: String(localized: "transactionForm.descriptionPlaceholder"),
-            style: .multiline(min: 2, max: 6)
+            style: .multiline(min: 2, max: 6),
+            externalFocus: $descriptionFocused
         )
         .screenPadding()
     }

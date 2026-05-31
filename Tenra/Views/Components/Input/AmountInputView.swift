@@ -19,6 +19,9 @@ struct AmountInputView: View {
     /// system keyboard: the large display reads from this model (the host owns it and
     /// mirrors `model.amountText` into `amount`). The keypad itself is placed by the host.
     var calculatorModel: CalculatorInputModel? = nil
+    /// Called when the calculator display is tapped (host re-activates the keypad and
+    /// dismisses the system keyboard from a sibling text field).
+    var onCalculatorTap: (() -> Void)? = nil
     var onAmountChange: ((String) -> Void)? = nil
 
     // MARK: - Currency Conversion
@@ -28,7 +31,7 @@ struct AmountInputView: View {
     var body: some View {
         VStack(spacing: AppSpacing.md) {
             if let calculatorModel {
-                CalculatorAmountDisplay(model: calculatorModel)
+                CalculatorAmountDisplay(model: calculatorModel, onTap: onCalculatorTap)
             } else {
                 AmountInput(
                     amount: $amount,

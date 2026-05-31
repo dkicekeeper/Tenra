@@ -959,6 +959,14 @@ Rendering a money amount?
     └── → AmountDisplayConfiguration.formatter (CACHED — never call .makeNumberFormatter())
 ```
 
+#### Calculator amount input
+
+`AmountInputView(calculatorModel:)` swaps the system keyboard for an in-app `CalculatorKeypad` driven by `CalculatorInputModel` (pure `Decimal` evaluator `ExpressionEvaluator` — `+ − × ÷`, no `=`, live result). Used in `TransactionAddModal`, `AccountActionView`, `TransactionEditView`, `LoanPaymentView`, `LoanEarlyRepaymentView`. (Entity-edit heroes via `EditableHeroSection` stay on the system keyboard — they're forms, not calculators.)
+
+- Host owns `@State CalculatorInputModel`, places `CalculatorKeypad` via `.safeAreaInset(.bottom)`, and mirrors `calc.amountText → formData.amountText` with `.onChange` (validation/save/conversion keep reading the existing amount binding).
+- Pre-fill via `CalculatorInputModel(seed:)` (at init) or `.seed(_:)` (in `onAppear`, for defaults computed late).
+- ⚠️ **A form with BOTH the keypad AND an inline `FormTextField` (description) must coordinate focus or two keyboards stack.** Pattern: host `@FocusState descriptionFocused`; pass `externalFocus: $descriptionFocused` to the text field; show the keypad `if !descriptionFocused`; wire `AmountInputView(onCalculatorTap:)` to set it `false`. `FormTextField(externalFocus:)` is optional and defaults to internal focus (existing call sites unchanged).
+
 #### Forbidden patterns (will be flagged in code review)
 
 | Pattern | Why forbidden | Fix |

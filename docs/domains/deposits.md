@@ -45,6 +45,12 @@ New/converted deposits MUST use `DepositEditView.computeInitialDates(postingDay:
 
 Use `AccountsViewModel.addDepositAccount(_ account:)` to preserve computed `DepositInfo` dates. Decomposing into fields loses `lastInterestCalculationDate` / `lastInterestPostingMonth`.
 
+### ⚠️ Converting an account WITH history → mark `.preserveImported`
+
+`AccountsViewModel.updateDeposit` detects a conversion (the existing account still has `depositInfo == nil`) and calls `balanceCoordinator.markAsImported(account.id)`. The converted account keeps its full transaction history (same `id`), but its current balance is snapshotted into `initialPrincipal`. Under the default `.fromInitialBalance` mode the cold-launch `recalculateAll` would re-sum that inherited history **on top of** the snapshot — the "converted deposit shows a huge negative balance days later" bug (incremental balance looked fine in-session; full recalc on next launch diverged). `.preserveImported` makes recalc keep the live, incrementally-maintained balance instead. This is robust even when the first post-conversion transfer is the same day as the conversion (a date-only `startDate` cutoff can't separate same-day pre- vs post-conversion events). Pinned by `BalanceLedgerInvariantTests.convertedDepositRecalcDoesNotDoubleCountHistory`.
+
+> Known follow-up: the **interest** walk (`DepositInterestService`) is independent of balance mode and still filters by `startDate`, which for a conversion sits at the open interest period's start (a past date). Inherited income/expense/linked-interest dated after it can still pollute the running principal used for interest accrual. Tracked separately — does not affect the displayed balance.
+
 ## Deposit Balance Model
 
 ```

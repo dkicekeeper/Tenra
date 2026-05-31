@@ -95,4 +95,66 @@ struct BalanceLedgerInvariantTests {
 
         #expect(inc == rec)
     }
+
+    @Test("Converting an account with history to a deposit doesn't double-count it on recalc")
+    func convertedDepositRecalcDoesNotDoubleCountHistory() async {
+        let coordinator = Self.makeCoordinator()
+
+        let today = DateFormatters.dateFormatter.string(from: Date())
+        // The conversion sets startDate to the start of the open interest period — a date
+        // in the PAST — so inherited history dated after it is NOT filtered by the deposit
+        // cutoff. That is exactly what lets the .fromInitialBalance recalc double-count it.
+        let pastStart = Self.pastDate(daysAgo: 30)
+
+        // A deposit produced by converting a regular account that held 1,000,000. The
+        // snapshot (initialPrincipal / balance) ALREADY includes all prior history. The
+        // conversion fix marks the account preserveImported so the cold-launch full recalc
+        // keeps the live balance instead of re-summing the inherited transactions on top
+        // of the snapshot.
+        let info = DepositInfo(
+            bankName: "T",
+            initialPrincipal: 1_000_000,
+            capitalizationEnabled: false,
+            interestRateAnnual: 0,
+            interestRateHistory: [RateChange(effectiveFrom: pastStart, annualRate: 0)],
+            interestPostingDay: 1,
+            lastInterestCalculationDate: pastStart,
+            lastInterestPostingMonth: pastStart,
+            interestAccruedForCurrentPeriod: 0,
+            startDate: pastStart
+        )
+        let deposit = Account(id: "dep", name: "Dep", currency: "KZT", depositInfo: info,
+                              initialBalance: 1_000_000, balance: 1_000_000)
+        await coordinator.registerAccounts([deposit])
+        await coordinator.setInitialBalance(1_000_000, for: "dep")
+        await coordinator.markAsImported("dep")
+
+        // Inherited pre-conversion income that already built the 1,000,000 snapshot.
+        let inheritedIncome = Transaction(
+            id: "inh", date: Self.pastDate(daysAgo: 10), description: "",
+            amount: 1_000_000, currency: "KZT", convertedAmount: nil,
+            type: .income, category: "Salary", subcategory: nil,
+            accountId: "dep", targetAccountId: nil
+        )
+        // Post-conversion transfer out (the user's "перевод с депозита на другой счёт").
+        let transferOut = Transaction(
+            id: "out", date: today, description: "",
+            amount: 491_070.36, currency: "KZT", convertedAmount: nil,
+            type: .internalTransfer, category: "", subcategory: nil,
+            accountId: "dep", targetAccountId: "other"
+        )
+
+        await coordinator.updateForTransaction(transferOut, operation: .add(transferOut))
+        let inc = coordinator.balances["dep"]
+
+        await coordinator.recalculateAll(accounts: [deposit], transactions: [inheritedIncome, transferOut])
+        let rec = coordinator.balances["dep"]
+
+        // The invariant: cold recalc must equal the incrementally-maintained balance.
+        // Before the fix the recalc re-added the inherited 1,000,000 (and re-applied the
+        // transfer), diverging into a large wrong (often negative) balance — the bug the
+        // user hit, where a converted deposit showed ≈ -1.5M days after a transfer.
+        #expect(inc == rec)
+        #expect(rec == 1_000_000 - 491_070.36)
+    }
 }

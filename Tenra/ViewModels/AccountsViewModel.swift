@@ -233,13 +233,27 @@ class AccountsViewModel {
 
     func updateDeposit(_ account: Account) {
         guard account.isDeposit else { return }
-        if accounts.firstIndex(where: { $0.id == account.id }) != nil {
-            transactionStore?.updateAccount(account)
+        guard let existing = accounts.first(where: { $0.id == account.id }) else { return }
 
-            if let coordinator = balanceCoordinator, let depositInfo = account.depositInfo {
-                Task {
-                    await coordinator.updateDepositInfo(account, depositInfo: depositInfo)
+        // A conversion is an existing *non-deposit* account that just gained `depositInfo`.
+        // Its prior transaction history is already baked into the snapshot balance, so the
+        // account must switch to `.preserveImported`: otherwise the cold-launch full recalc
+        // (`recalculateAll`, mode `.fromInitialBalance`) re-sums that inherited history on top
+        // of the snapshot, corrupting the balance (the converted-deposit "huge negative
+        // balance days later" bug). Imported mode keeps the live, incrementally-maintained
+        // balance — robust even when the first post-conversion transfer is same-day as the
+        // conversion (a date-only startDate cutoff can't separate those). Editing an
+        // already-converted deposit leaves its mode untouched.
+        let isConversion = existing.depositInfo == nil
+
+        transactionStore?.updateAccount(account)
+
+        if let coordinator = balanceCoordinator, let depositInfo = account.depositInfo {
+            Task {
+                if isConversion {
+                    await coordinator.markAsImported(account.id)
                 }
+                await coordinator.updateDepositInfo(account, depositInfo: depositInfo)
             }
         }
     }

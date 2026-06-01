@@ -9,7 +9,7 @@
 //    InsightsService+Spending.swift   — momReferenceDate, generateSpendingInsights, generateSpendingSpike, generateCategoryTrend
 //    InsightsService+Income.swift     — generateIncomeInsights
 //    InsightsService+Budget.swift     — generateBudgetInsights
-//    InsightsService+Recurring.swift  — generateRecurringInsights, generateSubscriptionGrowth, generateDuplicateSubscriptions
+//    InsightsService+Recurring.swift  — generateRecurringInsights, generateSubscriptionGrowth
 //    InsightsService+CashFlow.swift   — generateCashFlowInsights, generateCashFlowInsightsFromPeriodPoints
 //    InsightsService+Wealth.swift     — generateWealthInsights, generateAccountDormancy
 //    InsightsService+Savings.swift    — generateSavingsInsights
@@ -439,11 +439,6 @@ nonisolated final class InsightsService {
             if let spike = generateSpendingSpike(baseCurrency: baseCurrency, transactions: allTransactions, preAggregated: preAggregated) {
                 insights.append(spike)
             }
-            // Recurring behavioral — pass pre-computed monthly equivalents from PreAggregatedData
-            // so generators skip the per-series CurrencyConverter.convertSync call.
-            if let duplicates = generateDuplicateSubscriptions(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries, seriesMonthlyEquivalents: preAggregated?.seriesMonthlyEquivalents) {
-                insights.append(duplicates)
-            }
             if let dormancy = generateAccountDormancy(allTransactions: allTransactions, balanceFor: snapshot.balanceFor, preAggregated: preAggregated, accounts: snapshot.accounts) {
                 insights.append(dormancy)
             }
@@ -520,7 +515,6 @@ nonisolated final class InsightsService {
     private static let sharedInsightIDs: Set<String> = [
         "spending_spike",
         // "subscription_growth" — now granularity-dependent (lookback scales)
-        "duplicate_subscriptions",
         "accountDormancy",
         "emergency_fund",
         "spending_forecast",

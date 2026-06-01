@@ -44,6 +44,7 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
 
 - **`.onAppear` for synchronous cache warm-up**: Use `.onAppear { rebuildCache() }` (runs synchronously before next frame), NOT `.task { await rebuildCache() }` (async — fires after List body renders).
 - ⚠️ **`onAppear` fires on every back-navigation** — use `.task(id: trigger)` instead: combine reactive inputs in `Equatable` struct (`SummaryTrigger` pattern); SwiftUI manages cancellation automatically. Use debounce inside `if !isFullyInitialized` so init-complete triggers are immediate.
+- ⚠️ **`TimeFilter` freezes its date bounds at `init`** — relative presets (`.thisMonth`, `.today`) keep the month/day they were created in and go stale on rollover (incl. after a cold launch decoding saved bounds). Refresh via `TimeFilterManager.refreshRelativePresetIfNeeded()` on `scenePhase == .active` (`TenraApp`). Any `.task(id:)` keyed on `currentFilter.displayName` will NOT re-fire across a month boundary (name is unchanged) — key on the actual `dateRange()` start/end instead.
 
 ### Background work
 

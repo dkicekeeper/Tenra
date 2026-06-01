@@ -34,8 +34,10 @@ struct MiniSparkline: View {
     /// at a glance.
     private var tintColor: Color {
         switch series {
-        case .spending:
+        case .spending, .avgDailyExpenses:
             return AppColors.destructive
+        case .income:
+            return AppColors.success
         case .wealth:
             return AppColors.accent
         case .cashFlow:

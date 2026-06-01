@@ -102,3 +102,11 @@ critical > warning > neutral > positive
 - **`applyPrecomputed` never applies a missing granularity** — it keeps `isLoading=true` instead of flashing empty/stale cards.
 - **The summary card shows the CURRENT bucket.** For `.week` the current week is often empty (totals = 0) while the 52-week window total is non-zero — correct, not a bug.
 - **Deep-dive subcategory breakdown reads the LINKED subcategory** (`TransactionSubcategoryLink` via store indexes), passed as `subcategoryNameByTxId`. The add flow leaves `tx.subcategory` nil, so grouping by `tx.subcategory` dumps everything into "no subcategory".
+
+## Detail view & paging
+
+- **Adding an `InsightDetailData` case → update 3 exhaustive switches**: `InsightDetailView.chartSection`, `InsightDetailView.detailSection`, and `InsightsCardView.miniChart`. Miss one → build error (or silent `EmptyView`).
+- **`.categoryBreakdownPaged` renders full-screen in `InsightDetailView.body`** via `TabView(.page)`, NOT inside `detailSection` (the detailSection case is a dead `EmptyView`). A TabView must own the vertical space — nesting it in the body's `ScrollView` collapses it.
+- **Top-spending is emitted for every finite granularity even when the current period is empty** (empty hero "Нет расходов", still tappable). It only falls back to the legacy single `.categoryBreakdown` for `.allTime`. Paged breakdowns cover all `periodPoints` (current → first tx); `.week` is bounded by its rolling 52-week window.
+- **Per-generator ad-hoc tx filters MUST apply `LedgerPolicyRule.isRealized`.** `computePeriodDataPoints` and `PreAggregatedData.build` already exclude future-dated tx, but breakdown lists that re-filter `expenses` by date range (e.g. top-spending) did not — caused future tx in the breakdown vs. a realized % total. Keep them consistent.
+- **Period-trend detail charts/lists choose metric by `insight.type`** (avg-daily → avg daily expenses, monthOverMonth → expenses, incomeGrowth → income; else cash-flow). Pass the FULL `periodPoints` (not `[prev, current]`) so the chart/list span all time. See `periodListMetric` / `periodChartSeries` in `InsightDetailView`.

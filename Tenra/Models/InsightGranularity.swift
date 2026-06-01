@@ -310,6 +310,18 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Section header for a period-by-period breakdown list, matching the selected
+    /// granularity ("Weekly / Monthly / Quarterly / Yearly Breakdown").
+    nonisolated var breakdownTitle: String {
+        switch self {
+        case .week:    return String(localized: "insights.breakdown.week")
+        case .month:   return String(localized: "insights.breakdown.month")
+        case .quarter: return String(localized: "insights.breakdown.quarter")
+        case .year:    return String(localized: "insights.breakdown.year")
+        case .allTime: return String(localized: "insights.breakdown.month")
+        }
+    }
+
     /// Card title for the total recurring cost insight.
     nonisolated var totalRecurringTitle: String {
         switch self {

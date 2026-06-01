@@ -69,7 +69,8 @@ extension InsightsService {
                     ),
                     severity: severity,
                     category: .income,
-                    detailData: .periodTrend([prevPoint, currentPoint].compactMap { $0 })
+                    // Show the full granularity history (all periods), not just prev→current.
+                    detailData: .periodTrend(periodPoints)
                 ))
             }
         } else {

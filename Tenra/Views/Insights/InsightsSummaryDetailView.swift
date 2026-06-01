@@ -107,7 +107,7 @@ struct InsightsSummaryDetailView: View {
 
     private var periodListSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(String(localized: "insights.monthlyBreakdown"), style: .large)
+            SectionHeaderView(granularity.breakdownTitle, style: .large)
 
             ForEach(periodDataPoints.reversed()) { point in
                 PeriodBreakdownRow(

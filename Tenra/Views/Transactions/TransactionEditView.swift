@@ -90,7 +90,9 @@ struct TransactionEditView: View {
                         )
 
                         // 2. Account(s)
-                        if !_accounts.isEmpty {
+                        // Hidden for auto-posted interest accruals — the account is fixed
+                        // by the deposit that generated the transaction.
+                        if !_accounts.isEmpty, !coordinator.transaction.type.allowsOnlyAmountAndDescription {
                             if coordinator.transaction.type == .internalTransfer {
                                 AccountSelectorView(
                                     accounts: _accounts,
@@ -223,8 +225,10 @@ struct TransactionEditView: View {
                 }
                 .accessibilityLabel(String(localized: "button.close"))
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                recurringMenuButton
+            if coordinator.transaction.type.allowsRecurring {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    recurringMenuButton
+                }
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button {

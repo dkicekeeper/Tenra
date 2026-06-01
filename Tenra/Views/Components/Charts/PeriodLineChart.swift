@@ -21,6 +21,10 @@ import Charts
 enum PeriodLineChartSeries {
     /// Spending trend: `expenses` field, Y starts at 0, destructive color.
     case spending
+    /// Income trend: `income` field, Y starts at 0, success color.
+    case income
+    /// Average daily spending: `expenses / days-in-period`, Y starts at 0, destructive color.
+    case avgDailyExpenses
     /// Cash flow: `netFlow` field, ± Y, color tracks direction, zero reference line.
     case cashFlow
     /// Wealth: `cumulativeBalance` field (falls back to `netFlow`), ± Y, accent color.
@@ -31,6 +35,10 @@ enum PeriodLineChartSeries {
     func value(for point: PeriodDataPoint) -> Double {
         switch self {
         case .spending: return point.expenses
+        case .income:   return point.income
+        case .avgDailyExpenses:
+            let days = Swift.max(1, Calendar.current.dateComponents([.day], from: point.periodStart, to: point.periodEnd).day ?? 1)
+            return point.expenses / Double(days)
         case .cashFlow: return point.netFlow
         case .wealth:   return point.cumulativeBalance ?? point.netFlow
         }
@@ -40,7 +48,7 @@ enum PeriodLineChartSeries {
 
     func yDomain(values: [Double]) -> ClosedRange<Double> {
         switch self {
-        case .spending:
+        case .spending, .income, .avgDailyExpenses:
             return 0...Swift.max(values.max() ?? 0, 1)
         case .cashFlow, .wealth:
             let min = Swift.min(values.min() ?? 0, 0)
@@ -54,7 +62,8 @@ enum PeriodLineChartSeries {
     /// Per-point color used for PointMark (cashFlow colors each point individually).
     func pointColor(for value: Double) -> Color {
         switch self {
-        case .spending: return AppColors.destructive
+        case .spending, .avgDailyExpenses: return AppColors.destructive
+        case .income:   return AppColors.success
         case .cashFlow: return value >= 0 ? AppColors.success : AppColors.destructive
         case .wealth:   return AppColors.accent
         }
@@ -65,7 +74,8 @@ enum PeriodLineChartSeries {
     /// sign of each point along the curve. For other series returns a solid color.
     func lineStyle(yDomain: ClosedRange<Double>) -> AnyShapeStyle {
         switch self {
-        case .spending: return AnyShapeStyle(AppColors.destructive)
+        case .spending, .avgDailyExpenses: return AnyShapeStyle(AppColors.destructive)
+        case .income:   return AnyShapeStyle(AppColors.success)
         case .wealth:   return AnyShapeStyle(AppColors.accent)
         case .cashFlow:
             let total = yDomain.upperBound - yDomain.lowerBound
@@ -91,9 +101,14 @@ enum PeriodLineChartSeries {
     /// the gradient flips opacity above and below zero so each side reads as a tinted area.
     func areaStyle(yDomain: ClosedRange<Double>) -> AnyShapeStyle {
         switch self {
-        case .spending:
+        case .spending, .avgDailyExpenses:
             return AnyShapeStyle(LinearGradient(
                 colors: [AppColors.destructive.opacity(0.3), AppColors.destructive.opacity(0.05)],
+                startPoint: .top, endPoint: .bottom
+            ))
+        case .income:
+            return AnyShapeStyle(LinearGradient(
+                colors: [AppColors.success.opacity(0.3), AppColors.success.opacity(0.05)],
                 startPoint: .top, endPoint: .bottom
             ))
         case .wealth:
@@ -141,16 +156,16 @@ enum PeriodLineChartSeries {
     /// Whether to render a dashed zero reference line (RuleMark at y=0).
     var showZeroRuler: Bool {
         switch self {
-        case .spending, .wealth: return false
-        case .cashFlow:          return true
+        case .spending, .wealth, .income, .avgDailyExpenses: return false
+        case .cashFlow:                                      return true
         }
     }
 
     /// Line width in full (non-compact) mode.
     var fullLineWidth: CGFloat {
         switch self {
-        case .spending, .cashFlow: return 2
-        case .wealth:              return 2.5
+        case .spending, .cashFlow, .income, .avgDailyExpenses: return 2
+        case .wealth:                                          return 2.5
         }
     }
 }
@@ -200,7 +215,7 @@ struct PeriodLineChart: View {
     ///      and can be hoisted out of the per-frame body.
     private var fullYDomain: ClosedRange<Double> {
         switch series {
-        case .spending:
+        case .spending, .income, .avgDailyExpenses:
             return 0...max(cache.yMax, 1)
         case .cashFlow, .wealth:
             return min(cache.yMin, 0)...max(cache.yMax, 1)

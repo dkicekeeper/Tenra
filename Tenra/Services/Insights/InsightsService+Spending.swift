@@ -58,19 +58,142 @@ extension InsightsService {
             periodPoints.first(where: { $0.key == gran.currentPeriodKey })
         }
 
-        let topExpenses: [Transaction]
-        let topTotalExpenses: Double
+        // Realized-only filter: the breakdown must exclude future-dated (unrealized)
+        // transactions, matching the period totals (cp.expenses) which already apply
+        // LedgerPolicyRule.isRealized. Without this, a future-dated expense in the
+        // current bucket inflated the top-spending breakdown vs. its own % total.
+        let isRealizedTx: (Transaction) -> Bool = { tx in
+            let d = txDateMap?[tx.date] ?? DateFormatters.dateFormatter.date(from: tx.date)
+            return LedgerPolicyRule.isRealized(d)
+        }
 
-        if let cp = currentBucketPoint {
+        // Index categories by name once — O(M) build + O(1) lookup per breakdown item.
+        var categoryByName: [String: CustomCategory] = [:]
+        categoryByName.reserveCapacity(categories.count)
+        for cat in categories { categoryByName[cat.name] = cat }
+
+        // Builds a sorted (desc) per-category breakdown for a set of expense txns.
+        // `periodTotal` drives the percentage so it stays consistent with the period's
+        // realized expense total (cp.expenses).
+        let makeBreakdown: ([Transaction], Double) -> [CategoryBreakdownItem] = { txns, periodTotal in
+            let groups = Dictionary(grouping: txns, by: { $0.category })
+            return groups
+                .map { key, catTxns -> (key: String, total: Double, txns: [Transaction]) in
+                    let total = catTxns.reduce(0.0) { $0 + self.resolveAmount($1, baseCurrency: baseCurrency) }
+                    return (key: key, total: total, txns: catTxns)
+                }
+                .filter { !$0.key.isEmpty }
+                .sorted { $0.total > $1.total }
+                .map { item in
+                    let cat = categoryByName[item.key]
+                    let catColor = cat.map { Color(hex: $0.colorHex) } ?? AppColors.accent
+                    let subcategoryTotals = Dictionary(grouping: item.txns, by: { $0.subcategory ?? "" })
+                        .compactMap { subKey, subTxns -> SubcategoryBreakdownItem? in
+                            guard !subKey.isEmpty else { return nil }
+                            let subTotal = subTxns.reduce(0.0) { $0 + self.resolveAmount($1, baseCurrency: baseCurrency) }
+                            return SubcategoryBreakdownItem(
+                                id: subKey, name: subKey, amount: subTotal,
+                                percentage: item.total > 0 ? (subTotal / item.total) * 100 : 0
+                            )
+                        }
+                        .sorted { $0.amount > $1.amount }
+                    return CategoryBreakdownItem(
+                        id: item.key,
+                        categoryName: item.key,
+                        amount: item.total,
+                        percentage: periodTotal > 0 ? (item.total / periodTotal) * 100 : 0,
+                        color: catColor,
+                        iconSource: cat?.iconSource,
+                        subcategories: subcategoryTotals
+                    )
+                }
+        }
+
+        // Paged path: for a finite granularity, build one breakdown per period so the
+        // detail view can swipe across periods (current → back to the first tx). The
+        // card stays present even when the current period has no expenses (empty state).
+        if let gran = granularity, gran != .allTime, !periodPoints.isEmpty {
+            // Bucket realized expenses by period key in a single pass.
+            var expensesByKey: [String: [Transaction]] = [:]
+            for tx in expenses {
+                guard let d = (txDateMap?[tx.date] ?? DateFormatters.dateFormatter.date(from: tx.date)),
+                      LedgerPolicyRule.isRealized(d) else { continue }
+                expensesByKey[gran.groupingKey(for: d), default: []].append(tx)
+            }
+
+            let pages: [PeriodCategoryBreakdown] = periodPoints.map { pt in
+                PeriodCategoryBreakdown(
+                    id: pt.key,
+                    label: pt.label,
+                    totalExpenses: pt.expenses,
+                    items: makeBreakdown(expensesByKey[pt.key] ?? [], pt.expenses)
+                )
+            }
+
+            let currentKey = gran.currentPeriodKey
+            let currentIdx = periodPoints.firstIndex(where: { $0.key == currentKey }) ?? (periodPoints.count - 1)
+            let currentPage = pages.indices.contains(currentIdx) ? pages[currentIdx] : pages.last
+            let topItem = currentPage?.items.first
+
+            let metric: InsightMetric
+            let subtitle: String
+            let trend: InsightTrend?
+            let severity: InsightSeverity
+            if let top = topItem {
+                let pct = (currentPage?.totalExpenses ?? 0) > 0 ? (top.amount / currentPage!.totalExpenses) * 100 : 0
+                metric = InsightMetric(
+                    value: top.amount,
+                    formattedValue: Formatting.formatCurrencySmart(top.amount, currency: baseCurrency),
+                    currency: baseCurrency, unit: nil
+                )
+                subtitle = top.categoryName
+                trend = InsightTrend(
+                    direction: .down, changePercent: pct, changeAbsolute: nil,
+                    comparisonPeriod: String(format: "%.0f%% %@", pct, String(localized: "insights.ofTotal"))
+                )
+                severity = pct > 50 ? .warning : .neutral
+            } else {
+                // Current period has no realized expenses — keep the card, show empty hero.
+                metric = InsightMetric(
+                    value: 0,
+                    formattedValue: String(localized: "insights.noExpenses"),
+                    currency: baseCurrency, unit: nil
+                )
+                subtitle = currentPage?.label ?? gran.periodLabel(for: currentKey)
+                trend = nil
+                severity = .neutral
+            }
+
+            Self.logger.debug("🛒 [Insights] Spending (paged) — periods=\(pages.count), currentIdx=\(currentIdx), currentTop='\(topItem?.categoryName ?? "—", privacy: .public)'")
+            insights.append(Insight(
+                id: "top_spending",
+                type: .topSpendingCategory,
+                title: String(localized: "insights.topCategory"),
+                subtitle: subtitle,
+                metric: metric,
+                trend: trend,
+                severity: severity,
+                category: .spending,
+                detailData: .categoryBreakdownPaged(CategoryBreakdownPages(periods: pages, currentIndex: currentIdx))
+            ))
+        } else {
+            // Fallback / all-time path: a single non-paged breakdown for the current
+            // bucket (or the whole window for .allTime).
+            let topExpenses: [Transaction]
+            let topTotalExpenses: Double
+
+            if let cp = currentBucketPoint {
             _ = (cp.periodStart, cp.periodEnd) // topRange was unused
             // Use dateMap for O(1) date lookups — avoids O(N) DateFormatter re-parsing
             if let map = txDateMap {
                 topExpenses = expenses.filter { tx in
-                    guard let d = map[tx.date], d >= cp.periodStart, d < cp.periodEnd else { return false }
+                    guard let d = map[tx.date], d >= cp.periodStart, d < cp.periodEnd,
+                          LedgerPolicyRule.isRealized(d) else { return false }
                     return true
                 }
             } else {
                 topExpenses = filterService.filterByTimeRange(expenses, start: cp.periodStart, end: cp.periodEnd)
+                    .filter(isRealizedTx)
             }
             topTotalExpenses = cp.expenses
         } else if let gran = granularity, gran != .allTime {
@@ -82,16 +205,18 @@ extension InsightsService {
             let end = gran.periodEnd(for: key)
             if let map = txDateMap {
                 topExpenses = expenses.filter { tx in
-                    guard let d = map[tx.date], d >= start, d < end else { return false }
+                    guard let d = map[tx.date], d >= start, d < end,
+                          LedgerPolicyRule.isRealized(d) else { return false }
                     return true
                 }
             } else {
                 topExpenses = filterService.filterByTimeRange(expenses, start: start, end: end)
+                    .filter(isRealizedTx)
             }
             topTotalExpenses = topExpenses.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
         } else {
             _ = timeFilter.dateRange() // topRange was unused
-            topExpenses = expenses
+            topExpenses = expenses.filter(isRealizedTx)
             topTotalExpenses = periodSummary.totalExpenses
         }
 
@@ -132,15 +257,7 @@ extension InsightsService {
                 ? (top.total / topTotalExpenses) * 100
                 : 0
 
-            // Index categories by name once — replaces O(M²) scan (sortedCategories × categories)
-            // with O(M) build + O(1) lookup per breakdown item.
-            var categoryByName: [String: CustomCategory] = [:]
-            categoryByName.reserveCapacity(categories.count)
-            for cat in categories {
-                categoryByName[cat.name] = cat
-            }
-
-            // Show ALL categories in breakdown
+            // Show ALL categories in breakdown (categoryByName indexed above)
             let breakdownItems: [CategoryBreakdownItem] = sortedCategories.map { item in
                 let pct = topTotalExpenses > 0 ? (item.total / topTotalExpenses) * 100 : 0
                 let cat = categoryByName[item.key]
@@ -192,6 +309,7 @@ extension InsightsService {
                 category: .spending,
                 detailData: .categoryBreakdown(breakdownItems)
             ))
+            }
         }
 
         // 2. Period-over-period spending change.
@@ -229,7 +347,8 @@ extension InsightsService {
                     ),
                     severity: severity,
                     category: .spending,
-                    detailData: .periodTrend([prevPoint, currentPoint].compactMap { $0 })
+                    // Show the full granularity history (all periods), not just prev→current.
+                    detailData: .periodTrend(periodPoints)
                 ))
             }
         } else {
@@ -322,7 +441,8 @@ extension InsightsService {
                 ) : nil,
                 severity: .neutral,
                 category: .spending,
-                detailData: .periodTrend([prevPoint, currentPoint].compactMap { $0 })
+                // Show the full granularity history (all periods), not just prev→current.
+                detailData: .periodTrend(periodPoints)
             ))
         } else {
             let calendar = Calendar.current

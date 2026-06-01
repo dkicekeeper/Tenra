@@ -835,6 +835,13 @@
 "insights.cashFlowTrend" = "Cash Flow Trend";
 "insights.breakdown" = "Breakdown";
 "insights.monthlyBreakdown" = "Monthly Breakdown";
+"insights.breakdown.week" = "Weekly Breakdown";
+"insights.breakdown.month" = "Monthly Breakdown";
+"insights.breakdown.quarter" = "Quarterly Breakdown";
+"insights.breakdown.year" = "Yearly Breakdown";
+"insights.noExpenses" = "No expenses";
+"insights.noExpensesForPeriod" = "No expenses this period";
+"insights.swipeHint" = "Swipe to view other periods";
 "insights.other" = "Other";
 "insights.noSubcategory" = "No subcategory";
 "insights.spendingTrend" = "Spending Trend";

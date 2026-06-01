@@ -228,12 +228,33 @@ enum InsightCategory: String, CaseIterable, Hashable {
 
 enum InsightDetailData: Hashable {
     case categoryBreakdown([CategoryBreakdownItem])
+    case categoryBreakdownPaged(CategoryBreakdownPages)  // One breakdown per period, swipeable
     case periodTrend([PeriodDataPoint])         // Granularity-aware trend
     case budgetProgressList([BudgetInsightItem])
     case recurringList([RecurringInsightItem])
     case accountComparison([AccountInsightItem])
     case wealthBreakdown([AccountInsightItem])   // Per-account balances
     case formulaBreakdown(InsightFormulaModel)   // Header + hero + formula rows + recommendation
+}
+
+// MARK: - Paged Category Breakdown
+
+/// A category breakdown for a single period (week / month / quarter / year).
+/// `items` is empty when the period had no realized expenses — the detail view
+/// renders an empty state for that page so the user can keep swiping.
+struct PeriodCategoryBreakdown: Identifiable, Hashable {
+    let id: String           // period grouping key (e.g. "2026-06")
+    let label: String        // human-readable period label (e.g. "June 2026")
+    let totalExpenses: Double
+    let items: [CategoryBreakdownItem]
+}
+
+/// Ordered (chronological) per-period category breakdowns plus the index of the
+/// current period, so the detail pager opens on "today" and swipes back to the
+/// first transaction's period.
+struct CategoryBreakdownPages: Hashable {
+    let periods: [PeriodCategoryBreakdown]
+    let currentIndex: Int
 }
 
 // MARK: - Category Breakdown

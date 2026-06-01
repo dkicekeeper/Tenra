@@ -11,6 +11,18 @@
 import SwiftUI
 import os
 
+/// Shared icon styling for analytics breakdown lists, so categories, subscriptions and
+/// accounts all follow the app's standard: circle container, background, consistent size.
+/// (Mirrors `IconView(source:size:)` auto-styling; categories keep their colour.)
+enum InsightIconStyle {
+    static let listSize = AppIconSize.xl
+
+    /// Category icon: coloured glyph on a faint coloured circle.
+    static func category(_ color: Color) -> IconStyle {
+        .circle(size: listSize, tint: .monochrome(color), backgroundColor: color.opacity(0.15))
+    }
+}
+
 struct InsightDetailView<CategoryDestination: View>: View {
     let insight: Insight
     let currency: String
@@ -32,21 +44,35 @@ struct InsightDetailView<CategoryDestination: View>: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: AppSpacing.xl) {
-                // Header — hidden for formula-breakdown detail since the card already
-                // carries hero + label.
-                if !isFormulaBreakdown {
-                    headerSection
+        Group {
+            if case .categoryBreakdownPaged(let pages) = insight.detailData {
+                // Paged breakdown owns the full screen (TabView page-swipe) — must NOT be
+                // nested in a ScrollView, and its horizontal swipe replaces the chart/list
+                // sections entirely.
+                PagedCategoryBreakdownView(
+                    pages: pages.periods,
+                    currentIndex: pages.currentIndex,
+                    currency: currency,
+                    onCategoryTap: _onCategoryTap
+                )
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AppSpacing.xl) {
+                        // Header — hidden for formula-breakdown detail (the card already
+                        // carries hero + label).
+                        if !isFormulaBreakdown {
+                            headerSection
+                        }
+
+                        // Full-size chart
+                        chartSection
+
+                        // Detail breakdown
+                        detailSection
+                    }
+                    .padding(.vertical, AppSpacing.md)
                 }
-
-                // Full-size chart
-                chartSection
-
-                // Detail breakdown
-                detailSection
             }
-            .padding(.vertical, AppSpacing.md)
         }
         .navigationTitle(insight.title)
         .navigationBarTitleDisplayMode(.inline)
@@ -58,6 +84,27 @@ struct InsightDetailView<CategoryDestination: View>: View {
     private var isFormulaBreakdown: Bool {
         if case .formulaBreakdown = insight.detailData { return true }
         return false
+    }
+
+    /// Which single metric a period-trend breakdown list should surface, derived from
+    /// the insight type. Cash-flow style insights keep the income/expenses/net triple.
+    private var periodListMetric: PeriodListMetric {
+        switch insight.type {
+        case .averageDailySpending: return .avgDailyExpenses
+        case .monthOverMonthChange: return .expenses
+        case .incomeGrowth:         return .income
+        default:                    return .cashFlow
+        }
+    }
+
+    /// Which series the period-trend chart plots, matching the insight metric.
+    private var periodChartSeries: PeriodLineChartSeries {
+        switch insight.type {
+        case .averageDailySpending: return .avgDailyExpenses
+        case .monthOverMonthChange: return .spending
+        case .incomeGrowth:         return .income
+        default:                    return insight.category == .wealth ? .wealth : .cashFlow
+        }
     }
 
     // MARK: - Header
@@ -100,18 +147,23 @@ struct InsightDetailView<CategoryDestination: View>: View {
         case .categoryBreakdown(let items):
             DonutChart(slices: DonutSlice.from(items))
                 .screenPadding()
+        case .categoryBreakdownPaged:
+            // Chart + list are rendered together per page in detailSection.
+            EmptyView()
         case .periodTrend(let points):
             // Scrollable charts (line/bar) bleed edge-to-edge — no horizontal
             // padding here, otherwise the visible plot area is offset from the
             // screen left edge and the first datapoint appears clipped.
             let gran = points.first?.granularity ?? .month
             if insight.type == .bestMonth || insight.type == .worstMonth
-                || insight.type == .incomeGrowth || insight.type == .incomeVsExpenseRatio {
+                || insight.type == .incomeVsExpenseRatio {
+                // Income-vs-expense comparison charts keep the dual-series switcher.
                 PeriodChartSwitcher(dataPoints: points, currency: currency, granularity: gran)
             } else {
+                // Single-series line chart plotting the metric that matches the insight.
                 PeriodLineChart(
                     dataPoints: points,
-                    series: insight.category == .wealth ? .wealth : .cashFlow,
+                    series: periodChartSeries,
                     granularity: gran,
                     currency: currency
                 )
@@ -150,12 +202,16 @@ struct InsightDetailView<CategoryDestination: View>: View {
         switch insight.detailData {
         case .categoryBreakdown(let items):
             categoryDetailList(items)
+        case .categoryBreakdownPaged:
+            // Rendered full-screen at body level (TabView), not inside the ScrollView.
+            EmptyView()
         case .recurringList(let items):
             recurringDetailList(items)
         case .budgetProgressList:
             EmptyView()
         case .periodTrend(let points):
-            periodBreakdownList(points.map { BreakdownPoint(label: $0.label, income: $0.income, expenses: $0.expenses, netFlow: $0.netFlow) })
+            let gran = points.first?.granularity ?? .month
+            periodBreakdownList(points, granularity: gran, metric: periodListMetric)
         case .wealthBreakdown(let accounts):
             accountDetailList(accounts)
         case .accountComparison(let accounts):
@@ -165,14 +221,6 @@ struct InsightDetailView<CategoryDestination: View>: View {
         case nil:
             EmptyView()
         }
-    }
-
-    /// Unified point model for breakdown list — eliminates monthlyDetailList/periodDetailList duplication.
-    private struct BreakdownPoint {
-        let label: String
-        let income: Double
-        let expenses: Double
-        let netFlow: Double
     }
 
     private func categoryDetailList(_ items: [CategoryBreakdownItem]) -> some View {
@@ -189,12 +237,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
     @ViewBuilder
     private func categoryRow(_ item: CategoryBreakdownItem) -> some View {
         let rowContent = HStack(spacing: AppSpacing.md) {
-            if let iconSource = item.iconSource {
-                IconView(
-                    source: iconSource,
-                    style: .circle(size: AppIconSize.xl, tint: .monochrome(item.color))
-                )
-            }
+            IconView(source: item.iconSource, style: InsightIconStyle.category(item.color))
 
             VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                 Text(item.categoryName)
@@ -244,13 +287,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
             ForEach(items) { item in
                 HStack(spacing: AppSpacing.md) {
-                    if let iconSource = item.iconSource {
-                        IconView(source: iconSource, size: AppIconSize.lg)
-                    } else {
-                        Image(systemName: "repeat.circle")
-                            .font(.system(size: AppIconSize.md))
-                            .foregroundStyle(AppColors.accent)
-                    }
+                    IconView(source: item.iconSource, size: InsightIconStyle.listSize)
 
                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                         Text(item.name)
@@ -283,17 +320,21 @@ struct InsightDetailView<CategoryDestination: View>: View {
     }
 
     // P10: Single unified function replacing monthlyDetailList + periodDetailList.
-    private func periodBreakdownList(_ points: [BreakdownPoint]) -> some View {
+    // `metric` selects which value each row surfaces (cash-flow triple vs. a single
+    // metric matching the insight: expenses, income, or average daily expenses).
+    private func periodBreakdownList(_ points: [PeriodDataPoint], granularity: InsightGranularity, metric: PeriodListMetric) -> some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(String(localized: "insights.monthlyBreakdown"), style: .large)
+            SectionHeaderView(granularity.breakdownTitle, style: .large)
 
-            ForEach(points.reversed(), id: \.label) { point in
+            ForEach(points.reversed()) { point in
                 PeriodBreakdownRow(
                     label: point.label,
                     income: point.income,
                     expenses: point.expenses,
                     netFlow: point.netFlow,
-                    currency: currency
+                    currency: currency,
+                    singleValue: metric.value(for: point),
+                    singleColor: metric.color
                 )
             }
         }
@@ -305,13 +346,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
             ForEach(accounts) { account in
                 HStack(spacing: AppSpacing.md) {
-                    if let iconSource = account.iconSource {
-                        IconView(source: iconSource, size: AppIconSize.lg)
-                    } else {
-                        Image(systemName: "building.columns")
-                            .font(.system(size: AppIconSize.md))
-                            .foregroundStyle(AppColors.accent)
-                    }
+                    IconView(source: account.iconSource, size: InsightIconStyle.listSize)
 
                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                         Text(account.accountName)
@@ -345,13 +380,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
             ForEach(accounts) { account in
                 HStack(spacing: AppSpacing.md) {
-                    if let iconSource = account.iconSource {
-                        IconView(source: iconSource, size: AppIconSize.lg)
-                    } else {
-                        Image(systemName: "building.columns")
-                            .font(.system(size: AppIconSize.md))
-                            .foregroundStyle(AppColors.textSecondary)
-                    }
+                    IconView(source: account.iconSource, size: InsightIconStyle.listSize)
 
                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                         Text(account.accountName)
@@ -390,6 +419,184 @@ extension InsightDetailView where CategoryDestination == Never {
         self.insight = insight
         self.currency = currency
         self._onCategoryTap = nil
+    }
+}
+
+// MARK: - Paged Category Breakdown
+
+/// Swipeable per-period category breakdown. Opens on the current period and pages back
+/// to the first transaction's period. Empty periods show an empty state so the user can
+/// keep swiping. Generic over the drill-down destination (mirrors InsightDetailView).
+struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
+    let pages: [PeriodCategoryBreakdown]
+    let currency: String
+    let onCategoryTap: ((CategoryBreakdownItem) -> CategoryDestination)?
+
+    @State private var index: Int
+
+    init(
+        pages: [PeriodCategoryBreakdown],
+        currentIndex: Int,
+        currency: String,
+        onCategoryTap: ((CategoryBreakdownItem) -> CategoryDestination)?
+    ) {
+        self.pages = pages
+        self.currency = currency
+        self.onCategoryTap = onCategoryTap
+        let clamped = min(max(0, currentIndex), max(0, pages.count - 1))
+        _index = State(initialValue: clamped)
+    }
+
+    private var page: PeriodCategoryBreakdown? {
+        pages.indices.contains(index) ? pages[index] : nil
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            pagerHeader
+                .padding(.vertical, AppSpacing.sm)
+
+            // TabView page style captures horizontal swipes across the whole content area,
+            // so paging the period no longer fights the navigation's edge swipe-to-go-back.
+            TabView(selection: $index) {
+                ForEach(pages.indices, id: \.self) { i in
+                    pageContent(pages[i])
+                        .tag(i)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .animation(.easeInOut(duration: 0.25), value: index)
+        }
+    }
+
+    @ViewBuilder
+    private func pageContent(_ page: PeriodCategoryBreakdown) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppSpacing.lg) {
+                if page.items.isEmpty {
+                    emptyState
+                } else {
+                    DonutChart(slices: DonutSlice.from(page.items))
+                        .screenPadding()
+                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                        ForEach(page.items) { categoryRow($0) }
+                    }
+                    .screenPadding()
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, AppSpacing.md)
+        }
+    }
+
+    private func step(_ delta: Int) {
+        let next = index + delta
+        guard pages.indices.contains(next) else { return }
+        withAnimation(.easeInOut(duration: 0.25)) { index = next }
+    }
+
+    private var pagerHeader: some View {
+        HStack(spacing: AppSpacing.md) {
+            Button { step(-1) } label: {
+                Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(index > 0 ? AppColors.accent : AppColors.textTertiary)
+            .disabled(index == 0)
+
+            Spacer()
+
+            VStack(spacing: AppSpacing.xxs) {
+                Text(page?.label ?? "")
+                    .font(AppTypography.h3)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(AppColors.textPrimary)
+                if let total = page?.totalExpenses, total > 0 {
+                    FormattedAmountText(
+                        amount: total,
+                        currency: currency,
+                        fontSize: AppTypography.bodySmall,
+                        fontWeight: .regular,
+                        color: AppColors.textSecondary
+                    )
+                }
+            }
+
+            Spacer()
+
+            Button { step(1) } label: {
+                Image(systemName: "chevron.right")
+                    .font(.body.weight(.semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(index < pages.count - 1 ? AppColors.accent : AppColors.textTertiary)
+            .disabled(index >= pages.count - 1)
+        }
+        .screenPadding()
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: AppSpacing.md) {
+            Image(systemName: "tray")
+                .font(.system(size: AppIconSize.xl))
+                .foregroundStyle(AppColors.textTertiary)
+            Text(String(localized: "insights.noExpensesForPeriod"))
+                .font(AppTypography.body)
+                .foregroundStyle(AppColors.textSecondary)
+            Text(String(localized: "insights.swipeHint"))
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColors.textTertiary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, AppSpacing.xxl)
+        .screenPadding()
+    }
+
+    @ViewBuilder
+    private func categoryRow(_ item: CategoryBreakdownItem) -> some View {
+        let rowContent = HStack(spacing: AppSpacing.md) {
+            IconView(source: item.iconSource, style: InsightIconStyle.category(item.color))
+
+            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                Text(item.categoryName)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColors.textPrimary)
+                if !item.subcategories.isEmpty {
+                    Text(item.subcategories.prefix(3).map(\.name).joined(separator: ", "))
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColors.textTertiary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            HStack(spacing: AppSpacing.xs) {
+                VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
+                    FormattedAmountText(amount: item.amount, currency: currency, color: AppColors.textPrimary)
+                    Text(String(format: "%.1f%%", item.percentage))
+                        .font(AppTypography.bodySmall)
+                        .foregroundStyle(AppColors.textSecondary)
+                }
+                if onCategoryTap != nil {
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppColors.textTertiary)
+                }
+            }
+        }
+        .padding(.vertical, AppSpacing.sm)
+
+        if let tapHandler = onCategoryTap {
+            NavigationLink(destination: tapHandler(item)) {
+                rowContent.contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        } else {
+            rowContent
+        }
     }
 }
 

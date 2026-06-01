@@ -18,12 +18,7 @@ struct BudgetProgressRow: View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             // Icon + name + percentage
             HStack {
-                if let iconSource = item.iconSource {
-                    IconView(
-                        source: iconSource,
-                        style: .circle(size: AppIconSize.lg, tint: .monochrome(item.color))
-                    )
-                }
+                IconView(source: item.iconSource, style: InsightIconStyle.category(item.color))
                 Text(item.categoryName)
                     .font(AppTypography.body)
                     .fontWeight(.semibold)

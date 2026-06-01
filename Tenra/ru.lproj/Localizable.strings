@@ -835,6 +835,13 @@
 "insights.cashFlowTrend" = "Тренд денежных потоков";
 "insights.breakdown" = "Детализация";
 "insights.monthlyBreakdown" = "По месяцам";
+"insights.breakdown.week" = "По неделям";
+"insights.breakdown.month" = "По месяцам";
+"insights.breakdown.quarter" = "По кварталам";
+"insights.breakdown.year" = "По годам";
+"insights.noExpenses" = "Нет расходов";
+"insights.noExpensesForPeriod" = "Нет расходов за этот период";
+"insights.swipeHint" = "Свайпните, чтобы посмотреть другие периоды";
 "insights.other" = "Другое";
 "insights.noSubcategory" = "Без подкатегории";
 "insights.spendingTrend" = "Тренд расходов";

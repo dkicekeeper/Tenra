@@ -26,6 +26,14 @@ Scrollable charts must be **bleed-to-edge** — without `.screenPadding()` on pa
 
 If `MagnifyGesture` is unavoidable, attach `.simultaneousGesture(...)` so native chart gestures (selection) aren't intercepted.
 
+### Horizontal paging vs swipe-back
+
+⚠️ **For swipeable horizontal paging inside a pushed detail, use `TabView(.page(indexDisplayMode:))`, NOT a custom horizontal `DragGesture`.** A `DragGesture` fights the NavigationStack edge swipe-to-go-back (the user gets inconsistent paging vs. dismiss). TabView paging consumes content-area horizontal swipes; edge-back still works from the screen edge. Precedent: `PagedCategoryBreakdownView` in `InsightDetailView.swift`.
+
+### Adding a `PeriodLineChartSeries` case
+
+Adding a case touches ~9 switches: `value`/`yDomain`/`pointColor`/`lineStyle`/`areaStyle`/`showZeroRuler`/`fullLineWidth` in the enum, `fullYDomain` in `PeriodLineChart`, and `tintColor` in `MiniSparkline`. The compiler flags all of them (exhaustive switches) — none are silent.
+
 ### Custom tap selection blocks scroll
 
 ⚠️ **Custom tap selection blocks scroll on `chartScrollableAxes` charts**: `chartOverlay { Color.clear.contentShape(...) ... }` absorbs touches at SwiftUI hit-testing layer, before gesture arbitration — `simultaneousGesture` / `onTapGesture(coordinateSpace:)` don't help.

@@ -101,6 +101,11 @@ struct InsightsCardView<BottomChart: View>: View {
             // mini-card dominated frame time when LazyVStack materialised a
             // section. See MiniDonut.swift header for the rationale.
             MiniDonut(slices: DonutSlice.from(items))
+        case .categoryBreakdownPaged(let pages):
+            // Mini donut reflects the current period (the page the detail view opens on).
+            let current = pages.periods.indices.contains(pages.currentIndex)
+                ? pages.periods[pages.currentIndex].items : []
+            MiniDonut(slices: DonutSlice.from(current))
         case .budgetProgressList(let items):
             if let first = items.first {
                 budgetProgressBar(first)
@@ -111,10 +116,11 @@ struct InsightsCardView<BottomChart: View>: View {
             EmptyView()
         case .periodTrend(let points):
             // Canvas-based replacement for `PeriodLineChart(mode: .compact)`.
-            // See MiniSparkline.swift header for the rationale.
+            // Series matches the insight metric so the sparkline tracks the same
+            // data the detail chart and list show. See MiniSparkline.swift header.
             MiniSparkline(
                 dataPoints: points,
-                series: insight.category == .wealth ? .wealth : .cashFlow
+                series: miniSparklineSeries
             )
         case .wealthBreakdown:
             // No mini chart for wealth breakdown (account list)
@@ -124,6 +130,16 @@ struct InsightsCardView<BottomChart: View>: View {
             EmptyView()
         case nil:
             EmptyView()
+        }
+    }
+
+    /// Sparkline series matching the insight metric (mirrors InsightDetailView).
+    private var miniSparklineSeries: PeriodLineChartSeries {
+        switch insight.type {
+        case .averageDailySpending: return .avgDailyExpenses
+        case .monthOverMonthChange: return .spending
+        case .incomeGrowth:         return .income
+        default:                    return insight.category == .wealth ? .wealth : .cashFlow
         }
     }
 

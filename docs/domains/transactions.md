@@ -67,6 +67,10 @@ Task { @MainActor in rebuildSections() }
 
 ⚠️ **`TransactionStore.update()` blocks removing `recurringSeriesId`** — throws `cannotRemoveRecurring`. To unlink (e.g. bulk unlink from subscription), use `apply(.updated(old: tx, new: updatedTx))` directly. See `unlinkAllTransactions(fromSeriesId:)` in `TransactionStore+Recurring.swift`.
 
+## Edit-Screen Field Gating by Type
+
+`TransactionEditView` field visibility is driven by `TransactionType` computed properties (in `Models/Transaction.swift`), NOT scattered `if type ==` in the view: `allowsCategoryPicker`, `allowsSubcategoryPicker`, `allowsRecurring`, `allowsOnlyAmountAndDescription`. To restrict fields for a type, extend the relevant property. System-generated `.depositInterestAccrual` is amount+description-only (fixed account+category); `allowsRecurring` is false for all loan/deposit-op types (the recurring engine only replays income/expense).
+
 ## Per-Type Icon Override in `TransactionCard`
 
 `TransactionCard.subscriptionIconSource` (despite the name) is the **generic icon override channel** consumed by `TransactionIconView`. Precedence inside `TransactionCard.body`:

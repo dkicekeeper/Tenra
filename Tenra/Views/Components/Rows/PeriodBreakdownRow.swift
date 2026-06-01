@@ -8,10 +8,40 @@
 
 import SwiftUI
 
+/// Selects which value a period breakdown row surfaces. `.cashFlow` keeps the
+/// income/expenses/net triple; the others show one metric matching the insight.
+enum PeriodListMetric {
+    case cashFlow
+    case expenses
+    case income
+    case avgDailyExpenses
+
+    /// Single value to display, or nil for the cash-flow triple.
+    func value(for point: PeriodDataPoint) -> Double? {
+        switch self {
+        case .cashFlow: return nil
+        case .expenses: return point.expenses
+        case .income:   return point.income
+        case .avgDailyExpenses:
+            let days = max(1, Calendar.current.dateComponents([.day], from: point.periodStart, to: point.periodEnd).day ?? 1)
+            return point.expenses / Double(days)
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .income: return AppColors.success
+        default:      return AppColors.textPrimary
+        }
+    }
+}
+
 /// One row in a period breakdown list (week / month / quarter / year).
-/// Shows label on the left, netFlow + income/expenses on the right.
+/// Shows label on the left; on the right either the netFlow + income/expenses triple,
+/// or a single value when `singleValue` is provided (metric-specific lists).
 /// - Parameter showDivider: adds a `Divider` at the bottom (InsightsSummaryDetailView)
 /// - Parameter labelMinWidth: optional min width for the label column (InsightsSummaryDetailView)
+/// - Parameter singleValue: when non-nil, render only this value instead of the triple
 struct PeriodBreakdownRow: View {
     let label: String
     let income: Double
@@ -20,6 +50,8 @@ struct PeriodBreakdownRow: View {
     let currency: String
     var showDivider: Bool = false
     var labelMinWidth: CGFloat? = nil
+    var singleValue: Double? = nil
+    var singleColor: Color = AppColors.textPrimary
 
     var body: some View {
         VStack(spacing: 0) {
@@ -30,31 +62,41 @@ struct PeriodBreakdownRow: View {
 
                 Spacer()
 
-                VStack(alignment: .trailing, spacing: AppSpacing.xs) {
+                if let singleValue {
                     FormattedAmountText(
-                        amount: netFlow,
+                        amount: singleValue,
                         currency: currency,
                         fontSize: AppTypography.body,
                         fontWeight: .semibold,
-                        color: netFlow >= 0 ? AppColors.textPrimary : AppColors.destructive
+                        color: singleColor
                     )
-                    HStack(spacing: AppSpacing.md) {
+                } else {
+                    VStack(alignment: .trailing, spacing: AppSpacing.xs) {
                         FormattedAmountText(
-                            amount: income,
+                            amount: netFlow,
                             currency: currency,
-                            prefix: "+",
-                            fontSize: AppTypography.caption,
-                            fontWeight: .regular,
-                            color: AppColors.success
+                            fontSize: AppTypography.body,
+                            fontWeight: .semibold,
+                            color: netFlow >= 0 ? AppColors.textPrimary : AppColors.destructive
                         )
-                        FormattedAmountText(
-                            amount: expenses,
-                            currency: currency,
-                            prefix: "-",
-                            fontSize: AppTypography.caption,
-                            fontWeight: .regular,
-                            color: AppColors.destructive
-                        )
+                        HStack(spacing: AppSpacing.md) {
+                            FormattedAmountText(
+                                amount: income,
+                                currency: currency,
+                                prefix: "+",
+                                fontSize: AppTypography.caption,
+                                fontWeight: .regular,
+                                color: AppColors.success
+                            )
+                            FormattedAmountText(
+                                amount: expenses,
+                                currency: currency,
+                                prefix: "-",
+                                fontSize: AppTypography.caption,
+                                fontWeight: .regular,
+                                color: AppColors.destructive
+                            )
+                        }
                     }
                 }
             }

@@ -36,19 +36,41 @@ enum TransactionType: String, Codable, Sendable {
         }
     }
 
+    /// Auto-posted interest accruals are system-generated: the account and category are
+    /// fixed by `DepositInterestService`, and a recurring series makes no sense for them.
+    /// The edit screen exposes ONLY amount + description for this type.
+    nonisolated var allowsOnlyAmountAndDescription: Bool {
+        self == .depositInterestAccrual
+    }
+
+    /// Whether a "make recurring" option is meaningful for this type. The recurring
+    /// engine replays plain income/expense occurrences, so loan and deposit operations
+    /// — whose source/target account and linkage are domain-fixed — cannot be voiced as
+    /// a series and the option is hidden for them (interest accruals included, since
+    /// they're amount+description-only anyway).
+    nonisolated var allowsRecurring: Bool {
+        switch self {
+        case .income, .expense, .internalTransfer:
+            return true
+        case .depositTopUp, .depositWithdrawal, .depositInterestAccrual,
+             .loanPayment, .loanEarlyRepayment:
+            return false
+        }
+    }
+
     /// Whether the transaction edit screen should expose the category picker for this
     /// type. Internal transfers have no category at all; everything else is
     /// categorisable so users can tag loan/deposit payments alongside regular spend
     /// (mirrors how subscriptions reuse expense categories).
     nonisolated var allowsCategoryPicker: Bool {
-        self != .internalTransfer
+        self != .internalTransfer && !allowsOnlyAmountAndDescription
     }
 
     /// Whether subcategory tagging is meaningful for this transaction type.
     /// Loan / deposit ops still benefit from tags (e.g. specific loan id, deposit
     /// purpose) — only `.internalTransfer` skips subcategories entirely.
     nonisolated var allowsSubcategoryPicker: Bool {
-        self != .internalTransfer
+        self != .internalTransfer && !allowsOnlyAmountAndDescription
     }
 
     /// Transaction types that should pull from the `.expense` category catalog when

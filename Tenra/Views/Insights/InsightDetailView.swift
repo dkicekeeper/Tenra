@@ -11,24 +11,14 @@
 import SwiftUI
 import os
 
-/// Shared icon styling for analytics breakdown lists, so categories, subscriptions and
-/// accounts all follow the app's standard: circle container, background, consistent size.
-/// (Mirrors `IconView(source:size:)` auto-styling; categories keep their colour.)
-enum InsightIconStyle {
-    static let listSize = AppIconSize.xl
-
-    /// Category icon: coloured glyph on a faint coloured circle.
-    static func category(_ color: Color) -> IconStyle {
-        .circle(size: listSize, tint: .monochrome(color), backgroundColor: color.opacity(0.15))
-    }
-}
-
 struct InsightDetailView<CategoryDestination: View>: View {
     let insight: Insight
     let currency: String
     /// P9: SRP — pass only what's needed for drill-down, not the entire ViewModel.
     /// Nil = no drill-down chevron shown. Generic over CategoryDestination avoids AnyView type erasure.
-    private let _onCategoryTap: ((CategoryBreakdownItem) -> CategoryDestination)?
+    /// The `String?` is the period key of the breakdown page the user tapped from
+    /// (`nil` for non-paged breakdowns) so the destination dives into the right month.
+    private let _onCategoryTap: ((CategoryBreakdownItem, String?) -> CategoryDestination)?
 
     private var logger: Logger { Logger(subsystem: "Tenra", category: "InsightDetailView") }
 
@@ -36,7 +26,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
     init(
         insight: Insight,
         currency: String,
-        @ViewBuilder onCategoryTap: @escaping (CategoryBreakdownItem) -> CategoryDestination
+        @ViewBuilder onCategoryTap: @escaping (CategoryBreakdownItem, String?) -> CategoryDestination
     ) {
         self.insight = insight
         self.currency = currency
@@ -237,7 +227,14 @@ struct InsightDetailView<CategoryDestination: View>: View {
     @ViewBuilder
     private func categoryRow(_ item: CategoryBreakdownItem) -> some View {
         let rowContent = HStack(spacing: AppSpacing.md) {
-            IconView(source: item.iconSource, style: InsightIconStyle.category(item.color))
+            IconView(
+                source: item.iconSource,
+                style: .circle(
+                    size: AppIconSize.xxl,
+                    tint: .monochrome(item.color),
+                    backgroundColor: item.color.opacity(0.15)
+                )
+            )
 
             VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                 Text(item.categoryName)
@@ -270,9 +267,10 @@ struct InsightDetailView<CategoryDestination: View>: View {
         }
         .padding(.vertical, AppSpacing.sm)
 
-        // P9: drill-down destination — generic CategoryDestination, no AnyView type erasure
+        // P9: drill-down destination — generic CategoryDestination, no AnyView type erasure.
+        // Non-paged breakdown → nil period key (current/all-time bucket).
         if let tapHandler = _onCategoryTap {
-            NavigationLink(destination: tapHandler(item)) {
+            NavigationLink(destination: tapHandler(item, nil)) {
                 rowContent.contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -287,7 +285,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
             ForEach(items) { item in
                 HStack(spacing: AppSpacing.md) {
-                    IconView(source: item.iconSource, size: InsightIconStyle.listSize)
+                    IconView(source: item.iconSource, size: AppIconSize.xxl)
 
                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                         Text(item.name)
@@ -346,7 +344,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
             ForEach(accounts) { account in
                 HStack(spacing: AppSpacing.md) {
-                    IconView(source: account.iconSource, size: InsightIconStyle.listSize)
+                    IconView(source: account.iconSource, size: AppIconSize.xxl)
 
                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                         Text(account.accountName)
@@ -380,7 +378,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
             ForEach(accounts) { account in
                 HStack(spacing: AppSpacing.md) {
-                    IconView(source: account.iconSource, size: InsightIconStyle.listSize)
+                    IconView(source: account.iconSource, size: AppIconSize.xxl)
 
                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                         Text(account.accountName)
@@ -430,7 +428,9 @@ extension InsightDetailView where CategoryDestination == Never {
 struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
     let pages: [PeriodCategoryBreakdown]
     let currency: String
-    let onCategoryTap: ((CategoryBreakdownItem) -> CategoryDestination)?
+    /// Second arg is the period key of the page tapped from, so the drill-down dives
+    /// into the period the user is viewing rather than the current one.
+    let onCategoryTap: ((CategoryBreakdownItem, String?) -> CategoryDestination)?
 
     @State private var index: Int
 
@@ -438,7 +438,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
         pages: [PeriodCategoryBreakdown],
         currentIndex: Int,
         currency: String,
-        onCategoryTap: ((CategoryBreakdownItem) -> CategoryDestination)?
+        onCategoryTap: ((CategoryBreakdownItem, String?) -> CategoryDestination)?
     ) {
         self.pages = pages
         self.currency = currency
@@ -479,7 +479,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
                     DonutChart(slices: DonutSlice.from(page.items))
                         .screenPadding()
                     VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        ForEach(page.items) { categoryRow($0) }
+                        ForEach(page.items) { categoryRow($0, periodKey: page.id) }
                     }
                     .screenPadding()
                 }
@@ -555,9 +555,16 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
     }
 
     @ViewBuilder
-    private func categoryRow(_ item: CategoryBreakdownItem) -> some View {
+    private func categoryRow(_ item: CategoryBreakdownItem, periodKey: String) -> some View {
         let rowContent = HStack(spacing: AppSpacing.md) {
-            IconView(source: item.iconSource, style: InsightIconStyle.category(item.color))
+            IconView(
+                source: item.iconSource,
+                style: .circle(
+                    size: AppIconSize.xxl,
+                    tint: .monochrome(item.color),
+                    backgroundColor: item.color.opacity(0.15)
+                )
+            )
 
             VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                 Text(item.categoryName)
@@ -590,7 +597,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
         .padding(.vertical, AppSpacing.sm)
 
         if let tapHandler = onCategoryTap {
-            NavigationLink(destination: tapHandler(item)) {
+            NavigationLink(destination: tapHandler(item, periodKey)) {
                 rowContent.contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -646,8 +653,8 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
 
 #Preview("Category — Drill Down") {
     NavigationStack {
-        InsightDetailView(insight: .mockTopSpending(), currency: "KZT") { item in
-            Text("Deep dive: \(item.categoryName)")
+        InsightDetailView(insight: .mockTopSpending(), currency: "KZT") { item, periodKey in
+            Text("Deep dive: \(item.categoryName) [\(periodKey ?? "current")]")
                 .padding()
         }
     }

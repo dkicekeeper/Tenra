@@ -217,6 +217,7 @@ These cause silent data corruption or crashes — internalize even without readi
 - Use `BalanceCoordinator` as single entry point
 - Balance operations are cached automatically
 - Public methods modifying balance MUST update `self.balances` AND call `persistBalance()` — see [architecture.md](docs/architecture.md)
+- After a mutation touching a *known small set* of accounts (e.g. a loan payment hits source bank + loan), call `transactionsViewModel.recalculateBalances(for: Set<String>)` — NOT `recalculateAccountBalances()`, which rescans all ~19k tx × every account on MainActor (multi-second detail-view lag).
 
 ### UI Components
 - Reusable components live in `Views/Components/`
@@ -237,7 +238,7 @@ Outside a `List` (e.g. `LazyVStack`, `ScrollView`), `.swipeActions` silently no-
 
 ⚠️ **The Xcode project uses file-system-synchronized groups (`PBXFileSystemSynchronizedRootGroup`).** Adding, deleting, or renaming files (`.swift`, `.stringsdict`, etc.) needs NO `project.pbxproj` edits — just create/`rm` on disk and they're auto-included in the target. (Verified: deleted a view + added `.stringsdict` files, both picked up by the build.)
 
-`Tenra.xcdatamodeld` is currently at v11 (v11 added `CategorySubcategoryLinkEntity.sortOrder` to persist subcategory display order across launches; v10 added `CategoryAggregateEntity.expenseAmount` for expense-only budget "spent"). Bump checklist when adding an entity (additive — lightweight migration auto-handles):
+`Tenra.xcdatamodeld` is currently at v12 (v12 added `AccountEntity.includeInBalance` — accounts excluded from the Finances total + insights aggregates; v11 added `CategorySubcategoryLinkEntity.sortOrder`; v10 added `CategoryAggregateEntity.expenseAmount`). Bump checklist when adding an entity (additive — lightweight migration auto-handles):
 1. `cp -r Tenra/CoreData/Tenra.xcdatamodeld/Tenra\ vN.xcdatamodel Tenra/CoreData/Tenra.xcdatamodeld/Tenra\ vN+1.xcdatamodel`, edit `contents` XML.
 2. Update `Tenra/CoreData/Tenra.xcdatamodeld/.xccurrentversion` plist to point to vN+1.
 3. Create `Tenra/CoreData/Entities/<Entity>+CoreDataClass.swift` + `<Entity>+CoreDataProperties.swift` (mirror `AccountAggregateEntity` for aggregate-style entities).
@@ -304,6 +305,7 @@ When working with this project:
 - Don't add features without understanding context
 - Don't skip reading existing code before modifications
 - Don't use Combine when Observation framework is preferred
+- Don't create per-feature icon-style wrappers (e.g. an `InsightIconStyle`) — reuse `IconView` with the canonical style: `IconView(source:, size: AppIconSize.xxl)` (logos, like AccountRow) or `.circle(size: .xxl, tint: .monochrome(color), backgroundColor: color.opacity(0.15))` (colored category icons, like CategoryRow)
 - Don't flag `#Preview` block inconsistencies as production drifts in audits — distinguish preview-only from production usage when grep'ing
 - Don't write CLAUDE.md inline rules for things that fit in a domain doc — keep this file thin
 - Don't auto build/install/launch/screenshot the Simulator to verify UI changes — the user verifies visually. Build only to confirm compilation, then report what to check. (White-on-white plates are invisible in screenshots — `xcrun simctl ui <dev> appearance dark` exposes them.)

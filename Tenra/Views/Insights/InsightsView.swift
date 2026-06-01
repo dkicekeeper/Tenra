@@ -307,13 +307,14 @@ struct InsightsView: View {
     @ViewBuilder
     private func insightDetailView(for insight: Insight) -> some View {
         if insight.category == .spending {
-            InsightDetailView(insight: insight, currency: insightsViewModel.baseCurrency) { item in
+            InsightDetailView(insight: insight, currency: insightsViewModel.baseCurrency) { item, periodKey in
                 InsightDeepDiveView(
                     categoryName: item.categoryName,
                     color: item.color,
                     iconSource: item.iconSource,
                     currency: insightsViewModel.baseCurrency,
-                    viewModel: insightsViewModel
+                    viewModel: insightsViewModel,
+                    periodKey: periodKey
                 )
             }
         } else {

@@ -237,17 +237,22 @@ final class InsightsViewModel {
 
     // MARK: - Category Deep Dive
 
+    /// - Parameter periodKey: The period bucket to dive into. When `nil`, defaults to
+    ///   the current period (non-paged breakdowns). The paged "Top categories"
+    ///   breakdown passes the key of the page the user was viewing, so drilling into a
+    ///   non-current month shows that month's data — not the current one.
     func categoryDeepDive(
-        categoryName: String
+        categoryName: String,
+        periodKey: String? = nil
     ) -> (subcategories: [SubcategoryBreakdownItem], prevBucketTotal: Double) {
-        // Use current granularity bucket only (not the full window).
-        let currentKey   = currentGranularity.currentPeriodKey
+        // Use the selected granularity bucket only (not the full window).
+        let currentKey   = periodKey ?? currentGranularity.currentPeriodKey
         let currentStart = currentGranularity.periodStart(for: currentKey)
         let currentEnd   = currentGranularity.periodEnd(for: currentKey)
         let currentFilter = TimeFilter(preset: .custom, startDate: currentStart, endDate: currentEnd)
 
         // Previous bucket — for the comparison card in InsightDeepDiveView.
-        let prevKey   = currentGranularity.previousPeriodKey
+        let prevKey   = currentGranularity.previousPeriodKey(before: currentKey)
         let prevStart = currentGranularity.periodStart(for: prevKey)
         let prevEnd   = currentStart   // prev bucket ends where current bucket begins
         let prevFilter = TimeFilter(preset: .custom, startDate: prevStart, endDate: prevEnd)

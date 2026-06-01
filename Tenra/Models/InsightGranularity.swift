@@ -354,6 +354,17 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// Returns the grouping key for the current (today's) period.
     nonisolated var currentPeriodKey: String { groupingKey(for: Date()) }
 
+    /// Returns the grouping key for the period immediately preceding `key` at this
+    /// granularity. Generalises `previousPeriodKey` (which is anchored to "now") so a
+    /// deep-dive opened from a *selected* (non-current) period can compute its own
+    /// previous-bucket comparison. Anchoring at one day before the period start lands
+    /// reliably in the prior bucket for day/week/month/quarter/year.
+    nonisolated func previousPeriodKey(before key: String) -> String {
+        let start = periodStart(for: key)
+        let anchor = Calendar.current.date(byAdding: .day, value: -1, to: start) ?? start
+        return groupingKey(for: anchor)
+    }
+
     /// Returns the grouping key for the previous period (used for MoP comparison).
     nonisolated var previousPeriodKey: String {
         let calendar = Calendar.current

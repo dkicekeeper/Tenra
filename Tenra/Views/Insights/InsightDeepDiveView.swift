@@ -15,6 +15,10 @@ struct InsightDeepDiveView: View {
     let iconSource: IconSource?
     let currency: String
     let viewModel: InsightsViewModel?
+    /// Period bucket the user drilled in from. `nil` = current period (non-paged
+    /// breakdowns). Threaded so a drill-down from a non-current month shows that
+    /// month's data, not the current period's.
+    let periodKey: String?
 
     @State private var subcategories: [SubcategoryBreakdownItem] = []
     /// Previous-bucket total for the comparison card.
@@ -25,12 +29,13 @@ struct InsightDeepDiveView: View {
     // MARK: - Initializers
 
     /// Production initializer
-    init(categoryName: String, color: Color, iconSource: IconSource?, currency: String, viewModel: InsightsViewModel) {
+    init(categoryName: String, color: Color, iconSource: IconSource?, currency: String, viewModel: InsightsViewModel, periodKey: String? = nil) {
         self.categoryName = categoryName
         self.color = color
         self.iconSource = iconSource
         self.currency = currency
         self.viewModel = viewModel
+        self.periodKey = periodKey
     }
 
     /// Preview initializer — pre-populates state, no ViewModel needed
@@ -47,6 +52,7 @@ struct InsightDeepDiveView: View {
         self.iconSource = iconSource
         self.currency = currency
         self.viewModel = nil
+        self.periodKey = nil
         _subcategories = State(initialValue: subcategories)
         _prevBucketAmount = State(initialValue: prevBucketAmount)
     }
@@ -136,8 +142,9 @@ struct InsightDeepDiveView: View {
 
     private var comparisonSection: some View {
         let gran = viewModel?.currentGranularity ?? .month
-        let currentLabel  = gran.periodLabel(for: gran.currentPeriodKey)
-        let previousLabel = gran.periodLabel(for: gran.previousPeriodKey)
+        let curKey = periodKey ?? gran.currentPeriodKey
+        let currentLabel  = gran.periodLabel(for: curKey)
+        let previousLabel = gran.periodLabel(for: gran.previousPeriodKey(before: curKey))
         let currentAmount = subcategories.reduce(0.0) { $0 + $1.amount }
         return VStack(spacing: AppSpacing.md) {
 //            SectionHeaderView(String(localized: "insights.periodComparison"), style: .default)
@@ -163,7 +170,7 @@ struct InsightDeepDiveView: View {
         Self.logger.debug("🔍 [CategoryDeepDive] OPEN — category='\(categoryName, privacy: .public)' gran='\(viewModel.currentGranularity.rawValue, privacy: .public)'")
 
         // categoryDeepDive is @MainActor — call directly; Swift hops actors automatically.
-        let result = viewModel.categoryDeepDive(categoryName: categoryName)
+        let result = viewModel.categoryDeepDive(categoryName: categoryName, periodKey: periodKey)
 
         // Write results (already on MainActor)
         subcategories    = result.subcategories

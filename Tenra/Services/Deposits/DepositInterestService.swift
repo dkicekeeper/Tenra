@@ -71,22 +71,20 @@ nonisolated enum DepositInterestService {
         var currentDate = walkStart
         var totalAccrued: Decimal = 0
 
-        while currentDate < today {
+        // `<= today` (not `< today`): the posting day must be reached even when it IS
+        // today, otherwise opening the app ON the posting day (e.g. June 1) skips the
+        // just-ended period's posting entirely. Matches `calculateInterestToToday`,
+        // which the UI uses to display the accrued amount — keeping the two in sync.
+        // Idempotency is preserved: the walk fully recomputes from the period start
+        // each call, and `postInterest` guards against a duplicate accrual in the month.
+        while currentDate <= today {
             let currentDateStr = DateFormatters.dateFormatter.string(from: currentDate)
 
-            while eventIdx < events.count && events[eventIdx].date <= currentDateStr {
-                runningPrincipal += principalDelta(
-                    for: events[eventIdx],
-                    accountId: depositId,
-                    capitalizationEnabled: depositInfo.capitalizationEnabled
-                )
-                eventIdx += 1
-            }
-
-            let rate = rateForDate(date: currentDate, history: depositInfo.interestRateHistory)
-            let dailyInterest = runningPrincipal * (rate / 100) / 365
-            totalAccrued += dailyInterest
-
+            // Post BEFORE accruing this day's interest. Interest posted on the posting
+            // day (e.g. June 1) covers the period that just ENDED — through the day
+            // before. The posting day's own interest belongs to the NEW period, so it
+            // must be accrued AFTER the flush, not folded into the amount being posted.
+            // (Accruing-then-posting added one extra day to every posting.)
             if isPostingDay(date: currentDate, postingDay: depositInfo.interestPostingDay) {
                 let postingAmount = totalAccrued
                 if postingAmount > 0 {
@@ -104,6 +102,25 @@ nonisolated enum DepositInterestService {
                     totalAccrued = 0
                 }
             }
+
+            // Value date T+1: interest each day is computed on the balance at the
+            // START of the day (= the previous day's close), so money earns only from
+            // the day AFTER it arrives — matching how KZ banks (incl. Freedom) accrue.
+            // Hence `< currentDateStr`, not `<=`: an event dated `currentDate` is folded
+            // in tomorrow. (Pre-walk already consumed events before walkStart, so this
+            // never double-folds.)
+            while eventIdx < events.count && events[eventIdx].date < currentDateStr {
+                runningPrincipal += principalDelta(
+                    for: events[eventIdx],
+                    accountId: depositId,
+                    capitalizationEnabled: depositInfo.capitalizationEnabled
+                )
+                eventIdx += 1
+            }
+
+            let rate = rateForDate(date: currentDate, history: depositInfo.interestRateHistory)
+            let dailyInterest = runningPrincipal * (rate / 100) / 365
+            totalAccrued += dailyInterest
 
             currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
         }
@@ -221,7 +238,9 @@ nonisolated enum DepositInterestService {
 
         while currentDate <= today {
             let currentDateStr = DateFormatters.dateFormatter.string(from: currentDate)
-            while eventIdx < events.count && events[eventIdx].date <= currentDateStr {
+            // Value date T+1 — see reconcileDepositInterest. Money earns from the day
+            // after it arrives, so fold events dated strictly before `currentDate`.
+            while eventIdx < events.count && events[eventIdx].date < currentDateStr {
                 runningPrincipal += principalDelta(
                     for: events[eventIdx],
                     accountId: accountId,

@@ -450,6 +450,87 @@ struct DepositInterestServiceTests {
         let expected = 100_000.0 + totalPosted
         #expect(abs(computed - expected) < 0.01, "Balance \(computed) should ≈ \(expected)")
     }
+
+    @Test("reconcile posts interest when TODAY is the posting day (new-month / June-1 regression)")
+    func reconcile_postsOnTodayWhenTodayIsPostingDay() {
+        // Regression: the walk used `currentDate < today`, so when the user opened the
+        // app ON the posting day (e.g. June 1) the loop exited before reaching today and
+        // the interest transaction for the just-ended period was never created.
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let postingDay = calendar.component(.day, from: today)
+
+        // Last posting happened in the previous month → the open period ends today.
+        let prevMonth = calendar.date(byAdding: .month, value: -1, to: today)!
+        let prevMonthFloor = calendar.date(from: calendar.dateComponents([.year, .month], from: prevMonth))!
+        let lastPostingMonthStr = DateFormatters.dateFormatter.string(from: prevMonthFloor)
+
+        let startDate = calendar.date(byAdding: .day, value: -90, to: today)!
+        let startDateStr = DateFormatters.dateFormatter.string(from: startDate)
+
+        let info = DepositInfo(
+            bankName: "T",
+            initialPrincipal: 1_000_000,
+            capitalizationEnabled: false,
+            interestRateAnnual: 12,
+            interestRateHistory: [RateChange(effectiveFrom: startDateStr, annualRate: 12)],
+            interestPostingDay: postingDay,
+            lastInterestCalculationDate: startDateStr,
+            lastInterestPostingMonth: lastPostingMonthStr,
+            interestAccruedForCurrentPeriod: 0,
+            startDate: startDateStr
+        )
+        var account = makeDepositAccount(currency: "KZT", depositInfo: info)
+
+        var posted: [Transaction] = []
+        DepositInterestService.reconcileDepositInterest(
+            account: &account,
+            allTransactions: [],
+            onTransactionCreated: { posted.append($0) }
+        )
+
+        #expect(posted.count == 1, "Interest must be posted on the posting day even when that day is today")
+        if let tx = posted.first {
+            #expect(tx.date == DateFormatters.dateFormatter.string(from: today))
+            #expect(tx.amount > 0)
+        }
+    }
+
+    @Test("value date T+1: a top-up earns interest only from the day AFTER it arrives")
+    func accrual_topUpEarnsFromNextDay() {
+        // Deposit funded entirely by a top-up dated `today - 2`. Under T+1 that money
+        // earns on `today-1` and `today` = 2 days, NOT 3 (the arrival day earns nothing).
+        let principal: Decimal = 100_000
+        let rate: Decimal = 12
+
+        let startStr = dateString(offsetDays: -5)
+        let info = DepositInfo(
+            bankName: "T",
+            initialPrincipal: 0,
+            capitalizationEnabled: false,
+            interestRateAnnual: rate,
+            interestRateHistory: [RateChange(effectiveFrom: startStr, annualRate: rate)],
+            interestPostingDay: 1,
+            lastInterestCalculationDate: startStr,
+            lastInterestPostingMonth: "2020-01-01",  // far past → period start clamps to startDate
+            interestAccruedForCurrentPeriod: 0,
+            startDate: startStr
+        )
+
+        let topUp = makeIncomeTx(amount: 100_000, date: dateString(offsetDays: -2))
+
+        let result = DepositInterestService.calculateInterestToToday(
+            depositInfo: info, accountId: "d1", allTransactions: [topUp]
+        )
+
+        let daily = principal * (rate / 100) / 365
+        let expectedTwoDays = daily * 2
+        let wrongThreeDays = daily * 3
+        #expect(abs(result - expectedTwoDays) < Decimal(string: "0.01")!,
+                "Top-up should earn 2 days (T+1), got \(result), expected \(expectedTwoDays)")
+        #expect(abs(result - wrongThreeDays) > Decimal(string: "1")!,
+                "Must NOT earn from the arrival day (would be \(wrongThreeDays))")
+    }
 }
 
 @Suite("TransactionType.affectsDepositPrincipal")

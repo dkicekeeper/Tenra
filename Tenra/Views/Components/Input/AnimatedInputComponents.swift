@@ -118,9 +118,15 @@ struct AmountDigitDisplay: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.3)
 
-                BlinkingCursor(height: cursorHeight)
-                    .opacity(isFocused ? 1 : 0)
-                    .animation(.easeInOut(duration: 0.15), value: isFocused)
+                // Render the cursor ONLY while focused. Previously it stayed mounted
+                // and was hidden with `.opacity(isFocused ? 1 : 0)`, but BlinkingCursor's
+                // internal `.repeatForever` opacity animation kept running and fought the
+                // parent opacity, so the cursor never visually settled to hidden on blur.
+                // Removing it from the hierarchy tears the animation down (onDisappear).
+                if isFocused {
+                    BlinkingCursor(height: cursorHeight)
+                        .transition(.opacity.animation(.easeInOut(duration: 0.15)))
+                }
             }
             Spacer(minLength: 0)
         }

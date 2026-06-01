@@ -38,18 +38,26 @@ struct ContentView: View {
     // .task(id: summaryTrigger) restarts automatically whenever this changes.
     private struct SummaryTrigger: Equatable {
         let txCount: Int
-        let filterName: String  // displayName proxy — avoids Equatable requirement on TimeFilter
+        // The actual filter date bounds — NOT displayName. A relative preset like
+        // .thisMonth keeps the same displayName across a month boundary, so keying on
+        // the name would leave the summary on last month after the date rolls over
+        // (the bounds change but the name doesn't). Bounds capture both preset switches
+        // and the new-month refresh in TimeFilterManager.refreshRelativePresetIfNeeded().
+        let filterStart: Date
+        let filterEnd: Date
         let isImporting: Bool
         let isFullyInitialized: Bool
         let ratesVersion: Int   // bumps when CurrencyConverter.prewarm lands fresh rates
     }
     private var summaryTrigger: SummaryTrigger {
-        SummaryTrigger(
+        let range = timeFilterManager.currentFilter.dateRange()
+        return SummaryTrigger(
             // Read the Observable mirror, not transactions.count — the latter would
             // subscribe ContentView's body to the full 19k-element array and re-eval
             // body on every micro-mutation.
             txCount: transactionStore.transactionsCount,
-            filterName: timeFilterManager.currentFilter.displayName,
+            filterStart: range.start,
+            filterEnd: range.end,
             isImporting: transactionStore.isImporting,
             isFullyInitialized: coordinator.isFullyInitialized,
             ratesVersion: transactionStore.currencyRatesVersion

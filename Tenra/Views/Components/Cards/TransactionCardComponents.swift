@@ -68,22 +68,23 @@ struct TransactionInfoView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            // Category name — resolved through CategoryDisplay so technical
-            // values like "Loan Payment" surface as localized strings.
-            Text(CategoryDisplay.displayName(for: transaction.category, type: transaction.type))
-                .font(AppTypography.h4)
-
-            // Subcategories
-            if !linkedSubcategories.isEmpty {
-                Text(linkedSubcategories.map { $0.name }.joined(separator: ", "))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(.primary)
-            }
-
-            // Account info or transfer info
             if transaction.type == .internalTransfer {
+                // Transfers drop the redundant "Перевод" title; the from→to accounts ARE
+                // the headline (rendered at amount size by TransferAccountInfo).
                 TransferAccountInfo(transaction: transaction, sourceAccount: sourceAccount, targetAccount: targetAccount)
             } else {
+                // Category name — resolved through CategoryDisplay so technical
+                // values like "Loan Payment" surface as localized strings.
+                Text(CategoryDisplay.displayName(for: transaction.category, type: transaction.type))
+                    .font(AppTypography.h4)
+
+                // Subcategories
+                if !linkedSubcategories.isEmpty {
+                    Text(linkedSubcategories.map { $0.name }.joined(separator: ", "))
+                        .font(AppTypography.bodySmall)
+                        .foregroundStyle(.primary)
+                }
+
                 RegularAccountInfo(transaction: transaction, account: sourceAccount)
             }
 
@@ -105,44 +106,54 @@ struct TransferAccountInfo: View {
     let sourceAccount: Account?
     let targetAccount: Account?
 
+    /// Source ("откуда") name, falling back to the snapshotted name of a deleted account.
+    private var sourceName: String? {
+        sourceAccount?.name ?? transaction.accountName
+    }
+    /// Target ("куда") name, falling back to the snapshotted name of a deleted account.
+    private var targetName: String? {
+        targetAccount?.name ?? transaction.targetAccountName
+    }
+
     var body: some View {
-        HStack(spacing: AppSpacing.xs) {
-            // Source account
-            if let sourceAccount {
+        // Stacked headline: top row = source (from), bottom row = direction arrow + target (to).
+        // Sized to match the transaction amount (18pt semibold) so the transfer reads as the
+        // row's primary content now that the "Перевод" title is gone. Existing accounts show
+        // their logo (IconView) in primary color; deleted accounts drop the logo and render
+        // italic + secondary (the name is a stored snapshot, no live account to link to).
+        VStack(alignment: .leading, spacing: AppSpacing.xs) {
+            if let sourceName {
                 HStack(spacing: AppSpacing.xs) {
-                    IconView(source: sourceAccount.iconSource, size: AppIconSize.sm)
-                    Text(sourceAccount.name)
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(.secondary)
+                    if let sourceAccount {
+                        IconView(source: sourceAccount.iconSource, size: AppIconSize.sm)
+                    }
+                    accountText(sourceName, isDeleted: sourceAccount == nil)
                 }
-            } else if let accountName = transaction.accountName {
-                // Account was deleted - show name only
-                Text(accountName)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
-                    .italic()
             }
 
-            Image(systemName: "arrow.right")
-                .font(.system(size: AppIconSize.sm))
-                .foregroundStyle(.secondary)
+            HStack(spacing: AppSpacing.xs) {
+                Image(systemName: "arrow.turn.down.right")
+                    .font(.system(size: AppIconSize.sm))
+                    .foregroundStyle(AppColors.textSecondary)
 
-            // Target account
-            if let targetAccount {
-                HStack(spacing: AppSpacing.xs) {
-                    IconView(source: targetAccount.iconSource, size: AppIconSize.sm)
-                    Text(targetAccount.name)
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(.secondary)
+                if let targetName {
+                    if let targetAccount {
+                        IconView(source: targetAccount.iconSource, size: AppIconSize.sm)
+                    }
+                    accountText(targetName, isDeleted: targetAccount == nil)
                 }
-            } else if let targetAccountName = transaction.targetAccountName {
-                // Account was deleted - show name only
-                Text(targetAccountName)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
-                    .italic()
             }
         }
+    }
+
+    @ViewBuilder
+    private func accountText(_ name: String, isDeleted: Bool) -> some View {
+        Text(name)
+            .font(AppTypography.body)
+            .fontWeight(.semibold)
+            .foregroundStyle(isDeleted ? AnyShapeStyle(.secondary) : AnyShapeStyle(.primary))
+            .italic(isDeleted)
+            .lineLimit(1)
     }
 }
 
@@ -159,13 +170,13 @@ struct RegularAccountInfo: View {
                 IconView(source: account.iconSource, size: AppIconSize.sm)
                 Text(account.name)
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.textSecondary)
             }
         } else if let accountName = transaction.accountName {
             // Account was deleted - show name only without logo
             Text(accountName)
                 .font(AppTypography.bodySmall)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.textSecondary)
                 .italic()
         }
     }

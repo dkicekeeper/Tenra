@@ -73,6 +73,13 @@ struct TenraApp: App {
                     let center = UNUserNotificationCenter.current()
                     center.setBadgeCount(0)
                     center.removeAllDeliveredNotifications()
+
+                    // Re-derive relative time-filter bounds (e.g. .thisMonth) against
+                    // the current date. scenePhase fires on both cold launch and
+                    // background→foreground, so this covers a new month arriving while
+                    // the app was away — without it the home summary stays on last month
+                    // until the user re-opens the period picker.
+                    timeFilterManager.refreshRelativePresetIfNeeded()
                 }
             }
         }

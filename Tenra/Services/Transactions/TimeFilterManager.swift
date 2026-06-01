@@ -55,6 +55,26 @@ class TimeFilterManager {
     func setPreset(_ preset: TimeFilterPreset) {
         currentFilter = TimeFilter(preset: preset)
     }
+
+    /// Recomputes the active filter's date bounds against the current calendar date.
+    ///
+    /// `TimeFilter` freezes its `startDate`/`endDate` at init (computed from `Date()`),
+    /// so a relative preset like `.thisMonth` keeps showing the month it was created in
+    /// even after the calendar rolls into a new month while the app is backgrounded or
+    /// across a cold launch (the filter is decoded from storage with its stale bounds).
+    /// Call this when the app becomes active to re-derive the bounds; reassigning
+    /// `currentFilter` only when they actually change so observers (and persisted state)
+    /// aren't churned needlessly. `.custom` keeps its explicit range; `.allTime` is
+    /// effectively static (and its `end` drifts every call) so both are skipped.
+    func refreshRelativePresetIfNeeded() {
+        let preset = currentFilter.preset
+        guard preset != .custom, preset != .allTime else { return }
+
+        let fresh = TimeFilter(preset: preset)
+        if fresh.startDate != currentFilter.startDate || fresh.endDate != currentFilter.endDate {
+            currentFilter = fresh
+        }
+    }
     
     func setCustomRange(start: Date, end: Date) {
         currentFilter = TimeFilter(preset: .custom, startDate: start, endDate: end)

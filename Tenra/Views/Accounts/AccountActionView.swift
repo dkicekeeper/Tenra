@@ -70,6 +70,7 @@ struct AccountActionView: View {
                     style: .multiline(min: 2, max: 6),
                     externalFocus: $descriptionFocused
                 )
+                .screenPadding()
             }
         }
         .safeAreaBar(edge: .top) { topBar }
@@ -180,7 +181,6 @@ struct AccountActionView: View {
         )
         .screenPadding()
         .padding(.vertical, AppSpacing.md)
-        .background(Color.clear)
     }
 
     @ToolbarContentBuilder

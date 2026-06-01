@@ -16,10 +16,28 @@ Simple daily interest, compound monthly at posting:
 dailyInterest = principalBalance × (rate/100) / 365
 ```
 
+### Value date T+1 (start-of-day balance)
+
+Each day's interest is computed on the balance at the **start** of the day (= the
+previous day's close), so money earns only from the day **after** it arrives — matching
+KZ bank convention (incl. Freedom). In the walk this is `events[i].date < currentDate`
+(strictly), NOT `<=`. A top-up dated the 26th first earns on the 27th. Pinned by
+`accrual_topUpEarnsFromNextDay`. (A bank may still differ on when it *value-dates* a
+specific top-up — the app uses a uniform T+1, so a freshly-added amount the bank hasn't
+credited yet will read higher in-app until it matures.)
+
+### Posting day is exclusive of its own interest
+
+Interest posted on the posting day (e.g. the 1st) covers the period that just **ended**,
+through the day before. The walk posts the accrued total **before** accruing the posting
+day itself — the posting day's interest opens the next period. (Accruing-then-posting
+added one extra day to every posting.) Pinned by `reconcile_postsOnTodayWhenTodayIsPostingDay`.
+
 ## DepositInterestService.reconcileDepositInterest
 
-- Triggered on view appear (`.task {}`)
-- Walks days since `lastInterestCalculationDate`
+- Triggered on view appear (`.task {}`), app launch, and `AccountsManagementView`
+- Walks `walkStart … today` **inclusive** (`<= today`) so the posting fires on the
+  posting day itself (opening the app on the 1st must post May's interest, not skip it)
 - Creates `.depositInterestAccrual` transaction on posting day
 
 ### Capitalization behavior

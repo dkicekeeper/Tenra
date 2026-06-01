@@ -46,6 +46,10 @@ struct LoanPaymentView: View {
     var initialCategory: String? = nil
     /// Pre-selected subcategory ids — same precedence as `initialCategory`.
     var initialSubcategoryIds: Set<String> = []
+    /// Smart default for the source account, computed by the caller with the same
+    /// ranking the add-transaction flow uses. When `nil`, falls back to the first
+    /// available account.
+    var defaultSourceAccountId: String? = nil
     let onPayment: (LoanPaymentFormResult) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -310,8 +314,8 @@ struct LoanPaymentView: View {
         amountText = AmountInputFormatting.bindingString(for: defaultAmount)
         calc.seed(amountText)
         selectedCurrency = account.currency
-        if selectedSourceAccountId == nil, let first = availableAccounts.first {
-            selectedSourceAccountId = first.id
+        if selectedSourceAccountId == nil {
+            selectedSourceAccountId = defaultSourceAccountId ?? availableAccounts.first?.id
         }
         if selectedCategory == nil,
            let candidate = initialCategory,

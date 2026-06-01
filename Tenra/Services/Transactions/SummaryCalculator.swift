@@ -78,13 +78,15 @@ enum SummaryCalculator {
 
             if !isFuture {
                 switch tx.type {
-                case .income:
+                case .income, .depositInterestAccrual:
+                    // Deposit interest accrual is realized income to the user and
+                    // counts toward the summary card's income total.
                     totalIncome += amountInBase
                 case .expense:
                     totalExpenses += amountInBase
                 case .internalTransfer:
                     totalInternal += amountInBase
-                case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
+                case .depositTopUp, .depositWithdrawal:
                     break
                 case .loanPayment, .loanEarlyRepayment:
                     totalExpenses += amountInBase

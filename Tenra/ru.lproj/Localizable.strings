@@ -1020,6 +1020,15 @@
 "finances.accounts.totalLabel" = "Общий баланс";
 "finances.accounts.count" = "%lld счетов";
 "finances.accounts.empty" = "Нет счетов";
+"finances.deposits.title" = "Депозиты";
+"finances.deposits.count" = "%lld депозитов";
+"finances.deposits.empty" = "Нет депозитов";
+"deposit.listTitle" = "Депозиты";
+"deposit.emptyTitle" = "Нет депозитов";
+"deposit.emptyDescription" = "Добавьте депозит, чтобы отслеживать начисление процентов и капитализацию";
+"account.balanceSection" = "Баланс";
+"account.includeInBalance" = "Учитывать в балансе";
+"account.includeInBalanceHint" = "Учитывать этот счёт в общем балансе и аналитике.";
 "finances.categories.title" = "Категории";
 "finances.categories.count" = "%lld категорий";
 "finances.categories.empty" = "Нет категорий";

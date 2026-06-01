@@ -536,8 +536,12 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
     var initialBalance: Double?  // Начальный баланс при создании счёта (задаётся один раз, не меняется)
     var balance: Double          // Текущий баланс (обновляется BalanceCoordinator инкрементально)
     var order: Int? // Order for displaying accounts
+    /// When `false`, this account is excluded from the Finances total-across-accounts
+    /// sum and from analytics/insights aggregation. The account still appears in the
+    /// account list and its own detail view. Defaults to `true` (counted).
+    var includeInBalance: Bool
 
-    init(id: String = UUID().uuidString, name: String, currency: String, iconSource: IconSource? = nil, depositInfo: DepositInfo? = nil, loanInfo: LoanInfo? = nil, createdDate: Date? = nil, shouldCalculateFromTransactions: Bool = false, initialBalance: Double? = nil, balance: Double? = nil, order: Int? = nil) {
+    init(id: String = UUID().uuidString, name: String, currency: String, iconSource: IconSource? = nil, depositInfo: DepositInfo? = nil, loanInfo: LoanInfo? = nil, createdDate: Date? = nil, shouldCalculateFromTransactions: Bool = false, initialBalance: Double? = nil, balance: Double? = nil, order: Int? = nil, includeInBalance: Bool = true) {
         self.id = id
         self.name = name
         self.currency = currency
@@ -551,11 +555,12 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
         // Current balance starts equal to initialBalance; updated later by BalanceCoordinator
         self.balance = balance ?? resolvedInitial ?? 0.0
         self.order = order
+        self.includeInBalance = includeInBalance
     }
 
     // Кастомный decoder для обратной совместимости со старыми данными
     enum CodingKeys: String, CodingKey {
-        case id, name, balance, currency, bankLogo, iconSource, depositInfo, loanInfo, createdDate, shouldCalculateFromTransactions, initialBalance, order
+        case id, name, balance, currency, bankLogo, iconSource, depositInfo, loanInfo, createdDate, shouldCalculateFromTransactions, initialBalance, order, includeInBalance
     }
 
     init(from decoder: Decoder) throws {
@@ -590,6 +595,9 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
         balance = decodedBalance ?? initialBalance ?? 0.0
 
         order = try container.decodeIfPresent(Int.self, forKey: .order)
+
+        // Default to true for accounts saved before this field existed.
+        includeInBalance = try container.decodeIfPresent(Bool.self, forKey: .includeInBalance) ?? true
     }
 
     func encode(to encoder: Encoder) throws {
@@ -605,6 +613,7 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
         try container.encodeIfPresent(initialBalance, forKey: .initialBalance)
         try container.encode(balance, forKey: .balance)
         try container.encodeIfPresent(order, forKey: .order)
+        try container.encode(includeInBalance, forKey: .includeInBalance)
     }
     
     // Computed property для проверки, является ли счет депозитом

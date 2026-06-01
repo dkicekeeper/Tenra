@@ -400,7 +400,9 @@ nonisolated enum DepositInterestService {
         let transaction = Transaction(
             id: transactionId,
             date: dateString,
-            description: String(localized: "deposit.interestAccrual.description", defaultValue: "Interest"),
+            // Leave description empty — the UI infers the label from `type ==
+            // .depositInterestAccrual` via CategoryDisplay. Don't prefill.
+            description: "",
             amount: amountDouble,
             currency: account.currency,
             convertedAmount: nil,

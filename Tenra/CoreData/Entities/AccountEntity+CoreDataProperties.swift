@@ -32,6 +32,7 @@ extension AccountEntity {
     @NSManaged public nonisolated var iconSourceData: Data?  // Stores full IconSource as JSON
     @NSManaged public nonisolated var name: String?
     @NSManaged public nonisolated var shouldCalculateFromTransactions: Bool
+    @NSManaged public nonisolated var includeInBalance: Bool  // false = excluded from total + analytics (v12)
     @NSManaged public nonisolated var targetTransactions: NSSet?
     @NSManaged public nonisolated var transactions: NSSet?
 

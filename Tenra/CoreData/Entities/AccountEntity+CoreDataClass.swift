@@ -67,7 +67,8 @@ extension AccountEntity {
             createdDate: createdAt,
             shouldCalculateFromTransactions: shouldCalculateFromTransactions,
             initialBalance: resolvedInitialBalance,
-            balance: balance  // Pass current balance separately
+            balance: balance,  // Pass current balance separately
+            includeInBalance: includeInBalance
         )
     }
 
@@ -99,6 +100,7 @@ extension AccountEntity {
         entity.bankName = account.depositInfo?.bankName ?? account.loanInfo?.bankName
         entity.createdAt = account.createdDate ?? Date()
         entity.shouldCalculateFromTransactions = account.shouldCalculateFromTransactions
+        entity.includeInBalance = account.includeInBalance
 
         // Encode full DepositInfo as JSON (v5+)
         if let depositInfo = account.depositInfo,

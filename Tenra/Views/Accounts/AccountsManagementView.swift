@@ -17,7 +17,6 @@ struct AccountsManagementView: View {
     @Environment(AppCoordinator.self) private var appCoordinator
     @Environment(\.dismiss) var dismiss
     @State private var showingAddAccount = false
-    @State private var showingAddDeposit = false
     @State private var editingAccount: Account?
     @State private var navigatingAccount: Account?
     @State private var accountToDelete: Account?
@@ -37,9 +36,10 @@ struct AccountsManagementView: View {
 
     private let logger = Logger(subsystem: "Tenra", category: "AccountsManagementView")
 
-    // Filtered and sorted accounts (loans excluded — managed in dedicated Loans section)
+    // Filtered and sorted accounts. Loans live in the Loans section and deposits in
+    // the dedicated Deposits section — both excluded here.
     private var sortedAccounts: [Account] {
-        accountsViewModel.accounts.filter { !$0.isLoan }.sortedByOrder()
+        accountsViewModel.accounts.filter { !$0.isLoan && !$0.isDeposit }.sortedByOrder()
     }
 
     // MARK: - Methods
@@ -56,7 +56,7 @@ struct AccountsManagementView: View {
     
     var body: some View {
         Group {
-            if accountsViewModel.accounts.isEmpty {
+            if sortedAccounts.isEmpty {
                 EmptyStateView(
                     icon: "creditcard",
                     title: String(localized: "emptyState.noAccounts"),
@@ -120,23 +120,6 @@ struct AccountsManagementView: View {
         }
         .navigationTitle(String(localized: "settings.accounts"))
         .navigationBarTitleDisplayMode(.large)
-        .task {
-            // Reconcile all deposits — collect then batch-persist
-            var depositTransactions: [Transaction] = []
-            depositsViewModel.reconcileAllDeposits(
-                allTransactions: transactionsViewModel.allTransactions,
-                onTransactionCreated: { transaction in
-                    depositTransactions.append(transaction)
-                }
-            )
-            for tx in depositTransactions {
-                do {
-                    _ = try await transactionStore.add(tx)
-                } catch {
-                    logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
-                }
-            }
-        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 switch mode {
@@ -185,24 +168,14 @@ struct AccountsManagementView: View {
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
             ToolbarItem(placement: .topBarTrailing) {
                 if mode == .normal {
-                    Menu {
-                        Button(action: {
-                            HapticManager.light()
-                            showingAddAccount = true
-                        }) {
-                            Label(String(localized: "account.newAccount"), systemImage: "creditcard")
-                        }
-                        Button(action: {
-                            HapticManager.light()
-                            showingAddDeposit = true
-                        }) {
-                            Label(String(localized: "account.newDeposit"), systemImage: "lock.square.stack.fill")
-                        }
+                    Button {
+                        HapticManager.light()
+                        showingAddAccount = true
                     } label: {
                         Image(systemName: "plus")
                     }
                     .primaryButton()
-                    .accessibilityLabel(String(localized: "accessibility.accounts.addMenu"))
+                    .accessibilityLabel(String(localized: "account.newAccount"))
                 } else if mode.isSelecting {
                     Button {
                         HapticManager.selection()
@@ -255,40 +228,12 @@ struct AccountsManagementView: View {
                 onSave: { account in
                     HapticManager.success()
                     Task {
-                        await accountsViewModel.addAccount(name: account.name, initialBalance: account.initialBalance ?? 0, currency: account.currency, iconSource: account.iconSource)
+                        await accountsViewModel.addAccount(name: account.name, initialBalance: account.initialBalance ?? 0, currency: account.currency, iconSource: account.iconSource, includeInBalance: account.includeInBalance)
                         transactionsViewModel.syncAccountsFrom(accountsViewModel)
                         showingAddAccount = false
                     }
                 },
                 onCancel: { showingAddAccount = false }
-            )
-        }
-        .sheet(isPresented: $showingAddDeposit) {
-            DepositEditView(
-                depositsViewModel: depositsViewModel,
-                account: nil,
-                onSave: { account in
-                    guard account.isDeposit else { return }
-                    HapticManager.success()
-                    accountsViewModel.addDepositAccount(account)
-                    var depositTransactions: [Transaction] = []
-                    depositsViewModel.reconcileAllDeposits(
-                        allTransactions: transactionsViewModel.allTransactions,
-                        onTransactionCreated: { transaction in
-                            depositTransactions.append(transaction)
-                        }
-                    )
-                    Task {
-                        for tx in depositTransactions {
-                            do {
-                                _ = try await transactionStore.add(tx)
-                            } catch {
-                                logger.error("Failed to add deposit transaction: \(error.localizedDescription)")
-                            }
-                        }
-                    }
-                    showingAddDeposit = false
-                }
             )
         }
         .sheet(item: $editingAccount) { account in

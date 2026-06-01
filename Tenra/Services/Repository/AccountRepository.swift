@@ -238,6 +238,7 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
                 existing.isLoan = account.isLoan
                 existing.bankName = account.depositInfo?.bankName ?? account.loanInfo?.bankName
                 existing.shouldCalculateFromTransactions = account.shouldCalculateFromTransactions
+                existing.includeInBalance = account.includeInBalance
 
                 if let depositInfo = account.depositInfo,
                    let encoded = try? JSONEncoder().encode(depositInfo) {

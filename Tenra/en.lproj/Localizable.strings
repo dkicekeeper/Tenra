@@ -1020,6 +1020,15 @@
 "finances.accounts.totalLabel" = "Total balance";
 "finances.accounts.count" = "%lld accounts";
 "finances.accounts.empty" = "No accounts";
+"finances.deposits.title" = "Deposits";
+"finances.deposits.count" = "%lld deposits";
+"finances.deposits.empty" = "No deposits";
+"deposit.listTitle" = "Deposits";
+"deposit.emptyTitle" = "No Deposits";
+"deposit.emptyDescription" = "Add a deposit to track interest accrual and capitalization";
+"account.balanceSection" = "Balance";
+"account.includeInBalance" = "Include in balance";
+"account.includeInBalanceHint" = "Count this account in your total balance and analytics.";
 "finances.categories.title" = "Categories";
 "finances.categories.count" = "%lld categories";
 "finances.categories.empty" = "No categories";

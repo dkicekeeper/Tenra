@@ -13,6 +13,7 @@ import SwiftUI
 
 enum FinancesDestination: Hashable {
     case accounts
+    case deposits
     case subscriptions
     case loans
     case loanDetail(String) // accountId
@@ -44,14 +45,16 @@ struct FinancesView: View {
                     // not only at the instant the init flags flip during app startup.
                     accountsCard
                         .contentReveal(isReady: coordinator.isFastPathDone)
+                    depositsCard
+                        .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.05)
                     subscriptionsCard
-                        .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.05)
-                    loansCard
                         .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.10)
+                    loansCard
+                        .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.15)
                     categoriesCard
-                        .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.15)
-                    subcategoriesCard
                         .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.20)
+                    subcategoriesCard
+                        .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.25)
                 }
                 .padding(.vertical, AppSpacing.md)
             }
@@ -64,6 +67,12 @@ struct FinancesView: View {
                         accountsViewModel: accountsViewModel,
                         depositsViewModel: coordinator.depositsViewModel,
                         loansViewModel: coordinator.loansViewModel,
+                        transactionsViewModel: transactionsViewModel
+                    )
+                case .deposits:
+                    DepositsListView(
+                        accountsViewModel: accountsViewModel,
+                        depositsViewModel: coordinator.depositsViewModel,
                         transactionsViewModel: transactionsViewModel
                     )
                 case .subscriptions:
@@ -138,6 +147,18 @@ struct FinancesView: View {
     private var accountsCard: some View {
         NavigationLink(value: FinancesDestination.accounts) {
             AccountsCardView(
+                accountsViewModel: accountsViewModel,
+                balanceCoordinator: coordinator.balanceCoordinator,
+                transactionsViewModel: transactionsViewModel
+            )
+        }
+        .buttonStyle(.bounce)
+        .screenPadding()
+    }
+
+    private var depositsCard: some View {
+        NavigationLink(value: FinancesDestination.deposits) {
+            DepositsCardView(
                 accountsViewModel: accountsViewModel,
                 balanceCoordinator: coordinator.balanceCoordinator,
                 transactionsViewModel: transactionsViewModel

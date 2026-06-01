@@ -92,7 +92,7 @@ final class DateSectionExpensesCache {
         viewModel: TransactionsViewModel
     ) -> Double {
         return transactions
-            .filter { $0.type == .expense }
+            .filter { $0.type == .expense || $0.type == .loanPayment || $0.type == .loanEarlyRepayment }
             .reduce(0.0) { total, transaction in
                 // Use ViewModel's cached conversion method
                 let amountInBaseCurrency = viewModel.getConvertedAmountOrCompute(

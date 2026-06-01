@@ -63,6 +63,12 @@ struct BudgetProgressCircle: View {
     /// When `true` the arc is rendered in `AppColors.destructive`.
     var isOverBudget: Bool = false
 
+    /// Explicit arc color. When set, it overrides the budget-semantic three-tier
+    /// palette entirely — the caller owns the meaning of "fuller". Used by the loan
+    /// hero, where a fuller ring means *more debt paid off* and must stay green
+    /// regardless of fraction.
+    var overrideColor: Color? = nil
+
     /// Метка для VoiceOver. Когда `nil` — элемент скрыт из accessibility дерева
     /// (ожидается, что родительская View несёт семантику). Когда указана —
     /// VoiceOver читает её и помечает элемент `.updatesFrequently`.
@@ -73,6 +79,9 @@ struct BudgetProgressCircle: View {
     private static let warningThreshold: Double = 0.8
 
     private var arcColor: Color {
+        if let overrideColor {
+            return overrideColor
+        }
         if isOverBudget || progress > 1.0 {
             return AppColors.destructive
         }

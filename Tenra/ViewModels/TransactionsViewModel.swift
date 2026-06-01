@@ -332,6 +332,18 @@ class TransactionsViewModel {
         }
     }
 
+    /// Recalculate balances for only the given accounts. Use this instead of
+    /// `recalculateAccountBalances()` when a mutation is known to touch a small,
+    /// fixed set of accounts (e.g. a loan payment hits the source bank + the loan).
+    /// A full `recalculateAll` rescans all ~19k transactions per account on the
+    /// MainActor, which visibly lags the detail view for a couple seconds.
+    func recalculateBalances(for accountIds: Set<String>) {
+        guard !accountIds.isEmpty, let coordinator = balanceCoordinator else { return }
+        Task {
+            await coordinator.recalculateAccounts(accountIds, accounts: accounts, transactions: allTransactions)
+        }
+    }
+
     func scheduleBalanceRecalculation() {
         // CRITICAL: Recalculate all account balances after transaction changes
         // This is called after recurring transaction generation, CSV import, etc.

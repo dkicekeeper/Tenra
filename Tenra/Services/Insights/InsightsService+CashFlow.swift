@@ -113,7 +113,7 @@ extension InsightsService {
 
         // 3. Projected balance (30 days ahead) — show recurring impact delta
         // Loans are liabilities — exclude from "current balance" so projections stay truthful.
-        let currentBalance = snapshot.accounts.filter { !$0.isLoan }.reduce(0.0) { $0 + snapshot.balanceFor($1.id) }
+        let currentBalance = snapshot.accounts.filter { !$0.isLoan && $0.includeInBalance }.reduce(0.0) { $0 + snapshot.balanceFor($1.id) }
         let recurringNet = monthlyRecurringNet(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries, categories: snapshot.categories)
         let projectedBalance = currentBalance + recurringNet
 
@@ -239,7 +239,7 @@ extension InsightsService {
 
         // 4. Projected balance — recurring delta + average expenses scaled to granularity period.
         // Loans are liabilities — exclude from "current balance" so projections stay truthful.
-        let currentBalance = snapshot.accounts.filter { !$0.isLoan }.reduce(0.0) { $0 + snapshot.balanceFor($1.id) }
+        let currentBalance = snapshot.accounts.filter { !$0.isLoan && $0.includeInBalance }.reduce(0.0) { $0 + snapshot.balanceFor($1.id) }
         let recurringNet = monthlyRecurringNet(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries, categories: snapshot.categories)
 
         // Average monthly expenses from the last 3 period data points for a realistic projection.

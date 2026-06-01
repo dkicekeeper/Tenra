@@ -1,15 +1,15 @@
 //
-//  AccountsCardView.swift
+//  DepositsCardView.swift
 //  Tenra
 //
-//  Summary card showing total balance across regular accounts.
-//  Deposits live in DepositsCardView and loans in LoansCardView — both excluded
-//  here. Accounts the user excluded from balance are also omitted.
+//  Summary card showing total balance across deposit accounts. Deposits used to
+//  live inside AccountsCardView; they now have their own card and management
+//  screen in Finances. Accounts excluded from balance are omitted.
 //
 
 import SwiftUI
 
-struct AccountsCardView: View {
+struct DepositsCardView: View {
     let accountsViewModel: AccountsViewModel
     let balanceCoordinator: BalanceCoordinator
     let transactionsViewModel: TransactionsViewModel
@@ -17,23 +17,18 @@ struct AccountsCardView: View {
     @State private var totalAmount: Double = 0
     @State private var isLoadingTotal: Bool = false
 
-    private var accounts: [Account] {
-        // Deposits moved to DepositsCardView; loans live in LoansCardView.
-        // Accounts excluded from balance are omitted from the summary total,
-        // count, and icon cluster (they remain in the full accounts list).
-        accountsViewModel.regularAccounts.filter { $0.includeInBalance }
+    private var deposits: [Account] {
+        accountsViewModel.depositAccounts.filter { $0.includeInBalance }
     }
 
     private var baseCurrency: String {
         transactionsViewModel.appSettings.baseCurrency
     }
 
-    /// Drives `.task(id:)` — restarts when the underlying account list, currency, or
-    /// observed balances change. Reading `balanceCoordinator.balances` here keeps the
-    /// total reactive to balance writes (`accountsMutationVersion` only fires on
-    /// add/remove/reorder, not on balance updates).
+    /// Drives `.task(id:)` — restarts when the deposit list, currency, or observed
+    /// balances change. Mirrors AccountsCardView's reactivity contract.
     private var refreshID: String {
-        let snapshot = accounts
+        let snapshot = deposits
             .map { "\($0.id):\(balanceCoordinator.balances[$0.id] ?? 0)" }
             .joined(separator: ",")
         return "\(baseCurrency)|\(snapshot)"
@@ -42,13 +37,13 @@ struct AccountsCardView: View {
     var body: some View {
         HStack(alignment: .top, spacing: AppSpacing.md) {
             VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                Text(String(localized: "finances.accounts.title"))
+                Text(String(localized: "finances.deposits.title", defaultValue: "Deposits"))
                     .font(AppTypography.h3)
                     .foregroundStyle(AppColors.textPrimary)
 
-                if accounts.isEmpty {
+                if deposits.isEmpty {
                     EmptyStateView(
-                        title: String(localized: "finances.accounts.empty"),
+                        title: String(localized: "finances.deposits.empty", defaultValue: "No deposits"),
                         style: .compact
                     )
                     .transition(.opacity)
@@ -74,7 +69,7 @@ struct AccountsCardView: View {
                         }
                         .animation(AppAnimation.gentleSpring, value: isLoadingTotal)
 
-                        Text(String(format: String(localized: "finances.accounts.count"), accounts.count))
+                        Text(String(format: String(localized: "finances.deposits.count", defaultValue: "%lld deposits"), deposits.count))
                             .font(AppTypography.bodySmall)
                             .foregroundStyle(AppColors.textPrimary)
                     }
@@ -83,11 +78,11 @@ struct AccountsCardView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            if !accounts.isEmpty {
-                accountIcons
+            if !deposits.isEmpty {
+                depositIcons
             }
         }
-        .animation(AppAnimation.gentleSpring, value: accounts.isEmpty)
+        .animation(AppAnimation.gentleSpring, value: deposits.isEmpty)
         .padding(AppSpacing.lg)
         .cardStyle()
         .task(id: refreshID) {
@@ -97,14 +92,14 @@ struct AccountsCardView: View {
 
     // MARK: - Icons
 
-    private var accountIcons: some View {
+    private var depositIcons: some View {
         let balancesById = balanceCoordinator.balances
         return PackedCircleIconsView(
-            items: accounts.map { account in
+            items: deposits.map { deposit in
                 PackedCircleItem(
-                    id: account.id,
-                    iconSource: account.iconSource,
-                    amount: max(balancesById[account.id] ?? 0, 0)
+                    id: deposit.id,
+                    iconSource: deposit.iconSource,
+                    amount: max(balancesById[deposit.id] ?? 0, 0)
                 )
             }
         )
@@ -112,16 +107,15 @@ struct AccountsCardView: View {
 
     // MARK: - Total Calculation
 
-    /// Sums account balances converted to base currency. Mirrors the parallel
-    /// task-group pattern used in SubscriptionsCardView so per-account FX lookups
-    /// run concurrently rather than sequentially.
+    /// Sums deposit balances converted to base currency. Mirrors AccountsCardView's
+    /// parallel task-group FX pattern.
     private func refreshTotal() async {
         let isFirstLoad = totalAmount == 0
         if isFirstLoad { isLoadingTotal = true }
 
         let baseCur = baseCurrency
         let balancesById = balanceCoordinator.balances
-        let tuples: [(id: String, currency: String, balance: Double)] = accounts.map {
+        let tuples: [(id: String, currency: String, balance: Double)] = deposits.map {
             (id: $0.id, currency: $0.currency, balance: balancesById[$0.id] ?? 0)
         }
 
@@ -147,9 +141,9 @@ struct AccountsCardView: View {
 
 // MARK: - Preview
 
-#Preview("Accounts Card") {
+#Preview("Deposits Card") {
     let coordinator = AppCoordinator()
-    AccountsCardView(
+    DepositsCardView(
         accountsViewModel: coordinator.accountsViewModel,
         balanceCoordinator: coordinator.balanceCoordinator,
         transactionsViewModel: coordinator.transactionsViewModel

@@ -273,7 +273,13 @@ final class TransactionPaginationController: NSObject {
         }
 
         if let accountId = selectedAccountId {
-            predicates.append(NSPredicate(format: "accountId == %@", accountId))
+            // Match both the source account AND the destination account so that
+            // incoming transfers/loan payments to the selected account also appear
+            // when filtering by account — not just outgoing ones.
+            predicates.append(NSPredicate(
+                format: "accountId == %@ OR targetAccountId == %@",
+                accountId, accountId
+            ))
         }
 
         if let categoryId = selectedCategoryId {

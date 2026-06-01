@@ -55,14 +55,15 @@ class AccountsViewModel {
     
     // MARK: - Account CRUD Operations
     
-    func addAccount(name: String, initialBalance: Double, currency: String, iconSource: IconSource? = nil, shouldCalculateFromTransactions: Bool = false) async {
+    func addAccount(name: String, initialBalance: Double, currency: String, iconSource: IconSource? = nil, shouldCalculateFromTransactions: Bool = false, includeInBalance: Bool = true) async {
 
         let account = Account(
             name: name,
             currency: currency,
             iconSource: iconSource,
             shouldCalculateFromTransactions: shouldCalculateFromTransactions,
-            initialBalance: shouldCalculateFromTransactions ? 0.0 : initialBalance
+            initialBalance: shouldCalculateFromTransactions ? 0.0 : initialBalance,
+            includeInBalance: includeInBalance
         )
 
         transactionStore?.addAccount(account)

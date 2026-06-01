@@ -132,6 +132,21 @@ struct LoanDetailView: View {
         return Set(loanInfo.defaultSubcategoryIds)
     }
 
+    /// Smart default source account for new payments — uses the same ranking the
+    /// add-transaction flow uses (recency + volume) instead of naively picking the
+    /// first account. Falls back to the first regular account when no suggestion
+    /// qualifies (or the suggestion is itself a loan/deposit container).
+    private var suggestedSourceAccountId: String? {
+        let suggested = loansViewModel.accountsViewModel.suggestedAccount(
+            forCategory: "",
+            transactions: transactionsViewModel.allTransactions
+        )
+        if let suggested, !suggested.isLoan, !suggested.isDeposit {
+            return suggested.id
+        }
+        return loansViewModel.accountsViewModel.regularAccounts.first?.id
+    }
+
     /// Expense-catalog categories shown in the LoanPaymentView picker.
     ///
     /// Restricted to **currently active** custom categories — we deliberately
@@ -271,6 +286,7 @@ struct LoanDetailView: View {
                     categoriesViewModel: appCoordinator.categoriesViewModel,
                     initialCategory: resolvedInitialCategory(for: loanInfo),
                     initialSubcategoryIds: resolvedInitialSubcategoryIds(for: loanInfo),
+                    defaultSourceAccountId: suggestedSourceAccountId,
                     onPayment: { result in
                         if let transaction = loansViewModel.makeManualPayment(
                             accountId: account.id,
@@ -290,7 +306,12 @@ struct LoanDetailView: View {
                                                 subcategoryIds: Array(result.subcategoryIds)
                                             )
                                     }
-                                    transactionsViewModel.recalculateAccountBalances()
+                                    // Only the source bank + the loan account change —
+                                    // a targeted recalc avoids the multi-second stall of
+                                    // rescanning all transactions across every account.
+                                    transactionsViewModel.recalculateBalances(
+                                        for: [result.sourceAccountId, account.id]
+                                    )
                                 } catch {
                                     logger.error("Failed to add loan payment: \(error.localizedDescription)")
                                     showPaymentError(String(localized: "loan.paymentFailed", defaultValue: "Payment failed. Please try again."))
@@ -315,6 +336,7 @@ struct LoanDetailView: View {
                     categoriesViewModel: appCoordinator.categoriesViewModel,
                     initialCategory: resolvedInitialCategory(for: loanInfo),
                     initialSubcategoryIds: resolvedInitialSubcategoryIds(for: loanInfo),
+                    defaultSourceAccountId: suggestedSourceAccountId,
                     onRepayment: { result in
                         if let transaction = loansViewModel.makeEarlyRepayment(
                             accountId: account.id,
@@ -335,7 +357,10 @@ struct LoanDetailView: View {
                                                 subcategoryIds: Array(result.subcategoryIds)
                                             )
                                     }
-                                    transactionsViewModel.recalculateAccountBalances()
+                                    // Targeted recalc — only the source bank + loan change.
+                                    transactionsViewModel.recalculateBalances(
+                                        for: [result.sourceAccountId, account.id]
+                                    )
                                 } catch {
                                     logger.error("Failed to add early repayment transaction: \(error.localizedDescription)")
                                     showPaymentError(String(localized: "loan.earlyRepaymentFailed", defaultValue: "Early repayment failed. Please try again."))

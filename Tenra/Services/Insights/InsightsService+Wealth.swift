@@ -25,8 +25,9 @@ extension InsightsService {
         guard !accounts.isEmpty else { return [] }
 
         // Loans are liabilities — their balance represents debt remaining, not owned capital.
-        // Exclude them from total wealth and from the per-account breakdown.
-        let assetAccounts = accounts.filter { !$0.isLoan }
+        // Exclude them, and accounts the user excluded from balance, from total wealth
+        // and from the per-account breakdown.
+        let assetAccounts = accounts.filter { !$0.isLoan && $0.includeInBalance }
         let totalWealth = assetAccounts.reduce(0.0) { $0 + balanceFor($1.id) }
 
         // Use pre-computed counts (O(1) lookup) instead of O(N*M) allTransactions.filter
@@ -167,6 +168,8 @@ extension InsightsService {
         }
 
         let dormantAccounts: [AccountInsightItem] = accounts.compactMap { account in
+            // Accounts excluded from balance are out of analytics entirely.
+            guard account.includeInBalance else { return nil }
             let balance = balanceFor(account.id)
             guard balance > 0 else { return nil }
             // Deposit/savings accounts are expected to be inactive — don't flag them

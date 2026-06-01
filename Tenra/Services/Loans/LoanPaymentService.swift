@@ -257,7 +257,7 @@ nonisolated enum LoanPaymentService {
         let transaction = Transaction(
             id: UUID().uuidString,
             date: date,
-            description: note ?? String(localized: "loan.earlyRepayment.description", defaultValue: "Early repayment"),
+            description: note ?? "",
             amount: NSDecimalNumber(decimal: amount).doubleValue,
             currency: account.currency,
             type: .loanEarlyRepayment,
@@ -306,10 +306,10 @@ nonisolated enum LoanPaymentService {
         updated.paymentsMade += 1
         updated.lastPaymentDate = dateStr
 
-        let trimmedDescription = description?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let resolvedDescription = trimmedDescription.isEmpty
-            ? String(localized: "loan.payment.description", defaultValue: "Loan payment")
-            : trimmedDescription
+        // Leave the description empty when the user doesn't supply one — the UI
+        // infers the label from `type == .loanPayment` via CategoryDisplay.
+        // Don't prefill a default "Loan payment" string.
+        let resolvedDescription = description?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
         // Category is optional — when the user doesn't pick one we leave it empty
         // and let the UI infer the label from `type == .loanPayment` via

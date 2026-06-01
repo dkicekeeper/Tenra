@@ -58,7 +58,8 @@ struct HeroSection: View {
                         progress: progress.fraction,
                         size: Self.ringSize,
                         lineWidth: 4,
-                        isOverBudget: progress.fraction > 1.0
+                        isOverBudget: progress.fraction > 1.0,
+                        overrideColor: progress.color
                     )
                 }
                 IconView(source: icon, style: .glassHero(tint: iconTint ?? .original))

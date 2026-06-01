@@ -35,6 +35,10 @@ struct LoanEarlyRepaymentView: View {
     var categoriesViewModel: CategoriesViewModel? = nil
     var initialCategory: String? = nil
     var initialSubcategoryIds: Set<String> = []
+    /// Smart default for the source account, computed by the caller with the same
+    /// ranking the add-transaction flow uses. When `nil`, falls back to the first
+    /// available account.
+    var defaultSourceAccountId: String? = nil
     let onRepayment: (LoanEarlyRepaymentFormResult) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -352,8 +356,8 @@ struct LoanEarlyRepaymentView: View {
 
     private func applyDefaults() {
         selectedCurrency = account.currency
-        if selectedSourceAccountId == nil, let first = availableAccounts.first {
-            selectedSourceAccountId = first.id
+        if selectedSourceAccountId == nil {
+            selectedSourceAccountId = defaultSourceAccountId ?? availableAccounts.first?.id
         }
         if selectedCategory == nil,
            let candidate = initialCategory,

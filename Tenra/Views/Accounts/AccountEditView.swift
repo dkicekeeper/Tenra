@@ -23,6 +23,7 @@ struct AccountEditView: View {
     @State private var initialBalanceText: String = "" // snapshot of balanceText set on appear — detects user edits
     @State private var currency: String = "USD"
     @State private var selectedIconSource: IconSource? = nil
+    @State private var includeInBalance: Bool = true
     @State private var validationError: String? = nil
 
     private var parsedBalance: Double {
@@ -56,6 +57,20 @@ struct AccountEditView: View {
                         config: .accountHero
                     )
 
+                    // Include in balance toggle — when off, the account is excluded
+                    // from the Finances total and from analytics, but still shows in
+                    // the account list and its own detail view.
+                    FormSection(header: String(localized: "account.balanceSection", defaultValue: "Balance")) {
+                        UniversalRow(
+                            leadingIcon: .sfSymbol("sum", color: AppColors.accent, size: AppIconSize.lg),
+                            hint: String(localized: "account.includeInBalanceHint", defaultValue: "Count this account in your total balance and analytics."),
+                            title: String(localized: "account.includeInBalance", defaultValue: "Include in balance")
+                        ) {
+                            Toggle("", isOn: $includeInBalance)
+                                .labelsHidden()
+                        }
+                    }
+
                     // Validation Error
                     if let error = validationError {
                         InlineStatusText(message: error, type: .error)
@@ -88,6 +103,7 @@ struct AccountEditView: View {
                 initialBalanceText = formatted
                 currency = account.currency
                 selectedIconSource = account.iconSource
+                includeInBalance = account.includeInBalance
             } else {
                 currency = transactionsViewModel.appSettings.baseCurrency
                 selectedIconSource = nil
@@ -120,6 +136,7 @@ struct AccountEditView: View {
             updated.name = name
             updated.currency = currency
             updated.iconSource = selectedIconSource
+            updated.includeInBalance = includeInBalance
             newAccount = updated
         } else {
             newAccount = Account(
@@ -129,7 +146,8 @@ struct AccountEditView: View {
                 iconSource: selectedIconSource,
                 shouldCalculateFromTransactions: account?.shouldCalculateFromTransactions ?? false,
                 initialBalance: parsedBalance,
-                order: account?.order
+                order: account?.order,
+                includeInBalance: includeInBalance
             )
         }
 

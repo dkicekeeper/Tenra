@@ -528,7 +528,22 @@ final class TransactionStore {
     func recalculateLedgerIfDayChanged(now: Date = Date(), defaults: UserDefaults = .standard) async {
         guard !accounts.isEmpty else { return }
         let last = defaults.string(forKey: Self.lastLedgerRecalcKey)
-        guard LedgerMaturation.shouldRecalculate(now: now, lastRecalcKey: last) else { return }
+        let todayKey = LedgerMaturation.dayKey(for: now)
+        guard last != todayKey else { return }
+
+        // Targeted-maturation fast path: when we have a prior run AND no transaction matured
+        // since then (none dated in `(last, today]`), the incrementally-maintained balances and
+        // aggregates are already correct — skip the O(N_tx × N_accounts) recompute entirely.
+        // Most day rollovers have no future tx coming due, so this is the common case and is
+        // what removes the per-launch ledger-recalc stall. The recompute still runs whenever
+        // something actually matured, and on first launch after install/update (`last == nil`),
+        // which doubles as a one-time drift repair. The scan below is O(N_tx) cheap string
+        // comparisons — orders of magnitude lighter than the rebuild it guards.
+        if let last,
+           !transactions.contains(where: { LedgerMaturation.isMatured(dateKey: $0.date, since: last, through: todayKey) }) {
+            defaults.set(todayKey, forKey: Self.lastLedgerRecalcKey)
+            return
+        }
 
         // Realized aggregates exclude future tx — a matured tx must now be counted.
         rebuildAccountAggregates()
@@ -537,7 +552,7 @@ final class TransactionStore {
         // Balances recomputed from initialBalance + realized tx (also repairs drift).
         await balanceCoordinator.recalculateAll(accounts: accounts, transactions: transactions)
 
-        defaults.set(LedgerMaturation.dayKey(for: now), forKey: Self.lastLedgerRecalcKey)
+        defaults.set(todayKey, forKey: Self.lastLedgerRecalcKey)
     }
 
     // MARK: - CRUD Operations

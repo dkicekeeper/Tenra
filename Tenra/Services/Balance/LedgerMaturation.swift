@@ -23,4 +23,14 @@ enum LedgerMaturation {
     static func shouldRecalculate(now: Date, lastRecalcKey: String?) -> Bool {
         lastRecalcKey != dayKey(for: now)
     }
+
+    /// True if a transaction dated `dateKey` was FUTURE at the last run (`lastKey`) but is
+    /// realized by `todayKey` — i.e. it matured in the half-open-then-closed window
+    /// `(lastKey, todayKey]`. Day keys are `yyyy-MM-dd`, so lexical comparison is
+    /// chronological. Only such transactions require a balance/aggregate recompute on a day
+    /// rollover; if none matured, the incrementally-maintained figures are already correct
+    /// and the O(N) recompute can be skipped entirely.
+    static func isMatured(dateKey: String, since lastKey: String, through todayKey: String) -> Bool {
+        dateKey > lastKey && dateKey <= todayKey
+    }
 }

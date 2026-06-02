@@ -57,38 +57,33 @@ struct BalanceCalculationEngine {
 
     // MARK: - Full Balance Calculation
 
-    /// Calculate balance for an account from scratch
+    /// Calculate balance for an account from scratch: `initialBalance + Σ contribution`.
+    ///
+    /// Every account uses this one rule. Imported / converted-deposit accounts no longer
+    /// need a separate "preserve current balance" mode: their inherited history is excluded
+    /// by `contribution`'s gates (future-date, deposit startDate, and — for converted
+    /// deposits — the `conversionTimestamp` createdAt cutoff), so the sum reproduces the
+    /// snapshot. See `contribution(of:to:policy:)`.
     /// - Parameters:
     ///   - account: The account to calculate balance for
     ///   - transactions: All transactions to consider
-    ///   - mode: Calculation mode (fromInitialBalance or preserveImported)
     /// - Returns: Calculated balance
     func calculateBalance(
         account: AccountBalance,
-        transactions: [Transaction],
-        mode: BalanceMode
+        transactions: [Transaction]
     ) -> Double {
-        switch mode {
-        case .preserveImported:
-            // For imported accounts, balance is already correct
-            // New transactions should be applied incrementally
+        // No initial balance set → nothing to sum onto; return current.
+        guard let initialBalance = account.initialBalance else {
             return account.currentBalance
-
-        case .fromInitialBalance:
-            // Calculate from initial balance + transactions
-            guard let initialBalance = account.initialBalance else {
-                // No initial balance set, return current
-                return account.currentBalance
-            }
-
-            // Full recalc is just Σ of the SAME per-transaction contribution the
-            // incremental path applies — so the two cannot diverge by construction.
-            var balance = initialBalance
-            for tx in transactions {
-                balance += contribution(of: tx, to: account, policy: .currentBalance)
-            }
-            return balance
         }
+
+        // Full recalc is just Σ of the SAME per-transaction contribution the
+        // incremental path applies — so the two cannot diverge by construction.
+        var balance = initialBalance
+        for tx in transactions {
+            balance += contribution(of: tx, to: account, policy: .currentBalance)
+        }
+        return balance
     }
 
     // MARK: - Future-Date Gate
@@ -130,9 +125,19 @@ struct BalanceCalculationEngine {
     ) -> Double {
         if policy == .currentBalance {
             guard affectsCurrentBalance(tx) else { return 0 }
-            // Deposit events on/before startDate are already in initialPrincipal.
-            if account.isDeposit, let cutoff = account.depositInfo?.startDate, tx.date <= cutoff {
-                return 0
+            if account.isDeposit, let info = account.depositInfo {
+                if let conversionMoment = info.conversionTimestamp {
+                    // Converted deposit: `initialPrincipal` snapshots the balance at
+                    // conversion, so every tx that already EXISTED then (createdAt <=
+                    // the conversion moment) is baked in and must not be re-summed.
+                    // Using createdAt (a precise timestamp) rather than the calendar-day
+                    // startDate keeps same-day pre- vs post-conversion events separable —
+                    // the gap that made the date cutoff need `.preserveImported`.
+                    if tx.createdAt <= conversionMoment { return 0 }
+                } else if tx.date <= info.startDate {
+                    // Fresh deposit: events on/before startDate are baked into initialPrincipal.
+                    return 0
+                }
             }
         }
 

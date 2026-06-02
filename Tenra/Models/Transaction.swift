@@ -263,12 +263,19 @@ struct DepositInfo: Codable, Equatable, Hashable {
     var interestAccruedForCurrentPeriod: Decimal // running daily accrual since last posting
     var initialPrincipal: Decimal // creation-time amount (= Account.initialBalance)
     var startDate: String // YYYY-MM-DD — events on/before this are baked into initialPrincipal
+    /// Set ONLY when a regular account with history is converted into a deposit. Marks the
+    /// `Transaction.createdAt` boundary: every tx that existed at conversion (createdAt <=
+    /// this) is already baked into `initialPrincipal` and must be excluded from the balance
+    /// sum — using createdAt (a precise timestamp), NOT `startDate` (a calendar day), so
+    /// same-day pre- vs post-conversion events are separable. `nil` for freshly-created
+    /// deposits, which have no inherited history. See BalanceCalculationEngine.contribution.
+    var conversionTimestamp: TimeInterval?
 
     enum CodingKeys: String, CodingKey {
         case bankName, capitalizationEnabled
         case interestRateAnnual, interestRateHistory, interestPostingDay
         case lastInterestCalculationDate, lastInterestPostingMonth, interestAccruedForCurrentPeriod
-        case initialPrincipal, startDate
+        case initialPrincipal, startDate, conversionTimestamp
         // Legacy keys retained for read-only migration of pre-unification payloads.
         case principalBalance
         case interestAccruedNotCapitalized
@@ -290,6 +297,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
             ?? legacyPrincipal
             ?? 0
         startDate = (try container.decodeIfPresent(String.self, forKey: .startDate)) ?? lastInterestCalculationDate
+        conversionTimestamp = try container.decodeIfPresent(TimeInterval.self, forKey: .conversionTimestamp)
     }
 
     init(
@@ -302,7 +310,8 @@ struct DepositInfo: Codable, Equatable, Hashable {
         lastInterestCalculationDate: String? = nil,
         lastInterestPostingMonth: String? = nil,
         interestAccruedForCurrentPeriod: Decimal = 0,
-        startDate: String? = nil
+        startDate: String? = nil,
+        conversionTimestamp: TimeInterval? = nil
     ) {
         self.bankName = bankName
         self.capitalizationEnabled = capitalizationEnabled
@@ -328,6 +337,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
         self.interestAccruedForCurrentPeriod = interestAccruedForCurrentPeriod
         self.initialPrincipal = initialPrincipal
         self.startDate = startDate ?? lastInterestCalculationDate ?? today
+        self.conversionTimestamp = conversionTimestamp
     }
 
     nonisolated func encode(to encoder: Encoder) throws {
@@ -342,6 +352,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
         try container.encode(interestAccruedForCurrentPeriod, forKey: .interestAccruedForCurrentPeriod)
         try container.encode(initialPrincipal, forKey: .initialPrincipal)
         try container.encode(startDate, forKey: .startDate)
+        try container.encodeIfPresent(conversionTimestamp, forKey: .conversionTimestamp)
     }
 }
 

@@ -188,7 +188,11 @@ extension DepositEditView {
             lastInterestCalculationDate: lastCalcDate,
             lastInterestPostingMonth: lastPostingMonth,
             interestAccruedForCurrentPeriod: existingInfo?.interestAccruedForCurrentPeriod ?? 0,
-            startDate: existingInfo?.startDate
+            startDate: existingInfo?.startDate,
+            // Preserve the conversion marker across edits of an already-converted deposit;
+            // losing it would re-expose the inherited history to the recalc sum. For a fresh
+            // conversion existingInfo is nil here — AccountsViewModel.updateDeposit stamps it.
+            conversionTimestamp: existingInfo?.conversionTimestamp
         )
 
         let balance = NSDecimalNumber(decimal: principalBalance).doubleValue

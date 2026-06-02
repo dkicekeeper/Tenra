@@ -114,16 +114,6 @@ protocol BalanceCoordinatorProtocol: AnyObject {
     /// - Parameter operationId: Operation ID from optimisticUpdate
     func revertOptimisticUpdate(_ operationId: UUID) async
 
-    // MARK: - Calculation Modes
-
-    /// Mark account as imported (transactions already in balance)
-    /// - Parameter accountId: Account ID
-    func markAsImported(_ accountId: String) async
-
-    /// Mark account as manual (transactions need to be applied)
-    /// - Parameter accountId: Account ID
-    func markAsManual(_ accountId: String) async
-
     /// Set initial balance for account
     /// - Parameters:
     ///   - balance: Initial balance

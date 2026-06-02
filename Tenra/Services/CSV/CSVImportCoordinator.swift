@@ -315,10 +315,6 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
             for account in accountsVM.accounts {
                 let initialBalance = accountsVM.getInitialBalance(for: account.id) ?? 0
                 await balanceCoordinator.setInitialBalance(initialBalance, for: account.id)
-
-                if !account.shouldCalculateFromTransactions {
-                    await balanceCoordinator.markAsManual(account.id)
-                }
             }
 
             // ✅ CRITICAL: Recalculate balances after CSV import

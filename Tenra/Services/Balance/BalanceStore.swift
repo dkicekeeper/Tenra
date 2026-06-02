@@ -55,17 +55,6 @@ struct AccountBalance: Equatable, Identifiable {
 
 // MARK: - Balance Calculation Mode
 
-/// Determines how balance should be calculated for an account
-/// NOTE: This is separate from BalanceCalculationService's version for new architecture
-enum BalanceMode: Equatable {
-    /// Manual accounts: balance = initialBalance + Σtransactions
-    /// Used for accounts created manually with a specified initial balance
-    case fromInitialBalance
-
-    /// Imported accounts: transactions are already factored into current balance
-    /// Used for accounts imported from CSV where balance already includes all transactions
-    case preserveImported
-}
 
 // MARK: - Balance Update Operation
 
@@ -120,9 +109,6 @@ final class BalanceStore {
     /// Detailed account balance information
     private var accounts: [String: AccountBalance] = [:]
 
-    /// Calculation mode for each account
-    private var calculationModes: [String: BalanceMode] = [:]
-
     /// History of balance updates (for debugging/auditing)
     /// @ObservationIgnored — history mutations must not trigger UI re-renders
     @ObservationIgnored private var updateHistory: [BalanceStoreUpdate] = []
@@ -155,7 +141,6 @@ final class BalanceStore {
     func removeAccount(_ accountId: String) {
         accounts.removeValue(forKey: accountId)
         balances.removeValue(forKey: accountId)
-        calculationModes.removeValue(forKey: accountId)
 
     }
 
@@ -235,34 +220,6 @@ final class BalanceStore {
 
     }
 
-    // MARK: - Calculation Mode Management
-
-    /// Set calculation mode for account
-    func setCalculationMode(_ mode: BalanceMode, for accountId: String) {
-        calculationModes[accountId] = mode
-
-    }
-
-    /// Get calculation mode for account
-    func getCalculationMode(for accountId: String) -> BalanceMode {
-        return calculationModes[accountId] ?? .fromInitialBalance
-    }
-
-    /// Mark account as imported (transactions already in balance)
-    func markAsImported(_ accountId: String) {
-        setCalculationMode(.preserveImported, for: accountId)
-    }
-
-    /// Mark account as manual (transactions need to be applied)
-    func markAsManual(_ accountId: String) {
-        setCalculationMode(.fromInitialBalance, for: accountId)
-    }
-
-    /// Check if account is imported
-    func isImported(_ accountId: String) -> Bool {
-        return getCalculationMode(for: accountId) == .preserveImported
-    }
-
     // MARK: - Initial Balance Management
 
     /// Set initial balance for account
@@ -310,7 +267,6 @@ final class BalanceStore {
     func reset() {
         accounts.removeAll()
         balances.removeAll()
-        calculationModes.removeAll()
         updateHistory.removeAll()
 
     }
@@ -320,7 +276,6 @@ final class BalanceStore {
         return BalanceStoreSnapshot(
             accounts: accounts,
             balances: balances,
-            calculationModes: calculationModes,
             updateHistory: updateHistory
         )
     }
@@ -329,7 +284,6 @@ final class BalanceStore {
     func restore(from snapshot: BalanceStoreSnapshot) {
         accounts = snapshot.accounts
         balances = snapshot.balances
-        calculationModes = snapshot.calculationModes
         updateHistory = snapshot.updateHistory
 
     }
@@ -353,7 +307,6 @@ final class BalanceStore {
 struct BalanceStoreSnapshot {
     let accounts: [String: AccountBalance]
     let balances: [String: Double]
-    let calculationModes: [String: BalanceMode]
     let updateHistory: [BalanceStoreUpdate]
 }
 

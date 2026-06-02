@@ -101,16 +101,16 @@ struct BalanceLedgerInvariantTests {
         let coordinator = Self.makeCoordinator()
 
         let today = DateFormatters.dateFormatter.string(from: Date())
-        // The conversion sets startDate to the start of the open interest period — a date
-        // in the PAST — so inherited history dated after it is NOT filtered by the deposit
-        // cutoff. That is exactly what lets the .fromInitialBalance recalc double-count it.
+        // startDate sits at the open interest-period start (a PAST date), so inherited history
+        // dated after it is NOT filtered by the legacy date cutoff. The conversionTimestamp
+        // (createdAt-based) cutoff is what correctly excludes it instead.
         let pastStart = Self.pastDate(daysAgo: 30)
+        let conversionMoment = Date().timeIntervalSince1970
 
         // A deposit produced by converting a regular account that held 1,000,000. The
-        // snapshot (initialPrincipal / balance) ALREADY includes all prior history. The
-        // conversion fix marks the account preserveImported so the cold-launch full recalc
-        // keeps the live balance instead of re-summing the inherited transactions on top
-        // of the snapshot.
+        // snapshot (initialPrincipal / balance) ALREADY includes all prior history; the
+        // conversion stamps conversionTimestamp so the cold-launch full recalc excludes any
+        // tx that existed at conversion (createdAt <= it) instead of re-summing them.
         let info = DepositInfo(
             bankName: "T",
             initialPrincipal: 1_000_000,
@@ -121,27 +121,31 @@ struct BalanceLedgerInvariantTests {
             lastInterestCalculationDate: pastStart,
             lastInterestPostingMonth: pastStart,
             interestAccruedForCurrentPeriod: 0,
-            startDate: pastStart
+            startDate: pastStart,
+            conversionTimestamp: conversionMoment
         )
         let deposit = Account(id: "dep", name: "Dep", currency: "KZT", depositInfo: info,
                               initialBalance: 1_000_000, balance: 1_000_000)
         await coordinator.registerAccounts([deposit])
         await coordinator.setInitialBalance(1_000_000, for: "dep")
-        await coordinator.markAsImported("dep")
 
-        // Inherited pre-conversion income that already built the 1,000,000 snapshot.
+        // Inherited pre-conversion income that already built the 1,000,000 snapshot —
+        // createdAt is BEFORE the conversion moment, so it's baked in and excluded.
         let inheritedIncome = Transaction(
             id: "inh", date: Self.pastDate(daysAgo: 10), description: "",
             amount: 1_000_000, currency: "KZT", convertedAmount: nil,
             type: .income, category: "Salary", subcategory: nil,
-            accountId: "dep", targetAccountId: nil
+            accountId: "dep", targetAccountId: nil,
+            createdAt: conversionMoment - 1_000
         )
-        // Post-conversion transfer out (the user's "перевод с депозита на другой счёт").
+        // Post-conversion transfer out (the user's "перевод с депозита на другой счёт"),
+        // created AFTER conversion → counts.
         let transferOut = Transaction(
             id: "out", date: today, description: "",
             amount: 491_070.36, currency: "KZT", convertedAmount: nil,
             type: .internalTransfer, category: "", subcategory: nil,
-            accountId: "dep", targetAccountId: "other"
+            accountId: "dep", targetAccountId: "other",
+            createdAt: conversionMoment + 1_000
         )
 
         await coordinator.updateForTransaction(transferOut, operation: .add(transferOut))
@@ -156,5 +160,124 @@ struct BalanceLedgerInvariantTests {
         // user hit, where a converted deposit showed ≈ -1.5M days after a transfer.
         #expect(inc == rec)
         #expect(rec == 1_000_000 - 491_070.36)
+    }
+
+    /// Reproduces the production corruption: a deposit converted yesterday reads a wildly
+    /// wrong balance after a cold relaunch on a NEW calendar day.
+    ///
+    /// Root cause: the `.preserveImported` mode set by `markAsImported` at conversion lives
+    /// ONLY in `BalanceStore.calculationModes` (in-memory, never persisted). On relaunch the
+    /// dict is empty, every account defaults to `.fromInitialBalance`, and the day-change
+    /// trigger `recalculateLedgerIfDayChanged` runs `recalculateAll`. Because the conversion
+    /// sets `startDate` to the open interest-period start (a PAST date) while `initialPrincipal`
+    /// snapshots the balance at conversion, inherited history dated AFTER startDate but already
+    /// baked into the snapshot is re-applied on top → divergence.
+    ///
+    /// This test does NOT call `markAsImported` — it models the post-relaunch state directly.
+    /// It must equal the snapshot (inherited history is already inside it).
+    @Test("Converted deposit reads correct balance after relaunch with mode lost")
+    func convertedDepositRecalcCorrectAfterRelaunchModeLost() async {
+        let coordinator = Self.makeCoordinator()
+
+        // startDate sits at the open interest-period start — a PAST date, NOT the conversion
+        // moment. This is what lets post-startDate inherited history leak past a date cutoff.
+        let periodStart = Self.pastDate(daysAgo: 30)
+        // The conversion moment: every tx created at/before this is baked into the snapshot.
+        let conversionMoment = Date().timeIntervalSince1970
+
+        // Account converted to a deposit yesterday. Snapshot balance (= initialPrincipal =
+        // initialBalance) is 1000 and ALREADY reflects every pre-conversion transaction.
+        // conversionTimestamp is what the conversion flow now persists.
+        let info = DepositInfo(
+            bankName: "T",
+            initialPrincipal: 1_000,
+            capitalizationEnabled: false,
+            interestRateAnnual: 0,
+            interestRateHistory: [RateChange(effectiveFrom: periodStart, annualRate: 0)],
+            interestPostingDay: 1,
+            lastInterestCalculationDate: periodStart,
+            lastInterestPostingMonth: periodStart,
+            interestAccruedForCurrentPeriod: 0,
+            startDate: periodStart,
+            conversionTimestamp: conversionMoment
+        )
+        let deposit = Account(id: "dep", name: "Dep", currency: "KZT", depositInfo: info,
+                              initialBalance: 1_000, balance: 1_000)
+
+        // Inherited pre-conversion expense, dated AFTER periodStart but already inside the
+        // 1000 snapshot. createdAt is BEFORE the conversion moment (it existed at conversion).
+        let inheritedExpense = Transaction(
+            id: "inh", date: Self.pastDate(daysAgo: 10), description: "",
+            amount: 500, currency: "KZT", convertedAmount: nil,
+            type: .expense, category: "Food", subcategory: nil,
+            accountId: "dep", targetAccountId: nil,
+            createdAt: conversionMoment - 1_000
+        )
+
+        // Cold relaunch: register accounts, mode dict empty (defaults to .fromInitialBalance),
+        // day-change trigger fires recalculateAll. NO markAsImported — that state was lost.
+        await coordinator.registerAccounts([deposit])
+        await coordinator.setInitialBalance(1_000, for: "dep")
+        await coordinator.recalculateAll(accounts: [deposit], transactions: [inheritedExpense])
+        let rec = coordinator.balances["dep"]
+
+        // The inherited expense is already baked into the 1000 snapshot — recalc must NOT
+        // re-subtract it. Pre-fix this yields 500 (double-counted); post-fix it stays 1000.
+        #expect(rec == 1_000)
+    }
+
+    /// The reason the cutoff keys on `createdAt`, not the calendar day: a post-conversion
+    /// event dated the SAME day as the conversion must still count, while a pre-conversion
+    /// event on that same day must not. A date-only cutoff cannot tell them apart — which is
+    /// exactly why the old fix fell back to `.preserveImported`.
+    @Test("Converted deposit separates same-day pre- vs post-conversion events by createdAt")
+    func convertedDepositSameDayEventsSeparatedByCreatedAt() async {
+        let coordinator = Self.makeCoordinator()
+        let today = DateFormatters.dateFormatter.string(from: Date())
+        let conversionMoment = Date().timeIntervalSince1970
+
+        let info = DepositInfo(
+            bankName: "T",
+            initialPrincipal: 1_000,
+            capitalizationEnabled: false,
+            interestRateAnnual: 0,
+            interestRateHistory: [RateChange(effectiveFrom: today, annualRate: 0)],
+            interestPostingDay: 1,
+            lastInterestCalculationDate: today,
+            lastInterestPostingMonth: today,
+            interestAccruedForCurrentPeriod: 0,
+            startDate: today,
+            conversionTimestamp: conversionMoment
+        )
+        let deposit = Account(id: "dep", name: "Dep", currency: "KZT", depositInfo: info,
+                              initialBalance: 1_000, balance: 1_000)
+
+        // Pre-conversion expense, TODAY, already inside the 1000 snapshot (createdAt before).
+        let preConversion = Transaction(
+            id: "pre", date: today, description: "",
+            amount: 200, currency: "KZT", convertedAmount: nil,
+            type: .expense, category: "Food", subcategory: nil,
+            accountId: "dep", targetAccountId: nil,
+            createdAt: conversionMoment - 500
+        )
+        // Post-conversion withdrawal, TODAY, made AFTER converting (createdAt after) → counts.
+        let postConversion = Transaction(
+            id: "post", date: today, description: "",
+            amount: 300, currency: "KZT", convertedAmount: nil,
+            type: .depositWithdrawal, category: "", subcategory: nil,
+            accountId: "dep", targetAccountId: nil,
+            createdAt: conversionMoment + 500
+        )
+
+        await coordinator.registerAccounts([deposit])
+        await coordinator.setInitialBalance(1_000, for: "dep")
+        await coordinator.recalculateAll(
+            accounts: [deposit], transactions: [preConversion, postConversion]
+        )
+        let rec = coordinator.balances["dep"]
+
+        // 1000 snapshot (already includes the pre-conversion 200) minus the post-conversion
+        // withdrawal 300 = 700. The pre-conversion expense must NOT be re-applied.
+        #expect(rec == 700)
     }
 }

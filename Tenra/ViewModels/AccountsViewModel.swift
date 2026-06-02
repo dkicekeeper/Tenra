@@ -74,12 +74,6 @@ class AccountsViewModel {
             // Используем initialBalance вместо balance
             let initialBal = account.initialBalance ?? 0.0
             await coordinator.setInitialBalance(initialBal, for: account.id)
-
-            // If shouldCalculateFromTransactions is true, DON'T mark as manual
-            // This allows the account balance to be calculated from transactions
-            if !shouldCalculateFromTransactions {
-                await coordinator.markAsManual(account.id)
-            }
         }
     }
     
@@ -114,7 +108,6 @@ class AccountsViewModel {
 
             Task {
                 await coordinator.setInitialBalance(correctInitialBalance, for: account.id)
-                await coordinator.markAsManual(account.id)
                 await coordinator.recalculateAccounts(
                     [account.id],
                     accounts: store.accounts,
@@ -237,22 +230,30 @@ class AccountsViewModel {
         guard let existing = accounts.first(where: { $0.id == account.id }) else { return }
 
         // A conversion is an existing *non-deposit* account that just gained `depositInfo`.
-        // Its prior transaction history is already baked into the snapshot balance, so the
-        // account must switch to `.preserveImported`: otherwise the cold-launch full recalc
-        // (`recalculateAll`, mode `.fromInitialBalance`) re-sums that inherited history on top
-        // of the snapshot, corrupting the balance (the converted-deposit "huge negative
-        // balance days later" bug). Imported mode keeps the live, incrementally-maintained
-        // balance — robust even when the first post-conversion transfer is same-day as the
-        // conversion (a date-only startDate cutoff can't separate those). Editing an
-        // already-converted deposit leaves its mode untouched.
+        // Its prior transaction history is already baked into the snapshot balance. We stamp
+        // `conversionTimestamp` so the balance engine excludes every tx that existed at
+        // conversion (createdAt <= it) from the recalc sum, and align the store's
+        // initialBalance with the snapshot so `initialBalance + Σ(post-conversion)` is correct
+        // both in-session and after relaunch. This replaces the old in-memory
+        // `.preserveImported` mode, whose loss on the next-day cold recalc caused the
+        // "huge negative balance days later" bug. See BalanceCalculationEngine.contribution.
         let isConversion = existing.depositInfo == nil
+
+        var account = account
+        if isConversion, var info = account.depositInfo {
+            info.conversionTimestamp = Date().timeIntervalSince1970
+            account.depositInfo = info
+        }
 
         transactionStore?.updateAccount(account)
 
         if let coordinator = balanceCoordinator, let depositInfo = account.depositInfo {
+            let snapshotBalance = account.initialBalance
             Task {
-                if isConversion {
-                    await coordinator.markAsImported(account.id)
+                if isConversion, let snapshotBalance {
+                    // Snapshot is the conversion-time balance; align the engine's base so the
+                    // cold recalc reproduces it (inherited history is gated out by createdAt).
+                    await coordinator.setInitialBalance(snapshotBalance, for: account.id)
                 }
                 await coordinator.updateDepositInfo(account, depositInfo: depositInfo)
             }
@@ -311,17 +312,12 @@ class AccountsViewModel {
             // Register all accounts
             await coordinator.registerAccounts(accounts)
 
-            // Set initial balances and modes based on account configuration
+            // Set initial balances based on account configuration
             for account in accounts {
 
                 // Используем initialBalance вместо balance
                 let initialBal = account.initialBalance ?? 0.0
                 await coordinator.setInitialBalance(initialBal, for: account.id)
-
-                // Only mark as manual if shouldCalculateFromTransactions is false
-                if !account.shouldCalculateFromTransactions {
-                    await coordinator.markAsManual(account.id)
-                }
             }
 
         }

@@ -299,7 +299,7 @@ struct DepositInterestServiceTests {
             isDeposit: true
         )
         return BalanceCalculationEngine().calculateBalance(
-            account: bal, transactions: events, mode: .fromInitialBalance
+            account: bal, transactions: events
         )
     }
 

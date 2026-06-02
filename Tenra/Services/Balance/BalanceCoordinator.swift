@@ -212,16 +212,6 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
         store.setBalance(update.previousBalance, for: update.accountId, source: .manual)
     }
 
-    // MARK: - Calculation Modes
-
-    func markAsImported(_ accountId: String) async {
-        store.markAsImported(accountId)
-    }
-
-    func markAsManual(_ accountId: String) async {
-        store.markAsManual(accountId)
-    }
-
     func setInitialBalance(_ balance: Double, for accountId: String) async {
         store.setInitialBalance(balance, for: accountId)
     }
@@ -326,12 +316,9 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
                 continue
             }
 
-            let mode = store.getCalculationMode(for: account.id)
-
             let calculatedBalance = engine.calculateBalance(
                 account: accountBalance,
-                transactions: transactions,
-                mode: mode
+                transactions: transactions
             )
 
             newBalances[account.id] = calculatedBalance
@@ -374,12 +361,9 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
                 continue
             }
 
-            let mode = store.getCalculationMode(for: account.id)
-
             let calculatedBalance = engine.calculateBalance(
                 account: accountBalance,
-                transactions: transactions,
-                mode: mode
+                transactions: transactions
             )
 
             newBalances[account.id] = calculatedBalance

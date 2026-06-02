@@ -55,24 +55,15 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
 
             let isFutureDate = transactionDate > today
 
-            if !isFutureDate {
-                switch transaction.type {
-                case .income:
-                    totalIncome += amountInBaseCurrency
-                case .expense:
-                    totalExpenses += amountInBaseCurrency
-                case .internalTransfer:
-                    totalInternal += amountInBaseCurrency
-                case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
-                    break
-                case .loanPayment, .loanEarlyRepayment:
-                    totalExpenses += amountInBaseCurrency
-                }
-            } else {
-                // Calculate planned amount from future expense transactions
-                if transaction.type == .expense || transaction.type == .loanPayment {
-                    plannedExpenses += amountInBaseCurrency
-                }
+            // Single shared classification rule — see SummaryContribution. (This is what
+            // makes the history-screen summary agree with the home screen: deposit interest
+            // now counts as income here too, instead of being silently dropped.)
+            switch transaction.type.summaryContribution(isFuture: isFutureDate) {
+            case .income:           totalIncome += amountInBaseCurrency
+            case .expense:          totalExpenses += amountInBaseCurrency
+            case .internalTransfer: totalInternal += amountInBaseCurrency
+            case .plannedExpense:   plannedExpenses += amountInBaseCurrency
+            case .ignored:          break
             }
         }
 

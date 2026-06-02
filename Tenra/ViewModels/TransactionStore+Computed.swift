@@ -11,22 +11,6 @@ import Foundation
 
 extension TransactionStore {
 
-    /// Summary of income/expense/transfers (cached)
-    var summary: Summary {
-        // Try cache first
-        if let cached: Summary = cache.summary {
-            return cached
-        }
-
-        // Calculate
-        let result = calculateSummary(transactions: transactions)
-
-        // Cache result
-        cache.setSummary(result)
-
-        return result
-    }
-
     /// Expenses grouped by category (cached)
     var categoryExpenses: [CachedCategoryExpense] {
         // Try cache first
@@ -62,54 +46,6 @@ extension TransactionStore {
     }
 
     // MARK: - Calculation Methods
-
-    /// Calculate summary from transactions
-    private func calculateSummary(transactions: [Transaction]) -> Summary {
-        var totalIncome: Double = 0
-        var totalExpenses: Double = 0
-        var totalInternal: Double = 0
-
-        // YYYY-MM-DD format sorts lexicographically — no DateFormatter needed
-        var minDateStr: String?
-        var maxDateStr: String?
-
-        for tx in transactions {
-            let amountInBase = convertToBaseCurrency(amount: tx.amount, from: tx.currency)
-
-            switch tx.type {
-            case .income:
-                totalIncome += amountInBase
-            case .expense:
-                totalExpenses += amountInBase
-            case .internalTransfer:
-                totalInternal += amountInBase
-            case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
-                totalInternal += amountInBase
-            case .loanPayment, .loanEarlyRepayment:
-                totalExpenses += amountInBase
-            }
-
-            if !tx.date.isEmpty {
-                if minDateStr == nil || tx.date < minDateStr! {
-                    minDateStr = tx.date
-                }
-                if maxDateStr == nil || tx.date > maxDateStr! {
-                    maxDateStr = tx.date
-                }
-            }
-        }
-
-        return Summary(
-            totalIncome: totalIncome,
-            totalExpenses: totalExpenses,
-            totalInternalTransfers: totalInternal,
-            netFlow: totalIncome - totalExpenses,
-            currency: baseCurrency,
-            startDate: minDateStr ?? "",
-            endDate: maxDateStr ?? "",
-            plannedAmount: 0
-        )
-    }
 
     /// Calculate category expenses from transactions
     private func calculateCategoryExpenses(transactions: [Transaction]) -> [CachedCategoryExpense] {

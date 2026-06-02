@@ -76,25 +76,13 @@ enum SummaryCalculator {
             guard let txDate = dateFormatter.date(from: tx.date) else { continue }
             let isFuture = txDate > today
 
-            if !isFuture {
-                switch tx.type {
-                case .income, .depositInterestAccrual:
-                    // Deposit interest accrual is realized income to the user and
-                    // counts toward the summary card's income total.
-                    totalIncome += amountInBase
-                case .expense:
-                    totalExpenses += amountInBase
-                case .internalTransfer:
-                    totalInternal += amountInBase
-                case .depositTopUp, .depositWithdrawal:
-                    break
-                case .loanPayment, .loanEarlyRepayment:
-                    totalExpenses += amountInBase
-                }
-            } else {
-                if tx.type == .expense || tx.type == .loanPayment {
-                    plannedExpenses += amountInBase
-                }
+            // Single shared classification rule — see SummaryContribution.
+            switch tx.type.summaryContribution(isFuture: isFuture) {
+            case .income:          totalIncome += amountInBase
+            case .expense:         totalExpenses += amountInBase
+            case .internalTransfer: totalInternal += amountInBase
+            case .plannedExpense:  plannedExpenses += amountInBase
+            case .ignored:         break
             }
         }
 

@@ -99,6 +99,10 @@ private final class MockAccountRepository: AccountRepositoryProtocol {
         for (id, balance) in balances { balanceUpdates[id] = balance }
     }
 
+    func updateInitialBalancesSync(_ balances: [String: Double]) async {
+        // mock: no-op (initial balance persistence is a CoreData-only path)
+    }
+
     func loadAllAccountBalances() -> [String: Double] { [:] }
 
     // Schema v9: account aggregates persistence (no-op for mock).
@@ -199,6 +203,62 @@ struct AccountRepositoryMockTests {
         ])
         let a2 = repo.savedAccounts.first { $0.id == "a2" }
         #expect(a2?.balance == 500, "new account keeps its incoming balance")
+    }
+}
+
+// MARK: - updateInitialBalancesSync Round-Trip (real CoreData-backed repo)
+
+@Suite("AccountRepository InitialBalance Sync Tests", .serialized)
+struct AccountRepositoryInitialBalanceSyncTests {
+
+    private func makeContainer() throws -> NSPersistentContainer {
+        let container = NSPersistentContainer(name: "Tenra")
+        let desc = NSPersistentStoreDescription()
+        desc.type = NSInMemoryStoreType
+        desc.url = URL(string: "memory://\(UUID().uuidString)")
+        desc.shouldAddStoreAsynchronously = false
+        container.persistentStoreDescriptions = [desc]
+        var err: Error?
+        container.loadPersistentStores { _, error in err = error }
+        if let e = err { throw e }
+        return container
+    }
+
+    @Test("updateInitialBalancesSync persists initialBalance to CoreData")
+    func updateInitialBalancesSyncPersists() async throws {
+        let container = try makeContainer()
+        // Insert the account entity directly into the in-memory context.
+        let ctx = container.viewContext
+        let accountId = "conv-\(UUID().uuidString)"
+        ctx.performAndWait {
+            let entity = AccountEntity(context: ctx)
+            entity.id = accountId
+            entity.name = "Conv"
+            entity.currency = "KZT"
+            entity.balance = 1051.6
+            entity.initialBalance = 0
+            try? ctx.save()
+        }
+
+        // Build a CoreDataStack wrapper around the in-memory container and exercise
+        // the method under test through it.
+        let stack = CoreDataStack(container: container)
+        let saveCoord = CoreDataSaveCoordinator(stack: stack)
+        let repo = AccountRepository(stack: stack, saveCoordinator: saveCoord)
+
+        await repo.updateInitialBalancesSync([accountId: 1051.6])
+
+        // Reload from the same context to verify the write went through.
+        var reloadedInitial: Double? = nil
+        ctx.performAndWait {
+            ctx.reset()
+            let req = AccountEntity.fetchRequest()
+            req.predicate = NSPredicate(format: "id == %@", accountId)
+            reloadedInitial = (try? ctx.fetch(req))?.first?.initialBalance
+        }
+
+        let persisted = try #require(reloadedInitial)
+        #expect(abs(persisted - 1051.6) < 0.001, "initialBalance must be persisted to CoreData")
     }
 }
 

@@ -47,6 +47,9 @@ protocol DataRepositoryProtocol: Sendable {
     /// Awaited balance persist — lets `BalanceCoordinator.persistBalance` go through
     /// the facade instead of downcasting to `CoreDataRepository` (M-10).
     nonisolated func updateAccountBalancesSync(_ balances: [String: Double]) async
+    /// Persist `initialBalance` for specific accounts — the ONE allowed path that overwrites
+    /// AccountEntity.initialBalance after creation (deposit conversion recalc base snapshot).
+    nonisolated func updateInitialBalancesSync(_ balances: [String: Double]) async
 
     // MARK: - Categories
     nonisolated func loadCategories() -> [CustomCategory]

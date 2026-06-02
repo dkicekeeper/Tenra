@@ -42,6 +42,14 @@ final class CoreDataStack: @unchecked Sendable {
         setupNotifications()
     }
 
+    /// Testing-only initializer: wraps an already-loaded NSPersistentContainer so tests
+    /// can inject an in-memory store without touching CoreDataStack.shared.
+    /// NOT for production use — init is internal so it is only callable from the same module
+    /// and from `@testable import Tenra` test targets.
+    init(container: NSPersistentContainer) {
+        self._persistentContainer = container
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
     }

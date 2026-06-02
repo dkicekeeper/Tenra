@@ -103,6 +103,11 @@ nonisolated final class CoreDataRepository: DataRepositoryProtocol, @unchecked S
         await accountRepository.updateAccountBalancesSync(balances)
     }
 
+    /// Persist initialBalance for specific accounts — deposit conversion recalc base snapshot.
+    func updateInitialBalancesSync(_ balances: [String: Double]) async {
+        await accountRepository.updateInitialBalancesSync(balances)
+    }
+
     /// Load all persisted account balances from Core Data
     func loadAllAccountBalances() -> [String: Double] {
         return accountRepository.loadAllAccountBalances()

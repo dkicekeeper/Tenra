@@ -19,6 +19,10 @@ protocol AccountRepositoryProtocol: Sendable {
     nonisolated func updateAccountBalances(_ balances: [String: Double])
     /// Synchronously (awaited) persist multiple balances — safe to call from async context.
     nonisolated func updateAccountBalancesSync(_ balances: [String: Double]) async
+    /// Persist `initialBalance` for specific accounts — the ONE allowed path that overwrites
+    /// AccountEntity.initialBalance after creation. Used only when an account is converted to
+    /// a deposit and its current balance is snapshotted as the new recalc base.
+    nonisolated func updateInitialBalancesSync(_ balances: [String: Double]) async
     nonisolated func loadAllAccountBalances() -> [String: Double]
 
     /// Pre-aggregated income/expense per account — warm-start snapshot for
@@ -190,6 +194,29 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
         } catch {
             // Save failed — balance will be recalculated from transactions on next startup
             // for dynamic accounts; manual accounts may show stale balance until next update
+        }
+    }
+
+    /// Persist `initialBalance` for specific accounts. The ONE allowed path that overwrites
+    /// AccountEntity.initialBalance after creation — used only when an account is converted to
+    /// a deposit and its current balance is snapshotted as the new recalc base. saveAccountsInternal
+    /// intentionally refuses to touch initialBalance; this is the deliberate exception.
+    func updateInitialBalancesSync(_ balances: [String: Double]) async {
+        guard !balances.isEmpty else { return }
+        let operationId = "updateInitialBalancesSync_\(UUID().uuidString)"
+        do {
+            try await saveCoordinator.performSave(operation: operationId) { context in
+                let fetchRequest = NSFetchRequest<AccountEntity>(entityName: "AccountEntity")
+                fetchRequest.predicate = NSPredicate(format: "id IN %@", Array(balances.keys))
+                let accounts = try context.fetch(fetchRequest)
+                for account in accounts {
+                    if let accountId = account.id, let newInitial = balances[accountId] {
+                        account.initialBalance = newInitial
+                    }
+                }
+            }
+        } catch {
+            // Save failed — next-day recalc uses the stale base until the conversion is re-saved.
         }
     }
 

@@ -273,25 +273,21 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 
 ---
 
-## Roadmap — Phases 1-3 (each ships as its OWN detailed plan)
+## Phases 1-3 — Implemented (branch `perf/targeted-maturation`, 2026-06-02)
 
-These address the broader "why does it keep recalculating 19k / why do numbers diverge" concerns. Each is an independent, shippable subsystem and will get its own `writing-plans` pass before implementation. Listed here so the direction is agreed.
+### Phase 1 — Skip the daily full recalc when nothing matured ✅ DONE
+- **Shipped:** Instead of the riskier "apply matured deltas" approach (which is NOT idempotent across a kill-between-apply-and-key-persist), `recalculateLedgerIfDayChanged` now **skips the entire O(N×M) recompute when no transaction matured** since the last run — i.e. none dated in `(lastRun, today]`. Most day rollovers have no future tx coming due, so the heavy path (2× O(N) rebuilds + recalculateAll) is bypassed. It still runs when something actually matured, and on first launch after install/update (drift repair). The guard is an O(N) cheap string-compare. Zero change to HOW numbers are computed → zero balance-correctness risk. `LedgerMaturation.isMatured` + store skip/run tests pin it.
+- **Why not full delta-maturation:** delta-apply is not idempotent (a kill before the day-key persists would double-count on re-run); the skip is idempotent and captures the bulk of the win. A future pass could add scoped recompute-of-affected-accounts (idempotent) to also shrink the maturing-day cost.
 
-### Phase 1 — Replace the daily full recalc with targeted maturation (KILLS THE LAUNCH LAG)
-- **Problem:** `TransactionStore.recalculateLedgerIfDayChanged` runs `recalculateAll` = `initialBalance + Σ(19k tx) × every account` on the MainActor once per day and on every first launch after an update (`TransactionStore.swift:528-541`, `BalanceCoordinator.processRecalculateAll`). Plus two O(N) index rebuilds in the same call stack. This is the startup hang.
-- **Insight:** The ONLY thing a day-change genuinely changes is that future-dated transactions (`date > yesterday`) whose date is now `<= today` must be folded into realized balances/aggregates. That is a SMALL, identifiable set — not all 19k.
-- **Approach:** Add a maturation pass that selects transactions whose `date` falls in `(lastRecalcDate, today]` (a bounded set, indexable by date), computes each one's `contribution`, and applies the delta to ONLY the affected accounts + aggregate buckets — then advances `lastLedgerRecalcKey`. No full scan. Keep `recalculateAll` only as an explicit user-triggered "repair" action in Settings.
-- **Risk to design in the plan:** future-dated tx that were DELETED while still in the future; recurring occurrences generated ahead; correctness vs the existing `LedgerPolicyRule.isRealized` gate. Needs its own failing-test-first design (an invariant test: "incremental + maturation == full recalc" over a dataset spanning the date boundary).
+### Phase 2 — Unify the summary paths through one classification rule ✅ DONE
+- **Shipped:** Extracted `TransactionType.summaryContribution(isFuture:)` (`Tenra/Models/SummaryContribution.swift`) as the SINGLE rule and routed both live paths (`SummaryCalculator`, `TransactionQueryService`) through it; deleted the dead `TransactionStore.summary` path (no readers). Fixes the deposit-interest divergence (was income on home, dropped on history). Pinned by `SummaryContributionTests`.
+- **Noted follow-up:** the two live paths still differ in currency conversion (`SummaryCalculator` uses `convertSync`; `TransactionQueryService` uses `getConvertedAmountOrCompute`). Only matters for multi-currency with cold cache; left untouched to avoid shifting many displayed amounts in one go.
 
-### Phase 2 — Unify the three Summary code paths
-- **Problem:** `SummaryCalculator` (ContentView), `TransactionStore.summary` (`+Computed`), and `TransactionQueryService.calculateSummary` (`TransactionsViewModel`) compute totals with DIFFERENT future-tx and deposit-type handling, so different screens can show different numbers simultaneously.
-- **Approach:** Make `SummaryCalculator` the single source; route the other two call sites through it (or delete the dead `TransactionStore.summary` if unreferenced). Pin with a test asserting all UI summary entry points return identical figures for a fixture containing deposits + future recurring tx.
-
-### Phase 3 — Point fixes for the remaining divergence/persistence gaps
-- Flush category & account aggregate debounce (`scheduleAccountAggregatePersist`, the 500ms window) on `applicationWillResignActive` so a kill within 500ms of a mutation can't lose the write.
-- Rebuild ACCOUNT aggregates (not just category) on `bumpCurrencyRatesVersion` when cross-currency legs were converted with a stale FX fallback (`TransactionStore.swift:131-136`).
-- Reverse `LoanInfo.remainingPrincipal` / `totalInterestPaid` / `paymentsMade` when a linked loan-payment transaction is deleted through the generic history UI (currently only the dedicated LoanDetailView action keeps them in sync).
-- Make `processRecalculateAccounts` persist its results (it updates in-memory + published `balances` but never calls `persistBalances`, so a targeted recalc is lost on relaunch — `BalanceCoordinator.swift:337-380`).
+### Phase 3 — Point fixes ✅ DONE (3 of 4); ⚠️ 1 deferred
+- ✅ `processRecalculateAccounts` now calls `persistBalances` (targeted recalc was lost on relaunch).
+- ✅ Flush category + account aggregate debounce on `applicationWillResignActive` (custom notification posted from `AppDelegate`) — a kill within the 500ms window can't drop the write.
+- ✅ Account-aggregate rebuild on `bumpCurrencyRatesVersion` — **was already correct** (the audit was wrong; `TransactionStore.bumpCurrencyRatesVersion` already calls `rebuildAccountAggregates()`). No change.
+- ⚠️ **DEFERRED — loan `remainingPrincipal` reversal on tx delete.** Deleting a linked loan-payment through the generic history UI doesn't reverse `LoanInfo.remainingPrincipal`/`totalInterestPaid`/`paymentsMade`. The correct fix recomputes via `LoanPaymentService.recalculateAfterLinking` over the remaining linked payments — BUT that function treats all payments uniformly, while the live state may have been built by `applyEarlyRepayment` (full-amount reduction + `earlyRepayments` array) and incremental `createManualPayment`. Recompute-on-delete could therefore DIVERGE from the incrementally-maintained loan state for loans with early repayments, shifting the debt unexpectedly. This is real balance-correctness risk in the loan-amortization domain and needs its own focused, test-first session (invariant: `recalculateAfterLinking` over all payments == incremental result, across manual + early-repayment mixes) before shipping. **Do NOT rush it.**
 
 ---
 

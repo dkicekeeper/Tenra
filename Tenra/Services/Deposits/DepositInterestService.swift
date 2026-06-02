@@ -47,7 +47,7 @@ nonisolated enum DepositInterestService {
             .filter { tx in
                 tx.type.affectsDepositPrincipal &&
                 (tx.accountId == depositId || tx.targetAccountId == depositId) &&
-                tx.date > depositInfo.startDate
+                eventIsAfterAnchor(tx, depositInfo: depositInfo)
             }
             .sorted { $0.date < $1.date }
 
@@ -215,7 +215,7 @@ nonisolated enum DepositInterestService {
             .filter { tx in
                 tx.type.affectsDepositPrincipal &&
                 (tx.accountId == accountId || tx.targetAccountId == accountId) &&
-                tx.date > depositInfo.startDate
+                eventIsAfterAnchor(tx, depositInfo: depositInfo)
             }
             .sorted { $0.date < $1.date }
 
@@ -318,28 +318,58 @@ nonisolated enum DepositInterestService {
         return applicableRate > 0 ? applicableRate : (history.first?.annualRate ?? 0)
     }
 
+    /// Whether a principal-affecting transaction belongs in the accrual walk (i.e. it is
+    /// NOT already baked into `initialPrincipal`).
+    ///
+    /// For a CONVERTED deposit (`conversionTimestamp != nil`), `initialPrincipal` is the
+    /// balance snapshot taken at conversion, which already folds in every transaction that
+    /// existed then. We therefore gate by `createdAt > conversionTimestamp` — the SAME
+    /// precise-timestamp boundary `BalanceCalculationEngine.contribution` uses — so that
+    /// inherited history (e.g. a pre-conversion withdrawal carrying `date > startDate`) is
+    /// not re-applied in the walk. Re-applying it drove the running principal negative →
+    /// negative accrued interest (the field symptom). For a fresh deposit it falls back to
+    /// the calendar-day `startDate` cutoff.
+    private static func eventIsAfterAnchor(_ tx: Transaction, depositInfo: DepositInfo) -> Bool {
+        if let conversionMoment = depositInfo.conversionTimestamp {
+            return tx.createdAt > conversionMoment
+        }
+        return tx.date > depositInfo.startDate
+    }
+
     /// Start of the current (unposted) interest period — the posting date in
     /// `lastInterestPostingMonth`, clamped to the month's length, but never earlier
     /// than `startDate`. Accrual is recomputed from here on every reconcile/display
     /// call, so principal changes backdated into the open period are always picked up.
     /// (The previous incremental design advanced `lastInterestCalculationDate` past
     /// such days and could never re-accrue them — the root cause of "interest = 0".)
+    ///
+    /// For a CONVERTED deposit the period also never starts before the conversion day:
+    /// the snapshot principal only describes the balance from conversion onward, so
+    /// accruing on it for days the deposit did not yet exist would be wrong. This only
+    /// affects the first period after conversion — once interest posts,
+    /// `lastInterestPostingMonth` advances past the conversion day and the clamp is inert.
     private static func currentPeriodStart(depositInfo: DepositInfo) -> Date {
         let calendar = Calendar.current
         let startDate = DateFormatters.dateFormatter.date(from: depositInfo.startDate)
             .map { calendar.startOfDay(for: $0) }
 
-        guard let lastPostingMonth = DateFormatters.dateFormatter.date(from: depositInfo.lastInterestPostingMonth) else {
-            return startDate ?? calendar.startOfDay(for: Date())
+        let anchor: Date
+        if let lastPostingMonth = DateFormatters.dateFormatter.date(from: depositInfo.lastInterestPostingMonth) {
+            var comps = calendar.dateComponents([.year, .month], from: lastPostingMonth)
+            let monthDate = calendar.date(from: comps) ?? lastPostingMonth
+            let daysInMonth = calendar.range(of: .day, in: .month, for: monthDate)?.count ?? depositInfo.interestPostingDay
+            comps.day = min(depositInfo.interestPostingDay, daysInMonth)
+            let postingDate = calendar.date(from: comps).map { calendar.startOfDay(for: $0) } ?? monthDate
+            anchor = (startDate.map { $0 > postingDate } ?? false) ? startDate! : postingDate
+        } else {
+            anchor = startDate ?? calendar.startOfDay(for: Date())
         }
-        var comps = calendar.dateComponents([.year, .month], from: lastPostingMonth)
-        let monthDate = calendar.date(from: comps) ?? lastPostingMonth
-        let daysInMonth = calendar.range(of: .day, in: .month, for: monthDate)?.count ?? depositInfo.interestPostingDay
-        comps.day = min(depositInfo.interestPostingDay, daysInMonth)
-        let postingDate = calendar.date(from: comps).map { calendar.startOfDay(for: $0) } ?? monthDate
 
-        if let s = startDate, s > postingDate { return s }
-        return postingDate
+        if let conversionMoment = depositInfo.conversionTimestamp {
+            let conversionDay = calendar.startOfDay(for: Date(timeIntervalSince1970: conversionMoment))
+            if conversionDay > anchor { return conversionDay }
+        }
+        return anchor
     }
 
     /// `true` when `date` falls on the deposit's monthly interest-posting day

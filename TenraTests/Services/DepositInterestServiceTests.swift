@@ -530,6 +530,101 @@ struct DepositInterestServiceTests {
         #expect(abs(result - wrongThreeDays) > Decimal(string: "1")!,
                 "Must NOT earn from the arrival day (would be \(wrongThreeDays))")
     }
+
+    // MARK: - Converted-deposit interest (conversionTimestamp alignment)
+
+    /// Builds a DepositInfo for an account→deposit conversion: `initialPrincipal` is the
+    /// snapshot balance at conversion (already bakes in all prior history), `startDate` is
+    /// the past posting date that `DepositEditView.computeInitialDates` produces, and
+    /// `conversionTimestamp` marks the createdAt boundary (matching the balance engine).
+    private func makeConvertedDepositInfo(
+        initialPrincipal: Decimal,
+        annualRate: Decimal,
+        startDateOffset: Int,
+        lastPostingMonth: String,
+        conversionTimestamp: TimeInterval,
+        capitalizationEnabled: Bool = false
+    ) -> DepositInfo {
+        let startStr = dateString(offsetDays: startDateOffset)
+        return DepositInfo(
+            bankName: "ConvertedBank",
+            initialPrincipal: initialPrincipal,
+            capitalizationEnabled: capitalizationEnabled,
+            interestRateAnnual: annualRate,
+            interestRateHistory: [RateChange(effectiveFrom: startStr, annualRate: annualRate)],
+            interestPostingDay: 3,
+            lastInterestCalculationDate: startStr,
+            lastInterestPostingMonth: lastPostingMonth,
+            interestAccruedForCurrentPeriod: 0,
+            startDate: startStr,
+            conversionTimestamp: conversionTimestamp
+        )
+    }
+
+    @Test("converted deposit: pre-conversion history is NOT re-applied → interest never negative")
+    func convertedDeposit_excludesPreConversionEvents_noNegativeInterest() {
+        // Reproduces the field bug: a regular account with a month of top-ups and a large
+        // withdrawal is converted into a deposit. The snapshot balance (small) is baked
+        // into initialPrincipal; the pre-conversion withdrawal still carries date > startDate
+        // and — under the old startDate-only filter — was re-applied in the walk, driving the
+        // running principal negative → negative accrued interest (the −12 817 ₸ symptom).
+        let conversion = today().timeIntervalSince1970
+        let info = makeConvertedDepositInfo(
+            initialPrincipal: Decimal(string: "1051.6")!,
+            annualRate: Decimal(string: "13.8")!,
+            startDateOffset: -30,            // past posting date (computeInitialDates)
+            lastPostingMonth: "2020-01-01",  // far past → periodStart anchors at startDate
+            conversionTimestamp: conversion
+        )
+
+        // Large pre-conversion withdrawal, dated inside the open period (date > startDate)
+        // but created BEFORE conversion (createdAt <= conversionTimestamp) → baked into the snapshot.
+        let preConversionWithdrawal = Transaction(
+            id: "w1", date: dateString(offsetDays: -15), description: "",
+            amount: 2_000_000, currency: "KZT", convertedAmount: nil,
+            type: .expense, category: "Other", subcategory: nil,
+            accountId: "d1", targetAccountId: nil,
+            createdAt: conversion - 1000
+        )
+
+        let result = DepositInterestService.calculateInterestToToday(
+            depositInfo: info, accountId: "d1", allTransactions: [preConversionWithdrawal]
+        )
+
+        #expect(result >= 0, "Converted deposit must not accrue negative interest; got \(result)")
+    }
+
+    @Test("converted deposit: post-conversion top-up still accrues interest")
+    func convertedDeposit_postConversionTopUpStillAccrues() {
+        // Guards against over-exclusion: events created AFTER conversion must still drive
+        // the running principal (and thus interest).
+        let conversion = Calendar.current.date(byAdding: .day, value: -6, to: today())!.timeIntervalSince1970
+        let info = makeConvertedDepositInfo(
+            initialPrincipal: 100_000,
+            annualRate: 12,
+            startDateOffset: -30,
+            lastPostingMonth: "2020-01-01",
+            conversionTimestamp: conversion
+        )
+
+        let postConversionTopUp = Transaction(
+            id: "i1", date: dateString(offsetDays: -3), description: "",
+            amount: 500_000, currency: "KZT", convertedAmount: nil,
+            type: .income, category: "Salary", subcategory: nil,
+            accountId: "d1", targetAccountId: nil,
+            createdAt: conversion + 1000
+        )
+
+        let walked = DepositInterestService.calculateInterestToToday(
+            depositInfo: info, accountId: "d1", allTransactions: [postConversionTopUp]
+        )
+        let baseline = DepositInterestService.calculateInterestToToday(
+            depositInfo: info, accountId: "d1", allTransactions: []
+        )
+
+        #expect(walked > baseline, "Post-conversion top-up must increase accrued interest")
+        #expect(baseline >= 0, "Baseline accrual must be non-negative; got \(baseline)")
+    }
 }
 
 @Suite("TransactionType.affectsDepositPrincipal")

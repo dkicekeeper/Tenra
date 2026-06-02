@@ -251,9 +251,10 @@ class AccountsViewModel {
             let snapshotBalance = account.initialBalance
             Task {
                 if isConversion, let snapshotBalance {
-                    // Snapshot is the conversion-time balance; align the engine's base so the
-                    // cold recalc reproduces it (inherited history is gated out by createdAt).
-                    await coordinator.setInitialBalance(snapshotBalance, for: account.id)
+                    // Snapshot is the conversion-time balance; persist it as the recalc base
+                    // (CoreData + in-memory) so the cold-launch full recalc reproduces it.
+                    // Inherited history is gated out by the conversionTimestamp createdAt cutoff.
+                    await coordinator.persistInitialBalance(snapshotBalance, for: account.id)
                 }
                 await coordinator.updateDepositInfo(account, depositInfo: depositInfo)
             }

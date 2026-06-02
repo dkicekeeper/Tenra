@@ -221,6 +221,7 @@ struct AccountRepositoryInitialBalanceSyncTests {
         var err: Error?
         container.loadPersistentStores { _, error in err = error }
         if let e = err { throw e }
+        container.viewContext.automaticallyMergesChangesFromParent = true
         return container
     }
 
@@ -277,6 +278,7 @@ struct AccountEntityIntegrityTests {
         var err: Error?
         container.loadPersistentStores { _, error in err = error }
         if let e = err { throw e }
+        container.viewContext.automaticallyMergesChangesFromParent = true
         return container
     }
 

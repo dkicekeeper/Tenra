@@ -375,6 +375,12 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
 
         store.updateBalances(newBalances, source: .recalculation)
 
+        // Persist to Core Data — mirror processRecalculateAll. Without this a targeted recalc
+        // (e.g. after a loan payment) updated the in-memory + published balance but never wrote
+        // it back, so the corrected balance was lost on the next relaunch until something else
+        // re-touched the account.
+        persistBalances(newBalances)
+
         // Merge and publish balances to trigger UI updates
         var updatedBalances = self.balances
         for (accountId, balance) in newBalances {

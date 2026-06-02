@@ -32,4 +32,9 @@ extension Notification.Name {
 
     /// Posted when application becomes active (for notification rescheduling).
     static let applicationDidBecomeActive = Notification.Name("applicationDidBecomeActive")
+
+    /// Posted when the application is about to resign active (background/suspend).
+    /// Used to flush debounced aggregate persists so a kill within the debounce window
+    /// can't lose the write.
+    static let applicationWillResignActive = Notification.Name("applicationWillResignActive")
 }

@@ -283,6 +283,7 @@ final class TransactionStore {
 
     // Lifecycle observer token for cleanup in deinit
     @ObservationIgnored private var lifecycleObserver: NSObjectProtocol?
+    @ObservationIgnored private var resignActiveObserver: NSObjectProtocol?
 
     // Reentrancy guard: prevents concurrent extendAllActiveSeriesHorizons() calls
     // (loadData + applicationDidBecomeActive can race on startup)
@@ -313,6 +314,9 @@ final class TransactionStore {
         if let observer = lifecycleObserver {
             NotificationCenter.default.removeObserver(observer)
         }
+        if let observer = resignActiveObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     private func setupNotificationObservers() {
@@ -332,6 +336,21 @@ final class TransactionStore {
                 // If the day rolled over while backgrounded, fold any now-matured
                 // future transactions into realized balances/aggregates.
                 await self.recalculateLedgerIfDayChanged()
+            }
+        }
+
+        // Flush debounced aggregate persists before the app may be suspended/killed, so a
+        // kill within the 500ms debounce window can't drop the latest category/account
+        // aggregate write (which would otherwise read stale on the next cold launch).
+        resignActiveObserver = NotificationCenter.default.addObserver(
+            forName: .applicationWillResignActive,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                await self.flushAggregatePersist()
+                await self.flushAccountAggregatePersist()
             }
         }
     }

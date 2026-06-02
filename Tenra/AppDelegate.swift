@@ -37,6 +37,11 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         NotificationCenter.default.post(name: .applicationDidBecomeActive, object: nil)
     }
 
+    func applicationWillResignActive(_ application: UIApplication) {
+        // Flush debounced aggregate persists before the app may be suspended/killed.
+        NotificationCenter.default.post(name: .applicationWillResignActive, object: nil)
+    }
+
     // MARK: - UNUserNotificationCenterDelegate
 
     /// Called when a notification is delivered while the app is in the foreground

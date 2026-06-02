@@ -216,6 +216,11 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
         store.setInitialBalance(balance, for: accountId)
     }
 
+    func persistInitialBalance(_ balance: Double, for accountId: String) async {
+        store.setInitialBalance(balance, for: accountId)
+        await repository.updateInitialBalancesSync([accountId: balance])
+    }
+
     func getInitialBalance(for accountId: String) async -> Double? {
         return store.getInitialBalance(for: accountId)
     }

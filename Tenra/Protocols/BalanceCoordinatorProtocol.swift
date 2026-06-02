@@ -120,6 +120,12 @@ protocol BalanceCoordinatorProtocol: AnyObject {
     ///   - accountId: Account ID
     func setInitialBalance(_ balance: Double, for accountId: String) async
 
+    /// Persist a new initial balance both in-memory AND to CoreData. Used at deposit
+    /// conversion to snapshot the current balance as the recalc base so the cold-launch
+    /// full recalc reproduces it. Unlike `setInitialBalance` (in-memory only), this survives
+    /// relaunch.
+    func persistInitialBalance(_ balance: Double, for accountId: String) async
+
     /// Get initial balance for account
     /// - Parameter accountId: Account ID
     /// - Returns: Initial balance if set

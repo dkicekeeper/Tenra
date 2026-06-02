@@ -36,8 +36,7 @@ struct BalanceCalculationEngineTests {
                 interestAccruedForCurrentPeriod: 0,
                 startDate: "2020-01-01"
             ),
-            currency: currency,
-            isDeposit: true
+            currency: currency
         )
     }
 
@@ -50,8 +49,7 @@ struct BalanceCalculationEngineTests {
             accountId: id,
             currentBalance: currentBalance,
             initialBalance: currentBalance,
-            currency: currency,
-            isDeposit: false
+            currency: currency
         )
     }
 

@@ -20,7 +20,12 @@ struct AccountBalance: Equatable, Identifiable {
     var initialBalance: Double?
     var depositInfo: DepositInfo?
     let currency: String
-    let isDeposit: Bool
+
+    /// Derived from `depositInfo` so it can NEVER go stale — mirrors `Account.isDeposit`.
+    /// A stored flag here once caused an in-session conversion bug: after `updateDepositInfo`
+    /// set `depositInfo`, a stale `isDeposit == false` made `contribution` bypass the
+    /// conversionTimestamp cutoff on a same-session recalc, double-counting inherited history.
+    var isDeposit: Bool { depositInfo != nil }
 
     var id: String { accountId }
 
@@ -29,15 +34,13 @@ struct AccountBalance: Equatable, Identifiable {
         currentBalance: Double,
         initialBalance: Double? = nil,
         depositInfo: DepositInfo? = nil,
-        currency: String,
-        isDeposit: Bool = false
+        currency: String
     ) {
         self.accountId = accountId
         self.currentBalance = currentBalance
         self.initialBalance = initialBalance
         self.depositInfo = depositInfo
         self.currency = currency
-        self.isDeposit = isDeposit
     }
 
     /// Create AccountBalance from Account model
@@ -47,8 +50,7 @@ struct AccountBalance: Equatable, Identifiable {
             currentBalance: account.balance,
             initialBalance: account.initialBalance,
             depositInfo: account.depositInfo,
-            currency: account.currency,
-            isDeposit: account.isDeposit
+            currency: account.currency
         )
     }
 }

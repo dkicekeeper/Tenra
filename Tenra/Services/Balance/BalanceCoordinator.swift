@@ -75,8 +75,7 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
                 currentBalance: account.initialBalance ?? 0,
                 initialBalance: account.initialBalance,
                 depositInfo: account.depositInfo,
-                currency: account.currency,
-                isDeposit: account.isDeposit
+                currency: account.currency
             )
             accountBalancesByID[account.id] = ab
             // Loan accounts: balance IS the outstanding debt (remainingPrincipal), never the

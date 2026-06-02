@@ -280,4 +280,49 @@ struct BalanceLedgerInvariantTests {
         // withdrawal 300 = 700. The pre-conversion expense must NOT be re-applied.
         #expect(rec == 700)
     }
+
+    /// In-session conversion: an account is registered as a NON-deposit, then converted by
+    /// `updateDepositInfo` (which sets `depositInfo`). If a recalc fires in the SAME session
+    /// (e.g. the day rolls over past midnight while the app is open), the conversionTimestamp
+    /// cutoff must already apply — i.e. the stored `AccountBalance.isDeposit` must reflect the
+    /// freshly-set `depositInfo`, not the stale pre-conversion `false`. Pins that `isDeposit`
+    /// is derived from `depositInfo` rather than a stored flag that goes stale.
+    @Test("In-session conversion applies the conversionTimestamp cutoff on a same-session recalc")
+    func inSessionConversionAppliesCutoff() async {
+        let coordinator = Self.makeCoordinator()
+
+        // Registered as a regular (non-deposit) account, as it exists BEFORE conversion.
+        let pre = Account(id: "dep", name: "Dep", currency: "KZT", initialBalance: 1_000, balance: 1_000)
+        await coordinator.registerAccounts([pre])
+        await coordinator.setInitialBalance(1_000, for: "dep")
+
+        let conversionMoment = Date().timeIntervalSince1970
+        // Inherited pre-conversion expense already baked into the 1000 snapshot.
+        let inherited = Transaction(
+            id: "inh", date: Self.pastDate(daysAgo: 5), description: "",
+            amount: 300, currency: "KZT", convertedAmount: nil,
+            type: .expense, category: "Food", subcategory: nil,
+            accountId: "dep", targetAccountId: nil,
+            createdAt: conversionMoment - 1_000
+        )
+
+        // Simulate the in-session conversion: stamp depositInfo with a conversionTimestamp.
+        let periodStart = Self.pastDate(daysAgo: 30)
+        let info = DepositInfo(
+            bankName: "T", initialPrincipal: 1_000, capitalizationEnabled: false,
+            interestRateAnnual: 0,
+            interestRateHistory: [RateChange(effectiveFrom: periodStart, annualRate: 0)],
+            interestPostingDay: 1, lastInterestCalculationDate: periodStart,
+            lastInterestPostingMonth: periodStart, interestAccruedForCurrentPeriod: 0,
+            startDate: periodStart, conversionTimestamp: conversionMoment
+        )
+        let converted = Account(id: "dep", name: "Dep", currency: "KZT", depositInfo: info,
+                                initialBalance: 1_000, balance: 1_000)
+        await coordinator.updateDepositInfo(converted, depositInfo: info)
+
+        // Same-session recalc must NOT re-subtract the inherited expense (it's pre-conversion).
+        await coordinator.recalculateAll(accounts: [converted], transactions: [inherited])
+
+        #expect(coordinator.balances["dep"] == 1_000)
+    }
 }

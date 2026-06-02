@@ -295,8 +295,7 @@ struct DepositInterestServiceTests {
             currentBalance: 0,
             initialBalance: NSDecimalNumber(decimal: info?.initialPrincipal ?? 0).doubleValue,
             depositInfo: info,
-            currency: account.currency,
-            isDeposit: true
+            currency: account.currency
         )
         return BalanceCalculationEngine().calculateBalance(
             account: bal, transactions: events

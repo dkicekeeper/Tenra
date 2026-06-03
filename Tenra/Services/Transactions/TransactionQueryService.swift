@@ -91,8 +91,14 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
         currencyService: TransactionCurrencyService? = nil
     ) -> [String: CategoryExpense] {
 
-        // Check cache with time filter as key
-        if let cached = cacheManager.getCachedCategoryExpenses(for: timeFilter) {
+        // Composite cache key: the breakdown depends on the filter AND the base
+        // currency AND the set of valid category names. Keying on the filter alone
+        // returned a stale breakdown after a rename/delete or base-currency change
+        // until an unrelated mutation (cache audit #9).
+        let namesKey = validCategoryNames?.sorted().joined(separator: ",") ?? "all"
+        let cacheKey = "\(timeFilter.stableCacheKey)|\(baseCurrency)|\(namesKey)"
+
+        if let cached = cacheManager.getCachedCategoryExpenses(for: cacheKey) {
             return cached
         }
 
@@ -110,7 +116,7 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
 
         // Only cache non-empty results
         if !result.isEmpty {
-            cacheManager.setCachedCategoryExpenses(result, for: timeFilter)
+            cacheManager.setCachedCategoryExpenses(result, for: cacheKey)
         }
 
         return result

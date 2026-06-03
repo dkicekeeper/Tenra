@@ -37,7 +37,11 @@ struct ContentView: View {
     // Equatable snapshot of every input that drives the summary card.
     // .task(id: summaryTrigger) restarts automatically whenever this changes.
     private struct SummaryTrigger: Equatable {
-        let txCount: Int
+        // mutationVersion (not transactionsCount): bumps on EVERY add/update/delete,
+        // including in-place edits (amount/type/category) that keep the count constant.
+        // Keying on count left the summary card stale after an edit until restart
+        // (cache audit #2).
+        let txVersion: Int
         // The actual filter date bounds — NOT displayName. A relative preset like
         // .thisMonth keeps the same displayName across a month boundary, so keying on
         // the name would leave the summary on last month after the date rolls over
@@ -48,19 +52,23 @@ struct ContentView: View {
         let isImporting: Bool
         let isFullyInitialized: Bool
         let ratesVersion: Int   // bumps when CurrencyConverter.prewarm lands fresh rates
+        let baseCurrency: String // re-denominates all totals when the user switches base
     }
     private var summaryTrigger: SummaryTrigger {
+        // mutationVersion is @ObservationIgnored, so touch the observable transactions
+        // array to make `body` re-evaluate on in-place edits (which don't change count).
+        // The expensive recompute is still gated by the .task(id:) value diff below, and
+        // skipped entirely while importing.
+        _ = transactionStore.transactions.count
         let range = timeFilterManager.currentFilter.dateRange()
         return SummaryTrigger(
-            // Read the Observable mirror, not transactions.count — the latter would
-            // subscribe ContentView's body to the full 19k-element array and re-eval
-            // body on every micro-mutation.
-            txCount: transactionStore.transactionsCount,
+            txVersion: transactionStore.mutationVersion,
             filterStart: range.start,
             filterEnd: range.end,
             isImporting: transactionStore.isImporting,
             isFullyInitialized: coordinator.isFullyInitialized,
-            ratesVersion: transactionStore.currencyRatesVersion
+            ratesVersion: transactionStore.currencyRatesVersion,
+            baseCurrency: viewModel.appSettings.baseCurrency
         )
     }
 

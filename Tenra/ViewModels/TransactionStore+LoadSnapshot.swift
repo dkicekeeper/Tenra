@@ -51,6 +51,7 @@ extension TransactionStore {
         let coldStartCategoryAggregates: [String: CategoryAggregate]?
         let coldStartCategoryAggregatesAreFXStale: Bool
         let coldStartAccountAggregates: [String: AccountAggregates]?
+        let coldStartAccountAggregatesAreFXStale: Bool
     }
 
     /// Pure builder. Safe to call from any actor.
@@ -207,12 +208,15 @@ extension TransactionStore {
         }
 
         var coldStartAccountAggregates: [String: AccountAggregates]?
+        var coldStartAccountAggregatesAreFXStale = false
         if needsColdStartAccountAggregates {
-            coldStartAccountAggregates = computeAccountAggregates(
+            let (acc, fxStale) = computeAccountAggregates(
                 transactions: transactions,
                 parsedDates: parsedDates,
                 accountsCurrencyById: accountsCurrencyById
             )
+            coldStartAccountAggregates = acc
+            coldStartAccountAggregatesAreFXStale = fxStale
         }
 
         return LoadedIndexSnapshot(
@@ -231,7 +235,8 @@ extension TransactionStore {
             subcategoryLastUsedById: subcategoryLastUsedById,
             coldStartCategoryAggregates: coldStartCategoryAggregates,
             coldStartCategoryAggregatesAreFXStale: coldStartCategoryAggregatesAreFXStale,
-            coldStartAccountAggregates: coldStartAccountAggregates
+            coldStartAccountAggregates: coldStartAccountAggregates,
+            coldStartAccountAggregatesAreFXStale: coldStartAccountAggregatesAreFXStale
         )
     }
 
@@ -332,9 +337,10 @@ extension TransactionStore {
         transactions: [Transaction],
         parsedDates: [String: Date],
         accountsCurrencyById: [String: String]
-    ) -> [String: AccountAggregates] {
+    ) -> (aggregates: [String: AccountAggregates], fxStale: Bool) {
         var aggregates: [String: AccountAggregates] = [:]
         aggregates.reserveCapacity(accountsCurrencyById.count)
+        var fxStale = false
 
         for tx in transactions {
             // Realized actuals only — same gate as the production path.
@@ -344,28 +350,29 @@ extension TransactionStore {
             // Source leg
             if let id = tx.accountId,
                let currency = accountsCurrencyById[id] {
-                let amt = coldConvertSource(tx: tx, to: currency)
+                let amt = coldConvertSource(tx: tx, to: currency, fxStale: &fxStale)
                 patchColdAccountBucket(into: &aggregates, accountId: id, tx: tx, signedAmount: amt, isSource: true)
             }
             // Target leg
             if let id = tx.targetAccountId, id != tx.accountId,
                let currency = accountsCurrencyById[id] {
-                let amt = coldConvertTarget(tx: tx, to: currency)
+                let amt = coldConvertTarget(tx: tx, to: currency, fxStale: &fxStale)
                 patchColdAccountBucket(into: &aggregates, accountId: id, tx: tx, signedAmount: amt, isSource: false)
             }
         }
-        return aggregates
+        return (aggregates, fxStale)
     }
 
-    private nonisolated static func coldConvertSource(tx: Transaction, to: String) -> Double {
+    private nonisolated static func coldConvertSource(tx: Transaction, to: String, fxStale: inout Bool) -> Double {
         if tx.currency == to { return tx.amount }
         if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: to) {
             return fx
         }
+        fxStale = true
         return tx.convertedAmount ?? tx.amount
     }
 
-    private nonisolated static func coldConvertTarget(tx: Transaction, to: String) -> Double {
+    private nonisolated static func coldConvertTarget(tx: Transaction, to: String, fxStale: inout Bool) -> Double {
         if tx.type == .internalTransfer,
            let targetAmount = tx.targetAmount,
            let targetCurrency = tx.targetCurrency {
@@ -373,9 +380,10 @@ extension TransactionStore {
             if let fx = CurrencyConverter.convertSync(amount: targetAmount, from: targetCurrency, to: to) {
                 return fx
             }
+            fxStale = true
             return targetAmount
         }
-        return coldConvertSource(tx: tx, to: to)
+        return coldConvertSource(tx: tx, to: to, fxStale: &fxStale)
     }
 
     private nonisolated static func patchColdAccountBucket(

@@ -204,8 +204,9 @@ extension TransactionStore {
         if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: to) {
             return fx
         }
-        // Cold FX cache. Last-resort fallback matches the legacy calculator —
-        // a future bumpCurrencyRatesVersion will trigger a full rebuild.
+        // Cold FX cache. Mark stale (own flag, not relying on the category path) so the
+        // next bumpCurrencyRatesVersion rebuilds these aggregates too (cache audit #12).
+        aggregatesAreFXStale = true
         return tx.convertedAmount ?? tx.amount
     }
 
@@ -218,6 +219,7 @@ extension TransactionStore {
             if let fx = CurrencyConverter.convertSync(amount: targetAmount, from: targetCurrency, to: to) {
                 return fx
             }
+            aggregatesAreFXStale = true
             return targetAmount
         }
         return convertedSourceAmount(tx: tx, to: to)

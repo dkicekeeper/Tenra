@@ -488,6 +488,10 @@ final class TransactionStore {
             seedAccountAggregates(from: loadedAccountAggregates)
         } else if let coldStart = snapshot.coldStartAccountAggregates {
             accountAggregatesByAccountId = coldStart
+            // OR in the account cold-start FX-stale flag so bumpCurrencyRatesVersion
+            // rebuilds account aggregates even when no category leg was FX-stale —
+            // previously they relied on the category flag being set (cache audit #12).
+            aggregatesAreFXStale = aggregatesAreFXStale || snapshot.coldStartAccountAggregatesAreFXStale
             scheduleAccountAggregatePersist()
         }
 

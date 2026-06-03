@@ -43,7 +43,6 @@ nonisolated final class InsightsService {
     let filterService: TransactionFilterService
     let queryService: TransactionQueryService
     let budgetService: CategoryBudgetService
-    let cache: InsightsCache
 
     // MARK: - Static formatters (avoid per-call allocation)
     // Internal so cross-file extensions can use `Self.monthYearFormatter` etc.
@@ -77,21 +76,15 @@ nonisolated final class InsightsService {
         transactionStore: TransactionStore,
         filterService: TransactionFilterService,
         queryService: TransactionQueryService,
-        budgetService: CategoryBudgetService,
-        cache: InsightsCache
+        budgetService: CategoryBudgetService
     ) {
         self.transactionStore = transactionStore
         self.filterService = filterService
         self.queryService = queryService
         self.budgetService = budgetService
-        self.cache = cache
     }
 
     // MARK: - Public API
-
-    nonisolated func invalidateCache() {
-        cache.invalidateAll()
-    }
 
     // MARK: - Period Data Points (monthly granularity for CashFlow insights)
 

@@ -204,7 +204,6 @@ final class InsightsViewModel {
     /// When visible, debounces (800ms) and recomputes only the current granularity for speed.
     func invalidateAndRecompute() {
         Self.logger.debug("🔄 [InsightsVM] invalidateAndRecompute — marking stale (visible=\(self.isVisible))")
-        insightsService.invalidateCache()
         precomputedInsights = [:]
         precomputedPeriodPoints = [:]
         precomputedTotals = [:]
@@ -229,7 +228,6 @@ final class InsightsViewModel {
     /// Wipe caches directly and trigger immediate (non-debounced) background load.
     func refreshInsights() {
         Self.logger.debug("🔄 [InsightsVM] refreshInsights — manual refresh")
-        insightsService.invalidateCache()
         precomputedInsights = [:]
         precomputedPeriodPoints = [:]
         precomputedTotals = [:]

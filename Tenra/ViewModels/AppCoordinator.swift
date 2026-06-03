@@ -190,7 +190,6 @@ class AppCoordinator {
             initialSettings: transactionsViewModel.appSettings
         )
         // Initialize InsightsService and InsightsViewModel
-        let insightsCache = InsightsCache()
         let insightsFilterService = TransactionFilterService(dateFormatter: DateFormatters.dateFormatter)
         let insightsQueryService = TransactionQueryService()
 
@@ -203,8 +202,7 @@ class AppCoordinator {
             transactionStore: self.transactionStore,
             filterService: insightsFilterService,
             queryService: insightsQueryService,
-            budgetService: insightsBudgetService,
-            cache: insightsCache
+            budgetService: insightsBudgetService
         )
         self.insightsViewModel = InsightsViewModel(
             insightsService: insightsService,

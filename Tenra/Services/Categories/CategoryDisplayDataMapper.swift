@@ -28,6 +28,7 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
         let categoriesCount: Int
         let expensesHash: Int
         let orderHash: Int
+        let appearanceHash: Int
         let type: TransactionType
         let baseCurrency: String
         let filterCacheKey: String
@@ -47,13 +48,23 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
             // Sequence-sensitive fingerprint of (id, order) so a reorder — which swaps
             // `.order` values without changing count/names/totals — produces a new key.
             // Hasher.combine IS order-sensitive (unlike the XOR above), which is exactly
-            // what we need to distinguish a same-set swap.
+            // what we need to distinguish a same-set swap. The appearance hash covers the
+            // other inputs mapCategory reads — icon/color (styleData) and budget — so an
+            // in-session icon/color/budget edit isn't masked by an unchanged key
+            // (cache audit #3).
             var orderHasher = Hasher()
+            var appearanceHasher = Hasher()
             for cat in customCategories {
                 orderHasher.combine(cat.id)
                 orderHasher.combine(cat.order)
+                appearanceHasher.combine(cat.id)
+                appearanceHasher.combine(cat.iconSource)
+                appearanceHasher.combine(cat.colorHex)
+                appearanceHasher.combine(cat.budgetAmount)
+                appearanceHasher.combine(cat.budgetPeriod)
             }
             self.orderHash = orderHasher.finalize()
+            self.appearanceHash = appearanceHasher.finalize()
 
             self.type = type
             self.baseCurrency = baseCurrency

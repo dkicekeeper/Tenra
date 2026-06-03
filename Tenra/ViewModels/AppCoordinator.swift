@@ -470,10 +470,19 @@ class AppCoordinator {
         } onChange: { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
-                self.transactionStore.bumpCurrencyRatesVersion()
+                let didHealStaleAggregates = self.transactionStore.bumpCurrencyRatesVersion()
                 self.transactionsViewModel.invalidateCaches()
                 self.insightsViewModel.invalidateAndRecompute()
-                self.startObservingCurrencyRateChanges()  // re-arm for the next change
+                self.startObservingCurrencyRateChanges()  // re-arm before any async work
+                // Cached balances for cross-currency accounts were computed at the
+                // old/cold rate. Aggregates self-healed in bumpCurrencyRatesVersion;
+                // the balance cache must heal on the same trigger (cache audit #1).
+                if didHealStaleAggregates {
+                    await self.balanceCoordinator.recalculateAll(
+                        accounts: self.transactionStore.accounts,
+                        transactions: self.transactionStore.transactions
+                    )
+                }
             }
         }
     }

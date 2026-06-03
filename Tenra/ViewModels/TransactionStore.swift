@@ -126,15 +126,21 @@ final class TransactionStore {
     /// (`aggregatesAreFXStale == true`), rebuild the category indexes once now
     /// that rates are available. Rebuild stays O(N_tx) but only runs on the
     /// first successful prewarm of each session.
-    func bumpCurrencyRatesVersion() {
+    ///
+    /// - Returns: `true` if cold-cache aggregates were rebuilt with fresh rates.
+    ///   The caller must then also recalculate balances — cached balances for
+    ///   cross-currency accounts were likewise computed at the cold rate and the
+    ///   balance cache does not heal itself (cache audit #1).
+    @discardableResult
+    func bumpCurrencyRatesVersion() -> Bool {
         currencyRatesVersion &+= 1
-        if aggregatesAreFXStale {
-            rebuildCategoryIndexes()
-            // Account aggregates also depend on FX conversion (cross-currency
-            // sources / targets). Rebuild together so they self-heal in one pass.
-            rebuildAccountAggregates()
-            categoriesMutationVersion &+= 1
-        }
+        guard aggregatesAreFXStale else { return false }
+        rebuildCategoryIndexes()
+        // Account aggregates also depend on FX conversion (cross-currency
+        // sources / targets). Rebuild together so they self-heal in one pass.
+        rebuildAccountAggregates()
+        categoriesMutationVersion &+= 1
+        return true
     }
 
     /// All accounts - managed alongside transactions for balance updates

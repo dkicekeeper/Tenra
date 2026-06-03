@@ -90,6 +90,10 @@ final class InsightsViewModel {
     /// (non-loan, `includeInBalance`). Period-independent — mirrors the home total.
     /// Recomputed on each background recompute from the balance snapshot.
     private(set) var availableBalance: Double = 0
+    /// Latest computed available balance, applied to the published `availableBalance`
+    /// from `applyPrecomputed` so its numeric-roll animation fires at reveal time
+    /// alongside the bucket totals (setting it earlier rolled while still hidden).
+    @ObservationIgnored private var pendingAvailableBalance: Double = 0
     /// Financial Health Score (computed once per recompute cycle, using .month granularity data)
     private(set) var healthScore: FinancialHealthScore? = nil
 
@@ -316,8 +320,9 @@ final class InsightsViewModel {
         let accountsSnapshot    = Array(transactionStore.accounts)
         let priorityGranularity = currentGranularity  // show this one first
         // Total spendable balance (non-loan, included-in-balance accounts) — period-independent.
-        // Computed on MainActor from the just-built snapshot so the summary card has it immediately.
-        self.availableBalance = accountsSnapshot
+        // Stored as pending and published from applyPrecomputed so the numeric-roll animation
+        // fires at reveal time alongside the bucket totals (not while still hidden by contentReveal).
+        self.pendingAvailableBalance = accountsSnapshot
             .filter { !$0.isLoan && $0.includeInBalance }
             .reduce(0.0) { $0 + (balanceSnapshot[$1.id] ?? 0) }
         // Bundle all snapshots into DataSnapshot for nonisolated computation
@@ -537,6 +542,7 @@ final class InsightsViewModel {
             previousBucketExpenses = totals?.previousBucketExpenses ?? 0
             previousBucketNetFlow  = totals?.previousBucketNetFlow  ?? 0
             currentBucketLabel = granularity.currentBucketLabel()
+            availableBalance   = pendingAvailableBalance
             isLoading        = false
         }
     }

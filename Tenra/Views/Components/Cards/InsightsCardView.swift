@@ -29,57 +29,33 @@ struct InsightsCardView<BottomChart: View>: View {
         BottomChart.self != EmptyView.self
     }
 
+    // Mini-chart footprint. The chart is overlaid (not a layout sibling) so it can
+    // bleed to the card's trailing edge; the text column reserves matching room so
+    // titles/amounts/badges never run underneath it. Keep these in sync.
+    private static var miniChartWidth: CGFloat { 120 }
+    private static var miniChartHeight: CGFloat { 100 }
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            // Header: title + conditional mini-chart overlay
-            HStack(alignment: .top, spacing: AppSpacing.sm) {
+            // Text column. Reserves trailing room for the mini-chart overlay below
+            // so the title and amount+badge row can't collide with it.
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
                 Text(insight.title)
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textSecondary)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                Spacer()
+                Text(insight.subtitle)
+                    .font(AppTypography.bodyEmphasis)
+                    .foregroundStyle(AppColors.textPrimary)
+                    .lineLimit(1)
+
+                metricRow
             }
-            // Mini chart rendered OUTSIDE clip region to avoid being clipped.
-            // Hidden when a full-size bottom chart is injected.
-            .overlay(alignment: .topTrailing) {
-                if !hasBottomChart {
-                    miniChart
-                        .frame(width: 120, height: 100)
-                }
-            }
-
-            Text(insight.subtitle)
-                .font(AppTypography.bodyEmphasis)
-                .foregroundStyle(AppColors.textPrimary)
-                .lineLimit(1)
-
-            HStack(spacing: AppSpacing.sm) {
-                // Large metric — use FormattedAmountText for currency amounts
-                if let currency = insight.metric.currency {
-                    FormattedAmountText(
-                        amount: insight.metric.value,
-                        currency: currency,
-                        fontSize: AppTypography.h2,
-                        fontWeight: .bold,
-                        color: AppColors.textPrimary
-                    )
-                } else {
-                    Text(insight.metric.formattedValue)
-                        .font(AppTypography.h2)
-                        .fontWeight(.bold)
-                        .foregroundStyle(AppColors.textPrimary)
-                }
-
-                // Trend indicator
-                if let trend = insight.trend {
-                    InsightTrendBadge(trend: trend, style: .pill, colorOverride: insight.trendBadgeColorOverride)
-                }
-                if let unit = insight.metric.unit {
-                    Text(unit)
-                        .font(AppTypography.bodyEmphasis)
-                        .foregroundStyle(AppColors.textSecondary)
-                }
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // Keep clear of the full-bleed mini-chart; full width when a bottom chart replaces it.
+            .padding(.trailing, hasBottomChart ? 0 : Self.miniChartWidth + AppSpacing.sm)
 
             // Full-size chart — shown only when injected via init(insight:bottomChart:)
             if hasBottomChart {
@@ -88,6 +64,74 @@ struct InsightsCardView<BottomChart: View>: View {
         }
         .padding(AppSpacing.lg)
         .cardStyle()
+        // Mini chart overlaid OUTSIDE the clip region so it can bleed to the trailing edge.
+        // Hidden when a full-size bottom chart is injected.
+        .overlay(alignment: .topTrailing) {
+            if !hasBottomChart {
+                miniChart
+                    .frame(width: Self.miniChartWidth, height: Self.miniChartHeight)
+                    .padding(.top, AppSpacing.lg)
+                    .padding(.trailing, AppSpacing.lg)
+                    .allowsHitTesting(false)
+            }
+        }
+    }
+
+    // MARK: - Metric Row
+
+    /// Amount (+ optional unit) with the trend badge. Keeps both on one line when they
+    /// fit the reserved width, otherwise drops the badge to a second line.
+    @ViewBuilder
+    private var metricRow: some View {
+        if insight.trend != nil {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: AppSpacing.sm) {
+                    amountWithUnit
+                    trendBadge
+                }
+                VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                    amountWithUnit
+                    trendBadge
+                }
+            }
+        } else {
+            amountWithUnit
+        }
+    }
+
+    @ViewBuilder
+    private var amountWithUnit: some View {
+        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.sm) {
+            // Large metric — use FormattedAmountText for currency amounts
+            if let currency = insight.metric.currency {
+                FormattedAmountText(
+                    amount: insight.metric.value,
+                    currency: currency,
+                    fontSize: AppTypography.h2,
+                    fontWeight: .bold,
+                    color: AppColors.textPrimary
+                )
+            } else {
+                Text(insight.metric.formattedValue)
+                    .font(AppTypography.h2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(AppColors.textPrimary)
+            }
+
+            if let unit = insight.metric.unit {
+                Text(unit)
+                    .font(AppTypography.bodyEmphasis)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+        }
+        .lineLimit(1)
+    }
+
+    @ViewBuilder
+    private var trendBadge: some View {
+        if let trend = insight.trend {
+            InsightTrendBadge(trend: trend, style: .pill, colorOverride: insight.trendBadgeColorOverride)
+        }
     }
 
     // MARK: - Mini Chart

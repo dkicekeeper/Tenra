@@ -68,32 +68,28 @@ struct FormattedAmountText: View {
         return amount.truncatingRemainder(dividingBy: 1) != 0
     }
 
-    var body: some View {
+    /// Single concatenated `Text` (one layout unit) so `.minimumScaleFactor` / line
+    /// limits scale the whole amount uniformly — rendering the integer, decimal and
+    /// symbol as separate `Text`s let each run scale independently (only the integer
+    /// shrank while the decimal & symbol stayed full size). The reduced decimal opacity
+    /// is preserved by colouring that run separately.
+    private var composedText: Text {
         let parts = formattedParts
-
-        HStack(spacing: 0) {
-            Text(prefix + parts.integer)
-                .font(fontSize)
-                .fontWeight(fontWeight)
-                .foregroundStyle(color)
-                .contentTransition(.numericText())
-                .animation(AppAnimation.gentleSpring, value: amount)
-
-            if shouldShowDecimal {
-                Text(AmountDisplayConfiguration.shared.decimalSeparator + parts.decimal)
-                    .font(fontSize)
-                    .fontWeight(fontWeight)
-                    .foregroundStyle(color)
-                    .opacity(decimalOpacity)
-                    .contentTransition(.numericText())
-                    .animation(AppAnimation.gentleSpring, value: amount)
-            }
-
-            Text(" " + parts.symbol)
-                .font(fontSize)
-                .fontWeight(fontWeight)
-                .foregroundStyle(color)
+        var result = Text(prefix + parts.integer)
+            .font(fontSize).fontWeight(fontWeight).foregroundStyle(color)
+        if shouldShowDecimal {
+            result = result + Text(AmountDisplayConfiguration.shared.decimalSeparator + parts.decimal)
+                .font(fontSize).fontWeight(fontWeight).foregroundStyle(color.opacity(decimalOpacity))
         }
+        result = result + Text(" " + parts.symbol)
+            .font(fontSize).fontWeight(fontWeight).foregroundStyle(color)
+        return result
+    }
+
+    var body: some View {
+        composedText
+            .contentTransition(.numericText())
+            .animation(AppAnimation.gentleSpring, value: amount)
     }
 }
 

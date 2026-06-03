@@ -86,15 +86,26 @@ nonisolated class TransactionCacheManager {
     /// Fixes the bug where all time filters shared a single cached result.
     private var cachedCategoryExpensesByFilter: [String: [String: CategoryExpense]] = [:]
 
-    // Category lists cache
-    var categoryListsCacheInvalidated = false
+    // Category lists cache. nil = needs recompute (the previous shared
+    // `categoryListsCacheInvalidated` flag was never reset to false, so once set it
+    // forced an O(N) rescan on every access; and the normal tx-mutation path never
+    // set it at all, leaving the lists stale — cache audit #6). nil-means-invalid is
+    // self-resetting: the accessor recomputes and repopulates per list.
     var cachedUniqueCategories: [String]?
     var cachedExpenseCategories: [String]?
     var cachedIncomeCategories: [String]?
 
+    private func invalidateCategoryLists() {
+        cachedUniqueCategories = nil
+        cachedExpenseCategories = nil
+        cachedIncomeCategories = nil
+    }
+
     func invalidateCategoryExpenses() {
         categoryExpensesCacheInvalidated = true
         cachedCategoryExpensesByFilter.removeAll()
+        // Adding/removing a transaction can change which categories have activity.
+        invalidateCategoryLists()
     }
 
     func getCachedCategoryExpenses(for key: Any) -> [String: CategoryExpense]? {
@@ -121,11 +132,8 @@ nonisolated class TransactionCacheManager {
         parsedDateCache.removeAll()
         subcategoryIndex.removeAll()
         cachedCategoryExpensesByFilter.removeAll()
-        cachedUniqueCategories = nil
-        cachedExpenseCategories = nil
-        cachedIncomeCategories = nil
+        invalidateCategoryLists()
         categoryExpensesCacheInvalidated = true
-        categoryListsCacheInvalidated = true
     }
 
     // MARK: - Index Rebuild

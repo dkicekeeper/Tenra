@@ -200,7 +200,7 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
         transactions: [Transaction],
         cacheManager: TransactionCacheManager
     ) -> [String] {
-        if !cacheManager.categoryListsCacheInvalidated, let cached = cacheManager.cachedUniqueCategories {
+        if let cached = cacheManager.cachedUniqueCategories {
             return cached
         }
 
@@ -222,7 +222,7 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
         transactions: [Transaction],
         cacheManager: TransactionCacheManager
     ) -> [String] {
-        if !cacheManager.categoryListsCacheInvalidated, let cached = cacheManager.cachedExpenseCategories {
+        if let cached = cacheManager.cachedExpenseCategories {
             return cached
         }
 
@@ -243,7 +243,7 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
         transactions: [Transaction],
         cacheManager: TransactionCacheManager
     ) -> [String] {
-        if !cacheManager.categoryListsCacheInvalidated, let cached = cacheManager.cachedIncomeCategories {
+        if let cached = cacheManager.cachedIncomeCategories {
             return cached
         }
 

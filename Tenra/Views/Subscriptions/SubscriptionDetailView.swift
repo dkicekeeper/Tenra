@@ -44,6 +44,11 @@ struct SubscriptionDetailView: View {
     private struct RefreshKey: Equatable {
         let mutationVersion: Int
         let seriesId: String
+        // The "spent all time" hero sums multi-currency tx via convertSync. On a cold
+        // rate cache it falls back to wrong-unit amounts; when rates land they bump
+        // currencyRatesVersion. Without this dimension the cached total stayed wrong
+        // until a tx mutation / re-navigation (cache audit #4).
+        let ratesVersion: Int
     }
 
     private var refreshTrigger: RefreshKey {
@@ -52,7 +57,8 @@ struct SubscriptionDetailView: View {
         _ = transactionStore.transactions.count
         return RefreshKey(
             mutationVersion: transactionStore.mutationVersion,
-            seriesId: subscription.id
+            seriesId: subscription.id,
+            ratesVersion: transactionStore.currencyRatesVersion
         )
     }
 

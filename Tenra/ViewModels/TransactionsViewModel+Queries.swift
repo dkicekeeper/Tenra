@@ -138,5 +138,4 @@ extension TransactionsViewModel {
     func rebuildAggregateCacheAfterImport() async { cacheManager.invalidateAll() }
     func rebuildAggregateCacheInBackground() { cacheManager.invalidateAll() }
     func clearAndRebuildAggregateCache() { cacheManager.invalidateAll() }
-    func precomputeCurrencyConversions() { /* No-op */ }
 }

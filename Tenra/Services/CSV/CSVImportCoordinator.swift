@@ -301,7 +301,6 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
 
         // Rebuild indexes and caches
         transactionsViewModel.rebuildIndexes()
-        transactionsViewModel.precomputeCurrencyConversions()
 
         // Register accounts in BalanceCoordinator — but only persist balances when
         // the transactions they're derived from were durably written. Persisting a

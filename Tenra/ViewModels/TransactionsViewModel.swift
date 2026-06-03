@@ -516,10 +516,6 @@ class TransactionsViewModel {
 
     // MARK: - Currency Conversion
 
-    func getConvertedAmount(transactionId: String, to baseCurrency: String) -> Double? {
-        currencyService.getConvertedAmount(transactionId: transactionId, to: baseCurrency)
-    }
-
     func getConvertedAmountOrCompute(transaction: Transaction, to baseCurrency: String) -> Double {
         currencyService.getConvertedAmountOrCompute(transaction: transaction, to: baseCurrency)
     }

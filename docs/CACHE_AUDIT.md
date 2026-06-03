@@ -4,6 +4,8 @@
 **Scope:** Every memoization / cached-value / invalidation path in the app.
 **Trigger:** Repeated stale-data bugs after the move to CoreData + in-memory single-source-of-truth (`TransactionStore`) + O(1) indexes. Most recent: `CategoryDisplayDataMapper`'s cache key omitted category `order`, so reorders only showed after restart (fixed).
 
+**Status (2026-06-03):** ✅ All findings #1–#19 implemented across Phases 0–3 (atomic commits on `main`). Dead caches #13–#16 deleted; correctness fixes #1–#12 landed with unit tests where the layer is testable; low/systemic #17–#19 done. The cache-key discipline is now enforced as Critical Red Flag #12 in CLAUDE.md.
+
 ---
 
 ## 1. Executive summary

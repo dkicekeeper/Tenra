@@ -79,6 +79,21 @@ nonisolated final class CategoryOrderManager: @unchecked Sendable {
         userDefaults.removeObject(forKey: storageKey)
     }
 
+    /// Prune order keys for categories that no longer exist (e.g. after a wholesale
+    /// category replacement / re-seeded onboarding). Orphans are harmless on read but
+    /// accumulate unbounded; mirrors AccountOrderManager.reconcile (cache audit #18).
+    /// - Returns: number of stale keys removed.
+    @discardableResult
+    func reconcile(withCategoryIds knownCategoryIds: Set<String>) -> Int {
+        let orderMap = loadOrderMap()
+        let staleKeys = orderMap.keys.filter { !knownCategoryIds.contains($0) }
+        guard !staleKeys.isEmpty else { return 0 }
+        var pruned = orderMap
+        for key in staleKeys { pruned.removeValue(forKey: key) }
+        saveOrderMap(pruned)
+        return staleKeys.count
+    }
+
     // MARK: - Private Methods
 
     private func loadOrderMap() -> [String: Int] {

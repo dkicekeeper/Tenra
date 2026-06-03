@@ -405,6 +405,7 @@ final class TransactionStore {
         // deleted while importing skips removeOrder. Reconcile against the
         // authoritative loaded set before applying.
         AccountOrderManager.shared.reconcile(withAccountIds: Set(loadedAccs.map { $0.id }))
+        CategoryOrderManager.shared.reconcile(withCategoryIds: Set(loadedCats.map { $0.id }))
         let orderedAccounts = AccountOrderManager.shared.applyOrders(to: loadedAccs)
         let orderedCategories = CategoryOrderManager.shared.applyOrders(to: loadedCats)
 
@@ -537,6 +538,10 @@ final class TransactionStore {
             // when the user explicitly flips the base currency, not on hot paths.
             rebuildCategoryIndexes()
             categoriesMutationVersion &+= 1
+            // A base-currency change invalidates every base-denominated total just as a
+            // rate change does — bump so views keyed solely on currencyRatesVersion
+            // (e.g. detail-view refresh triggers) re-fire too (cache audit #17).
+            currencyRatesVersion &+= 1
         }
 
         // Currency change requires full balance recalculation in BalanceCoordinator

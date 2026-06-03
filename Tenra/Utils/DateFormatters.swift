@@ -31,23 +31,34 @@ enum DateFormatters {
         return formatter
     }()
 
-    /// Форматтер для отображения даты в формате "d MMMM" (локаль устройства)
-    nonisolated static let displayDateFormatter: DateFormatter = {
+    // Display formatters depend on the device locale (localised month names). A static
+    // `let` captured `Locale.current` once, so a mid-session language change showed stale
+    // month names until the process was killed (cache audit #19). These are cached by
+    // locale identifier and rebuilt only when it changes — per-call cost stays ~0 without
+    // going stale.
+    private static let displayFormatterLock = NSLock()
+    nonisolated(unsafe) private static var displayFormatterCache: [String: (locale: String, formatter: DateFormatter)] = [:]
+
+    private nonisolated static func localizedDisplayFormatter(format: String) -> DateFormatter {
+        let localeId = Locale.current.identifier
+        displayFormatterLock.lock()
+        defer { displayFormatterLock.unlock() }
+        if let cached = displayFormatterCache[format], cached.locale == localeId {
+            return cached.formatter
+        }
         let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM"
+        formatter.dateFormat = format
         formatter.locale = .current
         formatter.timeZone = TimeZone.current
+        displayFormatterCache[format] = (localeId, formatter)
         return formatter
-    }()
+    }
+
+    /// Форматтер для отображения даты в формате "d MMMM" (локаль устройства)
+    nonisolated static var displayDateFormatter: DateFormatter { localizedDisplayFormatter(format: "d MMMM") }
 
     /// Форматтер для отображения даты с годом в формате "d MMMM yyyy" (локаль устройства)
-    nonisolated static let displayDateWithYearFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = .current
-        formatter.timeZone = TimeZone.current
-        return formatter
-    }()
+    nonisolated static var displayDateWithYearFormatter: DateFormatter { localizedDisplayFormatter(format: "d MMMM yyyy") }
 
     /// Display a date as "d MMMM", appending the year ("d MMMM yyyy") only when it
     /// falls outside the current calendar year. Keeps same-year dates uncluttered

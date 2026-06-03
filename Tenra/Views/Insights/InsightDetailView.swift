@@ -105,7 +105,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
                 Image(systemName: insight.severity.icon)
                     .foregroundStyle(insight.severity.color)
                 Text(insight.subtitle)
-                    .font(AppTypography.bodySmall)
+                    .font(AppTypography.body)
                     .foregroundStyle(AppColors.textSecondary)
 
                 Spacer()
@@ -122,7 +122,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
             if let trend = insight.trend {
                 Text(trend.comparisonPeriod)
-                    .font(AppTypography.caption)
+                    .font(AppTypography.body)
                     .foregroundStyle(AppColors.textTertiary)
             }
         }
@@ -214,68 +214,29 @@ struct InsightDetailView<CategoryDestination: View>: View {
     }
 
     private func categoryDetailList(_ items: [CategoryBreakdownItem]) -> some View {
+        // Rows own their horizontal inset (per-row .screenPadding inside categoryRow),
+        // so the full width — including the padding — is tappable in NavigationLink.
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-//            SectionHeaderView(String(localized: "insights.breakdown"), style: .default)
-
             ForEach(items) { item in
                 categoryRow(item)
             }
         }
-        .screenPadding()
     }
 
     @ViewBuilder
     private func categoryRow(_ item: CategoryBreakdownItem) -> some View {
-        let rowContent = HStack(spacing: AppSpacing.md) {
-            IconView(
-                source: item.iconSource,
-                style: .circle(
-                    size: AppIconSize.xxl,
-                    tint: .monochrome(item.color),
-                    backgroundColor: item.color.opacity(0.15)
-                )
-            )
-
-            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                Text(item.categoryName)
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-                if !item.subcategories.isEmpty {
-                    Text(item.subcategories.prefix(3).map(\.name).joined(separator: ", "))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textTertiary)
-                        .lineLimit(1)
-                }
-            }
-
-            Spacer()
-
-            HStack(spacing: AppSpacing.xs) {
-                VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
-                    FormattedAmountText(amount: item.amount, currency: currency, color: AppColors.textPrimary)
-                    Text(String(format: "%.1f%%", item.percentage))
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
-                }
-                // P9: chevron only when drill-down closure is provided
-                if _onCategoryTap != nil {
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(AppColors.textTertiary)
-                }
-            }
-        }
-        .padding(.vertical, AppSpacing.sm)
-
         // P9: drill-down destination — generic CategoryDestination, no AnyView type erasure.
         // Non-paged breakdown → nil period key (current/all-time bucket).
         if let tapHandler = _onCategoryTap {
             NavigationLink(destination: tapHandler(item, nil)) {
-                rowContent.contentShape(Rectangle())
+                CategoryBreakdownRow(item: item, currency: currency, showsChevron: true)
+                    .screenPadding()
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         } else {
-            rowContent
+            CategoryBreakdownRow(item: item, currency: currency)
+                .screenPadding()
         }
     }
 
@@ -284,34 +245,14 @@ struct InsightDetailView<CategoryDestination: View>: View {
             SectionHeaderView(String(localized: "insights.breakdown"), style: .large)
 
             ForEach(items) { item in
-                HStack(spacing: AppSpacing.md) {
-                    IconView(source: item.iconSource, size: AppIconSize.xxl)
-
-                    VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                        Text(item.name)
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textPrimary)
-                        Text(item.frequency.displayName)
-                            .font(AppTypography.caption)
-                            .foregroundStyle(AppColors.textTertiary)
-                    }
-
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
-                        FormattedAmountText(
-                            amount: item.monthlyEquivalent,
-                            currency: currency,
-                            fontSize: AppTypography.body,
-                            fontWeight: .semibold,
-                            color: AppColors.textPrimary
-                        )
-                        Text(String(localized: "insights.perMonth"))
-                            .font(AppTypography.caption)
-                            .foregroundStyle(AppColors.textSecondary)
-                    }
-                }
-                .padding(.vertical, AppSpacing.sm)
+                InsightEntityRow(
+                    iconSource: item.iconSource,
+                    title: item.name,
+                    subtitle: item.frequency.displayName,
+                    amount: item.monthlyEquivalent,
+                    currency: currency,
+                    amountCaption: String(localized: "insights.perMonth")
+                )
                 .screenPadding()
             }
         }
@@ -326,7 +267,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
             ForEach(points.reversed()) { point in
                 PeriodBreakdownRow(
-                    label: point.label,
+                    label: point.granularity.headingLabel(for: point.key),
                     income: point.income,
                     expenses: point.expenses,
                     netFlow: point.netFlow,
@@ -343,29 +284,14 @@ struct InsightDetailView<CategoryDestination: View>: View {
             SectionHeaderView(String(localized: "insights.wealth.accounts"), style: .large)
 
             ForEach(accounts) { account in
-                HStack(spacing: AppSpacing.md) {
-                    IconView(source: account.iconSource, size: AppIconSize.xxl)
-
-                    VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                        Text(account.accountName)
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textPrimary)
-                        Text(account.currency)
-                            .font(AppTypography.caption)
-                            .foregroundStyle(AppColors.textTertiary)
-                    }
-
-                    Spacer()
-
-                    FormattedAmountText(
-                        amount: account.balance,
-                        currency: currency,
-                        fontSize: AppTypography.body,
-                        fontWeight: .semibold,
-                        color: account.balance >= 0 ? AppColors.textPrimary : AppColors.destructive
-                    )
-                }
-                .padding(.vertical, AppSpacing.sm)
+                InsightEntityRow(
+                    iconSource: account.iconSource,
+                    title: account.accountName,
+                    subtitle: account.currency,
+                    amount: account.balance,
+                    currency: currency,
+                    amountColor: account.balance >= 0 ? AppColors.textPrimary : AppColors.destructive
+                )
                 .screenPadding()
             }
         }
@@ -377,31 +303,19 @@ struct InsightDetailView<CategoryDestination: View>: View {
             SectionHeaderView(String(localized: "insights.dormant.accounts"), style: .large)
 
             ForEach(accounts) { account in
-                HStack(spacing: AppSpacing.md) {
-                    IconView(source: account.iconSource, size: AppIconSize.xxl)
-
-                    VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                        Text(account.accountName)
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textPrimary)
-                        if let lastActivity = account.lastActivityDate {
-                            Text(lastActivity, style: .relative)
-                                .font(AppTypography.caption)
-                                .foregroundStyle(AppColors.textTertiary)
-                        }
+                InsightEntityRow(
+                    iconSource: account.iconSource,
+                    title: account.accountName,
+                    amount: account.balance,
+                    currency: currency,
+                    amountColor: AppColors.textSecondary
+                ) {
+                    if let lastActivity = account.lastActivityDate {
+                        Text(lastActivity, style: .relative)
+                            .font(AppTypography.bodySmall)
+                            .foregroundStyle(AppColors.textSecondary)
                     }
-
-                    Spacer()
-
-                    FormattedAmountText(
-                        amount: account.balance,
-                        currency: currency,
-                        fontSize: AppTypography.body,
-                        fontWeight: .semibold,
-                        color: AppColors.textSecondary
-                    )
                 }
-                .padding(.vertical, AppSpacing.sm)
                 .screenPadding()
             }
         }
@@ -481,7 +395,6 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
                     VStack(alignment: .leading, spacing: AppSpacing.sm) {
                         ForEach(page.items) { categoryRow($0, periodKey: page.id) }
                     }
-                    .screenPadding()
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -537,72 +450,26 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: AppSpacing.md) {
-            Image(systemName: "tray")
-                .font(.system(size: AppIconSize.xl))
-                .foregroundStyle(AppColors.textTertiary)
-            Text(String(localized: "insights.noExpensesForPeriod"))
-                .font(AppTypography.body)
-                .foregroundStyle(AppColors.textSecondary)
-            Text(String(localized: "insights.swipeHint"))
-                .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textTertiary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
+        EmptyStateView(
+            icon: "tray",
+            title: String(localized: "insights.noExpensesForPeriod"),
+            description: String(localized: "insights.swipeHint")
+        )
         .padding(.vertical, AppSpacing.xxl)
-        .screenPadding()
     }
 
     @ViewBuilder
     private func categoryRow(_ item: CategoryBreakdownItem, periodKey: String) -> some View {
-        let rowContent = HStack(spacing: AppSpacing.md) {
-            IconView(
-                source: item.iconSource,
-                style: .circle(
-                    size: AppIconSize.xxl,
-                    tint: .monochrome(item.color),
-                    backgroundColor: item.color.opacity(0.15)
-                )
-            )
-
-            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                Text(item.categoryName)
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-                if !item.subcategories.isEmpty {
-                    Text(item.subcategories.prefix(3).map(\.name).joined(separator: ", "))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textTertiary)
-                        .lineLimit(1)
-                }
-            }
-
-            Spacer()
-
-            HStack(spacing: AppSpacing.xs) {
-                VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
-                    FormattedAmountText(amount: item.amount, currency: currency, color: AppColors.textPrimary)
-                    Text(String(format: "%.1f%%", item.percentage))
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
-                }
-                if onCategoryTap != nil {
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(AppColors.textTertiary)
-                }
-            }
-        }
-        .padding(.vertical, AppSpacing.sm)
-
         if let tapHandler = onCategoryTap {
             NavigationLink(destination: tapHandler(item, periodKey)) {
-                rowContent.contentShape(Rectangle())
+                CategoryBreakdownRow(item: item, currency: currency, showsChevron: true)
+                    .screenPadding()
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         } else {
-            rowContent
+            CategoryBreakdownRow(item: item, currency: currency)
+                .screenPadding()
         }
     }
 }

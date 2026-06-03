@@ -16,7 +16,7 @@ struct AmortizationScheduleRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: AppSpacing.md) {
             Image(systemName: entry.isPaid ? "checkmark.circle.fill" : "circle")
-                .font(AppTypography.h3)
+                .font(.system(size: AppIconSize.lg))
                 .foregroundStyle(entry.isPaid ? AppColors.income : AppColors.textSecondary)
             
             VStack(alignment: .leading, spacing: AppSpacing.xs) {

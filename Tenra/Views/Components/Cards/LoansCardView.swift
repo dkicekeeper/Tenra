@@ -21,47 +21,22 @@ struct LoansCardView: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppSpacing.md) {
-            VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                Text(String(localized: "loan.listTitle", defaultValue: "Loans"))
-                    .font(AppTypography.h3)
-                    .foregroundStyle(AppColors.textPrimary)
-
-                if loans.isEmpty {
-                    EmptyStateView(
-                        title: String(
-                            localized: "loan.emptyTitle",
-                            defaultValue: "No Loans"
-                        ),
-                        style: .compact
-                    )
-                    .transition(.opacity)
-                } else {
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        FormattedAmountText(
-                            amount: totalDebt,
-                            currency: baseCurrency,
-                            fontSize: AppTypography.h2,
-                            fontWeight: .bold,
-                            color: AppColors.textPrimary
-                        )
-
-                        Text(String(format: String(localized: "loan.activeCount", defaultValue: "%d active loans"), loans.count))
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textPrimary)
-                    }
-                    .transition(.opacity)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if !loans.isEmpty {
-                loanIcons
-            }
+        FinanceCard(
+            title: String(localized: "loan.listTitle", defaultValue: "Loans"),
+            isEmpty: loans.isEmpty,
+            emptyTitle: String(localized: "loan.emptyTitle", defaultValue: "No Loans"),
+            subtitle: String(format: String(localized: "loan.activeCount", defaultValue: "%d active loans"), loans.count)
+        ) {
+            FormattedAmountText(
+                amount: totalDebt,
+                currency: baseCurrency,
+                fontSize: AppTypography.h2,
+                fontWeight: .bold,
+                color: AppColors.textPrimary
+            )
+        } trailing: {
+            loanIcons
         }
-        .animation(AppAnimation.gentleSpring, value: loans.isEmpty)
-        .padding(AppSpacing.lg)
-        .cardStyle()
     }
 
     // MARK: - Computed

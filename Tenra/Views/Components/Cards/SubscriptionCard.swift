@@ -31,7 +31,7 @@ struct SubscriptionCard: View, Equatable {
             // Info
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
                 Text(subscription.description)
-                    .font(AppTypography.bodyEmphasis.weight(.semibold))
+                    .font(AppTypography.bodyEmphasis)
 
                 FormattedAmountText(
                     amount: NSDecimalNumber(decimal: subscription.amount).doubleValue,

@@ -113,17 +113,11 @@ struct HealthComponentCard: View {
     // MARK: - Progress bar
 
     private var progressBar: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(AppColors.textTertiary.opacity(0.15))
-
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(progressColor)
-                    .frame(width: proxy.size.width * max(0, min(model.progress, 1)))
-            }
-        }
-        .frame(height: 8)
+        BudgetProgressBar(
+            percentage: model.progress * 100,
+            isOverBudget: false,
+            color: progressColor
+        )
     }
 
     // MARK: - Explainer
@@ -138,19 +132,7 @@ struct HealthComponentCard: View {
     // MARK: - Recommendation
 
     private var recommendationBox: some View {
-        HStack(alignment: .top, spacing: AppSpacing.sm) {
-            Image(systemName: "lightbulb.fill")
-                .font(.system(size: AppIconSize.sm))
-                .foregroundStyle(model.color)
-
-            Text(model.recommendation)
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(AppSpacing.md)
-        .background(model.color.opacity(0.10))
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.md))
+        RecommendationBox(text: model.recommendation, color: model.color)
     }
 }
 

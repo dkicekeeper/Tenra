@@ -217,11 +217,12 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
                 : "\(dayMonth)'\(String(format: "%02d", weekYear % 100))"
 
         case .month:
-            // "Jan 2024"
+            // "Май 2024" — full month name, first letter capitalized (locales like
+            // Russian return lowercase month names).
             let df = DateFormatter()
             df.locale = locale
             df.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMMyyyy", options: 0, locale: locale)
-            return df.string(from: date)
+            return df.string(from: date).capitalizedFirstLetter
 
         case .quarter:
             // "Q1 2024"
@@ -259,6 +260,17 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
         case .month, .quarter, .year, .allTime:
             return periodLabel(for: key, locale: locale)
         }
+    }
+
+    // MARK: - Heading Label (full, capitalized, no abbreviations)
+
+    /// Label for contexts where a date acts as a **heading / title** — breakdown
+    /// list rows, period-comparison cards, deep-dive subtitles. Always capitalized
+    /// and never abbreviated (full month names, full week range), unlike the
+    /// axis-oriented `periodLabel` which abbreviates `.week` for space.
+    /// `.month`/`.quarter`/`.year`/`.allTime` already match `periodLabel`.
+    nonisolated func headingLabel(for key: String, locale: Locale = .current) -> String {
+        bannerLabel(for: key, locale: locale).capitalizedFirstLetter
     }
 
     // MARK: - SF Symbol icon
@@ -469,8 +481,7 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
             df.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMMyyyy", options: 0, locale: locale)
             // Locales like Russian return lowercase month names ("май 2026"); the
             // summary card wants a capitalized first letter ("Май 2026").
-            let raw = df.string(from: now)
-            return raw.prefix(1).uppercased() + raw.dropFirst()
+            return df.string(from: now).capitalizedFirstLetter
         case .quarter:
             let m = calendar.component(.month, from: now)
             let q = (m - 1) / 3 + 1

@@ -130,19 +130,7 @@ struct InsightFormulaCard: View {
     // MARK: - Recommendation
 
     private var recommendationBox: some View {
-        HStack(alignment: .top, spacing: AppSpacing.sm) {
-            Image(systemName: "lightbulb.fill")
-                .font(.system(size: AppIconSize.sm))
-                .foregroundStyle(model.color)
-
-            Text(model.recommendation)
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(AppSpacing.md)
-        .background(model.color.opacity(0.10))
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.md))
+        RecommendationBox(text: model.recommendation, color: model.color)
     }
 }
 

@@ -27,8 +27,7 @@ struct ChartSelectionBanner: View {
     let content: Content
 
     private var capitalizedTitle: String {
-        guard let first = title.first else { return title }
-        return first.uppercased() + title.dropFirst()
+        title.capitalizedFirstLetter
     }
 
     var body: some View {

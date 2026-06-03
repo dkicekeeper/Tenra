@@ -15,42 +15,20 @@ struct CategoriesCardView: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppSpacing.md) {
-            VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                Text(String(localized: "finances.categories.title"))
-                    .font(AppTypography.h3)
-                    .foregroundStyle(AppColors.textPrimary)
-
-                if categories.isEmpty {
-                    EmptyStateView(
-                        title: String(localized: "finances.categories.empty"),
-                        style: .compact
-                    )
-                    .transition(.opacity)
-                } else {
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        Text("\(categories.count)")
-                            .font(AppTypography.h2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(AppColors.textPrimary)
-                            .contentTransition(.numericText())
-
-                        Text(String(format: String(localized: "finances.categories.count"), categories.count))
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textPrimary)
-                    }
-                    .transition(.opacity)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if !categories.isEmpty {
-                categoryIcons
-            }
+        FinanceCard(
+            title: String(localized: "finances.categories.title"),
+            isEmpty: categories.isEmpty,
+            emptyTitle: String(localized: "finances.categories.empty"),
+            subtitle: String(format: String(localized: "finances.categories.count"), categories.count)
+        ) {
+            Text("\(categories.count)")
+                .font(AppTypography.h2)
+                .fontWeight(.bold)
+                .foregroundStyle(AppColors.textPrimary)
+                .contentTransition(.numericText())
+        } trailing: {
+            categoryIcons
         }
-        .animation(AppAnimation.gentleSpring, value: categories.isEmpty)
-        .padding(AppSpacing.lg)
-        .cardStyle()
     }
 
     // MARK: - Icons

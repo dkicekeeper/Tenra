@@ -82,23 +82,14 @@ struct CategoryRow: View, Equatable {
 
                         if let progress = budgetProgress {
                             HStack(spacing: AppSpacing.xs) {
-                                HStack(spacing: 0) {
-                                    FormattedAmountText(
-                                        amount: progress.spent,
-                                        currency: currency,
-                                        fontSize: AppTypography.bodySmall,
-                                        color: progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary
-                                    )
-                                    Text(" / ")
-                                        .font(AppTypography.bodySmall)
-                                        .foregroundStyle(progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary)
-                                    FormattedAmountText(
-                                        amount: progress.budgetAmount,
-                                        currency: currency,
-                                        fontSize: AppTypography.bodySmall,
-                                        color: progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary
-                                    )
-                                }
+                                SpentBudgetText(
+                                    spent: progress.spent,
+                                    budget: progress.budgetAmount,
+                                    currency: currency,
+                                    fontWeight: .semibold,
+                                    amountColor: progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary,
+                                    separatorColor: progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary
+                                )
 
                                 Text("(\(Int(progress.percentage))%)")
                                     .font(AppTypography.bodySmall)

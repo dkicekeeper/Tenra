@@ -124,7 +124,7 @@ extension InsightsService {
             let pages: [PeriodCategoryBreakdown] = periodPoints.map { pt in
                 PeriodCategoryBreakdown(
                     id: pt.key,
-                    label: pt.label,
+                    label: gran.headingLabel(for: pt.key),
                     totalExpenses: pt.expenses,
                     items: makeBreakdown(expensesByKey[pt.key] ?? [], pt.expenses)
                 )
@@ -159,7 +159,7 @@ extension InsightsService {
                     formattedValue: String(localized: "insights.noExpenses"),
                     currency: baseCurrency, unit: nil
                 )
-                subtitle = currentPage?.label ?? gran.periodLabel(for: currentKey)
+                subtitle = currentPage?.label ?? gran.headingLabel(for: currentKey)
                 trend = nil
                 severity = .neutral
             }

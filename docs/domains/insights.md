@@ -110,3 +110,8 @@ critical > warning > neutral > positive
 - **Top-spending is emitted for every finite granularity even when the current period is empty** (empty hero "Нет расходов", still tappable). It only falls back to the legacy single `.categoryBreakdown` for `.allTime`. Paged breakdowns cover all `periodPoints` (current → first tx); `.week` is bounded by its rolling 52-week window.
 - **Per-generator ad-hoc tx filters MUST apply `LedgerPolicyRule.isRealized`.** `computePeriodDataPoints` and `PreAggregatedData.build` already exclude future-dated tx, but breakdown lists that re-filter `expenses` by date range (e.g. top-spending) did not — caused future tx in the breakdown vs. a realized % total. Keep them consistent.
 - **Period-trend detail charts/lists choose metric by `insight.type`** (avg-daily → avg daily expenses, monthOverMonth → expenses, incomeGrowth → income; else cash-flow). Pass the FULL `periodPoints` (not `[prev, current]`) so the chart/list span all time. See `periodListMetric` / `periodChartSeries` in `InsightDetailView`.
+
+## Date labels — headings vs axis
+
+- **`InsightGranularity.headingLabel(for:)`** — use for ANY date acting as a heading / row-title: breakdown-list rows, `PeriodComparisonCard`, paged pager header, wealth/spending service subtitles. Capitalized, full month names, full week range (no abbreviations). Built on `String.capitalizedFirstLetter`.
+- **`InsightGranularity.periodLabel(for:)`** — axis / chart only: abbreviates `.week` ("3 янв"); month is full but locale-cased (ru → lowercase "май 2026"). Do NOT use it for headings — renders lowercase in ru locale. `PeriodDataPoint.label` is built from it (axis-oriented); heading call sites recompute via `headingLabel(for: point.key)`.

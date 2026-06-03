@@ -187,15 +187,10 @@ struct InsightsView: View {
         let filtered = insightsViewModel.filteredInsights
 
         if filtered.isEmpty {
-            VStack(spacing: AppSpacing.md) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.system(size: AppIconSize.xxxl))
-                    .foregroundStyle(AppColors.textTertiary)
-                Text(String(localized: "insights.noInsightsForFilter"))
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
-            .frame(maxWidth: .infinity)
+            EmptyStateView(
+                icon: "chart.line.uptrend.xyaxis",
+                title: String(localized: "insights.noInsightsForFilter")
+            )
             .padding(.top, AppSpacing.xxxl)
 
         } else if insightsViewModel.selectedCategory == nil {
@@ -294,7 +289,6 @@ struct InsightsView: View {
             icon: "chart.line.uptrend.xyaxis",
             title: String(localized: "insights.emptyState.title"),
             description: String(localized: "insights.emptyState.description")
-//            }
         )
     }
 

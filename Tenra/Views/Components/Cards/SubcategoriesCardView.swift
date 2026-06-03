@@ -33,36 +33,20 @@ struct SubcategoriesCardView: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppSpacing.md) {
-            VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                Text(String(localized: "finances.subcategories.title"))
-                    .font(AppTypography.h3)
-                    .foregroundStyle(AppColors.textPrimary)
-
-                if subcategories.isEmpty {
-                    EmptyStateView(
-                        title: String(localized: "finances.subcategories.empty"),
-                        style: .compact
-                    )
-                    .transition(.opacity)
-                } else {
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        Text("\(subcategories.count)")
-                            .font(AppTypography.h2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(AppColors.textPrimary)
-                            .contentTransition(.numericText())
-
-                        Text(String(format: String(localized: "finances.subcategories.linkedTo"), linkedCategories.count))
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textPrimary)
-                    }
-                    .transition(.opacity)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if !subcategories.isEmpty && !linkedCategories.isEmpty {
+        FinanceCard(
+            title: String(localized: "finances.subcategories.title"),
+            isEmpty: subcategories.isEmpty,
+            emptyTitle: String(localized: "finances.subcategories.empty"),
+            subtitle: String(format: String(localized: "finances.subcategories.linkedTo"), linkedCategories.count)
+        ) {
+            Text("\(subcategories.count)")
+                .font(AppTypography.h2)
+                .fontWeight(.bold)
+                .foregroundStyle(AppColors.textPrimary)
+                .contentTransition(.numericText())
+        } trailing: {
+            // Facepile shows linked parent categories; hidden when none are linked yet.
+            if !linkedCategories.isEmpty {
                 PackedCircleIconsView(
                     items: linkedCategories.map { category in
                         PackedCircleItem(
@@ -75,9 +59,6 @@ struct SubcategoriesCardView: View {
                 )
             }
         }
-        .animation(AppAnimation.gentleSpring, value: subcategories.isEmpty)
-        .padding(AppSpacing.lg)
-        .cardStyle()
     }
 }
 

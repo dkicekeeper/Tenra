@@ -40,56 +40,16 @@ struct AccountsCardView: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppSpacing.md) {
-            VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                Text(String(localized: "finances.accounts.title"))
-                    .font(AppTypography.h3)
-                    .foregroundStyle(AppColors.textPrimary)
-
-                if accounts.isEmpty {
-                    EmptyStateView(
-                        title: String(localized: "finances.accounts.empty"),
-                        style: .compact
-                    )
-                    .transition(.opacity)
-                } else {
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        ZStack {
-                            if isLoadingTotal {
-                                Text("0000.00")
-                                    .font(AppTypography.h2)
-                                    .fontWeight(.bold)
-                                    .redacted(reason: .placeholder)
-                                    .transition(.opacity)
-                            } else {
-                                FormattedAmountText(
-                                    amount: totalAmount,
-                                    currency: baseCurrency,
-                                    fontSize: AppTypography.h2,
-                                    fontWeight: .bold,
-                                    color: AppColors.textPrimary
-                                )
-                                .transition(.opacity)
-                            }
-                        }
-                        .animation(AppAnimation.gentleSpring, value: isLoadingTotal)
-
-                        Text(String(format: String(localized: "finances.accounts.count"), accounts.count))
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textPrimary)
-                    }
-                    .transition(.opacity)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if !accounts.isEmpty {
-                accountIcons
-            }
+        FinanceCard(
+            title: String(localized: "finances.accounts.title"),
+            isEmpty: accounts.isEmpty,
+            emptyTitle: String(localized: "finances.accounts.empty"),
+            subtitle: String(format: String(localized: "finances.accounts.count"), accounts.count)
+        ) {
+            RedactableAmount(amount: totalAmount, currency: baseCurrency, isLoading: isLoadingTotal)
+        } trailing: {
+            accountIcons
         }
-        .animation(AppAnimation.gentleSpring, value: accounts.isEmpty)
-        .padding(AppSpacing.lg)
-        .cardStyle()
         .task(id: refreshID) {
             await refreshTotal()
         }

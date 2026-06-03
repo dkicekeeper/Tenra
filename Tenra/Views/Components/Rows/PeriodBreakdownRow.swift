@@ -40,7 +40,6 @@ enum PeriodListMetric {
 /// Shows label on the left; on the right either the netFlow + income/expenses triple,
 /// or a single value when `singleValue` is provided (metric-specific lists).
 /// - Parameter showDivider: adds a `Divider` at the bottom (InsightsSummaryDetailView)
-/// - Parameter labelMinWidth: optional min width for the label column (InsightsSummaryDetailView)
 /// - Parameter singleValue: when non-nil, render only this value instead of the triple
 struct PeriodBreakdownRow: View {
     let label: String
@@ -49,7 +48,6 @@ struct PeriodBreakdownRow: View {
     let netFlow: Double
     let currency: String
     var showDivider: Bool = false
-    var labelMinWidth: CGFloat? = nil
     var singleValue: Double? = nil
     var singleColor: Color = AppColors.textPrimary
 
@@ -84,7 +82,7 @@ struct PeriodBreakdownRow: View {
                                 amount: income,
                                 currency: currency,
                                 prefix: "+",
-                                fontSize: AppTypography.caption,
+                                fontSize: AppTypography.bodySmall,
                                 fontWeight: .regular,
                                 color: AppColors.success
                             )
@@ -92,7 +90,7 @@ struct PeriodBreakdownRow: View {
                                 amount: expenses,
                                 currency: currency,
                                 prefix: "-",
-                                fontSize: AppTypography.caption,
+                                fontSize: AppTypography.bodySmall,
                                 fontWeight: .regular,
                                 color: AppColors.destructive
                             )
@@ -121,9 +119,16 @@ struct PeriodBreakdownRow: View {
     }
 }
 
-#Preview("With divider + minWidth") {
+#Preview("With divider") {
     VStack(spacing: 0) {
-        PeriodBreakdownRow(label: "Jan 2026", income: 530_000, expenses: 320_000, netFlow: 210_000, currency: "KZT", showDivider: true, labelMinWidth: 80)
-        PeriodBreakdownRow(label: "Dec 2025", income: 480_000, expenses: 390_000, netFlow: 90_000, currency: "KZT", showDivider: true, labelMinWidth: 80)
+        PeriodBreakdownRow(label: "Январь 2026", income: 530_000, expenses: 320_000, netFlow: 210_000, currency: "KZT", showDivider: true)
+        PeriodBreakdownRow(label: "Декабрь 2025", income: 480_000, expenses: 390_000, netFlow: 90_000, currency: "KZT", showDivider: true)
+    }
+}
+
+#Preview("Single metric") {
+    VStack(spacing: 0) {
+        PeriodBreakdownRow(label: "Январь 2026", income: 530_000, expenses: 320_000, netFlow: 210_000, currency: "KZT", singleValue: 320_000, singleColor: AppColors.textPrimary)
+        PeriodBreakdownRow(label: "Декабрь 2025", income: 480_000, expenses: 390_000, netFlow: 90_000, currency: "KZT", singleValue: 390_000, singleColor: AppColors.textPrimary)
     }
 }

@@ -30,61 +30,24 @@ struct SubscriptionsCardView: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppSpacing.md) {
-            VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                Text(String(localized: "subscriptions.title"))
-                    .font(AppTypography.h3)
-                    .foregroundStyle(.primary)
-
-                if subscriptions.isEmpty {
-                    EmptyStateView(title: String(localized: "emptyState.noActiveSubscriptions"), style: .compact)
-                        .transition(.opacity)
-                } else {
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        ZStack {
-                            if isLoadingTotal {
-                                Text("0000.00")
-                                    .font(AppTypography.h2)
-                                    .fontWeight(.bold)
-                                    .redacted(reason: .placeholder)
-                                    .transition(.opacity)
-                            } else {
-                                FormattedAmountText(
-                                    amount: totalAmount,
-                                    currency: baseCurrency,
-                                    fontSize: AppTypography.h2,
-                                    fontWeight: .bold,
-                                    color: AppColors.textPrimary
-                                )
-                                .transition(.opacity)
-                            }
-                        }
-                        .animation(AppAnimation.gentleSpring, value: isLoadingTotal)
-
-                        Text(String(format: String(localized: "subscriptions.activeCount"), subscriptions.count))
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textPrimary)
-                    }
-                    .transition(.opacity)
+        FinanceCard(
+            title: String(localized: "subscriptions.title"),
+            isEmpty: subscriptions.isEmpty,
+            emptyTitle: String(localized: "emptyState.noActiveSubscriptions"),
+            subtitle: String(format: String(localized: "subscriptions.activeCount"), subscriptions.count)
+        ) {
+            RedactableAmount(amount: totalAmount, currency: baseCurrency, isLoading: isLoadingTotal)
+        } trailing: {
+            PackedCircleIconsView(
+                items: subscriptions.map { sub in
+                    PackedCircleItem(
+                        id: sub.id,
+                        iconSource: sub.iconSource,
+                        amount: convertedAmounts[sub.id] ?? (sub.amount as NSDecimalNumber).doubleValue
+                    )
                 }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if !subscriptions.isEmpty {
-                PackedCircleIconsView(
-                    items: subscriptions.map { sub in
-                        PackedCircleItem(
-                            id: sub.id,
-                            iconSource: sub.iconSource,
-                            amount: convertedAmounts[sub.id] ?? (sub.amount as NSDecimalNumber).doubleValue
-                        )
-                    }
-                )
-            }
+            )
         }
-        .animation(AppAnimation.gentleSpring, value: subscriptions.isEmpty)
-        .padding(AppSpacing.lg)
-        .cardStyle()
         // Fix #3: replaced two separate `onChange + unstructured Task {}` blocks with a single
         // `.task(id: refreshID)`. SwiftUI automatically cancels and restarts this task whenever
         // `refreshID` changes (subscriptions count or base currency), and cancels it on view

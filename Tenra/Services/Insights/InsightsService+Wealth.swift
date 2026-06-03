@@ -107,8 +107,8 @@ extension InsightsService {
             let wealthGrowthSeverity: InsightSeverity = currentPeriodNetFlow > 0 ? .positive : .warning
             // Build an explicit comparison label "May 2026 vs April 2026" so the
             // text doesn't depend on a granularity-keyed string elsewhere.
-            let curLabel = granularity.periodLabel(for: currentKey)
-            let prevLabel = granularity.periodLabel(for: prevKey)
+            let curLabel = granularity.headingLabel(for: currentKey)
+            let prevLabel = granularity.headingLabel(for: prevKey)
             let comparison = String(
                 format: String(localized: "insights.wealth.growth.compare"),
                 curLabel, prevLabel

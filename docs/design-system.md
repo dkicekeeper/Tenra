@@ -275,19 +275,19 @@ UniversalRow(
 
 | Preset | V-Padding | H-Padding | Context |
 |--------|-----------|-----------|---------|
-| `.standard` | 8 | 12 | Form rows in `FormSection` |
+| `.standard` | 12 | 16 | Form rows in `FormSection` |
 | `.settings` | 4 | 0 | Settings list rows |
-| `.selectable` | 8 | 12 | Checkmark selection lists |
-| `.sheetList` | 8 | 16 | Modal selection sheets |
-| `.info` | 6 | 12 | Read-only label+value |
+| `.selectable` | 12 | 16 | Checkmark selection lists |
+| `.sheetList` | 12 | 16 | Modal selection sheets |
+| `.info` | 8 | 0 | Read-only label+value (container owns H-padding) |
 
 **IconConfig factories:**
 
 ```swift
-.sfSymbol("star", color: .blue, size: .lg)  // SF Symbol with color
-.bankLogo(.kaspi, size: .xl)                 // Bank logo
+.sfSymbol("star", color: .blue, size: .lg)   // SF Symbol with color
 .brandService("netflix", size: .xl)          // Brand service icon
 .custom(source: iconSource, style: style)    // Custom IconSource + IconStyle
+.auto(source: iconSource, size: .xl)         // Picks style by source (sfSymbol→categoryIcon, brandService→serviceLogo)
 ```
 
 **Interaction modifiers:**
@@ -297,6 +297,26 @@ row.navigationRow { DetailView() }           // NavigationLink wrapper
 row.actionRow(role: .destructive) { delete() } // Button wrapper
 row.selectableRow(isSelected: true) { select() } // Tap gesture wrapper
 ```
+
+#### Row token contract
+
+Every row in `Views/Components/Rows/` follows these token rules. New rows MUST conform; deviations are bugs unless explicitly justified inline.
+
+| Slot | Token | Notes |
+|------|-------|-------|
+| **Leading icon — content rows** | `AppIconSize.xxl` (44) | AccountRow, CategoryRow, CategoryBreakdownRow, InsightEntityRow, BudgetProgressRow |
+| **Leading icon — form rows** | `AppIconSize.lg` (24) | InfoRow, MenuPickerRow, DatePickerRow |
+| **Leading icon — settings rows** | `AppIconSize.md` (20) | ActionSettingsRow, NavigationSettingsRow |
+| **HStack spacing (icon ↔ content)** | `AppSpacing.md` (12) | All rows |
+| **Inner VStack (title ↔ subtitle)** | `AppSpacing.xs` (4) | Never `xxs` |
+| **Title — management lists** | `AppTypography.h4` (20 semibold) | AccountRow, CategoryRow (larger touch lists) |
+| **Title — detail / breakdown rows** | `AppTypography.body` (18) or `bodyEmphasis` (18 semibold) | Insights detail rows. Use the `bodyEmphasis` **token** — never `body` + `.fontWeight(.semibold)` |
+| **Subtitle / secondary line** | `AppTypography.bodySmall` (16) / `AppColors.textSecondary` | One token for all secondary subtitles |
+| **Trailing amount** | `FormattedAmountText` (default body/semibold) | Never hand-format money |
+| **Horizontal inset** | per-row `.screenPadding()` | Rows declare `hPad 0` (UniversalRow `.info`) and own their inset at the call site, so the full width — incl. padding — is tappable inside `NavigationLink`. Lists do NOT wrap the whole `VStack` (would double-pad self-padding `SectionHeaderView(.large)`) |
+| **Navigation chevron (outside `List`)** | `DisclosureChevron` | `chevron.forward` (RTL-aware) + tertiary. Never hand-roll `chevron.right` |
+
+**Shared row sub-components:** `AmountPercentageView` (amount + %), `SpentBudgetText` (spent / budget), `DisclosureChevron`, `PeriodBreakdownRow`, `BudgetProgressRow`. Reuse before building a new row.
 
 #### `InfoRow`
 Read-only label + value. Wrapper for `UniversalRow(config: .info)`.
@@ -384,6 +404,34 @@ BudgetSettingsSection(
 ```
 
 Use in: `CategoryEditView` only.
+
+---
+
+### Card Components
+
+All display cards share one contract: inner padding `AppSpacing.lg` (16), `.cardStyle()` (default radius `AppRadius.xl` = 20), section title `AppTypography.h3` / `AppColors.textPrimary`, entity-card title `AppTypography.h4`. Money always via `FormattedAmountText`. Conform new cards to this; don't hand-roll the glass shell.
+
+#### `FinanceCard`
+Shell for home-screen finance-product entry cards (accounts, deposits, loans, subscriptions, categories, subcategories). Owns the `HStack(title + hero/subtitle | icons)` layout, compact empty-state swap, padding and `.cardStyle()`. Each card supplies title, `isEmpty`, empty copy, `subtitle` (count line), a `hero` value view and a `trailing` facepile.
+
+```swift
+FinanceCard(
+    title: ..., isEmpty: accounts.isEmpty, emptyTitle: ..., subtitle: ...
+) {
+    RedactableAmount(amount: total, currency: base, isLoading: loading) // or FormattedAmountText / count Text
+} trailing: {
+    PackedCircleIconsView(items: ...)
+}
+```
+
+- **`RedactableAmount`** — hero amount that shows a redacted placeholder while an async (FX) total computes, then cross-fades. Use for cards whose total needs conversion (accounts, deposits, subscriptions).
+- Don't reintroduce the inline `HStack(.top, md) → VStack(.leading, lg) → title → if isEmpty …` shell in a new finance card — wrap `FinanceCard`.
+
+#### `RecommendationBox`
+Tinted "lightbulb + advice" callout (icon + text on `color.opacity(0.10)`, `AppRadius.md`). Shared by `InsightFormulaCard` and `HealthComponentCard`. Use for any card-bottom recommendation line.
+
+#### `EmptyCardView`
+Distinct from `FinanceCard`'s inline empty state: a standalone, optionally-tappable empty card (section title + compact empty message) for empty home sections that act as an "add first item" CTA.
 
 ---
 

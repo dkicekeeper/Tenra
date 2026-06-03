@@ -111,13 +111,12 @@ struct InsightsSummaryDetailView: View {
 
             ForEach(periodDataPoints.reversed()) { point in
                 PeriodBreakdownRow(
-                    label: point.label,
+                    label: point.granularity.headingLabel(for: point.key),
                     income: point.income,
                     expenses: point.expenses,
                     netFlow: point.netFlow,
                     currency: currency,
-                    showDivider: true,
-                    labelMinWidth: 80
+                    showDivider: true
                 )
             }
         }

@@ -104,8 +104,6 @@ struct InsightDeepDiveView: View {
         let slices = DonutSlice.from(subcategories, baseColor: color)
         let colorByID = Dictionary(uniqueKeysWithValues: slices.map { ($0.id, $0.color) })
         return VStack(alignment: .leading, spacing: AppSpacing.lg) {
-//            SectionHeaderView(String(localized: "insights.subcategories"), style: .default)
-
             DonutChart(
                 slices: slices,
                 showAnnotations: false
@@ -143,11 +141,10 @@ struct InsightDeepDiveView: View {
     private var comparisonSection: some View {
         let gran = viewModel?.currentGranularity ?? .month
         let curKey = periodKey ?? gran.currentPeriodKey
-        let currentLabel  = gran.periodLabel(for: curKey)
-        let previousLabel = gran.periodLabel(for: gran.previousPeriodKey(before: curKey))
+        let currentLabel  = gran.headingLabel(for: curKey)
+        let previousLabel = gran.headingLabel(for: gran.previousPeriodKey(before: curKey))
         let currentAmount = subcategories.reduce(0.0) { $0 + $1.amount }
         return VStack(spacing: AppSpacing.md) {
-//            SectionHeaderView(String(localized: "insights.periodComparison"), style: .default)
             PeriodComparisonCard(
                 currentLabel: currentLabel,
                 currentAmount: currentAmount,

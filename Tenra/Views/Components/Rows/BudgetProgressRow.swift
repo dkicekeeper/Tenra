@@ -27,8 +27,7 @@ struct BudgetProgressRow: View {
                     )
                 )
                 Text(item.categoryName)
-                    .font(AppTypography.body)
-                    .fontWeight(.semibold)
+                    .font(AppTypography.bodyEmphasis)
                     .foregroundStyle(AppColors.textPrimary)
                 Spacer()
                 Text(String(format: "%.0f%%", item.percentage))
@@ -45,22 +44,12 @@ struct BudgetProgressRow: View {
 
             // Spent / Budget / Days left
             HStack {
-                FormattedAmountText(
-                    amount: item.spent,
+                SpentBudgetText(
+                    spent: item.spent,
+                    budget: item.budgetAmount,
                     currency: currency,
-                    fontSize: AppTypography.caption,
-                    fontWeight: .regular,
-                    color: AppColors.textSecondary
-                )
-                Text("/")
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textTertiary)
-                FormattedAmountText(
-                    amount: item.budgetAmount,
-                    currency: currency,
-                    fontSize: AppTypography.caption,
-                    fontWeight: .regular,
-                    color: AppColors.textSecondary
+                    font: AppTypography.caption,
+                    separatorColor: AppColors.textTertiary
                 )
                 Spacer()
                 if item.daysRemaining > 0 {

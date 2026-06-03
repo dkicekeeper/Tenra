@@ -308,6 +308,7 @@ When working with this project:
 - Don't skip reading existing code before modifications
 - Don't use Combine when Observation framework is preferred
 - Don't create per-feature icon-style wrappers (e.g. an `InsightIconStyle`) — reuse `IconView` with the canonical style: `IconView(source:, size: AppIconSize.xxl)` (logos, like AccountRow) or `.circle(size: .xxl, tint: .monochrome(color), backgroundColor: color.opacity(0.15))` (colored category icons, like CategoryRow)
+- Don't hand-roll card/row shells — reuse `FinanceCard`, `UniversalRow` and the shared sub-components (see design-system.md Card/Row contracts)
 - Don't flag `#Preview` block inconsistencies as production drifts in audits — distinguish preview-only from production usage when grep'ing
 - Don't write CLAUDE.md inline rules for things that fit in a domain doc — keep this file thin
 - Don't auto build/install/launch/screenshot the Simulator to verify UI changes — the user verifies visually. Build only to confirm compilation, then report what to check. (White-on-white plates are invisible in screenshots — `xcrun simctl ui <dev> appearance dark` exposes them.)

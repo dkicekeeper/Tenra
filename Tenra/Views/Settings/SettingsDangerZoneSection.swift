@@ -14,11 +14,19 @@ struct SettingsDangerZoneSection: View {
     // MARK: - Props
 
     let onResetData: () -> Void
+    /// Wipes the on-device voice-learning store that biases account suggestions.
+    let onResetLearning: () -> Void
 
     // MARK: - Body
 
     var body: some View {
         Section(header: SettingsSectionHeaderView(title: String(localized: "settings.dangerZone"))) {
+            ActionSettingsRow(
+                icon: "trash",
+                title: "Сбросить обученные предпочтения",
+                isDestructive: true,
+                action: onResetLearning
+            )
             ActionSettingsRow(
                 icon: "trash",
                 title: String(localized: "settings.resetData"),
@@ -35,6 +43,8 @@ struct SettingsDangerZoneSection: View {
     List {
         SettingsDangerZoneSection(
             onResetData: {
+            },
+            onResetLearning: {
             }
         )
     }

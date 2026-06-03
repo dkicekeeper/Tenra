@@ -44,14 +44,15 @@ struct InsightFormulaCard: View {
     // MARK: - Hero value
 
     private var heroRow: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+        VStack(alignment: .leading, spacing: AppSpacing.xs) {
             Text(String(localized: String.LocalizationValue(model.heroLabelKey)))
-                .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textTertiary)
+                .font(AppTypography.body)
+                .foregroundStyle(AppColors.textSecondary)
             Text(model.heroValueText)
                 .font(AppTypography.h1.bold())
                 .foregroundStyle(AppColors.textPrimary)
         }
+        .padding(.vertical, AppSpacing.md)
     }
 
     // MARK: - Formula breakdown
@@ -100,7 +101,7 @@ struct InsightFormulaCard: View {
                     .monospacedDigit()
             }
         }
-        .padding(.vertical, AppSpacing.xxs)
+        .padding(.vertical, AppSpacing.xs)
     }
 
     private func formattedValue(_ row: InsightFormulaRow) -> String {
@@ -130,7 +131,7 @@ struct InsightFormulaCard: View {
     // MARK: - Recommendation
 
     private var recommendationBox: some View {
-        RecommendationBox(text: model.recommendation, color: model.color)
+        RecommendationBox(text: model.recommendation, color: model.color)       
     }
 }
 

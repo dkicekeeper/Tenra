@@ -18,6 +18,8 @@ struct TransactionAddModal: View {
 
     @Environment(AppCoordinator.self) private var appCoordinator
     @Environment(TimeFilterManager.self) private var timeFilterManager
+    /// Optional so the standalone #Previews (which don't inject it) don't crash.
+    @Environment(TabBarVisibility.self) private var tabBarVisibility: TabBarVisibility?
 
     // MARK: - State
 
@@ -90,7 +92,12 @@ struct TransactionAddModal: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        // Keep the per-destination hide (guarantees the bar is gone while the
+        // keypad occupies the bottom) AND drive the stable TabView-owned flag so
+        // restoration on pop isn't tied to this view's safe-area teardown.
         .toolbar(.hidden, for: .tabBar)
+        .onAppear { tabBarVisibility?.isHidden = true }
+        .onDisappear { tabBarVisibility?.isHidden = false }
         .toolbar {
             toolbarContent
         }

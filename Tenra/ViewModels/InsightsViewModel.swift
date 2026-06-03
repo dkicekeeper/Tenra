@@ -86,6 +86,10 @@ final class InsightsViewModel {
     private(set) var previousBucketNetFlow: Double = 0
     /// Localised label for the current bucket ("May 2026", "Q2 2026", "Last 7 days").
     private(set) var currentBucketLabel: String = ""
+    /// Total spendable balance across all accounts included in the Finances total
+    /// (non-loan, `includeInBalance`). Period-independent — mirrors the home total.
+    /// Recomputed on each background recompute from the balance snapshot.
+    private(set) var availableBalance: Double = 0
     /// Financial Health Score (computed once per recompute cycle, using .month granularity data)
     private(set) var healthScore: FinancialHealthScore? = nil
 
@@ -311,6 +315,11 @@ final class InsightsViewModel {
         let recurringSnapshot   = Array(transactionStore.recurringSeries)
         let accountsSnapshot    = Array(transactionStore.accounts)
         let priorityGranularity = currentGranularity  // show this one first
+        // Total spendable balance (non-loan, included-in-balance accounts) — period-independent.
+        // Computed on MainActor from the just-built snapshot so the summary card has it immediately.
+        self.availableBalance = accountsSnapshot
+            .filter { !$0.isLoan && $0.includeInBalance }
+            .reduce(0.0) { $0 + (balanceSnapshot[$1.id] ?? 0) }
         // Bundle all snapshots into DataSnapshot for nonisolated computation
         let snapshot = InsightsService.DataSnapshot(
             transactions: allTransactions,

@@ -319,17 +319,21 @@ extension InsightsService {
             heroLabelKey: "insights.formula.yearOverYear.heroLabel",
             formulaHeaderKey: "insights.formula.yearOverYear.formulaHeader",
             formulaRows: [
+                // Row label carries the period (e.g. "June 2026"); the value column
+                // shows just the amount — instead of cramming "amount — month" into one cell.
                 InsightFormulaRow(
                     id: "thisMonth",
                     labelKey: "insights.formula.yearOverYear.row.thisMonth",
+                    labelText: thisLabel,
                     value: thisExpenses,
-                    kind: .rawText("\(Formatting.formatCurrencySmart(thisExpenses, currency: baseCurrency)) — \(thisLabel)")
+                    kind: .currency
                 ),
                 InsightFormulaRow(
                     id: "lastYear",
                     labelKey: "insights.formula.yearOverYear.row.lastYear",
+                    labelText: lastLabel,
                     value: lastYearExpenses,
-                    kind: .rawText("\(Formatting.formatCurrencySmart(lastYearExpenses, currency: baseCurrency)) — \(lastLabel)")
+                    kind: .currency
                 ),
                 InsightFormulaRow(id: "absDelta", labelKey: "insights.formula.yearOverYear.row.absDelta", value: absDelta, kind: .currency),
                 InsightFormulaRow(id: "delta", labelKey: "insights.formula.yearOverYear.row.delta", value: delta, kind: .percent, isEmphasised: true)

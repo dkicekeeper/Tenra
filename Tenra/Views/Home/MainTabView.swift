@@ -48,6 +48,12 @@ struct MainTabView: View {
     /// so we can restore it when the user taps [×].
     @State private var previousTab: AppTab = .home
 
+    /// Stable, TabView-owned control of the tab bar's visibility. Pushed views
+    /// (e.g. `TransactionAddModal`) toggle `isHidden` instead of relying on a
+    /// transient `.toolbar(.hidden, for: .tabBar)` whose restore races the view's
+    /// teardown. See `TabBarVisibility` for the full rationale.
+    @State private var tabBarVisibility = TabBarVisibility()
+
     /// Home screen UI state that must survive ContentView recreation.
     /// ContentView is destroyed when tab-bar mode toggles (conditional Tab declarations).
     /// Storing state here keeps it alive and passes it down via @Environment.
@@ -112,6 +118,12 @@ struct MainTabView: View {
                 PlusTabLabel(isExpanded: tabBarMode == .expanded)
             }
         }
+        // `.automatic` (not `.visible`) is the default so pushed views that hide
+        // the bar via their own per-destination modifier (CloudBackupsView,
+        // LinkPaymentsView, AccountActionView) keep working; only an explicit
+        // `isHidden` forces `.hidden` from this stable owner.
+        .toolbar(tabBarVisibility.isHidden ? .hidden : .automatic, for: .tabBar)
+        .environment(tabBarVisibility)
         .onChange(of: selectedTab) { _, new in
             handleTabSelection(new)
         }

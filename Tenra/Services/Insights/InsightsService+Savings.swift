@@ -13,9 +13,6 @@ extension InsightsService {
     // MARK: - Savings Insights
 
     nonisolated func generateSavingsInsights(
-        allIncome: Double,
-        allExpenses: Double,
-        bucketLabel: String = "",
         baseCurrency: String,
         balanceFor: (String) -> Double,
         accounts: [Account],
@@ -25,8 +22,20 @@ extension InsightsService {
     ) -> [Insight] {
         var insights: [Insight] = []
 
-        // SavingsRate is granularity-dependent (uses bucket income/expenses) — always compute
-        if let rate = generateSavingsRate(allIncome: allIncome, allExpenses: allExpenses, bucketLabel: bucketLabel, baseCurrency: baseCurrency) {
+        // SavingsRate uses the LAST COMPLETED calendar month rather than the current
+        // (partial) period: salary commonly lands at month-end, so mid-month the rate
+        // would always read as a deficit. The completed month is a full income+expense
+        // cycle, making the metric meaningful regardless of the selected granularity.
+        let calendar = Calendar.current
+        let prevMonthAnchor = calendar.date(byAdding: .month, value: -1, to: Date()) ?? Date()
+        let completedMonth: InMemoryMonthlyTotal?
+        if let preAggregated {
+            completedMonth = preAggregated.lastMonthlyTotals(1, anchor: prevMonthAnchor).first
+        } else {
+            completedMonth = Self.computeLastMonthlyTotals(1, from: transactions, anchor: prevMonthAnchor, baseCurrency: baseCurrency).first
+        }
+        if let completedMonth,
+           let rate = generateSavingsRate(allIncome: completedMonth.totalIncome, allExpenses: completedMonth.totalExpenses, bucketLabel: completedMonth.label, baseCurrency: baseCurrency) {
             insights.append(rate)
         }
         // EmergencyFund is granularity-independent — skip when shared provided

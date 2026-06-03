@@ -31,8 +31,7 @@ struct InsightsTotalsCard: View {
             if let label = periodLabel {
                 Text(label)
                     .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textSecondary)
-//                    .textCase(.uppercase)
+                    .foregroundStyle(AppColors.textPrimary)
             }
 
             HStack(alignment: .top, spacing: AppSpacing.xs) {
@@ -72,7 +71,7 @@ struct InsightsTotalsCard: View {
         color: Color,
         upIsGood: Bool
     ) -> some View {
-        VStack(alignment: .center, spacing: AppSpacing.xs) {
+        VStack(alignment: .leading, spacing: AppSpacing.xs) {
             Text(title)
                 .font(AppTypography.bodySmall)
                 .foregroundStyle(AppColors.textSecondary)

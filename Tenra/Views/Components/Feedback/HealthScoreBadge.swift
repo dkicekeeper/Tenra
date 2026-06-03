@@ -20,8 +20,8 @@ struct HealthScoreBadge: View {
                 .font(AppTypography.bodyEmphasis)
 
             Text(String(localized: "insights.healthScore"))
-                .font(AppTypography.body)
-                .foregroundStyle(AppColors.textSecondary)
+                .font(AppTypography.bodyEmphasis)
+                .foregroundStyle(AppColors.textPrimary)
 
             Spacer()
 

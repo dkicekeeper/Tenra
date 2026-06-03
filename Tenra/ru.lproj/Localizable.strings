@@ -777,7 +777,11 @@
 "insights.recurring" = "Регулярные";
 "insights.cashFlow" = "Денежный поток";
 "insights.netFlow" = "Чистый поток";
+"insights.availableBalance" = "Доступный баланс";
 "insights.ratio" = "Соотношение доходов/расходов";
+"insights.incomeVsExpense.coverage" = "Доходы покрывают расходы на %@";
+"insights.topMonths.best" = "Топ-10 лучших месяцев";
+"insights.topMonths.worst" = "Топ-10 худших месяцев";
 "insights.loading" = "Анализируем ваши финансы...";
 "insights.emptyState.title" = "Пока нет аналитики";
 "insights.emptyState.description" = "Добавьте операции, чтобы увидеть финансовую аналитику";

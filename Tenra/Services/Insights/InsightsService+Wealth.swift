@@ -143,7 +143,7 @@ extension InsightsService {
 
     /// Flags accounts that have been idle for 30+ days but still hold a positive balance.
     /// Uses PreAggregatedData.lastAccountDates — O(accounts) instead of O(N) date-parsing loop.
-    nonisolated func generateAccountDormancy(allTransactions: [Transaction], balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil, accounts: [Account]) -> Insight? {
+    nonisolated func generateAccountDormancy(allTransactions: [Transaction], baseCurrency: String, balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil, accounts: [Account]) -> Insight? {
         let now = Date()
         guard let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: now) else { return nil }
 
@@ -187,15 +187,18 @@ extension InsightsService {
         }
         guard !dormantAccounts.isEmpty else { return nil }
 
+        // Metric = total balance sitting idle (an amount). The account count is in the
+        // subtitle, so a big "N" duplicated it in the detail header.
+        let totalIdleBalance = dormantAccounts.reduce(0.0) { $0 + $1.balance }
         return Insight(
             id: "accountDormancy",
             type: .accountDormancy,
             title: String(localized: "insights.accountDormancy.title"),
             subtitle: "\(dormantAccounts.count) \(String(localized: "insights.accountDormancy.subtitle"))",
             metric: InsightMetric(
-                value: Double(dormantAccounts.count),
-                formattedValue: "\(dormantAccounts.count)",
-                currency: nil, unit: nil
+                value: totalIdleBalance,
+                formattedValue: Formatting.formatCurrencySmart(totalIdleBalance, currency: baseCurrency),
+                currency: baseCurrency, unit: nil
             ),
             trend: nil,
             severity: .neutral,

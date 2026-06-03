@@ -83,6 +83,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
         case .averageDailySpending: return .avgDailyExpenses
         case .monthOverMonthChange: return .expenses
         case .incomeGrowth:         return .income
+        case .wealthGrowth:         return .cumulativeBalance
         default:                    return .cashFlow
         }
     }
@@ -120,7 +121,10 @@ struct InsightDetailView<CategoryDestination: View>: View {
                 .fontWeight(.bold)
                 .foregroundStyle(AppColors.textPrimary)
 
-            if let trend = insight.trend {
+            // Only show the comparison period when it adds information — several
+            // insights set trend.comparisonPeriod identical to the subtitle
+            // (monthOverMonth, wealthGrowth), which rendered the same line twice.
+            if let trend = insight.trend, trend.comparisonPeriod != insight.subtitle {
                 Text(trend.comparisonPeriod)
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textTertiary)
@@ -145,8 +149,10 @@ struct InsightDetailView<CategoryDestination: View>: View {
             // padding here, otherwise the visible plot area is offset from the
             // screen left edge and the first datapoint appears clipped.
             let gran = points.first?.granularity ?? .month
-            if insight.type == .bestMonth || insight.type == .worstMonth
-                || insight.type == .incomeVsExpenseRatio {
+            if insight.type == .bestMonth || insight.type == .worstMonth {
+                // Best/worst month show a ranked Top-10 list (in detailSection), no chart.
+                EmptyView()
+            } else if insight.type == .incomeVsExpenseRatio {
                 // Income-vs-expense comparison charts keep the dual-series switcher.
                 PeriodChartSwitcher(dataPoints: points, currency: currency, granularity: gran)
             } else {
@@ -201,7 +207,11 @@ struct InsightDetailView<CategoryDestination: View>: View {
             EmptyView()
         case .periodTrend(let points):
             let gran = points.first?.granularity ?? .month
-            periodBreakdownList(points, granularity: gran, metric: periodListMetric)
+            if insight.type == .bestMonth || insight.type == .worstMonth {
+                rankedPeriodList(points, best: insight.type == .bestMonth)
+            } else {
+                periodBreakdownList(points, granularity: gran, metric: periodListMetric)
+            }
         case .wealthBreakdown(let accounts):
             accountDetailList(accounts)
         case .accountComparison(let accounts):
@@ -274,6 +284,31 @@ struct InsightDetailView<CategoryDestination: View>: View {
                     currency: currency,
                     singleValue: metric.value(for: point),
                     singleColor: metric.color
+                )
+            }
+        }
+    }
+
+    /// Ranked Top-10 list of periods by net flow (best = descending, worst = ascending).
+    /// No chart, no income/expenses triple — just rank + period + net flow.
+    private func rankedPeriodList(_ points: [PeriodDataPoint], best: Bool) -> some View {
+        let sorted = points.sorted { best ? $0.netFlow > $1.netFlow : $0.netFlow < $1.netFlow }
+        let top = Array(sorted.prefix(10))
+        return VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            SectionHeaderView(
+                best ? String(localized: "insights.topMonths.best")
+                     : String(localized: "insights.topMonths.worst"),
+                style: .large
+            )
+            ForEach(Array(top.enumerated()), id: \.element.id) { index, point in
+                PeriodBreakdownRow(
+                    label: "\(index + 1). " + point.granularity.headingLabel(for: point.key),
+                    income: point.income,
+                    expenses: point.expenses,
+                    netFlow: point.netFlow,
+                    currency: currency,
+                    singleValue: point.netFlow,
+                    singleColor: point.netFlow >= 0 ? AppColors.success : AppColors.destructive
                 )
             }
         }
@@ -367,34 +402,100 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            pagerHeader
+            pagerLabel
                 .padding(.vertical, AppSpacing.sm)
 
-            // TabView page style captures horizontal swipes across the whole content area,
-            // so paging the period no longer fights the navigation's edge swipe-to-go-back.
-            TabView(selection: $index) {
-                ForEach(pages.indices, id: \.self) { i in
-                    pageContent(pages[i])
-                        .tag(i)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .animation(.easeInOut(duration: 0.25), value: index)
+            // Fixed-height donut band with the period-switch arrows overlaid on the
+            // left/right edges, vertically centered on the pie chart.
+            chartBand
+
+            // List of categories pages on horizontal swipe. TabView captures the swipe
+            // so paging doesn't fight the navigation's edge swipe-to-go-back.
+            listPager
         }
     }
 
+    // MARK: - Header label
+
+    private var pagerLabel: some View {
+        VStack(spacing: AppSpacing.xxs) {
+            Text(page?.label ?? "")
+                .font(AppTypography.h3)
+                .fontWeight(.semibold)
+                .foregroundStyle(AppColors.textPrimary)
+            if let total = page?.totalExpenses, total > 0 {
+                FormattedAmountText(
+                    amount: total,
+                    currency: currency,
+                    fontSize: AppTypography.bodySmall,
+                    fontWeight: .regular,
+                    color: AppColors.textSecondary
+                )
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .screenPadding()
+    }
+
+    // MARK: - Chart band (donut + centered side arrows)
+
+    private var chartBand: some View {
+        ZStack {
+            // Donut for the current page. Empty periods keep the band height stable so
+            // the arrows stay put. `.id(index)` cross-fades the chart on page change.
+            Group {
+                if let page, !page.items.isEmpty {
+                    DonutChart(slices: DonutSlice.from(page.items))
+                        .screenPadding()
+                } else {
+                    Color.clear.frame(height: 200)
+                }
+            }
+            .id(index)
+            .transition(.opacity)
+
+            // Arrows are vertically centered on the donut by the ZStack.
+            HStack {
+                arrowButton(step: -1, systemImage: "chevron.left", enabled: index > 0)
+                Spacer()
+                arrowButton(step: 1, systemImage: "chevron.right", enabled: index < pages.count - 1)
+            }
+            .screenPadding()
+        }
+        .animation(.easeInOut(duration: 0.25), value: index)
+    }
+
+    private func arrowButton(step delta: Int, systemImage: String, enabled: Bool) -> some View {
+        Button { step(delta) } label: {
+            Image(systemName: systemImage)
+                .font(.body.weight(.semibold))
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(enabled ? AppColors.accent : AppColors.textTertiary)
+        .disabled(!enabled)
+    }
+
+    // MARK: - List pager
+
+    private var listPager: some View {
+        TabView(selection: $index) {
+            ForEach(pages.indices, id: \.self) { i in
+                listContent(pages[i])
+                    .tag(i)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .animation(.easeInOut(duration: 0.25), value: index)
+    }
+
     @ViewBuilder
-    private func pageContent(_ page: PeriodCategoryBreakdown) -> some View {
+    private func listContent(_ page: PeriodCategoryBreakdown) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: AppSpacing.lg) {
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
                 if page.items.isEmpty {
                     emptyState
                 } else {
-                    DonutChart(slices: DonutSlice.from(page.items))
-                        .screenPadding()
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        ForEach(page.items) { categoryRow($0, periodKey: page.id) }
-                    }
+                    ForEach(page.items) { categoryRow($0, periodKey: page.id) }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -406,47 +507,6 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
         let next = index + delta
         guard pages.indices.contains(next) else { return }
         withAnimation(.easeInOut(duration: 0.25)) { index = next }
-    }
-
-    private var pagerHeader: some View {
-        HStack(spacing: AppSpacing.md) {
-            Button { step(-1) } label: {
-                Image(systemName: "chevron.left")
-                    .font(.body.weight(.semibold))
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(index > 0 ? AppColors.accent : AppColors.textTertiary)
-            .disabled(index == 0)
-
-            Spacer()
-
-            VStack(spacing: AppSpacing.xxs) {
-                Text(page?.label ?? "")
-                    .font(AppTypography.h3)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(AppColors.textPrimary)
-                if let total = page?.totalExpenses, total > 0 {
-                    FormattedAmountText(
-                        amount: total,
-                        currency: currency,
-                        fontSize: AppTypography.bodySmall,
-                        fontWeight: .regular,
-                        color: AppColors.textSecondary
-                    )
-                }
-            }
-
-            Spacer()
-
-            Button { step(1) } label: {
-                Image(systemName: "chevron.right")
-                    .font(.body.weight(.semibold))
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(index < pages.count - 1 ? AppColors.accent : AppColors.textTertiary)
-            .disabled(index >= pages.count - 1)
-        }
-        .screenPadding()
     }
 
     private var emptyState: some View {
@@ -524,5 +584,21 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
             Text("Deep dive: \(item.categoryName) [\(periodKey ?? "current")]")
                 .padding()
         }
+    }
+}
+
+#Preview("Paged Breakdown — centered arrows") {
+    let pages = [
+        PeriodCategoryBreakdown(id: "2026-05", label: "Май 2026", totalExpenses: 180_000, items: CategoryBreakdownItem.mockItems()),
+        PeriodCategoryBreakdown(id: "2026-04", label: "Апрель 2026", totalExpenses: 95_000, items: CategoryBreakdownItem.mockItems()),
+        PeriodCategoryBreakdown(id: "2026-03", label: "Март 2026", totalExpenses: 0, items: [])
+    ]
+    return NavigationStack {
+        PagedCategoryBreakdownView<Never>(
+            pages: pages,
+            currentIndex: 0,
+            currency: "KZT",
+            onCategoryTap: nil
+        )
     }
 }

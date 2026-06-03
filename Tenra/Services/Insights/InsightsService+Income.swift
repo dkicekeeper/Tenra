@@ -130,11 +130,14 @@ extension InsightsService {
             let severity: InsightSeverity = ratio >= 1.5 ? .positive : (ratio >= 1.0 ? .neutral : .critical)
             Self.logger.debug("💵 [Insights] I/E ratio=\(String(format: "%.2f", ratio), privacy: .public)x, severity=\(String(describing: severity), privacy: .public)")
 
+            // Plain-language subtitle explaining the "x" multiplier: how much of
+            // expenses the income covers (ratio 1.1 → "covers 110% of expenses").
+            let coveragePercent = Int((ratio * 100).rounded())
             insights.append(Insight(
                 id: "income_vs_expense",
                 type: .incomeVsExpenseRatio,
                 title: String(localized: "insights.incomeVsExpense"),
-                subtitle: String(localized: "insights.ratio"),
+                subtitle: String(format: String(localized: "insights.incomeVsExpense.coverage"), "\(coveragePercent)%"),
                 metric: InsightMetric(
                     value: ratio,
                     formattedValue: String(format: "%.1fx", ratio),

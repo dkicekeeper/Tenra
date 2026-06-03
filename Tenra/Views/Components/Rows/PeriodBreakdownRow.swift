@@ -15,6 +15,7 @@ enum PeriodListMetric {
     case expenses
     case income
     case avgDailyExpenses
+    case cumulativeBalance
 
     /// Single value to display, or nil for the cash-flow triple.
     func value(for point: PeriodDataPoint) -> Double? {
@@ -25,6 +26,9 @@ enum PeriodListMetric {
         case .avgDailyExpenses:
             let days = max(1, Calendar.current.dateComponents([.day], from: point.periodStart, to: point.periodEnd).day ?? 1)
             return point.expenses / Double(days)
+        case .cumulativeBalance:
+            // Running wealth at the end of the period; fall back to net flow if unset.
+            return point.cumulativeBalance ?? point.netFlow
         }
     }
 

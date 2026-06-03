@@ -118,16 +118,20 @@ struct DonutChart<CenterContent: View>: View {
     /// Chart ring height: 60 compact / 200 full.
     private var ringHeight: CGFloat { isCompact ? 60 : 200 }
 
+    /// Entrance reveal progress (0 → 1). Drives a trimmed-arc mask that sweeps the
+    /// ring into view around the circumference, so the donut appears to "draw itself".
+    @State private var drawProgress: CGFloat = 0
+
     // MARK: Body
 
     var body: some View {
-        // Compact mini-charts skip `.chartAppear()` — they render inside scroll feeds
+        // Compact mini-charts skip the entrance reveal — they render inside scroll feeds
         // where `LazyVStack` realises sections during scroll; firing N concurrent
-        // entrance springs at materialisation cost frames. Full mode keeps it.
+        // entrance animations at materialisation cost frames. Full mode keeps it.
         if isCompact {
             compactChart
         } else {
-            fullChart.chartAppear()
+            fullChart
         }
     }
 
@@ -176,11 +180,32 @@ struct DonutChart<CenterContent: View>: View {
             }
             .animation(AppAnimation.chartUpdateAnimation, value: slices.count)
             .chartLegend(.hidden)
+            // Reveal the ring by sweeping a trimmed arc around the circumference.
+            .mask { sweepMask }
 
             centerContent()
                 .allowsHitTesting(false)
         }
         .frame(height: ringHeight)
+        .onAppear {
+            drawProgress = 0
+            withAnimation(.easeOut(duration: 0.7)) { drawProgress = 1 }
+        }
+    }
+
+    /// A clockwise-from-top trimmed-circle stroke whose thickness spans the whole
+    /// radius — used as a `.mask` so animating `drawProgress` 0→1 wipes the donut
+    /// into view around its circumference.
+    private var sweepMask: some View {
+        GeometryReader { geo in
+            let d = min(geo.size.width, geo.size.height)
+            Circle()
+                .trim(from: 0, to: drawProgress)
+                .stroke(style: StrokeStyle(lineWidth: d / 2, lineCap: .butt))
+                .frame(width: d / 2, height: d / 2)
+                .rotationEffect(.degrees(-90))
+                .position(x: geo.size.width / 2, y: geo.size.height / 2)
+        }
     }
 }
 

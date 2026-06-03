@@ -63,7 +63,6 @@ struct SettingsView: View {
                 generalSection
                 cloudSection
                 exportImportSection
-                voiceSection
                 dangerZoneSection
                 #if DEBUG
                 experimentsSection
@@ -278,12 +277,7 @@ struct SettingsView: View {
         SettingsDangerZoneSection(
             onResetData: {
                 showingResetConfirmation = true
-            }
-        )
-    }
-
-    private var voiceSection: some View {
-        SettingsVoiceSection(
+            },
             onResetLearning: {
                 showingVoiceLearningResetConfirmation = true
             }

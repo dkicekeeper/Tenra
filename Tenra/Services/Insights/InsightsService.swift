@@ -375,16 +375,9 @@ nonisolated final class InsightsService {
             accounts: snapshot.accounts
         ))
 
-        // SavingsRate is granularity-dependent — narrow to the current bucket so
-        // the percentage answers "what fraction of THIS month/quarter/year/week
-        // did I keep" rather than the whole data window. EmergencyFund is shared.
-        let currentBucketPoint = periodPoints.first(where: { $0.key == granularity.currentPeriodKey })
-        let bucketIncome = currentBucketPoint?.income ?? windowedIncome
-        let bucketExpenses = currentBucketPoint?.expenses ?? windowedExpenses
+        // SavingsRate now uses the last completed calendar month (see generateSavingsInsights) —
+        // granularity-independent. EmergencyFund is shared.
         insights.append(contentsOf: generateSavingsInsights(
-            allIncome: bucketIncome,
-            allExpenses: bucketExpenses,
-            bucketLabel: granularity.currentBucketLabel(),
             baseCurrency: baseCurrency,
             balanceFor: snapshot.balanceFor,
             accounts: snapshot.accounts,
@@ -439,7 +432,7 @@ nonisolated final class InsightsService {
             if let spike = generateSpendingSpike(baseCurrency: baseCurrency, transactions: allTransactions, preAggregated: preAggregated) {
                 insights.append(spike)
             }
-            if let dormancy = generateAccountDormancy(allTransactions: allTransactions, balanceFor: snapshot.balanceFor, preAggregated: preAggregated, accounts: snapshot.accounts) {
+            if let dormancy = generateAccountDormancy(allTransactions: allTransactions, baseCurrency: baseCurrency, balanceFor: snapshot.balanceFor, preAggregated: preAggregated, accounts: snapshot.accounts) {
                 insights.append(dormancy)
             }
         } else {

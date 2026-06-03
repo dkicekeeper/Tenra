@@ -131,17 +131,8 @@ struct InsightsView: View {
                 periodDataPoints: insightsViewModel.periodDataPoints,
                 granularity: insightsViewModel.currentGranularity
             )) {
-                InsightsTotalsCard(
-                    income: insightsViewModel.currentBucketIncome,
-                    expenses: insightsViewModel.currentBucketExpenses,
-                    netFlow: insightsViewModel.currentBucketNetFlow,
-                    currency: insightsViewModel.baseCurrency,
-                    periodLabel: insightsViewModel.currentBucketLabel,
-                    previousIncome: insightsViewModel.previousBucketIncome,
-                    previousExpenses: insightsViewModel.previousBucketExpenses,
-                    previousNetFlow: insightsViewModel.previousBucketNetFlow
-                )
-                .contentShape(Rectangle())
+                summaryStatsGrid
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -155,6 +146,55 @@ struct InsightsView: View {
         }
         .screenPadding()
         .contentReveal(isReady: !insightsViewModel.isLoading)
+    }
+
+    /// 2×2 grid of summary stat cards: available balance, expenses, income, net flow.
+    private var summaryStatsGrid: some View {
+        let columns = [
+            GridItem(.flexible(), spacing: AppSpacing.md),
+            GridItem(.flexible(), spacing: AppSpacing.md)
+        ]
+        let currency = insightsViewModel.baseCurrency
+        let netFlow = insightsViewModel.currentBucketNetFlow
+        return VStack(alignment: .leading, spacing: AppSpacing.md) {
+            if !insightsViewModel.currentBucketLabel.isEmpty {
+                Text(insightsViewModel.currentBucketLabel)
+                    .font(AppTypography.bodyEmphasis)
+                    .foregroundStyle(AppColors.textPrimary)
+            }
+            LazyVGrid(columns: columns, spacing: AppSpacing.md) {
+                InsightsStatCard(
+                    title: String(localized: "insights.availableBalance"),
+                    amount: insightsViewModel.availableBalance,
+                    currency: currency,
+                    color: insightsViewModel.availableBalance >= 0 ? AppColors.textPrimary : AppColors.destructive
+                )
+                InsightsStatCard(
+                    title: String(localized: "insights.netFlow"),
+                    amount: netFlow,
+                    currency: currency,
+                    color: netFlow >= 0 ? AppColors.textPrimary : AppColors.destructive,
+                    previous: insightsViewModel.previousBucketNetFlow,
+                    upIsGood: true
+                )
+                InsightsStatCard(
+                    title: String(localized: "insights.expenses"),
+                    amount: insightsViewModel.currentBucketExpenses,
+                    currency: currency,
+                    color: AppColors.destructive,
+                    previous: insightsViewModel.previousBucketExpenses,
+                    upIsGood: false
+                )
+                InsightsStatCard(
+                    title: String(localized: "insights.income"),
+                    amount: insightsViewModel.currentBucketIncome,
+                    currency: currency,
+                    color: AppColors.success,
+                    previous: insightsViewModel.previousBucketIncome,
+                    upIsGood: true
+                )
+            }
+        }
     }
 
     // MARK: - Filter Section

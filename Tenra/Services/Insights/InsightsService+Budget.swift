@@ -58,9 +58,17 @@ extension InsightsService {
             }
 
             let daysRemaining = max(0, totalDays - daysElapsed)
-            let projectedSpend = totalDays > 0
-                ? (progress.spent / Double(daysElapsed)) * Double(totalDays)
-                : progress.spent
+            // Extrapolating "projected spend" from only a day or two of data produces
+            // false alarms (a category at 7 % of budget on day 2 "projects" an overspend).
+            // Require at least a quarter of the period (min 7 days) elapsed before we
+            // trust the run-rate; until then, project the actual spend with no extrapolation.
+            let minDaysForProjection = max(7, totalDays / 4)
+            let projectedSpend: Double
+            if daysElapsed >= minDaysForProjection && totalDays > 0 {
+                projectedSpend = (progress.spent / Double(daysElapsed)) * Double(totalDays)
+            } else {
+                projectedSpend = progress.spent
+            }
             let color = Color(hex: category.colorHex)
 
             if progress.isOverBudget { overBudgetCount += 1 }
@@ -90,22 +98,27 @@ extension InsightsService {
                 overBudgetItems.append(item)
             } else if item.projectedSpend > item.budgetAmount {
                 projectedOverspendItems.append(item)
-            } else if item.percentage < 80 && item.percentage > 0 {
+            } else if item.percentage < 80 {
+                // Include 0 %-spent budgets — an untouched budget has the most headroom,
+                // and hiding them made the list look near-empty (only 1 category showing).
                 underBudgetItems.append(item)
             }
         }
 
         if !overBudgetItems.isEmpty {
+            // Metric = how much over budget in total (an amount), not a category count —
+            // the count already lives in the subtitle, so showing it big duplicated it.
+            let totalOver = overBudgetItems.reduce(0.0) { $0 + max(0, $1.spent - $1.budgetAmount) }
             insights.append(Insight(
                 id: "budget_over",
                 type: .budgetOverspend,
                 title: String(localized: "insights.budgetOver"),
                 subtitle: String(format: String(localized: "insights.categoriesOverBudget"), overBudgetCount),
                 metric: InsightMetric(
-                    value: Double(overBudgetCount),
-                    formattedValue: "\(overBudgetCount)",
-                    currency: nil,
-                    unit: String(localized: "insights.categoriesUnit")
+                    value: totalOver,
+                    formattedValue: Formatting.formatCurrencySmart(totalOver, currency: baseCurrency),
+                    currency: baseCurrency,
+                    unit: nil
                 ),
                 trend: nil,
                 severity: .critical,
@@ -115,16 +128,19 @@ extension InsightsService {
         }
 
         if !projectedOverspendItems.isEmpty {
+            // Metric = total projected overshoot (an amount). The category count is in
+            // the subtitle, so a big "2" duplicated it.
+            let totalProjectedOver = projectedOverspendItems.reduce(0.0) { $0 + max(0, $1.projectedSpend - $1.budgetAmount) }
             insights.append(Insight(
                 id: "budget_projected_over",
                 type: .projectedOverspend,
                 title: String(localized: "insights.projectedOverspend"),
                 subtitle: String(format: String(localized: "insights.categoriesAtRisk"), projectedOverspendItems.count),
                 metric: InsightMetric(
-                    value: Double(projectedOverspendItems.count),
-                    formattedValue: "\(projectedOverspendItems.count)",
-                    currency: nil,
-                    unit: String(localized: "insights.categoriesUnit")
+                    value: totalProjectedOver,
+                    formattedValue: Formatting.formatCurrencySmart(totalProjectedOver, currency: baseCurrency),
+                    currency: baseCurrency,
+                    unit: nil
                 ),
                 trend: nil,
                 severity: .warning,

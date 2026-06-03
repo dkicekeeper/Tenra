@@ -777,7 +777,11 @@
 "insights.recurring" = "Recurring";
 "insights.cashFlow" = "Cash Flow";
 "insights.netFlow" = "Net Flow";
+"insights.availableBalance" = "Available Balance";
 "insights.ratio" = "Income/Expense Ratio";
+"insights.incomeVsExpense.coverage" = "Income covers %@ of expenses";
+"insights.topMonths.best" = "Top 10 best months";
+"insights.topMonths.worst" = "Top 10 worst months";
 "insights.loading" = "Analyzing your finances...";
 "insights.emptyState.title" = "No insights yet";
 "insights.emptyState.description" = "Add some transactions to see your financial insights";

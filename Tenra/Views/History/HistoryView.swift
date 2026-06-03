@@ -135,6 +135,13 @@ struct HistoryView: View {
             .onChange(of: transactionsViewModel.appSettings.baseCurrency) { _, _ in
                 expensesCache.invalidate()
             }
+            // Section totals sum multi-currency tx via convertSync. A late/manual FX-rate
+            // refresh bumps currencyRatesVersion but not mutationVersion, so without this
+            // a section computed under cold rates stayed stale until a tx mutation
+            // (cache audit #10).
+            .onChange(of: transactionsViewModel.transactionStore?.currencyRatesVersion ?? 0) { _, _ in
+                expensesCache.invalidate()
+            }
             .onChange(of: paginationController.sections.count) { oldCount, newCount in
                 historyLogger.debug("🔄 [History] sections.count: \(oldCount)→\(newCount) (totalCount:\(self.paginationController.totalCount))")
             }

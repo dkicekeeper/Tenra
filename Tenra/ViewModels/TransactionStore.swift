@@ -550,11 +550,17 @@ final class TransactionStore {
     /// Realized figures exclude future-dated transactions (incl. generated recurring
     /// occurrences); this is the trigger that folds them in once their date arrives.
     /// Idempotent and cheap to call repeatedly — gated to run at most once per day.
-    func recalculateLedgerIfDayChanged(now: Date = Date(), defaults: UserDefaults = .standard) async {
-        guard !accounts.isEmpty else { return }
+    ///
+    /// - Returns: `true` if the calendar day changed since the last run (whether or not
+    ///   a transaction matured). Callers use this to refresh date-relative consumers —
+    ///   notably Insights (forecast `daysRemaining`, period keys, health score) which
+    ///   depend on "today" even when no tx matured (cache audit #7).
+    @discardableResult
+    func recalculateLedgerIfDayChanged(now: Date = Date(), defaults: UserDefaults = .standard) async -> Bool {
+        guard !accounts.isEmpty else { return false }
         let last = defaults.string(forKey: Self.lastLedgerRecalcKey)
         let todayKey = LedgerMaturation.dayKey(for: now)
-        guard last != todayKey else { return }
+        guard last != todayKey else { return false }
 
         // Targeted-maturation fast path: when we have a prior run AND no transaction matured
         // since then (none dated in `(last, today]`), the incrementally-maintained balances and
@@ -567,7 +573,7 @@ final class TransactionStore {
         if let last,
            !transactions.contains(where: { LedgerMaturation.isMatured(dateKey: $0.date, since: last, through: todayKey) }) {
             defaults.set(todayKey, forKey: Self.lastLedgerRecalcKey)
-            return
+            return true // day changed (date-relative consumers stale) though nothing matured
         }
 
         // Realized aggregates exclude future tx — a matured tx must now be counted.
@@ -578,6 +584,7 @@ final class TransactionStore {
         await balanceCoordinator.recalculateAll(accounts: accounts, transactions: transactions)
 
         defaults.set(todayKey, forKey: Self.lastLedgerRecalcKey)
+        return true
     }
 
     // MARK: - CRUD Operations

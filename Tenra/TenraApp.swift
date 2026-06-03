@@ -80,6 +80,20 @@ struct TenraApp: App {
                     // the app was away — without it the home summary stays on last month
                     // until the user re-opens the period picker.
                     timeFilterManager.refreshRelativePresetIfNeeded()
+
+                    // Fold any matured future-dated tx into the realized ledger and, on a
+                    // day change, refresh Insights — forecast daysRemaining, period keys and
+                    // the health score depend on "today" even when nothing matured. Without
+                    // this, an app left foregrounded across midnight showed stale figures
+                    // until the next cold launch (cache audit #7).
+                    if let coordinator {
+                        Task { @MainActor in
+                            let dayChanged = await coordinator.transactionStore.recalculateLedgerIfDayChanged()
+                            if dayChanged {
+                                coordinator.insightsViewModel.invalidateAndRecompute()
+                            }
+                        }
+                    }
                 }
             }
         }

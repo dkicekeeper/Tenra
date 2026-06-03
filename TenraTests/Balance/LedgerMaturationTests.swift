@@ -103,6 +103,25 @@ struct LedgerMaturationStoreTests {
         #expect(defaults.string(forKey: "lastLedgerRecalcDate") == LedgerMaturation.dayKey(for: now))
     }
 
+    @Test("returns true on a day change (incl. nothing-matured), false on the same day")
+    func reportsDayChange() async {
+        // cache audit #7: the return value gates the foreground Insights refresh.
+        let store = Self.makeStore()
+        store.accounts = [Self.bankAccount()]
+        store.rebuildAccountById()
+        store.transactions = [Self.tx("2026-05-01")] // realized long ago — nothing matures
+        let defaults = Self.freshDefaults()
+        defaults.set("2026-05-24", forKey: "lastLedgerRecalcDate") // ran yesterday
+
+        // New day, nothing matured → still true (date-relative insights need refresh).
+        let dayChanged = await store.recalculateLedgerIfDayChanged(now: date("2026-05-25"), defaults: defaults)
+        #expect(dayChanged == true)
+
+        // Same day again → false (no refresh needed).
+        let sameDay = await store.recalculateLedgerIfDayChanged(now: date("2026-05-25"), defaults: defaults)
+        #expect(sameDay == false)
+    }
+
     @Test("does nothing before accounts are loaded")
     func noopWhenNoAccounts() async {
         let store = Self.makeStore()

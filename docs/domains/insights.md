@@ -79,6 +79,8 @@ critical > warning > neutral > positive
 ### Threshold tweaks
 - **`spendingSpike`** — uses relative threshold (1.5x category average) not absolute amount
 - **`accountDormancy`** — excludes deposit accounts (they accrue interest without transactions)
+- **`savingsRate`** uses the **last completed calendar month** (`preAggregated.lastMonthlyTotals(1, anchor: now − 1mo)`), NOT the current partial bucket — salary commonly lands month-end, so mid-month the current bucket always reads as a deficit. Now granularity-independent (same value across week/month/quarter/year).
+- **`projectedOverspend`** only extrapolates once ≥ `max(7, totalDays/4)` days of the budget period have elapsed — early-period run-rates falsely flagged categories at ~7 % spent.
 
 ### Health Score components
 - **Cash Flow score** uses gradient 0-100 (not binary)
@@ -106,6 +108,9 @@ critical > warning > neutral > positive
 ## Detail view & paging
 
 - **Adding an `InsightDetailData` case → update 3 exhaustive switches**: `InsightDetailView.chartSection`, `InsightDetailView.detailSection`, and `InsightsCardView.miniChart`. Miss one → build error (or silent `EmptyView`).
+- **Per-`insight.type` detail variants are done by special-casing `insight.type` inside the existing `chartSection`/`detailSection` switch arms — NOT by adding an `InsightDetailData` case** (which costs the 3 exhaustive-switch updates above). E.g. bestMonth/worstMonth reuse `.periodTrend` but render a ranked Top-10 list with no chart; wealthGrowth reuses `.periodTrend` but lists cumulative balance. `PeriodListMetric` selects the single row value (`.cumulativeBalance`, `.expenses`, …).
+- **Detail header (`InsightDetailView.headerSection`) renders three lines: `subtitle`, `metric.formattedValue`, `trend.comparisonPeriod`.** Two duplication traps: (a) generators that set `trend.comparisonPeriod == subtitle` (monthOverMonth, wealthGrowth) render the same line twice — the header suppresses `comparisonPeriod` when it equals `subtitle`; (b) **count-style metrics** (`"2"` + unit "категорий") duplicate the count already in the subtitle ("2 категорий под угрозой") — prefer an **amount** metric (currency: total overshoot / total idle balance) and leave the count in the subtitle (budgetOverspend / projectedOverspend / accountDormancy).
+- **`InsightFormulaRow.labelText` overrides `labelKey`** — use it to put a data-driven label (date, category name) in the row heading instead of cramming `.rawText("amount — label")` into the value cell (yearOverYear rows).
 - **`.categoryBreakdownPaged` renders full-screen in `InsightDetailView.body`** via `TabView(.page)`, NOT inside `detailSection` (the detailSection case is a dead `EmptyView`). A TabView must own the vertical space — nesting it in the body's `ScrollView` collapses it.
 - **Top-spending is emitted for every finite granularity even when the current period is empty** (empty hero "Нет расходов", still tappable). It only falls back to the legacy single `.categoryBreakdown` for `.allTime`. Paged breakdowns cover all `periodPoints` (current → first tx); `.week` is bounded by its rolling 52-week window.
 - **Per-generator ad-hoc tx filters MUST apply `LedgerPolicyRule.isRealized`.** `computePeriodDataPoints` and `PreAggregatedData.build` already exclude future-dated tx, but breakdown lists that re-filter `expenses` by date range (e.g. top-spending) did not — caused future tx in the breakdown vs. a realized % total. Keep them consistent.

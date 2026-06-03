@@ -43,9 +43,6 @@ class CategoriesViewModel {
     /// Subcategory coordinator - handles subcategory and link management
     @ObservationIgnored private let subcategoryCoordinator: CategorySubcategoryCoordinatorProtocol
 
-    /// Budget coordinator
-    @ObservationIgnored private let budgetCoordinator: CategoryBudgetCoordinatorProtocol
-
     /// Budget service for category budget management
     /// Mutable so we can rebind once `transactionStore` is set during setup.
     /// Reads only — view-facing API stays through `budgetProgress(for:)`.
@@ -66,10 +63,6 @@ class CategoriesViewModel {
         // Use delegate-less initializers, then set delegate after all properties are initialized
         self.crudService = CategoryCRUDService(repository: repository)
         self.subcategoryCoordinator = CategorySubcategoryCoordinator(repository: repository)
-        self.budgetCoordinator = CategoryBudgetCoordinator(
-            currencyService: currencyService,
-            appSettings: appSettings
-        )
         // Budget service is store-backed: it reads pre-aggregated totals from
         // TransactionStore.categoryAggregatesByKey for O(1) lookups. The store
         // reference is wired in `setupTransactionStoreObserver()` (called by
@@ -86,9 +79,6 @@ class CategoriesViewModel {
             service.delegate = self
         }
         if let coordinator = self.subcategoryCoordinator as? CategorySubcategoryCoordinator {
-            coordinator.delegate = self
-        }
-        if let coordinator = self.budgetCoordinator as? CategoryBudgetCoordinator {
             coordinator.delegate = self
         }
     }
@@ -345,7 +335,3 @@ extension CategoriesViewModel: CategoryCRUDDelegate {}
 // MARK: - CategorySubcategoryDelegate
 
 extension CategoriesViewModel: CategorySubcategoryDelegate {}
-
-// MARK: - CategoryBudgetDelegate
-
-extension CategoriesViewModel: CategoryBudgetDelegate {}

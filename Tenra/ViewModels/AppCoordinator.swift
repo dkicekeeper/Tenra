@@ -455,6 +455,11 @@ class AppCoordinator {
         // should immediately count toward the health score's budget-adherence component
         // instead of reading "not configured" until the next launch.
         startObservingCategoryChanges()
+        // Recompute Insights when accounts change (add/edit/delete, includeInBalance toggle,
+        // balance/currency edit). balance-runway / projected-balance / emergency-fund /
+        // wealth-breakdown and the health-score totalBalance all derive from accounts, and
+        // previously stayed stale until an unrelated tx/FX/category mutation (cache audit #5).
+        startObservingAccountChanges()
     }
 
     // MARK: - Private Methods
@@ -498,6 +503,23 @@ class AppCoordinator {
                 guard let self else { return }
                 self.insightsViewModel.invalidateAndRecompute()
                 self.startObservingCategoryChanges()  // re-arm for the next change
+            }
+        }
+    }
+
+    /// Observe account mutations (add/edit/delete, includeInBalance toggle, balance/currency
+    /// edit) so balance-derived Insights recompute without waiting for the next launch.
+    /// Tracks the observable `accounts` array — account CRUD replaces elements there.
+    /// Balance recalcs flow through BalanceCoordinator, not this array, so this does NOT
+    /// fire on every per-tx balance write. Re-arms after each change.
+    private func startObservingAccountChanges() {
+        withObservationTracking {
+            _ = transactionStore.accounts
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                self.insightsViewModel.invalidateAndRecompute()
+                self.startObservingAccountChanges()  // re-arm for the next change
             }
         }
     }

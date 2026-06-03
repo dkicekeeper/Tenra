@@ -106,10 +106,10 @@ extension TransactionStore {
 
     /// Delete a category
     func deleteCategory(_ categoryId: String) {
-        let removedName = categoryById[categoryId]?.name
+        let removed = categoryById[categoryId]
         categories.removeAll { $0.id == categoryId }
         categoryById.removeValue(forKey: categoryId)
-        if let name = removedName {
+        if let name = removed?.name {
             categoryIdByName.removeValue(forKey: name.lowercased())
             dropAggregates(forCategoryName: name)
         }
@@ -119,6 +119,11 @@ extension TransactionStore {
         // ✅ Remove order from UserDefaults
         CategoryOrderManager.shared.removeOrder(for: categoryId)
 
+        // Drop the cached style so a later category re-created with the same name+type
+        // doesn't inherit the deleted one's icon/colour (cache audit #11).
+        if let removed {
+            CategoryStyleCache.shared.invalidate(name: removed.name, type: removed.type)
+        }
     }
 
     /// Atomically reorder categories. Sets `order` on each touched category to
@@ -143,18 +148,22 @@ extension TransactionStore {
 
     /// Delete multiple categories — single persist at the end
     func deleteCategories(_ ids: Set<String>) {
-        let removedNames = ids.compactMap { categoryById[$0]?.name }
+        let removed = ids.compactMap { categoryById[$0] }
         categories.removeAll { ids.contains($0.id) }
         for id in ids { categoryById.removeValue(forKey: id) }
-        for name in removedNames {
-            categoryIdByName.removeValue(forKey: name.lowercased())
-            dropAggregates(forCategoryName: name)
+        for cat in removed {
+            categoryIdByName.removeValue(forKey: cat.name.lowercased())
+            dropAggregates(forCategoryName: cat.name)
         }
         categoriesMutationVersion &+= 1
         persistCategoriesToRepository()
 
         for id in ids {
             CategoryOrderManager.shared.removeOrder(for: id)
+        }
+        // Drop cached styles for the removed names (cache audit #11).
+        for cat in removed {
+            CategoryStyleCache.shared.invalidate(name: cat.name, type: cat.type)
         }
     }
 
@@ -257,6 +266,10 @@ extension TransactionStore {
         categories = newCategories
         rebuildCategoryLookups()
         categoriesMutationVersion &+= 1
+        // Wholesale replacement (CSV import, re-seeded onboarding) can reassign a
+        // category's icon/colour while keeping its name+type key, so the per-(name,type)
+        // style cache would serve the old style until restart (cache audit #11).
+        CategoryStyleCache.shared.invalidateCache()
 
         // Don't persist during import - will be done in finishImport()
         if !isImporting {

@@ -302,6 +302,10 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
         // Rebuild indexes and caches
         transactionsViewModel.rebuildIndexes()
 
+        // Import can create/reassign categories, so any per-(name,type) style cached
+        // from before the import may be stale — nuke it (cache audit #11).
+        CategoryStyleCache.shared.invalidateCache()
+
         // Register accounts in BalanceCoordinator — but only persist balances when
         // the transactions they're derived from were durably written. Persisting a
         // balance for non-durable tx leaves the next launch with a balance that

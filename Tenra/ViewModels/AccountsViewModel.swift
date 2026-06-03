@@ -87,6 +87,7 @@ class AccountsViewModel {
         let newInitial = account.initialBalance ?? 0
         let oldInitial = oldAccount.initialBalance ?? 0
         let balanceChanged = abs(newInitial - oldInitial) > 0.001
+        let currencyChanged = oldAccount.currency != account.currency
 
         if balanceChanged, let coordinator = balanceCoordinator, let store = transactionStore {
             // account.initialBalance here = desired CURRENT balance (from the edit view text field)
@@ -114,8 +115,23 @@ class AccountsViewModel {
                     transactions: store.transactions
                 )
             }
+        } else if currencyChanged, let coordinator = balanceCoordinator, let store = transactionStore {
+            // Currency-only edit. AccountBalance.currency is set once at registerAccounts,
+            // so the cached balance and every later incremental cross-currency conversion
+            // would keep using the OLD currency until restart (cache audit #8). Persist,
+            // re-register to refresh the cached currency, then recompute the value from
+            // initialBalance + realized tx in the new currency.
+            store.updateAccount(account)
+            Task {
+                await coordinator.registerAccounts(store.accounts)
+                await coordinator.recalculateAccounts(
+                    [account.id],
+                    accounts: store.accounts,
+                    transactions: store.transactions
+                )
+            }
         } else {
-            // No balance change — just update name/currency/icon
+            // No balance/currency change — just update name/icon
             transactionStore?.updateAccount(account)
         }
     }

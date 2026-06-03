@@ -2,7 +2,11 @@
 //  CloudBackupService.swift
 //  Tenra
 //
-//  Creates, lists, restores, and deletes SQLite backups in iCloud ubiquity container.
+//  Creates, lists, restores, and deletes SQLite backups.
+//  Backups live in either the app's local Documents folder or the iCloud Drive
+//  ubiquity container, controlled by the `isICloudEnabled` preference. This is
+//  plain file storage in iCloud Drive — NOT CloudKit database sync (which was
+//  removed 2026-04-22 after HistoryExpired events caused data loss).
 //  Uses WAL checkpoint before copying for consistency.
 //  Uses CoreDataStack.swapStore() for safe restore.
 //
@@ -15,32 +19,156 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
 
     private nonisolated static let logger = Logger(subsystem: "Tenra", category: "CloudBackupService")
 
+    /// iCloud container identifier — must match `Tenra.entitlements`.
+    static let iCloudContainerIdentifier = "iCloud.dakacom.Tenra"
+
+    /// UserDefaults key for the "save backups to iCloud" preference.
+    private static let iCloudPreferenceKey = "backups.useICloud"
+
     private let coreDataStack: CoreDataStack
     private let maxBackups = 5
+
+    /// Caches the resolved iCloud Documents URL. `nil` = not yet resolved,
+    /// `.some(nil)` = resolved-and-unavailable. Guarded by `lock` because this
+    /// type is `@unchecked Sendable` and reached from multiple threads.
+    private let lock = NSLock()
+    private var cachedICloudDocuments: URL??
 
     init(coreDataStack: CoreDataStack = .shared) {
         self.coreDataStack = coreDataStack
     }
 
+    // MARK: - iCloud Preference & Availability
+
+    /// Whether the user has opted to store backups in iCloud Drive.
+    var isICloudEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: Self.iCloudPreferenceKey) }
+        set { UserDefaults.standard.set(newValue, forKey: Self.iCloudPreferenceKey) }
+    }
+
+    /// Whether an iCloud ubiquity container is reachable (entitlement present + user
+    /// signed in). Slow on first call — resolve off the main thread via `prepareICloud()`.
+    var isICloudAvailable: Bool { resolveICloudDocumentsURL() != nil }
+
+    /// Resolves (and caches) the iCloud Documents URL. The first
+    /// `url(forUbiquityContainerIdentifier:)` call can block for hundreds of ms,
+    /// so prefer calling this once off the main thread at launch.
+    @discardableResult
+    func resolveICloudDocumentsURL() -> URL? {
+        lock.lock()
+        if let cached = cachedICloudDocuments {
+            lock.unlock()
+            return cached
+        }
+        lock.unlock()
+
+        let resolved = FileManager.default
+            .url(forUbiquityContainerIdentifier: Self.iCloudContainerIdentifier)?
+            .appendingPathComponent("Documents", isDirectory: true)
+
+        lock.lock()
+        cachedICloudDocuments = .some(resolved)
+        lock.unlock()
+        return resolved
+    }
+
+    /// Primes the iCloud container URL cache off the main thread. Call once at launch.
+    func prepareICloud() {
+        resolveICloudDocumentsURL()
+    }
+
     // MARK: - Backups Directory
 
-    /// Returns the Backups directory in the app's Documents folder.
-    /// Uses local storage — no iCloud Documents entitlement required.
-    private func backupsDirectoryURL() -> URL? {
+    private func createDirectoryIfNeeded(_ dir: URL) {
+        if !FileManager.default.fileExists(atPath: dir.path) {
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+    }
+
+    /// The Backups directory inside the app's local Documents folder.
+    private func localBackupsDirectoryURL() -> URL? {
         guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             CloudBackupService.logger.warning("Documents directory not available")
             return nil
         }
         let backupsDir = documentsURL.appendingPathComponent("Backups", isDirectory: true)
-        if !FileManager.default.fileExists(atPath: backupsDir.path) {
-            try? FileManager.default.createDirectory(at: backupsDir, withIntermediateDirectories: true)
-        }
+        createDirectoryIfNeeded(backupsDir)
         return backupsDir
+    }
+
+    /// The Backups directory inside the iCloud Drive ubiquity container, or `nil`
+    /// when iCloud is unavailable.
+    private func iCloudBackupsDirectoryURL() -> URL? {
+        guard let documentsURL = resolveICloudDocumentsURL() else { return nil }
+        let backupsDir = documentsURL.appendingPathComponent("Backups", isDirectory: true)
+        createDirectoryIfNeeded(backupsDir)
+        return backupsDir
+    }
+
+    /// The active Backups directory — iCloud when enabled and available, else local.
+    private func backupsDirectoryURL() -> URL? {
+        if isICloudEnabled, let iCloudDir = iCloudBackupsDirectoryURL() {
+            return iCloudDir
+        }
+        return localBackupsDirectoryURL()
+    }
+
+    // MARK: - iCloud Migration
+
+    /// Switches the backup destination and moves existing backups to match.
+    /// - `enabled == true`: move every local backup into iCloud Drive.
+    /// - `enabled == false`: move every iCloud backup back to local storage.
+    /// On success the `isICloudEnabled` preference is updated; on failure it is left
+    /// untouched so the caller can revert the UI.
+    func setICloudEnabled(_ enabled: Bool) throws {
+        if enabled {
+            guard let destination = iCloudBackupsDirectoryURL() else {
+                throw CoreDataStack.CloudBackupError.iCloudUnavailable
+            }
+            if let source = localBackupsDirectoryURL() {
+                try migrateBackups(from: source, to: destination, intoICloud: true)
+            }
+        } else {
+            guard let destination = localBackupsDirectoryURL() else {
+                throw CoreDataStack.CloudBackupError.noActiveStore
+            }
+            // Only migrate out if iCloud is reachable; otherwise there is nothing to move.
+            if let source = iCloudBackupsDirectoryURL() {
+                try migrateBackups(from: source, to: destination, intoICloud: false)
+            }
+        }
+        isICloudEnabled = enabled
+        CloudBackupService.logger.info("iCloud backups \(enabled ? "enabled" : "disabled")")
+    }
+
+    /// Moves each backup sub-directory between local and iCloud storage using
+    /// `FileManager.setUbiquitous`, which is the supported API for relocating items
+    /// into/out of the ubiquity container.
+    private func migrateBackups(from source: URL, to destination: URL, intoICloud: Bool) throws {
+        let fm = FileManager.default
+        guard let contents = try? fm.contentsOfDirectory(
+            at: source,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: .skipsHiddenFiles
+        ) else { return }
+
+        for itemURL in contents {
+            var isDir: ObjCBool = false
+            guard fm.fileExists(atPath: itemURL.path, isDirectory: &isDir), isDir.boolValue else { continue }
+
+            let destURL = destination.appendingPathComponent(itemURL.lastPathComponent, isDirectory: true)
+            if fm.fileExists(atPath: destURL.path) { continue } // already present at destination
+
+            // setUbiquitous(true, ...) moves a local item into iCloud;
+            // setUbiquitous(false, ...) evicts an iCloud item back to local.
+            try fm.setUbiquitous(intoICloud, itemAt: itemURL, destinationURL: destURL)
+        }
     }
 
     // MARK: - Create Backup
 
-    /// Creates a backup of the current SQLite store in the iCloud ubiquity container.
+    /// Creates a backup of the current SQLite store in the active backups directory
+    /// (local Documents, or the iCloud Drive container when iCloud is enabled).
     /// Performs WAL checkpoint before copying for consistency.
     func createBackup(
         transactionCount: Int,
@@ -131,6 +259,9 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
         var backups: [BackupMetadata] = []
         for dirURL in contents {
             let metadataURL = dirURL.appendingPathComponent("metadata.json")
+            // For iCloud backups the metadata may be a not-yet-downloaded placeholder —
+            // kick off a download (best effort; throws harmlessly for local files).
+            try? fm.startDownloadingUbiquitousItem(at: metadataURL)
             guard let data = try? Data(contentsOf: metadataURL),
                   let metadata = try? JSONDecoder().decode(BackupMetadata.self, from: data) else {
                 continue
@@ -139,6 +270,25 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
         }
 
         return backups.sorted { $0.date > $1.date }
+    }
+
+    /// Ensures a (possibly ubiquitous) file is downloaded before reading it.
+    /// No-op for local files. Blocks up to `timeout` seconds — call off the main thread.
+    private func ensureDownloaded(_ url: URL, timeout: TimeInterval = 30) {
+        let fm = FileManager.default
+        let status = try? url.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
+            .ubiquitousItemDownloadingStatus
+        // Local files (status == nil) or already-current files need no wait.
+        guard let status, status != .current else { return }
+
+        try? fm.startDownloadingUbiquitousItem(at: url)
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            let current = try? url.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
+                .ubiquitousItemDownloadingStatus
+            if current == .current { return }
+            Thread.sleep(forTimeInterval: 0.3)
+        }
     }
 
     // MARK: - Restore Backup
@@ -184,14 +334,21 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             }
         }
 
-        guard let sourceURL = backupStoreURL,
-              fm.fileExists(atPath: sourceURL.path) else {
+        guard let sourceURL = backupStoreURL else {
             throw CoreDataStack.CloudBackupError.noActiveStore
         }
 
         // Swap the store off the main thread — file I/O + PSC.addPersistentStore can be slow.
+        // For iCloud backups the store files may still be cloud placeholders, so download
+        // the full sqlite/wal/shm set (also off the main thread) before swapping.
         let stack = coreDataStack
-        try await Task.detached(priority: .userInitiated) {
+        try await Task.detached(priority: .userInitiated) { [self] in
+            ensureDownloaded(sourceURL)
+            ensureDownloaded(URL(fileURLWithPath: sourceURL.path + "-wal"))
+            ensureDownloaded(URL(fileURLWithPath: sourceURL.path + "-shm"))
+            guard FileManager.default.fileExists(atPath: sourceURL.path) else {
+                throw CoreDataStack.CloudBackupError.noActiveStore
+            }
             try stack.swapStore(from: sourceURL)
         }.value
 

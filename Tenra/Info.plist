@@ -37,6 +37,18 @@
 	<string>This app needs access to microphone to record voice for adding transactions.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>This app needs access to speech recognition to add transactions by voice.</string>
+	<key>NSUbiquitousContainers</key>
+	<dict>
+		<key>iCloud.dakacom.Tenra</key>
+		<dict>
+			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
+			<true/>
+			<key>NSUbiquitousContainerName</key>
+			<string>Tenra</string>
+			<key>NSUbiquitousContainerSupportedFolderLevels</key>
+			<string>Any</string>
+		</dict>
+	</dict>
 	<key>NSUserNotificationUsageDescription</key>
 	<string>Разрешите уведомления, чтобы получать напоминания о предстоящих списаниях по подпискам и не пропускать важные платежи.</string>
 	<key>UIAppFonts</key>

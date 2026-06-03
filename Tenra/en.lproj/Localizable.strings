@@ -1216,6 +1216,12 @@
 "settings.cloud.storage" = "Storage";
 "settings.cloud.storageUsed" = "%@ of %@";
 "settings.cloud.backupMetadata" = "%d accounts · %d transactions · %@";
+"settings.cloud.iCloud.toggle" = "Save backups to iCloud";
+"settings.cloud.iCloud.footer" = "Backups are stored in your iCloud Drive and available on your other devices.";
+"settings.cloud.iCloud.unavailable" = "Sign in to iCloud in Settings to store backups in iCloud Drive.";
+"settings.cloud.iCloud.movedToICloud" = "Backups moved to iCloud";
+"settings.cloud.iCloud.movedToLocal" = "Backups moved to this device";
+"settings.cloud.tapToRestoreHint" = "Tap a backup to restore it. Swipe left to delete.";
 "alert.restore.title" = "Restore Backup?";
 "alert.restore.message" = "All current data will be replaced with the backup from %@.";
 "alert.restore.confirm" = "Restore";
@@ -1227,6 +1233,7 @@
 "error.backup.noActiveStore" = "No active database found";
 "error.backup.copyFailed" = "Failed to copy backup";
 "error.backup.incompatibleVersion" = "Backup version is incompatible";
+"error.backup.iCloudUnavailable" = "iCloud is unavailable. Sign in to iCloud in Settings and try again.";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "Add Loan";

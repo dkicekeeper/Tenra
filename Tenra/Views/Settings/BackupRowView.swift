@@ -13,28 +13,37 @@ struct BackupRowView: View {
     let onDelete: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text(metadata.formattedDate)
-                .font(AppTypography.body)
-                .foregroundStyle(AppColors.textPrimary)
+        HStack(spacing: AppSpacing.sm) {
+            VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                Text(metadata.formattedDate)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColors.textPrimary)
 
-            Text(metadataLine)
+                Text(metadataLine)
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+
+            Spacer(minLength: 0)
+
+            // Affordance hinting the row is tappable to restore.
+            Image(systemName: "arrow.counterclockwise")
                 .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.accent)
         }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onRestore()
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint(Text(String(localized: "settings.cloud.restore")))
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
                 onDelete()
             } label: {
                 Label(String(localized: "settings.cloud.delete"), systemImage: "trash")
             }
-
-            Button {
-                onRestore()
-            } label: {
-                Label(String(localized: "settings.cloud.restore"), systemImage: "arrow.counterclockwise")
-            }
-            .tint(AppColors.accent)
         }
     }
 

@@ -212,10 +212,13 @@ class AppCoordinator {
             transactionsViewModel: self.transactionsViewModel
         )
 
-        // Local backups VM (iCloud sync removed 2026-04-22 — backups live in Documents/Backups)
+        // Backups VM. CloudKit DB sync removed 2026-04-22; backups live in Documents/Backups
+        // or, when the user opts in, the iCloud Drive ubiquity container.
         let cloudBackupService = CloudBackupService()
         self.cloudSyncViewModel = CloudSyncViewModel(backupService: cloudBackupService)
         self.cloudSyncViewModel.appCoordinator = self
+        // Prime the iCloud container URL off the main thread (first resolve can block).
+        Task.detached(priority: .utility) { cloudBackupService.prepareICloud() }
 
         // @Observable handles change propagation automatically - no manual observer setup needed
 

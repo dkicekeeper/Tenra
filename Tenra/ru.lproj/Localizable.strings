@@ -1216,6 +1216,12 @@
 "settings.cloud.storage" = "Хранилище";
 "settings.cloud.storageUsed" = "%@ из %@";
 "settings.cloud.backupMetadata" = "%d счетов · %d операций · %@";
+"settings.cloud.iCloud.toggle" = "Сохранять копии в iCloud";
+"settings.cloud.iCloud.footer" = "Резервные копии хранятся в вашем iCloud Drive и доступны на других ваших устройствах.";
+"settings.cloud.iCloud.unavailable" = "Войдите в iCloud в Настройках, чтобы хранить копии в iCloud Drive.";
+"settings.cloud.iCloud.movedToICloud" = "Копии перенесены в iCloud";
+"settings.cloud.iCloud.movedToLocal" = "Копии перенесены на это устройство";
+"settings.cloud.tapToRestoreHint" = "Нажмите на копию, чтобы восстановить её. Смахните влево для удаления.";
 "alert.restore.title" = "Восстановить данные?";
 "alert.restore.message" = "Все текущие данные будут заменены копией от %@.";
 "alert.restore.confirm" = "Восстановить";
@@ -1227,6 +1233,7 @@
 "error.backup.noActiveStore" = "Активная база данных не найдена";
 "error.backup.copyFailed" = "Не удалось скопировать резервную копию";
 "error.backup.incompatibleVersion" = "Версия резервной копии несовместима";
+"error.backup.iCloudUnavailable" = "iCloud недоступен. Войдите в iCloud в Настройках и попробуйте снова.";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "Добавить кредит";

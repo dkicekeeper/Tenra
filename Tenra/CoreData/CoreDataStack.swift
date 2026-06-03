@@ -340,12 +340,14 @@ final class CoreDataStack: @unchecked Sendable {
         case noActiveStore
         case copyFailed(Error)
         case incompatibleVersion(String)
+        case iCloudUnavailable
 
         var errorDescription: String? {
             switch self {
             case .noActiveStore: return String(localized: "error.backup.noActiveStore")
             case .copyFailed(let error): return String(localized: "error.backup.copyFailed") + ": \(error.localizedDescription)"
             case .incompatibleVersion(let version): return String(localized: "error.backup.incompatibleVersion") + " (\(version))"
+            case .iCloudUnavailable: return String(localized: "error.backup.iCloudUnavailable")
             }
         }
     }

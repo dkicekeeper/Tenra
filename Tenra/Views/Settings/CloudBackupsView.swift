@@ -23,6 +23,30 @@ struct CloudBackupsView: View {
 
     var body: some View {
         List {
+            Section {
+                Toggle(isOn: Binding(
+                    get: { cloudSyncViewModel.iCloudEnabled },
+                    set: { newValue in
+                        Task { await cloudSyncViewModel.setICloudEnabled(newValue) }
+                    }
+                )) {
+                    HStack(spacing: AppSpacing.sm) {
+                        Text(String(localized: "settings.cloud.iCloud.toggle"))
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppColors.textPrimary)
+                        if cloudSyncViewModel.isMigratingICloud {
+                            ProgressView()
+                        }
+                    }
+                }
+                .tint(AppColors.accent)
+                .disabled(cloudSyncViewModel.isMigratingICloud || !cloudSyncViewModel.iCloudAvailable)
+            } footer: {
+                Text(String(localized: cloudSyncViewModel.iCloudAvailable
+                    ? "settings.cloud.iCloud.footer"
+                    : "settings.cloud.iCloud.unavailable"))
+            }
+
             if !cloudSyncViewModel.backups.isEmpty {
                 Section {
                     ForEach(cloudSyncViewModel.backups) { backup in
@@ -38,6 +62,8 @@ struct CloudBackupsView: View {
                             }
                         )
                     }
+                } footer: {
+                    Text(String(localized: "settings.cloud.tapToRestoreHint"))
                 }
             }
         }

@@ -15,15 +15,19 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
     // MARK: - Memoization Cache
 
     /// Cache key for memoization. Uses content fingerprints (counts + a content
-    /// hash for the expenses map) — strictly cheaper than the previous design
-    /// which built a sorted-join string of every category's fields on EVERY call.
+    /// hash for the expenses map + an order fingerprint) — strictly cheaper than
+    /// the previous design which built a sorted-join string of every category's
+    /// fields on EVERY call.
     ///
     /// We can't rely on `categoriesMutationVersion` here because the mapper has
-    /// no `TransactionStore` reference; instead we accept that the worst case is
-    /// a same-count category swap (very rare; harmless cache hit).
+    /// no `TransactionStore` reference, so the key must fingerprint everything the
+    /// output depends on. A reorder changes only each category's `.order` value
+    /// (count / names / totals stay identical), so `orderHash` is what keeps the
+    /// sort fresh — without it the stale order survives until app restart.
     private struct CacheKey: Hashable {
         let categoriesCount: Int
         let expensesHash: Int
+        let orderHash: Int
         let type: TransactionType
         let baseCurrency: String
         let filterCacheKey: String
@@ -39,6 +43,17 @@ final class CategoryDisplayDataMapper: CategoryDisplayDataMapperProtocol {
                 expHash ^= Int(bitPattern: UInt(bitPattern: v.total.bitPattern.hashValue))
             }
             self.expensesHash = expHash
+
+            // Sequence-sensitive fingerprint of (id, order) so a reorder — which swaps
+            // `.order` values without changing count/names/totals — produces a new key.
+            // Hasher.combine IS order-sensitive (unlike the XOR above), which is exactly
+            // what we need to distinguish a same-set swap.
+            var orderHasher = Hasher()
+            for cat in customCategories {
+                orderHasher.combine(cat.id)
+                orderHasher.combine(cat.order)
+            }
+            self.orderHash = orderHasher.finalize()
 
             self.type = type
             self.baseCurrency = baseCurrency

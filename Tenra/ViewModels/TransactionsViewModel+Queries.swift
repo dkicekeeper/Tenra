@@ -18,20 +18,12 @@ extension TransactionsViewModel {
             timeFilter: timeFilterManager.currentFilter
         )
 
-        // IMPORTANT: Always invalidate summary cache because time filtering produces different results
-        // The cache doesn't account for time filters, so we need fresh calculation each time
-        cacheManager.summaryCacheInvalidated = true
-
         let result = queryService.calculateSummary(
             transactions: filtered,
             baseCurrency: appSettings.baseCurrency,
             cacheManager: cacheManager,
             currencyService: currencyService
         )
-
-        // ✅ FIX: Don't restore invalidation state
-        // calculateSummary() already sets it to false after computing the new summary
-        // Restoring the old state was breaking the invalidation flow when transactions changed
 
         return result
     }

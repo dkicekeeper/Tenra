@@ -76,8 +76,11 @@ nonisolated class TransactionCacheManager {
 
     // MARK: - Category Expenses Cache (for summary display)
 
-    var summaryCacheInvalidated = false
-    var cachedSummary: Summary?
+    /// Gate for the per-filter category-expenses cache below. (The summary card
+    /// computes fresh every time — `TransactionQueryService.calculateSummary` no
+    /// longer caches, since a single unkeyed slot returned one filter's totals for
+    /// every filter; see cache audit #14.)
+    var categoryExpensesCacheInvalidated = false
 
     /// Per-filter cache: key is TimeFilter.stableCacheKey string, value is expenses dict.
     /// Fixes the bug where all time filters shared a single cached result.
@@ -90,13 +93,12 @@ nonisolated class TransactionCacheManager {
     var cachedIncomeCategories: [String]?
 
     func invalidateCategoryExpenses() {
-        summaryCacheInvalidated = true
-        cachedSummary = nil
+        categoryExpensesCacheInvalidated = true
         cachedCategoryExpensesByFilter.removeAll()
     }
 
     func getCachedCategoryExpenses(for key: Any) -> [String: CategoryExpense]? {
-        guard !summaryCacheInvalidated else { return nil }
+        guard !categoryExpensesCacheInvalidated else { return nil }
         let cacheKey = stableCacheKey(from: key)
         return cachedCategoryExpensesByFilter[cacheKey]
     }
@@ -104,7 +106,7 @@ nonisolated class TransactionCacheManager {
     func setCachedCategoryExpenses(_ expenses: [String: CategoryExpense], for key: Any) {
         let cacheKey = stableCacheKey(from: key)
         cachedCategoryExpensesByFilter[cacheKey] = expenses
-        summaryCacheInvalidated = false
+        categoryExpensesCacheInvalidated = false
     }
 
     /// Derive a stable string key from the provided key (TimeFilter or any Hashable).
@@ -118,12 +120,11 @@ nonisolated class TransactionCacheManager {
     func invalidateAll() {
         parsedDateCache.removeAll()
         subcategoryIndex.removeAll()
-        cachedSummary = nil
         cachedCategoryExpensesByFilter.removeAll()
         cachedUniqueCategories = nil
         cachedExpenseCategories = nil
         cachedIncomeCategories = nil
-        summaryCacheInvalidated = true
+        categoryExpensesCacheInvalidated = true
         categoryListsCacheInvalidated = true
     }
 

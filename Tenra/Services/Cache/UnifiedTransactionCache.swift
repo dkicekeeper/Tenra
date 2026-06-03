@@ -9,8 +9,7 @@ import Foundation
 
 /// Unified cache for all transaction-derived data
 /// Replaces:
-/// - TransactionCacheManager.cachedSummary
-/// - TransactionCacheManager.cachedCachedCategoryExpenses
+/// - TransactionCacheManager per-filter category expenses
 /// - DateSectionExpensesCache
 /// - Parts of CategoryAggregateCacheOptimized
 ///

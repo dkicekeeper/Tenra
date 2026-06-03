@@ -27,11 +27,9 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
         currencyService: TransactionCurrencyService
     ) -> Summary {
 
-        // Return cached summary if valid
-        if !cacheManager.summaryCacheInvalidated, let cached = cacheManager.cachedSummary {
-            return cached
-        }
-
+        // No summary cache: a single unkeyed slot returned one filter's totals for
+        // every filter (and InsightsService had to bypass it). Compute fresh — the
+        // cost is one O(N) pass over the already-filtered slice. See cache audit #14.
         PerformanceProfiler.start("TransactionQueryService.calculateSummary")
 
         let today = Calendar.current.startOfDay(for: Date())
@@ -79,10 +77,6 @@ class TransactionQueryService: TransactionQueryServiceProtocol {
             endDate: dates.last ?? "",
             plannedAmount: plannedExpenses
         )
-
-
-        cacheManager.cachedSummary = result
-        cacheManager.summaryCacheInvalidated = false
 
         PerformanceProfiler.end("TransactionQueryService.calculateSummary")
         return result

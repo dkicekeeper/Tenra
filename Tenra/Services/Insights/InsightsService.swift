@@ -1093,16 +1093,13 @@ nonisolated final class InsightsService {
         return calendar.date(from: components) ?? date
     }
 
-    /// Calculates income/expenses for a specific transaction slice WITHOUT using
-    /// the global TransactionCacheManager cache.
+    /// Calculates income/expenses for a specific transaction slice directly.
     ///
-    /// ROOT CAUSE FIX for identical monthly data:
-    /// `TransactionQueryService.calculateSummary` has a global summary cache in
-    /// `cacheManager.cachedSummary`. The first call for month[0] populates it;
-    /// every subsequent call for months[1..5] hits `!summaryCacheInvalidated` and
-    /// returns the cached month[0] result — even though a different transaction
-    /// slice was passed. Since each monthly slice is independent, we must bypass
-    /// the cache entirely and do the arithmetic directly.
+    /// Each monthly slice is independent, so this does the arithmetic per-slice with
+    /// no shared cache. (Historically this existed to bypass a global single-slot
+    /// summary cache that returned month[0]'s totals for every month; that cache has
+    /// since been removed — cache audit #14 — but per-slice calculation remains the
+    /// correct, allocation-light approach here.)
     private nonisolated func calculateMonthlySummary(
         transactions: [Transaction],
         baseCurrency: String,

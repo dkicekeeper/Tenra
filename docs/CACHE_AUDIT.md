@@ -103,6 +103,7 @@ The normal mutation path is `invalidateCaches()` → `invalidateCategoryExpenses
 `AccountsViewModel.updateAccount` recalcs only when `initialBalance` changes ([:89](../Tenra/ViewModels/AccountsViewModel.swift)); `AccountBalance.currency` is a `let` set once at `registerAccounts` ([BalanceStore.swift:22](../Tenra/Services/Balance/BalanceStore.swift)).
 **Effect:** Changing an account's currency leaves the cached balance and all later incremental cross-currency `contribution` conversions using the old currency until restart.
 **Fix:** treat a `currency` change like a balance change — re-register the account and `recalculateAccounts([id])`.
+**Follow-up (post-audit):** the original fix only covered the *currency-only* edit branch. A *combined* balance+currency edit took the `balanceChanged` branch, which recalculated without re-registering → cached currency stayed stale (same defect, different entry path). Closed by re-registering inside the `balanceChanged` branch when `currencyChanged`. Pinned by `AccountCurrencyEditRecalcTests`.
 
 ---
 

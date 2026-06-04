@@ -590,6 +590,7 @@ class VoiceInputParser {
             let amount: Decimal
             let priority: Int  // 0 = с валютой (высший), 1 = без валюты (низший)
             let position: Int  // Позиция в тексте для разрешения конфликтов
+            let isLikelyYear: Bool  // Похоже на год — выбирается в последнюю очередь, но НЕ отбрасывается
         }
 
         var foundAmounts: [AmountMatch] = []
@@ -610,23 +611,30 @@ class VoiceInputParser {
                         let priority = index <= 1 ? 0 : 1
                         let position = match.range(at: 1).location
 
-                        // Фильтруем явно неправильные суммы (например, годы)
                         if amount >= VoiceInputConstants.minAmountValue && amount <= VoiceInputConstants.maxAmountValue {
-                            // Годы обычно 2000-2099 и не имеют валюты
+                            // Год обычно 1900-2100 и без валюты. Раньше такие
+                            // числа отбрасывались — но "2000 на такси" (типичная
+                            // сумма в тенге) тогда терялась, и голосовой ввод
+                            // молча ничего не создавал. Теперь год лишь
+                            // понижается в приоритете: реальная сумма в той же
+                            // фразе всё равно побеждает, а одинокое "2000"
+                            // остаётся суммой.
                             let looksLikeYear = amount >= 1900 && amount <= 2100 && priority == 1
-                            if !looksLikeYear {
-                                foundAmounts.append(AmountMatch(amount: amount, priority: priority, position: position))
-                            }
+                            foundAmounts.append(AmountMatch(amount: amount, priority: priority, position: position, isLikelyYear: looksLikeYear))
                         }
                     }
                 }
             }
         }
 
-        // Сортируем: сначала по приоритету (меньше = лучше), потом по сумме (больше = лучше)
+        // Сортируем: сначала по приоритету (валюта = лучше), затем НЕ-год
+        // раньше года (чтобы реальная сумма побеждала год), потом по сумме.
         foundAmounts.sort { lhs, rhs in
             if lhs.priority != rhs.priority {
                 return lhs.priority < rhs.priority
+            }
+            if lhs.isLikelyYear != rhs.isLikelyYear {
+                return !lhs.isLikelyYear  // false (не год) идёт первым
             }
             return lhs.amount > rhs.amount
         }

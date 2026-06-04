@@ -108,6 +108,16 @@ class AccountsViewModel {
             store.updateAccount(corrected)
 
             Task {
+                // If the currency ALSO changed in this edit, re-register first:
+                // AccountBalance.currency is set once at registerAccounts, and the
+                // recalc below reads the cached currency to convert cross-currency
+                // legs. Without this, a combined balance+currency edit recomputes in
+                // the OLD currency and leaves the cached currency stale until restart
+                // (cache audit #8 — the currency-only branch did this, the combined
+                // path didn't).
+                if currencyChanged {
+                    await coordinator.registerAccounts(store.accounts)
+                }
                 await coordinator.setInitialBalance(correctInitialBalance, for: account.id)
                 await coordinator.recalculateAccounts(
                     [account.id],

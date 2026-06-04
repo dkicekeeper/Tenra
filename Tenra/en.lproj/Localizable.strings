@@ -1535,3 +1535,9 @@
 
 "insights.health.rec.cashFlow.negative" = "You're spending more than you earn (−%.1f%% of income this period). Cut expenses or find an additional income source.";
 "insights.health.rec.cashFlow.positive" = "Your income exceeds expenses by %.1f%% — a healthy positive flow.";
+
+// MARK: - Rating Prompt
+"rating.survey.title" = "Enjoying Tenra?";
+"rating.survey.message" = "Your feedback helps us make Tenra better for everyone.";
+"rating.survey.love" = "Yes, love it!";
+"rating.survey.notReally" = "Not really";

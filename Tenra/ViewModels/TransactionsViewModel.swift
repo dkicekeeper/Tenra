@@ -181,6 +181,9 @@ class TransactionsViewModel {
         Task {
             do {
                 _ = try await transactionStore.add(transaction)
+                // Success moment: the user is actively tracking finances. Let the rating
+                // service decide whether this crosses into prompt eligibility.
+                RatingPromptService.shared.recordTransactionAdded()
             } catch {
                 errorMessage = error.localizedDescription
             }

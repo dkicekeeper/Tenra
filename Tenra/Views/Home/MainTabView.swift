@@ -42,6 +42,9 @@ struct MainTabView: View {
 
     @Environment(AppCoordinator.self) private var coordinator
 
+    /// Rating-prompt coordinator (singleton). Observed so `shouldShowSurvey` drives the sheet.
+    @State private var ratingPrompt = RatingPromptService.shared
+
     @State private var selectedTab: AppTab = .home
     @State private var tabBarMode: TabBarMode = .normal
     /// Remembers which "real" tab was active before expanding,
@@ -145,6 +148,10 @@ struct MainTabView: View {
             }
             selectedTab = .finances
             previousTab = .finances
+        }
+        // Rating pre-prompt survey. Fired by RatingPromptService at a success moment.
+        .sheet(isPresented: $ratingPrompt.shouldShowSurvey) {
+            RatingSurveyView()
         }
     }
 

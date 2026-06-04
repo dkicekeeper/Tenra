@@ -74,6 +74,9 @@ struct TenraApp: App {
                     center.setBadgeCount(0)
                     center.removeAllDeliveredNotifications()
 
+                    // Count this foreground as a session for rating-prompt eligibility.
+                    RatingPromptService.shared.recordSession()
+
                     // Re-derive relative time-filter bounds (e.g. .thisMonth) against
                     // the current date. scenePhase fires on both cold launch and
                     // background→foreground, so this covers a new month arriving while

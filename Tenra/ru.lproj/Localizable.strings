@@ -1535,3 +1535,9 @@
 
 "insights.health.rec.cashFlow.negative" = "Тратите больше, чем зарабатываете (−%.1f%% от дохода в этом периоде). Сократите расходы или найдите дополнительный источник.";
 "insights.health.rec.cashFlow.positive" = "Доход превышает расходы на %.1f%% — здоровый положительный поток.";
+
+// MARK: - Rating Prompt
+"rating.survey.title" = "Нравится Tenra?";
+"rating.survey.message" = "Ваш отзыв помогает нам делать Tenra лучше для всех.";
+"rating.survey.love" = "Да, нравится!";
+"rating.survey.notReally" = "Не очень";

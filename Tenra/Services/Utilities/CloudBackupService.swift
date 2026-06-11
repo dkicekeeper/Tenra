@@ -303,7 +303,7 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     // MARK: - Restore Backup
 
     /// Current model version, derived from the compiled model so it can never
-    /// drift from the schema again (was hardcoded "v7" while the schema was v12).
+    /// drift from the schema again (was hardcoded to v7 while the schema was v12).
     /// Display/diagnostic value only — restore compatibility is decided from the
     /// backup store file's own metadata, not this string.
     nonisolated static let currentModelVersion: String = {
@@ -325,7 +325,7 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     /// - Parameter metadata: The backup to restore
     func restoreBackup(_ metadata: BackupMetadata) async throws {
         // NOTE: The JSON metadata.modelVersion field is unreliable historical data —
-        // all backups were stamped "v7" regardless of actual schema. The gate has been
+        // all backups were stamped v7 regardless of actual schema. The gate has been
         // moved to a real CoreData store-metadata check inside the Task.detached block
         // below, where the backup SQLite file is inspected directly.
 

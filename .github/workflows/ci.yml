@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'plans/**'
+      - '**.md'
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.4.1.app
+
+      - name: Resolve simulator destination
+        id: sim
+        run: |
+          DEVICE=$(xcrun simctl list devices available | grep -E "iPhone" | head -1 | sed -E 's/^ *([^(]+) \(.*/\1/' | sed 's/ *$//')
+          if [ -z "$DEVICE" ]; then echo "No iPhone simulator available"; exit 1; fi
+          echo "device=$DEVICE" >> "$GITHUB_OUTPUT"
+          echo "Using simulator: $DEVICE"
+
+      - name: Build and run unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -scheme Tenra \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.device }}" \
+            -only-testing:TenraTests \
+            2>&1 | tee xcodebuild.log | grep -aE "Test case .* (passed|failed)|error:|\*\* TEST (SUCCEEDED|FAILED)" || true
+          grep -aq "\*\* TEST SUCCEEDED \*\*" xcodebuild.log
+
+      - name: Upload log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: xcodebuild.log

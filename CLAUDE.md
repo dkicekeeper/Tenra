@@ -66,7 +66,7 @@ Tenra is a native iOS finance management application built with SwiftUI and Core
 **Tech Stack:**
 - SwiftUI (iOS 26+ with Liquid Glass adoption)
 - Swift 5.0 (project setting), targeting Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
-- CoreData for persistence (v8 schema)
+- CoreData for persistence (v12 schema)
 - Observation framework (@Observable)
 - MVVM + Coordinator architecture
 
@@ -164,7 +164,7 @@ New file needed?
 
 | Working on... | Read first |
 |---|---|
-| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v8 model | [docs/architecture.md](docs/architecture.md) |
+| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v12 model | [docs/architecture.md](docs/architecture.md) |
 | `@Observable`, `Task`, `MainActor`, `nonisolated`, CoreData threading, `Sendable` | [docs/concurrency.md](docs/concurrency.md) |
 | `Views/Components/**`, animations, IconView, AppSpacing/Colors/Animation tokens, cardStyle, AnimatedInputComponents, amount formatting | [docs/design-system.md](docs/design-system.md) |
 | `Services/Insights/**` (operational guide) | [docs/domains/insights.md](docs/domains/insights.md) |
@@ -246,6 +246,7 @@ Outside a `List` (e.g. `LazyVStack`, `ScrollView`), `.swipeActions` silently no-
 2. Update `Tenra/CoreData/Tenra.xcdatamodeld/.xccurrentversion` plist to point to vN+1.
 3. Create `Tenra/CoreData/Entities/<Entity>+CoreDataClass.swift` + `<Entity>+CoreDataProperties.swift` (mirror `AccountAggregateEntity` for aggregate-style entities).
 4. Add load/save to the matching `Services/Repository/<Domain>Repository.swift`, then forward in `CoreDataRepository.swift`, then add no-op stubs in `UserDefaultsRepository.swift` and any test mocks.
+5. No backup-version constant to bump — `CloudBackupService.currentModelVersion` derives from the compiled model.
 
 Lightweight migration only works for ADDITIVE changes (new entity, new optional attribute). Removing/renaming requires a mapping model — none in this project yet.
 
@@ -333,7 +334,7 @@ Active reference docs in `docs/`:
 
 | File | Purpose |
 |------|---------|
-| [architecture.md](docs/architecture.md) | MVVM+Coordinator deep dive, TransactionStore, BalanceCoordinator, Repository, CoreData v8 |
+| [architecture.md](docs/architecture.md) | MVVM+Coordinator deep dive, TransactionStore, BalanceCoordinator, Repository, CoreData v12 |
 | [DATA_INTEGRITY_AUDIT.md](docs/DATA_INTEGRITY_AUDIT.md) | Cross-domain data-integrity audit, the unified `contribution`/`LedgerPolicyRule` model, realized-vs-forecast policy, phased refactor progress |
 | [concurrency.md](docs/concurrency.md) | Swift 6 concurrency, CoreData threading, @Observable rules |
 | [design-system.md](docs/design-system.md) | Design tokens, components, animations, padding contract, amount formatting |

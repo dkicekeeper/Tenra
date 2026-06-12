@@ -20,6 +20,10 @@ Repo-wide executor notes (apply to every plan):
 | 003 | CSV export→import round-trip tests | P2 | M | — (001 recommended first) | DONE (reviewed; commit `6d6a587` on `worktree-agent-aa39a2849a1d2d69a`, 7/7 tests re-verified; round-trip confirmed symmetric, awaiting owner merge) |
 | 004 | Revive voice + onboarding test suites; retire 2 obsolete dark suites | P2 | M | — (001 recommended first) | DONE (reviewed; commit `6915aad` on `worktree-agent-a441e10a2c89ecd6f`, 20/20 tests re-verified, zero dark suites remain, awaiting owner merge) |
 | 005 | Perf hygiene: 3 hot-path allocation/scan fixes | P3 | S | — | DONE (reviewed; commit `65fef2a` on `worktree-agent-ad91dd5fab10393cc`, insights tests re-verified, awaiting owner merge) |
+| 006 | Voice parser: English date + income/expense keywords | P2 | S | 004 (branch included) | DONE (reviewed; commit `f54416d` on `worktree-agent-a555e048af556d5ee`, 16/16 voice tests re-verified, awaiting owner merge) |
+
+> ⚠️ Merge note: plan 006's branch **contains** plan 004's commits (fast-forward merge in its Step 0).
+> When merging to main: merge branches for 001, 002, 003, 005, and **006** — skip 004's branch (included in 006).
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 
@@ -43,10 +47,10 @@ Recorded so future audits don't re-litigate them:
   iCloud Drive, not to other people. By design.
 - **Supabase JWT in git history** (historic `Info.plist` revisions up to commit
   `aa37302`) — real artifact, but anon-tier key for a backend abandoned when
-  logos moved to jsDelivr. Action for the owner, not a code plan: confirm the
-  Supabase project is deleted/paused (then no action), or rotate the anon key
-  in the dashboard. History rewrite not recommended (disruption > residual
-  risk for an anon key on a dead project).
+  logos moved to jsDelivr. **RESOLVED 2026-06-12**: verified the project host
+  (`mnkgheldjygknjghcpgy.supabase.co`) returns NXDOMAIN — project is deleted,
+  the leaked key is inert. No rotation possible or needed; history rewrite
+  not warranted.
 - **"Views over-subscribe via `transactions.count`"** — misread by the auditor;
   the touch is the *documented required* observation pattern because
   `mutationVersion` is `@ObservationIgnored` (CLAUDE.md, "Entity detail view

@@ -28,6 +28,10 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     private let coreDataStack: CoreDataStack
     private let maxBackups = 5
 
+    /// Test seam: when set, backups read/write under this directory instead of
+    /// Documents/iCloud. Internal so only the module + @testable tests see it.
+    var backupsRootOverride: URL?
+
     /// Caches the resolved iCloud Documents URL. `nil` = not yet resolved,
     /// `.some(nil)` = resolved-and-unavailable. Guarded by `lock` because this
     /// type is `@unchecked Sendable` and reached from multiple threads.
@@ -106,7 +110,12 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     }
 
     /// The active Backups directory — iCloud when enabled and available, else local.
+    /// Returns `backupsRootOverride` first when set (test seam).
     private func backupsDirectoryURL() -> URL? {
+        if let override = backupsRootOverride {
+            createDirectoryIfNeeded(override)
+            return override
+        }
         if isICloudEnabled, let iCloudDir = iCloudBackupsDirectoryURL() {
             return iCloudDir
         }
@@ -226,7 +235,7 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             transactionCount: transactionCount,
             accountCount: accountCount,
             categoryCount: categoryCount,
-            modelVersion: "v7",
+            modelVersion: Self.currentModelVersion,
             fileSize: fileSize,
             appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
         )
@@ -293,8 +302,19 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
 
     // MARK: - Restore Backup
 
-    /// Current model version — must match backup to allow restore
-    private nonisolated static let currentModelVersion = "v7"
+    /// Current model version, derived from the compiled model so it can never
+    /// drift from the schema again (was hardcoded to v7 while the schema was v12).
+    /// Display/diagnostic value only — restore compatibility is decided from the
+    /// backup store file's own metadata, not this string.
+    nonisolated static let currentModelVersion: String = {
+        guard
+            let momdURL = Bundle.main.url(forResource: "Tenra", withExtension: "momd"),
+            let info = NSDictionary(contentsOf: momdURL.appendingPathComponent("VersionInfo.plist")),
+            let current = info["NSManagedObjectModel_CurrentVersionName"] as? String
+        else { return "unknown" }
+        // "Tenra v12" → "v12"
+        return current.components(separatedBy: " ").last ?? current
+    }()
 
     /// Restores a backup by swapping the persistent store.
     /// Rejects backups with incompatible model versions.
@@ -304,10 +324,10 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     /// and must never block the main thread (watchdog + missed UI frames).
     /// - Parameter metadata: The backup to restore
     func restoreBackup(_ metadata: BackupMetadata) async throws {
-        // Reject incompatible model versions
-        guard metadata.modelVersion == Self.currentModelVersion else {
-            throw CoreDataStack.CloudBackupError.incompatibleVersion(metadata.modelVersion)
-        }
+        // NOTE: The JSON metadata.modelVersion field is unreliable historical data —
+        // all backups were stamped v7 regardless of actual schema. The gate has been
+        // moved to a real CoreData store-metadata check inside the Task.detached block
+        // below, where the backup SQLite file is inspected directly.
 
         guard let backupsDir = backupsDirectoryURL() else {
             throw CoreDataStack.CloudBackupError.noActiveStore
@@ -348,6 +368,20 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             ensureDownloaded(URL(fileURLWithPath: sourceURL.path + "-shm"))
             guard FileManager.default.fileExists(atPath: sourceURL.path) else {
                 throw CoreDataStack.CloudBackupError.noActiveStore
+            }
+            // Compatibility gate: read the backup store's own CoreData metadata.
+            // - Directly compatible with the current model → restore as-is.
+            // - Openable by an older bundled model version → swapStore re-adds the store
+            //   with automatic lightweight migration options, so restore is safe.
+            // - Neither (e.g. backup made by a NEWER app version) → reject.
+            let storeMetadata = try NSPersistentStoreCoordinator.metadataForPersistentStore(
+                ofType: NSSQLiteStoreType, at: sourceURL, options: nil
+            )
+            let currentModel = stack.persistentContainer.managedObjectModel
+            if !currentModel.isConfiguration(withName: nil, compatibleWithStoreMetadata: storeMetadata) {
+                guard NSManagedObjectModel.mergedModel(from: [.main], forStoreMetadata: storeMetadata) != nil else {
+                    throw CoreDataStack.CloudBackupError.incompatibleVersion(metadata.modelVersion)
+                }
             }
             try stack.swapStore(from: sourceURL)
         }.value

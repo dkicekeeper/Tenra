@@ -102,11 +102,16 @@ struct TimeFilterView: View {
         }
     }
 
+    /// Static formatter — allocated once, reused every body evaluation.
+    private static let rangeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .none
+        return f
+    }()
+
     private var customRangeDescription: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return "\(formatter.string(from: customDateRange.lowerBound)) – \(formatter.string(from: customDateRange.upperBound))"
+        "\(Self.rangeFormatter.string(from: customDateRange.lowerBound)) – \(Self.rangeFormatter.string(from: customDateRange.upperBound))"
     }
 }
 

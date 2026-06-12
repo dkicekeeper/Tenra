@@ -74,14 +74,16 @@ struct LoanDetailView: View {
     /// (amount + previously-used category). Real-world payments are usually rounded
     /// above the calculated annuity (e.g. 340 000 vs 336 829), so the prior actual
     /// is the best suggestion.
+    ///
+    /// Derived from cachedTransactions (already account-filtered and sorted
+    /// date-descending by refreshTransactions) — NOT from the full 19k store array.
+    /// cachedTransactions has the same account predicate (accountId/targetAccountId)
+    /// and is already sorted date-descending, so first(where:) returns the same
+    /// element the old filter→sorted→first chain did.
     private var mostRecentPayment: Transaction? {
-        transactionStore.transactions
-            .filter {
-                ($0.type == .loanPayment || $0.type == .loanEarlyRepayment)
-                && ($0.targetAccountId == accountId || $0.accountId == accountId)
-            }
-            .sorted { $0.date > $1.date }
-            .first
+        cachedTransactions.first {
+            $0.type == .loanPayment || $0.type == .loanEarlyRepayment
+        }
     }
 
     private var lastPaidAmount: Decimal? {

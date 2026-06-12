@@ -1103,16 +1103,18 @@ nonisolated final class InsightsService {
         var income: Double = 0
         var expenses: Double = 0
 
+        // Fallback formatter hoisted out of the loop — DateFormatter allocation per
+        // transaction is the expensive part (~µs each). Reuses DateFormatters.dateFormatter
+        // (same "yyyy-MM-dd" format, nonisolated static let) when the fast-path map is nil.
+        let fallbackDF: DateFormatter? = txDateMap == nil ? DateFormatters.dateFormatter : nil
+
         for tx in transactions {
             // Use pre-parsed date when available (O(1) lookup vs O(DateFormatter))
             let txDate: Date?
             if let map = txDateMap {
                 txDate = map[tx.date]
             } else {
-                // Fallback: allocate a formatter locally (rare path when preAggregated is nil)
-                let fallbackDF = DateFormatter()
-                fallbackDF.dateFormat = "yyyy-MM-dd"
-                txDate = fallbackDF.date(from: tx.date)
+                txDate = fallbackDF?.date(from: tx.date)
             }
             guard let date = txDate, date <= today else { continue }
             let amount = resolveAmount(tx, baseCurrency: baseCurrency)

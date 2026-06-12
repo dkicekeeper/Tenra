@@ -524,9 +524,9 @@ class VoiceInputParser {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         
-        if text.contains("сегодня") {
+        if text.contains("сегодня") || text.contains("today") {
             return today
-        } else if text.contains("вчера") {
+        } else if text.contains("вчера") || text.contains("yesterday") {
             return calendar.date(byAdding: .day, value: -1, to: today) ?? today
         }
         
@@ -549,6 +549,10 @@ class VoiceInputParser {
         "оплатил", "оплатила", "оплатили",
         "списал", "списала", "списали",
         "покупка", "покупки",
+        // EN — "paid" is intentionally absent: it is a substring of the income
+        // phrase "got paid" and expense is checked first, so including "paid"
+        // here would cause "got paid 500" to be classified as expense.
+        "spent", "bought", "purchase", "expense",
     ]
 
     /// Verbs that mark a clause as income.
@@ -562,6 +566,8 @@ class VoiceInputParser {
         "начислил", "начислила", "начислили",
         "зарплата", "зарплату", "зарплаты",
         "оклад", "премия", "премию",
+        // EN
+        "received", "earned", "income", "salary", "got paid",
     ]
 
     // 2. Парсинг типа операции

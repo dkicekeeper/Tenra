@@ -88,12 +88,10 @@ struct VoiceInputParserTests {
 
     // MARK: - 2. English equivalent
 
-    /// "spent 20 on groceries" — no EN-side income keyword → .expense; amount 20.
-    /// Category: "продукты" keyword is not triggered (EN phrase doesn't contain
-    /// Russian words). The parser falls back to the localized "category.other"
-    /// string.  We assert only the fields the parser *can* determine: amount
-    /// and type, so the test doesn't depend on the localisation of "other".
-    @Test("EN: 'spent 20 on groceries' → amount 20, expense")
+    /// "spent 20 on groceries" — "spent" is in Self.expenseKeywords (EN group) → .expense;
+    /// amount 20. Category: no RU keyword matches → falls back to localized "category.other".
+    /// We assert only amount and type so the test doesn't depend on localisation of "other".
+    @Test("EN: 'spent 20 on groceries' → amount 20, expense via keyword")
     func simpleEnExpense() {
         let (parser, cat, acc, tx) = Self.makeParser()
         _ = (cat, acc, tx)
@@ -134,6 +132,33 @@ struct VoiceInputParserTests {
         #expect(result.amount == Decimal(100_000))
     }
 
+    /// "received salary 1000" — "received" is in Self.incomeKeywords (EN group) → .income;
+    /// "salary" is also in incomeKeywords but "received" wins on first match.
+    @Test("EN: 'received salary 1000' → income, amount 1000")
+    func enIncomeKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("received salary 1000")
+
+        #expect(result.type == .income)
+        #expect(result.amount == Decimal(1000))
+    }
+
+    /// "got paid 500" — "got paid" is in Self.incomeKeywords (EN group) → .income.
+    /// "paid" is NOT in expenseKeywords (to avoid this phrase being mis-classified
+    /// as expense, since expense is checked first). This test pins that decision.
+    @Test("EN: 'got paid 500' → income (not expense), amount 500")
+    func enGotPaidIsIncome() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("got paid 500")
+
+        #expect(result.type == .income)
+        #expect(result.amount == Decimal(500))
+    }
+
     // MARK: - 4. Date extraction
 
     /// "вчера такси 300" → parsed date == Calendar.current start-of-yesterday.
@@ -153,14 +178,45 @@ struct VoiceInputParserTests {
         #expect(cal.startOfDay(for: result.date) == expectedYesterday)
     }
 
-    /// "yesterday 300" — "yesterday" is not matched by parseDate (only "вчера"
-    /// is checked) → default = today.
-    @Test("EN: no date keyword → date defaults to today")
-    func defaultDateIsToday() {
+    /// "yesterday 300 groceries" — "yesterday" is now matched by parseDate
+    /// (EN keyword added alongside "вчера") → date is start-of-yesterday.
+    /// Derivation: parseDate checks text.contains("yesterday") → returns
+    /// calendar.date(byAdding: .day, value: -1, to: today).
+    @Test("EN: 'yesterday' keyword → date is start-of-yesterday")
+    func enYesterdayDate() {
         let (parser, cat, acc, tx) = Self.makeParser()
         _ = (cat, acc, tx)
 
         let result = parser.parse("yesterday 300 groceries")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expectedYesterday = cal.date(byAdding: .day, value: -1, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expectedYesterday)
+    }
+
+    /// "today 50 coffee" — "today" is now matched by parseDate → start-of-today.
+    @Test("EN: 'today' keyword → date is start-of-today")
+    func enTodayDate() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("today 50 coffee")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+
+        #expect(cal.startOfDay(for: result.date) == today)
+    }
+
+    /// A phrase with no date keyword in either language → date defaults to today.
+    @Test("No date keyword → date defaults to today")
+    func defaultDateIsToday() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("300 groceries")
 
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())

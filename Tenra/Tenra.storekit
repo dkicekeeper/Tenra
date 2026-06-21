@@ -1,0 +1,94 @@
+{
+  "identifier" : "B1A0C0DE-0001-0000-0000-000000000001",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "39.99",
+      "familyShareable" : false,
+      "internalID" : "100000001",
+      "localizations" : [
+        {
+          "description" : "Unlock all Tenra Pro features forever, with a single payment.",
+          "displayName" : "Tenra Pro — Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tenra.pro.lifetime",
+      "referenceName" : "Tenra Pro Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "200000001",
+      "localizations" : [
+
+      ],
+      "name" : "Tenra Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "300000001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "All Tenra Pro features, billed monthly.",
+              "displayName" : "Tenra Pro — Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "tenra.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Tenra Pro Monthly",
+          "subscriptionGroupID" : "200000001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "displayPrice" : "19.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "300000002",
+          "introductoryOffer" : {
+            "internalID" : "400000001",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P2W"
+          },
+          "localizations" : [
+            {
+              "description" : "All Tenra Pro features, billed yearly. Best value.",
+              "displayName" : "Tenra Pro — Annual",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "tenra.pro.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Tenra Pro Annual",
+          "subscriptionGroupID" : "200000001",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

@@ -14,6 +14,12 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         CoreDataStack.shared.preWarm()
 
+        // Configure RevenueCat as early as possible. Runs the one-time grandfathering
+        // check while OnboardingState still reflects the pre-launch value (existing
+        // user = already onboarded → Founding User). No-ops cleanly until the API key
+        // is set in PremiumConfig, so launch is unaffected before monetization is live.
+        PremiumManager.shared.configure()
+
         // Set notification delegate
         UNUserNotificationCenter.current().delegate = self
 

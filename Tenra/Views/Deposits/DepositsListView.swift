@@ -17,8 +17,10 @@ struct DepositsListView: View {
     let transactionsViewModel: TransactionsViewModel
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(AppCoordinator.self) private var appCoordinator
+    @Environment(PremiumManager.self) private var premium
 
     @State private var showingAddDeposit = false
+    @State private var showingPaywall = false
     @State private var editingDeposit: Account?
     @State private var navigatingDeposit: Account?
     @State private var depositToDelete: Account?

@@ -9,10 +9,23 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
-		<key>Tenra.xcscheme_^#shared#^_</key>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>D62A09902F0D7B0D004AF1FA</key>
 		<dict>
-			<key>orderHint</key>
-			<integer>0</integer>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>D62A099D2F0D7B0E004AF1FA</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>D62A09A72F0D7B0E004AF1FA</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

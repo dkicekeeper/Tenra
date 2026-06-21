@@ -1541,3 +1541,10 @@
 "rating.survey.message" = "Your feedback helps us make Tenra better for everyone.";
 "rating.survey.love" = "Yes, love it!";
 "rating.survey.notReally" = "Not really";
+
+// MARK: - Premium
+"premium.unlock" = "Unlock Pro";
+"premium.locked.voice.title" = "Voice input is a Pro feature";
+"premium.locked.voice.message" = "Add transactions by voice — just say the amount and category, Tenra fills in the rest.";
+"premium.locked.import.title" = "Statement import is a Pro feature";
+"premium.locked.import.message" = "Import PDF bank statements and CSV files automatically instead of typing each transaction.";

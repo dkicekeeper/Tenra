@@ -48,12 +48,22 @@ struct FinancesTab: View {
 /// After recognition completes, pushes to VoiceInputConfirmationView.
 struct VoiceTab: View {
     @Environment(AppCoordinator.self) private var coordinator
+    @Environment(PremiumManager.self) private var premium
 
     @State private var voiceService = VoiceInputService()
     @State private var parser: VoiceInputParser? = nil
 
     var body: some View {
         NavigationStack {
+            if !premium.isPro {
+                PremiumLockedView(
+                    icon: "mic.fill",
+                    title: String(localized: "premium.locked.voice.title"),
+                    message: String(localized: "premium.locked.voice.message")
+                )
+                .navigationTitle(String(localized: "tab.voice"))
+                .navigationBarTitleDisplayMode(.inline)
+            } else {
             VoiceInputView(
                 voiceService: voiceService,
                 parser: parser ?? VoiceInputParser(
@@ -77,6 +87,7 @@ struct VoiceTab: View {
                 voiceService.categoriesViewModel = coordinator.categoriesViewModel
                 voiceService.accountsViewModel = coordinator.accountsViewModel
             }
+            }
         }
     }
 }
@@ -87,9 +98,19 @@ struct VoiceTab: View {
 /// Shows a centred import prompt; PDFImportCoordinator handles the rest internally.
 struct OCRTab: View {
     @Environment(AppCoordinator.self) private var coordinator
+    @Environment(PremiumManager.self) private var premium
 
     var body: some View {
         NavigationStack {
+            if !premium.isPro {
+                PremiumLockedView(
+                    icon: "doc.viewfinder",
+                    title: String(localized: "premium.locked.import.title"),
+                    message: String(localized: "premium.locked.import.message")
+                )
+                .navigationTitle(String(localized: "tab.ocr"))
+                .navigationBarTitleDisplayMode(.inline)
+            } else {
             VStack(spacing: AppSpacing.xxl) {
                 Spacer()
 
@@ -119,6 +140,7 @@ struct OCRTab: View {
             }
             .navigationTitle(String(localized: "tab.ocr"))
             .navigationBarTitleDisplayMode(.inline)
+            }
         }
     }
 }

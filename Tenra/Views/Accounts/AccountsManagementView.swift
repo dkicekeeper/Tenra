@@ -15,8 +15,10 @@ struct AccountsManagementView: View {
     let transactionsViewModel: TransactionsViewModel
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(AppCoordinator.self) private var appCoordinator
+    @Environment(PremiumManager.self) private var premium
     @Environment(\.dismiss) var dismiss
     @State private var showingAddAccount = false
+    @State private var showingPaywall = false
     @State private var editingAccount: Account?
     @State private var navigatingAccount: Account?
     @State private var accountToDelete: Account?
@@ -170,7 +172,14 @@ struct AccountsManagementView: View {
                 if mode == .normal {
                     Button {
                         HapticManager.light()
-                        showingAddAccount = true
+                        // Free tier caps regular accounts; Pro is unlimited. The
+                        // empty-state add (0 accounts) is never gated — only the
+                        // (limit+1)-th account routes to the paywall.
+                        if premium.isPro || sortedAccounts.count < PremiumConfig.freeAccountLimit {
+                            showingAddAccount = true
+                        } else {
+                            showingPaywall = true
+                        }
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -219,6 +228,10 @@ struct AccountsManagementView: View {
                 }
             }
             .navigationTransition(.zoom(sourceID: account.id, in: accountNamespace))
+        }
+        .paywallSheet(isPresented: $showingPaywall) {
+            // After unlocking Pro, continue straight to the add-account flow.
+            showingAddAccount = true
         }
         .sheet(isPresented: $showingAddAccount) {
             AccountEditView(

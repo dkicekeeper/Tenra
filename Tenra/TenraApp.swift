@@ -40,6 +40,7 @@ struct TenraApp: App {
                                 .environment(timeFilterManager)
                                 .environment(coordinator)
                                 .environment(coordinator.transactionStore)
+                                .environment(PremiumManager.shared)
                         }
                     }
                     .transition(.opacity)

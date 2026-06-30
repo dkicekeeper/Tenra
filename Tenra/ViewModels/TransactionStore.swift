@@ -268,6 +268,11 @@ final class TransactionStore {
     // Import mode flag - when true, persistence is deferred until finishImport()
     var isImporting: Bool = false
 
+    // True once loadData() has populated the full transaction set. The two-phase startup
+    // loads `accounts` (fast path) well before `transactions` (full load), so this gates the
+    // once-per-day ledger maturation against running while `transactions` is still empty.
+    @ObservationIgnored var hasCompletedInitialLoad: Bool = false
+
     // Debounce task for coalescing rapid mutations into single sync
     private var syncDebounceTask: Task<Void, Never>?
 
@@ -499,6 +504,9 @@ final class TransactionStore {
         categoriesMutationVersion &+= 1
         subcategoriesMutationVersion &+= 1
 
+        // The full transaction set is now in memory — the ledger maturation gate can safely run.
+        hasCompletedInitialLoad = true
+
         // baseCurrency is synced from settings by AppCoordinator (fast path / initialize)
         // before this point; the day-change repair rebuilds aggregates if it changed.
 
@@ -567,6 +575,16 @@ final class TransactionStore {
     @discardableResult
     func recalculateLedgerIfDayChanged(now: Date = Date(), defaults: UserDefaults = .standard) async -> Bool {
         guard !accounts.isEmpty else { return false }
+
+        // Don't stamp the once-per-day gate before the full transaction set is loaded. The
+        // two-phase startup populates `accounts` (fast path) well before `transactions` (full
+        // loadData). An early invocation — e.g. the applicationDidBecomeActive observer firing
+        // in that window — would otherwise scan an empty transaction set, find nothing matured,
+        // stamp `lastLedgerRecalcDate = today`, and short-circuit the real post-load recompute.
+        // The result: a matured recurring tx loads into history but is never folded into the
+        // realized balance until a base-currency change or post-update repair forces a full recalc.
+        guard hasCompletedInitialLoad else { return false }
+
         let last = defaults.string(forKey: Self.lastLedgerRecalcKey)
         let todayKey = LedgerMaturation.dayKey(for: now)
         guard last != todayKey else { return false }

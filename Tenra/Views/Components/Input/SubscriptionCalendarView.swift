@@ -12,6 +12,43 @@ private struct CalendarDay: Identifiable {
     let date: Date?
 }
 
+/// Pure date logic for the subscription calendar's week/month toggle. Extracted so the
+/// collapse anchoring is unit-testable (the view's @State indices are not).
+enum SubscriptionCalendarSync {
+    /// Week index to show when collapsing month → week.
+    ///
+    /// Keeps the currently-shown week when it already falls inside the displayed month, so
+    /// expand→collapse on the same month is a no-op and preserves today's week. Only when the
+    /// user swiped to a *different* month while expanded does it re-anchor — to the week
+    /// containing today if that month is the current month, otherwise the month's first day.
+    ///
+    /// Previously this always snapped to the month's first-day week, so collapsing the current
+    /// month jumped "29 июня–5 июля" → "1 июня–7 июня".
+    static func collapsedWeekIndex(
+        displayedMonth: Date,
+        currentWeekIndex: Int,
+        weeks: [Date],
+        today: Date,
+        calendar: Calendar
+    ) -> Int {
+        guard weeks.indices.contains(currentWeekIndex) else { return currentWeekIndex }
+
+        let currentWeekStart = weeks[currentWeekIndex]
+        if calendar.isDate(currentWeekStart, equalTo: displayedMonth, toGranularity: .month) {
+            return currentWeekIndex
+        }
+
+        let anchor = calendar.isDate(displayedMonth, equalTo: today, toGranularity: .month)
+            ? calendar.startOfDay(for: today)
+            : displayedMonth
+        let idx = weeks.firstIndex { weekStart in
+            guard let weekEnd = calendar.date(byAdding: .day, value: 7, to: weekStart) else { return false }
+            return weekStart <= anchor && anchor < weekEnd
+        }
+        return idx ?? currentWeekIndex
+    }
+}
+
 struct SubscriptionCalendarView: View {
     let subscriptions: [RecurringSeries]
     let baseCurrency: String
@@ -263,15 +300,19 @@ struct SubscriptionCalendarView: View {
 
     private func toggleExpanded() {
         if isExpanded {
-            // Sync: find week containing the first day of the current month
-            let monthStart = cachedMonths[currentMonthIndex]
-            let weeks = cachedWeeks
-            if let idx = weeks.firstIndex(where: { weekStart in
-                guard let weekEnd = calendar.date(byAdding: .day, value: 7, to: weekStart) else { return false }
-                return weekStart <= monthStart && monthStart < weekEnd
-            }) {
-                currentWeekIndex = idx
+            // Collapsing → week view. Keep the current week if it already belongs to the
+            // displayed month; only re-anchor when the user swiped to a different month.
+            guard cachedMonths.indices.contains(currentMonthIndex) else {
+                withAnimation(AppAnimation.gentleSpring) { isExpanded.toggle() }
+                return
             }
+            currentWeekIndex = SubscriptionCalendarSync.collapsedWeekIndex(
+                displayedMonth: cachedMonths[currentMonthIndex],
+                currentWeekIndex: currentWeekIndex,
+                weeks: cachedWeeks,
+                today: Date(),
+                calendar: calendar
+            )
         } else {
             // Sync: find month matching the current week's start date
             let weekStart = cachedWeeks[currentWeekIndex]

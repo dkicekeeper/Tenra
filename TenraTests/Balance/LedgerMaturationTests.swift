@@ -62,11 +62,15 @@ struct LedgerMaturationStoreTests {
         let repo = UserDefaultsRepository(
             userDefaults: UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
         )
-        return TransactionStore(
+        let store = TransactionStore(
             repository: repo,
             balanceCoordinator: BalanceCoordinator(repository: repo),
             recurringStore: RecurringStore(repository: repo)
         )
+        // These tests model a store after its full transaction load. The unloaded-window
+        // behaviour is covered explicitly by `doesNotStampBeforeInitialLoad`.
+        store.hasCompletedInitialLoad = true
+        return store
     }
 
     private static func freshDefaults() -> UserDefaults {
@@ -161,6 +165,28 @@ struct LedgerMaturationStoreTests {
 
         #expect(store.categoriesMutationVersion == before + 1)
         #expect(defaults.string(forKey: "lastLedgerRecalcDate") == LedgerMaturation.dayKey(for: date("2026-05-25")))
+    }
+
+    @Test("does NOT stamp the day key before the initial transaction load completes")
+    func doesNotStampBeforeInitialLoad() async {
+        // Regression: the fast-path startup loads `accounts` before `transactions`. An early
+        // invocation in that window must not stamp the once-per-day gate over an empty/partial
+        // transaction set — doing so short-circuited the real post-load recompute, leaving a
+        // matured recurring tx out of the realized balance (the "subscription charged in history
+        // but balance unchanged" bug).
+        let store = Self.makeStore()
+        store.hasCompletedInitialLoad = false      // full load not done yet
+        store.accounts = [Self.bankAccount()]      // accounts already loaded (fast path)
+        store.rebuildAccountById()
+        store.transactions = []                      // transactions still empty in the fast-path window
+        let defaults = Self.freshDefaults()
+        defaults.set("2026-05-24", forKey: "lastLedgerRecalcDate") // ran yesterday
+
+        let result = await store.recalculateLedgerIfDayChanged(now: date("2026-05-25"), defaults: defaults)
+
+        // Must NOT advance the gate, so the real post-load recompute can still run today.
+        #expect(result == false)
+        #expect(defaults.string(forKey: "lastLedgerRecalcDate") == "2026-05-24")
     }
 
     @Test("first launch (no prior key) runs the repair recompute even with no future tx")

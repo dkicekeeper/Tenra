@@ -19,6 +19,9 @@ struct AccountsManagementView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showingAddAccount = false
     @State private var showingPaywall = false
+    /// Set when the paywall was opened from the convert-to-deposit flow, so
+    /// onUnlocked resumes the conversion instead of the add-account sheet.
+    @State private var pendingConvertAccount: Account?
     @State private var editingAccount: Account?
     @State private var navigatingAccount: Account?
     @State private var accountToDelete: Account?
@@ -178,6 +181,7 @@ struct AccountsManagementView: View {
                         if premium.isPro || sortedAccounts.count < PremiumConfig.freeAccountLimit {
                             showingAddAccount = true
                         } else {
+                            pendingConvertAccount = nil  // this paywall resumes add-account
                             showingPaywall = true
                         }
                     } label: {
@@ -230,8 +234,15 @@ struct AccountsManagementView: View {
             .navigationTransition(.zoom(sourceID: account.id, in: accountNamespace))
         }
         .paywallSheet(isPresented: $showingPaywall) {
-            // After unlocking Pro, continue straight to the add-account flow.
-            showingAddAccount = true
+            // After unlocking Pro, resume the flow the paywall interrupted.
+            if let account = pendingConvertAccount {
+                pendingConvertAccount = nil
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    convertingAccount = account
+                }
+            } else {
+                showingAddAccount = true
+            }
         }
         .sheet(isPresented: $showingAddAccount) {
             AccountEditView(
@@ -287,7 +298,14 @@ struct AccountsManagementView: View {
                             let accountToConvert = account
                             editingAccount = nil
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                convertingAccount = accountToConvert
+                                // Deposits are Pro — gate the convert path like
+                                // DepositsListView gates direct creation.
+                                if premium.isPro {
+                                    convertingAccount = accountToConvert
+                                } else {
+                                    pendingConvertAccount = accountToConvert
+                                    showingPaywall = true
+                                }
                             }
                         }
                     )

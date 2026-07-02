@@ -39,6 +39,10 @@ struct PaywallSheet: ViewModifier {
                 .onRestoreCompleted { _ in
                     isPresented = false
                 }
+                // App Review guideline 3.1.2(c): the Terms of Use (EULA) + Privacy
+                // Policy links required in the purchase flow are configured in the
+                // RevenueCat paywall footer (dashboard), so no in-app footer here —
+                // a second row of links would duplicate them.
         }
     }
 }

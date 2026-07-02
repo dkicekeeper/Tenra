@@ -53,6 +53,37 @@ final class PremiumManager {
     private enum Key {
         static let grandfatherEvaluated = "tenra.premium.grandfatherEvaluated.v1"
         static let isFounder            = "tenra.premium.isFounder.v1"
+        static let softPaywallCount     = "tenra.premium.softPaywallCount.v1"
+        static let softPaywallLastShown = "tenra.premium.softPaywallLastShown.v1"
+    }
+
+    // MARK: - Soft paywall (aha-moment trigger)
+
+    /// Tuning knobs for the dismissible paywall shown on the Insights tab —
+    /// the "aha moment" where users see where their money goes (strategy §5).
+    private static let softPaywallMinTransactions = 10
+    private static let softPaywallMaxShows = 3
+    private static let softPaywallCooldown: TimeInterval = 14 * 86_400
+
+    /// True when the aha-moment paywall should be offered: non-Pro user who has
+    /// logged enough transactions to have felt the product's value, capped at
+    /// 3 lifetime shows with a 14-day cooldown so it never feels like nagging
+    /// (the contextual feature gates keep selling in between).
+    func shouldShowSoftPaywall(transactionCount: Int) -> Bool {
+        guard !isPro else { return false }
+        guard transactionCount >= Self.softPaywallMinTransactions else { return false }
+        guard defaults.integer(forKey: Key.softPaywallCount) < Self.softPaywallMaxShows else { return false }
+        if let last = defaults.object(forKey: Key.softPaywallLastShown) as? Date,
+           Date().timeIntervalSince(last) < Self.softPaywallCooldown {
+            return false
+        }
+        return true
+    }
+
+    /// Record a soft-paywall impression (call when it is actually presented).
+    func markSoftPaywallShown() {
+        defaults.set(defaults.integer(forKey: Key.softPaywallCount) + 1, forKey: Key.softPaywallCount)
+        defaults.set(Date(), forKey: Key.softPaywallLastShown)
     }
 
     private init() {}

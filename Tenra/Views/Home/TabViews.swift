@@ -22,6 +22,9 @@ struct HomeTab: View {
 struct AnalyticsTab: View {
     @Environment(AppCoordinator.self) private var coordinator
     @Environment(TimeFilterManager.self) private var timeFilterManager
+    @Environment(PremiumManager.self) private var premium
+
+    @State private var showingSoftPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -29,6 +32,21 @@ struct AnalyticsTab: View {
                 .environment(timeFilterManager)
                 .navigationTitle(String(localized: "tab.analytics"))
                 .navigationBarTitleDisplayMode(.large)
+                // Aha-moment soft paywall (strategy §5): Insights is where users
+                // first *see* where their money goes. Dismissible, ≥10 logged tx,
+                // max 3 shows / 14-day cooldown — enforced by PremiumManager.
+                .task {
+                    guard premium.shouldShowSoftPaywall(
+                        transactionCount: coordinator.transactionStore.transactions.count
+                    ) else { return }
+                    // Let the insights content render first — the paywall should
+                    // interrupt a loaded aha-screen, not an empty loading state.
+                    try? await Task.sleep(for: .milliseconds(800))
+                    guard !Task.isCancelled else { return }
+                    premium.markSoftPaywallShown()
+                    showingSoftPaywall = true
+                }
+                .paywallSheet(isPresented: $showingSoftPaywall)
         }
     }
 }

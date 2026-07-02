@@ -45,7 +45,13 @@ struct DepositsListView: View {
                     actionTitle: String(localized: "account.newDeposit", defaultValue: "New Deposit"),
                     action: {
                         HapticManager.light()
-                        showingAddDeposit = true
+                        // Deposits are a Pro feature (interest accrual + capitalization
+                        // tracking) — every add path routes non-Pro users to the paywall.
+                        if premium.isPro {
+                            showingAddDeposit = true
+                        } else {
+                            showingPaywall = true
+                        }
                     }
                 )
             } else if let coordinator = accountsViewModel.balanceCoordinator {
@@ -100,13 +106,21 @@ struct DepositsListView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     HapticManager.light()
-                    showingAddDeposit = true
+                    if premium.isPro {
+                        showingAddDeposit = true
+                    } else {
+                        showingPaywall = true
+                    }
                 } label: {
                     Image(systemName: "plus")
                 }
                 .primaryButton()
                 .accessibilityLabel(String(localized: "account.newDeposit", defaultValue: "New Deposit"))
             }
+        }
+        .paywallSheet(isPresented: $showingPaywall) {
+            // After unlocking Pro, continue straight into the add-deposit flow.
+            showingAddDeposit = true
         }
         .navigationDestination(item: $navigatingDeposit) { deposit in
             DepositDetailView(

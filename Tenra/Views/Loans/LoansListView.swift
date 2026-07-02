@@ -15,8 +15,10 @@ struct LoansListView: View {
     let balanceCoordinator: BalanceCoordinator
     @Environment(AppCoordinator.self) private var appCoordinator
     @Environment(TransactionStore.self) private var transactionStore
+    @Environment(PremiumManager.self) private var premium
 
     @State private var showingAddLoan = false
+    @State private var showingPaywall = false
     @State private var showingPayAll = false
     @State private var selectedFilter: LoanFilter = .all
     @State private var payAllError: String? = nil
@@ -55,7 +57,13 @@ struct LoansListView: View {
                     actionTitle: String(localized: "loan.addLoan", defaultValue: "Add Loan"),
                     action: {
                         HapticManager.light()
-                        showingAddLoan = true
+                        // Loans are a Pro feature (amortization + payment tracking) —
+                        // every add path routes non-Pro users to the paywall.
+                        if premium.isPro {
+                            showingAddLoan = true
+                        } else {
+                            showingPaywall = true
+                        }
                     }
                 )
             } else {
@@ -96,13 +104,21 @@ struct LoansListView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     HapticManager.light()
-                    showingAddLoan = true
+                    if premium.isPro {
+                        showingAddLoan = true
+                    } else {
+                        showingPaywall = true
+                    }
                 } label: {
                     Image(systemName: "plus")
                 }
                 .primaryButton()
                 .accessibilityLabel(String(localized: "loan.add", defaultValue: "Add Loan"))
             }
+        }
+        .paywallSheet(isPresented: $showingPaywall) {
+            // After unlocking Pro, continue straight into the add-loan flow.
+            showingAddLoan = true
         }
         .sheet(isPresented: $showingAddLoan) {
             LoanEditView(

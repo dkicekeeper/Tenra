@@ -16,6 +16,8 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     // MARK: - Dependencies (Observable - no wrappers needed!)
 
+    @Environment(PremiumManager.self) private var premium
+
     let settingsViewModel: SettingsViewModel
 
     // Legacy ViewModels (navigation only)
@@ -32,6 +34,7 @@ struct SettingsView: View {
     @State private var showingResetConfirmation = false
     @State private var showingExportSheet = false
     @State private var showingImportPicker = false
+    @State private var showingImportPaywall = false
     @State private var showingVoiceLearningResetConfirmation = false
 
     /// Cached expense-category weights for the home background preview.
@@ -180,9 +183,19 @@ struct SettingsView: View {
                 showingExportSheet = true
             },
             onImport: {
-                showingImportPicker = true
+                // CSV import is a Pro feature — mirrors the OCR-tab (PDF) gate so
+                // Settings doesn't become a free side-door into imports.
+                if premium.isPro {
+                    showingImportPicker = true
+                } else {
+                    showingImportPaywall = true
+                }
             }
         )
+        .paywallSheet(isPresented: $showingImportPaywall) {
+            // After unlocking Pro, continue straight into the import picker.
+            showingImportPicker = true
+        }
     }
 
     #if DEBUG

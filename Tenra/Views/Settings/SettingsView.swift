@@ -36,6 +36,7 @@ struct SettingsView: View {
     @State private var showingImportPicker = false
     @State private var showingImportPaywall = false
     @State private var showingVoiceLearningResetConfirmation = false
+    @State private var didCopySupportID = false
 
     /// Cached expense-category weights for the home background preview.
     /// Refreshed when this view appears so the gradient preview reflects current data.
@@ -270,6 +271,41 @@ struct SettingsView: View {
                 Text("\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"))")
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.textSecondary)
+            }
+            // Support ID = RevenueCat app user ID. Tap to copy — users share it for
+            // purchase-issue support; also lets us grant promotional entitlements
+            // to a specific person from the RevenueCat dashboard.
+            if let supportID = premium.appUserID {
+                Button {
+                    UIPasteboard.general.string = supportID
+                    HapticManager.success()
+                    withAnimation(AppAnimation.contentSpring) { didCopySupportID = true }
+                    Task {
+                        try? await Task.sleep(for: .seconds(2))
+                        withAnimation(AppAnimation.contentSpring) { didCopySupportID = false }
+                    }
+                } label: {
+                    UniversalRow(
+                        config: .settings,
+                        leadingIcon: .sfSymbol("person.text.rectangle", color: AppColors.accent, size: AppIconSize.md)
+                    ) {
+                        Text(String(localized: "settings.supportID"))
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppColors.textPrimary)
+                    } trailing: {
+                        HStack(spacing: AppSpacing.xs) {
+                            Text(didCopySupportID
+                                 ? String(localized: "settings.supportID.copied")
+                                 : String(supportID.suffix(8)))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textSecondary)
+                            Image(systemName: didCopySupportID ? "checkmark" : "doc.on.doc")
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textSecondary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
             }
         }
     }

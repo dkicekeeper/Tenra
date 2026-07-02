@@ -44,6 +44,14 @@ final class PremiumManager {
     /// treats everyone as free (safe default before the API key / package is set up).
     private(set) var isConfigured = false
 
+    /// RevenueCat anonymous app user ID. Shown in Settings → About as "Support ID"
+    /// so users can share it for purchase-issue support and promotional entitlement
+    /// grants (RevenueCat dashboard → Customers → find by this ID).
+    var appUserID: String? {
+        guard isConfigured else { return nil }
+        return Purchases.shared.appUserID
+    }
+
     // MARK: - Internals
 
     private let defaults = UserDefaults.standard

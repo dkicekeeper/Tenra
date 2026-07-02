@@ -1548,3 +1548,5 @@
 "premium.locked.voice.message" = "Add transactions by voice — just say the amount and category, Tenra fills in the rest.";
 "premium.locked.import.title" = "Statement import is a Pro feature";
 "premium.locked.import.message" = "Import PDF bank statements and CSV files automatically instead of typing each transaction.";
+"settings.supportID" = "Support ID";
+"settings.supportID.copied" = "Copied";

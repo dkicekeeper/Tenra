@@ -22,5 +22,25 @@
 			<string>%d операций</string>
 		</dict>
 	</dict>
+	<key>voiceConfirmation.confirmCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@operations@</string>
+		<key>operations</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Подтвердить %d операцию</string>
+			<key>few</key>
+			<string>Подтвердить %d операции</string>
+			<key>many</key>
+			<string>Подтвердить %d операций</string>
+			<key>other</key>
+			<string>Подтвердить %d операций</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

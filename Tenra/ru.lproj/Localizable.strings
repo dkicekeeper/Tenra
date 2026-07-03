@@ -112,12 +112,16 @@
 "settings.importData" = "Импорт данных";
 "settings.dangerZone" = "Опасные действия";
 "settings.resetData" = "Полный сброс данных";
+"settings.resetLearning" = "Сбросить обученные предпочтения";
 
 // MARK: - Alerts
 "alert.deleteAllData.title" = "Удалить все данные?";
 "alert.deleteAllData.message" = "Все операции, счета и категории будут удалены без возможности восстановления.";
 "alert.deleteAllData.confirm" = "Удалить";
 "alert.deleteAllData.cancel" = "Отмена";
+"alert.resetLearning.title" = "Сбросить голосовые предпочтения?";
+"alert.resetLearning.message" = "Парсер забудет, какой счёт вы обычно выбираете для каждой категории. Это не удалит сами операции.";
+"alert.resetLearning.confirm" = "Сбросить";
 "alert.textCopied.title" = "Текст скопирован";
 "alert.textCopied.message" = "Распознанный текст скопирован в буфер обмена.";
 "alert.parseError.title" = "Ошибка парсинга";
@@ -1257,6 +1261,13 @@
 "loan.linkPayments.search" = "Поиск по описанию или сумме";
 "loan.linkPayments.link" = "Привязать %d платежей";
 "loan.linkPayments.empty" = "Подходящие операции не найдены";
+"loan.linkPayments.error.notFound" = "Кредит не найден";
+"loan.add" = "Добавить кредит";
+"loan.markPaid" = "Отметить оплаченным";
+"loan.markUnpaid" = "Отметить неоплаченным";
+"loan.paymentFailed" = "Не удалось выполнить платёж. Попробуйте ещё раз.";
+"loan.earlyRepaymentFailed" = "Не удалось выполнить досрочное погашение. Попробуйте ещё раз.";
+"loan.payAllPartialFailed %@" = "Не удалось выполнить часть платежей: %@";
 
 // Привязка платежей к подписке
 "subscription.linkPayments.title" = "Привязать платежи";
@@ -1346,6 +1357,27 @@
 "voiceError.speechNotDetermined" = "Разрешение на распознавание речи не получено";
 "voiceError.unknownPermission" = "Неизвестная ошибка разрешений";
 "voiceError.speechBecameUnavailable" = "Распознавание речи стало недоступно";
+"voiceError.audioSessionSetup %@" = "Не удалось настроить аудиосессию: %@";
+"voiceError.recognitionRequestFailed" = "Не удалось создать запрос на распознавание";
+"voiceError.audioEngineCreateFailed" = "Не удалось создать аудиодвижок";
+"voiceError.audioEngineStartFailed %@" = "Не удалось запустить аудиодвижок: %@";
+
+// MARK: - Calculator Keypad (Accessibility)
+"calculator.add" = "Плюс";
+"calculator.subtract" = "Минус";
+"calculator.multiply" = "Умножить";
+"calculator.divide" = "Разделить";
+"calculator.separator" = "Десятичный разделитель";
+"calculator.backspace" = "Удалить";
+"calculator.clearHint" = "Удерживайте, чтобы очистить";
+
+// MARK: - CSV Import Errors
+"csvImport.error.fileAccessDenied" = "Нет доступа к файлу";
+"csvImport.error.invalidEncoding" = "Неверная кодировка файла (требуется UTF-8)";
+"csvImport.error.emptyFile" = "Файл пуст";
+"csvImport.error.noHeaders" = "В файле отсутствуют заголовки";
+"csvImport.error.invalidFormat" = "Неверный формат CSV";
+"csvImport.error.missingDependency %@" = "Отсутствует зависимость: %@";
 "voiceConfirmation.saveError" = "Ошибка сохранения";
 
 // MARK: - Progress

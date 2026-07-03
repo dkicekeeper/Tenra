@@ -13,9 +13,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%d operation</string>
+			<string>%d Transaktion</string>
 			<key>other</key>
-			<string>%d operations</string>
+			<string>%d Transaktionen</string>
 		</dict>
 	</dict>
 	<key>voiceConfirmation.confirmCount</key>
@@ -29,9 +29,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>Confirm %d operation</string>
+			<string>%d Transaktion bestätigen</string>
 			<key>other</key>
-			<string>Confirm %d operations</string>
+			<string>%d Transaktionen bestätigen</string>
 		</dict>
 	</dict>
 </dict>

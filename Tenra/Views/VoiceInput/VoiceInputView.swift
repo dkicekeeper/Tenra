@@ -432,22 +432,10 @@ struct VoiceInputView: View {
         }
     }
 
-    /// Russian-style plural for the confirm button label.
-    /// 1 → «Подтвердить», 2–4 → «Подтвердить N транзакции»,
-    /// 5+ / 11–14 → «Подтвердить N транзакций».
+    /// Plural forms live in Localizable.stringsdict (voiceConfirmation.confirmCount).
     private func confirmButtonLabel(count: Int) -> String {
         if count <= 1 { return String(localized: "voiceConfirmation.confirm") }
-        let mod10 = count % 10
-        let mod100 = count % 100
-        let suffix: String
-        if mod10 == 1, mod100 != 11 {
-            suffix = "операцию"
-        } else if (2...4).contains(mod10), !(12...14).contains(mod100) {
-            suffix = "операции"
-        } else {
-            suffix = "операций"
-        }
-        return "Подтвердить \(count) \(suffix)"
+        return String(format: NSLocalizedString("voiceConfirmation.confirmCount", comment: "Confirm button with transaction count"), count)
     }
 
     private func startRecordingOnAppear() {

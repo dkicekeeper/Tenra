@@ -111,15 +111,15 @@ struct SettingsView: View {
             Text(String(localized: "alert.deleteAllData.message"))
         }
         .alert(
-            "Сбросить голосовые предпочтения?",
+            String(localized: "alert.resetLearning.title"),
             isPresented: $showingVoiceLearningResetConfirmation
         ) {
-            Button("Сбросить", role: .destructive) {
+            Button(String(localized: "alert.resetLearning.confirm"), role: .destructive) {
                 VoiceLearningStore.shared.reset()
             }
             Button(String(localized: "alert.deleteAllData.cancel"), role: .cancel) {}
         } message: {
-            Text("Парсер забудет, какой счёт вы обычно выбираете для каждой категории. Это не удалит сами операции.")
+            Text(String(localized: "alert.resetLearning.message"))
         }
         .sheet(isPresented: $showingExportSheet) {
             ExportActivityView(transactionsViewModel: transactionsViewModel)

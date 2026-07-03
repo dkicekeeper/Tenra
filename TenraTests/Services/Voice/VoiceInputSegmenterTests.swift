@@ -49,6 +49,28 @@ final class VoiceInputSegmenterTests: XCTestCase {
         XCTAssertEqual(clauses[1], "3000 тенге на продукты")
     }
 
+    func testSplitOnGermanUndWithTwoAmounts() {
+        let clauses = VoiceInputSegmenter.segment("10 euro kaffee und 20 euro taxi")
+        XCTAssertEqual(clauses.count, 2)
+        XCTAssertEqual(clauses[0], "10 euro kaffee")
+        XCTAssertEqual(clauses[1], "20 euro taxi")
+    }
+
+    func testGermanUndWithoutAmountOnBothSidesDoesNotSplit() {
+        // "und" inside a shopping list — only one amount in the text.
+        XCTAssertEqual(
+            VoiceInputSegmenter.segment("10 euro für milch und brot"),
+            ["10 euro für milch und brot"]
+        )
+    }
+
+    func testSplitOnEnglishAndWithTwoAmounts() {
+        let clauses = VoiceInputSegmenter.segment("10 for coffee and 20 for taxi")
+        XCTAssertEqual(clauses.count, 2)
+        XCTAssertEqual(clauses[0], "10 for coffee")
+        XCTAssertEqual(clauses[1], "20 for taxi")
+    }
+
     func testSplitOnPotomWithTwoAmounts() {
         let clauses = VoiceInputSegmenter.segment("250 за кофе потом 1500 за обед")
         XCTAssertEqual(clauses.count, 2)

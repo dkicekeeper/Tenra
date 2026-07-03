@@ -1,0 +1,1584 @@
+/*
+   Localizable.strings (English)
+   AIFinanceManager
+*/
+
+// MARK: - Navigation Titles
+"navigation.home" = "Übersicht";
+"navigation.history" = "Verlauf";
+"navigation.categories" = "Kategorien";
+"navigation.settings" = "Einstellungen";
+"navigation.accounts" = "Konten";
+"navigation.subscriptions" = "Abos";
+"navigation.categoryFilter" = "Nach Kategorien filtern";
+"navigation.logoSearch" = "Logo suchen";
+"navigation.entityMapping" = "Zuordnung";
+"navigation.csvPreview" = "CSV-Vorschau";
+"navigation.transactionPreview" = "Transaktionsvorschau";
+
+// MARK: - Transaction Preview (Phase 16)
+"transactionPreview.found" = "Gefunden: %d Transaktionen";
+"transactionPreview.selectHint" = "Transaktionen für den Import auswählen";
+"transactionPreview.selectAll" = "Alle auswählen";
+"transactionPreview.deselectAll" = "Alle abwählen";
+"transactionPreview.addSelected" = "Ausgewählte hinzufügen (%d)";
+"transactionPreview.noAccount" = "Kein Konto";
+"transactionPreview.account" = "Konto";
+"navigation.statementText" = "Auszugstext";
+"navigation.voiceInput" = "Spracheingabe";
+"navigation.subcategorySearch" = "Unterkategorien suchen";
+"navigation.selectDate" = "Datum wählen";
+"navigation.selectIcon" = "Symbol wählen";
+"navigation.selectLogo" = "Logo wählen";
+"navigation.importResult" = "Importergebnis";
+
+// MARK: - Time Filters
+"timeFilter.title" = "Zeitfilter";
+"timeFilter.presets" = "Voreinstellungen";
+"timeFilter.customPeriod" = "Eigener Zeitraum";
+"timeFilter.from" = "Von";
+"timeFilter.to" = "Bis";
+"timeFilter.today" = "Heute";
+"timeFilter.yesterday" = "Gestern";
+"timeFilter.thisWeek" = "Diese Woche";
+"timeFilter.last30Days" = "Letzte 30 Tage";
+"timeFilter.thisMonth" = "Dieser Monat";
+"timeFilter.lastMonth" = "Letzter Monat";
+"timeFilter.thisYear" = "Dieses Jahr";
+"timeFilter.lastYear" = "Letztes Jahr";
+"timeFilter.allTime" = "Gesamter Zeitraum";
+"timeFilter.custom" = "Eigener Zeitraum";
+
+// MARK: - Buttons
+"button.save" = "Speichern";
+"button.cancel" = "Abbrechen";
+"button.delete" = "Löschen";
+"button.close" = "Schließen";
+"button.import" = "Importieren";
+"button.export" = "Exportieren";
+"button.copy" = "Kopieren";
+"button.paste" = "Einfügen";
+"button.add" = "Hinzufügen";
+"button.edit" = "Bearbeiten";
+"button.done" = "Fertig";
+"button.continue" = "Weiter";
+"button.ok" = "OK";
+"button.retry" = "Wiederholen";
+"button.change" = "Ändern";
+"button.select" = "Auswählen";
+"button.remove" = "Entfernen";
+"button.apply" = "Anwenden";
+
+// MARK: - Empty States
+"emptyState.noTransactions" = "Keine Transaktionen";
+"emptyState.noAccounts" = "Keine Konten";
+"emptyState.noCategories" = "Keine Kategorien";
+"emptyState.noSubcategories" = "Keine Unterkategorien";
+"emptyState.noData" = "Keine Daten verfügbar";
+"emptyState.searchNoResults" = "Nichts gefunden";
+"emptyState.startTracking" = "Fügen Sie Transaktionen hinzu, um Ihre Finanzen im Blick zu behalten";
+"emptyState.tryDifferentSearch" = "Ändern Sie Ihre Suchanfrage";
+"emptyState.tryDifferentFilters" = "Ändern Sie die Filter oder fügen Sie eine neue Transaktion hinzu";
+
+// MARK: - Settings
+"settings.title" = "Einstellungen";
+"settings.general" = "Allgemeine Einstellungen";
+"settings.baseCurrency" = "Basiswährung";
+"currency.title" = "Währung";
+"currency.popular" = "Beliebt";
+"currency.all" = "Alle Währungen";
+"currency.searchPrompt" = "Währung suchen";
+"currency.noResults.title" = "Keine Währungen gefunden";
+"currency.noResults.description" = "Versuchen Sie einen anderen Namen oder Code.";
+"currency.customize" = "Währungen anpassen";
+"currency.accountCurrencies" = "Kontowährungen";
+"currency.customizeAction" = "Anpassen...";
+"settings.wallpaper" = "Hintergrund der Übersicht";
+"settings.background" = "Hintergrund";
+"settings.background.none" = "Kein Hintergrund";
+"settings.background.gradient" = "Ausgabenfarben";
+"settings.background.photo" = "Foto";
+"settings.background.blurWallpaper" = "Hintergrund weichzeichnen";
+"settings.background.removePhoto" = "Foto entfernen";
+"settings.background.preview" = "Hintergrundvorschau";
+"settings.background.opacity" = "Farbintensität";
+"settings.background.opacityTitle" = "Ausgabenfarbe";
+"settings.dataManagement" = "Datenverwaltung";
+"settings.categories" = "Kategorien";
+"settings.subcategories" = "Unterkategorien";
+"settings.accounts" = "Konten";
+"settings.exportImport" = "Export & Import";
+"settings.exportData" = "Daten exportieren";
+"settings.importData" = "Daten importieren";
+"settings.dangerZone" = "Gefahrenzone";
+"settings.resetData" = "Alle Daten zurücksetzen";
+"settings.resetLearning" = "Gelernte Präferenzen zurücksetzen";
+
+// MARK: - Alerts
+"alert.deleteAllData.title" = "Alle Daten löschen?";
+"alert.deleteAllData.message" = "Alle Transaktionen, Konten und Kategorien werden unwiderruflich gelöscht.";
+"alert.deleteAllData.confirm" = "Löschen";
+"alert.deleteAllData.cancel" = "Abbrechen";
+"alert.resetLearning.title" = "Spracheingabe-Präferenzen zurücksetzen?";
+"alert.resetLearning.message" = "Der Parser vergisst, welches Konto Sie üblicherweise für jede Kategorie wählen. Ihre Transaktionen werden nicht gelöscht.";
+"alert.resetLearning.confirm" = "Zurücksetzen";
+"alert.textCopied.title" = "Text kopiert";
+"alert.textCopied.message" = "Der erkannte Text wurde in die Zwischenablage kopiert.";
+"alert.parseError.title" = "Analysefehler";
+"alert.importError.title" = "Importfehler";
+"alert.errorTitle" = "Fehler";
+
+// MARK: - Progress
+"progress.loadingData" = "Daten werden geladen...";
+"progress.processingPDF" = "PDF wird verarbeitet...";
+"progress.recognizingText" = "Text wird erkannt: Seite %d von %d";
+"progress.page" = "Seite %d von %d";
+"progress.parsingStatement" = "Auszug wird analysiert...";
+
+// MARK: - Errors
+"error.generic.title" = "Fehler";
+"error.loadTextFailed" = "Text konnte nicht geladen werden";
+"error.tryAgain" = "Erneut versuchen";
+"error.noTransactionsFound" = "Keine Transaktionen im erkannten Text gefunden. Stellen Sie sicher, dass der Text eine Transaktionstabelle enthält.";
+"error.noTransactionsStructured" = "Keine Transaktionen in den strukturierten Daten gefunden. Das Format des Auszugs weicht möglicherweise vom erwarteten Format ab.";
+"error.pdfExtraction" = "Text konnte nicht aus der PDF extrahiert werden. Das Dokument ist möglicherweise beschädigt oder leer.";
+"error.importFailed" = "Import fehlgeschlagen";
+"error.coredata.migrationFailed" = "Datenmigration fehlgeschlagen. Bitte starten Sie die App neu oder kontaktieren Sie den Support.";
+"error.coredata.initializationFailed" = "Lokaler Speicher konnte nicht initialisiert werden. Die App läuft im eingeschränkten Modus.";
+"error.pdfRecognitionFailed" = "Erkennungsfehler: %@";
+
+// MARK: - Accessibility
+"accessibility.accountCard.label" = "%@, Kontostand %@";
+"accessibility.accountCard.hint" = "Tippen, um Kontodetails anzuzeigen";
+
+// MARK: - Account Actions
+"account.transfer" = "Überweisung";
+"account.topUp" = "Einzahlen";
+"account.withdrawal" = "Abheben";
+
+// MARK: - Analytics
+"analytics.history" = "Verlauf";
+"analytics.planned" = "Geplant";
+"history.section.title" = "Verlauf";
+
+// MARK: - Transaction Form
+"transaction.account" = "Konto";
+"transaction.amount" = "Betrag";
+"transaction.description" = "Beschreibung";
+"transaction.date" = "Datum";
+"transaction.recurring" = "Wiederkehrend";
+"transaction.frequency" = "Häufigkeit";
+"transaction.category" = "Kategorie";
+"transaction.subcategories" = "Unterkategorien";
+"transaction.currency" = "Währung";
+
+// MARK: - Transaction Actions
+"transaction.importTransactions" = "Transaktionen importieren";
+"transaction.addNew" = "Transaktion hinzufügen";
+"transaction.edit" = "Transaktion bearbeiten";
+"transaction.new" = "Neue Transaktion";
+
+// MARK: - Search
+"search.placeholder" = "Nach Betrag, Kategorie oder Beschreibung suchen";
+"search.subcategories" = "Unterkategorien suchen";
+
+// MARK: - Modals
+"modal.recognizedText.title" = "Erkannter Text";
+"modal.recognizedText.message" = "Der Text wurde erfolgreich erkannt. Sie können Transaktionen importieren oder den Text kopieren.";
+"modal.newAccount" = "Neues Konto";
+"modal.editAccount" = "Konto bearbeiten";
+"modal.newCategory" = "Neue Kategorie";
+"modal.editCategory" = "Kategorie bearbeiten";
+"modal.newSubcategory" = "Neue Unterkategorie";
+"modal.editSubcategory" = "Unterkategorie bearbeiten";
+
+// MARK: - Common
+"common.name" = "Name";
+"common.balance" = "Kontostand";
+"common.type" = "Typ";
+"common.icon" = "Symbol";
+"common.color" = "Farbe";
+"common.logo" = "Logo";
+"common.all" = "Alle";
+"common.selected" = "Ausgewählt";
+"common.none" = "Keine";
+"common.uncategorized" = "Ohne Kategorie";
+"common.unknown" = "Unbekannt";
+"common.cancel" = "Abbrechen";
+"common.back" = "Zurück";
+"common.select" = "Auswählen";
+"common.selectAccount" = "Konto wählen";
+"common.selectCategory" = "Kategorie wählen";
+"common.selectSubcategory" = "Unterkategorie wählen";
+"common.selectColor" = "Farbe wählen";
+"common.filterBy" = "Filtern nach";
+"common.frequency" = "Häufigkeit";
+"common.startDate" = "Startdatum";
+
+// MARK: - Date Labels
+"date.today" = "Heute";
+"date.yesterday" = "Gestern";
+"date.tomorrow" = "Morgen";
+"date.selectDate" = "Datum";
+"date.choose" = "Datum wählen";
+
+// MARK: - Transaction Types
+"transactionType.income" = "Einnahme";
+"transactionType.expense" = "Ausgabe";
+"transactionType.transfer" = "Überweisung";
+
+// MARK: - Transaction Recurring
+"transaction.deleteConfirmation.title" = "Transaktion löschen?";
+"transaction.stopRecurring.title" = "Wiederholung beenden?";
+"transaction.stopRecurring.message" = "Die wiederkehrende Transaktion wird beendet. Alle zukünftigen Transaktionen werden gelöscht.";
+"transaction.stopRecurring.confirm" = "Wiederholung beenden";
+"transaction.stopRecurring.cancel" = "Abbrechen";
+"accessibility.deleteTransaction" = "Transaktion löschen";
+"accessibility.stopRecurring" = "Wiederkehrende Transaktion beenden";
+"accessibility.swipeForOptions" = "Für Optionen nach links wischen";
+
+// MARK: - Accounts Management
+"accounts.title" = "Konten";
+"account.interestToday" = "Zinsen heute: %@";
+"account.interestTodayPrefix" = "Zinsen heute: ";
+"account.nextPosting" = "Nächste Gutschrift: %@";
+"account.selectLogo" = "Logo wählen";
+"account.popularBanks" = "Beliebte Banken";
+"account.otherBanks" = "Weitere Banken";
+"account.newAccount" = "Neues Konto";
+"account.newDeposit" = "Neues Sparkonto";
+"account.namePlaceholder" = "Kontoname";
+"account.deleteTitle" = "Konto löschen";
+"account.deleteMessage" = "Was möchten Sie mit den Transaktionen von „%@“ tun?";
+"account.deleteOnlyAccount" = "Nur Konto löschen";
+"account.deleteAccountAndTransactions" = "Konto und Transaktionen löschen";
+"common.currency" = "Währung";
+"common.balancePlaceholder" = "0.00";
+"common.error" = "Fehler";
+
+// MARK: - Deposits
+"deposit.notFound" = "Sparkonto nicht gefunden";
+"deposit.title" = "Sparkonto";
+"deposit.edit" = "Bearbeiten";
+"deposit.changeRate" = "Zinssatz ändern";
+"deposit.delete" = "Sparkonto löschen";
+"deposit.deleteTitle" = "Sparkonto löschen?";
+"deposit.deleteMessage" = "Alle Daten des Sparkontos und zugehörige Transaktionen werden gelöscht.";
+"deposit.balance" = "Kontostand";
+"deposit.interestToday" = "Zinsen heute";
+"deposit.rate" = "Zinssatz";
+"deposit.rateAnnual" = "% p. a.";
+"deposit.capitalization" = "Zinskapitalisierung";
+"deposit.capitalizationEnabled" = "Aktiviert";
+"deposit.capitalizationDisabled" = "Deaktiviert";
+"deposit.postingDay" = "Gutschriftstag";
+"deposit.nextPosting" = "Nächste Gutschrift";
+"deposit.topUp" = "Einzahlen";
+"deposit.transferToAccount" = "Auf Konto überweisen";
+"deposit.topUpTitle" = "Einzahlung auf Sparkonto";
+"deposit.transferFromTitle" = "Überweisung vom Sparkonto";
+"deposit.sourceAccount" = "Quellkonto";
+"deposit.targetAccount" = "Zielkonto";
+"deposit.noOtherAccounts" = "Keine weiteren Konten für die Überweisung";
+"deposit.amount" = "Betrag";
+"deposit.description" = "Beschreibung";
+"deposit.descriptionOptional" = "Beschreibung (optional)";
+"deposit.date" = "Datum";
+"deposit.topUpDescription" = "Einzahlung auf Sparkonto";
+"deposit.transferFromDescription" = "Überweisung vom Sparkonto";
+"deposit.newRate" = "Neuer Zinssatz";
+"deposit.effectiveDate" = "Gültig ab";
+"deposit.note" = "Notiz (optional)";
+"deposit.changeRateTitle" = "Zinssatz ändern";
+"deposit.name" = "Name des Sparkontos";
+"deposit.namePlaceholder" = "Name";
+"deposit.bank" = "Bank";
+"deposit.bankName" = "Bankname";
+"deposit.bankNamePlaceholder" = "Bankname";
+"deposit.selectLogo" = "Logo wählen";
+"deposit.initialAmount" = "Anfangsbetrag";
+"deposit.interestRate" = "Zinssatz";
+"deposit.postingDayTitle" = "Tag der Zinsgutschrift";
+"deposit.dayOfMonth" = "Tag des Monats";
+"deposit.postingDayHint" = "Hat der Monat weniger Tage, erfolgt die Gutschrift am letzten Tag des Monats";
+"deposit.capitalizationTitle" = "Zinskapitalisierung";
+"deposit.enableCapitalization" = "Kapitalisierung aktivieren";
+"deposit.capitalizationHint" = "Bei aktivierter Kapitalisierung werden die Zinsen jeden Monat dem Kapital hinzugefügt";
+"deposit.new" = "Neues Sparkonto";
+"deposit.editTitle" = "Sparkonto bearbeiten";
+"deposit.interestAccrual.description" = "Zinsen";
+"deposit.interestAccrual.category" = "Zinsen";
+
+// MARK: - Categories Management
+"categories.expenseCategories" = "Ausgabenkategorien";
+"categories.incomeCategories" = "Einnahmenkategorien";
+"category.uncategorized" = "Ohne Kategorie";
+"category.deleteTitle" = "Kategorie löschen?";
+"category.deleteOnlyCategory" = "Nur Kategorie löschen";
+"category.deleteCategoryAndTransactions" = "Kategorie und Transaktionen löschen";
+"category.deleteMessage" = "Wählen Sie, was mit den Transaktionen in der Kategorie \"%@\" geschehen soll.";
+"category.namePlaceholder" = "Kategoriename";
+"category.tapToSelect" = "Zum Auswählen tippen";
+"category.subcategories" = "Unterkategorien";
+"category.addSubcategory" = "Unterkategorie hinzufügen";
+"category.manageSubcategories" = "Unterkategorien verwalten";
+
+// MARK: - Subcategories Management
+"subcategory.new" = "Neue Unterkategorie";
+"subcategory.namePlaceholder" = "Name der Unterkategorie";
+"subcategory.usageCount" = "%d-mal verwendet";
+"subcategory.notUsed" = "Noch nicht verwendet";
+"subcategory.reorder" = "Unterkategorien";
+"subcategory.sort.title" = "Sortieren";
+"subcategory.sort.alphabetical" = "Alphabetisch";
+"subcategory.sort.lastUsed" = "Zuletzt verwendet";
+"subcategory.sort.usageCount" = "Am häufigsten verwendet";
+
+// MARK: - Subcategory Search (2026-02-25)
+"subcategorySearch.titleSingle" = "Unterkategorie wählen";
+"subcategorySearch.searchPrompt" = "Unterkategorie finden oder erstellen";
+"subcategorySearch.unlink" = "Trennen";
+
+// MARK: - Icon Picker
+"iconPicker.title" = "Bild wählen";
+"iconPicker.iconsTab" = "Symbole";
+"iconPicker.logosTab" = "Logos";
+"iconPicker.frequentlyUsed" = "Häufig verwendet";
+"iconPicker.foodAndDrinks" = "Essen & Trinken";
+"iconPicker.transport" = "Transport";
+"iconPicker.shopping" = "Einkaufen";
+"iconPicker.entertainment" = "Unterhaltung";
+"iconPicker.health" = "Gesundheit";
+"iconPicker.homeAndUtilities" = "Wohnen & Nebenkosten";
+"iconPicker.moneyAndFinance" = "Geld & Finanzen";
+"iconPicker.banks" = "Banken";
+"iconPicker.streaming" = "Streaming & Unterhaltung";
+"iconPicker.productivity" = "Produktivität & Cloud";
+"iconPicker.social" = "Soziales & Kommunikation";
+"iconPicker.fitness" = "Fitness & Gesundheit";
+"iconPicker.gaming" = "Gaming";
+"iconPicker.devTools" = "Entwicklertools & KI";
+"iconPicker.services" = "Dienste";
+"iconPicker.popularBanks" = "Beliebte Banken";
+"iconPicker.otherBanks" = "Weitere Banken";
+"iconPicker.searchOnline" = "Markenlogo suchen...";
+"iconPicker.noLogo" = "Kein Logo";
+"iconPicker.searching" = "Suche läuft...";
+"iconPicker.searchResults" = "Suchergebnisse";
+
+// MARK: - Category Filter
+"categoryFilter.allCategories" = "Alle Kategorien";
+"categoryFilter.noExpenseCategories" = "Keine Ausgabenkategorien";
+"categoryFilter.noIncomeCategories" = "Keine Einnahmenkategorien";
+"categoryFilter.deletedCategories" = "Gelöscht";
+
+// MARK: - CSV
+"csv.emptyCell" = "Leer";
+
+// MARK: - Accessibility Labels
+"accessibility.voiceInput" = "Spracheingabe";
+"accessibility.voiceInputHint" = "Transaktion per Sprache erfassen";
+"accessibility.importStatement" = "Kontoauszug importieren";
+"accessibility.importStatementHint" = "Transaktionen aus PDF- oder CSV-Datei importieren";
+"accessibility.calendar" = "Kalender";
+"accessibility.calendarHint" = "Zeitraum zum Filtern der Transaktionen wählen";
+"accessibility.settings" = "Einstellungen";
+"accessibility.settingsHint" = "App-Einstellungen öffnen";
+
+// MARK: - Quick Add Transaction / Add Transaction Modal
+"quickAdd.account" = "Konto";
+"quickAdd.amount" = "Betrag";
+"quickAdd.description" = "Beschreibung";
+"quickAdd.descriptionPlaceholder" = "Beschreibung (optional)";
+"quickAdd.recurring" = "Wiederkehrende Transaktion";
+"quickAdd.makeRecurring" = "Wiederkehrend";
+"quickAdd.frequency" = "Häufigkeit";
+"quickAdd.subcategories" = "Unterkategorien";
+"quickAdd.searchSubcategories" = "Unterkategorien suchen";
+"quickAdd.searchAndAddSubcategories" = "Unterkategorien suchen und hinzufügen";
+"quickAdd.selectDate" = "Datum wählen";
+"quickAdd.done" = "Fertig";
+"quickAdd.cancel" = "Abbrechen";
+
+// MARK: - Validation Errors
+"error.validation.enterAmount" = "Geben Sie einen gültigen Betrag ein";
+"error.validation.amountGreaterThanZero" = "Der Betrag muss größer als null sein";
+"error.validation.selectAccount" = "Wählen Sie ein Konto";
+"error.validation.accountNotFound" = "Konto nicht gefunden";
+
+// MARK: - Voice Input
+"voice.title" = "Spracheingabe";
+"voice.speak" = "Sprechen ...";
+"voice.recording" = "Aufnahme läuft ...";
+"voice.error" = "Fehler";
+"voice.errorMessage" = "Aufnahme konnte nicht gestartet werden";
+"voice.emptyText" = "Es wurde kein Text erkannt. Bitte versuchen Sie es erneut.";
+"voice.ok" = "OK";
+"voice.vadToggle" = "Auto-Stopp bei Stille";
+"voice.vadDescription" = "Die Aufnahme stoppt automatisch nach 2,5 Sekunden Stille";
+
+// MARK: - Voice Input Confirmation
+"voiceConfirmation.title" = "Vorgang prüfen";
+"voiceConfirmation.confirm" = "Bestätigen";
+"voiceConfirmation.type" = "Vorgangsart";
+"voiceConfirmation.noAccounts" = "Keine verfügbaren Konten";
+"voiceConfirmation.selectCategory" = "Kategorie wählen";
+"voiceConfirmation.warning.accountNotFound" = "Konto nicht gefunden — Standard ausgewählt";
+"voiceConfirmation.warning.accountNotRecognized" = "Konto nicht erkannt — Standard ausgewählt";
+"voiceConfirmation.warning.enterAmount" = "Betrag eingeben";
+"voiceConfirmation.warning.enterValidAmount" = "Geben Sie einen gültigen Betrag ein";
+"voiceConfirmation.warning.selectAccount" = "Wählen Sie ein Konto";
+"voiceConfirmation.warning.accountNotSelected" = "Kein Konto gewählt — Standard wird verwendet";
+"voiceConfirmation.warning.categoryNotRecognized" = "Kategorie nicht erkannt — Standard ausgewählt";
+"voiceConfirmation.warning.selectCategory" = "Kategorie wählen";
+"voiceConfirmation.warning.categoryNotSelected" = "Keine Kategorie gewählt — Standard wird verwendet";
+"voiceConfirmation.warning.categoryNotFound" = "Kategorie konnte nicht gefunden werden";
+
+// MARK: - Subscriptions
+"subscriptions.title" = "Abos";
+"subscriptions.empty" = "Keine Abos";
+"subscriptions.emptyDescription" = "Fügen Sie ein Abo hinzu, um wiederkehrende Zahlungen zu verfolgen";
+"subscriptions.addSubscription" = "Abo hinzufügen";
+"subscriptions.deleteConfirmTitle" = "Abo löschen?";
+"subscriptions.deleteConfirmMessage" = "Alle Abo-Daten und zugehörigen Transaktionen werden gelöscht.";
+"subscriptions.delete" = "Löschen";
+"subscriptions.deleteOnlySubscription" = "Nur Abo löschen";
+"subscriptions.deleteSubscriptionAndTransactions" = "Abo und Transaktionen löschen";
+"subscriptions.edit" = "Bearbeiten";
+"subscriptions.pause" = "Pausieren";
+"subscriptions.resume" = "Fortsetzen";
+"subscriptions.transactionHistory" = "Transaktionsverlauf";
+"subscriptions.category" = "Kategorie";
+"subscriptions.frequency" = "Häufigkeit";
+"subscriptions.nextCharge" = "Nächste Abbuchung";
+"subscriptions.account" = "Konto";
+"subscriptions.status" = "Status";
+"subscriptions.status.active" = "Aktiv";
+"subscriptions.status.paused" = "Pausiert";
+"subscriptions.status.archived" = "Archiviert";
+"subscriptions.status.unknown" = "Unbekannt";
+
+// Notification Permission
+"notification.permission.title" = "Erinnerungen aktivieren?";
+"notification.permission.description" = "Lassen Sie sich über anstehende Abo-Abbuchungen benachrichtigen, damit Sie keine wichtige Zahlung verpassen";
+"notification.permission.allow" = "Mitteilungen erlauben";
+"notification.permission.skip" = "Nicht jetzt";
+"notification.subscription.reminderTitle" = "Abo-Erinnerung";
+"notification.subscription.reminderBody %@ %@ %lld" = "Das Abo \"%1$@\" wird in %3$lld Tagen mit %2$@ abgebucht";
+"reminder.daysBefore.custom %lld" = "%lld Tage vorher";
+
+// Active count (EmptyState)
+"emptyState.noActiveSubscriptions" = "Keine aktiven Abos";
+"subscriptions.activeCount" = "%lld aktiv";
+
+// Next charge inline text (format string for SubscriptionCard)
+"subscriptions.nextChargeOn" = "Nächste Abbuchung: %@";
+
+// Frequency display names
+"frequency.daily" = "Täglich";
+"frequency.weekly" = "Wöchentlich";
+"frequency.monthly" = "Monatlich";
+"frequency.quarterly" = "Vierteljährlich";
+"frequency.yearly" = "Jährlich";
+
+// Subscription Form
+"subscription.basicInfo" = "Grundinformationen";
+"subscription.namePlaceholder" = "Name des Abos";
+"subscription.reminders" = "Erinnerungen";
+"subscription.scheduleSection" = "Zeitplan";
+"subscription.newTitle" = "Neues Abo";
+"subscription.editTitle" = "Abo bearbeiten";
+
+// Reminders
+"reminder.dayBefore.one" = "1 Tag vorher";
+"reminder.daysBefore.3" = "3 Tage vorher";
+"reminder.daysBefore.7" = "7 Tage vorher";
+"reminder.daysBefore.30" = "30 Tage vorher";
+
+// Account messages
+"account.noAccountsAvailable" = "Keine Konten verfügbar";
+"account.selectAccount" = "Konto wählen";
+
+// Category messages
+"category.selectCategory" = "Kategorie wählen";
+
+// Error messages
+"error.subscriptionNameRequired" = "Geben Sie einen Abo-Namen ein";
+"error.invalidAmount" = "Geben Sie einen gültigen Betrag ein";
+"error.categoryRequired" = "Wählen Sie eine Kategorie";
+"error.accountRequired" = "Wählen Sie ein Zahlungskonto";
+"error.accountNameRequired" = "Geben Sie einen Kontonamen ein";
+"error.categoryNameRequired" = "Geben Sie einen Kategorienamen ein";
+
+// MARK: - Budget Management
+"budget.amount" = "Budgetbetrag";
+"budget.period" = "Zeitraum";
+"budget.weekly" = "Wöchentlich";
+"budget.monthly" = "Monatlich";
+"yearly" = "Jährlich";
+"budget_reset_day" = "Zurücksetzen am Tag";
+"budget_reset_day_description" = "Der Tag des Monats, an dem das Budget zurückgesetzt wird (1–31)";
+"budget_settings" = "Budget-Einstellungen";
+"current_budget" = "Aktuelles Budget";
+"current_settings" = "Aktuelle Einstellungen";
+"remove_budget" = "Budget entfernen";
+"set_budget_for" = "Budget festlegen für";
+"save" = "Sichern";
+"cancel" = "Abbrechen";
+"category.noBudgetSet" = "Kein Budget festgelegt";
+
+// MARK: - Calendar
+"calendar.upcomingPayments" = "Anstehende Zahlungen";
+"calendar.month" = "Monat";
+"calendar.halfYear" = "6 Monate";
+"calendar.year" = "Jahr";
+"calendar.noUpcomingPayments" = "Keine anstehenden Zahlungen";
+"calendar.currentMonth" = "Aktueller Monat";
+
+// MARK: - Transaction Forms
+"transactionForm.amount" = "Betrag";
+"transactionForm.description" = "Beschreibung";
+"transactionForm.descriptionPlaceholder" = "Beschreibung (optional)";
+"transactionForm.category" = "Kategorie";
+"transactionForm.selectCategory" = "Kategorie wählen";
+"transactionForm.noCategories" = "Keine Kategorien verfügbar. Erstellen Sie zuerst Kategorien.";
+"transactionForm.transfer" = "Überweisung";
+"transactionForm.topUp" = "Aufladen";
+"transactionForm.toAccount" = "Auf Konto";
+"transactionForm.fromAccount" = "Von Konto";
+"transactionForm.fromHeader" = "Von";
+"transactionForm.toHeader" = "An";
+"transactionForm.noAccountsForTransfer" = "Keine anderen Konten für eine Überweisung";
+"transactionForm.enterPositiveAmount" = "Geben Sie einen positiven Betrag ein";
+"transactionForm.selectCategoryIncome" = "Einnahmen-Kategorie wählen";
+"transactionForm.cannotTransferToSame" = "Überweisung auf dasselbe Konto nicht möglich";
+"transactionForm.accountNotFound" = "Konto nicht gefunden";
+"transactionForm.selectTargetAccount" = "Bitte wählen Sie ein Zielkonto";
+"transactionForm.depositTopUp" = "Sparkonto aufladen";
+"transactionForm.depositWithdrawal" = "Vom Sparkonto abheben";
+"transactionForm.accountTopUp" = "Konto aufladen";
+"transactionForm.editTransaction" = "Transaktion bearbeiten";
+"transactionForm.recurring" = "Wiederkehrend";
+"transactionForm.makeRecurring" = "Als wiederkehrend festlegen";
+"transactionForm.searchSubcategories" = "Unterkategorien suchen";
+"transactionForm.addSubcategory" = "Unterkategorie hinzufügen";
+"transactionForm.createSubcategory" = "\"%@\" erstellen";
+"transactionForm.searchAndAddSubcategories" = "Unterkategorien suchen und hinzufügen";
+"transactionForm.searchOrCreateSubcategory" = "Unterkategorie finden oder erstellen";
+// MARK: - Recurring Transactions Errors
+"recurring.error.seriesNotFound" = "Wiederkehrende Serie nicht gefunden";
+"recurring.error.invalidFrequency" = "Ungültige Häufigkeit ausgewählt";
+"recurring.error.invalidAmount" = "Der Betrag muss größer als null sein";
+"recurring.error.invalidStartDate" = "Ungültiges Startdatum";
+"recurring.error.missingAccount" = "Bitte wählen Sie ein Konto";
+"recurring.error.emptyDescription" = "Der Name darf nicht leer sein";
+"recurring.error.emptyCurrency" = "Währung ist erforderlich";
+"recurring.error.missingSubscriptionStatus" = "Abo-Status ist erforderlich";
+"recurring.error.invalidReminderOffsets" = "Erinnerungstage müssen positiv sein";
+"recurring.validation.amountRequired" = "Betrag ist erforderlich";
+"recurring.validation.descriptionRequired" = "Beschreibung ist erforderlich";
+
+
+// MARK: - CSV Import
+"category.other" = "Sonstiges";
+"csvImport.error.missingRequiredColumn" = "Erforderliche Spalte fehlt";
+"csvImport.error.invalidDateFormat" = "Ungültiges Datumsformat in Zeile %d: %@";
+"csvImport.error.invalidAmount" = "Ungültiger Betrag in Zeile %d: %@";
+"csvImport.error.invalidType" = "Ungültiger Transaktionstyp in Zeile %d: %@";
+"csvImport.error.emptyValue" = "Leerer Wert in Zeile %d, Spalte '%@'";
+"csvImport.error.duplicateTransaction" = "Doppelte Transaktion in Zeile %d";
+"csvImport.error.fileAccessDenied" = "Dateizugriff verweigert";
+"csvImport.error.invalidEncoding" = "Ungültige Dateikodierung (UTF-8 erforderlich)";
+"csvImport.error.emptyFile" = "Die Datei ist leer";
+"csvImport.error.noHeaders" = "Keine Spaltenüberschriften in der Datei gefunden";
+"csvImport.error.invalidFormat" = "Ungültiges CSV-Format";
+"csvImport.error.persistenceFailed" = "Die importierten Daten konnten nicht in der Datenbank gespeichert werden.";
+"csvImport.progress.parsing" = "CSV-Datei wird analysiert ...";
+"csvImport.progress.validating" = "Zeilen werden geprüft ...";
+"csvImport.progress.importing" = "Transaktionen werden importiert ...";
+"csvImport.progress.finalizing" = "Import wird abgeschlossen ...";
+"csvImport.result.imported" = "%d importiert";
+"csvImport.result.skipped" = "%d übersprungen";
+"csvImport.result.duplicates" = "%d Duplikate";
+"csvImport.result.createdAccounts" = "%d Konten erstellt";
+"csvImport.result.createdCategories" = "%d Kategorien erstellt";
+"csvImport.result.createdSubcategories" = "%d Unterkategorien erstellt";
+"csvImport.result.duration" = "Dauer";
+"csvImport.result.speed" = "Geschwindigkeit";
+"csvImport.result.title" = "Import abgeschlossen";
+"csvImport.button.cancel" = "Import abbrechen";
+"csvImport.button.retry" = "Erneut versuchen";
+"csvImport.button.viewErrors" = "Fehler anzeigen";
+"csvImport.preview.title" = "CSV-Vorschau";
+"csvImport.preview.rows" = "Zeilen";
+"csvImport.preview.columns" = "Spalten";
+"csvImport.mapping.title" = "Spaltenzuordnung";
+"csvImport.mapping.required" = "Pflichtfelder";
+"csvImport.mapping.optional" = "Optionale Felder";
+"csvImport.mapping.date" = "Datum";
+"csvImport.mapping.type" = "Typ";
+"csvImport.mapping.amount" = "Betrag";
+"csvImport.mapping.currency" = "Währung";
+"csvImport.mapping.account" = "Konto";
+"csvImport.mapping.none" = "Keine";
+"csvImport.entityMapping.title" = "Datenzuordnung";
+"csvImport.entityMapping.accounts" = "Konten";
+"csvImport.entityMapping.categories" = "Kategorien";
+"csvImport.entityMapping.autoCreate" = "Wird automatisch erstellt";
+"csvImport.preview.fileInfo" = "Dateiinformationen";
+"csvImport.preview.headersTitle" = "Spalten in der Datei";
+"csvImport.preview.dataPreview" = "Datenvorschau (erste %d Zeilen)";
+"csvImport.preview.empty" = "(leer)";
+"csvImport.mapping.category" = "Kategorie";
+"csvImport.mapping.targetAccount" = "Zielkonto";
+"csvImport.mapping.targetCurrency" = "Zielwährung";
+"csvImport.mapping.targetAmount" = "Zielbetrag";
+"csvImport.mapping.subcategories" = "Unterkategorien";
+"csvImport.mapping.note" = "Notiz";
+"csvImport.mapping.dateFormat" = "Datumsformat";
+"csvImport.mapping.subcategoriesSeparator" = "Trennzeichen für Unterkategorien";
+"csvImport.mapping.separator.semicolon" = "(Semikolon)";
+"csvImport.mapping.separator.comma" = "(Komma)";
+"csvImport.mapping.separator.pipe" = "(senkrechter Strich)";
+"csvImport.result.performance" = "Leistung";
+"csvImport.result.successRate" = "Erfolgsquote";
+"csvImport.result.errors" = "Fehler";
+"csvImport.result.moreErrors" = "... und %d weitere Fehler";
+
+// MARK: - CSV Entity Mapping
+"csvMapping.title" = "Datenzuordnung";
+"csvMapping.accountsSection" = "Kontenzuordnung";
+"csvMapping.categoriesSection" = "Kategoriezuordnung";
+"csvMapping.incomeCategoriesSection" = "Zuordnung der Einnahmen-Kategorien";
+"csvMapping.notSelected" = "Nicht ausgewählt";
+"csvMapping.selectAccount %@" = "Konto für \"%@\" wählen";
+"csvMapping.createAccount %@" = "Neues Konto \"%@\" erstellen";
+"csvMapping.accountMappingTitle" = "Kontenzuordnung";
+"csvMapping.categoryLabel" = "Kategorie";
+"csvMapping.incomeCategoryLabel" = "Einnahmen-Kategorie";
+"csvMapping.selectCategory %@ %@" = "%1$@ für \"%2$@\" wählen";
+"csvMapping.createCategory %@ %@" = "Neue %1$@ \"%2$@\" erstellen";
+"csvMapping.categoryMappingTitle" = "Kategoriezuordnung";
+"csvMapping.incomeCategoryMappingTitle" = "Zuordnung der Einnahmen-Kategorien";
+
+// MARK: - Settings Errors (Phase 1 - 2026-02-04)
+"error.settings.loadFailed" = "Einstellungen konnten nicht geladen werden: %@";
+"error.settings.saveFailed" = "Einstellungen konnten nicht gesichert werden: %@";
+"error.settings.corruptedData" = "Die Einstellungsdaten sind beschädigt";
+"error.settings.migrationFailed" = "Einstellungen konnten nicht migriert werden";
+"error.settings.invalidCurrency" = "Ungültige Währung: %@";
+"error.settings.wallpaperNotFound" = "Hintergrundbild-Datei nicht gefunden: %@";
+"error.settings.wallpaperCorrupted" = "Hintergrundbild-Datei ist beschädigt: %@";
+"error.settings.invalidLanguage" = "Ungültige Sprache: %@";
+
+// MARK: - Wallpaper Errors
+"error.wallpaper.compressionFailed" = "Hintergrundbild konnte nicht komprimiert werden";
+"error.wallpaper.fileTooLarge" = "Hintergrundbild-Datei ist zu groß (max. 10 MB)";
+"error.wallpaper.insufficientSpace" = "Nicht genügend Speicherplatz";
+"error.wallpaper.fileNotFound" = "Hintergrundbild-Datei nicht gefunden";
+"error.wallpaper.corruptedFile" = "Hintergrundbild-Datei ist beschädigt";
+"error.wallpaper.invalidFormat" = "Ungültiges Bildformat";
+"error.wallpaper.saveFailed" = "Hintergrundbild konnte nicht gesichert werden: %@";
+"error.wallpaper.loadFailed" = "Hintergrundbild konnte nicht geladen werden: %@";
+
+// MARK: - Data Reset Errors
+"error.reset.failed" = "Daten konnten nicht zurückgesetzt werden: %@";
+"error.recalculation.failed" = "Kontostände konnten nicht neu berechnet werden: %@";
+"error.reset.viewModelNotAvailable" = "Erforderliches View-Model nicht verfügbar: %@";
+
+// MARK: - Export Errors
+"error.export.noData" = "Keine Daten zum Exportieren";
+"error.export.failed" = "Daten konnten nicht exportiert werden: %@";
+"error.export.fileWriteFailed" = "Exportdatei konnte nicht geschrieben werden: %@";
+"error.export.insufficientSpace" = "Nicht genügend Speicherplatz für den Export";
+
+// MARK: - Alert Titles (Settings)
+"alert.recalculateBalances.title" = "Kontostände neu berechnen?";
+"alert.recalculateBalances.message" = "Alle Kontostände werden anhand der Transaktionen von Grund auf neu berechnet. Verwenden Sie dies, wenn Kontostände falsch angezeigt werden.";
+"alert.recalculateBalances.confirm" = "Neu berechnen";
+"alert.selectWallpaper.title" = "Hintergrundbild auswählen";
+"alert.removeWallpaper.title" = "Hintergrundbild entfernen?";
+"alert.removeWallpaper.message" = "Das aktuelle Hintergrundbild wird von der Übersicht entfernt";
+"alert.exportSuccess.title" = "Export erfolgreich";
+"alert.exportSuccess.message" = "Daten exportiert nach %@";
+"alert.importSuccess.title" = "Import erfolgreich";
+"alert.importSuccess.message" = "%d Transaktionen importiert";
+
+// MARK: - Settings Labels (Additional)
+"settings.recalculateBalances" = "Kontostände neu berechnen";
+"settings.wallpaperHistory" = "Hintergrundbild-Verlauf";
+"settings.recentCurrencies" = "Zuletzt verwendete Währungen";
+"settings.exportProgress" = "Export läuft ... %d%%";
+"settings.importProgress" = "Import läuft ... %d%%";
+
+// MARK: - Success Messages
+"success.settings.currencyUpdated" = "Währung erfolgreich aktualisiert";
+"success.settings.wallpaperUpdated" = "Hintergrundbild erfolgreich aktualisiert";
+"success.settings.wallpaperRemoved" = "Hintergrundbild erfolgreich entfernt";
+"success.export.completed" = "Daten erfolgreich exportiert";
+"success.reset.completed" = "Alle Daten wurden zurückgesetzt";
+"success.recalculation.completed" = "Kontostände erfolgreich neu berechnet";
+
+// MARK: - Import Errors (Phase 2)
+"error.import.coordinatorNotAvailable" = "Import-Koordinator nicht verfügbar";
+"error.import.viewModelsNotAvailable" = "Erforderliche View-Models nicht verfügbar";
+
+// MARK: - Import Progress (Phase 2)
+"progress.importing" = "Import läuft ...";
+
+// MARK: - TransactionStore Errors (Phase 7 - 2026-02-05)
+"error.transaction.invalidAmount" = "Ungültiger Transaktionsbetrag";
+"error.transaction.accountNotFound" = "Quellkonto nicht gefunden";
+"error.transaction.targetAccountNotFound" = "Zielkonto nicht gefunden";
+"error.transaction.categoryNotFound" = "Kategorie nicht gefunden";
+"error.transaction.notFound" = "Transaktion nicht gefunden";
+"error.transaction.idMismatch" = "Transaktions-ID stimmt nicht überein";
+"error.transaction.cannotRemoveRecurring" = "Wiederkehrende Serie kann nicht von der Transaktion entfernt werden";
+"error.transaction.cannotDeleteDepositInterest" = "Zins-Transaktion eines Sparkontos kann nicht gelöscht werden";
+"error.transaction.persistenceFailed" = "Transaktion konnte nicht gesichert werden";
+
+// MARK: - Currency Conversion
+"currency.conversion.approximate" = "≈";
+"currency.error.conversionFailed" = "Währungsumrechnung fehlgeschlagen. Bitte prüfen Sie Ihre Internetverbindung.";
+"currency.error.ratesUnavailable" = "Wechselkurse konnten nicht geladen werden. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.";
+"currency.error.sourceConversionFailed" = "Währung für das Quellkonto konnte nicht umgerechnet werden. Prüfen Sie Ihre Internetverbindung.";
+"currency.error.targetConversionFailed" = "Währung für das Zielkonto konnte nicht umgerechnet werden. Prüfen Sie Ihre Internetverbindung.";
+"currency.error.crossConversionFailed" = "Währung zwischen den Konten konnte nicht umgerechnet werden. Prüfen Sie Ihre Internetverbindung.";
+
+// MARK: - Icon Styles
+"iconStyle.shape.circle" = "Kreis";
+"iconStyle.shape.roundedSquare" = "Abgerundetes Quadrat";
+"iconStyle.shape.square" = "Quadrat";
+"iconStyle.tint.monochrome" = "Einfarbig";
+"iconStyle.tint.hierarchical" = "Hierarchisch";
+"iconStyle.tint.palette" = "Palette";
+"iconStyle.tint.original" = "Originalfarben";
+"iconStyle.preset.categoryIcon" = "Kategorie-Symbol";
+"iconStyle.preset.bankLogo" = "Bank-Logo";
+"iconStyle.preset.serviceLogo" = "Dienst-Logo";
+"iconStyle.preset.placeholder" = "Platzhalter";
+"recurring.never" = "Nie";
+"reminder.none" = "Nie";
+
+// MARK: - Filter Buttons (Phase 14)
+"filter.allAccounts" = "Alle Konten";
+"filter.allCategories" = "Alle Kategorien";
+"filter.allSubcategories" = "Alle Unterkategorien";
+"filter.categoriesCount" = "%d Kategorien";
+
+// MARK: - Animated Input (Phase 16)
+"input.amountPlaceholder" = "0";
+"input.titleHint" = "Tippen, um den Namen zu bearbeiten";
+"input.balanceHint" = "Tippen, um den Kontostand zu bearbeiten";
+
+// MARK: - Insights (Phase 17)
+"insights.title" = "Einblicke";
+"insights.all" = "Alle";
+"insights.spending" = "Ausgaben";
+"insights.income" = "Einnahmen";
+"insights.expenses" = "Ausgaben";
+"insights.budget" = "Budget";
+"insights.recurring" = "Wiederkehrend";
+"insights.cashFlow" = "Cashflow";
+"insights.netFlow" = "Netto-Cashflow";
+"insights.availableBalance" = "Verfügbarer Kontostand";
+"insights.ratio" = "Verhältnis Einnahmen/Ausgaben";
+"insights.incomeVsExpense.coverage" = "Einnahmen decken %@ der Ausgaben";
+"insights.topMonths.best" = "Top 10 der besten Monate";
+"insights.topMonths.worst" = "Top 10 der schwächsten Monate";
+"insights.loading" = "Ihre Finanzen werden analysiert ...";
+"insights.emptyState.title" = "Noch keine Einblicke";
+"insights.emptyState.description" = "Fügen Sie einige Transaktionen hinzu, um Einblicke in Ihre Finanzen zu erhalten";
+"insights.noInsightsForFilter" = "Keine Einblicke für diese Kategorie";
+"insights.topCategory" = "Top-Ausgabenkategorie";
+"insights.ofTotal" = "der Gesamtausgaben";
+"insights.spendingSpike" = "Ungewöhnliche Ausgaben erkannt";
+"insights.monthOverMonth" = "Monatliche Ausgabenveränderung";
+"insights.monthOverMonth.week" = "Wöchentliche Ausgaben";
+"insights.monthOverMonth.month" = "Monatliche Ausgabenveränderung";
+"insights.monthOverMonth.quarter" = "Quartalsausgaben";
+"insights.monthOverMonth.year" = "Jährliche Ausgaben";
+"insights.avgDailySpending" = "Durchschnittliche Tagesausgaben";
+"insights.days" = "Tage";
+"insights.incomeGrowth" = "Einnahmen-Trend";
+"insights.incomeVsExpense" = "Einnahmen vs. Ausgaben";
+"insights.vsPreviousPeriod" = "ggü. Vorperiode";
+"insights.vsAverage" = "ggü. Durchschnitt";
+"insights.budgetOver" = "Budget überschritten";
+"insights.budgetUnder" = "Im Budget";
+"insights.budgetHeadroom" = "Budget-Spielraum";
+"insights.projectedOverspend" = "Prognostizierte Überschreitung";
+"insights.categoriesOverBudget" = "%d Kategorien über Budget";
+"insights.categoriesAtRisk" = "%d Kategorien gefährdet";
+"insights.categoriesUnderBudget" = "%d Kategorien im Plan";
+"insights.categoriesUnit" = "Kategorien";
+"insights.totalRecurring" = "Monatliche wiederkehrende Kosten";
+"insights.totalRecurring.week" = "Wöchentlich wiederkehrend";
+"insights.totalRecurring.month" = "Monatliche wiederkehrende Kosten";
+"insights.totalRecurring.quarter" = "Vierteljährlich wiederkehrend";
+"insights.totalRecurring.year" = "Jährlich wiederkehrend";
+"insights.activeRecurring" = "%d aktive wiederkehrende Zahlungen";
+"insights.perMonth" = "pro Monat";
+"insights.perWeek" = "pro Woche";
+"insights.perQuarter" = "pro Quartal";
+"insights.perYear" = "pro Jahr";
+"insights.netCashFlow" = "Netto-Cashflow";
+"insights.bestMonth" = "Bester Monat";
+"insights.bestPeriod.week" = "Beste Woche";
+"insights.bestPeriod.month" = "Bester Monat";
+"insights.bestPeriod.quarter" = "Bestes Quartal";
+"insights.bestPeriod.year" = "Bestes Jahr";
+"insights.bestPeriod.allTime" = "Beste Periode";
+"insights.worstMonth" = "Schlechtester Monat";
+"insights.worstPeriod.week" = "Schlechteste Woche";
+"insights.worstPeriod.month" = "Schlechtester Monat";
+"insights.worstPeriod.quarter" = "Schlechtestes Quartal";
+"insights.worstPeriod.year" = "Schlechtestes Jahr";
+"insights.worstPeriod.allTime" = "Schlechteste Periode";
+"insights.projectedBalance" = "Prognostizierter Kontostand";
+"insights.in30Days" = "in 30 Tagen";
+"insights.recurringAndExpenses" = "Wiederkehrend + durchschnittliche Ausgaben";
+"insights.projected" = "prognostizierte Änderung";
+"insights.currentBalance" = "Aktueller Kontostand";
+"insights.cashFlowTrend" = "Cashflow-Trend";
+"insights.breakdown" = "Aufschlüsselung";
+"insights.monthlyBreakdown" = "Monatliche Aufschlüsselung";
+"insights.breakdown.week" = "Wöchentliche Aufschlüsselung";
+"insights.breakdown.month" = "Monatliche Aufschlüsselung";
+"insights.breakdown.quarter" = "Vierteljährliche Aufschlüsselung";
+"insights.breakdown.year" = "Jährliche Aufschlüsselung";
+"insights.noExpenses" = "Keine Ausgaben";
+"insights.noExpensesForPeriod" = "Keine Ausgaben in diesem Zeitraum";
+"insights.swipeHint" = "Wischen Sie, um andere Zeiträume anzuzeigen";
+"insights.other" = "Sonstiges";
+"insights.noSubcategory" = "Keine Unterkategorie";
+"insights.spendingTrend" = "Ausgaben-Trend";
+"insights.subcategories" = "Unterkategorien";
+"insights.periodComparison" = "Periodenvergleich";
+"insights.daysLeft" = "%d Tage übrig";
+
+// Granularity picker
+"insights.granularity.week" = "Nach Wochen";
+"insights.granularity.month" = "Nach Monaten";
+"insights.granularity.quarter" = "Nach Quartalen";
+"insights.granularity.year" = "Nach Jahren";
+"insights.granularity.allTime" = "Gesamter Zeitraum";
+"insights.granularity.week.short" = "Woche";
+"insights.granularity.month.short" = "Monat";
+"insights.granularity.quarter.short" = "Quartal";
+"insights.granularity.year.short" = "Jahr";
+"insights.granularity.allTime.short" = "Alle";
+"insights.bucket.week.label" = "Letzte 7 Tage";
+"insights.summary.windowTotalsLabel" = "Über das gesamte Diagrammfenster";
+"insights.formula.value.months" = "%.1f Mon.";
+"insights.formula.value.days" = "%d Tage";
+"insights.formula.savingsRate.title" = "Sparquote";
+"insights.formula.savingsRate.heroLabel" = "Von Ihrem Einkommen behalten Sie";
+"insights.formula.savingsRate.formulaHeader" = "So wird es berechnet";
+"insights.formula.savingsRate.row.period" = "Zeitraum";
+"insights.formula.savingsRate.row.income" = "Einnahmen";
+"insights.formula.savingsRate.row.expenses" = "Ausgaben";
+"insights.formula.savingsRate.row.saved" = "Gespart (Einnahmen − Ausgaben)";
+"insights.formula.savingsRate.row.rate" = "Sparquote";
+"insights.formula.savingsRate.explainer" = "Welcher Anteil Ihres Einkommens den Monat übersteht. Eine höhere Quote verschafft Ihnen mehr Freiheit — Flexibilität in schwachen Monaten, schnellere Zielerreichung und einen echten Notgroschen.";
+"insights.formula.savingsRate.rec.good" = "Sie sparen mehr als 20%% — behalten Sie die Routine bei und erwägen Sie, den Überschuss in ein langfristiges Ziel zu lenken.";
+"insights.formula.savingsRate.rec.fair" = "Solide — aber mit 20%% würden Sie jeden Monat %@ zusätzlich sparen. Kürzen Sie wiederkehrende oder einmalige Kategorien, die gewachsen sind.";
+"insights.formula.savingsRate.rec.low" = "Unter 10%% bleibt kein Puffer. Streben Sie mindestens %@ mehr pro Monat an — beginnen Sie mit der größten frei verfügbaren Kategorie.";
+"insights.formula.emergencyFund.title" = "Notgroschen";
+"insights.formula.emergencyFund.heroLabel" = "Monate an Ausgaben, die Ihr Kontostand abdeckt";
+"insights.formula.emergencyFund.formulaHeader" = "So wird es berechnet";
+"insights.formula.emergencyFund.row.balance" = "Gesamter Kontostand";
+"insights.formula.emergencyFund.row.avgExpenses" = "Ø monatliche Ausgaben (letzte 3 Mon.)";
+"insights.formula.emergencyFund.row.monthsCovered" = "Abgedeckte Monate";
+"insights.formula.emergencyFund.explainer" = "Wie lange Ihre Konten die regulären Ausgaben decken, wenn das Einkommen morgen ausbliebe. 3+ Monate sind das Minimum, das die meisten Finanzplaner empfehlen; 6 Monate sind ein komfortables Polster.";
+"insights.formula.emergencyFund.rec.good" = "Sie haben die 3-Monats-Schwelle überschritten. Erwägen Sie, den Überschuss auf einem besser verzinsten Konto zu parken oder in langfristige Ziele zu lenken.";
+"insights.formula.emergencyFund.rec.gap" = "Um 3 Monate Deckung zu erreichen, fehlen noch %@. Auch kleine monatliche Beiträge summieren sich — beginnen Sie mit dem, was Ihre Sparquote zulässt.";
+"insights.formula.spendingForecast.title" = "Ausgabenprognose zum Monatsende";
+"insights.formula.spendingForecast.heroLabel" = "Prognostizierte Gesamtausgaben diesen Monat";
+"insights.formula.spendingForecast.formulaHeader" = "So wird es berechnet";
+"insights.formula.spendingForecast.row.spentSoFar" = "Bisher diesen Monat ausgegeben";
+"insights.formula.spendingForecast.row.avgDaily" = "Ø Tagesausgaben (letzte 30 Tage)";
+"insights.formula.spendingForecast.row.daysLeft" = "Verbleibende Tage";
+"insights.formula.spendingForecast.row.projectedRest" = "Prognose für den Rest des Monats";
+"insights.formula.spendingForecast.row.total" = "Prognostizierte Summe";
+"insights.formula.spendingForecast.explainer" = "Bisher ausgegeben + (Ø täglich × verbleibende Tage) + ausstehende wiederkehrende Zahlungen. Wiederkehrendes wird anteilig auf die verbleibenden Tage gerechnet, damit ein Abo am 28. nicht doppelt zählt, wenn heute der 25. ist.";
+"insights.formula.spendingForecast.rec.overrun" = "Sie steuern darauf zu, die Einnahmen um %@ zu überschreiten. Prüfen Sie frei verfügbare Ausgaben oder verschieben Sie optionale Käufe auf den nächsten Monat.";
+"insights.formula.spendingForecast.rec.onTrack" = "Die Prognose lässt ein Polster von %@. Sichern Sie es, indem Sie ungeplante Käufe vermeiden — oder legen Sie es jetzt zurück.";
+"insights.formula.spendingForecast.rec.noIncome" = "In diesem Monat wurden noch keine Einnahmen erfasst — die Prognose ist rein informativ.";
+"insights.formula.balanceRunway.title" = "Kontostand-Reichweite";
+"insights.formula.balanceRunway.heroLabel" = "Monate, bis der Kontostand bei aktuellem Verbrauch aufgebraucht ist";
+"insights.formula.balanceRunway.heroLabel.growing" = "Durchschnittlicher Monatsüberschuss";
+"insights.formula.balanceRunway.formulaHeader" = "So wird es berechnet";
+"insights.formula.balanceRunway.row.balance" = "Aktueller Kontostand";
+"insights.formula.balanceRunway.row.avgIncome" = "Ø monatliche Einnahmen (3 Mon.)";
+"insights.formula.balanceRunway.row.avgExpenses" = "Ø monatliche Ausgaben (3 Mon.)";
+"insights.formula.balanceRunway.row.burn" = "Monatlicher Verbrauch (Ausgaben − Einnahmen)";
+"insights.formula.balanceRunway.row.netFlow" = "Durchschnittlicher Nettofluss";
+"insights.formula.balanceRunway.row.runway" = "Reichweite";
+"insights.formula.balanceRunway.explainer" = "Kontostand ÷ monatlicher Verbrauch. Die 3-Monats-Schwelle entspricht einem gesunden Notgroschen; unter 1 Monat leert schon ein einziger schlechter Gehaltszyklus den Puffer.";
+"insights.formula.balanceRunway.explainer.growing" = "Die Einnahmen übersteigen die Ausgaben, Ihr Kontostand wächst also. Der Hauptwert ist Ihr durchschnittlicher Monatsüberschuss — bei diesem Tempo reicht Ihr Kontostand unbegrenzt.";
+"insights.formula.balanceRunway.rec.growing" = "Sie sind im Plus — lenken Sie den Überschuss in Ziele, Schuldenabbau oder besser verzinste Rücklagen, statt ihn liegen zu lassen.";
+"insights.formula.balanceRunway.rec.long" = "Mehr als 3 Monate Reichweite — Sie sind gut gepolstert. Erwägen Sie, überschüssiges Geld langfristiger anzulegen.";
+"insights.formula.balanceRunway.rec.short" = "Unter 3 Monaten. Senken Sie den Verbrauch um ca. %@/Monat, um einen 3-Monats-Puffer zu erreichen; beginnen Sie mit der größten frei verfügbaren Kategorie.";
+"insights.formula.balanceRunway.rec.critical" = "Weniger als ein Monat Reichweite — schließen Sie die Lücke dringend. Schon das Pausieren einer großen wiederkehrenden Zahlung verschafft Tage.";
+"insights.formula.yearOverYear.title" = "Ausgaben im Jahresvergleich";
+"insights.formula.yearOverYear.heroLabel" = "Veränderung ggü. demselben Monat im Vorjahr";
+"insights.formula.yearOverYear.formulaHeader" = "So wird es berechnet";
+"insights.formula.yearOverYear.row.thisMonth" = "Dieser Monat";
+"insights.formula.yearOverYear.row.lastYear" = "Derselbe Monat im Vorjahr";
+"insights.formula.yearOverYear.row.absDelta" = "Absolute Veränderung";
+"insights.formula.yearOverYear.row.delta" = "Prozentuale Veränderung";
+"insights.formula.yearOverYear.explainer" = "Vergleicht die Gesamtausgaben des aktuellen Monats mit demselben Monat vor einem Jahr. Nützlich, um echte Verschiebungen von saisonalen Schwankungen zu unterscheiden — im Dezember wird immer mehr ausgegeben, aber ist *dieser* Dezember teurer als der letzte?";
+"insights.formula.yearOverYear.rec.down" = "Die Ausgaben sind im Jahresvergleich deutlich gesunken. Falls unbeabsichtigt, prüfen Sie, welche Kategorien zurückgingen — manchmal versteckt sich hier eine verpasste wiederkehrende Zahlung.";
+"insights.formula.yearOverYear.rec.up" = "Die Ausgaben sind um %@ gestiegen. Vergleichen Sie die Top-Kategorien beider Monate — ein neues Abo, eine zusätzliche Mietzahlung oder ein großer Einkauf erklären den Sprung oft.";
+"insights.formula.yearOverYear.rec.flat" = "Geringe Veränderung ggü. dem Vorjahr — Ihr Ausgabenmuster ist stabil. Beobachten Sie die Kennzahl nächsten Monat weiter, um Verschiebungen zu erkennen.";
+"insights.formula.projectedBalance.title" = "Prognostizierter Kontostand";
+"insights.formula.projectedBalance.heroLabel" = "Geschätzter Kontostand am Ende des Zeitraums";
+"insights.formula.projectedBalance.formulaHeader" = "So wird es berechnet";
+"insights.formula.projectedBalance.row.currentBalance" = "Aktueller Kontostand";
+"insights.formula.projectedBalance.row.recurringNet" = "Wiederkehrender Nettobetrag im Zeitraum";
+"insights.formula.projectedBalance.row.avgExpenses" = "Ø nicht wiederkehrende Ausgaben im Zeitraum";
+"insights.formula.projectedBalance.row.horizon" = "Horizont";
+"insights.formula.projectedBalance.row.projected" = "Prognostizierter Kontostand";
+"insights.formula.projectedBalance.explainer" = "Aktueller Kontostand + (wiederkehrender Nettobetrag − Ø nicht wiederkehrende Ausgaben), skaliert auf den gewählten Zeitraum. Einfache lineare Projektion — sie nimmt an, dass die letzten 3 Perioden repräsentativ sind. Als Frühwarnung nutzen, nicht als präzise Prognose.";
+"insights.formula.projectedBalance.rec.growing" = "Die Projektion zeigt nach oben — das aktuelle Muster erhöht den Kontostand über den Zeitraum.";
+"insights.formula.projectedBalance.rec.dropping" = "Die Projektion sinkt über den Zeitraum um %@. Finden Sie heraus, welche Kategorien die Ausgaben nach oben getrieben haben — dort wirkt ein Eingriff am stärksten.";
+"insights.wealth.growth.compare" = "%@ vs. %@";
+
+"insights.subscriptionGrowth.compareAgo" = "ggü. vor %d Monaten";
+"insights.duplicateSubscriptions.subtitle" = "%d mögliche(s) Paar(e)";
+"insights.formula.subscriptionGrowth.title" = "Abo-Wachstum";
+"insights.formula.subscriptionGrowth.heroLabel" = "Veränderung der monatlichen wiederkehrenden Ausgaben";
+"insights.formula.subscriptionGrowth.formulaHeader" = "So wird es berechnet";
+"insights.formula.subscriptionGrowth.row.lookback" = "Vergleichsfenster";
+"insights.formula.subscriptionGrowth.row.previous" = "Summe damals (monatliches Äquivalent)";
+"insights.formula.subscriptionGrowth.row.current" = "Summe heute (monatliches Äquivalent)";
+"insights.formula.subscriptionGrowth.row.addedCount" = "Seitdem hinzugefügte Abos";
+"insights.formula.subscriptionGrowth.row.delta" = "Veränderung";
+"insights.formula.subscriptionGrowth.explainer" = "Summiert das monatliche Äquivalent aller aktiven Abos und vergleicht es mit derselben Summe nur aus den Abos, die zu Beginn des Vergleichsfensters bereits existierten. Das Fenster skaliert mit dem gewählten Zeitraster.";
+"insights.formula.subscriptionGrowth.rec.growing" = "Die wiederkehrenden Ausgaben sind um %@/Monat gewachsen. Prüfen Sie die neuen Abos auf Dienste, die Sie nicht aktiv nutzen — wiederkehrende Bindungen summieren sich über Jahre.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "Sie haben die wiederkehrenden Ausgaben gesenkt — bleiben Sie diszipliniert, wenn neue Dienste locken. Lenken Sie den freigewordenen Cashflow in Rücklagen oder Schuldenabbau.";
+"insights.formula.subscriptionGrowth.rec.stable" = "Die wiederkehrenden Ausgaben blieben etwa gleich. Das Portfolio ist stabil; prüfen Sie es regelmäßig, damit ungenutzte Dienste nicht stillschweigend bleiben.";
+
+"insights.formula.categoryTrend.title" = "Kategorie-Trend";
+"insights.formula.categoryTrend.heroLabel" = "Am stärksten steigende Ausgabenkategorie";
+"insights.formula.categoryTrend.formulaHeader" = "Monatliche Ausgaben zuletzt";
+"insights.formula.categoryTrend.row.month" = "Monat";
+"insights.formula.categoryTrend.row.delta" = "Letzter vs. Vormonat";
+"insights.formula.categoryTrend.explainer" = "Wir durchsuchen die monatlichen Kategoriesummen im Vergleichsfenster (skaliert mit dem Zeitraster) und zeigen die Kategorie mit dem längsten ununterbrochenen monatlichen Anstieg. Nützlich, um schleichende Zuwächse zu erkennen, bevor sie das Budget sprengen.";
+"insights.formula.categoryTrend.rec" = "%@ steigt seit %d Monaten in Folge. Vergleichen Sie die neuesten Transaktionen mit früheren Monaten — meist erklärt eine einzelne wiederkehrende Transaktion oder eine geänderte Gewohnheit die Serie.";
+"insights.granularity.prev.week" = "ggü. Vorwoche";
+"insights.granularity.prev.month" = "ggü. Vormonat";
+"insights.granularity.prev.quarter" = "ggü. Vorquartal";
+"insights.granularity.prev.year" = "ggü. Vorjahr";
+
+// Wealth card
+"insights.wealth" = "Kapital";
+"insights.wealth.title" = "Angespartes Kapital";
+"insights.wealth.subtitle" = "Gesamter Kontostand über alle Konten";
+"insights.wealth.accounts" = "Konten";
+"insights.wealthGrowth" = "Vermögensänderung";
+
+// Savings
+"insights.savings" = "Sparen";
+"insights.savingsRate" = "Sparquote";
+"insights.emergencyFund" = "Notgroschen";
+"insights.monthsCovered" = "%d Monate abgedeckt";
+"insights.months" = "Monate";
+
+// Spending
+"insights.categoryTrend" = "Ausgaben-Trend";
+"insights.categoryTrend.risingMonths" = "Steigt seit %d Monaten";
+"insights.subscriptionGrowth" = "Abo-Wachstum";
+"insights.vsThreeMonthsAgo" = "ggü. vor 3 Monaten";
+
+// Forecasting
+"insights.forecasting" = "Prognose";
+"insights.spendingForecast" = "Monatliche Ausgabenprognose";
+"insights.balanceRunway" = "Kontostand-Reichweite";
+"insights.balanceRunway.months" = "Monate Reichweite";
+"insights.yearOverYear" = "Jahresvergleich";
+"insights.incomeSourceBreakdown" = "Einnahmequellen";
+
+// Health Score & Behavioral
+"insights.healthScore" = "Finanzen";
+"insights.healthGrade.excellent" = "Ausgezeichnet";
+"insights.healthGrade.good" = "Gut";
+"insights.healthGrade.fair" = "Befriedigend";
+"insights.healthGrade.needsAttention" = "Braucht Aufmerksamkeit";
+"insights.duplicateSubscriptions.title" = "Mögliche doppelte Abos";
+"insights.duplicateSubscriptions.subtitle" = "mögliche Duplikate erkannt";
+"insights.accountDormancy.title" = "Inaktives Konto erkannt";
+"insights.accountDormancy.subtitle" = "Konten seit 30+ Tagen inaktiv";
+"insights.dormant.accounts" = "Inaktive Konten";
+
+// MARK: - Tab Bar
+"tab.home" = "Übersicht";
+"tab.analytics" = "Analyse";
+"tab.finances" = "Finanzen";
+"tab.settings" = "Einstellungen";
+"tab.voice" = "Stimme";
+"tab.ocr" = "Import";
+"tab.add" = "Hinzufügen";
+"tab.close" = "Schließen";
+
+// MARK: - Finances
+"finances.title" = "Finanzen";
+"finances.accounts.title" = "Konten";
+"finances.accounts.totalLabel" = "Gesamter Kontostand";
+"finances.accounts.count" = "%lld Konten";
+"finances.accounts.empty" = "Keine Konten";
+"finances.deposits.title" = "Sparkonten";
+"finances.deposits.count" = "%lld Sparkonten";
+"finances.deposits.empty" = "Keine Sparkonten";
+"deposit.listTitle" = "Sparkonten";
+"deposit.emptyTitle" = "Keine Sparkonten";
+"deposit.emptyDescription" = "Fügen Sie ein Sparkonto hinzu, um Zinsen und Kapitalisierung zu verfolgen";
+"account.balanceSection" = "Kontostand";
+"account.includeInBalance" = "In Kontostand einbeziehen";
+"account.includeInBalanceHint" = "Dieses Konto im Gesamtkontostand und in der Analyse berücksichtigen.";
+"finances.categories.title" = "Kategorien";
+"finances.categories.count" = "%lld Kategorien";
+"finances.categories.empty" = "Keine Kategorien";
+"finances.subcategories.title" = "Unterkategorien";
+"finances.subcategories.count" = "%lld Unterkategorien";
+"finances.subcategories.linkedTo" = "In %lld Kategorien";
+"finances.subcategories.empty" = "Keine Unterkategorien";
+
+// MARK: - Loans
+"loan.listTitle" = "Kredite";
+"loan.filterAll" = "Alle";
+"loan.filterCredits" = "Kredite";
+"loan.filterInstallments" = "Ratenkäufe";
+"loan.filter" = "Filter";
+"loan.emptyTitle" = "Keine Kredite";
+"loan.emptyDescription" = "Fügen Sie Ihre Kredite und Ratenkäufe hinzu, um Zahlungen und Fortschritt zu verfolgen";
+"loan.totalDebt" = "Gesamtschulden";
+"loan.monthlyTotal" = "Monatlich";
+"loan.activeCount" = "%d aktive Kredite";
+"loan.typeAnnuityShort" = "Kredit";
+"loan.typeInstallmentShort" = "Ratenkauf";
+"loan.of" = "von";
+"loan.remainingShort" = "%d noch offen";
+"loan.notFound" = "Kredit nicht gefunden";
+"loan.title" = "Kredit";
+"loan.edit" = "Kredit bearbeiten";
+"loan.changeRate" = "Zinssatz ändern";
+"loan.earlyRepayment" = "Vorzeitige Rückzahlung";
+"loan.history" = "Zahlungsverlauf";
+"loan.actions" = "Kredit-Aktionen";
+"loan.delete" = "Kredit löschen";
+"loan.deleteTitle" = "Kredit löschen?";
+"loan.deleteMessage" = "Alle Kreditdaten und der Zahlungsverlauf werden gelöscht.";
+"loan.paidOff" = "Abbezahlt";
+"loan.remainingPrincipal" = "Restschuld";
+"loan.nextPayment" = "Nächste Zahlung: %@";
+"loan.currentPaymentBreakdown" = "Aufschlüsselung der aktuellen Rate";
+"loan.principalPortion" = "Tilgung";
+"loan.interestPortion" = "Zinsen";
+"loan.noInterest" = "Ratenkauf — keine Zinsen";
+"loan.stats" = "Statistik";
+"loan.originalAmount" = "Ursprünglicher Betrag";
+"loan.interestRate" = "Zinssatz";
+"loan.annual" = "jährlich";
+"loan.totalInterestPaid" = "Gezahlte Zinsen";
+"loan.projectedTotalInterest" = "Gesamtzinsen (prognostiziert)";
+"loan.term" = "Laufzeit";
+"loan.termValue" = "%d Monate";
+"loan.paymentsMade" = "Geleistete Zahlungen";
+"loan.paymentsRemaining" = "Verbleibend";
+"loan.paymentsRemainingValue" = "%d Zahlungen";
+"loan.endDate" = "Enddatum";
+"loan.earlyRepayments" = "Vorzeitige Rückzahlungen";
+"loan.amortizationSchedule" = "Tilgungsplan";
+"loan.noSchedule" = "Kein Tilgungsplan verfügbar";
+"loan.showAllPayments" = "Alle %d Zahlungen anzeigen";
+"loan.interestShort" = "Zinsen: %@";
+"loan.makeEarlyRepayment" = "Vorzeitige Rückzahlung";
+"loan.convertTitle" = "In Kredit umwandeln";
+"loan.editTitle" = "Kredit bearbeiten";
+"loan.newTitle" = "Neuer Kredit";
+"loan.nameHeader" = "Name";
+"loan.namePlaceholder" = "z. B. Autokredit";
+"loan.bankHeader" = "Bank";
+"loan.bankLabel" = "Bank";
+"loan.bankPlaceholder" = "Name der Bank";
+"loan.typeHeader" = "Kreditart";
+"loan.typePicker" = "Art";
+"loan.typeAnnuity" = "Annuität (Kredit)";
+"loan.typeInstallment" = "Ratenkauf";
+"loan.installmentHint" = "Ratenkauf = 0% Zinsen, gleiche Raten";
+"loan.principalHeader" = "Kreditbetrag";
+"loan.principalPlaceholder" = "Gesamter Kreditbetrag";
+"loan.interestRateHeader" = "Zinssatz";
+"loan.interestRateLabel" = "Zinssatz (Jahr)";
+"loan.rateAnnualSuffix" = "% jährlich";
+"loan.termHeader" = "Laufzeit";
+"loan.termPlaceholder" = "Anzahl der Monate";
+"loan.months" = "Monate";
+"loan.paymentDayHeader" = "Zahltag";
+"loan.paymentDay" = "Tag des Monats";
+"loan.paymentDayHint" = "Tag des Monats, an dem die Rate fällig ist";
+"loan.startDateHeader" = "Startdatum";
+"loan.startDate" = "Startdatum des Kredits";
+"loan.repaymentAmount" = "Rückzahlungsbetrag";
+"loan.amountPlaceholder" = "Betrag";
+"loan.remainingBalance" = "Restschuld: %@";
+"loan.repaymentDate" = "Datum";
+"loan.date" = "Datum";
+"loan.repaymentType" = "Rückzahlungsstrategie";
+"loan.strategy" = "Strategie";
+"loan.reduceTerm" = "Laufzeit verkürzen";
+"loan.reducePayment" = "Rate senken";
+"loan.reduceTermHint" = "Monatsrate beibehalten, früher fertig";
+"loan.reducePaymentHint" = "Laufzeit beibehalten, niedrigere Monatsrate";
+"loan.impact" = "Auswirkung";
+"loan.note" = "Notiz";
+"loan.notePlaceholder" = "Optionale Notiz";
+"loan.defaultTagging" = "Standardkategorie";
+"loan.defaultTaggingHint" = "Füllt das Zahlungsformular vor. Die zuletzt verwendete Kategorie früherer Zahlungen hat Vorrang.";
+"loan.subcategoryHeader" = "Unterkategorie";
+"loan.subcategoryEmpty" = "Wählen Sie oben eine Kategorie, um Unterkategorien hinzuzufügen";
+"loan.noDefaultCategory" = "Keine Kategorie";
+"loan.noDefaultSubcategory" = "Keine Unterkategorie";
+"loan.earlyRepaymentTitle" = "Vorzeitige Rückzahlung";
+"loan.termReduction" = "Laufzeit verkürzt um";
+"loan.monthsValue" = "%d Monate";
+"loan.newEndDate" = "Neues Enddatum";
+"loan.paymentReduction" = "Rate gesenkt um";
+"loan.newMonthlyPayment" = "Neue Monatsrate";
+"loan.newRate" = "Neuer Zinssatz";
+"loan.effectiveDate" = "Gültig ab";
+"loan.rateChangeImpact" = "Auswirkung";
+"loan.paymentChange" = "Änderung";
+"loan.enterRateForPreview" = "Zinssatz eingeben, um die Auswirkung zu sehen";
+"loan.changeRateTitle" = "Zinssatz ändern";
+"loan.payment.description" = "Kreditzahlung";
+
+// Loans Phase 5
+"loan.typeLockedHint" = "Die Kreditart kann nach der Erstellung nicht geändert werden";
+"loan.makePayment" = "Zahlung leisten";
+"loan.paymentTitle" = "Kreditzahlung";
+"loan.paymentAmount" = "Zahlungsbetrag";
+"loan.sourceAccount" = "Quellkonto";
+"loan.selectSourceAccount" = "Konto für die Zahlung wählen";
+"loan.scheduledPayment" = "Geplant: %@";
+"loan.noSourceAccounts" = "Keine Konten verfügbar";
+"loan.payAll" = "Alle zahlen";
+"loan.payAllTitle" = "Alle Kredite zahlen";
+"loan.payAllTotal" = "Gesamtzahlung";
+"loan.payAllConfirm" = "Alle zahlen";
+
+// MARK: - Icon Picker (new categories)
+"iconPicker.localServices" = "Lokale Dienste";
+"iconPicker.telecom" = "Telekommunikation";
+"iconPicker.cis" = "GUS-Dienste";
+"iconPicker.suggestions" = "Vorschläge";
+"iconPicker.onlineSearch" = "Online";
+"iconPicker.brandDomainHint" = "Marken-Domain eingeben (z. B. netflix.com)";
+
+// MARK: - Settings (extras)
+"settings.experiments" = "Experimente";
+"settings.debug.relaunchOnboarding" = "Onboarding neu starten";
+"settings.notificationDebug" = "Benachrichtigungs-Debug";
+
+// MARK: - Settings (About)
+"settings.about" = "Über die App";
+"settings.privacyPolicy" = "Datenschutzerklärung";
+"settings.termsOfUse" = "Nutzungsbedingungen";
+"settings.version" = "Version";
+
+// MARK: - Voice (extras)
+"voice.openSettings" = "Einstellungen öffnen";
+
+// MARK: - PDF Errors
+"pdf.error.invalidDocument" = "PDF-Dokument konnte nicht geöffnet werden. Stellen Sie sicher, dass die Datei ein gültiges PDF ist.";
+"pdf.error.noTextFound" = "Text konnte nicht aus dem PDF extrahiert werden. Das Dokument ist möglicherweise beschädigt oder leer.";
+"pdf.error.unsupportedFormat" = "Nicht unterstütztes PDF-Format.";
+"pdf.error.ocr %@" = "Fehler bei der Texterkennung: %@";
+
+// MARK: - iCloud Sync
+"settings.cloud" = "Backups";
+"settings.cloud.sync" = "iCloud-Synchronisierung";
+"settings.cloud.status.synced" = "Synchronisiert";
+"settings.cloud.status.syncing" = "Wird synchronisiert...";
+"settings.cloud.status.initialSync" = "Erste Synchronisierung";
+"settings.cloud.status.initialSyncMessage" = "Dies kann einige Minuten dauern";
+"settings.cloud.status.error" = "Synchronisierungsfehler";
+"settings.cloud.status.disabled" = "Deaktiviert";
+"settings.cloud.status.noAccount" = "Melden Sie sich in den Einstellungen bei iCloud an";
+"settings.cloud.lastSync" = "Letzte Synchronisierung: %@";
+"settings.cloud.changes" = "%d gesendet · %d empfangen";
+"settings.cloud.backups" = "Backups";
+"settings.cloud.createBackup" = "Backup erstellen";
+"settings.cloud.backupCreated" = "Backup erfolgreich erstellt";
+"settings.cloud.restore" = "Wiederherstellen";
+"settings.cloud.restoreSuccess" = "Daten erfolgreich wiederhergestellt";
+"settings.cloud.restoring" = "Wird wiederhergestellt…";
+"settings.cloud.restoringSubtitle" = "Bitte schließen Sie die App nicht";
+"settings.cloud.delete" = "Löschen";
+"settings.cloud.storage" = "Speicher";
+"settings.cloud.storageUsed" = "%@ von %@";
+"settings.cloud.backupMetadata" = "%d Konten · %d Transaktionen · %@";
+"settings.cloud.iCloud.toggle" = "Backups in iCloud speichern";
+"settings.cloud.iCloud.footer" = "Backups werden in Ihrem iCloud Drive gespeichert und sind auf Ihren anderen Geräten verfügbar.";
+"settings.cloud.iCloud.unavailable" = "Melden Sie sich in den Einstellungen bei iCloud an, um Backups in iCloud Drive zu speichern.";
+"settings.cloud.iCloud.movedToICloud" = "Backups nach iCloud verschoben";
+"settings.cloud.iCloud.movedToLocal" = "Backups auf dieses Gerät verschoben";
+"settings.cloud.tapToRestoreHint" = "Tippen Sie auf ein Backup, um es wiederherzustellen. Zum Löschen nach links wischen.";
+"alert.restore.title" = "Backup wiederherstellen?";
+"alert.restore.message" = "Alle aktuellen Daten werden durch das Backup vom %@ ersetzt.";
+"alert.restore.confirm" = "Wiederherstellen";
+"alert.disableSync.title" = "iCloud-Synchronisierung deaktivieren?";
+"alert.disableSync.message" = "Daten werden nur lokal auf diesem Gerät gespeichert.";
+"alert.disableSync.confirm" = "Deaktivieren";
+
+// Backup errors
+"error.backup.noActiveStore" = "Keine aktive Datenbank gefunden";
+"error.backup.copyFailed" = "Backup konnte nicht kopiert werden";
+"error.backup.incompatibleVersion" = "Backup-Version ist inkompatibel";
+"error.backup.iCloudUnavailable" = "iCloud ist nicht verfügbar. Melden Sie sich in den Einstellungen bei iCloud an und versuchen Sie es erneut.";
+
+// MARK: - Loans (Form)
+"loan.addLoan" = "Kredit hinzufügen";
+"loan.amountLabel" = "Betrag";
+"loan.detailsSection" = "Kreditdetails";
+"loan.noteLabel" = "Notiz";
+"loan.payAllLoans" = "Kredite";
+"loan.paymentSection" = "Zahlung";
+"loan.rateLabel" = "Jahreszins";
+"loan.scheduleSection" = "Tilgungsplan";
+"loan.termLabel" = "Laufzeit (Monate)";
+"loan.error.exceedsRemaining" = "Betrag übersteigt die Restschuld";
+"loan.error.invalidAmount" = "Geben Sie einen gültigen Betrag ein";
+"loan.error.invalidRate" = "Geben Sie einen gültigen Zinssatz ein";
+"loan.error.invalidTerm" = "Geben Sie eine gültige Laufzeit ein";
+"loan.error.noSourceAccount" = "Wählen Sie ein Quellkonto";
+"loan.linkPayments" = "Zahlungen verknüpfen";
+"loan.linkPayments.title" = "Zahlungen verknüpfen";
+"loan.linkPayments.selected" = "%d ausgewählt";
+"loan.linkPayments.selectedWithAmount" = "%d ausgewählt · %@";
+"loan.linkPayments.search" = "Nach Beschreibung oder Betrag suchen";
+"loan.linkPayments.link" = "%d Zahlungen verknüpfen";
+"loan.linkPayments.empty" = "Keine passenden Transaktionen";
+"loan.linkPayments.error.notFound" = "Kredit nicht gefunden";
+"loan.add" = "Kredit hinzufügen";
+"loan.markPaid" = "Als bezahlt markieren";
+"loan.markUnpaid" = "Als unbezahlt markieren";
+"loan.paymentFailed" = "Zahlung fehlgeschlagen. Bitte versuchen Sie es erneut.";
+"loan.earlyRepaymentFailed" = "Vorzeitige Tilgung fehlgeschlagen. Bitte versuchen Sie es erneut.";
+"loan.payAllPartialFailed %@" = "Einige Zahlungen sind fehlgeschlagen: %@";
+
+// Subscription Link Payments
+"subscription.linkPayments.title" = "Zahlungen verknüpfen";
+"subscription.linkPayments.search" = "Nach Beschreibung oder Betrag suchen";
+"subscription.linkPayments.searchPlaceholder" = "Suchen";
+"subscription.linkPayments.selectedWithAmount" = "%d ausgewählt · %@";
+"subscription.linkPayments.link" = "%d verknüpfen";
+"subscription.linkPayments.empty" = "Keine passenden Transaktionen";
+"subscription.linkPayments.amountExact" = "Genau";
+"subscription.linkPayments.amountTolerance" = "±30%";
+"subscription.linkPayments.amountAll" = "Alle";
+"subscription.linkPayments.unknownAccount" = "Unbekanntes Konto";
+"common.done" = "Fertig";
+"deposit.linkInterest.title" = "Zinszahlungen verknüpfen";
+"deposit.recalculateInterest" = "Zinsen neu berechnen";
+"subscription.linkPayments.selectAll" = "Alle auswählen";
+"subscription.linkPayments.deselectAll" = "Auswahl aufheben";
+"subscriptions.spentAllTime" = "Insgesamt ausgegeben";
+"subscription.edit.propagate.title" = "Verknüpfte Transaktionen aktualisieren?";
+"subscription.edit.propagate.message" = "Änderungen auf bestehende Transaktionen anwenden, die mit diesem Abo verknüpft sind?";
+"subscription.edit.propagate.seriesOnly" = "Nur das Abo";
+"subscription.edit.propagate.future" = "Zukünftige Transaktionen";
+"subscription.edit.propagate.all" = "Alle Transaktionen";
+"subscription.unlinkAll" = "Alle Transaktionen trennen";
+"subscription.unlinkAll.title" = "Alle Transaktionen trennen?";
+"subscription.unlinkAll.confirm" = "Alle trennen";
+"subscription.unlinkAll.message" = "Abo-Verknüpfung von %d Transaktionen entfernen? Die Transaktionen selbst bleiben erhalten.";
+"subscription.linkPayments.subcategories" = "Unterkategorien";
+"subscription.linkPayments.subcategoriesCount" = "%d Unterkategorien";
+"subscription.filterAll" = "Alle";
+
+// MARK: - Accounts (Types & Actions)
+"account.convertToDeposit" = "In Sparkonto umwandeln";
+"account.postingWithInterest" = "Gutschrift: %@ · ";
+"account.type.deposit" = "Sparkonten";
+"account.type.loan" = "Kredite";
+"account.type.regular" = "Konten";
+
+// MARK: - Deposits (Form)
+"deposit.bankDetails" = "Bank & Zinssatz";
+"deposit.convertTitle" = "In Sparkonto umwandeln";
+"deposit.postingWithDate" = "Gutschrift: %@";
+"deposit.schedule" = "Zinsplan";
+
+// MARK: - Transactions (Misc)
+"transaction.resumeRecurring" = "Fortsetzen";
+"transaction.type.internalTransfer" = "Überweisung";
+"transaction.type.loanPayment" = "Kreditzahlung";
+"transaction.type.loanEarlyRepayment" = "Vorzeitige Tilgung";
+"transaction.type.depositTopUp" = "Sparkonto-Einzahlung";
+"transaction.type.depositWithdrawal" = "Sparkonto-Abhebung";
+"transaction.type.depositInterestAccrual" = "Zinsgutschrift";
+"category.uncategorized" = "Ohne Kategorie";
+"category.budget" = "Budget";
+
+// MARK: - Recurring Errors
+"error.recurring.invalidData" = "Ungültige Daten der wiederkehrenden Serie";
+"error.recurring.invalidStartDate" = "Ungültiges Startdatum-Format";
+"error.recurring.seriesNotFound" = "Wiederkehrende Serie nicht gefunden";
+
+// MARK: - Insights
+"insights.remaining" = "verbleibend";
+"insights.range.totalExpenses" = "Ausgaben im Zeitraum";
+"insights.range.netFlow" = "Netto-Cashflow im Zeitraum";
+"insights.range.wealthChange" = "Vermögensänderung";
+"insights.range.totalIncome" = "Einnahmen im Zeitraum";
+"insights.range.reset" = "Zurücksetzen";
+"insights.zoom.reset" = "Einpassen";
+"insights.chart.line" = "Linie";
+"insights.chart.bar" = "Balken";
+"insights.today" = "Heute";
+"insights.empty.title" = "Noch keine Daten";
+"insights.empty.subtitle" = "Das Diagramm erscheint, sobald ein Transaktionsverlauf vorhanden ist";
+
+// MARK: - Voice Input
+"voice.noTextRecognizedYet" = "Noch kein Text erkannt";
+"voice.stopRecording" = "Aufnahme beenden";
+"voice.tapToFinish" = "Zum Beenden tippen";
+
+// MARK: - Voice Input Errors
+"voiceError.speechNotAvailable" = "Spracherkennung ist auf diesem Gerät nicht verfügbar";
+"voiceError.speechDenied" = "Zugriff auf Spracherkennung verweigert. Bitte aktivieren Sie ihn in den Einstellungen";
+"voiceError.speechRestricted" = "Zugriff auf Spracherkennung ist eingeschränkt";
+"voiceError.audio %@" = "Audiofehler: %@";
+"voiceError.recognition %@" = "Erkennungsfehler: %@";
+"voiceError.microphoneDenied" = "Mikrofonzugriff verweigert. Bitte aktivieren Sie ihn in den Einstellungen";
+"voiceError.speechNotDetermined" = "Berechtigung für Spracherkennung nicht erteilt";
+"voiceError.unknownPermission" = "Unbekannter Berechtigungsfehler";
+"voiceError.speechBecameUnavailable" = "Spracherkennung ist nicht mehr verfügbar";
+"voiceError.audioSessionSetup %@" = "Audio-Session konnte nicht konfiguriert werden: %@";
+"voiceError.recognitionRequestFailed" = "Erkennungsanfrage konnte nicht erstellt werden";
+"voiceError.audioEngineCreateFailed" = "Audio-Engine konnte nicht erstellt werden";
+"voiceError.audioEngineStartFailed %@" = "Audio-Engine konnte nicht gestartet werden: %@";
+"voiceConfirmation.saveError" = "Fehler beim Speichern";
+
+// MARK: - Calculator Keypad (Accessibility)
+"calculator.add" = "Plus";
+"calculator.subtract" = "Minus";
+"calculator.multiply" = "Mal";
+"calculator.divide" = "Geteilt";
+"calculator.separator" = "Dezimaltrennzeichen";
+"calculator.backspace" = "Löschen";
+"calculator.clearHint" = "Gedrückt halten zum Löschen";
+
+// MARK: - CSV Import Errors
+"csvImport.error.fileAccessDenied" = "Kein Zugriff auf die Datei";
+"csvImport.error.invalidEncoding" = "Ungültige Dateikodierung (UTF-8 erforderlich)";
+"csvImport.error.emptyFile" = "Die Datei ist leer";
+"csvImport.error.noHeaders" = "Die Datei enthält keine Spaltenüberschriften";
+"csvImport.error.invalidFormat" = "Ungültiges CSV-Format";
+"csvImport.error.missingDependency %@" = "Fehlende Abhängigkeit: %@";
+
+// MARK: - Progress
+"progress.loadingAccounts" = "Konten werden geladen";
+"progress.loadingTransactions" = "Transaktionen werden geladen";
+"progress.saving" = "Wird gespeichert";
+
+// MARK: - UI (Misc)
+"common.changeIcon" = "Symbol ändern";
+"currency.selected" = "Ausgewählte Währung";
+"filter.accounts" = "Konten";
+"timeFilter.customRange" = "Benutzerdefinierter Zeitraum";
+
+// MARK: - Accessibility
+"accessibility.accounts.addMenu" = "Hinzufügen-Menü";
+"accessibility.accounts.doneReordering" = "Sortieren beenden";
+"accessibility.accounts.reorder" = "Neu anordnen";
+"accessibility.category.budgetHint" = "Budgetnutzung";
+"accessibility.category.budgetProgress" = "Budgetfortschritt";
+"accessibility.category.label" = "Kategorie";
+"accessibility.category.overBudget" = "Budget überschritten";
+"accessibility.deposit.history" = "Transaktionsverlauf";
+"accessibility.deposit.moreActions" = "Weitere Aktionen";
+"accessibility.insights.granularityPicker" = "Zeitraumauswahl";
+"accessibility.insights.granularityPickerHint" = "Granularität wählen: Monat, Quartal oder Jahr";
+"accessibility.transaction.history" = "Transaktionsverlauf";
+
+// MARK: - Bulk Selection
+"bulk.select" = "Auswählen";
+"bulk.selectAll" = "Alle auswählen";
+"bulk.deselectAll" = "Auswahl aufheben";
+"bulk.done" = "Fertig";
+"bulk.deleteCount" = "Löschen (%d)";
+
+// MARK: - Bulk Delete Accounts
+"bulk.deleteAccounts.title" = "%d Konten löschen?";
+"bulk.deleteAccounts.message" = "Was soll mit den zugehörigen Transaktionen geschehen?";
+"bulk.deleteAccounts.onlyAccounts" = "Nur Konten löschen";
+"bulk.deleteAccounts.withTransactions" = "Mit allen Transaktionen löschen";
+
+// MARK: - Bulk Delete Categories
+"bulk.deleteCategories.title" = "%d Kategorien löschen?";
+"bulk.deleteCategories.message" = "Was soll mit den zugehörigen Transaktionen geschehen?";
+"bulk.deleteCategories.onlyCategories" = "Nur Kategorien löschen";
+"bulk.deleteCategories.withTransactions" = "Mit allen Transaktionen löschen";
+
+// MARK: - Bulk Delete Subcategories
+"bulk.deleteSubcategories.title" = "%d Unterkategorien löschen?";
+"bulk.deleteSubcategories.confirm" = "Löschen";
+
+// MARK: - Account Detail View
+"account.detail.actions.addTransaction" = "Transaktion hinzufügen";
+"account.detail.actions.transfer" = "Überweisung";
+"account.detail.totalIncome" = "Einnahmen gesamt";
+"account.detail.totalExpense" = "Ausgaben gesamt";
+"account.detail.transactionCount" = "Transaktionen";
+"account.detail.delete.confirmTitle" = "Konto löschen?";
+"account.detail.delete.confirmMessage" = "Das Konto wird dauerhaft gelöscht.";
+"accounts.type" = "Typ";
+"accounts.currency" = "Währung";
+"accounts.type.deposit" = "Sparkonto";
+"accounts.type.loan" = "Kredit";
+"accounts.type.regular" = "Konto";
+"common.edit" = "Bearbeiten";
+"common.delete" = "Löschen";
+
+// Category Detail
+"category.detail.actions.addTransaction" = "Transaktion hinzufügen";
+"category.detail.totalSpent" = "Ausgegeben gesamt";
+"category.detail.totalEarned" = "Eingenommen gesamt";
+"category.detail.avgMonthly" = "Ø pro Monat";
+"category.detail.budget" = "Budget";
+"category.detail.subcategories" = "Unterkategorien";
+"category.detail.transactionCount" = "Transaktionen";
+"category.detail.manageSubcategories" = "Unterkategorien verwalten";
+"category.detail.delete.confirmTitle" = "Kategorie löschen?";
+"category.detail.delete.confirmMessage" = "Die Kategorie wird gelöscht.";
+"category.detail.type.expense" = "Ausgabe";
+"category.detail.type.income" = "Einnahme";
+
+/* MARK: - Onboarding */
+
+"onboarding.welcome.page1.title" = "Alle Ihre Finanzen an einem Ort";
+"onboarding.welcome.page1.subtitle" = "Konten, Sparkonten, Kredite, Abos und Ausgabenkategorien – zusammen mit übersichtlichen Analysen.";
+"onboarding.welcome.page2.title" = "Transaktionen per Sprache hinzufügen";
+"onboarding.welcome.page2.subtitle" = "Sagen Sie \"Kaffee 800 Tenge\" – Tenra erkennt Betrag, Währung und Kategorie. Oder importieren Sie Kontoauszüge aus PDF/CSV.";
+"onboarding.welcome.page3.title" = "Ihre Daten gehören Ihnen";
+"onboarding.welcome.page3.subtitle" = "Alles wird auf dem Gerät gespeichert. iCloud-Backup ist optional. Kein Benutzerkonto, keine Registrierung.";
+
+"onboarding.cta.next" = "Weiter";
+"onboarding.cta.start" = "Jetzt starten";
+"onboarding.cta.done" = "Fertig";
+"onboarding.cta.doneWithCount" = "Fertig • %d ausgewählt";
+"onboarding.cta.skip" = "Überspringen";
+"onboarding.stepIndicator.label" = "Schritt %d von %d";
+
+"onboarding.currency.title" = "Wählen Sie Ihre Basiswährung";
+"onboarding.currency.subtitle" = "Tenra zeigt Ihren Gesamtsaldo und Ihre Analysen in dieser Währung. Sie können sie später in den Einstellungen ändern.";
+
+"onboarding.account.title" = "Fügen Sie Ihr erstes Konto hinzu";
+"onboarding.account.subtitle" = "Das kann eine Karte, Bargeld oder ein Bankkonto sein. Weitere können Sie später hinzufügen.";
+"onboarding.account.namePlaceholder" = "z. B. Sparkasse";
+"onboarding.account.nameLabel" = "Name";
+"onboarding.account.iconLabel" = "Symbol";
+"onboarding.account.balanceLabel" = "Startsaldo";
+"onboarding.account.currencyChangedBanner" = "Die App-Währung wurde geändert. Die Kontowährung bleibt gleich. Sie können sie im Konto-Editor ändern.";
+
+"onboarding.categories.title" = "Wählen Sie Ihre Ausgabenkategorien";
+"onboarding.categories.subtitle" = "Wählen Sie die Kategorien, die Sie nutzen. Weitere können Sie später hinzufügen.";
+
+"onboarding.preset.groceries" = "Lebensmittel";
+"onboarding.preset.dining" = "Essen gehen";
+"onboarding.preset.transport" = "Transport";
+"onboarding.preset.housing" = "Wohnen";
+"onboarding.preset.utilities" = "Nebenkosten";
+"onboarding.preset.health" = "Gesundheit";
+"onboarding.preset.clothing" = "Kleidung";
+"onboarding.preset.entertainment" = "Unterhaltung";
+"onboarding.preset.travel" = "Reisen";
+"onboarding.preset.education" = "Bildung";
+"onboarding.preset.gifts" = "Geschenke";
+"onboarding.preset.subscriptions" = "Abos";
+"onboarding.preset.pets" = "Haustiere";
+"onboarding.preset.services" = "Dienstleistungen";
+"onboarding.preset.other" = "Sonstiges";
+
+// MARK: - Financial Health Detail Page
+
+"insights.health.subtitle.excellent" = "Ausgezeichnet – Ihre Finanzen sind widerstandsfähig.";
+"insights.health.subtitle.good" = "Solide Finanzen mit Optimierungspotenzial.";
+"insights.health.subtitle.fair" = "Ordentliche Basis, aber einige Bereiche brauchen Aufmerksamkeit.";
+"insights.health.subtitle.needsAttention" = "Mehrere Aspekte Ihrer Finanzen sollten verbessert werden.";
+
+"insights.health.unavailable.title" = "Nicht genügend Daten";
+"insights.health.unavailable.message" = "Fügen Sie Einnahmen und Ausgaben hinzu – sobald genügend Daten vorliegen, bewerten wir Ihre finanzielle Gesundheit.";
+
+"insights.health.howItWorks" = "So wird der Score berechnet";
+"insights.health.explainer" = "Ein gewichteter Score von 0–100 über fünf Aspekte finanzieller Gesundheit. Höher bedeutet mehr finanzielle Widerstandsfähigkeit.";
+"insights.health.periodContext.months" = "Basierend auf der Aktivität der letzten %d Monate. Die Granularitätsauswahl oben ändert andere Einblicke, aber nicht diesen Score.";
+"insights.health.periodContext.singleMonth" = "Basierend auf der Aktivität dieses Monats. Die Granularitätsauswahl oben ändert andere Einblicke, aber nicht diesen Score.";
+"insights.health.weightLabel" = "%d%%";
+"insights.health.weights.redistributed" = "Keine Budgets eingerichtet – das Gewicht von 25 % wird auf die anderen vier Komponenten verteilt.";
+
+"insights.health.component.savingsRate.title" = "Sparquote";
+"insights.health.component.savingsRate.short" = "Sparen";
+"insights.health.component.savingsRate.explainer" = "Wie viel Ihres Einkommens Sie behalten. Eine höhere Sparquote bedeutet mehr Widerstandsfähigkeit.";
+
+"insights.health.component.budgetAdherence.title" = "Budgettreue";
+"insights.health.component.budgetAdherence.short" = "Budgets";
+"insights.health.component.budgetAdherence.explainer" = "Wie viele Ihrer Kategorie-Budgets Sie diesen Monat einhalten.";
+
+"insights.health.component.recurringRatio.title" = "Fixkostenquote";
+"insights.health.component.recurringRatio.short" = "Fixkosten";
+"insights.health.component.recurringRatio.explainer" = "Anteil des Einkommens, der in Abos und wiederkehrende Zahlungen gebunden ist. Niedriger bedeutet mehr Flexibilität.";
+
+"insights.health.component.emergencyFund.title" = "Notgroschen";
+"insights.health.component.emergencyFund.short" = "Notgroschen";
+"insights.health.component.emergencyFund.explainer" = "Wie viele Monatsausgaben Ihre Kontostände abdecken.";
+
+"insights.health.component.cashFlow.title" = "Cashflow";
+"insights.health.component.cashFlow.short" = "Cashflow";
+"insights.health.component.cashFlow.explainer" = "Um wie viel Ihre Einnahmen die Ausgaben im letzten Zeitraum übersteigen.";
+
+"insights.health.currentValue" = "Aktueller Wert";
+"insights.health.target" = "Zielwert";
+"insights.health.scoreContribution" = "%d / 100";
+
+"insights.health.target.savingsRate" = "≥ 20 %";
+"insights.health.target.budgetAdherence" = "100 % der Kategorien im Budget";
+"insights.health.target.recurringRatio" = "< 50 % des Einkommens";
+"insights.health.target.emergencyFund" = "≥ 3 Monate";
+"insights.health.target.cashFlow" = "≥ 0";
+
+"insights.health.rec.savingsRate.below" = "Um 20 %% zu erreichen, senken Sie die Ausgaben um ≈ %@ pro Monat oder steigern Sie das Einkommen um ≈ %@ pro Monat.";
+"insights.health.rec.savingsRate.healthy" = "Ausgezeichnet – halten Sie das Tempo. 20 %%+ ist das empfohlene Niveau für langfristige Widerstandsfähigkeit.";
+
+"insights.health.rec.budgetAdherence.empty" = "Budgets sind nicht eingerichtet. Legen Sie sie in Ihren Kategorien fest – diese Komponente zählt dann zum Score.";
+"insights.health.rec.budgetAdherence.partial" = "%d Kategorien liegen über dem Budget. Öffnen Sie sie, um die Quelle der Mehrausgaben zu finden.";
+"insights.health.rec.budgetAdherence.full" = "Jede Kategorie liegt im Budget – ausgezeichnet.";
+
+"insights.health.rec.recurringRatio.high" = "Abos und wiederkehrende Zahlungen machen %.0f%% Ihres Einkommens aus. Streben Sie unter 50%% an – prüfen und kündigen Sie, was Sie nicht brauchen.";
+"insights.health.rec.recurringRatio.healthy" = "%.0f%% Ihres Einkommens fließen in wiederkehrende Zahlungen – ein gesundes Niveau.";
+
+"insights.health.rec.emergencyFund.below" = "Ihnen fehlen ≈ %@, um 3 Monatsausgaben abzudecken.";
+"insights.health.rec.emergencyFund.belowWithProjection" = "Ihnen fehlen ≈ %@, um 3 Monatsausgaben abzudecken. Bei Ihrem aktuellen Spartempo sind das noch etwa %.1f Monate.";
+"insights.health.rec.emergencyFund.healthy" = "%.1f Monatsausgaben als Reserve – genug Puffer für Unerwartetes.";
+
+"insights.health.rec.cashFlow.negative" = "Sie geben mehr aus, als Sie einnehmen (−%.1f%% des Einkommens in diesem Zeitraum). Senken Sie die Ausgaben oder erschließen Sie eine zusätzliche Einkommensquelle.";
+"insights.health.rec.cashFlow.positive" = "Ihre Einnahmen übersteigen die Ausgaben um %.1f%% – ein gesunder positiver Cashflow.";
+
+// MARK: - Rating Prompt
+"rating.survey.title" = "Gefällt Ihnen Tenra?";
+"rating.survey.message" = "Ihr Feedback hilft uns, Tenra für alle besser zu machen.";
+"rating.survey.love" = "Ja, sehr!";
+"rating.survey.notReally" = "Nicht wirklich";
+
+// MARK: - Premium
+"premium.unlock" = "Pro freischalten";
+"premium.locked.voice.title" = "Spracheingabe ist eine Pro-Funktion";
+"premium.locked.voice.message" = "Fügen Sie Transaktionen per Sprache hinzu – sagen Sie einfach Betrag und Kategorie, Tenra ergänzt den Rest.";
+"premium.locked.import.title" = "Kontoauszug-Import ist eine Pro-Funktion";
+"premium.locked.import.message" = "Importieren Sie PDF-Kontoauszüge und CSV-Dateien automatisch, statt jede Transaktion einzeln einzugeben.";
+"settings.supportID" = "Support-ID";
+"settings.supportID.copied" = "Kopiert";

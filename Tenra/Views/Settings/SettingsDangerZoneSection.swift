@@ -23,7 +23,7 @@ struct SettingsDangerZoneSection: View {
         Section(header: SettingsSectionHeaderView(title: String(localized: "settings.dangerZone"))) {
             ActionSettingsRow(
                 icon: "trash",
-                title: "Сбросить обученные предпочтения",
+                title: String(localized: "settings.resetLearning"),
                 isDestructive: true,
                 action: onResetLearning
             )

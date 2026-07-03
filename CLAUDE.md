@@ -237,6 +237,15 @@ Account/Category/Subscription/Deposit/Loan detail views cache `[Transaction]` vi
 ### SwiftUI `.swipeActions` requires `List`
 Outside a `List` (e.g. `LazyVStack`, `ScrollView`), `.swipeActions` silently no-ops. [GroupedTransactionList](Tenra/Views/Components/History/GroupedTransactionList.swift) renders in `LazyVStack`, so entity-detail screens get their delete/recurring actions via [`TransactionCard`](Tenra/Views/Components/Cards/TransactionCard.swift)'s `.contextMenu` (long press). Keep `.contextMenu` and `.swipeActions` mirrored when adding new actions.
 
+## Monetization (Tenra Pro)
+
+- **SDK isolation**: ONLY [PremiumManager](Tenra/Services/Premium/PremiumManager.swift) imports `RevenueCat`; ONLY [PaywallSheet](Tenra/Views/Premium/PaywallSheet.swift) imports `RevenueCatUI`. Feature gates depend solely on `premium.isPro` — never import the SDK elsewhere.
+- **Gate pattern** (3 lines): `@Environment(PremiumManager.self)` + `@State showingPaywall` + `.paywallSheet(isPresented:onUnlocked:)`; `onUnlocked` resumes the interrupted flow. Whole-tab gates use `PremiumLockedView` (Voice/OCR tabs in TabViews.swift).
+- **Gated**: 4th account (AccountsManagementView, incl. convert-to-deposit path), voice, PDF/CSV import (OCR tab + SettingsView), deposits, loans. **Deliberately free — do NOT gate**: Insights (aha-moment that sells Pro; soft paywall with 3-show/14-day cap lives in AnalyticsTab), CSV **export** (user data must always be exportable).
+- **Grandfathering**: users onboarded before first Pro-build launch = Founding Users (`isFounder`, UserDefaults, decided once in `configure()`). Product IDs / entitlement `pro` / offering `default` / free limits live in [PremiumConfig](Tenra/Services/Premium/PremiumConfig.swift) — must match ASC + RevenueCat dashboard exactly.
+- **Local testing**: Edit Scheme → Options → StoreKit Configuration → `Tenra/Tenra.storekit` (sandbox purchases, no ASC needed). Paywall content/design is configured in the RevenueCat dashboard (incl. required Terms/Privacy footer links — App Review 3.1.2(c)), not in code.
+- Strategy/pricing rationale: [docs/MONETIZATION_STRATEGY.md](docs/MONETIZATION_STRATEGY.md).
+
 ## CoreData Schema Bumps
 
 ⚠️ **The Xcode project uses file-system-synchronized groups (`PBXFileSystemSynchronizedRootGroup`).** Adding, deleting, or renaming files (`.swift`, `.stringsdict`, etc.) needs NO `project.pbxproj` edits — just create/`rm` on disk and they're auto-included in the target. (Verified: deleted a view + added `.stringsdict` files, both picked up by the build.)
@@ -352,11 +361,12 @@ Active reference docs in `docs/`:
 | [domains/voice.md](docs/domains/voice.md) | VoiceInput architecture, speech recognition |
 | [domains/currency.md](docs/domains/currency.md) | FX rates, providers, prewarm |
 | [domains/logos.md](docs/domains/logos.md) | Logo provider chain, ServiceLogoRegistry |
+| [MONETIZATION_STRATEGY.md](docs/MONETIZATION_STRATEGY.md) | Pro model rationale, pricing, competitor analysis, paywall strategy, rollout plan |
 
 Historical docs (305 files) archived to `docs/archive/`.
 
 ---
 
-**Last Updated**: 2026-05-27
+**Last Updated**: 2026-07-03
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

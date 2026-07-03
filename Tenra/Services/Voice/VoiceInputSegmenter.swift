@@ -31,6 +31,11 @@ enum VoiceInputSegmenter {
         "плюс",
         "ещё", "еще",
         "и",
+        // EN — safe like "и": a boundary only fires when BOTH sides
+        // contain an amount, so decorative "milk and bread" never splits.
+        "and then", "and also", "then", "also", "plus", "and",
+        // DE
+        "und noch", "und dann", "außerdem", "danach", "dann", "sowie", "und",
     ]
 
     /// Returns the input split into clauses. Always returns a non-empty array

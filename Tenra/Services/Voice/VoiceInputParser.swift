@@ -163,7 +163,52 @@ class VoiceInputParser {
 
             // Другое
             "услуги": ("Услуги", nil),
-            "ремонт": ("Услуги", nil)
+            "ремонт": ("Услуги", nil),
+
+            // DE — targets are the German onboarding preset names
+            // (onboarding.preset.* in de.lproj). Presets create no
+            // subcategories, so all subcategory slots are nil.
+            "lebensmittel": ("Lebensmittel", nil),
+            "supermarkt": ("Lebensmittel", nil),
+            "einkauf lebensmittel": ("Lebensmittel", nil),
+            "restaurant": ("Essen gehen", nil),
+            "kaffee": ("Essen gehen", nil),
+            "mittagessen": ("Essen gehen", nil),
+            "abendessen": ("Essen gehen", nil),
+            "imbiss": ("Essen gehen", nil),
+            "lieferando": ("Essen gehen", nil),
+            "taxi": ("Transport", nil),
+            "benzin": ("Transport", nil),
+            "tanken": ("Transport", nil),
+            "parken": ("Transport", nil),
+            "bahn": ("Transport", nil),
+            "u-bahn": ("Transport", nil),
+            "bus fahren": ("Transport", nil),
+            "fahrkarte": ("Transport", nil),
+            "miete": ("Wohnen", nil),
+            "wohnung": ("Wohnen", nil),
+            "nebenkosten": ("Nebenkosten", nil),
+            "strom": ("Nebenkosten", nil),
+            "heizung": ("Nebenkosten", nil),
+            "apotheke": ("Gesundheit", nil),
+            "medikament": ("Gesundheit", nil),
+            "arzt": ("Gesundheit", nil),
+            "zahnarzt": ("Gesundheit", nil),
+            "kleidung": ("Kleidung", nil),
+            "schuhe": ("Kleidung", nil),
+            "kino": ("Unterhaltung", nil),
+            "konzert": ("Unterhaltung", nil),
+            "unterhaltung": ("Unterhaltung", nil),
+            "urlaub": ("Reisen", nil),
+            "flug": ("Reisen", nil),
+            "hotel": ("Reisen", nil),
+            "bildung": ("Bildung", nil),
+            "kurs": ("Bildung", nil),
+            "geschenk": ("Geschenke", nil),
+            "haustier": ("Haustiere", nil),
+            "tierarzt": ("Haustiere", nil),
+            "abo": ("Abos", nil),
+            "abonnement": ("Abos", nil)
         ]
 
     /// `categoryMap.keys` sorted by length descending. Computed once and
@@ -524,9 +569,13 @@ class VoiceInputParser {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         
-        if text.contains("сегодня") || text.contains("today") {
+        // "позавчера"/"vorgestern" contain "вчера"/"gestern" as substrings,
+        // so the day-before-yesterday check MUST run first.
+        if text.contains("позавчера") || text.contains("vorgestern") || text.contains("day before yesterday") {
+            return calendar.date(byAdding: .day, value: -2, to: today) ?? today
+        } else if text.contains("сегодня") || text.contains("today") || text.contains("heute") {
             return today
-        } else if text.contains("вчера") || text.contains("yesterday") {
+        } else if text.contains("вчера") || text.contains("yesterday") || text.contains("gestern") {
             return calendar.date(byAdding: .day, value: -1, to: today) ?? today
         }
         
@@ -553,6 +602,12 @@ class VoiceInputParser {
         // phrase "got paid" and expense is checked first, so including "paid"
         // here would cause "got paid 500" to be classified as expense.
         "spent", "bought", "purchase", "expense",
+        // DE — "bezahlt" is included even though the income phrase
+        // "bezahlt bekommen" contains it (expense wins). German speakers
+        // overwhelmingly say "Gehalt bekommen/erhalten" for income, so the
+        // common expense phrasing takes priority.
+        "ausgegeben", "gekauft", "bezahlt", "gezahlt",
+        "ausgabe", "ausgaben", "einkauf", "abgebucht",
     ]
 
     /// Verbs that mark a clause as income.
@@ -568,6 +623,10 @@ class VoiceInputParser {
         "оклад", "премия", "премию",
         // EN
         "received", "earned", "income", "salary", "got paid",
+        // DE
+        "erhalten", "bekommen", "verdient",
+        "einnahme", "einnahmen", "einkommen",
+        "gehalt", "lohn", "gutschrift", "eingegangen", "bonus",
     ]
 
     // 2. Парсинг типа операции
@@ -750,7 +809,8 @@ class VoiceInputParser {
             "eur": "EUR",
             "€": "EUR",
             "рубл": "RUB",
-            "rub": "RUB"
+            "rub": "RUB",
+            "dollar": "USD"
         ]
         
         for (keyword, code) in currencyMap {

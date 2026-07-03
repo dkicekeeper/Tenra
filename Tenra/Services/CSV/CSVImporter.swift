@@ -163,17 +163,17 @@ enum CSVImportError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .fileAccessDenied:
-            return "Нет доступа к файлу"
+            return String(localized: "csvImport.error.fileAccessDenied")
         case .invalidEncoding:
-            return "Неверная кодировка файла (требуется UTF-8)"
+            return String(localized: "csvImport.error.invalidEncoding")
         case .emptyFile:
-            return "Файл пуст"
+            return String(localized: "csvImport.error.emptyFile")
         case .noHeaders:
-            return "В файле отсутствуют заголовки"
+            return String(localized: "csvImport.error.noHeaders")
         case .invalidFormat:
-            return "Неверный формат CSV"
+            return String(localized: "csvImport.error.invalidFormat")
         case .missingDependency(let message):
-            return "Отсутствует зависимость: \(message)"
+            return String(localized: "csvImport.error.missingDependency \(message)")
         }
     }
 }

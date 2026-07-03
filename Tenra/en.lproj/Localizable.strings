@@ -112,12 +112,16 @@
 "settings.importData" = "Import Data";
 "settings.dangerZone" = "Danger Zone";
 "settings.resetData" = "Full Data Reset";
+"settings.resetLearning" = "Reset Learned Preferences";
 
 // MARK: - Alerts
 "alert.deleteAllData.title" = "Delete all data?";
 "alert.deleteAllData.message" = "All transactions, accounts, and categories will be permanently deleted.";
 "alert.deleteAllData.confirm" = "Delete";
 "alert.deleteAllData.cancel" = "Cancel";
+"alert.resetLearning.title" = "Reset voice preferences?";
+"alert.resetLearning.message" = "The parser will forget which account you usually pick for each category. Your transactions won't be deleted.";
+"alert.resetLearning.confirm" = "Reset";
 "alert.textCopied.title" = "Text copied";
 "alert.textCopied.message" = "Recognized text has been copied to clipboard.";
 "alert.parseError.title" = "Parse Error";
@@ -1257,6 +1261,13 @@
 "loan.linkPayments.search" = "Search by description or amount";
 "loan.linkPayments.link" = "Link %d Payments";
 "loan.linkPayments.empty" = "No matching transactions";
+"loan.linkPayments.error.notFound" = "Loan not found";
+"loan.add" = "Add Loan";
+"loan.markPaid" = "Mark as Paid";
+"loan.markUnpaid" = "Mark as Unpaid";
+"loan.paymentFailed" = "Payment failed. Please try again.";
+"loan.earlyRepaymentFailed" = "Early repayment failed. Please try again.";
+"loan.payAllPartialFailed %@" = "Some payments failed: %@";
 
 // Subscription Link Payments
 "subscription.linkPayments.title" = "Link Payments";
@@ -1346,7 +1357,28 @@
 "voiceError.speechNotDetermined" = "Speech recognition permission not granted";
 "voiceError.unknownPermission" = "Unknown permissions error";
 "voiceError.speechBecameUnavailable" = "Speech recognition became unavailable";
+"voiceError.audioSessionSetup %@" = "Failed to configure the audio session: %@";
+"voiceError.recognitionRequestFailed" = "Failed to create the recognition request";
+"voiceError.audioEngineCreateFailed" = "Failed to create the audio engine";
+"voiceError.audioEngineStartFailed %@" = "Failed to start the audio engine: %@";
 "voiceConfirmation.saveError" = "Save error";
+
+// MARK: - Calculator Keypad (Accessibility)
+"calculator.add" = "Plus";
+"calculator.subtract" = "Minus";
+"calculator.multiply" = "Multiply";
+"calculator.divide" = "Divide";
+"calculator.separator" = "Decimal separator";
+"calculator.backspace" = "Delete";
+"calculator.clearHint" = "Press and hold to clear";
+
+// MARK: - CSV Import Errors
+"csvImport.error.fileAccessDenied" = "Cannot access the file";
+"csvImport.error.invalidEncoding" = "Invalid file encoding (UTF-8 required)";
+"csvImport.error.emptyFile" = "The file is empty";
+"csvImport.error.noHeaders" = "The file has no headers";
+"csvImport.error.invalidFormat" = "Invalid CSV format";
+"csvImport.error.missingDependency %@" = "Missing dependency: %@";
 
 // MARK: - Progress
 "progress.loadingAccounts" = "Loading accounts";

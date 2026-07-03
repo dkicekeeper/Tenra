@@ -61,7 +61,7 @@ struct CategoryGridView: View {
         }
 
         // 4 columns on standard iPhone; adaptive minimum keeps iPad layouts sensible.
-        return [GridItem(.adaptive(minimum: 120, maximum: 180), spacing: AppSpacing.lg)]
+        return [GridItem(.adaptive(minimum: 108, maximum: 180), spacing: AppSpacing.lg)]
     }
 }
 

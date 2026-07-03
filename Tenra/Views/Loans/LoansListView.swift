@@ -253,7 +253,7 @@ struct LoansListView: View {
             }
             transactionsViewModel.recalculateAccountBalances()
             if !failedLoanNames.isEmpty {
-                payAllError = String(localized: "loan.payAllPartialFailed", defaultValue: "Some payments failed: \(failedLoanNames.joined(separator: ", "))")
+                payAllError = String(localized: "loan.payAllPartialFailed \(failedLoanNames.joined(separator: ", "))")
                 try? await Task.sleep(for: .seconds(4))
                 payAllError = nil
             }

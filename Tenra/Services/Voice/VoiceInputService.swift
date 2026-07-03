@@ -169,13 +169,13 @@ class VoiceInputService: NSObject {
             try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.duckOthers, .defaultToSpeaker])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
-            throw VoiceInputError.audioEngineError("Не удалось настроить аудио сессию: \(error.localizedDescription)")
+            throw VoiceInputError.audioEngineError(String(localized: "voiceError.audioSessionSetup \(error.localizedDescription)"))
         }
         
         // Создаем запрос на распознавание
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let recognitionRequest = recognitionRequest else {
-            throw VoiceInputError.recognitionError("Не удалось создать запрос на распознавание")
+            throw VoiceInputError.recognitionError(String(localized: "voiceError.recognitionRequestFailed"))
         }
         
         // Показываем partial results для UI, но используем только final для парсинга
@@ -204,7 +204,7 @@ class VoiceInputService: NSObject {
         // Настраиваем аудио engine
         audioEngine = AVAudioEngine()
         guard let audioEngine = audioEngine else {
-            throw VoiceInputError.audioEngineError("Не удалось создать аудио engine")
+            throw VoiceInputError.audioEngineError(String(localized: "voiceError.audioEngineCreateFailed"))
         }
         
         let inputNode = audioEngine.inputNode
@@ -222,7 +222,7 @@ class VoiceInputService: NSObject {
         do {
             try audioEngine.start()
         } catch {
-            throw VoiceInputError.audioEngineError("Не удалось запустить аудио engine: \(error.localizedDescription)")
+            throw VoiceInputError.audioEngineError(String(localized: "voiceError.audioEngineStartFailed \(error.localizedDescription)"))
         }
         
         // Запускаем распознавание

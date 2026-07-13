@@ -1582,3 +1582,21 @@
 "premium.locked.import.message" = "Importieren Sie PDF-Kontoauszüge und CSV-Dateien automatisch, statt jede Transaktion einzeln einzugeben.";
 "settings.supportID" = "Support-ID";
 "settings.supportID.copied" = "Kopiert";
+
+// MARK: - Settings Pro Section
+
+"settings.pro.cta.title" = "Tenra Pro holen";
+"settings.pro.cta.subtitle" = "Unbegrenzte Konten, Auszugsimport, Einlagen und Kredite";
+"settings.pro.status.active" = "Aktiv";
+"settings.pro.plan.monthly" = "Monatlich";
+"settings.pro.plan.annual" = "Jährlich";
+"settings.pro.plan.lifetime" = "Lebenslanger Zugriff";
+"settings.pro.status.renews" = "%1$@ · Verlängert sich am %2$@";
+"settings.pro.status.expires" = "%1$@ · Läuft ab am %2$@";
+"settings.pro.founder" = "Für immer gratis";
+"settings.pro.founder.subtitle" = "Sie sind ein Gründungsnutzer — alle Pro-Funktionen sind für Sie für immer kostenlos. Danke!";
+"settings.pro.manage" = "Abo verwalten";
+"settings.pro.restore" = "Käufe wiederherstellen";
+"settings.pro.restore.restored" = "Wiederhergestellt";
+"settings.pro.restore.none" = "Keine Käufe gefunden";
+"settings.pro.restore.failed" = "Fehlgeschlagen";

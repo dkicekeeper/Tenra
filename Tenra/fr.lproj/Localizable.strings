@@ -1582,3 +1582,21 @@
 "premium.locked.import.message" = "Importez automatiquement vos relevés bancaires PDF et fichiers CSV au lieu de saisir chaque opération.";
 "settings.supportID" = "ID de support";
 "settings.supportID.copied" = "Copié";
+
+// MARK: - Settings Pro Section
+
+"settings.pro.cta.title" = "Passer à Tenra Pro";
+"settings.pro.cta.subtitle" = "Comptes illimités, import de relevés, dépôts et crédits";
+"settings.pro.status.active" = "Actif";
+"settings.pro.plan.monthly" = "Mensuel";
+"settings.pro.plan.annual" = "Annuel";
+"settings.pro.plan.lifetime" = "Accès à vie";
+"settings.pro.status.renews" = "%1$@ · Renouvellement le %2$@";
+"settings.pro.status.expires" = "%1$@ · Expire le %2$@";
+"settings.pro.founder" = "Gratuit à vie";
+"settings.pro.founder.subtitle" = "Vous êtes un utilisateur fondateur : toutes les fonctions Pro sont gratuites pour vous, à vie. Merci !";
+"settings.pro.manage" = "Gérer l'abonnement";
+"settings.pro.restore" = "Restaurer les achats";
+"settings.pro.restore.restored" = "Restauré";
+"settings.pro.restore.none" = "Aucun achat trouvé";
+"settings.pro.restore.failed" = "Échec de la restauration";

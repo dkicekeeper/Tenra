@@ -20,6 +20,34 @@ import Observation
 import os
 import RevenueCat
 
+/// Snapshot of the active `pro` entitlement for status display (Settings → Tenra Pro).
+/// Plain Foundation types only — consumers never touch RevenueCat.
+struct ProStatus: Equatable, Sendable {
+
+    enum Plan: Equatable, Sendable {
+        case monthly
+        case annual
+        case lifetime
+        case unknown
+
+        init(productID: String) {
+            switch productID {
+            case PremiumConfig.Product.monthly:  self = .monthly
+            case PremiumConfig.Product.annual:   self = .annual
+            case PremiumConfig.Product.lifetime: self = .lifetime
+            default:                             self = .unknown
+            }
+        }
+    }
+
+    let plan: Plan
+    /// Renewal date when `willRenew`, otherwise the date access ends. `nil` for lifetime.
+    let expirationDate: Date?
+    let willRenew: Bool
+    /// Apple's manage-subscription page for this customer (RevenueCat `managementURL`).
+    let managementURL: URL?
+}
+
 @MainActor
 @Observable
 final class PremiumManager {
@@ -31,6 +59,10 @@ final class PremiumManager {
     /// True when RevenueCat reports an active `pro` entitlement (paid subscriber
     /// or lifetime buyer). Drives the UI together with `isFounder`.
     private(set) var isSubscriber = false
+
+    /// Details of the active entitlement (plan, renewal date, management URL)
+    /// for the Settings status block. `nil` while not a subscriber.
+    private(set) var proStatus: ProStatus?
 
     /// True for grandfathered existing users. Read from UserDefaults (decided once
     /// at first Pro-build launch); exposed so the paywall can show a "Founding User"
@@ -137,9 +169,24 @@ final class PremiumManager {
     }
 
     private func apply(_ info: CustomerInfo) {
-        let active = info.entitlements[PremiumConfig.entitlementID]?.isActive == true
-        guard active != isSubscriber else { return }
+        let entitlement = info.entitlements[PremiumConfig.entitlementID]
+        let active = entitlement?.isActive == true
+
+        var status: ProStatus?
+        if active, let entitlement {
+            status = ProStatus(
+                plan: ProStatus.Plan(productID: entitlement.productIdentifier),
+                expirationDate: entitlement.expirationDate,
+                willRenew: entitlement.willRenew,
+                managementURL: info.managementURL
+            )
+        }
+
+        // Compare the full snapshot, not just `active` — plan switches and
+        // renewal-date changes must reach the Settings status block too.
+        guard active != isSubscriber || status != proStatus else { return }
         isSubscriber = active
+        proStatus = status
         log.info("pro entitlement active=\(active, privacy: .public)")
     }
 

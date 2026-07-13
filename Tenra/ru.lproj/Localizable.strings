@@ -1582,3 +1582,21 @@
 "premium.locked.import.message" = "Импортируйте PDF-выписки банков и CSV-файлы автоматически, не вводя каждую операцию вручную.";
 "settings.supportID" = "ID для поддержки";
 "settings.supportID.copied" = "Скопировано";
+
+// MARK: - Settings Pro Section
+
+"settings.pro.cta.title" = "Оформить Tenra Pro";
+"settings.pro.cta.subtitle" = "Безлимитные счета, импорт выписок, вклады и кредиты";
+"settings.pro.status.active" = "Активна";
+"settings.pro.plan.monthly" = "Месячная";
+"settings.pro.plan.annual" = "Годовая";
+"settings.pro.plan.lifetime" = "Навсегда";
+"settings.pro.status.renews" = "%1$@ · продлится %2$@";
+"settings.pro.status.expires" = "%1$@ · истекает %2$@";
+"settings.pro.founder" = "Бесплатно навсегда";
+"settings.pro.founder.subtitle" = "Вы — один из первых пользователей: все функции Pro для вас бесплатны навсегда. Спасибо!";
+"settings.pro.manage" = "Управлять подпиской";
+"settings.pro.restore" = "Восстановить покупки";
+"settings.pro.restore.restored" = "Восстановлено";
+"settings.pro.restore.none" = "Покупки не найдены";
+"settings.pro.restore.failed" = "Не удалось восстановить";

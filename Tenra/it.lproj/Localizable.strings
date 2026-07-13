@@ -1582,3 +1582,21 @@
 "premium.locked.import.message" = "Importa automaticamente estratti conto PDF e file CSV invece di digitare ogni operazione.";
 "settings.supportID" = "ID di supporto";
 "settings.supportID.copied" = "Copiato";
+
+// MARK: - Settings Pro Section
+
+"settings.pro.cta.title" = "Passa a Tenra Pro";
+"settings.pro.cta.subtitle" = "Conti illimitati, importazione estratti conto, depositi e prestiti";
+"settings.pro.status.active" = "Attivo";
+"settings.pro.plan.monthly" = "Mensile";
+"settings.pro.plan.annual" = "Annuale";
+"settings.pro.plan.lifetime" = "Accesso a vita";
+"settings.pro.status.renews" = "%1$@ · Si rinnova il %2$@";
+"settings.pro.status.expires" = "%1$@ · Scade il %2$@";
+"settings.pro.founder" = "Gratis per sempre";
+"settings.pro.founder.subtitle" = "Sei un utente fondatore: tutte le funzioni Pro sono gratuite per te, per sempre. Grazie!";
+"settings.pro.manage" = "Gestisci abbonamento";
+"settings.pro.restore" = "Ripristina acquisti";
+"settings.pro.restore.restored" = "Ripristinato";
+"settings.pro.restore.none" = "Nessun acquisto trovato";
+"settings.pro.restore.failed" = "Ripristino non riuscito";

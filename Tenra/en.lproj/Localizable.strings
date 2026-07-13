@@ -1582,3 +1582,21 @@
 "premium.locked.import.message" = "Import PDF bank statements and CSV files automatically instead of typing each transaction.";
 "settings.supportID" = "Support ID";
 "settings.supportID.copied" = "Copied";
+
+// MARK: - Settings Pro Section
+
+"settings.pro.cta.title" = "Get Tenra Pro";
+"settings.pro.cta.subtitle" = "Unlimited accounts, statement imports, deposits and loans";
+"settings.pro.status.active" = "Active";
+"settings.pro.plan.monthly" = "Monthly";
+"settings.pro.plan.annual" = "Annual";
+"settings.pro.plan.lifetime" = "Lifetime access";
+"settings.pro.status.renews" = "%1$@ · Renews %2$@";
+"settings.pro.status.expires" = "%1$@ · Expires %2$@";
+"settings.pro.founder" = "Free forever";
+"settings.pro.founder.subtitle" = "You are a Founding User — every Pro feature is free for you, forever. Thank you!";
+"settings.pro.manage" = "Manage Subscription";
+"settings.pro.restore" = "Restore Purchases";
+"settings.pro.restore.restored" = "Restored";
+"settings.pro.restore.none" = "No purchases found";
+"settings.pro.restore.failed" = "Couldn't restore";

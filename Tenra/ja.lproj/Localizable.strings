@@ -1582,3 +1582,21 @@
 "premium.locked.import.message" = "取引を1件ずつ入力する代わりに、銀行のPDF明細やCSVファイルを自動で取り込めます。";
 "settings.supportID" = "サポートID";
 "settings.supportID.copied" = "コピーしました";
+
+// MARK: - Settings Pro Section
+
+"settings.pro.cta.title" = "Tenra Proを入手";
+"settings.pro.cta.subtitle" = "無制限の口座、明細インポート、預金・ローン";
+"settings.pro.status.active" = "有効";
+"settings.pro.plan.monthly" = "月額プラン";
+"settings.pro.plan.annual" = "年額プラン";
+"settings.pro.plan.lifetime" = "買い切り(無期限)";
+"settings.pro.status.renews" = "%1$@ · %2$@に更新";
+"settings.pro.status.expires" = "%1$@ · %2$@に終了";
+"settings.pro.founder" = "永久無料";
+"settings.pro.founder.subtitle" = "あなたは創設ユーザーです — すべてのPro機能を永久に無料でご利用いただけます。ありがとうございます!";
+"settings.pro.manage" = "サブスクリプションを管理";
+"settings.pro.restore" = "購入を復元";
+"settings.pro.restore.restored" = "復元しました";
+"settings.pro.restore.none" = "購入が見つかりません";
+"settings.pro.restore.failed" = "復元できませんでした";

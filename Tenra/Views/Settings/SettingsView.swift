@@ -64,6 +64,7 @@ struct SettingsView: View {
     private var settingsList: some View {
         ZStack(alignment: .top) {
             List {
+                SettingsProSection()
                 generalSection
                 cloudSection
                 exportImportSection

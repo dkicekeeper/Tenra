@@ -1582,3 +1582,21 @@
 "premium.locked.import.message" = "PDF banka ekstrelerini ve CSV dosyalarını her işlemi tek tek yazmak yerine otomatik olarak içe aktar.";
 "settings.supportID" = "Destek Kimliği";
 "settings.supportID.copied" = "Kopyalandı";
+
+// MARK: - Settings Pro Section
+
+"settings.pro.cta.title" = "Tenra Pro'ya geç";
+"settings.pro.cta.subtitle" = "Sınırsız hesap, ekstre içe aktarma, mevduat ve krediler";
+"settings.pro.status.active" = "Etkin";
+"settings.pro.plan.monthly" = "Aylık";
+"settings.pro.plan.annual" = "Yıllık";
+"settings.pro.plan.lifetime" = "Ömür boyu erişim";
+"settings.pro.status.renews" = "%1$@ · %2$@ tarihinde yenilenir";
+"settings.pro.status.expires" = "%1$@ · %2$@ tarihinde sona erer";
+"settings.pro.founder" = "Sonsuza dek ücretsiz";
+"settings.pro.founder.subtitle" = "Kurucu kullanıcısınız — tüm Pro özellikleri sizin için sonsuza dek ücretsiz. Teşekkürler!";
+"settings.pro.manage" = "Aboneliği yönet";
+"settings.pro.restore" = "Satın alımları geri yükle";
+"settings.pro.restore.restored" = "Geri yüklendi";
+"settings.pro.restore.none" = "Satın alım bulunamadı";
+"settings.pro.restore.failed" = "Geri yüklenemedi";

@@ -1582,3 +1582,21 @@
 "premium.locked.import.message" = "Імпортуйте банківські виписки PDF і файли CSV автоматично, замість того щоб вводити кожну операцію вручну.";
 "settings.supportID" = "ID підтримки";
 "settings.supportID.copied" = "Скопійовано";
+
+// MARK: - Settings Pro Section
+
+"settings.pro.cta.title" = "Оформити Tenra Pro";
+"settings.pro.cta.subtitle" = "Безлімітні рахунки, імпорт виписок, депозити та кредити";
+"settings.pro.status.active" = "Активна";
+"settings.pro.plan.monthly" = "Місячна";
+"settings.pro.plan.annual" = "Річна";
+"settings.pro.plan.lifetime" = "Назавжди";
+"settings.pro.status.renews" = "%1$@ · поновиться %2$@";
+"settings.pro.status.expires" = "%1$@ · спливає %2$@";
+"settings.pro.founder" = "Безплатно назавжди";
+"settings.pro.founder.subtitle" = "Ви — один із перших користувачів: усі функції Pro для вас безплатні назавжди. Дякуємо!";
+"settings.pro.manage" = "Керувати підпискою";
+"settings.pro.restore" = "Відновити покупки";
+"settings.pro.restore.restored" = "Відновлено";
+"settings.pro.restore.none" = "Покупок не знайдено";
+"settings.pro.restore.failed" = "Не вдалося відновити";

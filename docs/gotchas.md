@@ -82,3 +82,14 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
 - **Add new keys to BOTH `Tenra/en.lproj` and `Tenra/ru.lproj/Localizable.strings`** — the app ships RU + EN.
 - Localization is classic `.lproj/Localizable.strings` (NOT `.xcstrings`/String Catalog).
 - **Count strings use a single genitive-plural form, no plural rules** (e.g. `"%d категорий"`, `"%d транзакций"`). For grammatically correct plurals, add `Localizable.stringsdict` to BOTH `.lproj` (ru needs one/few/many/other) and render via `String(format: NSLocalizedString("key", comment: ""), count)` — `String(localized:)` won't apply the stringsdict rules. Precedent: `history.count`.
+
+## iOS Simulator — System Warnings to Ignore
+
+The following appear routinely in Xcode console on Simulator runs and are NOT bugs in our code. Don't try to fix them — none have application-side resolution:
+
+- `Unable to simultaneously satisfy constraints ... TUIKeyplane.right.width == -1.5` — Apple's keyboard layout calculation in Simulator only. Doesn't appear on physical device.
+- `Reading from public effective user settings` — informational from system Settings access.
+- `Reporter disconnected { function=sendMessage, ... }` — telemetry/Instruments transport.
+- `containerToPush is nil, will not push anything to candidate receiver` — SiriIntent candidate-receiver framework, no user-facing impact.
+
+If a real symptom appears (UI freeze, missing label, broken constraint affecting layout), look at the stack trace — if it doesn't pass through `Tenra.` symbols, it's still not us.

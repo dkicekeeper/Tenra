@@ -181,7 +181,8 @@ New file needed?
 | VoiceInput, speech recognition, SiriGlowView | [docs/domains/voice.md](docs/domains/voice.md) |
 | FX rates, currency conversion, prewarm, providers, base-currency aggregation (`convertSync` vs `convertedAmount`) | [docs/domains/currency.md](docs/domains/currency.md) |
 | Logo providers, ServiceLogoRegistry, jsDelivr | [docs/domains/logos.md](docs/domains/logos.md) |
-| Performance hot-paths, SwiftUI Layout gotchas, common cross-domain pitfalls | [docs/gotchas.md](docs/gotchas.md) |
+| Performance hot-paths, SwiftUI Layout gotchas, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |
+| Adding a CoreData entity/attribute, bumping `Tenra.xcdatamodeld` | `/coredata-schema-bump` skill |
 
 **Rule**: before editing files in a domain, Read the matching doc.
 
@@ -254,24 +255,7 @@ Outside a `List` (e.g. `LazyVStack`, `ScrollView`), `.swipeActions` silently no-
 
 ⚠️ **The Xcode project uses file-system-synchronized groups (`PBXFileSystemSynchronizedRootGroup`).** Adding, deleting, or renaming files (`.swift`, `.stringsdict`, etc.) needs NO `project.pbxproj` edits — just create/`rm` on disk and they're auto-included in the target. (Verified: deleted a view + added `.stringsdict` files, both picked up by the build.)
 
-`Tenra.xcdatamodeld` is currently at v12 (v12 added `AccountEntity.includeInBalance` — accounts excluded from the Finances total + insights aggregates; v11 added `CategorySubcategoryLinkEntity.sortOrder`; v10 added `CategoryAggregateEntity.expenseAmount`). Bump checklist when adding an entity (additive — lightweight migration auto-handles):
-1. `cp -r Tenra/CoreData/Tenra.xcdatamodeld/Tenra\ vN.xcdatamodel Tenra/CoreData/Tenra.xcdatamodeld/Tenra\ vN+1.xcdatamodel`, edit `contents` XML.
-2. Update `Tenra/CoreData/Tenra.xcdatamodeld/.xccurrentversion` plist to point to vN+1.
-3. Create `Tenra/CoreData/Entities/<Entity>+CoreDataClass.swift` + `<Entity>+CoreDataProperties.swift` (mirror `AccountAggregateEntity` for aggregate-style entities).
-4. Add load/save to the matching `Services/Repository/<Domain>Repository.swift`, then forward in `CoreDataRepository.swift`, then add no-op stubs in `UserDefaultsRepository.swift` and any test mocks.
-5. No backup-version constant to bump — `CloudBackupService.currentModelVersion` derives from the compiled model.
-
-Lightweight migration only works for ADDITIVE changes (new entity, new optional attribute). Removing/renaming requires a mapping model — none in this project yet.
-
-## iOS Simulator — System Warnings to Ignore
-
-The following appear routinely in Xcode console on Simulator runs and are NOT bugs in our code. Don't try to fix them — none have application-side resolution:
-- `Unable to simultaneously satisfy constraints ... TUIKeyplane.right.width == -1.5` — Apple's keyboard layout calculation in Simulator only. Doesn't appear on physical device.
-- `Reading from public effective user settings` — informational from system Settings access.
-- `Reporter disconnected { function=sendMessage, ... }` — telemetry/Instruments transport.
-- `containerToPush is nil, will not push anything to candidate receiver` — SiriIntent candidate-receiver framework, no user-facing impact.
-
-If a real symptom appears (UI freeze, missing label, broken constraint affecting layout), look at the stack trace — if it doesn't pass through `Tenra.` symbols, it's still not us.
+Schema version-bump checklist (currently v12) lives in the `/coredata-schema-bump` skill ([.claude/skills/coredata-schema-bump/SKILL.md](.claude/skills/coredata-schema-bump/SKILL.md)) — invoke it before touching `Tenra.xcdatamodeld`.
 
 ## Testing
 

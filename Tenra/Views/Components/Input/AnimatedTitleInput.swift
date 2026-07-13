@@ -60,12 +60,16 @@ struct AnimatedTitleInput: View {
                     Text(text.isEmpty ? "" : text)
                         .font(font)
                         .foregroundStyle(color)
-                        .contentTransition(.interpolate)
-                        .animation(AppAnimation.contentSpring, value: text)
 
-                    BlinkingCursor(height: 44)
-                        .opacity(showCursor ? 1 : 0)
-                        .animation(AppAnimation.fastAnimation, value: showCursor)
+                    // Conditional mount — see AnimatedInputComponents.BlinkingCursor note:
+                    // hiding via parent opacity fights the cursor's internal repeatForever,
+                    // so it never settles to hidden on blur. Removing it from the hierarchy
+                    // tears the animation down. Typing no longer morphs the whole string
+                    // (dropped .contentTransition(.interpolate) — it animated every keystroke).
+                    if showCursor {
+                        BlinkingCursor(height: 44)
+                            .transition(.opacity.animation(.easeInOut(duration: 0.15)))
+                    }
                 }
                 if alignment == .center { Spacer() }
             }
@@ -86,7 +90,6 @@ struct AnimatedTitleInput: View {
             isFocused = true
         }
         .animation(AppAnimation.fastAnimation, value: showPlaceholder)
-        .animation(AppAnimation.fastAnimation, value: showCursor)
         .onAppear {
             guard autoFocus else { return }
             // Brief delay so the field exists in the responder chain before we

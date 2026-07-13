@@ -19,6 +19,12 @@ import SwiftUI
 struct CalculatorKeypad: View {
     let model: CalculatorInputModel
 
+    /// Press state for the backspace key. The digit/operator keys get their press
+    /// feedback from `.buttonStyle(.bounce)`; backspace can't be a plain Button
+    /// because it also needs a long-press (clear), so it drives its own scale via
+    /// the long-press gesture's `onPressingChanged`.
+    @State private var backspacePressed = false
+
     private let columns = Array(
         repeating: GridItem(.flexible(), spacing: AppSpacing.sm),
         count: 4
@@ -33,6 +39,12 @@ struct CalculatorKeypad: View {
         }
         .padding(.horizontal, AppSpacing.md)
         .padding(.vertical, AppSpacing.sm)
+        // The keypad's presence in the tree is the single source of truth for "amount
+        // entry is active". Hosts mount it conditionally (e.g. `if !descriptionFocused`);
+        // the amount display's cursor reads `model.isActive`, so it follows automatically
+        // whatever condition — current or future — governs the keypad's visibility.
+        .onAppear { model.isActive = true }
+        .onDisappear { model.isActive = false }
     }
 
     // MARK: - Keys
@@ -67,15 +79,24 @@ struct CalculatorKeypad: View {
         keyShape(background: AppColors.bgCard) {
             Image(systemName: "delete.left").foregroundStyle(AppColors.textSecondary)
         }
+        .scaleEffect(backspacePressed ? 0.96 : 1.0)
+        .brightness(backspacePressed ? -0.05 : 0.0)
+        .animation(AppAnimation.adaptiveSpring, value: backspacePressed)
         .contentShape(RoundedRectangle(cornerRadius: AppRadius.lg, style: .continuous))
         .onTapGesture {
             HapticManager.light()
             model.backspace()
         }
-        .onLongPressGesture(minimumDuration: 0.35) {
-            HapticManager.medium()
-            model.clear()
-        }
+        .onLongPressGesture(
+            minimumDuration: 0.35,
+            perform: {
+                HapticManager.medium()
+                model.clear()
+            },
+            onPressingChanged: { pressing in
+                backspacePressed = pressing
+            }
+        )
         .accessibilityLabel(Text(String(localized: "calculator.backspace", defaultValue: "Delete")))
         .accessibilityHint(Text(String(localized: "calculator.clearHint", defaultValue: "Press and hold to clear")))
     }
@@ -93,7 +114,7 @@ struct CalculatorKeypad: View {
         } label: {
             keyShape(background: background, content: label)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.bounce)
     }
 
     private func keyShape(

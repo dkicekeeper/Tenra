@@ -112,18 +112,26 @@ struct TransactionCard: View, Equatable {
             : loanIconSource
         let showRecurringBadge = transaction.recurringSeriesId != nil && isFutureDate && isSeriesActive
 
-        return TransactionCardView(
-            transaction: transaction,
-            currency: currency,
-            styleData: styleData,
-            sourceAccount: sourceAccount,
-            targetAccount: targetAccount,
-            subscriptionIconSource: subscriptionIconSource,
-            showRecurringBadge: showRecurringBadge,
-            linkedSubcategories: linkedSubcategories,
-            transitionSourceID: transaction.id,
-            transitionNamespace: editNamespace
-        )
+        return Button {
+            HapticManager.selection()
+            showingEditModal = true
+        } label: {
+            TransactionCardView(
+                transaction: transaction,
+                currency: currency,
+                styleData: styleData,
+                sourceAccount: sourceAccount,
+                targetAccount: targetAccount,
+                subscriptionIconSource: subscriptionIconSource,
+                showRecurringBadge: showRecurringBadge,
+                linkedSubcategories: linkedSubcategories,
+                transitionSourceID: transaction.id,
+                transitionNamespace: editNamespace
+            )
+        }
+        // `.bounce` gives the row a subtle press-scale — this card renders inside a
+        // LazyVStack (not a List), so there is no system row highlight otherwise.
+        .buttonStyle(.bounce)
         .accessibilityHint(Text(String(localized: "accessibility.swipeForOptions")))
         // Context menu mirrors swipeActions for non-List parents (entity detail screens
         // render this card inside a LazyVStack where `.swipeActions` has no effect).
@@ -224,10 +232,6 @@ struct TransactionCard: View, Equatable {
             Button(String(localized: "button.ok"), role: .cancel) {}
         } message: {
             Text(resumeErrorMessage)
-        }
-        .onTapGesture {
-            HapticManager.selection()
-            showingEditModal = true
         }
         .sheet(isPresented: $showingEditModal) {
             if let viewModel = viewModel,

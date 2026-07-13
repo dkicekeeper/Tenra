@@ -21,7 +21,7 @@ struct InsightsGranularityPicker: View {
                     isSelected: selected == granularity
                 ) {
                     HapticManager.light()
-                    withAnimation(AppAnimation.adaptiveSpring) {
+                    withAnimation(AppAnimation.contentSpring) {
                         selected = granularity
                     }
                     onSelect?(granularity)

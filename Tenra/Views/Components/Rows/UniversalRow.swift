@@ -314,11 +314,16 @@ extension View {
         isSelected: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        self
-            .contentShape(Rectangle())
-            .onTapGesture(perform: action)
-            .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-            .accessibilityRemoveTraits(isSelected ? [] : .isSelected)
+        // Button (not bare onTapGesture) so the row gets a `.bounce` press-scale and
+        // coordinates correctly with scrolling. `Button` already carries the `.isButton`
+        // trait, so we only manage `.isSelected` here.
+        Button(action: action) {
+            self
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.bounce)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+        .accessibilityRemoveTraits(isSelected ? [] : .isSelected)
     }
 }
 

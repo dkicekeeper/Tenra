@@ -21,6 +21,13 @@ final class CalculatorInputModel {
     /// Raw canonical expression, e.g. "1200+350".
     private(set) var expression: String = ""
 
+    /// Whether the keypad currently owns input focus. Driven by `CalculatorKeypad`'s
+    /// own appear/disappear — the keypad's presence in the view tree IS the source of
+    /// truth for "amount entry is active", so the display's blinking cursor follows it
+    /// automatically. Any host that hides the keypad for a competing field (description,
+    /// or any field added later) gets correct cursor behaviour for free — no per-field wiring.
+    var isActive: Bool = false
+
     /// Retained so the large display never blanks while the expression is briefly invalid
     /// (e.g. a "0" divisor mid-typing).
     private var lastValidResult: Decimal?

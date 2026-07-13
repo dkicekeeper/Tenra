@@ -59,16 +59,16 @@ struct InsightDeepDiveView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: AppSpacing.xl) {
+            VStack(spacing: AppSpacing.lg) {
                 headerSection
 
                 if !subcategories.isEmpty {
+                    subcategorySection
+                }
+                
+                if !subcategories.isEmpty {
                     comparisonSection
 
-                }
-
-                if !subcategories.isEmpty {
-                    subcategorySection
                 }
             }
         }
@@ -78,22 +78,18 @@ struct InsightDeepDiveView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        VStack(spacing: AppSpacing.sm) {
-            HeroSection(
-                icon: iconSource,
-                title: categoryName,
-                iconTint: .monochrome(color)
-            )
-
-            let totalAmount = subcategories.reduce(0.0) { $0 + $1.amount }
-            FormattedAmountText(
-                amount: totalAmount,
-                currency: currency,
-                fontSize: AppTypography.h4,
-                fontWeight: .semibold,
-                color: color
-            )
-        }
+        let totalAmount = subcategories.reduce(0.0) { $0 + $1.amount }
+        // Icon is hidden here — it now lives in the centre of the orb chart below.
+        // Amount uses HeroSection's built-in slot (consistent with InsightDetailView).
+        return HeroSection(
+            icon: nil,
+            title: categoryName,
+            iconTint: .monochrome(color),
+            showsIcon: false,
+            primaryAmount: totalAmount > 0 ? totalAmount : nil,
+            primaryCurrency: currency,
+            primaryAmountColor: color
+        )
     }
 
     // MARK: - Subcategories
@@ -104,10 +100,7 @@ struct InsightDeepDiveView: View {
         let slices = DonutSlice.from(subcategories, baseColor: color)
         let colorByID = Dictionary(uniqueKeysWithValues: slices.map { ($0.id, $0.color) })
         return VStack(alignment: .leading, spacing: AppSpacing.lg) {
-            DonutChart(
-                slices: slices,
-                showAnnotations: false
-            )
+            SpendingOrbChart(slices: slices, showLabels: true, centerIcon: iconSource)
 
 
             // List

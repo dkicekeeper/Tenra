@@ -41,24 +41,29 @@ struct InsightTrendBadge: View {
                 if let percent = trend.changePercent {
                     Text(String(format: "%+.1f%%", percent))
                         .font(AppTypography.bodyEmphasis)
+                        .lineLimit(1)
                 }
             }
             .foregroundStyle(effectiveColor)
         } else {
             HStack(spacing: AppSpacing.xs) {
                 Image(systemName: trend.trendIcon)
-                    .font(style == .pill
-                          ? AppTypography.bodyEmphasis
-                          : AppTypography.bodyEmphasis)
+                    .font(AppTypography.bodyEmphasis)
 
                 if let percent = trend.changePercent {
                     Text(String(format: "%+.1f%%", percent))
-                        .font(style == .pill ? AppTypography.bodyEmphasis : AppTypography.bodyEmphasis)
+                        .font(AppTypography.bodyEmphasis)
                         .fontWeight(.semibold)
                 }
             }
+            .lineLimit(1)
             .foregroundStyle(effectiveColor)
             .modifier(PillModifier(isActive: style == .pill, color: effectiveColor))
+            // Keep the pill's intrinsic width — never let a tight parent (e.g. the
+            // reserved mini-chart column) squeeze the icon+percent into a wrap.
+            // ViewThatFits then measures the true width and drops the badge to a
+            // second line instead of distorting it.
+            .fixedSize(horizontal: true, vertical: false)
         }
     }
 }

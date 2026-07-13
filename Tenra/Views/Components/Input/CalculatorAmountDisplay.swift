@@ -37,7 +37,8 @@ struct CalculatorAmountDisplay: View {
             AmountDigitDisplay(
                 rawAmount: primaryRaw,
                 baseFontSize: baseFontSize,
-                isFocused: true
+                // Cursor blinks only while the keypad is the active input (see model.isActive).
+                isFocused: model.isActive
             )
         }
         .animation(AppAnimation.fastAnimation, value: model.hasOperator)

@@ -15,6 +15,8 @@ struct ExpenseIncomeProgressBar: View {
     @State private var displayExpensePercent: Double = 0
     @State private var displayIncomePercent: Double = 0
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var total: Double {
         expenseAmount + incomeAmount
     }
@@ -27,7 +29,11 @@ struct ExpenseIncomeProgressBar: View {
         total > 0 ? max(0, min(1, incomeAmount / total)) : 0.0
     }
 
-    private static let barAnimation = AppAnimation.progressBarSpring
+    // Non-optional (withAnimation needs a concrete Animation); `.linear(duration: 0)`
+    // under Reduce Motion drops the width sweep.
+    private var barAnimation: Animation {
+        reduceMotion ? .linear(duration: 0) : AppAnimation.progressBarSpring
+    }
 
     var body: some View {
         VStack(spacing: AppSpacing.sm) {
@@ -52,18 +58,18 @@ struct ExpenseIncomeProgressBar: View {
             }
             .frame(height: AppSpacing.md)
             .onAppear {
-                withAnimation(Self.barAnimation) {
+                withAnimation(barAnimation) {
                     displayExpensePercent = expensePercent
                     displayIncomePercent = incomePercent
                 }
             }
             .onChange(of: expensePercent) { _, newValue in
-                withAnimation(Self.barAnimation) {
+                withAnimation(barAnimation) {
                     displayExpensePercent = newValue
                 }
             }
             .onChange(of: incomePercent) { _, newValue in
-                withAnimation(Self.barAnimation) {
+                withAnimation(barAnimation) {
                     displayIncomePercent = newValue
                 }
             }

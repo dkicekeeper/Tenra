@@ -237,6 +237,12 @@ EditableHeroSection(
 | `.categoryHero` | Color picker |
 | `.subscriptionHero` | Balance + Currency |
 
+#### `HeroSection`
+**Purpose:** Read-only icon + title (+ optional amount / subtitle / progress) hero for entity-**detail** screens and simple icon+title contexts (`InsightDetailView`, `InsightDeepDiveView`, `TransactionAddModal`). For edit flows with bindings use `EditableHeroSection` instead.
+
+- ⚠️ **`icon: nil` renders a placeholder container** (intentional). To omit the icon block entirely (e.g. the icon lives elsewhere, like a `SpendingOrbChart` centre), pass **`showsIcon: false`** — not `icon: nil`.
+- **`primaryAmount` / `primaryCurrency`** — built-in amount slot (h3). Prefer it over a sibling `FormattedAmountText`. **`primaryAmountColor`** overrides its colour (default `AppColors.textSecondary`).
+
 ---
 
 ### Row Components
@@ -1164,7 +1170,12 @@ if items.isEmpty {
 
 ### Reduce Motion
 
-All decorative animations respect `UIAccessibility.isReduceMotionEnabled`. Use `AppAnimation.isReduceMotionEnabled` to check. Reduce Motion-aware variants (`adaptiveSpring`, `fastAnimation`, etc.) return `.linear(duration: 0)` when enabled.
+Movement-based decorative animations respect Reduce Motion. Two mechanisms:
+
+- **Token layer** — Reduce Motion-aware variants (`adaptiveSpring`, `fastAnimation`, `chartAppearAnimation`, `chartUpdateAnimation`, `heroEntranceAnimation`, `donutSweepAnimation`, `progressFillAnimation`, etc.) return `.linear(duration: 0)` / `nil` when enabled. Route movement (scale/offset/width/arc sweeps) through these.
+- **View layer** — for continuous or structural motion (voice glow, border beam, pulsing indicators, staggered card slides, banner scale/offset) read `@Environment(\.accessibilityReduceMotion)` so the view re-evaluates when the setting is toggled mid-session. Prefer this over the static `AppAnimation.isReduceMotionEnabled` read, which does not invalidate a running animation.
+
+**Opacity-only fades are NOT gated** — they aid comprehension and contain no movement, so they should survive Reduce Motion (`chartBannerFade`, `ContentRevealModifier`, banner opacity). Reduce Motion means *fewer and gentler* motion, not zero feedback.
 
 ---
 

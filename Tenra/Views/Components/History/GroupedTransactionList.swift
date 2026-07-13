@@ -196,19 +196,23 @@ struct GroupedTransactionList<Overlay: View>: View {
                             // For backward compatibility, callers that don't supply a real
                             // accessory pass `EmptyView()` — produces no visual artifact.
                             if let tapAction {
-                                HStack(spacing: 0) {
-                                    TransactionCardView(
-                                        transaction: transaction,
-                                        currency: rowCurrency,
-                                        styleData: style,
-                                        sourceAccount: sourceAccount,
-                                        targetAccount: targetAccount,
-                                        linkedSubcategories: linkedSubs
-                                    )
-                                    rowOverlay(transaction)
+                                Button {
+                                    tapAction(transaction)
+                                } label: {
+                                    HStack(spacing: 0) {
+                                        TransactionCardView(
+                                            transaction: transaction,
+                                            currency: rowCurrency,
+                                            styleData: style,
+                                            sourceAccount: sourceAccount,
+                                            targetAccount: targetAccount,
+                                            linkedSubcategories: linkedSubs
+                                        )
+                                        rowOverlay(transaction)
+                                    }
+                                    .contentShape(Rectangle())
                                 }
-                                .contentShape(Rectangle())
-                                .onTapGesture { tapAction(transaction) }
+                                .buttonStyle(.bounce)
                             } else {
                                 HStack(spacing: 0) {
                                     TransactionCard(
@@ -248,9 +252,21 @@ struct GroupedTransactionList<Overlay: View>: View {
             // back-navigation when the count is unchanged. SwiftUI cancels the previous task
             // automatically. visibleLimit reset is handled here as well.
             .task(id: transactions.count) {
+                // When sections already exist, a count change is a delete/insert (not the
+                // first load or a back-nav) — animate the ForEach diff so removed rows
+                // collapse smoothly instead of the list teleporting up one frame. The
+                // initial populate (empty → filled) stays instant to avoid a whole-list
+                // entrance on every screen open.
+                let isMutation = !cachedSections.isEmpty
                 visibleLimit = pageSize
-                rebuildSections()
+                if isMutation {
+                    withAnimation(AppAnimation.gentleSpring) { rebuildSections() }
+                } else {
+                    rebuildSections()
+                }
             }
+            // Pagination (load-more) rebuilds without animation — appending 100 rows with a
+            // spring would be janky.
             .onChange(of: visibleLimit) { _, _ in rebuildSections() }
     }
 }

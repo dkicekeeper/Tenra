@@ -88,7 +88,7 @@ struct PeriodBarChart: View {
         if dataPoints.isEmpty {
             emptyState.frame(height: chartHeight)
         } else {
-            VStack(spacing: AppSpacing.sm) {
+            VStack(spacing: AppSpacing.lg) {
                 bannerSlot
                 fullChart.frame(height: chartHeight)
             }

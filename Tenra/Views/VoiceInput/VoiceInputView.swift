@@ -517,14 +517,18 @@ private struct StaggeredCard<Content: View>: View {
 
     @State private var visible = false
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         content()
             .opacity(visible ? 1 : 0)
-            .offset(y: visible ? 0 : 12)
+            // Reduce Motion: keep the fade (and the stagger cadence, which isn't
+            // movement), drop the upward slide.
+            .offset(y: visible || reduceMotion ? 0 : 12)
             .task {
                 try? await Task.sleep(for: .milliseconds(index * 80))
                 guard !Task.isCancelled else { return }
-                withAnimation(AppAnimation.gentleSpring) {
+                withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : AppAnimation.gentleSpring) {
                     visible = true
                 }
             }
@@ -537,15 +541,17 @@ private struct PulsingText: View {
     let text: String
     @State private var isPulsing = false
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         Text(text)
             .font(AppTypography.h1)
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .opacity(isPulsing ? 0.3 : 0.8)
+            .opacity(isPulsing && !reduceMotion ? 0.3 : 0.8)
             .animation(
-                AppAnimation.isReduceMotionEnabled
+                reduceMotion
                     ? nil
                     : .easeInOut(duration: 1.2).repeatForever(autoreverses: true),
                 value: isPulsing
@@ -559,14 +565,16 @@ private struct PulsingText: View {
 struct RecordingIndicatorView: View {
     @State private var isAnimating = false
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         HStack(spacing: AppSpacing.sm) {
             Circle()
                 .fill(AppColors.destructive)
                 .frame(width: 12, height: 12)
-                .opacity(isAnimating ? 0.3 : 1.0)
+                .opacity(isAnimating && !reduceMotion ? 0.3 : 1.0)
                 .animation(
-                    AppAnimation.isReduceMotionEnabled
+                    reduceMotion
                         ? nil
                         : AppAnimation.gentleSpring.repeatForever(autoreverses: true),
                     value: isAnimating

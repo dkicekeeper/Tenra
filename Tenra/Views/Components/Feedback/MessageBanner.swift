@@ -9,12 +9,15 @@
 import SwiftUI
 
 private enum BannerAnimation {
-    static let entranceResponse: Double = 0.6
-    static let entranceDamping: Double = 0.7
-    static let iconResponse: Double = 0.5
-    static let iconDamping: Double = 0.6
+    /// Entrance spring — snappier than the old 0.6-response (~0.9s) settle; a toast
+    /// belongs in the 200–500ms band.
+    static let entrance = Animation.spring(response: 0.4, dampingFraction: 0.8)
+    /// Icon pop (delay applied at the call site during entrance only).
+    static let icon = Animation.spring(response: 0.5, dampingFraction: 0.6)
     static let iconDelay: Double = 0.1
-    static let hiddenScale: CGFloat = 0.85
+    /// Reduce-Motion / in-place-message-change fade: opacity only, no movement.
+    static let reducedFade = Animation.easeInOut(duration: 0.2)
+    static let hiddenScale: CGFloat = 0.92
     static let hiddenOffset: CGFloat = -20
 }
 
@@ -26,6 +29,8 @@ struct MessageBanner: View {
 
     @State private var isVisible = false
     @State private var iconScale: CGFloat = 0.5
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     enum MessageType {
         case success
@@ -68,24 +73,22 @@ struct MessageBanner: View {
                     )
             }
         }
-        .scaleEffect(isVisible ? 1 : BannerAnimation.hiddenScale)
+        // Under Reduce Motion the banner is a feedback surface, so the opacity fade
+        // stays — only the scale/offset movement is dropped.
+        .scaleEffect(isVisible || reduceMotion ? 1 : BannerAnimation.hiddenScale)
         .opacity(isVisible ? 1 : 0)
-        .offset(y: isVisible ? 0 : BannerAnimation.hiddenOffset)
+        .offset(y: isVisible || reduceMotion ? 0 : BannerAnimation.hiddenOffset)
         .onAppear {
-            withAnimation(.spring(
-                response: BannerAnimation.entranceResponse,
-                dampingFraction: BannerAnimation.entranceDamping,
-                blendDuration: 0
-            )) {
+            withAnimation(reduceMotion ? BannerAnimation.reducedFade : BannerAnimation.entrance) {
                 isVisible = true
             }
 
-            withAnimation(.spring(
-                response: BannerAnimation.iconResponse,
-                dampingFraction: BannerAnimation.iconDamping,
-                blendDuration: 0
-            ).delay(BannerAnimation.iconDelay)) {
+            if reduceMotion {
                 iconScale = 1.0
+            } else {
+                withAnimation(BannerAnimation.icon.delay(BannerAnimation.iconDelay)) {
+                    iconScale = 1.0
+                }
             }
 
             HapticManager.notification(type: type.hapticType)
@@ -98,17 +101,17 @@ struct MessageBanner: View {
                 .font(.system(size: AppIconSize.md))
                 .foregroundStyle(type.tintColor)
                 .scaleEffect(iconScale)
-                .animation(.spring(
-                    response: BannerAnimation.iconResponse,
-                    dampingFraction: BannerAnimation.iconDamping,
-                    blendDuration: 0
-                ), value: iconScale)
+                .animation(reduceMotion ? nil : BannerAnimation.icon, value: iconScale)
 
             Text(message)
                 .font(AppTypography.body)
                 .foregroundStyle(AppColors.textPrimary)
                 .lineLimit(3)
                 .fixedSize(horizontal: false, vertical: true)
+                // Smooth a message that changes in place (same banner identity) instead
+                // of a hard text swap.
+                .contentTransition(.opacity)
+                .animation(BannerAnimation.reducedFade, value: message)
         }
         .padding(AppSpacing.md)
     }

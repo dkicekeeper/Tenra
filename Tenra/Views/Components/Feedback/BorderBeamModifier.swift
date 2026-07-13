@@ -22,10 +22,12 @@ struct BorderBeamModifier: ViewModifier {
     var lineWidth: CGFloat
     var duration: Double
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func body(content: Content) -> some View {
         content
             .overlay {
-                if isActive && !AppAnimation.isReduceMotionEnabled {
+                if isActive && !reduceMotion {
                     // Display-synced redraw — at 60–120 Hz the gradient sweep
                     // looks fluid. The per-tick work is now a single
                     // un-blurred stroke; the static halo is provided by the

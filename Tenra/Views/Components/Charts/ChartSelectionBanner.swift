@@ -79,7 +79,7 @@ struct ChartSelectionBanner: View {
                     color: color
                 )
                 .lineLimit(1)
-                .minimumScaleFactor(0.6)
+//                .minimumScaleFactor(0.6)
             }
         }
     }

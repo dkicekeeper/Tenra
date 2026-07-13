@@ -130,7 +130,7 @@ struct AccountSelectorView: View {
         let target = selectedAccountId
         if animated {
             guard scrollPosition != target else { return }
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(AppAnimation.carouselScroll) {
                 scrollPosition = target
             }
         } else {

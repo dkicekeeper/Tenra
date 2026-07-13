@@ -1,6 +1,6 @@
 # Charts Domain
 
-Swift Charts patterns for `PeriodBarChart`, `IncomeExpenseLineChart`, `PeriodLineChart`, `DonutChart`, and mini-charts.
+Swift Charts patterns for `PeriodBarChart`, `IncomeExpenseLineChart`, `PeriodLineChart`, the `SpendingOrbChart` breakdown chart, and mini-charts.
 
 ## Native Scroll Pattern
 
@@ -140,7 +140,14 @@ New `PeriodDataPoint`-driven charts plug into these — don't reimplement inline
 
 For insight-feed compact charts use **Canvas-based** `MiniSparkline` / `MiniDonut` (~50× cheaper to instantiate than Apple Charts).
 
-`ChartDisplayMode` enum still applies to `DonutChart`.
+`ChartDisplayMode` applies to compact mini-charts only.
+
+## Breakdown Chart (SpendingOrbChart)
+
+⚠️ **`DonutChart` was removed** — [`SpendingOrbChart`](../../Tenra/Views/Components/Charts/SpendingOrbChart.swift) is the full-size category/subcategory breakdown chart (a blended glass "orb" + thin perimeter arcs + centred `%` labels). `DonutSlice` and its `from(_:)` / `from(_:baseColor:)` factories (sliver aggregation: merge <5% into "Other", drop a <3% tail) live in that file now, NOT a `DonutChart.swift`. `MiniDonut` still backs compact feed charts.
+- **Params**: `showLabels`, `centerIcon` (white glyph in the sphere centre) + `showsCenterIcon`, `size`, `animatesOnAppear`.
+- **Motion highlight**: `CMMotionManager` device-motion drives the specular glint. No Info.plist usage string needed (only pedometer/activity require one); Simulator `isDeviceMotionAvailable == false` → static no-op; neutral pose captured on first reading. 30 Hz updates isolated in a child view so only it invalidates.
+- **Staggered entrance**: one `@State` flip + per-layer `.animation(anim.delay(i·step), value: entered)` — see the SwiftUI note in [gotchas.md](../gotchas.md).
 
 ## Mini-Charts in Scroll Feeds
 

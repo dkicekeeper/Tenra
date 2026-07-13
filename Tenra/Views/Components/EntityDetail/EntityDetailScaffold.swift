@@ -143,7 +143,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                     }
                 }
                 .opacity(isNavTitleVisible ? 1 : 0)
-                .animation(.smooth(duration: 0.2), value: isNavTitleVisible)
+                .animation(.easeInOut(duration: 0.2), value: isNavTitleVisible)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

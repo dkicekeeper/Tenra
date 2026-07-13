@@ -89,7 +89,7 @@ extension CarouselConfiguration {
         verticalPadding: AppSpacing.xs,
         showsIndicators: false,
         clipDisabled: true,
-        scrollAnimation: .easeInOut(duration: 0.3),
+        scrollAnimation: AppAnimation.carouselScroll,
         snapBehavior: .viewAligned
     )
 

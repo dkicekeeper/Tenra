@@ -30,9 +30,25 @@ enum AppAnimation {
     /// response 0.4 + damping 0.8 = soft deceleration, no visible overshoot.
     static let gentleSpring = Animation.spring(response: 0.4, dampingFraction: 0.8)
 
-    /// Hero spring — for hero icon entrance animations (slower, dramatic settle).
-    /// response 0.6 + damping 0.7 = visible overshoot with smooth settle.
+    /// Hero spring — legacy dramatic settle (response 0.6, ~0.9s perceived).
+    /// Prefer `heroEntranceAnimation` for icon entrances — it stays in the ≤350ms
+    /// entrance budget and is Reduce-Motion aware. Kept for any non-entrance use.
     static let heroSpring = Animation.spring(response: 0.6, dampingFraction: 0.7)
+
+    /// Starting scale for hero icon entrance (grows from this to 1.0).
+    /// Never 0 — nothing in the real world appears from nothing.
+    static let heroHiddenScale: CGFloat = 0.92
+
+    /// Reduce-Motion-aware hero icon entrance. Snappier than `heroSpring`:
+    /// settles within the ~350ms entrance budget.
+    static var heroEntranceAnimation: Animation {
+        isReduceMotionEnabled
+            ? .linear(duration: 0)
+            : .spring(response: 0.35, dampingFraction: 0.75)
+    }
+
+    /// Programmatic carousel scroll-to-selection (account/category selectors).
+    static let carouselScroll: Animation = .easeInOut(duration: 0.3)
 
     /// Progress bar spring — for animated bar width changes.
     /// response 0.55 + damping 0.72 = smooth bar expansion with slight bounce.
@@ -85,13 +101,10 @@ enum AppAnimation {
             : .spring(response: chartUpdateResponse, dampingFraction: chartUpdateDamping)
     }
 
-    /// Reduce-Motion-aware fade for chart selection banner appearance/dismissal.
-    /// Short duration to feel responsive to selection changes (drag across bars).
-    static var chartBannerFade: Animation {
-        isReduceMotionEnabled
-            ? .linear(duration: 0)
-            : .easeInOut(duration: 0.15)
-    }
+    /// Fade for chart selection banner appearance/dismissal. Opacity-only —
+    /// deliberately NOT Reduce-Motion-gated: fades aid comprehension and contain
+    /// no movement, so they should survive Reduce Motion (AUDIT §6).
+    static let chartBannerFade: Animation = .easeInOut(duration: 0.15)
 
     // MARK: - Reduce Motion Aware Animations
 
@@ -115,6 +128,13 @@ enum AppAnimation {
         UIAccessibility.isReduceMotionEnabled
             ? .linear(duration: 0)
             : .spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0)
+    }
+
+    /// Reduce-Motion-aware fill animation for ALL progress bars/rings
+    /// (ExpenseIncomeProgressBar, BudgetProgressBar, ProportionBar, BudgetProgressCircle).
+    /// `nil` under Reduce Motion so the value jumps instantly (no width/arc sweep).
+    static var progressFillAnimation: Animation? {
+        isReduceMotionEnabled ? nil : progressBarSpring
     }
 
 }

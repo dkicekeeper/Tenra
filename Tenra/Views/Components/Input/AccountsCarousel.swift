@@ -54,7 +54,9 @@ private struct CarouselScrollTransition: ViewModifier {
 
     func body(content: Content) -> some View {
         if enabled {
-            content.scrollTransition(.animated(.easeOut(duration: 0.3))) { content, phase in
+            // `.interactive` so opacity/scale track scroll offset continuously (cards
+            // move with the finger) instead of re-tweening with a fixed easing.
+            content.scrollTransition(.interactive) { content, phase in
                 content
                     .opacity(phase.isIdentity ? 1 : 0.75)
                     .scaleEffect(phase.isIdentity ? 1 : 0.95)

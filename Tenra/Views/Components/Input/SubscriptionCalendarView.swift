@@ -190,7 +190,7 @@ struct SubscriptionCalendarView: View {
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
-                    .animation(.easeInOut(duration: AppAnimation.slow), value: currentMonthIndex)
+                    .animation(.easeInOut(duration: AppAnimation.standard), value: currentMonthIndex)
                 }
                 .frame(height: calculateCalendarHeight())
                 .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
@@ -262,7 +262,7 @@ struct SubscriptionCalendarView: View {
                         logoView(for: sub, size: AppIconSize.md)
                             .background(Circle().fill(AppColors.bgBase))
                             .clipShape(Circle())
-                            .transition(.scale.combined(with: .opacity))
+                            .transition(.scale(scale: AppAnimation.facepileHiddenScale).combined(with: .opacity))
                     }
                     if occurrences.count > 3 {
                         Text("+\(occurrences.count - 3)")
@@ -270,7 +270,7 @@ struct SubscriptionCalendarView: View {
                             .foregroundStyle(AppColors.textSecondary)
                             .frame(width: AppIconSize.md, height: AppIconSize.md)
                             .background(Circle().fill(AppColors.bgCard))
-                            .transition(.scale.combined(with: .opacity))
+                            .transition(.scale(scale: AppAnimation.facepileHiddenScale).combined(with: .opacity))
                     }
                 }
                 .animation(AppAnimation.contentSpring, value: occurrences.count)

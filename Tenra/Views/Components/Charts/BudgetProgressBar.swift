@@ -63,8 +63,8 @@ struct BudgetProgressBar: View {
             .frame(height: height)
             .clipShape(RoundedRectangle(cornerRadius: AppRadius.xs))
         }
-        .animation(AppAnimation.gentleSpring, value: percentage)
-        .animation(AppAnimation.gentleSpring, value: isOverBudget)
+        .animation(AppAnimation.progressFillAnimation, value: percentage)
+        .animation(AppAnimation.progressFillAnimation, value: isOverBudget)
     }
 }
 

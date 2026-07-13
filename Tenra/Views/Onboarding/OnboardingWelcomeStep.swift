@@ -19,6 +19,10 @@ struct OnboardingWelcomeStep: View {
 
     @State private var startDate: Date = .now
 
+    /// Onboarding hero phase spring — component-local per design-system §9
+    /// (no inline `.spring(...)` literals in view bodies).
+    private static let phaseSpring: Animation = .spring(response: 0.55, dampingFraction: 0.85)
+
     private static let phases: [LoopOnBoardingPhase] = [
         LoopOnBoardingPhase(
             symbol: "chart.pie.fill",
@@ -98,7 +102,7 @@ struct OnboardingWelcomeStep: View {
                 .padding(.bottom, AppSpacing.lg)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .animation(.spring(response: 0.55, dampingFraction: 0.85), value: index)
+            .animation(Self.phaseSpring, value: index)
             .sensoryFeedback(.selection, trigger: index)
         }
     }

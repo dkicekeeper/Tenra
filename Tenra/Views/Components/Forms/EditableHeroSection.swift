@@ -53,7 +53,8 @@ struct EditableHeroSection: View {
     // MARK: - State
 
     @State private var showingIconPicker = false
-    @State private var iconScale: CGFloat = 0
+    @State private var iconScale: CGFloat = AppAnimation.heroHiddenScale
+    @State private var iconOpacity: Double = 0
 
     // MARK: - Initializer
 
@@ -84,9 +85,11 @@ struct EditableHeroSection: View {
             // Hero Icon
             heroIconView
                 .scaleEffect(iconScale)
+                .opacity(iconOpacity)
                 .onAppear {
-                    withAnimation(AppAnimation.heroSpring) {
+                    withAnimation(AppAnimation.heroEntranceAnimation) {
                         iconScale = 1.0
+                        iconOpacity = 1.0
                     }
                 }
 

@@ -100,8 +100,8 @@ struct BudgetProgressCircle: View {
             )
             .rotationEffect(.degrees(-90))
             .frame(width: size, height: size)
-            .animation(.easeInOut(duration: AppAnimation.standard), value: progress)
-            .animation(.easeInOut(duration: AppAnimation.standard), value: arcColor)
+            .animation(AppAnimation.progressFillAnimation, value: progress)
+            .animation(AppAnimation.progressFillAnimation, value: arcColor)
 
         if let label = accessibilityLabel {
             arc

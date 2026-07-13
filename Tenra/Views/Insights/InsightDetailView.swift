@@ -139,7 +139,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
     private var chartSection: some View {
         switch insight.detailData {
         case .categoryBreakdown(let items):
-            DonutChart(slices: DonutSlice.from(items))
+            SpendingOrbChart(slices: DonutSlice.from(items))
                 .screenPadding()
         case .categoryBreakdownPaged:
             // Chart + list are rendered together per page in detailSection.
@@ -383,6 +383,11 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
 
     @State private var index: Int
 
+    /// Chart band and list pager page together, so their page transition must stay
+    /// in lockstep — one value instead of three hand-typed `easeInOut(0.25)`.
+    /// (Computed, not `static let` — this type is generic, which bars stored statics.)
+    private var pageAnimation: Animation { .easeInOut(duration: AppAnimation.standard) }
+
     init(
         pages: [PeriodCategoryBreakdown],
         currentIndex: Int,
@@ -401,9 +406,8 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: AppSpacing.lg) {
             pagerLabel
-                .padding(.vertical, AppSpacing.sm)
 
             // Fixed-height donut band with the period-switch arrows overlaid on the
             // left/right edges, vertically centered on the pie chart.
@@ -418,23 +422,14 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
     // MARK: - Header label
 
     private var pagerLabel: some View {
-        VStack(spacing: AppSpacing.xxs) {
-            Text(page?.label ?? "")
-                .font(AppTypography.h3)
-                .fontWeight(.semibold)
-                .foregroundStyle(AppColors.textPrimary)
-            if let total = page?.totalExpenses, total > 0 {
-                FormattedAmountText(
-                    amount: total,
-                    currency: currency,
-                    fontSize: AppTypography.bodySmall,
-                    fontWeight: .regular,
-                    color: AppColors.textSecondary
-                )
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .screenPadding()
+        // Iconless hero — consistent with InsightDeepDiveView's header.
+        HeroSection(
+            icon: nil,
+            title: page?.label ?? "",
+            showsIcon: false,
+            primaryAmount: page.flatMap { $0.totalExpenses > 0 ? $0.totalExpenses : nil },
+            primaryCurrency: currency
+        )
     }
 
     // MARK: - Chart band (donut + centered side arrows)
@@ -445,10 +440,11 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
             // the arrows stay put. `.id(index)` cross-fades the chart on page change.
             Group {
                 if let page, !page.items.isEmpty {
-                    DonutChart(slices: DonutSlice.from(page.items))
+                    // Always replay the entrance (per page / re-appearance) while iterating on it.
+                    SpendingOrbChart(slices: DonutSlice.from(page.items), animatesOnAppear: true)
                         .screenPadding()
                 } else {
-                    Color.clear.frame(height: 200)
+                    Color.clear.frame(height: 280)
                 }
             }
             .id(index)
@@ -462,7 +458,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
             }
             .screenPadding()
         }
-        .animation(.easeInOut(duration: 0.25), value: index)
+        .animation(pageAnimation, value: index)
     }
 
     private func arrowButton(step delta: Int, systemImage: String, enabled: Bool) -> some View {
@@ -485,7 +481,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-        .animation(.easeInOut(duration: 0.25), value: index)
+        .animation(pageAnimation, value: index)
     }
 
     @ViewBuilder
@@ -506,7 +502,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
     private func step(_ delta: Int) {
         let next = index + delta
         guard pages.indices.contains(next) else { return }
-        withAnimation(.easeInOut(duration: 0.25)) { index = next }
+        withAnimation(pageAnimation) { index = next }
     }
 
     private var emptyState: some View {

@@ -33,10 +33,15 @@ struct PaywallSheet: ViewModifier {
             // call site forgets to react to `onUnlocked`.
             PaywallView(displayCloseButton: true)
                 .onPurchaseCompleted { _ in
+                    // Rarest, highest-emotion success moment in the app — acknowledge the
+                    // unlock with a success haptic (ordinary tx saves already fire one)
+                    // before dismissing.
+                    HapticManager.success()
                     isPresented = false
                     onUnlocked?()
                 }
                 .onRestoreCompleted { _ in
+                    HapticManager.success()
                     isPresented = false
                 }
                 // App Review guideline 3.1.2(c): the Terms of Use (EULA) + Privacy

@@ -258,7 +258,7 @@ struct PeriodLineChart: View {
         if dataPoints.isEmpty {
             emptyState.frame(height: chartHeight)
         } else {
-            VStack(spacing: AppSpacing.sm) {
+            VStack(spacing: AppSpacing.lg) {
                 zoomToolbar.screenPadding()
                 bannerSlot
                 fullChart.frame(height: chartHeight)

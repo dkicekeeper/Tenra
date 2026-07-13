@@ -14,22 +14,31 @@ import SwiftUI
 struct HeroSection: View {
     let icon: IconSource?
     let iconTint: IconTint?
+    /// When `false` the icon block (and its progress ring) is omitted entirely — no
+    /// placeholder container. Use when the icon is shown elsewhere (e.g. an orb centre).
+    /// This differs from `icon: nil`, which intentionally renders a placeholder.
+    let showsIcon: Bool
     let title: String
     let primaryAmount: Double?
     let primaryCurrency: String
+    /// Colour for the primary amount; defaults to `AppColors.textSecondary`.
+    let primaryAmountColor: Color?
     let subtitle: String?
     let progress: ProgressConfig?
     let showBaseConversion: Bool
     let baseCurrency: String
 
-    @State private var iconScale: CGFloat = 0
+    @State private var iconScale: CGFloat = AppAnimation.heroHiddenScale
+    @State private var iconOpacity: Double = 0
 
     init(
         icon: IconSource?,
         title: String,
         iconTint: IconTint? = nil,
+        showsIcon: Bool = true,
         primaryAmount: Double? = nil,
         primaryCurrency: String = "",
+        primaryAmountColor: Color? = nil,
         subtitle: String? = nil,
         progress: ProgressConfig? = nil,
         showBaseConversion: Bool = false,
@@ -37,9 +46,11 @@ struct HeroSection: View {
     ) {
         self.icon = icon
         self.iconTint = iconTint
+        self.showsIcon = showsIcon
         self.title = title
         self.primaryAmount = primaryAmount
         self.primaryCurrency = primaryCurrency
+        self.primaryAmountColor = primaryAmountColor
         self.subtitle = subtitle
         self.progress = progress
         self.showBaseConversion = showBaseConversion
@@ -52,22 +63,26 @@ struct HeroSection: View {
 
     var body: some View {
         VStack(spacing: AppSpacing.md) {
-            ZStack {
-                if let progress {
-                    BudgetProgressCircle(
-                        progress: progress.fraction,
-                        size: Self.ringSize,
-                        lineWidth: 4,
-                        isOverBudget: progress.fraction > 1.0,
-                        overrideColor: progress.color
-                    )
+            if showsIcon {
+                ZStack {
+                    if let progress {
+                        BudgetProgressCircle(
+                            progress: progress.fraction,
+                            size: Self.ringSize,
+                            lineWidth: 4,
+                            isOverBudget: progress.fraction > 1.0,
+                            overrideColor: progress.color
+                        )
+                    }
+                    IconView(source: icon, style: .glassHero(tint: iconTint ?? .original))
                 }
-                IconView(source: icon, style: .glassHero(tint: iconTint ?? .original))
-            }
-            .scaleEffect(iconScale)
-            .onAppear {
-                withAnimation(AppAnimation.heroSpring) {
-                    iconScale = 1.0
+                .scaleEffect(iconScale)
+                .opacity(iconOpacity)
+                .onAppear {
+                    withAnimation(AppAnimation.heroEntranceAnimation) {
+                        iconScale = 1.0
+                        iconOpacity = 1.0
+                    }
                 }
             }
 
@@ -81,7 +96,7 @@ struct HeroSection: View {
                         amount: primaryAmount,
                         currency: primaryCurrency,
                         fontSize: AppTypography.h3,
-                        color: AppColors.textSecondary
+                        color: primaryAmountColor ?? AppColors.textSecondary
                     )
 
                     if showBaseConversion, !baseCurrency.isEmpty, primaryCurrency != baseCurrency {

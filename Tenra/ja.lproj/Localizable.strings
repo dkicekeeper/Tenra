@@ -1,0 +1,1584 @@
+/*
+   Localizable.strings (English)
+   AIFinanceManager
+*/
+
+// MARK: - Navigation Titles
+"navigation.home" = "ホーム";
+"navigation.history" = "履歴";
+"navigation.categories" = "カテゴリ";
+"navigation.settings" = "設定";
+"navigation.accounts" = "口座";
+"navigation.subscriptions" = "サブスク";
+"navigation.categoryFilter" = "カテゴリで絞り込み";
+"navigation.logoSearch" = "ロゴを検索";
+"navigation.entityMapping" = "項目の対応付け";
+"navigation.csvPreview" = "CSVプレビュー";
+"navigation.transactionPreview" = "取引プレビュー";
+
+// MARK: - Transaction Preview (Phase 16)
+"transactionPreview.found" = "%d件の取引が見つかりました";
+"transactionPreview.selectHint" = "取り込む取引を選択してください";
+"transactionPreview.selectAll" = "すべて選択";
+"transactionPreview.deselectAll" = "選択を解除";
+"transactionPreview.addSelected" = "選択した項目を追加（%d）";
+"transactionPreview.noAccount" = "口座なし";
+"transactionPreview.account" = "口座";
+"navigation.statementText" = "明細テキスト";
+"navigation.voiceInput" = "音声入力";
+"navigation.subcategorySearch" = "サブカテゴリを検索";
+"navigation.selectDate" = "日付を選択";
+"navigation.selectIcon" = "アイコンを選択";
+"navigation.selectLogo" = "ロゴを選択";
+"navigation.importResult" = "インポート結果";
+
+// MARK: - Time Filters
+"timeFilter.title" = "期間フィルタ";
+"timeFilter.presets" = "プリセット";
+"timeFilter.customPeriod" = "カスタム期間";
+"timeFilter.from" = "開始";
+"timeFilter.to" = "終了";
+"timeFilter.today" = "今日";
+"timeFilter.yesterday" = "昨日";
+"timeFilter.thisWeek" = "今週";
+"timeFilter.last30Days" = "過去30日間";
+"timeFilter.thisMonth" = "今月";
+"timeFilter.lastMonth" = "先月";
+"timeFilter.thisYear" = "今年";
+"timeFilter.lastYear" = "昨年";
+"timeFilter.allTime" = "全期間";
+"timeFilter.custom" = "カスタム期間";
+
+// MARK: - Buttons
+"button.save" = "保存";
+"button.cancel" = "キャンセル";
+"button.delete" = "削除";
+"button.close" = "閉じる";
+"button.import" = "インポート";
+"button.export" = "エクスポート";
+"button.copy" = "コピー";
+"button.paste" = "ペースト";
+"button.add" = "追加";
+"button.edit" = "編集";
+"button.done" = "完了";
+"button.continue" = "続ける";
+"button.ok" = "OK";
+"button.retry" = "再試行";
+"button.change" = "変更";
+"button.select" = "選択";
+"button.remove" = "削除";
+"button.apply" = "適用";
+
+// MARK: - Empty States
+"emptyState.noTransactions" = "取引がありません";
+"emptyState.noAccounts" = "口座がありません";
+"emptyState.noCategories" = "カテゴリがありません";
+"emptyState.noSubcategories" = "サブカテゴリがありません";
+"emptyState.noData" = "データがありません";
+"emptyState.searchNoResults" = "見つかりませんでした";
+"emptyState.startTracking" = "取引を追加して家計の管理を始めましょう";
+"emptyState.tryDifferentSearch" = "検索キーワードを変えてお試しください";
+"emptyState.tryDifferentFilters" = "フィルタを変えるか、新しい取引を追加してください";
+
+// MARK: - Settings
+"settings.title" = "設定";
+"settings.general" = "一般設定";
+"settings.baseCurrency" = "基準通貨";
+"currency.title" = "通貨";
+"currency.popular" = "よく使う通貨";
+"currency.all" = "すべての通貨";
+"currency.searchPrompt" = "通貨を検索";
+"currency.noResults.title" = "通貨が見つかりません";
+"currency.noResults.description" = "別の名前またはコードでお試しください。";
+"currency.customize" = "通貨をカスタマイズ";
+"currency.accountCurrencies" = "口座の通貨";
+"currency.customizeAction" = "カスタマイズ…";
+"settings.wallpaper" = "ホームの壁紙";
+"settings.background" = "背景";
+"settings.background.none" = "背景なし";
+"settings.background.gradient" = "支出カラー";
+"settings.background.photo" = "写真";
+"settings.background.blurWallpaper" = "壁紙をぼかす";
+"settings.background.removePhoto" = "写真を削除";
+"settings.background.preview" = "背景プレビュー";
+"settings.background.opacity" = "色の濃さ";
+"settings.background.opacityTitle" = "支出カラー";
+"settings.dataManagement" = "データ管理";
+"settings.categories" = "カテゴリ";
+"settings.subcategories" = "サブカテゴリ";
+"settings.accounts" = "口座";
+"settings.exportImport" = "エクスポート・インポート";
+"settings.exportData" = "データをエクスポート";
+"settings.importData" = "データをインポート";
+"settings.dangerZone" = "危険な操作";
+"settings.resetData" = "すべてのデータをリセット";
+"settings.resetLearning" = "学習した設定をリセット";
+
+// MARK: - Alerts
+"alert.deleteAllData.title" = "すべてのデータを削除しますか？";
+"alert.deleteAllData.message" = "すべての取引・口座・カテゴリが完全に削除されます。";
+"alert.deleteAllData.confirm" = "削除";
+"alert.deleteAllData.cancel" = "キャンセル";
+"alert.resetLearning.title" = "音声入力の設定をリセットしますか？";
+"alert.resetLearning.message" = "各カテゴリでいつも選んでいる口座を、パーサーが忘れます。取引は削除されません。";
+"alert.resetLearning.confirm" = "リセット";
+"alert.textCopied.title" = "テキストをコピーしました";
+"alert.textCopied.message" = "認識されたテキストをクリップボードにコピーしました。";
+"alert.parseError.title" = "解析エラー";
+"alert.importError.title" = "インポートエラー";
+"alert.errorTitle" = "エラー";
+
+// MARK: - Progress
+"progress.loadingData" = "データを読み込んでいます…";
+"progress.processingPDF" = "PDFを処理しています…";
+"progress.recognizingText" = "テキストを認識中：%d / %d ページ";
+"progress.page" = "%d / %d ページ";
+"progress.parsingStatement" = "明細を解析しています…";
+
+// MARK: - Errors
+"error.generic.title" = "エラー";
+"error.loadTextFailed" = "テキストの読み込みに失敗しました";
+"error.tryAgain" = "もう一度お試しください";
+"error.noTransactionsFound" = "認識されたテキストから取引が見つかりませんでした。テキストに取引明細の表が含まれているかご確認ください。";
+"error.noTransactionsStructured" = "構造化データから取引が見つかりませんでした。明細の形式が想定と異なる可能性があります。";
+"error.pdfExtraction" = "PDFからテキストを抽出できませんでした。ファイルが破損しているか、内容が空の可能性があります。";
+"error.importFailed" = "インポートに失敗しました";
+"error.coredata.migrationFailed" = "データの移行に失敗しました。アプリを再起動するか、サポートにお問い合わせください。";
+"error.coredata.initializationFailed" = "ローカルストレージの初期化に失敗しました。アプリは制限された状態で動作します。";
+"error.pdfRecognitionFailed" = "認識エラー：%@";
+
+// MARK: - Accessibility
+"accessibility.accountCard.label" = "%@ 残高 %@";
+"accessibility.accountCard.hint" = "タップして口座の詳細を表示";
+
+// MARK: - Account Actions
+"account.transfer" = "振替";
+"account.topUp" = "入金";
+"account.withdrawal" = "出金";
+
+// MARK: - Analytics
+"analytics.history" = "履歴";
+"analytics.planned" = "予定";
+"history.section.title" = "履歴";
+
+// MARK: - Transaction Form
+"transaction.account" = "口座";
+"transaction.amount" = "金額";
+"transaction.description" = "説明";
+"transaction.date" = "日付";
+"transaction.recurring" = "定期";
+"transaction.frequency" = "頻度";
+"transaction.category" = "カテゴリ";
+"transaction.subcategories" = "サブカテゴリ";
+"transaction.currency" = "通貨";
+
+// MARK: - Transaction Actions
+"transaction.importTransactions" = "取引をインポート";
+"transaction.addNew" = "取引を追加";
+"transaction.edit" = "取引を編集";
+"transaction.new" = "新しい取引";
+
+// MARK: - Search
+"search.placeholder" = "金額・カテゴリ・説明で検索";
+"search.subcategories" = "サブカテゴリを検索";
+
+// MARK: - Modals
+"modal.recognizedText.title" = "認識されたテキスト";
+"modal.recognizedText.message" = "テキストを正常に認識しました。取引をインポートするか、テキストをコピーできます。";
+"modal.newAccount" = "新しい口座";
+"modal.editAccount" = "口座を編集";
+"modal.newCategory" = "新しいカテゴリ";
+"modal.editCategory" = "カテゴリを編集";
+"modal.newSubcategory" = "新しいサブカテゴリ";
+"modal.editSubcategory" = "サブカテゴリを編集";
+
+// MARK: - Common
+"common.name" = "名前";
+"common.balance" = "残高";
+"common.type" = "種類";
+"common.icon" = "アイコン";
+"common.color" = "色";
+"common.logo" = "ロゴ";
+"common.all" = "すべて";
+"common.selected" = "選択中";
+"common.none" = "なし";
+"common.uncategorized" = "未分類";
+"common.unknown" = "不明";
+"common.cancel" = "キャンセル";
+"common.back" = "戻る";
+"common.select" = "選択";
+"common.selectAccount" = "口座を選択";
+"common.selectCategory" = "カテゴリを選択";
+"common.selectSubcategory" = "サブカテゴリを選択";
+"common.selectColor" = "色を選択";
+"common.filterBy" = "絞り込み";
+"common.frequency" = "頻度";
+"common.startDate" = "開始日";
+
+// MARK: - Date Labels
+"date.today" = "今日";
+"date.yesterday" = "昨日";
+"date.tomorrow" = "明日";
+"date.selectDate" = "日付";
+"date.choose" = "日付を選択";
+
+// MARK: - Transaction Types
+"transactionType.income" = "収入";
+"transactionType.expense" = "支出";
+"transactionType.transfer" = "振替";
+
+// MARK: - Transaction Recurring
+"transaction.deleteConfirmation.title" = "取引を削除しますか？";
+"transaction.stopRecurring.title" = "定期取引を停止しますか？";
+"transaction.stopRecurring.message" = "定期取引を停止します。今後の取引はすべて削除されます。";
+"transaction.stopRecurring.confirm" = "定期を停止";
+"transaction.stopRecurring.cancel" = "キャンセル";
+"accessibility.deleteTransaction" = "取引を削除";
+"accessibility.stopRecurring" = "定期取引を停止";
+"accessibility.swipeForOptions" = "左にスワイプして操作を表示";
+
+// MARK: - Accounts Management
+"accounts.title" = "口座";
+"account.interestToday" = "本日の利息：%@";
+"account.interestTodayPrefix" = "本日の利息：";
+"account.nextPosting" = "次回の付与：%@";
+"account.selectLogo" = "ロゴを選択";
+"account.popularBanks" = "よく使う銀行";
+"account.otherBanks" = "その他の銀行";
+"account.newAccount" = "新しい口座";
+"account.newDeposit" = "新しい預金";
+"account.namePlaceholder" = "口座名";
+"account.deleteTitle" = "口座を削除";
+"account.deleteMessage" = "「%@」の取引をどうしますか？";
+"account.deleteOnlyAccount" = "口座のみ削除";
+"account.deleteAccountAndTransactions" = "口座と取引を削除";
+"common.currency" = "通貨";
+"common.balancePlaceholder" = "0.00";
+"common.error" = "エラー";
+
+// MARK: - Deposits
+"deposit.notFound" = "預金が見つかりません";
+"deposit.title" = "預金";
+"deposit.edit" = "編集";
+"deposit.changeRate" = "金利を変更";
+"deposit.delete" = "預金を削除";
+"deposit.deleteTitle" = "預金を削除しますか？";
+"deposit.deleteMessage" = "すべての預金データと関連する取引が削除されます。";
+"deposit.balance" = "残高";
+"deposit.interestToday" = "本日の利息";
+"deposit.rate" = "金利";
+"deposit.rateAnnual" = "％（年利）";
+"deposit.capitalization" = "利息の元本組入れ";
+"deposit.capitalizationEnabled" = "有効";
+"deposit.capitalizationDisabled" = "無効";
+"deposit.postingDay" = "付与日";
+"deposit.nextPosting" = "次回の付与";
+"deposit.topUp" = "入金";
+"deposit.transferToAccount" = "口座へ振替";
+"deposit.topUpTitle" = "預金に入金";
+"deposit.transferFromTitle" = "預金から振替";
+"deposit.sourceAccount" = "振替元の口座";
+"deposit.targetAccount" = "振替先の口座";
+"deposit.noOtherAccounts" = "振替できる他の口座がありません";
+"deposit.amount" = "金額";
+"deposit.description" = "説明";
+"deposit.descriptionOptional" = "説明（任意）";
+"deposit.date" = "日付";
+"deposit.topUpDescription" = "預金への入金";
+"deposit.transferFromDescription" = "預金からの振替";
+"deposit.newRate" = "新しい金利";
+"deposit.effectiveDate" = "適用日";
+"deposit.note" = "メモ（任意）";
+"deposit.changeRateTitle" = "金利を変更";
+"deposit.name" = "預金名";
+"deposit.namePlaceholder" = "名前";
+"deposit.bank" = "銀行";
+"deposit.bankName" = "銀行名";
+"deposit.bankNamePlaceholder" = "銀行名";
+"deposit.selectLogo" = "ロゴを選択";
+"deposit.initialAmount" = "初期金額";
+"deposit.interestRate" = "金利";
+"deposit.postingDayTitle" = "利息の付与日";
+"deposit.dayOfMonth" = "毎月の日付";
+"deposit.postingDayHint" = "その月の日数が少ない場合は、月末に付与されます";
+"deposit.capitalizationTitle" = "利息の元本組入れ";
+"deposit.enableCapitalization" = "元本組入れを有効にする";
+"deposit.capitalizationHint" = "元本組入れを有効にすると、利息が毎月元本に加算されます";
+"deposit.new" = "新しい預金";
+"deposit.editTitle" = "預金を編集";
+"deposit.interestAccrual.description" = "利息";
+"deposit.interestAccrual.category" = "利息";
+
+// MARK: - Categories Management
+"categories.expenseCategories" = "支出カテゴリ";
+"categories.incomeCategories" = "収入カテゴリ";
+"category.uncategorized" = "未分類";
+"category.deleteTitle" = "カテゴリを削除しますか？";
+"category.deleteOnlyCategory" = "カテゴリのみ削除";
+"category.deleteCategoryAndTransactions" = "カテゴリと取引を削除";
+"category.deleteMessage" = "カテゴリ「%@」の取引をどうするか選んでください。";
+"category.namePlaceholder" = "カテゴリ名";
+"category.tapToSelect" = "タップして選択";
+"category.subcategories" = "サブカテゴリ";
+"category.addSubcategory" = "サブカテゴリを追加";
+"category.manageSubcategories" = "サブカテゴリを管理";
+
+// MARK: - Subcategories Management
+"subcategory.new" = "新しいサブカテゴリ";
+"subcategory.namePlaceholder" = "サブカテゴリ名";
+"subcategory.usageCount" = "%d回使用";
+"subcategory.notUsed" = "まだ使用していません";
+"subcategory.reorder" = "サブカテゴリ";
+"subcategory.sort.title" = "並べ替え";
+"subcategory.sort.alphabetical" = "五十音順";
+"subcategory.sort.lastUsed" = "最終使用日";
+"subcategory.sort.usageCount" = "使用回数順";
+
+// MARK: - Subcategory Search (2026-02-25)
+"subcategorySearch.titleSingle" = "サブカテゴリを選択";
+"subcategorySearch.searchPrompt" = "サブカテゴリを検索または作成";
+"subcategorySearch.unlink" = "リンクを解除";
+
+// MARK: - Icon Picker
+"iconPicker.title" = "画像を選択";
+"iconPicker.iconsTab" = "アイコン";
+"iconPicker.logosTab" = "ロゴ";
+"iconPicker.frequentlyUsed" = "よく使う";
+"iconPicker.foodAndDrinks" = "飲食";
+"iconPicker.transport" = "交通";
+"iconPicker.shopping" = "ショッピング";
+"iconPicker.entertainment" = "娯楽";
+"iconPicker.health" = "健康";
+"iconPicker.homeAndUtilities" = "住まい・公共料金";
+"iconPicker.moneyAndFinance" = "お金・金融";
+"iconPicker.banks" = "銀行";
+"iconPicker.streaming" = "ストリーミング・娯楽";
+"iconPicker.productivity" = "生産性・クラウド";
+"iconPicker.social" = "ソーシャル・コミュニケーション";
+"iconPicker.fitness" = "フィットネス・健康";
+"iconPicker.gaming" = "ゲーム";
+"iconPicker.devTools" = "開発ツール・AI";
+"iconPicker.services" = "サービス";
+"iconPicker.popularBanks" = "よく使う銀行";
+"iconPicker.otherBanks" = "その他の銀行";
+"iconPicker.searchOnline" = "ブランドロゴを検索…";
+"iconPicker.noLogo" = "ロゴなし";
+"iconPicker.searching" = "検索中…";
+"iconPicker.searchResults" = "検索結果";
+
+// MARK: - Category Filter
+"categoryFilter.allCategories" = "すべてのカテゴリ";
+"categoryFilter.noExpenseCategories" = "支出カテゴリがありません";
+"categoryFilter.noIncomeCategories" = "収入カテゴリがありません";
+"categoryFilter.deletedCategories" = "削除済み";
+
+// MARK: - CSV
+"csv.emptyCell" = "空";
+
+// MARK: - Accessibility Labels
+"accessibility.voiceInput" = "音声入力";
+"accessibility.voiceInputHint" = "音声で取引を記録します";
+"accessibility.importStatement" = "銀行明細をインポート";
+"accessibility.importStatementHint" = "PDFまたはCSVファイルから取引をインポートします";
+"accessibility.calendar" = "カレンダー";
+"accessibility.calendarHint" = "取引を絞り込む期間を選択します";
+"accessibility.settings" = "設定";
+"accessibility.settingsHint" = "アプリの設定を開きます";
+
+// MARK: - Quick Add Transaction / Add Transaction Modal
+"quickAdd.account" = "口座";
+"quickAdd.amount" = "金額";
+"quickAdd.description" = "説明";
+"quickAdd.descriptionPlaceholder" = "説明（任意）";
+"quickAdd.recurring" = "定期取引";
+"quickAdd.makeRecurring" = "定期";
+"quickAdd.frequency" = "頻度";
+"quickAdd.subcategories" = "サブカテゴリ";
+"quickAdd.searchSubcategories" = "サブカテゴリを検索";
+"quickAdd.searchAndAddSubcategories" = "サブカテゴリを検索して追加";
+"quickAdd.selectDate" = "日付を選択";
+"quickAdd.done" = "完了";
+"quickAdd.cancel" = "キャンセル";
+
+// MARK: - Validation Errors
+"error.validation.enterAmount" = "有効な金額を入力してください";
+"error.validation.amountGreaterThanZero" = "金額は0より大きい必要があります";
+"error.validation.selectAccount" = "口座を選択してください";
+"error.validation.accountNotFound" = "口座が見つかりません";
+
+// MARK: - Voice Input
+"voice.title" = "音声入力";
+"voice.speak" = "話してください…";
+"voice.recording" = "録音中…";
+"voice.error" = "エラー";
+"voice.errorMessage" = "録音を開始できませんでした";
+"voice.emptyText" = "テキストを認識できませんでした。もう一度お試しください。";
+"voice.ok" = "OK";
+"voice.vadToggle" = "無音で自動停止";
+"voice.vadDescription" = "2.5秒間の無音で録音を自動的に停止します";
+
+// MARK: - Voice Input Confirmation
+"voiceConfirmation.title" = "操作を確認";
+"voiceConfirmation.confirm" = "確定";
+"voiceConfirmation.type" = "操作の種類";
+"voiceConfirmation.noAccounts" = "利用できる口座がありません";
+"voiceConfirmation.selectCategory" = "カテゴリを選択";
+"voiceConfirmation.warning.accountNotFound" = "口座が見つかりません — 既定の口座を選択しました";
+"voiceConfirmation.warning.accountNotRecognized" = "口座を認識できませんでした — 既定の口座を選択しました";
+"voiceConfirmation.warning.enterAmount" = "金額を入力してください";
+"voiceConfirmation.warning.enterValidAmount" = "有効な金額を入力してください";
+"voiceConfirmation.warning.selectAccount" = "口座を選択してください";
+"voiceConfirmation.warning.accountNotSelected" = "口座が選択されていません — 既定の口座を使用します";
+"voiceConfirmation.warning.categoryNotRecognized" = "カテゴリを認識できませんでした — 既定のカテゴリを選択しました";
+"voiceConfirmation.warning.selectCategory" = "カテゴリを選択してください";
+"voiceConfirmation.warning.categoryNotSelected" = "カテゴリが選択されていません — 既定のカテゴリを使用します";
+"voiceConfirmation.warning.categoryNotFound" = "カテゴリが見つかりませんでした";
+
+// MARK: - Subscriptions
+"subscriptions.title" = "サブスク";
+"subscriptions.empty" = "サブスクがありません";
+"subscriptions.emptyDescription" = "サブスクを追加して定期的な支払いを管理しましょう";
+"subscriptions.addSubscription" = "サブスクを追加";
+"subscriptions.deleteConfirmTitle" = "サブスクを削除しますか？";
+"subscriptions.deleteConfirmMessage" = "サブスクのすべてのデータと関連する取引が削除されます。";
+"subscriptions.delete" = "削除";
+"subscriptions.deleteOnlySubscription" = "サブスクのみ削除";
+"subscriptions.deleteSubscriptionAndTransactions" = "サブスクと取引を削除";
+"subscriptions.edit" = "編集";
+"subscriptions.pause" = "一時停止";
+"subscriptions.resume" = "再開";
+"subscriptions.transactionHistory" = "取引履歴";
+"subscriptions.category" = "カテゴリ";
+"subscriptions.frequency" = "頻度";
+"subscriptions.nextCharge" = "次回請求";
+"subscriptions.account" = "口座";
+"subscriptions.status" = "ステータス";
+"subscriptions.status.active" = "有効";
+"subscriptions.status.paused" = "一時停止中";
+"subscriptions.status.archived" = "アーカイブ済み";
+"subscriptions.status.unknown" = "不明";
+
+// Notification Permission
+"notification.permission.title" = "リマインダーを有効にしますか？";
+"notification.permission.description" = "今後のサブスク請求をお知らせして、大切な支払いを見逃さないようにします";
+"notification.permission.allow" = "通知を許可";
+"notification.permission.skip" = "後で";
+"notification.subscription.reminderTitle" = "サブスクのリマインダー";
+"notification.subscription.reminderBody %@ %@ %lld" = "サブスク「%1$@」が%3$lld日後に%2$@請求されます";
+"reminder.daysBefore.custom %lld" = "%lld日前";
+
+// Active count (EmptyState)
+"emptyState.noActiveSubscriptions" = "有効なサブスクがありません";
+"subscriptions.activeCount" = "%lld件が有効";
+
+// Next charge inline text (format string for SubscriptionCard)
+"subscriptions.nextChargeOn" = "次回請求：%@";
+
+// Frequency display names
+"frequency.daily" = "毎日";
+"frequency.weekly" = "毎週";
+"frequency.monthly" = "毎月";
+"frequency.quarterly" = "四半期ごと";
+"frequency.yearly" = "毎年";
+
+// Subscription Form
+"subscription.basicInfo" = "基本情報";
+"subscription.namePlaceholder" = "サブスク名";
+"subscription.reminders" = "リマインダー";
+"subscription.scheduleSection" = "スケジュール";
+"subscription.newTitle" = "新しいサブスク";
+"subscription.editTitle" = "サブスクを編集";
+
+// Reminders
+"reminder.dayBefore.one" = "1日前";
+"reminder.daysBefore.3" = "3日前";
+"reminder.daysBefore.7" = "7日前";
+"reminder.daysBefore.30" = "30日前";
+
+// Account messages
+"account.noAccountsAvailable" = "利用できる口座がありません";
+"account.selectAccount" = "口座を選択";
+
+// Category messages
+"category.selectCategory" = "カテゴリを選択";
+
+// Error messages
+"error.subscriptionNameRequired" = "サブスク名を入力してください";
+"error.invalidAmount" = "有効な金額を入力してください";
+"error.categoryRequired" = "カテゴリを選択してください";
+"error.accountRequired" = "支払口座を選択してください";
+"error.accountNameRequired" = "口座名を入力してください";
+"error.categoryNameRequired" = "カテゴリ名を入力してください";
+
+// MARK: - Budget Management
+"budget.amount" = "予算額";
+"budget.period" = "期間";
+"budget.weekly" = "毎週";
+"budget.monthly" = "毎月";
+"yearly" = "毎年";
+"budget_reset_day" = "リセット日";
+"budget_reset_day_description" = "予算がリセットされる月の日（1〜31）";
+"budget_settings" = "予算設定";
+"current_budget" = "現在の予算";
+"current_settings" = "現在の設定";
+"remove_budget" = "予算を削除";
+"set_budget_for" = "予算を設定する対象";
+"save" = "保存";
+"cancel" = "キャンセル";
+"category.noBudgetSet" = "予算が設定されていません";
+
+// MARK: - Calendar
+"calendar.upcomingPayments" = "今後の支払い";
+"calendar.month" = "月";
+"calendar.halfYear" = "6か月";
+"calendar.year" = "年";
+"calendar.noUpcomingPayments" = "今後の支払いはありません";
+"calendar.currentMonth" = "今月";
+
+// MARK: - Transaction Forms
+"transactionForm.amount" = "金額";
+"transactionForm.description" = "説明";
+"transactionForm.descriptionPlaceholder" = "説明（任意）";
+"transactionForm.category" = "カテゴリ";
+"transactionForm.selectCategory" = "カテゴリを選択";
+"transactionForm.noCategories" = "利用できるカテゴリがありません。まずカテゴリを作成してください。";
+"transactionForm.transfer" = "振替";
+"transactionForm.topUp" = "入金";
+"transactionForm.toAccount" = "入金先口座";
+"transactionForm.fromAccount" = "出金元口座";
+"transactionForm.fromHeader" = "出金元";
+"transactionForm.toHeader" = "入金先";
+"transactionForm.noAccountsForTransfer" = "振替できる他の口座がありません";
+"transactionForm.enterPositiveAmount" = "正の金額を入力してください";
+"transactionForm.selectCategoryIncome" = "収入カテゴリを選択してください";
+"transactionForm.cannotTransferToSame" = "同じ口座には振替できません";
+"transactionForm.accountNotFound" = "口座が見つかりません";
+"transactionForm.selectTargetAccount" = "振替先の口座を選択してください";
+"transactionForm.depositTopUp" = "預金に入金";
+"transactionForm.depositWithdrawal" = "預金から引き出し";
+"transactionForm.accountTopUp" = "口座に入金";
+"transactionForm.editTransaction" = "取引を編集";
+"transactionForm.recurring" = "定期";
+"transactionForm.makeRecurring" = "これを定期にする";
+"transactionForm.searchSubcategories" = "サブカテゴリを検索";
+"transactionForm.addSubcategory" = "サブカテゴリを追加";
+"transactionForm.createSubcategory" = "「%@」を作成";
+"transactionForm.searchAndAddSubcategories" = "サブカテゴリを検索して追加";
+"transactionForm.searchOrCreateSubcategory" = "サブカテゴリを検索または作成";
+// MARK: - Recurring Transactions Errors
+"recurring.error.seriesNotFound" = "定期シリーズが見つかりません";
+"recurring.error.invalidFrequency" = "選択された頻度が無効です";
+"recurring.error.invalidAmount" = "金額は0より大きい必要があります";
+"recurring.error.invalidStartDate" = "開始日が無効です";
+"recurring.error.missingAccount" = "口座を選択してください";
+"recurring.error.emptyDescription" = "名前を空にはできません";
+"recurring.error.emptyCurrency" = "通貨が必要です";
+"recurring.error.missingSubscriptionStatus" = "サブスクのステータスが必要です";
+"recurring.error.invalidReminderOffsets" = "リマインダーの日数は正の値である必要があります";
+"recurring.validation.amountRequired" = "金額は必須です";
+"recurring.validation.descriptionRequired" = "説明は必須です";
+
+
+// MARK: - CSV Import
+"category.other" = "その他";
+"csvImport.error.missingRequiredColumn" = "必須の列がありません";
+"csvImport.error.invalidDateFormat" = "%d行目の日付形式が無効です：%@";
+"csvImport.error.invalidAmount" = "%d行目の金額が無効です：%@";
+"csvImport.error.invalidType" = "%d行目の取引タイプが無効です：%@";
+"csvImport.error.emptyValue" = "%d行目、列「%@」の値が空です";
+"csvImport.error.duplicateTransaction" = "%d行目の取引が重複しています";
+"csvImport.error.fileAccessDenied" = "ファイルへのアクセスが拒否されました";
+"csvImport.error.invalidEncoding" = "ファイルのエンコードが無効です（UTF-8が必要です）";
+"csvImport.error.emptyFile" = "ファイルが空です";
+"csvImport.error.noHeaders" = "ファイルにヘッダーが見つかりません";
+"csvImport.error.invalidFormat" = "CSV形式が無効です";
+"csvImport.error.persistenceFailed" = "インポートデータをデータベースに保存できませんでした。";
+"csvImport.progress.parsing" = "CSVファイルを解析中…";
+"csvImport.progress.validating" = "行を検証中…";
+"csvImport.progress.importing" = "取引をインポート中…";
+"csvImport.progress.finalizing" = "インポートを完了中…";
+"csvImport.result.imported" = "%d件インポート";
+"csvImport.result.skipped" = "%d件スキップ";
+"csvImport.result.duplicates" = "%d件重複";
+"csvImport.result.createdAccounts" = "%d件の口座を作成";
+"csvImport.result.createdCategories" = "%d件のカテゴリを作成";
+"csvImport.result.createdSubcategories" = "%d件のサブカテゴリを作成";
+"csvImport.result.duration" = "所要時間";
+"csvImport.result.speed" = "速度";
+"csvImport.result.title" = "インポート完了";
+"csvImport.button.cancel" = "インポートをキャンセル";
+"csvImport.button.retry" = "再試行";
+"csvImport.button.viewErrors" = "エラーを表示";
+"csvImport.preview.title" = "CSVプレビュー";
+"csvImport.preview.rows" = "行数";
+"csvImport.preview.columns" = "列数";
+"csvImport.mapping.title" = "列のマッピング";
+"csvImport.mapping.required" = "必須フィールド";
+"csvImport.mapping.optional" = "任意フィールド";
+"csvImport.mapping.date" = "日付";
+"csvImport.mapping.type" = "タイプ";
+"csvImport.mapping.amount" = "金額";
+"csvImport.mapping.currency" = "通貨";
+"csvImport.mapping.account" = "口座";
+"csvImport.mapping.none" = "なし";
+"csvImport.entityMapping.title" = "エンティティのマッピング";
+"csvImport.entityMapping.accounts" = "口座";
+"csvImport.entityMapping.categories" = "カテゴリ";
+"csvImport.entityMapping.autoCreate" = "自動的に作成されます";
+"csvImport.preview.fileInfo" = "ファイル情報";
+"csvImport.preview.headersTitle" = "ファイル内の列";
+"csvImport.preview.dataPreview" = "データプレビュー（先頭%d行）";
+"csvImport.preview.empty" = "（空）";
+"csvImport.mapping.category" = "カテゴリ";
+"csvImport.mapping.targetAccount" = "対象口座";
+"csvImport.mapping.targetCurrency" = "対象通貨";
+"csvImport.mapping.targetAmount" = "対象金額";
+"csvImport.mapping.subcategories" = "サブカテゴリ";
+"csvImport.mapping.note" = "メモ";
+"csvImport.mapping.dateFormat" = "日付形式";
+"csvImport.mapping.subcategoriesSeparator" = "サブカテゴリの区切り文字";
+"csvImport.mapping.separator.semicolon" = "（セミコロン）";
+"csvImport.mapping.separator.comma" = "（カンマ）";
+"csvImport.mapping.separator.pipe" = "（パイプ）";
+"csvImport.result.performance" = "パフォーマンス";
+"csvImport.result.successRate" = "成功率";
+"csvImport.result.errors" = "エラー";
+"csvImport.result.moreErrors" = "…他%d件のエラー";
+
+// MARK: - CSV Entity Mapping
+"csvMapping.title" = "エンティティのマッピング";
+"csvMapping.accountsSection" = "口座のマッピング";
+"csvMapping.categoriesSection" = "カテゴリのマッピング";
+"csvMapping.incomeCategoriesSection" = "収入カテゴリのマッピング";
+"csvMapping.notSelected" = "未選択";
+"csvMapping.selectAccount %@" = "「%@」の口座を選択";
+"csvMapping.createAccount %@" = "新しい口座「%@」を作成";
+"csvMapping.accountMappingTitle" = "口座のマッピング";
+"csvMapping.categoryLabel" = "カテゴリ";
+"csvMapping.incomeCategoryLabel" = "収入カテゴリ";
+"csvMapping.selectCategory %@ %@" = "「%2$@」の%1$@を選択";
+"csvMapping.createCategory %@ %@" = "新しい%1$@「%2$@」を作成";
+"csvMapping.categoryMappingTitle" = "カテゴリのマッピング";
+"csvMapping.incomeCategoryMappingTitle" = "収入カテゴリのマッピング";
+
+// MARK: - Settings Errors (Phase 1 - 2026-02-04)
+"error.settings.loadFailed" = "設定の読み込みに失敗しました：%@";
+"error.settings.saveFailed" = "設定の保存に失敗しました：%@";
+"error.settings.corruptedData" = "設定データが破損しています";
+"error.settings.migrationFailed" = "設定の移行に失敗しました";
+"error.settings.invalidCurrency" = "無効な通貨：%@";
+"error.settings.wallpaperNotFound" = "壁紙ファイルが見つかりません：%@";
+"error.settings.wallpaperCorrupted" = "壁紙ファイルが破損しています：%@";
+"error.settings.invalidLanguage" = "無効な言語：%@";
+
+// MARK: - Wallpaper Errors
+"error.wallpaper.compressionFailed" = "壁紙画像の圧縮に失敗しました";
+"error.wallpaper.fileTooLarge" = "壁紙ファイルが大きすぎます（最大10 MB）";
+"error.wallpaper.insufficientSpace" = "ディスクの空き容量が不足しています";
+"error.wallpaper.fileNotFound" = "壁紙ファイルが見つかりません";
+"error.wallpaper.corruptedFile" = "壁紙ファイルが破損しています";
+"error.wallpaper.invalidFormat" = "無効な画像形式です";
+"error.wallpaper.saveFailed" = "壁紙の保存に失敗しました：%@";
+"error.wallpaper.loadFailed" = "壁紙の読み込みに失敗しました：%@";
+
+// MARK: - Data Reset Errors
+"error.reset.failed" = "データのリセットに失敗しました：%@";
+"error.recalculation.failed" = "残高の再計算に失敗しました：%@";
+"error.reset.viewModelNotAvailable" = "必要なビューモデルが利用できません：%@";
+
+// MARK: - Export Errors
+"error.export.noData" = "エクスポートするデータがありません";
+"error.export.failed" = "データのエクスポートに失敗しました：%@";
+"error.export.fileWriteFailed" = "エクスポートファイルの書き込みに失敗しました：%@";
+"error.export.insufficientSpace" = "エクスポートに必要なディスクの空き容量が不足しています";
+
+// MARK: - Alert Titles (Settings)
+"alert.recalculateBalances.title" = "残高を再計算しますか？";
+"alert.recalculateBalances.message" = "取引をもとに、すべての口座残高を最初から再計算します。残高が正しく表示されない場合にご利用ください。";
+"alert.recalculateBalances.confirm" = "再計算";
+"alert.selectWallpaper.title" = "壁紙を選択";
+"alert.removeWallpaper.title" = "壁紙を削除しますか？";
+"alert.removeWallpaper.message" = "ホーム画面から現在の壁紙を削除します";
+"alert.exportSuccess.title" = "エクスポートが完了しました";
+"alert.exportSuccess.message" = "データを%@にエクスポートしました";
+"alert.importSuccess.title" = "インポートが完了しました";
+"alert.importSuccess.message" = "%d件の取引をインポートしました";
+
+// MARK: - Settings Labels (Additional)
+"settings.recalculateBalances" = "口座残高を再計算";
+"settings.wallpaperHistory" = "壁紙の履歴";
+"settings.recentCurrencies" = "最近使った通貨";
+"settings.exportProgress" = "エクスポート中… %d%%";
+"settings.importProgress" = "インポート中… %d%%";
+
+// MARK: - Success Messages
+"success.settings.currencyUpdated" = "通貨を更新しました";
+"success.settings.wallpaperUpdated" = "壁紙を更新しました";
+"success.settings.wallpaperRemoved" = "壁紙を削除しました";
+"success.export.completed" = "データをエクスポートしました";
+"success.reset.completed" = "すべてのデータをリセットしました";
+"success.recalculation.completed" = "残高を再計算しました";
+
+// MARK: - Import Errors (Phase 2)
+"error.import.coordinatorNotAvailable" = "インポートコーディネーターが利用できません";
+"error.import.viewModelsNotAvailable" = "必要なビューモデルが利用できません";
+
+// MARK: - Import Progress (Phase 2)
+"progress.importing" = "インポート中…";
+
+// MARK: - TransactionStore Errors (Phase 7 - 2026-02-05)
+"error.transaction.invalidAmount" = "取引の金額が無効です";
+"error.transaction.accountNotFound" = "出金元口座が見つかりません";
+"error.transaction.targetAccountNotFound" = "入金先口座が見つかりません";
+"error.transaction.categoryNotFound" = "カテゴリが見つかりません";
+"error.transaction.notFound" = "取引が見つかりません";
+"error.transaction.idMismatch" = "取引IDが一致しません";
+"error.transaction.cannotRemoveRecurring" = "取引から定期シリーズを削除できません";
+"error.transaction.cannotDeleteDepositInterest" = "預金利息の取引は削除できません";
+"error.transaction.persistenceFailed" = "取引の保存に失敗しました";
+
+// MARK: - Currency Conversion
+"currency.conversion.approximate" = "≈";
+"currency.error.conversionFailed" = "通貨の換算に失敗しました。インターネット接続をご確認ください。";
+"currency.error.ratesUnavailable" = "為替レートの読み込みに失敗しました。インターネット接続を確認してもう一度お試しください。";
+"currency.error.sourceConversionFailed" = "出金元口座の通貨換算に失敗しました。インターネット接続をご確認ください。";
+"currency.error.targetConversionFailed" = "入金先口座の通貨換算に失敗しました。インターネット接続をご確認ください。";
+"currency.error.crossConversionFailed" = "口座間の通貨換算に失敗しました。インターネット接続をご確認ください。";
+
+// MARK: - Icon Styles
+"iconStyle.shape.circle" = "円形";
+"iconStyle.shape.roundedSquare" = "角丸四角形";
+"iconStyle.shape.square" = "四角形";
+"iconStyle.tint.monochrome" = "モノクロ";
+"iconStyle.tint.hierarchical" = "階層的";
+"iconStyle.tint.palette" = "パレット";
+"iconStyle.tint.original" = "オリジナルカラー";
+"iconStyle.preset.categoryIcon" = "カテゴリアイコン";
+"iconStyle.preset.bankLogo" = "銀行ロゴ";
+"iconStyle.preset.serviceLogo" = "サービスロゴ";
+"iconStyle.preset.placeholder" = "プレースホルダー";
+"recurring.never" = "なし";
+"reminder.none" = "なし";
+
+// MARK: - Filter Buttons (Phase 14)
+"filter.allAccounts" = "すべての口座";
+"filter.allCategories" = "すべてのカテゴリ";
+"filter.allSubcategories" = "すべてのサブカテゴリ";
+"filter.categoriesCount" = "%d件のカテゴリ";
+
+// MARK: - Animated Input (Phase 16)
+"input.amountPlaceholder" = "0";
+"input.titleHint" = "タップして名前を編集";
+"input.balanceHint" = "タップして残高を編集";
+
+// MARK: - Insights (Phase 17)
+"insights.title" = "分析";
+"insights.all" = "すべて";
+"insights.spending" = "支出";
+"insights.income" = "収入";
+"insights.expenses" = "支出";
+"insights.budget" = "予算";
+"insights.recurring" = "定期";
+"insights.cashFlow" = "キャッシュフロー";
+"insights.netFlow" = "純フロー";
+"insights.availableBalance" = "利用可能残高";
+"insights.ratio" = "収入／支出比率";
+"insights.incomeVsExpense.coverage" = "収入が支出の%@をカバーしています";
+"insights.topMonths.best" = "ベスト10か月";
+"insights.topMonths.worst" = "ワースト10か月";
+"insights.loading" = "家計を分析中…";
+"insights.emptyState.title" = "まだ分析はありません";
+"insights.emptyState.description" = "取引を追加すると家計の分析が表示されます";
+"insights.noInsightsForFilter" = "このカテゴリの分析はありません";
+"insights.topCategory" = "支出トップのカテゴリ";
+"insights.ofTotal" = "全支出のうち";
+"insights.spendingSpike" = "異常な支出を検出しました";
+"insights.monthOverMonth" = "月間の支出の変化";
+"insights.monthOverMonth.week" = "週間の支出";
+"insights.monthOverMonth.month" = "月間の支出の変化";
+"insights.monthOverMonth.quarter" = "四半期の支出";
+"insights.monthOverMonth.year" = "年間の支出";
+"insights.avgDailySpending" = "1日あたりの平均支出";
+"insights.days" = "日";
+"insights.incomeGrowth" = "収入の推移";
+"insights.incomeVsExpense" = "収入と支出";
+"insights.vsPreviousPeriod" = "前の期間比";
+"insights.vsAverage" = "平均比";
+"insights.budgetOver" = "予算超過";
+"insights.budgetUnder" = "予算内";
+"insights.budgetHeadroom" = "予算の余裕";
+"insights.projectedOverspend" = "超過見込み";
+"insights.categoriesOverBudget" = "%d件のカテゴリが予算超過";
+"insights.categoriesAtRisk" = "%d件のカテゴリが超過の恐れ";
+"insights.categoriesUnderBudget" = "%d件のカテゴリが予算内";
+"insights.categoriesUnit" = "カテゴリ";
+"insights.totalRecurring" = "毎月の定期コスト";
+"insights.totalRecurring.week" = "週ごとの定期コスト";
+"insights.totalRecurring.month" = "毎月の定期コスト";
+"insights.totalRecurring.quarter" = "四半期ごとの定期コスト";
+"insights.totalRecurring.year" = "毎年の定期コスト";
+"insights.activeRecurring" = "%d件の有効な定期";
+"insights.perMonth" = "月あたり";
+"insights.perWeek" = "週あたり";
+"insights.perQuarter" = "四半期あたり";
+"insights.perYear" = "年あたり";
+"insights.netCashFlow" = "純キャッシュフロー";
+"insights.bestMonth" = "ベストな月";
+"insights.bestPeriod.week" = "ベストな週";
+"insights.bestPeriod.month" = "ベストな月";
+"insights.bestPeriod.quarter" = "ベストな四半期";
+"insights.bestPeriod.year" = "ベストな年";
+"insights.bestPeriod.allTime" = "ベストな期間";
+"insights.worstMonth" = "ワーストな月";
+"insights.worstPeriod.week" = "ワーストな週";
+"insights.worstPeriod.month" = "ワーストな月";
+"insights.worstPeriod.quarter" = "ワーストな四半期";
+"insights.worstPeriod.year" = "ワーストな年";
+"insights.worstPeriod.allTime" = "ワーストな期間";
+"insights.projectedBalance" = "残高の見込み";
+"insights.in30Days" = "30日後";
+"insights.recurringAndExpenses" = "定期＋平均支出";
+"insights.projected" = "見込みの変化";
+"insights.currentBalance" = "現在の残高";
+"insights.cashFlowTrend" = "キャッシュフローの推移";
+"insights.breakdown" = "内訳";
+"insights.monthlyBreakdown" = "月ごとの内訳";
+"insights.breakdown.week" = "週ごとの内訳";
+"insights.breakdown.month" = "月ごとの内訳";
+"insights.breakdown.quarter" = "四半期ごとの内訳";
+"insights.breakdown.year" = "年ごとの内訳";
+"insights.noExpenses" = "支出なし";
+"insights.noExpensesForPeriod" = "この期間の支出はありません";
+"insights.swipeHint" = "スワイプして他の期間を表示";
+"insights.other" = "その他";
+"insights.noSubcategory" = "サブカテゴリなし";
+"insights.spendingTrend" = "支出の推移";
+"insights.subcategories" = "サブカテゴリ";
+"insights.periodComparison" = "期間の比較";
+"insights.daysLeft" = "残り%d日";
+
+// Granularity picker
+"insights.granularity.week" = "週ごと";
+"insights.granularity.month" = "月ごと";
+"insights.granularity.quarter" = "四半期ごと";
+"insights.granularity.year" = "年ごと";
+"insights.granularity.allTime" = "全期間";
+"insights.granularity.week.short" = "週";
+"insights.granularity.month.short" = "月";
+"insights.granularity.quarter.short" = "四半期";
+"insights.granularity.year.short" = "年";
+"insights.granularity.allTime.short" = "全体";
+"insights.bucket.week.label" = "直近7日間";
+"insights.summary.windowTotalsLabel" = "チャート全体の期間で";
+"insights.formula.value.months" = "%.1fヶ月";
+"insights.formula.value.days" = "%d日";
+"insights.formula.savingsRate.title" = "貯蓄率";
+"insights.formula.savingsRate.heroLabel" = "稼いだ1円あたり、手元に残る割合";
+"insights.formula.savingsRate.formulaHeader" = "計算方法";
+"insights.formula.savingsRate.row.period" = "期間";
+"insights.formula.savingsRate.row.income" = "収入";
+"insights.formula.savingsRate.row.expenses" = "支出";
+"insights.formula.savingsRate.row.saved" = "貯蓄額（収入 − 支出）";
+"insights.formula.savingsRate.row.rate" = "貯蓄率";
+"insights.formula.savingsRate.explainer" = "収入のうち、その月を乗り越えて手元に残る割合です。貯蓄率が高いほど自由度が増します。収入の少ない月の余裕、目標達成の加速、そして本当の非常時の備えにつながります。";
+"insights.formula.savingsRate.rec.good" = "貯蓄率が20%%を超えています。この習慣を保ち、余剰分を長期的な目標に振り向けることをご検討ください。";
+"insights.formula.savingsRate.rec.fair" = "まずまずですが、20%%を目指すと毎月あと%@の貯蓄になります。増えてしまった定期コストや単発の支出を見直しましょう。";
+"insights.formula.savingsRate.rec.low" = "10%%未満では余裕がありません。毎月あと%@を目標にしましょう。まずは一番大きい自由支出のカテゴリから始めてください。";
+"insights.formula.emergencyFund.title" = "生活防衛資金";
+"insights.formula.emergencyFund.heroLabel" = "残高がまかなえる支出の月数";
+"insights.formula.emergencyFund.formulaHeader" = "計算方法";
+"insights.formula.emergencyFund.row.balance" = "残高の合計";
+"insights.formula.emergencyFund.row.avgExpenses" = "平均月間支出（直近3ヶ月）";
+"insights.formula.emergencyFund.row.monthsCovered" = "まかなえる月数";
+"insights.formula.emergencyFund.explainer" = "明日から収入が止まった場合に、口座で通常の支出を何ヶ月まかなえるかを示します。多くのプランナーが推奨する最低ラインは3ヶ月以上、6ヶ月あれば安心の備えです。";
+"insights.formula.emergencyFund.rec.good" = "3ヶ月の目安を超えています。余剰分は、より高い利回りの口座に置くか、長期的な目標に振り向けることをご検討ください。";
+"insights.formula.emergencyFund.rec.gap" = "3ヶ月分の備えに達するには、%@の積み増しが必要です。少額の毎月の積み立てでも効果は積み重なります。貯蓄率に合った金額から始めましょう。";
+"insights.formula.spendingForecast.title" = "月末の支出予測";
+"insights.formula.spendingForecast.heroLabel" = "今月の支出合計の見込み";
+"insights.formula.spendingForecast.formulaHeader" = "計算方法";
+"insights.formula.spendingForecast.row.spentSoFar" = "今月これまでの支出";
+"insights.formula.spendingForecast.row.avgDaily" = "1日あたりの平均支出（直近30日）";
+"insights.formula.spendingForecast.row.daysLeft" = "残り日数";
+"insights.formula.spendingForecast.row.projectedRest" = "月内の残り期間の見込み";
+"insights.formula.spendingForecast.row.total" = "予測合計";
+"insights.formula.spendingForecast.explainer" = "これまでの支出 ＋（1日あたりの平均支出 × 残り日数）＋ 未処理の定期。定期は残り日数で按分されるため、今日が25日で28日のサブスクがある場合でも二重計上されません。";
+"insights.formula.spendingForecast.rec.overrun" = "収入を%@超過する見込みです。自由支出を見直しの段階に前倒しするか、任意の購入を来月まで延期しましょう。";
+"insights.formula.spendingForecast.rec.onTrack" = "予測では%@の余裕が残ります。予定外の購入を避けて確保するか、今すぐ貯蓄に回しましょう。";
+"insights.formula.spendingForecast.rec.noIncome" = "今月はまだ収入が記録されていません。予測は参考情報のみです。";
+"insights.formula.balanceRunway.title" = "残高持続月数";
+"insights.formula.balanceRunway.heroLabel" = "現在のペースで残高がなくなるまでの月数";
+"insights.formula.balanceRunway.heroLabel.growing" = "平均の月間余剰";
+"insights.formula.balanceRunway.formulaHeader" = "計算方法";
+"insights.formula.balanceRunway.row.balance" = "現在の残高";
+"insights.formula.balanceRunway.row.avgIncome" = "平均月間収入（3ヶ月）";
+"insights.formula.balanceRunway.row.avgExpenses" = "平均月間支出（3ヶ月）";
+"insights.formula.balanceRunway.row.burn" = "月間の持ち出し（支出 − 収入）";
+"insights.formula.balanceRunway.row.netFlow" = "平均の純収支";
+"insights.formula.balanceRunway.row.runway" = "持続月数";
+"insights.formula.balanceRunway.explainer" = "残高 ÷ 月間の持ち出し。3ヶ月の目安は健全な非常時の備えに相当し、1ヶ月を下回ると1回の悪い給料サイクルで備えが尽きてしまいます。";
+"insights.formula.balanceRunway.explainer.growing" = "収入が支出を上回っているため、残高は増えています。ヒーローの値は平均の月間余剰です。このペースなら残高は無期限に持続します。";
+"insights.formula.balanceRunway.rec.growing" = "収支はプラスです。余剰分は寝かせず、目標・返済・より高利回りの貯蓄に振り向けましょう。";
+"insights.formula.balanceRunway.rec.long" = "持続月数が3ヶ月を超えており、十分な備えがあります。余剰資金を長期的な商品に活用することをご検討ください。";
+"insights.formula.balanceRunway.rec.short" = "3ヶ月を下回っています。月あたり約%@持ち出しを減らせば3ヶ月の備えに届きます。まずは一番大きい自由支出のカテゴリから始めましょう。";
+"insights.formula.balanceRunway.rec.critical" = "持続月数が1ヶ月未満です。早急に差を埋めましょう。大きな定期支払いを1つ止めるだけでも日数を稼げます。";
+"insights.formula.yearOverYear.title" = "前年同月比の支出";
+"insights.formula.yearOverYear.heroLabel" = "昨年の同じ月との変化";
+"insights.formula.yearOverYear.formulaHeader" = "計算方法";
+"insights.formula.yearOverYear.row.thisMonth" = "今月";
+"insights.formula.yearOverYear.row.lastYear" = "昨年の同じ月";
+"insights.formula.yearOverYear.row.absDelta" = "実額の変化";
+"insights.formula.yearOverYear.row.delta" = "変化率";
+"insights.formula.yearOverYear.explainer" = "今月の支出合計を、1年前の同じ月と比較します。季節的な変動と本当の傾向を見分けるのに役立ちます。12月はいつも支出が多いものですが、「今年の」12月は昨年より重いのでしょうか。";
+"insights.formula.yearOverYear.rec.down" = "支出が前年同月より大きく減っています。意図しない場合は、どのカテゴリが落ち着いたかを確認してください。記録漏れの定期が隠れていることもあります。";
+"insights.formula.yearOverYear.rec.up" = "支出が%@増えています。両方の月の上位カテゴリを比べてみましょう。新しいサブスク1件、家賃サイクルの追加、または大きな買い物1回が原因のことが多いです。";
+"insights.formula.yearOverYear.rec.flat" = "昨年比の変化はわずかで、支出パターンは安定しています。来月も同じ指標を追って、傾向のずれを見つけましょう。";
+"insights.formula.projectedBalance.title" = "残高の見込み";
+"insights.formula.projectedBalance.heroLabel" = "期間末の残高の推定";
+"insights.formula.projectedBalance.formulaHeader" = "計算方法";
+"insights.formula.projectedBalance.row.currentBalance" = "現在の残高";
+"insights.formula.projectedBalance.row.recurringNet" = "期間内の定期の純収支";
+"insights.formula.projectedBalance.row.avgExpenses" = "期間内の平均の定期外支出";
+"insights.formula.projectedBalance.row.horizon" = "対象期間";
+"insights.formula.projectedBalance.row.projected" = "残高の見込み";
+"insights.formula.projectedBalance.explainer" = "現在の残高 ＋（定期の純収支 − 平均の定期外支出）を選択した期間に合わせて拡大したものです。直近3つのバケットが今後を代表すると仮定した、単純な線形の見込みです。正確な予測ではなく、早めの警告としてお使いください。";
+"insights.formula.projectedBalance.rec.growing" = "見込みは上向きです。現在のパターンなら期間を通じて残高が増えていきます。";
+"insights.formula.projectedBalance.rec.dropping" = "見込みでは期間中に%@減少します。どのカテゴリが支出を押し上げたかを特定しましょう。そこが対策の効果が積み重なる場所です。";
+"insights.wealth.growth.compare" = "%@ 対 %@";
+
+"insights.subscriptionGrowth.compareAgo" = "%dヶ月前比";
+"insights.duplicateSubscriptions.subtitle" = "重複の可能性%d組";
+"insights.formula.subscriptionGrowth.title" = "サブスクの増加";
+"insights.formula.subscriptionGrowth.heroLabel" = "毎月の定期支出の変化";
+"insights.formula.subscriptionGrowth.formulaHeader" = "計算方法";
+"insights.formula.subscriptionGrowth.row.lookback" = "比較の期間";
+"insights.formula.subscriptionGrowth.row.previous" = "当時の合計（月額換算）";
+"insights.formula.subscriptionGrowth.row.current" = "現在の合計（月額換算）";
+"insights.formula.subscriptionGrowth.row.addedCount" = "以降に追加したサブスク";
+"insights.formula.subscriptionGrowth.row.delta" = "変化";
+"insights.formula.subscriptionGrowth.explainer" = "有効なすべてのサブスクの月額換算を合計し、比較期間の開始時点ですでに存在していたサブスクだけで計算した同じ合計と比べます。比較期間は詳細度の選択に応じて変わります。";
+"insights.formula.subscriptionGrowth.rec.growing" = "定期支出が月あたり%@増えました。新しいサブスクの中に、実際には使っていないものがないか見直しましょう。定期の縛りは年単位で積み重なります。";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "定期支出を削減できました。新しいサービスの誘惑があってもこの姿勢を保ちましょう。空いたキャッシュフローは貯蓄や返済に振り向けてください。";
+"insights.formula.subscriptionGrowth.rec.stable" = "定期支出はほぼ横ばいです。構成は安定しています。使っていないサービスがそっと残らないよう、定期的に見直しましょう。";
+
+"insights.formula.categoryTrend.title" = "カテゴリの推移";
+"insights.formula.categoryTrend.heroLabel" = "最も増えている支出カテゴリ";
+"insights.formula.categoryTrend.formulaHeader" = "直近の月ごとの支出";
+"insights.formula.categoryTrend.row.month" = "月";
+"insights.formula.categoryTrend.row.delta" = "前月比";
+"insights.formula.categoryTrend.explainer" = "比較期間（詳細度に応じて変わります）のカテゴリ別の月間合計を調べ、連続して最も長く増加しているカテゴリを表示します。予算超過として現れる前に、緩やかなずれをつかむのに役立ちます。";
+"insights.formula.categoryTrend.rec" = "%@が%dヶ月連続で増えています。最新の取引を以前の月と比べてみましょう。定期取引1件や習慣の変化が連続の原因であることが多いです。";
+"insights.granularity.prev.week" = "前週比";
+"insights.granularity.prev.month" = "前月比";
+"insights.granularity.prev.quarter" = "前四半期比";
+"insights.granularity.prev.year" = "前年比";
+
+// Wealth card
+"insights.wealth" = "資産";
+"insights.wealth.title" = "積み上げた資産";
+"insights.wealth.subtitle" = "全口座の残高合計";
+"insights.wealth.accounts" = "口座";
+"insights.wealthGrowth" = "資産の変化";
+
+// Savings
+"insights.savings" = "貯蓄";
+"insights.savingsRate" = "貯蓄率";
+"insights.emergencyFund" = "生活防衛資金";
+"insights.monthsCovered" = "%dヶ月分をカバー";
+"insights.months" = "ヶ月";
+
+// Spending
+"insights.categoryTrend" = "支出の推移";
+"insights.categoryTrend.risingMonths" = "%dヶ月連続で増加";
+"insights.subscriptionGrowth" = "サブスクの増加";
+"insights.vsThreeMonthsAgo" = "3ヶ月前比";
+
+// Forecasting
+"insights.forecasting" = "予測";
+"insights.spendingForecast" = "毎月の支出予測";
+"insights.balanceRunway" = "残高持続月数";
+"insights.balanceRunway.months" = "ヶ月分の持続";
+"insights.yearOverYear" = "前年同月比";
+"insights.incomeSourceBreakdown" = "収入源";
+
+// Health Score & Behavioral
+"insights.healthScore" = "家計";
+"insights.healthGrade.excellent" = "非常に良い";
+"insights.healthGrade.good" = "良い";
+"insights.healthGrade.fair" = "まずまず";
+"insights.healthGrade.needsAttention" = "要注意";
+"insights.duplicateSubscriptions.title" = "重複しているサブスクの可能性";
+"insights.duplicateSubscriptions.subtitle" = "重複の可能性を検出しました";
+"insights.accountDormancy.title" = "使われていない口座を検出";
+"insights.accountDormancy.subtitle" = "30日以上使われていない口座";
+"insights.dormant.accounts" = "使われていない口座";
+
+// MARK: - Tab Bar
+"tab.home" = "ホーム";
+"tab.analytics" = "分析";
+"tab.finances" = "ファイナンス";
+"tab.settings" = "設定";
+"tab.voice" = "音声";
+"tab.ocr" = "インポート";
+"tab.add" = "追加";
+"tab.close" = "閉じる";
+
+// MARK: - Finances
+"finances.title" = "ファイナンス";
+"finances.accounts.title" = "口座";
+"finances.accounts.totalLabel" = "残高の合計";
+"finances.accounts.count" = "%lld件の口座";
+"finances.accounts.empty" = "口座がありません";
+"finances.deposits.title" = "預金";
+"finances.deposits.count" = "%lld件の預金";
+"finances.deposits.empty" = "預金がありません";
+"deposit.listTitle" = "預金";
+"deposit.emptyTitle" = "預金がありません";
+"deposit.emptyDescription" = "預金を追加して、利息の発生と元金組入れを管理しましょう";
+"account.balanceSection" = "残高";
+"account.includeInBalance" = "残高に含める";
+"account.includeInBalanceHint" = "この口座を残高の合計と分析に含めます。";
+"finances.categories.title" = "カテゴリ";
+"finances.categories.count" = "%lld件のカテゴリ";
+"finances.categories.empty" = "カテゴリがありません";
+"finances.subcategories.title" = "サブカテゴリ";
+"finances.subcategories.count" = "%lld件のサブカテゴリ";
+"finances.subcategories.linkedTo" = "%lld件のカテゴリにわたって";
+"finances.subcategories.empty" = "サブカテゴリがありません";
+
+// MARK: - Loans
+"loan.listTitle" = "ローン";
+"loan.filterAll" = "すべて";
+"loan.filterCredits" = "ローン";
+"loan.filterInstallments" = "分割払い";
+"loan.filter" = "絞り込み";
+"loan.emptyTitle" = "ローンがありません";
+"loan.emptyDescription" = "ローンや分割払いを追加して、支払いと進捗を管理しましょう";
+"loan.totalDebt" = "負債の合計";
+"loan.monthlyTotal" = "毎月";
+"loan.activeCount" = "%d件の有効なローン";
+"loan.typeAnnuityShort" = "ローン";
+"loan.typeInstallmentShort" = "分割払い";
+"loan.of" = "／";
+"loan.remainingShort" = "残り%d回の支払い";
+"loan.notFound" = "ローンが見つかりません";
+"loan.title" = "ローン";
+"loan.edit" = "ローンを編集";
+"loan.changeRate" = "金利を変更";
+"loan.earlyRepayment" = "繰上げ返済";
+"loan.history" = "支払い履歴";
+"loan.actions" = "ローンの操作";
+"loan.delete" = "ローンを削除";
+"loan.deleteTitle" = "ローンを削除しますか？";
+"loan.deleteMessage" = "すべてのローンのデータと支払い履歴が削除されます。";
+"loan.paidOff" = "完済";
+"loan.remainingPrincipal" = "残り";
+"loan.nextPayment" = "次回の支払い：%@";
+"loan.currentPaymentBreakdown" = "今回の支払いの内訳";
+"loan.principalPortion" = "元金";
+"loan.interestPortion" = "利息";
+"loan.noInterest" = "分割払い — 利息はかかりません";
+"loan.stats" = "統計";
+"loan.originalAmount" = "当初の金額";
+"loan.interestRate" = "金利";
+"loan.annual" = "年利";
+"loan.totalInterestPaid" = "支払った利息";
+"loan.projectedTotalInterest" = "利息の合計（見込み）";
+"loan.term" = "期間";
+"loan.termValue" = "%dヶ月";
+"loan.paymentsMade" = "支払い済み";
+"loan.paymentsRemaining" = "残り";
+"loan.paymentsRemainingValue" = "%d回の支払い";
+"loan.endDate" = "終了日";
+"loan.earlyRepayments" = "繰上げ返済";
+"loan.amortizationSchedule" = "返済スケジュール";
+"loan.noSchedule" = "スケジュールがありません";
+"loan.showAllPayments" = "%d回すべての支払いを表示";
+"loan.interestShort" = "利息：%@";
+"loan.makeEarlyRepayment" = "繰上げ返済";
+"loan.convertTitle" = "ローンに変換";
+"loan.editTitle" = "ローンを編集";
+"loan.newTitle" = "新しいローン";
+"loan.nameHeader" = "名前";
+"loan.namePlaceholder" = "例：自動車ローン";
+"loan.bankHeader" = "銀行";
+"loan.bankLabel" = "銀行";
+"loan.bankPlaceholder" = "銀行名";
+"loan.typeHeader" = "ローンの種類";
+"loan.typePicker" = "種類";
+"loan.typeAnnuity" = "元利均等（ローン）";
+"loan.typeInstallment" = "分割払い";
+"loan.installmentHint" = "分割払い＝金利0%、均等の支払い";
+"loan.principalHeader" = "ローンの金額";
+"loan.principalPlaceholder" = "ローンの総額";
+"loan.interestRateHeader" = "金利";
+"loan.interestRateLabel" = "金利（年）";
+"loan.rateAnnualSuffix" = "% 年利";
+"loan.termHeader" = "期間";
+"loan.termPlaceholder" = "月数";
+"loan.months" = "ヶ月";
+"loan.paymentDayHeader" = "支払日";
+"loan.paymentDay" = "毎月の日";
+"loan.paymentDayHint" = "支払期日となる毎月の日";
+"loan.startDateHeader" = "開始日";
+"loan.startDate" = "ローンの開始日";
+"loan.repaymentAmount" = "返済額";
+"loan.amountPlaceholder" = "金額";
+"loan.remainingBalance" = "残り：%@";
+"loan.repaymentDate" = "日付";
+"loan.date" = "日付";
+"loan.repaymentType" = "返済の方針";
+"loan.strategy" = "方針";
+"loan.reduceTerm" = "期間を短縮";
+"loan.reducePayment" = "支払額を減らす";
+"loan.reduceTermHint" = "毎月の支払額を保ち、早く完済する";
+"loan.reducePaymentHint" = "期間を保ち、毎月の支払額を下げる";
+"loan.impact" = "影響";
+"loan.note" = "メモ";
+"loan.notePlaceholder" = "任意のメモ";
+"loan.defaultTagging" = "既定のカテゴリ";
+"loan.defaultTaggingHint" = "支払いフォームにあらかじめ入力します。前回の支払いで最後に使ったカテゴリが優先されます。";
+"loan.subcategoryHeader" = "サブカテゴリ";
+"loan.subcategoryEmpty" = "上でカテゴリを選ぶと、サブカテゴリのタグを追加できます";
+"loan.noDefaultCategory" = "カテゴリなし";
+"loan.noDefaultSubcategory" = "サブカテゴリなし";
+"loan.earlyRepaymentTitle" = "繰上げ返済";
+"loan.termReduction" = "短縮された期間";
+"loan.monthsValue" = "%dヶ月";
+"loan.newEndDate" = "新しい終了日";
+"loan.paymentReduction" = "減額された支払額";
+"loan.newMonthlyPayment" = "新しい毎月の支払額";
+"loan.newRate" = "新しい金利";
+"loan.effectiveDate" = "適用開始日";
+"loan.rateChangeImpact" = "影響";
+"loan.paymentChange" = "変化";
+"loan.enterRateForPreview" = "金利を入力すると影響が表示されます";
+"loan.changeRateTitle" = "金利を変更";
+"loan.payment.description" = "ローンの支払い";
+
+// Loans Phase 5
+"loan.typeLockedHint" = "ローンの種類は作成後に変更できません";
+"loan.makePayment" = "支払う";
+"loan.paymentTitle" = "ローンの支払い";
+"loan.paymentAmount" = "支払額";
+"loan.sourceAccount" = "支払元の口座";
+"loan.selectSourceAccount" = "支払元の口座を選択";
+"loan.scheduledPayment" = "予定：%@";
+"loan.noSourceAccounts" = "利用できる口座がありません";
+"loan.payAll" = "すべて支払う";
+"loan.payAllTitle" = "すべてのローンを支払う";
+"loan.payAllTotal" = "支払いの合計";
+"loan.payAllConfirm" = "すべて支払う";
+
+// MARK: - Icon Picker (new categories)
+"iconPicker.localServices" = "地域のサービス";
+"iconPicker.telecom" = "通信";
+"iconPicker.cis" = "CISのサービス";
+"iconPicker.suggestions" = "候補";
+"iconPicker.onlineSearch" = "オンライン";
+"iconPicker.brandDomainHint" = "ブランドのドメインを入力（例：netflix.com）";
+
+// MARK: - Settings (extras)
+"settings.experiments" = "実験的機能";
+"settings.debug.relaunchOnboarding" = "オンボーディングを再表示";
+"settings.notificationDebug" = "通知のデバッグ";
+
+// MARK: - Settings (About)
+"settings.about" = "情報";
+"settings.privacyPolicy" = "プライバシーポリシー";
+"settings.termsOfUse" = "利用規約";
+"settings.version" = "バージョン";
+
+// MARK: - Voice (extras)
+"voice.openSettings" = "設定を開く";
+
+// MARK: - PDF Errors
+"pdf.error.invalidDocument" = "PDFドキュメントを開けませんでした。ファイルが有効なPDFかご確認ください。";
+"pdf.error.noTextFound" = "PDFからテキストを抽出できませんでした。ドキュメントが破損しているか、空の可能性があります。";
+"pdf.error.unsupportedFormat" = "対応していないPDF形式です。";
+"pdf.error.ocr %@" = "テキスト認識エラー：%@";
+
+// MARK: - iCloud Sync
+"settings.cloud" = "バックアップ";
+"settings.cloud.sync" = "iCloud同期";
+"settings.cloud.status.synced" = "同期済み";
+"settings.cloud.status.syncing" = "同期中…";
+"settings.cloud.status.initialSync" = "初回同期";
+"settings.cloud.status.initialSyncMessage" = "数分かかる場合があります";
+"settings.cloud.status.error" = "同期エラー";
+"settings.cloud.status.disabled" = "オフ";
+"settings.cloud.status.noAccount" = "設定でiCloudにサインインしてください";
+"settings.cloud.lastSync" = "前回の同期: %@";
+"settings.cloud.changes" = "%d件送信 · %d件受信";
+"settings.cloud.backups" = "バックアップ";
+"settings.cloud.createBackup" = "バックアップを作成";
+"settings.cloud.backupCreated" = "バックアップを作成しました";
+"settings.cloud.restore" = "復元";
+"settings.cloud.restoreSuccess" = "データを復元しました";
+"settings.cloud.restoring" = "復元中…";
+"settings.cloud.restoringSubtitle" = "アプリを閉じないでください";
+"settings.cloud.delete" = "削除";
+"settings.cloud.storage" = "ストレージ";
+"settings.cloud.storageUsed" = "%@ / %@";
+"settings.cloud.backupMetadata" = "%d口座 · %d件の取引 · %@";
+"settings.cloud.iCloud.toggle" = "iCloudにバックアップを保存";
+"settings.cloud.iCloud.footer" = "バックアップはiCloud Driveに保存され、ほかのデバイスでも利用できます。";
+"settings.cloud.iCloud.unavailable" = "iCloud Driveにバックアップを保存するには、設定でiCloudにサインインしてください。";
+"settings.cloud.iCloud.movedToICloud" = "バックアップをiCloudに移動しました";
+"settings.cloud.iCloud.movedToLocal" = "バックアップをこのデバイスに移動しました";
+"settings.cloud.tapToRestoreHint" = "バックアップをタップすると復元できます。左にスワイプで削除します。";
+"alert.restore.title" = "バックアップを復元しますか？";
+"alert.restore.message" = "現在のデータはすべて、%@のバックアップに置き換えられます。";
+"alert.restore.confirm" = "復元";
+"alert.disableSync.title" = "iCloud同期をオフにしますか？";
+"alert.disableSync.message" = "データはこのデバイス内にのみ保存されます。";
+"alert.disableSync.confirm" = "オフにする";
+
+// Backup errors
+"error.backup.noActiveStore" = "有効なデータベースが見つかりません";
+"error.backup.copyFailed" = "バックアップのコピーに失敗しました";
+"error.backup.incompatibleVersion" = "バックアップのバージョンに互換性がありません";
+"error.backup.iCloudUnavailable" = "iCloudを利用できません。設定でiCloudにサインインしてから、もう一度お試しください。";
+
+// MARK: - Loans (Form)
+"loan.addLoan" = "ローンを追加";
+"loan.amountLabel" = "金額";
+"loan.detailsSection" = "ローンの詳細";
+"loan.noteLabel" = "メモ";
+"loan.payAllLoans" = "ローン";
+"loan.paymentSection" = "返済";
+"loan.rateLabel" = "年利";
+"loan.scheduleSection" = "スケジュール";
+"loan.termLabel" = "期間（月）";
+"loan.error.exceedsRemaining" = "金額が残高を超えています";
+"loan.error.invalidAmount" = "有効な金額を入力してください";
+"loan.error.invalidRate" = "有効な金利を入力してください";
+"loan.error.invalidTerm" = "有効な期間を入力してください";
+"loan.error.noSourceAccount" = "引き落とし口座を選択してください";
+"loan.linkPayments" = "返済を紐づける";
+"loan.linkPayments.title" = "返済を紐づける";
+"loan.linkPayments.selected" = "%d件選択中";
+"loan.linkPayments.selectedWithAmount" = "%d件選択中 · %@";
+"loan.linkPayments.search" = "内容または金額で検索";
+"loan.linkPayments.link" = "%d件の返済を紐づける";
+"loan.linkPayments.empty" = "一致する取引がありません";
+"loan.linkPayments.error.notFound" = "ローンが見つかりません";
+"loan.add" = "ローンを追加";
+"loan.markPaid" = "支払い済みにする";
+"loan.markUnpaid" = "未払いに戻す";
+"loan.paymentFailed" = "支払いに失敗しました。もう一度お試しください。";
+"loan.earlyRepaymentFailed" = "繰り上げ返済に失敗しました。もう一度お試しください。";
+"loan.payAllPartialFailed %@" = "一部の支払いに失敗しました: %@";
+
+// Subscription Link Payments
+"subscription.linkPayments.title" = "取引を紐づける";
+"subscription.linkPayments.search" = "内容または金額で検索";
+"subscription.linkPayments.searchPlaceholder" = "検索";
+"subscription.linkPayments.selectedWithAmount" = "%d件選択中 · %@";
+"subscription.linkPayments.link" = "%d件を紐づける";
+"subscription.linkPayments.empty" = "一致する取引がありません";
+"subscription.linkPayments.amountExact" = "一致";
+"subscription.linkPayments.amountTolerance" = "±30%";
+"subscription.linkPayments.amountAll" = "すべて";
+"subscription.linkPayments.unknownAccount" = "不明な口座";
+"common.done" = "完了";
+"deposit.linkInterest.title" = "利息の入金を紐づける";
+"deposit.recalculateInterest" = "利息を再計算";
+"subscription.linkPayments.selectAll" = "すべて選択";
+"subscription.linkPayments.deselectAll" = "選択を解除";
+"subscriptions.spentAllTime" = "累計の支出";
+"subscription.edit.propagate.title" = "紐づいた取引を更新しますか？";
+"subscription.edit.propagate.message" = "このサブスクに紐づく既存の取引に変更を反映しますか？";
+"subscription.edit.propagate.seriesOnly" = "サブスクのみ";
+"subscription.edit.propagate.future" = "今後の取引";
+"subscription.edit.propagate.all" = "すべての取引";
+"subscription.unlinkAll" = "すべての取引の紐づけを解除";
+"subscription.unlinkAll.title" = "すべての取引の紐づけを解除しますか？";
+"subscription.unlinkAll.confirm" = "すべて解除";
+"subscription.unlinkAll.message" = "%d件の取引からサブスクの紐づけを解除しますか？取引自体はそのまま残ります。";
+"subscription.linkPayments.subcategories" = "サブカテゴリ";
+"subscription.linkPayments.subcategoriesCount" = "%d件のサブカテゴリ";
+"subscription.filterAll" = "すべて";
+
+// MARK: - Accounts (Types & Actions)
+"account.convertToDeposit" = "預金に変換";
+"account.postingWithInterest" = "計上: %@ · ";
+"account.type.deposit" = "預金";
+"account.type.loan" = "ローン";
+"account.type.regular" = "口座";
+
+// MARK: - Deposits (Form)
+"deposit.bankDetails" = "銀行・金利";
+"deposit.convertTitle" = "預金に変換";
+"deposit.postingWithDate" = "計上: %@";
+"deposit.schedule" = "スケジュール";
+
+// MARK: - Transactions (Misc)
+"transaction.resumeRecurring" = "再開";
+"transaction.type.internalTransfer" = "振替";
+"transaction.type.loanPayment" = "ローン返済";
+"transaction.type.loanEarlyRepayment" = "繰り上げ返済";
+"transaction.type.depositTopUp" = "預金の預け入れ";
+"transaction.type.depositWithdrawal" = "預金の引き出し";
+"transaction.type.depositInterestAccrual" = "利息の発生";
+"category.uncategorized" = "未分類";
+"category.budget" = "予算";
+
+// MARK: - Recurring Errors
+"error.recurring.invalidData" = "定期取引のデータが不正です";
+"error.recurring.invalidStartDate" = "開始日の形式が不正です";
+"error.recurring.seriesNotFound" = "定期取引が見つかりません";
+
+// MARK: - Insights
+"insights.remaining" = "残り";
+"insights.range.totalExpenses" = "期間の支出";
+"insights.range.netFlow" = "期間の収支";
+"insights.range.wealthChange" = "資産の増減";
+"insights.range.totalIncome" = "期間の収入";
+"insights.range.reset" = "リセット";
+"insights.zoom.reset" = "全体表示";
+"insights.chart.line" = "折れ線";
+"insights.chart.bar" = "棒";
+"insights.today" = "今日";
+"insights.empty.title" = "まだデータがありません";
+"insights.empty.subtitle" = "取引の履歴がたまると、グラフが表示されます";
+
+// MARK: - Voice Input
+"voice.noTextRecognizedYet" = "まだ音声を認識していません";
+"voice.stopRecording" = "録音を停止";
+"voice.tapToFinish" = "タップして完了";
+
+// MARK: - Voice Input Errors
+"voiceError.speechNotAvailable" = "このデバイスでは音声認識を利用できません";
+"voiceError.speechDenied" = "音声認識へのアクセスが拒否されています。設定で有効にしてください";
+"voiceError.speechRestricted" = "音声認識へのアクセスが制限されています";
+"voiceError.audio %@" = "オーディオエラー: %@";
+"voiceError.recognition %@" = "認識エラー: %@";
+"voiceError.microphoneDenied" = "マイクへのアクセスが拒否されています。設定で有効にしてください";
+"voiceError.speechNotDetermined" = "音声認識の許可が得られていません";
+"voiceError.unknownPermission" = "不明な権限エラー";
+"voiceError.speechBecameUnavailable" = "音声認識が利用できなくなりました";
+"voiceError.audioSessionSetup %@" = "オーディオセッションの設定に失敗しました: %@";
+"voiceError.recognitionRequestFailed" = "認識リクエストの作成に失敗しました";
+"voiceError.audioEngineCreateFailed" = "オーディオエンジンの作成に失敗しました";
+"voiceError.audioEngineStartFailed %@" = "オーディオエンジンの起動に失敗しました: %@";
+"voiceConfirmation.saveError" = "保存エラー";
+
+// MARK: - Calculator Keypad (Accessibility)
+"calculator.add" = "プラス";
+"calculator.subtract" = "マイナス";
+"calculator.multiply" = "掛ける";
+"calculator.divide" = "割る";
+"calculator.separator" = "小数点";
+"calculator.backspace" = "削除";
+"calculator.clearHint" = "長押しでクリアします";
+
+// MARK: - CSV Import Errors
+"csvImport.error.fileAccessDenied" = "ファイルにアクセスできません";
+"csvImport.error.invalidEncoding" = "ファイルのエンコードが不正です（UTF-8が必要です）";
+"csvImport.error.emptyFile" = "ファイルが空です";
+"csvImport.error.noHeaders" = "ファイルにヘッダーがありません";
+"csvImport.error.invalidFormat" = "CSVの形式が不正です";
+"csvImport.error.missingDependency %@" = "依存関係が不足しています: %@";
+
+// MARK: - Progress
+"progress.loadingAccounts" = "口座を読み込み中";
+"progress.loadingTransactions" = "取引を読み込み中";
+"progress.saving" = "保存中";
+
+// MARK: - UI (Misc)
+"common.changeIcon" = "アイコンを変更";
+"currency.selected" = "選択中の通貨";
+"filter.accounts" = "口座";
+"timeFilter.customRange" = "期間を指定";
+
+// MARK: - Accessibility
+"accessibility.accounts.addMenu" = "追加メニュー";
+"accessibility.accounts.doneReordering" = "並べ替えを完了";
+"accessibility.accounts.reorder" = "並べ替え";
+"accessibility.category.budgetHint" = "予算の使用状況";
+"accessibility.category.budgetProgress" = "予算の進捗";
+"accessibility.category.label" = "カテゴリ";
+"accessibility.category.overBudget" = "予算超過";
+"accessibility.deposit.history" = "取引履歴";
+"accessibility.deposit.moreActions" = "その他の操作";
+"accessibility.insights.granularityPicker" = "期間の選択";
+"accessibility.insights.granularityPickerHint" = "粒度を選択: 月・四半期・年";
+"accessibility.transaction.history" = "取引履歴";
+
+// MARK: - Bulk Selection
+"bulk.select" = "選択";
+"bulk.selectAll" = "すべて選択";
+"bulk.deselectAll" = "選択を解除";
+"bulk.done" = "完了";
+"bulk.deleteCount" = "削除（%d）";
+
+// MARK: - Bulk Delete Accounts
+"bulk.deleteAccounts.title" = "%d件の口座を削除しますか？";
+"bulk.deleteAccounts.message" = "関連する取引はどうしますか？";
+"bulk.deleteAccounts.onlyAccounts" = "口座のみ削除";
+"bulk.deleteAccounts.withTransactions" = "すべての取引ごと削除";
+
+// MARK: - Bulk Delete Categories
+"bulk.deleteCategories.title" = "%d件のカテゴリを削除しますか？";
+"bulk.deleteCategories.message" = "関連する取引はどうしますか？";
+"bulk.deleteCategories.onlyCategories" = "カテゴリのみ削除";
+"bulk.deleteCategories.withTransactions" = "すべての取引ごと削除";
+
+// MARK: - Bulk Delete Subcategories
+"bulk.deleteSubcategories.title" = "%d件のサブカテゴリを削除しますか？";
+"bulk.deleteSubcategories.confirm" = "削除";
+
+// MARK: - Account Detail View
+"account.detail.actions.addTransaction" = "取引を追加";
+"account.detail.actions.transfer" = "振替";
+"account.detail.totalIncome" = "収入の合計";
+"account.detail.totalExpense" = "支出の合計";
+"account.detail.transactionCount" = "取引数";
+"account.detail.delete.confirmTitle" = "口座を削除しますか？";
+"account.detail.delete.confirmMessage" = "この口座は完全に削除されます。";
+"accounts.type" = "種類";
+"accounts.currency" = "通貨";
+"accounts.type.deposit" = "預金";
+"accounts.type.loan" = "ローン";
+"accounts.type.regular" = "口座";
+"common.edit" = "編集";
+"common.delete" = "削除";
+
+// Category Detail
+"category.detail.actions.addTransaction" = "取引を追加";
+"category.detail.totalSpent" = "支出の合計";
+"category.detail.totalEarned" = "収入の合計";
+"category.detail.avgMonthly" = "月平均";
+"category.detail.budget" = "予算";
+"category.detail.subcategories" = "サブカテゴリ";
+"category.detail.transactionCount" = "取引数";
+"category.detail.manageSubcategories" = "サブカテゴリを管理";
+"category.detail.delete.confirmTitle" = "カテゴリを削除しますか？";
+"category.detail.delete.confirmMessage" = "このカテゴリを削除します。";
+"category.detail.type.expense" = "支出";
+"category.detail.type.income" = "収入";
+
+/* MARK: - Onboarding */
+
+"onboarding.welcome.page1.title" = "すべての家計を、ひとつに";
+"onboarding.welcome.page1.subtitle" = "口座・預金・ローン・サブスク・支出カテゴリを、わかりやすい分析とともにまとめて管理できます。";
+"onboarding.welcome.page2.title" = "音声で取引を追加";
+"onboarding.welcome.page2.subtitle" = "「コーヒー 800テンゲ」と話すだけで、Tenraが金額・通貨・カテゴリを認識します。PDF/CSVの明細を取り込むこともできます。";
+"onboarding.welcome.page3.title" = "データはあなたのもの";
+"onboarding.welcome.page3.subtitle" = "すべて端末内に保存されます。iCloudバックアップは任意です。アカウント登録もサインアップも不要です。";
+
+"onboarding.cta.next" = "次へ";
+"onboarding.cta.start" = "はじめる";
+"onboarding.cta.done" = "完了";
+"onboarding.cta.doneWithCount" = "完了 • %d件選択中";
+"onboarding.cta.skip" = "スキップ";
+"onboarding.stepIndicator.label" = "ステップ %d / %d";
+
+"onboarding.currency.title" = "基準通貨を選択";
+"onboarding.currency.subtitle" = "Tenraは合計残高と分析をこの通貨で表示します。あとで設定から変更できます。";
+
+"onboarding.account.title" = "最初の口座を追加";
+"onboarding.account.subtitle" = "カード・現金・銀行口座のいずれでもかまいません。あとで追加できます。";
+"onboarding.account.namePlaceholder" = "例: 三菱UFJ";
+"onboarding.account.nameLabel" = "名前";
+"onboarding.account.iconLabel" = "アイコン";
+"onboarding.account.balanceLabel" = "初期残高";
+"onboarding.account.currencyChangedBanner" = "アプリの通貨が変更されました。口座の通貨はそのままです。口座の編集画面で変更できます。";
+
+"onboarding.categories.title" = "支出カテゴリを選択";
+"onboarding.categories.subtitle" = "使うものを選んでください。あとで追加できます。";
+
+"onboarding.preset.groceries" = "食費";
+"onboarding.preset.dining" = "外食";
+"onboarding.preset.transport" = "交通";
+"onboarding.preset.housing" = "住居";
+"onboarding.preset.utilities" = "光熱費";
+"onboarding.preset.health" = "健康";
+"onboarding.preset.clothing" = "衣類";
+"onboarding.preset.entertainment" = "娯楽";
+"onboarding.preset.travel" = "旅行";
+"onboarding.preset.education" = "教育";
+"onboarding.preset.gifts" = "ギフト";
+"onboarding.preset.subscriptions" = "サブスク";
+"onboarding.preset.pets" = "ペット";
+"onboarding.preset.services" = "サービス";
+"onboarding.preset.other" = "その他";
+
+// MARK: - Financial Health Detail Page
+
+"insights.health.subtitle.excellent" = "とても良好です。家計はしっかりしています。";
+"insights.health.subtitle.good" = "健全な家計です。さらに改善する余地があります。";
+"insights.health.subtitle.fair" = "まずまずですが、いくつか注意したい点があります。";
+"insights.health.subtitle.needsAttention" = "家計にはいくつか改善が必要な点があります。";
+
+"insights.health.unavailable.title" = "データが足りません";
+"insights.health.unavailable.message" = "収入と支出の取引を追加してください。十分なデータがそろうと、家計の健康状態を評価します。";
+
+"insights.health.howItWorks" = "算出方法";
+"insights.health.explainer" = "家計の健康に関する5つの観点を0〜100で重みづけしたスコアです。高いほど家計が安定していることを表します。";
+"insights.health.periodContext.months" = "直近%dか月の記録にもとづいています。上部の粒度セレクタは他の分析には影響しますが、このスコアには影響しません。";
+"insights.health.periodContext.singleMonth" = "今月の記録にもとづいています。上部の粒度セレクタは他の分析には影響しますが、このスコアには影響しません。";
+"insights.health.weightLabel" = "%d%%";
+"insights.health.weights.redistributed" = "予算が未設定のため、25%の重みは他の4つの項目に振り分けられます。";
+
+"insights.health.component.savingsRate.title" = "貯蓄率";
+"insights.health.component.savingsRate.short" = "貯蓄";
+"insights.health.component.savingsRate.explainer" = "収入のうち手元に残る割合です。貯蓄率が高いほど、家計は安定します。";
+
+"insights.health.component.budgetAdherence.title" = "予算の達成度";
+"insights.health.component.budgetAdherence.short" = "予算";
+"insights.health.component.budgetAdherence.explainer" = "今月、カテゴリ別の予算をどれだけ守れているかを表します。";
+
+"insights.health.component.recurringRatio.title" = "固定支出の割合";
+"insights.health.component.recurringRatio.short" = "固定";
+"insights.health.component.recurringRatio.explainer" = "収入のうち、サブスクや定期的な支払いに占められている割合です。低いほど自由度が高まります。";
+
+"insights.health.component.emergencyFund.title" = "生活防衛資金";
+"insights.health.component.emergencyFund.short" = "備え";
+"insights.health.component.emergencyFund.explainer" = "口座の残高で、支出の何か月分をまかなえるかを表します。";
+
+"insights.health.component.cashFlow.title" = "収支";
+"insights.health.component.cashFlow.short" = "収支";
+"insights.health.component.cashFlow.explainer" = "直近の期間で、収入が支出をどれだけ上回っているかを表します。";
+
+"insights.health.currentValue" = "現在の値";
+"insights.health.target" = "目標";
+"insights.health.scoreContribution" = "%d / 100";
+
+"insights.health.target.savingsRate" = "20%以上";
+"insights.health.target.budgetAdherence" = "すべてのカテゴリが予算内";
+"insights.health.target.recurringRatio" = "収入の50%未満";
+"insights.health.target.emergencyFund" = "3か月以上";
+"insights.health.target.cashFlow" = "0以上";
+
+"insights.health.rec.savingsRate.below" = "20%%に届くには、支出を月あたり約%@減らすか、収入を月あたり約%@増やしましょう。";
+"insights.health.rec.savingsRate.healthy" = "とても良好です。このペースを保ちましょう。長期的な安定には20%%以上が目安です。";
+
+"insights.health.rec.budgetAdherence.empty" = "予算が未設定です。各カテゴリに設定すると、この項目もスコアに反映されます。";
+"insights.health.rec.budgetAdherence.partial" = "%d件のカテゴリが予算を超えています。開いて、使いすぎの原因を確認しましょう。";
+"insights.health.rec.budgetAdherence.full" = "すべてのカテゴリが予算内です。とても良好です。";
+
+"insights.health.rec.recurringRatio.high" = "サブスクや定期的な支払いが収入の%.0f%%を占めています。50%%未満を目指し、不要なものは見直して解約しましょう。";
+"insights.health.rec.recurringRatio.healthy" = "収入の%.0f%%が定期的な支払いに使われています。健全な水準です。";
+
+"insights.health.rec.emergencyFund.below" = "3か月分の支出をまかなうには、あと約%@必要です。";
+"insights.health.rec.emergencyFund.belowWithProjection" = "3か月分の支出をまかなうには、あと約%@必要です。現在の貯蓄ペースなら、あと約%.1fか月です。";
+"insights.health.rec.emergencyFund.healthy" = "支出の%.1fか月分を手元に確保できています。もしもの備えとして十分です。";
+
+"insights.health.rec.cashFlow.negative" = "収入より支出が多くなっています（今期は収入の−%.1f%%）。支出を減らすか、収入源を増やしましょう。";
+"insights.health.rec.cashFlow.positive" = "収入が支出を%.1f%%上回っています。健全なプラスの収支です。";
+
+// MARK: - Rating Prompt
+"rating.survey.title" = "Tenraはいかがですか？";
+"rating.survey.message" = "皆さまのご意見が、Tenraをより良くする力になります。";
+"rating.survey.love" = "気に入っています！";
+"rating.survey.notReally" = "いまひとつ";
+
+// MARK: - Premium
+"premium.unlock" = "Proにアップグレード";
+"premium.locked.voice.title" = "音声入力はProの機能です";
+"premium.locked.voice.message" = "音声で取引を追加。金額とカテゴリを話すだけで、残りはTenraが入力します。";
+"premium.locked.import.title" = "明細の取り込みはProの機能です";
+"premium.locked.import.message" = "取引を1件ずつ入力する代わりに、銀行のPDF明細やCSVファイルを自動で取り込めます。";
+"settings.supportID" = "サポートID";
+"settings.supportID.copied" = "コピーしました";

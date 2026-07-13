@@ -42,6 +42,48 @@ struct CSVColumnMapping {
         "трансфер": .internalTransfer,
         "internal": .internalTransfer,
         "internaltransfer": .internalTransfer,
+        // DE
+        "ausgabe": .expense,
+        "ausgaben": .expense,
+        "einnahme": .income,
+        "einnahmen": .income,
+        "überweisung": .internalTransfer,
+        "umbuchung": .internalTransfer,
+        // ES
+        "gasto": .expense,
+        "gastos": .expense,
+        "ingreso": .income,
+        "ingresos": .income,
+        "transferencia": .internalTransfer,
+        // FR
+        "dépense": .expense,
+        "dépenses": .expense,
+        "revenu": .income,
+        "revenus": .income,
+        "virement": .internalTransfer,
+        // TR
+        "gider": .expense,
+        "giderler": .expense,
+        "gelir": .income,
+        "gelirler": .income,
+        // PT-BR
+        "despesa": .expense,
+        "despesas": .expense,
+        "receita": .income,
+        "receitas": .income,
+        "transferência": .internalTransfer,
+        // IT
+        "spesa": .expense,
+        "spese": .expense,
+        "entrata": .income,
+        "entrate": .income,
+        "bonifico": .internalTransfer,
+        // UK
+        "витрата": .expense,
+        "витрати": .expense,
+        "дохід": .income,
+        "доходи": .income,
+        "переказ": .internalTransfer,
         // Deposit types (exported by CSVExporter)
         "deposit_topup": .depositTopUp,
         "deposit_withdrawal": .depositWithdrawal,

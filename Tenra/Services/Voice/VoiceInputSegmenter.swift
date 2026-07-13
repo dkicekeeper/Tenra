@@ -36,6 +36,18 @@ enum VoiceInputSegmenter {
         "and then", "and also", "then", "also", "plus", "and",
         // DE
         "und noch", "und dann", "außerdem", "danach", "dann", "sowie", "und",
+        // ES
+        "y luego", "y también", "luego", "después", "también", "además", "y",
+        // FR
+        "et puis", "et aussi", "ensuite", "puis", "aussi", "et",
+        // TR
+        "ve sonra", "bir de", "ayrıca", "sonra", "artı", "ve",
+        // PT-BR
+        "e depois", "e também", "depois", "também", "e",
+        // IT
+        "e poi", "e anche", "poi", "inoltre", "anche", "e",
+        // UK
+        "і ще", "та також", "потім", "також", "ще", "і", "та", "й",
     ]
 
     /// Returns the input split into clauses. Always returns a non-empty array

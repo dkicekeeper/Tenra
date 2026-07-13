@@ -203,6 +203,294 @@ struct VoiceInputParserTests {
         #expect(result.amount == Decimal(20))
     }
 
+    // MARK: - 3b. Spanish / French keywords (Phase 2 localization)
+
+    /// "gasté 30 en taxi" — "gasté" is in expenseKeywords (ES group).
+    @Test("ES: 'gasté 30 en taxi' → expense, amount 30")
+    func esExpenseKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("gasté 30 en taxi")
+
+        #expect(result.type == .expense)
+        #expect(result.amount == Decimal(30))
+    }
+
+    /// "recibí el sueldo 2000" — "recibí" and "sueldo" are in incomeKeywords (ES group).
+    @Test("ES: 'recibí el sueldo 2000' → income, amount 2000")
+    func esIncomeKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("recibí el sueldo 2000")
+
+        #expect(result.type == .income)
+        #expect(result.amount == Decimal(2000))
+    }
+
+    /// "anteayer 40 taxi" — "anteayer" CONTAINS "ayer"; the -2 days branch
+    /// must win over the yesterday branch. Pins the ordering for Spanish.
+    @Test("ES: 'anteayer' beats 'ayer' substring → -2 days")
+    func esAnteayerBeatsAyer() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("anteayer 40 taxi")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expected = cal.date(byAdding: .day, value: -2, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expected)
+    }
+
+    /// "dépensé 25 pour le taxi" — "dépensé" is in expenseKeywords (FR group).
+    @Test("FR: 'dépensé 25 pour le taxi' → expense, amount 25")
+    func frExpenseKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("dépensé 25 pour le taxi")
+
+        #expect(result.type == .expense)
+        #expect(result.amount == Decimal(25))
+    }
+
+    /// "salaire reçu 3000" — "reçu"/"salaire" are in incomeKeywords (FR group).
+    @Test("FR: 'salaire reçu 3000' → income, amount 3000")
+    func frIncomeKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("salaire reçu 3000")
+
+        #expect(result.type == .income)
+        #expect(result.amount == Decimal(3000))
+    }
+
+    /// "avant-hier 15 café" — unambiguous FR keyword (unlike bare "hier",
+    /// which is locale-gated because it collides with German "hier" = "here").
+    @Test("FR: 'avant-hier' → -2 days (locale-independent)")
+    func frAvantHierDate() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("avant-hier 15 café")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expected = cal.date(byAdding: .day, value: -2, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expected)
+    }
+
+    // MARK: - 3c. Turkish / Portuguese keywords (Phase 3 localization)
+
+    /// "markete 50 harcadım" — "harcadım" is in expenseKeywords (TR group).
+    @Test("TR: 'markete 50 harcadım' → expense, amount 50")
+    func trExpenseKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("markete 50 harcadım")
+
+        #expect(result.type == .expense)
+        #expect(result.amount == Decimal(50))
+    }
+
+    /// "maaş aldım 40000" — bare "aldım" is deliberately NOT an expense
+    /// keyword (it also means "received"); "maaş" wins as income. Pins the
+    /// aldım-ambiguity decision from docs/localization/tr.md.
+    @Test("TR: 'maaş aldım 40000' → income (aldım ambiguity)")
+    func trMaasAldimIsIncome() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("maaş aldım 40000")
+
+        #expect(result.type == .income)
+        #expect(result.amount == Decimal(40000))
+    }
+
+    /// "dün 30 taksi" — "dün" (TR) → start-of-yesterday; "bugün" contains
+    /// "gün" but not "dün", so today-phrases are unaffected.
+    @Test("TR: 'dün' keyword → date is start-of-yesterday")
+    func trYesterdayDate() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("dün 30 taksi")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expected = cal.date(byAdding: .day, value: -1, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expected)
+    }
+
+    /// "gastei 45 no mercado" — "gastei" is in expenseKeywords (PT group).
+    @Test("PT: 'gastei 45 no mercado' → expense, amount 45")
+    func ptExpenseKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("gastei 45 no mercado")
+
+        #expect(result.type == .expense)
+        #expect(result.amount == Decimal(45))
+    }
+
+    /// "anteontem 20 mercado" — "anteontem" CONTAINS "ontem"; the -2 days
+    /// branch must win. Pins the ordering for Portuguese.
+    @Test("PT: 'anteontem' beats 'ontem' substring → -2 days")
+    func ptAnteontemBeatsOntem() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("anteontem 20 mercado")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expected = cal.date(byAdding: .day, value: -2, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expected)
+    }
+
+    // MARK: - 3d. Italian / Ukrainian keywords (Phase 4 localization)
+
+    /// "speso 30 al ristorante" — "speso" is in expenseKeywords (IT group);
+    /// "ristorante" maps to preset "Ristoranti".
+    @Test("IT: 'speso 30 al ristorante' → expense, Ristoranti")
+    func itExpenseKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("speso 30 al ristorante")
+
+        #expect(result.type == .expense)
+        #expect(result.amount == Decimal(30))
+        #expect(result.categoryName == "Ristoranti")
+    }
+
+    /// "ricevuto lo stipendio 2000" — "ricevuto"/"stipendio" are IT income keywords.
+    @Test("IT: 'ricevuto lo stipendio 2000' → income, amount 2000")
+    func itIncomeKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("ricevuto lo stipendio 2000")
+
+        #expect(result.type == .income)
+        #expect(result.amount == Decimal(2000))
+    }
+
+    /// "l'altro ieri 15 caffè" — "l'altro ieri" CONTAINS "ieri"; the -2 days
+    /// branch must win over the yesterday branch. Pins the ordering for Italian.
+    @Test("IT: 'l'altro ieri' beats 'ieri' substring → -2 days")
+    func itAltroIeriBeatsIeri() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("l'altro ieri 15 caffè")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expected = cal.date(byAdding: .day, value: -2, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expected)
+    }
+
+    /// "витратив 200 на продукти" — "витратив" is a UK expense keyword;
+    /// "продукти" maps to preset "Продукти".
+    @Test("UK: 'витратив 200 на продукти' → expense, Продукти")
+    func ukExpenseKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("витратив 200 на продукти")
+
+        #expect(result.type == .expense)
+        #expect(result.amount == Decimal(200))
+        #expect(result.categoryName == "Продукти")
+    }
+
+    /// "отримав зарплату 15000" — "отримав"/"зарплата" are UK income keywords.
+    @Test("UK: 'отримав зарплату 15000' → income, amount 15000")
+    func ukIncomeKeyword() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("отримав зарплату 15000")
+
+        #expect(result.type == .income)
+        #expect(result.amount == Decimal(15000))
+    }
+
+    /// "позавчора 40 таксі" — "позавчора" CONTAINS "вчора"; the -2 days
+    /// branch must win. Pins the ordering for Ukrainian (distinct from the
+    /// Russian "позавчера"/"вчера" pair).
+    @Test("UK: 'позавчора' beats 'вчора' substring → -2 days")
+    func ukPozavchoraBeatsVchora() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("позавчора 40 таксі")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expected = cal.date(byAdding: .day, value: -2, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expected)
+    }
+
+    // MARK: - 3e. Japanese / Korean dates (Phase 5 L1 — safe CJK date words)
+
+    /// "昨日 タクシー 300" — Japanese "昨日" (yesterday) via contains().
+    @Test("JA: '昨日' keyword → date is start-of-yesterday")
+    func jaYesterdayDate() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("昨日 タクシー 300")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expected = cal.date(byAdding: .day, value: -1, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expected)
+    }
+
+    /// "一昨日 300" — 一昨日 CONTAINS 昨日; the -2 days branch must win.
+    @Test("JA: '一昨日' beats '昨日' substring → -2 days")
+    func jaOtotoiBeatsKinou() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("一昨日 300")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expected = cal.date(byAdding: .day, value: -2, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expected)
+    }
+
+    /// "어제 3000" — Korean "어제" (yesterday) via contains().
+    @Test("KO: '어제' keyword → date is start-of-yesterday")
+    func koYesterdayDate() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+
+        let result = parser.parse("어제 3000")
+
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let expected = cal.date(byAdding: .day, value: -1, to: today)!
+
+        #expect(cal.startOfDay(for: result.date) == expected)
+    }
+
     // MARK: - 4. Date extraction
 
     /// "вчера такси 300" → parsed date == Calendar.current start-of-yesterday.

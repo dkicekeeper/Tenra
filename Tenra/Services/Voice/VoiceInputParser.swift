@@ -208,7 +208,140 @@ class VoiceInputParser {
             "haustier": ("Haustiere", nil),
             "tierarzt": ("Haustiere", nil),
             "abo": ("Abos", nil),
-            "abonnement": ("Abos", nil)
+            "abonnement": ("Abos", nil),
+
+            // ES — targets are the Spanish onboarding preset names.
+            "supermercado": ("Supermercado", nil),
+            "mercado": ("Supermercado", nil),
+            "comida": ("Restaurantes", nil),
+            "restaurante": ("Restaurantes", nil),
+            "café": ("Restaurantes", nil),
+            "gasolina": ("Transporte", nil),
+            "transporte": ("Transporte", nil),
+            "alquiler": ("Vivienda", nil),
+            "renta": ("Vivienda", nil),
+            "luz": ("Servicios públicos", nil),
+            "farmacia": ("Salud", nil),
+            "médico": ("Salud", nil),
+            "ropa": ("Ropa", nil),
+            "zapatos": ("Ropa", nil),
+            "cine": ("Entretenimiento", nil),
+            "concierto": ("Entretenimiento", nil),
+            "vuelo": ("Viajes", nil),
+            "viaje": ("Viajes", nil),
+            "regalo": ("Regalos", nil),
+            "mascota": ("Mascotas", nil),
+            "veterinario": ("Mascotas", nil),
+            "suscripción": ("Suscripciones", nil),
+
+            // FR — targets are the French onboarding preset names.
+            "courses": ("Courses", nil),
+            "supermarché": ("Courses", nil),
+            "resto": ("Restaurants", nil),
+            "essence": ("Transports", nil),
+            "métro": ("Transports", nil),
+            "loyer": ("Logement", nil),
+            "électricité": ("Charges", nil),
+            "pharmacie": ("Santé", nil),
+            "médecin": ("Santé", nil),
+            "vêtements": ("Vêtements", nil),
+            "chaussures": ("Vêtements", nil),
+            "cinéma": ("Loisirs", nil),
+            "avion": ("Voyages", nil),
+            "voyage": ("Voyages", nil),
+            "cadeau": ("Cadeaux", nil),
+            "vétérinaire": ("Animaux", nil),
+
+            // TR — targets are the Turkish onboarding preset names. Matching
+            // is substring-based, so agglutinated forms (markete, taksiye)
+            // still hit the stem ("market", "taksi"). Keys that would collide
+            // with another language ("benzin" already maps to DE "Transport",
+            // same concept) are intentionally omitted — a flat dict can't hold
+            // one key twice, and the shared concept already resolves.
+            "market": ("Market", nil),
+            "restoran": ("Dışarıda yemek", nil),
+            "yemek": ("Dışarıda yemek", nil),
+            "kahve": ("Dışarıda yemek", nil),
+            "taksi": ("Ulaşım", nil),
+            "ulaşım": ("Ulaşım", nil),
+            "kira": ("Konut", nil),
+            "fatura": ("Faturalar", nil),
+            "elektrik": ("Faturalar", nil),
+            "eczane": ("Sağlık", nil),
+            "doktor": ("Sağlık", nil),
+            "giyim": ("Giyim", nil),
+            "ayakkabı": ("Giyim", nil),
+            "sinema": ("Eğlence", nil),
+            "uçak": ("Seyahat", nil),
+            "seyahat": ("Seyahat", nil),
+            "hediye": ("Hediyeler", nil),
+            "veteriner": ("Evcil hayvanlar", nil),
+
+            // PT-BR — targets are the Brazilian onboarding preset names.
+            // "restaurante"/"gasolina" already map (via ES) to the identically
+            // spelled presets "Restaurantes"/"Transporte", so they serve
+            // Brazilian users too and are not repeated here. "médico"/"uber"
+            // are omitted to avoid duplicate keys with the ES/RU entries.
+            "almoço": ("Restaurantes", nil),
+            "jantar": ("Restaurantes", nil),
+            "aluguel": ("Moradia", nil),
+            "conta de luz": ("Contas de casa", nil),
+            "farmácia": ("Saúde", nil),
+            "roupa": ("Roupas", nil),
+            "cinema": ("Lazer", nil),
+            "viagem": ("Viagens", nil),
+            "presente": ("Presentes", nil),
+            "veterinário": ("Pets", nil),
+
+            // IT — targets are the Italian onboarding preset names. Keys that
+            // would duplicate another language ("farmacia" ES, "cinema" PT,
+            // "regalo"/"veterinario" ES) are omitted; accent-free variants
+            // ("medico" vs ES "médico") are safe distinct keys.
+            "spesa": ("Spesa", nil),
+            "supermercato": ("Spesa", nil),
+            "ristorante": ("Ristoranti", nil),
+            "pranzo": ("Ristoranti", nil),
+            "cena": ("Ristoranti", nil),
+            "caffè": ("Ristoranti", nil),
+            "benzina": ("Trasporti", nil),
+            "trasporti": ("Trasporti", nil),
+            "affitto": ("Casa", nil),
+            "bolletta": ("Utenze", nil),
+            "bollette": ("Utenze", nil),
+            "medico": ("Salute", nil),
+            "abbigliamento": ("Abbigliamento", nil),
+            "scarpe": ("Abbigliamento", nil),
+            "film": ("Svago", nil),
+            "concerto": ("Svago", nil),
+            "viaggio": ("Viaggi", nil),
+            "volo": ("Viaggi", nil),
+            "regali": ("Regali", nil),
+            "animali": ("Animali", nil),
+            "abbonamento": ("Abbonamenti", nil),
+
+            // UK — targets are the Ukrainian onboarding preset names. Keys
+            // identical to a Russian entry ("бензин", "ресторан", "аптека")
+            // are omitted: a flat dict can't hold one key twice, and where
+            // the target preset name matches ("Транспорт" ru==uk) the Russian
+            // entry already serves Ukrainian speakers.
+            "продукти": ("Продукти", nil),
+            "таксі": ("Транспорт", nil),
+            "проїзд": ("Транспорт", nil),
+            "їжа": ("Кафе та ресторани", nil),
+            "кава": ("Кафе та ресторани", nil),
+            "оренда": ("Житло", nil),
+            "житло": ("Житло", nil),
+            "комуналка": ("Комунальні послуги", nil),
+            "лікар": ("Здоров'я", nil),
+            "одяг": ("Одяг", nil),
+            "взуття": ("Одяг", nil),
+            "кіно": ("Розваги", nil),
+            "розваги": ("Розваги", nil),
+            "подорож": ("Подорожі", nil),
+            "навчання": ("Освіта", nil),
+            "подарунок": ("Подарунки", nil),
+            "ветеринар": ("Домашні улюбленці", nil),
+            "підписка": ("Підписки", nil)
         ]
 
     /// `categoryMap.keys` sorted by length descending. Computed once and
@@ -569,16 +702,38 @@ class VoiceInputParser {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         
-        // "позавчера"/"vorgestern" contain "вчера"/"gestern" as substrings,
-        // so the day-before-yesterday check MUST run first.
-        if text.contains("позавчера") || text.contains("vorgestern") || text.contains("day before yesterday") {
+        // "позавчера"/"vorgestern"/"anteayer"/"avant-hier" contain
+        // "вчера"/"gestern"/"ayer"/"hier" as substrings, so the
+        // day-before-yesterday check MUST run first.
+        // CJK date words (ja/ko) match via `contains()` even without spaces,
+        // so they are safe to add ahead of the full voice tokenization spike.
+        // 一昨日 contains 昨日, so day-before-yesterday stays first.
+        let dayBeforeYesterday = ["позавчера", "vorgestern", "day before yesterday",
+                                  "anteayer", "antier", "avant-hier",
+                                  "anteontem", "evvelsi gün", "önceki gün",
+                                  "позавчора", "l'altro ieri", "avantieri",
+                                  "一昨日", "おととい", "그저께", "그제"]
+        var yesterday = ["вчера", "yesterday", "gestern", "ayer", "ontem", "dün",
+                         "вчора", "учора", "ieri",
+                         "昨日", "きのう", "어제"]
+        let todayWords = ["сегодня", "today", "heute", "hoy", "aujourd'hui",
+                          "hoje", "bugün", "сьогодні", "oggi",
+                          "今日", "きょう", "오늘"]
+
+        // FR "hier" is a homograph of DE "hier" ("here"), so it only counts
+        // as a date keyword when the app runs in French.
+        if Locale.current.language.languageCode?.identifier == "fr" {
+            yesterday.append("hier")
+        }
+
+        if dayBeforeYesterday.contains(where: { text.contains($0) }) {
             return calendar.date(byAdding: .day, value: -2, to: today) ?? today
-        } else if text.contains("сегодня") || text.contains("today") || text.contains("heute") {
+        } else if todayWords.contains(where: { text.contains($0) }) {
             return today
-        } else if text.contains("вчера") || text.contains("yesterday") || text.contains("gestern") {
+        } else if yesterday.contains(where: { text.contains($0) }) {
             return calendar.date(byAdding: .day, value: -1, to: today) ?? today
         }
-        
+
         return today
     }
     
@@ -608,6 +763,23 @@ class VoiceInputParser {
         // common expense phrasing takes priority.
         "ausgegeben", "gekauft", "bezahlt", "gezahlt",
         "ausgabe", "ausgaben", "einkauf", "abgebucht",
+        // ES
+        "gasté", "gastado", "compré", "comprado", "pagué", "pagado",
+        "gasto", "gastos", "compra de",
+        // FR
+        "dépensé", "acheté", "payé", "dépense", "dépenses", "achat",
+        // TR — bare "aldım" is deliberately absent: it means both "bought"
+        // and "received" ("maaş aldım"); ambiguous phrases fall through to
+        // the .expense default, while income wins via "maaş"/"gelir".
+        "harcadım", "ödedim", "harcama", "gider", "satın",
+        // PT-BR
+        "gastei", "comprei", "paguei", "despesa", "despesas", "parcelei",
+        // IT — "speso" (spent) also matches "fare la spesa" (grocery shopping)
+        // but both are expenses, so no misclassification.
+        "speso", "comprato", "pagato", "spesa", "spese", "acquisto",
+        // UK
+        "витратив", "витратила", "купив", "купила", "заплатив", "заплатила",
+        "витрата", "витрати", "оплатив", "оплатила",
     ]
 
     /// Verbs that mark a clause as income.
@@ -627,6 +799,21 @@ class VoiceInputParser {
         "erhalten", "bekommen", "verdient",
         "einnahme", "einnahmen", "einkommen",
         "gehalt", "lohn", "gutschrift", "eingegangen", "bonus",
+        // ES
+        "recibí", "recibido", "cobré", "cobrado",
+        "ingreso", "ingresos", "sueldo", "salario", "nómina", "gané",
+        // FR — "versé" intentionally absent: ambiguous between paying out
+        // and being paid (see docs/localization/fr-FR.md).
+        "reçu", "salaire", "touché", "gagné", "revenu", "revenus",
+        // TR
+        "maaş", "gelir", "kazandım",
+        // PT-BR
+        "recebi", "ganhei", "salário", "salario", "receita",
+        // IT
+        "ricevuto", "stipendio", "incassato", "guadagnato", "entrata", "entrate",
+        // UK
+        "отримав", "отримала", "зарплата", "зарплату",
+        "дохід", "надійшло", "заробив", "заробила",
     ]
 
     // 2. Парсинг типа операции
@@ -810,7 +997,24 @@ class VoiceInputParser {
             "€": "EUR",
             "рубл": "RUB",
             "rub": "RUB",
-            "dollar": "USD"
+            "dollar": "USD",
+            "dólar": "USD",
+            "dolar": "USD",
+            // "tl" is intentionally absent — it is a substring of common
+            // Turkish words ("katlı", "atlet"); "lira"/"₺" are unambiguous.
+            "lira": "TRY",
+            "₺": "TRY",
+            "reais": "BRL",
+            "r$": "BRL",
+            "гривень": "UAH",
+            "гривня": "UAH",
+            "гривні": "UAH",
+            "грн": "UAH",
+            "₴": "UAH",
+            "円": "JPY",
+            "¥": "JPY",
+            "원": "KRW",
+            "₩": "KRW"
         ]
         
         for (keyword, code) in currencyMap {

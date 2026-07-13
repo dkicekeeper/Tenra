@@ -38,6 +38,11 @@ nonisolated enum ServiceLogoRegistry {
             ServiceLogoEntry(domain: "music.youtube.com", displayName: "YouTube Music", category: .streaming, aliases: ["ютуб мьюзик"]),
             ServiceLogoEntry(domain: "pandora.com", displayName: "Pandora", category: .streaming, aliases: []),
             ServiceLogoEntry(domain: "audible.com", displayName: "Audible", category: .streaming, aliases: []),
+            // DE streaming (Phase 1 localization)
+            ServiceLogoEntry(domain: "sky.de", displayName: "Sky", category: .streaming, aliases: []),
+            ServiceLogoEntry(domain: "dazn.com", displayName: "DAZN", category: .streaming, aliases: ["dazon"]),
+            ServiceLogoEntry(domain: "plus.rtl.de", displayName: "RTL+", category: .streaming, aliases: ["rtl plus"]),
+            ServiceLogoEntry(domain: "joyn.de", displayName: "Joyn", category: .streaming, aliases: []),
         ])
 
         // Productivity & Cloud
@@ -185,6 +190,10 @@ nonisolated enum ServiceLogoRegistry {
             ServiceLogoEntry(domain: "activ.kz", displayName: "Activ", category: .telecom, aliases: ["актив"]),
             ServiceLogoEntry(domain: "telecom.kz", displayName: "Kazakhtelecom", category: .telecom, aliases: ["казахтелеком", "мегалайн", "megaline"]),
             ServiceLogoEntry(domain: "id.kz", displayName: "iD Mobile", category: .telecom, aliases: []),
+            // DE telecom (Phase 1 localization)
+            ServiceLogoEntry(domain: "telekom.de", displayName: "Deutsche Telekom", category: .telecom, aliases: ["telekom"]),
+            ServiceLogoEntry(domain: "o2online.de", displayName: "O2", category: .telecom, aliases: ["o zwei"]),
+            ServiceLogoEntry(domain: "1und1.de", displayName: "1&1", category: .telecom, aliases: ["eins und eins"]),
         ])
 
         // CIS Services

@@ -47,4 +47,12 @@ struct CSVParseTypeTests {
     func descriptiveFuzzyMatch() {
         #expect(service.parseType("Expense transaction", mappings: mappings) == .expense)
     }
+
+    @Test("German type values map correctly")
+    func germanTypeValues() {
+        #expect(service.parseType("Ausgabe", mappings: mappings) == .expense)
+        #expect(service.parseType("Einnahme", mappings: mappings) == .income)
+        #expect(service.parseType("Überweisung", mappings: mappings) == .internalTransfer)
+        #expect(service.parseType("Umbuchung", mappings: mappings) == .internalTransfer)
+    }
 }

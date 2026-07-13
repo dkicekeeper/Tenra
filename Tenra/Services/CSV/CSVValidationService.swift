@@ -317,11 +317,42 @@ nonisolated class CSVValidationService: CSVValidationServiceProtocol {
         return nil
     }
 
-    private func parseAmount(_ amountString: String) -> Double? {
-        let cleaned = amountString
-            .replacingOccurrences(of: ",", with: ".")
-            .replacingOccurrences(of: " ", with: "")
-            .trimmingCharacters(in: .whitespaces)
+    /// Locale-tolerant amount parsing. CSV files mix EU and US conventions:
+    /// "1.234,56" (de/es/fr), "1,234.56" (en), "1 234,56" (fr/ru — incl.
+    /// NBSP/narrow-NBSP group separators). Rule: when both "." and "," are
+    /// present, the LAST one is the decimal separator and the other is
+    /// grouping; a single separator followed by exactly 3 digits is grouping
+    /// (money never has 3 decimals), otherwise it's the decimal point.
+    func parseAmount(_ amountString: String) -> Double? {
+        var cleaned = amountString.trimmingCharacters(in: .whitespaces)
+        for space in [" ", "\u{00A0}", "\u{202F}", "'"] {
+            cleaned = cleaned.replacingOccurrences(of: space, with: "")
+        }
+        guard !cleaned.isEmpty else { return nil }
+
+        let lastDot = cleaned.lastIndex(of: ".")
+        let lastComma = cleaned.lastIndex(of: ",")
+
+        switch (lastDot, lastComma) {
+        case let (dot?, comma?):
+            let decimalSep: Character = dot > comma ? "." : ","
+            let groupSep: Character = dot > comma ? "," : "."
+            cleaned = cleaned
+                .replacingOccurrences(of: String(groupSep), with: "")
+                .replacingOccurrences(of: String(decimalSep), with: ".")
+        case let (sep?, nil), let (nil, sep?):
+            let tail = cleaned.distance(from: cleaned.index(after: sep), to: cleaned.endIndex)
+            let occurrences = cleaned.filter { $0 == cleaned[sep] }.count
+            if occurrences > 1 || tail == 3 {
+                // "1.234.567" / "1,234" → grouping only
+                cleaned = cleaned
+                    .replacingOccurrences(of: String(cleaned[sep]), with: "")
+            } else {
+                cleaned = cleaned.replacingOccurrences(of: ",", with: ".")
+            }
+        case (nil, nil):
+            break
+        }
 
         return Double(cleaned)
     }

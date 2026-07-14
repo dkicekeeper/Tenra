@@ -44,6 +44,8 @@ Feature-bound names replaced with reusable ones (old → new; grep for the new n
 
 **`ProgressRing` color model** — a static full-circle "trajectory" `AngularGradient` (green ≤45% → warning by 80% → destructive at 100%; over-budget = warning→red) revealed by the animated `trim`. The tip color tracks the fill level continuously with zero interpolation code — do NOT reintroduce threshold-snapped solid colors; gradient stops are progress fractions and must NOT be tied to the animated display value (stops aren't animatable).
 
+**`ProgressRing` trim-start inset** — round stroke caps protrude half a lineWidth beyond the trimmed path, so a trim starting at 0 bleeds counter-clockwise past 12 o'clock and paints the green start cap over the red arc tip at ~100% (2026-07 bug). The trim start is inset by `(lineWidth / 2) / (π × size)` (clamped to `end / 2` so tiny progress still renders) — do NOT "simplify" it back to `.trim(from: 0, ...)`.
+
 ## Native Scroll Pattern
 
 Use **native `chartScrollableAxes`** instead of wrapping `Chart{}` in `ScrollView`:
@@ -181,6 +183,8 @@ New `PeriodDataPoint`-driven charts plug into these — don't reimplement inline
 ⚠️ **No compact mode** on `BarChart` / `LineChart` / `ChartSwitcher`.
 
 For insight-feed compact charts use **Canvas-based** `MiniSparkline` / `MiniDonut` (~50× cheaper to instantiate than Apple Charts).
+
+**`MiniSparkline` shows the recent tail, not the full series** (2026-07): `InsightsCardView.sparklineTail` slices `.periodTrend` points to the last 12 weeks / 12 months / 8 quarters before passing them in — the full all-time series at 120×60pt renders as noise, and one historical outlier flattens recent dynamics (y-domain follows the visible slice). The DETAIL view still receives the full series (insights.md contract — don't move the slice into the generators). The sparkline also draws a "you are here" dot on the last point (plot rect inset by `endDotRadius`) and, for `.cashFlow` with negatives in range, a dashed zero baseline.
 
 (`ChartDisplayMode` was dead code and deleted in the 2026-07 charts refactor.)
 

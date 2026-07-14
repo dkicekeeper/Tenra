@@ -80,7 +80,7 @@ Full rationale + benchmarks: [INSIGHTS_PRODUCT_AUDIT.md](../INSIGHTS_PRODUCT_AUD
 - ⚠️ `duplicateSubscriptions` enum case exists but has NO generator — dead code, don't "fix" callers into existence without a product decision
 
 ### Added (audit 2026-07)
-- `subscriptionPriceIncrease` (`+Recurring`) — latest linked charge vs previous (or series amount), >5% в той же валюте; up to 3 cards, ids `price_increase_<seriesId>`; **shared** (prefix-matched in `extractSharedInsights`)
+- `subscriptionPriceIncrease` (`+Recurring`) — latest linked charge vs previous (or series amount), >5% и ≤300% в той же валюте; up to 3 cards, ids `price_increase_<seriesId>`; **shared** (prefix-matched in `extractSharedInsights`). Billing-period guard (2026-07): интервал между сравниваемыми списаниями должен быть в 0.5–1.6× периода `series.frequency`, иначе это смена тарифа (месячный→годовой) — не сигналить
 - `largeTransaction` (`+Spending`) — largest non-recurring realized expense of last 30d, ≥4× the 90d average tx (needs ≥20 baseline tx); id `large_tx_<txId>`; **shared** (prefix-matched)
 - "Важное сейчас" strip — `InsightsViewModel.urgentInsights` (top-5 critical/warning across ALL categories); promoted insights are EXCLUDED from their category sections (unique `matchedTransitionSource` ids)
 - `accountDormancy` — reframed as "money sitting idle / missed deposit yield" (copy only)
@@ -123,6 +123,7 @@ Full rationale + benchmarks: [INSIGHTS_PRODUCT_AUDIT.md](../INSIGHTS_PRODUCT_AUD
 
 - **`Insight` equality MUST stay value-based** (`Models/InsightModels.swift`). Insight ids are stable across granularities (e.g. `top_spending_<category>` when the same category tops every period). With id-only `==`, SwiftUI diffing treats a new granularity's card as unchanged and skips re-render → cards show the previous period's numbers. `==` compares rendered fields; `hash` stays id-only. Do NOT revert to id-only `==`.
 - **Granularity switches must NOT cancel the in-flight recompute.** `loadInsightsBackground` is two-phase (priority gran first, then the rest); MainActor writes are generation-guarded and MERGE into the cache (never replace). `currentGranularity.didSet` applies from cache if present, else sets `isLoading` and waits — starting a competing load cancels phase 2 and leaves the cache incomplete → cards lag / show the wrong granularity.
+- **`healthScore` is published with the PHASE-1 write, not after phase 2.** It needs only `.month` period data, derivable from `preAggregated` (`computePeriodDataPointsFromPreAggregated(.month)` — internal for exactly this call). Publishing it in the final write made the health badge pop in seconds after the rest of the feed. Don't move it back.
 - **`applyPrecomputed` never applies a missing granularity** — it keeps `isLoading=true` instead of flashing empty/stale cards.
 - **The summary card shows the CURRENT bucket.** For `.week` the current week is often empty (totals = 0) while the 52-week window total is non-zero — correct, not a bug.
 - **Deep-dive subcategory breakdown reads the LINKED subcategory** (`TransactionSubcategoryLink` via store indexes), passed as `subcategoryNameByTxId`. The add flow leaves `tx.subcategory` nil, so grouping by `tx.subcategory` dumps everything into "no subcategory".

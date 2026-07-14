@@ -655,7 +655,10 @@ nonisolated final class InsightsService {
     /// For .quarter/.year: aggregates 3/12 monthly totals per period.
     /// For .allTime: aggregates all monthly totals into one point.
     /// .week MUST NOT use this (weekly resolution ≠ monthly) — caller checks granularity.
-    private nonisolated func computePeriodDataPointsFromPreAggregated(
+    /// Internal (not private): InsightsViewModel calls it directly to build .month
+    /// points for the early health-score publish (phase 1), guaranteeing parity with
+    /// the points phase 2 later computes for the .month granularity.
+    nonisolated func computePeriodDataPointsFromPreAggregated(
         preAggregated: PreAggregatedData,
         granularity: InsightGranularity,
         firstTransactionDate: Date?

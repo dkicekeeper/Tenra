@@ -142,11 +142,28 @@ extension InsightsService {
             occ.sort { $0.date > $1.date }
             let latest = occ[0]
 
+            let chargesPerYear: Double
+            switch series.frequency {
+            case .daily:     chargesPerYear = 365
+            case .weekly:    chargesPerYear = 52
+            case .monthly:   chargesPerYear = 12
+            case .quarterly: chargesPerYear = 4
+            case .yearly:    chargesPerYear = 1
+            }
+            let expectedGapDays = 365.25 / chargesPerYear
+
             // Baseline: previous occurrence in the SAME currency (multi-currency
             // comparison would need FX and reads as noise); fall back to the series
             // amount when only one occurrence is linked.
             let baseline: Double
             if let previous = occ.dropFirst().first(where: { $0.currency == latest.currency }) {
+                // Billing-period guard: the previous charge covers roughly the span
+                // up to the latest one. If that span doesn't match the series'
+                // current frequency, the billing period changed (monthly → yearly
+                // plan switch) — comparing raw charge amounts would read as a huge
+                // fake "price increase" (real bug: Wolt 1 199/mo → 9 588/yr = +699%).
+                let gapDays = latest.date.timeIntervalSince(previous.date) / 86_400
+                guard gapDays >= expectedGapDays * 0.5, gapDays <= expectedGapDays * 1.6 else { continue }
                 baseline = previous.amount
             } else if series.currency == latest.currency {
                 baseline = NSDecimalNumber(decimal: series.amount).doubleValue
@@ -157,16 +174,10 @@ extension InsightsService {
 
             let delta = latest.amount - baseline
             let changePercent = (delta / baseline) * 100
-            guard changePercent > 5 else { continue }
+            // >300% within one billing period is implausible as a price hike —
+            // it's a plan/period switch or a mislinked charge, not a signal.
+            guard changePercent > 5, changePercent <= 300 else { continue }
 
-            let chargesPerYear: Double
-            switch series.frequency {
-            case .daily:     chargesPerYear = 365
-            case .weekly:    chargesPerYear = 52
-            case .monthly:   chargesPerYear = 12
-            case .quarterly: chargesPerYear = 4
-            case .yearly:    chargesPerYear = 1
-            }
             let yearlyImpact = delta * chargesPerYear
 
             let name = series.description.isEmpty ? series.category : series.description

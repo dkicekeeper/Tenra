@@ -185,7 +185,7 @@ struct InsightsCardView<BottomChart: View>: View {
             // Series matches the insight metric so the sparkline tracks the same
             // data the detail chart and list show. See MiniSparkline.swift header.
             MiniSparkline(
-                dataPoints: points,
+                dataPoints: sparklineTail(points),
                 series: miniSparklineSeries
             )
         case .wealthBreakdown:
@@ -197,6 +197,24 @@ struct InsightsCardView<BottomChart: View>: View {
         case nil:
             EmptyView()
         }
+    }
+
+    /// Recent tail of the period series for the 120×60pt sparkline. `.periodTrend`
+    /// deliberately carries the FULL series for the detail view (domain contract —
+    /// see docs/domains/insights.md), but at card scale dozens of points render as
+    /// noise, and a historical outlier stretches the y-domain until the recent
+    /// dynamics the trend badge describes go flat. Slicing here keeps the detail
+    /// view untouched; the y-domain follows the visible slice automatically.
+    private func sparklineTail(_ points: [PeriodDataPoint]) -> [PeriodDataPoint] {
+        guard let granularity = points.first?.granularity else { return points }
+        let limit: Int
+        switch granularity {
+        case .week:    limit = 12
+        case .month:   limit = 12
+        case .quarter: limit = 8
+        case .year, .allTime: return points // few buckets by nature
+        }
+        return Array(points.suffix(limit))
     }
 
     /// Sparkline series matching the insight metric (mirrors InsightDetailView).

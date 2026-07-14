@@ -426,6 +426,33 @@ final class InsightsViewModel {
 
             guard !Task.isCancelled else { return }
 
+            // Health score needs only .month period data, which is fully derivable
+            // from preAggregated — compute it NOW and publish with the phase-1 write.
+            // It used to be computed after phase 2, so the badge popped in seconds
+            // after the rest of the feed. When priority == .month we reuse the
+            // phase-1 points; otherwise we build them via the SAME preAggregated
+            // path phase 2 will use for .month (identical result, O(months) cost).
+            let monthPointsForScore = newPoints[.month] ?? service.computePeriodDataPointsFromPreAggregated(
+                preAggregated: preAggregated,
+                granularity: .month,
+                firstTransactionDate: preAggregated.firstDate
+            )
+            var monthIncome = 0.0; var monthExpenses = 0.0
+            for p in monthPointsForScore { monthIncome += p.income; monthExpenses += p.expenses }
+            let computedHealthScore = service.computeHealthScore(
+                totalIncome: monthIncome,
+                totalExpenses: monthExpenses,
+                latestNetFlow: monthPointsForScore.last?.netFlow ?? 0,
+                monthsInWindow: monthPointsForScore.count,
+                baseCurrency: currency,
+                balanceFor: { balanceSnapshot[$0] ?? 0 },
+                allTransactions: allTransactions,
+                categories: categoriesSnapshot,
+                recurringSeries: recurringSnapshot,
+                accounts: accountsSnapshot,
+                preAggregated: preAggregated
+            )
+
             // Show the current granularity immediately — user sees real data, not zeros
             let phase1Insights = newInsights
             let phase1Points   = newPoints
@@ -439,8 +466,9 @@ final class InsightsViewModel {
                 self.precomputedInsights.merge(phase1Insights) { _, new in new }
                 self.precomputedPeriodPoints.merge(phase1Points) { _, new in new }
                 self.precomputedTotals.merge(phase1Totals) { _, new in new }
+                self.healthScore = computedHealthScore
                 self.applyPrecomputed(for: self.currentGranularity)
-                Self.logger.debug("🔧 [InsightsVM] Priority gran done — .\(priorityGranularity.rawValue, privacy: .public) shown early")
+                Self.logger.debug("🔧 [InsightsVM] Priority gran done — .\(priorityGranularity.rawValue, privacy: .public) shown early (health score included)")
             }
 
             // ── Remaining granularities ─────────────────────────────
@@ -485,25 +513,6 @@ final class InsightsViewModel {
 
             guard !Task.isCancelled else { return }
 
-            // Health score uses .month data (available after phase 2 if priority wasn't .month,
-            // or from phase 1 if priority was .month)
-            let monthTotals   = newTotals[.month]
-            let monthPoints   = newPoints[.month] ?? []
-            let latestNetFlow = monthPoints.last?.netFlow ?? 0
-            let computedHealthScore = service.computeHealthScore(
-                totalIncome: monthTotals?.income   ?? 0,
-                totalExpenses: monthTotals?.expenses ?? 0,
-                latestNetFlow: latestNetFlow,
-                monthsInWindow: monthPoints.count,
-                baseCurrency: currency,
-                balanceFor: { balanceSnapshot[$0] ?? 0 },
-                allTransactions: allTransactions,
-                categories: categoriesSnapshot,
-                recurringSeries: recurringSnapshot,
-                accounts: accountsSnapshot,
-                preAggregated: preAggregated
-            )
-
             let totalDur = totalStart.duration(to: .now)
             let totalMs = Int(totalDur.components.seconds * 1000) + Int(totalDur.components.attoseconds / 1_000_000_000_000_000)
 
@@ -518,7 +527,7 @@ final class InsightsViewModel {
                 self.precomputedInsights.merge(finalInsights) { _, new in new }
                 self.precomputedPeriodPoints.merge(finalPoints) { _, new in new }
                 self.precomputedTotals.merge(finalTotals) { _, new in new }
-                self.healthScore             = computedHealthScore
+                // (healthScore published in the phase-1 write — needs only .month data)
                 // All granularities are now cached — mark the recompute finished so subsequent
                 // granularity switches read the cache synchronously instead of waiting.
                 self.recomputeTask = nil

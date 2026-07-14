@@ -174,6 +174,57 @@ struct InsightSignalGeneratorTests {
         #expect(insights.last?.id == "price_increase_s1")  // +20% (s0 +10% dropped)
     }
 
+    @Test("monthly→yearly plan switch is not a price increase (Wolt bug)")
+    func planSwitchSuppressed() {
+        let (service, store) = Self.makeService()
+        _ = store
+        // Series edited to yearly 9 588; history: monthly 1 199 charges, then the
+        // first yearly charge ~30 days after the last monthly one.
+        let series = makeSeries(id: "s1", amount: 9_588, frequency: .yearly)
+        let txs = [
+            makeTx(daysAgo: 65, amount: 1_199, seriesId: "s1"),
+            makeTx(daysAgo: 33, amount: 1_199, seriesId: "s1"),
+            makeTx(daysAgo: 3, amount: 9_588, seriesId: "s1")
+        ]
+        let insights = service.generateSubscriptionPriceIncreases(
+            recurringSeries: [series], categories: expenseCategories, transactions: txs
+        )
+        #expect(insights.isEmpty)
+    }
+
+    @Test("same-period jump above 300% is treated as a plan switch, not a hike")
+    func implausibleJumpSuppressed() {
+        let (service, store) = Self.makeService()
+        _ = store
+        // Series still marked monthly but the latest charge is a yearly-plan amount.
+        let series = makeSeries(id: "s1", amount: 1_199)
+        let txs = [
+            makeTx(daysAgo: 33, amount: 1_199, seriesId: "s1"),
+            makeTx(daysAgo: 3, amount: 9_588, seriesId: "s1") // +699.7%
+        ]
+        let insights = service.generateSubscriptionPriceIncreases(
+            recurringSeries: [series], categories: expenseCategories, transactions: txs
+        )
+        #expect(insights.isEmpty)
+    }
+
+    @Test("charge gap that doesn't match the series frequency does not fire")
+    func gapMismatchSuppressed() {
+        let (service, store) = Self.makeService()
+        _ = store
+        // Monthly series, but 100 days between the compared charges (missed /
+        // unlinked months) — baseline is stale, comparison unreliable.
+        let series = makeSeries(id: "s1", amount: 5_000)
+        let txs = [
+            makeTx(daysAgo: 103, amount: 5_000, seriesId: "s1"),
+            makeTx(daysAgo: 3, amount: 6_000, seriesId: "s1")
+        ]
+        let insights = service.generateSubscriptionPriceIncreases(
+            recurringSeries: [series], categories: expenseCategories, transactions: txs
+        )
+        #expect(insights.isEmpty)
+    }
+
     // MARK: - Large Transaction
 
     /// 25 small expenses (1 000 each) spread over the last 90 days as baseline noise.

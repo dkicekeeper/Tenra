@@ -6,7 +6,7 @@
 > ⚠️ **Product audit 2026-07** ([INSIGHTS_PRODUCT_AUDIT.md](INSIGHTS_PRODUCT_AUDIT.md), [domains/insights.md](domains/insights.md)):
 > - **Removed:** `incomeVsExpenseRatio` (дубль savingsRate+netCashFlow).
 > - **Merged:** `bestMonth`+`worstMonth` → одна карточка «Рекорды» (`period_records`, тип `.bestMonth`); `balanceRunway` → в деталь `emergencyFund` (severity = худшая из двух).
-> - **Added:** `subscriptionPriceIncrease` (shared, `price_increase_<seriesId>`, >5% к прошлому списанию), `largeTransaction` (shared, `large_tx_<txId>`, ≥4× средней траты за 90д, non-recurring, ≥20 базовых tx).
+> - **Added:** `subscriptionPriceIncrease` (shared, `price_increase_<seriesId>`, >5% и ≤300% к прошлому списанию в той же валюте; billing-period guard 2026-07: интервал между сравниваемыми списаниями обязан быть в 0.5–1.6× периода `series.frequency`, иначе это смена тарифного периода — месячный→годовой, Wolt-баг — и сигнал подавляется), `largeTransaction` (shared, `large_tx_<txId>`, ≥4× средней траты за 90д, non-recurring, ≥20 базовых tx).
 > - **Reframed:** `accountDormancy` → «деньги без дела / упущенная выгода» (только копирайт).
 > - **UI:** секция «Важное сейчас» — топ-5 critical/warning из всех секций, исключаются из своих секций.
 > - **Стало неактуально ниже:** описание `averageDailySpending` — метрика давно считается по текущему бакету с трендом (Phase 30+), не по всему окну.

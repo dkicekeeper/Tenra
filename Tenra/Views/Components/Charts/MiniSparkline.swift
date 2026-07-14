@@ -14,6 +14,11 @@
 //    upgrade to Catmull-Rom only if needed)
 //  - For `.cashFlow` series, the entire sparkline tints by the sign of the
 //    series' summary (last point's net flow): green if non-negative, red otherwise
+//  - "You are here" dot on the LAST point — visually ties the sparkline to the
+//    card's current-period metric + trend badge. The plot rect is inset by the
+//    dot radius so the dot never clips at the canvas edges.
+//  - For `.cashFlow` with negative values in range, a dashed zero baseline shows
+//    where surplus flips to deficit (color alone doesn't place the crossing).
 //
 
 import SwiftUI
@@ -23,6 +28,8 @@ struct MiniSparkline: View {
     let series: PeriodChartSeries
     var lineWidth: CGFloat = 1.5
     var height: CGFloat = 60
+    /// Radius of the last-point marker; doubles as the plot-rect inset.
+    var endDotRadius: CGFloat = 3
 
     private var values: [Double] {
         dataPoints.map { series.value(for: $0) }
@@ -54,26 +61,37 @@ struct MiniSparkline: View {
                 let domain = series.yDomain(values: vals)
                 let span = max(domain.upperBound - domain.lowerBound, .leastNonzeroMagnitude)
 
-                let stepX = size.width / CGFloat(max(dataPoints.count - 1, 1))
+                // Plot rect inset by the dot radius so the end dot (and the line
+                // at the domain extremes) renders fully inside the canvas.
+                let inset = endDotRadius
+                let plotWidth = max(size.width - inset * 2, 1)
+                let plotHeight = max(size.height - inset * 2, 1)
+                let stepX = plotWidth / CGFloat(max(dataPoints.count - 1, 1))
+
+                // Y axis is inverted in screen coords. Higher value → smaller y.
+                func plotPoint(index: Int, value: Double) -> CGPoint {
+                    let yNorm = CGFloat((value - domain.lowerBound) / span)
+                    return CGPoint(
+                        x: inset + CGFloat(index) * stepX,
+                        y: inset + (1 - yNorm) * plotHeight
+                    )
+                }
 
                 // Build the line path once.
                 var linePath = Path()
                 for (idx, v) in vals.enumerated() {
-                    let x = CGFloat(idx) * stepX
-                    // Y axis is inverted in screen coords. Higher value → smaller y.
-                    let yNorm = CGFloat((v - domain.lowerBound) / span)
-                    let y = size.height - yNorm * size.height
+                    let p = plotPoint(index: idx, value: v)
                     if idx == 0 {
-                        linePath.move(to: CGPoint(x: x, y: y))
+                        linePath.move(to: p)
                     } else {
-                        linePath.addLine(to: CGPoint(x: x, y: y))
+                        linePath.addLine(to: p)
                     }
                 }
 
                 // Build the area path by closing the line down to the bottom.
                 var areaPath = linePath
-                areaPath.addLine(to: CGPoint(x: size.width, y: size.height))
-                areaPath.addLine(to: CGPoint(x: 0, y: size.height))
+                areaPath.addLine(to: CGPoint(x: inset + plotWidth, y: size.height))
+                areaPath.addLine(to: CGPoint(x: inset, y: size.height))
                 areaPath.closeSubpath()
 
                 let tint = tintColor
@@ -90,11 +108,39 @@ struct MiniSparkline: View {
                     )
                 )
 
+                // Dashed zero baseline — only for cashFlow AND only when the
+                // domain actually dips below zero (otherwise it hugs the bottom
+                // edge and reads as chart chrome).
+                if series == .cashFlow, domain.lowerBound < 0 {
+                    let zeroY = plotPoint(index: 0, value: 0).y
+                    var zeroPath = Path()
+                    zeroPath.move(to: CGPoint(x: inset, y: zeroY))
+                    zeroPath.addLine(to: CGPoint(x: inset + plotWidth, y: zeroY))
+                    context.stroke(
+                        zeroPath,
+                        with: .color(AppColors.textSecondary.opacity(0.35)),
+                        style: StrokeStyle(lineWidth: 1, dash: [2, 3])
+                    )
+                }
+
                 context.stroke(
                     linePath,
                     with: .color(tint),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
                 )
+
+                // "You are here" dot on the last point — anchors the eye to the
+                // current period the card's metric and trend badge describe.
+                if let lastValue = vals.last {
+                    let center = plotPoint(index: vals.count - 1, value: lastValue)
+                    let dotRect = CGRect(
+                        x: center.x - endDotRadius,
+                        y: center.y - endDotRadius,
+                        width: endDotRadius * 2,
+                        height: endDotRadius * 2
+                    )
+                    context.fill(Path(ellipseIn: dotRect), with: .color(tint))
+                }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }

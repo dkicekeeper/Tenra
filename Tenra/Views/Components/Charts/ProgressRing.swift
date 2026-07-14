@@ -102,7 +102,6 @@ struct ProgressRing: View {
             // Over the limit — unmistakably red, with a warning-colored tail.
             stops = [
                 .init(color: AppColors.warning, location: 0),
-                .init(color: AppColors.destructive, location: 0.4),
                 .init(color: AppColors.destructive, location: 1)
             ]
         } else {
@@ -118,8 +117,15 @@ struct ProgressRing: View {
     }
 
     var body: some View {
+        // Round caps protrude half a lineWidth BEYOND the trimmed path ends. An
+        // un-inset start cap therefore bleeds counter-clockwise past 12 o'clock
+        // and paints green over the red arc tip at ~100% (visible bug). Insetting
+        // the trim start by exactly that arc-fraction keeps the start rounded AND
+        // makes its cap begin precisely at 12 o'clock.
+        let end = min(displayProgress, 1.0)
+        let capFraction = (lineWidth / 2) / (.pi * size)
         let arc = Circle()
-            .trim(from: 0, to: min(displayProgress, 1.0))
+            .trim(from: min(capFraction, end / 2), to: end)
             .stroke(
                 arcGradient,
                 style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)

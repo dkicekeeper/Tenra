@@ -82,6 +82,11 @@ struct ProgressRing: View {
     /// during scroll.
     var animatesOnAppear: Bool = true
 
+    /// Draws a faint full-circle track behind the arc. Off by default (embedded
+    /// rows read fine without it); enable in standalone contexts where a low
+    /// percentage would otherwise float as a disconnected arc (insight cards).
+    var showsTrack: Bool = false
+
     @State private var displayProgress: Double = 0
     /// Reduce-Motion-aware (nil under Reduce Motion → instant jump, no sweep).
     private var fillAnimation: Animation? { AppAnimation.progressFillAnimation }
@@ -124,12 +129,21 @@ struct ProgressRing: View {
         // makes its cap begin precisely at 12 o'clock.
         let end = min(displayProgress, 1.0)
         let capFraction = (lineWidth / 2) / (.pi * size)
-        let arc = Circle()
-            .trim(from: min(capFraction, end / 2), to: end)
-            .stroke(
-                arcGradient,
-                style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-            )
+        let arc = ZStack {
+            if showsTrack {
+                Circle()
+                    .stroke(
+                        AppColors.textSecondary.opacity(0.15),
+                        style: StrokeStyle(lineWidth: lineWidth)
+                    )
+            }
+            Circle()
+                .trim(from: min(capFraction, end / 2), to: end)
+                .stroke(
+                    arcGradient,
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
+        }
             .rotationEffect(.degrees(-90))
             .frame(width: size, height: size)
             .animation(AppAnimation.progressFillAnimation, value: isOverBudget)

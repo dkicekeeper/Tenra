@@ -30,6 +30,13 @@ struct MiniSparkline: View {
     var height: CGFloat = 60
     /// Radius of the last-point marker; doubles as the plot-rect inset.
     var endDotRadius: CGFloat = 3
+    /// Forecast value: the fact line compresses to ~72% of the width and a
+    /// dashed tail runs to this value at the right edge (hollow endpoint —
+    /// forecast grammar: dashed/hollow = not yet real).
+    var projectedValue: Double? = nil
+    /// Marks the series extremes: max → success dot, min → destructive dot
+    /// (period-records card — the extremes ARE the message).
+    var markExtremes: Bool = false
 
     private var values: [Double] {
         dataPoints.map { series.value(for: $0) }
@@ -58,7 +65,10 @@ struct MiniSparkline: View {
             Canvas { context, size in
                 guard dataPoints.count >= 2 else { return }
                 let vals = values
-                let domain = series.yDomain(values: vals)
+                // The projection endpoint must fit inside the y-domain.
+                var domainValues = vals
+                if let projectedValue { domainValues.append(projectedValue) }
+                let domain = series.yDomain(values: domainValues)
                 let span = max(domain.upperBound - domain.lowerBound, .leastNonzeroMagnitude)
 
                 // Plot rect inset by the dot radius so the end dot (and the line
@@ -66,15 +76,17 @@ struct MiniSparkline: View {
                 let inset = endDotRadius
                 let plotWidth = max(size.width - inset * 2, 1)
                 let plotHeight = max(size.height - inset * 2, 1)
-                let stepX = plotWidth / CGFloat(max(dataPoints.count - 1, 1))
+                // The fact line yields the right ~28% to the projection tail.
+                let factWidth = projectedValue != nil ? plotWidth * 0.72 : plotWidth
+                let stepX = factWidth / CGFloat(max(dataPoints.count - 1, 1))
 
                 // Y axis is inverted in screen coords. Higher value → smaller y.
-                func plotPoint(index: Int, value: Double) -> CGPoint {
+                func yFor(_ value: Double) -> CGFloat {
                     let yNorm = CGFloat((value - domain.lowerBound) / span)
-                    return CGPoint(
-                        x: inset + CGFloat(index) * stepX,
-                        y: inset + (1 - yNorm) * plotHeight
-                    )
+                    return inset + (1 - yNorm) * plotHeight
+                }
+                func plotPoint(index: Int, value: Double) -> CGPoint {
+                    CGPoint(x: inset + CGFloat(index) * stepX, y: yFor(value))
                 }
 
                 // Build the line path once.
@@ -88,9 +100,10 @@ struct MiniSparkline: View {
                     }
                 }
 
-                // Build the area path by closing the line down to the bottom.
+                // Build the area path by closing the line down to the bottom
+                // (fact only — no fill under the projection tail).
                 var areaPath = linePath
-                areaPath.addLine(to: CGPoint(x: inset + plotWidth, y: size.height))
+                areaPath.addLine(to: CGPoint(x: inset + factWidth, y: size.height))
                 areaPath.addLine(to: CGPoint(x: inset, y: size.height))
                 areaPath.closeSubpath()
 
@@ -128,6 +141,42 @@ struct MiniSparkline: View {
                     with: .color(tint),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
                 )
+
+                // Dashed projection tail: last fact point → forecast value at the
+                // right edge, ending in a hollow dot (not yet real).
+                if let projectedValue, let lastValue = vals.last {
+                    let from = plotPoint(index: vals.count - 1, value: lastValue)
+                    let to = CGPoint(x: inset + plotWidth, y: yFor(projectedValue))
+                    var dash = Path()
+                    dash.move(to: from)
+                    dash.addLine(to: to)
+                    context.stroke(
+                        dash,
+                        with: .color(tint),
+                        style: StrokeStyle(lineWidth: lineWidth, dash: [3, 4])
+                    )
+                    let r = endDotRadius
+                    context.stroke(
+                        Path(ellipseIn: CGRect(x: to.x - r, y: to.y - r, width: r * 2, height: r * 2)),
+                        with: .color(tint),
+                        lineWidth: 1.5
+                    )
+                }
+
+                // Extreme markers — best (max) and worst (min) of the series.
+                if markExtremes,
+                   let maxIdx = vals.indices.max(by: { vals[$0] < vals[$1] }),
+                   let minIdx = vals.indices.min(by: { vals[$0] < vals[$1] }),
+                   maxIdx != minIdx {
+                    for (idx, color) in [(maxIdx, AppColors.success), (minIdx, AppColors.destructive)] {
+                        let c = plotPoint(index: idx, value: vals[idx])
+                        let dotRect = CGRect(
+                            x: c.x - endDotRadius, y: c.y - endDotRadius,
+                            width: endDotRadius * 2, height: endDotRadius * 2
+                        )
+                        context.fill(Path(ellipseIn: dotRect), with: .color(color))
+                    }
+                }
 
                 // "You are here" dot on the last point — anchors the eye to the
                 // current period the card's metric and trend badge describe.

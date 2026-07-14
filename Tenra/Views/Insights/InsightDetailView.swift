@@ -54,6 +54,10 @@ struct InsightDetailView<CategoryDestination: View>: View {
                             headerSection
                         }
 
+                        // Hero visual (2026-07 visual refresh) — full-size sibling
+                        // of the feed card's cardVisual, above the data sections.
+                        heroChartSection
+
                         // Full-size chart
                         chartSection
 
@@ -131,6 +135,53 @@ struct InsightDetailView<CategoryDestination: View>: View {
             }
         }
         .screenPadding()
+    }
+
+    // MARK: - Hero Section (2026-07 visual refresh)
+
+    /// Full-size hero rendered from the generator-set `cardVisual` payload —
+    /// same data the feed mini-visual draws, scaled up with the wow toolkit
+    /// (chartGlow / materialize / glass, see HeroChartEffects). Special-cases
+    /// by payload, NOT by adding InsightDetailData cases (domain-doc rule).
+    @ViewBuilder
+    private var heroChartSection: some View {
+        switch insight.cardVisual {
+        case .halfGauge(let value, let norm, let color):
+            HeroHalfGauge(value: value, norm: norm, color: color)
+                .frame(maxWidth: .infinity)
+                .screenPadding()
+        case .barPair(let previous, let current, let color, let isProjection):
+            HeroBarPair(previous: previous, current: current, color: color, isProjection: isProjection)
+                .frame(maxWidth: .infinity)
+                .screenPadding()
+        case .milestoneGauge(let value, let target, let maxValue, let color):
+            HeroMilestoneGauge(value: value, target: target, maxValue: maxValue, color: color)
+                .screenPadding()
+        case .sparkline(let points, let series, let projectedValue, let markExtremes):
+            // Scaled-up sparkline (projection tail / extreme markers) with the
+            // glow underlay — Canvas, so it stays cheap at hero size.
+            MiniSparkline(
+                dataPoints: points,
+                series: series,
+                lineWidth: 2.5,
+                height: 160,
+                endDotRadius: 5,
+                projectedValue: projectedValue,
+                markExtremes: markExtremes
+            )
+            .chartGlow(radius: 20, yOffset: 12, opacity: 0.45)
+            .materialize()
+            .screenPadding()
+        case .proportionBar(let segments):
+            MiniProportionBar(segments: segments, barHeight: 18, segmentGap: 3, height: 36)
+                .chartGlow(radius: 14, yOffset: 8, opacity: 0.5)
+                .materialize()
+                .screenPadding()
+        case .ring, .budgetBars, .donut, nil:
+            // Ring/budget-bars/donut details already render their own full-size
+            // sections (budget rows, OrbChart, account lists) — no hero needed.
+            EmptyView()
+        }
     }
 
     // MARK: - Chart Section

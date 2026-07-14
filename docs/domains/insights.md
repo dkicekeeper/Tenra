@@ -118,6 +118,7 @@ Full rationale + benchmarks: [INSIGHTS_PRODUCT_AUDIT.md](../INSIGHTS_PRODUCT_AUD
 5. If adding new aggregations — piggyback on `PreAggregatedData.build()` O(N) pass
 6. Return value-type Sendable struct — no class instances threaded through
 7. If insight is severity-sortable, ensure `severity` field is set
+8. Consider setting `cardVisual` (purpose-built feed mini-visual — see charts.md §Insight mini-visuals); pick by message type: pairwise comparison → `.barPair`, value-vs-norm → `.halfGauge`, % of limit → `.ring`, composition → `.donut` (accounts) / `.proportionBar` (flat bar), per-category budget list → `.budgetBars` (top-3), progress to a discrete milestone → `.milestoneGauge`, trend with projection/extremes/custom points → `.sparkline`; a plain trend stays on the detailData sparkline fallback
 
 ## Granularity switching — gotchas (hard-won)
 

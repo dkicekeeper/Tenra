@@ -3,7 +3,10 @@
 //  Tenra
 //
 //  Large hero card on the Financial Health detail screen:
-//  progress ring + score + grade capsule + grade-band subtitle.
+//  half-circle score gauge (0–100, zone ticks at 40/70, colour-matched glow)
+//  + score + grade capsule + grade-band subtitle. 2026-07 visual refresh:
+//  the full progress ring became a HeroHalfGauge — the score has a fixed
+//  0–100 scale with meaningful zone boundaries, which is gauge semantics.
 //
 
 import SwiftUI
@@ -13,10 +16,6 @@ struct HealthScoreHeroCard: View {
     /// True when the score is meaningful (totalIncomeWindow > 0). When false,
     /// the ring and number are replaced with an "—" placeholder.
     let isAvailable: Bool
-
-    private var ringProgress: Double {
-        isAvailable ? Double(score.score) / 100.0 : 0
-    }
 
     private var gradeBandSubtitleKey: String {
         switch score.score {
@@ -29,20 +28,22 @@ struct HealthScoreHeroCard: View {
 
     var body: some View {
         VStack(spacing: AppSpacing.lg) {
-            ZStack {
-                Circle()
-                    .stroke(AppColors.textTertiary.opacity(0.15), lineWidth: 12)
+            ZStack(alignment: .bottom) {
+                HeroHalfGauge(
+                    value: isAvailable ? Double(score.score) : 0,
+                    maxValue: 100,
+                    zoneTicks: [40, 70],
+                    color: score.gradeColor,
+                    diameter: 220,
+                    lineWidth: 16
+                )
 
-                Circle()
-                    .trim(from: 0, to: ringProgress)
-                    .stroke(score.gradeColor, style: StrokeStyle(lineWidth: 12, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(AppAnimation.adaptiveSpring, value: ringProgress)
-
+                // Score + grade sit inside the semicircle's interior.
                 VStack(spacing: AppSpacing.xs) {
                     Text(isAvailable ? "\(score.score)" : "—")
                         .font(AppTypography.h1.bold())
                         .foregroundStyle(isAvailable ? score.gradeColor : AppColors.textTertiary)
+                        .materialize(delay: 0.35)
 
                     Text(score.grade)
                         .font(AppTypography.bodySmall)
@@ -51,9 +52,9 @@ struct HealthScoreHeroCard: View {
                         .padding(.vertical, AppSpacing.xs)
                         .background(score.gradeColor.opacity(0.12))
                         .clipShape(Capsule())
+                        .materialize(delay: 0.45)
                 }
             }
-            .frame(width: 160, height: 160)
 
             Text(String(localized: isAvailable
                         ? String.LocalizationValue(gradeBandSubtitleKey)

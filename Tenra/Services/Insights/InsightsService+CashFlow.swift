@@ -213,7 +213,16 @@ extension InsightsService {
                 trend: nil,
                 severity: .neutral,
                 category: .cashFlow,
-                detailData: .periodTrend(periodPoints)
+                detailData: .periodTrend(periodPoints),
+                // FULL history with min/max markers — for the records card the
+                // extremes (and where they sit in time) ARE the message, so no
+                // recent-tail slicing here.
+                cardVisual: .sparkline(
+                    points: periodPoints,
+                    series: .cashFlow,
+                    projectedValue: nil,
+                    markExtremes: true
+                )
             ))
         }
 
@@ -305,7 +314,29 @@ extension InsightsService {
             ),
             severity: pbSeverity,
             category: .cashFlow,
-            detailData: .formulaBreakdown(pbModel)
+            detailData: .formulaBreakdown(pbModel),
+            // Balance trajectory (cumulative, recent 12 periods) with a dashed
+            // projection tail to the projected balance — forecast grammar.
+            cardVisual: {
+                let initialBalance = currentBalance - periodPoints.reduce(0.0) { $0 + $1.netFlow }
+                var running = initialBalance
+                let balancePoints: [PeriodDataPoint] = periodPoints.map { p in
+                    running += p.netFlow
+                    return PeriodDataPoint(
+                        id: p.id, granularity: p.granularity, key: p.key,
+                        periodStart: p.periodStart, periodEnd: p.periodEnd, label: p.label,
+                        income: p.income, expenses: p.expenses, cumulativeBalance: running
+                    )
+                }
+                let recent = Array(balancePoints.suffix(12))
+                guard recent.count >= 2 else { return nil }
+                return .sparkline(
+                    points: recent,
+                    series: .wealth,
+                    projectedValue: projectedBalance,
+                    markExtremes: false
+                )
+            }()
         ))
 
         return insights

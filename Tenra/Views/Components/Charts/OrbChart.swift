@@ -18,7 +18,7 @@ import CoreMotion
 
 /// A single slice of a spending breakdown — one category (or a monochromatic subcategory
 /// step). Shared input for `OrbChart` (and the compact `MiniDonut`).
-struct DonutSlice: Identifiable {
+struct DonutSlice: Identifiable, Equatable {
     let id: String
     let amount: Double
     let color: Color

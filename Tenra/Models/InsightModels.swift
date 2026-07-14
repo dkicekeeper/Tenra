@@ -21,6 +21,11 @@ struct Insight: Identifiable, Hashable {
     let severity: InsightSeverity
     let category: InsightCategory
     let detailData: InsightDetailData?
+    /// Purpose-built mini-visual for the feed card (2026-07 visual refresh). When set,
+    /// InsightsCardView renders it instead of deriving a chart from `detailData`; `nil`
+    /// falls back to the legacy detailData-driven mini-chart. Defaulted so the dozens of
+    /// existing construction sites stay valid.
+    var cardVisual: InsightCardVisual? = nil
 
     // Hash by id only (detailData holds non-Hashable Colors). Equality is VALUE-BASED on the
     // display-affecting fields, though — insight ids are stable across granularities
@@ -36,9 +41,58 @@ struct Insight: Identifiable, Hashable {
         lhs.metric == rhs.metric &&
         lhs.trend == rhs.trend &&
         lhs.severity == rhs.severity &&
-        lhs.category == rhs.category
+        lhs.category == rhs.category &&
+        lhs.cardVisual == rhs.cardVisual
     }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
+}
+
+// MARK: - Card Visual (2026-07 visual refresh)
+
+/// Purpose-built mini-visual for an insight's feed card, rendered in the trailing
+/// 120×60pt slot. Generators set ready-to-draw values; deliberately decoupled from
+/// `InsightDetailData` (the detail-screen contract, which stays untouched).
+///
+/// Visual grammar (docs/domains/charts.md §Insight mini-visuals): solid fill = fact,
+/// translucent/dashed = forecast, gray = comparison base, tick = norm/target marker.
+enum InsightCardVisual: Equatable {
+    /// Two-bar was/now comparison: muted gray `previous`, `color`-tinted `current`.
+    /// `isProjection` renders the current bar translucent with a dashed outline.
+    case barPair(previous: Double, current: Double, color: Color, isProjection: Bool)
+    /// Half-circle gauge: `value` against a `norm` tick on a relative scale
+    /// (scale = max(value × 1.15, norm × 2), so the norm tick never hugs an edge).
+    case halfGauge(value: Double, norm: Double, color: Color)
+    /// Budget-consumption ring (ProgressRing reuse), `progress` 0…1+.
+    case ring(progress: Double, isOverBudget: Bool)
+    /// Composition donut (MiniDonut reuse).
+    case donut([DonutSlice])
+    /// Up to 3 thin per-category budget bars (LinearProgressBar reuse) — a
+    /// "N categories over budget" card must show N offenders, not just the worst.
+    case budgetBars([CardBudgetBar])
+    /// Segmented milestone scale (emergency fund): `value` filled out of
+    /// `maxValue` segments, target tick at `target`.
+    case milestoneGauge(value: Double, target: Double, maxValue: Double, color: Color)
+    /// Sparkline with extras the plain detailData fallback can't express:
+    /// a dashed projection tail to `projectedValue` (hollow endpoint), and/or
+    /// min/max extreme markers (period records). Generators pass the points
+    /// they want shown (already sliced/cumulative) — no card-side slicing.
+    case sparkline(points: [PeriodDataPoint], series: PeriodChartSeries, projectedValue: Double?, markExtremes: Bool)
+    /// Horizontal stacked composition bar (MiniProportionBar) — e.g. the
+    /// recurring total split into top subscriptions + "other".
+    case proportionBar([DonutSlice])
+}
+
+/// One row of the `.budgetBars` card visual.
+struct CardBudgetBar: Equatable {
+    let id: String
+    /// Raw budget consumption, 0–100+.
+    let percentage: Double
+    let isOverBudget: Bool
+    /// End-of-period projection (0–100+). When set, LinearProgressBar renders the
+    /// span from `percentage` to it as a translucent forecast segment with the
+    /// 100% limit tick visible.
+    let projectedPercentage: Double?
+    let color: Color
 }
 
 // MARK: - Insight Type

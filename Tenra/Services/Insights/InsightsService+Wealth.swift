@@ -80,6 +80,31 @@ extension InsightsService {
 
         var wealthInsights: [Insight] = []
 
+        // Composition donut: positive balances only (a liability can't be a slice),
+        // top 6 accounts + the rest folded into "other" — mirrors DonutSlice.from.
+        // Colors are decorative (no legend in the mini slot); hash-based like the
+        // category fallback palette.
+        let positiveAccounts = accountItems.filter { $0.balance > 0 }
+        var wealthSlices = positiveAccounts.prefix(6).map { item in
+            DonutSlice(
+                id: item.id,
+                amount: item.balance,
+                color: CategoryColors.hexColor(for: item.accountName),
+                label: item.accountName,
+                percentage: totalWealth > 0 ? item.balance / totalWealth * 100 : 0
+            )
+        }
+        let foldedBalance = positiveAccounts.dropFirst(6).reduce(0.0) { $0 + $1.balance }
+        if foldedBalance > 0 {
+            wealthSlices.append(DonutSlice(
+                id: "other",
+                amount: foldedBalance,
+                color: AppColors.textTertiary,
+                label: String(localized: "insights.other"),
+                percentage: totalWealth > 0 ? foldedBalance / totalWealth * 100 : 0
+            ))
+        }
+
         wealthInsights.append(Insight(
             id: "total_wealth",
             type: .totalWealth,
@@ -99,7 +124,8 @@ extension InsightsService {
             ),
             severity: totalWealth >= 0 ? .positive : .critical,
             category: .wealth,
-            detailData: .wealthBreakdown(accountItems)
+            detailData: .wealthBreakdown(accountItems),
+            cardVisual: wealthSlices.isEmpty ? nil : .donut(wealthSlices)
         ))
 
         // Wealth Growth

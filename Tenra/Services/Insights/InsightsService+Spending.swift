@@ -348,7 +348,16 @@ extension InsightsService {
                     severity: severity,
                     category: .spending,
                     // Show the full granularity history (all periods), not just prev→current.
-                    detailData: .periodTrend(periodPoints)
+                    detailData: .periodTrend(periodPoints),
+                    // The card's message is a pairwise comparison — bar pair, not a sparkline.
+                    cardVisual: .barPair(
+                        previous: prevTotal,
+                        current: thisTotal,
+                        color: direction == .up ? AppColors.destructive
+                             : direction == .down ? AppColors.success
+                             : AppColors.accent,
+                        isProjection: false
+                    )
                 ))
             }
         } else {
@@ -401,7 +410,15 @@ extension InsightsService {
                             changeAbsolute: thisMonthTotal - prevMonthTotal,
                             comparisonPeriod: String(localized: "insights.vsPreviousPeriod")
                         ),
-                        severity: severity, category: .spending, detailData: nil
+                        severity: severity, category: .spending, detailData: nil,
+                        cardVisual: .barPair(
+                            previous: prevMonthTotal,
+                            current: thisMonthTotal,
+                            color: direction == .up ? AppColors.destructive
+                                 : direction == .down ? AppColors.success
+                                 : AppColors.accent,
+                            isProjection: false
+                        )
                     ))
                 }
             }
@@ -544,7 +561,13 @@ extension InsightsService {
             ),
             severity: spikeMultiplier > 2 ? .critical : .warning,
             category: .spending,
-            detailData: nil
+            detailData: nil,
+            // Gauge vs the category's own historical average (norm tick).
+            cardVisual: .halfGauge(
+                value: spikeAmount,
+                norm: spikeAmount / spikeMultiplier,
+                color: spikeMultiplier > 2 ? AppColors.destructive : AppColors.warning
+            )
         )
     }
 
@@ -628,7 +651,14 @@ extension InsightsService {
             trend: nil,
             severity: severity,
             category: .spending,
-            detailData: .formulaBreakdown(model)
+            detailData: .formulaBreakdown(model),
+            // Gauge vs the 90-day average bill — the norm tick pinned near the
+            // start of an almost-full arc IS the "×14 the usual" story.
+            cardVisual: .halfGauge(
+                value: candidate.amountBase,
+                norm: avgTx,
+                color: multiplier >= 8 ? AppColors.destructive : AppColors.warning
+            )
         )
     }
 
@@ -758,7 +788,26 @@ extension InsightsService {
             ),
             severity: .warning,
             category: .spending,
-            detailData: .formulaBreakdown(model)
+            detailData: .formulaBreakdown(model),
+            // The category's own rising curve — built from the same month records
+            // the formula rows show (streak ≥ 3 guarantees ≥ 4 points).
+            cardVisual: .sparkline(
+                points: displayRecords.map { rec in
+                    var comps = DateComponents()
+                    comps.year = rec.year; comps.month = rec.month; comps.day = 1
+                    let start = calendar.date(from: comps) ?? Date()
+                    let end = calendar.date(byAdding: .month, value: 1, to: start) ?? start
+                    return PeriodDataPoint(
+                        id: "\(rec.year)-\(rec.month)", granularity: .month,
+                        key: "\(rec.year)-\(rec.month)",
+                        periodStart: start, periodEnd: end, label: "",
+                        income: 0, expenses: rec.totalExpenses, cumulativeBalance: nil
+                    )
+                },
+                series: .spending,
+                projectedValue: nil,
+                markExtremes: false
+            )
         )
     }
 }

@@ -102,7 +102,35 @@ extension InsightsService {
             trend: nil,
             severity: periodTotal > 0 ? .neutral : .positive,
             category: .recurring,
-            detailData: .recurringList(recurringItems.sorted { $0.monthlyEquivalent > $1.monthlyEquivalent })
+            detailData: .recurringList(recurringItems.sorted { $0.monthlyEquivalent > $1.monthlyEquivalent }),
+            // Composition of the recurring total: top-3 subscriptions + "other".
+            // A single subscription has no composition to show — stay nil.
+            cardVisual: {
+                let sorted = recurringItems
+                    .filter { $0.monthlyEquivalent > 0 }
+                    .sorted { $0.monthlyEquivalent > $1.monthlyEquivalent }
+                guard sorted.count >= 2, totalMonthly > 0 else { return nil }
+                var segments = sorted.prefix(3).map { item in
+                    DonutSlice(
+                        id: item.id,
+                        amount: item.monthlyEquivalent,
+                        color: CategoryColors.hexColor(for: item.name),
+                        label: item.name,
+                        percentage: item.monthlyEquivalent / totalMonthly * 100
+                    )
+                }
+                let rest = sorted.dropFirst(3).reduce(0.0) { $0 + $1.monthlyEquivalent }
+                if rest > 0 {
+                    segments.append(DonutSlice(
+                        id: "other",
+                        amount: rest,
+                        color: AppColors.textTertiary,
+                        label: String(localized: "insights.other"),
+                        percentage: rest / totalMonthly * 100
+                    ))
+                }
+                return .proportionBar(segments)
+            }()
         )]
     }
 
@@ -228,7 +256,14 @@ extension InsightsService {
                 ),
                 severity: severity,
                 category: .recurring,
-                detailData: .formulaBreakdown(model)
+                detailData: .formulaBreakdown(model),
+                // Old charge vs new charge — the card IS a two-value comparison.
+                cardVisual: .barPair(
+                    previous: baseline,
+                    current: latest.amount,
+                    color: AppColors.warning,
+                    isProjection: false
+                )
             ), changePercent))
         }
 
@@ -346,7 +381,13 @@ extension InsightsService {
             ),
             severity: severity,
             category: .recurring,
-            detailData: .formulaBreakdown(model)
+            detailData: .formulaBreakdown(model),
+            cardVisual: .barPair(
+                previous: prevTotal,
+                current: currentTotal,
+                color: changePercent > 0 ? AppColors.warning : AppColors.success,
+                isProjection: false
+            )
         )
     }
 

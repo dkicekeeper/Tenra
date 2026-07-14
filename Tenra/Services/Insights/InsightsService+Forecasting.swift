@@ -149,7 +149,15 @@ extension InsightsService {
             trend: nil,
             severity: severity,
             category: .forecasting,
-            detailData: .formulaBreakdown(model)
+            detailData: .formulaBreakdown(model),
+            // Fact so far vs projected month total — the projection bar renders
+            // translucent + dashed (forecast grammar).
+            cardVisual: .barPair(
+                previous: spentSoFar,
+                current: forecast,
+                color: severity == .warning ? AppColors.destructive : AppColors.accent,
+                isProjection: true
+            )
         )
     }
 
@@ -248,7 +256,13 @@ extension InsightsService {
             ),
             severity: severity,
             category: .forecasting,
-            detailData: .formulaBreakdown(model)
+            detailData: .formulaBreakdown(model),
+            cardVisual: .barPair(
+                previous: lastYearExpenses,
+                current: thisExpenses,
+                color: direction == .up ? AppColors.destructive : AppColors.success,
+                isProjection: false
+            )
         )
     }
 

@@ -123,7 +123,23 @@ extension InsightsService {
                 trend: nil,
                 severity: .critical,
                 category: .budget,
-                detailData: .budgetProgressList(budgetItems.sorted { $0.percentage > $1.percentage })
+                detailData: .budgetProgressList(budgetItems.sorted { $0.percentage > $1.percentage }),
+                // Top-3 offenders — "N categories over budget" must show N bars,
+                // not just the worst one.
+                cardVisual: .budgetBars(
+                    overBudgetItems
+                        .sorted { $0.percentage > $1.percentage }
+                        .prefix(3)
+                        .map { item in
+                            CardBudgetBar(
+                                id: item.id,
+                                percentage: item.percentage,
+                                isOverBudget: true,
+                                projectedPercentage: nil,
+                                color: item.color
+                            )
+                        }
+                )
             ))
         }
 
@@ -145,12 +161,34 @@ extension InsightsService {
                 trend: nil,
                 severity: .warning,
                 category: .budget,
-                detailData: .budgetProgressList(projectedOverspendItems.sorted { $0.projectedSpend / $0.budgetAmount > $1.projectedSpend / $1.budgetAmount })
+                detailData: .budgetProgressList(projectedOverspendItems.sorted { $0.projectedSpend / $0.budgetAmount > $1.projectedSpend / $1.budgetAmount }),
+                // Forecast bars: solid fact + translucent projection crossing the
+                // 100% limit tick — both "where we are" and "where we're heading".
+                cardVisual: .budgetBars(
+                    projectedOverspendItems
+                        .sorted { $0.projectedSpend / $0.budgetAmount > $1.projectedSpend / $1.budgetAmount }
+                        .prefix(3)
+                        .map { item in
+                            CardBudgetBar(
+                                id: item.id,
+                                percentage: item.percentage,
+                                isOverBudget: false,
+                                projectedPercentage: item.budgetAmount > 0
+                                    ? item.projectedSpend / item.budgetAmount * 100
+                                    : nil,
+                                color: item.color
+                            )
+                        }
+                )
             ))
         }
 
         if !underBudgetItems.isEmpty {
             let totalHeadroom = underBudgetItems.reduce(0.0) { $0 + ($1.budgetAmount - $1.spent) }
+            // Aggregate consumption across the under-budget categories — the ring
+            // reads "how full these budgets are" (low = plenty left, positive frame).
+            let underTotalBudget = underBudgetItems.reduce(0.0) { $0 + $1.budgetAmount }
+            let underTotalSpent  = underBudgetItems.reduce(0.0) { $0 + $1.spent }
             insights.append(Insight(
                 id: "budget_under",
                 type: .budgetUnderutilized,
@@ -165,7 +203,10 @@ extension InsightsService {
                 trend: nil,
                 severity: .positive,
                 category: .budget,
-                detailData: .budgetProgressList(underBudgetItems.sorted { $0.percentage < $1.percentage })
+                detailData: .budgetProgressList(underBudgetItems.sorted { $0.percentage < $1.percentage }),
+                cardVisual: underTotalBudget > 0
+                    ? .ring(progress: underTotalSpent / underTotalBudget, isOverBudget: false)
+                    : nil
             ))
         }
 

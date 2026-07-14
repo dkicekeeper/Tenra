@@ -34,6 +34,16 @@ struct InsightsCardView<BottomChart: View>: View {
     /// (formula breakdowns, lists, empty data), the text column takes the full
     /// card width instead of reserving a blank 120pt gutter.
     private var hasMiniChart: Bool {
+        // Purpose-built visual wins over the detailData-derived fallback.
+        if let visual = insight.cardVisual {
+            switch visual {
+            case .donut(let slices):            return !slices.isEmpty
+            case .budgetBars(let bars):         return !bars.isEmpty
+            case .sparkline(let points, _, _, _): return points.count >= 2
+            case .proportionBar(let segments):  return !segments.isEmpty
+            default:                            return true
+            }
+        }
         switch insight.detailData {
         case .categoryBreakdown(let items):
             return !items.isEmpty
@@ -160,6 +170,62 @@ struct InsightsCardView<BottomChart: View>: View {
 
     @ViewBuilder
     private var miniChart: some View {
+        // Purpose-built visual set by the generator (2026-07 visual refresh).
+        // Falls back to the legacy detailData-derived chart when nil.
+        if let visual = insight.cardVisual {
+            cardVisualView(visual)
+        } else {
+            legacyMiniChart
+        }
+    }
+
+    @ViewBuilder
+    private func cardVisualView(_ visual: InsightCardVisual) -> some View {
+        switch visual {
+        case .barPair(let previous, let current, let color, let isProjection):
+            MiniBarPair(previous: previous, current: current, color: color, isProjection: isProjection)
+        case .halfGauge(let value, let norm, let color):
+            MiniHalfGauge(value: value, norm: norm, color: color)
+        case .ring(let progress, let isOverBudget):
+            ProgressRing(
+                progress: progress,
+                size: 48,
+                lineWidth: 5,
+                isOverBudget: isOverBudget,
+                animatesOnAppear: false, // LazyVStack feed — onAppear re-fires on scroll
+                showsTrack: true
+            )
+        case .donut(let slices):
+            MiniDonut(slices: slices)
+        case .budgetBars(let bars):
+            VStack(spacing: AppSpacing.sm) {
+                ForEach(bars.prefix(3), id: \.id) { bar in
+                    LinearProgressBar(
+                        percentage: bar.percentage,
+                        isOverBudget: bar.isOverBudget,
+                        color: bar.color,
+                        height: 5,
+                        animatesOnAppear: false, // LazyVStack feed
+                        projectedPercentage: bar.projectedPercentage
+                    )
+                }
+            }
+        case .milestoneGauge(let value, let target, let maxValue, let color):
+            MiniMilestoneGauge(value: value, target: target, maxValue: maxValue, color: color)
+        case .sparkline(let points, let series, let projectedValue, let markExtremes):
+            MiniSparkline(
+                dataPoints: points, // generator-shaped — no sparklineTail slice here
+                series: series,
+                projectedValue: projectedValue,
+                markExtremes: markExtremes
+            )
+        case .proportionBar(let segments):
+            MiniProportionBar(segments: segments)
+        }
+    }
+
+    @ViewBuilder
+    private var legacyMiniChart: some View {
         switch insight.detailData {
         case .categoryBreakdown(let items):
             // Canvas-based replacement for `DonutChart(mode: .compact)`. With

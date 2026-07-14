@@ -115,7 +115,12 @@ extension InsightsService {
             trend: nil,
             severity: severity,
             category: .savings,
-            detailData: .formulaBreakdown(model)
+            detailData: .formulaBreakdown(model),
+            // Gauge vs the classic 20% target; a deficit (rate ≤ 0) has nothing
+            // to gauge — leave nil so the card takes full width.
+            cardVisual: rate > 0
+                ? .halfGauge(value: rate, norm: 20, color: severity.color)
+                : nil
         )
     }
 
@@ -208,7 +213,15 @@ extension InsightsService {
             trend: nil,
             severity: severity,
             category: .savings,
-            detailData: .formulaBreakdown(model)
+            detailData: .formulaBreakdown(model),
+            // Discrete milestone scale: months covered out of 6, target tick at
+            // the 3-month baseline (same baseline the health score uses).
+            cardVisual: .milestoneGauge(
+                value: monthsCovered,
+                target: 3,
+                maxValue: 6,
+                color: severity.color
+            )
         )
     }
 

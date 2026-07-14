@@ -262,6 +262,7 @@ struct ContentView: View {
             )
         }
         .buttonStyle(.bounce)
+        .accessibilityIdentifier("home.historyLink")
         .screenPadding()
     }
 

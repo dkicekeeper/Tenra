@@ -12,6 +12,12 @@ import UserNotifications
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        #if DEBUG
+        // Screenshot capture mode: must run before PremiumManager.configure()
+        // (founder flag) and before CurrencyRateStore is first touched (FX cache).
+        ScreenshotDemoMode.applyEarlyOverridesIfNeeded()
+        #endif
+
         CoreDataStack.shared.preWarm()
 
         // Configure RevenueCat as early as possible. Runs the one-time grandfathering

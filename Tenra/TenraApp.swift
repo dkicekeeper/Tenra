@@ -53,6 +53,11 @@ struct TenraApp: App {
                 await Task.detached(priority: .userInitiated) {
                     _ = CoreDataStack.shared.persistentContainer
                 }.value
+                #if DEBUG
+                // Screenshot capture mode: wipe + seed the demo dataset BEFORE the
+                // coordinator exists so the normal startup path loads it as user data.
+                await ScreenshotDemoSeeder.seed()
+                #endif
                 // Construct the coordinator and run the fast path BEFORE publishing it,
                 // so the first MainTabView/OnboardingFlowView render already has accounts
                 // + categories loaded. This removes the brief empty-Home flash and the

@@ -153,6 +153,7 @@ struct FinancesView: View {
             )
         }
         .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.accountsCard")
         .screenPadding()
     }
 

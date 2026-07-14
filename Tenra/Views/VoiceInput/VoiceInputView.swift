@@ -73,9 +73,19 @@ struct VoiceInputView: View {
 
     // MARK: - Core content
 
+    /// Screenshot capture mode renders a static "recording" look (wave + sample
+    /// phrase) because speech recognition can't run in the Simulator.
+    private var isScreenshotDemo: Bool {
+        #if DEBUG
+        return ScreenshotDemoMode.isActive
+        #else
+        return false
+        #endif
+    }
+
     private var coreContent: some View {
         ZStack {
-            if voiceService.isRecording {
+            if voiceService.isRecording || isScreenshotDemo {
                 SiriWaveRecordingView()
                     .ignoresSafeArea()
                     .transition(.opacity.animation(AppAnimation.gentleSpring))
@@ -302,9 +312,22 @@ struct VoiceInputView: View {
     private var transcriptionSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             if voiceService.transcribedText.isEmpty {
+                #if DEBUG
+                if isScreenshotDemo {
+                    AnimatedTranscriptionText(
+                        text: ScreenshotDemoLexicon.current().voiceDemoPhrase,
+                        entities: [],
+                        font: AppTypography.h1,
+                        alignment: .leading
+                    )
+                } else if voiceService.isRecording {
+                    PulsingText(text: String(localized: "voice.speak"))
+                }
+                #else
                 if voiceService.isRecording {
                     PulsingText(text: String(localized: "voice.speak"))
                 }
+                #endif
             } else {
                 AnimatedTranscriptionText(
                     text: voiceService.transcribedText,
@@ -319,7 +342,7 @@ struct VoiceInputView: View {
 
     @ViewBuilder
     private var buttonSection: some View {
-        if voiceService.isRecording {
+        if voiceService.isRecording || isScreenshotDemo {
             // Recording: stop button
             HStack {
                 Spacer()

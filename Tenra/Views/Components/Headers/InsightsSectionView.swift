@@ -46,6 +46,7 @@ struct InsightsSectionView: View {
                             .matchedTransitionSource(id: insight.id, in: namespace)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("insights.card.\(insight.id)")
                 }
             }
         }

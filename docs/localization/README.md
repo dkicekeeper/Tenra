@@ -7,8 +7,16 @@
 > **Прогресс (обновлено 2026-07-10):** реализованы 9 локалей — en, ru, de, es, fr, tr, pt-BR, it, uk
 > (полный конвейер L1 UI + L2 голос + L3-lite CSV), плюс ja, ko (L1 UI + безопасные даты/валюты).
 > Голос/выписки для ja/ko отложены — см. [PHASE5_VOICE_SPIKE.md](PHASE5_VOICE_SPIKE.md).
-> Все каталоги — AI-черновики под нейтив-вычитку; метаданные ASC и скриншоты в языковых файлах
-> ещё не залиты в App Store Connect.
+> Все каталоги — AI-черновики под нейтив-вычитку.
+> **Метаданные ASC залиты 2026-07-14** в черновик версии **1.0.2** (Prepare for Submission) для
+> 11 витрин: de-DE, es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko — name/subtitle
+> (App Info) + description/keywords/promo/What's New (версия).
+> **Скриншоты залиты 2026-07-14**: 8 фреймов × 11 локалей (APP_IPHONE_67, 1320×2868; tr — с
+> мультивалютным hero первым). Конвейер: `scripts/capture_screenshots.sh` (демо-режим
+> `-ScreenshotDemo`, см. Tenra/Services/Utilities/ScreenshotDemo/) → Figma-страница
+> «Screenshots L10n» (подписи из `scripts/screenshot_captions.json`) → ASC. Финальные PNG:
+> `screenshots/final/<locale>/`. До сабмита: нейтив-вычитка текстов и скриншотов,
+> валидация ключевиков (ASA), цены per-storefront.
 
 ## Целевые языки и фазы
 

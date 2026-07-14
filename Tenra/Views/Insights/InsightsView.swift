@@ -142,6 +142,7 @@ struct InsightsView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("insights.healthScore")
             }
         }
         .screenPadding()
@@ -319,6 +320,7 @@ struct InsightsView: View {
                         .matchedTransitionSource(id: insight.id, in: insightNamespace)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("insights.card.\(insight.id)")
             }
             .screenPadding()
         }
@@ -346,6 +348,7 @@ struct InsightsView: View {
                             .matchedTransitionSource(id: insight.id, in: insightNamespace)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("insights.card.\(insight.id)")
                 }
             }
             .screenPadding()

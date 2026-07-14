@@ -1,0 +1,71 @@
+▶ Booting simulator: iPhone 17 Pro
+Monitoring boot status for iPhone 17 Pro (C6312FCE-B82F-4070-A83E-853A8B1EE1C8).
+Device already booted, nothing to do.
+
+
+━━━ de-DE  (lang=de locale=de_DE currency=EUR) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/de-DE
+  ✅ de-DE: 8 screenshots
+
+━━━ es-ES  (lang=es locale=es_ES currency=EUR) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/es-ES
+  ✅ es-ES: 8 screenshots
+
+━━━ es-MX  (lang=es-MX locale=es_MX currency=MXN) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/es-MX
+  ✅ es-MX: 8 screenshots
+
+━━━ fr-FR  (lang=fr locale=fr_FR currency=EUR) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/fr-FR
+  ✅ fr-FR: 8 screenshots
+
+━━━ fr-CA  (lang=fr-CA locale=fr_CA currency=CAD) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/fr-CA
+  ✅ fr-CA: 8 screenshots
+
+━━━ tr  (lang=tr locale=tr_TR currency=TRY) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/tr
+  ✅ tr: 8 screenshots
+
+━━━ pt-BR  (lang=pt-BR locale=pt_BR currency=BRL) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/pt-BR
+  ✅ pt-BR: 8 screenshots
+
+━━━ it  (lang=it locale=it_IT currency=EUR) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/it
+  ✅ it: 8 screenshots
+
+━━━ uk  (lang=uk locale=uk_UA currency=UAH) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/uk
+  ✅ uk: 8 screenshots
+
+━━━ ja  (lang=ja locale=ja_JP currency=JPY) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/ja
+  ✅ ja: 8 screenshots
+
+━━━ ko  (lang=ko locale=ko_KR currency=KRW) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/ko
+  ✅ ko: 8 screenshots
+
+━━━ en-US  (lang=en locale=en_US currency=USD) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/en-US
+  ✅ en-US: 8 screenshots
+
+━━━ ru  (lang=ru locale=ru_RU currency=KZT) ━━━
+** TEST SUCCEEDED **
+  exported 8 screenshots -> screenshots/raw/ru
+  ✅ ru: 8 screenshots
+
+✅ All locales captured into screenshots/raw/

@@ -428,6 +428,15 @@ class AppCoordinator {
         // healed. Runs after the prewarm wait so multi-currency conversion uses fresh FX.
         await transactionStore.recalculateLedgerIfDayChanged()
 
+        #if DEBUG
+        // Screenshot demo: seeded Account.balance values are placeholders — fold the
+        // seeded transactions into real balances via the canonical full recalc once
+        // (tiny dataset, so the all-accounts rescan is cheap here).
+        if ScreenshotDemoMode.isActive {
+            transactionsViewModel.recalculateAccountBalances()
+        }
+        #endif
+
         // Insights recompute — non-essential for first frame; debounced internally.
         insightsViewModel.invalidateAndRecompute()
 

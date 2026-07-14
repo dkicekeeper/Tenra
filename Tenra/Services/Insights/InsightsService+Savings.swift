@@ -137,11 +137,26 @@ extension InsightsService {
         guard avgMonthlyExpenses > 0 else { return nil }
 
         let monthsCovered = totalBalance / avgMonthlyExpenses
-        let severity: InsightSeverity = monthsCovered >= 3 ? .positive : (monthsCovered >= 1 ? .warning : .critical)
+        let fundSeverity: InsightSeverity = monthsCovered >= 3 ? .positive : (monthsCovered >= 1 ? .warning : .critical)
         let monthsInt = Int(monthsCovered.rounded(.down))
 
+        // Runway at the current burn rate (merged from the former balanceRunway
+        // insight — audit 2026-07). "If income stopped" (monthsCovered) and
+        // "at the current pace" (runway) now live in one card.
+        let avgMonthlyIncome = aggregates.reduce(0.0) { $0 + $1.totalIncome } / Double(aggregates.count)
+        let avgMonthlyNetFlow = avgMonthlyIncome - avgMonthlyExpenses
+        let runway: Double? = avgMonthlyNetFlow < 0 ? totalBalance / abs(avgMonthlyNetFlow) : nil
+        // A negative net flow shortens the real horizon — surface the worse of the two.
+        let runwaySeverity: InsightSeverity? = runway.map { $0 >= 3 ? .positive : ($0 >= 1 ? .warning : .critical) }
+        let severity: InsightSeverity = {
+            guard let runwaySeverity else { return fundSeverity }
+            return runwaySeverity.sortOrder < fundSeverity.sortOrder ? runwaySeverity : fundSeverity
+        }()
+
         let recommendation: String
-        if monthsCovered >= 3 {
+        if let runway, runway < 1 {
+            recommendation = String(localized: "insights.formula.balanceRunway.rec.critical")
+        } else if monthsCovered >= 3 {
             recommendation = String(localized: "insights.formula.emergencyFund.rec.good")
         } else {
             let targetBalance = avgMonthlyExpenses * 3
@@ -160,11 +175,19 @@ extension InsightsService {
             heroValueText: String(format: String(localized: "insights.formula.value.months"), monthsCovered),
             heroLabelKey: "insights.formula.emergencyFund.heroLabel",
             formulaHeaderKey: "insights.formula.emergencyFund.formulaHeader",
-            formulaRows: [
-                InsightFormulaRow(id: "balance", labelKey: "insights.formula.emergencyFund.row.balance", value: totalBalance, kind: .currency),
-                InsightFormulaRow(id: "avgExpenses", labelKey: "insights.formula.emergencyFund.row.avgExpenses", value: avgMonthlyExpenses, kind: .currency),
-                InsightFormulaRow(id: "monthsCovered", labelKey: "insights.formula.emergencyFund.row.monthsCovered", value: monthsCovered, kind: .months, isEmphasised: true)
-            ],
+            formulaRows: {
+                var rows = [
+                    InsightFormulaRow(id: "balance", labelKey: "insights.formula.emergencyFund.row.balance", value: totalBalance, kind: .currency),
+                    InsightFormulaRow(id: "avgExpenses", labelKey: "insights.formula.emergencyFund.row.avgExpenses", value: avgMonthlyExpenses, kind: .currency),
+                    InsightFormulaRow(id: "monthsCovered", labelKey: "insights.formula.emergencyFund.row.monthsCovered", value: monthsCovered, kind: .months, isEmphasised: true)
+                ]
+                // Reuse the former balanceRunway row keys — they exist in all locales.
+                rows.append(InsightFormulaRow(id: "netFlow", labelKey: "insights.formula.balanceRunway.row.netFlow", value: avgMonthlyNetFlow, kind: .currency))
+                if let runway {
+                    rows.append(InsightFormulaRow(id: "runway", labelKey: "insights.formula.balanceRunway.row.runway", value: runway, kind: .months, isEmphasised: true))
+                }
+                return rows
+            }(),
             explainerKey: "insights.formula.emergencyFund.explainer",
             recommendation: recommendation,
             baseCurrency: baseCurrency

@@ -782,8 +782,6 @@
 "insights.cashFlow" = "Flujo de caja";
 "insights.netFlow" = "Flujo neto";
 "insights.availableBalance" = "Saldo disponible";
-"insights.ratio" = "Relación ingresos/gastos";
-"insights.incomeVsExpense.coverage" = "Los ingresos cubren el %@ de los gastos";
 "insights.topMonths.best" = "Los 10 mejores meses";
 "insights.topMonths.worst" = "Los 10 peores meses";
 "insights.loading" = "Analizando tus finanzas...";
@@ -801,7 +799,6 @@
 "insights.avgDailySpending" = "Gasto diario promedio";
 "insights.days" = "días";
 "insights.incomeGrowth" = "Tendencia de ingresos";
-"insights.incomeVsExpense" = "Ingresos vs. gastos";
 "insights.vsPreviousPeriod" = "vs. periodo anterior";
 "insights.vsAverage" = "vs. promedio";
 "insights.budgetOver" = "Presupuesto excedido";
@@ -823,18 +820,8 @@
 "insights.perQuarter" = "al trimestre";
 "insights.perYear" = "al año";
 "insights.netCashFlow" = "Flujo de caja neto";
-"insights.bestMonth" = "Mejor mes";
-"insights.bestPeriod.week" = "Mejor semana";
-"insights.bestPeriod.month" = "Mejor mes";
-"insights.bestPeriod.quarter" = "Mejor trimestre";
-"insights.bestPeriod.year" = "Mejor año";
-"insights.bestPeriod.allTime" = "Mejor periodo";
-"insights.worstMonth" = "Peor mes";
-"insights.worstPeriod.week" = "Peor semana";
-"insights.worstPeriod.month" = "Peor mes";
-"insights.worstPeriod.quarter" = "Peor trimestre";
-"insights.worstPeriod.year" = "Peor año";
-"insights.worstPeriod.allTime" = "Peor periodo";
+"insights.periodRecords" = "Récords";
+"insights.urgentNow" = "Requiere atención";
 "insights.projectedBalance" = "Saldo proyectado";
 "insights.in30Days" = "en 30 días";
 "insights.recurringAndExpenses" = "Recurrentes + gastos promedio";
@@ -995,8 +982,6 @@
 // Forecasting
 "insights.forecasting" = "Pronóstico";
 "insights.spendingForecast" = "Pronóstico de gasto mensual";
-"insights.balanceRunway" = "Autonomía del saldo";
-"insights.balanceRunway.months" = "meses de autonomía";
 "insights.yearOverYear" = "Interanual";
 "insights.incomeSourceBreakdown" = "Fuentes de ingresos";
 
@@ -1008,8 +993,44 @@
 "insights.healthGrade.needsAttention" = "Requiere atención";
 "insights.duplicateSubscriptions.title" = "Posibles suscripciones duplicadas";
 "insights.duplicateSubscriptions.subtitle" = "posibles duplicados detectados";
-"insights.accountDormancy.title" = "Cuenta inactiva detectada";
-"insights.accountDormancy.subtitle" = "cuentas inactivas 30+ días";
+"insights.accountDormancy.title" = "Dinero sin uso";
+"insights.accountDormancy.subtitle" = "cuentas inactivas 30+ días: podrían rentar en un depósito";
+
+"notification.weeklyDigest.title" = "Resumen semanal";
+"notification.weeklyDigest.body.withComparison" = "%1$@: gastos %2$@ (%3$@ vs. la semana anterior)";
+"notification.weeklyDigest.body.simple" = "%1$@: gastos %2$@";
+"settings.insightSignals.weeklyDigest" = "Resumen semanal (lun, 9:00)";
+
+"settings.insightSignals.title" = "Alertas de análisis";
+"settings.insightSignals.master" = "Push para señales importantes";
+"settings.insightSignals.footer" = "Solo se envían cambios importantes: exceso de presupuesto, subidas de precio de suscripciones, previsión de saldo bajo. Cada señal como máximo una vez por semana, y no más de 5 notificaciones semanales en total.";
+"settings.insightSignals.lowBalance" = "Previsión de saldo bajo";
+"settings.insightSignals.permissionDenied" = "Las notificaciones están desactivadas en Ajustes de iOS: toca para activarlas";
+
+"insights.priceIncrease" = "La suscripción subió de precio";
+"insights.priceIncrease.was" = "antes %@";
+"insights.largeTransaction" = "Gasto grande";
+"insights.formula.priceIncrease.title" = "Subida de precio";
+"insights.formula.priceIncrease.heroLabel" = "Cambio vs. el cargo anterior";
+"insights.formula.priceIncrease.formulaHeader" = "Cómo se calcula";
+"insights.formula.priceIncrease.row.name" = "Suscripción";
+"insights.formula.priceIncrease.row.oldPrice" = "Cargo anterior";
+"insights.formula.priceIncrease.row.newPrice" = "Último cargo";
+"insights.formula.priceIncrease.row.delta" = "Cambio";
+"insights.formula.priceIncrease.row.yearlyImpact" = "Coste extra al año";
+"insights.formula.priceIncrease.explainer" = "Compara el último cargo de un pago recurrente activo con el anterior (o con el importe previsto). Las pequeñas subidas se acumulan: un 15% en varias suscripciones equivale a una suscripción nueva entera.";
+"insights.formula.priceIncrease.rec" = "Comprueba si el nuevo precio está justificado. Si no, pausa o cancela la suscripción en la pestaña Suscripciones.";
+"insights.formula.largeTransaction.title" = "Gasto grande";
+"insights.formula.largeTransaction.heroLabel" = "Mayor gasto puntual en 30 días";
+"insights.formula.largeTransaction.formulaHeader" = "Cómo se calcula";
+"insights.formula.largeTransaction.row.name" = "Descripción";
+"insights.formula.largeTransaction.row.date" = "Fecha";
+"insights.formula.largeTransaction.row.category" = "Categoría";
+"insights.formula.largeTransaction.row.amount" = "Importe";
+"insights.formula.largeTransaction.row.avgTx" = "Gasto medio (90 días)";
+"insights.formula.largeTransaction.row.multiplier" = "Veces sobre la media";
+"insights.formula.largeTransaction.explainer" = "Los pagos recurrentes como alquiler y suscripciones quedan excluidos: solo cuentan las compras puntuales. Una compra 4 veces superior a tu gasto medio merece un vistazo.";
+"insights.formula.largeTransaction.rec" = "Asegúrate de que la compra sea esperada. ¿Puntual? No hace falta hacer nada: la señal desaparece al ajustarse la media.";
 "insights.dormant.accounts" = "Cuentas inactivas";
 
 // MARK: - Tab Bar

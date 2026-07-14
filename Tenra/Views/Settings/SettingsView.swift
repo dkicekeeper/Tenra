@@ -66,6 +66,7 @@ struct SettingsView: View {
             List {
                 SettingsProSection()
                 generalSection
+                notificationsSection
                 cloudSection
                 exportImportSection
                 dangerZoneSection
@@ -197,6 +198,19 @@ struct SettingsView: View {
         .paywallSheet(isPresented: $showingImportPaywall) {
             // After unlocking Pro, continue straight into the import picker.
             showingImportPicker = true
+        }
+    }
+
+    // MARK: - Notifications Section
+
+    private var notificationsSection: some View {
+        Section {
+            NavigationSettingsRow(
+                icon: "bell.badge",
+                title: String(localized: "settings.insightSignals.title")
+            ) {
+                InsightSignalSettingsView()
+            }
         }
     }
 

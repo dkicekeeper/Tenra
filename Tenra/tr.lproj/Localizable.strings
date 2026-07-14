@@ -782,8 +782,6 @@
 "insights.cashFlow" = "Nakit Akışı";
 "insights.netFlow" = "Net Akış";
 "insights.availableBalance" = "Kullanılabilir Bakiye";
-"insights.ratio" = "Gelir/Gider Oranı";
-"insights.incomeVsExpense.coverage" = "Gelir, giderlerin %@ kadarını karşılıyor";
 "insights.topMonths.best" = "En iyi 10 ay";
 "insights.topMonths.worst" = "En kötü 10 ay";
 "insights.loading" = "Finansların analiz ediliyor...";
@@ -801,7 +799,6 @@
 "insights.avgDailySpending" = "Ortalama Günlük Harcama";
 "insights.days" = "gün";
 "insights.incomeGrowth" = "Gelir Eğilimi";
-"insights.incomeVsExpense" = "Gelir ve Gider";
 "insights.vsPreviousPeriod" = "önceki döneme göre";
 "insights.vsAverage" = "ortalamaya göre";
 "insights.budgetOver" = "Bütçe Aşımı";
@@ -823,18 +820,8 @@
 "insights.perQuarter" = "çeyreklik";
 "insights.perYear" = "yıllık";
 "insights.netCashFlow" = "Net Nakit Akışı";
-"insights.bestMonth" = "En İyi Ay";
-"insights.bestPeriod.week" = "En İyi Hafta";
-"insights.bestPeriod.month" = "En İyi Ay";
-"insights.bestPeriod.quarter" = "En İyi Çeyrek";
-"insights.bestPeriod.year" = "En İyi Yıl";
-"insights.bestPeriod.allTime" = "En İyi Dönem";
-"insights.worstMonth" = "En Kötü Ay";
-"insights.worstPeriod.week" = "En Kötü Hafta";
-"insights.worstPeriod.month" = "En Kötü Ay";
-"insights.worstPeriod.quarter" = "En Kötü Çeyrek";
-"insights.worstPeriod.year" = "En Kötü Yıl";
-"insights.worstPeriod.allTime" = "En Kötü Dönem";
+"insights.periodRecords" = "Rekorlar";
+"insights.urgentNow" = "Dikkat gerektirenler";
 "insights.projectedBalance" = "Öngörülen Bakiye";
 "insights.in30Days" = "30 gün içinde";
 "insights.recurringAndExpenses" = "Tekrarlayanlar + ortalama giderler";
@@ -995,8 +982,6 @@
 // Forecasting
 "insights.forecasting" = "Tahmin";
 "insights.spendingForecast" = "Aylık Harcama Tahmini";
-"insights.balanceRunway" = "Bakiye Ömrü";
-"insights.balanceRunway.months" = "ay bakiye ömrü";
 "insights.yearOverYear" = "Yıldan Yıla";
 "insights.incomeSourceBreakdown" = "Gelir Kaynakları";
 
@@ -1008,8 +993,44 @@
 "insights.healthGrade.needsAttention" = "Dikkat Gerektiriyor";
 "insights.duplicateSubscriptions.title" = "Olası Yinelenen Abonelikler";
 "insights.duplicateSubscriptions.subtitle" = "olası yinelenenler tespit edildi";
-"insights.accountDormancy.title" = "Atıl Hesap Tespit Edildi";
-"insights.accountDormancy.subtitle" = "30+ gündür hareketsiz hesaplar";
+"insights.accountDormancy.title" = "Atıl duran para";
+"insights.accountDormancy.subtitle" = "hesap 30+ gündür hareketsiz — mevduatta gelir getirebilirdi";
+
+"notification.weeklyDigest.title" = "Haftalık özet";
+"notification.weeklyDigest.body.withComparison" = "%1$@: harcama %2$@ (önceki haftaya göre %3$@)";
+"notification.weeklyDigest.body.simple" = "%1$@: harcama %2$@";
+"settings.insightSignals.weeklyDigest" = "Haftalık özet (Pzt 9:00)";
+
+"settings.insightSignals.title" = "Analiz uyarıları";
+"settings.insightSignals.master" = "Önemli sinyaller için bildirim";
+"settings.insightSignals.footer" = "Yalnızca önemli değişiklikler bildirilir: bütçe aşımı, abonelik zamları, düşük bakiye tahmini. Her sinyal haftada en fazla bir kez, toplamda haftada en fazla 5 bildirim.";
+"settings.insightSignals.lowBalance" = "Düşük bakiye tahmini";
+"settings.insightSignals.permissionDenied" = "Bildirimler iOS Ayarlarında kapalı — açmak için dokunun";
+
+"insights.priceIncrease" = "Abonelik zamlandı";
+"insights.priceIncrease.was" = "önceki %@";
+"insights.largeTransaction" = "Büyük harcama";
+"insights.formula.priceIncrease.title" = "Fiyat artışı";
+"insights.formula.priceIncrease.heroLabel" = "Önceki ödemeye göre değişim";
+"insights.formula.priceIncrease.formulaHeader" = "Nasıl hesaplanır";
+"insights.formula.priceIncrease.row.name" = "Abonelik";
+"insights.formula.priceIncrease.row.oldPrice" = "Önceki ödeme";
+"insights.formula.priceIncrease.row.newPrice" = "Son ödeme";
+"insights.formula.priceIncrease.row.delta" = "Değişim";
+"insights.formula.priceIncrease.row.yearlyImpact" = "Yıllık ek maliyet";
+"insights.formula.priceIncrease.explainer" = "Aktif bir düzenli ödemenin son tahsilatını bir öncekiyle (veya planlanan tutarla) karşılaştırır. Küçük zamlar birikir: birkaç abonelikte %15 artış, yepyeni bir abonelik demektir.";
+"insights.formula.priceIncrease.rec" = "Yeni fiyatın makul olup olmadığını kontrol edin. Değilse aboneliği Abonelikler sekmesinden duraklatın veya iptal edin.";
+"insights.formula.largeTransaction.title" = "Büyük harcama";
+"insights.formula.largeTransaction.heroLabel" = "Son 30 günün en büyük tek seferlik harcaması";
+"insights.formula.largeTransaction.formulaHeader" = "Nasıl hesaplanır";
+"insights.formula.largeTransaction.row.name" = "Açıklama";
+"insights.formula.largeTransaction.row.date" = "Tarih";
+"insights.formula.largeTransaction.row.category" = "Kategori";
+"insights.formula.largeTransaction.row.amount" = "Tutar";
+"insights.formula.largeTransaction.row.avgTx" = "Ortalama harcama (90 gün)";
+"insights.formula.largeTransaction.row.multiplier" = "Ortalamanın katı";
+"insights.formula.largeTransaction.explainer" = "Kira ve abonelik gibi düzenli ödemeler hariçtir — yalnızca tek seferlik alışverişler sayılır. Ortalama harcamanızın 4 katı bir alışveriş ikinci bir bakışı hak eder.";
+"insights.formula.largeTransaction.rec" = "Alışverişin beklenen bir harcama olduğundan emin olun. Tek seferlikse bir şey yapmanıza gerek yok — ortalama güncellendikçe sinyal kaybolur.";
 "insights.dormant.accounts" = "Atıl Hesaplar";
 
 // MARK: - Tab Bar

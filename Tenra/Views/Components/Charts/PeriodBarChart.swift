@@ -90,7 +90,9 @@ struct PeriodBarChart: View {
         } else {
             VStack(spacing: AppSpacing.lg) {
                 bannerSlot
-                fullChart.frame(height: chartHeight)
+                fullChart
+                    .padding(.leading, AppSpacing.lg)
+                    .frame(height: chartHeight)
             }
             .chartAppear()
         }
@@ -202,6 +204,4 @@ struct PeriodBarChart: View {
         currency: "KZT",
         granularity: .month
     )
-    .screenPadding()
-    .padding(.vertical, AppSpacing.md)
 }

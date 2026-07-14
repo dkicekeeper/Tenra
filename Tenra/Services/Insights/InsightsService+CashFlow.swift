@@ -91,12 +91,13 @@ extension InsightsService {
             ))
         }
 
-        // 2. Best month
+        // 2. Period records (merged best + worst — audit 2026-07: two retrospective
+        // cards collapsed into one; the detail view lists both rankings)
         if let best = periodData.max(by: { $0.netFlow < $1.netFlow }) {
             insights.append(Insight(
-                id: "best_month",
+                id: "period_records",
                 type: .bestMonth,
-                title: String(localized: "insights.bestMonth"),
+                title: String(localized: "insights.periodRecords"),
                 subtitle: best.label,
                 metric: InsightMetric(
                     value: best.netFlow,
@@ -105,7 +106,7 @@ extension InsightsService {
                     unit: nil
                 ),
                 trend: nil,
-                severity: .positive,
+                severity: .neutral,
                 category: .cashFlow,
                 detailData: .periodTrend(periodData)
             ))
@@ -194,13 +195,14 @@ extension InsightsService {
             detailData: .periodTrend(periodPoints)
         ))
 
-        // 2. Best period
-        let bestPeriod = periodPoints.max(by: { $0.netFlow < $1.netFlow })
-        if let best = bestPeriod {
+        // 2. Period records (merged best + worst — audit 2026-07: two retrospective
+        // "trivia" cards collapsed into one neutral card; the detail view renders
+        // both the best-10 and worst-10 rankings)
+        if let best = periodPoints.max(by: { $0.netFlow < $1.netFlow }) {
             insights.append(Insight(
-                id: "best_month",
+                id: "period_records",
                 type: .bestMonth,
-                title: granularity.bestPeriodTitle,
+                title: String(localized: "insights.periodRecords"),
                 subtitle: best.label,
                 metric: InsightMetric(
                     value: best.netFlow,
@@ -209,29 +211,7 @@ extension InsightsService {
                     unit: nil
                 ),
                 trend: nil,
-                severity: .positive,
-                category: .cashFlow,
-                detailData: .periodTrend(periodPoints)
-            ))
-        }
-
-        // 3. Worst period
-        if let worst = periodPoints.min(by: { $0.netFlow < $1.netFlow }),
-           worst.netFlow < 0,
-           worst.key != (bestPeriod?.key ?? "") {
-            insights.append(Insight(
-                id: "worst_month",
-                type: .worstMonth,
-                title: granularity.worstPeriodTitle,
-                subtitle: worst.label,
-                metric: InsightMetric(
-                    value: worst.netFlow,
-                    formattedValue: Formatting.formatCurrencySmart(worst.netFlow, currency: baseCurrency),
-                    currency: baseCurrency,
-                    unit: nil
-                ),
-                trend: nil,
-                severity: .warning,
+                severity: .neutral,
                 category: .cashFlow,
                 detailData: .periodTrend(periodPoints)
             ))

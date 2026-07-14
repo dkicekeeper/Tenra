@@ -106,6 +106,127 @@ extension InsightsService {
         )]
     }
 
+    // MARK: - Subscription Price Increase (audit 2026-07)
+
+    /// Detects active expense series whose latest realized charge is noticeably higher
+    /// than the previous one (or than the series amount when only one occurrence is
+    /// linked). Emma/Rocket-style "your subscription got more expensive" signal.
+    /// Emits up to 3 insights, largest increase first. Granularity-independent (shared).
+    nonisolated func generateSubscriptionPriceIncreases(
+        recurringSeries: [RecurringSeries],
+        categories: [CustomCategory],
+        transactions: [Transaction],
+        txDateMap: [String: Date]? = nil
+    ) -> [Insight] {
+        let activeExpenseSeries = recurringSeries.filter { series in
+            guard series.isActive else { return false }
+            return categories.first { $0.name == series.category }?.type != .income
+        }
+        guard !activeExpenseSeries.isEmpty else { return [] }
+        let activeIds = Set(activeExpenseSeries.map(\.id))
+
+        // Single pass: collect realized occurrences per active series.
+        let df = DateFormatters.dateFormatter
+        let now = Date()
+        var occurrences: [String: [(date: Date, amount: Double, currency: String)]] = [:]
+        for tx in transactions where tx.type == .expense {
+            guard let seriesId = tx.recurringSeriesId, activeIds.contains(seriesId) else { continue }
+            guard let d = txDateMap?[tx.date] ?? df.date(from: tx.date), d <= now else { continue }
+            occurrences[seriesId, default: []].append((d, tx.amount, tx.currency))
+        }
+        guard !occurrences.isEmpty else { return [] }
+
+        var found: [(insight: Insight, changePercent: Double)] = []
+        for series in activeExpenseSeries {
+            guard var occ = occurrences[series.id], !occ.isEmpty else { continue }
+            occ.sort { $0.date > $1.date }
+            let latest = occ[0]
+
+            // Baseline: previous occurrence in the SAME currency (multi-currency
+            // comparison would need FX and reads as noise); fall back to the series
+            // amount when only one occurrence is linked.
+            let baseline: Double
+            if let previous = occ.dropFirst().first(where: { $0.currency == latest.currency }) {
+                baseline = previous.amount
+            } else if series.currency == latest.currency {
+                baseline = NSDecimalNumber(decimal: series.amount).doubleValue
+            } else {
+                continue
+            }
+            guard baseline > 0 else { continue }
+
+            let delta = latest.amount - baseline
+            let changePercent = (delta / baseline) * 100
+            guard changePercent > 5 else { continue }
+
+            let chargesPerYear: Double
+            switch series.frequency {
+            case .daily:     chargesPerYear = 365
+            case .weekly:    chargesPerYear = 52
+            case .monthly:   chargesPerYear = 12
+            case .quarterly: chargesPerYear = 4
+            case .yearly:    chargesPerYear = 1
+            }
+            let yearlyImpact = delta * chargesPerYear
+
+            let name = series.description.isEmpty ? series.category : series.description
+            let severity: InsightSeverity = .warning
+
+            // All amounts here are in the CHARGE currency, so the model formats
+            // .currency rows with it (not the app base currency).
+            let model = InsightFormulaModel(
+                id: "priceIncrease_\(series.id)",
+                titleKey: "insights.formula.priceIncrease.title",
+                icon: "arrow.up.forward.circle.fill",
+                color: severity.color,
+                heroValueText: String(format: "%+.1f%%", changePercent),
+                heroLabelKey: "insights.formula.priceIncrease.heroLabel",
+                formulaHeaderKey: "insights.formula.priceIncrease.formulaHeader",
+                formulaRows: [
+                    InsightFormulaRow(id: "name", labelKey: "insights.formula.priceIncrease.row.name", value: 0, kind: .rawText(name)),
+                    InsightFormulaRow(id: "oldPrice", labelKey: "insights.formula.priceIncrease.row.oldPrice", value: baseline, kind: .currency),
+                    InsightFormulaRow(id: "newPrice", labelKey: "insights.formula.priceIncrease.row.newPrice", value: latest.amount, kind: .currency),
+                    InsightFormulaRow(id: "delta", labelKey: "insights.formula.priceIncrease.row.delta", value: changePercent, kind: .percent),
+                    InsightFormulaRow(id: "yearlyImpact", labelKey: "insights.formula.priceIncrease.row.yearlyImpact", value: yearlyImpact, kind: .currency, isEmphasised: true)
+                ],
+                explainerKey: "insights.formula.priceIncrease.explainer",
+                recommendation: String(localized: "insights.formula.priceIncrease.rec"),
+                baseCurrency: latest.currency
+            )
+
+            Self.logger.debug("🔁 [Insights] PriceIncrease — '\(name, privacy: .public)' \(String(format: "%.0f", baseline), privacy: .public) → \(String(format: "%.0f", latest.amount), privacy: .public) \(latest.currency, privacy: .public) (\(String(format: "%+.1f%%", changePercent), privacy: .public))")
+            found.append((Insight(
+                id: "price_increase_\(series.id)",
+                type: .subscriptionPriceIncrease,
+                title: String(localized: "insights.priceIncrease"),
+                subtitle: name,
+                metric: InsightMetric(
+                    value: latest.amount,
+                    formattedValue: Formatting.formatCurrencySmart(latest.amount, currency: latest.currency),
+                    currency: latest.currency,
+                    unit: nil
+                ),
+                trend: InsightTrend(
+                    direction: .up,
+                    changePercent: changePercent,
+                    changeAbsolute: delta,
+                    comparisonPeriod: String(
+                        format: String(localized: "insights.priceIncrease.was"),
+                        Formatting.formatCurrencySmart(baseline, currency: latest.currency)
+                    )
+                ),
+                severity: severity,
+                category: .recurring,
+                detailData: .formulaBreakdown(model)
+            ), changePercent))
+        }
+
+        return found
+            .sorted { $0.changePercent > $1.changePercent }
+            .prefix(3)
+            .map(\.insight)
+    }
+
     // MARK: - Subscription Growth
 
     /// Compares current monthly recurring total with the total a granularity-scaled

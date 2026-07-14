@@ -782,8 +782,6 @@
 "insights.cashFlow" = "Денежный поток";
 "insights.netFlow" = "Чистый поток";
 "insights.availableBalance" = "Доступный баланс";
-"insights.ratio" = "Соотношение доходов/расходов";
-"insights.incomeVsExpense.coverage" = "Доходы покрывают расходы на %@";
 "insights.topMonths.best" = "Топ-10 лучших месяцев";
 "insights.topMonths.worst" = "Топ-10 худших месяцев";
 "insights.loading" = "Анализируем ваши финансы...";
@@ -801,7 +799,6 @@
 "insights.avgDailySpending" = "Среднедневные расходы";
 "insights.days" = "дней";
 "insights.incomeGrowth" = "Тренд доходов";
-"insights.incomeVsExpense" = "Доходы и расходы";
 "insights.vsPreviousPeriod" = "к прошлому периоду";
 "insights.vsAverage" = "к среднему";
 "insights.budgetOver" = "Превышение бюджета";
@@ -823,18 +820,8 @@
 "insights.perQuarter" = "в квартал";
 "insights.perYear" = "в год";
 "insights.netCashFlow" = "Чистый денежный поток";
-"insights.bestMonth" = "Лучший месяц";
-"insights.bestPeriod.week" = "Лучшая неделя";
-"insights.bestPeriod.month" = "Лучший месяц";
-"insights.bestPeriod.quarter" = "Лучший квартал";
-"insights.bestPeriod.year" = "Лучший год";
-"insights.bestPeriod.allTime" = "Лучший период";
-"insights.worstMonth" = "Худший месяц";
-"insights.worstPeriod.week" = "Худшая неделя";
-"insights.worstPeriod.month" = "Худший месяц";
-"insights.worstPeriod.quarter" = "Худший квартал";
-"insights.worstPeriod.year" = "Худший год";
-"insights.worstPeriod.allTime" = "Худший период";
+"insights.periodRecords" = "Рекорды";
+"insights.urgentNow" = "Важное сейчас";
 "insights.projectedBalance" = "Прогноз баланса";
 "insights.in30Days" = "через 30 дней";
 "insights.recurringAndExpenses" = "Подписки + средние расходы";
@@ -995,8 +982,6 @@
 // Forecasting
 "insights.forecasting" = "Прогноз";
 "insights.spendingForecast" = "Прогноз расходов";
-"insights.balanceRunway" = "Запас баланса";
-"insights.balanceRunway.months" = "месяцев хватит";
 "insights.yearOverYear" = "Год к году";
 "insights.incomeSourceBreakdown" = "Источники дохода";
 
@@ -1008,8 +993,44 @@
 "insights.healthGrade.needsAttention" = "Требует внимания";
 "insights.duplicateSubscriptions.title" = "Возможные дубликаты подписок";
 "insights.duplicateSubscriptions.subtitle" = "возможных дубликата";
-"insights.accountDormancy.title" = "Обнаружен неактивный счёт";
-"insights.accountDormancy.subtitle" = "счёта без активности 30+ дней";
+"insights.accountDormancy.title" = "Деньги без дела";
+"insights.accountDormancy.subtitle" = "счетов без движения 30+ дней — могли бы приносить доход на депозите";
+
+"notification.weeklyDigest.title" = "Итоги недели";
+"notification.weeklyDigest.body.withComparison" = "%1$@: расходы %2$@ (%3$@ к прошлой неделе)";
+"notification.weeklyDigest.body.simple" = "%1$@: расходы %2$@";
+"settings.insightSignals.weeklyDigest" = "Итоги недели (пн, 9:00)";
+
+"settings.insightSignals.title" = "Сигналы аналитики";
+"settings.insightSignals.master" = "Push-уведомления о важных сигналах";
+"settings.insightSignals.footer" = "Приходят только важные изменения: перерасход бюджета, подорожание подписок, низкий прогноз баланса. Каждый сигнал — не чаще раза в неделю, всего не больше 5 уведомлений в неделю.";
+"settings.insightSignals.lowBalance" = "Низкий прогноз баланса";
+"settings.insightSignals.permissionDenied" = "Уведомления выключены в настройках iOS — нажмите, чтобы включить";
+
+"insights.priceIncrease" = "Подписка подорожала";
+"insights.priceIncrease.was" = "было %@";
+"insights.largeTransaction" = "Крупная трата";
+"insights.formula.priceIncrease.title" = "Рост цены";
+"insights.formula.priceIncrease.heroLabel" = "Изменение к прошлому списанию";
+"insights.formula.priceIncrease.formulaHeader" = "Как это посчитано";
+"insights.formula.priceIncrease.row.name" = "Подписка";
+"insights.formula.priceIncrease.row.oldPrice" = "Прошлое списание";
+"insights.formula.priceIncrease.row.newPrice" = "Новое списание";
+"insights.formula.priceIncrease.row.delta" = "Изменение";
+"insights.formula.priceIncrease.row.yearlyImpact" = "Переплата за год";
+"insights.formula.priceIncrease.explainer" = "Сравнивает последнее списание по активному регулярному платежу с предыдущим (или с плановой суммой). Небольшие повышения цен накапливаются: +15% по нескольким подпискам — это целая новая подписка.";
+"insights.formula.priceIncrease.rec" = "Проверьте, оправдана ли новая цена. Если нет — приостановите или отмените подписку во вкладке «Подписки».";
+"insights.formula.largeTransaction.title" = "Крупная трата";
+"insights.formula.largeTransaction.heroLabel" = "Крупнейшая разовая трата за 30 дней";
+"insights.formula.largeTransaction.formulaHeader" = "Как это посчитано";
+"insights.formula.largeTransaction.row.name" = "Описание";
+"insights.formula.largeTransaction.row.date" = "Дата";
+"insights.formula.largeTransaction.row.category" = "Категория";
+"insights.formula.largeTransaction.row.amount" = "Сумма";
+"insights.formula.largeTransaction.row.avgTx" = "Средняя трата (90 дней)";
+"insights.formula.largeTransaction.row.multiplier" = "Во сколько раз выше средней";
+"insights.formula.largeTransaction.explainer" = "Регулярные платежи — аренда, подписки — исключены: учитываются только разовые покупки. Покупка в 4 раза выше вашей средней траты заслуживает внимания.";
+"insights.formula.largeTransaction.rec" = "Убедитесь, что покупка ожидаемая. Разовая? Ничего делать не нужно — сигнал исчезнет по мере обновления средней.";
 "insights.dormant.accounts" = "Неактивные счета";
 
 // MARK: - Tab Bar

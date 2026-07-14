@@ -548,6 +548,90 @@ extension InsightsService {
         )
     }
 
+    // MARK: - Large Transaction (audit 2026-07)
+
+    /// Copilot-style "big expense" detector: the largest non-recurring realized expense
+    /// of the last 30 days, when it exceeds 4× the average expense transaction of the
+    /// last 90 days. Recurring charges (rent, subscriptions) never fire it — the key
+    /// predicate every benchmark app applies. Granularity-independent (shared).
+    nonisolated func generateLargeTransaction(
+        baseCurrency: String,
+        transactions: [Transaction],
+        txDateMap: [String: Date]? = nil
+    ) -> Insight? {
+        let calendar = Calendar.current
+        let now = Date()
+        guard let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: now),
+              let ninetyDaysAgo = calendar.date(byAdding: .day, value: -90, to: now) else { return nil }
+        let df = DateFormatters.dateFormatter
+
+        // One pass: 90-day baseline (all realized expenses) + 30-day non-recurring candidate.
+        var baselineTotal = 0.0
+        var baselineCount = 0
+        var candidate: (tx: Transaction, amountBase: Double, date: Date)?
+        for tx in transactions where tx.type == .expense {
+            guard let d = txDateMap?[tx.date] ?? df.date(from: tx.date),
+                  d >= ninetyDaysAgo, d <= now else { continue }
+            let amountBase = resolveAmount(tx, baseCurrency: baseCurrency)
+            baselineTotal += amountBase
+            baselineCount += 1
+            if d >= thirtyDaysAgo, tx.recurringSeriesId == nil,
+               amountBase > (candidate?.amountBase ?? 0) {
+                candidate = (tx, amountBase, d)
+            }
+        }
+
+        // A thin baseline makes the multiplier meaningless — require real history.
+        guard baselineCount >= 20, let candidate else { return nil }
+        let avgTx = baselineTotal / Double(baselineCount)
+        guard avgTx > 0 else { return nil }
+        let multiplier = candidate.amountBase / avgTx
+        guard multiplier >= 4 else { return nil }
+
+        let severity: InsightSeverity = multiplier >= 8 ? .warning : .neutral
+        let dateLabel = DateFormatter.localizedString(from: candidate.date, dateStyle: .medium, timeStyle: .none)
+        let name = candidate.tx.description.isEmpty ? candidate.tx.category : candidate.tx.description
+
+        let model = InsightFormulaModel(
+            id: "largeTransaction_\(candidate.tx.id)",
+            titleKey: "insights.formula.largeTransaction.title",
+            icon: "creditcard.trianglebadge.exclamationmark",
+            color: severity.color,
+            heroValueText: Formatting.formatCurrencySmart(candidate.amountBase, currency: baseCurrency),
+            heroLabelKey: "insights.formula.largeTransaction.heroLabel",
+            formulaHeaderKey: "insights.formula.largeTransaction.formulaHeader",
+            formulaRows: [
+                InsightFormulaRow(id: "name", labelKey: "insights.formula.largeTransaction.row.name", value: 0, kind: .rawText(name)),
+                InsightFormulaRow(id: "date", labelKey: "insights.formula.largeTransaction.row.date", value: 0, kind: .rawText(dateLabel)),
+                InsightFormulaRow(id: "category", labelKey: "insights.formula.largeTransaction.row.category", value: 0, kind: .rawText(candidate.tx.category)),
+                InsightFormulaRow(id: "amount", labelKey: "insights.formula.largeTransaction.row.amount", value: candidate.amountBase, kind: .currency),
+                InsightFormulaRow(id: "avgTx", labelKey: "insights.formula.largeTransaction.row.avgTx", value: avgTx, kind: .currency),
+                InsightFormulaRow(id: "multiplier", labelKey: "insights.formula.largeTransaction.row.multiplier", value: multiplier, kind: .rawText(String(format: "×%.1f", multiplier)), isEmphasised: true)
+            ],
+            explainerKey: "insights.formula.largeTransaction.explainer",
+            recommendation: String(localized: "insights.formula.largeTransaction.rec"),
+            baseCurrency: baseCurrency
+        )
+
+        Self.logger.debug("💳 [Insights] LargeTransaction — '\(name, privacy: .public)' \(String(format: "%.0f", candidate.amountBase), privacy: .public) \(baseCurrency, privacy: .public) = ×\(String(format: "%.1f", multiplier), privacy: .public) avg")
+        return Insight(
+            id: "large_tx_\(candidate.tx.id)",
+            type: .largeTransaction,
+            title: String(localized: "insights.largeTransaction"),
+            subtitle: name + " — " + dateLabel,
+            metric: InsightMetric(
+                value: candidate.amountBase,
+                formattedValue: Formatting.formatCurrencySmart(candidate.amountBase, currency: baseCurrency),
+                currency: baseCurrency,
+                unit: nil
+            ),
+            trend: nil,
+            severity: severity,
+            category: .spending,
+            detailData: .formulaBreakdown(model)
+        )
+    }
+
     // MARK: - Category Trend
 
     /// Finds the expense category that has been rising for the most consecutive months (min 2).

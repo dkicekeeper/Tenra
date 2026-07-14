@@ -338,6 +338,7 @@ Active reference docs in `docs/`:
 | [design-system.md](docs/design-system.md) | Design tokens, components, animations, padding contract, amount formatting |
 | [gotchas.md](docs/gotchas.md) | SwiftUI Layout, Performance hot-paths, code hygiene |
 | [INSIGHTS_METRICS_REFERENCE.md](docs/INSIGHTS_METRICS_REFERENCE.md) | Per-metric reference for InsightsService |
+| [INSIGHTS_PRODUCT_AUDIT.md](docs/INSIGHTS_PRODUCT_AUDIT.md) | Insights product audit vs benchmarks, signal-notification rules (dedup/cap), follow-ups |
 | [domains/transactions.md](docs/domains/transactions.md) | TransactionStore CRUD, FRC, batch ops |
 | [domains/categories.md](docs/domains/categories.md) | Category / subcategory / budget aggregate indexes (O(1) reads), style cache invalidation, reorder |
 | [domains/accounts.md](docs/domains/accounts.md) | Account / series / parsed-date indexes, AccountDetailView read contract, ranking helpers |

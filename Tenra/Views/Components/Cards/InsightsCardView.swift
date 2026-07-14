@@ -29,11 +29,32 @@ struct InsightsCardView<BottomChart: View>: View {
         BottomChart.self != EmptyView.self
     }
 
+    /// Whether the trailing mini-chart overlay actually renders content for this
+    /// insight. Must mirror the `miniChart` switch: when it resolves to EmptyView
+    /// (formula breakdowns, lists, empty data), the text column takes the full
+    /// card width instead of reserving a blank 120pt gutter.
+    private var hasMiniChart: Bool {
+        switch insight.detailData {
+        case .categoryBreakdown(let items):
+            return !items.isEmpty
+        case .categoryBreakdownPaged(let pages):
+            let current = pages.periods.indices.contains(pages.currentIndex)
+                ? pages.periods[pages.currentIndex].items : []
+            return !current.isEmpty
+        case .budgetProgressList(let items):
+            return !items.isEmpty
+        case .periodTrend(let points):
+            return !points.isEmpty
+        case .recurringList, .accountComparison, .wealthBreakdown, .formulaBreakdown, nil:
+            return false
+        }
+    }
+
     // Mini-chart footprint. The chart is overlaid (not a layout sibling) so it can
     // bleed to the card's trailing edge; the text column reserves matching room so
     // titles/amounts/badges never run underneath it. Keep these in sync.
     private static var miniChartWidth: CGFloat { 120 }
-    private static var miniChartHeight: CGFloat { 100 }
+    private static var miniChartHeight: CGFloat { 120 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
@@ -43,19 +64,20 @@ struct InsightsCardView<BottomChart: View>: View {
                 Text(insight.title)
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textSecondary)
-                    .lineLimit(3)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(1)
+//                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(insight.subtitle)
                     .font(AppTypography.bodyEmphasis)
                     .foregroundStyle(AppColors.textPrimary)
-                    .lineLimit(1)
+                    .lineLimit(3)
 
                 metricRow
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Keep clear of the full-bleed mini-chart; full width when a bottom chart replaces it.
-            .padding(.trailing, hasBottomChart ? 0 : Self.miniChartWidth + AppSpacing.sm)
+            // Keep clear of the full-bleed mini-chart; full width when a bottom chart
+            // replaces it OR when this insight renders no mini-chart at all.
+            .padding(.trailing, (hasBottomChart || !hasMiniChart) ? 0 : Self.miniChartWidth + AppSpacing.sm)
 
             // Full-size chart — shown only when injected via init(insight:bottomChart:)
             if hasBottomChart {
@@ -66,11 +88,11 @@ struct InsightsCardView<BottomChart: View>: View {
         .cardStyle()
         // Mini chart overlaid OUTSIDE the clip region so it can bleed to the trailing edge.
         // Hidden when a full-size bottom chart is injected.
-        .overlay(alignment: .topTrailing) {
-            if !hasBottomChart {
+        .overlay(alignment: .trailing) {
+            if !hasBottomChart && hasMiniChart {
                 miniChart
                     .frame(width: Self.miniChartWidth, height: Self.miniChartHeight)
-                    .padding(.top, AppSpacing.lg)
+//                    .padding(.top, AppSpacing.lg)
                     .padding(.trailing, AppSpacing.lg)
                     .allowsHitTesting(false)
             }

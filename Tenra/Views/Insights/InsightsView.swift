@@ -237,6 +237,8 @@ struct InsightsView: View {
             // LazyVStack: defers body evaluation of off-screen sections — prevents simultaneous
             // layout measurement of all 40+ compact Chart views during granularity switch.
             LazyVStack(alignment: .leading, spacing: AppSpacing.xl) {
+                urgentSection
+
                 InsightsSectionView(
                     category: .spending,
                     insights: insightsViewModel.spendingInsights,
@@ -317,6 +319,34 @@ struct InsightsView: View {
                         .matchedTransitionSource(id: insight.id, in: insightNamespace)
                 }
                 .buttonStyle(.plain)
+            }
+            .screenPadding()
+        }
+    }
+
+    // MARK: - Urgent Section
+
+    /// "Важное сейчас" — cross-section critical/warning signals surfaced above the
+    /// category sections. Promoted insights are excluded from their own sections
+    /// (see InsightsViewModel.urgentInsights), so card ids stay unique in the namespace.
+    @ViewBuilder
+    private var urgentSection: some View {
+        let urgent = insightsViewModel.urgentInsights
+        if !urgent.isEmpty {
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
+                SectionHeaderView(
+                    String(localized: "insights.urgentNow"),
+                    systemImage: "exclamationmark.circle",
+                    style: .large
+                )
+
+                ForEach(urgent) { insight in
+                    NavigationLink(value: insight) {
+                        InsightsCardView(insight: insight)
+                            .matchedTransitionSource(id: insight.id, in: insightNamespace)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .screenPadding()
         }

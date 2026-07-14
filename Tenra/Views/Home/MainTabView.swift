@@ -149,6 +149,16 @@ struct MainTabView: View {
             selectedTab = .finances
             previousTab = .finances
         }
+        // Insight signal notification tap → Analytics tab (audit 2026-07).
+        .onReceive(
+            NotificationCenter.default.publisher(for: .insightSignalNotificationTapped)
+        ) { _ in
+            if tabBarMode == .expanded {
+                tabBarMode = .normal
+            }
+            selectedTab = .analytics
+            previousTab = .analytics
+        }
         // Rating pre-prompt survey. Fired by RatingPromptService at a success moment.
         .sheet(isPresented: $ratingPrompt.shouldShowSurvey) {
             RatingSurveyView()

@@ -300,28 +300,6 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Card title for the best-period cashflow insight.
-    nonisolated var bestPeriodTitle: String {
-        switch self {
-        case .week:    return String(localized: "insights.bestPeriod.week")
-        case .month:   return String(localized: "insights.bestPeriod.month")
-        case .quarter: return String(localized: "insights.bestPeriod.quarter")
-        case .year:    return String(localized: "insights.bestPeriod.year")
-        case .allTime: return String(localized: "insights.bestPeriod.allTime")
-        }
-    }
-
-    /// Card title for the worst-period cashflow insight.
-    nonisolated var worstPeriodTitle: String {
-        switch self {
-        case .week:    return String(localized: "insights.worstPeriod.week")
-        case .month:   return String(localized: "insights.worstPeriod.month")
-        case .quarter: return String(localized: "insights.worstPeriod.quarter")
-        case .year:    return String(localized: "insights.worstPeriod.year")
-        case .allTime: return String(localized: "insights.worstPeriod.allTime")
-        }
-    }
-
     /// Section header for a period-by-period breakdown list, matching the selected
     /// granularity ("Weekly / Monthly / Quarterly / Yearly Breakdown").
     nonisolated var breakdownTitle: String {

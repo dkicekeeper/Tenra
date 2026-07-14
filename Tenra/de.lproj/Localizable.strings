@@ -782,8 +782,6 @@
 "insights.cashFlow" = "Cashflow";
 "insights.netFlow" = "Netto-Cashflow";
 "insights.availableBalance" = "Verfügbarer Kontostand";
-"insights.ratio" = "Verhältnis Einnahmen/Ausgaben";
-"insights.incomeVsExpense.coverage" = "Einnahmen decken %@ der Ausgaben";
 "insights.topMonths.best" = "Top 10 der besten Monate";
 "insights.topMonths.worst" = "Top 10 der schwächsten Monate";
 "insights.loading" = "Ihre Finanzen werden analysiert ...";
@@ -801,7 +799,6 @@
 "insights.avgDailySpending" = "Durchschnittliche Tagesausgaben";
 "insights.days" = "Tage";
 "insights.incomeGrowth" = "Einnahmen-Trend";
-"insights.incomeVsExpense" = "Einnahmen vs. Ausgaben";
 "insights.vsPreviousPeriod" = "ggü. Vorperiode";
 "insights.vsAverage" = "ggü. Durchschnitt";
 "insights.budgetOver" = "Budget überschritten";
@@ -823,18 +820,8 @@
 "insights.perQuarter" = "pro Quartal";
 "insights.perYear" = "pro Jahr";
 "insights.netCashFlow" = "Netto-Cashflow";
-"insights.bestMonth" = "Bester Monat";
-"insights.bestPeriod.week" = "Beste Woche";
-"insights.bestPeriod.month" = "Bester Monat";
-"insights.bestPeriod.quarter" = "Bestes Quartal";
-"insights.bestPeriod.year" = "Bestes Jahr";
-"insights.bestPeriod.allTime" = "Beste Periode";
-"insights.worstMonth" = "Schlechtester Monat";
-"insights.worstPeriod.week" = "Schlechteste Woche";
-"insights.worstPeriod.month" = "Schlechtester Monat";
-"insights.worstPeriod.quarter" = "Schlechtestes Quartal";
-"insights.worstPeriod.year" = "Schlechtestes Jahr";
-"insights.worstPeriod.allTime" = "Schlechteste Periode";
+"insights.periodRecords" = "Rekorde";
+"insights.urgentNow" = "Jetzt wichtig";
 "insights.projectedBalance" = "Prognostizierter Kontostand";
 "insights.in30Days" = "in 30 Tagen";
 "insights.recurringAndExpenses" = "Wiederkehrend + durchschnittliche Ausgaben";
@@ -995,8 +982,6 @@
 // Forecasting
 "insights.forecasting" = "Prognose";
 "insights.spendingForecast" = "Monatliche Ausgabenprognose";
-"insights.balanceRunway" = "Kontostand-Reichweite";
-"insights.balanceRunway.months" = "Monate Reichweite";
 "insights.yearOverYear" = "Jahresvergleich";
 "insights.incomeSourceBreakdown" = "Einnahmequellen";
 
@@ -1008,8 +993,44 @@
 "insights.healthGrade.needsAttention" = "Braucht Aufmerksamkeit";
 "insights.duplicateSubscriptions.title" = "Mögliche doppelte Abos";
 "insights.duplicateSubscriptions.subtitle" = "mögliche Duplikate erkannt";
-"insights.accountDormancy.title" = "Inaktives Konto erkannt";
-"insights.accountDormancy.subtitle" = "Konten seit 30+ Tagen inaktiv";
+"insights.accountDormancy.title" = "Ungenutztes Geld";
+"insights.accountDormancy.subtitle" = "Konten 30+ Tage inaktiv — könnten auf einem Festgeld Zinsen bringen";
+
+"notification.weeklyDigest.title" = "Wochenrückblick";
+"notification.weeklyDigest.body.withComparison" = "%1$@: Ausgaben %2$@ (%3$@ ggü. Vorwoche)";
+"notification.weeklyDigest.body.simple" = "%1$@: Ausgaben %2$@";
+"settings.insightSignals.weeklyDigest" = "Wochenrückblick (Mo, 9:00)";
+
+"settings.insightSignals.title" = "Insight-Benachrichtigungen";
+"settings.insightSignals.master" = "Push bei wichtigen Signalen";
+"settings.insightSignals.footer" = "Nur wichtige Änderungen werden gesendet: Budgetüberschreitungen, Abo-Preiserhöhungen, niedrige Saldoprognose. Jedes Signal höchstens einmal pro Woche, insgesamt maximal 5 Benachrichtigungen pro Woche.";
+"settings.insightSignals.lowBalance" = "Niedrige Saldoprognose";
+"settings.insightSignals.permissionDenied" = "Benachrichtigungen sind in den iOS-Einstellungen deaktiviert — zum Aktivieren tippen";
+
+"insights.priceIncrease" = "Abo-Preis gestiegen";
+"insights.priceIncrease.was" = "vorher %@";
+"insights.largeTransaction" = "Große Ausgabe";
+"insights.formula.priceIncrease.title" = "Preiserhöhung";
+"insights.formula.priceIncrease.heroLabel" = "Änderung ggü. letzter Abbuchung";
+"insights.formula.priceIncrease.formulaHeader" = "So wird es berechnet";
+"insights.formula.priceIncrease.row.name" = "Abo";
+"insights.formula.priceIncrease.row.oldPrice" = "Letzte Abbuchung";
+"insights.formula.priceIncrease.row.newPrice" = "Neueste Abbuchung";
+"insights.formula.priceIncrease.row.delta" = "Änderung";
+"insights.formula.priceIncrease.row.yearlyImpact" = "Mehrkosten pro Jahr";
+"insights.formula.priceIncrease.explainer" = "Vergleicht die neueste Abbuchung einer aktiven regelmäßigen Zahlung mit der vorherigen (oder mit dem geplanten Betrag). Kleine Preiserhöhungen summieren sich — 15 % bei mehreren Abos entsprechen einem ganz neuen Abo.";
+"insights.formula.priceIncrease.rec" = "Prüfen Sie, ob der neue Preis gerechtfertigt ist. Wenn nicht — pausieren oder kündigen Sie das Abo im Tab „Abos“.";
+"insights.formula.largeTransaction.title" = "Große Ausgabe";
+"insights.formula.largeTransaction.heroLabel" = "Größte Einzelausgabe in 30 Tagen";
+"insights.formula.largeTransaction.formulaHeader" = "So wird es berechnet";
+"insights.formula.largeTransaction.row.name" = "Beschreibung";
+"insights.formula.largeTransaction.row.date" = "Datum";
+"insights.formula.largeTransaction.row.category" = "Kategorie";
+"insights.formula.largeTransaction.row.amount" = "Betrag";
+"insights.formula.largeTransaction.row.avgTx" = "Durchschnittliche Ausgabe (90 Tage)";
+"insights.formula.largeTransaction.row.multiplier" = "Faktor über dem Durchschnitt";
+"insights.formula.largeTransaction.explainer" = "Regelmäßige Zahlungen wie Miete und Abos sind ausgenommen — nur Einzelkäufe zählen. Ein Kauf, der das 4-Fache Ihrer Durchschnittsausgabe beträgt, verdient einen zweiten Blick.";
+"insights.formula.largeTransaction.rec" = "Stellen Sie sicher, dass der Kauf erwartet war. Einmalig? Keine Aktion nötig — das Signal verschwindet, sobald sich der Durchschnitt anpasst.";
 "insights.dormant.accounts" = "Inaktive Konten";
 
 // MARK: - Tab Bar

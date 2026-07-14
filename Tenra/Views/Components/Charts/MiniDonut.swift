@@ -75,7 +75,7 @@ struct MiniDonut: View {
                 startAngle = endAngle + perSliceGap
             }
         }
-        .frame(height: 60)
+        .frame(height: 80)
     }
 }
 

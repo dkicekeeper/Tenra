@@ -23,14 +23,12 @@ extension InsightsService {
     ) -> [Insight] {
         var insights: [Insight] = []
 
-        // SpendingForecast, BalanceRunway, YoY
-        // are granularity-independent — skip when shared insights already provided
+        // SpendingForecast and YoY are granularity-independent — skip when shared
+        // insights already provided. (BalanceRunway merged into EmergencyFund —
+        // audit 2026-07: both answered "how many months will the money last".)
         if !skipSharedGenerators {
             if let forecast = generateSpendingForecast(transactions: snapshot.transactions, recurringSeries: snapshot.recurringSeries, categories: snapshot.categories, baseCurrency: baseCurrency, preAggregated: preAggregated) {
                 insights.append(forecast)
-            }
-            if let runway = generateBalanceRunway(accounts: snapshot.accounts, transactions: snapshot.transactions, baseCurrency: baseCurrency, balanceFor: snapshot.balanceFor, preAggregated: preAggregated) {
-                insights.append(runway)
             }
             if let yoy = generateYearOverYear(transactions: snapshot.transactions, baseCurrency: baseCurrency, preAggregated: preAggregated) {
                 insights.append(yoy)
@@ -147,119 +145,6 @@ extension InsightsService {
                 formattedValue: Formatting.formatCurrencySmart(forecast, currency: baseCurrency),
                 currency: baseCurrency,
                 unit: nil
-            ),
-            trend: nil,
-            severity: severity,
-            category: .forecasting,
-            detailData: .formulaBreakdown(model)
-        )
-    }
-
-    /// How many months the current balance will last at the current net-burn rate.
-    private nonisolated func generateBalanceRunway(accounts: [Account], transactions: [Transaction], baseCurrency: String, balanceFor: (String) -> Double, preAggregated: PreAggregatedData? = nil) -> Insight? {
-        // Loans are liabilities, not runway.
-        let currentBalance = accounts.filter { !$0.isLoan && $0.includeInBalance }.reduce(0.0) { $0 + balanceFor($1.id) }
-        guard currentBalance > 0 else { return nil }
-
-        // Use preAggregated O(M) lookup when available; fall back to O(N) scan
-        let aggregates: [InMemoryMonthlyTotal]
-        if let preAggregated {
-            aggregates = preAggregated.lastMonthlyTotals(3)
-        } else {
-            aggregates = Self.computeLastMonthlyTotals(3, from: transactions, baseCurrency: baseCurrency)
-        }
-        guard !aggregates.isEmpty else { return nil }
-
-        let avgIncome = aggregates.reduce(0.0) { $0 + $1.totalIncome } / Double(aggregates.count)
-        let avgExpenses = aggregates.reduce(0.0) { $0 + $1.totalExpenses } / Double(aggregates.count)
-        let avgMonthlyNetFlow = avgIncome - avgExpenses
-
-        // Positive net flow → growing balance: not strictly a runway, but show the breakdown.
-        if avgMonthlyNetFlow > 0 {
-            let model = InsightFormulaModel(
-                id: "balanceRunway",
-                titleKey: "insights.formula.balanceRunway.title",
-                icon: "fuelpump.fill",
-                color: AppColors.success,
-                heroValueText: "+" + Formatting.formatCurrencySmart(avgMonthlyNetFlow, currency: baseCurrency) + " / " + String(localized: "insights.perMonth"),
-                heroLabelKey: "insights.formula.balanceRunway.heroLabel.growing",
-                formulaHeaderKey: "insights.formula.balanceRunway.formulaHeader",
-                formulaRows: [
-                    InsightFormulaRow(id: "balance", labelKey: "insights.formula.balanceRunway.row.balance", value: currentBalance, kind: .currency),
-                    InsightFormulaRow(id: "avgIncome", labelKey: "insights.formula.balanceRunway.row.avgIncome", value: avgIncome, kind: .currency),
-                    InsightFormulaRow(id: "avgExpenses", labelKey: "insights.formula.balanceRunway.row.avgExpenses", value: avgExpenses, kind: .currency),
-                    InsightFormulaRow(id: "netFlow", labelKey: "insights.formula.balanceRunway.row.netFlow", value: avgMonthlyNetFlow, kind: .currency, isEmphasised: true)
-                ],
-                explainerKey: "insights.formula.balanceRunway.explainer.growing",
-                recommendation: String(localized: "insights.formula.balanceRunway.rec.growing"),
-                baseCurrency: baseCurrency
-            )
-            return Insight(
-                id: "balance_runway",
-                type: .balanceRunway,
-                title: String(localized: "insights.balanceRunway"),
-                subtitle: Formatting.formatCurrencySmart(avgMonthlyNetFlow, currency: baseCurrency) + " " + String(localized: "insights.perMonth"),
-                metric: InsightMetric(
-                    value: avgMonthlyNetFlow,
-                    formattedValue: "+" + Formatting.formatCurrencySmart(avgMonthlyNetFlow, currency: baseCurrency),
-                    currency: baseCurrency,
-                    unit: String(localized: "insights.perMonth")
-                ),
-                trend: nil,
-                severity: .positive,
-                category: .forecasting,
-                detailData: .formulaBreakdown(model)
-            )
-        }
-
-        let burn = abs(avgMonthlyNetFlow)
-        let runway = currentBalance / burn
-        let severity: InsightSeverity = runway >= 3 ? .positive : (runway >= 1 ? .warning : .critical)
-
-        let recommendation: String
-        if runway >= 3 {
-            recommendation = String(localized: "insights.formula.balanceRunway.rec.long")
-        } else if runway >= 1 {
-            let neededReduction = burn - (currentBalance / 3)
-            recommendation = String(
-                format: String(localized: "insights.formula.balanceRunway.rec.short"),
-                Formatting.formatCurrencySmart(max(0, neededReduction), currency: baseCurrency)
-            )
-        } else {
-            recommendation = String(localized: "insights.formula.balanceRunway.rec.critical")
-        }
-
-        let model = InsightFormulaModel(
-            id: "balanceRunway",
-            titleKey: "insights.formula.balanceRunway.title",
-            icon: "fuelpump.fill",
-            color: severity.color,
-            heroValueText: String(format: String(localized: "insights.formula.value.months"), runway),
-            heroLabelKey: "insights.formula.balanceRunway.heroLabel",
-            formulaHeaderKey: "insights.formula.balanceRunway.formulaHeader",
-            formulaRows: [
-                InsightFormulaRow(id: "balance", labelKey: "insights.formula.balanceRunway.row.balance", value: currentBalance, kind: .currency),
-                InsightFormulaRow(id: "avgIncome", labelKey: "insights.formula.balanceRunway.row.avgIncome", value: avgIncome, kind: .currency),
-                InsightFormulaRow(id: "avgExpenses", labelKey: "insights.formula.balanceRunway.row.avgExpenses", value: avgExpenses, kind: .currency),
-                InsightFormulaRow(id: "burn", labelKey: "insights.formula.balanceRunway.row.burn", value: burn, kind: .currency),
-                InsightFormulaRow(id: "runway", labelKey: "insights.formula.balanceRunway.row.runway", value: runway, kind: .months, isEmphasised: true)
-            ],
-            explainerKey: "insights.formula.balanceRunway.explainer",
-            recommendation: recommendation,
-            baseCurrency: baseCurrency
-        )
-
-        Self.logger.debug("🛤 [Insights] BalanceRunway — balance=\(String(format: "%.0f", currentBalance), privacy: .public), burn=\(String(format: "%.0f", burn), privacy: .public)/mo, runway=\(String(format: "%.1f", runway), privacy: .public) months")
-        return Insight(
-            id: "balance_runway",
-            type: .balanceRunway,
-            title: String(localized: "insights.balanceRunway"),
-            subtitle: String(format: "%.1f " + String(localized: "insights.balanceRunway.months"), runway),
-            metric: InsightMetric(
-                value: runway,
-                formattedValue: String(format: "%.1f", runway),
-                currency: nil,
-                unit: String(localized: "insights.months")
             ),
             trend: nil,
             severity: severity,

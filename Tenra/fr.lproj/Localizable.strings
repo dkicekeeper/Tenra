@@ -782,8 +782,6 @@
 "insights.cashFlow" = "Flux de trésorerie";
 "insights.netFlow" = "Flux net";
 "insights.availableBalance" = "Solde disponible";
-"insights.ratio" = "Ratio revenus/dépenses";
-"insights.incomeVsExpense.coverage" = "Les revenus couvrent %@ des dépenses";
 "insights.topMonths.best" = "Top 10 des meilleurs mois";
 "insights.topMonths.worst" = "Top 10 des pires mois";
 "insights.loading" = "Analyse de vos finances...";
@@ -801,7 +799,6 @@
 "insights.avgDailySpending" = "Dépenses quotidiennes moyennes";
 "insights.days" = "jours";
 "insights.incomeGrowth" = "Tendance des revenus";
-"insights.incomeVsExpense" = "Revenus vs dépenses";
 "insights.vsPreviousPeriod" = "vs période précédente";
 "insights.vsAverage" = "vs moyenne";
 "insights.budgetOver" = "Budget dépassé";
@@ -823,18 +820,8 @@
 "insights.perQuarter" = "par trimestre";
 "insights.perYear" = "par an";
 "insights.netCashFlow" = "Flux net";
-"insights.bestMonth" = "Meilleur mois";
-"insights.bestPeriod.week" = "Meilleure semaine";
-"insights.bestPeriod.month" = "Meilleur mois";
-"insights.bestPeriod.quarter" = "Meilleur trimestre";
-"insights.bestPeriod.year" = "Meilleure année";
-"insights.bestPeriod.allTime" = "Meilleure période";
-"insights.worstMonth" = "Pire mois";
-"insights.worstPeriod.week" = "Pire semaine";
-"insights.worstPeriod.month" = "Pire mois";
-"insights.worstPeriod.quarter" = "Pire trimestre";
-"insights.worstPeriod.year" = "Pire année";
-"insights.worstPeriod.allTime" = "Pire période";
+"insights.periodRecords" = "Records";
+"insights.urgentNow" = "À surveiller";
 "insights.projectedBalance" = "Solde prévisionnel";
 "insights.in30Days" = "dans 30 jours";
 "insights.recurringAndExpenses" = "Récurrent + dépenses moyennes";
@@ -995,8 +982,6 @@
 // Forecasting
 "insights.forecasting" = "Prévisions";
 "insights.spendingForecast" = "Prévision des dépenses mensuelles";
-"insights.balanceRunway" = "Autonomie du solde";
-"insights.balanceRunway.months" = "mois d'autonomie";
 "insights.yearOverYear" = "D'une année sur l'autre";
 "insights.incomeSourceBreakdown" = "Sources de revenus";
 
@@ -1008,8 +993,44 @@
 "insights.healthGrade.needsAttention" = "À surveiller";
 "insights.duplicateSubscriptions.title" = "Abonnements en double possibles";
 "insights.duplicateSubscriptions.subtitle" = "doublons potentiels détectés";
-"insights.accountDormancy.title" = "Compte inactif détecté";
-"insights.accountDormancy.subtitle" = "comptes inactifs depuis plus de 30 jours";
+"insights.accountDormancy.title" = "Argent qui dort";
+"insights.accountDormancy.subtitle" = "comptes inactifs 30+ jours — pourraient rapporter sur un dépôt";
+
+"notification.weeklyDigest.title" = "Bilan de la semaine";
+"notification.weeklyDigest.body.withComparison" = "%1$@ : dépenses %2$@ (%3$@ vs la semaine précédente)";
+"notification.weeklyDigest.body.simple" = "%1$@ : dépenses %2$@";
+"settings.insightSignals.weeklyDigest" = "Bilan hebdo (lun. 9:00)";
+
+"settings.insightSignals.title" = "Alertes analytiques";
+"settings.insightSignals.master" = "Push pour les signaux importants";
+"settings.insightSignals.footer" = "Seuls les changements importants sont notifiés : dépassement de budget, hausse du prix des abonnements, prévision de solde bas. Chaque signal au plus une fois par semaine, 5 notifications hebdomadaires maximum au total.";
+"settings.insightSignals.lowBalance" = "Prévision de solde bas";
+"settings.insightSignals.permissionDenied" = "Les notifications sont désactivées dans Réglages iOS — touchez pour activer";
+
+"insights.priceIncrease" = "Abonnement plus cher";
+"insights.priceIncrease.was" = "avant %@";
+"insights.largeTransaction" = "Grosse dépense";
+"insights.formula.priceIncrease.title" = "Hausse de prix";
+"insights.formula.priceIncrease.heroLabel" = "Variation vs le prélèvement précédent";
+"insights.formula.priceIncrease.formulaHeader" = "Comment c’est calculé";
+"insights.formula.priceIncrease.row.name" = "Abonnement";
+"insights.formula.priceIncrease.row.oldPrice" = "Prélèvement précédent";
+"insights.formula.priceIncrease.row.newPrice" = "Dernier prélèvement";
+"insights.formula.priceIncrease.row.delta" = "Variation";
+"insights.formula.priceIncrease.row.yearlyImpact" = "Surcoût par an";
+"insights.formula.priceIncrease.explainer" = "Compare le dernier prélèvement d’un paiement récurrent actif avec le précédent (ou avec le montant prévu). Les petites hausses s’accumulent : +15 % sur plusieurs abonnements équivaut à un abonnement entier.";
+"insights.formula.priceIncrease.rec" = "Vérifiez si le nouveau prix est justifié. Sinon, suspendez ou résiliez l’abonnement dans l’onglet Abonnements.";
+"insights.formula.largeTransaction.title" = "Grosse dépense";
+"insights.formula.largeTransaction.heroLabel" = "Plus grosse dépense ponctuelle sur 30 jours";
+"insights.formula.largeTransaction.formulaHeader" = "Comment c’est calculé";
+"insights.formula.largeTransaction.row.name" = "Description";
+"insights.formula.largeTransaction.row.date" = "Date";
+"insights.formula.largeTransaction.row.category" = "Catégorie";
+"insights.formula.largeTransaction.row.amount" = "Montant";
+"insights.formula.largeTransaction.row.avgTx" = "Dépense moyenne (90 jours)";
+"insights.formula.largeTransaction.row.multiplier" = "Fois au-dessus de la moyenne";
+"insights.formula.largeTransaction.explainer" = "Les paiements récurrents (loyer, abonnements) sont exclus — seuls les achats ponctuels comptent. Un achat à 4× votre dépense moyenne mérite un second regard.";
+"insights.formula.largeTransaction.rec" = "Vérifiez que l’achat était prévu. Ponctuel ? Aucune action requise — le signal disparaît quand la moyenne s’ajuste.";
 "insights.dormant.accounts" = "Comptes inactifs";
 
 // MARK: - Tab Bar

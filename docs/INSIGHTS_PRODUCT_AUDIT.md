@@ -2,7 +2,7 @@
 
 **Дата:** 2026-07-13
 **Метод:** инвентаризация кода (`Services/Insights/**`, `Views/Insights/**`, [INSIGHTS_METRICS_REFERENCE.md](INSIGHTS_METRICS_REFERENCE.md)) + бенчмарк-исследование Copilot Money, Monarch, YNAB, Emma, Cleo, Rocket Money, Revolut, Kaspi/Halyk, Apple Wallet + отраслевые данные по push-нотификациям (Personetics, MX, Pushwoosh, Latinia).
-**Статус:** отчёт / план. Реализация не начата.
+**Статус:** реализовано 2026-07-13 (фазы A–D, см. «Статус реализации» внизу).
 
 ---
 
@@ -137,6 +137,21 @@ Severity-сортировка работает только внутри сек�
 1. Weekly digest push (понедельник 09:00, содержимое из последнего пересчёта).
 2. `BGAppRefreshTask`: фоновый пересчёт сигналов + обновление запланированных уведомлений.
 3. Тихая лента сигналов / бейдж «Важное сейчас».
+
+### Статус реализации (2026-07-13)
+
+**Сделано (фазы A–D, все юнит-тесты зелёные):**
+- A: `incomeVsExpenseRatio` удалён; best+worst → «Рекорды» (`period_records`); `balanceRunway` слит в `emergencyFund`; секция «Важное сейчас» (топ-5 critical/warning, дедуп из секций). `averageDailySpending` НЕ трогали — reference-док был устаревшим, метрика уже считается по текущему бакету с трендом.
+- B: `subscriptionPriceIncrease` + `largeTransaction` (+тесты `InsightSignalGeneratorTests`); `accountDormancy` перефреймлен в «упущенную выгоду» (копирайт). Локализация ×11 с паритетом ключей.
+- C: `InsightSignalService` (diff-переходы, дедуп 7д, колпак 5/нед; тесты `InsightSignalServiceTests`), `InsightSignalSettings` + экран настроек (master + per-type тумблеры + weekly digest + обработка denied-permission), deep-link тапа в таб «Аналитика».
+- D: `WeeklyDigestScheduler` — пн 09:00, контент из последнего пересчёта `.week`, тело называет покрываемую неделю.
+
+**Отложено (follow-ups):**
+1. **BGAppRefreshTask** — сигналы/digest сейчас пересчитываются только при пересчёте инсайтов (вкладка «Аналитика»). Фоновый пересчёт требует capability Background Modes + Info.plist identifiers.
+2. `recurringCandidate` (детект «похоже на подписку»), `depositEarnings`, `loanProgress`, `fxImpact` — доменные дифференциаторы из фазы B.
+3. Слайдеры порогов (низкий баланс, крупная трата) — сейчас пороги зашиты в severity-гейты генераторов.
+4. Обнаружено: `duplicateSubscriptions` — enum-кейс без генератора (мёртвый код, метрика из reference-дока никогда не эмитится). Решить: реализовать или удалить кейс.
+5. Вариативность текстов push (пул шаблонов) — сейчас тело собирается из полей инсайта.
 
 ### Метрики успеха
 - Доля пользователей с ≥1 включённым сигналом; retention push-подписчиков vs без (бенчмарк: +50% логинов у PFM с инсайтами, MX).

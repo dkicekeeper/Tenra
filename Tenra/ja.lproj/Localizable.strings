@@ -782,8 +782,6 @@
 "insights.cashFlow" = "キャッシュフロー";
 "insights.netFlow" = "純フロー";
 "insights.availableBalance" = "利用可能残高";
-"insights.ratio" = "収入／支出比率";
-"insights.incomeVsExpense.coverage" = "収入が支出の%@をカバーしています";
 "insights.topMonths.best" = "ベスト10か月";
 "insights.topMonths.worst" = "ワースト10か月";
 "insights.loading" = "家計を分析中…";
@@ -801,7 +799,6 @@
 "insights.avgDailySpending" = "1日あたりの平均支出";
 "insights.days" = "日";
 "insights.incomeGrowth" = "収入の推移";
-"insights.incomeVsExpense" = "収入と支出";
 "insights.vsPreviousPeriod" = "前の期間比";
 "insights.vsAverage" = "平均比";
 "insights.budgetOver" = "予算超過";
@@ -823,18 +820,8 @@
 "insights.perQuarter" = "四半期あたり";
 "insights.perYear" = "年あたり";
 "insights.netCashFlow" = "純キャッシュフロー";
-"insights.bestMonth" = "ベストな月";
-"insights.bestPeriod.week" = "ベストな週";
-"insights.bestPeriod.month" = "ベストな月";
-"insights.bestPeriod.quarter" = "ベストな四半期";
-"insights.bestPeriod.year" = "ベストな年";
-"insights.bestPeriod.allTime" = "ベストな期間";
-"insights.worstMonth" = "ワーストな月";
-"insights.worstPeriod.week" = "ワーストな週";
-"insights.worstPeriod.month" = "ワーストな月";
-"insights.worstPeriod.quarter" = "ワーストな四半期";
-"insights.worstPeriod.year" = "ワーストな年";
-"insights.worstPeriod.allTime" = "ワーストな期間";
+"insights.periodRecords" = "記録";
+"insights.urgentNow" = "要注意";
 "insights.projectedBalance" = "残高の見込み";
 "insights.in30Days" = "30日後";
 "insights.recurringAndExpenses" = "定期＋平均支出";
@@ -995,8 +982,6 @@
 // Forecasting
 "insights.forecasting" = "予測";
 "insights.spendingForecast" = "毎月の支出予測";
-"insights.balanceRunway" = "残高持続月数";
-"insights.balanceRunway.months" = "ヶ月分の持続";
 "insights.yearOverYear" = "前年同月比";
 "insights.incomeSourceBreakdown" = "収入源";
 
@@ -1008,8 +993,44 @@
 "insights.healthGrade.needsAttention" = "要注意";
 "insights.duplicateSubscriptions.title" = "重複しているサブスクの可能性";
 "insights.duplicateSubscriptions.subtitle" = "重複の可能性を検出しました";
-"insights.accountDormancy.title" = "使われていない口座を検出";
-"insights.accountDormancy.subtitle" = "30日以上使われていない口座";
+"insights.accountDormancy.title" = "眠っているお金";
+"insights.accountDormancy.subtitle" = "口座が30日以上動きなし——預金なら利息を生めます";
+
+"notification.weeklyDigest.title" = "今週のまとめ";
+"notification.weeklyDigest.body.withComparison" = "%1$@：支出 %2$@（前週比 %3$@）";
+"notification.weeklyDigest.body.simple" = "%1$@：支出 %2$@";
+"settings.insightSignals.weeklyDigest" = "週間まとめ（月曜9:00）";
+
+"settings.insightSignals.title" = "インサイト通知";
+"settings.insightSignals.master" = "重要なシグナルをプッシュ通知";
+"settings.insightSignals.footer" = "重要な変化のみ通知します：予算超過、サブスクの値上げ、残高不足の予測。各シグナルは週1回まで、合計で週5件までです。";
+"settings.insightSignals.lowBalance" = "残高不足の予測";
+"settings.insightSignals.permissionDenied" = "iOSの設定で通知がオフです。タップして有効にしてください";
+
+"insights.priceIncrease" = "サブスクが値上がり";
+"insights.priceIncrease.was" = "以前は%@";
+"insights.largeTransaction" = "大きな支出";
+"insights.formula.priceIncrease.title" = "値上げ";
+"insights.formula.priceIncrease.heroLabel" = "前回請求との差";
+"insights.formula.priceIncrease.formulaHeader" = "計算方法";
+"insights.formula.priceIncrease.row.name" = "サブスク";
+"insights.formula.priceIncrease.row.oldPrice" = "前回の請求";
+"insights.formula.priceIncrease.row.newPrice" = "最新の請求";
+"insights.formula.priceIncrease.row.delta" = "変化";
+"insights.formula.priceIncrease.row.yearlyImpact" = "年間の追加コスト";
+"insights.formula.priceIncrease.explainer" = "アクティブな定期支払いの最新請求を前回（または予定金額）と比較します。小さな値上げも積み重なります。複数のサブスクで15%の値上げは、新しいサブスク1つ分に相当します。";
+"insights.formula.priceIncrease.rec" = "新しい価格が妥当か確認しましょう。妥当でなければ、サブスクタブで一時停止または解約できます。";
+"insights.formula.largeTransaction.title" = "大きな支出";
+"insights.formula.largeTransaction.heroLabel" = "過去30日で最大の単発支出";
+"insights.formula.largeTransaction.formulaHeader" = "計算方法";
+"insights.formula.largeTransaction.row.name" = "内容";
+"insights.formula.largeTransaction.row.date" = "日付";
+"insights.formula.largeTransaction.row.category" = "カテゴリ";
+"insights.formula.largeTransaction.row.amount" = "金額";
+"insights.formula.largeTransaction.row.avgTx" = "平均支出（90日）";
+"insights.formula.largeTransaction.row.multiplier" = "平均の何倍か";
+"insights.formula.largeTransaction.explainer" = "家賃やサブスクなどの定期支払いは除外され、単発の購入のみが対象です。平均支出の4倍の買い物は一度見直す価値があります。";
+"insights.formula.largeTransaction.rec" = "想定内の買い物か確認しましょう。単発なら対応不要です。平均が更新されればシグナルは消えます。";
 "insights.dormant.accounts" = "使われていない口座";
 
 // MARK: - Tab Bar

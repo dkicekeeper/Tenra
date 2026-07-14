@@ -428,6 +428,15 @@ nonisolated final class InsightsService {
             if let dormancy = generateAccountDormancy(allTransactions: allTransactions, baseCurrency: baseCurrency, balanceFor: snapshot.balanceFor, preAggregated: preAggregated, accounts: snapshot.accounts) {
                 insights.append(dormancy)
             }
+            insights.append(contentsOf: generateSubscriptionPriceIncreases(
+                recurringSeries: snapshot.recurringSeries,
+                categories: snapshot.categories,
+                transactions: allTransactions,
+                txDateMap: dateMap
+            ))
+            if let large = generateLargeTransaction(baseCurrency: baseCurrency, transactions: allTransactions, txDateMap: dateMap) {
+                insights.append(large)
+            }
         } else {
             // Merge pre-computed shared insights
             insights.append(contentsOf: sharedInsights!)
@@ -501,18 +510,25 @@ nonisolated final class InsightsService {
     private static let sharedInsightIDs: Set<String> = [
         "spending_spike",
         // "subscription_growth" — now granularity-dependent (lookback scales)
+        // "balance_runway" — merged into emergency_fund (audit 2026-07)
         "accountDormancy",
         "emergency_fund",
         "spending_forecast",
-        "balance_runway",
         "year_over_year"
     ]
+
+    /// Per-entity shared insights carry the entity id in their insight id, so
+    /// they're matched by prefix rather than exact id.
+    private static let sharedInsightIDPrefixes = ["price_increase_", "large_tx_"]
 
     /// Extracts granularity-independent insights from a full insight array.
     /// `category_trend_*` and `subscription_growth` were removed from the shared
     /// set — they now scale their lookback by granularity and must regenerate.
     static func extractSharedInsights(from insights: [Insight]) -> [Insight] {
-        insights.filter { sharedInsightIDs.contains($0.id) }
+        insights.filter { insight in
+            sharedInsightIDs.contains(insight.id)
+                || sharedInsightIDPrefixes.contains(where: { insight.id.hasPrefix($0) })
+        }
     }
 
     /// Computes all insight granularities in a single call.

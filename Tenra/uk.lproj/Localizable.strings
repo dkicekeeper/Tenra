@@ -782,8 +782,6 @@
 "insights.cashFlow" = "Грошовий потік";
 "insights.netFlow" = "Чистий потік";
 "insights.availableBalance" = "Доступний баланс";
-"insights.ratio" = "Співвідношення дохід/витрати";
-"insights.incomeVsExpense.coverage" = "Дохід покриває %@ витрат";
 "insights.topMonths.best" = "10 найкращих місяців";
 "insights.topMonths.worst" = "10 найгірших місяців";
 "insights.loading" = "Аналізуємо ваші фінанси...";
@@ -801,7 +799,6 @@
 "insights.avgDailySpending" = "Середні витрати за день";
 "insights.days" = "днів";
 "insights.incomeGrowth" = "Динаміка доходу";
-"insights.incomeVsExpense" = "Дохід і витрати";
 "insights.vsPreviousPeriod" = "порівняно з попереднім періодом";
 "insights.vsAverage" = "порівняно із середнім";
 "insights.budgetOver" = "Перевищення бюджету";
@@ -823,18 +820,8 @@
 "insights.perQuarter" = "на квартал";
 "insights.perYear" = "на рік";
 "insights.netCashFlow" = "Чистий грошовий потік";
-"insights.bestMonth" = "Найкращий місяць";
-"insights.bestPeriod.week" = "Найкращий тиждень";
-"insights.bestPeriod.month" = "Найкращий місяць";
-"insights.bestPeriod.quarter" = "Найкращий квартал";
-"insights.bestPeriod.year" = "Найкращий рік";
-"insights.bestPeriod.allTime" = "Найкращий період";
-"insights.worstMonth" = "Найгірший місяць";
-"insights.worstPeriod.week" = "Найгірший тиждень";
-"insights.worstPeriod.month" = "Найгірший місяць";
-"insights.worstPeriod.quarter" = "Найгірший квартал";
-"insights.worstPeriod.year" = "Найгірший рік";
-"insights.worstPeriod.allTime" = "Найгірший період";
+"insights.periodRecords" = "Рекорди";
+"insights.urgentNow" = "Важливе зараз";
 "insights.projectedBalance" = "Прогнозований баланс";
 "insights.in30Days" = "за 30 днів";
 "insights.recurringAndExpenses" = "Регулярні + середні витрати";
@@ -995,8 +982,6 @@
 // Forecasting
 "insights.forecasting" = "Прогноз";
 "insights.spendingForecast" = "Прогноз витрат за місяць";
-"insights.balanceRunway" = "Запас балансу";
-"insights.balanceRunway.months" = "місяців запасу";
 "insights.yearOverYear" = "Рік до року";
 "insights.incomeSourceBreakdown" = "Джерела доходу";
 
@@ -1008,8 +993,44 @@
 "insights.healthGrade.needsAttention" = "Потребує уваги";
 "insights.duplicateSubscriptions.title" = "Можливі дубльовані підписки";
 "insights.duplicateSubscriptions.subtitle" = "виявлено потенційних дублів";
-"insights.accountDormancy.title" = "Виявлено неактивний рахунок";
-"insights.accountDormancy.subtitle" = "рахунків неактивні 30+ днів";
+"insights.accountDormancy.title" = "Гроші без діла";
+"insights.accountDormancy.subtitle" = "рахунків без руху 30+ днів — могли б приносити дохід на депозиті";
+
+"notification.weeklyDigest.title" = "Підсумки тижня";
+"notification.weeklyDigest.body.withComparison" = "%1$@: витрати %2$@ (%3$@ до минулого тижня)";
+"notification.weeklyDigest.body.simple" = "%1$@: витрати %2$@";
+"settings.insightSignals.weeklyDigest" = "Підсумки тижня (пн, 9:00)";
+
+"settings.insightSignals.title" = "Сигнали аналітики";
+"settings.insightSignals.master" = "Push про важливі сигнали";
+"settings.insightSignals.footer" = "Надходять лише важливі зміни: перевитрата бюджету, подорожчання підписок, низький прогноз балансу. Кожен сигнал — не частіше разу на тиждень, загалом не більше 5 сповіщень на тиждень.";
+"settings.insightSignals.lowBalance" = "Низький прогноз балансу";
+"settings.insightSignals.permissionDenied" = "Сповіщення вимкнені в налаштуваннях iOS — торкніться, щоб увімкнути";
+
+"insights.priceIncrease" = "Підписка подорожчала";
+"insights.priceIncrease.was" = "було %@";
+"insights.largeTransaction" = "Велика витрата";
+"insights.formula.priceIncrease.title" = "Зростання ціни";
+"insights.formula.priceIncrease.heroLabel" = "Зміна до попереднього списання";
+"insights.formula.priceIncrease.formulaHeader" = "Як це пораховано";
+"insights.formula.priceIncrease.row.name" = "Підписка";
+"insights.formula.priceIncrease.row.oldPrice" = "Попереднє списання";
+"insights.formula.priceIncrease.row.newPrice" = "Нове списання";
+"insights.formula.priceIncrease.row.delta" = "Зміна";
+"insights.formula.priceIncrease.row.yearlyImpact" = "Переплата за рік";
+"insights.formula.priceIncrease.explainer" = "Порівнює останнє списання за активним регулярним платежем із попереднім (або з плановою сумою). Невеликі підвищення накопичуються: +15% за кількома підписками — це ціла нова підписка.";
+"insights.formula.priceIncrease.rec" = "Перевірте, чи виправдана нова ціна. Якщо ні — призупиніть або скасуйте підписку у вкладці «Підписки».";
+"insights.formula.largeTransaction.title" = "Велика витрата";
+"insights.formula.largeTransaction.heroLabel" = "Найбільша разова витрата за 30 днів";
+"insights.formula.largeTransaction.formulaHeader" = "Як це пораховано";
+"insights.formula.largeTransaction.row.name" = "Опис";
+"insights.formula.largeTransaction.row.date" = "Дата";
+"insights.formula.largeTransaction.row.category" = "Категорія";
+"insights.formula.largeTransaction.row.amount" = "Сума";
+"insights.formula.largeTransaction.row.avgTx" = "Середня витрата (90 днів)";
+"insights.formula.largeTransaction.row.multiplier" = "У скільки разів вище середньої";
+"insights.formula.largeTransaction.explainer" = "Регулярні платежі — оренда, підписки — виключені: враховуються лише разові покупки. Покупка вчетверо вища за вашу середню витрату заслуговує на увагу.";
+"insights.formula.largeTransaction.rec" = "Переконайтеся, що покупка очікувана. Разова? Нічого робити не треба — сигнал зникне з оновленням середньої.";
 "insights.dormant.accounts" = "Неактивні рахунки";
 
 // MARK: - Tab Bar

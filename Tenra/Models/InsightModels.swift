@@ -50,7 +50,6 @@ enum InsightType: String, Hashable {
     case averageDailySpending
     case incomeGrowth
     case incomeSourceBreakdown
-    case incomeVsExpenseRatio
     case budgetOverspend
     case budgetUnderutilized
     case projectedOverspend
@@ -59,8 +58,7 @@ enum InsightType: String, Hashable {
     case totalRecurringCost
     case subscriptionGrowth
     case netCashFlow
-    case bestMonth
-    case worstMonth
+    case bestMonth       // merged "period records" card (best + worst rankings in detail)
     case projectedBalance
     case accountActivity
     case totalWealth      // Current sum of all account balances
@@ -68,10 +66,11 @@ enum InsightType: String, Hashable {
     case savingsRate       // (income - expenses) / income %
     case emergencyFund     // months of expenses covered by balance
     case spendingForecast  // projected 30-day spend
-    case balanceRunway     // months until balance runs out at current burn
     case yearOverYear      // this month vs same month last year
     case duplicateSubscriptions // possible duplicate recurring items
     case accountDormancy        // accounts idle 30+ days with non-zero balance
+    case subscriptionPriceIncrease // latest charge higher than the previous one (audit 2026-07)
+    case largeTransaction          // big non-recurring expense vs 90d average (audit 2026-07)
 }
 
 // MARK: - Insight Metric
@@ -124,11 +123,11 @@ extension InsightType {
         case .spendingSpike, .monthOverMonthChange, .averageDailySpending,
              .categoryTrend, .totalRecurringCost, .subscriptionGrowth, .duplicateSubscriptions,
              .budgetOverspend, .budgetUnderutilized, .projectedOverspend, .accountDormancy,
-             .yearOverYear, .spendingForecast:
+             .yearOverYear, .spendingForecast, .subscriptionPriceIncrease, .largeTransaction:
             return true
-        case .topSpendingCategory, .incomeGrowth, .incomeSourceBreakdown, .incomeVsExpenseRatio,
-             .netCashFlow, .bestMonth, .worstMonth, .projectedBalance, .accountActivity,
-             .totalWealth, .wealthGrowth, .savingsRate, .emergencyFund, .balanceRunway,
+        case .topSpendingCategory, .incomeGrowth, .incomeSourceBreakdown,
+             .netCashFlow, .bestMonth, .projectedBalance, .accountActivity,
+             .totalWealth, .wealthGrowth, .savingsRate, .emergencyFund,
              .subcategoryBreakdown:
             return false
         }

@@ -1,7 +1,16 @@
 # Insights Metrics Reference
 
-**Last Updated:** 2026-04-03
-**Phase coverage:** Phase 17–27 (all metrics, post-audit)
+**Last Updated:** 2026-07-13
+**Phase coverage:** Phase 17–31 + product audit 2026-07
+
+> ⚠️ **Product audit 2026-07** ([INSIGHTS_PRODUCT_AUDIT.md](INSIGHTS_PRODUCT_AUDIT.md), [domains/insights.md](domains/insights.md)):
+> - **Removed:** `incomeVsExpenseRatio` (дубль savingsRate+netCashFlow).
+> - **Merged:** `bestMonth`+`worstMonth` → одна карточка «Рекорды» (`period_records`, тип `.bestMonth`); `balanceRunway` → в деталь `emergencyFund` (severity = худшая из двух).
+> - **Added:** `subscriptionPriceIncrease` (shared, `price_increase_<seriesId>`, >5% к прошлому списанию), `largeTransaction` (shared, `large_tx_<txId>`, ≥4× средней траты за 90д, non-recurring, ≥20 базовых tx).
+> - **Reframed:** `accountDormancy` → «деньги без дела / упущенная выгода» (только копирайт).
+> - **UI:** секция «Важное сейчас» — топ-5 critical/warning из всех секций, исключаются из своих секций.
+> - **Стало неактуально ниже:** описание `averageDailySpending` — метрика давно считается по текущему бакету с трендом (Phase 30+), не по всему окну.
+> - **Уведомления:** `InsightSignalService` (diff-переходы, дедуп 7д, колпак 5/нед) + `WeeklyDigestScheduler` (пн 09:00).
 
 ## Легенда
 

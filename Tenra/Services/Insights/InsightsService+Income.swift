@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Income growth and trend insights.
-//  Responsible for: income growth (MoM / period-over-period), income vs expense ratio.
+//  Responsible for: income growth (MoM / period-over-period).
 //
 
 import Foundation
@@ -124,37 +124,9 @@ extension InsightsService {
             }
         }
 
-        // 2. Income vs Expense ratio — reuse periodSummary (no extra calculateSummary call)
-        if periodSummary.totalExpenses > 0 {
-            let ratio = periodSummary.totalIncome / periodSummary.totalExpenses
-            let severity: InsightSeverity = ratio >= 1.5 ? .positive : (ratio >= 1.0 ? .neutral : .critical)
-            Self.logger.debug("💵 [Insights] I/E ratio=\(String(format: "%.2f", ratio), privacy: .public)x, severity=\(String(describing: severity), privacy: .public)")
-
-            // Plain-language subtitle explaining the "x" multiplier: how much of
-            // expenses the income covers (ratio 1.1 → "covers 110% of expenses").
-            let coveragePercent = Int((ratio * 100).rounded())
-            insights.append(Insight(
-                id: "income_vs_expense",
-                type: .incomeVsExpenseRatio,
-                title: String(localized: "insights.incomeVsExpense"),
-                subtitle: String(format: String(localized: "insights.incomeVsExpense.coverage"), "\(coveragePercent)%"),
-                metric: InsightMetric(
-                    value: ratio,
-                    formattedValue: String(format: "%.1fx", ratio),
-                    currency: nil,
-                    unit: nil
-                ),
-                trend: InsightTrend(
-                    direction: ratio >= 1.0 ? .up : .down,
-                    changePercent: nil,
-                    changeAbsolute: periodSummary.netFlow,
-                    comparisonPeriod: Formatting.formatCurrencySmart(periodSummary.netFlow, currency: baseCurrency)
-                ),
-                severity: severity,
-                category: .income,
-                detailData: periodPoints.isEmpty ? nil : .periodTrend(periodPoints)
-            ))
-        }
+        // NOTE (Insights product audit 2026-07): incomeVsExpenseRatio removed —
+        // the "1.2x" multiplier duplicated savingsRate + netCashFlow with a less
+        // intuitive formula. No benchmark app surfaces this as a standalone card.
 
         Self.logger.debug("💵 [Insights] Income END — \(insights.count) insights")
         return insights

@@ -28,6 +28,10 @@ extension Notification.Name {
     /// UserInfo: `seriesId: String`.
     static let subscriptionNotificationTapped = Notification.Name("subscriptionNotificationTapped")
 
+    /// Posted when user taps on an insight signal notification (audit 2026-07).
+    /// MainTabView switches to the Analytics tab.
+    static let insightSignalNotificationTapped = Notification.Name("insightSignalNotificationTapped")
+
     // MARK: - Application Lifecycle Events
 
     /// Posted when application becomes active (for notification rescheduling).

@@ -149,12 +149,9 @@ struct InsightDetailView<CategoryDestination: View>: View {
             // padding here, otherwise the visible plot area is offset from the
             // screen left edge and the first datapoint appears clipped.
             let gran = points.first?.granularity ?? .month
-            if insight.type == .bestMonth || insight.type == .worstMonth {
-                // Best/worst month show a ranked Top-10 list (in detailSection), no chart.
+            if insight.type == .bestMonth {
+                // Period records show ranked Top-10 lists (in detailSection), no chart.
                 EmptyView()
-            } else if insight.type == .incomeVsExpenseRatio {
-                // Income-vs-expense comparison charts keep the dual-series switcher.
-                PeriodChartSwitcher(dataPoints: points, currency: currency, granularity: gran)
             } else {
                 // Single-series line chart plotting the metric that matches the insight.
                 PeriodLineChart(
@@ -207,8 +204,13 @@ struct InsightDetailView<CategoryDestination: View>: View {
             EmptyView()
         case .periodTrend(let points):
             let gran = points.first?.granularity ?? .month
-            if insight.type == .bestMonth || insight.type == .worstMonth {
-                rankedPeriodList(points, best: insight.type == .bestMonth)
+            if insight.type == .bestMonth {
+                // Merged "period records" card: best ranking always; worst ranking
+                // only when there is at least one negative period to rank.
+                rankedPeriodList(points, best: true)
+                if points.contains(where: { $0.netFlow < 0 }) {
+                    rankedPeriodList(points, best: false)
+                }
             } else {
                 periodBreakdownList(points, granularity: gran, metric: periodListMetric)
             }
@@ -292,7 +294,10 @@ struct InsightDetailView<CategoryDestination: View>: View {
     /// Ranked Top-10 list of periods by net flow (best = descending, worst = ascending).
     /// No chart, no income/expenses triple — just rank + period + net flow.
     private func rankedPeriodList(_ points: [PeriodDataPoint], best: Bool) -> some View {
-        let sorted = points.sorted { best ? $0.netFlow > $1.netFlow : $0.netFlow < $1.netFlow }
+        // Worst ranking only makes sense for deficit periods — a "worst" list that
+        // surfaces profitable months reads as a bug.
+        let candidates = best ? points : points.filter { $0.netFlow < 0 }
+        let sorted = candidates.sorted { best ? $0.netFlow > $1.netFlow : $0.netFlow < $1.netFlow }
         let top = Array(sorted.prefix(10))
         return VStack(alignment: .leading, spacing: AppSpacing.sm) {
             SectionHeaderView(

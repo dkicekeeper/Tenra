@@ -69,6 +69,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     ) {
         let identifier = response.notification.request.identifier
 
+        // Insight signal tap → switch to the Analytics tab (audit 2026-07).
+        if identifier.hasPrefix(InsightSignalService.notificationIdPrefix) {
+            NotificationCenter.default.post(name: .insightSignalNotificationTapped, object: nil)
+        }
 
         // Parse notification ID: "subscription_{seriesId}_{offsetDays}"
         if identifier.hasPrefix("subscription_") {

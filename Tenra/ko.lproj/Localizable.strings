@@ -782,8 +782,6 @@
 "insights.cashFlow" = "현금 흐름";
 "insights.netFlow" = "순흐름";
 "insights.availableBalance" = "사용 가능 잔액";
-"insights.ratio" = "수입/지출 비율";
-"insights.incomeVsExpense.coverage" = "수입이 지출의 %@를 감당해요";
 "insights.topMonths.best" = "최고의 달 상위 10개";
 "insights.topMonths.worst" = "최악의 달 상위 10개";
 "insights.loading" = "재무 상황을 분석하는 중...";
@@ -801,7 +799,6 @@
 "insights.avgDailySpending" = "일 평균 지출";
 "insights.days" = "일";
 "insights.incomeGrowth" = "수입 추이";
-"insights.incomeVsExpense" = "수입 vs 지출";
 "insights.vsPreviousPeriod" = "이전 기간 대비";
 "insights.vsAverage" = "평균 대비";
 "insights.budgetOver" = "예산 초과";
@@ -823,18 +820,8 @@
 "insights.perQuarter" = "분기별";
 "insights.perYear" = "연별";
 "insights.netCashFlow" = "순 현금 흐름";
-"insights.bestMonth" = "최고의 달";
-"insights.bestPeriod.week" = "최고의 주";
-"insights.bestPeriod.month" = "최고의 달";
-"insights.bestPeriod.quarter" = "최고의 분기";
-"insights.bestPeriod.year" = "최고의 해";
-"insights.bestPeriod.allTime" = "최고의 기간";
-"insights.worstMonth" = "최악의 달";
-"insights.worstPeriod.week" = "최악의 주";
-"insights.worstPeriod.month" = "최악의 달";
-"insights.worstPeriod.quarter" = "최악의 분기";
-"insights.worstPeriod.year" = "최악의 해";
-"insights.worstPeriod.allTime" = "최악의 기간";
+"insights.periodRecords" = "기록";
+"insights.urgentNow" = "주의 필요";
 "insights.projectedBalance" = "예상 잔액";
 "insights.in30Days" = "30일 후";
 "insights.recurringAndExpenses" = "반복 + 평균 지출";
@@ -995,8 +982,6 @@
 // Forecasting
 "insights.forecasting" = "예측";
 "insights.spendingForecast" = "월 지출 예측";
-"insights.balanceRunway" = "잔액 지속 개월수";
-"insights.balanceRunway.months" = "개월 지속 가능";
 "insights.yearOverYear" = "전년 대비";
 "insights.incomeSourceBreakdown" = "수입원";
 
@@ -1008,8 +993,44 @@
 "insights.healthGrade.needsAttention" = "주의 필요";
 "insights.duplicateSubscriptions.title" = "중복 가능성 있는 구독";
 "insights.duplicateSubscriptions.subtitle" = "중복 가능성 발견됨";
-"insights.accountDormancy.title" = "미사용 계좌 발견";
-"insights.accountDormancy.subtitle" = "30일 이상 미사용 계좌";
+"insights.accountDormancy.title" = "잠자는 돈";
+"insights.accountDormancy.subtitle" = "계좌가 30일 이상 미사용 — 예금이라면 수익이 생겼을 것";
+
+"notification.weeklyDigest.title" = "주간 요약";
+"notification.weeklyDigest.body.withComparison" = "%1$@: 지출 %2$@ (전주 대비 %3$@)";
+"notification.weeklyDigest.body.simple" = "%1$@: 지출 %2$@";
+"settings.insightSignals.weeklyDigest" = "주간 요약 (월 9:00)";
+
+"settings.insightSignals.title" = "인사이트 알림";
+"settings.insightSignals.master" = "중요 신호 푸시 알림";
+"settings.insightSignals.footer" = "중요한 변화만 알립니다: 예산 초과, 구독료 인상, 잔액 부족 예측. 각 신호는 주 1회까지, 전체 주 5건을 넘지 않습니다.";
+"settings.insightSignals.lowBalance" = "잔액 부족 예측";
+"settings.insightSignals.permissionDenied" = "iOS 설정에서 알림이 꺼져 있습니다. 눌러서 켜세요";
+
+"insights.priceIncrease" = "구독료 인상";
+"insights.priceIncrease.was" = "이전 %@";
+"insights.largeTransaction" = "큰 지출";
+"insights.formula.priceIncrease.title" = "가격 인상";
+"insights.formula.priceIncrease.heroLabel" = "이전 청구 대비 변화";
+"insights.formula.priceIncrease.formulaHeader" = "계산 방식";
+"insights.formula.priceIncrease.row.name" = "구독";
+"insights.formula.priceIncrease.row.oldPrice" = "이전 청구";
+"insights.formula.priceIncrease.row.newPrice" = "최근 청구";
+"insights.formula.priceIncrease.row.delta" = "변화";
+"insights.formula.priceIncrease.row.yearlyImpact" = "연간 추가 비용";
+"insights.formula.priceIncrease.explainer" = "활성 정기 결제의 최근 청구액을 이전 청구액(또는 예정 금액)과 비교합니다. 작은 인상도 누적됩니다. 여러 구독에서 15% 인상은 새 구독 하나와 맞먹습니다.";
+"insights.formula.priceIncrease.rec" = "인상된 가격이 합당한지 확인하세요. 아니라면 구독 탭에서 일시중지하거나 해지하세요.";
+"insights.formula.largeTransaction.title" = "큰 지출";
+"insights.formula.largeTransaction.heroLabel" = "최근 30일 최대 일회성 지출";
+"insights.formula.largeTransaction.formulaHeader" = "계산 방식";
+"insights.formula.largeTransaction.row.name" = "설명";
+"insights.formula.largeTransaction.row.date" = "날짜";
+"insights.formula.largeTransaction.row.category" = "카테고리";
+"insights.formula.largeTransaction.row.amount" = "금액";
+"insights.formula.largeTransaction.row.avgTx" = "평균 지출(90일)";
+"insights.formula.largeTransaction.row.multiplier" = "평균 대비 배수";
+"insights.formula.largeTransaction.explainer" = "임대료나 구독 같은 정기 결제는 제외되며 일회성 구매만 집계합니다. 평균 지출의 4배가 넘는 구매는 한 번 더 살펴볼 가치가 있습니다.";
+"insights.formula.largeTransaction.rec" = "예상한 구매인지 확인하세요. 일회성이라면 조치가 필요 없습니다. 평균이 조정되면 신호는 사라집니다.";
 "insights.dormant.accounts" = "미사용 계좌";
 
 // MARK: - Tab Bar

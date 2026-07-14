@@ -782,8 +782,6 @@
 "insights.cashFlow" = "Cash Flow";
 "insights.netFlow" = "Net Flow";
 "insights.availableBalance" = "Available Balance";
-"insights.ratio" = "Income/Expense Ratio";
-"insights.incomeVsExpense.coverage" = "Income covers %@ of expenses";
 "insights.topMonths.best" = "Top 10 best months";
 "insights.topMonths.worst" = "Top 10 worst months";
 "insights.loading" = "Analyzing your finances...";
@@ -801,7 +799,6 @@
 "insights.avgDailySpending" = "Average Daily Spending";
 "insights.days" = "days";
 "insights.incomeGrowth" = "Income Trend";
-"insights.incomeVsExpense" = "Income vs Expenses";
 "insights.vsPreviousPeriod" = "vs previous period";
 "insights.vsAverage" = "vs average";
 "insights.budgetOver" = "Over Budget";
@@ -823,18 +820,8 @@
 "insights.perQuarter" = "per quarter";
 "insights.perYear" = "per year";
 "insights.netCashFlow" = "Net Cash Flow";
-"insights.bestMonth" = "Best Month";
-"insights.bestPeriod.week" = "Best Week";
-"insights.bestPeriod.month" = "Best Month";
-"insights.bestPeriod.quarter" = "Best Quarter";
-"insights.bestPeriod.year" = "Best Year";
-"insights.bestPeriod.allTime" = "Best Period";
-"insights.worstMonth" = "Worst Month";
-"insights.worstPeriod.week" = "Worst Week";
-"insights.worstPeriod.month" = "Worst Month";
-"insights.worstPeriod.quarter" = "Worst Quarter";
-"insights.worstPeriod.year" = "Worst Year";
-"insights.worstPeriod.allTime" = "Worst Period";
+"insights.periodRecords" = "Records";
+"insights.urgentNow" = "Needs attention";
 "insights.projectedBalance" = "Projected Balance";
 "insights.in30Days" = "in 30 days";
 "insights.recurringAndExpenses" = "Recurring + average expenses";
@@ -995,8 +982,6 @@
 // Forecasting
 "insights.forecasting" = "Forecast";
 "insights.spendingForecast" = "Monthly Spending Forecast";
-"insights.balanceRunway" = "Balance Runway";
-"insights.balanceRunway.months" = "months of runway";
 "insights.yearOverYear" = "Year-over-Year";
 "insights.incomeSourceBreakdown" = "Income Sources";
 
@@ -1008,8 +993,44 @@
 "insights.healthGrade.needsAttention" = "Needs Attention";
 "insights.duplicateSubscriptions.title" = "Possible Duplicate Subscriptions";
 "insights.duplicateSubscriptions.subtitle" = "potential duplicates detected";
-"insights.accountDormancy.title" = "Idle Account Detected";
-"insights.accountDormancy.subtitle" = "accounts idle 30+ days";
+"insights.accountDormancy.title" = "Money sitting idle";
+"insights.accountDormancy.subtitle" = "accounts idle 30+ days — could be earning on a deposit";
+
+"notification.weeklyDigest.title" = "Weekly summary";
+"notification.weeklyDigest.body.withComparison" = "%1$@: spending %2$@ (%3$@ vs the previous week)";
+"notification.weeklyDigest.body.simple" = "%1$@: spending %2$@";
+"settings.insightSignals.weeklyDigest" = "Weekly summary (Mon, 9:00)";
+
+"settings.insightSignals.title" = "Insight alerts";
+"settings.insightSignals.master" = "Push alerts for important signals";
+"settings.insightSignals.footer" = "Only important changes are pushed: budget overruns, subscription price increases, a low balance forecast. Each signal fires at most once a week, no more than 5 notifications per week in total.";
+"settings.insightSignals.lowBalance" = "Low balance forecast";
+"settings.insightSignals.permissionDenied" = "Notifications are off in iOS Settings — tap to enable";
+
+"insights.priceIncrease" = "Subscription price increased";
+"insights.priceIncrease.was" = "was %@";
+"insights.largeTransaction" = "Large expense";
+"insights.formula.priceIncrease.title" = "Price Increase";
+"insights.formula.priceIncrease.heroLabel" = "Change vs the previous charge";
+"insights.formula.priceIncrease.formulaHeader" = "How it's computed";
+"insights.formula.priceIncrease.row.name" = "Subscription";
+"insights.formula.priceIncrease.row.oldPrice" = "Previous charge";
+"insights.formula.priceIncrease.row.newPrice" = "Latest charge";
+"insights.formula.priceIncrease.row.delta" = "Change";
+"insights.formula.priceIncrease.row.yearlyImpact" = "Extra cost per year";
+"insights.formula.priceIncrease.explainer" = "Compares the latest charge of an active recurring payment with the previous one (or with the planned amount). Small provider price bumps compound — a 15% raise across several subscriptions equals a whole new subscription.";
+"insights.formula.priceIncrease.rec" = "Check whether the new price is justified. If not — pause or cancel it in the Subscriptions tab.";
+"insights.formula.largeTransaction.title" = "Large Expense";
+"insights.formula.largeTransaction.heroLabel" = "Biggest one-off expense in 30 days";
+"insights.formula.largeTransaction.formulaHeader" = "How it's computed";
+"insights.formula.largeTransaction.row.name" = "Description";
+"insights.formula.largeTransaction.row.date" = "Date";
+"insights.formula.largeTransaction.row.category" = "Category";
+"insights.formula.largeTransaction.row.amount" = "Amount";
+"insights.formula.largeTransaction.row.avgTx" = "Average expense (90 days)";
+"insights.formula.largeTransaction.row.multiplier" = "Times above average";
+"insights.formula.largeTransaction.explainer" = "Recurring charges like rent and subscriptions are excluded — only one-off purchases count. A purchase 4× your average expense is worth a second look.";
+"insights.formula.largeTransaction.rec" = "Make sure the purchase is expected. One-off? No action needed — the signal clears as your average adjusts.";
 "insights.dormant.accounts" = "Idle Accounts";
 
 // MARK: - Tab Bar

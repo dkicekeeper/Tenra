@@ -133,14 +133,34 @@ final class InsightsViewModel {
         items.sorted { $0.severity.sortOrder < $1.severity.sortOrder }
     }
 
-    var spendingInsights: [Insight]     { sortedBySeverity(insights.filter { $0.category == .spending }) }
-    var incomeInsights: [Insight]       { sortedBySeverity(insights.filter { $0.category == .income }) }
-    var budgetInsights: [Insight]       { sortedBySeverity(insights.filter { $0.category == .budget }) }
-    var recurringInsights: [Insight]    { sortedBySeverity(insights.filter { $0.category == .recurring }) }
-    var cashFlowInsights: [Insight]     { sortedBySeverity(insights.filter { $0.category == .cashFlow }) }
-    var wealthInsights: [Insight]       { sortedBySeverity(insights.filter { $0.category == .wealth }) }
-    var savingsInsights: [Insight]      { sortedBySeverity(insights.filter { $0.category == .savings }) }
-    var forecastingInsights: [Insight]  { sortedBySeverity(insights.filter { $0.category == .forecasting }) }
+    /// Cross-section signal strip "Важное сейчас" (audit 2026-07): the top
+    /// critical/warning insights from ALL categories. Without it a critical
+    /// budget signal sat below neutral spending stats — severity sorting only
+    /// worked within sections.
+    var urgentInsights: [Insight] {
+        Array(
+            sortedBySeverity(insights.filter { $0.severity == .critical || $0.severity == .warning })
+                .prefix(5)
+        )
+    }
+
+    /// Insights promoted to the urgent strip are excluded from their category
+    /// sections — each card must appear once (matchedTransitionSource ids are
+    /// unique per namespace) and duplicating them would lengthen the feed.
+    private var urgentIds: Set<String> { Set(urgentInsights.map(\.id)) }
+
+    private func sectionInsights(_ category: InsightCategory) -> [Insight] {
+        sortedBySeverity(insights.filter { $0.category == category && !urgentIds.contains($0.id) })
+    }
+
+    var spendingInsights: [Insight]     { sectionInsights(.spending) }
+    var incomeInsights: [Insight]       { sectionInsights(.income) }
+    var budgetInsights: [Insight]       { sectionInsights(.budget) }
+    var recurringInsights: [Insight]    { sectionInsights(.recurring) }
+    var cashFlowInsights: [Insight]     { sectionInsights(.cashFlow) }
+    var wealthInsights: [Insight]       { sectionInsights(.wealth) }
+    var savingsInsights: [Insight]      { sectionInsights(.savings) }
+    var forecastingInsights: [Insight]  { sectionInsights(.forecasting) }
 
     var baseCurrency: String {
         transactionStore.baseCurrency
@@ -504,6 +524,19 @@ final class InsightsViewModel {
                 self.recomputeTask = nil
                 self.applyPrecomputed(for: self.currentGranularity)
                 Self.logger.debug("🔧 [InsightsVM] Background recompute END — total \(totalMs)ms — UI updated for .\(self.currentGranularity.rawValue, privacy: .public)")
+
+                // Insight signal notifications (audit 2026-07): diff the fresh .month
+                // insights against the alert history — new critical/warning signals
+                // fire a local push (7-day dedup + 5/week cap in InsightSignalService).
+                if let monthInsights = finalInsights[.month] {
+                    Task { await InsightSignalService.shared.processInsights(monthInsights) }
+                }
+                // Weekly digest (Phase D): refresh the Monday-09:00 push content
+                // from the freshly computed week buckets.
+                if let weekPoints = finalPoints[.week] {
+                    let digestCurrency = self.baseCurrency
+                    Task { await WeeklyDigestScheduler.shared.reschedule(weekPoints: weekPoints, baseCurrency: digestCurrency) }
+                }
             }
         }
     }

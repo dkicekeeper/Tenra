@@ -261,7 +261,9 @@ struct PeriodLineChart: View {
             VStack(spacing: AppSpacing.lg) {
                 zoomToolbar.screenPadding()
                 bannerSlot
-                fullChart.frame(height: chartHeight)
+                fullChart
+                    .padding(.leading, AppSpacing.lg)
+                    .frame(height: chartHeight)
             }
             .chartAppear()
         }
@@ -409,8 +411,6 @@ struct PeriodLineChart: View {
         series: .spending,
         granularity: .month
     )
-    .screenPadding()
-    .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Cash Flow — Monthly") {
@@ -419,8 +419,6 @@ struct PeriodLineChart: View {
         series: .cashFlow,
         granularity: .month
     )
-    .screenPadding()
-    .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Wealth — Monthly") {
@@ -429,6 +427,4 @@ struct PeriodLineChart: View {
         series: .wealth,
         granularity: .month
     )
-    .screenPadding()
-    .padding(.vertical, AppSpacing.md)
 }

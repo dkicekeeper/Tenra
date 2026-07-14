@@ -69,6 +69,28 @@ All return lightweight value-type structs (`InMemoryMonthlyTotal`, `InMemoryCate
 critical > warning > neutral > positive
 ```
 
+## Recent Metric Changes (2026-07 product audit)
+
+Full rationale + benchmarks: [INSIGHTS_PRODUCT_AUDIT.md](../INSIGHTS_PRODUCT_AUDIT.md).
+
+### Deleted / merged (audit 2026-07)
+- `incomeVsExpenseRatio` — deleted (unintuitive `1.2x` multiplier; duplicated `savingsRate` + `netCashFlow`)
+- `bestMonth` + `worstMonth` — merged into one neutral "period records" card (id `period_records`, type stays `.bestMonth`); detail renders both Top-10 rankings (worst list filters to deficit periods only)
+- `balanceRunway` — merged into `emergencyFund`: runway rows reuse the `insights.formula.balanceRunway.row.*` keys, severity = worse of (monthsCovered, runway); the standalone generator is gone
+- ⚠️ `duplicateSubscriptions` enum case exists but has NO generator — dead code, don't "fix" callers into existence without a product decision
+
+### Added (audit 2026-07)
+- `subscriptionPriceIncrease` (`+Recurring`) — latest linked charge vs previous (or series amount), >5% в той же валюте; up to 3 cards, ids `price_increase_<seriesId>`; **shared** (prefix-matched in `extractSharedInsights`)
+- `largeTransaction` (`+Spending`) — largest non-recurring realized expense of last 30d, ≥4× the 90d average tx (needs ≥20 baseline tx); id `large_tx_<txId>`; **shared** (prefix-matched)
+- "Важное сейчас" strip — `InsightsViewModel.urgentInsights` (top-5 critical/warning across ALL categories); promoted insights are EXCLUDED from their category sections (unique `matchedTransitionSource` ids)
+- `accountDormancy` — reframed as "money sitting idle / missed deposit yield" (copy only)
+
+### Signal notifications (Phase C/D)
+- `InsightSignalService` (`Services/Notifications/`) — diff engine: fires local pushes for NEW critical/warning signals only (7-day per-id dedup + 5/week global cap, history in UserDefaults). Pure core `selectSignals` is unit-tested (`InsightSignalServiceTests`). Wired at the END of `loadInsightsBackground` phase 2 (`.month` insights).
+- `WeeklyDigestScheduler` — Monday-09:00 digest from `.week` periodPoints, rescheduled on every recompute; body names the week it covers (stale-content guard). Toggle + per-kind toggles: `InsightSignalSettings` → `InsightSignalSettingsView` (Settings).
+- Notification ids use prefix `insightSignal_` — AppDelegate routes taps to the Analytics tab via `.insightSignalNotificationTapped`.
+- ⚠️ Known limitation: signals/digest only (re)compute when InsightsViewModel recomputes (Analytics tab usage). BGAppRefresh follow-up in the audit doc.
+
 ## Recent Metric Changes (2026-04 audit)
 
 ### Deleted (low signal / duplicated)

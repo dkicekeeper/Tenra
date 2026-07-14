@@ -4,9 +4,9 @@
 //
 //  Full-size half-circle gauge for insight detail screens (2026-07 visual
 //  refresh) — the hero sibling of the feed's MiniHalfGauge, sharing its
-//  geometry rules (relative scale, norm tick, ProgressRing cap trim-inset)
+//  geometry rules (relative scale, norm marker, cap-aligned arc start)
 //  and adding the OrbChart-derived wow layer: colour-matched glow underlay,
-//  spring sweep-in, materialising ticks.
+//  spring sweep-in, materialising tick markers.
 //
 //  Two scale modes:
 //  - relative (norm != nil): scale = max(value × 1.15, norm × 2), radial norm tick
@@ -25,7 +25,7 @@ struct HeroHalfGauge: View {
     var norm: Double? = nil
     /// Absolute mode: fixed scale end (e.g. 100 for the health score).
     var maxValue: Double? = nil
-    /// Absolute-mode zone boundaries (e.g. [40, 70]) — faint radial ticks.
+    /// Absolute-mode zone boundaries (e.g. [40, 70]) — knockout dot markers.
     var zoneTicks: [Double] = []
     /// Semantic tint of the value arc.
     let color: Color
@@ -57,21 +57,24 @@ struct HeroHalfGauge: View {
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
 
-            // Zone boundaries (absolute mode) — behind the value arc.
-            ForEach(zoneTicks.indices, id: \.self) { i in
-                radialTick(at: zoneTicks[i] / scale, width: 2, opacity: 0.45)
-            }
-
             // Value arc + colour-matched glow (the glow is a blurred copy of the
             // arc itself, so it sweeps in together with the trim animation).
-            // Start inset by the round cap's protrusion — ProgressRing lesson.
-            halfArc(from: capInsetFraction, to: 0.5 * displayFraction)
+            // Starts at 0 like the track so both round caps coincide exactly —
+            // an inset start makes the fill sit half a lineWidth above the
+            // track's cap on the left.
+            halfArc(from: 0, to: 0.5 * displayFraction)
                 .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .chartGlow(radius: lineWidth * 1.1, yOffset: 8)
 
-            // Norm tick (relative mode) — lands after the sweep.
+            // Zone boundaries (absolute mode) — land staggered after the sweep.
+            ForEach(zoneTicks.indices, id: \.self) { i in
+                tickMarker(at: zoneTicks[i] / scale)
+                    .materialize(delay: 0.55 + Double(i) * 0.1, animatesOnAppear: animatesOnAppear)
+            }
+
+            // Norm marker (relative mode) — lands after the sweep.
             if let norm {
-                radialTick(at: norm / scale, width: 3, opacity: 0.7)
+                tickMarker(at: norm / scale)
                     .materialize(delay: 0.55, animatesOnAppear: animatesOnAppear)
             }
         }
@@ -95,12 +98,6 @@ struct HeroHalfGauge: View {
         }
     }
 
-    /// Round caps protrude half a lineWidth beyond the trim — inset the start
-    /// so the cap begins exactly at the left horizontal (ProgressRing lesson).
-    private var capInsetFraction: CGFloat {
-        (lineWidth / 2) / (.pi * (diameter - lineWidth))
-    }
-
     /// Fractions 0…0.5 map left → top → right over the square's top half.
     private func halfArc(from: CGFloat, to: CGFloat) -> some Shape {
         Circle()
@@ -109,15 +106,23 @@ struct HeroHalfGauge: View {
             .rotation(.degrees(180))
     }
 
-    /// Radial marker crossing the stroke at `fraction` (0 = left, 1 = right).
-    private func radialTick(at fraction: Double, width: CGFloat, opacity: Double) -> some View {
+    /// Knockout dot marker centred on the stroke at `fraction` (0 = left,
+    /// 1 = right) — a background-coloured disc punching a gap in the arc,
+    /// with an arc-tinted dot inside (Activity-ring-style marker).
+    private func tickMarker(at fraction: Double) -> some View {
         let clamped = min(max(fraction, 0), 1)
         let radius = diameter / 2 - lineWidth / 2
-        return Capsule()
-            .fill(AppColors.textSecondary.opacity(opacity))
-            .frame(width: width, height: lineWidth + Self.tickOvershoot * 2 - 2)
-            .offset(y: -radius)
-            .rotationEffect(.degrees(-90 + clamped * 180))
+        let markerDiameter = lineWidth + 12
+        return ZStack {
+            Circle()
+                .fill(AppColors.bgBase)
+            Circle()
+                .fill(color)
+                .frame(width: markerDiameter / 3, height: markerDiameter / 3)
+        }
+        .frame(width: markerDiameter, height: markerDiameter)
+        .offset(y: -radius)
+        .rotationEffect(.degrees(-90 + clamped * 180))
     }
 }
 

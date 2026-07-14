@@ -9,16 +9,16 @@
 //
 //  Visual grammar (docs/domains/charts.md §Insight mini-visuals):
 //  - gray track = the scale, tinted arc = the fact
-//  - radial tick = the norm/target marker
+//  - knockout dot = the norm/target marker
 //  - scale = max(value × 1.15, norm × 2) so the arc always keeps headroom and
 //    the norm tick never hugs an edge; for extreme outliers the story is the
 //    tick sitting near the start of an almost-full arc
 //
 //  Unlike ProgressRing (absolute "% of limit" on a full circle), the gauge's
 //  scale is RELATIVE — the always-visible track + tick keep the two readable
-//  as different things. The arc start uses the ProgressRing trim-inset lesson:
-//  a round cap protrudes half a lineWidth beyond the path end, so the start is
-//  inset by that arc-angle to begin exactly at the left horizontal.
+//  as different things. The value arc starts at the same angle as the track
+//  so their round caps coincide exactly on the left — an inset start makes
+//  the fill sit half a lineWidth above the track's cap.
 //
 //  No text inside — values live in the card's metric row (localization-free,
 //  decorative for VoiceOver).
@@ -65,11 +65,10 @@ struct MiniHalfGauge: View {
                 style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
             )
 
-            // Value arc. Start is inset by the cap's angular protrusion
-            // (lineWidth/2 of arc length) so the round cap begins exactly at
-            // the left horizontal instead of bleeding below the scale.
-            let capInset = Angle.radians(Double(lineWidth / 2 / radius))
-            let start = Angle.degrees(180) + capInset
+            // Value arc — starts at the track's angle so both round caps
+            // coincide on the left (an inset start floats the fill above the
+            // track's cap).
+            let start = Angle.degrees(180)
             let end = max(Angle.degrees(180 + fraction * 180), start + .degrees(1))
             var arc = Path()
             arc.addArc(center: center, radius: radius, startAngle: start, endAngle: end, clockwise: false)
@@ -79,23 +78,32 @@ struct MiniHalfGauge: View {
                 style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
             )
 
-            // Norm tick — radial marker crossing the stroke.
+            // Norm marker — knockout dot punching a gap in the arc, with an
+            // arc-tinted dot inside (matches HeroHalfGauge's tick marker).
             let tickRadians = CGFloat(Angle.degrees(180 + min(norm / scale, 1.0) * 180).radians)
-            let inner = CGPoint(
-                x: center.x + (radius - Self.tickOvershoot) * cos(tickRadians),
-                y: center.y + (radius - Self.tickOvershoot) * sin(tickRadians)
+            let tickCenter = CGPoint(
+                x: center.x + radius * cos(tickRadians),
+                y: center.y + radius * sin(tickRadians)
             )
-            let outer = CGPoint(
-                x: center.x + (radius + Self.tickOvershoot) * cos(tickRadians),
-                y: center.y + (radius + Self.tickOvershoot) * sin(tickRadians)
+            let markerRadius = lineWidth / 2 + 3.5
+            context.fill(
+                Path(ellipseIn: CGRect(
+                    x: tickCenter.x - markerRadius,
+                    y: tickCenter.y - markerRadius,
+                    width: markerRadius * 2,
+                    height: markerRadius * 2
+                )),
+                with: .color(AppColors.bgBase)
             )
-            var tick = Path()
-            tick.move(to: inner)
-            tick.addLine(to: outer)
-            context.stroke(
-                tick,
-                with: .color(AppColors.textSecondary.opacity(0.7)),
-                style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
+            let dotRadius = markerRadius / 3
+            context.fill(
+                Path(ellipseIn: CGRect(
+                    x: tickCenter.x - dotRadius,
+                    y: tickCenter.y - dotRadius,
+                    width: dotRadius * 2,
+                    height: dotRadius * 2
+                )),
+                with: .color(color)
             )
         }
         .frame(height: height)

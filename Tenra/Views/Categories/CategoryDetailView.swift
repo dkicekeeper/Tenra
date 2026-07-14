@@ -135,6 +135,7 @@ struct CategoryDetailView: View {
             },
             toolbarMenu: { toolbarMenu }
         )
+        .heroAccentGlow(icon: liveCategory.iconSource, tint: .monochrome(liveCategory.color))
         .sheet(isPresented: $showingEdit) {
             CategoryEditView(
                 categoriesViewModel: categoriesViewModel,

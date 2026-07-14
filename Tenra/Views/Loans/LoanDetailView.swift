@@ -262,6 +262,7 @@ struct LoanDetailView: View {
                 loanToolbarMenu
             }
         )
+        .heroAccentGlow(icon: account.iconSource)
         .sheet(isPresented: $showingEditView) {
             LoanEditView(
                 loansViewModel: loansViewModel,

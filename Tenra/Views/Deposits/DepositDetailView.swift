@@ -145,6 +145,7 @@ struct DepositDetailView: View {
                 depositToolbarMenu
             }
         )
+        .heroAccentGlow(icon: account.iconSource)
         .sheet(isPresented: $showingEditView) {
             DepositEditView(
                 depositsViewModel: depositsViewModel,

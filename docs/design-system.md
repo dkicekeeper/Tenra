@@ -728,6 +728,43 @@ ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
 
 Used in: `StaticSubscriptionIconsView`, `LoanFacepileIconsView`.
 
+#### `BlurSlideTransition` (text reveal)
+Canonical transition for animated text appearance: insertion slides up from below + un-blurs + fades in; removal keeps sliding up + blurs + fades out. Lives in `Views/Components/Feedback/BlurSlideTransition.swift`. Use the presets — don't hand-tune parameters at call sites:
+
+| Preset | Params | Use For |
+|--------|--------|---------|
+| `.blurSlideHero` | slide 24, blur 10 | Block-level text (onboarding hero title/subtitle) |
+| `.blurSlideWord` | slide 18, blur 6 | Per-word streaming text (voice transcription). Lighter on purpose — many words can transition at once and per-word blur is the dominant GPU cost |
+
+```swift
+Text(phase.title)
+    .id(index)
+    .transition(.blurSlideHero)
+
+// Per-word (see AnimatedTranscriptionText — stable word IDs ensure only NEW words animate)
+Text(token.text)
+    .transition(.blurSlideWord)
+```
+
+Used in: `OnboardingWelcomeStep`, `AnimatedTranscriptionText`.
+
+#### `AccentGlow` (ambient edge glow)
+Blurred gradient circle rising from a screen edge (`Views/Components/Feedback/AccentGlow.swift`). Static — no animation loop, no hit-testing, hidden from VoiceOver. Tunables in `GlowMetrics` (blur 120, 85% off-screen, hero intensity 0.45).
+
+| Preset | Edge | Tint | Use For |
+|--------|------|------|---------|
+| `.onboardingAccentGlow()` | bottom, full intensity | `AppColors.accent` | Onboarding screen backgrounds |
+| `.heroAccentGlow(icon:tint:)` | top, 0.45 intensity | Resolved from the hero icon | Entity-detail screens (apply to `EntityDetailScaffold`, pass the same `icon`/`tint` as the `HeroSection`) |
+
+`heroAccentGlow` tint resolution: explicit `IconTint` colour (monochrome/hierarchical/palette) → that colour immediately; `.brandService` → dominant logo colour via `DominantColorExtractor` (async — glow renders with the fallback and cross-fades with `gentleSpring` when the brand colour arrives); otherwise `AppColors.accent`. Pure black/white logos yield no extractable accent — the fallback stays.
+
+```swift
+EntityDetailScaffold(... hero: { HeroSection(icon: liveCategory.iconSource, ...) })
+    .heroAccentGlow(icon: liveCategory.iconSource, tint: .monochrome(liveCategory.color))
+```
+
+Used in: `OnboardingWelcomeStep` (bottom), Account/Category/Subscription/Deposit/Loan detail views (top).
+
 ---
 
 ## 4. View Patterns

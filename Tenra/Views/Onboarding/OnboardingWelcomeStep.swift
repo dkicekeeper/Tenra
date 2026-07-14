@@ -88,7 +88,7 @@ struct OnboardingWelcomeStep: View {
                 }
                 .screenPadding()
                 .id(index)
-                .transition(LoopOnboardingTextTransition())
+                .transition(.blurSlideHero)
                 .padding(.bottom, AppSpacing.xl)
 
                 Button {

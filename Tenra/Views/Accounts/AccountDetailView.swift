@@ -118,6 +118,7 @@ struct AccountDetailView: View {
             },
             toolbarMenu: { toolbarMenu }
         )
+        .heroAccentGlow(icon: liveAccount.iconSource)
         .sheet(isPresented: $showingEdit) {
             AccountEditView(
                 accountsViewModel: accountsViewModel,

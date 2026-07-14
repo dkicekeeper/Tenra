@@ -7,8 +7,8 @@
 //  next loop. Stateless about phase cycling — callers drive the symbol via
 //  their own TimelineView (see `OnboardingWelcomeStep`).
 //
-//  Also exposes `LoopOnboardingTextTransition` — the blur+slide transition
-//  used on the synced title/subtitle block.
+//  The synced title/subtitle block uses the shared `.blurSlideHero`
+//  transition (see `BlurSlideTransition.swift`).
 //
 
 import SwiftUI
@@ -118,31 +118,6 @@ struct LoopOnboardingHero: View {
                 LinearKeyframe(0, duration: safeHold)
             }
         }
-    }
-}
-
-// MARK: - Phase Text Transition
-
-/// Insertion: slides up from below + un-blurs + fades in.
-/// Removal: keeps sliding up off-screen + blurs + fades out.
-/// Used on the synced title/subtitle block beneath/around the hero.
-struct LoopOnboardingTextTransition: Transition {
-    var slideDistance: CGFloat = 24
-    var blurRadius: CGFloat = 10
-
-    func body(content: Content, phase: TransitionPhase) -> some View {
-        let yOffset: CGFloat = {
-            switch phase {
-            case .willAppear: return slideDistance      // start below identity
-            case .identity: return 0
-            case .didDisappear: return -slideDistance   // exit upward
-            }
-        }()
-
-        return content
-            .opacity(phase.isIdentity ? 1 : 0)
-            .blur(radius: phase.isIdentity ? 0 : blurRadius)
-            .offset(y: yOffset)
     }
 }
 

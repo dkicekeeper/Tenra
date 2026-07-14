@@ -127,6 +127,7 @@ struct SubscriptionDetailView: View {
                 subscriptionToolbarMenu
             }
         )
+        .heroAccentGlow(icon: liveSubscription.iconSource)
         .sheet(isPresented: $showingEditView) {
             SubscriptionEditView(
                 transactionStore: transactionStore,

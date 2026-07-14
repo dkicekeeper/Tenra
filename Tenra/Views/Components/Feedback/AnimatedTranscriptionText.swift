@@ -15,8 +15,10 @@
 //  • Stable IDs are assigned to words whose text matches the previous
 //    snapshot, so Speech "refinements" don't re-trigger entrance animations
 //    for words that are already visible.
-//  • The entrance transition is offset + opacity — no per-word `.blur`
-//    filter, which was the dominant cost when many words appeared at once.
+//  • The entrance is the shared `.blurSlideWord` transition (slide + fade +
+//    blur). Per-word blur was once the dominant cost when many words appeared
+//    at once, so the word preset keeps the radius small and blur only runs on
+//    words actually transitioning (stable IDs skip settled ones).
 //
 
 import SwiftUI
@@ -37,7 +39,7 @@ struct AnimatedTranscriptionText: View {
                 Text(token.text)
                     .font(font)
                     .foregroundStyle(token.color)
-                    .transition(.slideUp)
+                    .transition(.blurSlideWord)
             }
         }
         .onAppear { refreshTokens() }
@@ -113,27 +115,6 @@ struct AnimatedTranscriptionText: View {
             }
         }
         return (result, nextID)
-    }
-}
-
-// MARK: - Slide Up Transition
-
-private struct SlideUpModifier: ViewModifier {
-    let progress: Double
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(progress)
-            .offset(y: (1 - progress) * 18)
-    }
-}
-
-extension AnyTransition {
-    static var slideUp: AnyTransition {
-        .modifier(
-            active: SlideUpModifier(progress: 0),
-            identity: SlideUpModifier(progress: 1)
-        )
     }
 }
 

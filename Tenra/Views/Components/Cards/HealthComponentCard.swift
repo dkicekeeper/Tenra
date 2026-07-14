@@ -113,7 +113,7 @@ struct HealthComponentCard: View {
     // MARK: - Progress bar
 
     private var progressBar: some View {
-        BudgetProgressBar(
+        LinearProgressBar(
             percentage: model.progress * 100,
             isOverBudget: false,
             color: progressColor

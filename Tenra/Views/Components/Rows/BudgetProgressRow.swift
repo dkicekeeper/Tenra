@@ -2,7 +2,7 @@
 //  BudgetProgressRow.swift
 //  Tenra
 //
-//  Full budget progress row: icon + name + BudgetProgressBar + spent/budget amounts.
+//  Full budget progress row: icon + name + LinearProgressBar + spent/budget amounts.
 //  Extracted from InsightDetailView.budgetChartSection — Phase 26.
 //
 
@@ -36,7 +36,7 @@ struct BudgetProgressRow: View {
             }
 
             // Progress bar
-            BudgetProgressBar(
+            LinearProgressBar(
                 percentage: item.percentage,
                 isOverBudget: item.isOverBudget,
                 color: item.color

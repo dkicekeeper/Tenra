@@ -1,5 +1,5 @@
 //
-//  PeriodLineChart.swift
+//  LineChart.swift
 //  Tenra
 //
 //  Phase 43 (chart merge): Unified granularity-aware area/line chart.
@@ -8,17 +8,17 @@
 //  - PeriodCashFlowChart     (netFlow, ±Y, dynamic green/red, zero ruler)
 //  - WealthChart             (cumulativeBalance, ±Y, accent color)
 //
-//  Behavioral differences are captured in PeriodLineChartSeries enum.
+//  Behavioral differences are captured in PeriodChartSeries enum.
 //  Layout, scrolling, Y-axis overlay, and animation are shared.
 //
 
 import SwiftUI
 import Charts
 
-// MARK: - PeriodLineChartSeries
+// MARK: - PeriodChartSeries
 
-/// Defines which data field and visual style a `PeriodLineChart` uses.
-enum PeriodLineChartSeries {
+/// Defines which data field and visual style a `LineChart` uses.
+enum PeriodChartSeries {
     /// Spending trend: `expenses` field, Y starts at 0, destructive color.
     case spending
     /// Income trend: `income` field, Y starts at 0, success color.
@@ -151,6 +151,20 @@ enum PeriodLineChartSeries {
         }
     }
 
+    // MARK: - Mark grouping
+
+    /// Stable mark key for Charts `series:` / `position(by:)` grouping in
+    /// multi-series charts. Static strings — safe on the per-frame hot path.
+    var seriesKey: String {
+        switch self {
+        case .spending:         return "spending"
+        case .income:           return "income"
+        case .avgDailyExpenses: return "avgDaily"
+        case .cashFlow:         return "cashFlow"
+        case .wealth:           return "wealth"
+        }
+    }
+
     // MARK: - Visual flags
 
     /// Whether to render a dashed zero reference line (RuleMark at y=0).
@@ -170,56 +184,93 @@ enum PeriodLineChartSeries {
     }
 }
 
-// MARK: - PeriodLineChart
+// MARK: - LineChart
 
-/// Granularity-aware area/line chart for any `PeriodDataPoint` series.
+/// Granularity-aware area/line chart for one or more `PeriodDataPoint` series.
+///
+/// Multi-series (2026-07 charts refactor): pass `series: [.income, .spending]`
+/// to get the income-vs-expense overlay that used to be a separate
+/// `IncomeExpenseLineChart` — each series draws its own area/line/points with
+/// the styles its `PeriodChartSeries` case defines. With two series the
+/// selection banner switches to the dual income/expense layout.
 ///
 /// Native Apple Charts horizontal scrolling (`chartScrollableAxes`) with a
 /// sticky leading Y-axis. The visible window is controlled by `zoomScale`
-/// (1.0 = default), driven by the `+/-` zoom controls (clamped to `[0.4, 4.0]`).
-/// Pinch-to-zoom is intentionally NOT used — it conflicts with the navigation
-/// swipe-to-go-back gesture on the parent view.
+/// (1.0 = default), owned by `ChartSwitcher`'s `+/-` controls
+/// (clamped to `[0.4, 4.0]`). Pinch-to-zoom is intentionally NOT used — it
+/// conflicts with the navigation swipe-to-go-back gesture on the parent view.
 ///
 /// Compact rendering for insight cards lives in `MiniSparkline` instead — it
 /// avoids spinning up a full Apple Charts render-tree per card.
 ///
 /// Usage:
 /// ```swift
-/// PeriodLineChart(dataPoints: points, series: .cashFlow, granularity: .month)
-/// PeriodLineChart(dataPoints: points, series: .wealth,   granularity: .month)
+/// LineChart(dataPoints: points, series: .cashFlow, granularity: .month)
+/// LineChart(dataPoints: points, series: [.income, .spending], granularity: .month)
 /// ```
-struct PeriodLineChart: View {
+struct LineChart: View {
     let dataPoints: [PeriodDataPoint]
-    let series: PeriodLineChartSeries
+    let seriesList: [PeriodChartSeries]
     let granularity: InsightGranularity
     /// ISO currency code for the selection-banner amount. Defaults to "" so
     /// callers without a currency keep compiling; the banner falls back to
     /// non-currency compact formatting in that case.
     var currency: String = ""
 
-    @State private var zoomScale: CGFloat = 1.0
+    /// External zoom binding — controlled by `ChartSwitcher` toolbar.
+    /// Defaults to 1.0 when the chart is used standalone (no parent toolbar).
+    @Binding var zoomScale: CGFloat
+
     @State private var selectedValueLabel: String?
     @State private var cache = PeriodChartCache()
+
+    init(
+        dataPoints: [PeriodDataPoint],
+        series: [PeriodChartSeries],
+        granularity: InsightGranularity,
+        currency: String = "",
+        zoomScale: Binding<CGFloat> = .constant(1.0)
+    ) {
+        self.dataPoints = dataPoints
+        self.seriesList = series
+        self.granularity = granularity
+        self.currency = currency
+        self._zoomScale = zoomScale
+    }
+
+    /// Single-series convenience — the overwhelmingly common case.
+    init(
+        dataPoints: [PeriodDataPoint],
+        series: PeriodChartSeries,
+        granularity: InsightGranularity,
+        currency: String = "",
+        zoomScale: Binding<CGFloat> = .constant(1.0)
+    ) {
+        self.init(
+            dataPoints: dataPoints,
+            series: [series],
+            granularity: granularity,
+            currency: currency,
+            zoomScale: zoomScale
+        )
+    }
 
     private var basePointWidth: CGFloat { granularity.pointWidth }
     private var effectivePointWidth: CGFloat { basePointWidth * zoomScale }
     private let chartHeight: CGFloat = 200
-    private var lineWidth: CGFloat { series.fullLineWidth }
 
-    /// Static Y-domain computed once over the entire dataset, derived from
-    /// the cached yMin/yMax envelope. Stable across scroll for two reasons:
-    ///   1. **Visual stability**: with a dynamic domain, the Y axis re-scaled
-    ///      as the user scrolled — points visually jumped under their finger.
-    ///   2. **Performance**: a stable domain means `lineStyle`/`areaStyle`
-    ///      (multi-stop `LinearGradient` for `.cashFlow`/`.wealth`) are constant
-    ///      and can be hoisted out of the per-frame body.
+    /// Static Y-domain computed once over the entire dataset (all series),
+    /// derived from the cached yMin/yMax envelope. Stable across scroll for
+    /// visual stability + hoisted gradient styles (see charts.md).
+    /// ~6% headroom so the peak PointMark (and its selection ring) isn't
+    /// clipped by the plot-area edge; zero-based series keep their 0 floor.
     private var fullYDomain: ClosedRange<Double> {
-        switch series {
-        case .spending, .income, .avgDailyExpenses:
-            return 0...max(cache.yMax, 1)
-        case .cashFlow, .wealth:
-            return min(cache.yMin, 0)...max(cache.yMax, 1)
-        }
+        let allowsNegative = seriesList.contains { $0 == .cashFlow || $0 == .wealth }
+        let rawMin = allowsNegative ? min(cache.yMin, 0) : 0
+        let rawMax = max(cache.yMax, 1)
+        let headroom = (rawMax - rawMin) * 0.06
+        let paddedMin = rawMin < 0 ? rawMin - headroom : rawMin
+        return paddedMin...(rawMax + headroom)
     }
 
     private var selectedSinglePoint: PeriodDataPoint? {
@@ -242,7 +293,7 @@ struct PeriodLineChart: View {
 
     private func rebuildCacheIfNeeded() {
         rebuildPeriodCacheIfNeeded(cache, dataPoints: dataPoints) { p in
-            [series.value(for: p)]
+            seriesList.map { $0.value(for: p) }
         }
     }
 
@@ -259,7 +310,6 @@ struct PeriodLineChart: View {
             emptyState.frame(height: chartHeight)
         } else {
             VStack(spacing: AppSpacing.lg) {
-                zoomToolbar.screenPadding()
                 bannerSlot
                 fullChart
                     .padding(.leading, AppSpacing.lg)
@@ -272,11 +322,10 @@ struct PeriodLineChart: View {
     private var bannerSlot: some View {
         ZStack {
             if let p = selectedSinglePoint {
-                let value = series.value(for: p)
                 ChartSelectionBanner(
                     title: granularity.bannerLabel(for: p.key),
                     currency: currency,
-                    content: .single(value: value, color: series.pointColor(for: value))
+                    content: bannerContent(for: p)
                 )
                 .transition(.opacity)
             }
@@ -285,11 +334,30 @@ struct PeriodLineChart: View {
         .chartSelectionAnnouncement(announcementText)
     }
 
+    /// The only shipped multi-series combo is income + expenses, so 2+ series
+    /// use the dual income/expense banner layout.
+    private func bannerContent(for p: PeriodDataPoint) -> ChartSelectionBanner.Content {
+        if seriesList.count >= 2 {
+            return .dual(income: p.income, expenses: p.expenses)
+        }
+        let s = seriesList[0]
+        let value = s.value(for: p)
+        return .single(value: value, color: s.pointColor(for: value))
+    }
+
     private var announcementText: String? {
         guard let p = selectedSinglePoint else { return nil }
+        if seriesList.count >= 2 {
+            return chartBannerAnnouncementText(
+                title: granularity.bannerLabel(for: p.key),
+                income: p.income,
+                expenses: p.expenses,
+                currency: currency
+            )
+        }
         return chartBannerAnnouncementText(
             title: granularity.bannerLabel(for: p.key),
-            value: series.value(for: p),
+            value: seriesList[0].value(for: p),
             currency: currency
         )
     }
@@ -303,26 +371,25 @@ struct PeriodLineChart: View {
         )
     }
 
-    /// Trailing-aligned zoom controls. Pinch-to-zoom was removed because it
-    /// conflicted with the parent NavigationStack's swipe-to-go-back gesture.
-    private var zoomToolbar: some View {
-        HStack {
-            Spacer()
-            ChartZoomControls(zoomScale: $zoomScale, range: 0.4...4.0)
-        }
-    }
-
     // MARK: - Interactive full chart
 
     private var fullChart: some View {
         let domain = fullYDomain
         // Stable styles: yDomain is fixed for the lifetime of this view, so the
         // multi-stop `LinearGradient` for `.cashFlow`/`.wealth` is computed once.
-        let lineFill = series.lineStyle(yDomain: domain)
-        let areaFill = series.areaStyle(yDomain: domain)
+        //
+        // ⚠️ Gradients resolve against the MARK's own bounds (the raw data
+        // envelope), NOT the padded axis domain — computing `zeroRatio` from
+        // `fullYDomain` (with its 6% headroom) shifted the green→red transition
+        // ABOVE the true zero line (visible as a red band over y=0). Style
+        // gradients must always use the unpadded envelope.
+        let styleEnvelope = min(cache.yMin, 0)...max(cache.yMax, 1)
+        let lineFills = seriesList.map { $0.lineStyle(yDomain: styleEnvelope) }
+        let areaFills = seriesList.map { $0.areaStyle(yDomain: styleEnvelope) }
         let categoryDomain = dataPoints.map { $0.label }
         let leftIdx = max(0, dataPoints.count - visibleCount)
         let trailingAnchorLabel = dataPoints[leftIdx].label
+        let showZeroRuler = seriesList.contains(where: \.showZeroRuler)
         return Chart {
             // Today / future boundary marker — drawn first; today is part of
             // dataPoints' label set so this doesn't introduce a new category.
@@ -337,21 +404,36 @@ struct PeriodLineChart: View {
                     }
             }
 
-            ForEach(dataPoints) { point in
-                let v = series.value(for: point)
-                AreaMark(x: .value("Period", point.label), y: .value("Value", v))
-                    .foregroundStyle(areaFill)
+            // `series:` + `stacking: .unstacked` keep multiple series as distinct
+            // overlaid lines/areas with a y=0 baseline (see charts.md Multi-Series
+            // AreaMark). Harmless for the single-series case.
+            ForEach(seriesList.indices, id: \.self) { i in
+                let s = seriesList[i]
+                ForEach(dataPoints) { point in
+                    let v = s.value(for: point)
+                    AreaMark(
+                        x: .value("Period", point.label),
+                        y: .value("Value", v),
+                        series: .value("Type", s.seriesKey),
+                        stacking: .unstacked
+                    )
+                    .foregroundStyle(areaFills[i])
                     .interpolationMethod(.monotone)
-                LineMark(x: .value("Period", point.label), y: .value("Value", v))
-                    .foregroundStyle(lineFill)
+                    LineMark(
+                        x: .value("Period", point.label),
+                        y: .value("Value", v),
+                        series: .value("Type", s.seriesKey)
+                    )
+                    .foregroundStyle(lineFills[i])
                     .interpolationMethod(.monotone)
-                    .lineStyle(StrokeStyle(lineWidth: lineWidth))
-                PointMark(x: .value("Period", point.label), y: .value("Value", v))
-                    .foregroundStyle(series.pointColor(for: v))
-                    .symbolSize(30)
+                    .lineStyle(StrokeStyle(lineWidth: s.fullLineWidth))
+                    PointMark(x: .value("Period", point.label), y: .value("Value", v))
+                        .foregroundStyle(s.pointColor(for: v))
+                        .symbolSize(30)
+                }
             }
 
-            if series.showZeroRuler {
+            if showZeroRuler {
                 RuleMark(y: .value("Zero", 0))
                     .foregroundStyle(AppColors.textTertiary.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 0.5, dash: [4, 4]))
@@ -362,29 +444,39 @@ struct PeriodLineChart: View {
             // ensure selection marks cannot reorder the X axis.
             //
             // Visual layers (back-to-front): ruler → halo → emphasized point.
+            // Multi-series: highlight every series' point at the selected x;
+            // zero values are skipped (a halo at the baseline reads as noise).
             if let label = selectedValueLabel,
                let idx = cache.labelToIndex[label] {
                 let selectedPoint = dataPoints[idx]
-                let v = series.value(for: selectedPoint)
-                let pointColor = series.pointColor(for: v)
+                let rulerColor = seriesList.count == 1
+                    ? seriesList[0].pointColor(for: seriesList[0].value(for: selectedPoint))
+                    : AppColors.accent
 
                 RuleMark(x: .value("Selected", label))
-                    .foregroundStyle(pointColor.opacity(0.5))
+                    .foregroundStyle(rulerColor.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1.5))
 
-                PointMark(
-                    x: .value("SelectedHalo", selectedPoint.label),
-                    y: .value("SelectedV", v)
-                )
-                .symbolSize(180)
-                .foregroundStyle(pointColor.opacity(0.20))
+                ForEach(seriesList.indices, id: \.self) { i in
+                    let s = seriesList[i]
+                    let v = s.value(for: selectedPoint)
+                    if seriesList.count == 1 || v > 0 {
+                        let pointColor = s.pointColor(for: v)
+                        PointMark(
+                            x: .value("SelectedHalo", selectedPoint.label),
+                            y: .value("SelectedV", v)
+                        )
+                        .symbolSize(180)
+                        .foregroundStyle(pointColor.opacity(0.20))
 
-                PointMark(
-                    x: .value("SelectedInner", selectedPoint.label),
-                    y: .value("SelectedV", v)
-                )
-                .symbolSize(70)
-                .foregroundStyle(pointColor)
+                        PointMark(
+                            x: .value("SelectedInner", selectedPoint.label),
+                            y: .value("SelectedV", v)
+                        )
+                        .symbolSize(70)
+                        .foregroundStyle(pointColor)
+                    }
+                }
             }
         }
         // Lock category order to the dataPoints' label sequence. Without this,
@@ -406,7 +498,7 @@ struct PeriodLineChart: View {
 // MARK: - Previews
 
 #Preview("Spending — Monthly") {
-    PeriodLineChart(
+    LineChart(
         dataPoints: PeriodDataPoint.mockMonthly(),
         series: .spending,
         granularity: .month
@@ -414,17 +506,18 @@ struct PeriodLineChart: View {
 }
 
 #Preview("Cash Flow — Monthly") {
-    PeriodLineChart(
+    LineChart(
         dataPoints: PeriodDataPoint.mockMonthly(),
         series: .cashFlow,
         granularity: .month
     )
 }
 
-#Preview("Wealth — Monthly") {
-    PeriodLineChart(
+#Preview("Income vs Expenses — Monthly") {
+    LineChart(
         dataPoints: PeriodDataPoint.mockMonthly(),
-        series: .wealth,
-        granularity: .month
+        series: [.income, .spending],
+        granularity: .month,
+        currency: "KZT"
     )
 }

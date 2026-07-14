@@ -181,7 +181,7 @@ struct InsightsCardView<BottomChart: View>: View {
         case .accountComparison:
             EmptyView()
         case .periodTrend(let points):
-            // Canvas-based replacement for `PeriodLineChart(mode: .compact)`.
+            // Canvas-based replacement for `LineChart(mode: .compact)`.
             // Series matches the insight metric so the sparkline tracks the same
             // data the detail chart and list show. See MiniSparkline.swift header.
             MiniSparkline(
@@ -200,7 +200,7 @@ struct InsightsCardView<BottomChart: View>: View {
     }
 
     /// Sparkline series matching the insight metric (mirrors InsightDetailView).
-    private var miniSparklineSeries: PeriodLineChartSeries {
+    private var miniSparklineSeries: PeriodChartSeries {
         switch insight.type {
         case .averageDailySpending: return .avgDailyExpenses
         case .monthOverMonthChange: return .spending
@@ -210,11 +210,12 @@ struct InsightsCardView<BottomChart: View>: View {
     }
 
     private func budgetProgressBar(_ item: BudgetInsightItem) -> some View {
-        BudgetProgressBar(
+        LinearProgressBar(
             percentage: item.percentage,
             isOverBudget: item.isOverBudget,
             color: item.color,
-            height: 6
+            height: 6,
+            animatesOnAppear: false // insights feed is a LazyVStack — onAppear re-fires on scroll
         )
     }
 }
@@ -272,14 +273,14 @@ struct InsightsCardView<BottomChart: View>: View {
     ScrollView {
         VStack(spacing: AppSpacing.md) {
             InsightsCardView(insight: .mockCashFlow()) {
-                PeriodLineChart(
+                LineChart(
                     dataPoints: PeriodDataPoint.mockMonthly(),
                     series: .cashFlow,
                     granularity: .month
                 )
             }
             InsightsCardView(insight: .mockPeriodTrend()) {
-                PeriodLineChart(
+                LineChart(
                     dataPoints: PeriodDataPoint.mockMonthly(),
                     series: .cashFlow,
                     granularity: .month

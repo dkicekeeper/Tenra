@@ -52,11 +52,12 @@ struct CategoryRow: View, Equatable {
                     ZStack {
                         // Budget progress ring (if budget exists)
                         if let progress = budgetProgress {
-                            BudgetProgressCircle(
+                            ProgressRing(
                                 progress: progress.percentage / 100,
                                 size: AppIconSize.categoryIcon,
                                 lineWidth: 3,
-                                isOverBudget: progress.isOverBudget
+                                isOverBudget: progress.isOverBudget,
+                                animatesOnAppear: false // list row — onAppear re-fires on scroll
                             )
                         }
 

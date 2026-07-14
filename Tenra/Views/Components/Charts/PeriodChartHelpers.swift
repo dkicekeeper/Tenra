@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Shared infrastructure for `PeriodDataPoint`-driven full-mode charts
-//  (`PeriodBarChart`, `IncomeExpenseLineChart`, `PeriodLineChart`):
+//  (`BarChart`, `LineChart`):
 //
 //  - `PeriodChartCache`: per-instance derived-value cache (label→index map,
 //    yMin/yMax envelope, today-marker label) keyed off a dataset identity
@@ -68,8 +68,8 @@ func periodCacheIdentity(_ dataPoints: [PeriodDataPoint]) -> String {
 /// identity has changed. No-op otherwise.
 ///
 /// `values(_:)` returns the per-point values to fold into the yMin/yMax
-/// envelope. For `PeriodBarChart` and `IncomeExpenseLineChart` this is
-/// `[income, expenses]`; for `PeriodLineChart` it's the single series value.
+/// envelope. For multi-series charts (e.g. `series: [.income, .spending]`) this is
+/// `[income, expenses]`; for `LineChart` it's the single series value.
 @MainActor
 func rebuildPeriodCacheIfNeeded(
     _ cache: PeriodChartCache,

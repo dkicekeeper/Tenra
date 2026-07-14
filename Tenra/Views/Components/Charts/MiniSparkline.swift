@@ -3,10 +3,10 @@
 //  Tenra
 //
 //  Lightweight Canvas-based sparkline for `.periodTrend` mini-chart overlays
-//  in the Insights feed. Replaces `PeriodLineChart(mode: .compact)` to avoid
+//  in the Insights feed. Replaces `LineChart(mode: .compact)` to avoid
 //  spinning up an Apple Charts render-tree per insight card.
 //
-//  Visual contract matches the compact `PeriodLineChart`:
+//  Visual contract matches the compact `LineChart`:
 //  - Solid line stroke (no per-point dynamic gradient — at 60pt height the
 //    multi-stop gradient is perceptually a solid colour anyway)
 //  - Tinted area fill below the line, fading toward the bottom
@@ -20,7 +20,7 @@ import SwiftUI
 
 struct MiniSparkline: View {
     let dataPoints: [PeriodDataPoint]
-    let series: PeriodLineChartSeries
+    let series: PeriodChartSeries
     var lineWidth: CGFloat = 1.5
     var height: CGFloat = 60
 
@@ -29,7 +29,7 @@ struct MiniSparkline: View {
     }
 
     /// Solid colour used for line + area tint (mini-mode simplification of
-    /// `PeriodLineChartSeries.lineStyle/areaStyle`). For `.cashFlow` we sample
+    /// `PeriodChartSeries.lineStyle/areaStyle`). For `.cashFlow` we sample
     /// the last value's sign so the user can read "currently in surplus / deficit"
     /// at a glance.
     private var tintColor: Color {

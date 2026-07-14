@@ -131,7 +131,7 @@ enum AppAnimation {
     }
 
     /// Reduce-Motion-aware fill animation for ALL progress bars/rings
-    /// (ExpenseIncomeProgressBar, BudgetProgressBar, ProportionBar, BudgetProgressCircle).
+    /// (AmountComparisonBar, LinearProgressBar, ProportionBar, ProgressRing).
     /// `nil` under Reduce Motion so the value jumps instantly (no width/arc sweep).
     static var progressFillAnimation: Animation? {
         isReduceMotionEnabled ? nil : progressBarSpring

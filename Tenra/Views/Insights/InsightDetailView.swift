@@ -89,7 +89,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
     }
 
     /// Which series the period-trend chart plots, matching the insight metric.
-    private var periodChartSeries: PeriodLineChartSeries {
+    private var periodChartSeries: PeriodChartSeries {
         switch insight.type {
         case .averageDailySpending: return .avgDailyExpenses
         case .monthOverMonthChange: return .spending
@@ -139,7 +139,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
     private var chartSection: some View {
         switch insight.detailData {
         case .categoryBreakdown(let items):
-            SpendingOrbChart(slices: DonutSlice.from(items))
+            OrbChart(slices: DonutSlice.from(items))
                 .screenPadding()
         case .categoryBreakdownPaged:
             // Chart + list are rendered together per page in detailSection.
@@ -153,8 +153,9 @@ struct InsightDetailView<CategoryDestination: View>: View {
                 // Period records show ranked Top-10 lists (in detailSection), no chart.
                 EmptyView()
             } else {
-                // Single-series line chart plotting the metric that matches the insight.
-                PeriodLineChart(
+                // Single-series bar/line pair plotting the metric that matches the
+                // insight, with the same style switcher the income/expense pair has.
+                ChartSwitcher(
                     dataPoints: points,
                     series: periodChartSeries,
                     granularity: gran,
@@ -446,7 +447,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
             Group {
                 if let page, !page.items.isEmpty {
                     // Always replay the entrance (per page / re-appearance) while iterating on it.
-                    SpendingOrbChart(slices: DonutSlice.from(page.items), animatesOnAppear: true)
+                    OrbChart(slices: DonutSlice.from(page.items), animatesOnAppear: true)
                         .screenPadding()
                 } else {
                     Color.clear.frame(height: 280)

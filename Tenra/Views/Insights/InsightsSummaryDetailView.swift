@@ -95,10 +95,12 @@ struct InsightsSummaryDetailView: View {
             // Chart bleeds edge-to-edge so the scrollable plot area aligns
             // with the screen edges. Apple Charts with chartScrollableAxes
             // looks clipped if a horizontal padding is applied to the parent.
-            PeriodChartSwitcher(
+            ChartSwitcher(
                 dataPoints: periodDataPoints,
+                series: [.income, .spending],
+                granularity: granularity,
                 currency: currency,
-                granularity: granularity
+                initialStyle: .bar
             )
         }
     }

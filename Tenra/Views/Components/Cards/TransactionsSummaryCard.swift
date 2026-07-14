@@ -57,7 +57,7 @@ struct TransactionsSummaryCard: View {
                 Spacer()
             }
 
-            ExpenseIncomeProgressBar(
+            AmountComparisonBar(
                 expenseAmount: summary.totalExpenses,
                 incomeAmount: summary.totalIncome,
                 currency: currency

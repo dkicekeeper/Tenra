@@ -14,8 +14,8 @@ import Foundation
 /// Shared axis formatting utilities for all Insights chart components.
 ///
 /// Eliminates duplicated axis formatting code across:
-/// - `PeriodBarChart`
-/// - `PeriodLineChart`
+/// - `BarChart`
+/// - `LineChart`
 nonisolated enum ChartAxisHelpers {
 
     // MARK: - Y-axis value formatter (all charts)

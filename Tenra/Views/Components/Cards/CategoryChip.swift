@@ -56,11 +56,12 @@ struct CategoryChip: View {
                 ZStack {
                     // Budget progress ring (expense categories only)
                     if let progress = budgetProgress, type == .expense {
-                        BudgetProgressCircle(
+                        ProgressRing(
                             progress: progress.percentage / 100,
                             size: AppIconSize.budgetRing,
                             lineWidth: 4,
-                            isOverBudget: progress.isOverBudget
+                            isOverBudget: progress.isOverBudget,
+                            animatesOnAppear: false // lazy grid — onAppear re-fires on scroll
                         )
                     }
 

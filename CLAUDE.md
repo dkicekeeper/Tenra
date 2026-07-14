@@ -45,6 +45,9 @@ xcodebuild build -scheme Tenra \
 # If xcodebuild reports "accessing build database ... database is locked", another
 # xcodebuild instance is still finishing — wait ~5s and retry, no other action needed.
 
+# zsh (project shell) does NOT word-split unquoted vars: `for f in $FILES` gets ONE
+# giant "filename". Iterate file lists via `grep -rl ... | while IFS= read -r f`.
+
 # Profiling on real device (xctrace, requires unlocked iPhone)
 # Open Xcode → Window → Devices and Simulators to prime the connection.
 # Disable iPhone auto-lock during recording. Performance perf needs a real
@@ -168,6 +171,7 @@ New file needed?
 | `@Observable`, `Task`, `MainActor`, `nonisolated`, CoreData threading, `Sendable` | [docs/concurrency.md](docs/concurrency.md) |
 | `Views/Components/**`, animations, IconView, AppSpacing/Colors/Animation tokens, cardStyle, AnimatedInputComponents, amount formatting | [docs/design-system.md](docs/design-system.md) |
 | `Services/Insights/**` (operational guide) | [docs/domains/insights.md](docs/domains/insights.md) |
+| `Services/Notifications/**` (insight signals, weekly digest, subscription reminders) | [docs/domains/insights.md](docs/domains/insights.md) §Signal notifications + [docs/INSIGHTS_PRODUCT_AUDIT.md](docs/INSIGHTS_PRODUCT_AUDIT.md) |
 | Per-metric formulas, granularity, severity behavior | [docs/INSIGHTS_METRICS_REFERENCE.md](docs/INSIGHTS_METRICS_REFERENCE.md) |
 | Localization, adding/editing UI strings, `*.lproj`, `.stringsdict`, ASO metadata | [docs/localization/README.md](docs/localization/README.md) |
 | TransactionStore CRUD, FRC, addBatch, NSBatchDeleteRequest | [docs/domains/transactions.md](docs/domains/transactions.md) |
@@ -269,6 +273,7 @@ Schema version-bump checklist (currently v12) lives in the `/coredata-schema-bum
 - ⚠️ `CategoryStyleCache.shared` is a process-global singleton (like `CurrencyRateStore`) — assertions on resolved category icon/colour flake across parallel suites; test the cache-key/invalidation layer instead of the resolved style, or invalidate it in the suite.
 - ⚠️ swift-testing `-only-testing:TenraTests/Suite/method()` runs **0 tests** but still prints `** TEST SUCCEEDED **` — method-level filtering doesn't work; filter at the **suite** level. `Suite` must be the **type name** (e.g. `ExpressionEvaluatorTests`), NOT the `@Suite("display name")` — the display name also silently runs 0 tests.
 - ⚠️ Parse test results reliably with `grep -aE "Test case .* (passed|failed)|\*\* TEST (SUCCEEDED|FAILED)"` — do NOT grep `expect`, it matches `#expect` compiler warnings.
+- ⚠️ A full-suite run can print `** TEST FAILED **` with ZERO failing `Test case` lines (parallel-clone flake). Re-run the same command once before investigating.
 - ⚠️ Tests that build a `TransactionStore` must **retain** it — `AccountsViewModel.transactionStore` is `weak`, so `accounts` (= `transactionStore?.accounts`) goes empty once the store deallocates.
 - ⚠️ `xcodebuild test -only-testing:...` does NOT skip compilation — one broken test file fails the whole target. When a test file's API has drifted, wrap it in `#if false` / `#endif` with a header comment (existing precedent: `TenraTests/Onboarding/OnboardingViewModelTests.swift`, `TenraTests/Services/Voice/VoiceInputParserTests.swift`).
 - ⚠️ Swift filenames must be unique within a target. Xcode rejects two `.swift` files with the same name even in different directories of the same target. When replacing a legacy test file with a fresh-API rewrite, rename the new one (precedent: `CategoryBudgetServiceStoreBackedTests.swift` replaces the legacy `CategoryBudgetServiceTests.swift`).

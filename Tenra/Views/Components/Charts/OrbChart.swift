@@ -1,5 +1,5 @@
 //
-//  SpendingOrbChart.swift
+//  OrbChart.swift
 //  Tenra
 //
 //  Alternative to `DonutChart` inspired by the Plata "spending sphere": a soft orb whose
@@ -17,7 +17,7 @@ import CoreMotion
 // MARK: - DonutSlice
 
 /// A single slice of a spending breakdown — one category (or a monochromatic subcategory
-/// step). Shared input for `SpendingOrbChart` (and the compact `MiniDonut`).
+/// step). Shared input for `OrbChart` (and the compact `MiniDonut`).
 struct DonutSlice: Identifiable {
     let id: String
     let amount: Double
@@ -101,7 +101,7 @@ extension DonutSlice {
     }
 }
 
-struct SpendingOrbChart: View {
+struct OrbChart: View {
     let slices: [DonutSlice]
     /// Ring height (square). Matches `DonutChart`'s full mode by default.
     var size: CGFloat = 280
@@ -397,7 +397,7 @@ private extension View {
 // MARK: - Previews
 
 #Preview("Orb — category breakdown") {
-    SpendingOrbChart(slices: DonutSlice.from(CategoryBreakdownItem.mockItems()))
+    OrbChart(slices: DonutSlice.from(CategoryBreakdownItem.mockItems()))
         .screenPadding()
         .padding(.vertical, AppSpacing.xl)
 }
@@ -409,7 +409,7 @@ private extension View {
         CategoryBreakdownItem(id: "clothing", categoryName: "Clothing", amount: 2,
                               percentage: 0.8, color: .pink, iconSource: nil, subcategories: [])
     ]
-    return SpendingOrbChart(slices: DonutSlice.from(items))
+    return OrbChart(slices: DonutSlice.from(items))
         .screenPadding()
         .padding(.vertical, AppSpacing.xl)
 }

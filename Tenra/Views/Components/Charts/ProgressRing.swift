@@ -1,5 +1,5 @@
 //
-//  BudgetProgressCircle.swift
+//  ProgressRing.swift
 //  Tenra
 //
 //  Phase 33.1: Extracted from CategoryChip + CategoryRow to eliminate duplication
@@ -8,20 +8,23 @@
 
 import SwiftUI
 
-// MARK: - BudgetProgressCircle
+// MARK: - ProgressRing
 
 /// Circular arc representing how much of a budget period has been consumed.
 ///
-/// Three-tier color palette:
-/// - Progress < 80 %                       → `AppColors.success` (green)
-/// - 80 % ≤ Progress ≤ 100 %, not over     → `AppColors.warning` (orange) — early warning
-/// - Over budget OR Progress > 100 %        → `AppColors.destructive` (red)
+/// Color model — a "trajectory" AngularGradient over the full circle; the animated
+/// trim reveals it, so the arc TIP continuously heats up with the fill level
+/// (no threshold snapping):
+/// - 0 – 45 %   → solid `AppColors.success` (green — calm zone)
+/// - 45 – 80 %  → blend `success` → `warning`
+/// - 80 – 100 % → blend `warning` → `destructive` (the red tip appears exactly at the limit)
+/// - `isOverBudget` → red-dominant gradient (`warning` start → `destructive`)
 ///
-/// The early-warning band catches the user *before* they breach the limit, instead
-/// of jumping from "everything fine" green directly to red on overspend.
+/// Because the gradient is static and only `trim` animates, the entrance sweep and
+/// value changes recolor the tip for free — no color interpolation code.
 ///
 /// The ring starts at the 12-o'clock position (−90° rotation) and sweeps
-/// clockwise.
+/// clockwise; the gradient rotates with the arc, so location 0 = trim start.
 ///
 /// **VoiceOver behaviour:**
 /// - `accessibilityLabel: nil` (default) — элемент скрыт из дерева VoiceOver.
@@ -32,7 +35,7 @@ import SwiftUI
 /// Usage:
 /// ```swift
 /// // Embedded in row — parent row carries accessibility meaning
-/// BudgetProgressCircle(
+/// ProgressRing(
 ///     progress: budgetProgress.percentage / 100,
 ///     size: AppIconSize.categoryIcon,
 ///     lineWidth: 3,
@@ -40,7 +43,7 @@ import SwiftUI
 /// )
 ///
 /// // Standalone — provide label for VoiceOver
-/// BudgetProgressCircle(
+/// ProgressRing(
 ///     progress: 0.75,
 ///     size: AppIconSize.budgetRing,
 ///     lineWidth: 4,
@@ -48,7 +51,7 @@ import SwiftUI
 ///     accessibilityLabel: String(localized: "75% бюджета использовано")
 /// )
 /// ```
-struct BudgetProgressCircle: View {
+struct ProgressRing: View {
     /// Normalised progress value (0.0 – 1.0+). Values above 1.0 are clamped at
     /// 1.0 visually but `isOverBudget` still drives the colour choice.
     let progress: Double
@@ -74,34 +77,66 @@ struct BudgetProgressCircle: View {
     /// VoiceOver читает её и помечает элемент `.updatesFrequently`.
     var accessibilityLabel: String? = nil
 
-    /// Threshold (0.0–1.0) at which the arc switches from `success` green to
-    /// `warning` orange as an early-warning band before over-budget.
-    private static let warningThreshold: Double = 0.8
+    /// Sweep-from-zero entrance. Disable in lazy lists/rows (CategoryRow,
+    /// CategoryChip) — `onAppear` re-fires on every row re-materialisation
+    /// during scroll.
+    var animatesOnAppear: Bool = true
 
-    private var arcColor: Color {
+    @State private var displayProgress: Double = 0
+    /// Reduce-Motion-aware (nil under Reduce Motion → instant jump, no sweep).
+    private var fillAnimation: Animation? { AppAnimation.progressFillAnimation }
+
+    /// Static full-circle gradient — the trimmed arc reveals it, so the tip color
+    /// always matches the fill level. Stops are gradient locations = progress
+    /// fractions (0.45 / 0.8 / 1.0), NOT tied to the animated display value
+    /// (gradient stops aren't animatable; the trim animation does the work).
+    private var arcGradient: AngularGradient {
+        let stops: [Gradient.Stop]
         if let overrideColor {
-            return overrideColor
+            // Caller owns the semantics (loan hero) — keep one hue, add depth.
+            stops = [
+                .init(color: overrideColor.opacity(0.55), location: 0),
+                .init(color: overrideColor, location: 1)
+            ]
+        } else if isOverBudget || progress > 1.0 {
+            // Over the limit — unmistakably red, with a warning-colored tail.
+            stops = [
+                .init(color: AppColors.warning, location: 0),
+                .init(color: AppColors.destructive, location: 0.4),
+                .init(color: AppColors.destructive, location: 1)
+            ]
+        } else {
+            // Trajectory palette: calm green half, heating up toward the limit.
+            stops = [
+                .init(color: AppColors.success, location: 0),
+                .init(color: AppColors.success, location: 0.45),
+                .init(color: AppColors.warning, location: 0.8),
+                .init(color: AppColors.destructive, location: 1)
+            ]
         }
-        if isOverBudget || progress > 1.0 {
-            return AppColors.destructive
-        }
-        if progress >= Self.warningThreshold {
-            return AppColors.warning
-        }
-        return AppColors.success
+        return AngularGradient(stops: stops, center: .center)
     }
 
     var body: some View {
         let arc = Circle()
-            .trim(from: 0, to: min(progress, 1.0))
+            .trim(from: 0, to: min(displayProgress, 1.0))
             .stroke(
-                arcColor,
+                arcGradient,
                 style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
             )
             .rotationEffect(.degrees(-90))
             .frame(width: size, height: size)
-            .animation(AppAnimation.progressFillAnimation, value: progress)
-            .animation(AppAnimation.progressFillAnimation, value: arcColor)
+            .animation(AppAnimation.progressFillAnimation, value: isOverBudget)
+            .onAppear {
+                if animatesOnAppear {
+                    withAnimation(fillAnimation) { displayProgress = progress }
+                } else {
+                    displayProgress = progress
+                }
+            }
+            .onChange(of: progress) { _, newValue in
+                withAnimation(fillAnimation) { displayProgress = newValue }
+            }
 
         if let label = accessibilityLabel {
             arc
@@ -120,25 +155,25 @@ struct BudgetProgressCircle: View {
     HStack(spacing: AppSpacing.xl) {
         // 0 % spent
         VStack(spacing: AppSpacing.xs) {
-            BudgetProgressCircle(progress: 0, size: AppIconSize.categoryIcon, lineWidth: 3, isOverBudget: false)
+            ProgressRing(progress: 0, size: AppIconSize.categoryIcon, lineWidth: 3, isOverBudget: false)
             Text("0 %").font(AppTypography.caption).foregroundStyle(.secondary)
         }
 
         // 50 % spent
         VStack(spacing: AppSpacing.xs) {
-            BudgetProgressCircle(progress: 0.5, size: AppIconSize.categoryIcon, lineWidth: 3, isOverBudget: false)
+            ProgressRing(progress: 0.5, size: AppIconSize.categoryIcon, lineWidth: 3, isOverBudget: false)
             Text("50 %").font(AppTypography.caption).foregroundStyle(.secondary)
         }
 
         // 100 % spent (exact)
         VStack(spacing: AppSpacing.xs) {
-            BudgetProgressCircle(progress: 1.0, size: AppIconSize.categoryIcon, lineWidth: 3, isOverBudget: false)
+            ProgressRing(progress: 1.0, size: AppIconSize.categoryIcon, lineWidth: 3, isOverBudget: false)
             Text("100 %").font(AppTypography.caption).foregroundStyle(.secondary)
         }
 
         // Over budget
         VStack(spacing: AppSpacing.xs) {
-            BudgetProgressCircle(progress: 1.2, size: AppIconSize.categoryIcon, lineWidth: 3, isOverBudget: true)
+            ProgressRing(progress: 1.2, size: AppIconSize.categoryIcon, lineWidth: 3, isOverBudget: true)
             Text("120 %").font(AppTypography.caption).foregroundStyle(AppColors.destructive)
         }
     }
@@ -146,7 +181,7 @@ struct BudgetProgressCircle: View {
 }
 
 #Preview("Budget Ring — large (budgetRing)") {
-    BudgetProgressCircle(
+    ProgressRing(
         progress: 0.73,
         size: AppIconSize.budgetRing,
         lineWidth: 4,

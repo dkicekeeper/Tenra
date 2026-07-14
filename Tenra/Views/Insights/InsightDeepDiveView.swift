@@ -100,7 +100,7 @@ struct InsightDeepDiveView: View {
         let slices = DonutSlice.from(subcategories, baseColor: color)
         let colorByID = Dictionary(uniqueKeysWithValues: slices.map { ($0.id, $0.color) })
         return VStack(alignment: .leading, spacing: AppSpacing.lg) {
-            SpendingOrbChart(slices: slices, showLabels: true, centerIcon: iconSource)
+            OrbChart(slices: slices, showLabels: true, centerIcon: iconSource)
 
 
             // List

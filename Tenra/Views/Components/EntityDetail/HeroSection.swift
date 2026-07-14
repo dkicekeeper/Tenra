@@ -66,7 +66,7 @@ struct HeroSection: View {
             if showsIcon {
                 ZStack {
                     if let progress {
-                        BudgetProgressCircle(
+                        ProgressRing(
                             progress: progress.fraction,
                             size: Self.ringSize,
                             lineWidth: 4,

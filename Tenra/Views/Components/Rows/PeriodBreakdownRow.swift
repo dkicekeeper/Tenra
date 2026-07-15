@@ -103,7 +103,7 @@ struct PeriodBreakdownRow: View {
                 }
             }
             .padding(.vertical, AppSpacing.md)
-            .screenPadding()
+//            .screenPadding()
 
             if showDivider {
                 Divider()

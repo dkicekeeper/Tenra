@@ -797,10 +797,15 @@ extension InsightsService {
                     comps.year = rec.year; comps.month = rec.month; comps.day = 1
                     let start = calendar.date(from: comps) ?? Date()
                     let end = calendar.date(byAdding: .month, value: 1, to: start) ?? start
+                    let key = String(format: "%04d-%02d", rec.year, rec.month)
                     return PeriodDataPoint(
-                        id: "\(rec.year)-\(rec.month)", granularity: .month,
-                        key: "\(rec.year)-\(rec.month)",
-                        periodStart: start, periodEnd: end, label: "",
+                        id: key, granularity: .month,
+                        key: key,
+                        // Real axis label — HeroSparkline plots these points on a
+                        // category x-axis, where empty labels collapse into one
+                        // duplicate category (MiniSparkline ignores labels).
+                        periodStart: start, periodEnd: end,
+                        label: InsightGranularity.month.periodLabel(for: key),
                         income: 0, expenses: rec.totalExpenses, cumulativeBalance: nil
                     )
                 },

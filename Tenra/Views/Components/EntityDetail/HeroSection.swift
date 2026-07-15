@@ -11,7 +11,7 @@
 
 import SwiftUI
 
-struct HeroSection: View {
+struct HeroSection<Accessory: View>: View {
     let icon: IconSource?
     let iconTint: IconTint?
     /// When `false` the icon block (and its progress ring) is omitted entirely — no
@@ -23,10 +23,15 @@ struct HeroSection: View {
     let primaryCurrency: String
     /// Colour for the primary amount; defaults to `AppColors.textSecondary`.
     let primaryAmountColor: Color?
+    /// Non-currency metric fallback (percent, count, composed strings) rendered
+    /// in the amount slot's style when there is no `primaryAmount`/currency pair.
+    let primaryText: String?
     let subtitle: String?
     let progress: ProgressConfig?
     let showBaseConversion: Bool
     let baseCurrency: String
+    /// Optional centered accessory under the amount (e.g. a trend badge).
+    @ViewBuilder private let accessory: () -> Accessory
 
     @State private var iconScale: CGFloat = AppAnimation.heroHiddenScale
     @State private var iconOpacity: Double = 0
@@ -39,10 +44,12 @@ struct HeroSection: View {
         primaryAmount: Double? = nil,
         primaryCurrency: String = "",
         primaryAmountColor: Color? = nil,
+        primaryText: String? = nil,
         subtitle: String? = nil,
         progress: ProgressConfig? = nil,
         showBaseConversion: Bool = false,
-        baseCurrency: String = ""
+        baseCurrency: String = "",
+        @ViewBuilder accessory: @escaping () -> Accessory
     ) {
         self.icon = icon
         self.iconTint = iconTint
@@ -51,15 +58,18 @@ struct HeroSection: View {
         self.primaryAmount = primaryAmount
         self.primaryCurrency = primaryCurrency
         self.primaryAmountColor = primaryAmountColor
+        self.primaryText = primaryText
         self.subtitle = subtitle
         self.progress = progress
         self.showBaseConversion = showBaseConversion
         self.baseCurrency = baseCurrency
+        self.accessory = accessory
     }
 
     /// Diameter of the progress ring that wraps the hero icon.
     /// Icon is `AppIconSize.ultra` (80pt); ring sits 6pt outside.
-    private static let ringSize: CGFloat = AppIconSize.ultra + 12
+    /// (Computed, not `static let` — the type is generic, which bars stored statics.)
+    private static var ringSize: CGFloat { AppIconSize.ultra + 12 }
 
     var body: some View {
         VStack(spacing: AppSpacing.md) {
@@ -108,7 +118,17 @@ struct HeroSection: View {
                             color: AppColors.textSecondary.opacity(0.7)
                         )
                     }
+                } else if let primaryText {
+                    // Non-currency metric (percent, count, composed string) —
+                    // same visual slot/style as the amount.
+                    Text(primaryText)
+                        .font(AppTypography.h3)
+                        .foregroundStyle(primaryAmountColor ?? AppColors.textSecondary)
+                        .multilineTextAlignment(.center)
                 }
+
+                accessory()
+                    .padding(.top, AppSpacing.xs)
 
                 if let subtitle {
                     Text(subtitle)
@@ -129,6 +149,42 @@ struct HeroSection: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Convenience init (no accessory)
+
+extension HeroSection where Accessory == EmptyView {
+    /// Accessory-free init — keeps the dozens of existing call sites source-compatible.
+    init(
+        icon: IconSource?,
+        title: String,
+        iconTint: IconTint? = nil,
+        showsIcon: Bool = true,
+        primaryAmount: Double? = nil,
+        primaryCurrency: String = "",
+        primaryAmountColor: Color? = nil,
+        primaryText: String? = nil,
+        subtitle: String? = nil,
+        progress: ProgressConfig? = nil,
+        showBaseConversion: Bool = false,
+        baseCurrency: String = ""
+    ) {
+        self.init(
+            icon: icon,
+            title: title,
+            iconTint: iconTint,
+            showsIcon: showsIcon,
+            primaryAmount: primaryAmount,
+            primaryCurrency: primaryCurrency,
+            primaryAmountColor: primaryAmountColor,
+            primaryText: primaryText,
+            subtitle: subtitle,
+            progress: progress,
+            showBaseConversion: showBaseConversion,
+            baseCurrency: baseCurrency,
+            accessory: { EmptyView() }
+        )
     }
 }
 

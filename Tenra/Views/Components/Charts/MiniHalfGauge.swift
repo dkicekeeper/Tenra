@@ -29,8 +29,12 @@ import SwiftUI
 struct MiniHalfGauge: View {
     /// The measured value (charge amount, spike total, savings %).
     let value: Double
-    /// The reference the tick marks (category average, avg bill, 20% target).
-    let norm: Double
+    /// Relative mode: the reference the tick marks (category average, avg bill,
+    /// 20% target). Nil in absolute mode (no tick).
+    var norm: Double? = nil
+    /// Absolute mode: fixed scale end (e.g. 100 for the health score) — the
+    /// mini sibling of HeroHalfGauge's absolute mode.
+    var maxValue: Double? = nil
     /// Semantic tint of the value arc (severity — the generator knows).
     let color: Color
 
@@ -42,7 +46,13 @@ struct MiniHalfGauge: View {
 
     var body: some View {
         Canvas { context, size in
-            guard value > 0, norm > 0 else { return }
+            // Scale: absolute (fixed maxValue) or relative (norm-anchored).
+            let scale: Double = {
+                if let maxValue { return max(maxValue, .leastNonzeroMagnitude) }
+                if let norm { return max(value * 1.15, norm * 2) }
+                return max(value * 1.15, .leastNonzeroMagnitude)
+            }()
+            guard scale > 0, value >= 0 else { return }
 
             // Geometry: semicircle bulging up, ends on the horizontal through
             // `center`. Radius leaves room for the tick overshoot on all sides
@@ -50,7 +60,6 @@ struct MiniHalfGauge: View {
             let center = CGPoint(x: size.width / 2, y: size.height - 4)
             let radius = min(size.width / 2, size.height - 4) - Self.tickOvershoot - 4
 
-            let scale = max(value * 1.15, norm * 2)
             let fraction = min(value / scale, 1.0)
 
             // Track — the full relative scale.
@@ -68,18 +77,22 @@ struct MiniHalfGauge: View {
             // Value arc — starts at the track's angle so both round caps
             // coincide on the left (an inset start floats the fill above the
             // track's cap).
-            let start = Angle.degrees(180)
-            let end = max(Angle.degrees(180 + fraction * 180), start + .degrees(1))
-            var arc = Path()
-            arc.addArc(center: center, radius: radius, startAngle: start, endAngle: end, clockwise: false)
-            context.stroke(
-                arc,
-                with: .color(color),
-                style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-            )
+            if value > 0 {
+                let start = Angle.degrees(180)
+                let end = max(Angle.degrees(180 + fraction * 180), start + .degrees(1))
+                var arc = Path()
+                arc.addArc(center: center, radius: radius, startAngle: start, endAngle: end, clockwise: false)
+                context.stroke(
+                    arc,
+                    with: .color(color),
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
+            }
 
             // Norm marker — knockout dot punching a gap in the arc, with an
             // arc-tinted dot inside (matches HeroHalfGauge's tick marker).
+            // Absolute mode has no norm → no tick.
+            guard let norm, norm > 0 else { return }
             let tickRadians = CGFloat(Angle.degrees(180 + min(norm / scale, 1.0) * 180).radians)
             let tickCenter = CGPoint(
                 x: center.x + radius * cos(tickRadians),

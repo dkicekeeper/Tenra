@@ -822,6 +822,7 @@
 "insights.netCashFlow" = "Чистий грошовий потік";
 "insights.periodRecords" = "Рекорди";
 "insights.urgentNow" = "Важливе зараз";
+"insights.filter.urgent" = "Важливе";
 "insights.projectedBalance" = "Прогнозований баланс";
 "insights.in30Days" = "за 30 днів";
 "insights.recurringAndExpenses" = "Регулярні + середні витрати";
@@ -858,6 +859,7 @@
 "insights.bucket.week.label" = "Останні 7 днів";
 "insights.summary.windowTotalsLabel" = "За все вікно графіка";
 "insights.formula.value.months" = "%.1f міс";
+"insights.formula.howCalculated" = "Як розраховується";
 "insights.formula.value.days" = "%d днів";
 "insights.formula.savingsRate.title" = "Норма заощаджень";
 "insights.formula.savingsRate.heroLabel" = "З кожної заробленої гривні ви зберігаєте";

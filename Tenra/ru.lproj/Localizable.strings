@@ -822,6 +822,7 @@
 "insights.netCashFlow" = "Чистый денежный поток";
 "insights.periodRecords" = "Рекорды";
 "insights.urgentNow" = "Важное сейчас";
+"insights.filter.urgent" = "Важное";
 "insights.projectedBalance" = "Прогноз баланса";
 "insights.in30Days" = "через 30 дней";
 "insights.recurringAndExpenses" = "Подписки + средние расходы";
@@ -858,6 +859,7 @@
 "insights.bucket.week.label" = "Последние 7 дней";
 "insights.summary.windowTotalsLabel" = "За весь период графика";
 "insights.formula.value.months" = "%.1f мес";
+"insights.formula.howCalculated" = "Как считается";
 "insights.formula.value.days" = "%d дн";
 "insights.formula.savingsRate.title" = "Норма сбережений";
 "insights.formula.savingsRate.heroLabel" = "С каждого заработанного остаётся";

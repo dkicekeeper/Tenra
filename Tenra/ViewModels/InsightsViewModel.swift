@@ -69,7 +69,7 @@ final class InsightsViewModel {
     private(set) var insights: [Insight] = []
     private(set) var isLoading: Bool = false
     private(set) var errorMessage: String?
-    var selectedCategory: InsightCategory? = nil
+    var selectedFilter: InsightFilter = .all
     private(set) var periodDataPoints: [PeriodDataPoint] = []
     private(set) var totalIncome: Double = 0
     private(set) var totalExpenses: Double = 0
@@ -125,12 +125,26 @@ final class InsightsViewModel {
     // MARK: - Computed Properties
 
     var filteredInsights: [Insight] {
-        guard let category = selectedCategory else { return insights }
-        return insights.filter { $0.category == category }
+        switch selectedFilter {
+        case .all:
+            return insights
+        case .urgent:
+            // The dedicated filter is uncapped — a filter that silently hides
+            // signals reads as a bug (the feed strip stays top-5).
+            return allUrgentInsights
+        case .category(let category):
+            return insights.filter { $0.category == category }
+        }
     }
 
     private func sortedBySeverity(_ items: [Insight]) -> [Insight] {
         items.sorted { $0.severity.sortOrder < $1.severity.sortOrder }
+    }
+
+    /// Every critical/warning insight across ALL categories, severity-sorted.
+    /// Backs the «Важное» filter; the feed strip shows the top-5 slice.
+    var allUrgentInsights: [Insight] {
+        sortedBySeverity(insights.filter { $0.severity == .critical || $0.severity == .warning })
     }
 
     /// Cross-section signal strip "Важное сейчас" (audit 2026-07): the top
@@ -138,10 +152,7 @@ final class InsightsViewModel {
     /// budget signal sat below neutral spending stats — severity sorting only
     /// worked within sections.
     var urgentInsights: [Insight] {
-        Array(
-            sortedBySeverity(insights.filter { $0.severity == .critical || $0.severity == .warning })
-                .prefix(5)
-        )
+        Array(allUrgentInsights.prefix(5))
     }
 
     /// Insights promoted to the urgent strip are excluded from their category
@@ -257,8 +268,8 @@ final class InsightsViewModel {
         loadInsightsBackground()
     }
 
-    func selectCategory(_ category: InsightCategory?) {
-        selectedCategory = category
+    func selectFilter(_ filter: InsightFilter) {
+        selectedFilter = filter
     }
 
     // MARK: - Category Deep Dive

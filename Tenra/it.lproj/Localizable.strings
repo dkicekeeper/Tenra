@@ -822,6 +822,7 @@
 "insights.netCashFlow" = "Flusso di cassa netto";
 "insights.periodRecords" = "Record";
 "insights.urgentNow" = "Da tenere d’occhio";
+"insights.filter.urgent" = "Importanti";
 "insights.projectedBalance" = "Saldo previsto";
 "insights.in30Days" = "tra 30 giorni";
 "insights.recurringAndExpenses" = "Ricorrenti + spese medie";
@@ -858,6 +859,7 @@
 "insights.bucket.week.label" = "Ultimi 7 giorni";
 "insights.summary.windowTotalsLabel" = "Sull'intera finestra del grafico";
 "insights.formula.value.months" = "%.1f mesi";
+"insights.formula.howCalculated" = "Come si calcola";
 "insights.formula.value.days" = "%d giorni";
 "insights.formula.savingsRate.title" = "Tasso di risparmio";
 "insights.formula.savingsRate.heroLabel" = "Di ogni euro che guadagni, trattieni";

@@ -22,12 +22,21 @@ struct HeroBarPair: View {
     let color: Color
     /// Renders the current bar as a forecast: translucent fill + dashed outline.
     var isProjection: Bool = false
+    /// ISO currency code for the tap-to-reveal amount annotations.
+    var currency: String = ""
+    /// Extra delay before the entrance — pass the nav-transition duration so
+    /// the bars grow in after the push settles (animating during the zoom
+    /// transition made the hero visibly jump at its end).
+    var entranceDelay: Double = 0
 
     var barWidth: CGFloat = 64
     var maxBarHeight: CGFloat = 150
     var animatesOnAppear: Bool = true
 
     @State private var entered = false
+    /// Tap-selected bar: 0 = "was", 1 = "now". Shows the amount above the bar —
+    /// the same explore-by-tap interaction the period charts have.
+    @State private var selectedBar: Int?
     private var immediate: Bool { !animatesOnAppear || AppAnimation.isReduceMotionEnabled }
     private static let cornerRadius: CGFloat = 10
     /// Bars shorter than this read as "missing" — a zero value stays visible.
@@ -44,14 +53,18 @@ struct HeroBarPair: View {
                 // "Was" — muted, glowless (the past is context, not signal).
                 bar(
                     height: barHeight(previous),
-                    delay: 0.05,
+                    delay: entranceDelay + 0.05,
                     fill: AnyShapeStyle(AppColors.textSecondary.opacity(0.25))
                 )
+                .overlay(alignment: .top) {
+                    valueAnnotation(previous, index: 0, tint: AppColors.textSecondary)
+                }
+                .onTapGesture { select(0) }
 
                 // "Now" — glass + colour glow; dashed translucent when projected.
                 bar(
                     height: barHeight(current),
-                    delay: 0.22,
+                    delay: entranceDelay + 0.22,
                     fill: AnyShapeStyle(isProjection ? color.opacity(0.3) : color)
                 )
                 .overlay(alignment: .bottom) {
@@ -60,7 +73,7 @@ struct HeroBarPair: View {
                             .strokeBorder(color, style: StrokeStyle(lineWidth: 2, dash: [6, 5]))
                             .frame(width: barWidth, height: entered ? barHeight(current) : 0)
                             .animation(
-                                immediate ? nil : .spring(response: 0.55, dampingFraction: 0.7).delay(0.22),
+                                immediate ? nil : .spring(response: 0.55, dampingFraction: 0.7).delay(entranceDelay + 0.22),
                                 value: entered
                             )
                     }
@@ -70,6 +83,10 @@ struct HeroBarPair: View {
                     yOffset: 12,
                     opacity: isProjection ? 0.3 : 0.55
                 )
+                .overlay(alignment: .top) {
+                    valueAnnotation(current, index: 1, tint: color)
+                }
+                .onTapGesture { select(1) }
             }
             .frame(height: maxBarHeight, alignment: .bottom)
 
@@ -79,7 +96,30 @@ struct HeroBarPair: View {
                 .frame(width: barWidth * 2 + AppSpacing.xxl + AppSpacing.xl * 2, height: 1)
                 .padding(.top, AppSpacing.xs)
         }
+        .animation(AppAnimation.chartBannerFade, value: selectedBar)
         .onAppear { entered = true }
+    }
+
+    private func select(_ index: Int) {
+        HapticManager.selection()
+        selectedBar = selectedBar == index ? nil : index
+    }
+
+    /// Amount pill floating above the tapped bar. Overlaid on the bar's frame
+    /// so it never shifts the layout.
+    @ViewBuilder
+    private func valueAnnotation(_ value: Double, index: Int, tint: Color) -> some View {
+        if selectedBar == index {
+            Text(Formatting.formatCurrencySmart(value, currency: currency))
+                .font(AppTypography.bodySmall.bold())
+                .foregroundStyle(tint)
+                .padding(.horizontal, AppSpacing.sm)
+                .padding(.vertical, AppSpacing.xs)
+                .background(tint.opacity(0.12), in: Capsule())
+                .fixedSize()
+                .offset(y: -30)
+                .transition(.opacity)
+        }
     }
 
     private func bar(height: CGFloat, delay: Double, fill: AnyShapeStyle) -> some View {
@@ -91,6 +131,7 @@ struct HeroBarPair: View {
                 immediate ? nil : .spring(response: 0.55, dampingFraction: 0.7).delay(delay),
                 value: entered
             )
+            .contentShape(Rectangle())
     }
 }
 

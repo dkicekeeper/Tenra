@@ -11,11 +11,16 @@ import SwiftUI
 
 struct InsightFormulaCard: View {
     let model: InsightFormulaModel
+    /// Hide the hero value row when the metric is already shown above the card
+    /// (InsightDetailView renders it in the shared HeroSection header).
+    var showsHero: Bool = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.lg) {
             headerRow
-            heroRow
+            if showsHero {
+                heroRow
+            }
             formulaSection
             explainer
             recommendationBox
@@ -33,7 +38,10 @@ struct InsightFormulaCard: View {
                 .foregroundStyle(model.color)
                 .frame(width: 28)
 
-            Text(String(localized: String.LocalizationValue(model.titleKey)))
+            // Static "How it's calculated" — the metric name is already the
+            // navigation title of the detail screen; repeating it here
+            // (model.titleKey) read as a duplicate.
+            Text(String(localized: "insights.formula.howCalculated"))
                 .font(AppTypography.bodyEmphasis)
                 .foregroundStyle(AppColors.textPrimary)
 
@@ -57,19 +65,14 @@ struct InsightFormulaCard: View {
 
     // MARK: - Formula breakdown
 
+    // No section sub-header here: the card title is already the static
+    // "How it's calculated" — `model.formulaHeaderKey` duplicated it in gray.
     private var formulaSection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            Text(String(localized: String.LocalizationValue(model.formulaHeaderKey)))
-                .font(AppTypography.bodySmall)
-                .fontWeight(.semibold)
-                .foregroundStyle(AppColors.textSecondary)
-
-            VStack(spacing: AppSpacing.xs) {
-                ForEach(model.formulaRows) { row in
-                    formulaRow(row)
-                    if row.id != model.formulaRows.last?.id {
-                        Divider().opacity(0.4)
-                    }
+        VStack(spacing: AppSpacing.xs) {
+            ForEach(model.formulaRows) { row in
+                formulaRow(row)
+                if row.id != model.formulaRows.last?.id {
+                    Divider().opacity(0.4)
                 }
             }
         }

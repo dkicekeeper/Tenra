@@ -822,6 +822,7 @@
 "insights.netCashFlow" = "Net Nakit Akışı";
 "insights.periodRecords" = "Rekorlar";
 "insights.urgentNow" = "Dikkat gerektirenler";
+"insights.filter.urgent" = "Önemli";
 "insights.projectedBalance" = "Öngörülen Bakiye";
 "insights.in30Days" = "30 gün içinde";
 "insights.recurringAndExpenses" = "Tekrarlayanlar + ortalama giderler";
@@ -858,6 +859,7 @@
 "insights.bucket.week.label" = "Son 7 gün";
 "insights.summary.windowTotalsLabel" = "Grafik penceresinin tamamı için";
 "insights.formula.value.months" = "%.1f ay";
+"insights.formula.howCalculated" = "Nasıl hesaplanır";
 "insights.formula.value.days" = "%d gün";
 "insights.formula.savingsRate.title" = "Birikim Oranı";
 "insights.formula.savingsRate.heroLabel" = "Kazandığın her liradan elinde kalan";

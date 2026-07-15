@@ -277,6 +277,16 @@ enum InsightCategory: String, CaseIterable, Hashable {
     }
 }
 
+// MARK: - Insight Filter
+
+/// Feed filter selection: everything, the cross-section «Важное» slice
+/// (critical/warning severities + health score), or a single category.
+enum InsightFilter: Hashable {
+    case all
+    case urgent
+    case category(InsightCategory)
+}
+
 // MARK: - Detail Data
 
 enum InsightDetailData: Hashable {

@@ -204,8 +204,11 @@ extension InsightsService {
                 severity: .positive,
                 category: .budget,
                 detailData: .budgetProgressList(underBudgetItems.sorted { $0.percentage < $1.percentage }),
+                // Half-gauge "spent vs budget tick" — a ring here sat next to the
+                // wealth donut and read as a second donut; the gauge's track +
+                // norm tick reads unambiguously as "arc hasn't reached the limit".
                 cardVisual: underTotalBudget > 0
-                    ? .ring(progress: underTotalSpent / underTotalBudget, isOverBudget: false)
+                    ? .halfGauge(value: underTotalSpent, norm: underTotalBudget, color: AppColors.success)
                     : nil
             ))
         }

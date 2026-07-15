@@ -822,6 +822,7 @@
 "insights.netCashFlow" = "순 현금 흐름";
 "insights.periodRecords" = "기록";
 "insights.urgentNow" = "주의 필요";
+"insights.filter.urgent" = "중요";
 "insights.projectedBalance" = "예상 잔액";
 "insights.in30Days" = "30일 후";
 "insights.recurringAndExpenses" = "반복 + 평균 지출";
@@ -858,6 +859,7 @@
 "insights.bucket.week.label" = "최근 7일";
 "insights.summary.windowTotalsLabel" = "전체 차트 구간 기준";
 "insights.formula.value.months" = "%.1f개월";
+"insights.formula.howCalculated" = "계산 방법";
 "insights.formula.value.days" = "%d일";
 "insights.formula.savingsRate.title" = "저축률";
 "insights.formula.savingsRate.heroLabel" = "버는 1원당 남기는 금액";

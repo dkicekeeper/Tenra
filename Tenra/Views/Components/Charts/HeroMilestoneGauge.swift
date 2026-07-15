@@ -25,9 +25,18 @@ struct HeroMilestoneGauge: View {
 
     var segmentHeight: CGFloat = 22
     var animatesOnAppear: Bool = true
+    /// Extra delay before the entrance wave — pass the nav-transition duration
+    /// so the fill animates after the push settles (animating during the zoom
+    /// transition made the hero visibly jump at its end).
+    var entranceDelay: Double = 0
 
     @State private var entered = false
-    private var immediate: Bool { !animatesOnAppear || AppAnimation.isReduceMotionEnabled }
+    /// One-shot: the entrance delay applies to the first wave only, not tap replays.
+    @State private var hasEnteredOnce = false
+    /// Suppresses the wave animation while resetting for a replay.
+    @State private var suppressAnimation = false
+    private var immediate: Bool { !animatesOnAppear || AppAnimation.isReduceMotionEnabled || suppressAnimation }
+    private var currentEntranceDelay: Double { hasEnteredOnce ? 0 : entranceDelay }
 
     private static let cornerRadius: CGFloat = 6
     private static let segmentGap: CGFloat = 6
@@ -45,7 +54,7 @@ struct HeroMilestoneGauge: View {
             ZStack(alignment: .leading) {
                 // Muted base row.
                 segmentRow(segmentWidth: segmentWidth) { _ in
-                    AnyShapeStyle(AppColors.textSecondary.opacity(0.15))
+                    AnyShapeStyle(AppColors.textSecondary.opacity(0.18))
                 }
 
                 // Filled run — glass + glow, revealed as a left-to-right wave.
@@ -58,13 +67,30 @@ struct HeroMilestoneGauge: View {
                 // landing once the wave has passed it.
                 tick(segmentWidth: segmentWidth)
                     .materialize(
-                        delay: Double(min(target, clamped)) * Self.waveStep + 0.45,
+                        delay: entranceDelay + Double(min(target, clamped)) * Self.waveStep + 0.45,
                         animatesOnAppear: animatesOnAppear
                     )
             }
         }
         .frame(height: segmentHeight + Self.tickOvershoot * 2)
+        .contentShape(Rectangle())
+        // Tap replays the fill wave (instant reset, then re-enter without the
+        // one-shot entrance delay).
+        .onTapGesture { replay() }
         .onAppear { entered = true }
+    }
+
+    private func replay() {
+        guard !AppAnimation.isReduceMotionEnabled, entered else { return }
+        HapticManager.light()
+        hasEnteredOnce = true
+        suppressAnimation = true
+        entered = false
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(80))
+            suppressAnimation = false
+            entered = true
+        }
     }
 
     /// A row of segments. With `fillFractionOf` set, segment `i` shows only its
@@ -81,10 +107,10 @@ struct HeroMilestoneGauge: View {
                     guard let coveredValue else { return 1 }
                     return min(max(coveredValue - Double(i), 0), 1)
                 }()
-                RoundedRectangle(cornerRadius: Self.cornerRadius)
-                    .fill(style(i))
-                    .frame(width: segmentWidth * CGFloat(fraction), height: segmentHeight)
-                    .glassBar(cornerRadius: Self.cornerRadius)
+                // Glass only on the filled run: glassEffect(.clear) visually
+                // swallows the base row's low-alpha gray fill — the muted
+                // cells read as fully transparent (2026-07 bug).
+                segment(width: segmentWidth * CGFloat(fraction), style: style(i), glass: coveredValue != nil)
                     .opacity(coveredValue == nil || entered ? 1 : 0)
                     .scaleEffect(
                         coveredValue == nil || entered ? 1 : 0.6,
@@ -93,7 +119,8 @@ struct HeroMilestoneGauge: View {
                     .animation(
                         coveredValue == nil || immediate
                             ? nil
-                            : .spring(response: 0.45, dampingFraction: 0.7).delay(Double(i) * Self.waveStep),
+                            : .spring(response: 0.45, dampingFraction: 0.7)
+                                .delay(currentEntranceDelay + Double(i) * Self.waveStep),
                         value: entered
                     )
                     // Keep the HStack slot at full segment width so partial
@@ -102,6 +129,19 @@ struct HeroMilestoneGauge: View {
             }
         }
         .frame(height: segmentHeight + Self.tickOvershoot * 2)
+    }
+
+    /// One scale cell. `glass` adds the Liquid Glass sheen — filled run only.
+    @ViewBuilder
+    private func segment(width: CGFloat, style: AnyShapeStyle, glass: Bool) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Self.cornerRadius)
+            .fill(style)
+            .frame(width: width, height: segmentHeight)
+        if glass {
+            shape.glassBar(cornerRadius: Self.cornerRadius)
+        } else {
+            shape
+        }
     }
 
     private func tick(segmentWidth: CGFloat) -> some View {

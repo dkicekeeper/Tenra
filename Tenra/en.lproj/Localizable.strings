@@ -822,6 +822,7 @@
 "insights.netCashFlow" = "Net Cash Flow";
 "insights.periodRecords" = "Records";
 "insights.urgentNow" = "Needs attention";
+"insights.filter.urgent" = "Important";
 "insights.projectedBalance" = "Projected Balance";
 "insights.in30Days" = "in 30 days";
 "insights.recurringAndExpenses" = "Recurring + average expenses";
@@ -858,6 +859,7 @@
 "insights.bucket.week.label" = "Last 7 days";
 "insights.summary.windowTotalsLabel" = "Across the whole chart window";
 "insights.formula.value.months" = "%.1f mo";
+"insights.formula.howCalculated" = "How it's calculated";
 "insights.formula.value.days" = "%d days";
 "insights.formula.savingsRate.title" = "Savings Rate";
 "insights.formula.savingsRate.heroLabel" = "Of every dollar you earn, you keep";

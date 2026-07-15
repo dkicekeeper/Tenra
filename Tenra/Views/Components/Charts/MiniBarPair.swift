@@ -44,9 +44,11 @@ struct MiniBarPair: View {
             let baselineY = size.height - 1
             let plotHeight = baselineY - 2
 
-            // Right-align the pair inside the slot (trailing overlay in the card).
-            let currentX = size.width - barWidth
-            let previousX = currentX - barGap - barWidth
+            // Center the pair inside the slot — all feed mini-charts sit
+            // centered in their 120pt container (2026-07 UX pass).
+            let pairWidth = barWidth * 2 + barGap
+            let previousX = (size.width - pairWidth) / 2
+            let currentX = previousX + barWidth + barGap
 
             func barPath(x: CGFloat, value: Double) -> Path {
                 let h = max(Self.minBarHeight, plotHeight * CGFloat(value / maxValue))
@@ -60,10 +62,10 @@ struct MiniBarPair: View {
                 )
             }
 
-            // Baseline hairline under both bars.
+            // Baseline hairline under both bars — symmetric overhang.
             var baseline = Path()
             baseline.move(to: CGPoint(x: previousX - 6, y: baselineY))
-            baseline.addLine(to: CGPoint(x: size.width, y: baselineY))
+            baseline.addLine(to: CGPoint(x: currentX + barWidth + 6, y: baselineY))
             context.stroke(
                 baseline,
                 with: .color(AppColors.textSecondary.opacity(0.2)),

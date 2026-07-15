@@ -24,10 +24,10 @@ struct ProportionBar: View {
     var body: some View {
         GeometryReader { geo in
             HStack(spacing: AppSpacing.xxs) {
-                RoundedRectangle(cornerRadius: AppRadius.xs)
+                RoundedRectangle(cornerRadius: AppRadius.xl)
                     .fill(leftColor)
                     .frame(width: geo.size.width * max(0, min(1, displayRatio)))
-                RoundedRectangle(cornerRadius: AppRadius.xs)
+                RoundedRectangle(cornerRadius: AppRadius.xl)
                     .fill(rightColor)
             }
         }

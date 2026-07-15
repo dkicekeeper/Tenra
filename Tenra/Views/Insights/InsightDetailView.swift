@@ -48,11 +48,12 @@ struct InsightDetailView<CategoryDestination: View>: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppSpacing.xl) {
-                        // Header — hidden for formula-breakdown detail (the card already
-                        // carries hero + label).
-                        if !isFormulaBreakdown {
-                            headerSection
-                        }
+                        // Detail structure contract (2026-07 UX pass), top to bottom:
+                        // HeroSection → chart (hero visual / full chart) → cards →
+                        // detail lists. Every detail shows the header — formula
+                        // details render InsightFormulaCard with showsHero: false
+                        // so the metric isn't duplicated.
+                        headerSection
 
                         // Hero visual (2026-07 visual refresh) — full-size sibling
                         // of the feed card's cardVisual, above the data sections.
@@ -73,11 +74,6 @@ struct InsightDetailView<CategoryDestination: View>: View {
         .onAppear {
             logger.debug("📋 [InsightDetail] OPEN — type=\(String(describing: insight.type), privacy: .public), category=\(String(describing: insight.category), privacy: .public), metric=\(insight.metric.formattedValue, privacy: .public), drillDown=\(_onCategoryTap != nil)")
         }
-    }
-
-    private var isFormulaBreakdown: Bool {
-        if case .formulaBreakdown = insight.detailData { return true }
-        return false
     }
 
     /// Which single metric a period-trend breakdown list should surface, derived from
@@ -104,79 +100,108 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
     // MARK: - Header
 
+    /// Unified entity-detail hero (2026-07 UX pass — replaced a bespoke
+    /// three-line leading-aligned header). Mapping:
+    /// title ← insight.subtitle (insight.title is already the nav title),
+    /// amount slot ← metric (FormattedAmountText for currency, `primaryText`
+    /// otherwise), accessory ← trend badge, subtitle ← comparison period
+    /// (suppressed when it duplicates insight.subtitle — several generators
+    /// set them identical: monthOverMonth, wealthGrowth). Iconless — the
+    /// severity glyph carried no information over the trend badge + hero chart.
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            HStack {
-                Image(systemName: insight.severity.icon)
-                    .foregroundStyle(insight.severity.color)
-                Text(insight.subtitle)
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
-
-                Spacer()
-
-                if let trend = insight.trend {
-                    InsightTrendBadge(trend: trend, style: .inline, colorOverride: insight.trendBadgeColorOverride)
-                }
-            }
-
-            Text(insight.metric.formattedValue)
-                .font(AppTypography.h1)
-                .fontWeight(.bold)
-                .foregroundStyle(AppColors.textPrimary)
-
-            // Only show the comparison period when it adds information — several
-            // insights set trend.comparisonPeriod identical to the subtitle
-            // (monthOverMonth, wealthGrowth), which rendered the same line twice.
-            if let trend = insight.trend, trend.comparisonPeriod != insight.subtitle {
-                Text(trend.comparisonPeriod)
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textTertiary)
+        HeroSection(
+            icon: nil,
+            title: insight.subtitle,
+            showsIcon: false,
+            primaryAmount: insight.metric.currency != nil ? insight.metric.value : nil,
+            primaryCurrency: insight.metric.currency ?? "",
+            primaryText: insight.metric.currency == nil ? nonCurrencyMetricText : nil,
+            subtitle: comparisonSubtitle
+        ) {
+            if let trend = insight.trend {
+                InsightTrendBadge(trend: trend, style: .pill, colorOverride: insight.trendBadgeColorOverride)
             }
         }
+        .frame(maxWidth: .infinity)
         .screenPadding()
+    }
+
+    /// Non-currency metric (percent, count) with its unit appended.
+    private var nonCurrencyMetricText: String {
+        if let unit = insight.metric.unit {
+            return "\(insight.metric.formattedValue) \(unit)"
+        }
+        return insight.metric.formattedValue
+    }
+
+    /// Comparison period line — only when it adds information over the title.
+    private var comparisonSubtitle: String? {
+        guard let trend = insight.trend, trend.comparisonPeriod != insight.subtitle else { return nil }
+        return trend.comparisonPeriod
     }
 
     // MARK: - Hero Section (2026-07 visual refresh)
 
+    /// Delay before hero entrance animations start. The detail is pushed with a
+    /// zoom `navigationTransition`; entrance animations running DURING the
+    /// transition made the hero visibly jump the moment the push settled.
+    /// Delaying past the transition keeps the open buttery and choreographs
+    /// the hero as a second beat.
+    private static var heroEntranceDelay: Double { 0.5 }
+
     /// Full-size hero rendered from the generator-set `cardVisual` payload —
-    /// same data the feed mini-visual draws, scaled up with the wow toolkit
-    /// (chartGlow / materialize / glass, see HeroChartEffects). Special-cases
-    /// by payload, NOT by adding InsightDetailData cases (domain-doc rule).
+    /// same data the feed mini-visual draws, as a DEDICATED hero component per
+    /// visual (never the Mini* view scaled up) with the wow toolkit and
+    /// tap interactivity (see HeroChartEffects + Hero* components).
+    /// Special-cases by payload, NOT by adding InsightDetailData cases
+    /// (domain-doc rule).
     @ViewBuilder
     private var heroChartSection: some View {
         switch insight.cardVisual {
         case .halfGauge(let value, let norm, let color):
-            HeroHalfGauge(value: value, norm: norm, color: color)
+            HeroHalfGauge(value: value, norm: norm, color: color, entranceDelay: Self.heroEntranceDelay)
                 .frame(maxWidth: .infinity)
                 .screenPadding()
         case .barPair(let previous, let current, let color, let isProjection):
-            HeroBarPair(previous: previous, current: current, color: color, isProjection: isProjection)
-                .frame(maxWidth: .infinity)
-                .screenPadding()
+            HeroBarPair(
+                previous: previous,
+                current: current,
+                color: color,
+                isProjection: isProjection,
+                currency: currency,
+                entranceDelay: Self.heroEntranceDelay
+            )
+            .frame(maxWidth: .infinity)
+            .screenPadding()
         case .milestoneGauge(let value, let target, let maxValue, let color):
-            HeroMilestoneGauge(value: value, target: target, maxValue: maxValue, color: color)
-                .screenPadding()
+            HeroMilestoneGauge(
+                value: value,
+                target: target,
+                maxValue: maxValue,
+                color: color,
+                entranceDelay: Self.heroEntranceDelay
+            )
+            .screenPadding()
         case .sparkline(let points, let series, let projectedValue, let markExtremes):
-            // Scaled-up sparkline (projection tail / extreme markers) with the
-            // glow underlay — Canvas, so it stays cheap at hero size.
-            MiniSparkline(
+            // Interactive Swift Charts hero (tap selection + banner) with the
+            // projection tail / extreme markers the mini draws.
+            HeroSparkline(
                 dataPoints: points,
                 series: series,
-                lineWidth: 2.5,
-                height: 160,
-                endDotRadius: 5,
                 projectedValue: projectedValue,
-                markExtremes: markExtremes
+                markExtremes: markExtremes,
+                currency: currency,
+                entranceDelay: Self.heroEntranceDelay
             )
-            .chartGlow(radius: 20, yOffset: 12, opacity: 0.45)
-            .materialize()
-            .screenPadding()
         case .proportionBar(let segments):
-            MiniProportionBar(segments: segments, barHeight: 18, segmentGap: 3, height: 36)
-                .chartGlow(radius: 14, yOffset: 8, opacity: 0.5)
-                .materialize()
-                .screenPadding()
+            // Interactive composition hero: animated stacked bar + tappable
+            // legend (name / share / amount per segment).
+            HeroProportionBar(
+                segments: segments,
+                currency: currency,
+                entranceDelay: Self.heroEntranceDelay
+            )
+            .screenPadding()
         case .ring, .budgetBars, .donut, nil:
             // Ring/budget-bars/donut details already render their own full-size
             // sections (budget rows, OrbChart, account lists) — no hero needed.
@@ -200,8 +225,10 @@ struct InsightDetailView<CategoryDestination: View>: View {
             // padding here, otherwise the visible plot area is offset from the
             // screen left edge and the first datapoint appears clipped.
             let gran = points.first?.granularity ?? .month
-            if insight.type == .bestMonth {
-                // Period records show ranked Top-10 lists (in detailSection), no chart.
+            if insight.type == .bestMonth || insight.type == .monthOverMonthChange {
+                // No full trend chart here: period records show ranked Top-10
+                // lists instead, and MoM already leads with the HeroBarPair —
+                // a second (trend) chart under it duplicated the message.
                 EmptyView()
             } else {
                 // Single-series bar/line pair plotting the metric that matches the
@@ -214,44 +241,45 @@ struct InsightDetailView<CategoryDestination: View>: View {
                 )
             }
         case .budgetProgressList(let items):
-            budgetChartSection(items)
-                .screenPadding()
+            InsightBudgetBreakdownList(items: items, currency: currency)
         case .recurringList:
             EmptyView()
         case .accountComparison:
             EmptyView()
-        case .wealthBreakdown:
-            // Account balance list rendered in detailSection
-            EmptyView()
+        case .wealthBreakdown(let accounts):
+            // Composition orb from the generator's ready donut slices (top
+            // accounts + "Other" already aggregated) — the account list alone
+            // left the detail chartless. List renders in detailSection.
+            if case .donut(let slices) = insight.cardVisual, !slices.isEmpty {
+                WealthOrbSection(accounts: accounts, fallbackSlices: slices)
+                    .screenPadding()
+            }
         case .formulaBreakdown(let model):
-            InsightFormulaCard(model: model)
+            // showsHero: false — the metric already leads the screen in
+            // headerSection; the card keeps its formula rows + explainer.
+            InsightFormulaCard(model: model, showsHero: false)
                 .screenPadding()
         case nil:
             EmptyView()
         }
     }
 
-    // P22: LazyVStack eliminates upfront layout of all budget rows
-    private func budgetChartSection(_ items: [BudgetInsightItem]) -> some View {
-        LazyVStack(spacing: AppSpacing.md) {
-            ForEach(items) { item in
-                BudgetProgressRow(item: item, currency: currency)
-            }
-        }
-    }
-
     // MARK: - Detail Section
 
+    // Lists live in InsightDetailLists.swift — carded per the detail structure
+    // contract (SectionHeaderView above, rows inside .cardStyle()).
     @ViewBuilder
     private var detailSection: some View {
         switch insight.detailData {
         case .categoryBreakdown(let items):
-            categoryDetailList(items)
+            // P9: drill-down destination — generic CategoryDestination, no AnyView
+            // type erasure. Non-paged breakdown → nil period key (current bucket).
+            InsightCategoryBreakdownList(items: items, currency: currency, onCategoryTap: _onCategoryTap)
         case .categoryBreakdownPaged:
             // Rendered full-screen at body level (TabView), not inside the ScrollView.
             EmptyView()
         case .recurringList(let items):
-            recurringDetailList(items)
+            InsightRecurringBreakdownList(items: items, currency: currency)
         case .budgetProgressList:
             EmptyView()
         case .periodTrend(let points):
@@ -259,160 +287,65 @@ struct InsightDetailView<CategoryDestination: View>: View {
             if insight.type == .bestMonth {
                 // Merged "period records" card: best ranking always; worst ranking
                 // only when there is at least one negative period to rank.
-                rankedPeriodList(points, best: true)
+                InsightRankedPeriodList(points: points, best: true, currency: currency)
                 if points.contains(where: { $0.netFlow < 0 }) {
-                    rankedPeriodList(points, best: false)
+                    InsightRankedPeriodList(points: points, best: false, currency: currency)
                 }
             } else {
-                periodBreakdownList(points, granularity: gran, metric: periodListMetric)
+                InsightPeriodBreakdownList(points: points, granularity: gran, metric: periodListMetric, currency: currency)
             }
         case .wealthBreakdown(let accounts):
-            accountDetailList(accounts)
+            InsightAccountBreakdownList(accounts: accounts, currency: currency)
         case .accountComparison(let accounts):
-            dormantAccountDetailList(accounts)
+            InsightDormantAccountList(accounts: accounts, currency: currency)
         case .formulaBreakdown:
             EmptyView()
         case nil:
             EmptyView()
         }
     }
+}
 
-    private func categoryDetailList(_ items: [CategoryBreakdownItem]) -> some View {
-        // Rows own their horizontal inset (per-row .screenPadding inside categoryRow),
-        // so the full width — including the padding — is tappable in NavigationLink.
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            ForEach(items) { item in
-                categoryRow(item)
-            }
-        }
+// MARK: - Wealth composition orb
+
+/// Wealth orb with account-brand colours and NAME labels. Slice tints resolve
+/// asynchronously from the dominant logo colour (`DominantColorExtractor`,
+/// in-memory cached — usually instant) for brand-icon accounts; SF-symbol
+/// accounts and misses keep the generator's hash palette. The generator can't
+/// do this itself: it runs nonisolated/off-main with no access to logo images.
+private struct WealthOrbSection: View {
+    let accounts: [AccountInsightItem]
+    let fallbackSlices: [DonutSlice]
+
+    @State private var brandSlices: [DonutSlice]?
+
+    var body: some View {
+        OrbChart(slices: brandSlices ?? fallbackSlices, labelStyle: .name)
+            .task { await resolveBrandColors() }
     }
 
-    @ViewBuilder
-    private func categoryRow(_ item: CategoryBreakdownItem) -> some View {
-        // P9: drill-down destination — generic CategoryDestination, no AnyView type erasure.
-        // Non-paged breakdown → nil period key (current/all-time bucket).
-        if let tapHandler = _onCategoryTap {
-            NavigationLink(destination: tapHandler(item, nil)) {
-                CategoryBreakdownRow(item: item, currency: currency, showsChevron: true)
-                    .screenPadding()
-                    .contentShape(Rectangle())
+    private func resolveBrandColors() async {
+        guard brandSlices == nil else { return }
+        var resolved: [DonutSlice] = []
+        resolved.reserveCapacity(fallbackSlices.count)
+        for slice in fallbackSlices {
+            guard let account = accounts.first(where: { $0.id == slice.id }),
+                  case .brandService(let brand) = account.iconSource,
+                  let brandColor = await DominantColorExtractor.accentColor(forBrand: brand)
+            else {
+                resolved.append(slice)
+                continue
             }
-            .buttonStyle(.plain)
-        } else {
-            CategoryBreakdownRow(item: item, currency: currency)
-                .screenPadding()
+            resolved.append(DonutSlice(
+                id: slice.id,
+                amount: slice.amount,
+                color: brandColor,
+                label: slice.label,
+                percentage: slice.percentage
+            ))
         }
+        brandSlices = resolved
     }
-
-    private func recurringDetailList(_ items: [RecurringInsightItem]) -> some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(String(localized: "insights.breakdown"), style: .large)
-
-            ForEach(items) { item in
-                InsightEntityRow(
-                    iconSource: item.iconSource,
-                    title: item.name,
-                    subtitle: item.frequency.displayName,
-                    amount: item.monthlyEquivalent,
-                    currency: currency,
-                    amountCaption: String(localized: "insights.perMonth")
-                )
-                .screenPadding()
-            }
-        }
-    }
-
-    // P10: Single unified function replacing monthlyDetailList + periodDetailList.
-    // `metric` selects which value each row surfaces (cash-flow triple vs. a single
-    // metric matching the insight: expenses, income, or average daily expenses).
-    private func periodBreakdownList(_ points: [PeriodDataPoint], granularity: InsightGranularity, metric: PeriodListMetric) -> some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(granularity.breakdownTitle, style: .large)
-
-            ForEach(points.reversed()) { point in
-                PeriodBreakdownRow(
-                    label: point.granularity.headingLabel(for: point.key),
-                    income: point.income,
-                    expenses: point.expenses,
-                    netFlow: point.netFlow,
-                    currency: currency,
-                    singleValue: metric.value(for: point),
-                    singleColor: metric.color
-                )
-            }
-        }
-    }
-
-    /// Ranked Top-10 list of periods by net flow (best = descending, worst = ascending).
-    /// No chart, no income/expenses triple — just rank + period + net flow.
-    private func rankedPeriodList(_ points: [PeriodDataPoint], best: Bool) -> some View {
-        // Worst ranking only makes sense for deficit periods — a "worst" list that
-        // surfaces profitable months reads as a bug.
-        let candidates = best ? points : points.filter { $0.netFlow < 0 }
-        let sorted = candidates.sorted { best ? $0.netFlow > $1.netFlow : $0.netFlow < $1.netFlow }
-        let top = Array(sorted.prefix(10))
-        return VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(
-                best ? String(localized: "insights.topMonths.best")
-                     : String(localized: "insights.topMonths.worst"),
-                style: .large
-            )
-            ForEach(Array(top.enumerated()), id: \.element.id) { index, point in
-                PeriodBreakdownRow(
-                    label: "\(index + 1). " + point.granularity.headingLabel(for: point.key),
-                    income: point.income,
-                    expenses: point.expenses,
-                    netFlow: point.netFlow,
-                    currency: currency,
-                    singleValue: point.netFlow,
-                    singleColor: point.netFlow >= 0 ? AppColors.success : AppColors.destructive
-                )
-            }
-        }
-    }
-
-    private func accountDetailList(_ accounts: [AccountInsightItem]) -> some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(String(localized: "insights.wealth.accounts"), style: .large)
-
-            ForEach(accounts) { account in
-                InsightEntityRow(
-                    iconSource: account.iconSource,
-                    title: account.accountName,
-                    subtitle: account.currency,
-                    amount: account.balance,
-                    currency: currency,
-                    amountColor: account.balance >= 0 ? AppColors.textPrimary : AppColors.destructive
-                )
-                .screenPadding()
-            }
-        }
-    }
-
-    /// Shows each dormant account with last activity date and balance.
-    private func dormantAccountDetailList(_ accounts: [AccountInsightItem]) -> some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(String(localized: "insights.dormant.accounts"), style: .large)
-
-            ForEach(accounts) { account in
-                InsightEntityRow(
-                    iconSource: account.iconSource,
-                    title: account.accountName,
-                    amount: account.balance,
-                    currency: currency,
-                    amountColor: AppColors.textSecondary
-                ) {
-                    if let lastActivity = account.lastActivityDate {
-                        Text(lastActivity, style: .relative)
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
-                    }
-                }
-                .screenPadding()
-            }
-        }
-    }
-
 }
 
 // MARK: - Convenience init (no drill-down)
@@ -458,54 +391,64 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
         _index = State(initialValue: clamped)
     }
 
-    private var page: PeriodCategoryBreakdown? {
-        pages.indices.contains(index) ? pages[index] : nil
-    }
-
     var body: some View {
-        VStack(spacing: AppSpacing.lg) {
-            pagerLabel
-
-            // Fixed-height donut band with the period-switch arrows overlaid on the
-            // left/right edges, vertically centered on the pie chart.
-            chartBand
-
-            // List of categories pages on horizontal swipe. TabView captures the swipe
-            // so paging doesn't fight the navigation's edge swipe-to-go-back.
-            listPager
+        // Outer pager owns the full screen; each page is its own ScrollView so
+        // the hero and orb scroll together with the category list (they used to
+        // be pinned above a list-only pager). TabView captures the horizontal
+        // swipe so paging doesn't fight the navigation's edge swipe-to-go-back.
+        TabView(selection: $index) {
+            ForEach(pages.indices, id: \.self) { i in
+                pageContent(pages[i])
+                    .tag(i)
+            }
         }
+        .tabViewStyle(.page(indexDisplayMode: .never))
     }
 
-    // MARK: - Header label
+    // MARK: - Page content (hero + orb + list, scrolling together)
 
-    private var pagerLabel: some View {
-        // Iconless hero — consistent with InsightDeepDiveView's header.
-        HeroSection(
-            icon: nil,
-            title: page?.label ?? "",
-            showsIcon: false,
-            primaryAmount: page.flatMap { $0.totalExpenses > 0 ? $0.totalExpenses : nil },
-            primaryCurrency: currency
-        )
+    private func pageContent(_ page: PeriodCategoryBreakdown) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppSpacing.lg) {
+                // Iconless hero — consistent with InsightDeepDiveView's header.
+                HeroSection(
+                    icon: nil,
+                    title: page.label,
+                    showsIcon: false,
+                    primaryAmount: page.totalExpenses > 0 ? page.totalExpenses : nil,
+                    primaryCurrency: currency
+                )
+                .frame(maxWidth: .infinity)
+
+                chartBand(page)
+
+                if page.items.isEmpty {
+                    emptyState
+                        .frame(maxWidth: .infinity)
+                } else {
+                    InsightCategoryBreakdownList(
+                        items: page.items,
+                        currency: currency,
+                        periodKey: page.id,
+                        onCategoryTap: onCategoryTap
+                    )
+                }
+            }
+            .padding(.vertical, AppSpacing.md)
+        }
     }
 
     // MARK: - Chart band (donut + centered side arrows)
 
-    private var chartBand: some View {
+    private func chartBand(_ page: PeriodCategoryBreakdown) -> some View {
         ZStack {
-            // Donut for the current page. Empty periods keep the band height stable so
-            // the arrows stay put. `.id(index)` cross-fades the chart on page change.
-            Group {
-                if let page, !page.items.isEmpty {
-                    // Always replay the entrance (per page / re-appearance) while iterating on it.
-                    OrbChart(slices: DonutSlice.from(page.items), animatesOnAppear: true)
-                        .screenPadding()
-                } else {
-                    Color.clear.frame(height: 280)
-                }
+            // Empty periods keep the band height stable so the arrows stay put.
+            if !page.items.isEmpty {
+                OrbChart(slices: DonutSlice.from(page.items), animatesOnAppear: true)
+                    .screenPadding()
+            } else {
+                Color.clear.frame(height: 280)
             }
-            .id(index)
-            .transition(.opacity)
 
             // Arrows are vertically centered on the donut by the ZStack.
             HStack {
@@ -515,7 +458,6 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
             }
             .screenPadding()
         }
-        .animation(pageAnimation, value: index)
     }
 
     private func arrowButton(step delta: Int, systemImage: String, enabled: Bool) -> some View {
@@ -526,34 +468,6 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
         .buttonStyle(.plain)
         .foregroundStyle(enabled ? AppColors.accent : AppColors.textTertiary)
         .disabled(!enabled)
-    }
-
-    // MARK: - List pager
-
-    private var listPager: some View {
-        TabView(selection: $index) {
-            ForEach(pages.indices, id: \.self) { i in
-                listContent(pages[i])
-                    .tag(i)
-            }
-        }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .animation(pageAnimation, value: index)
-    }
-
-    @ViewBuilder
-    private func listContent(_ page: PeriodCategoryBreakdown) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                if page.items.isEmpty {
-                    emptyState
-                } else {
-                    ForEach(page.items) { categoryRow($0, periodKey: page.id) }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, AppSpacing.md)
-        }
     }
 
     private func step(_ delta: Int) {
@@ -569,21 +483,6 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
             description: String(localized: "insights.swipeHint")
         )
         .padding(.vertical, AppSpacing.xxl)
-    }
-
-    @ViewBuilder
-    private func categoryRow(_ item: CategoryBreakdownItem, periodKey: String) -> some View {
-        if let tapHandler = onCategoryTap {
-            NavigationLink(destination: tapHandler(item, periodKey)) {
-                CategoryBreakdownRow(item: item, currency: currency, showsChevron: true)
-                    .screenPadding()
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        } else {
-            CategoryBreakdownRow(item: item, currency: currency)
-                .screenPadding()
-        }
     }
 }
 

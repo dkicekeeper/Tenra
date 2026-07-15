@@ -102,7 +102,6 @@ struct InsightsCardView<BottomChart: View>: View {
             if !hasBottomChart && hasMiniChart {
                 miniChart
                     .frame(width: Self.miniChartWidth, height: Self.miniChartHeight)
-//                    .padding(.top, AppSpacing.lg)
                     .padding(.trailing, AppSpacing.lg)
                     .allowsHitTesting(false)
             }
@@ -117,7 +116,7 @@ struct InsightsCardView<BottomChart: View>: View {
     private var metricRow: some View {
         if insight.trend != nil {
             ViewThatFits(in: .horizontal) {
-                HStack(alignment: .firstTextBaseline, spacing: AppSpacing.sm) {
+                HStack(alignment: .center, spacing: AppSpacing.sm) {
                     amountWithUnit
                     trendBadge
                 }

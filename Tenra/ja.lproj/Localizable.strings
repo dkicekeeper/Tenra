@@ -822,6 +822,7 @@
 "insights.netCashFlow" = "純キャッシュフロー";
 "insights.periodRecords" = "記録";
 "insights.urgentNow" = "要注意";
+"insights.filter.urgent" = "重要";
 "insights.projectedBalance" = "残高の見込み";
 "insights.in30Days" = "30日後";
 "insights.recurringAndExpenses" = "定期＋平均支出";
@@ -858,6 +859,7 @@
 "insights.bucket.week.label" = "直近7日間";
 "insights.summary.windowTotalsLabel" = "チャート全体の期間で";
 "insights.formula.value.months" = "%.1fヶ月";
+"insights.formula.howCalculated" = "計算方法";
 "insights.formula.value.days" = "%d日";
 "insights.formula.savingsRate.title" = "貯蓄率";
 "insights.formula.savingsRate.heroLabel" = "稼いだ1円あたり、手元に残る割合";

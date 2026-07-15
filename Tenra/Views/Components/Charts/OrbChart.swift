@@ -105,9 +105,18 @@ struct OrbChart: View {
     let slices: [DonutSlice]
     /// Ring height (square). Matches `DonutChart`'s full mode by default.
     var size: CGFloat = 280
+    /// What the perimeter labels show: slice percentages (default) or slice
+    /// names (wealth composition — account names beat raw percentages there).
+    enum LabelStyle {
+        case percent
+        case name
+    }
+
     /// Percentage labels around the perimeter. Off for monochrome breakdowns where the
     /// numbers would clutter (mirrors `DonutChart`'s `showAnnotations`).
     var showLabels: Bool = true
+    /// Perimeter label content — percent (default) or slice names.
+    var labelStyle: LabelStyle = .percent
     /// Plays the staged entrance on first appear; set `false` for re-mounts
     /// (e.g. `.id(index)` pager pages) so it doesn't replay.
     var animatesOnAppear: Bool = true
@@ -289,13 +298,10 @@ struct OrbChart: View {
             if index + 1 < bounds.count, slices[index].percentage >= 2 {
                 let midFraction = (bounds[index] + bounds[index + 1]) / 2
                 let angle = midFraction * 2 * .pi
-                // Roll the number up from 0 with .numericText once the arcs are in.
-                let value = entered ? slices[index].percentage : 0
-                Text(String(format: "%.0f%%", value))
+                labelText(for: index)
                     .font(AppTypography.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(AppColors.textPrimary)
-                    .contentTransition(.numericText())
                     .opacity(entered ? 1 : 0)
                     .position(
                         x: center.x + labelRadius * sin(angle),
@@ -305,6 +311,26 @@ struct OrbChart: View {
                                : .easeInOut(duration: 0.6).delay(0.85 + Double(index) * 0.05),
                                value: entered)
             }
+        }
+    }
+}
+
+// MARK: - Label content
+
+private extension OrbChart {
+    /// Perimeter label content for slice `index`, by `labelStyle`.
+    @ViewBuilder
+    func labelText(for index: Int) -> some View {
+        switch labelStyle {
+        case .percent:
+            // Roll the number up from 0 with .numericText once the arcs are in.
+            let value = entered ? slices[index].percentage : 0
+            Text(String(format: "%.0f%%", value))
+                .contentTransition(.numericText())
+        case .name:
+            Text(slices[index].label)
+                .lineLimit(1)
+                .frame(maxWidth: 96)
         }
     }
 }

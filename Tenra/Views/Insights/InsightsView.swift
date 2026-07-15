@@ -83,26 +83,41 @@ struct InsightsView: View {
             // "All" filter
             UniversalFilterButton(
                 title: String(localized: "insights.all"),
-                isSelected: insightsViewModel.selectedCategory == nil,
+                isSelected: insightsViewModel.selectedFilter == .all,
                 showChevron: false,
                 onTap: {
                     HapticManager.light()
-                    insightsViewModel.selectCategory(nil)
+                    insightsViewModel.selectFilter(.all)
                 }
             ) {
                 Image(systemName: "square.grid.2x2")
+            }
+
+            // «Важное» — the cross-section critical/warning slice + health score.
+            UniversalFilterButton(
+                title: String(localized: "insights.filter.urgent"),
+                isSelected: insightsViewModel.selectedFilter == .urgent,
+                showChevron: false,
+                onTap: {
+                    HapticManager.light()
+                    insightsViewModel.selectFilter(
+                        insightsViewModel.selectedFilter == .urgent ? .all : .urgent
+                    )
+                }
+            ) {
+                Image(systemName: "exclamationmark.circle")
             }
 
             // Category filters
             ForEach(InsightCategory.allCases, id: \.self) { category in
                 UniversalFilterButton(
                     title: category.displayName,
-                    isSelected: insightsViewModel.selectedCategory == category,
+                    isSelected: insightsViewModel.selectedFilter == .category(category),
                     showChevron: false,
                     onTap: {
                         HapticManager.light()
-                        insightsViewModel.selectCategory(
-                            insightsViewModel.selectedCategory == category ? nil : category
+                        insightsViewModel.selectFilter(
+                            insightsViewModel.selectedFilter == .category(category) ? .all : .category(category)
                         )
                     }
                 ) {
@@ -135,18 +150,23 @@ struct InsightsView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-
-            if let hs = insightsViewModel.healthScore {
-                NavigationLink(destination: FinancialHealthDetailView(score: hs)) {
-                    HealthScoreBadge(score: hs)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("insights.healthScore")
-            }
+            // Health score card moved into the «Важное сейчас» section (2026-07 UX pass).
         }
         .screenPadding()
         .contentReveal(isReady: !insightsViewModel.isLoading)
+    }
+
+    /// Health score as an insight-style card, navigating to the health detail.
+    @ViewBuilder
+    private var healthScoreCard: some View {
+        if let hs = insightsViewModel.healthScore {
+            NavigationLink(destination: FinancialHealthDetailView(score: hs)) {
+                HealthScoreCardView(score: hs)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("insights.healthScore")
+        }
     }
 
     /// 2×2 grid of summary stat cards: available balance, expenses, income, net flow.
@@ -226,15 +246,19 @@ struct InsightsView: View {
     @ViewBuilder
     private var insightSections: some View {
         let filtered = insightsViewModel.filteredInsights
+        // The «Важное» filter also carries the health score card, so it isn't
+        // empty just because no critical/warning insights exist right now.
+        let urgentHasHealthCard = insightsViewModel.selectedFilter == .urgent
+            && insightsViewModel.healthScore != nil
 
-        if filtered.isEmpty {
+        if filtered.isEmpty && !urgentHasHealthCard {
             EmptyStateView(
                 icon: "chart.line.uptrend.xyaxis",
                 title: String(localized: "insights.noInsightsForFilter")
             )
             .padding(.top, AppSpacing.xxxl)
 
-        } else if insightsViewModel.selectedCategory == nil {
+        } else if insightsViewModel.selectedFilter == .all {
             // LazyVStack: defers body evaluation of off-screen sections — prevents simultaneous
             // layout measurement of all 40+ compact Chart views during granularity switch.
             LazyVStack(alignment: .leading, spacing: AppSpacing.xl) {
@@ -314,13 +338,21 @@ struct InsightsView: View {
             }
 
         } else {
-            ForEach(filtered) { insight in
-                NavigationLink(value: insight) {
-                    InsightsCardView(insight: insight)
-                        .matchedTransitionSource(id: insight.id, in: insightNamespace)
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
+                // «Важное» filter leads with the health score card (it lives in
+                // the urgent section of the unfiltered feed).
+                if insightsViewModel.selectedFilter == .urgent {
+                    healthScoreCard
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("insights.card.\(insight.id)")
+
+                ForEach(filtered) { insight in
+                    NavigationLink(value: insight) {
+                        InsightsCardView(insight: insight)
+                            .matchedTransitionSource(id: insight.id, in: insightNamespace)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("insights.card.\(insight.id)")
+                }
             }
             .screenPadding()
         }
@@ -328,19 +360,22 @@ struct InsightsView: View {
 
     // MARK: - Urgent Section
 
-    /// "Важное сейчас" — cross-section critical/warning signals surfaced above the
-    /// category sections. Promoted insights are excluded from their own sections
-    /// (see InsightsViewModel.urgentInsights), so card ids stay unique in the namespace.
+    /// "Важное сейчас" — health score card + cross-section critical/warning
+    /// signals surfaced above the category sections. Promoted insights are
+    /// excluded from their own sections (see InsightsViewModel.urgentInsights),
+    /// so card ids stay unique in the namespace.
     @ViewBuilder
     private var urgentSection: some View {
         let urgent = insightsViewModel.urgentInsights
-        if !urgent.isEmpty {
+        if !urgent.isEmpty || insightsViewModel.healthScore != nil {
             VStack(alignment: .leading, spacing: AppSpacing.md) {
                 SectionHeaderView(
                     String(localized: "insights.urgentNow"),
                     systemImage: "exclamationmark.circle",
                     style: .large
                 )
+
+                healthScoreCard
 
                 ForEach(urgent) { insight in
                     NavigationLink(value: insight) {

@@ -822,6 +822,7 @@
 "insights.netCashFlow" = "Fluxo de caixa líquido";
 "insights.periodRecords" = "Recordes";
 "insights.urgentNow" = "Requer atenção";
+"insights.filter.urgent" = "Importante";
 "insights.projectedBalance" = "Saldo projetado";
 "insights.in30Days" = "em 30 dias";
 "insights.recurringAndExpenses" = "Recorrentes + despesas médias";
@@ -858,6 +859,7 @@
 "insights.bucket.week.label" = "Últimos 7 dias";
 "insights.summary.windowTotalsLabel" = "Em toda a janela do gráfico";
 "insights.formula.value.months" = "%.1f meses";
+"insights.formula.howCalculated" = "Como é calculado";
 "insights.formula.value.days" = "%d dias";
 "insights.formula.savingsRate.title" = "Taxa de poupança";
 "insights.formula.savingsRate.heroLabel" = "De cada real que você ganha, você guarda";

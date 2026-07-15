@@ -31,9 +31,13 @@ struct HeroHalfGauge: View {
     let color: Color
 
     var diameter: CGFloat = 240
-    var lineWidth: CGFloat = 18
+    var lineWidth: CGFloat = 20
     /// Replay guard for re-mounts; also disables the sweep under Reduce Motion.
     var animatesOnAppear: Bool = true
+    /// Extra delay before the entrance sweep — pass the nav-transition duration
+    /// so the gauge animates after the push settles (animating during the zoom
+    /// transition made the hero visibly jump at its end).
+    var entranceDelay: Double = 0
 
     @State private var displayFraction: Double = 0
     private var fillAnimation: Animation? { AppAnimation.progressFillAnimation }
@@ -69,13 +73,13 @@ struct HeroHalfGauge: View {
             // Zone boundaries (absolute mode) — land staggered after the sweep.
             ForEach(zoneTicks.indices, id: \.self) { i in
                 tickMarker(at: zoneTicks[i] / scale)
-                    .materialize(delay: 0.55 + Double(i) * 0.1, animatesOnAppear: animatesOnAppear)
+                    .materialize(delay: entranceDelay + 0.55 + Double(i) * 0.1, animatesOnAppear: animatesOnAppear)
             }
 
             // Norm marker (relative mode) — lands after the sweep.
             if let norm {
                 tickMarker(at: norm / scale)
-                    .materialize(delay: 0.55, animatesOnAppear: animatesOnAppear)
+                    .materialize(delay: entranceDelay + 0.55, animatesOnAppear: animatesOnAppear)
             }
         }
         .frame(width: diameter, height: diameter)
@@ -86,9 +90,17 @@ struct HeroHalfGauge: View {
             height: diameter / 2 + lineWidth / 2 + Self.tickOvershoot,
             alignment: .top
         )
+        .contentShape(Rectangle())
+        // Tap replays the sweep — the same light interactivity the other hero
+        // charts have (no delay on replays; the entrance delay is one-shot).
+        .onTapGesture {
+            guard !AppAnimation.isReduceMotionEnabled else { return }
+            HapticManager.light()
+            startSweep(delay: 0, from: 0)
+        }
         .onAppear {
             if animatesOnAppear {
-                withAnimation(fillAnimation) { displayFraction = targetFraction }
+                startSweep(delay: entranceDelay, from: 0)
             } else {
                 displayFraction = targetFraction
             }
@@ -96,6 +108,12 @@ struct HeroHalfGauge: View {
         .onChange(of: value) { _, _ in
             withAnimation(fillAnimation) { displayFraction = targetFraction }
         }
+    }
+
+    /// Resets the arc and sweeps it in after `delay`.
+    private func startSweep(delay: Double, from: Double) {
+        displayFraction = from
+        withAnimation(fillAnimation?.delay(delay)) { displayFraction = targetFraction }
     }
 
     /// Fractions 0…0.5 map left → top → right over the square's top half.
@@ -112,13 +130,13 @@ struct HeroHalfGauge: View {
     private func tickMarker(at fraction: Double) -> some View {
         let clamped = min(max(fraction, 0), 1)
         let radius = diameter / 2 - lineWidth / 2
-        let markerDiameter = lineWidth + 12
+        let markerDiameter = lineWidth + 16
         return ZStack {
             Circle()
-                .fill(AppColors.bgBase)
-            Circle()
                 .fill(color)
-                .frame(width: markerDiameter / 3, height: markerDiameter / 3)
+            Circle()
+                .fill(AppColors.bgBase)
+                .frame(width: markerDiameter / 1.6, height: markerDiameter / 1.6)
         }
         .frame(width: markerDiameter, height: markerDiameter)
         .offset(y: -radius)

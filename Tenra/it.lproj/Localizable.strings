@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "Tipo di operazione";
 "voiceConfirmation.noAccounts" = "Nessun conto disponibile";
 "voiceConfirmation.selectCategory" = "Seleziona categoria";
-"voiceConfirmation.warning.accountNotFound" = "Conto non trovato — selezionato quello predefinito";
-"voiceConfirmation.warning.accountNotRecognized" = "Conto non riconosciuto — selezionato quello predefinito";
+"voiceConfirmation.warning.accountNotFound" = "Conto non trovato: selezionato quello predefinito";
+"voiceConfirmation.warning.accountNotRecognized" = "Conto non riconosciuto: selezionato quello predefinito";
 "voiceConfirmation.warning.enterAmount" = "Inserisci l'importo";
 "voiceConfirmation.warning.enterValidAmount" = "Inserisci un importo valido";
 "voiceConfirmation.warning.selectAccount" = "Seleziona un conto";
-"voiceConfirmation.warning.accountNotSelected" = "Conto non selezionato — uso quello predefinito";
-"voiceConfirmation.warning.categoryNotRecognized" = "Categoria non riconosciuta — selezionata quella predefinita";
+"voiceConfirmation.warning.accountNotSelected" = "Conto non selezionato: uso quello predefinito";
+"voiceConfirmation.warning.categoryNotRecognized" = "Categoria non riconosciuta: selezionata quella predefinita";
 "voiceConfirmation.warning.selectCategory" = "Seleziona categoria";
-"voiceConfirmation.warning.categoryNotSelected" = "Categoria non selezionata — uso quella predefinita";
+"voiceConfirmation.warning.categoryNotSelected" = "Categoria non selezionata: uso quella predefinita";
 "voiceConfirmation.warning.categoryNotFound" = "Impossibile trovare la categoria";
 
 // MARK: - Subscriptions
@@ -870,9 +870,9 @@
 "insights.formula.savingsRate.row.saved" = "Risparmiato (entrate − spese)";
 "insights.formula.savingsRate.row.rate" = "Tasso di risparmio";
 "insights.formula.savingsRate.explainer" = "Quale parte delle tue entrate sopravvive al mese. Un tasso più alto ti dà più libertà: flessibilità nei mesi lenti, obiettivi finanziati più in fretta e un vero cuscinetto d'emergenza.";
-"insights.formula.savingsRate.rec.good" = "Stai risparmiando più del 20%% — mantieni l'abitudine e valuta di indirizzare il surplus verso un obiettivo a lungo termine.";
+"insights.formula.savingsRate.rec.good" = "Stai risparmiando più del 20%%: mantieni l'abitudine e valuta di indirizzare il surplus verso un obiettivo a lungo termine.";
 "insights.formula.savingsRate.rec.fair" = "Discreto, ma arrivare al 20%% significa %@ in più risparmiati ogni mese. Riduci le categorie ricorrenti o una tantum che sono cresciute.";
-"insights.formula.savingsRate.rec.low" = "Sotto il 10%% non lascia margine. Punta ad almeno %@ in più ogni mese — inizia dalla categoria discrezionale più grande.";
+"insights.formula.savingsRate.rec.low" = "Sotto il 10%% non lascia margine. Punta ad almeno %@ in più ogni mese: inizia dalla categoria discrezionale più grande.";
 "insights.formula.emergencyFund.title" = "Fondo di emergenza";
 "insights.formula.emergencyFund.heroLabel" = "Mesi di spese coperti dal tuo saldo";
 "insights.formula.emergencyFund.formulaHeader" = "Come si calcola";
@@ -881,7 +881,7 @@
 "insights.formula.emergencyFund.row.monthsCovered" = "Mesi coperti";
 "insights.formula.emergencyFund.explainer" = "Per quanto tempo i tuoi conti coprono le spese abituali se le entrate si fermassero domani. 3+ mesi è il minimo consigliato dalla maggior parte dei pianificatori; 6 mesi sono un cuscinetto confortevole.";
 "insights.formula.emergencyFund.rec.good" = "Hai superato la soglia dei 3 mesi. Valuta di parcheggiare il surplus in un conto a rendimento più alto o di indirizzarlo verso obiettivi a più lungo termine.";
-"insights.formula.emergencyFund.rec.gap" = "Per arrivare a 3 mesi di copertura, aggiungi %@. Anche piccoli contributi mensili si accumulano — inizia con ciò che rientra nel tuo tasso di risparmio.";
+"insights.formula.emergencyFund.rec.gap" = "Per arrivare a 3 mesi di copertura, aggiungi %@. Anche piccoli contributi mensili si accumulano: inizia con ciò che rientra nel tuo tasso di risparmio.";
 "insights.formula.spendingForecast.title" = "Previsione di spesa a fine mese";
 "insights.formula.spendingForecast.heroLabel" = "Spesa totale prevista questo mese";
 "insights.formula.spendingForecast.formulaHeader" = "Come si calcola";
@@ -893,7 +893,7 @@
 "insights.formula.spendingForecast.explainer" = "Speso finora + (spesa media giornaliera × giorni rimanenti) + ricorrenti in sospeso. I ricorrenti sono ripartiti in base ai giorni rimanenti, così un abbonamento il 28 non viene contato due volte se oggi è il 25.";
 "insights.formula.spendingForecast.rec.overrun" = "Sei sulla strada per superare le entrate di %@. Anticipa la spesa discrezionale per rivederla o rimanda gli acquisti facoltativi al mese prossimo.";
 "insights.formula.spendingForecast.rec.onTrack" = "La previsione lascia un cuscinetto di %@. Consolidalo evitando acquisti non programmati, oppure spostalo subito nei risparmi.";
-"insights.formula.spendingForecast.rec.noIncome" = "Nessuna entrata ancora registrata questo mese — la previsione è solo informativa.";
+"insights.formula.spendingForecast.rec.noIncome" = "Nessuna entrata ancora registrata questo mese: la previsione è solo informativa.";
 "insights.formula.balanceRunway.title" = "Autonomia del saldo";
 "insights.formula.balanceRunway.heroLabel" = "Mesi prima che il saldo si esaurisca all'attuale ritmo di spesa";
 "insights.formula.balanceRunway.heroLabel.growing" = "Surplus medio mensile";
@@ -905,11 +905,11 @@
 "insights.formula.balanceRunway.row.netFlow" = "Flusso netto medio";
 "insights.formula.balanceRunway.row.runway" = "Autonomia";
 "insights.formula.balanceRunway.explainer" = "Saldo ÷ consumo mensile. La soglia dei 3 mesi corrisponde a un cuscinetto d'emergenza sano; sotto 1 mese significa che un solo ciclo di paga negativo prosciuga la riserva.";
-"insights.formula.balanceRunway.explainer.growing" = "Le entrate superano le spese, quindi il saldo sta crescendo. Il valore principale è il tuo surplus medio mensile — a questo ritmo il tuo saldo ha autonomia indefinita.";
-"insights.formula.balanceRunway.rec.growing" = "Sei in positivo netto — indirizza il surplus verso obiettivi, debiti o risparmi a rendimento più alto invece di lasciarlo fermo.";
-"insights.formula.balanceRunway.rec.long" = "Più di 3 mesi di autonomia — sei ben protetto. Valuta di destinare la liquidità in eccesso a strumenti a più lungo termine.";
+"insights.formula.balanceRunway.explainer.growing" = "Le entrate superano le spese, quindi il saldo sta crescendo. Il valore principale è il tuo surplus medio mensile: a questo ritmo il tuo saldo ha autonomia indefinita.";
+"insights.formula.balanceRunway.rec.growing" = "Sei in positivo netto: indirizza il surplus verso obiettivi, debiti o risparmi a rendimento più alto invece di lasciarlo fermo.";
+"insights.formula.balanceRunway.rec.long" = "Più di 3 mesi di autonomia: sei ben protetto. Valuta di destinare la liquidità in eccesso a strumenti a più lungo termine.";
 "insights.formula.balanceRunway.rec.short" = "Sotto i 3 mesi. Riduci il consumo di circa %@/mese per raggiungere un cuscinetto di 3 mesi; inizia dalla categoria discrezionale più grande.";
-"insights.formula.balanceRunway.rec.critical" = "Meno di un mese di autonomia — colma il divario con urgenza. Anche mettere in pausa un solo pagamento ricorrente importante fa guadagnare giorni.";
+"insights.formula.balanceRunway.rec.critical" = "Meno di un mese di autonomia: colma il divario con urgenza. Anche mettere in pausa un solo pagamento ricorrente importante fa guadagnare giorni.";
 "insights.formula.yearOverYear.title" = "Spesa anno su anno";
 "insights.formula.yearOverYear.heroLabel" = "Variazione rispetto allo stesso mese dell'anno scorso";
 "insights.formula.yearOverYear.formulaHeader" = "Come si calcola";
@@ -917,10 +917,10 @@
 "insights.formula.yearOverYear.row.lastYear" = "Stesso mese l'anno scorso";
 "insights.formula.yearOverYear.row.absDelta" = "Variazione assoluta";
 "insights.formula.yearOverYear.row.delta" = "Variazione percentuale";
-"insights.formula.yearOverYear.explainer" = "Confronta le spese totali del mese corrente con quelle dello stesso mese di un anno fa. Utile per individuare una deriva reale rispetto alle oscillazioni stagionali — a dicembre si spende sempre di più, ma *questo* dicembre è più pesante dello scorso?";
-"insights.formula.yearOverYear.rec.down" = "Le spese sono nettamente in calo anno su anno. Se non è intenzionale, verifica quali categorie si sono raffreddate — a volte un ricorrente mancato si nasconde qui.";
-"insights.formula.yearOverYear.rec.up" = "Le spese sono in aumento del %@. Confronta le categorie principali di entrambi i mesi — un solo nuovo abbonamento, un ciclo di affitto extra o un grande acquisto spesso spiegano il salto.";
-"insights.formula.yearOverYear.rec.flat" = "Variazione modesta rispetto all'anno scorso — il tuo schema di spesa è stabile. Tieni d'occhio la stessa metrica il mese prossimo per individuare eventuali derive.";
+"insights.formula.yearOverYear.explainer" = "Confronta le spese totali del mese corrente con quelle dello stesso mese di un anno fa. Utile per individuare una deriva reale rispetto alle oscillazioni stagionali: a dicembre si spende sempre di più, ma *questo* dicembre è più pesante dello scorso?";
+"insights.formula.yearOverYear.rec.down" = "Le spese sono nettamente in calo anno su anno. Se non è intenzionale, verifica quali categorie si sono raffreddate: a volte un ricorrente mancato si nasconde qui.";
+"insights.formula.yearOverYear.rec.up" = "Le spese sono in aumento del %@. Confronta le categorie principali di entrambi i mesi: un solo nuovo abbonamento, un ciclo di affitto extra o un grande acquisto spesso spiegano il salto.";
+"insights.formula.yearOverYear.rec.flat" = "Variazione modesta rispetto all'anno scorso: il tuo schema di spesa è stabile. Tieni d'occhio la stessa metrica il mese prossimo per individuare eventuali derive.";
 "insights.formula.projectedBalance.title" = "Saldo previsto";
 "insights.formula.projectedBalance.heroLabel" = "Saldo stimato alla fine del periodo";
 "insights.formula.projectedBalance.formulaHeader" = "Come si calcola";
@@ -929,9 +929,9 @@
 "insights.formula.projectedBalance.row.avgExpenses" = "Spese non ricorrenti medie per il periodo";
 "insights.formula.projectedBalance.row.horizon" = "Orizzonte";
 "insights.formula.projectedBalance.row.projected" = "Saldo previsto";
-"insights.formula.projectedBalance.explainer" = "Saldo attuale + (ricorrenti netti − spese non ricorrenti medie) rapportato al periodo selezionato. Proiezione lineare ingenua — presuppone che gli ultimi 3 intervalli rappresentino ciò che verrà. Usala come allerta precoce, non come previsione precisa.";
-"insights.formula.projectedBalance.rec.growing" = "La proiezione è in tendenza al rialzo — lo schema attuale aumenta il saldo nel periodo.";
-"insights.formula.projectedBalance.rec.dropping" = "La proiezione cala di %@ nel periodo. Individua quali categorie hanno fatto salire le spese — è lì che l'intervento produce più effetto.";
+"insights.formula.projectedBalance.explainer" = "Saldo attuale + (ricorrenti netti − spese non ricorrenti medie) rapportato al periodo selezionato. Proiezione lineare ingenua: presuppone che gli ultimi 3 intervalli rappresentino ciò che verrà. Usala come allerta precoce, non come previsione precisa.";
+"insights.formula.projectedBalance.rec.growing" = "La proiezione è in tendenza al rialzo: lo schema attuale aumenta il saldo nel periodo.";
+"insights.formula.projectedBalance.rec.dropping" = "La proiezione cala di %@ nel periodo. Individua quali categorie hanno fatto salire le spese: è lì che l'intervento produce più effetto.";
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "rispetto a %d mesi fa";
@@ -945,8 +945,8 @@
 "insights.formula.subscriptionGrowth.row.addedCount" = "Abbonamenti aggiunti da allora";
 "insights.formula.subscriptionGrowth.row.delta" = "Variazione";
 "insights.formula.subscriptionGrowth.explainer" = "Somma l'equivalente mensile di ogni abbonamento attivo, poi lo confronta con lo stesso totale calcolato solo dagli abbonamenti già esistenti all'inizio della finestra di confronto. La finestra si adatta al selettore di granularità.";
-"insights.formula.subscriptionGrowth.rec.growing" = "La spesa ricorrente è cresciuta di %@/mese. Verifica i nuovi abbonamenti per quelli che non usi attivamente — i vincoli ricorrenti si accumulano negli anni.";
-"insights.formula.subscriptionGrowth.rec.shrinking" = "Hai ridotto la spesa ricorrente — mantieni la disciplina mentre nuovi servizi ti tentano. Indirizza il flusso di cassa liberato verso risparmi o debiti.";
+"insights.formula.subscriptionGrowth.rec.growing" = "La spesa ricorrente è cresciuta di %@/mese. Verifica i nuovi abbonamenti per quelli che non usi attivamente: i vincoli ricorrenti si accumulano negli anni.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "Hai ridotto la spesa ricorrente: mantieni la disciplina mentre nuovi servizi ti tentano. Indirizza il flusso di cassa liberato verso risparmi o debiti.";
 "insights.formula.subscriptionGrowth.rec.stable" = "La spesa ricorrente è rimasta più o meno stabile. Il portafoglio è stabile; rivedilo periodicamente così i servizi inutilizzati non restano in sordina.";
 
 "insights.formula.categoryTrend.title" = "Andamento della categoria";
@@ -955,7 +955,7 @@
 "insights.formula.categoryTrend.row.month" = "Mese";
 "insights.formula.categoryTrend.row.delta" = "Ultimo vs mese precedente";
 "insights.formula.categoryTrend.explainer" = "Analizziamo i totali mensili per categoria sulla finestra di confronto (che si adatta alla granularità) e mettiamo in evidenza la categoria con l'aumento mensile consecutivo più lungo. Utile per cogliere una deriva lenta prima che si trasformi in uno sforamento del budget.";
-"insights.formula.categoryTrend.rec" = "%@ è in aumento da %d mesi di fila. Confronta le operazioni più recenti con i mesi precedenti — di solito una singola operazione ricorrente o un cambio di abitudini spiega la serie.";
+"insights.formula.categoryTrend.rec" = "%@ è in aumento da %d mesi di fila. Confronta le operazioni più recenti con i mesi precedenti: di solito una singola operazione ricorrente o un cambio di abitudini spiega la serie.";
 "insights.granularity.prev.week" = "rispetto alla settimana precedente";
 "insights.granularity.prev.month" = "rispetto al mese precedente";
 "insights.granularity.prev.quarter" = "rispetto al trimestre precedente";
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "Ripartizione del pagamento attuale";
 "loan.principalPortion" = "Capitale";
 "loan.interestPortion" = "Interessi";
-"loan.noInterest" = "Rateizzazione — nessun interesse applicato";
+"loan.noInterest" = "Rateizzazione: nessun interesse applicato";
 "loan.stats" = "Statistiche";
 "loan.originalAmount" = "Importo originale";
 "loan.interestRate" = "Tasso d'interesse";
@@ -1484,9 +1484,9 @@
 /* MARK: - Onboarding */
 
 "onboarding.welcome.page1.title" = "Tutte le tue finanze in un posto";
-"onboarding.welcome.page1.subtitle" = "Conti, depositi, prestiti, abbonamenti e categorie di spesa — insieme ad analisi chiare.";
+"onboarding.welcome.page1.subtitle" = "Conti, depositi, prestiti, abbonamenti e categorie di spesa, insieme ad analisi chiare.";
 "onboarding.welcome.page2.title" = "Aggiungi operazioni con la voce";
-"onboarding.welcome.page2.subtitle" = "Di' \"Caffè 800 tenge\" — Tenra riconosce importo, valuta e categoria. Oppure importa gli estratti conto da PDF/CSV.";
+"onboarding.welcome.page2.subtitle" = "Di' \"Caffè 800 tenge\": Tenra riconosce importo, valuta e categoria. Oppure importa gli estratti conto da PDF/CSV.";
 "onboarding.welcome.page3.title" = "I tuoi dati restano tuoi";
 "onboarding.welcome.page3.subtitle" = "Tutto è salvato sul dispositivo. Il backup su iCloud è facoltativo. Nessun account, nessuna registrazione.";
 
@@ -1529,20 +1529,20 @@
 
 // MARK: - Financial Health Detail Page
 
-"insights.health.subtitle.excellent" = "Ottima forma — le tue finanze sono solide.";
+"insights.health.subtitle.excellent" = "Ottima forma: le tue finanze sono solide.";
 "insights.health.subtitle.good" = "Finanze solide, con margini di miglioramento.";
 "insights.health.subtitle.fair" = "Base discreta, ma alcuni aspetti richiedono attenzione.";
 "insights.health.subtitle.needsAttention" = "Diversi aspetti delle tue finanze richiedono attenzione.";
 
 "insights.health.unavailable.title" = "Dati insufficienti";
-"insights.health.unavailable.message" = "Aggiungi operazioni di entrata e spesa — valuteremo la tua salute finanziaria quando ci saranno abbastanza dati.";
+"insights.health.unavailable.message" = "Aggiungi operazioni di entrata e spesa: valuteremo la tua salute finanziaria quando ci saranno abbastanza dati.";
 
 "insights.health.howItWorks" = "Come si calcola";
 "insights.health.explainer" = "Un punteggio ponderato da 0 a 100 su cinque aspetti della salute finanziaria. Più alto è, maggiore è la solidità finanziaria.";
 "insights.health.periodContext.months" = "Basato sugli ultimi %d mesi di attività. Il selettore di granularità in alto cambia le altre analisi, ma non questo punteggio.";
 "insights.health.periodContext.singleMonth" = "Basato sull'attività di questo mese. Il selettore di granularità in alto cambia le altre analisi, ma non questo punteggio.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "Nessun budget configurato — il peso del 25% è ridistribuito tra gli altri quattro componenti.";
+"insights.health.weights.redistributed" = "Nessun budget configurato: il peso del 25% è ridistribuito tra gli altri quattro componenti.";
 
 "insights.health.component.savingsRate.title" = "Tasso di risparmio";
 "insights.health.component.savingsRate.short" = "Risparmi";
@@ -1575,21 +1575,21 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Per raggiungere il 20%%, riduci le spese di ≈ %@ al mese o aumenta le entrate di ≈ %@ al mese.";
-"insights.health.rec.savingsRate.healthy" = "Ottimo — mantieni il ritmo. Il 20%%+ è il livello consigliato per una solidità a lungo termine.";
+"insights.health.rec.savingsRate.healthy" = "Ottimo: mantieni il ritmo. Il 20%%+ è il livello consigliato per una solidità a lungo termine.";
 
-"insights.health.rec.budgetAdherence.empty" = "I budget non sono configurati. Impostali sulle tue categorie — questo componente conterà quindi nel punteggio.";
+"insights.health.rec.budgetAdherence.empty" = "I budget non sono configurati. Impostali sulle tue categorie: questo componente conterà quindi nel punteggio.";
 "insights.health.rec.budgetAdherence.partial" = "%d categorie sono fuori budget. Aprile per trovare la fonte dell'eccesso di spesa.";
-"insights.health.rec.budgetAdherence.full" = "Ogni categoria è entro il budget — ottimo.";
+"insights.health.rec.budgetAdherence.full" = "Ogni categoria è entro il budget: ottimo.";
 
-"insights.health.rec.recurringRatio.high" = "Abbonamenti e pagamenti ricorrenti sono il %.0f%% delle tue entrate. Punta a meno del 50%% — rivedi e disdici ciò che non ti serve.";
-"insights.health.rec.recurringRatio.healthy" = "Il %.0f%% delle tue entrate va a pagamenti ricorrenti — un livello sano.";
+"insights.health.rec.recurringRatio.high" = "Abbonamenti e pagamenti ricorrenti sono il %.0f%% delle tue entrate. Punta a meno del 50%%: rivedi e disdici ciò che non ti serve.";
+"insights.health.rec.recurringRatio.healthy" = "Il %.0f%% delle tue entrate va a pagamenti ricorrenti: un livello sano.";
 
 "insights.health.rec.emergencyFund.below" = "Ti servono ≈ %@ in più per coprire 3 mesi di spese.";
 "insights.health.rec.emergencyFund.belowWithProjection" = "Ti servono ≈ %@ in più per coprire 3 mesi di spese. Al tuo attuale ritmo di risparmio, ci vorranno circa %.1f mesi.";
-"insights.health.rec.emergencyFund.healthy" = "%.1f mesi di spese disponibili — un cuscinetto sufficiente per gli imprevisti.";
+"insights.health.rec.emergencyFund.healthy" = "%.1f mesi di spese disponibili: un cuscinetto sufficiente per gli imprevisti.";
 
 "insights.health.rec.cashFlow.negative" = "Stai spendendo più di quanto guadagni (−%.1f%% delle entrate in questo periodo). Riduci le spese o trova una fonte di entrate aggiuntiva.";
-"insights.health.rec.cashFlow.positive" = "Le tue entrate superano le spese del %.1f%% — un flusso positivo e sano.";
+"insights.health.rec.cashFlow.positive" = "Le tue entrate superano le spese del %.1f%%: un flusso positivo e sano.";
 
 // MARK: - Rating Prompt
 "rating.survey.title" = "Ti piace Tenra?";
@@ -1600,7 +1600,7 @@
 // MARK: - Premium
 "premium.unlock" = "Sblocca Pro";
 "premium.locked.voice.title" = "L'inserimento vocale è una funzione Pro";
-"premium.locked.voice.message" = "Aggiungi operazioni con la voce — di' importo e categoria, e Tenra completa il resto.";
+"premium.locked.voice.message" = "Aggiungi operazioni con la voce: di' importo e categoria, e Tenra completa il resto.";
 "premium.locked.import.title" = "L'importazione degli estratti conto è una funzione Pro";
 "premium.locked.import.message" = "Importa automaticamente estratti conto PDF e file CSV invece di digitare ogni operazione.";
 "settings.supportID" = "ID di supporto";

@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "操作の種類";
 "voiceConfirmation.noAccounts" = "利用できる口座がありません";
 "voiceConfirmation.selectCategory" = "カテゴリを選択";
-"voiceConfirmation.warning.accountNotFound" = "口座が見つかりません — 既定の口座を選択しました";
-"voiceConfirmation.warning.accountNotRecognized" = "口座を認識できませんでした — 既定の口座を選択しました";
+"voiceConfirmation.warning.accountNotFound" = "口座が見つかりません。既定の口座を選択しました";
+"voiceConfirmation.warning.accountNotRecognized" = "口座を認識できませんでした。既定の口座を選択しました";
 "voiceConfirmation.warning.enterAmount" = "金額を入力してください";
 "voiceConfirmation.warning.enterValidAmount" = "有効な金額を入力してください";
 "voiceConfirmation.warning.selectAccount" = "口座を選択してください";
-"voiceConfirmation.warning.accountNotSelected" = "口座が選択されていません — 既定の口座を使用します";
-"voiceConfirmation.warning.categoryNotRecognized" = "カテゴリを認識できませんでした — 既定のカテゴリを選択しました";
+"voiceConfirmation.warning.accountNotSelected" = "口座が選択されていません。既定の口座を使用します";
+"voiceConfirmation.warning.categoryNotRecognized" = "カテゴリを認識できませんでした。既定のカテゴリを選択しました";
 "voiceConfirmation.warning.selectCategory" = "カテゴリを選択してください";
-"voiceConfirmation.warning.categoryNotSelected" = "カテゴリが選択されていません — 既定のカテゴリを使用します";
+"voiceConfirmation.warning.categoryNotSelected" = "カテゴリが選択されていません。既定のカテゴリを使用します";
 "voiceConfirmation.warning.categoryNotFound" = "カテゴリが見つかりませんでした";
 
 // MARK: - Subscriptions
@@ -996,7 +996,7 @@
 "insights.duplicateSubscriptions.title" = "重複しているサブスクの可能性";
 "insights.duplicateSubscriptions.subtitle" = "重複の可能性を検出しました";
 "insights.accountDormancy.title" = "眠っているお金";
-"insights.accountDormancy.subtitle" = "口座が30日以上動きなし——預金なら利息を生めます";
+"insights.accountDormancy.subtitle" = "口座が30日以上動きなし。預金なら利息を生めます";
 
 "notification.weeklyDigest.title" = "今週のまとめ";
 "notification.weeklyDigest.body.withComparison" = "%1$@：支出 %2$@（前週比 %3$@）";
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "今回の支払いの内訳";
 "loan.principalPortion" = "元金";
 "loan.interestPortion" = "利息";
-"loan.noInterest" = "分割払い — 利息はかかりません";
+"loan.noInterest" = "分割払い(利息はかかりません)";
 "loan.stats" = "統計";
 "loan.originalAmount" = "当初の金額";
 "loan.interestRate" = "金利";
@@ -1617,7 +1617,7 @@
 "settings.pro.status.renews" = "%1$@ · %2$@に更新";
 "settings.pro.status.expires" = "%1$@ · %2$@に終了";
 "settings.pro.founder" = "永久無料";
-"settings.pro.founder.subtitle" = "あなたは創設ユーザーです — すべてのPro機能を永久に無料でご利用いただけます。ありがとうございます!";
+"settings.pro.founder.subtitle" = "あなたは創設ユーザーです。すべてのPro機能を永久に無料でご利用いただけます。ありがとうございます!";
 "settings.pro.manage" = "サブスクリプションを管理";
 "settings.pro.restore" = "購入を復元";
 "settings.pro.restore.restored" = "復元しました";

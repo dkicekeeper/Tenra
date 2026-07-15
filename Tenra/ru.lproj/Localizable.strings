@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "Тип операции";
 "voiceConfirmation.noAccounts" = "Нет доступных счетов";
 "voiceConfirmation.selectCategory" = "Выберите категорию";
-"voiceConfirmation.warning.accountNotFound" = "Счёт не найден — выбран по умолчанию";
-"voiceConfirmation.warning.accountNotRecognized" = "Счёт не распознан — выбран по умолчанию";
+"voiceConfirmation.warning.accountNotFound" = "Счёт не найден, выбран по умолчанию";
+"voiceConfirmation.warning.accountNotRecognized" = "Счёт не распознан, выбран по умолчанию";
 "voiceConfirmation.warning.enterAmount" = "Введите сумму";
 "voiceConfirmation.warning.enterValidAmount" = "Введите корректную сумму";
 "voiceConfirmation.warning.selectAccount" = "Выберите счёт";
-"voiceConfirmation.warning.accountNotSelected" = "Счёт не выбран — использован по умолчанию";
-"voiceConfirmation.warning.categoryNotRecognized" = "Категория не распознана — выбрана по умолчанию";
+"voiceConfirmation.warning.accountNotSelected" = "Счёт не выбран, использован по умолчанию";
+"voiceConfirmation.warning.categoryNotRecognized" = "Категория не распознана, выбрана по умолчанию";
 "voiceConfirmation.warning.selectCategory" = "Выберите категорию";
-"voiceConfirmation.warning.categoryNotSelected" = "Категория не выбрана — использована по умолчанию";
+"voiceConfirmation.warning.categoryNotSelected" = "Категория не выбрана, использована по умолчанию";
 "voiceConfirmation.warning.categoryNotFound" = "Не удалось найти категорию";
 
 // MARK: - Subscriptions
@@ -869,19 +869,19 @@
 "insights.formula.savingsRate.row.expenses" = "Расходы";
 "insights.formula.savingsRate.row.saved" = "Сбережено (доход − расход)";
 "insights.formula.savingsRate.row.rate" = "Норма сбережений";
-"insights.formula.savingsRate.explainer" = "Какая доля дохода уцелела до конца периода. Чем выше — тем больше свободы: подушка на просадки, ускорение целей и настоящий резерв.";
-"insights.formula.savingsRate.rec.good" = "Сберегаете больше 20%% — держите ритм и направьте излишек на долгосрочную цель.";
+"insights.formula.savingsRate.explainer" = "Какая доля дохода уцелела до конца периода. Чем выше, тем больше свободы: подушка на просадки, ускорение целей и настоящий резерв.";
+"insights.formula.savingsRate.rec.good" = "Сберегаете больше 20%%. Держите ритм и направьте излишек на долгосрочную цель.";
 "insights.formula.savingsRate.rec.fair" = "Неплохо, но до 20%% не хватает %@ в месяц. Подрежьте регулярные или разовые категории, которые подросли.";
-"insights.formula.savingsRate.rec.low" = "Ниже 10%% — буфера почти нет. Минимум +%@ в месяц: начните с самой крупной дискреционной категории.";
+"insights.formula.savingsRate.rec.low" = "Ниже 10%%: буфера почти нет. Минимум +%@ в месяц: начните с самой крупной дискреционной категории.";
 "insights.formula.emergencyFund.title" = "Резервный фонд";
 "insights.formula.emergencyFund.heroLabel" = "Сколько месяцев расходов покроет баланс";
 "insights.formula.emergencyFund.formulaHeader" = "Как считается";
 "insights.formula.emergencyFund.row.balance" = "Общий баланс";
 "insights.formula.emergencyFund.row.avgExpenses" = "Средние расходы (3 мес)";
 "insights.formula.emergencyFund.row.monthsCovered" = "Месяцев покрытия";
-"insights.formula.emergencyFund.explainer" = "Сколько продержитесь, если доход остановится завтра. Минимум — 3 месяца; 6 месяцев — комфортная подушка.";
+"insights.formula.emergencyFund.explainer" = "Сколько продержитесь, если доход остановится завтра. Минимум: 3 месяца, а 6 месяцев дают комфортную подушку.";
 "insights.formula.emergencyFund.rec.good" = "Покрытие выше 3 месяцев. Излишек можно перевести на доходный счёт или направить на долгосрочные цели.";
-"insights.formula.emergencyFund.rec.gap" = "До 3 месяцев покрытия не хватает %@. Даже небольшие пополнения накапливаются — начните с любой суммы, которая укладывается в норму сбережений.";
+"insights.formula.emergencyFund.rec.gap" = "До 3 месяцев покрытия не хватает %@. Даже небольшие пополнения накапливаются. Начните с любой суммы, которая укладывается в норму сбережений.";
 "insights.formula.spendingForecast.title" = "Прогноз расходов до конца месяца";
 "insights.formula.spendingForecast.heroLabel" = "Прогнозируемый расход этого месяца";
 "insights.formula.spendingForecast.formulaHeader" = "Как считается";
@@ -892,8 +892,8 @@
 "insights.formula.spendingForecast.row.total" = "Итоговый прогноз";
 "insights.formula.spendingForecast.explainer" = "Уже потрачено + (среднее в день × оставшиеся дни) + ожидаемые подписки. Подписки делятся пропорционально дням, чтобы подписка 28-го не учитывалась дважды, если сегодня 25-е.";
 "insights.formula.spendingForecast.rec.overrun" = "Превышение дохода на %@. Перепроверьте дискреционные траты или перенесите необязательные покупки на следующий месяц.";
-"insights.formula.spendingForecast.rec.onTrack" = "Запас по доходу — %@. Чтобы зафиксировать, избегайте незапланированных покупок или сразу перенесите сумму в сбережения.";
-"insights.formula.spendingForecast.rec.noIncome" = "В этом месяце ещё не зафиксирован доход — прогноз только информационный.";
+"insights.formula.spendingForecast.rec.onTrack" = "Запас по доходу: %@. Чтобы зафиксировать, избегайте незапланированных покупок или сразу перенесите сумму в сбережения.";
+"insights.formula.spendingForecast.rec.noIncome" = "В этом месяце ещё не зафиксирован доход, поэтому прогноз только информационный.";
 "insights.formula.balanceRunway.title" = "Запас прочности";
 "insights.formula.balanceRunway.heroLabel" = "Месяцев до исчерпания баланса";
 "insights.formula.balanceRunway.heroLabel.growing" = "Среднее ежемесячное превышение";
@@ -904,12 +904,12 @@
 "insights.formula.balanceRunway.row.burn" = "Ежемесячный расход (расход − доход)";
 "insights.formula.balanceRunway.row.netFlow" = "Средний чистый поток";
 "insights.formula.balanceRunway.row.runway" = "Запас прочности";
-"insights.formula.balanceRunway.explainer" = "Баланс ÷ ежемесячный расход. Порог 3 месяца — здоровая подушка; ниже 1 месяца значит, что одна неудачная зарплата «съедает» весь буфер.";
-"insights.formula.balanceRunway.explainer.growing" = "Доход превышает расход — баланс растёт. Вверху — среднее ежемесячное превышение. При таком темпе запас прочности неограничен.";
-"insights.formula.balanceRunway.rec.growing" = "Вы в плюсе — направьте излишек на цели, долги или доходные сбережения, а не оставляйте просто на счёте.";
-"insights.formula.balanceRunway.rec.long" = "Запас более 3 месяцев — вы хорошо забуферены. Часть денег можно перевести в более долгосрочные инструменты.";
-"insights.formula.balanceRunway.rec.short" = "Ниже 3 месяцев. Сократите расходы на ~%@/мес для подушки на 3 месяца — начните с самой крупной дискреционной категории.";
-"insights.formula.balanceRunway.rec.critical" = "Меньше месяца — закрывайте разрыв срочно. Даже пауза одной крупной подписки даст несколько дней.";
+"insights.formula.balanceRunway.explainer" = "Баланс ÷ ежемесячный расход. Порог 3 месяца: здоровая подушка; ниже 1 месяца значит, что одна неудачная зарплата «съедает» весь буфер.";
+"insights.formula.balanceRunway.explainer.growing" = "Доход превышает расход, поэтому баланс растёт. Вверху: среднее ежемесячное превышение. При таком темпе запас прочности неограничен.";
+"insights.formula.balanceRunway.rec.growing" = "Вы в плюсе. Направьте излишек на цели, долги или доходные сбережения, а не оставляйте просто на счёте.";
+"insights.formula.balanceRunway.rec.long" = "Запас более 3 месяцев: вы хорошо забуферены. Часть денег можно перевести в более долгосрочные инструменты.";
+"insights.formula.balanceRunway.rec.short" = "Ниже 3 месяцев. Сократите расходы на ~%@/мес для подушки на 3 месяца. Начните с самой крупной дискреционной категории.";
+"insights.formula.balanceRunway.rec.critical" = "Меньше месяца: закрывайте разрыв срочно. Даже пауза одной крупной подписки даст несколько дней.";
 "insights.formula.yearOverYear.title" = "Год к году";
 "insights.formula.yearOverYear.heroLabel" = "Изменение к тому же месяцу год назад";
 "insights.formula.yearOverYear.formulaHeader" = "Как считается";
@@ -917,10 +917,10 @@
 "insights.formula.yearOverYear.row.lastYear" = "Тот же месяц год назад";
 "insights.formula.yearOverYear.row.absDelta" = "Абсолютное изменение";
 "insights.formula.yearOverYear.row.delta" = "Изменение в %%";
-"insights.formula.yearOverYear.explainer" = "Сравнение общих расходов за текущий месяц и тот же месяц год назад. Помогает отличить реальный сдвиг от сезонности — декабрь всегда «дороже», но именно этот декабрь тяжелее прошлого?";
-"insights.formula.yearOverYear.rec.down" = "Расходы заметно ниже год к году. Если это случайно — проверьте, не пропущена ли регулярная операция; иногда она «прячется» именно так.";
-"insights.formula.yearOverYear.rec.up" = "Рост на %@. Сравните топ-категории обоих месяцев — обычно скачок объясняется одной новой подпиской, дополнительным циклом аренды или крупной покупкой.";
-"insights.formula.yearOverYear.rec.flat" = "Изменение умеренное — ваш паттерн расходов стабилен. Проверьте тот же показатель в следующем месяце для отслеживания дрейфа.";
+"insights.formula.yearOverYear.explainer" = "Сравнение общих расходов за текущий месяц и тот же месяц год назад. Помогает отличить реальный сдвиг от сезонности: декабрь всегда «дороже», но именно этот декабрь тяжелее прошлого?";
+"insights.formula.yearOverYear.rec.down" = "Расходы заметно ниже год к году. Если это случайно, проверьте, не пропущена ли регулярная операция; иногда она «прячется» именно так.";
+"insights.formula.yearOverYear.rec.up" = "Рост на %@. Сравните топ-категории обоих месяцев: обычно скачок объясняется одной новой подпиской, дополнительным циклом аренды или крупной покупкой.";
+"insights.formula.yearOverYear.rec.flat" = "Изменение умеренное: ваш паттерн расходов стабилен. Проверьте тот же показатель в следующем месяце для отслеживания дрейфа.";
 "insights.formula.projectedBalance.title" = "Прогноз баланса";
 "insights.formula.projectedBalance.heroLabel" = "Ожидаемый баланс к концу периода";
 "insights.formula.projectedBalance.formulaHeader" = "Как считается";
@@ -929,9 +929,9 @@
 "insights.formula.projectedBalance.row.avgExpenses" = "Средние непостоянные расходы за период";
 "insights.formula.projectedBalance.row.horizon" = "Горизонт";
 "insights.formula.projectedBalance.row.projected" = "Прогнозный баланс";
-"insights.formula.projectedBalance.explainer" = "Текущий баланс + (чистый поток подписок − средние непостоянные расходы), масштабированные на выбранный период. Простая линейная проекция — предполагает, что последние 3 периода повторятся. Используйте для раннего сигнала, не как точный прогноз.";
-"insights.formula.projectedBalance.rec.growing" = "Тренд вверх — текущий паттерн прибавляет к балансу за период.";
-"insights.formula.projectedBalance.rec.dropping" = "Просадка на %@ за период. Найдите категории, которые подняли расходы — там вмешательство даёт максимальный эффект.";
+"insights.formula.projectedBalance.explainer" = "Текущий баланс + (чистый поток подписок − средние непостоянные расходы), масштабированные на выбранный период. Простая линейная проекция предполагает, что последние 3 периода повторятся. Используйте для раннего сигнала, не как точный прогноз.";
+"insights.formula.projectedBalance.rec.growing" = "Тренд вверх: текущий паттерн прибавляет к балансу за период.";
+"insights.formula.projectedBalance.rec.dropping" = "Просадка на %@ за период. Найдите категории, которые подняли расходы. Там вмешательство даёт максимальный эффект.";
 "insights.wealth.growth.compare" = "%@ к %@";
 
 "insights.subscriptionGrowth.compareAgo" = "за %d мес.";
@@ -945,9 +945,9 @@
 "insights.formula.subscriptionGrowth.row.addedCount" = "Подписок добавлено";
 "insights.formula.subscriptionGrowth.row.delta" = "Изменение";
 "insights.formula.subscriptionGrowth.explainer" = "Сумма месячного эквивалента всех активных подписок сравнивается с такой же суммой, посчитанной только по подпискам, существовавшим в начале окна. Длина окна меняется с гранулярностью.";
-"insights.formula.subscriptionGrowth.rec.growing" = "Регулярные расходы выросли на %@/мес. Проверьте новые подписки — те, которыми не пользуетесь, накапливаются годами.";
-"insights.formula.subscriptionGrowth.rec.shrinking" = "Вы сократили регулярные расходы — держите дисциплину при новых сервисах. Освободившийся денежный поток лучше направить в сбережения или на долги.";
-"insights.formula.subscriptionGrowth.rec.stable" = "Регулярные расходы держатся стабильно. Портфель устойчив — периодически проверяйте, не остались ли неиспользуемые сервисы.";
+"insights.formula.subscriptionGrowth.rec.growing" = "Регулярные расходы выросли на %@/мес. Проверьте новые подписки: те, которыми не пользуетесь, накапливаются годами.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "Вы сократили регулярные расходы. Держите дисциплину при новых сервисах. Освободившийся денежный поток лучше направить в сбережения или на долги.";
+"insights.formula.subscriptionGrowth.rec.stable" = "Регулярные расходы держатся стабильно. Портфель устойчив. Периодически проверяйте, не остались ли неиспользуемые сервисы.";
 
 "insights.formula.categoryTrend.title" = "Тренд категории";
 "insights.formula.categoryTrend.heroLabel" = "Топ растущая категория расходов";
@@ -955,7 +955,7 @@
 "insights.formula.categoryTrend.row.month" = "Месяц";
 "insights.formula.categoryTrend.row.delta" = "Последний к предыдущему месяцу";
 "insights.formula.categoryTrend.explainer" = "Сканируем помесячные итоги по категориям в окне (длина зависит от гранулярности) и показываем категорию с самой длинной серией роста подряд. Помогает поймать медленный дрейф до того, как он превратится в превышение бюджета.";
-"insights.formula.categoryTrend.rec" = "%@ растёт %d месяцев подряд. Сравните последние операции с более ранними — обычно одна новая регулярная подписка или смена привычек объясняет серию.";
+"insights.formula.categoryTrend.rec" = "%@ растёт %d месяцев подряд. Сравните последние операции с более ранними. Обычно одна новая регулярная подписка или смена привычек объясняет серию.";
 "insights.granularity.prev.week" = "к предыдущей неделе";
 "insights.granularity.prev.month" = "к предыдущему месяцу";
 "insights.granularity.prev.quarter" = "к предыдущему кварталу";
@@ -996,7 +996,7 @@
 "insights.duplicateSubscriptions.title" = "Возможные дубликаты подписок";
 "insights.duplicateSubscriptions.subtitle" = "возможных дубликата";
 "insights.accountDormancy.title" = "Деньги без дела";
-"insights.accountDormancy.subtitle" = "счетов без движения 30+ дней — могли бы приносить доход на депозите";
+"insights.accountDormancy.subtitle" = "счетов без движения 30+ дней, могли бы приносить доход на депозите";
 
 "notification.weeklyDigest.title" = "Итоги недели";
 "notification.weeklyDigest.body.withComparison" = "%1$@: расходы %2$@ (%3$@ к прошлой неделе)";
@@ -1005,9 +1005,9 @@
 
 "settings.insightSignals.title" = "Сигналы аналитики";
 "settings.insightSignals.master" = "Push-уведомления о важных сигналах";
-"settings.insightSignals.footer" = "Приходят только важные изменения: перерасход бюджета, подорожание подписок, низкий прогноз баланса. Каждый сигнал — не чаще раза в неделю, всего не больше 5 уведомлений в неделю.";
+"settings.insightSignals.footer" = "Приходят только важные изменения: перерасход бюджета, подорожание подписок, низкий прогноз баланса. Каждый сигнал приходит не чаще раза в неделю, всего не больше 5 уведомлений в неделю.";
 "settings.insightSignals.lowBalance" = "Низкий прогноз баланса";
-"settings.insightSignals.permissionDenied" = "Уведомления выключены в настройках iOS — нажмите, чтобы включить";
+"settings.insightSignals.permissionDenied" = "Уведомления выключены в настройках iOS. Нажмите, чтобы включить";
 
 "insights.priceIncrease" = "Подписка подорожала";
 "insights.priceIncrease.was" = "было %@";
@@ -1020,8 +1020,8 @@
 "insights.formula.priceIncrease.row.newPrice" = "Новое списание";
 "insights.formula.priceIncrease.row.delta" = "Изменение";
 "insights.formula.priceIncrease.row.yearlyImpact" = "Переплата за год";
-"insights.formula.priceIncrease.explainer" = "Сравнивает последнее списание по активному регулярному платежу с предыдущим (или с плановой суммой). Небольшие повышения цен накапливаются: +15% по нескольким подпискам — это целая новая подписка.";
-"insights.formula.priceIncrease.rec" = "Проверьте, оправдана ли новая цена. Если нет — приостановите или отмените подписку во вкладке «Подписки».";
+"insights.formula.priceIncrease.explainer" = "Сравнивает последнее списание по активному регулярному платежу с предыдущим (или с плановой суммой). Небольшие повышения цен накапливаются: +15% по нескольким подпискам равносильно целой новой подписке.";
+"insights.formula.priceIncrease.rec" = "Проверьте, оправдана ли новая цена. Если нет, приостановите или отмените подписку во вкладке «Подписки».";
 "insights.formula.largeTransaction.title" = "Крупная трата";
 "insights.formula.largeTransaction.heroLabel" = "Крупнейшая разовая трата за 30 дней";
 "insights.formula.largeTransaction.formulaHeader" = "Как это посчитано";
@@ -1031,8 +1031,8 @@
 "insights.formula.largeTransaction.row.amount" = "Сумма";
 "insights.formula.largeTransaction.row.avgTx" = "Средняя трата (90 дней)";
 "insights.formula.largeTransaction.row.multiplier" = "Во сколько раз выше средней";
-"insights.formula.largeTransaction.explainer" = "Регулярные платежи — аренда, подписки — исключены: учитываются только разовые покупки. Покупка в 4 раза выше вашей средней траты заслуживает внимания.";
-"insights.formula.largeTransaction.rec" = "Убедитесь, что покупка ожидаемая. Разовая? Ничего делать не нужно — сигнал исчезнет по мере обновления средней.";
+"insights.formula.largeTransaction.explainer" = "Регулярные платежи (аренда, подписки) исключены: учитываются только разовые покупки. Покупка в 4 раза выше вашей средней траты заслуживает внимания.";
+"insights.formula.largeTransaction.rec" = "Убедитесь, что покупка ожидаемая. Разовая? Ничего делать не нужно: сигнал исчезнет по мере обновления средней.";
 "insights.dormant.accounts" = "Неактивные счета";
 
 // MARK: - Tab Bar
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "Разбивка текущего платежа";
 "loan.principalPortion" = "Основной долг";
 "loan.interestPortion" = "Проценты";
-"loan.noInterest" = "Рассрочка — без начисления процентов";
+"loan.noInterest" = "Рассрочка: без начисления процентов";
 "loan.stats" = "Статистика";
 "loan.originalAmount" = "Сумма кредита";
 "loan.interestRate" = "Процентная ставка";
@@ -1484,10 +1484,10 @@
 /* MARK: - Onboarding */
 
 "onboarding.welcome.page1.title" = "Все финансы в одном месте";
-"onboarding.welcome.page1.subtitle" = "Счета, депозиты, кредиты, подписки и категории трат — всё в одном приложении с понятной аналитикой.";
+"onboarding.welcome.page1.subtitle" = "Счета, депозиты, кредиты, подписки и категории трат: всё в одном приложении с понятной аналитикой.";
 "onboarding.welcome.page2.title" = "Добавляйте операции голосом";
-"onboarding.welcome.page2.subtitle" = "Скажите «Кофе 800 тенге» — Tenra поймёт сумму, валюту и категорию. Или импортируйте выписку из PDF/CSV.";
-"onboarding.welcome.page3.title" = "Ваши данные — только ваши";
+"onboarding.welcome.page2.subtitle" = "Скажите «Кофе 800 тенге», и Tenra поймёт сумму, валюту и категорию. Или импортируйте выписку из PDF/CSV.";
+"onboarding.welcome.page3.title" = "Ваши данные принадлежат только вам";
 "onboarding.welcome.page3.subtitle" = "Всё хранится локально на устройстве. iCloud-бэкап опциональный. Никаких аккаунтов и регистраций.";
 
 "onboarding.cta.next" = "Далее";
@@ -1529,20 +1529,20 @@
 
 // MARK: - Financial Health Detail Page
 
-"insights.health.subtitle.excellent" = "Отличная форма — финансы устойчивы.";
+"insights.health.subtitle.excellent" = "Отличная форма: финансы устойчивы.";
 "insights.health.subtitle.good" = "Хорошее состояние, есть куда оптимизировать.";
 "insights.health.subtitle.fair" = "Неплохо, но есть аспекты, требующие внимания.";
 "insights.health.subtitle.needsAttention" = "Несколько направлений требуют работы.";
 
 "insights.health.unavailable.title" = "Недостаточно данных";
-"insights.health.unavailable.message" = "Добавьте операции дохода и расхода — после этого мы сможем оценить ваше финансовое здоровье.";
+"insights.health.unavailable.message" = "Добавьте операции дохода и расхода. После этого мы сможем оценить ваше финансовое здоровье.";
 
 "insights.health.howItWorks" = "Как считается";
-"insights.health.explainer" = "Скор от 0 до 100 — взвешенная оценка пяти аспектов финансового здоровья. Чем выше, тем устойчивее финансы.";
+"insights.health.explainer" = "Скор от 0 до 100: взвешенная оценка пяти аспектов финансового здоровья. Чем выше, тем устойчивее финансы.";
 "insights.health.periodContext.months" = "Рассчитано по последним %d месяцам активности. Переключатель гранулярности сверху меняет другие инсайты, но не этот скор.";
 "insights.health.periodContext.singleMonth" = "Рассчитано по этому месяцу активности. Переключатель гранулярности сверху меняет другие инсайты, но не этот скор.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "Бюджеты не настроены — вес 25% перераспределён между четырьмя оставшимися компонентами.";
+"insights.health.weights.redistributed" = "Бюджеты не настроены, поэтому вес 25% перераспределён между четырьмя оставшимися компонентами.";
 
 "insights.health.component.savingsRate.title" = "Норма сбережений";
 "insights.health.component.savingsRate.short" = "Сбережения";
@@ -1554,7 +1554,7 @@
 
 "insights.health.component.recurringRatio.title" = "Доля регулярных платежей";
 "insights.health.component.recurringRatio.short" = "Регулярные";
-"insights.health.component.recurringRatio.explainer" = "Какая часть дохода уходит на подписки и регулярные платежи. Меньше — больше свободы.";
+"insights.health.component.recurringRatio.explainer" = "Какая часть дохода уходит на подписки и регулярные платежи. Чем меньше, тем больше свободы.";
 
 "insights.health.component.emergencyFund.title" = "Финансовая подушка";
 "insights.health.component.emergencyFund.short" = "Подушка";
@@ -1575,21 +1575,21 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Чтобы выйти на 20%%, сократите расходы на ≈ %@ в месяц или увеличьте доход на ≈ %@ в месяц.";
-"insights.health.rec.savingsRate.healthy" = "Отлично — сохраняйте темп. 20%%+ это рекомендованный уровень для долгосрочной устойчивости.";
+"insights.health.rec.savingsRate.healthy" = "Отлично, сохраняйте темп. 20%%+ это рекомендованный уровень для долгосрочной устойчивости.";
 
-"insights.health.rec.budgetAdherence.empty" = "Бюджеты не настроены. Установите их в категориях — это включит этот компонент в скор.";
+"insights.health.rec.budgetAdherence.empty" = "Бюджеты не настроены. Установите их в категориях. Это включит этот компонент в скор.";
 "insights.health.rec.budgetAdherence.partial" = "%d категорий вышли за бюджет. Откройте их, чтобы понять, где перерасход.";
-"insights.health.rec.budgetAdherence.full" = "Все категории в рамках бюджета — превосходно.";
+"insights.health.rec.budgetAdherence.full" = "Все категории в рамках бюджета, превосходно.";
 
-"insights.health.rec.recurringRatio.high" = "Подписки и регулярные платежи — %.0f%% дохода. Целевой уровень меньше 50%%. Просмотрите подписки и отмените ненужные.";
-"insights.health.rec.recurringRatio.healthy" = "%.0f%% дохода уходит на регулярные платежи — здоровый уровень.";
+"insights.health.rec.recurringRatio.high" = "Подписки и регулярные платежи составляют %.0f%% дохода. Целевой уровень меньше 50%%. Просмотрите подписки и отмените ненужные.";
+"insights.health.rec.recurringRatio.healthy" = "%.0f%% дохода уходит на регулярные платежи. Это здоровый уровень.";
 
 "insights.health.rec.emergencyFund.below" = "Чтобы покрыть 3 месяца расходов, нужно ещё ≈ %@.";
 "insights.health.rec.emergencyFund.belowWithProjection" = "Чтобы покрыть 3 месяца расходов, нужно ещё ≈ %@. При текущей скорости накоплений это около %.1f месяцев.";
-"insights.health.rec.emergencyFund.healthy" = "У вас %.1f месяцев расходов на счетах — этого достаточно для непредвиденных ситуаций.";
+"insights.health.rec.emergencyFund.healthy" = "У вас %.1f месяцев расходов на счетах. Этого достаточно для непредвиденных ситуаций.";
 
 "insights.health.rec.cashFlow.negative" = "Тратите больше, чем зарабатываете (−%.1f%% от дохода в этом периоде). Сократите расходы или найдите дополнительный источник.";
-"insights.health.rec.cashFlow.positive" = "Доход превышает расходы на %.1f%% — здоровый положительный поток.";
+"insights.health.rec.cashFlow.positive" = "Доход превышает расходы на %.1f%%. Это здоровый положительный поток.";
 
 // MARK: - Rating Prompt
 "rating.survey.title" = "Нравится Tenra?";
@@ -1599,9 +1599,9 @@
 
 // MARK: - Premium
 "premium.unlock" = "Разблокировать Pro";
-"premium.locked.voice.title" = "Голосовой ввод — функция Pro";
-"premium.locked.voice.message" = "Добавляйте операции голосом — просто назовите сумму и категорию, Tenra заполнит остальное.";
-"premium.locked.import.title" = "Импорт выписок — функция Pro";
+"premium.locked.voice.title" = "Голосовой ввод: функция Pro";
+"premium.locked.voice.message" = "Добавляйте операции голосом: просто назовите сумму и категорию, Tenra заполнит остальное.";
+"premium.locked.import.title" = "Импорт выписок: функция Pro";
 "premium.locked.import.message" = "Импортируйте PDF-выписки банков и CSV-файлы автоматически, не вводя каждую операцию вручную.";
 "settings.supportID" = "ID для поддержки";
 "settings.supportID.copied" = "Скопировано";
@@ -1617,7 +1617,7 @@
 "settings.pro.status.renews" = "%1$@ · продлится %2$@";
 "settings.pro.status.expires" = "%1$@ · истекает %2$@";
 "settings.pro.founder" = "Бесплатно навсегда";
-"settings.pro.founder.subtitle" = "Вы — один из первых пользователей: все функции Pro для вас бесплатны навсегда. Спасибо!";
+"settings.pro.founder.subtitle" = "Вы один из первых пользователей: все функции Pro для вас бесплатны навсегда. Спасибо!";
 "settings.pro.manage" = "Управлять подпиской";
 "settings.pro.restore" = "Восстановить покупки";
 "settings.pro.restore.restored" = "Восстановлено";

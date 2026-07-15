@@ -869,8 +869,8 @@
 "insights.formula.savingsRate.row.expenses" = "지출";
 "insights.formula.savingsRate.row.saved" = "저축액 (수입 − 지출)";
 "insights.formula.savingsRate.row.rate" = "저축률";
-"insights.formula.savingsRate.explainer" = "수입 중 한 달을 버티고 남는 비율이에요. 저축률이 높을수록 여유가 커져요 — 수입이 적은 달의 유연성, 더 빠른 목표 달성, 그리고 든든한 비상금이 생겨요.";
-"insights.formula.savingsRate.rec.good" = "20%% 이상 저축하고 있어요 — 이 습관을 유지하고 남는 돈을 장기 목표로 돌려 보세요.";
+"insights.formula.savingsRate.explainer" = "수입 중 한 달을 버티고 남는 비율이에요. 저축률이 높을수록 여유가 커져요. 수입이 적은 달의 유연성, 더 빠른 목표 달성, 그리고 든든한 비상금이 생겨요.";
+"insights.formula.savingsRate.rec.good" = "20%% 이상 저축하고 있어요. 이 습관을 유지하고 남는 돈을 장기 목표로 돌려 보세요.";
 "insights.formula.savingsRate.rec.fair" = "괜찮지만, 20%%까지 올리면 매달 %@를 더 저축할 수 있어요. 슬금슬금 늘어난 반복·일회성 카테고리를 줄여 보세요.";
 "insights.formula.savingsRate.rec.low" = "10%% 미만이면 여유가 없어요. 매달 최소 %@를 더 저축하는 것을 목표로, 가장 큰 재량 지출 카테고리부터 시작해 보세요.";
 "insights.formula.emergencyFund.title" = "비상금";
@@ -881,7 +881,7 @@
 "insights.formula.emergencyFund.row.monthsCovered" = "버틸 수 있는 개월수";
 "insights.formula.emergencyFund.explainer" = "내일 당장 수입이 끊겨도 계좌로 평소 지출을 얼마나 버틸 수 있는지예요. 대부분의 재무 전문가가 최소 3개월을 권장하고, 6개월이면 든든한 완충이 돼요.";
 "insights.formula.emergencyFund.rec.good" = "3개월 기준을 넘겼어요. 남는 돈을 금리가 더 높은 계좌에 두거나 장기 목표로 돌려 보세요.";
-"insights.formula.emergencyFund.rec.gap" = "3개월치를 채우려면 %@를 더 모아야 해요. 매달 조금씩 넣어도 쌓여요 — 저축률에 맞는 만큼부터 시작해 보세요.";
+"insights.formula.emergencyFund.rec.gap" = "3개월치를 채우려면 %@를 더 모아야 해요. 매달 조금씩 넣어도 쌓여요. 저축률에 맞는 만큼부터 시작해 보세요.";
 "insights.formula.spendingForecast.title" = "월말 지출 예측";
 "insights.formula.spendingForecast.heroLabel" = "이번 달 예상 총 지출";
 "insights.formula.spendingForecast.formulaHeader" = "계산 방법";
@@ -893,7 +893,7 @@
 "insights.formula.spendingForecast.explainer" = "지금까지 지출 + (일 평균 × 남은 일수) + 예정된 반복 결제예요. 반복 결제는 남은 일수에 비례해 계산하므로, 오늘이 25일일 때 28일 구독이 이중으로 계산되지 않아요.";
 "insights.formula.spendingForecast.rec.overrun" = "수입을 %@만큼 초과할 것으로 보여요. 재량 지출을 미리 점검하거나, 필수가 아닌 구매는 다음 달로 미뤄 보세요.";
 "insights.formula.spendingForecast.rec.onTrack" = "예측상 %@의 여유가 남아요. 계획에 없던 구매를 피해 이 여유를 지키거나, 지금 저축으로 옮겨 보세요.";
-"insights.formula.spendingForecast.rec.noIncome" = "이번 달에 아직 기록된 수입이 없어요 — 예측은 참고용일 뿐이에요.";
+"insights.formula.spendingForecast.rec.noIncome" = "이번 달에 아직 기록된 수입이 없어요. 예측은 참고용일 뿐이에요.";
 "insights.formula.balanceRunway.title" = "잔액 지속 개월수";
 "insights.formula.balanceRunway.heroLabel" = "현재 소진 속도로 잔액이 바닥날 때까지의 개월수";
 "insights.formula.balanceRunway.heroLabel.growing" = "월 평균 흑자";
@@ -905,11 +905,11 @@
 "insights.formula.balanceRunway.row.netFlow" = "평균 순 흐름";
 "insights.formula.balanceRunway.row.runway" = "지속 개월수";
 "insights.formula.balanceRunway.explainer" = "잔액 ÷ 월 소진액이에요. 3개월 기준은 건강한 비상금 완충과 같고, 1개월 미만이면 월급 한 번만 나빠도 완충이 바닥나요.";
-"insights.formula.balanceRunway.explainer.growing" = "수입이 지출을 넘어서 잔액이 늘고 있어요. 대표 값은 월 평균 흑자이며 — 이 속도라면 잔액은 무한히 유지돼요.";
-"insights.formula.balanceRunway.rec.growing" = "순흑자 상태예요 — 남는 돈을 놀리지 말고 목표, 부채 상환, 또는 금리가 더 높은 저축으로 돌려 보세요.";
-"insights.formula.balanceRunway.rec.long" = "지속 개월수가 3개월을 넘어요 — 완충이 충분해요. 여유 자금을 장기 상품에 투입하는 것을 고려해 보세요.";
+"insights.formula.balanceRunway.explainer.growing" = "수입이 지출을 넘어서 잔액이 늘고 있어요. 대표 값은 월 평균 흑자이며, 이 속도라면 잔액은 무한히 유지돼요.";
+"insights.formula.balanceRunway.rec.growing" = "순흑자 상태예요. 남는 돈을 놀리지 말고 목표, 부채 상환, 또는 금리가 더 높은 저축으로 돌려 보세요.";
+"insights.formula.balanceRunway.rec.long" = "지속 개월수가 3개월을 넘어요. 완충이 충분해요. 여유 자금을 장기 상품에 투입하는 것을 고려해 보세요.";
 "insights.formula.balanceRunway.rec.short" = "3개월 미만이에요. 3개월 완충에 도달하려면 월 소진액을 약 %@/월 줄여 보세요. 가장 큰 재량 지출 카테고리부터 시작하세요.";
-"insights.formula.balanceRunway.rec.critical" = "지속 개월수가 한 달도 안 돼요 — 서둘러 격차를 메우세요. 큰 반복 결제 하나만 멈춰도 며칠을 벌 수 있어요.";
+"insights.formula.balanceRunway.rec.critical" = "지속 개월수가 한 달도 안 돼요. 서둘러 격차를 메우세요. 큰 반복 결제 하나만 멈춰도 며칠을 벌 수 있어요.";
 "insights.formula.yearOverYear.title" = "전년 대비 지출";
 "insights.formula.yearOverYear.heroLabel" = "작년 같은 달 대비 변화";
 "insights.formula.yearOverYear.formulaHeader" = "계산 방법";
@@ -917,10 +917,10 @@
 "insights.formula.yearOverYear.row.lastYear" = "작년 같은 달";
 "insights.formula.yearOverYear.row.absDelta" = "절대 변화";
 "insights.formula.yearOverYear.row.delta" = "변화율";
-"insights.formula.yearOverYear.explainer" = "이번 달 총 지출을 1년 전 같은 달과 비교해요. 계절적 변동과 진짜 추세 변화를 구분하는 데 유용해요 — 12월은 항상 지출이 많지만, 올해 12월이 작년보다 더 무거운지 알 수 있어요.";
-"insights.formula.yearOverYear.rec.down" = "전년 대비 지출이 눈에 띄게 줄었어요. 의도한 게 아니라면 어떤 카테고리가 줄었는지 살펴보세요 — 놓친 반복 결제가 숨어 있을 수도 있어요.";
-"insights.formula.yearOverYear.rec.up" = "지출이 %@ 늘었어요. 두 달의 상위 카테고리를 비교해 보세요 — 새 구독 하나, 추가된 월세 주기, 큰 구매 하나가 원인인 경우가 많아요.";
-"insights.formula.yearOverYear.rec.flat" = "작년 대비 변화가 크지 않아요 — 지출 패턴이 안정적이에요. 다음 달에도 같은 지표를 추적해 변화를 잡아 보세요.";
+"insights.formula.yearOverYear.explainer" = "이번 달 총 지출을 1년 전 같은 달과 비교해요. 계절적 변동과 진짜 추세 변화를 구분하는 데 유용해요. 12월은 항상 지출이 많지만, 올해 12월이 작년보다 더 무거운지 알 수 있어요.";
+"insights.formula.yearOverYear.rec.down" = "전년 대비 지출이 눈에 띄게 줄었어요. 의도한 게 아니라면 어떤 카테고리가 줄었는지 살펴보세요. 놓친 반복 결제가 숨어 있을 수도 있어요.";
+"insights.formula.yearOverYear.rec.up" = "지출이 %@ 늘었어요. 두 달의 상위 카테고리를 비교해 보세요. 새 구독 하나, 추가된 월세 주기, 큰 구매 하나가 원인인 경우가 많아요.";
+"insights.formula.yearOverYear.rec.flat" = "작년 대비 변화가 크지 않아요. 지출 패턴이 안정적이에요. 다음 달에도 같은 지표를 추적해 변화를 잡아 보세요.";
 "insights.formula.projectedBalance.title" = "예상 잔액";
 "insights.formula.projectedBalance.heroLabel" = "기간 종료 시점의 예상 잔액";
 "insights.formula.projectedBalance.formulaHeader" = "계산 방법";
@@ -929,9 +929,9 @@
 "insights.formula.projectedBalance.row.avgExpenses" = "기간 평균 비반복 지출";
 "insights.formula.projectedBalance.row.horizon" = "기간";
 "insights.formula.projectedBalance.row.projected" = "예상 잔액";
-"insights.formula.projectedBalance.explainer" = "현재 잔액 + (반복 순액 − 평균 비반복 지출)을 선택한 기간에 맞춰 계산해요. 단순 선형 예측으로 — 최근 3개 구간이 앞으로도 이어진다고 가정해요. 정밀한 예측이 아니라 조기 경고용으로 활용하세요.";
-"insights.formula.projectedBalance.rec.growing" = "예측이 상승세예요 — 현재 패턴이라면 기간 동안 잔액이 늘어나요.";
-"insights.formula.projectedBalance.rec.dropping" = "기간 동안 예측 잔액이 %@ 줄어요. 어떤 카테고리가 지출을 끌어올렸는지 찾아보세요 — 거기서 개선 효과가 가장 커요.";
+"insights.formula.projectedBalance.explainer" = "현재 잔액 + (반복 순액 − 평균 비반복 지출)을 선택한 기간에 맞춰 계산해요. 단순 선형 예측으로, 최근 3개 구간이 앞으로도 이어진다고 가정해요. 정밀한 예측이 아니라 조기 경고용으로 활용하세요.";
+"insights.formula.projectedBalance.rec.growing" = "예측이 상승세예요. 현재 패턴이라면 기간 동안 잔액이 늘어나요.";
+"insights.formula.projectedBalance.rec.dropping" = "기간 동안 예측 잔액이 %@ 줄어요. 어떤 카테고리가 지출을 끌어올렸는지 찾아보세요. 거기서 개선 효과가 가장 커요.";
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "%d개월 전 대비";
@@ -945,9 +945,9 @@
 "insights.formula.subscriptionGrowth.row.addedCount" = "이후 추가된 구독";
 "insights.formula.subscriptionGrowth.row.delta" = "변화";
 "insights.formula.subscriptionGrowth.explainer" = "활성 구독의 월 환산액을 모두 더한 뒤, 비교 구간이 시작될 때 이미 존재하던 구독만으로 계산한 같은 총액과 비교해요. 비교 구간은 단위 선택에 따라 조정돼요.";
-"insights.formula.subscriptionGrowth.rec.growing" = "반복 지출이 월 %@ 늘었어요. 적극적으로 쓰지 않는 새 구독이 있는지 점검하세요 — 반복 결제는 해가 갈수록 쌓여요.";
-"insights.formula.subscriptionGrowth.rec.shrinking" = "반복 지출을 줄였어요 — 새 서비스의 유혹 속에서도 이 절제를 유지하세요. 아낀 현금 흐름을 저축이나 부채 상환으로 돌려 보세요.";
-"insights.formula.subscriptionGrowth.rec.stable" = "반복 지출이 거의 그대로예요. 구성이 안정적이에요 — 안 쓰는 서비스가 조용히 남지 않도록 주기적으로 점검하세요.";
+"insights.formula.subscriptionGrowth.rec.growing" = "반복 지출이 월 %@ 늘었어요. 적극적으로 쓰지 않는 새 구독이 있는지 점검하세요. 반복 결제는 해가 갈수록 쌓여요.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "반복 지출을 줄였어요. 새 서비스의 유혹 속에서도 이 절제를 유지하세요. 아낀 현금 흐름을 저축이나 부채 상환으로 돌려 보세요.";
+"insights.formula.subscriptionGrowth.rec.stable" = "반복 지출이 거의 그대로예요. 구성이 안정적이에요. 안 쓰는 서비스가 조용히 남지 않도록 주기적으로 점검하세요.";
 
 "insights.formula.categoryTrend.title" = "카테고리 추이";
 "insights.formula.categoryTrend.heroLabel" = "가장 빠르게 늘어난 지출 카테고리";
@@ -955,7 +955,7 @@
 "insights.formula.categoryTrend.row.month" = "월";
 "insights.formula.categoryTrend.row.delta" = "지난달 vs 그 이전 달";
 "insights.formula.categoryTrend.explainer" = "비교 구간(단위에 따라 조정됨) 동안의 월별 카테고리 총액을 살펴, 연속으로 가장 오래 증가한 카테고리를 찾아내요. 예산 초과로 드러나기 전에 서서히 늘어나는 지출을 잡는 데 유용해요.";
-"insights.formula.categoryTrend.rec" = "%@가 %d개월 연속 늘고 있어요. 최근 거래를 이전 달과 비교해 보세요 — 반복 거래 하나 또는 습관 변화가 대개 원인이에요.";
+"insights.formula.categoryTrend.rec" = "%@가 %d개월 연속 늘고 있어요. 최근 거래를 이전 달과 비교해 보세요. 반복 거래 하나 또는 습관 변화가 대개 원인이에요.";
 "insights.granularity.prev.week" = "이전 주 대비";
 "insights.granularity.prev.month" = "이전 달 대비";
 "insights.granularity.prev.quarter" = "이전 분기 대비";
@@ -996,7 +996,7 @@
 "insights.duplicateSubscriptions.title" = "중복 가능성 있는 구독";
 "insights.duplicateSubscriptions.subtitle" = "중복 가능성 발견됨";
 "insights.accountDormancy.title" = "잠자는 돈";
-"insights.accountDormancy.subtitle" = "계좌가 30일 이상 미사용 — 예금이라면 수익이 생겼을 것";
+"insights.accountDormancy.subtitle" = "계좌가 30일 이상 미사용, 예금이라면 수익이 생겼을 것";
 
 "notification.weeklyDigest.title" = "주간 요약";
 "notification.weeklyDigest.body.withComparison" = "%1$@: 지출 %2$@ (전주 대비 %3$@)";
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "현재 상환 구성";
 "loan.principalPortion" = "원금";
 "loan.interestPortion" = "이자";
-"loan.noInterest" = "할부 — 이자 없음";
+"loan.noInterest" = "할부, 이자 없음";
 "loan.stats" = "통계";
 "loan.originalAmount" = "최초 금액";
 "loan.interestRate" = "금리";
@@ -1484,7 +1484,7 @@
 /* MARK: - Onboarding */
 
 "onboarding.welcome.page1.title" = "모든 금융을 한곳에";
-"onboarding.welcome.page1.subtitle" = "계좌, 예금, 대출, 구독, 지출 카테고리 — 명확한 분석과 함께 관리해요.";
+"onboarding.welcome.page1.subtitle" = "계좌, 예금, 대출, 구독, 지출 카테고리를 명확한 분석과 함께 관리해요.";
 "onboarding.welcome.page2.title" = "음성으로 거래를 추가하세요";
 "onboarding.welcome.page2.subtitle" = "\"커피 800텡게\"라고 말하면 Tenra가 금액, 통화, 카테고리를 알아들어요. PDF·CSV 명세서를 가져올 수도 있어요.";
 "onboarding.welcome.page3.title" = "내 데이터는 내 것이에요";
@@ -1529,20 +1529,20 @@
 
 // MARK: - Financial Health Detail Page
 
-"insights.health.subtitle.excellent" = "아주 탄탄해요 — 금융 상태가 든든해요.";
+"insights.health.subtitle.excellent" = "아주 탄탄해요. 금융 상태가 든든해요.";
 "insights.health.subtitle.good" = "안정적이에요. 조금 더 최적화할 여지가 있어요.";
 "insights.health.subtitle.fair" = "기본기는 괜찮지만 몇 가지 신경 쓸 부분이 있어요.";
 "insights.health.subtitle.needsAttention" = "금융의 여러 부분을 손볼 필요가 있어요.";
 
 "insights.health.unavailable.title" = "데이터가 충분하지 않아요";
-"insights.health.unavailable.message" = "수입과 지출 거래를 추가해 주세요 — 데이터가 충분해지면 금융 건강을 평가해 드려요.";
+"insights.health.unavailable.message" = "수입과 지출 거래를 추가해 주세요. 데이터가 충분해지면 금융 건강을 평가해 드려요.";
 
 "insights.health.howItWorks" = "계산 방식";
 "insights.health.explainer" = "금융 건강의 다섯 가지 측면을 반영한 0-100점 가중 점수예요. 점수가 높을수록 금융이 더 든든해요.";
 "insights.health.periodContext.months" = "최근 %d개월 활동을 기준으로 해요. 상단의 단위 선택기는 다른 분석을 바꾸지만 이 점수에는 영향을 주지 않아요.";
 "insights.health.periodContext.singleMonth" = "이번 달 활동을 기준으로 해요. 상단의 단위 선택기는 다른 분석을 바꾸지만 이 점수에는 영향을 주지 않아요.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "설정된 예산이 없어요 — 25% 가중치가 나머지 네 항목에 재분배돼요.";
+"insights.health.weights.redistributed" = "설정된 예산이 없어요. 25% 가중치가 나머지 네 항목에 재분배돼요.";
 
 "insights.health.component.savingsRate.title" = "저축률";
 "insights.health.component.savingsRate.short" = "저축";
@@ -1575,21 +1575,21 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "20%%에 도달하려면 매달 지출을 약 %@ 줄이거나 수입을 약 %@ 늘려 보세요.";
-"insights.health.rec.savingsRate.healthy" = "훌륭해요 — 이 속도를 유지하세요. 20%% 이상이 장기적으로 권장되는 수준이에요.";
+"insights.health.rec.savingsRate.healthy" = "훌륭해요. 이 속도를 유지하세요. 20%% 이상이 장기적으로 권장되는 수준이에요.";
 
 "insights.health.rec.budgetAdherence.empty" = "예산이 설정돼 있지 않아요. 카테고리에 예산을 설정하면 이 항목이 점수에 반영돼요.";
 "insights.health.rec.budgetAdherence.partial" = "카테고리 %d개가 예산을 초과했어요. 열어서 과다 지출의 원인을 찾아보세요.";
-"insights.health.rec.budgetAdherence.full" = "모든 카테고리가 예산 내에 있어요 — 훌륭해요.";
+"insights.health.rec.budgetAdherence.full" = "모든 카테고리가 예산 내에 있어요. 훌륭해요.";
 
 "insights.health.rec.recurringRatio.high" = "구독과 반복 결제가 수입의 %.0f%%예요. 50%% 미만을 목표로, 필요 없는 것을 검토해 해지하세요.";
-"insights.health.rec.recurringRatio.healthy" = "수입의 %.0f%%가 반복 결제로 나가요 — 건강한 수준이에요.";
+"insights.health.rec.recurringRatio.healthy" = "수입의 %.0f%%가 반복 결제로 나가요. 건강한 수준이에요.";
 
 "insights.health.rec.emergencyFund.below" = "3개월치 지출을 감당하려면 약 %@가 더 필요해요.";
 "insights.health.rec.emergencyFund.belowWithProjection" = "3개월치 지출을 감당하려면 약 %@가 더 필요해요. 지금 저축 속도라면 약 %.1f개월 뒤에 도달해요.";
-"insights.health.rec.emergencyFund.healthy" = "%.1f개월치 지출을 확보하고 있어요 — 예상치 못한 상황에도 든든해요.";
+"insights.health.rec.emergencyFund.healthy" = "%.1f개월치 지출을 확보하고 있어요. 예상치 못한 상황에도 든든해요.";
 
 "insights.health.rec.cashFlow.negative" = "버는 것보다 많이 쓰고 있어요(이번 기간 수입의 −%.1f%%). 지출을 줄이거나 추가 수입원을 찾아보세요.";
-"insights.health.rec.cashFlow.positive" = "수입이 지출보다 %.1f%% 많아요 — 건강한 흑자 흐름이에요.";
+"insights.health.rec.cashFlow.positive" = "수입이 지출보다 %.1f%% 많아요. 건강한 흑자 흐름이에요.";
 
 // MARK: - Rating Prompt
 "rating.survey.title" = "Tenra가 마음에 드세요?";
@@ -1600,7 +1600,7 @@
 // MARK: - Premium
 "premium.unlock" = "Pro 잠금 해제";
 "premium.locked.voice.title" = "음성 입력은 Pro 기능이에요";
-"premium.locked.voice.message" = "음성으로 거래를 추가하세요 — 금액과 카테고리만 말하면 나머지는 Tenra가 채워요.";
+"premium.locked.voice.message" = "음성으로 거래를 추가하세요. 금액과 카테고리만 말하면 나머지는 Tenra가 채워요.";
 "premium.locked.import.title" = "명세서 가져오기는 Pro 기능이에요";
 "premium.locked.import.message" = "거래를 하나하나 입력하는 대신 PDF 은행 명세서와 CSV 파일을 자동으로 가져오세요.";
 "settings.supportID" = "지원 ID";
@@ -1617,7 +1617,7 @@
 "settings.pro.status.renews" = "%1$@ · %2$@ 갱신";
 "settings.pro.status.expires" = "%1$@ · %2$@ 만료";
 "settings.pro.founder" = "영구 무료";
-"settings.pro.founder.subtitle" = "당신은 파운딩 유저입니다 — 모든 Pro 기능을 영원히 무료로 이용할 수 있습니다. 감사합니다!";
+"settings.pro.founder.subtitle" = "당신은 파운딩 유저입니다. 모든 Pro 기능을 영원히 무료로 이용할 수 있습니다. 감사합니다!";
 "settings.pro.manage" = "구독 관리";
 "settings.pro.restore" = "구매 복원";
 "settings.pro.restore.restored" = "복원됨";

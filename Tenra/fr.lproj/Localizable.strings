@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "Type d'opération";
 "voiceConfirmation.noAccounts" = "Aucun compte disponible";
 "voiceConfirmation.selectCategory" = "Sélectionnez une catégorie";
-"voiceConfirmation.warning.accountNotFound" = "Compte introuvable — sélectionné par défaut";
-"voiceConfirmation.warning.accountNotRecognized" = "Compte non reconnu — sélectionné par défaut";
+"voiceConfirmation.warning.accountNotFound" = "Compte introuvable, sélectionné par défaut";
+"voiceConfirmation.warning.accountNotRecognized" = "Compte non reconnu, sélectionné par défaut";
 "voiceConfirmation.warning.enterAmount" = "Saisissez un montant";
 "voiceConfirmation.warning.enterValidAmount" = "Saisissez un montant valide";
 "voiceConfirmation.warning.selectAccount" = "Sélectionnez un compte";
-"voiceConfirmation.warning.accountNotSelected" = "Compte non sélectionné — valeur par défaut utilisée";
-"voiceConfirmation.warning.categoryNotRecognized" = "Catégorie non reconnue — sélectionnée par défaut";
+"voiceConfirmation.warning.accountNotSelected" = "Compte non sélectionné, valeur par défaut utilisée";
+"voiceConfirmation.warning.categoryNotRecognized" = "Catégorie non reconnue, sélectionnée par défaut";
 "voiceConfirmation.warning.selectCategory" = "Sélectionnez une catégorie";
-"voiceConfirmation.warning.categoryNotSelected" = "Catégorie non sélectionnée — valeur par défaut utilisée";
+"voiceConfirmation.warning.categoryNotSelected" = "Catégorie non sélectionnée, valeur par défaut utilisée";
 "voiceConfirmation.warning.categoryNotFound" = "Catégorie introuvable";
 
 // MARK: - Subscriptions
@@ -869,10 +869,10 @@
 "insights.formula.savingsRate.row.expenses" = "Dépenses";
 "insights.formula.savingsRate.row.saved" = "Épargné (revenus − dépenses)";
 "insights.formula.savingsRate.row.rate" = "Taux d'épargne";
-"insights.formula.savingsRate.explainer" = "La part de vos revenus qui reste à la fin du mois. Un taux plus élevé vous donne plus de liberté — de la souplesse dans les mois creux, des objectifs financés plus vite et un vrai coussin de sécurité.";
-"insights.formula.savingsRate.rec.good" = "Vous épargnez plus de 20 %% — gardez cette routine et envisagez de diriger le surplus vers un objectif à long terme.";
+"insights.formula.savingsRate.explainer" = "La part de vos revenus qui reste à la fin du mois. Un taux plus élevé vous donne plus de liberté : de la souplesse dans les mois creux, des objectifs financés plus vite et un vrai coussin de sécurité.";
+"insights.formula.savingsRate.rec.good" = "Vous épargnez plus de 20 %%. Gardez cette routine et envisagez de diriger le surplus vers un objectif à long terme.";
 "insights.formula.savingsRate.rec.fair" = "Correct, mais atteindre 20 %% représenterait %@ d'épargne en plus chaque mois. Réduisez les catégories récurrentes ou ponctuelles qui ont dérivé.";
-"insights.formula.savingsRate.rec.low" = "Sous 10 %%, aucune marge de sécurité. Visez au moins %@ de plus chaque mois — commencez par la plus grosse catégorie non essentielle.";
+"insights.formula.savingsRate.rec.low" = "Sous 10 %%, aucune marge de sécurité. Visez au moins %@ de plus chaque mois. Commencez par la plus grosse catégorie non essentielle.";
 "insights.formula.emergencyFund.title" = "Fonds d'urgence";
 "insights.formula.emergencyFund.heroLabel" = "Mois de dépenses couverts par votre solde";
 "insights.formula.emergencyFund.formulaHeader" = "Mode de calcul";
@@ -881,7 +881,7 @@
 "insights.formula.emergencyFund.row.monthsCovered" = "Mois couverts";
 "insights.formula.emergencyFund.explainer" = "Combien de temps vos comptes couvrent vos dépenses courantes si vos revenus s'arrêtaient demain. 3 mois est le plancher recommandé par la plupart des experts. 6 mois offrent un coussin confortable.";
 "insights.formula.emergencyFund.rec.good" = "Vous avez dépassé le seuil des 3 mois. Envisagez de placer le surplus sur un compte mieux rémunéré ou de le diriger vers des objectifs à plus long terme.";
-"insights.formula.emergencyFund.rec.gap" = "Pour atteindre 3 mois de couverture, ajoutez %@. Même de petites contributions mensuelles s'accumulent — commencez avec ce que permet votre taux d'épargne.";
+"insights.formula.emergencyFund.rec.gap" = "Pour atteindre 3 mois de couverture, ajoutez %@. Même de petites contributions mensuelles s'accumulent. Commencez avec ce que permet votre taux d'épargne.";
 "insights.formula.spendingForecast.title" = "Prévision des dépenses de fin de mois";
 "insights.formula.spendingForecast.heroLabel" = "Total des dépenses prévu ce mois-ci";
 "insights.formula.spendingForecast.formulaHeader" = "Mode de calcul";
@@ -893,7 +893,7 @@
 "insights.formula.spendingForecast.explainer" = "Dépensé à ce jour + (moyenne quotidienne × jours restants) + paiements récurrents à venir. Le récurrent est réparti au prorata des jours restants pour qu'un abonnement du 28 ne soit pas compté deux fois si nous sommes le 25.";
 "insights.formula.spendingForecast.rec.overrun" = "Vous êtes en passe de dépasser vos revenus de %@. Passez en revue les dépenses non essentielles ou reportez les achats optionnels au mois prochain.";
 "insights.formula.spendingForecast.rec.onTrack" = "La prévision laisse une marge de %@. Sécurisez-la en évitant les achats non prévus, ou transférez-la dès maintenant vers votre épargne.";
-"insights.formula.spendingForecast.rec.noIncome" = "Aucun revenu enregistré ce mois-ci pour l'instant — la prévision est donnée à titre indicatif.";
+"insights.formula.spendingForecast.rec.noIncome" = "Aucun revenu enregistré ce mois-ci pour l'instant. La prévision est donnée à titre indicatif.";
 "insights.formula.balanceRunway.title" = "Autonomie du solde";
 "insights.formula.balanceRunway.heroLabel" = "Mois avant épuisement du solde au rythme actuel";
 "insights.formula.balanceRunway.heroLabel.growing" = "Excédent mensuel moyen";
@@ -905,11 +905,11 @@
 "insights.formula.balanceRunway.row.netFlow" = "Flux net moyen";
 "insights.formula.balanceRunway.row.runway" = "Autonomie";
 "insights.formula.balanceRunway.explainer" = "Solde ÷ déficit mensuel. Le seuil de 3 mois correspond à un coussin de sécurité sain. En dessous d'un mois, un seul cycle de paie difficile épuise la réserve.";
-"insights.formula.balanceRunway.explainer.growing" = "Vos revenus dépassent vos dépenses, donc votre solde augmente. La valeur affichée est votre excédent mensuel moyen — à ce rythme, votre solde a une autonomie illimitée.";
-"insights.formula.balanceRunway.rec.growing" = "Vous êtes en excédent — dirigez le surplus vers vos objectifs, vos dettes ou une épargne mieux rémunérée plutôt que de le laisser dormir.";
-"insights.formula.balanceRunway.rec.long" = "Plus de 3 mois d'autonomie — vous êtes bien couvert. Envisagez de placer l'excédent sur des supports à plus long terme.";
-"insights.formula.balanceRunway.rec.short" = "Moins de 3 mois. Réduisez le déficit d'environ %@/mois pour atteindre 3 mois de réserve — commencez par la plus grosse catégorie non essentielle.";
-"insights.formula.balanceRunway.rec.critical" = "Moins d'un mois d'autonomie — comblez l'écart de toute urgence. Suspendre même un seul gros paiement récurrent fait gagner des jours.";
+"insights.formula.balanceRunway.explainer.growing" = "Vos revenus dépassent vos dépenses, donc votre solde augmente. La valeur affichée est votre excédent mensuel moyen. À ce rythme, votre solde a une autonomie illimitée.";
+"insights.formula.balanceRunway.rec.growing" = "Vous êtes en excédent. Dirigez le surplus vers vos objectifs, vos dettes ou une épargne mieux rémunérée plutôt que de le laisser dormir.";
+"insights.formula.balanceRunway.rec.long" = "Plus de 3 mois d'autonomie : vous êtes bien couvert. Envisagez de placer l'excédent sur des supports à plus long terme.";
+"insights.formula.balanceRunway.rec.short" = "Moins de 3 mois. Réduisez le déficit d'environ %@/mois pour atteindre 3 mois de réserve. Commencez par la plus grosse catégorie non essentielle.";
+"insights.formula.balanceRunway.rec.critical" = "Moins d'un mois d'autonomie : comblez l'écart de toute urgence. Suspendre même un seul gros paiement récurrent fait gagner des jours.";
 "insights.formula.yearOverYear.title" = "Dépenses d'une année sur l'autre";
 "insights.formula.yearOverYear.heroLabel" = "Variation vs le même mois l'an dernier";
 "insights.formula.yearOverYear.formulaHeader" = "Mode de calcul";
@@ -917,10 +917,10 @@
 "insights.formula.yearOverYear.row.lastYear" = "Même mois l'an dernier";
 "insights.formula.yearOverYear.row.absDelta" = "Variation absolue";
 "insights.formula.yearOverYear.row.delta" = "Variation en pourcentage";
-"insights.formula.yearOverYear.explainer" = "Compare le total des dépenses du mois en cours au même mois il y a un an. Utile pour distinguer une vraie dérive des variations saisonnières — décembre coûte toujours plus cher, mais *ce* décembre est-il plus lourd que le précédent ?";
-"insights.formula.yearOverYear.rec.down" = "Vos dépenses sont nettement en baisse sur un an. Si ce n'est pas volontaire, vérifiez quelles catégories ont diminué — un paiement récurrent manqué se cache parfois ici.";
-"insights.formula.yearOverYear.rec.up" = "Les dépenses ont augmenté de %@. Comparez les principales catégories des deux mois — un nouvel abonnement, un loyer supplémentaire ou un gros achat expliquent souvent l'écart.";
-"insights.formula.yearOverYear.rec.flat" = "Variation modeste par rapport à l'an dernier — vos habitudes de dépense sont stables. Suivez le même indicateur le mois prochain pour repérer toute dérive.";
+"insights.formula.yearOverYear.explainer" = "Compare le total des dépenses du mois en cours au même mois il y a un an. Utile pour distinguer une vraie dérive des variations saisonnières : décembre coûte toujours plus cher, mais *ce* décembre est-il plus lourd que le précédent ?";
+"insights.formula.yearOverYear.rec.down" = "Vos dépenses sont nettement en baisse sur un an. Si ce n'est pas volontaire, vérifiez quelles catégories ont diminué. Un paiement récurrent manqué se cache parfois ici.";
+"insights.formula.yearOverYear.rec.up" = "Les dépenses ont augmenté de %@. Comparez les principales catégories des deux mois. Un nouvel abonnement, un loyer supplémentaire ou un gros achat expliquent souvent l'écart.";
+"insights.formula.yearOverYear.rec.flat" = "Variation modeste par rapport à l'an dernier : vos habitudes de dépense sont stables. Suivez le même indicateur le mois prochain pour repérer toute dérive.";
 "insights.formula.projectedBalance.title" = "Solde prévisionnel";
 "insights.formula.projectedBalance.heroLabel" = "Solde estimé en fin de période";
 "insights.formula.projectedBalance.formulaHeader" = "Mode de calcul";
@@ -929,9 +929,9 @@
 "insights.formula.projectedBalance.row.avgExpenses" = "Dépenses non récurrentes moy. sur la période";
 "insights.formula.projectedBalance.row.horizon" = "Horizon";
 "insights.formula.projectedBalance.row.projected" = "Solde prévisionnel";
-"insights.formula.projectedBalance.explainer" = "Solde actuel + (récurrent net − dépenses non récurrentes moyennes) rapporté à la période sélectionnée. Projection linéaire naïve — elle suppose que les 3 dernières périodes reflètent ce qui vient. Utilisez-la comme alerte précoce, pas comme une prévision précise.";
-"insights.formula.projectedBalance.rec.growing" = "La projection est orientée à la hausse — le rythme actuel fait croître le solde sur la période.";
-"insights.formula.projectedBalance.rec.dropping" = "La projection baisse de %@ sur la période. Identifiez les catégories qui ont fait grimper les dépenses — c'est là que l'action porte le plus.";
+"insights.formula.projectedBalance.explainer" = "Solde actuel + (récurrent net − dépenses non récurrentes moyennes) rapporté à la période sélectionnée. Projection linéaire naïve : elle suppose que les 3 dernières périodes reflètent ce qui vient. Utilisez-la comme alerte précoce, pas comme une prévision précise.";
+"insights.formula.projectedBalance.rec.growing" = "La projection est orientée à la hausse : le rythme actuel fait croître le solde sur la période.";
+"insights.formula.projectedBalance.rec.dropping" = "La projection baisse de %@ sur la période. Identifiez les catégories qui ont fait grimper les dépenses. C'est là que l'action porte le plus.";
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "vs il y a %d mois";
@@ -945,9 +945,9 @@
 "insights.formula.subscriptionGrowth.row.addedCount" = "Abonnements ajoutés depuis";
 "insights.formula.subscriptionGrowth.row.delta" = "Variation";
 "insights.formula.subscriptionGrowth.explainer" = "Additionne l'équivalent mensuel de chaque abonnement actif, puis compare au même total calculé uniquement avec les abonnements qui existaient déjà au début de la fenêtre de comparaison. La fenêtre s'adapte au sélecteur de granularité.";
-"insights.formula.subscriptionGrowth.rec.growing" = "Les dépenses récurrentes ont augmenté de %@/mois. Passez en revue les nouveaux abonnements que vous n'utilisez pas vraiment — les engagements récurrents s'accumulent au fil des ans.";
-"insights.formula.subscriptionGrowth.rec.shrinking" = "Vous avez réduit vos dépenses récurrentes — gardez cette discipline face aux nouveaux services. Dirigez le flux libéré vers l'épargne ou le remboursement de dettes.";
-"insights.formula.subscriptionGrowth.rec.stable" = "Les dépenses récurrentes sont restées à peu près stables. Le portefeuille est stable — passez-le en revue régulièrement pour éviter que des services inutilisés ne restent en douce.";
+"insights.formula.subscriptionGrowth.rec.growing" = "Les dépenses récurrentes ont augmenté de %@/mois. Passez en revue les nouveaux abonnements que vous n'utilisez pas vraiment. Les engagements récurrents s'accumulent au fil des ans.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "Vous avez réduit vos dépenses récurrentes. Gardez cette discipline face aux nouveaux services. Dirigez le flux libéré vers l'épargne ou le remboursement de dettes.";
+"insights.formula.subscriptionGrowth.rec.stable" = "Les dépenses récurrentes sont restées à peu près stables. Le portefeuille est stable : passez-le en revue régulièrement pour éviter que des services inutilisés ne restent en douce.";
 
 "insights.formula.categoryTrend.title" = "Tendance par catégorie";
 "insights.formula.categoryTrend.heroLabel" = "Catégorie de dépenses en plus forte hausse";
@@ -955,7 +955,7 @@
 "insights.formula.categoryTrend.row.month" = "Mois";
 "insights.formula.categoryTrend.row.delta" = "Dernier mois vs précédent";
 "insights.formula.categoryTrend.explainer" = "Nous analysons les totaux mensuels par catégorie sur la fenêtre de comparaison (qui s'adapte à la granularité) et affichons la catégorie avec la plus longue hausse mensuelle consécutive. Utile pour repérer une dérive lente avant qu'elle ne devienne un dépassement de budget.";
-"insights.formula.categoryTrend.rec" = "%@ augmente depuis %d mois consécutifs. Comparez les dernières opérations aux mois précédents — une opération récurrente ou un changement d'habitude explique généralement la série.";
+"insights.formula.categoryTrend.rec" = "%@ augmente depuis %d mois consécutifs. Comparez les dernières opérations aux mois précédents. Une opération récurrente ou un changement d'habitude explique généralement la série.";
 "insights.granularity.prev.week" = "vs semaine précédente";
 "insights.granularity.prev.month" = "vs mois précédent";
 "insights.granularity.prev.quarter" = "vs trimestre précédent";
@@ -996,7 +996,7 @@
 "insights.duplicateSubscriptions.title" = "Abonnements en double possibles";
 "insights.duplicateSubscriptions.subtitle" = "doublons potentiels détectés";
 "insights.accountDormancy.title" = "Argent qui dort";
-"insights.accountDormancy.subtitle" = "comptes inactifs 30+ jours — pourraient rapporter sur un dépôt";
+"insights.accountDormancy.subtitle" = "comptes inactifs 30+ jours, pourraient rapporter sur un dépôt";
 
 "notification.weeklyDigest.title" = "Bilan de la semaine";
 "notification.weeklyDigest.body.withComparison" = "%1$@ : dépenses %2$@ (%3$@ vs la semaine précédente)";
@@ -1007,7 +1007,7 @@
 "settings.insightSignals.master" = "Push pour les signaux importants";
 "settings.insightSignals.footer" = "Seuls les changements importants sont notifiés : dépassement de budget, hausse du prix des abonnements, prévision de solde bas. Chaque signal au plus une fois par semaine, 5 notifications hebdomadaires maximum au total.";
 "settings.insightSignals.lowBalance" = "Prévision de solde bas";
-"settings.insightSignals.permissionDenied" = "Les notifications sont désactivées dans Réglages iOS — touchez pour activer";
+"settings.insightSignals.permissionDenied" = "Les notifications sont désactivées dans Réglages iOS. Touchez pour activer";
 
 "insights.priceIncrease" = "Abonnement plus cher";
 "insights.priceIncrease.was" = "avant %@";
@@ -1031,8 +1031,8 @@
 "insights.formula.largeTransaction.row.amount" = "Montant";
 "insights.formula.largeTransaction.row.avgTx" = "Dépense moyenne (90 jours)";
 "insights.formula.largeTransaction.row.multiplier" = "Fois au-dessus de la moyenne";
-"insights.formula.largeTransaction.explainer" = "Les paiements récurrents (loyer, abonnements) sont exclus — seuls les achats ponctuels comptent. Un achat à 4× votre dépense moyenne mérite un second regard.";
-"insights.formula.largeTransaction.rec" = "Vérifiez que l’achat était prévu. Ponctuel ? Aucune action requise — le signal disparaît quand la moyenne s’ajuste.";
+"insights.formula.largeTransaction.explainer" = "Les paiements récurrents (loyer, abonnements) sont exclus : seuls les achats ponctuels comptent. Un achat à 4× votre dépense moyenne mérite un second regard.";
+"insights.formula.largeTransaction.rec" = "Vérifiez que l’achat était prévu. Ponctuel ? Aucune action requise : le signal disparaît quand la moyenne s’ajuste.";
 "insights.dormant.accounts" = "Comptes inactifs";
 
 // MARK: - Tab Bar
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "Détail du paiement en cours";
 "loan.principalPortion" = "Capital";
 "loan.interestPortion" = "Intérêts";
-"loan.noInterest" = "Paiement échelonné — sans intérêts";
+"loan.noInterest" = "Paiement échelonné, sans intérêts";
 "loan.stats" = "Statistiques";
 "loan.originalAmount" = "Montant initial";
 "loan.interestRate" = "Taux d'intérêt";
@@ -1484,9 +1484,9 @@
 /* MARK: - Onboarding */
 
 "onboarding.welcome.page1.title" = "Toutes vos finances au même endroit";
-"onboarding.welcome.page1.subtitle" = "Comptes, comptes épargne, crédits, abonnements et catégories de dépenses — le tout avec une analyse claire.";
+"onboarding.welcome.page1.subtitle" = "Comptes, comptes épargne, crédits, abonnements et catégories de dépenses, le tout avec une analyse claire.";
 "onboarding.welcome.page2.title" = "Ajoutez des opérations à la voix";
-"onboarding.welcome.page2.subtitle" = "Dites \"Café 800 tenge\" — Tenra reconnaît le montant, la devise et la catégorie. Ou importez vos relevés PDF/CSV.";
+"onboarding.welcome.page2.subtitle" = "Dites \"Café 800 tenge\" et Tenra reconnaît le montant, la devise et la catégorie. Ou importez vos relevés PDF/CSV.";
 "onboarding.welcome.page3.title" = "Vos données restent les vôtres";
 "onboarding.welcome.page3.subtitle" = "Tout est stocké sur votre appareil. La sauvegarde iCloud est facultative. Pas de compte, pas d'inscription.";
 
@@ -1529,20 +1529,20 @@
 
 // MARK: - Financial Health Detail Page
 
-"insights.health.subtitle.excellent" = "Excellente forme — vos finances sont solides.";
+"insights.health.subtitle.excellent" = "Excellente forme : vos finances sont solides.";
 "insights.health.subtitle.good" = "Des finances saines, avec une marge d'optimisation.";
 "insights.health.subtitle.fair" = "Une base correcte, mais quelques points demandent votre attention.";
 "insights.health.subtitle.needsAttention" = "Plusieurs aspects de vos finances demandent du travail.";
 
 "insights.health.unavailable.title" = "Pas assez de données";
-"insights.health.unavailable.message" = "Ajoutez des opérations de revenus et de dépenses — nous évaluerons votre santé financière dès que les données seront suffisantes.";
+"insights.health.unavailable.message" = "Ajoutez des opérations de revenus et de dépenses. Nous évaluerons votre santé financière dès que les données seront suffisantes.";
 
 "insights.health.howItWorks" = "Comment c'est calculé";
 "insights.health.explainer" = "Un score pondéré de 0 à 100 sur cinq aspects de la santé financière. Plus il est élevé, plus vos finances sont résilientes.";
 "insights.health.periodContext.months" = "Basé sur l'activité des %d derniers mois. Le sélecteur de granularité en haut modifie les autres analyses, mais pas ce score.";
 "insights.health.periodContext.singleMonth" = "Basé sur l'activité de ce mois-ci. Le sélecteur de granularité en haut modifie les autres analyses, mais pas ce score.";
 "insights.health.weightLabel" = "%d %%";
-"insights.health.weights.redistributed" = "Aucun budget configuré — la pondération de 25 % est répartie entre les quatre autres composantes.";
+"insights.health.weights.redistributed" = "Aucun budget configuré : la pondération de 25 % est répartie entre les quatre autres composantes.";
 
 "insights.health.component.savingsRate.title" = "Taux d'épargne";
 "insights.health.component.savingsRate.short" = "Épargne";
@@ -1575,21 +1575,21 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Pour atteindre 20 %%, réduisez vos dépenses d'environ %@ par mois ou augmentez vos revenus d'environ %@ par mois.";
-"insights.health.rec.savingsRate.healthy" = "Excellent — gardez le rythme. 20 %% et plus est le niveau recommandé pour une résilience à long terme.";
+"insights.health.rec.savingsRate.healthy" = "Excellent : gardez le rythme. 20 %% et plus est le niveau recommandé pour une résilience à long terme.";
 
-"insights.health.rec.budgetAdherence.empty" = "Les budgets ne sont pas configurés. Définissez-les sur vos catégories — cette composante comptera alors dans le score.";
+"insights.health.rec.budgetAdherence.empty" = "Les budgets ne sont pas configurés. Définissez-les sur vos catégories : cette composante comptera alors dans le score.";
 "insights.health.rec.budgetAdherence.partial" = "%d catégories dépassent leur budget. Ouvrez-les pour trouver la source du dépassement.";
-"insights.health.rec.budgetAdherence.full" = "Toutes les catégories respectent leur budget — excellent.";
+"insights.health.rec.budgetAdherence.full" = "Toutes les catégories respectent leur budget : excellent.";
 
-"insights.health.rec.recurringRatio.high" = "Les abonnements et paiements récurrents représentent %.0f %% de vos revenus. Visez moins de 50 %% — passez-les en revue et résiliez ce dont vous n'avez pas besoin.";
-"insights.health.rec.recurringRatio.healthy" = "%.0f %% de vos revenus vont aux paiements récurrents — un niveau sain.";
+"insights.health.rec.recurringRatio.high" = "Les abonnements et paiements récurrents représentent %.0f %% de vos revenus. Visez moins de 50 %% : passez-les en revue et résiliez ce dont vous n'avez pas besoin.";
+"insights.health.rec.recurringRatio.healthy" = "%.0f %% de vos revenus vont aux paiements récurrents, un niveau sain.";
 
 "insights.health.rec.emergencyFund.below" = "Il vous manque ≈ %@ pour couvrir 3 mois de dépenses.";
 "insights.health.rec.emergencyFund.belowWithProjection" = "Il vous manque ≈ %@ pour couvrir 3 mois de dépenses. À votre rythme d'épargne actuel, il vous faudra environ %.1f mois.";
-"insights.health.rec.emergencyFund.healthy" = "%.1f mois de dépenses en réserve — un coussin suffisant pour les imprévus.";
+"insights.health.rec.emergencyFund.healthy" = "%.1f mois de dépenses en réserve, un coussin suffisant pour les imprévus.";
 
 "insights.health.rec.cashFlow.negative" = "Vous dépensez plus que vous ne gagnez (−%.1f %% des revenus sur cette période). Réduisez vos dépenses ou trouvez une source de revenus supplémentaire.";
-"insights.health.rec.cashFlow.positive" = "Vos revenus dépassent vos dépenses de %.1f %% — un flux positif sain.";
+"insights.health.rec.cashFlow.positive" = "Vos revenus dépassent vos dépenses de %.1f %%, un flux positif sain.";
 
 // MARK: - Rating Prompt
 "rating.survey.title" = "Tenra vous plaît ?";
@@ -1600,7 +1600,7 @@
 // MARK: - Premium
 "premium.unlock" = "Débloquer Pro";
 "premium.locked.voice.title" = "La saisie vocale est une fonction Pro";
-"premium.locked.voice.message" = "Ajoutez des opérations à la voix — dites simplement le montant et la catégorie, Tenra s'occupe du reste.";
+"premium.locked.voice.message" = "Ajoutez des opérations à la voix : dites simplement le montant et la catégorie, Tenra s'occupe du reste.";
 "premium.locked.import.title" = "L'import de relevés est une fonction Pro";
 "premium.locked.import.message" = "Importez automatiquement vos relevés bancaires PDF et fichiers CSV au lieu de saisir chaque opération.";
 "settings.supportID" = "ID de support";

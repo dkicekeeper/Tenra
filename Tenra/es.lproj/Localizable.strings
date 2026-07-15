@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "Tipo de operación";
 "voiceConfirmation.noAccounts" = "No hay cuentas disponibles";
 "voiceConfirmation.selectCategory" = "Selecciona una categoría";
-"voiceConfirmation.warning.accountNotFound" = "Cuenta no encontrada — seleccionada por defecto";
-"voiceConfirmation.warning.accountNotRecognized" = "Cuenta no reconocida — seleccionada por defecto";
+"voiceConfirmation.warning.accountNotFound" = "Cuenta no encontrada, seleccionada por defecto";
+"voiceConfirmation.warning.accountNotRecognized" = "Cuenta no reconocida, seleccionada por defecto";
 "voiceConfirmation.warning.enterAmount" = "Introduce el importe";
 "voiceConfirmation.warning.enterValidAmount" = "Introduce un importe válido";
 "voiceConfirmation.warning.selectAccount" = "Selecciona una cuenta";
-"voiceConfirmation.warning.accountNotSelected" = "Cuenta no seleccionada — se usa la predeterminada";
-"voiceConfirmation.warning.categoryNotRecognized" = "Categoría no reconocida — seleccionada por defecto";
+"voiceConfirmation.warning.accountNotSelected" = "Cuenta no seleccionada, se usa la predeterminada";
+"voiceConfirmation.warning.categoryNotRecognized" = "Categoría no reconocida, seleccionada por defecto";
 "voiceConfirmation.warning.selectCategory" = "Selecciona una categoría";
-"voiceConfirmation.warning.categoryNotSelected" = "Categoría no seleccionada — se usa la predeterminada";
+"voiceConfirmation.warning.categoryNotSelected" = "Categoría no seleccionada, se usa la predeterminada";
 "voiceConfirmation.warning.categoryNotFound" = "No se pudo encontrar la categoría";
 
 // MARK: - Subscriptions
@@ -1484,9 +1484,9 @@
 /* MARK: - Onboarding */
 
 "onboarding.welcome.page1.title" = "Todas tus finanzas en un solo lugar";
-"onboarding.welcome.page1.subtitle" = "Cuentas, depósitos, préstamos, suscripciones y categorías de gasto — junto con análisis claros.";
+"onboarding.welcome.page1.subtitle" = "Cuentas, depósitos, préstamos, suscripciones y categorías de gasto, junto con análisis claros.";
 "onboarding.welcome.page2.title" = "Añade transacciones con tu voz";
-"onboarding.welcome.page2.subtitle" = "Di \"Café 800 tenge\" — Tenra reconoce el importe, la moneda y la categoría. O importa extractos desde PDF/CSV.";
+"onboarding.welcome.page2.subtitle" = "Di \"Café 800 tenge\" y Tenra reconoce el importe, la moneda y la categoría. O importa extractos desde PDF/CSV.";
 "onboarding.welcome.page3.title" = "Tus datos siguen siendo tuyos";
 "onboarding.welcome.page3.subtitle" = "Todo se guarda en tu dispositivo. La copia de seguridad en iCloud es opcional. Sin cuentas ni registro.";
 
@@ -1529,20 +1529,20 @@
 
 // MARK: - Financial Health Detail Page
 
-"insights.health.subtitle.excellent" = "Excelente forma — tus finanzas son resilientes.";
+"insights.health.subtitle.excellent" = "Excelente forma: tus finanzas son resilientes.";
 "insights.health.subtitle.good" = "Finanzas sólidas con margen para optimizar.";
 "insights.health.subtitle.fair" = "Base decente, pero algunas áreas necesitan atención.";
 "insights.health.subtitle.needsAttention" = "Varios aspectos de tus finanzas necesitan trabajo.";
 
 "insights.health.unavailable.title" = "Datos insuficientes";
-"insights.health.unavailable.message" = "Añade transacciones de ingresos y gastos — evaluaremos tu salud financiera cuando haya datos suficientes.";
+"insights.health.unavailable.message" = "Añade transacciones de ingresos y gastos. Evaluaremos tu salud financiera cuando haya datos suficientes.";
 
 "insights.health.howItWorks" = "Cómo se calcula";
 "insights.health.explainer" = "Una puntuación ponderada de 0 a 100 sobre cinco aspectos de la salud financiera. Cuanto más alta, mayor resiliencia financiera.";
 "insights.health.periodContext.months" = "Basado en la actividad de los últimos %d meses. El selector de granularidad de arriba cambia otros análisis, pero no esta puntuación.";
 "insights.health.periodContext.singleMonth" = "Basado en la actividad de este mes. El selector de granularidad de arriba cambia otros análisis, pero no esta puntuación.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "No hay presupuestos configurados — su peso del 25% se redistribuye entre los otros cuatro componentes.";
+"insights.health.weights.redistributed" = "No hay presupuestos configurados: su peso del 25% se redistribuye entre los otros cuatro componentes.";
 
 "insights.health.component.savingsRate.title" = "Tasa de ahorro";
 "insights.health.component.savingsRate.short" = "Ahorro";
@@ -1575,21 +1575,21 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Para llegar al 20%%, reduce tus gastos ≈ %@ al mes o aumenta tus ingresos ≈ %@ al mes.";
-"insights.health.rec.savingsRate.healthy" = "Excelente — mantén el ritmo. Un 20%% o más es el nivel recomendado para la resiliencia a largo plazo.";
+"insights.health.rec.savingsRate.healthy" = "Excelente, mantén el ritmo. Un 20%% o más es el nivel recomendado para la resiliencia a largo plazo.";
 
-"insights.health.rec.budgetAdherence.empty" = "Los presupuestos no están configurados. Defínelos en tus categorías — este componente contará entonces para la puntuación.";
+"insights.health.rec.budgetAdherence.empty" = "Los presupuestos no están configurados. Defínelos en tus categorías. Este componente contará entonces para la puntuación.";
 "insights.health.rec.budgetAdherence.partial" = "%d categorías superan el presupuesto. Ábrelas para encontrar el origen del exceso.";
-"insights.health.rec.budgetAdherence.full" = "Todas las categorías están dentro del presupuesto — excelente.";
+"insights.health.rec.budgetAdherence.full" = "Todas las categorías están dentro del presupuesto: excelente.";
 
-"insights.health.rec.recurringRatio.high" = "Las suscripciones y los pagos recurrentes suponen el %.0f%% de tus ingresos. Procura estar por debajo del 50%% — revisa y cancela lo que no necesites.";
-"insights.health.rec.recurringRatio.healthy" = "El %.0f%% de tus ingresos va a pagos recurrentes — un nivel saludable.";
+"insights.health.rec.recurringRatio.high" = "Las suscripciones y los pagos recurrentes suponen el %.0f%% de tus ingresos. Procura estar por debajo del 50%%: revisa y cancela lo que no necesites.";
+"insights.health.rec.recurringRatio.healthy" = "El %.0f%% de tus ingresos va a pagos recurrentes, un nivel saludable.";
 
 "insights.health.rec.emergencyFund.below" = "Te faltan ≈ %@ para cubrir 3 meses de gastos.";
 "insights.health.rec.emergencyFund.belowWithProjection" = "Te faltan ≈ %@ para cubrir 3 meses de gastos. A tu ritmo de ahorro actual, lo lograrás en unos %.1f meses.";
-"insights.health.rec.emergencyFund.healthy" = "%.1f meses de gastos disponibles — colchón suficiente para imprevistos.";
+"insights.health.rec.emergencyFund.healthy" = "%.1f meses de gastos disponibles, un colchón suficiente para imprevistos.";
 
 "insights.health.rec.cashFlow.negative" = "Gastas más de lo que ganas (−%.1f%% de tus ingresos este período). Reduce gastos o busca una fuente de ingresos adicional.";
-"insights.health.rec.cashFlow.positive" = "Tus ingresos superan tus gastos en un %.1f%% — un flujo positivo saludable.";
+"insights.health.rec.cashFlow.positive" = "Tus ingresos superan tus gastos en un %.1f%%, un flujo positivo saludable.";
 
 // MARK: - Rating Prompt
 "rating.survey.title" = "¿Te gusta Tenra?";
@@ -1600,7 +1600,7 @@
 // MARK: - Premium
 "premium.unlock" = "Desbloquear Pro";
 "premium.locked.voice.title" = "La entrada por voz es una función Pro";
-"premium.locked.voice.message" = "Añade transacciones con tu voz — solo di el importe y la categoría, Tenra completa el resto.";
+"premium.locked.voice.message" = "Añade transacciones con tu voz: solo di el importe y la categoría, Tenra completa el resto.";
 "premium.locked.import.title" = "La importación de extractos es una función Pro";
 "premium.locked.import.message" = "Importa extractos bancarios en PDF y archivos CSV automáticamente, en lugar de escribir cada transacción a mano.";
 "settings.supportID" = "ID de soporte";

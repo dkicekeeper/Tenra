@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "Operation Type";
 "voiceConfirmation.noAccounts" = "No available accounts";
 "voiceConfirmation.selectCategory" = "Select category";
-"voiceConfirmation.warning.accountNotFound" = "Account not found — selected by default";
-"voiceConfirmation.warning.accountNotRecognized" = "Account not recognized — selected by default";
+"voiceConfirmation.warning.accountNotFound" = "Account not found, selected by default";
+"voiceConfirmation.warning.accountNotRecognized" = "Account not recognized, selected by default";
 "voiceConfirmation.warning.enterAmount" = "Enter amount";
 "voiceConfirmation.warning.enterValidAmount" = "Enter a valid amount";
 "voiceConfirmation.warning.selectAccount" = "Select an account";
-"voiceConfirmation.warning.accountNotSelected" = "Account not selected — using default";
-"voiceConfirmation.warning.categoryNotRecognized" = "Category not recognized — selected by default";
+"voiceConfirmation.warning.accountNotSelected" = "Account not selected, using default";
+"voiceConfirmation.warning.categoryNotRecognized" = "Category not recognized, selected by default";
 "voiceConfirmation.warning.selectCategory" = "Select category";
-"voiceConfirmation.warning.categoryNotSelected" = "Category not selected — using default";
+"voiceConfirmation.warning.categoryNotSelected" = "Category not selected, using default";
 "voiceConfirmation.warning.categoryNotFound" = "Failed to find category";
 
 // MARK: - Subscriptions
@@ -869,10 +869,10 @@
 "insights.formula.savingsRate.row.expenses" = "Expenses";
 "insights.formula.savingsRate.row.saved" = "Saved (income − expenses)";
 "insights.formula.savingsRate.row.rate" = "Savings rate";
-"insights.formula.savingsRate.explainer" = "What share of your income survives the month. A higher rate buys you more freedom — flexibility in slow months, faster goal funding, and a real emergency cushion.";
-"insights.formula.savingsRate.rec.good" = "You're saving more than 20%% — keep the routine and consider directing the surplus toward a long-term goal.";
+"insights.formula.savingsRate.explainer" = "What share of your income survives the month. A higher rate buys you more freedom: flexibility in slow months, faster goal funding, and a real emergency cushion.";
+"insights.formula.savingsRate.rec.good" = "You're saving more than 20%%. Keep the routine and consider directing the surplus toward a long-term goal.";
 "insights.formula.savingsRate.rec.fair" = "Decent, but pushing to 20%% means an extra %@ saved each month. Trim recurring or one-off categories that crept up.";
-"insights.formula.savingsRate.rec.low" = "Below 10%% leaves no buffer. Aim for at least %@ more each month — start with the largest discretionary category.";
+"insights.formula.savingsRate.rec.low" = "Below 10%% leaves no buffer. Aim for at least %@ more each month. Start with the largest discretionary category.";
 "insights.formula.emergencyFund.title" = "Emergency Fund";
 "insights.formula.emergencyFund.heroLabel" = "Months of expenses your balance covers";
 "insights.formula.emergencyFund.formulaHeader" = "How it's computed";
@@ -881,7 +881,7 @@
 "insights.formula.emergencyFund.row.monthsCovered" = "Months covered";
 "insights.formula.emergencyFund.explainer" = "How long your accounts cover regular spending if income paused tomorrow. 3+ months is the floor most planners recommend; 6 months is a comfortable cushion.";
 "insights.formula.emergencyFund.rec.good" = "You're past the 3-month threshold. Consider parking the surplus in a higher-yield account or directing it toward longer-term goals.";
-"insights.formula.emergencyFund.rec.gap" = "To reach 3 months of cover, top up by %@. Even small monthly contributions compound — start with whatever fits your savings rate.";
+"insights.formula.emergencyFund.rec.gap" = "To reach 3 months of cover, top up by %@. Even small monthly contributions compound. Start with whatever fits your savings rate.";
 "insights.formula.spendingForecast.title" = "Month-end Spending Forecast";
 "insights.formula.spendingForecast.heroLabel" = "Projected total spend this month";
 "insights.formula.spendingForecast.formulaHeader" = "How it's computed";
@@ -893,7 +893,7 @@
 "insights.formula.spendingForecast.explainer" = "Spent so far + (avg daily × days remaining) + pending recurring. Recurring is prorated by days remaining so a subscription on the 28th doesn't double-count if today's the 25th.";
 "insights.formula.spendingForecast.rec.overrun" = "On track to overshoot income by %@. Pull discretionary spend forward into review or postpone optional purchases until next month.";
 "insights.formula.spendingForecast.rec.onTrack" = "Forecast leaves a cushion of %@. Lock it in by avoiding unscheduled purchases, or move it to savings now.";
-"insights.formula.spendingForecast.rec.noIncome" = "No income recorded yet this month — forecast is informational only.";
+"insights.formula.spendingForecast.rec.noIncome" = "No income recorded yet this month, so the forecast is informational only.";
 "insights.formula.balanceRunway.title" = "Balance Runway";
 "insights.formula.balanceRunway.heroLabel" = "Months until balance runs out at current burn";
 "insights.formula.balanceRunway.heroLabel.growing" = "Average monthly surplus";
@@ -905,11 +905,11 @@
 "insights.formula.balanceRunway.row.netFlow" = "Average net flow";
 "insights.formula.balanceRunway.row.runway" = "Runway";
 "insights.formula.balanceRunway.explainer" = "Balance ÷ monthly burn. The 3-month threshold matches a healthy emergency cushion; below 1 month means a single bad pay cycle drains the buffer.";
-"insights.formula.balanceRunway.explainer.growing" = "Income exceeds expenses, so balance is growing. The hero value is your average monthly surplus — your balance has indefinite runway at this rate.";
-"insights.formula.balanceRunway.rec.growing" = "You're net-positive — direct the surplus toward goals, debt, or higher-yield savings rather than letting it idle.";
-"insights.formula.balanceRunway.rec.long" = "More than 3 months of runway — you're well-buffered. Consider deploying excess cash to longer-term instruments.";
+"insights.formula.balanceRunway.explainer.growing" = "Income exceeds expenses, so balance is growing. The hero value is your average monthly surplus. Your balance has indefinite runway at this rate.";
+"insights.formula.balanceRunway.rec.growing" = "You're net-positive. Direct the surplus toward goals, debt, or higher-yield savings rather than letting it idle.";
+"insights.formula.balanceRunway.rec.long" = "More than 3 months of runway: you're well-buffered. Consider deploying excess cash to longer-term instruments.";
 "insights.formula.balanceRunway.rec.short" = "Below 3 months. Cut burn by ~%@/mo to reach a 3-month buffer; start with the largest discretionary category.";
-"insights.formula.balanceRunway.rec.critical" = "Less than a month of runway — close the gap urgently. Even pausing one major recurring payment buys days.";
+"insights.formula.balanceRunway.rec.critical" = "Less than a month of runway: close the gap urgently. Even pausing one major recurring payment buys days.";
 "insights.formula.yearOverYear.title" = "Year-Over-Year Spending";
 "insights.formula.yearOverYear.heroLabel" = "Change vs same month last year";
 "insights.formula.yearOverYear.formulaHeader" = "How it's computed";
@@ -917,10 +917,10 @@
 "insights.formula.yearOverYear.row.lastYear" = "Same month last year";
 "insights.formula.yearOverYear.row.absDelta" = "Absolute change";
 "insights.formula.yearOverYear.row.delta" = "Percentage change";
-"insights.formula.yearOverYear.explainer" = "Compares total expenses for the current month vs. the same month one year ago. Useful for spotting genuine drift versus seasonal swings — December always spends more, but is *this* December heavier than last?";
-"insights.formula.yearOverYear.rec.down" = "Spending is meaningfully down year-over-year. If unintentional, audit which categories cooled — sometimes a missed recurring is hiding here.";
-"insights.formula.yearOverYear.rec.up" = "Spending is up %@. Compare top categories for both months — single new subscriptions, an extra rent cycle, or one big purchase often explain the jump.";
-"insights.formula.yearOverYear.rec.flat" = "Modest change vs. last year — your spending pattern is stable. Track the same metric next month to spot any drift.";
+"insights.formula.yearOverYear.explainer" = "Compares total expenses for the current month vs. the same month one year ago. Useful for spotting genuine drift versus seasonal swings: December always spends more, but is *this* December heavier than last?";
+"insights.formula.yearOverYear.rec.down" = "Spending is meaningfully down year-over-year. If unintentional, audit which categories cooled. Sometimes a missed recurring is hiding here.";
+"insights.formula.yearOverYear.rec.up" = "Spending is up %@. Compare top categories for both months: single new subscriptions, an extra rent cycle, or one big purchase often explain the jump.";
+"insights.formula.yearOverYear.rec.flat" = "Modest change vs. last year: your spending pattern is stable. Track the same metric next month to spot any drift.";
 "insights.formula.projectedBalance.title" = "Projected Balance";
 "insights.formula.projectedBalance.heroLabel" = "Estimated balance at the end of period";
 "insights.formula.projectedBalance.formulaHeader" = "How it's computed";
@@ -929,9 +929,9 @@
 "insights.formula.projectedBalance.row.avgExpenses" = "Avg non-recurring expenses for the period";
 "insights.formula.projectedBalance.row.horizon" = "Horizon";
 "insights.formula.projectedBalance.row.projected" = "Projected balance";
-"insights.formula.projectedBalance.explainer" = "Current balance + (recurring net − avg non-recurring expenses) scaled to the selected period. Naïve linear projection — assumes the last 3 buckets represent what's coming. Use it for early warning, not as a precise forecast.";
-"insights.formula.projectedBalance.rec.growing" = "Projection trends upward — the current pattern adds to balance over the period.";
-"insights.formula.projectedBalance.rec.dropping" = "Projection drops by %@ over the period. Identify which categories pushed expenses up — those are where intervention compounds.";
+"insights.formula.projectedBalance.explainer" = "Current balance + (recurring net − avg non-recurring expenses) scaled to the selected period. Naïve linear projection: assumes the last 3 buckets represent what's coming. Use it for early warning, not as a precise forecast.";
+"insights.formula.projectedBalance.rec.growing" = "Projection trends upward: the current pattern adds to balance over the period.";
+"insights.formula.projectedBalance.rec.dropping" = "Projection drops by %@ over the period. Identify which categories pushed expenses up. Those are where intervention compounds.";
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "vs %d months ago";
@@ -945,8 +945,8 @@
 "insights.formula.subscriptionGrowth.row.addedCount" = "Subscriptions added since";
 "insights.formula.subscriptionGrowth.row.delta" = "Change";
 "insights.formula.subscriptionGrowth.explainer" = "Sums the monthly equivalent of every active subscription, then compares to the same total computed from only the subscriptions that already existed at the start of the lookback window. Lookback scales with the granularity selector.";
-"insights.formula.subscriptionGrowth.rec.growing" = "Recurring spend grew by %@/month. Audit the new subscriptions for ones you don't actively use — recurring lock-ins compound over years.";
-"insights.formula.subscriptionGrowth.rec.shrinking" = "You've trimmed recurring spend — keep the discipline as new services tempt you. Direct the freed cash flow to savings or debt.";
+"insights.formula.subscriptionGrowth.rec.growing" = "Recurring spend grew by %@/month. Audit the new subscriptions for ones you don't actively use. Recurring lock-ins compound over years.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "You've trimmed recurring spend. Keep the discipline as new services tempt you. Direct the freed cash flow to savings or debt.";
 "insights.formula.subscriptionGrowth.rec.stable" = "Recurring spend held roughly flat. The portfolio is stable; review periodically so unused services don't quietly stay.";
 
 "insights.formula.categoryTrend.title" = "Category Trend";
@@ -955,7 +955,7 @@
 "insights.formula.categoryTrend.row.month" = "Month";
 "insights.formula.categoryTrend.row.delta" = "Last vs previous month";
 "insights.formula.categoryTrend.explainer" = "We scan monthly category totals over the lookback window (which scales with granularity) and surface the category with the longest consecutive monthly increase. Useful for catching slow drift before it shows up as a budget overrun.";
-"insights.formula.categoryTrend.rec" = "%@ has been rising %d months in a row. Compare the latest transactions against earlier months — a single recurring transaction or a habit shift usually explains the streak.";
+"insights.formula.categoryTrend.rec" = "%@ has been rising %d months in a row. Compare the latest transactions against earlier months. A single recurring transaction or a habit shift usually explains the streak.";
 "insights.granularity.prev.week" = "vs previous week";
 "insights.granularity.prev.month" = "vs previous month";
 "insights.granularity.prev.quarter" = "vs previous quarter";
@@ -996,7 +996,7 @@
 "insights.duplicateSubscriptions.title" = "Possible Duplicate Subscriptions";
 "insights.duplicateSubscriptions.subtitle" = "potential duplicates detected";
 "insights.accountDormancy.title" = "Money sitting idle";
-"insights.accountDormancy.subtitle" = "accounts idle 30+ days — could be earning on a deposit";
+"insights.accountDormancy.subtitle" = "accounts idle 30+ days, could be earning on a deposit";
 
 "notification.weeklyDigest.title" = "Weekly summary";
 "notification.weeklyDigest.body.withComparison" = "%1$@: spending %2$@ (%3$@ vs the previous week)";
@@ -1007,7 +1007,7 @@
 "settings.insightSignals.master" = "Push alerts for important signals";
 "settings.insightSignals.footer" = "Only important changes are pushed: budget overruns, subscription price increases, a low balance forecast. Each signal fires at most once a week, no more than 5 notifications per week in total.";
 "settings.insightSignals.lowBalance" = "Low balance forecast";
-"settings.insightSignals.permissionDenied" = "Notifications are off in iOS Settings — tap to enable";
+"settings.insightSignals.permissionDenied" = "Notifications are off in iOS Settings. Tap to enable";
 
 "insights.priceIncrease" = "Subscription price increased";
 "insights.priceIncrease.was" = "was %@";
@@ -1020,8 +1020,8 @@
 "insights.formula.priceIncrease.row.newPrice" = "Latest charge";
 "insights.formula.priceIncrease.row.delta" = "Change";
 "insights.formula.priceIncrease.row.yearlyImpact" = "Extra cost per year";
-"insights.formula.priceIncrease.explainer" = "Compares the latest charge of an active recurring payment with the previous one (or with the planned amount). Small provider price bumps compound — a 15% raise across several subscriptions equals a whole new subscription.";
-"insights.formula.priceIncrease.rec" = "Check whether the new price is justified. If not — pause or cancel it in the Subscriptions tab.";
+"insights.formula.priceIncrease.explainer" = "Compares the latest charge of an active recurring payment with the previous one (or with the planned amount). Small provider price bumps compound: a 15% raise across several subscriptions equals a whole new subscription.";
+"insights.formula.priceIncrease.rec" = "Check whether the new price is justified. If not, pause or cancel it in the Subscriptions tab.";
 "insights.formula.largeTransaction.title" = "Large Expense";
 "insights.formula.largeTransaction.heroLabel" = "Biggest one-off expense in 30 days";
 "insights.formula.largeTransaction.formulaHeader" = "How it's computed";
@@ -1031,8 +1031,8 @@
 "insights.formula.largeTransaction.row.amount" = "Amount";
 "insights.formula.largeTransaction.row.avgTx" = "Average expense (90 days)";
 "insights.formula.largeTransaction.row.multiplier" = "Times above average";
-"insights.formula.largeTransaction.explainer" = "Recurring charges like rent and subscriptions are excluded — only one-off purchases count. A purchase 4× your average expense is worth a second look.";
-"insights.formula.largeTransaction.rec" = "Make sure the purchase is expected. One-off? No action needed — the signal clears as your average adjusts.";
+"insights.formula.largeTransaction.explainer" = "Recurring charges like rent and subscriptions are excluded: only one-off purchases count. A purchase 4× your average expense is worth a second look.";
+"insights.formula.largeTransaction.rec" = "Make sure the purchase is expected. One-off? No action needed. The signal clears as your average adjusts.";
 "insights.dormant.accounts" = "Idle Accounts";
 
 // MARK: - Tab Bar
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "Current Payment Breakdown";
 "loan.principalPortion" = "Principal";
 "loan.interestPortion" = "Interest";
-"loan.noInterest" = "Installment — no interest charged";
+"loan.noInterest" = "Installment: no interest charged";
 "loan.stats" = "Statistics";
 "loan.originalAmount" = "Original Amount";
 "loan.interestRate" = "Interest Rate";
@@ -1484,9 +1484,9 @@
 /* MARK: - Onboarding */
 
 "onboarding.welcome.page1.title" = "All your finances in one place";
-"onboarding.welcome.page1.subtitle" = "Accounts, deposits, loans, subscriptions and spending categories — together with clear analytics.";
+"onboarding.welcome.page1.subtitle" = "Accounts, deposits, loans, subscriptions and spending categories, together with clear analytics.";
 "onboarding.welcome.page2.title" = "Add transactions by voice";
-"onboarding.welcome.page2.subtitle" = "Say \"Coffee 800 tenge\" — Tenra parses amount, currency, and category. Or import statements from PDF/CSV.";
+"onboarding.welcome.page2.subtitle" = "Say \"Coffee 800 tenge\" and Tenra parses amount, currency, and category. Or import statements from PDF/CSV.";
 "onboarding.welcome.page3.title" = "Your data stays yours";
 "onboarding.welcome.page3.subtitle" = "Everything is stored on-device. iCloud backup is optional. No accounts, no signup.";
 
@@ -1529,20 +1529,20 @@
 
 // MARK: - Financial Health Detail Page
 
-"insights.health.subtitle.excellent" = "Excellent shape — your finances are resilient.";
+"insights.health.subtitle.excellent" = "Excellent shape: your finances are resilient.";
 "insights.health.subtitle.good" = "Solid finances with room to optimise.";
 "insights.health.subtitle.fair" = "Decent footing, but a few areas need attention.";
 "insights.health.subtitle.needsAttention" = "Several aspects of your finances need work.";
 
 "insights.health.unavailable.title" = "Not enough data";
-"insights.health.unavailable.message" = "Add income and expense transactions — we'll evaluate your financial health once enough data is available.";
+"insights.health.unavailable.message" = "Add income and expense transactions. We'll evaluate your financial health once enough data is available.";
 
 "insights.health.howItWorks" = "How it's computed";
 "insights.health.explainer" = "A 0-100 weighted score across five aspects of financial health. Higher means more financial resilience.";
 "insights.health.periodContext.months" = "Based on the last %d months of activity. The granularity selector at the top changes other insights but not this score.";
 "insights.health.periodContext.singleMonth" = "Based on this month's activity. The granularity selector at the top changes other insights but not this score.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "No budgets configured — the 25% weight is redistributed across the other four components.";
+"insights.health.weights.redistributed" = "No budgets configured, so the 25% weight is redistributed across the other four components.";
 
 "insights.health.component.savingsRate.title" = "Savings Rate";
 "insights.health.component.savingsRate.short" = "Savings";
@@ -1575,21 +1575,21 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "To reach 20%%, cut expenses by ≈ %@ per month or grow income by ≈ %@ per month.";
-"insights.health.rec.savingsRate.healthy" = "Excellent — keep the pace. 20%%+ is the recommended level for long-term resilience.";
+"insights.health.rec.savingsRate.healthy" = "Excellent, keep the pace. 20%%+ is the recommended level for long-term resilience.";
 
-"insights.health.rec.budgetAdherence.empty" = "Budgets aren't configured. Set them up on your categories — this component will then count toward the score.";
+"insights.health.rec.budgetAdherence.empty" = "Budgets aren't configured. Set them up on your categories. This component will then count toward the score.";
 "insights.health.rec.budgetAdherence.partial" = "%d categories are over budget. Open them to find the source of overspend.";
-"insights.health.rec.budgetAdherence.full" = "Every category is within budget — excellent.";
+"insights.health.rec.budgetAdherence.full" = "Every category is within budget. Excellent.";
 
-"insights.health.rec.recurringRatio.high" = "Subscriptions and recurring payments are %.0f%% of your income. Aim for under 50%% — review and cancel what you don't need.";
-"insights.health.rec.recurringRatio.healthy" = "%.0f%% of your income goes to recurring payments — a healthy level.";
+"insights.health.rec.recurringRatio.high" = "Subscriptions and recurring payments are %.0f%% of your income. Aim for under 50%%. Review and cancel what you don't need.";
+"insights.health.rec.recurringRatio.healthy" = "%.0f%% of your income goes to recurring payments, a healthy level.";
 
 "insights.health.rec.emergencyFund.below" = "You need ≈ %@ more to cover 3 months of expenses.";
 "insights.health.rec.emergencyFund.belowWithProjection" = "You need ≈ %@ more to cover 3 months of expenses. At your current saving pace, that's about %.1f months away.";
-"insights.health.rec.emergencyFund.healthy" = "%.1f months of expenses on hand — enough cushion for the unexpected.";
+"insights.health.rec.emergencyFund.healthy" = "%.1f months of expenses on hand, enough cushion for the unexpected.";
 
 "insights.health.rec.cashFlow.negative" = "You're spending more than you earn (−%.1f%% of income this period). Cut expenses or find an additional income source.";
-"insights.health.rec.cashFlow.positive" = "Your income exceeds expenses by %.1f%% — a healthy positive flow.";
+"insights.health.rec.cashFlow.positive" = "Your income exceeds expenses by %.1f%%, a healthy positive flow.";
 
 // MARK: - Rating Prompt
 "rating.survey.title" = "Enjoying Tenra?";
@@ -1600,7 +1600,7 @@
 // MARK: - Premium
 "premium.unlock" = "Unlock Pro";
 "premium.locked.voice.title" = "Voice input is a Pro feature";
-"premium.locked.voice.message" = "Add transactions by voice — just say the amount and category, Tenra fills in the rest.";
+"premium.locked.voice.message" = "Add transactions by voice: just say the amount and category, Tenra fills in the rest.";
 "premium.locked.import.title" = "Statement import is a Pro feature";
 "premium.locked.import.message" = "Import PDF bank statements and CSV files automatically instead of typing each transaction.";
 "settings.supportID" = "Support ID";
@@ -1617,7 +1617,7 @@
 "settings.pro.status.renews" = "%1$@ · Renews %2$@";
 "settings.pro.status.expires" = "%1$@ · Expires %2$@";
 "settings.pro.founder" = "Free forever";
-"settings.pro.founder.subtitle" = "You are a Founding User — every Pro feature is free for you, forever. Thank you!";
+"settings.pro.founder.subtitle" = "You are a Founding User. Every Pro feature is free for you, forever. Thank you!";
 "settings.pro.manage" = "Manage Subscription";
 "settings.pro.restore" = "Restore Purchases";
 "settings.pro.restore.restored" = "Restored";

@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "Vorgangsart";
 "voiceConfirmation.noAccounts" = "Keine verfügbaren Konten";
 "voiceConfirmation.selectCategory" = "Kategorie wählen";
-"voiceConfirmation.warning.accountNotFound" = "Konto nicht gefunden — Standard ausgewählt";
-"voiceConfirmation.warning.accountNotRecognized" = "Konto nicht erkannt — Standard ausgewählt";
+"voiceConfirmation.warning.accountNotFound" = "Konto nicht gefunden, Standard ausgewählt";
+"voiceConfirmation.warning.accountNotRecognized" = "Konto nicht erkannt, Standard ausgewählt";
 "voiceConfirmation.warning.enterAmount" = "Betrag eingeben";
 "voiceConfirmation.warning.enterValidAmount" = "Geben Sie einen gültigen Betrag ein";
 "voiceConfirmation.warning.selectAccount" = "Wählen Sie ein Konto";
-"voiceConfirmation.warning.accountNotSelected" = "Kein Konto gewählt — Standard wird verwendet";
-"voiceConfirmation.warning.categoryNotRecognized" = "Kategorie nicht erkannt — Standard ausgewählt";
+"voiceConfirmation.warning.accountNotSelected" = "Kein Konto gewählt, Standard wird verwendet";
+"voiceConfirmation.warning.categoryNotRecognized" = "Kategorie nicht erkannt, Standard ausgewählt";
 "voiceConfirmation.warning.selectCategory" = "Kategorie wählen";
-"voiceConfirmation.warning.categoryNotSelected" = "Keine Kategorie gewählt — Standard wird verwendet";
+"voiceConfirmation.warning.categoryNotSelected" = "Keine Kategorie gewählt, Standard wird verwendet";
 "voiceConfirmation.warning.categoryNotFound" = "Kategorie konnte nicht gefunden werden";
 
 // MARK: - Subscriptions
@@ -869,10 +869,10 @@
 "insights.formula.savingsRate.row.expenses" = "Ausgaben";
 "insights.formula.savingsRate.row.saved" = "Gespart (Einnahmen − Ausgaben)";
 "insights.formula.savingsRate.row.rate" = "Sparquote";
-"insights.formula.savingsRate.explainer" = "Welcher Anteil Ihres Einkommens den Monat übersteht. Eine höhere Quote verschafft Ihnen mehr Freiheit — Flexibilität in schwachen Monaten, schnellere Zielerreichung und einen echten Notgroschen.";
-"insights.formula.savingsRate.rec.good" = "Sie sparen mehr als 20%% — behalten Sie die Routine bei und erwägen Sie, den Überschuss in ein langfristiges Ziel zu lenken.";
-"insights.formula.savingsRate.rec.fair" = "Solide — aber mit 20%% würden Sie jeden Monat %@ zusätzlich sparen. Kürzen Sie wiederkehrende oder einmalige Kategorien, die gewachsen sind.";
-"insights.formula.savingsRate.rec.low" = "Unter 10%% bleibt kein Puffer. Streben Sie mindestens %@ mehr pro Monat an — beginnen Sie mit der größten frei verfügbaren Kategorie.";
+"insights.formula.savingsRate.explainer" = "Welcher Anteil Ihres Einkommens den Monat übersteht. Eine höhere Quote verschafft Ihnen mehr Freiheit: Flexibilität in schwachen Monaten, schnellere Zielerreichung und einen echten Notgroschen.";
+"insights.formula.savingsRate.rec.good" = "Sie sparen mehr als 20%%. Behalten Sie die Routine bei und erwägen Sie, den Überschuss in ein langfristiges Ziel zu lenken.";
+"insights.formula.savingsRate.rec.fair" = "Solide, aber mit 20%% würden Sie jeden Monat %@ zusätzlich sparen. Kürzen Sie wiederkehrende oder einmalige Kategorien, die gewachsen sind.";
+"insights.formula.savingsRate.rec.low" = "Unter 10%% bleibt kein Puffer. Streben Sie mindestens %@ mehr pro Monat an. Beginnen Sie mit der größten frei verfügbaren Kategorie.";
 "insights.formula.emergencyFund.title" = "Notgroschen";
 "insights.formula.emergencyFund.heroLabel" = "Monate an Ausgaben, die Ihr Kontostand abdeckt";
 "insights.formula.emergencyFund.formulaHeader" = "So wird es berechnet";
@@ -881,7 +881,7 @@
 "insights.formula.emergencyFund.row.monthsCovered" = "Abgedeckte Monate";
 "insights.formula.emergencyFund.explainer" = "Wie lange Ihre Konten die regulären Ausgaben decken, wenn das Einkommen morgen ausbliebe. 3+ Monate sind das Minimum, das die meisten Finanzplaner empfehlen; 6 Monate sind ein komfortables Polster.";
 "insights.formula.emergencyFund.rec.good" = "Sie haben die 3-Monats-Schwelle überschritten. Erwägen Sie, den Überschuss auf einem besser verzinsten Konto zu parken oder in langfristige Ziele zu lenken.";
-"insights.formula.emergencyFund.rec.gap" = "Um 3 Monate Deckung zu erreichen, fehlen noch %@. Auch kleine monatliche Beiträge summieren sich — beginnen Sie mit dem, was Ihre Sparquote zulässt.";
+"insights.formula.emergencyFund.rec.gap" = "Um 3 Monate Deckung zu erreichen, fehlen noch %@. Auch kleine monatliche Beiträge summieren sich. Beginnen Sie mit dem, was Ihre Sparquote zulässt.";
 "insights.formula.spendingForecast.title" = "Ausgabenprognose zum Monatsende";
 "insights.formula.spendingForecast.heroLabel" = "Prognostizierte Gesamtausgaben diesen Monat";
 "insights.formula.spendingForecast.formulaHeader" = "So wird es berechnet";
@@ -892,8 +892,8 @@
 "insights.formula.spendingForecast.row.total" = "Prognostizierte Summe";
 "insights.formula.spendingForecast.explainer" = "Bisher ausgegeben + (Ø täglich × verbleibende Tage) + ausstehende wiederkehrende Zahlungen. Wiederkehrendes wird anteilig auf die verbleibenden Tage gerechnet, damit ein Abo am 28. nicht doppelt zählt, wenn heute der 25. ist.";
 "insights.formula.spendingForecast.rec.overrun" = "Sie steuern darauf zu, die Einnahmen um %@ zu überschreiten. Prüfen Sie frei verfügbare Ausgaben oder verschieben Sie optionale Käufe auf den nächsten Monat.";
-"insights.formula.spendingForecast.rec.onTrack" = "Die Prognose lässt ein Polster von %@. Sichern Sie es, indem Sie ungeplante Käufe vermeiden — oder legen Sie es jetzt zurück.";
-"insights.formula.spendingForecast.rec.noIncome" = "In diesem Monat wurden noch keine Einnahmen erfasst — die Prognose ist rein informativ.";
+"insights.formula.spendingForecast.rec.onTrack" = "Die Prognose lässt ein Polster von %@. Sichern Sie es, indem Sie ungeplante Käufe vermeiden, oder legen Sie es jetzt zurück.";
+"insights.formula.spendingForecast.rec.noIncome" = "In diesem Monat wurden noch keine Einnahmen erfasst. Die Prognose ist rein informativ.";
 "insights.formula.balanceRunway.title" = "Kontostand-Reichweite";
 "insights.formula.balanceRunway.heroLabel" = "Monate, bis der Kontostand bei aktuellem Verbrauch aufgebraucht ist";
 "insights.formula.balanceRunway.heroLabel.growing" = "Durchschnittlicher Monatsüberschuss";
@@ -905,11 +905,11 @@
 "insights.formula.balanceRunway.row.netFlow" = "Durchschnittlicher Nettofluss";
 "insights.formula.balanceRunway.row.runway" = "Reichweite";
 "insights.formula.balanceRunway.explainer" = "Kontostand ÷ monatlicher Verbrauch. Die 3-Monats-Schwelle entspricht einem gesunden Notgroschen; unter 1 Monat leert schon ein einziger schlechter Gehaltszyklus den Puffer.";
-"insights.formula.balanceRunway.explainer.growing" = "Die Einnahmen übersteigen die Ausgaben, Ihr Kontostand wächst also. Der Hauptwert ist Ihr durchschnittlicher Monatsüberschuss — bei diesem Tempo reicht Ihr Kontostand unbegrenzt.";
-"insights.formula.balanceRunway.rec.growing" = "Sie sind im Plus — lenken Sie den Überschuss in Ziele, Schuldenabbau oder besser verzinste Rücklagen, statt ihn liegen zu lassen.";
-"insights.formula.balanceRunway.rec.long" = "Mehr als 3 Monate Reichweite — Sie sind gut gepolstert. Erwägen Sie, überschüssiges Geld langfristiger anzulegen.";
+"insights.formula.balanceRunway.explainer.growing" = "Die Einnahmen übersteigen die Ausgaben, Ihr Kontostand wächst also. Der Hauptwert ist Ihr durchschnittlicher Monatsüberschuss. Bei diesem Tempo reicht Ihr Kontostand unbegrenzt.";
+"insights.formula.balanceRunway.rec.growing" = "Sie sind im Plus. Lenken Sie den Überschuss in Ziele, Schuldenabbau oder besser verzinste Rücklagen, statt ihn liegen zu lassen.";
+"insights.formula.balanceRunway.rec.long" = "Mehr als 3 Monate Reichweite: Sie sind gut gepolstert. Erwägen Sie, überschüssiges Geld langfristiger anzulegen.";
 "insights.formula.balanceRunway.rec.short" = "Unter 3 Monaten. Senken Sie den Verbrauch um ca. %@/Monat, um einen 3-Monats-Puffer zu erreichen; beginnen Sie mit der größten frei verfügbaren Kategorie.";
-"insights.formula.balanceRunway.rec.critical" = "Weniger als ein Monat Reichweite — schließen Sie die Lücke dringend. Schon das Pausieren einer großen wiederkehrenden Zahlung verschafft Tage.";
+"insights.formula.balanceRunway.rec.critical" = "Weniger als ein Monat Reichweite. Schließen Sie die Lücke dringend. Schon das Pausieren einer großen wiederkehrenden Zahlung verschafft Tage.";
 "insights.formula.yearOverYear.title" = "Ausgaben im Jahresvergleich";
 "insights.formula.yearOverYear.heroLabel" = "Veränderung ggü. demselben Monat im Vorjahr";
 "insights.formula.yearOverYear.formulaHeader" = "So wird es berechnet";
@@ -917,10 +917,10 @@
 "insights.formula.yearOverYear.row.lastYear" = "Derselbe Monat im Vorjahr";
 "insights.formula.yearOverYear.row.absDelta" = "Absolute Veränderung";
 "insights.formula.yearOverYear.row.delta" = "Prozentuale Veränderung";
-"insights.formula.yearOverYear.explainer" = "Vergleicht die Gesamtausgaben des aktuellen Monats mit demselben Monat vor einem Jahr. Nützlich, um echte Verschiebungen von saisonalen Schwankungen zu unterscheiden — im Dezember wird immer mehr ausgegeben, aber ist *dieser* Dezember teurer als der letzte?";
-"insights.formula.yearOverYear.rec.down" = "Die Ausgaben sind im Jahresvergleich deutlich gesunken. Falls unbeabsichtigt, prüfen Sie, welche Kategorien zurückgingen — manchmal versteckt sich hier eine verpasste wiederkehrende Zahlung.";
-"insights.formula.yearOverYear.rec.up" = "Die Ausgaben sind um %@ gestiegen. Vergleichen Sie die Top-Kategorien beider Monate — ein neues Abo, eine zusätzliche Mietzahlung oder ein großer Einkauf erklären den Sprung oft.";
-"insights.formula.yearOverYear.rec.flat" = "Geringe Veränderung ggü. dem Vorjahr — Ihr Ausgabenmuster ist stabil. Beobachten Sie die Kennzahl nächsten Monat weiter, um Verschiebungen zu erkennen.";
+"insights.formula.yearOverYear.explainer" = "Vergleicht die Gesamtausgaben des aktuellen Monats mit demselben Monat vor einem Jahr. Nützlich, um echte Verschiebungen von saisonalen Schwankungen zu unterscheiden: Im Dezember wird immer mehr ausgegeben, aber ist *dieser* Dezember teurer als der letzte?";
+"insights.formula.yearOverYear.rec.down" = "Die Ausgaben sind im Jahresvergleich deutlich gesunken. Falls unbeabsichtigt, prüfen Sie, welche Kategorien zurückgingen. Manchmal versteckt sich hier eine verpasste wiederkehrende Zahlung.";
+"insights.formula.yearOverYear.rec.up" = "Die Ausgaben sind um %@ gestiegen. Vergleichen Sie die Top-Kategorien beider Monate. Ein neues Abo, eine zusätzliche Mietzahlung oder ein großer Einkauf erklären den Sprung oft.";
+"insights.formula.yearOverYear.rec.flat" = "Geringe Veränderung ggü. dem Vorjahr: Ihr Ausgabenmuster ist stabil. Beobachten Sie die Kennzahl nächsten Monat weiter, um Verschiebungen zu erkennen.";
 "insights.formula.projectedBalance.title" = "Prognostizierter Kontostand";
 "insights.formula.projectedBalance.heroLabel" = "Geschätzter Kontostand am Ende des Zeitraums";
 "insights.formula.projectedBalance.formulaHeader" = "So wird es berechnet";
@@ -929,9 +929,9 @@
 "insights.formula.projectedBalance.row.avgExpenses" = "Ø nicht wiederkehrende Ausgaben im Zeitraum";
 "insights.formula.projectedBalance.row.horizon" = "Horizont";
 "insights.formula.projectedBalance.row.projected" = "Prognostizierter Kontostand";
-"insights.formula.projectedBalance.explainer" = "Aktueller Kontostand + (wiederkehrender Nettobetrag − Ø nicht wiederkehrende Ausgaben), skaliert auf den gewählten Zeitraum. Einfache lineare Projektion — sie nimmt an, dass die letzten 3 Perioden repräsentativ sind. Als Frühwarnung nutzen, nicht als präzise Prognose.";
-"insights.formula.projectedBalance.rec.growing" = "Die Projektion zeigt nach oben — das aktuelle Muster erhöht den Kontostand über den Zeitraum.";
-"insights.formula.projectedBalance.rec.dropping" = "Die Projektion sinkt über den Zeitraum um %@. Finden Sie heraus, welche Kategorien die Ausgaben nach oben getrieben haben — dort wirkt ein Eingriff am stärksten.";
+"insights.formula.projectedBalance.explainer" = "Aktueller Kontostand + (wiederkehrender Nettobetrag − Ø nicht wiederkehrende Ausgaben), skaliert auf den gewählten Zeitraum. Einfache lineare Projektion, die annimmt, dass die letzten 3 Perioden repräsentativ sind. Als Frühwarnung nutzen, nicht als präzise Prognose.";
+"insights.formula.projectedBalance.rec.growing" = "Die Projektion zeigt nach oben: Das aktuelle Muster erhöht den Kontostand über den Zeitraum.";
+"insights.formula.projectedBalance.rec.dropping" = "Die Projektion sinkt über den Zeitraum um %@. Finden Sie heraus, welche Kategorien die Ausgaben nach oben getrieben haben. Dort wirkt ein Eingriff am stärksten.";
 "insights.wealth.growth.compare" = "%@ vs. %@";
 
 "insights.subscriptionGrowth.compareAgo" = "ggü. vor %d Monaten";
@@ -945,8 +945,8 @@
 "insights.formula.subscriptionGrowth.row.addedCount" = "Seitdem hinzugefügte Abos";
 "insights.formula.subscriptionGrowth.row.delta" = "Veränderung";
 "insights.formula.subscriptionGrowth.explainer" = "Summiert das monatliche Äquivalent aller aktiven Abos und vergleicht es mit derselben Summe nur aus den Abos, die zu Beginn des Vergleichsfensters bereits existierten. Das Fenster skaliert mit dem gewählten Zeitraster.";
-"insights.formula.subscriptionGrowth.rec.growing" = "Die wiederkehrenden Ausgaben sind um %@/Monat gewachsen. Prüfen Sie die neuen Abos auf Dienste, die Sie nicht aktiv nutzen — wiederkehrende Bindungen summieren sich über Jahre.";
-"insights.formula.subscriptionGrowth.rec.shrinking" = "Sie haben die wiederkehrenden Ausgaben gesenkt — bleiben Sie diszipliniert, wenn neue Dienste locken. Lenken Sie den freigewordenen Cashflow in Rücklagen oder Schuldenabbau.";
+"insights.formula.subscriptionGrowth.rec.growing" = "Die wiederkehrenden Ausgaben sind um %@/Monat gewachsen. Prüfen Sie die neuen Abos auf Dienste, die Sie nicht aktiv nutzen. Wiederkehrende Bindungen summieren sich über Jahre.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "Sie haben die wiederkehrenden Ausgaben gesenkt. Bleiben Sie diszipliniert, wenn neue Dienste locken. Lenken Sie den freigewordenen Cashflow in Rücklagen oder Schuldenabbau.";
 "insights.formula.subscriptionGrowth.rec.stable" = "Die wiederkehrenden Ausgaben blieben etwa gleich. Das Portfolio ist stabil; prüfen Sie es regelmäßig, damit ungenutzte Dienste nicht stillschweigend bleiben.";
 
 "insights.formula.categoryTrend.title" = "Kategorie-Trend";
@@ -955,7 +955,7 @@
 "insights.formula.categoryTrend.row.month" = "Monat";
 "insights.formula.categoryTrend.row.delta" = "Letzter vs. Vormonat";
 "insights.formula.categoryTrend.explainer" = "Wir durchsuchen die monatlichen Kategoriesummen im Vergleichsfenster (skaliert mit dem Zeitraster) und zeigen die Kategorie mit dem längsten ununterbrochenen monatlichen Anstieg. Nützlich, um schleichende Zuwächse zu erkennen, bevor sie das Budget sprengen.";
-"insights.formula.categoryTrend.rec" = "%@ steigt seit %d Monaten in Folge. Vergleichen Sie die neuesten Transaktionen mit früheren Monaten — meist erklärt eine einzelne wiederkehrende Transaktion oder eine geänderte Gewohnheit die Serie.";
+"insights.formula.categoryTrend.rec" = "%@ steigt seit %d Monaten in Folge. Vergleichen Sie die neuesten Transaktionen mit früheren Monaten. Meist erklärt eine einzelne wiederkehrende Transaktion oder eine geänderte Gewohnheit die Serie.";
 "insights.granularity.prev.week" = "ggü. Vorwoche";
 "insights.granularity.prev.month" = "ggü. Vormonat";
 "insights.granularity.prev.quarter" = "ggü. Vorquartal";
@@ -996,7 +996,7 @@
 "insights.duplicateSubscriptions.title" = "Mögliche doppelte Abos";
 "insights.duplicateSubscriptions.subtitle" = "mögliche Duplikate erkannt";
 "insights.accountDormancy.title" = "Ungenutztes Geld";
-"insights.accountDormancy.subtitle" = "Konten 30+ Tage inaktiv — könnten auf einem Festgeld Zinsen bringen";
+"insights.accountDormancy.subtitle" = "Konten 30+ Tage inaktiv, könnten auf einem Festgeld Zinsen bringen";
 
 "notification.weeklyDigest.title" = "Wochenrückblick";
 "notification.weeklyDigest.body.withComparison" = "%1$@: Ausgaben %2$@ (%3$@ ggü. Vorwoche)";
@@ -1007,7 +1007,7 @@
 "settings.insightSignals.master" = "Push bei wichtigen Signalen";
 "settings.insightSignals.footer" = "Nur wichtige Änderungen werden gesendet: Budgetüberschreitungen, Abo-Preiserhöhungen, niedrige Saldoprognose. Jedes Signal höchstens einmal pro Woche, insgesamt maximal 5 Benachrichtigungen pro Woche.";
 "settings.insightSignals.lowBalance" = "Niedrige Saldoprognose";
-"settings.insightSignals.permissionDenied" = "Benachrichtigungen sind in den iOS-Einstellungen deaktiviert — zum Aktivieren tippen";
+"settings.insightSignals.permissionDenied" = "Benachrichtigungen sind in den iOS-Einstellungen deaktiviert. Zum Aktivieren tippen";
 
 "insights.priceIncrease" = "Abo-Preis gestiegen";
 "insights.priceIncrease.was" = "vorher %@";
@@ -1020,8 +1020,8 @@
 "insights.formula.priceIncrease.row.newPrice" = "Neueste Abbuchung";
 "insights.formula.priceIncrease.row.delta" = "Änderung";
 "insights.formula.priceIncrease.row.yearlyImpact" = "Mehrkosten pro Jahr";
-"insights.formula.priceIncrease.explainer" = "Vergleicht die neueste Abbuchung einer aktiven regelmäßigen Zahlung mit der vorherigen (oder mit dem geplanten Betrag). Kleine Preiserhöhungen summieren sich — 15 % bei mehreren Abos entsprechen einem ganz neuen Abo.";
-"insights.formula.priceIncrease.rec" = "Prüfen Sie, ob der neue Preis gerechtfertigt ist. Wenn nicht — pausieren oder kündigen Sie das Abo im Tab „Abos“.";
+"insights.formula.priceIncrease.explainer" = "Vergleicht die neueste Abbuchung einer aktiven regelmäßigen Zahlung mit der vorherigen (oder mit dem geplanten Betrag). Kleine Preiserhöhungen summieren sich: 15 % bei mehreren Abos entsprechen einem ganz neuen Abo.";
+"insights.formula.priceIncrease.rec" = "Prüfen Sie, ob der neue Preis gerechtfertigt ist. Wenn nicht, pausieren oder kündigen Sie das Abo im Tab „Abos“.";
 "insights.formula.largeTransaction.title" = "Große Ausgabe";
 "insights.formula.largeTransaction.heroLabel" = "Größte Einzelausgabe in 30 Tagen";
 "insights.formula.largeTransaction.formulaHeader" = "So wird es berechnet";
@@ -1031,8 +1031,8 @@
 "insights.formula.largeTransaction.row.amount" = "Betrag";
 "insights.formula.largeTransaction.row.avgTx" = "Durchschnittliche Ausgabe (90 Tage)";
 "insights.formula.largeTransaction.row.multiplier" = "Faktor über dem Durchschnitt";
-"insights.formula.largeTransaction.explainer" = "Regelmäßige Zahlungen wie Miete und Abos sind ausgenommen — nur Einzelkäufe zählen. Ein Kauf, der das 4-Fache Ihrer Durchschnittsausgabe beträgt, verdient einen zweiten Blick.";
-"insights.formula.largeTransaction.rec" = "Stellen Sie sicher, dass der Kauf erwartet war. Einmalig? Keine Aktion nötig — das Signal verschwindet, sobald sich der Durchschnitt anpasst.";
+"insights.formula.largeTransaction.explainer" = "Regelmäßige Zahlungen wie Miete und Abos sind ausgenommen. Nur Einzelkäufe zählen. Ein Kauf, der das 4-Fache Ihrer Durchschnittsausgabe beträgt, verdient einen zweiten Blick.";
+"insights.formula.largeTransaction.rec" = "Stellen Sie sicher, dass der Kauf erwartet war. Einmalig? Keine Aktion nötig. Das Signal verschwindet, sobald sich der Durchschnitt anpasst.";
 "insights.dormant.accounts" = "Inaktive Konten";
 
 // MARK: - Tab Bar
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "Aufschlüsselung der aktuellen Rate";
 "loan.principalPortion" = "Tilgung";
 "loan.interestPortion" = "Zinsen";
-"loan.noInterest" = "Ratenkauf — keine Zinsen";
+"loan.noInterest" = "Ratenkauf ohne Zinsen";
 "loan.stats" = "Statistik";
 "loan.originalAmount" = "Ursprünglicher Betrag";
 "loan.interestRate" = "Zinssatz";
@@ -1617,7 +1617,7 @@
 "settings.pro.status.renews" = "%1$@ · Verlängert sich am %2$@";
 "settings.pro.status.expires" = "%1$@ · Läuft ab am %2$@";
 "settings.pro.founder" = "Für immer gratis";
-"settings.pro.founder.subtitle" = "Sie sind ein Gründungsnutzer — alle Pro-Funktionen sind für Sie für immer kostenlos. Danke!";
+"settings.pro.founder.subtitle" = "Sie sind ein Gründungsnutzer: Alle Pro-Funktionen sind für Sie für immer kostenlos. Danke!";
 "settings.pro.manage" = "Abo verwalten";
 "settings.pro.restore" = "Käufe wiederherstellen";
 "settings.pro.restore.restored" = "Wiederhergestellt";

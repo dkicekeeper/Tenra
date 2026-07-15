@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "Tipo de Operação";
 "voiceConfirmation.noAccounts" = "Nenhuma conta disponível";
 "voiceConfirmation.selectCategory" = "Selecione a categoria";
-"voiceConfirmation.warning.accountNotFound" = "Conta não encontrada — selecionada por padrão";
-"voiceConfirmation.warning.accountNotRecognized" = "Conta não reconhecida — selecionada por padrão";
+"voiceConfirmation.warning.accountNotFound" = "Conta não encontrada: selecionada por padrão";
+"voiceConfirmation.warning.accountNotRecognized" = "Conta não reconhecida: selecionada por padrão";
 "voiceConfirmation.warning.enterAmount" = "Insira o valor";
 "voiceConfirmation.warning.enterValidAmount" = "Insira um valor válido";
 "voiceConfirmation.warning.selectAccount" = "Selecione uma conta";
-"voiceConfirmation.warning.accountNotSelected" = "Conta não selecionada — usando a padrão";
-"voiceConfirmation.warning.categoryNotRecognized" = "Categoria não reconhecida — selecionada por padrão";
+"voiceConfirmation.warning.accountNotSelected" = "Conta não selecionada: usando a padrão";
+"voiceConfirmation.warning.categoryNotRecognized" = "Categoria não reconhecida: selecionada por padrão";
 "voiceConfirmation.warning.selectCategory" = "Selecione a categoria";
-"voiceConfirmation.warning.categoryNotSelected" = "Categoria não selecionada — usando a padrão";
+"voiceConfirmation.warning.categoryNotSelected" = "Categoria não selecionada: usando a padrão";
 "voiceConfirmation.warning.categoryNotFound" = "Falha ao encontrar a categoria";
 
 // MARK: - Subscriptions
@@ -869,10 +869,10 @@
 "insights.formula.savingsRate.row.expenses" = "Despesas";
 "insights.formula.savingsRate.row.saved" = "Poupado (receita − despesas)";
 "insights.formula.savingsRate.row.rate" = "Taxa de poupança";
-"insights.formula.savingsRate.explainer" = "Que parcela da sua renda sobrevive ao mês. Uma taxa maior compra mais liberdade — flexibilidade nos meses fracos, metas alcançadas mais rápido e uma reserva de emergência de verdade.";
-"insights.formula.savingsRate.rec.good" = "Você está poupando mais de 20%% — mantenha a rotina e considere direcionar o excedente para uma meta de longo prazo.";
+"insights.formula.savingsRate.explainer" = "Que parcela da sua renda sobrevive ao mês. Uma taxa maior compra mais liberdade: flexibilidade nos meses fracos, metas alcançadas mais rápido e uma reserva de emergência de verdade.";
+"insights.formula.savingsRate.rec.good" = "Você está poupando mais de 20%%: mantenha a rotina e considere direcionar o excedente para uma meta de longo prazo.";
 "insights.formula.savingsRate.rec.fair" = "Bom, mas chegar a 20%% significa %@ a mais poupado por mês. Corte categorias recorrentes ou pontuais que cresceram sem você perceber.";
-"insights.formula.savingsRate.rec.low" = "Abaixo de 10%% não sobra colchão. Tente poupar pelo menos %@ a mais por mês — comece pela maior categoria de gastos não essenciais.";
+"insights.formula.savingsRate.rec.low" = "Abaixo de 10%% não sobra colchão. Tente poupar pelo menos %@ a mais por mês: comece pela maior categoria de gastos não essenciais.";
 "insights.formula.emergencyFund.title" = "Reserva de emergência";
 "insights.formula.emergencyFund.heroLabel" = "Meses de despesas que seu saldo cobre";
 "insights.formula.emergencyFund.formulaHeader" = "Como é calculado";
@@ -881,7 +881,7 @@
 "insights.formula.emergencyFund.row.monthsCovered" = "Meses cobertos";
 "insights.formula.emergencyFund.explainer" = "Por quanto tempo suas contas cobrem os gastos regulares se a renda parasse amanhã. 3+ meses é o mínimo que a maioria dos planejadores recomenda; 6 meses é um colchão confortável.";
 "insights.formula.emergencyFund.rec.good" = "Você já passou do limite de 3 meses. Considere deixar o excedente em uma conta com maior rendimento ou direcioná-lo para metas de longo prazo.";
-"insights.formula.emergencyFund.rec.gap" = "Para chegar a 3 meses de cobertura, faltam %@. Até aportes mensais pequenos se acumulam — comece com o que couber na sua taxa de poupança.";
+"insights.formula.emergencyFund.rec.gap" = "Para chegar a 3 meses de cobertura, faltam %@. Até aportes mensais pequenos se acumulam: comece com o que couber na sua taxa de poupança.";
 "insights.formula.spendingForecast.title" = "Previsão de gastos até o fim do mês";
 "insights.formula.spendingForecast.heroLabel" = "Gasto total projetado neste mês";
 "insights.formula.spendingForecast.formulaHeader" = "Como é calculado";
@@ -892,8 +892,8 @@
 "insights.formula.spendingForecast.row.total" = "Total previsto";
 "insights.formula.spendingForecast.explainer" = "Gasto até agora + (média diária × dias restantes) + recorrentes pendentes. Os recorrentes são rateados pelos dias restantes, então uma assinatura no dia 28 não conta em dobro se hoje é dia 25.";
 "insights.formula.spendingForecast.rec.overrun" = "No ritmo atual, você vai ultrapassar a renda em %@. Revise os gastos não essenciais ou adie compras opcionais para o próximo mês.";
-"insights.formula.spendingForecast.rec.onTrack" = "A previsão deixa uma folga de %@. Garanta essa folga evitando compras fora do planejado — ou mande o valor para a poupança agora.";
-"insights.formula.spendingForecast.rec.noIncome" = "Nenhuma receita registrada neste mês — a previsão é apenas informativa.";
+"insights.formula.spendingForecast.rec.onTrack" = "A previsão deixa uma folga de %@. Garanta essa folga evitando compras fora do planejado, ou mande o valor para a poupança agora.";
+"insights.formula.spendingForecast.rec.noIncome" = "Nenhuma receita registrada neste mês: a previsão é apenas informativa.";
 "insights.formula.balanceRunway.title" = "Fôlego do saldo";
 "insights.formula.balanceRunway.heroLabel" = "Meses até o saldo acabar no ritmo atual de gastos";
 "insights.formula.balanceRunway.heroLabel.growing" = "Excedente mensal médio";
@@ -905,11 +905,11 @@
 "insights.formula.balanceRunway.row.netFlow" = "Fluxo líquido médio";
 "insights.formula.balanceRunway.row.runway" = "Fôlego";
 "insights.formula.balanceRunway.explainer" = "Saldo ÷ queima mensal. O limite de 3 meses corresponde a uma reserva de emergência saudável; abaixo de 1 mês, um único ciclo de pagamento ruim esgota o colchão.";
-"insights.formula.balanceRunway.explainer.growing" = "A receita supera as despesas, então o saldo está crescendo. O valor em destaque é seu excedente mensal médio — nesse ritmo, seu saldo tem fôlego indefinido.";
-"insights.formula.balanceRunway.rec.growing" = "Você está no positivo — direcione o excedente para metas, dívidas ou aplicações com maior rendimento em vez de deixá-lo parado.";
-"insights.formula.balanceRunway.rec.long" = "Mais de 3 meses de fôlego — você está bem protegido. Considere aplicar o excedente em instrumentos de prazo mais longo.";
+"insights.formula.balanceRunway.explainer.growing" = "A receita supera as despesas, então o saldo está crescendo. O valor em destaque é seu excedente mensal médio: nesse ritmo, seu saldo tem fôlego indefinido.";
+"insights.formula.balanceRunway.rec.growing" = "Você está no positivo: direcione o excedente para metas, dívidas ou aplicações com maior rendimento em vez de deixá-lo parado.";
+"insights.formula.balanceRunway.rec.long" = "Mais de 3 meses de fôlego: você está bem protegido. Considere aplicar o excedente em instrumentos de prazo mais longo.";
 "insights.formula.balanceRunway.rec.short" = "Abaixo de 3 meses. Corte ~%@/mês nos gastos para chegar a um colchão de 3 meses; comece pela maior categoria não essencial.";
-"insights.formula.balanceRunway.rec.critical" = "Menos de um mês de fôlego — feche essa lacuna com urgência. Até pausar um pagamento recorrente grande já ganha alguns dias.";
+"insights.formula.balanceRunway.rec.critical" = "Menos de um mês de fôlego: feche essa lacuna com urgência. Até pausar um pagamento recorrente grande já ganha alguns dias.";
 "insights.formula.yearOverYear.title" = "Gastos ano a ano";
 "insights.formula.yearOverYear.heroLabel" = "Variação vs mesmo mês do ano passado";
 "insights.formula.yearOverYear.formulaHeader" = "Como é calculado";
@@ -917,10 +917,10 @@
 "insights.formula.yearOverYear.row.lastYear" = "Mesmo mês do ano passado";
 "insights.formula.yearOverYear.row.absDelta" = "Variação absoluta";
 "insights.formula.yearOverYear.row.delta" = "Variação percentual";
-"insights.formula.yearOverYear.explainer" = "Compara o total de despesas do mês atual com o mesmo mês do ano anterior. Útil para separar aumento real de oscilação sazonal — em dezembro sempre se gasta mais, mas *este* dezembro está mais pesado que o do ano passado?";
-"insights.formula.yearOverYear.rec.down" = "Os gastos caíram bastante em relação ao ano passado. Se não foi intencional, verifique quais categorias esfriaram — às vezes um recorrente que deixou de ser registrado se esconde aqui.";
-"insights.formula.yearOverYear.rec.up" = "Os gastos subiram %@. Compare as principais categorias dos dois meses — uma assinatura nova, um ciclo extra de aluguel ou uma compra grande costumam explicar o salto.";
-"insights.formula.yearOverYear.rec.flat" = "Variação modesta em relação ao ano passado — seu padrão de gastos está estável. Acompanhe a mesma métrica no próximo mês para detectar qualquer desvio.";
+"insights.formula.yearOverYear.explainer" = "Compara o total de despesas do mês atual com o mesmo mês do ano anterior. Útil para separar aumento real de oscilação sazonal: em dezembro sempre se gasta mais, mas *este* dezembro está mais pesado que o do ano passado?";
+"insights.formula.yearOverYear.rec.down" = "Os gastos caíram bastante em relação ao ano passado. Se não foi intencional, verifique quais categorias esfriaram: às vezes um recorrente que deixou de ser registrado se esconde aqui.";
+"insights.formula.yearOverYear.rec.up" = "Os gastos subiram %@. Compare as principais categorias dos dois meses: uma assinatura nova, um ciclo extra de aluguel ou uma compra grande costumam explicar o salto.";
+"insights.formula.yearOverYear.rec.flat" = "Variação modesta em relação ao ano passado: seu padrão de gastos está estável. Acompanhe a mesma métrica no próximo mês para detectar qualquer desvio.";
 "insights.formula.projectedBalance.title" = "Saldo projetado";
 "insights.formula.projectedBalance.heroLabel" = "Saldo estimado no fim do período";
 "insights.formula.projectedBalance.formulaHeader" = "Como é calculado";
@@ -929,9 +929,9 @@
 "insights.formula.projectedBalance.row.avgExpenses" = "Despesas médias não recorrentes do período";
 "insights.formula.projectedBalance.row.horizon" = "Horizonte";
 "insights.formula.projectedBalance.row.projected" = "Saldo projetado";
-"insights.formula.projectedBalance.explainer" = "Saldo atual + (líquido recorrente − despesas médias não recorrentes) escalado para o período selecionado. Projeção linear simples — assume que os últimos 3 períodos representam o que vem pela frente. Use como alerta antecipado, não como previsão exata.";
-"insights.formula.projectedBalance.rec.growing" = "A projeção aponta para cima — o padrão atual aumenta o saldo ao longo do período.";
-"insights.formula.projectedBalance.rec.dropping" = "A projeção cai %@ ao longo do período. Identifique quais categorias puxaram as despesas para cima — é nelas que agir rende mais.";
+"insights.formula.projectedBalance.explainer" = "Saldo atual + (líquido recorrente − despesas médias não recorrentes) escalado para o período selecionado. Projeção linear simples: assume que os últimos 3 períodos representam o que vem pela frente. Use como alerta antecipado, não como previsão exata.";
+"insights.formula.projectedBalance.rec.growing" = "A projeção aponta para cima: o padrão atual aumenta o saldo ao longo do período.";
+"insights.formula.projectedBalance.rec.dropping" = "A projeção cai %@ ao longo do período. Identifique quais categorias puxaram as despesas para cima: é nelas que agir rende mais.";
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "vs %d meses atrás";
@@ -945,8 +945,8 @@
 "insights.formula.subscriptionGrowth.row.addedCount" = "Assinaturas adicionadas desde então";
 "insights.formula.subscriptionGrowth.row.delta" = "Variação";
 "insights.formula.subscriptionGrowth.explainer" = "Soma o equivalente mensal de cada assinatura ativa e compara com o mesmo total calculado apenas com as assinaturas que já existiam no início da janela de comparação. A janela escala com o seletor de granularidade.";
-"insights.formula.subscriptionGrowth.rec.growing" = "O gasto recorrente cresceu %@/mês. Revise as assinaturas novas e veja quais você não usa de verdade — cobranças recorrentes se acumulam ao longo dos anos.";
-"insights.formula.subscriptionGrowth.rec.shrinking" = "Você reduziu o gasto recorrente — mantenha a disciplina quando novos serviços tentarem você. Direcione o dinheiro liberado para poupança ou dívidas.";
+"insights.formula.subscriptionGrowth.rec.growing" = "O gasto recorrente cresceu %@/mês. Revise as assinaturas novas e veja quais você não usa de verdade: cobranças recorrentes se acumulam ao longo dos anos.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "Você reduziu o gasto recorrente: mantenha a disciplina quando novos serviços tentarem você. Direcione o dinheiro liberado para poupança ou dívidas.";
 "insights.formula.subscriptionGrowth.rec.stable" = "O gasto recorrente se manteve praticamente estável. O conjunto está estável; revise periodicamente para que serviços sem uso não continuem cobrando em silêncio.";
 
 "insights.formula.categoryTrend.title" = "Tendência por categoria";
@@ -955,7 +955,7 @@
 "insights.formula.categoryTrend.row.month" = "Mês";
 "insights.formula.categoryTrend.row.delta" = "Último mês vs anterior";
 "insights.formula.categoryTrend.explainer" = "Analisamos os totais mensais por categoria na janela de comparação (que escala com a granularidade) e destacamos a categoria com a maior sequência de aumentos mensais consecutivos. Útil para pegar o crescimento lento antes que ele vire estouro de orçamento.";
-"insights.formula.categoryTrend.rec" = "%1$@ está subindo há %2$d meses seguidos. Compare as transações mais recentes com os meses anteriores — uma única transação recorrente ou uma mudança de hábito costuma explicar a sequência.";
+"insights.formula.categoryTrend.rec" = "%1$@ está subindo há %2$d meses seguidos. Compare as transações mais recentes com os meses anteriores: uma única transação recorrente ou uma mudança de hábito costuma explicar a sequência.";
 "insights.granularity.prev.week" = "vs semana anterior";
 "insights.granularity.prev.month" = "vs mês anterior";
 "insights.granularity.prev.quarter" = "vs trimestre anterior";
@@ -996,7 +996,7 @@
 "insights.duplicateSubscriptions.title" = "Possíveis assinaturas duplicadas";
 "insights.duplicateSubscriptions.subtitle" = "possíveis duplicatas detectadas";
 "insights.accountDormancy.title" = "Dinheiro parado";
-"insights.accountDormancy.subtitle" = "contas paradas há 30+ dias — poderiam render em um depósito";
+"insights.accountDormancy.subtitle" = "contas paradas há 30+ dias: poderiam render em um depósito";
 
 "notification.weeklyDigest.title" = "Resumo da semana";
 "notification.weeklyDigest.body.withComparison" = "%1$@: gastos %2$@ (%3$@ vs. semana anterior)";
@@ -1007,7 +1007,7 @@
 "settings.insightSignals.master" = "Push para sinais importantes";
 "settings.insightSignals.footer" = "Só mudanças importantes são enviadas: estouro de orçamento, aumento de preço de assinaturas, previsão de saldo baixo. Cada sinal no máximo uma vez por semana, e no total até 5 notificações semanais.";
 "settings.insightSignals.lowBalance" = "Previsão de saldo baixo";
-"settings.insightSignals.permissionDenied" = "As notificações estão desativadas nos Ajustes do iOS — toque para ativar";
+"settings.insightSignals.permissionDenied" = "As notificações estão desativadas nos Ajustes do iOS: toque para ativar";
 
 "insights.priceIncrease" = "Assinatura ficou mais cara";
 "insights.priceIncrease.was" = "antes %@";
@@ -1031,8 +1031,8 @@
 "insights.formula.largeTransaction.row.amount" = "Valor";
 "insights.formula.largeTransaction.row.avgTx" = "Gasto médio (90 dias)";
 "insights.formula.largeTransaction.row.multiplier" = "Vezes acima da média";
-"insights.formula.largeTransaction.explainer" = "Pagamentos recorrentes como aluguel e assinaturas são excluídos — só compras avulsas contam. Uma compra 4× acima do seu gasto médio merece atenção.";
-"insights.formula.largeTransaction.rec" = "Confirme que a compra era esperada. Avulsa? Nada a fazer — o sinal some conforme a média se ajusta.";
+"insights.formula.largeTransaction.explainer" = "Pagamentos recorrentes como aluguel e assinaturas são excluídos: só compras avulsas contam. Uma compra 4× acima do seu gasto médio merece atenção.";
+"insights.formula.largeTransaction.rec" = "Confirme que a compra era esperada. Avulsa? Nada a fazer: o sinal some conforme a média se ajusta.";
 "insights.dormant.accounts" = "Contas inativas";
 
 // MARK: - Tab Bar
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "Composição do pagamento atual";
 "loan.principalPortion" = "Principal";
 "loan.interestPortion" = "Juros";
-"loan.noInterest" = "Parcelamento — sem cobrança de juros";
+"loan.noInterest" = "Parcelamento: sem cobrança de juros";
 "loan.stats" = "Estatísticas";
 "loan.originalAmount" = "Valor original";
 "loan.interestRate" = "Taxa de juros";
@@ -1484,9 +1484,9 @@
 /* MARK: - Onboarding */
 
 "onboarding.welcome.page1.title" = "Todas as suas finanças em um só lugar";
-"onboarding.welcome.page1.subtitle" = "Contas, depósitos, empréstimos, assinaturas e categorias de gastos — tudo junto, com análises claras.";
+"onboarding.welcome.page1.subtitle" = "Contas, depósitos, empréstimos, assinaturas e categorias de gastos: tudo junto, com análises claras.";
 "onboarding.welcome.page2.title" = "Adicione transações por voz";
-"onboarding.welcome.page2.subtitle" = "Diga \"Café 15 reais\" — o Tenra reconhece o valor, a moeda e a categoria. Ou importe extratos em PDF/CSV.";
+"onboarding.welcome.page2.subtitle" = "Diga \"Café 15 reais\": o Tenra reconhece o valor, a moeda e a categoria. Ou importe extratos em PDF/CSV.";
 "onboarding.welcome.page3.title" = "Seus dados continuam sendo seus";
 "onboarding.welcome.page3.subtitle" = "Tudo fica armazenado no seu dispositivo. O backup no iCloud é opcional. Sem contas, sem cadastro.";
 
@@ -1529,20 +1529,20 @@
 
 // MARK: - Financial Health Detail Page
 
-"insights.health.subtitle.excellent" = "Em excelente forma — suas finanças estão resilientes.";
+"insights.health.subtitle.excellent" = "Em excelente forma: suas finanças estão resilientes.";
 "insights.health.subtitle.good" = "Finanças sólidas, com espaço para otimizar.";
 "insights.health.subtitle.fair" = "Uma base razoável, mas algumas áreas precisam de atenção.";
 "insights.health.subtitle.needsAttention" = "Vários aspectos das suas finanças precisam de trabalho.";
 
 "insights.health.unavailable.title" = "Dados insuficientes";
-"insights.health.unavailable.message" = "Adicione transações de receita e despesa — avaliaremos sua saúde financeira assim que houver dados suficientes.";
+"insights.health.unavailable.message" = "Adicione transações de receita e despesa: avaliaremos sua saúde financeira assim que houver dados suficientes.";
 
 "insights.health.howItWorks" = "Como é calculada";
 "insights.health.explainer" = "Uma nota ponderada de 0 a 100 que avalia cinco aspectos da saúde financeira. Quanto mais alta, maior a resiliência financeira.";
 "insights.health.periodContext.months" = "Com base na atividade dos últimos %d meses. O seletor de granularidade no topo altera as outras análises, mas não esta nota.";
 "insights.health.periodContext.singleMonth" = "Com base na atividade deste mês. O seletor de granularidade no topo altera as outras análises, mas não esta nota.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "Nenhum orçamento configurado — o peso de 25% é redistribuído entre os outros quatro componentes.";
+"insights.health.weights.redistributed" = "Nenhum orçamento configurado: o peso de 25% é redistribuído entre os outros quatro componentes.";
 
 "insights.health.component.savingsRate.title" = "Taxa de poupança";
 "insights.health.component.savingsRate.short" = "Poupança";
@@ -1575,21 +1575,21 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Para chegar a 20%%, reduza as despesas em ≈ %@ por mês ou aumente a renda em ≈ %@ por mês.";
-"insights.health.rec.savingsRate.healthy" = "Excelente — mantenha o ritmo. 20%% ou mais é o nível recomendado para resiliência de longo prazo.";
+"insights.health.rec.savingsRate.healthy" = "Excelente: mantenha o ritmo. 20%% ou mais é o nível recomendado para resiliência de longo prazo.";
 
-"insights.health.rec.budgetAdherence.empty" = "Os orçamentos não estão configurados. Defina-os nas suas categorias — este componente então passará a contar na nota.";
+"insights.health.rec.budgetAdherence.empty" = "Os orçamentos não estão configurados. Defina-os nas suas categorias: este componente então passará a contar na nota.";
 "insights.health.rec.budgetAdherence.partial" = "%d categorias estão acima do orçamento. Abra-as para encontrar a origem do gasto excessivo.";
-"insights.health.rec.budgetAdherence.full" = "Todas as categorias estão dentro do orçamento — excelente.";
+"insights.health.rec.budgetAdherence.full" = "Todas as categorias estão dentro do orçamento: excelente.";
 
-"insights.health.rec.recurringRatio.high" = "Assinaturas e pagamentos recorrentes representam %.0f%% da sua renda. Busque ficar abaixo de 50%% — revise e cancele o que você não precisa.";
-"insights.health.rec.recurringRatio.healthy" = "%.0f%% da sua renda vai para pagamentos recorrentes — um nível saudável.";
+"insights.health.rec.recurringRatio.high" = "Assinaturas e pagamentos recorrentes representam %.0f%% da sua renda. Busque ficar abaixo de 50%%: revise e cancele o que você não precisa.";
+"insights.health.rec.recurringRatio.healthy" = "%.0f%% da sua renda vai para pagamentos recorrentes: um nível saudável.";
 
 "insights.health.rec.emergencyFund.below" = "Faltam ≈ %@ para cobrir 3 meses de despesas.";
 "insights.health.rec.emergencyFund.belowWithProjection" = "Faltam ≈ %@ para cobrir 3 meses de despesas. No seu ritmo atual de poupança, isso está a cerca de %.1f meses de distância.";
-"insights.health.rec.emergencyFund.healthy" = "%.1f meses de despesas em caixa — uma boa folga para imprevistos.";
+"insights.health.rec.emergencyFund.healthy" = "%.1f meses de despesas em caixa: uma boa folga para imprevistos.";
 
 "insights.health.rec.cashFlow.negative" = "Você está gastando mais do que ganha (−%.1f%% da renda neste período). Reduza as despesas ou encontre uma fonte de renda adicional.";
-"insights.health.rec.cashFlow.positive" = "Sua renda supera as despesas em %.1f%% — um fluxo positivo saudável.";
+"insights.health.rec.cashFlow.positive" = "Sua renda supera as despesas em %.1f%%: um fluxo positivo saudável.";
 
 // MARK: - Rating Prompt
 "rating.survey.title" = "Curtindo o Tenra?";
@@ -1600,7 +1600,7 @@
 // MARK: - Premium
 "premium.unlock" = "Desbloquear o Pro";
 "premium.locked.voice.title" = "A entrada por voz é um recurso Pro";
-"premium.locked.voice.message" = "Adicione transações por voz — diga só o valor e a categoria, e o Tenra preenche o resto.";
+"premium.locked.voice.message" = "Adicione transações por voz: diga só o valor e a categoria, e o Tenra preenche o resto.";
 "premium.locked.import.title" = "A importação de extratos é um recurso Pro";
 "premium.locked.import.message" = "Importe extratos bancários em PDF e arquivos CSV automaticamente, em vez de digitar cada transação.";
 "settings.supportID" = "ID de suporte";
@@ -1617,7 +1617,7 @@
 "settings.pro.status.renews" = "%1$@ · Renova em %2$@";
 "settings.pro.status.expires" = "%1$@ · Expira em %2$@";
 "settings.pro.founder" = "Grátis para sempre";
-"settings.pro.founder.subtitle" = "Você é um usuário fundador — todos os recursos Pro são gratuitos para você, para sempre. Obrigado!";
+"settings.pro.founder.subtitle" = "Você é um usuário fundador: todos os recursos Pro são gratuitos para você, para sempre. Obrigado!";
 "settings.pro.manage" = "Gerenciar assinatura";
 "settings.pro.restore" = "Restaurar compras";
 "settings.pro.restore.restored" = "Restaurado";

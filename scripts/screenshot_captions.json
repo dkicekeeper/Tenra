@@ -16,99 +16,99 @@
     },
     "es-ES": {
       "frames": {
-        "home":     { "title": "Presupuesto para cada categoría", "subtitle": "Límites, gastos y saldo restante del mes — directo en la pantalla principal" },
-        "finances": { "title": "Todas tus finanzas en un solo lugar", "subtitle": "Cuentas, depósitos, suscripciones y préstamos — sin conectar tu banco" },
-        "insights": { "title": "Mira a dónde se va tu dinero", "subtitle": "Saldo, gastos y flujo neto del mes — de un solo vistazo" },
+        "home":     { "title": "Presupuesto para cada categoría", "subtitle": "Límites, gastos y saldo restante del mes, directo en la pantalla principal" },
+        "finances": { "title": "Todas tus finanzas en un solo lugar", "subtitle": "Cuentas, depósitos, suscripciones y préstamos, sin conectar tu banco" },
+        "insights": { "title": "Mira a dónde se va tu dinero", "subtitle": "Saldo, gastos y flujo neto del mes, de un solo vistazo" },
         "score":    { "title": "Tu salud financiera en un número", "subtitle": "Ahorros, presupuestos y colchón en una puntuación clara" },
         "topcat":   { "title": "Descubre tus mayores gastos", "subtitle": "Categorías de gasto con un desglose claro mes a mes" },
-        "history":  { "title": "Cada movimiento bajo control", "subtitle": "Gastos, ingresos e intereses de depósitos — en una sola lista" },
+        "history":  { "title": "Cada movimiento bajo control", "subtitle": "Gastos, ingresos e intereses de depósitos en una sola lista" },
         "voice":    { "title": "Añade gastos con tu voz", "subtitle": "" },
-        "fx":       { "title": "EUR, USD, GBP — un total real", "subtitle": "" }
+        "fx":       { "title": "EUR, USD, GBP: un total real", "subtitle": "" }
       }
     },
     "es-MX": {
       "frames": {
-        "home":     { "title": "Presupuesto para cada categoría", "subtitle": "Límites, gastos y saldo restante del mes — directo en la pantalla principal" },
-        "finances": { "title": "Todas tus finanzas en un solo lugar", "subtitle": "Cuentas, depósitos, suscripciones y préstamos — sin conectar tu banco" },
-        "insights": { "title": "Mira a dónde se va tu dinero", "subtitle": "Saldo, gastos y flujo neto del mes — de un solo vistazo" },
+        "home":     { "title": "Presupuesto para cada categoría", "subtitle": "Límites, gastos y saldo restante del mes, directo en la pantalla principal" },
+        "finances": { "title": "Todas tus finanzas en un solo lugar", "subtitle": "Cuentas, depósitos, suscripciones y préstamos, sin conectar tu banco" },
+        "insights": { "title": "Mira a dónde se va tu dinero", "subtitle": "Saldo, gastos y flujo neto del mes, de un solo vistazo" },
         "score":    { "title": "Tu salud financiera en un número", "subtitle": "Ahorros, presupuestos y colchón en una puntuación clara" },
         "topcat":   { "title": "Descubre tus mayores gastos", "subtitle": "Categorías de gasto con un desglose claro mes a mes" },
-        "history":  { "title": "Cada movimiento bajo control", "subtitle": "Gastos, ingresos e intereses de depósitos — en una sola lista" },
+        "history":  { "title": "Cada movimiento bajo control", "subtitle": "Gastos, ingresos e intereses de depósitos en una sola lista" },
         "voice":    { "title": "Agrega gastos con tu voz", "subtitle": "" },
-        "fx":       { "title": "MXN, USD, EUR — un total real", "subtitle": "" }
+        "fx":       { "title": "MXN, USD, EUR: un total real", "subtitle": "" }
       }
     },
     "fr-FR": {
       "frames": {
-        "home":     { "title": "Un budget pour chaque catégorie", "subtitle": "Limites, dépenses et solde du mois — dès l'écran d'accueil" },
-        "finances": { "title": "Toutes vos finances au même endroit", "subtitle": "Comptes, dépôts, abonnements et crédits — sans connexion bancaire" },
-        "insights": { "title": "Voyez où part votre argent", "subtitle": "Solde, dépenses et flux net du mois — en un coup d'œil" },
-        "score":    { "title": "Votre santé financière en une note", "subtitle": "Épargne, budgets et coussin de sécurité — un score clair" },
+        "home":     { "title": "Un budget pour chaque catégorie", "subtitle": "Limites, dépenses et solde du mois, dès l'écran d'accueil" },
+        "finances": { "title": "Toutes vos finances au même endroit", "subtitle": "Comptes, dépôts, abonnements et crédits, sans connexion bancaire" },
+        "insights": { "title": "Voyez où part votre argent", "subtitle": "Solde, dépenses et flux net du mois, en un coup d'œil" },
+        "score":    { "title": "Votre santé financière en une note", "subtitle": "Épargne, budgets et coussin de sécurité en un score clair" },
         "topcat":   { "title": "Découvrez vos plus grosses dépenses", "subtitle": "Catégories de dépenses avec répartition claire par mois" },
-        "history":  { "title": "Chaque opération sous contrôle", "subtitle": "Dépenses, revenus et intérêts des dépôts — dans un seul fil" },
-        "voice":    { "title": "Ajoutez vos dépenses à la voix", "subtitle": "Dites le montant et la catégorie — c'est enregistré" },
-        "fx":       { "title": "EUR, USD, CHF — un seul vrai total", "subtitle": "De vrais taux de change, un total fiable dans votre devise" }
+        "history":  { "title": "Chaque opération sous contrôle", "subtitle": "Dépenses, revenus et intérêts des dépôts, dans un seul fil" },
+        "voice":    { "title": "Ajoutez vos dépenses à la voix", "subtitle": "Dites le montant et la catégorie, c'est enregistré" },
+        "fx":       { "title": "EUR, USD, CHF : un seul vrai total", "subtitle": "De vrais taux de change, un total fiable dans votre devise" }
       }
     },
     "fr-CA": {
       "frames": {
-        "home":     { "title": "Un budget pour chaque catégorie", "subtitle": "Limites, dépenses et solde du mois — dès l'écran d'accueil" },
-        "finances": { "title": "Toutes vos finances au même endroit", "subtitle": "Comptes, dépôts, abonnements et crédits — sans connexion bancaire" },
-        "insights": { "title": "Voyez où part votre argent", "subtitle": "Solde, dépenses et flux net du mois — en un coup d'œil" },
-        "score":    { "title": "Votre santé financière en une note", "subtitle": "Épargne, budgets et coussin de sécurité — un score clair" },
+        "home":     { "title": "Un budget pour chaque catégorie", "subtitle": "Limites, dépenses et solde du mois, dès l'écran d'accueil" },
+        "finances": { "title": "Toutes vos finances au même endroit", "subtitle": "Comptes, dépôts, abonnements et crédits, sans connexion bancaire" },
+        "insights": { "title": "Voyez où part votre argent", "subtitle": "Solde, dépenses et flux net du mois, en un coup d'œil" },
+        "score":    { "title": "Votre santé financière en une note", "subtitle": "Épargne, budgets et coussin de sécurité en un score clair" },
         "topcat":   { "title": "Découvrez vos plus grosses dépenses", "subtitle": "Catégories de dépenses avec répartition claire par mois" },
-        "history":  { "title": "Chaque opération sous contrôle", "subtitle": "Dépenses, revenus et intérêts des dépôts — dans un seul fil" },
-        "voice":    { "title": "Ajoutez vos dépenses à la voix", "subtitle": "Dites le montant et la catégorie — c'est enregistré" },
-        "fx":       { "title": "CAD, USD, EUR — un seul vrai total", "subtitle": "De vrais taux de change, un total fiable dans votre devise" }
+        "history":  { "title": "Chaque opération sous contrôle", "subtitle": "Dépenses, revenus et intérêts des dépôts, dans un seul fil" },
+        "voice":    { "title": "Ajoutez vos dépenses à la voix", "subtitle": "Dites le montant et la catégorie, c'est enregistré" },
+        "fx":       { "title": "CAD, USD, EUR : un seul vrai total", "subtitle": "De vrais taux de change, un total fiable dans votre devise" }
       }
     },
     "tr": {
       "order": ["fx", "home", "finances", "insights", "score", "topcat", "history", "voice"],
       "frames": {
-        "fx":       { "title": "TL, dolar, euro — tek gerçek bakiye", "subtitle": "Tüm hesapların gerçek kurlarla tek dürüst toplamda" },
-        "home":     { "title": "Her kategori için ayrı bütçe", "subtitle": "Limitler, harcamalar ve kalan — ana ekranda" },
-        "finances": { "title": "Tüm finansların tek yerde", "subtitle": "Hesaplar, mevduatlar, abonelikler ve krediler — banka bağlantısı olmadan" },
-        "insights": { "title": "Paran nereye gidiyor, gör", "subtitle": "Bakiye, harcamalar ve aylık net akış — ilk bakışta" },
-        "score":    { "title": "Finansal sağlığının tek puanı", "subtitle": "Birikim, bütçeler ve güvence fonu — anlaşılır tek skorda" },
+        "fx":       { "title": "TL, dolar, euro: tek gerçek bakiye", "subtitle": "Tüm hesapların gerçek kurlarla tek dürüst toplamda" },
+        "home":     { "title": "Her kategori için ayrı bütçe", "subtitle": "Limitler, harcamalar ve kalan, ana ekranda" },
+        "finances": { "title": "Tüm finansların tek yerde", "subtitle": "Hesaplar, mevduatlar, abonelikler ve krediler, banka bağlantısı olmadan" },
+        "insights": { "title": "Paran nereye gidiyor, gör", "subtitle": "Bakiye, harcamalar ve aylık net akış, ilk bakışta" },
+        "score":    { "title": "Finansal sağlığının tek puanı", "subtitle": "Birikim, bütçeler ve güvence fonu, anlaşılır tek skorda" },
         "topcat":   { "title": "En büyük harcamalarını keşfet", "subtitle": "Aylara göre net dağılımıyla harcama kategorileri" },
-        "history":  { "title": "Her işlem kontrol altında", "subtitle": "Harcamalar, gelirler ve mevduat faizleri — tek akışta" },
-        "voice":    { "title": "Harcamalarını sesle ekle", "subtitle": "\"Markete 450 lira harcadım\" — de ve bitti" }
+        "history":  { "title": "Her işlem kontrol altında", "subtitle": "Harcamalar, gelirler ve mevduat faizleri, tek akışta" },
+        "voice":    { "title": "Harcamalarını sesle ekle", "subtitle": "\"Markete 450 lira harcadım\" de, bitti" }
       }
     },
     "pt-BR": {
       "frames": {
-        "home":     { "title": "Orçamento para cada categoria", "subtitle": "Limites, gastos e quanto sobra no mês — direto na tela inicial" },
-        "finances": { "title": "Todas as suas finanças em um só lugar", "subtitle": "Contas, poupança, assinaturas e empréstimos — sem conectar seu banco" },
-        "insights": { "title": "Veja para onde seu dinheiro vai", "subtitle": "Saldo, despesas e fluxo do mês — tudo em um olhar" },
+        "home":     { "title": "Orçamento para cada categoria", "subtitle": "Limites, gastos e quanto sobra no mês, direto na tela inicial" },
+        "finances": { "title": "Todas as suas finanças em um só lugar", "subtitle": "Contas, poupança, assinaturas e empréstimos, sem conectar seu banco" },
+        "insights": { "title": "Veja para onde seu dinheiro vai", "subtitle": "Saldo, despesas e fluxo do mês, tudo em um olhar" },
         "score":    { "title": "A nota da sua saúde financeira", "subtitle": "Poupança, orçamentos e reserva de emergência em uma única nota" },
         "topcat":   { "title": "Descubra seus maiores gastos", "subtitle": "Categorias de despesas com análise clara mês a mês" },
-        "history":  { "title": "Cada transação sob controle", "subtitle": "Gastos, receitas e rendimentos da poupança — em uma só lista" },
-        "voice":    { "title": "Adicione gastos por voz", "subtitle": "\"Gastei 50 reais no mercado\" — e pronto, está registrado" },
-        "fx":       { "title": "BRL, USD, EUR — um total honesto", "subtitle": "Contas em várias moedas, um único saldo confiável" }
+        "history":  { "title": "Cada transação sob controle", "subtitle": "Gastos, receitas e rendimentos da poupança em uma só lista" },
+        "voice":    { "title": "Adicione gastos por voz", "subtitle": "\"Gastei 50 reais no mercado\" e pronto, está registrado" },
+        "fx":       { "title": "BRL, USD, EUR: um total honesto", "subtitle": "Contas em várias moedas, um único saldo confiável" }
       }
     },
     "it": {
       "frames": {
-        "home":     { "title": "Un budget per ogni categoria", "subtitle": "Limiti, spese e quanto ti resta nel mese — subito in home" },
-        "finances": { "title": "Tutte le tue finanze in un posto", "subtitle": "Conti, depositi, abbonamenti e prestiti — senza collegare la banca" },
-        "insights": { "title": "Scopri dove vanno i tuoi soldi", "subtitle": "Saldo, spese e flusso netto del mese — a colpo d'occhio" },
+        "home":     { "title": "Un budget per ogni categoria", "subtitle": "Limiti, spese e quanto ti resta nel mese, subito in home" },
+        "finances": { "title": "Tutte le tue finanze in un posto", "subtitle": "Conti, depositi, abbonamenti e prestiti, senza collegare la banca" },
+        "insights": { "title": "Scopri dove vanno i tuoi soldi", "subtitle": "Saldo, spese e flusso netto del mese, a colpo d'occhio" },
         "score":    { "title": "La tua salute finanziaria, in un voto", "subtitle": "Risparmi, budget e fondo di emergenza in un punteggio chiaro" },
         "topcat":   { "title": "Conosci le tue spese principali", "subtitle": "Categorie di spesa con ripartizione mensile chiara" },
-        "history":  { "title": "Ogni movimento sotto controllo", "subtitle": "Spese, entrate e interessi sui depositi — in un'unica cronologia" },
-        "voice":    { "title": "Aggiungi le spese con la voce", "subtitle": "Di' importo e categoria — la spesa è registrata" },
-        "fx":       { "title": "EUR, USD, CHF — un unico totale", "subtitle": "Conti in valute diverse, un totale onesto in euro" }
+        "history":  { "title": "Ogni movimento sotto controllo", "subtitle": "Spese, entrate e interessi sui depositi in un'unica cronologia" },
+        "voice":    { "title": "Aggiungi le spese con la voce", "subtitle": "Di' importo e categoria: la spesa è registrata" },
+        "fx":       { "title": "EUR, USD, CHF: un unico totale", "subtitle": "Conti in valute diverse, un totale onesto in euro" }
       }
     },
     "uk": {
       "frames": {
-        "home":     { "title": "Бюджет для кожної категорії", "subtitle": "Ліміти, витрати й залишок на місяць — одразу на головному екрані" },
-        "finances": { "title": "Усі ваші фінанси в одному місці", "subtitle": "Рахунки, депозити, підписки й кредити — без доступу до банку" },
-        "insights": { "title": "Видно, куди йдуть гроші", "subtitle": "Баланс, витрати й чистий потік за місяць — з першого погляду" },
+        "home":     { "title": "Бюджет для кожної категорії", "subtitle": "Ліміти, витрати й залишок на місяць, одразу на головному екрані" },
+        "finances": { "title": "Усі ваші фінанси в одному місці", "subtitle": "Рахунки, депозити, підписки й кредити, без доступу до банку" },
+        "insights": { "title": "Видно, куди йдуть гроші", "subtitle": "Баланс, витрати й чистий потік за місяць, з першого погляду" },
         "score":    { "title": "Оцінка вашого фінансового здоров'я", "subtitle": "Заощадження, бюджети й подушка безпеки в одному зрозумілому балі" },
         "topcat":   { "title": "Дізнайтеся свої найбільші витрати", "subtitle": "Категорії витрат із наочною розбивкою за місяцями" },
-        "history":  { "title": "Кожна операція під контролем", "subtitle": "Витрати, доходи й відсотки за депозитами — в одній стрічці" },
-        "voice":    { "title": "Додавайте витрати голосом", "subtitle": "Скажіть суму й категорію — операцію записано" },
-        "fx":       { "title": "UAH, EUR, USD — один чесний підсумок", "subtitle": "Рахунки в різних валютах, курс — завжди актуальний" }
+        "history":  { "title": "Кожна операція під контролем", "subtitle": "Витрати, доходи й відсотки за депозитами в одній стрічці" },
+        "voice":    { "title": "Додавайте витрати голосом", "subtitle": "Скажіть суму й категорію, і операцію записано" },
+        "fx":       { "title": "UAH, EUR, USD: один чесний підсумок", "subtitle": "Рахунки в різних валютах, курс завжди актуальний" }
       }
     },
     "ja": {
@@ -120,19 +120,19 @@
         "topcat":   { "title": "一番の出費はどこ？", "subtitle": "カテゴリ別の支出を、月ごとにわかりやすく" },
         "history":  { "title": "すべての取引をこの手の中に", "subtitle": "支出・収入・預金利息まで、ひとつの履歴で" },
         "voice":    { "title": "話すだけで支出を記録", "subtitle": "「コンビニで500円」と言うだけで入力完了" },
-        "fx":       { "title": "円もドルもユーロも、ひとつに", "subtitle": "JPY・USD・EUR — 実際の為替レートで正直な合計" }
+        "fx":       { "title": "円もドルもユーロも、ひとつに", "subtitle": "JPY・USD・EUR、実際の為替レートで正直な合計" }
       }
     },
     "ko": {
       "frames": {
-        "home":     { "title": "카테고리별 예산이 한눈에", "subtitle": "한 달 한도, 지출, 남은 금액 — 홈 화면에서 바로 확인해요" },
-        "finances": { "title": "모든 자산을 한곳에서", "subtitle": "계좌, 예금, 구독, 대출 — 은행 연동 없이 관리해요" },
+        "home":     { "title": "카테고리별 예산이 한눈에", "subtitle": "한 달 한도, 지출, 남은 금액을 홈 화면에서 바로 확인해요" },
+        "finances": { "title": "모든 자산을 한곳에서", "subtitle": "계좌, 예금, 구독, 대출을 은행 연동 없이 관리해요" },
         "insights": { "title": "돈이 어디로 가는지 보여요", "subtitle": "잔액, 지출, 한 달 순흐름을 그래프 하나로" },
         "score":    { "title": "내 금융 건강 점수", "subtitle": "저축, 예산, 비상금을 알기 쉬운 점수 하나로" },
         "topcat":   { "title": "가장 큰 지출을 찾아보세요", "subtitle": "카테고리별 지출을 월별로 한눈에 비교해요" },
         "history":  { "title": "모든 내역이 한 줄로", "subtitle": "지출, 수입, 예금 이자까지 하나의 타임라인에" },
-        "voice":    { "title": "음성으로 지출을 기록해요", "subtitle": "\"점심 12,000원 썼어\" — 말하면 바로 입력돼요" },
-        "fx":       { "title": "₩, $, € — 하나의 진짜 합계", "subtitle": "통화가 달라도 실시간 환율로 정확하게 합산해요" }
+        "voice":    { "title": "음성으로 지출을 기록해요", "subtitle": "\"점심 12,000원 썼어\"라고 말하면 바로 입력돼요" },
+        "fx":       { "title": "₩, $, €: 하나의 진짜 합계", "subtitle": "통화가 달라도 실시간 환율로 정확하게 합산해요" }
       }
     }
   }

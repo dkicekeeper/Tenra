@@ -309,6 +309,7 @@ When working with this project:
 - Use Glob for finding files by pattern
 
 ### Don't
+- **Don't use em dashes (—) in any user-facing text**: UI strings (`Localizable.strings`), ASC metadata (description/promo/What's New), release notes, screenshot captions, push/notification copy. Reads as AI-generated. Rephrase with a comma, colon, period, or split the sentence. (Legitimate uses stay: minus signs for amounts, list bullets in code/docs.)
 - Don't create unnecessary abstractions
 - Don't ignore existing architectural patterns
 - Don't add features without understanding context

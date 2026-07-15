@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "Тип операції";
 "voiceConfirmation.noAccounts" = "Немає доступних рахунків";
 "voiceConfirmation.selectCategory" = "Виберіть категорію";
-"voiceConfirmation.warning.accountNotFound" = "Рахунок не знайдено — вибрано за замовчуванням";
-"voiceConfirmation.warning.accountNotRecognized" = "Рахунок не розпізнано — вибрано за замовчуванням";
+"voiceConfirmation.warning.accountNotFound" = "Рахунок не знайдено, вибрано за замовчуванням";
+"voiceConfirmation.warning.accountNotRecognized" = "Рахунок не розпізнано, вибрано за замовчуванням";
 "voiceConfirmation.warning.enterAmount" = "Введіть суму";
 "voiceConfirmation.warning.enterValidAmount" = "Введіть коректну суму";
 "voiceConfirmation.warning.selectAccount" = "Виберіть рахунок";
-"voiceConfirmation.warning.accountNotSelected" = "Рахунок не вибрано — використовується за замовчуванням";
-"voiceConfirmation.warning.categoryNotRecognized" = "Категорію не розпізнано — вибрано за замовчуванням";
+"voiceConfirmation.warning.accountNotSelected" = "Рахунок не вибрано, використовується за замовчуванням";
+"voiceConfirmation.warning.categoryNotRecognized" = "Категорію не розпізнано, вибрано за замовчуванням";
 "voiceConfirmation.warning.selectCategory" = "Виберіть категорію";
-"voiceConfirmation.warning.categoryNotSelected" = "Категорію не вибрано — використовується за замовчуванням";
+"voiceConfirmation.warning.categoryNotSelected" = "Категорію не вибрано, використовується за замовчуванням";
 "voiceConfirmation.warning.categoryNotFound" = "Не вдалося знайти категорію";
 
 // MARK: - Subscriptions
@@ -869,19 +869,19 @@
 "insights.formula.savingsRate.row.expenses" = "Витрати";
 "insights.formula.savingsRate.row.saved" = "Заощаджено (дохід − витрати)";
 "insights.formula.savingsRate.row.rate" = "Норма заощаджень";
-"insights.formula.savingsRate.explainer" = "Яка частка вашого доходу переживає місяць. Вища норма дає більше свободи — гнучкість у мляві місяці, швидше фінансування цілей і справжню фінансову подушку.";
-"insights.formula.savingsRate.rec.good" = "Ви заощаджуєте понад 20%% — тримайте цей ритм і подумайте, щоб спрямувати надлишок на довгострокову ціль.";
+"insights.formula.savingsRate.explainer" = "Яка частка вашого доходу переживає місяць. Вища норма дає більше свободи: гнучкість у мляві місяці, швидше фінансування цілей і справжню фінансову подушку.";
+"insights.formula.savingsRate.rec.good" = "Ви заощаджуєте понад 20%%. Тримайте цей ритм і подумайте, щоб спрямувати надлишок на довгострокову ціль.";
 "insights.formula.savingsRate.rec.fair" = "Непогано, але зростання до 20%% означає додаткові %@ заощаджень щомісяця. Скоротіть регулярні чи разові категорії, які підросли.";
-"insights.formula.savingsRate.rec.low" = "Нижче 10%% не залишає запасу. Прагніть щонайменше на %@ більше щомісяця — почніть із найбільшої необов'язкової категорії.";
+"insights.formula.savingsRate.rec.low" = "Нижче 10%% не залишає запасу. Прагніть щонайменше на %@ більше щомісяця. Почніть із найбільшої необов'язкової категорії.";
 "insights.formula.emergencyFund.title" = "Фінансова подушка";
 "insights.formula.emergencyFund.heroLabel" = "Скільки місяців витрат покриває ваш баланс";
 "insights.formula.emergencyFund.formulaHeader" = "Як це обчислюється";
 "insights.formula.emergencyFund.row.balance" = "Загальний баланс";
 "insights.formula.emergencyFund.row.avgExpenses" = "Середні витрати за місяць (останні 3 міс)";
 "insights.formula.emergencyFund.row.monthsCovered" = "Покрито місяців";
-"insights.formula.emergencyFund.explainer" = "Скільки ваші рахунки покриватимуть звичні витрати, якщо дохід припиниться завтра. 3+ місяці — це мінімум, який радить більшість фінансових планувальників; 6 місяців — комфортний запас.";
+"insights.formula.emergencyFund.explainer" = "Скільки ваші рахунки покриватимуть звичні витрати, якщо дохід припиниться завтра. 3+ місяці вважаються мінімумом, який радить більшість фінансових планувальників; 6 місяців дають комфортний запас.";
 "insights.formula.emergencyFund.rec.good" = "Ви пройшли поріг у 3 місяці. Подумайте, щоб розмістити надлишок на рахунку з вищою дохідністю або спрямувати його на довгострокові цілі.";
-"insights.formula.emergencyFund.rec.gap" = "Щоб досягти покриття на 3 місяці, поповніть на %@. Навіть невеликі щомісячні внески накопичуються — почніть із того, що дозволяє ваша норма заощаджень.";
+"insights.formula.emergencyFund.rec.gap" = "Щоб досягти покриття на 3 місяці, поповніть на %@. Навіть невеликі щомісячні внески накопичуються. Почніть із того, що дозволяє ваша норма заощаджень.";
 "insights.formula.spendingForecast.title" = "Прогноз витрат на кінець місяця";
 "insights.formula.spendingForecast.heroLabel" = "Прогнозовані загальні витрати цього місяця";
 "insights.formula.spendingForecast.formulaHeader" = "Як це обчислюється";
@@ -893,7 +893,7 @@
 "insights.formula.spendingForecast.explainer" = "Витрачено на цей момент + (середні витрати за день × дні, що залишилися) + очікувані регулярні. Регулярні розподіляються пропорційно до днів, що залишилися, тож підписка 28-го числа не рахується двічі, якщо сьогодні 25-те.";
 "insights.formula.spendingForecast.rec.overrun" = "Ви прямуєте до перевищення доходу на %@. Перегляньте необов'язкові витрати або відкладіть додаткові покупки до наступного місяця.";
 "insights.formula.spendingForecast.rec.onTrack" = "Прогноз залишає запас у %@. Закріпіть його, уникаючи незапланованих покупок, або переведіть у заощадження вже зараз.";
-"insights.formula.spendingForecast.rec.noIncome" = "Цього місяця ще не зафіксовано доходу — прогноз має лише інформаційний характер.";
+"insights.formula.spendingForecast.rec.noIncome" = "Цього місяця ще не зафіксовано доходу, тож прогноз має лише інформаційний характер.";
 "insights.formula.balanceRunway.title" = "Запас балансу";
 "insights.formula.balanceRunway.heroLabel" = "Місяців до вичерпання балансу за поточних темпів витрат";
 "insights.formula.balanceRunway.heroLabel.growing" = "Середній місячний надлишок";
@@ -905,11 +905,11 @@
 "insights.formula.balanceRunway.row.netFlow" = "Середній чистий потік";
 "insights.formula.balanceRunway.row.runway" = "Запас балансу";
 "insights.formula.balanceRunway.explainer" = "Баланс ÷ місячні витрати. Поріг у 3 місяці відповідає здоровій фінансовій подушці; менше ніж місяць означає, що один невдалий платіжний цикл вичерпає запас.";
-"insights.formula.balanceRunway.explainer.growing" = "Дохід перевищує витрати, тож баланс зростає. Головне значення — це ваш середній місячний надлишок; за таких темпів запас балансу необмежений.";
-"insights.formula.balanceRunway.rec.growing" = "Ви в плюсі — спрямуйте надлишок на цілі, борги чи заощадження з вищою дохідністю, а не залишайте його без діла.";
-"insights.formula.balanceRunway.rec.long" = "Понад 3 місяці запасу — у вас надійна подушка. Подумайте, щоб розмістити зайві кошти в довгострокові інструменти.";
+"insights.formula.balanceRunway.explainer.growing" = "Дохід перевищує витрати, тож баланс зростає. Головним значенням є ваш середній місячний надлишок; за таких темпів запас балансу необмежений.";
+"insights.formula.balanceRunway.rec.growing" = "Ви в плюсі, тож спрямуйте надлишок на цілі, борги чи заощадження з вищою дохідністю, а не залишайте його без діла.";
+"insights.formula.balanceRunway.rec.long" = "Понад 3 місяці запасу: у вас надійна подушка. Подумайте, щоб розмістити зайві кошти в довгострокові інструменти.";
 "insights.formula.balanceRunway.rec.short" = "Нижче 3 місяців. Скоротіть витрати приблизно на %@/міс, щоб досягти запасу на 3 місяці; почніть із найбільшої необов'язкової категорії.";
-"insights.formula.balanceRunway.rec.critical" = "Менше місяця запасу — терміново закрийте розрив. Навіть призупинка одного великого регулярного платежу дає кілька днів.";
+"insights.formula.balanceRunway.rec.critical" = "Менше місяця запасу: терміново закрийте розрив. Навіть призупинка одного великого регулярного платежу дає кілька днів.";
 "insights.formula.yearOverYear.title" = "Витрати рік до року";
 "insights.formula.yearOverYear.heroLabel" = "Зміна порівняно з тим самим місяцем торік";
 "insights.formula.yearOverYear.formulaHeader" = "Як це обчислюється";
@@ -917,10 +917,10 @@
 "insights.formula.yearOverYear.row.lastYear" = "Той самий місяць торік";
 "insights.formula.yearOverYear.row.absDelta" = "Абсолютна зміна";
 "insights.formula.yearOverYear.row.delta" = "Зміна у відсотках";
-"insights.formula.yearOverYear.explainer" = "Порівнює загальні витрати за поточний місяць із тим самим місяцем рік тому. Корисно для виявлення справжніх зрушень, а не сезонних коливань — у грудні витрати завжди більші, але чи цей грудень важчий за минулий?";
-"insights.formula.yearOverYear.rec.down" = "Витрати помітно знизилися рік до року. Якщо це ненавмисно, перегляньте, які категорії охололи — інколи тут ховається пропущений регулярний платіж.";
-"insights.formula.yearOverYear.rec.up" = "Витрати зросли на %@. Порівняйте топ-категорії за обидва місяці — нові підписки, зайвий цикл оренди чи одна велика покупка часто пояснюють стрибок.";
-"insights.formula.yearOverYear.rec.flat" = "Помірна зміна порівняно з торішнім — ваш шаблон витрат стабільний. Відстежуйте цей самий показник наступного місяця, щоб помітити зрушення.";
+"insights.formula.yearOverYear.explainer" = "Порівнює загальні витрати за поточний місяць із тим самим місяцем рік тому. Корисно для виявлення справжніх зрушень, а не сезонних коливань: у грудні витрати завжди більші, але чи цей грудень важчий за минулий?";
+"insights.formula.yearOverYear.rec.down" = "Витрати помітно знизилися рік до року. Якщо це ненавмисно, перегляньте, які категорії охололи. Інколи тут ховається пропущений регулярний платіж.";
+"insights.formula.yearOverYear.rec.up" = "Витрати зросли на %@. Порівняйте топ-категорії за обидва місяці: нові підписки, зайвий цикл оренди чи одна велика покупка часто пояснюють стрибок.";
+"insights.formula.yearOverYear.rec.flat" = "Помірна зміна порівняно з торішнім: ваш шаблон витрат стабільний. Відстежуйте цей самий показник наступного місяця, щоб помітити зрушення.";
 "insights.formula.projectedBalance.title" = "Прогнозований баланс";
 "insights.formula.projectedBalance.heroLabel" = "Орієнтовний баланс на кінець періоду";
 "insights.formula.projectedBalance.formulaHeader" = "Як це обчислюється";
@@ -929,9 +929,9 @@
 "insights.formula.projectedBalance.row.avgExpenses" = "Середні нерегулярні витрати за період";
 "insights.formula.projectedBalance.row.horizon" = "Горизонт";
 "insights.formula.projectedBalance.row.projected" = "Прогнозований баланс";
-"insights.formula.projectedBalance.explainer" = "Поточний баланс + (чисті регулярні − середні нерегулярні витрати), масштабовані до вибраного періоду. Проста лінійна проєкція — припускає, що останні 3 інтервали відображають те, що буде далі. Використовуйте для раннього попередження, а не як точний прогноз.";
-"insights.formula.projectedBalance.rec.growing" = "Прогноз спрямований угору — поточний шаблон додає до балансу за період.";
-"insights.formula.projectedBalance.rec.dropping" = "Прогноз падає на %@ за період. Визначте, які категорії підняли витрати — саме там втручання дає найбільший ефект.";
+"insights.formula.projectedBalance.explainer" = "Поточний баланс + (чисті регулярні − середні нерегулярні витрати), масштабовані до вибраного періоду. Це проста лінійна проєкція, яка припускає, що останні 3 інтервали відображають те, що буде далі. Використовуйте для раннього попередження, а не як точний прогноз.";
+"insights.formula.projectedBalance.rec.growing" = "Прогноз спрямований угору: поточний шаблон додає до балансу за період.";
+"insights.formula.projectedBalance.rec.dropping" = "Прогноз падає на %@ за період. Визначте, які категорії підняли витрати: саме там втручання дає найбільший ефект.";
 "insights.wealth.growth.compare" = "%@ проти %@";
 
 "insights.subscriptionGrowth.compareAgo" = "порівняно з періодом %d місяців тому";
@@ -945,8 +945,8 @@
 "insights.formula.subscriptionGrowth.row.addedCount" = "Додано підписок за цей час";
 "insights.formula.subscriptionGrowth.row.delta" = "Зміна";
 "insights.formula.subscriptionGrowth.explainer" = "Підсумовує місячний еквівалент кожної активної підписки, а потім порівнює з тим самим підсумком, обчисленим лише за підписками, що вже існували на початку вікна порівняння. Вікно масштабується разом із селектором деталізації.";
-"insights.formula.subscriptionGrowth.rec.growing" = "Регулярні витрати зросли на %@/місяць. Перевірте нові підписки на ті, якими ви активно не користуєтеся — регулярні зобов'язання накопичуються роками.";
-"insights.formula.subscriptionGrowth.rec.shrinking" = "Ви скоротили регулярні витрати — тримайте дисципліну, коли нові сервіси спокушають. Спрямуйте вивільнений потік на заощадження чи борги.";
+"insights.formula.subscriptionGrowth.rec.growing" = "Регулярні витрати зросли на %@/місяць. Перевірте нові підписки на ті, якими ви активно не користуєтеся: регулярні зобов'язання накопичуються роками.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "Ви скоротили регулярні витрати. Тримайте дисципліну, коли нові сервіси спокушають. Спрямуйте вивільнений потік на заощадження чи борги.";
 "insights.formula.subscriptionGrowth.rec.stable" = "Регулярні витрати залишилися приблизно на місці. Портфель стабільний; переглядайте його час від часу, щоб невикористані сервіси тихо не залишалися.";
 
 "insights.formula.categoryTrend.title" = "Динаміка категорії";
@@ -955,7 +955,7 @@
 "insights.formula.categoryTrend.row.month" = "Місяць";
 "insights.formula.categoryTrend.row.delta" = "Останній проти попереднього місяця";
 "insights.formula.categoryTrend.explainer" = "Ми аналізуємо місячні підсумки за категоріями у вікні порівняння (яке масштабується з деталізацією) і виводимо категорію з найдовшим поспіль щомісячним зростанням. Корисно для виявлення повільного зрушення, перш ніж воно проявиться як перевищення бюджету.";
-"insights.formula.categoryTrend.rec" = "%@ зростає %d місяців поспіль. Порівняйте останні операції з попередніми місяцями — зазвичай серію пояснює одна регулярна операція чи зміна звички.";
+"insights.formula.categoryTrend.rec" = "%@ зростає %d місяців поспіль. Порівняйте останні операції з попередніми місяцями: зазвичай серію пояснює одна регулярна операція чи зміна звички.";
 "insights.granularity.prev.week" = "порівняно з попереднім тижнем";
 "insights.granularity.prev.month" = "порівняно з попереднім місяцем";
 "insights.granularity.prev.quarter" = "порівняно з попереднім кварталом";
@@ -996,7 +996,7 @@
 "insights.duplicateSubscriptions.title" = "Можливі дубльовані підписки";
 "insights.duplicateSubscriptions.subtitle" = "виявлено потенційних дублів";
 "insights.accountDormancy.title" = "Гроші без діла";
-"insights.accountDormancy.subtitle" = "рахунків без руху 30+ днів — могли б приносити дохід на депозиті";
+"insights.accountDormancy.subtitle" = "рахунків без руху 30+ днів, які могли б приносити дохід на депозиті";
 
 "notification.weeklyDigest.title" = "Підсумки тижня";
 "notification.weeklyDigest.body.withComparison" = "%1$@: витрати %2$@ (%3$@ до минулого тижня)";
@@ -1005,9 +1005,9 @@
 
 "settings.insightSignals.title" = "Сигнали аналітики";
 "settings.insightSignals.master" = "Push про важливі сигнали";
-"settings.insightSignals.footer" = "Надходять лише важливі зміни: перевитрата бюджету, подорожчання підписок, низький прогноз балансу. Кожен сигнал — не частіше разу на тиждень, загалом не більше 5 сповіщень на тиждень.";
+"settings.insightSignals.footer" = "Надходять лише важливі зміни: перевитрата бюджету, подорожчання підписок, низький прогноз балансу. Кожен сигнал надходить не частіше разу на тиждень, загалом не більше 5 сповіщень на тиждень.";
 "settings.insightSignals.lowBalance" = "Низький прогноз балансу";
-"settings.insightSignals.permissionDenied" = "Сповіщення вимкнені в налаштуваннях iOS — торкніться, щоб увімкнути";
+"settings.insightSignals.permissionDenied" = "Сповіщення вимкнені в налаштуваннях iOS. Торкніться, щоб увімкнути";
 
 "insights.priceIncrease" = "Підписка подорожчала";
 "insights.priceIncrease.was" = "було %@";
@@ -1020,8 +1020,8 @@
 "insights.formula.priceIncrease.row.newPrice" = "Нове списання";
 "insights.formula.priceIncrease.row.delta" = "Зміна";
 "insights.formula.priceIncrease.row.yearlyImpact" = "Переплата за рік";
-"insights.formula.priceIncrease.explainer" = "Порівнює останнє списання за активним регулярним платежем із попереднім (або з плановою сумою). Невеликі підвищення накопичуються: +15% за кількома підписками — це ціла нова підписка.";
-"insights.formula.priceIncrease.rec" = "Перевірте, чи виправдана нова ціна. Якщо ні — призупиніть або скасуйте підписку у вкладці «Підписки».";
+"insights.formula.priceIncrease.explainer" = "Порівнює останнє списання за активним регулярним платежем із попереднім (або з плановою сумою). Невеликі підвищення накопичуються: +15% за кількома підписками разом дають цілу нову підписку.";
+"insights.formula.priceIncrease.rec" = "Перевірте, чи виправдана нова ціна. Якщо ні, призупиніть або скасуйте підписку у вкладці «Підписки».";
 "insights.formula.largeTransaction.title" = "Велика витрата";
 "insights.formula.largeTransaction.heroLabel" = "Найбільша разова витрата за 30 днів";
 "insights.formula.largeTransaction.formulaHeader" = "Як це пораховано";
@@ -1031,8 +1031,8 @@
 "insights.formula.largeTransaction.row.amount" = "Сума";
 "insights.formula.largeTransaction.row.avgTx" = "Середня витрата (90 днів)";
 "insights.formula.largeTransaction.row.multiplier" = "У скільки разів вище середньої";
-"insights.formula.largeTransaction.explainer" = "Регулярні платежі — оренда, підписки — виключені: враховуються лише разові покупки. Покупка вчетверо вища за вашу середню витрату заслуговує на увагу.";
-"insights.formula.largeTransaction.rec" = "Переконайтеся, що покупка очікувана. Разова? Нічого робити не треба — сигнал зникне з оновленням середньої.";
+"insights.formula.largeTransaction.explainer" = "Регулярні платежі (оренда, підписки) виключені: враховуються лише разові покупки. Покупка вчетверо вища за вашу середню витрату заслуговує на увагу.";
+"insights.formula.largeTransaction.rec" = "Переконайтеся, що покупка очікувана. Разова? Нічого робити не треба: сигнал зникне з оновленням середньої.";
 "insights.dormant.accounts" = "Неактивні рахунки";
 
 // MARK: - Tab Bar
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "Розподіл поточного платежу";
 "loan.principalPortion" = "Основна сума";
 "loan.interestPortion" = "Відсотки";
-"loan.noInterest" = "Розстрочка — відсотки не нараховуються";
+"loan.noInterest" = "Розстрочка: відсотки не нараховуються";
 "loan.stats" = "Статистика";
 "loan.originalAmount" = "Початкова сума";
 "loan.interestRate" = "Відсоткова ставка";
@@ -1484,11 +1484,11 @@
 /* MARK: - Onboarding */
 
 "onboarding.welcome.page1.title" = "Усі ваші фінанси в одному місці";
-"onboarding.welcome.page1.subtitle" = "Рахунки, депозити, кредити, підписки й категорії витрат — разом із зрозумілою аналітикою.";
+"onboarding.welcome.page1.subtitle" = "Рахунки, депозити, кредити, підписки й категорії витрат разом із зрозумілою аналітикою.";
 "onboarding.welcome.page2.title" = "Додавайте операції голосом";
-"onboarding.welcome.page2.subtitle" = "Скажіть «Кава 800 тенге» — Tenra розпізнає суму, валюту й категорію. Або імпортуйте виписки з PDF/CSV.";
+"onboarding.welcome.page2.subtitle" = "Скажіть «Кава 800 тенге», і Tenra розпізнає суму, валюту й категорію. Або імпортуйте виписки з PDF/CSV.";
 "onboarding.welcome.page3.title" = "Ваші дані залишаються вашими";
-"onboarding.welcome.page3.subtitle" = "Усе зберігається на пристрої. Резервна копія в iCloud — за бажанням. Без облікових записів, без реєстрації.";
+"onboarding.welcome.page3.subtitle" = "Усе зберігається на пристрої. Резервна копія в iCloud за бажанням. Без облікових записів, без реєстрації.";
 
 "onboarding.cta.next" = "Далі";
 "onboarding.cta.start" = "Почати";
@@ -1529,20 +1529,20 @@
 
 // MARK: - Financial Health Detail Page
 
-"insights.health.subtitle.excellent" = "Чудовий стан — ваші фінанси стійкі.";
+"insights.health.subtitle.excellent" = "Чудовий стан: ваші фінанси стійкі.";
 "insights.health.subtitle.good" = "Надійні фінанси з простором для оптимізації.";
 "insights.health.subtitle.fair" = "Пристойна основа, але кілька моментів потребують уваги.";
 "insights.health.subtitle.needsAttention" = "Кілька аспектів ваших фінансів потребують уваги.";
 
 "insights.health.unavailable.title" = "Недостатньо даних";
-"insights.health.unavailable.message" = "Додайте операції доходів і витрат — ми оцінимо ваше фінансове здоров'я, щойно буде достатньо даних.";
+"insights.health.unavailable.message" = "Додайте операції доходів і витрат, і ми оцінимо ваше фінансове здоров'я, щойно буде достатньо даних.";
 
 "insights.health.howItWorks" = "Як це обчислюється";
 "insights.health.explainer" = "Зважений бал від 0 до 100 за п'ятьма аспектами фінансового здоров'я. Вищий бал означає більшу фінансову стійкість.";
 "insights.health.periodContext.months" = "На основі активності за останні %d місяців. Селектор деталізації вгорі змінює інші показники аналітики, але не цей бал.";
 "insights.health.periodContext.singleMonth" = "На основі активності цього місяця. Селектор деталізації вгорі змінює інші показники аналітики, але не цей бал.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "Бюджети не налаштовано — вагу 25% перерозподілено між чотирма іншими компонентами.";
+"insights.health.weights.redistributed" = "Бюджети не налаштовано, тому вагу 25% перерозподілено між чотирма іншими компонентами.";
 
 "insights.health.component.savingsRate.title" = "Норма заощаджень";
 "insights.health.component.savingsRate.short" = "Заощадження";
@@ -1575,21 +1575,21 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Щоб досягти 20%%, скоротьте витрати на ≈ %@ на місяць або збільште дохід на ≈ %@ на місяць.";
-"insights.health.rec.savingsRate.healthy" = "Чудово — тримайте темп. 20%%+ — рекомендований рівень для довгострокової стійкості.";
+"insights.health.rec.savingsRate.healthy" = "Чудово, тримайте темп. 20%%+ вважається рекомендованим рівнем для довгострокової стійкості.";
 
-"insights.health.rec.budgetAdherence.empty" = "Бюджети не налаштовано. Задайте їх для своїх категорій — тоді цей компонент враховуватиметься в балі.";
+"insights.health.rec.budgetAdherence.empty" = "Бюджети не налаштовано. Задайте їх для своїх категорій, тоді цей компонент враховуватиметься в балі.";
 "insights.health.rec.budgetAdherence.partial" = "%d категорій перевищують бюджет. Відкрийте їх, щоб знайти джерело перевитрат.";
-"insights.health.rec.budgetAdherence.full" = "Кожна категорія в межах бюджету — чудово.";
+"insights.health.rec.budgetAdherence.full" = "Кожна категорія в межах бюджету, чудово.";
 
-"insights.health.rec.recurringRatio.high" = "Підписки й регулярні платежі становлять %.0f%% вашого доходу. Прагніть до менш ніж 50%% — перегляньте й скасуйте те, що вам не потрібно.";
-"insights.health.rec.recurringRatio.healthy" = "%.0f%% вашого доходу йде на регулярні платежі — здоровий рівень.";
+"insights.health.rec.recurringRatio.high" = "Підписки й регулярні платежі становлять %.0f%% вашого доходу. Прагніть до менш ніж 50%%: перегляньте й скасуйте те, що вам не потрібно.";
+"insights.health.rec.recurringRatio.healthy" = "%.0f%% вашого доходу йде на регулярні платежі, і це здоровий рівень.";
 
 "insights.health.rec.emergencyFund.below" = "Вам потрібно ще ≈ %@, щоб покрити 3 місяці витрат.";
 "insights.health.rec.emergencyFund.belowWithProjection" = "Вам потрібно ще ≈ %@, щоб покрити 3 місяці витрат. За поточного темпу заощаджень це приблизно за %.1f місяців.";
-"insights.health.rec.emergencyFund.healthy" = "%.1f місяців витрат у запасі — достатня подушка на непередбачене.";
+"insights.health.rec.emergencyFund.healthy" = "%.1f місяців витрат у запасі: достатня подушка на непередбачене.";
 
 "insights.health.rec.cashFlow.negative" = "Ви витрачаєте більше, ніж заробляєте (−%.1f%% доходу за цей період). Скоротьте витрати або знайдіть додаткове джерело доходу.";
-"insights.health.rec.cashFlow.positive" = "Ваш дохід перевищує витрати на %.1f%% — здоровий позитивний потік.";
+"insights.health.rec.cashFlow.positive" = "Ваш дохід перевищує витрати на %.1f%%, і це здоровий позитивний потік.";
 
 // MARK: - Rating Prompt
 "rating.survey.title" = "Подобається Tenra?";
@@ -1599,9 +1599,9 @@
 
 // MARK: - Premium
 "premium.unlock" = "Відкрити Pro";
-"premium.locked.voice.title" = "Голосове введення — функція Pro";
-"premium.locked.voice.message" = "Додавайте операції голосом — просто назвіть суму й категорію, а решту Tenra заповнить сама.";
-"premium.locked.import.title" = "Імпорт виписок — функція Pro";
+"premium.locked.voice.title" = "Голосове введення: функція Pro";
+"premium.locked.voice.message" = "Додавайте операції голосом: просто назвіть суму й категорію, а решту Tenra заповнить сама.";
+"premium.locked.import.title" = "Імпорт виписок: функція Pro";
 "premium.locked.import.message" = "Імпортуйте банківські виписки PDF і файли CSV автоматично, замість того щоб вводити кожну операцію вручну.";
 "settings.supportID" = "ID підтримки";
 "settings.supportID.copied" = "Скопійовано";
@@ -1617,7 +1617,7 @@
 "settings.pro.status.renews" = "%1$@ · поновиться %2$@";
 "settings.pro.status.expires" = "%1$@ · спливає %2$@";
 "settings.pro.founder" = "Безплатно назавжди";
-"settings.pro.founder.subtitle" = "Ви — один із перших користувачів: усі функції Pro для вас безплатні назавжди. Дякуємо!";
+"settings.pro.founder.subtitle" = "Ви один із перших користувачів: усі функції Pro для вас безплатні назавжди. Дякуємо!";
 "settings.pro.manage" = "Керувати підпискою";
 "settings.pro.restore" = "Відновити покупки";
 "settings.pro.restore.restored" = "Відновлено";

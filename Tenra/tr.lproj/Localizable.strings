@@ -423,15 +423,15 @@
 "voiceConfirmation.type" = "İşlem Türü";
 "voiceConfirmation.noAccounts" = "Kullanılabilir hesap yok";
 "voiceConfirmation.selectCategory" = "Kategori seç";
-"voiceConfirmation.warning.accountNotFound" = "Hesap bulunamadı — varsayılan seçildi";
-"voiceConfirmation.warning.accountNotRecognized" = "Hesap tanınamadı — varsayılan seçildi";
+"voiceConfirmation.warning.accountNotFound" = "Hesap bulunamadı, varsayılan seçildi";
+"voiceConfirmation.warning.accountNotRecognized" = "Hesap tanınamadı, varsayılan seçildi";
 "voiceConfirmation.warning.enterAmount" = "Tutar gir";
 "voiceConfirmation.warning.enterValidAmount" = "Geçerli bir tutar gir";
 "voiceConfirmation.warning.selectAccount" = "Bir hesap seç";
-"voiceConfirmation.warning.accountNotSelected" = "Hesap seçilmedi — varsayılan kullanılıyor";
-"voiceConfirmation.warning.categoryNotRecognized" = "Kategori tanınamadı — varsayılan seçildi";
+"voiceConfirmation.warning.accountNotSelected" = "Hesap seçilmedi, varsayılan kullanılıyor";
+"voiceConfirmation.warning.categoryNotRecognized" = "Kategori tanınamadı, varsayılan seçildi";
 "voiceConfirmation.warning.selectCategory" = "Kategori seç";
-"voiceConfirmation.warning.categoryNotSelected" = "Kategori seçilmedi — varsayılan kullanılıyor";
+"voiceConfirmation.warning.categoryNotSelected" = "Kategori seçilmedi, varsayılan kullanılıyor";
 "voiceConfirmation.warning.categoryNotFound" = "Kategori bulunamadı";
 
 // MARK: - Subscriptions
@@ -869,10 +869,10 @@
 "insights.formula.savingsRate.row.expenses" = "Gider";
 "insights.formula.savingsRate.row.saved" = "Biriken (gelir − gider)";
 "insights.formula.savingsRate.row.rate" = "Birikim oranı";
-"insights.formula.savingsRate.explainer" = "Gelirinin ne kadarı ay sonuna kalıyor. Oran ne kadar yüksekse o kadar özgürlük demek — durgun aylarda esneklik, hedeflere daha hızlı ulaşma ve gerçek bir güvence fonu.";
-"insights.formula.savingsRate.rec.good" = "%%20'den fazlasını biriktiriyorsun — bu düzeni koru ve fazlayı uzun vadeli bir hedefe yönlendirmeyi düşün.";
+"insights.formula.savingsRate.explainer" = "Gelirinin ne kadarı ay sonuna kalıyor. Oran ne kadar yüksekse o kadar özgürlük demek: durgun aylarda esneklik, hedeflere daha hızlı ulaşma ve gerçek bir güvence fonu.";
+"insights.formula.savingsRate.rec.good" = "%%20'den fazlasını biriktiriyorsun. Bu düzeni koru ve fazlayı uzun vadeli bir hedefe yönlendirmeyi düşün.";
 "insights.formula.savingsRate.rec.fair" = "Fena değil, ama %%20'ye çıkmak her ay fazladan %@ birikim demek. Sinsice artan tekrarlayan veya tek seferlik kategorileri kırp.";
-"insights.formula.savingsRate.rec.low" = "%%10'un altı hiç tampon bırakmaz. Her ay en az %@ daha biriktirmeyi hedefle — en büyük keyfi harcama kategorisinden başla.";
+"insights.formula.savingsRate.rec.low" = "%%10'un altı hiç tampon bırakmaz. Her ay en az %@ daha biriktirmeyi hedefle. En büyük keyfi harcama kategorisinden başla.";
 "insights.formula.emergencyFund.title" = "Güvence Fonu";
 "insights.formula.emergencyFund.heroLabel" = "Bakiyenin kaç aylık gideri karşıladığı";
 "insights.formula.emergencyFund.formulaHeader" = "Nasıl hesaplanır";
@@ -881,7 +881,7 @@
 "insights.formula.emergencyFund.row.monthsCovered" = "Karşılanan ay sayısı";
 "insights.formula.emergencyFund.explainer" = "Gelir yarın dursa hesapların olağan harcamaları ne kadar süre karşılar. Çoğu planlamacının önerdiği taban 3+ ay; 6 ay ise rahat bir tampondur.";
 "insights.formula.emergencyFund.rec.good" = "3 ay eşiğini geçtin. Fazlayı daha yüksek getirili bir hesaba park etmeyi ya da uzun vadeli hedeflere yönlendirmeyi düşün.";
-"insights.formula.emergencyFund.rec.gap" = "3 aylık karşılamaya ulaşmak için %@ daha ekle. Küçük aylık katkılar bile birikir — birikim oranına uyan tutarla başla.";
+"insights.formula.emergencyFund.rec.gap" = "3 aylık karşılamaya ulaşmak için %@ daha ekle. Küçük aylık katkılar bile birikir. Birikim oranına uyan tutarla başla.";
 "insights.formula.spendingForecast.title" = "Ay Sonu Harcama Tahmini";
 "insights.formula.spendingForecast.heroLabel" = "Bu ay öngörülen toplam harcama";
 "insights.formula.spendingForecast.formulaHeader" = "Nasıl hesaplanır";
@@ -893,7 +893,7 @@
 "insights.formula.spendingForecast.explainer" = "Şu ana dek harcanan + (günlük ortalama × kalan gün) + bekleyen tekrarlayanlar. Tekrarlayanlar kalan güne göre oranlanır; böylece bugün ayın 25'iyse ayın 28'indeki bir abonelik iki kez sayılmaz.";
 "insights.formula.spendingForecast.rec.overrun" = "Geliri %@ aşma yolundasın. Keyfi harcamaları gözden geçir ya da isteğe bağlı alışverişleri gelecek aya ertele.";
 "insights.formula.spendingForecast.rec.onTrack" = "Tahmin %@ tutarında bir pay bırakıyor. Plansız alışverişlerden kaçınarak bunu koru ya da hemen birikime aktar.";
-"insights.formula.spendingForecast.rec.noIncome" = "Bu ay henüz gelir kaydedilmedi — tahmin yalnızca bilgi amaçlıdır.";
+"insights.formula.spendingForecast.rec.noIncome" = "Bu ay henüz gelir kaydedilmedi. Tahmin yalnızca bilgi amaçlıdır.";
 "insights.formula.balanceRunway.title" = "Bakiye Ömrü";
 "insights.formula.balanceRunway.heroLabel" = "Mevcut harcama hızıyla bakiyenin biteceği ay sayısı";
 "insights.formula.balanceRunway.heroLabel.growing" = "Ortalama aylık fazla";
@@ -905,11 +905,11 @@
 "insights.formula.balanceRunway.row.netFlow" = "Ortalama net akış";
 "insights.formula.balanceRunway.row.runway" = "Bakiye ömrü";
 "insights.formula.balanceRunway.explainer" = "Bakiye ÷ aylık açık. 3 ay eşiği sağlıklı bir güvence tamponuna denk gelir; 1 ayın altı, tek bir kötü maaş döngüsünün tamponu tüketmesi demektir.";
-"insights.formula.balanceRunway.explainer.growing" = "Gelir gideri aştığı için bakiye büyüyor. Ana değer ortalama aylık fazlan — bu hızla bakiyenin ömrü sınırsız.";
-"insights.formula.balanceRunway.rec.growing" = "Net pozitifsin — fazlayı boşta bekletmek yerine hedeflere, borca ya da daha yüksek getirili birikime yönlendir.";
-"insights.formula.balanceRunway.rec.long" = "3 aydan uzun bakiye ömrü — tamponun sağlam. Fazla nakdi daha uzun vadeli araçlara yönlendirmeyi düşün.";
+"insights.formula.balanceRunway.explainer.growing" = "Gelir gideri aştığı için bakiye büyüyor. Ana değer ortalama aylık fazlan. Bu hızla bakiyenin ömrü sınırsız.";
+"insights.formula.balanceRunway.rec.growing" = "Net pozitifsin. Fazlayı boşta bekletmek yerine hedeflere, borca ya da daha yüksek getirili birikime yönlendir.";
+"insights.formula.balanceRunway.rec.long" = "3 aydan uzun bakiye ömrü var, tamponun sağlam. Fazla nakdi daha uzun vadeli araçlara yönlendirmeyi düşün.";
 "insights.formula.balanceRunway.rec.short" = "3 ayın altında. 3 aylık tampona ulaşmak için harcamayı ayda ~%@ azalt; en büyük keyfi harcama kategorisinden başla.";
-"insights.formula.balanceRunway.rec.critical" = "Bir aydan az bakiye ömrü — açığı acilen kapat. Büyük bir tekrarlayan ödemeyi duraklatmak bile sana günler kazandırır.";
+"insights.formula.balanceRunway.rec.critical" = "Bir aydan az bakiye ömrü kaldı. Açığı acilen kapat. Büyük bir tekrarlayan ödemeyi duraklatmak bile sana günler kazandırır.";
 "insights.formula.yearOverYear.title" = "Yıldan Yıla Harcama";
 "insights.formula.yearOverYear.heroLabel" = "Geçen yılın aynı ayına göre değişim";
 "insights.formula.yearOverYear.formulaHeader" = "Nasıl hesaplanır";
@@ -917,10 +917,10 @@
 "insights.formula.yearOverYear.row.lastYear" = "Geçen yıl aynı ay";
 "insights.formula.yearOverYear.row.absDelta" = "Mutlak değişim";
 "insights.formula.yearOverYear.row.delta" = "Yüzde değişim";
-"insights.formula.yearOverYear.explainer" = "Bu ayın toplam giderlerini bir yıl önceki aynı ayla karşılaştırır. Mevsimsel dalgalanmalarla gerçek kaymayı ayırt etmeye yarar — Aralık her zaman daha masraflıdır, ama *bu* Aralık geçen yılkinden daha mı ağır?";
-"insights.formula.yearOverYear.rec.down" = "Harcama yıldan yıla belirgin şekilde düştü. Kasıtlı değilse hangi kategorilerin soğuduğuna bak — bazen burada atlanan bir tekrarlayan işlem saklanıyor olabilir.";
-"insights.formula.yearOverYear.rec.up" = "Harcama %@ arttı. İki ayın en büyük kategorilerini karşılaştır — sıçramayı çoğu zaman yeni bir abonelik, fazladan bir kira dönemi ya da tek büyük bir alışveriş açıklar.";
-"insights.formula.yearOverYear.rec.flat" = "Geçen yıla göre değişim düşük — harcama düzenin istikrarlı. Olası kaymayı yakalamak için aynı metriği gelecek ay da izle.";
+"insights.formula.yearOverYear.explainer" = "Bu ayın toplam giderlerini bir yıl önceki aynı ayla karşılaştırır. Mevsimsel dalgalanmalarla gerçek kaymayı ayırt etmeye yarar. Aralık her zaman daha masraflıdır, ama *bu* Aralık geçen yılkinden daha mı ağır?";
+"insights.formula.yearOverYear.rec.down" = "Harcama yıldan yıla belirgin şekilde düştü. Kasıtlı değilse hangi kategorilerin soğuduğuna bak. Bazen burada atlanan bir tekrarlayan işlem saklanıyor olabilir.";
+"insights.formula.yearOverYear.rec.up" = "Harcama %@ arttı. İki ayın en büyük kategorilerini karşılaştır. Sıçramayı çoğu zaman yeni bir abonelik, fazladan bir kira dönemi ya da tek büyük bir alışveriş açıklar.";
+"insights.formula.yearOverYear.rec.flat" = "Geçen yıla göre değişim düşük. Harcama düzenin istikrarlı. Olası kaymayı yakalamak için aynı metriği gelecek ay da izle.";
 "insights.formula.projectedBalance.title" = "Öngörülen Bakiye";
 "insights.formula.projectedBalance.heroLabel" = "Dönem sonunda tahmini bakiye";
 "insights.formula.projectedBalance.formulaHeader" = "Nasıl hesaplanır";
@@ -929,9 +929,9 @@
 "insights.formula.projectedBalance.row.avgExpenses" = "Dönemin ortalama tekrarlayan olmayan gideri";
 "insights.formula.projectedBalance.row.horizon" = "Zaman ufku";
 "insights.formula.projectedBalance.row.projected" = "Öngörülen bakiye";
-"insights.formula.projectedBalance.explainer" = "Mevcut bakiye + (tekrarlayan net − ortalama tekrarlayan olmayan giderler), seçilen döneme ölçeklenir. Basit doğrusal projeksiyon — son 3 dilimin geleceği temsil ettiğini varsayar. Kesin bir tahmin olarak değil, erken uyarı için kullan.";
-"insights.formula.projectedBalance.rec.growing" = "Projeksiyon yukarı yönlü — mevcut düzen dönem boyunca bakiyeye ekleme yapıyor.";
-"insights.formula.projectedBalance.rec.dropping" = "Projeksiyon dönem boyunca %@ düşüyor. Giderleri hangi kategorilerin yukarı ittiğini bul — müdahalenin en çok işe yaradığı yer orası.";
+"insights.formula.projectedBalance.explainer" = "Mevcut bakiye + (tekrarlayan net − ortalama tekrarlayan olmayan giderler), seçilen döneme ölçeklenir. Basit doğrusal projeksiyon: son 3 dilimin geleceği temsil ettiğini varsayar. Kesin bir tahmin olarak değil, erken uyarı için kullan.";
+"insights.formula.projectedBalance.rec.growing" = "Projeksiyon yukarı yönlü. Mevcut düzen dönem boyunca bakiyeye ekleme yapıyor.";
+"insights.formula.projectedBalance.rec.dropping" = "Projeksiyon dönem boyunca %@ düşüyor. Giderleri hangi kategorilerin yukarı ittiğini bul. Müdahalenin en çok işe yaradığı yer orası.";
 "insights.wealth.growth.compare" = "%@ – %@";
 
 "insights.subscriptionGrowth.compareAgo" = "%d ay öncesine göre";
@@ -945,8 +945,8 @@
 "insights.formula.subscriptionGrowth.row.addedCount" = "O zamandan beri eklenen abonelikler";
 "insights.formula.subscriptionGrowth.row.delta" = "Değişim";
 "insights.formula.subscriptionGrowth.explainer" = "Tüm aktif aboneliklerin aylık eşdeğerini toplar, sonra bunu yalnızca karşılaştırma penceresinin başında var olan aboneliklerden hesaplanan aynı toplamla kıyaslar. Pencere, ayrıntı düzeyi seçicisiyle birlikte ölçeklenir.";
-"insights.formula.subscriptionGrowth.rec.growing" = "Tekrarlayan harcama ayda %@ arttı. Yeni abonelikleri gözden geçir, aktif kullanmadıklarını bul — tekrarlayan bağlanmalar yıllar içinde birikir.";
-"insights.formula.subscriptionGrowth.rec.shrinking" = "Tekrarlayan harcamayı kırptın — yeni servisler cezbettikçe bu disiplini koru. Boşalan nakit akışını birikime ya da borca yönlendir.";
+"insights.formula.subscriptionGrowth.rec.growing" = "Tekrarlayan harcama ayda %@ arttı. Yeni abonelikleri gözden geçir, aktif kullanmadıklarını bul. Tekrarlayan bağlanmalar yıllar içinde birikir.";
+"insights.formula.subscriptionGrowth.rec.shrinking" = "Tekrarlayan harcamayı kırptın. Yeni servisler cezbettikçe bu disiplini koru. Boşalan nakit akışını birikime ya da borca yönlendir.";
 "insights.formula.subscriptionGrowth.rec.stable" = "Tekrarlayan harcama neredeyse sabit kaldı. Portföy istikrarlı; kullanılmayan servisler sessizce kalmasın diye ara sıra gözden geçir.";
 
 "insights.formula.categoryTrend.title" = "Kategori Eğilimi";
@@ -955,7 +955,7 @@
 "insights.formula.categoryTrend.row.month" = "Ay";
 "insights.formula.categoryTrend.row.delta" = "Son ay – önceki ay";
 "insights.formula.categoryTrend.explainer" = "Aylık kategori toplamlarını karşılaştırma penceresi boyunca (ayrıntı düzeyiyle ölçeklenir) tarar ve en uzun süre aralıksız artan kategoriyi öne çıkarırız. Yavaş kaymayı bütçe aşımı olarak görünmeden önce yakalamaya yarar.";
-"insights.formula.categoryTrend.rec" = "%@ üst üste %d aydır yükseliyor. Son işlemleri önceki aylarla karşılaştır — bu seriyi çoğu zaman tek bir tekrarlayan işlem ya da alışkanlık değişimi açıklar.";
+"insights.formula.categoryTrend.rec" = "%@ üst üste %d aydır yükseliyor. Son işlemleri önceki aylarla karşılaştır. Bu seriyi çoğu zaman tek bir tekrarlayan işlem ya da alışkanlık değişimi açıklar.";
 "insights.granularity.prev.week" = "önceki haftaya göre";
 "insights.granularity.prev.month" = "önceki aya göre";
 "insights.granularity.prev.quarter" = "önceki çeyreğe göre";
@@ -996,7 +996,7 @@
 "insights.duplicateSubscriptions.title" = "Olası Yinelenen Abonelikler";
 "insights.duplicateSubscriptions.subtitle" = "olası yinelenenler tespit edildi";
 "insights.accountDormancy.title" = "Atıl duran para";
-"insights.accountDormancy.subtitle" = "hesap 30+ gündür hareketsiz — mevduatta gelir getirebilirdi";
+"insights.accountDormancy.subtitle" = "hesap 30+ gündür hareketsiz, mevduatta gelir getirebilirdi";
 
 "notification.weeklyDigest.title" = "Haftalık özet";
 "notification.weeklyDigest.body.withComparison" = "%1$@: harcama %2$@ (önceki haftaya göre %3$@)";
@@ -1007,7 +1007,7 @@
 "settings.insightSignals.master" = "Önemli sinyaller için bildirim";
 "settings.insightSignals.footer" = "Yalnızca önemli değişiklikler bildirilir: bütçe aşımı, abonelik zamları, düşük bakiye tahmini. Her sinyal haftada en fazla bir kez, toplamda haftada en fazla 5 bildirim.";
 "settings.insightSignals.lowBalance" = "Düşük bakiye tahmini";
-"settings.insightSignals.permissionDenied" = "Bildirimler iOS Ayarlarında kapalı — açmak için dokunun";
+"settings.insightSignals.permissionDenied" = "Bildirimler iOS Ayarlarında kapalı, açmak için dokunun";
 
 "insights.priceIncrease" = "Abonelik zamlandı";
 "insights.priceIncrease.was" = "önceki %@";
@@ -1031,8 +1031,8 @@
 "insights.formula.largeTransaction.row.amount" = "Tutar";
 "insights.formula.largeTransaction.row.avgTx" = "Ortalama harcama (90 gün)";
 "insights.formula.largeTransaction.row.multiplier" = "Ortalamanın katı";
-"insights.formula.largeTransaction.explainer" = "Kira ve abonelik gibi düzenli ödemeler hariçtir — yalnızca tek seferlik alışverişler sayılır. Ortalama harcamanızın 4 katı bir alışveriş ikinci bir bakışı hak eder.";
-"insights.formula.largeTransaction.rec" = "Alışverişin beklenen bir harcama olduğundan emin olun. Tek seferlikse bir şey yapmanıza gerek yok — ortalama güncellendikçe sinyal kaybolur.";
+"insights.formula.largeTransaction.explainer" = "Kira ve abonelik gibi düzenli ödemeler hariçtir. Yalnızca tek seferlik alışverişler sayılır. Ortalama harcamanızın 4 katı bir alışveriş ikinci bir bakışı hak eder.";
+"insights.formula.largeTransaction.rec" = "Alışverişin beklenen bir harcama olduğundan emin olun. Tek seferlikse bir şey yapmanıza gerek yok. Ortalama güncellendikçe sinyal kaybolur.";
 "insights.dormant.accounts" = "Atıl Hesaplar";
 
 // MARK: - Tab Bar
@@ -1099,7 +1099,7 @@
 "loan.currentPaymentBreakdown" = "Mevcut Ödeme Dağılımı";
 "loan.principalPortion" = "Anapara";
 "loan.interestPortion" = "Faiz";
-"loan.noInterest" = "Taksit — faiz alınmaz";
+"loan.noInterest" = "Taksit: faiz alınmaz";
 "loan.stats" = "İstatistikler";
 "loan.originalAmount" = "Başlangıç Tutarı";
 "loan.interestRate" = "Faiz Oranı";
@@ -1484,9 +1484,9 @@
 /* MARK: - Onboarding */
 
 "onboarding.welcome.page1.title" = "Tüm finansların tek yerde";
-"onboarding.welcome.page1.subtitle" = "Hesaplar, mevduatlar, krediler, abonelikler ve harcama kategorileri — anlaşılır analizle birlikte.";
+"onboarding.welcome.page1.subtitle" = "Hesaplar, mevduatlar, krediler, abonelikler ve harcama kategorileri. Hepsi anlaşılır analizle birlikte.";
 "onboarding.welcome.page2.title" = "İşlemleri sesle ekle";
-"onboarding.welcome.page2.subtitle" = "\"Kahveye 90 lira\" de — Tenra tutarı, para birimini ve kategoriyi anlar. Ya da PDF/CSV ekstrelerini içe aktar.";
+"onboarding.welcome.page2.subtitle" = "\"Kahveye 90 lira\" de. Tenra tutarı, para birimini ve kategoriyi anlar. Ya da PDF/CSV ekstrelerini içe aktar.";
 "onboarding.welcome.page3.title" = "Verilerin sende kalır";
 "onboarding.welcome.page3.subtitle" = "Her şey cihazında saklanır. iCloud yedeği isteğe bağlıdır. Hesap yok, kayıt yok.";
 
@@ -1529,20 +1529,20 @@
 
 // MARK: - Financial Health Detail Page
 
-"insights.health.subtitle.excellent" = "Mükemmel durumda — finansların dayanıklı.";
+"insights.health.subtitle.excellent" = "Mükemmel durumdasın, finansların dayanıklı.";
 "insights.health.subtitle.good" = "Sağlam finanslar, iyileştirme alanı var.";
 "insights.health.subtitle.fair" = "Fena değil, ama birkaç alan ilgi bekliyor.";
 "insights.health.subtitle.needsAttention" = "Finanslarının birkaç yönü üzerinde çalışman gerekiyor.";
 
 "insights.health.unavailable.title" = "Yeterli veri yok";
-"insights.health.unavailable.message" = "Gelir ve gider işlemleri ekle — yeterli veri oluştuğunda finansal sağlığını değerlendireceğiz.";
+"insights.health.unavailable.message" = "Gelir ve gider işlemleri ekle. Yeterli veri oluştuğunda finansal sağlığını değerlendireceğiz.";
 
 "insights.health.howItWorks" = "Nasıl hesaplanır";
 "insights.health.explainer" = "Finansal sağlığın beş yönünü kapsayan 0-100 arası ağırlıklı bir puan. Daha yüksek puan daha fazla finansal dayanıklılık demek.";
 "insights.health.periodContext.months" = "Son %d aylık etkinliğe dayanır. Üstteki dönem seçici diğer analizleri değiştirir ama bu puanı etkilemez.";
 "insights.health.periodContext.singleMonth" = "Bu ayki etkinliğe dayanır. Üstteki dönem seçici diğer analizleri değiştirir ama bu puanı etkilemez.";
 "insights.health.weightLabel" = "%d%%";
-"insights.health.weights.redistributed" = "Bütçe ayarlanmamış — %25'lik ağırlık diğer dört bileşene dağıtılır.";
+"insights.health.weights.redistributed" = "Bütçe ayarlanmamış, %25'lik ağırlık diğer dört bileşene dağıtılır.";
 
 "insights.health.component.savingsRate.title" = "Birikim Oranı";
 "insights.health.component.savingsRate.short" = "Birikim";
@@ -1575,21 +1575,21 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "%%20'ye ulaşmak için giderleri ayda ≈ %@ azalt ya da geliri ayda ≈ %@ artır.";
-"insights.health.rec.savingsRate.healthy" = "Mükemmel — tempoyu koru. Uzun vadeli dayanıklılık için önerilen seviye %%20 ve üzeri.";
+"insights.health.rec.savingsRate.healthy" = "Mükemmel, tempoyu koru. Uzun vadeli dayanıklılık için önerilen seviye %%20 ve üzeri.";
 
-"insights.health.rec.budgetAdherence.empty" = "Bütçeler ayarlanmamış. Kategorilerinde bütçe belirle — bu bileşen o zaman puana dahil olur.";
+"insights.health.rec.budgetAdherence.empty" = "Bütçeler ayarlanmamış. Kategorilerinde bütçe belirle. Bu bileşen o zaman puana dahil olur.";
 "insights.health.rec.budgetAdherence.partial" = "%d kategori bütçeyi aştı. Fazla harcamanın kaynağını bulmak için bu kategorileri aç.";
-"insights.health.rec.budgetAdherence.full" = "Her kategori bütçe içinde — mükemmel.";
+"insights.health.rec.budgetAdherence.full" = "Her kategori bütçe içinde, mükemmel.";
 
-"insights.health.rec.recurringRatio.high" = "Abonelikler ve tekrarlayan ödemeler gelirinin %%%.0f kadarını tutuyor. %%50'nin altını hedefle — gözden geçir ve gerekmeyenleri iptal et.";
-"insights.health.rec.recurringRatio.healthy" = "Gelirinin %%%.0f kadarı tekrarlayan ödemelere gidiyor — sağlıklı bir seviye.";
+"insights.health.rec.recurringRatio.high" = "Abonelikler ve tekrarlayan ödemeler gelirinin %%%.0f kadarını tutuyor. %%50'nin altını hedefle. Gözden geçir ve gerekmeyenleri iptal et.";
+"insights.health.rec.recurringRatio.healthy" = "Gelirinin %%%.0f kadarı tekrarlayan ödemelere gidiyor, sağlıklı bir seviye.";
 
 "insights.health.rec.emergencyFund.below" = "3 aylık gideri karşılamak için ≈ %@ daha gerekiyor.";
 "insights.health.rec.emergencyFund.belowWithProjection" = "3 aylık gideri karşılamak için ≈ %@ daha gerekiyor. Mevcut birikim hızınla buna yaklaşık %.1f ay var.";
-"insights.health.rec.emergencyFund.healthy" = "Elinde %.1f aylık gider var — beklenmedik durumlar için yeterli tampon.";
+"insights.health.rec.emergencyFund.healthy" = "Elinde %.1f aylık gider var, beklenmedik durumlar için yeterli tampon.";
 
 "insights.health.rec.cashFlow.negative" = "Kazandığından fazla harcıyorsun (bu dönem gelirinin −%%%.1f kadarı). Giderleri kıs ya da ek bir gelir kaynağı bul.";
-"insights.health.rec.cashFlow.positive" = "Gelirin giderlerini %%%.1f kadar aşıyor — sağlıklı bir pozitif akış.";
+"insights.health.rec.cashFlow.positive" = "Gelirin giderlerini %%%.1f kadar aşıyor, sağlıklı bir pozitif akış.";
 
 // MARK: - Rating Prompt
 "rating.survey.title" = "Tenra'yı beğeniyor musun?";
@@ -1600,7 +1600,7 @@
 // MARK: - Premium
 "premium.unlock" = "Pro'nun Kilidini Aç";
 "premium.locked.voice.title" = "Sesli giriş bir Pro özelliğidir";
-"premium.locked.voice.message" = "İşlemleri sesle ekle — tutarı ve kategoriyi söylemen yeterli, gerisini Tenra tamamlar.";
+"premium.locked.voice.message" = "İşlemleri sesle ekle. Tutarı ve kategoriyi söylemen yeterli, gerisini Tenra tamamlar.";
 "premium.locked.import.title" = "Ekstre içe aktarma bir Pro özelliğidir";
 "premium.locked.import.message" = "PDF banka ekstrelerini ve CSV dosyalarını her işlemi tek tek yazmak yerine otomatik olarak içe aktar.";
 "settings.supportID" = "Destek Kimliği";
@@ -1617,7 +1617,7 @@
 "settings.pro.status.renews" = "%1$@ · %2$@ tarihinde yenilenir";
 "settings.pro.status.expires" = "%1$@ · %2$@ tarihinde sona erer";
 "settings.pro.founder" = "Sonsuza dek ücretsiz";
-"settings.pro.founder.subtitle" = "Kurucu kullanıcısınız — tüm Pro özellikleri sizin için sonsuza dek ücretsiz. Teşekkürler!";
+"settings.pro.founder.subtitle" = "Kurucu kullanıcısınız. Tüm Pro özellikleri sizin için sonsuza dek ücretsiz. Teşekkürler!";
 "settings.pro.manage" = "Aboneliği yönet";
 "settings.pro.restore" = "Satın alımları geri yükle";
 "settings.pro.restore.restored" = "Geri yüklendi";

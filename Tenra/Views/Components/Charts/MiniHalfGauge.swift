@@ -106,7 +106,7 @@ struct MiniHalfGauge: View {
                     width: markerRadius * 2,
                     height: markerRadius * 2
                 )),
-                with: .color(AppColors.bgBase)
+                with: .color(color)
             )
             let dotRadius = markerRadius / 3
             context.fill(
@@ -116,7 +116,7 @@ struct MiniHalfGauge: View {
                     width: dotRadius * 2,
                     height: dotRadius * 2
                 )),
-                with: .color(color)
+                with: .color(AppColors.bgBase)
             )
         }
         .frame(height: height)

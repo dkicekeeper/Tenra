@@ -358,6 +358,7 @@ Active reference docs in `docs/`:
 | [domains/currency.md](docs/domains/currency.md) | FX rates, providers, prewarm |
 | [domains/logos.md](docs/domains/logos.md) | Logo provider chain, ServiceLogoRegistry |
 | [MONETIZATION_STRATEGY.md](docs/MONETIZATION_STRATEGY.md) | Pro model rationale, pricing, competitor analysis, paywall strategy, rollout plan |
+| [PROMOTION_PLAN.md](docs/PROMOTION_PLAN.md) | Active growth/MRR plan: measurement, ratings, ASO iteration, Apple Search Ads pilot, weekly metrics table (see also app-marketing-context.md in repo root) |
 
 Historical docs (305 files) archived to `docs/archive/`.
 

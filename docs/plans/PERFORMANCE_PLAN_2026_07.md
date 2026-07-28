@@ -679,8 +679,12 @@ _ = fxStale    // ← мёртвый код
 
 ## Обновление документации по завершении
 
-- [ ] `docs/gotchas.md` — добавить в «Performance Hot-Paths»: `DateFormatter.date(from:)` стоит ~13.4 мкс; для `yyyy-MM-dd` использовать `FastDateParser`.
-- [ ] `docs/architecture.md` — обновить описание индексов `TransactionStore` (id-based группировка, кэш дат по строке).
-- [ ] `docs/domains/currency.md` — задокументировать `RateSnapshot` и когда его брать вместо `convertSync`.
-- [ ] `CLAUDE.md` — добавить красный флаг: «Никогда не вызывать `DateFormatter.date(from:)` в цикле по транзакциям — использовать `FastDateParser`».
-- [ ] `docs/CACHE_AUDIT.md` — отметить консолидацию трёх кэшей разобранных дат в один.
+Выполнено 2026-07-28.
+
+- [x] [`docs/gotchas.md`](../gotchas.md) — три новых раздела: «Date parsing» (стоимость `DateFormatter.date(from:)`, неравномерная строгость, требование `en_US_POSIX`, ключевание кэша по строке даты), «Grouping indexes store ids, not values», «Currency conversion in bulk loops».
+- [x] [`docs/architecture.md`](../architecture.md) — раздел «Grouping indexes (id-based)» с таблицей соответствия хранилище ↔ view, правилом «привязывай бакет к `let`» и требованием `ensureTransactionByIdInSync()`; в список O(1)-индексов добавлен `parsedDateByDateString`.
+- [x] [`docs/domains/currency.md`](../domains/currency.md) — раздел «`RateSnapshot` — for bulk loops»: оба обоснования (трафик локов и консистентность курсов внутри одного прохода), список текущих мест применения, граница «единичные конверсии остаются на `convertSync`».
+- [x] [`CLAUDE.md`](../../CLAUDE.md) — красный флаг #15 про `FastDateParser`; заодно поправлена строка про индексы `TransactionStore` (`internal(set)` → `var`, ссылка на `TransactionIndex`).
+- [x] `docs/CACHE_AUDIT.md` (с тех пор заархивирован в [`archive/CACHE_AUDIT_2026_06_03.md`](../archive/CACHE_AUDIT_2026_06_03.md)) — консолидация трёх кэшей дат, новое правило инвалидации (не выселять по дате при удалении транзакции), баг с локалью описан как тот же класс «забытого измерения», плюс FX-консистентность как ранее не названное измерение.
+
+Также помечены как реализованные шапки [аудита](../PERFORMANCE_AUDIT_2026_07.md) и этого плана.

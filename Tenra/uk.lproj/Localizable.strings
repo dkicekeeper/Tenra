@@ -937,7 +937,6 @@
 "insights.wealth.growth.compare" = "%@ проти %@";
 
 "insights.subscriptionGrowth.compareAgo" = "порівняно з періодом %d місяців тому";
-"insights.duplicateSubscriptions.subtitle" = "%d можливих пар(и)";
 "insights.formula.subscriptionGrowth.title" = "Зростання підписок";
 "insights.formula.subscriptionGrowth.heroLabel" = "Зміна щомісячних регулярних витрат";
 "insights.formula.subscriptionGrowth.formulaHeader" = "Як це обчислюється";
@@ -995,8 +994,6 @@
 "insights.healthGrade.good" = "Добре";
 "insights.healthGrade.fair" = "Задовільно";
 "insights.healthGrade.needsAttention" = "Потребує уваги";
-"insights.duplicateSubscriptions.title" = "Можливі дубльовані підписки";
-"insights.duplicateSubscriptions.subtitle" = "виявлено потенційних дублів";
 "insights.accountDormancy.title" = "Гроші без діла";
 "insights.accountDormancy.subtitle" = "рахунків без руху 30+ днів, які могли б приносити дохід на депозиті";
 

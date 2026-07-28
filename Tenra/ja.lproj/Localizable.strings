@@ -937,7 +937,6 @@
 "insights.wealth.growth.compare" = "%@ 対 %@";
 
 "insights.subscriptionGrowth.compareAgo" = "%dヶ月前比";
-"insights.duplicateSubscriptions.subtitle" = "重複の可能性%d組";
 "insights.formula.subscriptionGrowth.title" = "サブスクの増加";
 "insights.formula.subscriptionGrowth.heroLabel" = "毎月の定期支出の変化";
 "insights.formula.subscriptionGrowth.formulaHeader" = "計算方法";
@@ -995,8 +994,6 @@
 "insights.healthGrade.good" = "良い";
 "insights.healthGrade.fair" = "まずまず";
 "insights.healthGrade.needsAttention" = "要注意";
-"insights.duplicateSubscriptions.title" = "重複しているサブスクの可能性";
-"insights.duplicateSubscriptions.subtitle" = "重複の可能性を検出しました";
 "insights.accountDormancy.title" = "眠っているお金";
 "insights.accountDormancy.subtitle" = "口座が30日以上動きなし。預金なら利息を生めます";
 

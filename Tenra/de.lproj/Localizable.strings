@@ -937,7 +937,6 @@
 "insights.wealth.growth.compare" = "%@ vs. %@";
 
 "insights.subscriptionGrowth.compareAgo" = "ggü. vor %d Monaten";
-"insights.duplicateSubscriptions.subtitle" = "%d mögliche(s) Paar(e)";
 "insights.formula.subscriptionGrowth.title" = "Abo-Wachstum";
 "insights.formula.subscriptionGrowth.heroLabel" = "Veränderung der monatlichen wiederkehrenden Ausgaben";
 "insights.formula.subscriptionGrowth.formulaHeader" = "So wird es berechnet";
@@ -995,8 +994,6 @@
 "insights.healthGrade.good" = "Gut";
 "insights.healthGrade.fair" = "Befriedigend";
 "insights.healthGrade.needsAttention" = "Braucht Aufmerksamkeit";
-"insights.duplicateSubscriptions.title" = "Mögliche doppelte Abos";
-"insights.duplicateSubscriptions.subtitle" = "mögliche Duplikate erkannt";
 "insights.accountDormancy.title" = "Ungenutztes Geld";
 "insights.accountDormancy.subtitle" = "Konten 30+ Tage inaktiv, könnten auf einem Festgeld Zinsen bringen";
 

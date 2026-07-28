@@ -937,7 +937,6 @@
 "insights.wealth.growth.compare" = "%@ – %@";
 
 "insights.subscriptionGrowth.compareAgo" = "%d ay öncesine göre";
-"insights.duplicateSubscriptions.subtitle" = "%d olası çift";
 "insights.formula.subscriptionGrowth.title" = "Abonelik Artışı";
 "insights.formula.subscriptionGrowth.heroLabel" = "Aylık tekrarlayan harcamadaki değişim";
 "insights.formula.subscriptionGrowth.formulaHeader" = "Nasıl hesaplanır";
@@ -995,8 +994,6 @@
 "insights.healthGrade.good" = "İyi";
 "insights.healthGrade.fair" = "Orta";
 "insights.healthGrade.needsAttention" = "Dikkat Gerektiriyor";
-"insights.duplicateSubscriptions.title" = "Olası Yinelenen Abonelikler";
-"insights.duplicateSubscriptions.subtitle" = "olası yinelenenler tespit edildi";
 "insights.accountDormancy.title" = "Atıl duran para";
 "insights.accountDormancy.subtitle" = "hesap 30+ gündür hareketsiz, mevduatta gelir getirebilirdi";
 

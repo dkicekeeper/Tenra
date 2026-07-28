@@ -937,7 +937,6 @@
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "rispetto a %d mesi fa";
-"insights.duplicateSubscriptions.subtitle" = "%d possibile/i coppia/e";
 "insights.formula.subscriptionGrowth.title" = "Crescita degli abbonamenti";
 "insights.formula.subscriptionGrowth.heroLabel" = "Variazione della spesa ricorrente mensile";
 "insights.formula.subscriptionGrowth.formulaHeader" = "Come si calcola";
@@ -995,8 +994,6 @@
 "insights.healthGrade.good" = "Buono";
 "insights.healthGrade.fair" = "Discreto";
 "insights.healthGrade.needsAttention" = "Richiede attenzione";
-"insights.duplicateSubscriptions.title" = "Possibili abbonamenti duplicati";
-"insights.duplicateSubscriptions.subtitle" = "potenziali duplicati rilevati";
 "insights.accountDormancy.title" = "Denaro fermo";
 "insights.accountDormancy.subtitle" = "conti fermi da 30+ giorni: potrebbero rendere su un deposito";
 

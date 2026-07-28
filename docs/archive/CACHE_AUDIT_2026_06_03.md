@@ -161,6 +161,6 @@ Items **#17, #18, #19**, plus the prevention guardrails below.
 ---
 
 ## 7. References
-- [docs/DATA_INTEGRITY_AUDIT.md](DATA_INTEGRITY_AUDIT.md) — the unified contribution / realized-vs-forecast model (#1, #7 interact with it).
+- [DATA_INTEGRITY_AUDIT_2026_05_25.md](DATA_INTEGRITY_AUDIT_2026_05_25.md) — the unified contribution / realized-vs-forecast model (#1, #7 interact with it).
 - [docs/domains/categories.md](domains/categories.md) — index maintenance contract & view-layer subscription rules (#3, #6).
 - [docs/domains/currency.md](domains/currency.md) — `convertSync` vs `convertedAmount`, FX staleness (#1, #4, #9, #10, #12).

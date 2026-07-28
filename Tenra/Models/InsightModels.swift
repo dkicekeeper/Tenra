@@ -121,7 +121,6 @@ enum InsightType: String, Hashable {
     case emergencyFund     // months of expenses covered by balance
     case spendingForecast  // projected 30-day spend
     case yearOverYear      // this month vs same month last year
-    case duplicateSubscriptions // possible duplicate recurring items
     case accountDormancy        // accounts idle 30+ days with non-zero balance
     case subscriptionPriceIncrease // latest charge higher than the previous one (audit 2026-07)
     case largeTransaction          // big non-recurring expense vs 90d average (audit 2026-07)
@@ -175,7 +174,7 @@ extension InsightType {
     var upIsBadForUser: Bool {
         switch self {
         case .spendingSpike, .monthOverMonthChange, .averageDailySpending,
-             .categoryTrend, .totalRecurringCost, .subscriptionGrowth, .duplicateSubscriptions,
+             .categoryTrend, .totalRecurringCost, .subscriptionGrowth,
              .budgetOverspend, .budgetUnderutilized, .projectedOverspend, .accountDormancy,
              .yearOverYear, .spendingForecast, .subscriptionPriceIncrease, .largeTransaction:
             return true

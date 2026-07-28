@@ -3,7 +3,7 @@
 **Last Updated:** 2026-07-13
 **Phase coverage:** Phase 17–31 + product audit 2026-07
 
-> ⚠️ **Product audit 2026-07** ([INSIGHTS_PRODUCT_AUDIT.md](INSIGHTS_PRODUCT_AUDIT.md), [domains/insights.md](domains/insights.md)):
+> ⚠️ **Product audit 2026-07** ([archive/INSIGHTS_PRODUCT_AUDIT_2026_07_13.md](archive/INSIGHTS_PRODUCT_AUDIT_2026_07_13.md), [domains/insights.md](domains/insights.md)):
 > - **Removed:** `incomeVsExpenseRatio` (дубль savingsRate+netCashFlow).
 > - **Merged:** `bestMonth`+`worstMonth` → одна карточка «Рекорды» (`period_records`, тип `.bestMonth`); `balanceRunway` → в деталь `emergencyFund` (severity = худшая из двух).
 > - **Added:** `subscriptionPriceIncrease` (shared, `price_increase_<seriesId>`, >5% и ≤300% к прошлому списанию в той же валюте; billing-period guard 2026-07: интервал между сравниваемыми списаниями обязан быть в 0.5–1.6× периода `series.frequency`, иначе это смена тарифного периода — месячный→годовой, Wolt-баг — и сигнал подавляется), `largeTransaction` (shared, `large_tx_<txId>`, ≥4× средней траты за 90д, non-recurring, ≥20 базовых tx).

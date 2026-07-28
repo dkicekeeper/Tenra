@@ -937,7 +937,6 @@
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "vs. hace %d meses";
-"insights.duplicateSubscriptions.subtitle" = "%d posible(s) par(es)";
 "insights.formula.subscriptionGrowth.title" = "Crecimiento de suscripciones";
 "insights.formula.subscriptionGrowth.heroLabel" = "Cambio en el gasto recurrente mensual";
 "insights.formula.subscriptionGrowth.formulaHeader" = "Cómo se calcula";
@@ -995,8 +994,6 @@
 "insights.healthGrade.good" = "Bueno";
 "insights.healthGrade.fair" = "Aceptable";
 "insights.healthGrade.needsAttention" = "Requiere atención";
-"insights.duplicateSubscriptions.title" = "Posibles suscripciones duplicadas";
-"insights.duplicateSubscriptions.subtitle" = "posibles duplicados detectados";
 "insights.accountDormancy.title" = "Dinero sin uso";
 "insights.accountDormancy.subtitle" = "cuentas inactivas 30+ días: podrían rentar en un depósito";
 

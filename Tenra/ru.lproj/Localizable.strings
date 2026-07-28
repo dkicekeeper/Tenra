@@ -937,7 +937,6 @@
 "insights.wealth.growth.compare" = "%@ к %@";
 
 "insights.subscriptionGrowth.compareAgo" = "за %d мес.";
-"insights.duplicateSubscriptions.subtitle" = "%d возможных пар(ы)";
 "insights.formula.subscriptionGrowth.title" = "Рост подписок";
 "insights.formula.subscriptionGrowth.heroLabel" = "Изменение ежемесячного расхода на подписки";
 "insights.formula.subscriptionGrowth.formulaHeader" = "Как считается";
@@ -995,8 +994,6 @@
 "insights.healthGrade.good" = "Хорошо";
 "insights.healthGrade.fair" = "Неплохо";
 "insights.healthGrade.needsAttention" = "Требует внимания";
-"insights.duplicateSubscriptions.title" = "Возможные дубликаты подписок";
-"insights.duplicateSubscriptions.subtitle" = "возможных дубликата";
 "insights.accountDormancy.title" = "Деньги без дела";
 "insights.accountDormancy.subtitle" = "счетов без движения 30+ дней, могли бы приносить доход на депозите";
 

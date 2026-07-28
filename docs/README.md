@@ -6,7 +6,7 @@ Living reference docs. The thin index in [CLAUDE.md](../CLAUDE.md) routes Claude
 
 | File | Purpose |
 |------|---------|
-| [architecture.md](architecture.md) | MVVM+Coordinator deep dive, TransactionStore, BalanceCoordinator, Repository pattern, CoreData v8 |
+| [architecture.md](architecture.md) | MVVM+Coordinator deep dive, TransactionStore, BalanceCoordinator, Repository pattern, CoreData v12 |
 | [concurrency.md](concurrency.md) | Swift 6 concurrency, CoreData threading, @Observable rules |
 | [design-system.md](design-system.md) | Design tokens, components, animations, padding contract, amount formatting |
 | [gotchas.md](gotchas.md) | SwiftUI Layout, Performance hot-paths, code hygiene |
@@ -29,8 +29,9 @@ Living reference docs. The thin index in [CLAUDE.md](../CLAUDE.md) routes Claude
 
 ## Working Files
 
-- `superpowers/plans/` — implementation plans from `/ship` sessions
-- `superpowers/specs/` — feature specifications
+- `plans/` — implementation plans from `/ship` sessions, **in flight only**. Completed plans move to `archive/plans/`.
+
+Feature specifications live alongside their plans in `archive/specs/`.
 
 ## Archive
 

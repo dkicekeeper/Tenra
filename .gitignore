@@ -1,3 +1,7 @@
 .worktrees/
 .claude/worktrees/
 .gstack/
+
+# Xcode per-user state — window layout, breakpoints, last-open files.
+# Machine-local noise: it changes on every Xcode session and lands in every commit.
+**/xcuserdata/

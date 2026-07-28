@@ -71,7 +71,7 @@ critical > warning > neutral > positive
 
 ## Recent Metric Changes (2026-07 product audit)
 
-Full rationale + benchmarks: [INSIGHTS_PRODUCT_AUDIT.md](../INSIGHTS_PRODUCT_AUDIT.md).
+Full rationale + benchmarks (archived): [archive/INSIGHTS_PRODUCT_AUDIT_2026_07_13.md](../archive/INSIGHTS_PRODUCT_AUDIT_2026_07_13.md).
 
 ### Deleted / merged (audit 2026-07)
 - `incomeVsExpenseRatio` — deleted (unintuitive `1.2x` multiplier; duplicated `savingsRate` + `netCashFlow`)

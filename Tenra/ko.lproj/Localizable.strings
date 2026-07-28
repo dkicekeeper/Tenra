@@ -937,7 +937,6 @@
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "%d개월 전 대비";
-"insights.duplicateSubscriptions.subtitle" = "가능성 있는 쌍 %d개";
 "insights.formula.subscriptionGrowth.title" = "구독 증가";
 "insights.formula.subscriptionGrowth.heroLabel" = "월 반복 지출의 변화";
 "insights.formula.subscriptionGrowth.formulaHeader" = "계산 방법";
@@ -995,8 +994,6 @@
 "insights.healthGrade.good" = "좋음";
 "insights.healthGrade.fair" = "보통";
 "insights.healthGrade.needsAttention" = "주의 필요";
-"insights.duplicateSubscriptions.title" = "중복 가능성 있는 구독";
-"insights.duplicateSubscriptions.subtitle" = "중복 가능성 발견됨";
 "insights.accountDormancy.title" = "잠자는 돈";
 "insights.accountDormancy.subtitle" = "계좌가 30일 이상 미사용, 예금이라면 수익이 생겼을 것";
 

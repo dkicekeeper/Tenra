@@ -937,7 +937,6 @@
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "vs %d months ago";
-"insights.duplicateSubscriptions.subtitle" = "%d possible pair(s)";
 "insights.formula.subscriptionGrowth.title" = "Subscription Growth";
 "insights.formula.subscriptionGrowth.heroLabel" = "Change in monthly recurring spend";
 "insights.formula.subscriptionGrowth.formulaHeader" = "How it's computed";
@@ -995,8 +994,6 @@
 "insights.healthGrade.good" = "Good";
 "insights.healthGrade.fair" = "Fair";
 "insights.healthGrade.needsAttention" = "Needs Attention";
-"insights.duplicateSubscriptions.title" = "Possible Duplicate Subscriptions";
-"insights.duplicateSubscriptions.subtitle" = "potential duplicates detected";
 "insights.accountDormancy.title" = "Money sitting idle";
 "insights.accountDormancy.subtitle" = "accounts idle 30+ days, could be earning on a deposit";
 

@@ -587,10 +587,10 @@
 "csvImport.error.invalidType" = "Tipo de transacción no válido en la fila %d: %@";
 "csvImport.error.emptyValue" = "Valor vacío en la fila %d, columna '%@'";
 "csvImport.error.duplicateTransaction" = "Transacción duplicada en la fila %d";
-"csvImport.error.fileAccessDenied" = "Acceso al archivo denegado";
+"csvImport.error.fileAccessDenied" = "No se puede acceder al archivo";
 "csvImport.error.invalidEncoding" = "Codificación de archivo no válida (se requiere UTF-8)";
 "csvImport.error.emptyFile" = "El archivo está vacío";
-"csvImport.error.noHeaders" = "No se encontraron encabezados en el archivo";
+"csvImport.error.noHeaders" = "El archivo no tiene encabezados";
 "csvImport.error.invalidFormat" = "Formato CSV no válido";
 "csvImport.error.persistenceFailed" = "No se pudieron guardar los datos importados en la base de datos.";
 "csvImport.progress.parsing" = "Analizando el archivo CSV...";
@@ -1348,7 +1348,6 @@
 "transaction.type.depositTopUp" = "Aporte al depósito";
 "transaction.type.depositWithdrawal" = "Retiro del depósito";
 "transaction.type.depositInterestAccrual" = "Intereses devengados";
-"category.uncategorized" = "Sin categoría";
 "category.budget" = "Presupuesto";
 
 // MARK: - Recurring Errors
@@ -1401,11 +1400,6 @@
 "calculator.clearHint" = "Mantén pulsado para borrar todo";
 
 // MARK: - CSV Import Errors
-"csvImport.error.fileAccessDenied" = "No se puede acceder al archivo";
-"csvImport.error.invalidEncoding" = "Codificación de archivo no válida (se requiere UTF-8)";
-"csvImport.error.emptyFile" = "El archivo está vacío";
-"csvImport.error.noHeaders" = "El archivo no tiene encabezados";
-"csvImport.error.invalidFormat" = "Formato CSV no válido";
 "csvImport.error.missingDependency %@" = "Falta una dependencia: %@";
 
 // MARK: - Progress

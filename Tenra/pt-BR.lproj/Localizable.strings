@@ -587,11 +587,11 @@
 "csvImport.error.invalidType" = "Tipo de transação inválido na linha %d: %@";
 "csvImport.error.emptyValue" = "Valor vazio na linha %d, coluna '%@'";
 "csvImport.error.duplicateTransaction" = "Transação duplicada na linha %d";
-"csvImport.error.fileAccessDenied" = "Acesso ao arquivo negado";
+"csvImport.error.fileAccessDenied" = "Não foi possível acessar o arquivo";
 "csvImport.error.invalidEncoding" = "Codificação de arquivo inválida (UTF-8 obrigatório)";
 "csvImport.error.emptyFile" = "O arquivo está vazio";
-"csvImport.error.noHeaders" = "Nenhum cabeçalho encontrado no arquivo";
-"csvImport.error.invalidFormat" = "Formato de CSV inválido";
+"csvImport.error.noHeaders" = "O arquivo não tem cabeçalhos";
+"csvImport.error.invalidFormat" = "Formato CSV inválido";
 "csvImport.error.persistenceFailed" = "Não foi possível salvar os dados importados no banco de dados.";
 "csvImport.progress.parsing" = "Analisando arquivo CSV...";
 "csvImport.progress.validating" = "Validando linhas...";
@@ -1348,7 +1348,6 @@
 "transaction.type.depositTopUp" = "Aporte no depósito";
 "transaction.type.depositWithdrawal" = "Resgate do depósito";
 "transaction.type.depositInterestAccrual" = "Rendimento de juros";
-"category.uncategorized" = "Sem categoria";
 "category.budget" = "Orçamento";
 
 // MARK: - Recurring Errors
@@ -1401,11 +1400,6 @@
 "calculator.clearHint" = "Mantenha pressionado para limpar";
 
 // MARK: - CSV Import Errors
-"csvImport.error.fileAccessDenied" = "Não foi possível acessar o arquivo";
-"csvImport.error.invalidEncoding" = "Codificação de arquivo inválida (UTF-8 obrigatório)";
-"csvImport.error.emptyFile" = "O arquivo está vazio";
-"csvImport.error.noHeaders" = "O arquivo não tem cabeçalhos";
-"csvImport.error.invalidFormat" = "Formato CSV inválido";
 "csvImport.error.missingDependency %@" = "Dependência ausente: %@";
 
 // MARK: - Progress

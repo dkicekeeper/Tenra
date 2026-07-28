@@ -1348,7 +1348,6 @@
 "transaction.type.depositTopUp" = "Пополнение депозита";
 "transaction.type.depositWithdrawal" = "Снятие с депозита";
 "transaction.type.depositInterestAccrual" = "Начисление процентов";
-"category.uncategorized" = "Без категории";
 "category.budget" = "Бюджет";
 
 // MARK: - Recurring Errors
@@ -1400,11 +1399,6 @@
 "calculator.clearHint" = "Удерживайте, чтобы очистить";
 
 // MARK: - CSV Import Errors
-"csvImport.error.fileAccessDenied" = "Нет доступа к файлу";
-"csvImport.error.invalidEncoding" = "Неверная кодировка файла (требуется UTF-8)";
-"csvImport.error.emptyFile" = "Файл пуст";
-"csvImport.error.noHeaders" = "В файле отсутствуют заголовки";
-"csvImport.error.invalidFormat" = "Неверный формат CSV";
 "csvImport.error.missingDependency %@" = "Отсутствует зависимость: %@";
 "voiceConfirmation.saveError" = "Ошибка сохранения";
 

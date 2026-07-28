@@ -587,11 +587,11 @@
 "csvImport.error.invalidType" = "%d行目の取引タイプが無効です：%@";
 "csvImport.error.emptyValue" = "%d行目、列「%@」の値が空です";
 "csvImport.error.duplicateTransaction" = "%d行目の取引が重複しています";
-"csvImport.error.fileAccessDenied" = "ファイルへのアクセスが拒否されました";
-"csvImport.error.invalidEncoding" = "ファイルのエンコードが無効です（UTF-8が必要です）";
+"csvImport.error.fileAccessDenied" = "ファイルにアクセスできません";
+"csvImport.error.invalidEncoding" = "ファイルのエンコードが不正です（UTF-8が必要です）";
 "csvImport.error.emptyFile" = "ファイルが空です";
-"csvImport.error.noHeaders" = "ファイルにヘッダーが見つかりません";
-"csvImport.error.invalidFormat" = "CSV形式が無効です";
+"csvImport.error.noHeaders" = "ファイルにヘッダーがありません";
+"csvImport.error.invalidFormat" = "CSVの形式が不正です";
 "csvImport.error.persistenceFailed" = "インポートデータをデータベースに保存できませんでした。";
 "csvImport.progress.parsing" = "CSVファイルを解析中…";
 "csvImport.progress.validating" = "行を検証中…";
@@ -1348,7 +1348,6 @@
 "transaction.type.depositTopUp" = "預金の預け入れ";
 "transaction.type.depositWithdrawal" = "預金の引き出し";
 "transaction.type.depositInterestAccrual" = "利息の発生";
-"category.uncategorized" = "未分類";
 "category.budget" = "予算";
 
 // MARK: - Recurring Errors
@@ -1401,11 +1400,6 @@
 "calculator.clearHint" = "長押しでクリアします";
 
 // MARK: - CSV Import Errors
-"csvImport.error.fileAccessDenied" = "ファイルにアクセスできません";
-"csvImport.error.invalidEncoding" = "ファイルのエンコードが不正です（UTF-8が必要です）";
-"csvImport.error.emptyFile" = "ファイルが空です";
-"csvImport.error.noHeaders" = "ファイルにヘッダーがありません";
-"csvImport.error.invalidFormat" = "CSVの形式が不正です";
 "csvImport.error.missingDependency %@" = "依存関係が不足しています: %@";
 
 // MARK: - Progress

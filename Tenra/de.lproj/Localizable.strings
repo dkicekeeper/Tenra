@@ -587,10 +587,10 @@
 "csvImport.error.invalidType" = "Ungültiger Transaktionstyp in Zeile %d: %@";
 "csvImport.error.emptyValue" = "Leerer Wert in Zeile %d, Spalte '%@'";
 "csvImport.error.duplicateTransaction" = "Doppelte Transaktion in Zeile %d";
-"csvImport.error.fileAccessDenied" = "Dateizugriff verweigert";
+"csvImport.error.fileAccessDenied" = "Kein Zugriff auf die Datei";
 "csvImport.error.invalidEncoding" = "Ungültige Dateikodierung (UTF-8 erforderlich)";
 "csvImport.error.emptyFile" = "Die Datei ist leer";
-"csvImport.error.noHeaders" = "Keine Spaltenüberschriften in der Datei gefunden";
+"csvImport.error.noHeaders" = "Die Datei enthält keine Spaltenüberschriften";
 "csvImport.error.invalidFormat" = "Ungültiges CSV-Format";
 "csvImport.error.persistenceFailed" = "Die importierten Daten konnten nicht in der Datenbank gespeichert werden.";
 "csvImport.progress.parsing" = "CSV-Datei wird analysiert ...";
@@ -1348,7 +1348,6 @@
 "transaction.type.depositTopUp" = "Sparkonto-Einzahlung";
 "transaction.type.depositWithdrawal" = "Sparkonto-Abhebung";
 "transaction.type.depositInterestAccrual" = "Zinsgutschrift";
-"category.uncategorized" = "Ohne Kategorie";
 "category.budget" = "Budget";
 
 // MARK: - Recurring Errors
@@ -1401,11 +1400,6 @@
 "calculator.clearHint" = "Gedrückt halten zum Löschen";
 
 // MARK: - CSV Import Errors
-"csvImport.error.fileAccessDenied" = "Kein Zugriff auf die Datei";
-"csvImport.error.invalidEncoding" = "Ungültige Dateikodierung (UTF-8 erforderlich)";
-"csvImport.error.emptyFile" = "Die Datei ist leer";
-"csvImport.error.noHeaders" = "Die Datei enthält keine Spaltenüberschriften";
-"csvImport.error.invalidFormat" = "Ungültiges CSV-Format";
 "csvImport.error.missingDependency %@" = "Fehlende Abhängigkeit: %@";
 
 // MARK: - Progress

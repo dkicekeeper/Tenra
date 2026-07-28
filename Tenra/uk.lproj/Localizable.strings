@@ -587,10 +587,10 @@
 "csvImport.error.invalidType" = "Некоректний тип операції в рядку %d: %@";
 "csvImport.error.emptyValue" = "Порожнє значення в рядку %d, стовпець '%@'";
 "csvImport.error.duplicateTransaction" = "Дубльована операція в рядку %d";
-"csvImport.error.fileAccessDenied" = "Доступ до файлу заборонено";
+"csvImport.error.fileAccessDenied" = "Немає доступу до файлу";
 "csvImport.error.invalidEncoding" = "Некоректне кодування файлу (потрібне UTF-8)";
 "csvImport.error.emptyFile" = "Файл порожній";
-"csvImport.error.noHeaders" = "У файлі не знайдено заголовків";
+"csvImport.error.noHeaders" = "Файл не має заголовків";
 "csvImport.error.invalidFormat" = "Некоректний формат CSV";
 "csvImport.error.persistenceFailed" = "Не вдалося зберегти імпортовані дані в базу даних.";
 "csvImport.progress.parsing" = "Розбір файлу CSV...";
@@ -1348,7 +1348,6 @@
 "transaction.type.depositTopUp" = "Поповнення депозиту";
 "transaction.type.depositWithdrawal" = "Зняття з депозиту";
 "transaction.type.depositInterestAccrual" = "Нарахування відсотків";
-"category.uncategorized" = "Без категорії";
 "category.budget" = "Бюджет";
 
 // MARK: - Recurring Errors
@@ -1401,11 +1400,6 @@
 "calculator.clearHint" = "Натисніть і утримуйте, щоб очистити";
 
 // MARK: - CSV Import Errors
-"csvImport.error.fileAccessDenied" = "Немає доступу до файлу";
-"csvImport.error.invalidEncoding" = "Некоректне кодування файлу (потрібне UTF-8)";
-"csvImport.error.emptyFile" = "Файл порожній";
-"csvImport.error.noHeaders" = "Файл не має заголовків";
-"csvImport.error.invalidFormat" = "Некоректний формат CSV";
 "csvImport.error.missingDependency %@" = "Відсутня залежність: %@";
 
 // MARK: - Progress

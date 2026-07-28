@@ -587,10 +587,10 @@
 "csvImport.error.invalidType" = "%d. satırda geçersiz işlem türü: %@";
 "csvImport.error.emptyValue" = "%d. satırda, '%@' sütununda boş değer";
 "csvImport.error.duplicateTransaction" = "%d. satırda yinelenen işlem";
-"csvImport.error.fileAccessDenied" = "Dosya erişimi reddedildi";
+"csvImport.error.fileAccessDenied" = "Dosyaya erişilemiyor";
 "csvImport.error.invalidEncoding" = "Geçersiz dosya kodlaması (UTF-8 gerekli)";
 "csvImport.error.emptyFile" = "Dosya boş";
-"csvImport.error.noHeaders" = "Dosyada başlık bulunamadı";
+"csvImport.error.noHeaders" = "Dosyada başlık yok";
 "csvImport.error.invalidFormat" = "Geçersiz CSV biçimi";
 "csvImport.error.persistenceFailed" = "İçe aktarılan veriler veritabanına kaydedilemedi.";
 "csvImport.progress.parsing" = "CSV dosyası ayrıştırılıyor...";
@@ -1348,7 +1348,6 @@
 "transaction.type.depositTopUp" = "Mevduata ekleme";
 "transaction.type.depositWithdrawal" = "Mevduattan çekim";
 "transaction.type.depositInterestAccrual" = "Faiz tahakkuku";
-"category.uncategorized" = "Kategorisiz";
 "category.budget" = "Bütçe";
 
 // MARK: - Recurring Errors
@@ -1401,11 +1400,6 @@
 "calculator.clearHint" = "Temizlemek için basılı tut";
 
 // MARK: - CSV Import Errors
-"csvImport.error.fileAccessDenied" = "Dosyaya erişilemiyor";
-"csvImport.error.invalidEncoding" = "Geçersiz dosya kodlaması (UTF-8 gerekli)";
-"csvImport.error.emptyFile" = "Dosya boş";
-"csvImport.error.noHeaders" = "Dosyada başlık yok";
-"csvImport.error.invalidFormat" = "Geçersiz CSV biçimi";
 "csvImport.error.missingDependency %@" = "Eksik bağımlılık: %@";
 
 // MARK: - Progress

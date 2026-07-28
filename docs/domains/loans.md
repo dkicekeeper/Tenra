@@ -27,6 +27,33 @@ Loan payments are **never** generated automatically. The user records every paym
 
 Rationale: real-world loan payments rarely match the calculated annuity exactly (users round up, pay early, vary amounts). Auto-generated phantom payments diverged from real bank withdrawals and confused state. Deposits still auto-reconcile interest accrual — only loans are user-driven.
 
+## Paid-off Lifecycle
+
+A loan is **closed** when `LoanInfo.isPaidOff` — i.e. `remainingPrincipal <= LoanInfo.paidOffThreshold` (0.01). There is **no persisted closed flag**: the status is derived so it can never drift from the balance when a payment is edited, unlinked, or the amount is corrected. Threshold rather than `<= 0` because annuity rounding and FX leave sub-cent residue on the final payment, which would pin a loan "active" at a displayed debt of 0.00 forever.
+
+Convenience accessors on `Account`: `isPaidOffLoan`, `isActiveLoan` (both `false` for non-loan accounts).
+
+⚠️ **Every loan aggregate must read `LoansViewModel.activeLoans`, not `loans`.** A closed loan contributes 0 debt but keeps a non-zero `monthlyPayment` forever — summing `loans` inflates "Monthly" and the active count. Current call sites: `LoansListView.loansSummary`, `LoansListView.activeLoans` (Pay All), `LoansCardView`. `LoansCardView` deliberately keys its empty state on `loans.isEmpty` (any loans at all) so a user whose loans are all paid off still sees the card.
+
+Closed loans surface in `LoansListView` under a collapsed "Closed" `DisclosureGroup`, below the active cards and outside the type filter's card list (`filteredClosedLoans` applies the same type filter separately).
+
+`LoanDetailView` when closed: `primaryAction`/`secondaryAction` are `nil` (paying a zero balance would drive `remainingPrincipal` negative and silently reopen the loan), "Change Rate" is hidden, the hero subtitle becomes "Closed <date>" (from `lastPaymentDate`), and a one-shot success banner fires on the `false → true` edge of `isPaidOffLoan`. The amortization schedule and payment history stay fully readable.
+
+## Deleting a Loan — two intents
+
+⚠️ **`deleteTransactions(forAccountId:)` matches BOTH `accountId` and `targetAccountId`**, so the old single-button delete wiped every bank-side expense that funded the loan. Loan payments are real expenses on real accounts; losing them is data loss, not cleanup.
+
+`LoanDetailView` now presents a `confirmationDialog` with two paths:
+
+| Action | Behavior |
+|---|---|
+| **Delete, keep payments** | `LoansViewModel.deleteLoanPreservingPayments` — each `.loanPayment` / `.loanEarlyRepayment` becomes an `.expense` on its original source bank (`targetAccountId` cleared), then the account is deleted. |
+| **Delete everything** | `deleteTransactions(forAccountId:)` **first**, then `deleteLoan` (deleting the account first leaves the balance pass with dangling references). |
+
+Conversion rules in `deleteLoanPreservingPayments`:
+- Category is preserved **only if it still exists in the expense catalog** — `TransactionStore.validate` rejects an `.expense` whose category isn't in `categories`. Otherwise it falls back to `""` (uncategorized is explicitly allowed).
+- A payment with no resolvable bank account is left pointing at the loan and swept by the trailing `deleteTransactions(forAccountId:)`: it had no bank leg, so it can't become an expense and nothing is lost.
+
 ## Transaction Orientation Contract
 
 ⚠️ **`accountId = SOURCE bank, targetAccountId = LOAN`** for `.loanPayment` and `.loanEarlyRepayment`.

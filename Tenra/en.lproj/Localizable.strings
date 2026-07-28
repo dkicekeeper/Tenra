@@ -1092,7 +1092,13 @@
 "loan.actions" = "Loan Actions";
 "loan.delete" = "Delete Loan";
 "loan.deleteTitle" = "Delete Loan?";
-"loan.deleteMessage" = "All loan data and payment history will be deleted.";
+"loan.deleteMessage" = "Payments on this loan are recorded as real expenses on your accounts. You can keep them in history, or delete them together with the loan.";
+"loan.closedSection" = "Closed";
+"loan.statusPaidOff" = "Paid off";
+"loan.closedOn" = "Closed %@";
+"loan.deleteKeepPayments" = "Delete, keep payments";
+"loan.deleteWithPayments" = "Delete everything";
+"loan.payoffCelebration" = "Loan paid off. Nice work.";
 "loan.paidOff" = "Paid off";
 "loan.remainingPrincipal" = "Remaining";
 "loan.nextPayment" = "Next payment: %@";

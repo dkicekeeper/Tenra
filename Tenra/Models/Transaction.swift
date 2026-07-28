@@ -417,6 +417,22 @@ struct LoanInfo: Codable, Equatable, Hashable {
     var defaultCategory: String?
     var defaultSubcategoryIds: [String]
 
+    /// Долг закрыт. Единственный источник истины для «закрытого» состояния кредита —
+    /// отдельного персистентного флага нет, чтобы статус не мог разойтись с остатком
+    /// (правка суммы, отмена платежа и linking пересчитывают `remainingPrincipal`,
+    /// и статус следует за ним автоматически).
+    ///
+    /// Порог, а не `<= 0`: аннуитетный график и конвертация валют оставляют копеечный
+    /// остаток на последнем платеже, из-за которого кредит навсегда оставался бы
+    /// «активным» с долгом 0,00 в интерфейсе.
+    nonisolated var isPaidOff: Bool {
+        remainingPrincipal <= Self.paidOffThreshold
+    }
+
+    /// Остаток ниже этого значения считается нулём. В минорных единицах валюты
+    /// (тиын/копейка/цент) — заведомо меньше одной.
+    nonisolated static let paidOffThreshold: Decimal = Decimal(string: "0.01") ?? 0
+
     enum CodingKeys: String, CodingKey {
         case bankName, loanType, originalPrincipal, remainingPrincipal
         case interestRateAnnual, interestRateHistory, totalInterestPaid
@@ -635,5 +651,17 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
     // Computed property для проверки, является ли счет кредитом/рассрочкой
     nonisolated var isLoan: Bool {
         loanInfo != nil
+    }
+
+    /// Кредит/рассрочка полностью погашен. `false` для не-кредитных счетов.
+    /// Единственный признак «закрытости» — производный от `remainingPrincipal`,
+    /// отдельного персистентного флага нет (см. `LoanInfo.isPaidOff`).
+    nonisolated var isPaidOffLoan: Bool {
+        loanInfo?.isPaidOff ?? false
+    }
+
+    /// Активный (непогашенный) кредит/рассрочка. `false` для не-кредитных счетов.
+    nonisolated var isActiveLoan: Bool {
+        isLoan && !isPaidOffLoan
     }
 }

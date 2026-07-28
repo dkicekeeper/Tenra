@@ -1092,7 +1092,13 @@
 "loan.actions" = "Ações do empréstimo";
 "loan.delete" = "Excluir empréstimo";
 "loan.deleteTitle" = "Excluir empréstimo?";
-"loan.deleteMessage" = "Todos os dados do empréstimo e o histórico de pagamentos serão excluídos.";
+"loan.deleteMessage" = "Os pagamentos deste empréstimo são despesas reais nas suas contas. Você pode mantê-los no histórico ou excluí-los junto com o empréstimo.";
+"loan.closedSection" = "Quitados";
+"loan.statusPaidOff" = "Quitado";
+"loan.closedOn" = "Quitado em %@";
+"loan.deleteKeepPayments" = "Excluir e manter pagamentos";
+"loan.deleteWithPayments" = "Excluir tudo";
+"loan.payoffCelebration" = "Empréstimo quitado. Muito bem.";
 "loan.paidOff" = "Quitado";
 "loan.remainingPrincipal" = "Restante";
 "loan.nextPayment" = "Próximo pagamento: %@";

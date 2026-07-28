@@ -226,7 +226,78 @@ class AccountRankingService {
         ).first
     }
 
+    /// The account the user most likely wants on the other side of a transfer from
+    /// `sourceId`, learned from their own `.internalTransfer` history.
+    ///
+    /// Transfers are habitual and pair-shaped ("Freedom deposit → Freedom card"), which
+    /// `rankAccounts` can't express — it scores each account in isolation, so the globally
+    /// busiest account always wins regardless of which source is selected. This scores the
+    /// *counterpart of this specific source* instead, with the same `Decay.tau` recency
+    /// weighting used everywhere else.
+    ///
+    /// `transactionsByAccount` is the pre-built `TransactionStore` index; passing it keeps
+    /// the scan O(M) over this account's transactions instead of O(N_tx).
+    /// Returns `nil` when the user has never transferred out of this account.
+    static func suggestedTransferCounterpart(
+        forSource sourceId: String,
+        accounts: [Account],
+        transactions: [Transaction] = [],
+        transactionsByAccount: [String: [Transaction]]? = nil
+    ) -> Account? {
+        let candidates = transactionsByAccount?[sourceId]
+            ?? transactions.filter { $0.accountId == sourceId || $0.targetAccountId == sourceId }
+
+        let now = Date()
+        var score: [String: Double] = [:]
+
+        for tx in candidates where tx.type == .internalTransfer {
+            let counterpartId: String?
+            let directionWeight: Double
+            if tx.accountId == sourceId {
+                // Outgoing — exactly the direction we're predicting.
+                counterpartId = tx.targetAccountId
+                directionWeight = 1.0
+            } else if tx.targetAccountId == sourceId {
+                // Incoming. Still evidence that these two accounts are paired, but a
+                // weaker signal for "where does money go when it leaves this account".
+                counterpartId = tx.accountId
+                directionWeight = Self.reverseDirectionWeight
+            } else {
+                continue
+            }
+
+            guard let counterpartId, counterpartId != sourceId,
+                  let date = parseDateCached(tx.date) else { continue }
+
+            let days = Double(daysAgo(from: date, to: now))
+            score[counterpartId, default: 0] += exp(-days / Decay.tau) * directionWeight
+        }
+
+        guard !score.isEmpty else { return nil }
+
+        let accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
+
+        // Only accounts still present in `accounts` are eligible — the history can
+        // reference accounts the user has since deleted.
+        let best = score
+            .compactMap { id, value -> (account: Account, score: Double)? in
+                guard let account = accountById[id] else { return nil }
+                return (account, value)
+            }
+            .max { a, b in
+                if abs(a.score - b.score) > scoreEqualityEpsilon { return a.score < b.score }
+                return a.account.name > b.account.name
+            }
+
+        return best?.account
+    }
+
     // MARK: - Private
+
+    /// Weight applied to transfers that ran *into* the source account when predicting
+    /// where money leaving it should go. Low enough that a single genuine outgoing
+    /// transfer outranks an incoming one of the same age.
+    private static let reverseDirectionWeight: Double = 0.35
 
     private static func calculateScore(
         for account: Account,

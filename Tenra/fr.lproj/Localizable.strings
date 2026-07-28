@@ -1092,7 +1092,13 @@
 "loan.actions" = "Actions du crédit";
 "loan.delete" = "Supprimer le crédit";
 "loan.deleteTitle" = "Supprimer le crédit ?";
-"loan.deleteMessage" = "Toutes les données du crédit et l'historique des paiements seront supprimés.";
+"loan.deleteMessage" = "Les paiements de ce crédit sont de vraies dépenses sur vos comptes. Vous pouvez les garder dans l'historique ou les supprimer avec le crédit.";
+"loan.closedSection" = "Clôturés";
+"loan.statusPaidOff" = "Remboursé";
+"loan.closedOn" = "Clôturé le %@";
+"loan.deleteKeepPayments" = "Supprimer, garder les paiements";
+"loan.deleteWithPayments" = "Tout supprimer";
+"loan.payoffCelebration" = "Crédit remboursé. Bravo.";
 "loan.paidOff" = "Remboursé";
 "loan.remainingPrincipal" = "Restant";
 "loan.nextPayment" = "Prochain paiement: %@";

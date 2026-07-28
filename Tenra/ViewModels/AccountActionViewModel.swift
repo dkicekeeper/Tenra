@@ -33,6 +33,10 @@ final class AccountActionViewModel {
     @ObservationIgnored let transactionsViewModel: TransactionsViewModel
     @ObservationIgnored private let logger = Logger(subsystem: "Tenra", category: "AccountActionViewModel")
 
+    /// Set once the user picks a transfer target themselves. After that we stop
+    /// re-suggesting on every source change — an explicit choice outranks the model.
+    @ObservationIgnored private var userPickedTarget = false
+
     // MARK: - Nested Types
 
     enum ActionType {
@@ -98,9 +102,7 @@ final class AccountActionViewModel {
         switch selectedAction {
         case .transfer:
             selectedSourceAccountId = account.id
-            // Default the target to the source's neighbor in the carousel so it starts with a
-            // selection (centered = selected, matching the source) and the two never begin equal.
-            selectedTargetAccountId = neighborAccountId(of: account.id)
+            selectedTargetAccountId = defaultTargetAccountId(for: account.id)
         case .income:
             selectedSourceAccountId = nil
             selectedTargetAccountId = account.id
@@ -113,23 +115,44 @@ final class AccountActionViewModel {
     }
 
     /// Source picker changed (user tap/scroll). Keeps the amount currency in sync and, for
-    /// transfers, nudges the target off the source if they'd clash — the carousels no longer
+    /// transfers, re-suggests the target for the new source — the carousels no longer
     /// cross-filter (that caused scroll jumps), so equality is prevented here instead.
     func handleSourceSelectionChange() {
         updateCurrencyForPrimaryAccount()
         guard selectedAction == .transfer,
-              let source = selectedSourceAccountId,
-              source == selectedTargetAccountId else { return }
-        selectedTargetAccountId = neighborAccountId(of: source)
+              let source = selectedSourceAccountId else { return }
+
+        // Transfer habits are pair-shaped ("Freedom deposit → Freedom card"), so a new
+        // source implies a different likely target — re-suggest rather than only nudging
+        // on a clash. Once the user has picked a target themselves we stop overriding it
+        // and fall back to the clash-only nudge.
+        if userPickedTarget {
+            guard source == selectedTargetAccountId else { return }
+            selectedTargetAccountId = neighborAccountId(of: source)
+        } else {
+            selectedTargetAccountId = defaultTargetAccountId(for: source)
+        }
     }
 
     /// Target picker changed. For transfers, nudges the source off the target if they clash.
     func handleTargetSelectionChange() {
         updateCurrencyForPrimaryAccount()
-        guard selectedAction == .transfer,
-              let target = selectedTargetAccountId,
+        guard selectedAction == .transfer else { return }
+        userPickedTarget = true
+        guard let target = selectedTargetAccountId,
               target == selectedSourceAccountId else { return }
         selectedSourceAccountId = neighborAccountId(of: target)
+    }
+
+    /// Default counterpart for a transfer out of `sourceId`: the account the user
+    /// actually transfers to, learned from their history. Falls back to the carousel
+    /// neighbor for accounts with no transfer history (new users, first transfer).
+    private func defaultTargetAccountId(for sourceId: String) -> String? {
+        if let learned = accountsViewModel.suggestedTransferTarget(forSource: sourceId),
+           learned.id != sourceId {
+            return learned.id
+        }
+        return neighborAccountId(of: sourceId)
     }
 
     /// The account adjacent to `accountId` in the carousel's display order (the same

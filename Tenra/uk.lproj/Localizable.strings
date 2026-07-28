@@ -1092,7 +1092,13 @@
 "loan.actions" = "Дії з кредитом";
 "loan.delete" = "Видалити кредит";
 "loan.deleteTitle" = "Видалити кредит?";
-"loan.deleteMessage" = "Усі дані кредиту та історію платежів буде видалено.";
+"loan.deleteMessage" = "Платежі за цим кредитом записані як реальні витрати на ваших рахунках. Їх можна залишити в історії або видалити разом із кредитом.";
+"loan.closedSection" = "Закриті";
+"loan.statusPaidOff" = "Погашено";
+"loan.closedOn" = "Закрито %@";
+"loan.deleteKeepPayments" = "Видалити, залишити платежі";
+"loan.deleteWithPayments" = "Видалити все";
+"loan.payoffCelebration" = "Кредит погашено. Чудова робота.";
 "loan.paidOff" = "Погашено";
 "loan.remainingPrincipal" = "Залишок";
 "loan.nextPayment" = "Наступний платіж: %@";

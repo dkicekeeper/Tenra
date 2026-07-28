@@ -20,6 +20,19 @@ class LoansViewModel {
         accountsViewModel.accounts.filter { $0.isLoan }
     }
 
+    /// Кредиты с непогашенным остатком. Это то, что пользователь считает «своими
+    /// кредитами»: только они формируют общий долг, ежемесячный платёж, счётчик
+    /// активных и попадают в Pay All.
+    var activeLoans: [Account] {
+        loans.filter { !$0.isPaidOffLoan }
+    }
+
+    /// Полностью погашенные кредиты — архив. Остаются доступны для просмотра
+    /// (график, история платежей), но исключены из всех сводных чисел.
+    var closedLoans: [Account] {
+        loans.filter(\.isPaidOffLoan)
+    }
+
     // MARK: - Dependencies
 
     @ObservationIgnored let repository: DataRepositoryProtocol
@@ -49,6 +62,72 @@ class LoansViewModel {
     }
 
     func deleteLoan(_ account: Account) {
+        accountsViewModel.deleteLoan(account)
+    }
+
+    /// Удаляет кредит, **сохраняя** его платежи в истории: каждый `.loanPayment` /
+    /// `.loanEarlyRepayment` превращается обратно в обычный `.expense` на том банковском
+    /// счёте, с которого реально ушли деньги.
+    ///
+    /// Причина: платежи по кредиту — это настоящие расходы пользователя. Удаление кредита
+    /// вместе с ними (`deleteTransactions(forAccountId:)` матчит и `accountId`, и
+    /// `targetAccountId`) стирало месяцы реальной истории по банковским счетам.
+    ///
+    /// Платежи без разрешимого банковского счёта удаляются: у них нет банковской «ноги»,
+    /// они существовали только как запись на стороне кредита, и расходом стать не могут.
+    /// Категория сохраняется только если она всё ещё есть в каталоге расходов —
+    /// `TransactionStore.validate` отвергает `.expense` с несуществующей категорией.
+    func deleteLoanPreservingPayments(
+        _ account: Account,
+        transactionStore: TransactionStore
+    ) async {
+        let loanId = account.id
+        let linked = (transactionStore.transactionsByAccount[loanId] ?? [])
+            .filter { $0.type == .loanPayment || $0.type == .loanEarlyRepayment }
+
+        let expenseCategories = Set(
+            transactionStore.categories.filter { $0.type == .expense }.map(\.name)
+        )
+
+        for tx in linked {
+            // No resolvable bank leg — leave it pointing at the loan and let the
+            // sweep below delete it.
+            guard let bankAccountId = tx.accountId,
+                  !bankAccountId.isEmpty,
+                  bankAccountId != loanId,
+                  let bankAccount = transactionStore.accountById[bankAccountId]
+            else { continue }
+
+            let resolvedCategory = expenseCategories.contains(tx.category) ? tx.category : ""
+
+            let converted = Transaction(
+                id: tx.id,
+                date: tx.date,
+                description: tx.description,
+                amount: tx.amount,
+                currency: tx.currency,
+                convertedAmount: tx.convertedAmount,
+                type: .expense,
+                category: resolvedCategory,
+                subcategory: tx.subcategory,
+                accountId: bankAccountId,
+                targetAccountId: nil,
+                accountName: bankAccount.name,
+                targetAccountName: nil,
+                targetCurrency: tx.targetCurrency,
+                targetAmount: tx.targetAmount,
+                recurringSeriesId: tx.recurringSeriesId,
+                recurringOccurrenceId: tx.recurringOccurrenceId,
+                createdAt: tx.createdAt
+            )
+            try? await transactionStore.update(converted)
+        }
+
+        // Anything still pointing at the loan (e.g. a transaction type we don't convert)
+        // must go before the account does — a dangling targetAccountId fails validation
+        // on the next edit of that row.
+        await transactionStore.deleteTransactions(forAccountId: loanId)
+
         accountsViewModel.deleteLoan(account)
     }
 

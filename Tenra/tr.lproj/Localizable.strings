@@ -1092,7 +1092,13 @@
 "loan.actions" = "Kredi İşlemleri";
 "loan.delete" = "Krediyi Sil";
 "loan.deleteTitle" = "Kredi Silinsin mi?";
-"loan.deleteMessage" = "Tüm kredi verileri ve ödeme geçmişi silinecek.";
+"loan.deleteMessage" = "Bu kredinin ödemeleri hesaplarınızdaki gerçek harcamalardır. Bunları geçmişte tutabilir veya krediyle birlikte silebilirsiniz.";
+"loan.closedSection" = "Kapananlar";
+"loan.statusPaidOff" = "Ödendi";
+"loan.closedOn" = "%@ tarihinde kapandı";
+"loan.deleteKeepPayments" = "Sil, ödemeleri koru";
+"loan.deleteWithPayments" = "Hepsini sil";
+"loan.payoffCelebration" = "Kredi kapandı. Tebrikler.";
 "loan.paidOff" = "Ödendi";
 "loan.remainingPrincipal" = "Kalan";
 "loan.nextPayment" = "Sonraki ödeme: %@";

@@ -1092,7 +1092,13 @@
 "loan.actions" = "ローンの操作";
 "loan.delete" = "ローンを削除";
 "loan.deleteTitle" = "ローンを削除しますか？";
-"loan.deleteMessage" = "すべてのローンのデータと支払い履歴が削除されます。";
+"loan.deleteMessage" = "このローンの支払いは、口座の実際の支出です。履歴に残すことも、ローンと一緒に削除することもできます。";
+"loan.closedSection" = "完済済み";
+"loan.statusPaidOff" = "完済";
+"loan.closedOn" = "%@に完済";
+"loan.deleteKeepPayments" = "削除して支払いは残す";
+"loan.deleteWithPayments" = "すべて削除";
+"loan.payoffCelebration" = "ローンを完済しました。お疲れさまでした。";
 "loan.paidOff" = "完済";
 "loan.remainingPrincipal" = "残り";
 "loan.nextPayment" = "次回の支払い：%@";

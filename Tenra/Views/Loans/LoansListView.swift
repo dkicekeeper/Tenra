@@ -22,6 +22,7 @@ struct LoansListView: View {
     @State private var showingPayAll = false
     @State private var selectedFilter: LoanFilter = .all
     @State private var payAllError: String? = nil
+    @State private var isClosedSectionExpanded = false
 
     private let logger = Logger(subsystem: "Tenra", category: "LoansListView")
 
@@ -39,11 +40,21 @@ struct LoansListView: View {
         }
     }
 
+    /// Только активные кредиты — закрытые живут в отдельной секции ниже и не
+    /// участвуют в фильтре.
     private var filteredLoans: [Account] {
+        applyTypeFilter(to: loansViewModel.activeLoans)
+    }
+
+    private var filteredClosedLoans: [Account] {
+        applyTypeFilter(to: loansViewModel.closedLoans)
+    }
+
+    private func applyTypeFilter(to loans: [Account]) -> [Account] {
         switch selectedFilter {
-        case .all: return loansViewModel.loans
-        case .credits: return loansViewModel.loans.filter { $0.loanInfo?.loanType == .annuity }
-        case .installments: return loansViewModel.loans.filter { $0.loanInfo?.loanType == .installment }
+        case .all: return loans
+        case .credits: return loans.filter { $0.loanInfo?.loanType == .annuity }
+        case .installments: return loans.filter { $0.loanInfo?.loanType == .installment }
         }
     }
 
@@ -93,6 +104,10 @@ struct LoansListView: View {
                             .buttonStyle(.plain)
                             .chartAppear(delay: Double(index) * 0.05)
                             .screenPadding()
+                        }
+
+                        if !filteredClosedLoans.isEmpty {
+                            closedLoansSection
                         }
                     }
                     .padding(.vertical, AppSpacing.md)
@@ -153,14 +168,46 @@ struct LoansListView: View {
         .animation(AppAnimation.gentleSpring, value: payAllError)
     }
 
+    // MARK: - Closed loans
+
+    /// Погашенные кредиты держим отдельно и свёрнутыми: они не требуют действий, но
+    /// историю платежей и график по ним пользователь должен уметь открыть.
+    private var closedLoansSection: some View {
+        DisclosureGroup(isExpanded: $isClosedSectionExpanded) {
+            VStack(spacing: AppSpacing.md) {
+                ForEach(filteredClosedLoans) { loan in
+                    NavigationLink(value: FinancesDestination.loanDetail(loan.id)) {
+                        LoanCard(loan: loan)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.top, AppSpacing.md)
+        } label: {
+            HStack(spacing: AppSpacing.xs) {
+                Text(String(localized: "loan.closedSection", defaultValue: "Closed"))
+                    .font(AppTypography.h4)
+                Text("\(filteredClosedLoans.count)")
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+        }
+        .tint(AppColors.textSecondary)
+        .padding(.top, AppSpacing.md)
+        .screenPadding()
+    }
+
     // MARK: - Summary
 
     private var loansSummary: some View {
-        let totalDebt = loansViewModel.loans.compactMap { $0.loanInfo?.remainingPrincipal }
+        // Закрытые кредиты исключены из всех сводных чисел: их остаток равен нулю, а
+        // monthlyPayment остаётся заполненным навсегда и раздувал бы «Ежемесячно».
+        let active = loansViewModel.activeLoans
+        let totalDebt = active.compactMap { $0.loanInfo?.remainingPrincipal }
             .reduce(Decimal(0), +)
-        let totalMonthlyPayment = loansViewModel.loans.compactMap { $0.loanInfo?.monthlyPayment }
+        let totalMonthlyPayment = active.compactMap { $0.loanInfo?.monthlyPayment }
             .reduce(Decimal(0), +)
-        let primaryCurrency = loansViewModel.loans.first?.currency ?? "KZT"
+        let primaryCurrency = active.first?.currency ?? loansViewModel.loans.first?.currency ?? "KZT"
 
         return VStack(alignment: .leading, spacing: AppSpacing.md) {
             HStack(alignment: .top) {
@@ -188,7 +235,7 @@ struct LoansListView: View {
                 }
             }
 
-            Text(String(format: String(localized: "loan.activeCount", defaultValue: "%d active loans"), loansViewModel.loans.count))
+            Text(String(format: String(localized: "loan.activeCount", defaultValue: "%d active loans"), active.count))
                 .font(AppTypography.bodySmall)
                 .foregroundStyle(AppColors.textSecondary)
         }
@@ -202,7 +249,7 @@ struct LoansListView: View {
     }
 
     private var activeLoans: [Account] {
-        loansViewModel.loans.filter { ($0.loanInfo?.remainingPrincipal ?? 0) > 0 }
+        loansViewModel.activeLoans
     }
 
     /// Pay All only available when all active loans share a single currency

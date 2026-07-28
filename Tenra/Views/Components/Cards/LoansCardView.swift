@@ -12,8 +12,10 @@ struct LoansCardView: View {
     let loansViewModel: LoansViewModel
     let transactionsViewModel: TransactionsViewModel
 
+    /// Только активные кредиты: закрытые дают нулевой вклад в долг, но раздували бы
+    /// счётчик «активных» и добавляли пустые кружки в иконки.
     private var loans: [Account] {
-        loansViewModel.loans
+        loansViewModel.activeLoans
     }
 
     private var baseCurrency: String {
@@ -23,7 +25,9 @@ struct LoansCardView: View {
     var body: some View {
         FinanceCard(
             title: String(localized: "loan.listTitle", defaultValue: "Loans"),
-            isEmpty: loans.isEmpty,
+            // Empty means "no loans at all" — a user whose loans are all paid off still
+            // has loans to open, so the card stays, showing zero debt and zero active.
+            isEmpty: loansViewModel.loans.isEmpty,
             emptyTitle: String(localized: "loan.emptyTitle", defaultValue: "No Loans"),
             subtitle: String(format: String(localized: "loan.activeCount", defaultValue: "%d active loans"), loans.count)
         ) {

@@ -1092,7 +1092,13 @@
 "loan.actions" = "대출 작업";
 "loan.delete" = "대출 삭제";
 "loan.deleteTitle" = "대출을 삭제할까요?";
-"loan.deleteMessage" = "모든 대출 데이터와 상환 내역이 삭제돼요.";
+"loan.deleteMessage" = "이 대출의 상환 내역은 계좌의 실제 지출이에요. 내역을 남겨 두거나 대출과 함께 삭제할 수 있어요.";
+"loan.closedSection" = "상환 완료";
+"loan.statusPaidOff" = "상환 완료";
+"loan.closedOn" = "%@에 상환 완료";
+"loan.deleteKeepPayments" = "삭제하고 상환 내역 유지";
+"loan.deleteWithPayments" = "모두 삭제";
+"loan.payoffCelebration" = "대출을 모두 갚았어요. 수고하셨어요.";
 "loan.paidOff" = "상환 완료";
 "loan.remainingPrincipal" = "남은 금액";
 "loan.nextPayment" = "다음 상환: %@";

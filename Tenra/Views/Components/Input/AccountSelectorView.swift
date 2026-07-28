@@ -26,6 +26,11 @@ struct AccountSelectorView: View {
     }
 
     @State private var scrollPosition: String?
+    /// `false` until the scroll view has a measured container and we've written the
+    /// first `scrollPosition`. Until then every write is dropped by SwiftUI while
+    /// still mutating our `@State` — which permanently desyncs the carousel from
+    /// the selection (the state already equals the target, so no later write lands).
+    @State private var hasAlignedInitialScroll = false
 
     init(
         accounts: [Account],
@@ -89,10 +94,26 @@ struct AccountSelectorView: View {
         .scrollPosition(id: $scrollPosition, anchor: .center)
         .contentMargins(.horizontal, contentMargin, for: .scrollContent)
         .scrollClipDisabled()
-        // Defer the initial position to the next runloop tick. `containerRelativeFrame`
-        // doesn't have a measured width during the synchronous onAppear, and assigning
-        // `scrollPosition` before the scroll view has sized its content silently no-ops.
+        // Owns the FIRST alignment. `onAppear` fires before the scroll view has a
+        // measured container, so `containerRelativeFrame` cards are still zero-width
+        // and any `scrollPosition` write there is silently dropped. Waiting for a real
+        // container width (then one runloop tick for the cards to size against it) is
+        // the only deterministic signal that a write will actually scroll.
+        //
+        // This matters because the selection often arrives *after* appear —
+        // `TransactionAddModal.task` resolves the suggested account asynchronously —
+        // so the pre-measurement write was the common case, not the edge case.
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            geometry.containerSize.width
+        } action: { _, containerWidth in
+            guard containerWidth > 0 else { return }
+            performInitialAlignment()
+        }
+        // Backstop: `onScrollGeometryChange` only fires when the value *changes*, so a
+        // scroll view already sized on its first evaluation may never call the action.
+        // `performInitialAlignment` is idempotent, so whichever path runs first wins.
         .onAppear {
+            performInitialAlignment()
             syncScrollToSelected(animated: false)
         }
         .onChange(of: selectedAccountId) { _, _ in
@@ -122,21 +143,43 @@ struct AccountSelectorView: View {
         }
     }
 
-    /// Aligns the scroll position with the current `selectedAccountId`. Defers the
-    /// non-animated case to the next runloop tick so the scroll view has a measured
-    /// width when we assign `scrollPosition` — without the defer, the assignment
-    /// silently no-ops on first appear (and after the accounts list changes).
+    /// Performs the one-and-only first `scrollPosition` write, a runloop tick after the
+    /// caller's signal so the cards have sized against the measured container. Idempotent
+    /// — the flag is set inside the deferred block, immediately before the write, so a
+    /// concurrent `syncScrollToSelected` can't slip a dropped write in ahead of it.
+    private func performInitialAlignment() {
+        guard !hasAlignedInitialScroll else { return }
+        DispatchQueue.main.async {
+            guard !hasAlignedInitialScroll else { return }
+            hasAlignedInitialScroll = true
+            if scrollPosition != selectedAccountId {
+                scrollPosition = selectedAccountId
+            }
+        }
+    }
+
+    /// Aligns the scroll position with the current `selectedAccountId`.
+    ///
+    /// No-ops until `hasAlignedInitialScroll` — before the container is measured a
+    /// write only corrupts `scrollPosition` without scrolling, and the corrupted
+    /// state then blocks the real alignment. The `onScrollGeometryChange` hook above
+    /// performs that first write instead.
+    ///
+    /// The non-animated case defers a runloop tick so the scroll view has re-sized its
+    /// content (the accounts list may have just changed under it), and re-reads the
+    /// selection at execution time rather than capturing it — the captured value could
+    /// already be stale by the time the block runs.
     private func syncScrollToSelected(animated: Bool) {
-        let target = selectedAccountId
+        guard hasAlignedInitialScroll else { return }
         if animated {
-            guard scrollPosition != target else { return }
+            guard scrollPosition != selectedAccountId else { return }
             withAnimation(AppAnimation.carouselScroll) {
-                scrollPosition = target
+                scrollPosition = selectedAccountId
             }
         } else {
             DispatchQueue.main.async {
-                guard scrollPosition != target else { return }
-                scrollPosition = target
+                guard scrollPosition != selectedAccountId else { return }
+                scrollPosition = selectedAccountId
             }
         }
     }

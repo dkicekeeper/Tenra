@@ -508,5 +508,17 @@ class AccountsViewModel {
         return result
     }
 
+    /// Рекомендуемый счёт-получатель для перевода с `sourceAccountId`, выученный из
+    /// истории переводов пользователя. `nil`, если переводов с этого счёта ещё не было —
+    /// вызывающая сторона подставляет свой fallback.
+    func suggestedTransferTarget(forSource sourceAccountId: String) -> Account? {
+        AccountRankingService.suggestedTransferCounterpart(
+            forSource: sourceAccountId,
+            accounts: accounts,
+            transactions: transactionStore?.transactions ?? [],
+            transactionsByAccount: transactionStore?.transactionsByAccount
+        )
+    }
+
     // MARK: - Private Helpers
 }

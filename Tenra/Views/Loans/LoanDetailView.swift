@@ -28,6 +28,7 @@ struct LoanDetailView: View {
     @State private var cachedSchedule: [LoanPaymentService.AmortizationEntry] = []
     @State private var cachedTransactions: [Transaction] = []
     @State private var paymentError: String? = nil
+    @State private var payoffMessage: String? = nil
     @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
 
@@ -185,9 +186,30 @@ struct LoanDetailView: View {
                     .padding(.top, AppSpacing.sm)
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .zIndex(1)
+            } else if let msg = payoffMessage {
+                MessageBanner.success(msg)
+                    .padding(.horizontal, AppSpacing.md)
+                    .padding(.top, AppSpacing.sm)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .zIndex(1)
             }
         }
         .animation(AppAnimation.gentleSpring, value: paymentError)
+        .animation(AppAnimation.gentleSpring, value: payoffMessage)
+        // Fires only on the false → true edge, so re-opening an already-closed loan
+        // stays quiet — the banner marks the moment the debt was cleared, not the state.
+        .onChange(of: liveAccount?.isPaidOffLoan) { wasPaidOff, isPaidOff in
+            guard wasPaidOff == false, isPaidOff == true else { return }
+            HapticManager.success()
+            payoffMessage = String(
+                localized: "loan.payoffCelebration",
+                defaultValue: "Loan paid off. Nice work."
+            )
+            Task {
+                try? await Task.sleep(for: .seconds(5))
+                payoffMessage = nil
+            }
+        }
     }
 
     private func showPaymentError(_ message: String) {
@@ -210,7 +232,9 @@ struct LoanDetailView: View {
                 NSDecimalNumber(decimal: $0.remainingPrincipal).doubleValue
             },
             navigationCurrency: account.currency,
-            primaryAction: ActionConfig(
+            // A closed loan takes no more money: offering "Make Payment" on a zero
+            // balance would drive `remainingPrincipal` negative and silently reopen it.
+            primaryAction: account.isPaidOffLoan ? nil : ActionConfig(
                 title: String(localized: "loan.makePayment", defaultValue: "Make Payment"),
                 systemImage: "banknote",
                 action: {
@@ -218,7 +242,7 @@ struct LoanDetailView: View {
                     showingPayment = true
                 }
             ),
-            secondaryAction: ActionConfig(
+            secondaryAction: account.isPaidOffLoan ? nil : ActionConfig(
                 title: String(localized: "loan.earlyRepayment", defaultValue: "Early Repayment"),
                 systemImage: "bolt.fill",
                 action: {
@@ -399,19 +423,38 @@ struct LoanDetailView: View {
                 balanceCoordinator: balanceCoordinator
             )
         }
-        .alert(String(localized: "loan.deleteTitle", defaultValue: "Delete Loan?"), isPresented: $showingDeleteConfirmation) {
-            Button(String(localized: "button.delete"), role: .destructive) {
+        // Two genuinely different intents hide behind "delete a loan": retiring a loan
+        // the user actually had (its payments are real expenses and must survive), and
+        // removing one entered by mistake (its payments are noise). Asking is the only
+        // way to tell them apart — the old single-button alert always did the latter.
+        .confirmationDialog(
+            String(localized: "loan.deleteTitle", defaultValue: "Delete Loan?"),
+            isPresented: $showingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "loan.deleteKeepPayments", defaultValue: "Delete, keep payments")) {
                 HapticManager.warning()
-                loansViewModel.deleteLoan(account)
+                Task {
+                    await loansViewModel.deleteLoanPreservingPayments(
+                        account,
+                        transactionStore: transactionStore
+                    )
+                    transactionsViewModel.recalculateAccountBalances()
+                    dismiss()
+                }
+            }
+            Button(String(localized: "loan.deleteWithPayments", defaultValue: "Delete everything"), role: .destructive) {
+                HapticManager.warning()
                 Task {
                     await transactionStore.deleteTransactions(forAccountId: account.id)
+                    loansViewModel.deleteLoan(account)
+                    transactionsViewModel.recalculateAccountBalances()
+                    dismiss()
                 }
-                transactionsViewModel.recalculateAccountBalances()
-                dismiss()
             }
             Button(String(localized: "button.cancel"), role: .cancel) {}
         } message: {
-            Text(String(localized: "loan.deleteMessage", defaultValue: "All loan data and payment history will be deleted."))
+            Text(String(localized: "loan.deleteMessage", defaultValue: "Payments made on this loan are real expenses on your bank accounts. You can keep them in history, or delete them along with the loan."))
         }
         .task(id: refreshTrigger) {
             await refreshTransactions()
@@ -439,6 +482,16 @@ struct LoanDetailView: View {
 
     private func heroSubtitle(for account: Account) -> String? {
         guard let info = account.loanInfo else { return nil }
+        if info.isPaidOff {
+            guard let lastPaymentDate = info.lastPaymentDate,
+                  let date = DateFormatters.dateFormatter.date(from: lastPaymentDate) else {
+                return String(localized: "loan.statusPaidOff", defaultValue: "Paid off")
+            }
+            return String(
+                format: String(localized: "loan.closedOn", defaultValue: "Closed %@"),
+                formatDate(date)
+            )
+        }
         if let nextDate = LoanPaymentService.nextPaymentDate(loanInfo: info) {
             return String(
                 format: String(localized: "loan.nextPayment", defaultValue: "Next payment: %@"),
@@ -681,8 +734,9 @@ struct LoanDetailView: View {
             Label(String(localized: "loan.edit", defaultValue: "Edit Loan"), systemImage: "pencil")
         }
 
-        // Rate changes don't apply to installments (always 0% by definition).
-        if liveAccount?.loanInfo?.loanType != .installment {
+        // Rate changes don't apply to installments (always 0% by definition), and are
+        // meaningless once the debt is closed.
+        if liveAccount?.loanInfo?.loanType != .installment, liveAccount?.isPaidOffLoan == false {
             Button {
                 HapticManager.selection()
                 showingRateChange = true

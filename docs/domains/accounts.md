@@ -81,6 +81,14 @@ private var refreshTrigger: RefreshKey {
 
 The legacy `accounts: [Account]` parameter still exists for back-compat; internally we build a one-shot `accountById` map so the `accounts.first(where:)` lookups inside the loop are O(1).
 
+### Transfer targets are pair-shaped, not per-account
+
+⚠️ **Do NOT reuse `rankAccounts` to pick a transfer target.** It scores each account in isolation, so the globally busiest account always wins regardless of the selected source — the reason the transfer form used to insist on the wrong account ("Freedom deposit → Freedom card" kept suggesting a third account).
+
+`AccountRankingService.suggestedTransferCounterpart(forSource:)` scores *counterparts of that specific source* from `.internalTransfer` history, with the same `Decay.tau` recency weighting. Incoming transfers count at `reverseDirectionWeight` (0.35) — still evidence the two accounts are paired, weaker evidence about where money goes when it leaves.
+
+Call site: `AccountsViewModel.suggestedTransferTarget(forSource:)` → `AccountActionViewModel.defaultTargetAccountId(for:)`, which falls back to the carousel neighbour when there's no transfer history. Once the user picks a target themselves (`userPickedTarget`), source changes stop re-suggesting and only nudge on a source == target clash.
+
 ## Caveats
 
 - `accountAggregatesByAccountId` is `@ObservationIgnored`; reads in a SwiftUI body must "touch" `transactionStore.mutationVersion` (or use the scalar refresh key pattern) to register a subscription.

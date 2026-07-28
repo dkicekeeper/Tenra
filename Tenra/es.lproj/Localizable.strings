@@ -1092,7 +1092,13 @@
 "loan.actions" = "Acciones del préstamo";
 "loan.delete" = "Eliminar préstamo";
 "loan.deleteTitle" = "¿Eliminar préstamo?";
-"loan.deleteMessage" = "Se eliminarán todos los datos del préstamo y el historial de pagos.";
+"loan.deleteMessage" = "Los pagos de este préstamo son gastos reales en tus cuentas. Puedes conservarlos en el historial o eliminarlos junto con el préstamo.";
+"loan.closedSection" = "Cerrados";
+"loan.statusPaidOff" = "Pagado";
+"loan.closedOn" = "Cerrado el %@";
+"loan.deleteKeepPayments" = "Eliminar y conservar pagos";
+"loan.deleteWithPayments" = "Eliminar todo";
+"loan.payoffCelebration" = "Préstamo pagado. Buen trabajo.";
 "loan.paidOff" = "Pagado";
 "loan.remainingPrincipal" = "Restante";
 "loan.nextPayment" = "Próximo pago: %@";

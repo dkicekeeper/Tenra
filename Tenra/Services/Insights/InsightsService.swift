@@ -379,32 +379,20 @@ nonisolated final class InsightsService {
             skipSharedGenerators: hasShared
         ))
 
-        // Narrow incomeSourceBreakdown to current granularity bucket only.
-        // Use dateMap for O(1) date lookups — avoids O(N) DateFormatter re-parsing.
-        let currentBucketForForecasting: [Transaction]
-        if let cp = periodPoints.first(where: { $0.key == granularity.currentPeriodKey }) {
-            if let map = dateMap {
-                currentBucketForForecasting = allTransactions.filter { tx in
-                    guard let d = map[tx.date], d >= cp.periodStart, d < cp.periodEnd else { return false }
-                    return true
-                }
-            } else {
-                currentBucketForForecasting = filterService.filterByTimeRange(
-                    allTransactions, start: cp.periodStart, end: cp.periodEnd
-                )
-            }
-        } else {
-            currentBucketForForecasting = windowedTransactions
-        }
-
-        // IncomeSourceBreakdown is granularity-dependent; rest are shared
+        // IncomeSourceBreakdown is granularity-dependent; rest are shared.
+        // Pass the WINDOWED set (not the current bucket): the breakdown pages across
+        // every period in the window, like topSpendingCategory, and scopes each page
+        // itself from `periodPoints`. `dateMap` keeps the per-page bucketing O(1).
         insights.append(contentsOf: generateForecastingInsights(
             allTransactions: allTransactions,
             baseCurrency: baseCurrency,
             snapshot: snapshot,
-            filteredTransactions: currentBucketForForecasting,
+            filteredTransactions: windowedTransactions,
             preAggregated: preAggregated,
-            skipSharedGenerators: hasShared
+            skipSharedGenerators: hasShared,
+            granularity: granularity,
+            periodPoints: periodPoints,
+            txDateMap: dateMap
         ))
 
         // ── Granularity-INDEPENDENT generators ─────────────────────────────

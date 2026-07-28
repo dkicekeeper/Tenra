@@ -303,12 +303,16 @@ enum InsightDetailData: Hashable {
 // MARK: - Paged Category Breakdown
 
 /// A category breakdown for a single period (week / month / quarter / year).
-/// `items` is empty when the period had no realized expenses — the detail view
+/// `items` is empty when the period had no realized activity — the detail view
 /// renders an empty state for that page so the user can keep swiping.
+///
+/// Flavor-neutral: used for both expense categories (`topSpendingCategory`) and
+/// income sources (`incomeSourceBreakdown`), so `total` is the period's realized
+/// expense OR income total depending on which generator built it.
 struct PeriodCategoryBreakdown: Identifiable, Hashable {
     let id: String           // period grouping key (e.g. "2026-06")
     let label: String        // human-readable period label (e.g. "June 2026")
-    let totalExpenses: Double
+    let total: Double
     let items: [CategoryBreakdownItem]
 }
 

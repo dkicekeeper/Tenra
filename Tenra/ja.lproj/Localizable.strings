@@ -837,6 +837,8 @@
 "insights.breakdown.year" = "年ごとの内訳";
 "insights.noExpenses" = "支出なし";
 "insights.noExpensesForPeriod" = "この期間の支出はありません";
+"insights.noIncome" = "収入なし";
+"insights.noIncomeForPeriod" = "この期間の収入はありません";
 "insights.swipeHint" = "スワイプして他の期間を表示";
 "insights.other" = "その他";
 "insights.noSubcategory" = "サブカテゴリなし";

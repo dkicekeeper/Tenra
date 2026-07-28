@@ -125,7 +125,7 @@ extension InsightsService {
                 PeriodCategoryBreakdown(
                     id: pt.key,
                     label: gran.headingLabel(for: pt.key),
-                    totalExpenses: pt.expenses,
+                    total: pt.expenses,
                     items: makeBreakdown(expensesByKey[pt.key] ?? [], pt.expenses)
                 )
             }
@@ -140,7 +140,7 @@ extension InsightsService {
             let trend: InsightTrend?
             let severity: InsightSeverity
             if let top = topItem {
-                let pct = (currentPage?.totalExpenses ?? 0) > 0 ? (top.amount / currentPage!.totalExpenses) * 100 : 0
+                let pct = (currentPage?.total ?? 0) > 0 ? (top.amount / currentPage!.total) * 100 : 0
                 metric = InsightMetric(
                     value: top.amount,
                     formattedValue: Formatting.formatCurrencySmart(top.amount, currency: baseCurrency),

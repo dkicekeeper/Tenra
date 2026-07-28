@@ -19,7 +19,10 @@ extension InsightsService {
         snapshot: DataSnapshot,
         filteredTransactions: [Transaction]? = nil,
         preAggregated: PreAggregatedData? = nil,
-        skipSharedGenerators: Bool = false
+        skipSharedGenerators: Bool = false,
+        granularity: InsightGranularity? = nil,
+        periodPoints: [PeriodDataPoint] = [],
+        txDateMap: [String: Date]? = nil
     ) -> [Insight] {
         var insights: [Insight] = []
 
@@ -34,11 +37,18 @@ extension InsightsService {
                 insights.append(yoy)
             }
         }
-        // IncomeSourceBreakdown is granularity-dependent (uses currentBucketForForecasting) — always compute.
-        // Use filteredTransactions (windowed) when available so incomeSourceBreakdown
-        // respects the selected granularity period.
+        // IncomeSourceBreakdown is granularity-dependent — always compute.
+        // `filteredTransactions` is the WINDOWED set (whole filter window), not the current
+        // bucket: the generator pages across every period and narrows per page itself.
         let sourceTransactions = filteredTransactions ?? allTransactions
-        if let breakdown = generateIncomeSourceBreakdown(allTransactions: sourceTransactions, categories: snapshot.categories, baseCurrency: baseCurrency) {
+        if let breakdown = generateIncomeSourceBreakdown(
+            allTransactions: sourceTransactions,
+            categories: snapshot.categories,
+            baseCurrency: baseCurrency,
+            granularity: granularity,
+            periodPoints: periodPoints,
+            txDateMap: txDateMap
+        ) {
             insights.append(breakdown)
         }
         return insights
@@ -271,52 +281,160 @@ extension InsightsService {
     // MARK: - Income Source Breakdown
 
     /// Groups income transactions by category to show income source distribution.
-    nonisolated func generateIncomeSourceBreakdown(allTransactions: [Transaction], categories: [CustomCategory], baseCurrency: String) -> Insight? {
+    ///
+    /// Mirrors the paged path of `generateSpendingInsights`: for a finite granularity
+    /// it builds one breakdown per period so the detail view can swipe across periods
+    /// (current → back to the first transaction's period). `.allTime` — and any case
+    /// where no period points were produced — falls back to a single breakdown scoped
+    /// to the current bucket.
+    ///
+    /// `allTransactions` must be the **windowed** set (the whole filter window), not the
+    /// current bucket: the pager needs every period, and narrowing happens per page here.
+    nonisolated func generateIncomeSourceBreakdown(
+        allTransactions: [Transaction],
+        categories: [CustomCategory],
+        baseCurrency: String,
+        granularity: InsightGranularity? = nil,
+        periodPoints: [PeriodDataPoint] = [],
+        txDateMap: [String: Date]? = nil
+    ) -> Insight? {
         let incomeCategories = categories.filter { $0.type == .income }
         guard incomeCategories.count >= 2 else { return nil }
 
         let incomeTransactions = allTransactions.filter { $0.type == .income }
         guard !incomeTransactions.isEmpty else { return nil }
-        let totalIncome = incomeTransactions.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
-        guard totalIncome > 0 else { return nil }
-        let grouped = Dictionary(grouping: incomeTransactions, by: { $0.category })
-        let breakdownItems: [CategoryBreakdownItem] = grouped
-            .map { catName, txns -> CategoryBreakdownItem in
-                let amount = txns.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
-                let pct = (amount / totalIncome) * 100
-                let cat = categories.first { $0.name == catName }
-                return CategoryBreakdownItem(
-                    id: catName,
-                    categoryName: catName,
-                    amount: amount,
-                    percentage: pct,
-                    color: Color(hex: cat?.colorHex ?? "#5856D6"),
-                    iconSource: cat?.iconSource,
-                    subcategories: []
+
+        // Realized-only, matching the period totals (pt.income) the percentages divide by.
+        // Without this a future-dated income in the current bucket inflates the breakdown
+        // against its own total — the same bug the spending breakdown had.
+        let resolveDate: (Transaction) -> Date? = { tx in
+            txDateMap?[tx.date] ?? DateFormatters.dateFormatter.date(from: tx.date)
+        }
+
+        var categoryByName: [String: CustomCategory] = [:]
+        categoryByName.reserveCapacity(categories.count)
+        for cat in categories { categoryByName[cat.name] = cat }
+
+        let makeBreakdown: ([Transaction], Double) -> [CategoryBreakdownItem] = { txns, periodTotal in
+            Dictionary(grouping: txns, by: { $0.category })
+                .map { catName, catTxns -> (key: String, total: Double) in
+                    (key: catName, total: catTxns.reduce(0.0) { $0 + self.resolveAmount($1, baseCurrency: baseCurrency) })
+                }
+                .filter { !$0.key.isEmpty }
+                .sorted { $0.total > $1.total }
+                .map { item in
+                    let cat = categoryByName[item.key]
+                    return CategoryBreakdownItem(
+                        id: item.key,
+                        categoryName: item.key,
+                        amount: item.total,
+                        percentage: periodTotal > 0 ? (item.total / periodTotal) * 100 : 0,
+                        color: Color(hex: cat?.colorHex ?? "#5856D6"),
+                        iconSource: cat?.iconSource,
+                        subcategories: []
+                    )
+                }
+        }
+
+        // Builds the insight from a top item + the total it's a share of. Shared by both
+        // paths so the hero reads identically whether or not the detail is paged.
+        let makeInsight: (CategoryBreakdownItem?, Double, String, InsightDetailData) -> Insight? = { top, total, fallbackSubtitle, detail in
+            guard let top else {
+                // Keep the card when paging: the user can still swipe to a period that
+                // has income. Without pages an empty current bucket has nothing to show.
+                guard case .categoryBreakdownPaged = detail else { return nil }
+                return Insight(
+                    id: "income_source_breakdown",
+                    type: .incomeSourceBreakdown,
+                    title: String(localized: "insights.incomeSourceBreakdown"),
+                    subtitle: fallbackSubtitle,
+                    metric: InsightMetric(
+                        value: 0,
+                        formattedValue: String(localized: "insights.noIncome"),
+                        currency: nil,
+                        unit: nil
+                    ),
+                    trend: nil,
+                    severity: .neutral,
+                    category: .income,
+                    detailData: detail
                 )
             }
-            .sorted { $0.amount > $1.amount }
+            let topPercent = total > 0 ? (top.amount / total) * 100 : 0
+            return Insight(
+                id: "income_source_breakdown",
+                type: .incomeSourceBreakdown,
+                title: String(localized: "insights.incomeSourceBreakdown"),
+                subtitle: top.categoryName,
+                metric: InsightMetric(
+                    value: topPercent,
+                    formattedValue: String(format: "%.0f%%", topPercent),
+                    currency: nil,
+                    unit: nil
+                ),
+                trend: nil,
+                severity: .neutral,
+                category: .income,
+                detailData: detail
+            )
+        }
 
+        // ── Paged path ────────────────────────────────────────────────────────
+        if let gran = granularity, gran != .allTime, !periodPoints.isEmpty {
+            var incomeByKey: [String: [Transaction]] = [:]
+            for tx in incomeTransactions {
+                guard let d = resolveDate(tx), LedgerPolicyRule.isRealized(d) else { continue }
+                incomeByKey[gran.groupingKey(for: d), default: []].append(tx)
+            }
+
+            let pages: [PeriodCategoryBreakdown] = periodPoints.map { pt in
+                PeriodCategoryBreakdown(
+                    id: pt.key,
+                    label: gran.headingLabel(for: pt.key),
+                    total: pt.income,
+                    items: makeBreakdown(incomeByKey[pt.key] ?? [], pt.income)
+                )
+            }
+
+            let currentKey = gran.currentPeriodKey
+            let currentIdx = periodPoints.firstIndex(where: { $0.key == currentKey }) ?? (periodPoints.count - 1)
+            let currentPage = pages.indices.contains(currentIdx) ? pages[currentIdx] : pages.last
+
+            Self.logger.debug("💼 [Insights] IncomeSourceBreakdown (paged) — periods=\(pages.count), currentIdx=\(currentIdx), currentTop='\(currentPage?.items.first?.categoryName ?? "—", privacy: .public)'")
+            return makeInsight(
+                currentPage?.items.first,
+                currentPage?.total ?? 0,
+                currentPage?.label ?? gran.headingLabel(for: currentKey),
+                .categoryBreakdownPaged(CategoryBreakdownPages(periods: pages, currentIndex: currentIdx))
+            )
+        }
+
+        // ── Fallback: single breakdown ────────────────────────────────────────
+        // Scope to the current bucket for a finite granularity that produced no period
+        // points; `.allTime` (and no granularity) uses the whole window.
+        let scoped: [Transaction]
+        if let gran = granularity, gran != .allTime {
+            let key = gran.currentPeriodKey
+            let start = gran.periodStart(for: key)
+            let end = gran.periodEnd(for: key)
+            scoped = incomeTransactions.filter { tx in
+                guard let d = resolveDate(tx), d >= start, d < end, LedgerPolicyRule.isRealized(d) else { return false }
+                return true
+            }
+        } else {
+            scoped = incomeTransactions.filter { tx in
+                guard let d = resolveDate(tx) else { return false }
+                return LedgerPolicyRule.isRealized(d)
+            }
+        }
+
+        let totalIncome = scoped.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
+        guard totalIncome > 0 else { return nil }
+        let breakdownItems = makeBreakdown(scoped, totalIncome)
         guard let top = breakdownItems.first else { return nil }
-        let topPercent = top.percentage
 
-        Self.logger.debug("💼 [Insights] IncomeSourceBreakdown — \(breakdownItems.count) sources, top='\(top.categoryName, privacy: .public)' \(String(format: "%.0f%%", topPercent), privacy: .public)")
-        return Insight(
-            id: "income_source_breakdown",
-            type: .incomeSourceBreakdown,
-            title: String(localized: "insights.incomeSourceBreakdown"),
-            subtitle: top.categoryName,
-            metric: InsightMetric(
-                value: topPercent,
-                formattedValue: String(format: "%.0f%%", topPercent),
-                currency: nil,
-                unit: nil
-            ),
-            trend: nil,
-            severity: .neutral,
-            category: .income,
-            detailData: .categoryBreakdown(breakdownItems)
-        )
+        Self.logger.debug("💼 [Insights] IncomeSourceBreakdown — \(breakdownItems.count) sources, top='\(top.categoryName, privacy: .public)' \(String(format: "%.0f%%", top.percentage), privacy: .public)")
+        return makeInsight(top, totalIncome, top.categoryName, .categoryBreakdown(breakdownItems))
     }
 
 }

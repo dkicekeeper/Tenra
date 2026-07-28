@@ -837,6 +837,8 @@
 "insights.breakdown.year" = "Yearly Breakdown";
 "insights.noExpenses" = "No expenses";
 "insights.noExpensesForPeriod" = "No expenses this period";
+"insights.noIncome" = "No income";
+"insights.noIncomeForPeriod" = "No income this period";
 "insights.swipeHint" = "Swipe to view other periods";
 "insights.other" = "Other";
 "insights.noSubcategory" = "No subcategory";

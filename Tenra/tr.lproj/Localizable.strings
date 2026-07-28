@@ -837,6 +837,8 @@
 "insights.breakdown.year" = "Yıllık Dağılım";
 "insights.noExpenses" = "Gider yok";
 "insights.noExpensesForPeriod" = "Bu dönemde gider yok";
+"insights.noIncome" = "Gelir yok";
+"insights.noIncomeForPeriod" = "Bu dönemde gelir yok";
 "insights.swipeHint" = "Diğer dönemleri görmek için kaydır";
 "insights.other" = "Diğer";
 "insights.noSubcategory" = "Alt kategori yok";

@@ -32,7 +32,7 @@
 ### `topSpendingCategory`
 - **Что считает:** категория расходов с наибольшей суммой за **текущий** период гранулярности
 - **Данные:** `currentBucketPoint` — текущий бакет из `periodPoints` (Phase 31); при отсутствии — fallback на `windowedTransactions`
-- **Детализация:** `categoryBreakdown` — топ-5 категорий с подкатегориями
+- **Детализация:** `categoryBreakdownPaged` — одна страница на период (свайп); `.allTime` / пустые `periodPoints` → одиночный `categoryBreakdown` с подкатегориями
 - **Fast path:** `CategoryAggregateService.fetchRange(from: cp.periodStart, to: cp.periodEnd)` → O(M) вместо O(N)
 - **Гранулярность:** ✅ — данные скоупированы по **текущему бакету** (не по всему окну)
 
@@ -78,11 +78,13 @@
 - **Severity:** Positive ≥1.5×, Neutral ≥1.0×, Critical <1.0× (тратим больше дохода)
 - **Гранулярность:** ✅
 
-### `incomeSourceBreakdown` *(Phase 24, Phase 31)*
-- **Что считает:** группировка доходных транзакций по категории за **текущий бакет** гранулярности
-- **Данные (Phase 31):** `currentBucketForForecasting` — `filterByTimeRange(allTransactions, start: cp.periodStart, end: cp.periodEnd)` для текущего бакета; fallback на `windowedTransactions`
-- **Условия:** ≥2 категории дохода, totalIncome > 0
-- **Гранулярность:** ✅ — скоупирован по текущему периоду (до Phase 31 был ❌ all-time)
+### `incomeSourceBreakdown` *(Phase 24, Phase 31; пагинация 2026-07)*
+- **Что считает:** группировка доходных транзакций по категории за период гранулярности
+- **Данные:** `windowedTransactions` (всё окно фильтра) + `periodPoints`; скоупинг по периодам делает сам генератор
+- **Детализация:** `categoryBreakdownPaged` — одна страница на период, как у [`topSpendingCategory`](#topspendingcategory). Открывается на текущем бакете, свайп назад до первой транзакции. `.allTime` (и когда `periodPoints` пустые) → одиночный `categoryBreakdown`, скоупленный по текущему бакету
+- **Проценты:** доля считается от `pt.income` соответствующей страницы, транзакции фильтруются `LedgerPolicyRule.isRealized` — иначе будущий доход в текущем бакете раздувал бы breakdown относительно собственного тотала
+- **Условия:** ≥2 категории дохода. В paged-режиме карточка остаётся даже когда в текущем бакете дохода нет (пустой hero + пустая страница), чтобы пользователь мог свайпнуть к периоду с доходом
+- **Гранулярность:** ✅ — страница на период (до Phase 31 был ❌ all-time, до 2026-07 — только текущий бакет без пагинации)
 
 ---
 
@@ -241,7 +243,7 @@
 | `categoryTrend` | spending | 🔒 6mo | CategoryAggregateService (streak ≥3 мес) |
 | `incomeGrowth` | income | ✅ (skip allTime) | periodPoints currentPeriodKey/previousPeriodKey |
 | `incomeVsExpenseRatio` | income | ✅ | periodSummary (windowed) |
-| `incomeSourceBreakdown` | income | ✅ current bucket | filteredTransactions (current bucket) |
+| `incomeSourceBreakdown` | income | ✅ paged per period | windowedTransactions + periodPoints (страница на период) |
 | `budgetOverspend` | budget | ✅ | BudgetSpendingCacheService O(1) |
 | `budgetHeadroom` | budget | ✅ | BudgetSpendingCacheService O(1) (сумма в валюте) |
 | `projectedOverspend` | budget | ✅ | windowedTransactions + day calc |
@@ -268,7 +270,7 @@
 ## Итоговые группы
 
 ### ✅ Полностью следуют гранулярности (14 метрик)
-`topSpendingCategory` (current bucket), `monthOverMonthChange` (skip allTime), `averageDailySpending`, `incomeGrowth` (skip allTime), `incomeVsExpenseRatio`, `incomeSourceBreakdown` (current bucket), `budgetOverspend`, `budgetHeadroom`, `projectedOverspend`, `netCashFlow`, `bestMonth`, `worstMonth`, `wealthGrowth`, `savingsRate`
+`topSpendingCategory` (paged per period), `monthOverMonthChange` (skip allTime), `averageDailySpending`, `incomeGrowth` (skip allTime), `incomeVsExpenseRatio`, `incomeSourceBreakdown` (paged per period), `budgetOverspend`, `budgetHeadroom`, `projectedOverspend`, `netCashFlow`, `bestMonth`, `worstMonth`, `wealthGrowth`, `savingsRate`
 
 ### ⚠️ Значение текущее, trend arrow window-aware (1 метрика)
 `totalWealth` — баланс счетов всегда текущий; trend направление вычисляется из `currentPeriodKey vs previousPeriodKey`

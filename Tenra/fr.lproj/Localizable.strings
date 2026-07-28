@@ -837,6 +837,8 @@
 "insights.breakdown.year" = "Répartition annuelle";
 "insights.noExpenses" = "Aucune dépense";
 "insights.noExpensesForPeriod" = "Aucune dépense sur cette période";
+"insights.noIncome" = "Aucun revenu";
+"insights.noIncomeForPeriod" = "Aucun revenu sur cette période";
 "insights.swipeHint" = "Balayez pour voir les autres périodes";
 "insights.other" = "Autre";
 "insights.noSubcategory" = "Sans sous-catégorie";

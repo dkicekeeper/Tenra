@@ -837,6 +837,8 @@
 "insights.breakdown.year" = "Jährliche Aufschlüsselung";
 "insights.noExpenses" = "Keine Ausgaben";
 "insights.noExpensesForPeriod" = "Keine Ausgaben in diesem Zeitraum";
+"insights.noIncome" = "Keine Einnahmen";
+"insights.noIncomeForPeriod" = "Keine Einnahmen in diesem Zeitraum";
 "insights.swipeHint" = "Wischen Sie, um andere Zeiträume anzuzeigen";
 "insights.other" = "Sonstiges";
 "insights.noSubcategory" = "Keine Unterkategorie";

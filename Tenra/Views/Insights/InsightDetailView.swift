@@ -43,6 +43,9 @@ struct InsightDetailView<CategoryDestination: View>: View {
                     pages: pages.periods,
                     currentIndex: pages.currentIndex,
                     currency: currency,
+                    emptyTitle: insight.type == .incomeSourceBreakdown
+                        ? String(localized: "insights.noIncomeForPeriod")
+                        : String(localized: "insights.noExpensesForPeriod"),
                     onCategoryTap: _onCategoryTap
                 )
             } else {
@@ -367,6 +370,9 @@ extension InsightDetailView where CategoryDestination == Never {
 struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
     let pages: [PeriodCategoryBreakdown]
     let currency: String
+    /// Empty-page copy. The pager is flavor-agnostic (expense categories and income
+    /// sources both page through it), so the caller supplies the wording.
+    let emptyTitle: String
     /// Second arg is the period key of the page tapped from, so the drill-down dives
     /// into the period the user is viewing rather than the current one.
     let onCategoryTap: ((CategoryBreakdownItem, String?) -> CategoryDestination)?
@@ -382,10 +388,12 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
         pages: [PeriodCategoryBreakdown],
         currentIndex: Int,
         currency: String,
+        emptyTitle: String = String(localized: "insights.noExpensesForPeriod"),
         onCategoryTap: ((CategoryBreakdownItem, String?) -> CategoryDestination)?
     ) {
         self.pages = pages
         self.currency = currency
+        self.emptyTitle = emptyTitle
         self.onCategoryTap = onCategoryTap
         let clamped = min(max(0, currentIndex), max(0, pages.count - 1))
         _index = State(initialValue: clamped)
@@ -415,7 +423,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
                     icon: nil,
                     title: page.label,
                     showsIcon: false,
-                    primaryAmount: page.totalExpenses > 0 ? page.totalExpenses : nil,
+                    primaryAmount: page.total > 0 ? page.total : nil,
                     primaryCurrency: currency
                 )
                 .frame(maxWidth: .infinity)
@@ -479,7 +487,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
     private var emptyState: some View {
         EmptyStateView(
             icon: "tray",
-            title: String(localized: "insights.noExpensesForPeriod"),
+            title: emptyTitle,
             description: String(localized: "insights.swipeHint")
         )
         .padding(.vertical, AppSpacing.xxl)
@@ -541,9 +549,9 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
 
 #Preview("Paged Breakdown — centered arrows") {
     let pages = [
-        PeriodCategoryBreakdown(id: "2026-05", label: "Май 2026", totalExpenses: 180_000, items: CategoryBreakdownItem.mockItems()),
-        PeriodCategoryBreakdown(id: "2026-04", label: "Апрель 2026", totalExpenses: 95_000, items: CategoryBreakdownItem.mockItems()),
-        PeriodCategoryBreakdown(id: "2026-03", label: "Март 2026", totalExpenses: 0, items: [])
+        PeriodCategoryBreakdown(id: "2026-05", label: "Май 2026", total: 180_000, items: CategoryBreakdownItem.mockItems()),
+        PeriodCategoryBreakdown(id: "2026-04", label: "Апрель 2026", total: 95_000, items: CategoryBreakdownItem.mockItems()),
+        PeriodCategoryBreakdown(id: "2026-03", label: "Март 2026", total: 0, items: [])
     ]
     return NavigationStack {
         PagedCategoryBreakdownView<Never>(

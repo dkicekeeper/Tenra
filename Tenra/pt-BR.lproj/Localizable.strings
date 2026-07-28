@@ -837,6 +837,8 @@
 "insights.breakdown.year" = "Detalhamento anual";
 "insights.noExpenses" = "Sem despesas";
 "insights.noExpensesForPeriod" = "Sem despesas neste período";
+"insights.noIncome" = "Sem receitas";
+"insights.noIncomeForPeriod" = "Sem receitas neste período";
 "insights.swipeHint" = "Deslize para ver outros períodos";
 "insights.other" = "Outros";
 "insights.noSubcategory" = "Sem subcategoria";

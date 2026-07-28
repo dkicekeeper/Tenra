@@ -451,6 +451,11 @@ struct AccountsManagementView: View {
         )
     }
     .environment(coordinator.transactionStore)
+    // Required: the view reads `@Environment(AppCoordinator.self)` and
+    // `@Environment(PremiumManager.self)`. A non-optional `@Environment(T.self)` traps
+    // when T isn't in the environment, which crashes the preview process.
+    .environment(coordinator)
+    .environment(PremiumManager.shared)
 }
 
 #Preview("Accounts Management - Empty") {
@@ -464,6 +469,8 @@ struct AccountsManagementView: View {
         )
     }
     .environment(coordinator.transactionStore)
+    .environment(coordinator)
+    .environment(PremiumManager.shared)
 }
 
 #Preview("Account Row") {

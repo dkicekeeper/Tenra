@@ -389,4 +389,7 @@ struct SettingsView: View {
             cloudSyncViewModel: coordinator.cloudSyncViewModel
         )
     }
+    // Required: the view reads `@Environment(PremiumManager.self)` for the Pro gate.
+    // A non-optional `@Environment(T.self)` traps when T isn't in the environment.
+    .environment(PremiumManager.shared)
 }

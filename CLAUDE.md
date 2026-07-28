@@ -185,7 +185,7 @@ New file needed?
 | VoiceInput, speech recognition, SiriGlowView | [docs/domains/voice.md](docs/domains/voice.md) |
 | FX rates, currency conversion, prewarm, providers, base-currency aggregation (`convertSync` vs `convertedAmount`) | [docs/domains/currency.md](docs/domains/currency.md) |
 | Logo providers, ServiceLogoRegistry, jsDelivr | [docs/domains/logos.md](docs/domains/logos.md) |
-| Performance hot-paths, SwiftUI Layout gotchas, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |
+| Performance hot-paths, SwiftUI Layout gotchas, `#Preview` crashes, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |
 | Adding a CoreData entity/attribute, bumping `Tenra.xcdatamodeld` | `/coredata-schema-bump` skill |
 
 **Rule**: before editing files in a domain, Read the matching doc.
@@ -320,6 +320,7 @@ When working with this project:
 - Don't flag `#Preview` block inconsistencies as production drifts in audits — distinguish preview-only from production usage when grep'ing
 - Don't write CLAUDE.md inline rules for things that fit in a domain doc — keep this file thin
 - Don't auto build/install/launch/screenshot the Simulator to verify UI changes — the user verifies visually. Build only to confirm compilation, then report what to check. (White-on-white plates are invisible in screenshots — `xcrun simctl ui <dev> appearance dark` exposes them.)
+- Don't treat a green `xcodebuild build` as "previews work" — it compiles `#Preview` bodies but never *renders* them, so preview-only breakage is invisible to every check available here. Adding `@Environment(T.self)` to a view means updating every `#Preview` in that file, else the preview process traps (`EXC_BREAKPOINT` in `EnvironmentValues.subscript.getter`) on a green build. Details in [gotchas.md](docs/gotchas.md).
 
 ## Questions?
 

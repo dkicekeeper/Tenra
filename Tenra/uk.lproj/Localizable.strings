@@ -837,6 +837,8 @@
 "insights.breakdown.year" = "Розподіл за роками";
 "insights.noExpenses" = "Немає витрат";
 "insights.noExpensesForPeriod" = "За цей період немає витрат";
+"insights.noIncome" = "Немає доходів";
+"insights.noIncomeForPeriod" = "За цей період немає доходів";
 "insights.swipeHint" = "Проведіть, щоб переглянути інші періоди";
 "insights.other" = "Інше";
 "insights.noSubcategory" = "Без підкатегорії";

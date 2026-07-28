@@ -837,6 +837,8 @@
 "insights.breakdown.year" = "По годам";
 "insights.noExpenses" = "Нет расходов";
 "insights.noExpensesForPeriod" = "Нет расходов за этот период";
+"insights.noIncome" = "Нет доходов";
+"insights.noIncomeForPeriod" = "Нет доходов за этот период";
 "insights.swipeHint" = "Свайпните, чтобы посмотреть другие периоды";
 "insights.other" = "Другое";
 "insights.noSubcategory" = "Без подкатегории";

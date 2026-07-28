@@ -172,29 +172,49 @@ struct LoansListView: View {
 
     /// Погашенные кредиты держим отдельно и свёрнутыми: они не требуют действий, но
     /// историю платежей и график по ним пользователь должен уметь открыть.
+    ///
+    /// Заголовок + `if`, а НЕ `DisclosureGroup`: тот клипает своё содержимое (так он
+    /// анимирует раскрытие), а `cardStyle()` на iOS 26 это `.glassEffect`, свечение
+    /// которого выходит за границы фигуры, и клип его срезает. По той же причине
+    /// `screenPadding()` висит на каждой карточке отдельно, как у активных кредитов,
+    /// а не на контейнере секции.
     private var closedLoansSection: some View {
-        DisclosureGroup(isExpanded: $isClosedSectionExpanded) {
-            VStack(spacing: AppSpacing.md) {
+        VStack(spacing: AppSpacing.md) {
+            Button {
+                HapticManager.light()
+                withAnimation(AppAnimation.contentSpring) {
+                    isClosedSectionExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: AppSpacing.md) {
+                    Text(String(localized: "loan.closedSection", defaultValue: "Closed"))
+                        .font(AppTypography.h4)
+                        .foregroundStyle(AppColors.textPrimary)
+                    Text("\(filteredClosedLoans.count)")
+                        .font(AppTypography.h4)
+                        .foregroundStyle(AppColors.textSecondary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(AppTypography.bodySmall)
+                        .foregroundStyle(AppColors.textSecondary)
+                        .rotationEffect(.degrees(isClosedSectionExpanded ? 90 : 0))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .screenPadding()
+
+            if isClosedSectionExpanded {
                 ForEach(filteredClosedLoans) { loan in
                     NavigationLink(value: FinancesDestination.loanDetail(loan.id)) {
                         LoanCard(loan: loan)
                     }
                     .buttonStyle(.plain)
+                    .screenPadding()
                 }
             }
-            .padding(.top, AppSpacing.md)
-        } label: {
-            HStack(spacing: AppSpacing.xs) {
-                Text(String(localized: "loan.closedSection", defaultValue: "Closed"))
-                    .font(AppTypography.h4)
-                Text("\(filteredClosedLoans.count)")
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
         }
-        .tint(AppColors.textSecondary)
         .padding(.top, AppSpacing.md)
-        .screenPadding()
     }
 
     // MARK: - Summary
@@ -360,6 +380,10 @@ struct LoansListView: View {
         )
         .environment(coordinator)
         .environment(coordinator.transactionStore)
+        // Required: the view reads `@Environment(PremiumManager.self)` for the Pro gate.
+        // A non-optional `@Environment(T.self)` traps during dynamic-property update when
+        // T isn't in the environment, so omitting it crashes the preview process.
+        .environment(PremiumManager.shared)
     }
 }
 
@@ -374,5 +398,9 @@ struct LoansListView: View {
         )
         .environment(coordinator)
         .environment(coordinator.transactionStore)
+        // Required: the view reads `@Environment(PremiumManager.self)` for the Pro gate.
+        // A non-optional `@Environment(T.self)` traps during dynamic-property update when
+        // T isn't in the environment, so omitting it crashes the preview process.
+        .environment(PremiumManager.shared)
     }
 }

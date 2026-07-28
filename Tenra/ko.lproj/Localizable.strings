@@ -837,6 +837,8 @@
 "insights.breakdown.year" = "연간 상세 분석";
 "insights.noExpenses" = "지출 없음";
 "insights.noExpensesForPeriod" = "이 기간에는 지출이 없어요";
+"insights.noIncome" = "수입 없음";
+"insights.noIncomeForPeriod" = "이 기간에는 수입이 없어요";
 "insights.swipeHint" = "다른 기간을 보려면 스와이프하세요";
 "insights.other" = "기타";
 "insights.noSubcategory" = "하위 카테고리 없음";

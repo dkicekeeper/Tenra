@@ -52,6 +52,25 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
 - ⚠️ **`onAppear` fires on every back-navigation** — use `.task(id: trigger)` instead: combine reactive inputs in `Equatable` struct (`SummaryTrigger` pattern); SwiftUI manages cancellation automatically. Use debounce inside `if !isFullyInitialized` so init-complete triggers are immediate.
 - ⚠️ **`TimeFilter` freezes its date bounds at `init`** — relative presets (`.thisMonth`, `.today`) keep the month/day they were created in and go stale on rollover (incl. after a cold launch decoding saved bounds). Refresh via `TimeFilterManager.refreshRelativePresetIfNeeded()` on `scenePhase == .active` (`TenraApp`). Any `.task(id:)` keyed on `currentFilter.displayName` will NOT re-fire across a month boundary (name is unchanged) — key on the actual `dateRange()` start/end instead.
 
+### Date parsing
+
+- ⚠️ **`DateFormatter.date(from:)` costs ~13.4 µs per call — never call it in a loop over transactions.** Measured on 19k: `DateFormatter.date(from:)` 254 ms vs [`FastDateParser.date(from:)`](../Tenra/Utils/FastDateParser.swift) 4.8 ms (~53×). Formatting is far cheaper than parsing (`string(from:)` is only 18.6 ms/19k), so the expensive direction is String → Date. Use `FastDateParser` for the canonical `"yyyy-MM-dd"` storage format; keep `DateFormatters` for anything user-facing (localized month names depend on device locale by design).
+- **`FastDateParser` is pinned to `DateFormatter` by `FastDateParserTests`** — every day 2015–2035 plus the whole month/day space. If you change its calendar/timeZone config, re-run that suite.
+- **`DateFormatter` is not uniformly strict, and matching it matters**: it returns nil for a field outside its own range (`"2026-13-01"`, `"2026-07-32"`) but *rolls over* an in-range day that overflows the month (`"2026-02-30"` → 2026-03-02, `"2025-02-29"` → 2025-03-01). `Calendar.date(from:)` rolls over everything, so a naive swap silently accepts month 13. `FastDateParser` range-guards then delegates, reproducing DateFormatter exactly.
+- ⚠️ **A `DateFormatter` parsing a stored key MUST set `locale = en_US_POSIX`.** Without it the formatter inherits the device region's calendar, so `"2026-07-28"` parses to a different date — or nil — on a device set to Thailand (Buddhist) or Saudi Arabia (Umm al-Qura). The app ships in 11 languages and region ≠ language. `TransactionCacheManager` shipped without it and silently broke history grouping for those users (fixed 2026-07).
+- **Key a parsed-date cache by the date STRING, not `tx.id`** — 19k transactions span only ~1.8k unique dates, so an id-keyed cache does 10× the parses and holds 10× the entries. Precedent: `InsightsService.PreAggregatedData.txDateMap`.
+
+### Grouping indexes store ids, not values
+
+- **`transactionsByAccount` / `transactionsByCategoryName` / `transactionsBySeriesId` are computed [`TransactionIndex`](../Tenra/Models/TransactionIndex.swift) views**, not stored dictionaries. Storage is `transactionIdsBy*: [String: [String]]`; the index resolves through `transactionById` on subscript. Read sites are unchanged (`index[key] ?? []` still yields `[Transaction]`), but **bind the bucket to a `let` before using it more than once** — each subscript re-resolves.
+- **Never re-write a bucket to make an edit visible.** The old maintenance code overwrote the stored `Transaction` inside each bucket on update; buckets now hold ids and `updateState` refreshes `transactionById` first, so edits show through automatically. Adding an in-place rewrite back would be dead code. Pinned by `TransactionIndexTests.editIsVisibleWithoutBucketRewrite`.
+- ⚠️ **Any cold rebuild driven off the `transactions` array must call `ensureTransactionByIdInSync()` first** — otherwise buckets resolve to nothing. `rebuildCategoryIndexes`, `rebuildSeriesAndDateIndexes` and `seedCategoryAggregates` already do; it is O(1) when in sync. This is why assigning `store.transactions` directly (tests, fixtures) no longer silently yields empty indexes.
+
+### Currency conversion in bulk loops
+
+- **Use [`RateSnapshot`](../Tenra/Services/Currency/RateSnapshot.swift), not `CurrencyConverter.convertSync`, inside any walk over the transaction set.** `convertSync` takes two `NSLock` acquisitions per call (38k per 19k-pass), and — more importantly — reads live state: a prewarm response landing mid-loop converts the first half of the set at old rates and the second half at new ones, producing a total that corresponds to no point in time. `aggregatesAreFXStale` catches a cold cache, not this. Single conversions should keep using `convertSync`.
+- `CategoryBudgetCurrency.toBase(amount:from:base:rates:)` is the snapshot-taking overload; it preserves the `usedStaleFallback` contract exactly.
+
 ### Background work
 
 - **Heavy nonisolated scans off MainActor**: `Task.detached(priority: .userInitiated) { let result = Matcher.scan(...); await MainActor.run { self.baseline = result; self.applyFilters() } }` for O(N_transactions) filters on view open. SwiftUI `View` structs are auto-Sendable — capture is safe.

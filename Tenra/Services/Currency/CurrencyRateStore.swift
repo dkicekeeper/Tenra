@@ -29,7 +29,7 @@ import Observation
 
 // MARK: - Persistence DTO
 
-private struct PersistedRates: Codable {
+private nonisolated struct PersistedRates: Codable {
     let pivot: String
     let rates: [String: Double]
     let fetchedAt: Date
@@ -42,9 +42,10 @@ nonisolated final class CurrencyRateStore: @unchecked Sendable {
 
     // MARK: Singleton
 
-    /// Shared instance. `nonisolated(unsafe)` because there is exactly one
-    /// initializer call (lazy `let`-style init pattern via static dispatch).
-    nonisolated(unsafe) static let shared = CurrencyRateStore()
+    /// Shared instance. The type is `@unchecked Sendable` (all mutable state is behind
+    /// `lock`), so a plain `static let` is already safe — `nonisolated(unsafe)` here was
+    /// redundant and the compiler now says so.
+    static let shared = CurrencyRateStore()
 
     // MARK: Constants
 

@@ -17,7 +17,7 @@ import Foundation
 // MARK: - ExchangeRates
 
 /// Normalized exchange-rate snapshot returned by every provider.
-struct ExchangeRates: Sendable {
+nonisolated struct ExchangeRates: Sendable {
     /// Pivot currency code, e.g. "KZT", "USD".
     let pivot: String
     /// `rates[X] = pivot per 1 X`. Does NOT include the pivot itself.
@@ -69,7 +69,7 @@ enum CurrencyProviderError: Error, Sendable {
 /// through `Task.detached`).
 protocol CurrencyRateProvider: Sendable {
     /// Identifier for logging (e.g. "jsdelivr", "nbk").
-    var name: String { get }
+    nonisolated var name: String { get }
     /// Fetch the snapshot of rates for `date` (nil ⇒ today).
     func fetchRates(on date: Date?) async throws -> ExchangeRates
 }

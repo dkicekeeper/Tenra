@@ -36,7 +36,7 @@ enum AppColors {
     static let textSecondary = Color.secondary
 
     /// Tertiary text (используй системный .gray для мета-информации)
-    static let textTertiary = Color.gray
+    nonisolated static let textTertiary = Color.gray
 
     // MARK: Interactive Colors
 
@@ -88,7 +88,7 @@ enum AppColors {
 /// Цвета для категорий транзакций — hash-based assignment из палитры
 struct CategoryColors {
     /// Pre-computed color palette (avoids hex parsing on every call)
-    private static let palette: [Color] = {
+    private nonisolated static let palette: [Color] = {
         let hexValues: [UInt64] = [
             0x3b82f6, 0x8b5cf6, 0xec4899, 0xf97316, 0xeab308,
             0x22c55e, 0x14b8a6, 0x06b6d4, 0x6366f1, 0xd946ef,
@@ -106,7 +106,7 @@ struct CategoryColors {
     /// Возвращает цвет по палитре с учётом пользовательских категорий.
     /// Legacy O(N_cat) path — still used in cold/preview contexts. Prefer the
     /// store-backed overload below on the hot path.
-    static func hexColor(for category: String, opacity: Double = 1.0, customCategories: [CustomCategory] = []) -> Color {
+    nonisolated static func hexColor(for category: String, opacity: Double = 1.0, customCategories: [CustomCategory] = []) -> Color {
         if let custom = customCategories.first(where: { $0.name.lowercased() == category.lowercased() }) {
             return custom.color.opacity(opacity)
         }

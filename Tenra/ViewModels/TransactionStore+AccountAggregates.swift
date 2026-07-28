@@ -104,7 +104,7 @@ extension TransactionStore {
         // Realized actuals only: exclude future-dated tx so the income/expense
         // totals stay consistent with the balance (which also excludes them).
         // Same single rule as `BalanceCalculationEngine.affectsCurrentBalance`.
-        let parsedDate = parsedDateById[tx.id] ?? DateFormatters.dateFormatter.date(from: tx.date)
+        let parsedDate = parsedDateByDateString[tx.date] ?? FastDateParser.date(from: tx.date)
         guard LedgerPolicyRule.isRealized(parsedDate) else { return }
 
         let signD = Double(sign)

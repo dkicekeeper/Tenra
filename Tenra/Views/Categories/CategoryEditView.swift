@@ -86,7 +86,7 @@ struct CategoryEditView: View {
                     }
 
                     // Subcategories Section (edit mode only)
-                    if let category = category {
+                    if category != nil {
 //                        FormSection(header: String(localized: "category.subcategories")) {
                             UniversalRow(
                                 leadingIcon: .sfSymbol("list.bullet", color: AppColors.accent),

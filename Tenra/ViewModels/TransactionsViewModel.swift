@@ -89,7 +89,7 @@ class TransactionsViewModel {
         self.repository = repository
 
         // Initialize services (required for @Observable compatibility)
-        let filterService = TransactionFilterService(dateFormatter: DateFormatters.dateFormatter)
+        let filterService = TransactionFilterService()
         self.filterCoordinator = TransactionFilterCoordinator(filterService: filterService, dateFormatter: DateFormatters.dateFormatter)
         self.queryService = TransactionQueryService()
         self.groupingService = TransactionGroupingService(

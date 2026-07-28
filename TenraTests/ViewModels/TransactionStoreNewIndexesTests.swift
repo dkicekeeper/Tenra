@@ -4,7 +4,7 @@
 //
 //  Regression coverage for Step I indexes added in the second audit:
 //   • `transactionsBySeriesId`        — series → tx bucket
-//   • `parsedDateById`                — id → parsed Date cache
+//   • `parsedDateByDateString`        — date string → parsed Date cache
 //   • `accountAggregatesByAccountId`  — pre-aggregated income/expense per account
 //   • `RecurringStore.occurrencesBySeriesId` — series → occurrence bucket
 //
@@ -58,10 +58,10 @@ struct TransactionStoreNewIndexesTests {
         )
     }
 
-    // MARK: - parsedDateById
+    // MARK: - parsedDateByDateString
 
-    @Test("rebuildSeriesAndDateIndexes parses every tx date once")
-    func parsedDateByIdCovered() async throws {
+    @Test("rebuildSeriesAndDateIndexes parses every distinct date once")
+    func parsedDateByDateStringCovered() async throws {
         let store = Self.makeStore()
         store.transactions = [
             Self.tx(id: "a", date: "2026-01-15"),
@@ -70,10 +70,38 @@ struct TransactionStoreNewIndexesTests {
         ]
         store.rebuildSeriesAndDateIndexes()
 
-        #expect(store.parsedDateById["a"] != nil)
-        #expect(store.parsedDateById["b"] != nil)
-        #expect(store.parsedDateById["c"] == nil)
-        #expect(store.parsedDateById.count == 2)
+        #expect(store.parsedDateByDateString["2026-01-15"] != nil)
+        #expect(store.parsedDateByDateString["2026-02-20"] != nil)
+        #expect(store.parsedDateByDateString["not-a-date"] == nil)
+        #expect(store.parsedDateByDateString.count == 2)
+    }
+
+    @Test("transactions sharing a date collapse into one cache entry")
+    func parsedDateByDateStringDeduplicates() async throws {
+        let store = Self.makeStore()
+        store.transactions = [
+            Self.tx(id: "a", date: "2026-01-15"),
+            Self.tx(id: "b", date: "2026-01-15"),
+            Self.tx(id: "c", date: "2026-01-15"),
+            Self.tx(id: "d", date: "2026-02-20")
+        ]
+        store.rebuildSeriesAndDateIndexes()
+
+        // 4 transactions, 2 distinct dates — this dedup is the point of the key change.
+        #expect(store.parsedDateByDateString.count == 2)
+    }
+
+    @Test("removing one transaction keeps the shared date entry for its siblings")
+    func parsedDateSurvivesSiblingRemoval() async throws {
+        let store = Self.makeStore()
+        let a = Self.tx(id: "a", date: "2026-01-15")
+        let b = Self.tx(id: "b", date: "2026-01-15")
+        store.transactions = [a, b]
+        store.rebuildSeriesAndDateIndexes()
+
+        // Evicting by date on delete would break every other tx on that day.
+        store.seriesIndexRemove(a)
+        #expect(store.parsedDateByDateString["2026-01-15"] != nil)
     }
 
     // MARK: - transactionsBySeriesId

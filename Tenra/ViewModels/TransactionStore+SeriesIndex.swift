@@ -3,9 +3,9 @@
 //  Tenra
 //
 //  Maintains:
-//  • `transactionsBySeriesId`  — O(1) lookup of all tx linked to a recurring series.
-//  • `parsedDateById`          — cached `DateFormatter.date(from: tx.date)` so the
-//    parse cost (~16 µs/tx) is paid once per tx lifecycle, not per filter pass.
+//  • `transactionIdsBySeriesId` — O(1) lookup of all tx linked to a recurring series.
+//  • `parsedDateByDateString`  — cached `FastDateParser.date(from: tx.date)`, keyed by
+//    the date STRING so transactions sharing a day share one entry.
 //
 //  Wired into the same `updateState` funnel as `categoryIndexAdd` etc.
 //
@@ -18,86 +18,87 @@ extension TransactionStore {
 
     /// Add a transaction to the series-id index and cache its parsed date.
     internal func seriesIndexAdd(_ tx: Transaction) {
-        if let parsed = DateFormatters.dateFormatter.date(from: tx.date) {
-            parsedDateById[tx.id] = parsed
+        // Idempotent: transactions sharing a date share the entry.
+        if parsedDateByDateString[tx.date] == nil,
+           let parsed = FastDateParser.date(from: tx.date) {
+            parsedDateByDateString[tx.date] = parsed
         }
         guard let sid = tx.recurringSeriesId, !sid.isEmpty else { return }
-        transactionsBySeriesId[sid, default: []].append(tx)
+        transactionIdsBySeriesId[sid, default: []].append(tx.id)
     }
 
-    /// Remove a transaction from the series-id index and date cache.
+    /// Remove a transaction from the series-id index.
+    ///
+    /// Deliberately does NOT touch `parsedDateByDateString`: the entry is keyed by date,
+    /// so other transactions on the same day still need it. See the property's doc comment.
     internal func seriesIndexRemove(_ tx: Transaction) {
-        parsedDateById.removeValue(forKey: tx.id)
         guard let sid = tx.recurringSeriesId, !sid.isEmpty else { return }
-        if var bucket = transactionsBySeriesId[sid],
-           let i = bucket.firstIndex(where: { $0.id == tx.id }) {
+        if var bucket = transactionIdsBySeriesId[sid],
+           let i = bucket.firstIndex(of: tx.id) {
             bucket.remove(at: i)
             if bucket.isEmpty {
-                transactionsBySeriesId.removeValue(forKey: sid)
+                transactionIdsBySeriesId.removeValue(forKey: sid)
             } else {
-                transactionsBySeriesId[sid] = bucket
+                transactionIdsBySeriesId[sid] = bucket
             }
         }
     }
 
     /// Apply a tx update — re-bucket if the series link or the date string changed.
     internal func seriesIndexUpdate(old: Transaction, new: Transaction) {
-        // Date cache: re-parse only when the date string changed.
-        if old.date != new.date {
-            if let parsed = DateFormatters.dateFormatter.date(from: new.date) {
-                parsedDateById[new.id] = parsed
-            } else {
-                parsedDateById.removeValue(forKey: new.id)
-            }
+        // Date cache: only ever ADD the new date's entry. The old date's entry stays —
+        // it is shared with every other transaction on that day, and evicting it here
+        // would break their lookups. An unparseable new date simply gets no entry.
+        if old.date != new.date,
+           parsedDateByDateString[new.date] == nil,
+           let parsed = FastDateParser.date(from: new.date) {
+            parsedDateByDateString[new.date] = parsed
         }
 
         // Series-id bucket: same id → replace in place; different id → remove+add.
         let oldSid = old.recurringSeriesId ?? ""
         let newSid = new.recurringSeriesId ?? ""
         if oldSid == newSid {
-            guard !newSid.isEmpty else { return }
-            if var bucket = transactionsBySeriesId[newSid],
-               let i = bucket.firstIndex(where: { $0.id == new.id }) {
-                bucket[i] = new
-                transactionsBySeriesId[newSid] = bucket
-            }
+            // Same bucket, same id — the bucket holds ids and resolves through
+            // `transactionById`, which updateState refreshed before calling us.
             return
         }
         if !oldSid.isEmpty,
-           var bucket = transactionsBySeriesId[oldSid],
-           let i = bucket.firstIndex(where: { $0.id == old.id }) {
+           var bucket = transactionIdsBySeriesId[oldSid],
+           let i = bucket.firstIndex(of: old.id) {
             bucket.remove(at: i)
             if bucket.isEmpty {
-                transactionsBySeriesId.removeValue(forKey: oldSid)
+                transactionIdsBySeriesId.removeValue(forKey: oldSid)
             } else {
-                transactionsBySeriesId[oldSid] = bucket
+                transactionIdsBySeriesId[oldSid] = bucket
             }
         }
         if !newSid.isEmpty {
-            transactionsBySeriesId[newSid, default: []].append(new)
+            transactionIdsBySeriesId[newSid, default: []].append(new.id)
         }
     }
 
     // MARK: - Cold Rebuild
 
-    /// Rebuild `transactionsBySeriesId` and `parsedDateById` from the canonical
+    /// Rebuild `transactionIdsBySeriesId` and `parsedDateByDateString` from the canonical
     /// `transactions` array. Called once during `loadData()`.
     internal func rebuildSeriesAndDateIndexes() {
-        var byId: [String: Date] = [:]
-        var bySeries: [String: [Transaction]] = [:]
-        byId.reserveCapacity(transactions.count)
+        ensureTransactionByIdInSync()
+        var byDate: [String: Date] = [:]
+        var bySeries: [String: [String]] = [:]
+        // ~1.8k distinct dates for a 19k set — not `transactions.count`.
+        byDate.reserveCapacity(2048)
         bySeries.reserveCapacity(32)
 
-        let formatter = DateFormatters.dateFormatter
         for tx in transactions {
-            if let parsed = formatter.date(from: tx.date) {
-                byId[tx.id] = parsed
+            if byDate[tx.date] == nil, let parsed = FastDateParser.date(from: tx.date) {
+                byDate[tx.date] = parsed
             }
             if let sid = tx.recurringSeriesId, !sid.isEmpty {
-                bySeries[sid, default: []].append(tx)
+                bySeries[sid, default: []].append(tx.id)
             }
         }
-        parsedDateById = byId
-        transactionsBySeriesId = bySeries
+        parsedDateByDateString = byDate
+        transactionIdsBySeriesId = bySeries
     }
 }

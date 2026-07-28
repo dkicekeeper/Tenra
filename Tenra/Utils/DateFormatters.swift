@@ -36,7 +36,7 @@ enum DateFormatters {
     // month names until the process was killed (cache audit #19). These are cached by
     // locale identifier and rebuilt only when it changes — per-call cost stays ~0 without
     // going stale.
-    private static let displayFormatterLock = NSLock()
+    private nonisolated static let displayFormatterLock = NSLock()
     nonisolated(unsafe) private static var displayFormatterCache: [String: (locale: String, formatter: DateFormatter)] = [:]
 
     private nonisolated static func localizedDisplayFormatter(format: String) -> DateFormatter {

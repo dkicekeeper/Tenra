@@ -42,6 +42,26 @@ Maintained alongside the canonical arrays — read-only, never mutate from outsi
 - **`accountById: [String: Account]`** — rebuilt by `rebuildAccountById()` whenever `accounts` mutates (load/add/update/delete/reorder in `TransactionStore+AccountCRUD.swift`). Adding new account-mutation paths MUST call `rebuildAccountById()`.
 - **`seriesById: [String: RecurringSeries]`** (forwarded from `RecurringStore`) — synced inside RecurringStore's `handleSeries*` helpers.
 - **`accountsMutationVersion: Int`** — bumped by `rebuildAccountById()`. Downstream caches (e.g. `AccountsViewModel.regularAccounts/depositAccounts/loanAccounts`) compare this against their last-seen value to detect invalidation cheaply.
+- **`parsedDateByDateString: [String: Date]`** — cached `FastDateParser.date(from:)`, keyed by the date **string** (~1.8k entries for 19k tx, since many transactions share a day), not by `tx.id`. Never evicted on delete: siblings on the same date still need the entry.
+
+### Grouping indexes (id-based)
+
+The three grouping indexes are **computed [`TransactionIndex`](../Tenra/Models/TransactionIndex.swift) views, not stored dictionaries**. Storage holds ids only; values resolve through `transactionById` on subscript.
+
+| Read as | Backed by |
+|---|---|
+| `transactionsByAccount` | `transactionIdsByAccount: [String: [String]]` (both legs — transfers appear under `accountId` and `targetAccountId`) |
+| `transactionsByCategoryName` | `transactionIdsByCategoryName: [String: [String]]` (aggregatable types only) |
+| `transactionsBySeriesId` | `transactionIdsBySeriesId: [String: [String]]` |
+
+Why: `Transaction` has a 256-byte stride, so storing values in all three duplicated the 19k set ~3 extra times (~15 MB) on top of `transactions` + `transactionById`.
+
+Read shape is unchanged (`index[key] ?? []` still yields `[Transaction]`), with two rules:
+
+- **Bind a bucket to a `let` before using it twice** — every subscript re-resolves, O(bucket).
+- ⚠️ **A cold rebuild driven off the `transactions` array must call `ensureTransactionByIdInSync()` first**, else buckets resolve to nothing. `rebuildCategoryIndexes`, `rebuildSeriesAndDateIndexes` and `seedCategoryAggregates` already do; it is O(1) when in sync.
+
+Editing a transaction needs **no** bucket rewrite: `updateState` refreshes `transactionById` before the index-maintenance helpers run, so the new field values resolve automatically. Pinned by `TransactionIndexTests`.
 
 ### Deletion semantics
 

@@ -109,7 +109,7 @@ final class CoreDataStack: @unchecked Sendable {
 
     /// Creates and loads a local-only persistent container. iCloud/CloudKit sync was
     /// removed 2026-04-22 after `HistoryExpired` events caused data loss on restart.
-    private func createAndLoadContainer() -> NSPersistentContainer {
+    private nonisolated func createAndLoadContainer() -> NSPersistentContainer {
         let container = NSPersistentContainer(name: "Tenra")
 
         let description = container.persistentStoreDescriptions.first
@@ -398,11 +398,11 @@ final class CoreDataStack: @unchecked Sendable {
             }
         } catch {
             // Recovery: re-add the store at the original URL (now empty) to avoid a crash
-            try? container.persistentStoreCoordinator.addPersistentStore(type: .sqlite, at: storeURL, options: options)
+            _ = try? container.persistentStoreCoordinator.addPersistentStore(type: .sqlite, at: storeURL, options: options)
             throw CloudBackupError.copyFailed(error)
         }
 
-        try container.persistentStoreCoordinator.addPersistentStore(type: .sqlite, at: storeURL, options: options)
+        _ = try container.persistentStoreCoordinator.addPersistentStore(type: .sqlite, at: storeURL, options: options)
 
         // Reset again so the viewContext picks up the new store's row cache.
         viewContext.performAndWait { viewContext.reset() }

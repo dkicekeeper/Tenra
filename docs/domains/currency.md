@@ -23,6 +23,29 @@ Services/Currency/Providers/* (CurrencyRateProviderChain)
 - `getAllRates()` — full snapshot
 - `prewarm()` — runs on app init
 
+## `RateSnapshot` — for bulk loops
+
+⚠️ **Inside any walk over the transaction set, use [`RateSnapshot`](../../Tenra/Services/Currency/RateSnapshot.swift), not `convertSync`.** Take one before the loop, use it for every conversion inside, discard it after.
+
+```swift
+let rates = RateSnapshot()
+for tx in transactions {
+    let base = rates.convert(tx.amount, from: tx.currency, to: baseCurrency)
+    …
+}
+```
+
+Two reasons, the second more important than the first:
+
+1. **Lock traffic.** `convertSync` takes `CurrencyRateStore`'s `NSLock` twice per call (once per currency) — 38 000 acquisitions per 19k pass, plus memory barriers that stop the optimiser hoisting anything out of the loop. Several such walks run concurrently on detached tasks at launch, so the lock is genuinely contended.
+2. **Consistency.** `convertSync` reads live state. A prewarm response landing mid-loop converts the first half of the set at old rates and the second half at new ones, producing a total that corresponds to no point in time. `aggregatesAreFXStale` catches a *cold* cache, not this. A snapshot pins one rate table for the whole computation.
+
+`convert` returns `nil` on a missing rate exactly like `convertSync`, so callers keep their documented fallback and FX-stale flagging. `CategoryBudgetCurrency.toBase(amount:from:base:rates:)` is the snapshot-taking overload that preserves the `usedStaleFallback` contract.
+
+Single conversions should keep calling `convertSync` — there are hundreds and they gain nothing.
+
+Current bulk call sites: `SummaryCalculator.compute` / `computeTopExpenseWeights`, `TransactionStore+LoadSnapshot`'s cold aggregate rebuilds.
+
 ## KZT-Pivot Storage
 
 ⚠️ **Internal storage is always KZT-pivot**: `cachedRates[X] = "KZT per 1 X"`.

@@ -10,7 +10,7 @@ public import CoreData
 
 extension MonthlyAggregateEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<MonthlyAggregateEntity> {
+    @nonobjc public nonisolated class func fetchRequest() -> NSFetchRequest<MonthlyAggregateEntity> {
         return NSFetchRequest<MonthlyAggregateEntity>(entityName: "MonthlyAggregateEntity")
     }
 

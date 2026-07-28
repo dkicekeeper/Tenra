@@ -161,7 +161,7 @@ struct InsightTrend: Hashable {
     }
 }
 
-enum TrendDirection: Hashable {
+nonisolated enum TrendDirection: Hashable {
     case up, down, flat
 }
 
@@ -204,7 +204,7 @@ extension Insight {
 
 // MARK: - Insight Severity
 
-enum InsightSeverity: String, Hashable {
+nonisolated enum InsightSeverity: String, Hashable {
     case positive
     case neutral
     case warning

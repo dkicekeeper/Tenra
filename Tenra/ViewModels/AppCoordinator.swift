@@ -190,7 +190,7 @@ class AppCoordinator {
             initialSettings: transactionsViewModel.appSettings
         )
         // Initialize InsightsService and InsightsViewModel
-        let insightsFilterService = TransactionFilterService(dateFormatter: DateFormatters.dateFormatter)
+        let insightsFilterService = TransactionFilterService()
         let insightsQueryService = TransactionQueryService()
 
         // Insights uses CategoryBudgetService only as a namespace for static
@@ -284,12 +284,21 @@ class AppCoordinator {
         // initialize() will register accounts again after full transaction load.
         await balanceCoordinator.registerAccounts(transactionStore.accounts)
 
-        // Populate backup count/storage so the Settings row doesn't read 0 until the user
-        // navigates into CloudBackupsView. listBackups() is a synchronous directory scan.
-        cloudSyncViewModel.loadBackups()
-
         reconcileOnboardingAfterFastPath()
         isFastPathDone = true
+
+        // Populate backup count/storage so the Settings row doesn't read 0 until the user
+        // navigates into CloudBackupsView. Deliberately AFTER isFastPathDone: this whole
+        // method is awaited by TenraApp.task BEFORE the coordinator is published, so
+        // anything left above blocks the first frame. loadBackups() is a synchronous
+        // directory scan, and when iCloud backups are enabled it routes through
+        // CloudBackupService.resolveICloudDocumentsURL() — documented there as blocking
+        // for hundreds of ms on first call. The prepareICloud() prewarm in init() runs at
+        // .utility priority and usually loses that race, so the cost landed on MainActor
+        // during launch. Nothing on the first frame reads these values.
+        Task(priority: .utility) { [weak self] in
+            self?.cloudSyncViewModel.loadBackups()
+        }
     }
 
     /// Initialize all ViewModels asynchronously

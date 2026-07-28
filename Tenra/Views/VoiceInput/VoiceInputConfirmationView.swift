@@ -398,7 +398,7 @@ struct VoiceInputConfirmationView: View {
             .replacingOccurrences(of: "₽", with: "")
             .trimmingCharacters(in: .whitespaces)
 
-        var updated = ParsedOperation(
+        let updated = ParsedOperation(
             type: selectedType,
             amount: Decimal(string: cleanedAmount),
             currencyCode: selectedCurrency,

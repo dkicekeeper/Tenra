@@ -69,7 +69,7 @@ extension InsightsService {
         let last30Spent = transactions
             .filter { $0.type == .expense }
             .reduce(0.0) { total, tx in
-                guard let txDate = df.date(from: tx.date),
+                guard let txDate = FastDateParser.date(from: tx.date),
                       txDate >= thirtyDaysAgo, txDate < now else { return total }
                 return total + resolveAmount(tx, baseCurrency: baseCurrency)
             }
@@ -308,7 +308,7 @@ extension InsightsService {
         // Without this a future-dated income in the current bucket inflates the breakdown
         // against its own total — the same bug the spending breakdown had.
         let resolveDate: (Transaction) -> Date? = { tx in
-            txDateMap?[tx.date] ?? DateFormatters.dateFormatter.date(from: tx.date)
+            txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date)
         }
 
         var categoryByName: [String: CustomCategory] = [:]

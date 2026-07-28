@@ -29,7 +29,7 @@ struct InsightSignalGeneratorTests {
         let store = TransactionStore(repository: repo, balanceCoordinator: balance, recurringStore: recurring)
         let service = InsightsService(
             transactionStore: store,
-            filterService: TransactionFilterService(dateFormatter: DateFormatters.dateFormatter),
+            filterService: TransactionFilterService(),
             queryService: TransactionQueryService(),
             budgetService: CategoryBudgetService(store: store)
         )

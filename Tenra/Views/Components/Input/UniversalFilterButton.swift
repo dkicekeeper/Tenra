@@ -198,7 +198,8 @@ extension UniversalFilterButton where Icon == EmptyView {
 #Preview("Account Filter Menu Example") {
     @Previewable @State var selectedAccountId: String? = nil
 
-    let coordinator = AppCoordinator()
+    // No AppCoordinator here: it was unused, and constructing one in a preview spins up
+    // the entire DI graph (repositories, CoreData stack, every ViewModel) for nothing.
     let accounts = [
         Account(name: "Cash", currency: "KZT", iconSource: .sfSymbol("banknote"), initialBalance: 50000),
         Account(name: "Card", currency: "KZT", iconSource: .sfSymbol("creditcard"), initialBalance: 150000)

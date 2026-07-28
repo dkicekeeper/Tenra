@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BackupMetadata: Codable, Sendable, Identifiable {
+nonisolated struct BackupMetadata: Codable, Sendable, Identifiable {
     let id: String
     let date: Date
     let transactionCount: Int

@@ -53,10 +53,10 @@ enum DominantColorExtractor {
     // MARK: - Extraction (off-MainActor)
 
     /// Downsample side — 576 pixels is plenty for a dominant-bucket vote.
-    private static let sampleSide = 24
+    private nonisolated static let sampleSide = 24
     /// Minimum pixels the winning bucket must hold (~2% of the sample) so a
     /// stray antialiased edge can't dictate the glow colour.
-    private static let minBucketCount = 12
+    private nonisolated static let minBucketCount = 12
 
     nonisolated static func dominantColor(in image: CGImage) -> UIColor? {
         let side = sampleSide

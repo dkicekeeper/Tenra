@@ -6,6 +6,13 @@
 
 **Status (2026-06-03):** ✅ All findings #1–#19 implemented across Phases 0–3 (atomic commits on `main`). Dead caches #13–#16 deleted; correctness fixes #1–#12 landed with unit tests where the layer is testable; low/systemic #17–#19 done. The cache-key discipline is now enforced as Critical Red Flag #12 in CLAUDE.md.
 
+**Update (2026-07-28, performance audit):** the "caches duplicating store indexes" theme below got two further consolidations — see [PERFORMANCE_AUDIT_2026_07.md](PERFORMANCE_AUDIT_2026_07.md).
+
+- **Three parallel parsed-date caches → one scheme.** `TransactionStore.parsedDateById` (keyed by `tx.id`, ~19k entries), `InsightsService.PreAggregatedData.txDateMap` (keyed by date string, ~1.8k) and `TransactionCacheManager.parsedDateCache` (date string) all cached the same parse. The store map is now `parsedDateByDateString`, matching the scheme Insights had already arrived at. With `FastDateParser` a parse costs ~0.25 µs, so these caches are now a memory optimisation rather than a speed one.
+  - ⚠️ New invalidation rule: entries are keyed by date, so they are **never evicted on transaction delete** — siblings on the same day still need them. Bounded by distinct dates seen; rebuilt on every cold load.
+- **`TransactionCacheManager`'s formatter had no `en_US_POSIX`**, so on a non-Gregorian device region it parsed stored keys into wrong dates or nil, breaking history grouping. This is the same "forgotten dimension" class as the rest of this document — the dimension being *device region*. Fixed; `FastDateParser` is hard-Gregorian by construction.
+- **FX consistency within a bulk walk** is a dimension this audit did not previously name: `convertSync` reads live rates, so a prewarm landing mid-loop split a total across two rate generations. `RateSnapshot` pins one table per computation — see [domains/currency.md](domains/currency.md).
+
 ---
 
 ## 1. Executive summary

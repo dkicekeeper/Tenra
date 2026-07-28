@@ -75,15 +75,23 @@ struct FormattedAmountText: View {
     /// is preserved by colouring that run separately.
     private var composedText: Text {
         let parts = formattedParts
-        var result = Text(prefix + parts.integer)
+
+        // Built by interpolating styled `Text` runs into one `Text`. `Text.+` does the same
+        // thing but was deprecated in iOS 26; interpolating a `Text` value preserves that
+        // run's own font/weight/foregroundStyle, so the decimal run keeps its reduced
+        // opacity exactly as before. Still ONE Text — that is what makes
+        // `.minimumScaleFactor` scale the whole amount uniformly (see comment above).
+        let integerRun = Text(prefix + parts.integer)
             .font(fontSize).fontWeight(fontWeight).foregroundStyle(color)
+        let decimalRun = Text(AmountDisplayConfiguration.shared.decimalSeparator + parts.decimal)
+            .font(fontSize).fontWeight(fontWeight).foregroundStyle(color.opacity(decimalOpacity))
+        let symbolRun = Text(" " + parts.symbol)
+            .font(fontSize).fontWeight(fontWeight).foregroundStyle(color)
+
         if shouldShowDecimal {
-            result = result + Text(AmountDisplayConfiguration.shared.decimalSeparator + parts.decimal)
-                .font(fontSize).fontWeight(fontWeight).foregroundStyle(color.opacity(decimalOpacity))
+            return Text("\(integerRun)\(decimalRun)\(symbolRun)")
         }
-        result = result + Text(" " + parts.symbol)
-            .font(fontSize).fontWeight(fontWeight).foregroundStyle(color)
-        return result
+        return Text("\(integerRun)\(symbolRun)")
     }
 
     var body: some View {

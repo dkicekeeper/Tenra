@@ -98,8 +98,16 @@ final class TransactionStore {
 
     /// Per-account transaction index, maintained incrementally by `apply()`.
     /// Lets `AccountRankingService.rankAccounts` skip the O(N) pre-grouping pass.
-    /// Includes both `accountId` and `targetAccountId` references (transfers appear under both).
-    @ObservationIgnored private(set) var transactionsByAccount: [String: [Transaction]] = [:]
+    /// Account id → transaction ids; transfers appear under both `accountId` and
+    /// `targetAccountId`. Storage is id-only — read `transactionsByAccount` for values.
+    @ObservationIgnored private(set) var transactionIdsByAccount: [String: [String]] = [:]
+
+    /// Value-resolving view over `transactionIdsByAccount`. Keeps the historical
+    /// `store.transactionsByAccount[id] ?? []` read shape while the storage holds ids
+    /// only — see `TransactionIndex` for the memory rationale.
+    var transactionsByAccount: TransactionIndex {
+        TransactionIndex(ids: transactionIdsByAccount, byId: transactionById)
+    }
 
     /// Bumps on every `apply()` call. Consumers (e.g. AccountsViewModel suggestion cache)
     /// use it as a cache key to detect when invalidation is needed without observing every
@@ -167,23 +175,28 @@ final class TransactionStore {
 
     /// O(1) category-by-id lookup — eliminates `customCategories.first(where:)` linear scans.
     /// Sync rule: every mutation of `categories` MUST keep `categoryById` in sync.
-    @ObservationIgnored internal(set) var categoryById: [String: CustomCategory] = [:]
+    @ObservationIgnored var categoryById: [String: CustomCategory] = [:]
 
     /// Case-folded name → category id. Lets style/icon/color resolvers find a custom
     /// category by name in O(1) without scanning the array with lowercased() per call.
-    @ObservationIgnored internal(set) var categoryIdByName: [String: String] = [:]
+    @ObservationIgnored var categoryIdByName: [String: String] = [:]
 
     /// Per-category-name transaction index — mirrors `transactionsByAccount`.
     /// Lets CategoryDetailView skip the O(N_tx) filter when fetching its history,
     /// and lets aggregate rebuilds run as O(M) where M is the category's own size.
     /// Includes both expense and income transactions; consumers filter by type if needed.
-    @ObservationIgnored internal(set) var transactionsByCategoryName: [String: [Transaction]] = [:]
+    @ObservationIgnored var transactionIdsByCategoryName: [String: [String]] = [:]
+
+    /// Value-resolving view over `transactionIdsByCategoryName`.
+    var transactionsByCategoryName: TransactionIndex {
+        TransactionIndex(ids: transactionIdsByCategoryName, byId: transactionById)
+    }
 
     /// Pre-aggregated category spending, keyed by `CategoryAggregate.makeId(...)`.
     /// 4 granularities per category: daily (last ~90 days) / monthly / yearly / all-time.
     /// Base currency only — conversion happens at apply-time, never at read-time.
     /// See CLAUDE.md ⚠️ #6 — DO NOT use `Transaction.convertedAmount` as a base-currency proxy.
-    @ObservationIgnored internal(set) var categoryAggregatesByKey: [String: CategoryAggregate] = [:]
+    @ObservationIgnored var categoryAggregatesByKey: [String: CategoryAggregate] = [:]
 
     /// True when at least one tx was added to aggregates while the FX-rate cache was cold.
     /// Cleared after `reconcileCategoryAggregatesForFX()` runs on the next `bumpCurrencyRatesVersion()`.
@@ -192,52 +205,64 @@ final class TransactionStore {
     /// Bumps on every `categories` mutation (add/update/delete/rename/reorder). Used by Views
     /// as a cheap scalar Observable cache key — subscribing to this instead of the entire
     /// `categories` array prevents body re-eval on unrelated transaction mutations.
-    internal(set) var categoriesMutationVersion: Int = 0
+    var categoriesMutationVersion: Int = 0
 
     // MARK: - Subcategory Indexes (O(1) lookups)
 
     /// O(1) subcategory-by-id lookup.
-    @ObservationIgnored internal(set) var subcategoryById: [String: Subcategory] = [:]
+    @ObservationIgnored var subcategoryById: [String: Subcategory] = [:]
 
     /// Ordered subcategory ids per category, sorted by `CategorySubcategoryLink.sortOrder`.
-    @ObservationIgnored internal(set) var subcategoryIdsByCategoryId: [String: [String]] = [:]
+    @ObservationIgnored var subcategoryIdsByCategoryId: [String: [String]] = [:]
 
     /// Subcategory ids linked to a given transaction.
-    @ObservationIgnored internal(set) var subcategoryIdsByTransactionId: [String: [String]] = [:]
+    @ObservationIgnored var subcategoryIdsByTransactionId: [String: [String]] = [:]
 
     /// O(1) usage count per subcategory — pre-maintained on every tx-subcategory link mutation.
-    @ObservationIgnored internal(set) var subcategoryUsageCountById: [String: Int] = [:]
+    @ObservationIgnored var subcategoryUsageCountById: [String: Int] = [:]
 
     /// O(1) last-used date per subcategory — pre-maintained on tx mutations.
     /// `Date.distantPast` if no linked transactions are known yet.
-    @ObservationIgnored internal(set) var subcategoryLastUsedById: [String: Date] = [:]
+    @ObservationIgnored var subcategoryLastUsedById: [String: Date] = [:]
 
     /// Bumps on every subcategory or link mutation. Use as a `.task(id:)` trigger.
-    internal(set) var subcategoriesMutationVersion: Int = 0
+    var subcategoriesMutationVersion: Int = 0
 
     // MARK: - Series / Date / Account Aggregate Indexes (O(1) lookups)
     // Same pattern as the category indexes above. See docs/domains/transactions.md
     // for the full read/write contract.
 
-    /// Pre-built id → parsed Date map. Filling once in `loadData()` and maintaining
-    /// incrementally on every tx mutation removes the per-call
-    /// `DateFormatter.date(from:)` cost (~16 µs × 19k = ~300 ms per filter pass)
-    /// from `TransactionFilterService.filterByTimeRange`, deposit reconcile walks,
-    /// budget services, etc.
-    @ObservationIgnored internal(set) var parsedDateById: [String: Date] = [:]
+    /// Pre-built **date-string** → parsed Date map.
+    ///
+    /// Keyed by `tx.date`, NOT `tx.id`: 19k transactions span only ~1.8k distinct dates,
+    /// so an id-keyed map did ~10× the parses and held ~10× the entries (~1.7 MB vs
+    /// ~0.2 MB) for identical information. `InsightsService.PreAggregatedData.txDateMap`
+    /// already used this scheme; the store now matches it.
+    ///
+    /// ⚠️ Entries are **never removed on transaction delete** — several transactions share
+    /// a date, so evicting on one tx's removal would corrupt lookups for its siblings. The
+    /// map is bounded by the number of distinct dates the process has seen (a few thousand
+    /// after years of use) and is rebuilt from scratch on every cold load, so unbounded
+    /// growth is not a concern.
+    @ObservationIgnored var parsedDateByDateString: [String: Date] = [:]
 
     /// Per-recurring-series transaction index. Mirrors `transactionsByAccount`/
     /// `transactionsByCategoryName`. Used by SubscriptionEditView, SubscriptionDetailView,
     /// and any "show me linked payments" UI path. Replaces the
     /// `transactions.filter { $0.recurringSeriesId == X }` full scan.
-    @ObservationIgnored internal(set) var transactionsBySeriesId: [String: [Transaction]] = [:]
+    @ObservationIgnored var transactionIdsBySeriesId: [String: [String]] = [:]
+
+    /// Value-resolving view over `transactionIdsBySeriesId`.
+    var transactionsBySeriesId: TransactionIndex {
+        TransactionIndex(ids: transactionIdsBySeriesId, byId: transactionById)
+    }
 
     /// Pre-aggregated income/expense/count per account. Mirrors
     /// `categoryAggregatesByKey` for the account domain — patched on every tx mutation
     /// in `accountAggregatesApplyDelta`. Drives AccountDetailView reads in O(1).
     /// All amounts are in the OWNING account's currency, not base currency — accounts
     /// can have heterogeneous currencies and each detail view shows its own currency.
-    @ObservationIgnored internal(set) var accountAggregatesByAccountId: [String: AccountAggregates] = [:]
+    @ObservationIgnored var accountAggregatesByAccountId: [String: AccountAggregates] = [:]
 
     // MARK: - Dependencies
 
@@ -336,7 +361,9 @@ final class TransactionStore {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            Task {
+            // Explicit @MainActor: the enclosing closure is nonisolated (NotificationCenter
+            // hands it back on the posting thread), so `self.accounts` needs the hop.
+            Task { @MainActor in
                 guard let self else { return }
                 // Skip if data hasn't been loaded yet — loadData() will extend horizons itself
                 guard !self.accounts.isEmpty else { return }
@@ -454,7 +481,7 @@ final class TransactionStore {
         transactionsCount = loadedTxs.count
         transactionIdSet = snapshot.transactionIdSet
         transactionById = snapshot.transactionById
-        transactionsByAccount = snapshot.transactionsByAccount
+        transactionIdsByAccount = snapshot.transactionIdsByAccount
         categories = orderedCategories
         subcategories = loadedSubs
         categorySubcategoryLinks = loadedCatLinks
@@ -469,9 +496,9 @@ final class TransactionStore {
         subcategoryIdsByTransactionId = snapshot.subcategoryIdsByTransactionId
         subcategoryUsageCountById = snapshot.subcategoryUsageCountById
         subcategoryLastUsedById = snapshot.subcategoryLastUsedById
-        parsedDateById = snapshot.parsedDateById
-        transactionsBySeriesId = snapshot.transactionsBySeriesId
-        transactionsByCategoryName = snapshot.transactionsByCategoryName
+        parsedDateByDateString = snapshot.parsedDateByDateString
+        transactionIdsBySeriesId = snapshot.transactionIdsBySeriesId
+        transactionIdsByCategoryName = snapshot.transactionIdsByCategoryName
 
         // Aggregates: warm-start from CoreData if we have a saved snapshot, else
         // use the cold rebuild performed inside the detached snapshot builder.
@@ -1164,34 +1191,50 @@ final class TransactionStore {
 
     // MARK: - Per-Account Index Maintenance
 
+    /// Guarantees `transactionById` mirrors `transactions`.
+    ///
+    /// Grouping indexes store ids and resolve through `transactionById`, so a cold rebuild
+    /// driven off the `transactions` array silently produces empty buckets if that map is
+    /// stale. Production only assigns `transactions` inside `loadData()`, which sets
+    /// `transactionById` on the same line — but the coupling is invisible at the rebuild
+    /// call sites, so they self-heal instead of trusting it.
+    ///
+    /// O(1) when already in sync, which is every production call.
+    internal func ensureTransactionByIdInSync() {
+        guard transactionById.count != transactions.count else { return }
+        var byId: [String: Transaction] = [:]
+        byId.reserveCapacity(transactions.count)
+        for tx in transactions { byId[tx.id] = tx }
+        transactionById = byId
+    }
+
     private func rebuildAccountIndex(from txs: [Transaction]) {
-        var index: [String: [Transaction]] = [:]
+        var index: [String: [String]] = [:]
         index.reserveCapacity(accounts.count)
         for tx in txs {
-            if let id = tx.accountId { index[id, default: []].append(tx) }
-            if let id = tx.targetAccountId { index[id, default: []].append(tx) }
+            if let id = tx.accountId { index[id, default: []].append(tx.id) }
+            if let id = tx.targetAccountId { index[id, default: []].append(tx.id) }
         }
-        transactionsByAccount = index
+        transactionIdsByAccount = index
     }
 
     private func indexAdd(_ tx: Transaction) {
-        if let id = tx.accountId { transactionsByAccount[id, default: []].append(tx) }
-        if let id = tx.targetAccountId { transactionsByAccount[id, default: []].append(tx) }
+        if let id = tx.accountId { transactionIdsByAccount[id, default: []].append(tx.id) }
+        if let id = tx.targetAccountId { transactionIdsByAccount[id, default: []].append(tx.id) }
     }
 
     private func indexRemove(_ tx: Transaction) {
-        // Index-based removal — replaces O(N) `removeAll` with O(N) scan + O(1) remove.
-        // For per-account buckets (typically 100–500 entries) this halves the work
-        // since we stop scanning at the first match instead of walking the whole array.
+        // Buckets hold ids, so removal is a direct `firstIndex(of:)` on String —
+        // no closure, no Transaction equality walk.
         if let id = tx.accountId,
-           let i = transactionsByAccount[id]?.firstIndex(where: { $0.id == tx.id }) {
-            transactionsByAccount[id]?.remove(at: i)
-            if transactionsByAccount[id]?.isEmpty == true { transactionsByAccount.removeValue(forKey: id) }
+           let i = transactionIdsByAccount[id]?.firstIndex(of: tx.id) {
+            transactionIdsByAccount[id]?.remove(at: i)
+            if transactionIdsByAccount[id]?.isEmpty == true { transactionIdsByAccount.removeValue(forKey: id) }
         }
         if let id = tx.targetAccountId,
-           let i = transactionsByAccount[id]?.firstIndex(where: { $0.id == tx.id }) {
-            transactionsByAccount[id]?.remove(at: i)
-            if transactionsByAccount[id]?.isEmpty == true { transactionsByAccount.removeValue(forKey: id) }
+           let i = transactionIdsByAccount[id]?.firstIndex(of: tx.id) {
+            transactionIdsByAccount[id]?.remove(at: i)
+            if transactionIdsByAccount[id]?.isEmpty == true { transactionIdsByAccount.removeValue(forKey: id) }
         }
     }
 
@@ -1202,15 +1245,11 @@ final class TransactionStore {
             indexAdd(new)
             return
         }
-        // Same buckets — replace in place to keep the latest tx fields (date/amount/category/etc.)
-        if let id = new.accountId,
-           let i = transactionsByAccount[id]?.firstIndex(where: { $0.id == new.id }) {
-            transactionsByAccount[id]?[i] = new
-        }
-        if let id = new.targetAccountId,
-           let i = transactionsByAccount[id]?.firstIndex(where: { $0.id == new.id }) {
-            transactionsByAccount[id]?[i] = new
-        }
+        // Same buckets, same id — nothing to do. The old code had to overwrite the stored
+        // Transaction value here so edits (date/amount/category) were visible through the
+        // index; buckets now hold ids and resolve through `transactionById`, which
+        // `updateState` has already refreshed, so the new field values are picked up for
+        // free. Forgetting a field here is no longer possible.
     }
 }
 

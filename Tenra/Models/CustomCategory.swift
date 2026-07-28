@@ -89,7 +89,7 @@ struct CustomCategory: Identifiable, Codable, Equatable, Hashable {
         try container.encode(budgetResetDay, forKey: .budgetResetDay)
     }
     
-    var color: Color {
+    nonisolated var color: Color {
         var hexSanitized = colorHex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
         

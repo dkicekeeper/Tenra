@@ -10,7 +10,7 @@ public import CoreData
 
 extension AccountAggregateEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<AccountAggregateEntity> {
+    @nonobjc public nonisolated class func fetchRequest() -> NSFetchRequest<AccountAggregateEntity> {
         return NSFetchRequest<AccountAggregateEntity>(entityName: "AccountAggregateEntity")
     }
 

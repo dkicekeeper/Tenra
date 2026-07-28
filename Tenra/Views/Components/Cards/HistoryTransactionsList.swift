@@ -123,18 +123,31 @@ struct HistoryTransactionsList: View {
         // The ProgressView row at the bottom auto-loads more sections as the user scrolls.
         let displaySections = Array(sections.prefix(visibleSectionLimit))
         let hasMore = displaySections.count < sections.count
+        // Hoisted out of the row body on purpose. Reading `accountsViewModel.accounts`
+        // inside the ForEach subscribes EVERY row to the whole accounts array, so any
+        // balance write marks all visible rows dirty. Resolving through the O(1)
+        // `accountById` index once per body pass keeps rows independent — this is the
+        // "pre-resolve per-row data at the ForEach call site" rule from gotchas.md.
+        let accountById = transactionsViewModel.transactionStore?.accountById ?? [:]
+
         return ScrollViewReader { proxy in
             List {
                 ForEach(displaySections) { section in
+                    // `TransactionSection.transactions` is a COMPUTED property: each access
+                    // re-runs compactMap { entity.toTransaction() } over the section's managed
+                    // objects, with a DateFormatter.string per entity. It used to be read twice
+                    // per section (header + ForEach); with 100 visible sections that was ~1000
+                    // redundant materialisations per body pass, on the scroll path.
+                    let rows = section.transactions
                     let displayLabel = displayLabelCache[section.date] ?? displayDateKey(from: section.date)
                     Section(
                         header: dateHeader(
                             isoDate: section.date,
                             displayLabel: displayLabel,
-                            transactions: section.transactions
+                            transactions: rows
                         )
                     ) {
-                        ForEach(section.transactions) { transaction in
+                        ForEach(rows) { transaction in
                             // Pre-resolve per-transaction data so that changes to OTHER accounts
                             // or OTHER categories do not force a re-render of this row.
                             let styleData = CategoryStyleHelper.cached(
@@ -142,8 +155,8 @@ struct HistoryTransactionsList: View {
                                 type: transaction.type,
                                 customCategories: categoriesViewModel.customCategories
                             )
-                            let sourceAccount = accountsViewModel.accounts.first { $0.id == transaction.accountId }
-                            let targetAccount = accountsViewModel.accounts.first { $0.id == transaction.targetAccountId }
+                            let sourceAccount = transaction.accountId.flatMap { accountById[$0] }
+                            let targetAccount = transaction.targetAccountId.flatMap { accountById[$0] }
                             TransactionCard(
                                 transaction: transaction,
                                 currency: baseCurrency,

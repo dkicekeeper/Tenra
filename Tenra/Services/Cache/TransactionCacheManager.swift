@@ -42,6 +42,15 @@ nonisolated class TransactionCacheManager {
 
     init() {
         dateFormatter.dateFormat = "yyyy-MM-dd"
+        // locale/calendar are NOT optional here. A DateFormatter without an explicit
+        // locale inherits the device region's calendar, so on a device set to Thailand
+        // (Buddhist) or Saudi Arabia (Umm al-Qura) `date(from: "2026-07-28")` yields a
+        // different date — or nil. TransactionGroupingService.parseDate() routes through
+        // this cache, so history date grouping silently broke for those users.
+        // Matches the canonical DateFormatters.dateFormatter contract.
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = .current
     }
 
     /// Get cached parsed date (O(1) lookup)

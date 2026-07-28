@@ -53,7 +53,7 @@ enum GlowMetrics {
     static let blurRadius: CGFloat = 120
     /// Fraction of the circle's own height pushed past the screen edge,
     /// leaving only a soft crown visible.
-    static let offScreenFraction: CGFloat = 0.85
+    nonisolated static let offScreenFraction: CGFloat = 0.85
     /// Hero glow sits under title/amount text — keep it well below full
     /// intensity so text contrast survives in both themes.
     static let heroIntensity: Double = 1

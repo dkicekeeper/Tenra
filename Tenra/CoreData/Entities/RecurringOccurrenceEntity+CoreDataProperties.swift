@@ -10,7 +10,7 @@ import CoreData
 
 extension RecurringOccurrenceEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<RecurringOccurrenceEntity> {
+    @nonobjc public nonisolated class func fetchRequest() -> NSFetchRequest<RecurringOccurrenceEntity> {
         return NSFetchRequest<RecurringOccurrenceEntity>(entityName: "RecurringOccurrenceEntity")
     }
 

@@ -37,7 +37,7 @@ extension TransactionType {
     ///
     /// Future (`isFuture == true`): only expense and loan payment become `.plannedExpense`;
     /// everything else future is `.ignored` (realized figures exclude future-dated tx).
-    func summaryContribution(isFuture: Bool) -> SummaryContribution {
+    nonisolated func summaryContribution(isFuture: Bool) -> SummaryContribution {
         if isFuture {
             return (self == .expense || self == .loanPayment) ? .plannedExpense : .ignored
         }

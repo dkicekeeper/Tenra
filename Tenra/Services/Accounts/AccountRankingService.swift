@@ -90,7 +90,7 @@ class AccountRankingService {
     static func rankAccounts(
         accounts: [Account],
         transactions: [Transaction],
-        transactionsByAccount: [String: [Transaction]]? = nil,
+        transactionsByAccount: TransactionIndex? = nil,
         context: AccountRankingContext? = nil,
         balances: [String: Double] = [:]
     ) -> [Account] {
@@ -102,7 +102,7 @@ class AccountRankingService {
 
         let now = Date()
 
-        let index: [String: [Transaction]]
+        let index: TransactionIndex
         if let prebuilt = transactionsByAccount {
             index = prebuilt
         } else {
@@ -112,7 +112,7 @@ class AccountRankingService {
                 if let id = transaction.accountId { built[id, default: []].append(transaction) }
                 if let id = transaction.targetAccountId { built[id, default: []].append(transaction) }
             }
-            index = built
+            index = TransactionIndex(grouping: built)
         }
 
         let ranked = accounts.map { account -> RankedAccount in
@@ -134,12 +134,12 @@ class AccountRankingService {
         forCategory category: String,
         accounts: [Account],
         transactions: [Transaction],
-        transactionsByAccount: [String: [Transaction]]? = nil,
+        transactionsByAccount: TransactionIndex? = nil,
         /// Pre-built index from `TransactionStore.transactionsByCategoryName`.
         /// When provided, the per-category candidate scan becomes O(M) (M = tx
         /// in this category) instead of O(N_tx). Optional for back-compat with
         /// the prior call sites that pass an array snapshot directly.
-        transactionsByCategoryName: [String: [Transaction]]? = nil,
+        transactionsByCategoryName: TransactionIndex? = nil,
         amount: Double? = nil,
         balances: [String: Double] = [:]
     ) -> Account? {
@@ -242,7 +242,7 @@ class AccountRankingService {
         forSource sourceId: String,
         accounts: [Account],
         transactions: [Transaction] = [],
-        transactionsByAccount: [String: [Transaction]]? = nil
+        transactionsByAccount: TransactionIndex? = nil
     ) -> Account? {
         let candidates = transactionsByAccount?[sourceId]
             ?? transactions.filter { $0.accountId == sourceId || $0.targetAccountId == sourceId }

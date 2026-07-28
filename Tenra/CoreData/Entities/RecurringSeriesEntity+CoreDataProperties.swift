@@ -14,7 +14,7 @@ public typealias RecurringSeriesEntityCoreDataPropertiesSet = NSSet
 
 extension RecurringSeriesEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<RecurringSeriesEntity> {
+    @nonobjc public nonisolated class func fetchRequest() -> NSFetchRequest<RecurringSeriesEntity> {
         return NSFetchRequest<RecurringSeriesEntity>(entityName: "RecurringSeriesEntity")
     }
 

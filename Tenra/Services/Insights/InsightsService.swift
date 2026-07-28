@@ -64,12 +64,6 @@ nonisolated final class InsightsService {
         return f
     }()
 
-    static let yearMonthFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM"
-        return f
-    }()
-
     // MARK: - Init
 
     init(
@@ -223,7 +217,7 @@ nonisolated final class InsightsService {
             firstDate = provided
         } else {
             firstDate = allTransactions
-                .compactMap { (dateMap?[$0.date]) ?? DateFormatters.dateFormatter.date(from: $0.date) }
+                .compactMap { (dateMap?[$0.date]) ?? FastDateParser.date(from: $0.date) }
                 .min()
         }
         let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate)
@@ -553,12 +547,19 @@ nonisolated final class InsightsService {
         firstTransactionDate: Date? = nil,
         txDateMap: [String: Date]? = nil
     ) -> [PeriodDataPoint] {
-        let dateFormatter = Self.yearMonthFormatter
         let calendar = Calendar.current
 
-        // Determine data window
+        // Determine data window.
+        //
+        // The fallback below used to parse `$0.date` ("yyyy-MM-dd") with
+        // `Self.yearMonthFormatter` ("yyyy-MM"), which returns nil for every full date
+        // string — so `compactMap` dropped everything, `.min()` was nil, and this always
+        // collapsed to `?? Date()`. Unreachable in production (the only caller passes a
+        // non-nil `firstTransactionDate`, which short-circuits the chain), but it made the
+        // parameter's default value silently useless. FastDateParser resolves the real
+        // earliest transaction date, which is what this expression always intended.
         let firstDate = firstTransactionDate
-            ?? transactions.compactMap { (txDateMap?[$0.date]) ?? dateFormatter.date(from: $0.date) }.min()
+            ?? transactions.compactMap { (txDateMap?[$0.date]) ?? FastDateParser.date(from: $0.date) }.min()
             ?? Date()
         let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate)
 
@@ -595,7 +596,7 @@ nonisolated final class InsightsService {
             if let map = txDateMap {
                 txDate = map[tx.date]
             } else {
-                txDate = dateFormatter.date(from: tx.date)
+                txDate = FastDateParser.date(from: tx.date)
             }
             // Realized period totals exclude future-dated tx (consistent with the
             // pre-aggregated path and calculateMonthlySummary).
@@ -759,13 +760,12 @@ nonisolated final class InsightsService {
         baseCurrency: String
     ) -> [InMemoryMonthlyTotal] {
         let calendar = Calendar.current
-        let df = DateFormatters.dateFormatter
         struct Key: Hashable { let year: Int; let month: Int }
         var acc: [Key: (income: Double, expenses: Double)] = [:]
 
         for tx in transactions {
             guard tx.type == .income || tx.type == .expense else { continue }
-            guard let txDate = df.date(from: tx.date),
+            guard let txDate = FastDateParser.date(from: tx.date),
                   txDate >= startDate, txDate < endDate else { continue }
             let comps = calendar.dateComponents([.year, .month], from: txDate)
             guard let year = comps.year, let month = comps.month else { continue }
@@ -812,13 +812,12 @@ nonisolated final class InsightsService {
         baseCurrency: String
     ) -> [InMemoryCategoryMonthTotal] {
         let calendar = Calendar.current
-        let df = DateFormatters.dateFormatter
         struct Key: Hashable { let category: String; let year: Int; let month: Int }
         var acc: [Key: Double] = [:]
 
         for tx in transactions {
             guard tx.type == .expense, !tx.category.isEmpty else { continue }
-            guard let txDate = df.date(from: tx.date),
+            guard let txDate = FastDateParser.date(from: tx.date),
                   txDate >= startDate, txDate < endDate else { continue }
             let comps = calendar.dateComponents([.year, .month], from: txDate)
             guard let year = comps.year, let month = comps.month else { continue }
@@ -952,7 +951,6 @@ nonisolated final class InsightsService {
             recurringSeries: [RecurringSeries] = []
         ) -> PreAggregatedData {
             let calendar = Calendar.current
-            let df = DateFormatters.dateFormatter
             var monthly = [MonthKey: MonthTotals]()
             var categoryMonth = [CategoryMonthKey: Double]()
             var firstDate: Date?
@@ -968,7 +966,7 @@ nonisolated final class InsightsService {
                 let txDate: Date
                 if let cached = dateMap[tx.date] {
                     txDate = cached
-                } else if let parsed = df.date(from: tx.date) {
+                } else if let parsed = FastDateParser.date(from: tx.date) {
                     dateMap[tx.date] = parsed
                     txDate = parsed
                 } else {
@@ -1110,20 +1108,13 @@ nonisolated final class InsightsService {
         var income: Double = 0
         var expenses: Double = 0
 
-        // Fallback formatter hoisted out of the loop — DateFormatter allocation per
-        // transaction is the expensive part (~µs each). Reuses DateFormatters.dateFormatter
-        // (same "yyyy-MM-dd" format, nonisolated static let) when the fast-path map is nil.
-        let fallbackDF: DateFormatter? = txDateMap == nil ? DateFormatters.dateFormatter : nil
-
         for tx in transactions {
-            // Use pre-parsed date when available (O(1) lookup vs O(DateFormatter))
-            let txDate: Date?
-            if let map = txDateMap {
-                txDate = map[tx.date]
-            } else {
-                txDate = fallbackDF?.date(from: tx.date)
-            }
-            guard let date = txDate, date <= today else { continue }
+            // Pre-parsed map when the caller supplied one, else parse directly. The old
+            // code hoisted an optional DateFormatter out of the loop to amortise its cost;
+            // FastDateParser is stateless and ~53× cheaper, so the fallback needs no
+            // hoisting and no optional dance.
+            guard let date = txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date),
+                  date <= today else { continue }
             let amount = resolveAmount(tx, baseCurrency: baseCurrency)
             switch tx.type {
             case .income:  income += amount

@@ -27,23 +27,23 @@ extension TransactionStore {
     // MARK: - Per-event Maintenance
 
     /// Apply additive maintenance for one newly-added transaction.
-    /// O(1) on `transactionsByCategoryName` insertion + O(4) bucket patches.
+    /// O(1) on `transactionIdsByCategoryName` insertion + O(4) bucket patches.
     internal func categoryIndexAdd(_ tx: Transaction) {
         guard isAggregatable(tx) else { return }
-        transactionsByCategoryName[tx.category, default: []].append(tx)
+        transactionIdsByCategoryName[tx.category, default: []].append(tx.id)
         applyAggregateDelta(tx: tx, sign: 1)
     }
 
     /// Apply subtractive maintenance for one transaction being removed.
     internal func categoryIndexRemove(_ tx: Transaction) {
         guard isAggregatable(tx) else { return }
-        if var bucket = transactionsByCategoryName[tx.category],
-           let i = bucket.firstIndex(where: { $0.id == tx.id }) {
+        if var bucket = transactionIdsByCategoryName[tx.category],
+           let i = bucket.firstIndex(of: tx.id) {
             bucket.remove(at: i)
             if bucket.isEmpty {
-                transactionsByCategoryName.removeValue(forKey: tx.category)
+                transactionIdsByCategoryName.removeValue(forKey: tx.category)
             } else {
-                transactionsByCategoryName[tx.category] = bucket
+                transactionIdsByCategoryName[tx.category] = bucket
             }
         }
         applyAggregateDelta(tx: tx, sign: -1)
@@ -63,12 +63,9 @@ extension TransactionStore {
             || (old.type != new.type)
 
         if oldEligible && newEligible && !bucketAffecting {
-            // Same buckets, same totals — just refresh the stored tx reference.
-            if var bucket = transactionsByCategoryName[new.category],
-               let i = bucket.firstIndex(where: { $0.id == new.id }) {
-                bucket[i] = new
-                transactionsByCategoryName[new.category] = bucket
-            }
+            // Same bucket, same id, same totals. Buckets hold ids and resolve through
+            // `transactionById` (already refreshed by updateState), so the edited field
+            // values are visible without rewriting anything here.
             return
         }
 
@@ -87,16 +84,17 @@ extension TransactionStore {
     /// persist; they coalesce to a single CoreData write thanks to the 500ms
     /// debounce — so the total cost is one save regardless of N_tx.
     internal func rebuildCategoryIndexes() {
-        transactionsByCategoryName.removeAll(keepingCapacity: true)
+        ensureTransactionByIdInSync()
+        transactionIdsByCategoryName.removeAll(keepingCapacity: true)
         categoryAggregatesByKey.removeAll(keepingCapacity: true)
         aggregatesAreFXStale = false
 
         // Pre-size for typical workloads (≤30 categories, ≤19k tx).
-        transactionsByCategoryName.reserveCapacity(64)
+        transactionIdsByCategoryName.reserveCapacity(64)
         categoryAggregatesByKey.reserveCapacity(categories.count * 8)
 
         for tx in transactions where isAggregatable(tx) {
-            transactionsByCategoryName[tx.category, default: []].append(tx)
+            transactionIdsByCategoryName[tx.category, default: []].append(tx.id)
             applyAggregateDelta(tx: tx, sign: 1)
         }
 
@@ -107,27 +105,28 @@ extension TransactionStore {
 
     /// Seed `categoryAggregatesByKey` from a pre-loaded CoreData snapshot
     /// (warm-start path). Skips the O(N_tx) rebuild walk.
-    /// Also rebuilds `transactionsByCategoryName` because that index isn't
+    /// Also rebuilds `transactionIdsByCategoryName` because that index isn't
     /// persisted in CoreData — but it's O(N_tx) without the FX conversion or
     /// per-bucket arithmetic, so it stays cheap.
     ///
-    /// Use this when `transactionsByCategoryName` is NOT already populated.
+    /// Use this when `transactionIdsByCategoryName` is NOT already populated.
     /// `loadData()` builds that map off-MainActor (see TransactionStore+LoadSnapshot.swift)
     /// and calls `seedCategoryAggregateBuckets(from:)` to skip the inner sweep.
     internal func seedCategoryAggregates(from snapshot: [CategoryAggregate]) {
+        ensureTransactionByIdInSync()
         seedCategoryAggregateBuckets(from: snapshot)
 
         // Rebuild the in-memory transactions-by-category bucket index without
         // touching aggregate totals (those came from CoreData).
-        transactionsByCategoryName.removeAll(keepingCapacity: true)
-        transactionsByCategoryName.reserveCapacity(64)
+        transactionIdsByCategoryName.removeAll(keepingCapacity: true)
+        transactionIdsByCategoryName.reserveCapacity(64)
         for tx in transactions where isAggregatable(tx) {
-            transactionsByCategoryName[tx.category, default: []].append(tx)
+            transactionIdsByCategoryName[tx.category, default: []].append(tx.id)
         }
     }
 
     /// Seed only the `categoryAggregatesByKey` map — does NOT rebuild
-    /// `transactionsByCategoryName`. Use when that bucket map is already
+    /// `transactionIdsByCategoryName`. Use when that bucket map is already
     /// populated (e.g. by `buildLoadSnapshot` during `loadData()`).
     internal func seedCategoryAggregateBuckets(from snapshot: [CategoryAggregate]) {
         var byKey: [String: CategoryAggregate] = [:]
@@ -183,8 +182,8 @@ extension TransactionStore {
         guard oldName != newName else { return }
 
         // Move transactions-by-name bucket.
-        if let bucket = transactionsByCategoryName.removeValue(forKey: oldName) {
-            transactionsByCategoryName[newName] = bucket
+        if let bucket = transactionIdsByCategoryName.removeValue(forKey: oldName) {
+            transactionIdsByCategoryName[newName] = bucket
         }
 
         // Re-key categoryIdByName.
@@ -221,7 +220,7 @@ extension TransactionStore {
 
     /// Drop every aggregate row belonging to a deleted category. Transactions
     /// keep the category name as a string (see CategoriesManagementView delete flow),
-    /// so we do NOT clear `transactionsByCategoryName` — it stays correct.
+    /// so we do NOT clear `transactionIdsByCategoryName` — it stays correct.
     internal func dropAggregates(forCategoryName name: String) {
         let prefix = "\(name)_"
         let keys = categoryAggregatesByKey.keys.filter { $0.hasPrefix(prefix) }

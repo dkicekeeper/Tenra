@@ -12,7 +12,7 @@ public import CoreData
 
 extension CategoryAggregateEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CategoryAggregateEntity> {
+    @nonobjc public nonisolated class func fetchRequest() -> NSFetchRequest<CategoryAggregateEntity> {
         return NSFetchRequest<CategoryAggregateEntity>(entityName: "CategoryAggregateEntity")
     }
 

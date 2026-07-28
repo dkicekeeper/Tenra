@@ -63,7 +63,7 @@ extension InsightsService {
         // LedgerPolicyRule.isRealized. Without this, a future-dated expense in the
         // current bucket inflated the top-spending breakdown vs. its own % total.
         let isRealizedTx: (Transaction) -> Bool = { tx in
-            let d = txDateMap?[tx.date] ?? DateFormatters.dateFormatter.date(from: tx.date)
+            let d = txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date)
             return LedgerPolicyRule.isRealized(d)
         }
 
@@ -116,7 +116,7 @@ extension InsightsService {
             // Bucket realized expenses by period key in a single pass.
             var expensesByKey: [String: [Transaction]] = [:]
             for tx in expenses {
-                guard let d = (txDateMap?[tx.date] ?? DateFormatters.dateFormatter.date(from: tx.date)),
+                guard let d = (txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date)),
                       LedgerPolicyRule.isRealized(d) else { continue }
                 expensesByKey[gran.groupingKey(for: d), default: []].append(tx)
             }
@@ -323,7 +323,7 @@ extension InsightsService {
 
             Self.logger.debug("🔄 [Insights] MoP spending (granularity) — this=\(String(format: "%.0f", thisTotal), privacy: .public), prev=\(String(format: "%.0f", prevTotal), privacy: .public)")
 
-            if let prevPoint, prevTotal > 0 {
+            if prevPoint != nil, prevTotal > 0 {
                 let changePercent = ((thisTotal - prevTotal) / prevTotal) * 100
                 let direction: TrendDirection = changePercent > 2 ? .up : (changePercent < -2 ? .down : .flat)
                 let severity: InsightSeverity = changePercent > 20 ? .warning : (changePercent < -10 ? .positive : .neutral)
@@ -383,9 +383,8 @@ extension InsightsService {
                         else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevMonthTotal += amount }
                     }
                 } else {
-                    let dateFormatter = DateFormatters.dateFormatter
                     for tx in allTransactions where tx.type == .expense {
-                        guard let txDate = dateFormatter.date(from: tx.date) else { continue }
+                        guard let txDate = FastDateParser.date(from: tx.date) else { continue }
                         let amount = resolveAmount(tx, baseCurrency: baseCurrency)
                         if txDate >= thisMonthStart && txDate < thisMonthEnd { thisMonthTotal += amount }
                         else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevMonthTotal += amount }
@@ -586,14 +585,13 @@ extension InsightsService {
         let now = Date()
         guard let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: now),
               let ninetyDaysAgo = calendar.date(byAdding: .day, value: -90, to: now) else { return nil }
-        let df = DateFormatters.dateFormatter
 
         // One pass: 90-day baseline (all realized expenses) + 30-day non-recurring candidate.
         var baselineTotal = 0.0
         var baselineCount = 0
         var candidate: (tx: Transaction, amountBase: Double, date: Date)?
         for tx in transactions where tx.type == .expense {
-            guard let d = txDateMap?[tx.date] ?? df.date(from: tx.date),
+            guard let d = txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date),
                   d >= ninetyDaysAgo, d <= now else { continue }
             let amountBase = resolveAmount(tx, baseCurrency: baseCurrency)
             baselineTotal += amountBase

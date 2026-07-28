@@ -154,12 +154,11 @@ extension InsightsService {
         let activeIds = Set(activeExpenseSeries.map(\.id))
 
         // Single pass: collect realized occurrences per active series.
-        let df = DateFormatters.dateFormatter
         let now = Date()
         var occurrences: [String: [(date: Date, amount: Double, currency: String)]] = [:]
         for tx in transactions where tx.type == .expense {
             guard let seriesId = tx.recurringSeriesId, activeIds.contains(seriesId) else { continue }
-            guard let d = txDateMap?[tx.date] ?? df.date(from: tx.date), d <= now else { continue }
+            guard let d = txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date), d <= now else { continue }
             occurrences[seriesId, default: []].append((d, tx.amount, tx.currency))
         }
         guard !occurrences.isEmpty else { return [] }

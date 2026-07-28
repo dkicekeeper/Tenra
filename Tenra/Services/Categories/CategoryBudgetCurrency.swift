@@ -47,4 +47,26 @@ enum CategoryBudgetCurrency {
         // are at least proportional; reconciliation will replace them once rates land.
         return ConversionResult(amount: amount, usedStaleFallback: true)
     }
+
+    /// Bulk-loop variant: identical semantics to `toBase(amount:from:base:)` but reads a
+    /// frozen `RateSnapshot` instead of the live store.
+    ///
+    /// Use this inside any walk over the transaction set. It removes two NSLock
+    /// acquisitions per conversion and — more importantly — guarantees every transaction
+    /// in the walk is converted against the same rate table, so a prewarm landing
+    /// mid-loop cannot produce a total that mixes two different rate generations.
+    nonisolated static func toBase(
+        amount: Double,
+        from: String,
+        base: String,
+        rates: RateSnapshot
+    ) -> ConversionResult {
+        if from == base {
+            return ConversionResult(amount: amount, usedStaleFallback: false)
+        }
+        if let converted = rates.convert(amount, from: from, to: base) {
+            return ConversionResult(amount: converted, usedStaleFallback: false)
+        }
+        return ConversionResult(amount: amount, usedStaleFallback: true)
+    }
 }

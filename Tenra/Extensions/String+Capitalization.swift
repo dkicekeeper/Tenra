@@ -14,7 +14,7 @@ extension String {
     /// "май 2026"). Date labels used as **headings** should read "Май 2026".
     /// Unlike `.capitalized`, this does not touch subsequent words, so multi-word
     /// labels ("3 января 2026") keep their natural casing.
-    var capitalizedFirstLetter: String {
+    nonisolated var capitalizedFirstLetter: String {
         guard let first = self.first else { return self }
         return first.uppercased() + self.dropFirst()
     }

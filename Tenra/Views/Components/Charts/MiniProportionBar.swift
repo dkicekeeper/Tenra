@@ -27,15 +27,19 @@ struct MiniProportionBar: View {
         GeometryReader { geo in
             let total = segments.reduce(0.0) { $0 + $1.amount }
             if total > 0 {
+                // Every intermediate is explicitly typed. As one fused expression this
+                // mixed CGFloat, Double and literals across max/*/-//, and the constraint
+                // solver spent 3.56s type-checking this body on every build (measured with
+                // -warn-long-function-bodies). Annotating the steps makes it instant.
+                let gapTotal: CGFloat = segmentGap * CGFloat(segments.count - 1)
+                let available: CGFloat = geo.size.width - gapTotal
+                let minWidth: CGFloat = barHeight / 2 // a sliver stays visible as a nub
                 HStack(spacing: segmentGap) {
                     ForEach(segments) { segment in
+                        let share: CGFloat = CGFloat(segment.amount / total)
                         Rectangle()
                             .fill(segment.color)
-                            .frame(width: max(
-                                barHeight / 2, // a sliver stays visible as a nub
-                                (geo.size.width - segmentGap * CGFloat(segments.count - 1))
-                                    * CGFloat(segment.amount / total)
-                            ))
+                            .frame(width: max(minWidth, available * share))
                     }
                 }
                 .frame(height: barHeight)

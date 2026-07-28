@@ -14,7 +14,7 @@ public typealias CategorySubcategoryLinkEntityCoreDataPropertiesSet = NSSet
 
 extension CategorySubcategoryLinkEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CategorySubcategoryLinkEntity> {
+    @nonobjc public nonisolated class func fetchRequest() -> NSFetchRequest<CategorySubcategoryLinkEntity> {
         return NSFetchRequest<CategorySubcategoryLinkEntity>(entityName: "CategorySubcategoryLinkEntity")
     }
 

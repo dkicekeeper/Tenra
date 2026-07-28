@@ -14,7 +14,7 @@ public typealias AccountEntityCoreDataPropertiesSet = NSSet
 
 extension AccountEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<AccountEntity> {
+    @nonobjc public nonisolated class func fetchRequest() -> NSFetchRequest<AccountEntity> {
         return NSFetchRequest<AccountEntity>(entityName: "AccountEntity")
     }
 

@@ -14,7 +14,7 @@ public typealias CategoryRuleEntityCoreDataPropertiesSet = NSSet
 
 extension CategoryRuleEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CategoryRuleEntity> {
+    @nonobjc public nonisolated class func fetchRequest() -> NSFetchRequest<CategoryRuleEntity> {
         return NSFetchRequest<CategoryRuleEntity>(entityName: "CategoryRuleEntity")
     }
 

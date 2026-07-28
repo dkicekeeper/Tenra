@@ -102,7 +102,44 @@ struct HistoryView: View {
             }
     }
 
+    // The observers below used to be one 9-deep `.onChange` chain on `historyContent`.
+    // Each modifier wraps the previous one in another generic layer, so the solver had to
+    // type-check a 9-level nested type in a single expression — 484 ms for this getter on
+    // every build (measured with -warn-long-function-bodies). Split by concern: each
+    // computed var type-checks independently and hands the next one an opaque `some View`.
+    // Same modifier order, same semantics — see gotchas.md "Large view body".
+
     private var historyEventContent: some View {
+        historyContentWithCacheObservers
+            .onChange(of: paginationController.sections.count) { oldCount, newCount in
+                historyLogger.debug("🔄 [History] sections.count: \(oldCount)→\(newCount) (totalCount:\(self.paginationController.totalCount))")
+            }
+            .onDisappear {
+                resetFilters()
+            }
+    }
+
+    /// Observers that only invalidate the per-section expense cache.
+    private var historyContentWithCacheObservers: some View {
+        historyContentWithFilterObservers
+            // Scalar mutation counter, not the 19k-element transactions array.
+            .onChange(of: transactionsViewModel.transactionStore?.mutationVersion ?? 0) { _, _ in
+                expensesCache.invalidate()
+            }
+            .onChange(of: transactionsViewModel.appSettings.baseCurrency) { _, _ in
+                expensesCache.invalidate()
+            }
+            // Section totals sum multi-currency tx via convertSync. A late/manual FX-rate
+            // refresh bumps currencyRatesVersion but not mutationVersion, so without this
+            // a section computed under cold rates stayed stale until a tx mutation
+            // (cache audit #10).
+            .onChange(of: transactionsViewModel.transactionStore?.currencyRatesVersion ?? 0) { _, _ in
+                expensesCache.invalidate()
+            }
+    }
+
+    /// Observers that re-apply filters to the pagination controller.
+    private var historyContentWithFilterObservers: some View {
         historyContent
             .onChange(of: timeFilterManager.currentFilter) { _, _ in
                 HapticManager.selection()
@@ -127,26 +164,6 @@ struct HistoryView: View {
             .onChange(of: transactionsViewModel.selectedCategories) { _, _ in
                 filterCoordinator.applyCategoryFilterChange()
                 applyFiltersToController()
-            }
-            // Scalar mutation counter, not the 19k-element transactions array.
-            .onChange(of: transactionsViewModel.transactionStore?.mutationVersion ?? 0) { _, _ in
-                expensesCache.invalidate()
-            }
-            .onChange(of: transactionsViewModel.appSettings.baseCurrency) { _, _ in
-                expensesCache.invalidate()
-            }
-            // Section totals sum multi-currency tx via convertSync. A late/manual FX-rate
-            // refresh bumps currencyRatesVersion but not mutationVersion, so without this
-            // a section computed under cold rates stayed stale until a tx mutation
-            // (cache audit #10).
-            .onChange(of: transactionsViewModel.transactionStore?.currencyRatesVersion ?? 0) { _, _ in
-                expensesCache.invalidate()
-            }
-            .onChange(of: paginationController.sections.count) { oldCount, newCount in
-                historyLogger.debug("🔄 [History] sections.count: \(oldCount)→\(newCount) (totalCount:\(self.paginationController.totalCount))")
-            }
-            .onDisappear {
-                resetFilters()
             }
     }
 

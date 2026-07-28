@@ -11,7 +11,7 @@ import SwiftUI
 
 /// One row of the formula breakdown — e.g. "Income: 530 000 ₸".
 /// `kind` controls the value formatting (currency / months / percentage / count).
-struct InsightFormulaRow: Identifiable, Hashable, Sendable {
+nonisolated struct InsightFormulaRow: Identifiable, Hashable, Sendable {
     enum Kind: Hashable, Sendable {
         case currency        // formatted via Formatting.formatCurrencySmart
         case months          // "1.8 months" — value is months count
@@ -43,7 +43,7 @@ struct InsightFormulaRow: Identifiable, Hashable, Sendable {
 /// Display model for a formula-breakdown detail card — value-type, Sendable.
 /// Carries everything needed to render: header, hero value, formula rows, and
 /// localized recommendation copy.
-struct InsightFormulaModel: Hashable, Sendable {
+nonisolated struct InsightFormulaModel: Hashable, Sendable {
     let id: String                  // stable id, e.g. "savingsRate"
     let titleKey: String            // "insights.formula.<insight>.title"
     let icon: String                // SF Symbol name

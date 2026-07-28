@@ -179,11 +179,10 @@ extension InsightsService {
         if let preAgg = preAggregated {
             lastDates = preAgg.lastAccountDates
         } else {
-            let dateFormatter = DateFormatters.dateFormatter
             var computed: [String: Date] = [:]
             for tx in allTransactions {
                 guard let accountId = tx.accountId, !accountId.isEmpty,
-                      let txDate = dateFormatter.date(from: tx.date) else { continue }
+                      let txDate = FastDateParser.date(from: tx.date) else { continue }
                 if let existing = computed[accountId] {
                     if txDate > existing { computed[accountId] = txDate }
                 } else {

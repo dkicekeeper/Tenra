@@ -9,7 +9,7 @@ import Foundation
 import QuartzCore
 import os
 
-private let perfLogger = Logger(subsystem: "Tenra", category: "Performance")
+private nonisolated let perfLogger = Logger(subsystem: "Tenra", category: "Performance")
 
 /// Простой профилировщик производительности для debug режима.
 ///

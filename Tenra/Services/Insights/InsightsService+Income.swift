@@ -45,7 +45,7 @@ extension InsightsService {
 
             Self.logger.debug("💵 [Insights] Income growth (granularity) — this=\(String(format: "%.0f", thisTotal), privacy: .public), prev=\(String(format: "%.0f", prevTotal), privacy: .public)")
 
-            if let prevPoint, prevTotal > 0 {
+            if prevPoint != nil, prevTotal > 0 {
                 let changePercent = ((thisTotal - prevTotal) / prevTotal) * 100
                 let direction: TrendDirection = changePercent > 2 ? .up : (changePercent < -2 ? .down : .flat)
                 let severity: InsightSeverity = changePercent > 10 ? .positive : (changePercent < -10 ? .warning : .neutral)
@@ -96,9 +96,8 @@ extension InsightsService {
                         else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevTotal += amount }
                     }
                 } else {
-                    let dateFormatter = DateFormatters.dateFormatter
                     for tx in allTransactions where tx.type == .income {
-                        guard let txDate = dateFormatter.date(from: tx.date) else { continue }
+                        guard let txDate = FastDateParser.date(from: tx.date) else { continue }
                         let amount = resolveAmount(tx, baseCurrency: baseCurrency)
                         if txDate >= thisMonthStart && txDate < thisMonthEnd { thisTotal += amount }
                         else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevTotal += amount }

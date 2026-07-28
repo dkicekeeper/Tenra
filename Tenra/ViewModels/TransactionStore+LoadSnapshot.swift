@@ -32,10 +32,10 @@ extension TransactionStore {
         // Transaction-level
         let transactionIdSet: Set<String>
         let transactionById: [String: Transaction]
-        let transactionsByAccount: [String: [Transaction]]
-        let transactionsByCategoryName: [String: [Transaction]]
-        let parsedDateById: [String: Date]
-        let transactionsBySeriesId: [String: [Transaction]]
+        let transactionIdsByAccount: [String: [String]]
+        let transactionIdsByCategoryName: [String: [String]]
+        let parsedDateByDateString: [String: Date]
+        let transactionIdsBySeriesId: [String: [String]]
         // Category-level
         let categoryById: [String: CustomCategory]
         let categoryIdByName: [String: String]
@@ -61,7 +61,7 @@ extension TransactionStore {
     /// • `rebuildSeriesAndDateIndexes()`
     /// • `rebuildCategoryLookups()`
     /// • `rebuildAllSubcategoryIndexes()`
-    /// • the `transactionsByCategoryName` half of `seedCategoryAggregates(from:)`
+    /// • the `transactionIdsByCategoryName` half of `seedCategoryAggregates(from:)`
     /// • `rebuildCategoryIndexes()` and `rebuildAccountAggregates()` (when the
     ///   corresponding CoreData warm-start snapshot is empty)
     ///
@@ -97,41 +97,46 @@ extension TransactionStore {
         var byId: [String: Transaction] = [:]
         byId.reserveCapacity(txCount)
 
-        var byAccount: [String: [Transaction]] = [:]
+        // Buckets hold transaction IDs; `transactionById` resolves them on read.
+        // Storing values here duplicated the whole 19k set three more times (~15 MB).
+        var byAccount: [String: [String]] = [:]
         byAccount.reserveCapacity(32)
 
-        var byCategoryName: [String: [Transaction]] = [:]
+        var byCategoryName: [String: [String]] = [:]
         byCategoryName.reserveCapacity(64)
 
+        // Keyed by date STRING, not tx.id — a 19k set spans only ~1.8k distinct dates.
         var parsedDates: [String: Date] = [:]
-        parsedDates.reserveCapacity(txCount)
+        parsedDates.reserveCapacity(2048)
 
-        var bySeries: [String: [Transaction]] = [:]
+        var bySeries: [String: [String]] = [:]
         bySeries.reserveCapacity(32)
-
-        let dateFormatter = DateFormatters.dateFormatter
 
         for tx in transactions {
             idSet.insert(tx.id)
             byId[tx.id] = tx
 
             if let aid = tx.accountId {
-                byAccount[aid, default: []].append(tx)
+                byAccount[aid, default: []].append(tx.id)
             }
             if let tid = tx.targetAccountId {
-                byAccount[tid, default: []].append(tx)
+                byAccount[tid, default: []].append(tx.id)
             }
 
             if isAggregatableForLoad(tx) {
-                byCategoryName[tx.category, default: []].append(tx)
+                byCategoryName[tx.category, default: []].append(tx.id)
             }
 
-            if let parsed = dateFormatter.date(from: tx.date) {
-                parsedDates[tx.id] = parsed
+            // FastDateParser, not DateFormatter: this is the single hottest parse in the
+            // app — 19k calls on the critical path to `isFullyInitialized`. Measured
+            // ~254 ms via DateFormatter vs ~4.8 ms here. Equivalence pinned by
+            // FastDateParserTests.
+            if parsedDates[tx.date] == nil, let parsed = FastDateParser.date(from: tx.date) {
+                parsedDates[tx.date] = parsed
             }
 
             if let sid = tx.recurringSeriesId, !sid.isEmpty {
-                bySeries[sid, default: []].append(tx)
+                bySeries[sid, default: []].append(tx.id)
             }
         }
 
@@ -179,7 +184,7 @@ extension TransactionStore {
         subcategoryLastUsedById.reserveCapacity(subcategories.count)
         for tx in transactions {
             guard let ids = subcategoryIdsByTransactionId[tx.id], !ids.isEmpty else { continue }
-            let txDate = parsedDates[tx.id] ?? Date()
+            let txDate = parsedDates[tx.date] ?? Date()
             for id in ids {
                 subcategoryUsageCountById[id, default: 0] += 1
                 let prev = subcategoryLastUsedById[id] ?? .distantPast
@@ -196,15 +201,13 @@ extension TransactionStore {
         var coldStartCategoryAggregates: [String: CategoryAggregate]?
         var coldStartCategoryAggregatesAreFXStale = false
         if needsColdStartCategoryAggregates {
-            var (cat, fxStale) = computeCategoryAggregates(
+            let (cat, fxStale) = computeCategoryAggregates(
                 transactions: transactions,
                 parsedDates: parsedDates,
                 baseCurrency: baseCurrency
             )
             coldStartCategoryAggregates = cat
             coldStartCategoryAggregatesAreFXStale = fxStale
-            _ = cat
-            _ = fxStale
         }
 
         var coldStartAccountAggregates: [String: AccountAggregates]?
@@ -222,10 +225,10 @@ extension TransactionStore {
         return LoadedIndexSnapshot(
             transactionIdSet: idSet,
             transactionById: byId,
-            transactionsByAccount: byAccount,
-            transactionsByCategoryName: byCategoryName,
-            parsedDateById: parsedDates,
-            transactionsBySeriesId: bySeries,
+            transactionIdsByAccount: byAccount,
+            transactionIdsByCategoryName: byCategoryName,
+            parsedDateByDateString: parsedDates,
+            transactionIdsBySeriesId: bySeries,
             categoryById: categoryById,
             categoryIdByName: categoryIdByName,
             subcategoryById: subcategoryById,
@@ -258,16 +261,19 @@ extension TransactionStore {
         var aggregates: [String: CategoryAggregate] = [:]
         aggregates.reserveCapacity(512)
         var fxStale = false
+        // One frozen rate table for the whole cold rebuild — see RateSnapshot.
+        let rates = RateSnapshot()
 
         for tx in transactions where isAggregatableForLoad(tx) {
-            guard let date = parsedDates[tx.id] else { continue }
+            guard let date = parsedDates[tx.date] else { continue }
             // Realized actuals only — exclude future-dated tx.
             guard LedgerPolicyRule.isRealized(date) else { continue }
 
             let conversion = CategoryBudgetCurrency.toBase(
                 amount: tx.amount,
                 from: tx.currency,
-                base: baseCurrency
+                base: baseCurrency,
+                rates: rates
             )
             if conversion.usedStaleFallback { fxStale = true }
             let amount = conversion.amount
@@ -331,8 +337,8 @@ extension TransactionStore {
 
     /// Pure mirror of `rebuildAccountAggregates()` + `applyAccountAggregateDelta(...)`.
     /// Amounts stay in the OWNING account's currency (not base) — see ⚠️ #6 in CLAUDE.md.
-    /// Cross-currency legs use `CurrencyConverter.convertSync` which is documented as
-    /// safe from any actor.
+    /// Cross-currency legs read a frozen `RateSnapshot` so the whole rebuild sees one
+    /// rate generation (a prewarm landing mid-walk must not split the totals).
     private nonisolated static func computeAccountAggregates(
         transactions: [Transaction],
         parsedDates: [String: Date],
@@ -341,49 +347,51 @@ extension TransactionStore {
         var aggregates: [String: AccountAggregates] = [:]
         aggregates.reserveCapacity(accountsCurrencyById.count)
         var fxStale = false
+        // One frozen rate table for the whole cold rebuild — see RateSnapshot.
+        let rates = RateSnapshot()
 
         for tx in transactions {
             // Realized actuals only — same gate as the production path.
-            let date = parsedDates[tx.id]
+            let date = parsedDates[tx.date]
             guard LedgerPolicyRule.isRealized(date) else { continue }
 
             // Source leg
             if let id = tx.accountId,
                let currency = accountsCurrencyById[id] {
-                let amt = coldConvertSource(tx: tx, to: currency, fxStale: &fxStale)
+                let amt = coldConvertSource(tx: tx, to: currency, rates: rates, fxStale: &fxStale)
                 patchColdAccountBucket(into: &aggregates, accountId: id, tx: tx, signedAmount: amt, isSource: true)
             }
             // Target leg
             if let id = tx.targetAccountId, id != tx.accountId,
                let currency = accountsCurrencyById[id] {
-                let amt = coldConvertTarget(tx: tx, to: currency, fxStale: &fxStale)
+                let amt = coldConvertTarget(tx: tx, to: currency, rates: rates, fxStale: &fxStale)
                 patchColdAccountBucket(into: &aggregates, accountId: id, tx: tx, signedAmount: amt, isSource: false)
             }
         }
         return (aggregates, fxStale)
     }
 
-    private nonisolated static func coldConvertSource(tx: Transaction, to: String, fxStale: inout Bool) -> Double {
+    private nonisolated static func coldConvertSource(tx: Transaction, to: String, rates: RateSnapshot, fxStale: inout Bool) -> Double {
         if tx.currency == to { return tx.amount }
-        if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: to) {
+        if let fx = rates.convert(tx.amount, from: tx.currency, to: to) {
             return fx
         }
         fxStale = true
         return tx.convertedAmount ?? tx.amount
     }
 
-    private nonisolated static func coldConvertTarget(tx: Transaction, to: String, fxStale: inout Bool) -> Double {
+    private nonisolated static func coldConvertTarget(tx: Transaction, to: String, rates: RateSnapshot, fxStale: inout Bool) -> Double {
         if tx.type == .internalTransfer,
            let targetAmount = tx.targetAmount,
            let targetCurrency = tx.targetCurrency {
             if targetCurrency == to { return targetAmount }
-            if let fx = CurrencyConverter.convertSync(amount: targetAmount, from: targetCurrency, to: to) {
+            if let fx = rates.convert(targetAmount, from: targetCurrency, to: to) {
                 return fx
             }
             fxStale = true
             return targetAmount
         }
-        return coldConvertSource(tx: tx, to: to, fxStale: &fxStale)
+        return coldConvertSource(tx: tx, to: to, rates: rates, fxStale: &fxStale)
     }
 
     private nonisolated static func patchColdAccountBucket(

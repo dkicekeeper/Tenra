@@ -1636,7 +1636,7 @@
 "intent.snippet.category" = "카테고리";
 "intent.snippet.account" = "계좌";
 "intent.snippet.noCategory" = "카테고리 없음";
-"intent.snippet.guessed" = "(추정)";
+"intent.snippet.guessed" = "추정";
 "intent.addExpense.title" = "지출 추가";
 "intent.addExpense.description" = "금액, 카테고리, 계좌를 지정해 지출을 기록합니다.";
 "intent.addExpense.parameter.amount" = "금액";

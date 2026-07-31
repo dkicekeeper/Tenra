@@ -1636,7 +1636,7 @@
 "intent.snippet.category" = "Catégorie";
 "intent.snippet.account" = "Compte";
 "intent.snippet.noCategory" = "Sans catégorie";
-"intent.snippet.guessed" = "(déduit)";
+"intent.snippet.guessed" = "déduit";
 "intent.addExpense.title" = "Ajouter une dépense";
 "intent.addExpense.description" = "Enregistrer une dépense avec un montant, une catégorie et un compte précis.";
 "intent.addExpense.parameter.amount" = "Montant";

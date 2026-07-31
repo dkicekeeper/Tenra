@@ -1636,7 +1636,7 @@
 "intent.snippet.category" = "Kategori";
 "intent.snippet.account" = "Hesap";
 "intent.snippet.noCategory" = "Kategorisiz";
-"intent.snippet.guessed" = "(tahmin)";
+"intent.snippet.guessed" = "tahmin";
 "intent.addExpense.title" = "Gider ekle";
 "intent.addExpense.description" = "Belirli tutar, kategori ve hesapla bir gider kaydedin.";
 "intent.addExpense.parameter.amount" = "Tutar";

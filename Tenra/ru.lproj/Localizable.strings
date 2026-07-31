@@ -1636,7 +1636,7 @@
 "intent.snippet.category" = "Категория";
 "intent.snippet.account" = "Счёт";
 "intent.snippet.noCategory" = "Без категории";
-"intent.snippet.guessed" = "(подставлено)";
+"intent.snippet.guessed" = "подставлено";
 "intent.addExpense.title" = "Добавить трату";
 "intent.addExpense.description" = "Записать трату с конкретной суммой, категорией и счётом.";
 "intent.addExpense.parameter.amount" = "Сумма";

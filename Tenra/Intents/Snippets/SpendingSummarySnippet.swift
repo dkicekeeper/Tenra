@@ -38,6 +38,10 @@ struct SpendingSummarySnippet: View {
             .font(.footnote)
             .foregroundStyle(.secondary)
         }
+        // The snippet container hands the view the full card width. Without
+        // this the VStack hugs its content and gets centred, which reads as a
+        // ragged margin on the left.
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AppSpacing.lg)
     }
 }

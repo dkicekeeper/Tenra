@@ -1636,7 +1636,7 @@
 "intent.snippet.category" = "Kategorie";
 "intent.snippet.account" = "Konto";
 "intent.snippet.noCategory" = "Keine Kategorie";
-"intent.snippet.guessed" = "(ergänzt)";
+"intent.snippet.guessed" = "ergänzt";
 "intent.addExpense.title" = "Ausgabe hinzufügen";
 "intent.addExpense.description" = "Eine Ausgabe mit Betrag, Kategorie und Konto erfassen.";
 "intent.addExpense.parameter.amount" = "Betrag";

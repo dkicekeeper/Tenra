@@ -1636,7 +1636,7 @@
 "intent.snippet.category" = "Категорія";
 "intent.snippet.account" = "Рахунок";
 "intent.snippet.noCategory" = "Без категорії";
-"intent.snippet.guessed" = "(підставлено)";
+"intent.snippet.guessed" = "підставлено";
 "intent.addExpense.title" = "Додати витрату";
 "intent.addExpense.description" = "Записати витрату з конкретною сумою, категорією та рахунком.";
 "intent.addExpense.parameter.amount" = "Сума";

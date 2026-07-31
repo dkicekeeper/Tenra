@@ -1636,7 +1636,7 @@
 "intent.snippet.category" = "Categoría";
 "intent.snippet.account" = "Cuenta";
 "intent.snippet.noCategory" = "Sin categoría";
-"intent.snippet.guessed" = "(supuesto)";
+"intent.snippet.guessed" = "supuesto";
 "intent.addExpense.title" = "Añadir un gasto";
 "intent.addExpense.description" = "Registrar un gasto con importe, categoría y cuenta concretos.";
 "intent.addExpense.parameter.amount" = "Importe";

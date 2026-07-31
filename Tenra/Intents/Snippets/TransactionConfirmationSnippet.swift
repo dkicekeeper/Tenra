@@ -49,15 +49,32 @@ struct TransactionConfirmationSnippet: View {
                 guessed: accountWasGuessed
             )
         }
+        // The snippet container hands the view the full card width; without
+        // this the VStack hugs its content and gets centred.
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AppSpacing.lg)
     }
 
     private func row(label: String, value: String, guessed: Bool) -> some View {
-        HStack {
+        HStack(alignment: .firstTextBaseline) {
             Text(label)
                 .foregroundStyle(.secondary)
-            Spacer()
-            Text(guessed ? "\(value) \(String(localized: "intent.snippet.guessed"))" : value)
+
+            Spacer(minLength: AppSpacing.md)
+
+            // The "guessed" marker is its own line rather than part of the
+            // value: appended inline it wrapped mid-phrase, so a two-word
+            // category read as two ragged lines.
+            VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
+                Text(value)
+                    .multilineTextAlignment(.trailing)
+
+                if guessed {
+                    Text(String(localized: "intent.snippet.guessed"))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
         .font(.subheadline)
     }

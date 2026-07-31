@@ -1636,7 +1636,7 @@
 "intent.snippet.category" = "カテゴリ";
 "intent.snippet.account" = "口座";
 "intent.snippet.noCategory" = "カテゴリなし";
-"intent.snippet.guessed" = "（推定）";
+"intent.snippet.guessed" = "推定";
 "intent.addExpense.title" = "支出を追加";
 "intent.addExpense.description" = "金額、カテゴリ、口座を指定して支出を記録します。";
 "intent.addExpense.parameter.amount" = "金額";

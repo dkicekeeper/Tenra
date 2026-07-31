@@ -11,7 +11,7 @@
 - **Platform:** iOS only, iPhone-only (iPad planned in 1.1, not shipped yet)
 - **Price Model:** Freemium + Subscription (Tenra Pro) + Lifetime IAP
 - **Launch Date:** ~April 2026 (v1.0 READY_FOR_SALE)
-- **Current Version:** 1.0.2 (READY_FOR_SALE since 2026-07-14)
+- **Current Version:** 1.0.2 (READY_FOR_SALE since 2026-07-14); 1.1 in PREPARE_FOR_SUBMISSION (Siri / App Intents, created 2026-07-31)
 - **Monetization live since:** ~2026-07-09 (1.0.1 build 4 approved after one rejection)
 
 ## Value Proposition
@@ -35,7 +35,7 @@
 - **Subtitle (US):** Money Manager & Subscriptions
 - **Title (RU/KZ):** Tenra: Бюджет, Учёт Расходов
 - **Subtitle (RU/KZ):** Финансы, подписки и контроль
-- **Keywords:** see docs/RELEASE_1.1_PLAN.md (locked 1.0 set; volume-unvalidated guesses)
+- **Keywords:** see docs/RELEASE_1.1_PLAN.md (locked 1.0 set; volume-unvalidated guesses). 1.1 appends `siri` only where it fits free (en-US, ru, ja, ko); the other 9 locales are already at the 100-char cap and no existing keyword was sacrificed for it.
 - **ASC metadata locales:** 13 (de-DE, en-US, es-ES, es-MX, fr-CA, fr-FR, it, ja, ko, pt-BR, ru, tr, uk), all with description+keywords+promo text
 - **In-app locales:** 11 (en, ru, de, es, fr, tr, pt-BR, it, uk, ja, ko)
 - **Rating:** 0 written reviews worldwide, all time (as of 2026-07-17). CRITICAL GAP.

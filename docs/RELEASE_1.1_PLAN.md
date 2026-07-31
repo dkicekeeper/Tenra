@@ -1,5 +1,10 @@
 # Tenra — Release 1.1 Plan
 
+> ⚠️ **Superseded for the version number.** 1.1 now ships App Intents / Siri
+> (see docs/superpowers/plans/2026-07-31-app-intents.md). The iPad workstream
+> below moves to **1.2**. Workstreams B and C remain valid as written.
+
+
 > Status: planning. Start after 1.0 is approved on the App Store.
 > Goal: first post-launch update — bring back iPad properly, ship the rating-prompt
 > growth loop, and iterate ASO on real keyword data.

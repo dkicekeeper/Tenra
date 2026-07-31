@@ -16,9 +16,15 @@
 //
 
 import AppIntents
+import OSLog
 import SwiftUI
 
 struct LogTransactionIntent: AppIntent {
+
+    /// Diagnostic trail for the Siri path, which cannot be stepped through in a
+    /// debugger. Capture with: Console.app, filter subsystem "Tenra",
+    /// category "LogTransactionIntent".
+    private static let log = Logger(subsystem: "Tenra", category: "LogTransactionIntent")
 
     static var title: LocalizedStringResource = "intent.log.title"
     static var description = IntentDescription("intent.log.description")
@@ -41,13 +47,28 @@ struct LogTransactionIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
 
+        Self.log.info("perform() entered, phrase=\(phrase, privacy: .public)")
+
         let services = await IntentEnvironment.shared.services()
         let parser = services.makeParser()
 
+        Self.log.info("""
+            context: accounts=\(services.accounts.accounts.count, privacy: .public) \
+            categories=\(services.categories.customCategories.count, privacy: .public)
+            """)
+
         let operations = parser.parseMulti(phrase)
         guard let first = operations.first else {
+            Self.log.error("parseMulti returned no operations")
             return .result(dialog: "intent.log.notUnderstood")
         }
+
+        Self.log.info("""
+            parsed: amount=\(String(describing: first.amount), privacy: .public) \
+            category=\(first.categoryName ?? "nil", privacy: .public) \
+            currency=\(first.currencyCode ?? "nil", privacy: .public) \
+            accountId=\(first.accountId ?? "nil", privacy: .public)
+            """)
 
         let result = TransactionDraftService.makeDraft(
             from: first,
@@ -59,14 +80,27 @@ struct LogTransactionIntent: AppIntent {
         )
 
         switch result {
-        case .failure:
+        case .failure(let issue):
+            Self.log.error("""
+                makeDraft BLOCKED: \(String(describing: issue), privacy: .public) \
+                | eligibleAccounts=\(services.accounts.accounts.filter { !$0.isLoan && !$0.isDeposit }.count, privacy: .public) \
+                | firstAccountCurrency=\(services.accounts.accounts.first?.currency ?? "nil", privacy: .public) \
+                | expenseCategories=\(services.categories.customCategories.filter { $0.type == .expense }.map(\.name).joined(separator: ","), privacy: .public) \
+                | otherKey=\(String(localized: "category.other"), privacy: .public)
+                """)
             // Amount missing, no eligible account, no Other category, or a cold
             // FX cache. Hand it to the UI with the fields prefilled. No network
             // call is attempted here on purpose.
             IntentHandoff.shared.request(first)
-            try await continueInForeground(
-                IntentDialog(stringLiteral: String(localized: "intent.log.openingApp"))
-            )
+            do {
+                try await continueInForeground(
+                    IntentDialog(stringLiteral: String(localized: "intent.log.openingApp"))
+                )
+                Self.log.info("continueInForeground returned normally")
+            } catch {
+                Self.log.error("continueInForeground threw: \(String(describing: error), privacy: .public)")
+                throw error
+            }
             return .result(dialog: "intent.log.openingApp")
 
         case .success(let draft):

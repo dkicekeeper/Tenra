@@ -184,6 +184,9 @@ class TransactionsViewModel {
                 // Success moment: the user is actively tracking finances. Let the rating
                 // service decide whether this crosses into prompt eligibility.
                 RatingPromptService.shared.recordTransactionAdded()
+                // Local-only counter, for comparing manual entry against Siri
+                // and Shortcuts. Never leaves the device.
+                IntentUsageCounters.shared.record(.manualAdd)
             } catch {
                 errorMessage = error.localizedDescription
             }

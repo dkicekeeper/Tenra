@@ -1635,3 +1635,14 @@
 "intent.snippet.category" = "Category";
 "intent.snippet.account" = "Account";
 "intent.snippet.guessed" = "(guessed)";
+"intent.addExpense.title" = "Add an expense";
+"intent.addExpense.description" = "Record an expense with a specific amount, category and account.";
+"intent.addExpense.parameter.amount" = "Amount";
+"intent.addExpense.parameter.category" = "Category";
+"intent.addExpense.parameter.account" = "Account";
+"intent.addExpense.parameter.note" = "Note";
+"intent.addExpense.confirm" = "Add this expense?";
+"intent.addExpense.openingApp" = "Opening Tenra so you can finish this one.";
+"intent.addExpense.saved" = "Added %1$@, %2$@.";
+"intent.entity.account" = "Account";
+"intent.entity.category" = "Category";

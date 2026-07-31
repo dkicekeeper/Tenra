@@ -1646,3 +1646,10 @@
 "intent.addExpense.saved" = "Added %1$@, %2$@.";
 "intent.entity.account" = "Account";
 "intent.entity.category" = "Category";
+"intent.checkSpending.title" = "Check spending";
+"intent.checkSpending.description" = "Ask Tenra how much you have spent.";
+"intent.checkSpending.period" = "Period";
+"intent.checkSpending.period.today" = "Today";
+"intent.checkSpending.period.week" = "This week";
+"intent.checkSpending.period.month" = "This month";
+"intent.checkSpending.answer" = "You have spent %@.";

@@ -416,7 +416,7 @@ struct VoiceInputConfirmationView: View {
     private func saveTransaction() {
         // Валидируем перед сохранением
         validateAmount()
-        
+
         // Парсим сумму, убирая валютные символы и пробелы
         let cleanedAmountText = amountText
             .replacingOccurrences(of: ",", with: ".")
@@ -426,113 +426,99 @@ struct VoiceInputConfirmationView: View {
             .replacingOccurrences(of: "€", with: "")
             .replacingOccurrences(of: "₽", with: "")
             .trimmingCharacters(in: .whitespaces)
-        
-        // Проверяем, что все поля заполнены
-        guard let amount = Double(cleanedAmountText), amount > 0 else {
-            amountWarning = String(localized: "voiceConfirmation.warning.enterValidAmount")
-            return
+
+        // Экран владеет собственным отредактированным состоянием, поэтому
+        // собирает ParsedOperation из него и отдаёт резолверу, а не выводит
+        // поля заново. Один путь записи с App Intents.
+        let operation = ParsedOperation(
+            type: selectedType,
+            amount: Decimal(string: cleanedAmountText),
+            currencyCode: selectedCurrency,
+            date: selectedDate,
+            accountId: selectedAccountId,
+            categoryName: selectedCategoryName,
+            subcategoryNames: [],
+            note: noteText.isEmpty ? originalText : noteText
+        )
+
+        Task { await resolveAndCommit(operation) }
+    }
+
+    private func resolveAndCommit(_ operation: ParsedOperation) async {
+        var result = TransactionDraftService.makeDraft(
+            from: operation,
+            accounts: accountsViewModel.accounts,
+            categories: categoriesViewModel.customCategories,
+            learned: .shared,
+            conversion: .cachedOnly
+        )
+
+        // Пользователь на экране, поэтому промах FX-кэша стоит сетевого
+        // запроса — в отличие от интента, где это блокирующая ситуация.
+        if case .failure(.needsFXConversion(let amount, let from, let to)) = result {
+            let converted = await CurrencyConverter.convert(amount: amount, from: from, to: to)
+            result = TransactionDraftService.makeDraft(
+                from: operation,
+                accounts: accountsViewModel.accounts,
+                categories: categoriesViewModel.customCategories,
+                learned: .shared,
+                conversion: .provided(converted)
+            )
         }
-        
-        guard let accountId = selectedAccountId,
-              let acc = accountsViewModel.accounts.first(where: { $0.id == accountId }),
-              !acc.isLoan, !acc.isDeposit else {
-            accountWarning = String(localized: "voiceConfirmation.warning.selectAccount")
-            if let defaultAccount = accountsViewModel.regularAccounts.first {
-                selectedAccountId = defaultAccount.id
+
+        switch result {
+        case .failure(let issue):
+            applyWarning(for: issue)
+
+        case .success(var draft):
+            // Счёт и категория ведут себя по-разному, и это поведение
+            // сохранено дословно: подстановка счёта чинит выбор и ждёт
+            // повторного нажатия, подстановка категории сохраняет сразу.
+            if draft.warnings.contains(.accountInferred) {
+                selectedAccountId = draft.accountId
                 accountWarning = String(localized: "voiceConfirmation.warning.accountNotSelected")
-            }
-            return
-        }
-        
-        // Проверяем и устанавливаем категорию
-        var categoryName: String
-        if let selectedCategory = selectedCategoryName, 
-           categoriesViewModel.customCategories.contains(where: { $0.name == selectedCategory && $0.type == selectedType }) {
-            categoryName = selectedCategory
-        } else {
-            categoryWarning = String(localized: "voiceConfirmation.warning.selectCategory")
-            // Устанавливаем категорию "Другое", если не выбрана
-            let otherCategoryName = String(localized: "category.other")
-            if let otherCategory = categoriesViewModel.customCategories.first(where: { $0.name == otherCategoryName && $0.type == selectedType }) {
-                selectedCategoryName = otherCategory.name
-                categoryName = otherCategory.name
-                categoryWarning = String(localized: "voiceConfirmation.warning.categoryNotSelected")
-            } else {
-                categoryWarning = String(localized: "voiceConfirmation.warning.categoryNotFound")
                 return
             }
-        }
-        
-        // Получаем валюту счета
-        guard let account = accountsViewModel.accounts.first(where: { $0.id == accountId }) else {
-            return
-        }
-        let accountCurrency = account.currency
-        
-        let dateFormatter = DateFormatters.dateFormatter
-        let dateString = dateFormatter.string(from: selectedDate)
-        
-        // Получаем первую подкатегорию для обратной совместимости (subcategory поле)
-        var subcategoryId: String? = nil
-        if !selectedSubcategoryIds.isEmpty {
-            let firstSubcategory = categoriesViewModel.subcategories.first(where: { selectedSubcategoryIds.contains($0.id) })
-            subcategoryId = firstSubcategory?.name
-        }
-        
-        // Конвертируем валюту, если она отличается от валюты счета
-        Task {
-            var convertedAmount: Double? = nil
-            if selectedCurrency != accountCurrency {
-                convertedAmount = await CurrencyConverter.convert(
-                    amount: amount,
-                    from: selectedCurrency,
-                    to: accountCurrency
-                )
-            }
-            
-            let transaction = Transaction(
-                id: "",
-                date: dateString,
-                description: noteText.isEmpty ? originalText : noteText,
-                amount: amount,
-                currency: selectedCurrency,
-                convertedAmount: convertedAmount,
-                type: selectedType,
-                category: categoryName,
-                subcategory: subcategoryId,
-                accountId: accountId,
-                targetAccountId: nil,
-                recurringSeriesId: nil,
-                recurringOccurrenceId: nil
-            )
-            
-            do {
-                let addedTransaction = try await transactionStore.add(transaction)
 
-                await MainActor.run {
-                    // Link subcategories using the returned transaction's ID
-                    if !addedTransaction.id.isEmpty, !selectedSubcategoryIds.isEmpty {
-                        categoriesViewModel.linkSubcategoriesToTransaction(
-                            transactionId: addedTransaction.id,
-                            subcategoryIds: Array(selectedSubcategoryIds)
-                        )
-                    }
-                    // Feed the learning store with the user's confirmed
-                    // (category → account) choice so the parser can prefer
-                    // it for the next voice input in this category.
-                    VoiceLearningStore.shared.recordSave(
-                        category: addedTransaction.category,
-                        accountId: addedTransaction.accountId
-                    )
-                    HapticManager.success()
-                    dismiss()
-                }
-            } catch {
-                await MainActor.run {
-                    saveErrorMessage = error.localizedDescription
-                    HapticManager.error()
+            for warning in draft.warnings {
+                if case .categorySubstituted = warning {
+                    selectedCategoryName = draft.categoryName
+                    categoryWarning = String(localized: "voiceConfirmation.warning.categoryNotSelected")
                 }
             }
+
+            draft.subcategoryIds = Array(selectedSubcategoryIds)
+
+            do {
+                _ = try await TransactionDraftService.commit(
+                    draft,
+                    store: transactionStore,
+                    categoriesViewModel: categoriesViewModel
+                )
+                HapticManager.success()
+                dismiss()
+            } catch {
+                saveErrorMessage = error.localizedDescription
+                HapticManager.error()
+            }
+        }
+    }
+
+    /// Воспроизводит доработочные предупреждения для блокирующих условий.
+    private func applyWarning(for issue: DraftIssue) {
+        switch issue {
+        case .missingAmount:
+            amountWarning = String(localized: "voiceConfirmation.warning.enterValidAmount")
+
+        case .noEligibleAccount:
+            accountWarning = String(localized: "voiceConfirmation.warning.selectAccount")
+
+        case .noFallbackCategory:
+            categoryWarning = String(localized: "voiceConfirmation.warning.categoryNotFound")
+
+        case .needsFXConversion:
+            // Недостижимо: resolveAndCommit повторяет попытку с .provided выше.
+            amountWarning = String(localized: "voiceConfirmation.warning.enterValidAmount")
         }
     }
 }

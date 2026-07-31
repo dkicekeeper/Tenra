@@ -66,6 +66,10 @@ struct TenraApp: App {
                 // reconcileOnboardingAfterFastPath() runs inside initializeFastPath(), so
                 // `needsOnboarding` is also settled before the conditional below evaluates.
                 let c = AppCoordinator()
+                // Register before the await: an App Intent can run in this same
+                // process, and it must reuse this coordinator rather than build a
+                // second TransactionStore alongside it.
+                IntentEnvironment.shared.register(c)
                 await c.initializeFastPath()
                 coordinator = c
             }

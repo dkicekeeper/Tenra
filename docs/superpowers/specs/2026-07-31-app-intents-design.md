@@ -269,22 +269,89 @@ App Privacy stays "Data Not Collected". Measurement is local only:
 
 ---
 
-## 7. Testing
+## 7. Testing — TDD
 
-| Suite | Covers |
+**Everything under `Services/Intents/` is built test-first.** Not "tests are written for it",
+but strict RED → GREEN → REFACTOR: write one failing test, run it, confirm it fails **for
+the expected reason** (a wrong-reason failure means the test is broken, not the code), then
+write the minimum implementation to pass, then clean up with the test green.
+
+The design is deliberately shaped to make this possible: all decision logic lives in plain
+services with value-typed inputs and outputs, and the intents are thin adapters over them.
+
+### 7.1 Order of work
+
+Each step lands as its own commit, red test first.
+
+**Step 1 — characterization tests before touching shipped code.**
+Before `VoiceInputConfirmationView.saveTransaction` is extracted, pin its *current* behavior
+in tests: which account gets chosen, when `category.other` is substituted, how loan/deposit
+accounts are rejected, how currency conversion is triggered. These tests are written against
+the behavior as it exists today and must pass **before** the refactor begins. They are what
+makes the extraction provably behavior-preserving instead of hopefully behavior-preserving.
+
+**Step 2 — `TransactionDraftService.makeDraft`,** one test per row:
+
+| RED test | Expected |
 |---|---|
-| `TransactionDraftServiceTests` (`@MainActor`) | Full phrase; missing amount; no eligible account; unknown category → `category.other`; loan/deposit accounts excluded; learned-account preference; currency mismatch with cold cache → `needsFXConversion`. |
-| `SpendingQueryServiceTests` (`@MainActor`) | Period boundaries; multi-currency total in base currency (must not sum `convertedAmount`); empty period. |
-| `IntentEnvironmentTests` | In-memory container bootstrap; does not build a second coordinator when a live one is registered. |
-| Localization parity script | `AppShortcuts.strings` + new `Localizable.strings` keys across all 11 locales; verify one non-ASCII locale (ru or ja) for mojibake. |
+| Phrase with amount + known category + named account | `.success`, no warnings |
+| No amount parsed | `.failure(.missingAmount)` |
+| No regular accounts exist | `.failure(.noEligibleAccount)` |
+| Only loan and deposit accounts exist | `.failure(.noEligibleAccount)` |
+| Unknown category | `.success` + `.categorySubstituted`, category is `category.other` of the right type |
+| No account named, learned account exists for the category | `.success` + `.accountInferred`, learned account chosen |
+| No account named, nothing learned | `.success` + `.accountInferred`, first regular account |
+| Phrase currency ≠ account currency, rate cached | `.success`, converted amount set |
+| Phrase currency ≠ account currency, cache cold | `.failure(.needsFXConversion)` |
+| No date in phrase | `.success` + `.dateAssumedToday` |
 
-Suites constructing MainActor-isolated types must be annotated `@MainActor`. Any test
-building a `TransactionStore` must retain it (`AccountsViewModel.transactionStore` is weak).
+**Step 3 — `TransactionDraftService.commit`:** transaction reaches the store; subcategories
+linked; `VoiceLearningStore.recordSave` called; `RatingPromptService.recordTransactionAdded`
+called. Each asserted separately.
 
-**Manual, on the physical device (`Dkicekeeper 17`), not the Simulator:** Siri invocation,
-Shortcuts app, Spotlight, Action Button, cold launch with the app force-quit, and the
-in-foreground case (Home must refresh after an intent-added transaction —
-`mutationVersion` bump, per the entity-detail refresh contract).
+**Step 4 — refactor `VoiceInputConfirmationView` onto the service.** The Step 1
+characterization tests must still be green, unchanged. If a characterization test needs
+editing to pass, that is a behavior change and needs an explicit decision, not a test edit.
+
+**Step 5 — `SpendingQueryService`:** period boundary tests (first and last second of the
+period included/excluded), empty period returns zero rather than nil, and the multi-currency
+case — two transactions in different currencies must total correctly in base currency. That
+last test is written specifically to fail if someone sums `convertedAmount` (red flag #6).
+
+**Step 6 — `IntentEnvironment`:** bootstrap on an in-memory container; returns the
+registered live coordinator instead of constructing a second one.
+
+**Step 7 — intents themselves.** Thin adapters, written last, once every branch they can
+take is already covered by green service tests.
+
+### 7.2 What cannot be TDD'd, and how it is verified instead
+
+Being explicit so these do not silently become untested:
+
+| Not unit-testable | Verification |
+|---|---|
+| `perform()` inside the AppIntents runtime | Kept trivial by design: parse → service → snippet. Verified on device. |
+| Siri phrase matching, Spotlight, Action Button | Physical device only (`Dkicekeeper 17`). The Simulator is unreliable for Siri. |
+| SwiftUI snippet views | Manual check plus their `#Preview` blocks. A green build does not render previews (CLAUDE.md), so previews are opened by hand. |
+| Localization parity | Script gate, run before every build in this workstream. |
+
+### 7.3 Project-specific test constraints
+
+- Suites constructing MainActor-isolated types must be annotated `@MainActor`.
+- Any test building a `TransactionStore` must retain it — `AccountsViewModel.transactionStore`
+  is `weak` and `accounts` empties when the store deallocates.
+- Filter at suite level (`-only-testing:TenraTests/SuiteTypeName`); method-level filtering
+  silently runs zero tests while still printing `TEST SUCCEEDED`.
+- Parse results with `grep -aE "Test case .* (passed|failed)|\*\* TEST (SUCCEEDED|FAILED)"`.
+- A full-suite run can print `TEST FAILED` with zero failing cases (parallel-clone flake);
+  re-run once before investigating.
+
+### 7.4 Manual device checklist
+
+Siri invocation; Shortcuts app; Spotlight; Action Button; cold launch with the app
+force-quit; the in-foreground case (Home must refresh after an intent-added transaction, per
+the `mutationVersion` refresh contract); and balance correctness after a background write
+followed by a full relaunch.
 
 ---
 
@@ -309,7 +376,9 @@ in-foreground case (Home must refresh after an intent-added transaction —
 - `VoiceInputConfirmationView` and the intents share one write path.
 - All 11 locales have phrases and strings; parity script clean.
 - Settings has a "Siri & Shortcuts" section with localized example phrases.
-- Tests above pass; manual device checklist passes.
+- Every service in `Services/Intents/` was built test-first, and the Step 1 characterization
+  tests are green **unedited** after the `VoiceInputConfirmationView` refactor.
+- Manual device checklist passes.
 - CLAUDE.md file-organization tree updated with `Tenra/Intents/` and `Services/Intents/`.
 
 ---

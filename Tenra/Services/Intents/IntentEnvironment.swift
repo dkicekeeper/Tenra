@@ -65,4 +65,16 @@ struct IntentServices {
     var accounts: AccountsViewModel { coordinator.accountsViewModel }
     var categories: CategoriesViewModel { coordinator.categoriesViewModel }
     var settings: SettingsViewModel { coordinator.settingsViewModel }
+    var transactions: TransactionsViewModel { coordinator.transactionsViewModel }
+
+    /// Parser wired exactly as the Voice tab wires it (TabViews.swift:87-91).
+    /// It holds weak references, so the coordinator must outlive it — which it
+    /// does, being retained by IntentEnvironment.
+    func makeParser() -> VoiceInputParser {
+        VoiceInputParser(
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
+            transactionsViewModel: coordinator.transactionsViewModel
+        )
+    }
 }

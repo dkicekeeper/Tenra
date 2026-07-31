@@ -1622,3 +1622,16 @@
 "settings.pro.restore.restored" = "Restored";
 "settings.pro.restore.none" = "No purchases found";
 "settings.pro.restore.failed" = "Couldn't restore";
+
+/* MARK: - App Intents / Siri */
+"intent.log.title" = "Log a transaction";
+"intent.log.description" = "Say an amount and what it was for, and Tenra records it.";
+"intent.log.parameter.phrase" = "Phrase";
+"intent.log.notUnderstood" = "I could not find an amount in that.";
+"intent.log.openingApp" = "Opening Tenra so you can finish this one.";
+"intent.log.confirm" = "Add this transaction?";
+"intent.log.saved" = "Added %1$@, %2$@.";
+"intent.log.savedWithProHint" = "Added %1$@, %2$@. The phrase contained %3$lld more operations. Logging several at once is part of Tenra Pro.";
+"intent.snippet.category" = "Category";
+"intent.snippet.account" = "Account";
+"intent.snippet.guessed" = "(guessed)";

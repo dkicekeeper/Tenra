@@ -163,6 +163,25 @@ struct MainTabView: View {
         .sheet(isPresented: $ratingPrompt.shouldShowSurvey) {
             RatingSurveyView()
         }
+        // An App Intent that could not resolve a draft headlessly hands the
+        // parsed operation over here. Deliberately NOT Pro-gated: logging a
+        // single transaction by voice is free for everyone, the gate stays on
+        // the Voice tab itself.
+        .sheet(item: Binding(
+            get: { IntentHandoff.shared.pendingOperation },
+            set: { IntentHandoff.shared.pendingOperation = $0 }
+        )) { operation in
+            NavigationStack {
+                VoiceInputConfirmationView(
+                    transactionsViewModel: coordinator.transactionsViewModel,
+                    accountsViewModel: coordinator.accountsViewModel,
+                    categoriesViewModel: coordinator.categoriesViewModel,
+                    parsedOperation: operation,
+                    originalText: operation.note
+                )
+            }
+            .environment(coordinator.transactionStore)
+        }
     }
 
     // MARK: - Tap Handling

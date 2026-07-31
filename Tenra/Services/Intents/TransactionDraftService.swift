@@ -33,7 +33,25 @@ enum TransactionDraftService {
         let amount = NSDecimalNumber(decimal: parsedAmount).doubleValue
         guard amount > 0 else { return .failure(.missingAmount) }
 
-        // 2. Account — named, else learned for this category, else first eligible.
+        // 2. Category — resolved through a widening chain, and never a reason to
+        //    refuse the transaction (TransactionStore.validate deliberately
+        //    allows an empty category, meaning "uncategorized").
+        //
+        //    Resolved BEFORE the account, because the account lookup is keyed on
+        //    the category and commit() records that key using the RESOLVED name.
+        //    Looking it up under the parser's raw guess instead would mean the
+        //    learning store never matches for anyone who renamed a category.
+        let resolution = resolveCategory(
+            named: operation.categoryName,
+            type: operation.type,
+            in: categories
+        )
+        let categoryName = resolution.name
+        if !resolution.isExact {
+            warnings.append(.categorySubstituted(original: operation.categoryName))
+        }
+
+        // 3. Account — named, else learned for this category, else first eligible.
         //    Loan and deposit accounts are never eligible for a plain expense/income.
         let eligible = accounts.filter { !$0.isLoan && !$0.isDeposit }
         guard let firstEligible = eligible.first else { return .failure(.noEligibleAccount) }
@@ -46,26 +64,13 @@ enum TransactionDraftService {
             warnings.append(.accountInferred)
             let eligibleIds = Set(eligible.map(\.id))
             if let learnedId = learned.preferredAccountID(
-                forCategory: operation.categoryName,
+                forCategory: categoryName,
                 where: { eligibleIds.contains($0) }
             ), let match = eligible.first(where: { $0.id == learnedId }) {
                 account = match
             } else {
                 account = firstEligible
             }
-        }
-
-        // 3. Category — resolved through a widening chain, and never a reason to
-        //    refuse the transaction (TransactionStore.validate deliberately
-        //    allows an empty category, meaning "uncategorized").
-        let resolution = resolveCategory(
-            named: operation.categoryName,
-            type: operation.type,
-            in: categories
-        )
-        let categoryName = resolution.name
-        if !resolution.isExact {
-            warnings.append(.categorySubstituted(original: operation.categoryName))
         }
 
         // 4. Currency — convert only when it differs from the account currency.

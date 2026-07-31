@@ -173,6 +173,28 @@ struct TransactionDraftResolverTests {
         #expect(draft.warnings.contains(.accountInferred))
     }
 
+    @Test("Learning is keyed on the RESOLVED category, not the parsed one")
+    func learnedAccountUsesResolvedCategory() throws {
+        // commit() records the pair under the resolved category name, so the
+        // lookup must use the same key. Keying it on the parser's raw guess
+        // means the learning store is never hit for any substituted category,
+        // which is every user who renamed their categories.
+        let learned = emptyLearningStore("draft.tests.19")
+        learned.recordSave(category: "Еда вне дома", accountId: "a2")
+        learned.recordSave(category: "Еда вне дома", accountId: "a2")
+
+        let op = ParsedOperation(type: .expense, amount: 3000, categoryName: "Еда")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1"), account("a2")],
+            categories: [category("Еда вне дома")],
+            learned: learned
+        )
+        let draft = try result.get()
+        #expect(draft.categoryName == "Еда вне дома")
+        #expect(draft.accountId == "a2")
+    }
+
     @Test("Falls back to the first eligible account and warns")
     func firstEligibleAccountFallback() throws {
         let op = ParsedOperation(type: .expense, amount: 3000, categoryName: "Food")

@@ -495,6 +495,10 @@ struct VoiceInputConfirmationView: View {
                     store: transactionStore,
                     categoriesViewModel: categoriesViewModel
                 )
+                // Донат после реального успешного ввода: система начинает
+                // предлагать эту команду в момент, когда человек скорее всего
+                // повторит действие.
+                await LogTransactionIntent.donate(phrase: originalText)
                 HapticManager.success()
                 dismiss()
             } catch {

@@ -1654,3 +1654,10 @@
 "intent.checkSpending.period.week" = "Bu hafta";
 "intent.checkSpending.period.month" = "Bu ay";
 "intent.checkSpending.answer" = "%@ harcadınız.";
+
+/* MARK: - Settings: Siri & Shortcuts */
+"settings.siri.header" = "Siri ve kısayollar";
+"settings.siri.footer" = "Bunu Siri'ye söyleyin, Tenra işlemi açılmadan kaydetsin.";
+"settings.siri.example1" = "Hey Siri, Tenra uygulamasına işlem kaydet";
+"settings.siri.example2" = "Hey Siri, Tenra uygulamasında ne kadar harcadım";
+"settings.siri.example3" = "Hey Siri, Tenra uygulamasına gider ekle";

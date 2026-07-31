@@ -112,3 +112,16 @@ struct LogTransactionIntent: AppIntent {
         }
     }
 }
+
+extension LogTransactionIntent {
+
+    /// Tells the system this action just happened for real, so it can offer it
+    /// as a suggestion next time. Failures are ignored on purpose: a donation
+    /// is a hint, never a requirement for a save that already succeeded.
+    @MainActor
+    static func donate(phrase: String) async {
+        let intent = LogTransactionIntent()
+        intent.phrase = phrase
+        _ = try? await intent.donate()
+    }
+}

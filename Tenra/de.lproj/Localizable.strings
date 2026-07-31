@@ -1654,3 +1654,10 @@
 "intent.checkSpending.period.week" = "Diese Woche";
 "intent.checkSpending.period.month" = "Diesen Monat";
 "intent.checkSpending.answer" = "Sie haben %@ ausgegeben.";
+
+/* MARK: - Settings: Siri & Shortcuts */
+"settings.siri.header" = "Siri und Kurzbefehle";
+"settings.siri.footer" = "Sagen Sie das zu Siri, und Tenra erfasst die Buchung, ohne zu öffnen.";
+"settings.siri.example1" = "Hey Siri, Buchung in Tenra erfassen";
+"settings.siri.example2" = "Hey Siri, wie viel habe ich in Tenra ausgegeben";
+"settings.siri.example3" = "Hey Siri, Ausgabe in Tenra hinzufügen";

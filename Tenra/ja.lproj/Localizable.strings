@@ -1654,3 +1654,10 @@
 "intent.checkSpending.period.week" = "今週";
 "intent.checkSpending.period.month" = "今月";
 "intent.checkSpending.answer" = "%@ 使いました。";
+
+/* MARK: - Settings: Siri & Shortcuts */
+"settings.siri.header" = "Siri とショートカット";
+"settings.siri.footer" = "Siri に話しかけるだけで、アプリを開かずに記録できます。";
+"settings.siri.example1" = "ヘイ Siri、Tenra に取引を記録";
+"settings.siri.example2" = "ヘイ Siri、Tenra でいくら使った";
+"settings.siri.example3" = "ヘイ Siri、Tenra に支出を追加";

@@ -1622,3 +1622,35 @@
 "settings.pro.restore.restored" = "Восстановлено";
 "settings.pro.restore.none" = "Покупки не найдены";
 "settings.pro.restore.failed" = "Не удалось восстановить";
+
+/* MARK: - App Intents / Siri */
+"intent.log.title" = "Записать операцию";
+"intent.log.description" = "Назовите сумму и на что потратили, Tenra запишет это.";
+"intent.log.parameter.phrase" = "Фраза";
+"intent.log.parameter.phrase.prompt" = "Сколько и на что вы потратили?";
+"intent.log.notUnderstood" = "Не удалось разобрать сумму.";
+"intent.log.openingApp" = "Открываю Tenra, чтобы вы могли закончить.";
+"intent.log.confirm" = "Добавить эту операцию?";
+"intent.log.saved" = "Добавлено: %1$@, %2$@.";
+"intent.log.savedWithProHint" = "Добавлено: %1$@, %2$@. Во фразе было ещё операций: %3$lld. Разбор нескольких трат сразу доступен в Tenra Pro.";
+"intent.snippet.category" = "Категория";
+"intent.snippet.account" = "Счёт";
+"intent.snippet.guessed" = "(подставлено)";
+"intent.addExpense.title" = "Добавить трату";
+"intent.addExpense.description" = "Записать трату с конкретной суммой, категорией и счётом.";
+"intent.addExpense.parameter.amount" = "Сумма";
+"intent.addExpense.parameter.category" = "Категория";
+"intent.addExpense.parameter.account" = "Счёт";
+"intent.addExpense.parameter.note" = "Заметка";
+"intent.addExpense.confirm" = "Добавить эту трату?";
+"intent.addExpense.openingApp" = "Открываю Tenra, чтобы вы могли закончить.";
+"intent.addExpense.saved" = "Добавлено: %1$@, %2$@.";
+"intent.entity.account" = "Счёт";
+"intent.entity.category" = "Категория";
+"intent.checkSpending.title" = "Проверить траты";
+"intent.checkSpending.description" = "Спросите у Tenra, сколько вы потратили.";
+"intent.checkSpending.period" = "Период";
+"intent.checkSpending.period.today" = "Сегодня";
+"intent.checkSpending.period.week" = "На этой неделе";
+"intent.checkSpending.period.month" = "В этом месяце";
+"intent.checkSpending.answer" = "Вы потратили %@.";

@@ -1622,3 +1622,35 @@
 "settings.pro.restore.restored" = "Geri yüklendi";
 "settings.pro.restore.none" = "Satın alım bulunamadı";
 "settings.pro.restore.failed" = "Geri yüklenemedi";
+
+/* MARK: - App Intents / Siri */
+"intent.log.title" = "İşlem kaydet";
+"intent.log.description" = "Tutarı ve ne için olduğunu söyleyin, Tenra kaydetsin.";
+"intent.log.parameter.phrase" = "İfade";
+"intent.log.parameter.phrase.prompt" = "Ne kadar ve ne için harcadınız?";
+"intent.log.notUnderstood" = "Bunda bir tutar bulamadım.";
+"intent.log.openingApp" = "Tamamlayabilmeniz için Tenra açılıyor.";
+"intent.log.confirm" = "Bu işlem eklensin mi?";
+"intent.log.saved" = "Eklendi: %1$@, %2$@.";
+"intent.log.savedWithProHint" = "Eklendi: %1$@, %2$@. İfadede %3$lld işlem daha vardı. Birden fazla harcamayı aynı anda kaydetmek Tenra Pro kapsamındadır.";
+"intent.snippet.category" = "Kategori";
+"intent.snippet.account" = "Hesap";
+"intent.snippet.guessed" = "(tahmin)";
+"intent.addExpense.title" = "Gider ekle";
+"intent.addExpense.description" = "Belirli tutar, kategori ve hesapla bir gider kaydedin.";
+"intent.addExpense.parameter.amount" = "Tutar";
+"intent.addExpense.parameter.category" = "Kategori";
+"intent.addExpense.parameter.account" = "Hesap";
+"intent.addExpense.parameter.note" = "Not";
+"intent.addExpense.confirm" = "Bu gider eklensin mi?";
+"intent.addExpense.openingApp" = "Tamamlayabilmeniz için Tenra açılıyor.";
+"intent.addExpense.saved" = "Eklendi: %1$@, %2$@.";
+"intent.entity.account" = "Hesap";
+"intent.entity.category" = "Kategori";
+"intent.checkSpending.title" = "Harcamaları kontrol et";
+"intent.checkSpending.description" = "Tenra'ya ne kadar harcadığınızı sorun.";
+"intent.checkSpending.period" = "Dönem";
+"intent.checkSpending.period.today" = "Bugün";
+"intent.checkSpending.period.week" = "Bu hafta";
+"intent.checkSpending.period.month" = "Bu ay";
+"intent.checkSpending.answer" = "%@ harcadınız.";

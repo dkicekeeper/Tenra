@@ -1622,3 +1622,35 @@
 "settings.pro.restore.restored" = "復元しました";
 "settings.pro.restore.none" = "購入が見つかりません";
 "settings.pro.restore.failed" = "復元できませんでした";
+
+/* MARK: - App Intents / Siri */
+"intent.log.title" = "取引を記録";
+"intent.log.description" = "金額と用途を話すだけで、Tenra が記録します。";
+"intent.log.parameter.phrase" = "フレーズ";
+"intent.log.parameter.phrase.prompt" = "いくら、何に使いましたか？";
+"intent.log.notUnderstood" = "金額を聞き取れませんでした。";
+"intent.log.openingApp" = "Tenra を開きます。続きを入力してください。";
+"intent.log.confirm" = "この取引を追加しますか？";
+"intent.log.saved" = "追加しました: %1$@、%2$@。";
+"intent.log.savedWithProHint" = "追加しました: %1$@、%2$@。フレーズには他に %3$lld 件の取引が含まれていました。複数をまとめて記録する機能は Tenra Pro に含まれます。";
+"intent.snippet.category" = "カテゴリ";
+"intent.snippet.account" = "口座";
+"intent.snippet.guessed" = "（推定）";
+"intent.addExpense.title" = "支出を追加";
+"intent.addExpense.description" = "金額、カテゴリ、口座を指定して支出を記録します。";
+"intent.addExpense.parameter.amount" = "金額";
+"intent.addExpense.parameter.category" = "カテゴリ";
+"intent.addExpense.parameter.account" = "口座";
+"intent.addExpense.parameter.note" = "メモ";
+"intent.addExpense.confirm" = "この支出を追加しますか？";
+"intent.addExpense.openingApp" = "Tenra を開きます。続きを入力してください。";
+"intent.addExpense.saved" = "追加しました: %1$@、%2$@。";
+"intent.entity.account" = "口座";
+"intent.entity.category" = "カテゴリ";
+"intent.checkSpending.title" = "支出を確認";
+"intent.checkSpending.description" = "いくら使ったか Tenra に聞きます。";
+"intent.checkSpending.period" = "期間";
+"intent.checkSpending.period.today" = "今日";
+"intent.checkSpending.period.week" = "今週";
+"intent.checkSpending.period.month" = "今月";
+"intent.checkSpending.answer" = "%@ 使いました。";

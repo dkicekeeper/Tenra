@@ -1622,3 +1622,35 @@
 "settings.pro.restore.restored" = "Wiederhergestellt";
 "settings.pro.restore.none" = "Keine Käufe gefunden";
 "settings.pro.restore.failed" = "Fehlgeschlagen";
+
+/* MARK: - App Intents / Siri */
+"intent.log.title" = "Buchung erfassen";
+"intent.log.description" = "Nennen Sie einen Betrag und wofür er war, Tenra erfasst es.";
+"intent.log.parameter.phrase" = "Eingabe";
+"intent.log.parameter.phrase.prompt" = "Wie viel haben Sie wofür ausgegeben?";
+"intent.log.notUnderstood" = "Darin war kein Betrag zu erkennen.";
+"intent.log.openingApp" = "Tenra wird geöffnet, damit Sie das abschließen können.";
+"intent.log.confirm" = "Diese Buchung hinzufügen?";
+"intent.log.saved" = "Hinzugefügt: %1$@, %2$@.";
+"intent.log.savedWithProHint" = "Hinzugefügt: %1$@, %2$@. Die Eingabe enthielt %3$lld weitere Buchungen. Mehrere auf einmal zu erfassen gehört zu Tenra Pro.";
+"intent.snippet.category" = "Kategorie";
+"intent.snippet.account" = "Konto";
+"intent.snippet.guessed" = "(ergänzt)";
+"intent.addExpense.title" = "Ausgabe hinzufügen";
+"intent.addExpense.description" = "Eine Ausgabe mit Betrag, Kategorie und Konto erfassen.";
+"intent.addExpense.parameter.amount" = "Betrag";
+"intent.addExpense.parameter.category" = "Kategorie";
+"intent.addExpense.parameter.account" = "Konto";
+"intent.addExpense.parameter.note" = "Notiz";
+"intent.addExpense.confirm" = "Diese Ausgabe hinzufügen?";
+"intent.addExpense.openingApp" = "Tenra wird geöffnet, damit Sie das abschließen können.";
+"intent.addExpense.saved" = "Hinzugefügt: %1$@, %2$@.";
+"intent.entity.account" = "Konto";
+"intent.entity.category" = "Kategorie";
+"intent.checkSpending.title" = "Ausgaben prüfen";
+"intent.checkSpending.description" = "Fragen Sie Tenra, wie viel Sie ausgegeben haben.";
+"intent.checkSpending.period" = "Zeitraum";
+"intent.checkSpending.period.today" = "Heute";
+"intent.checkSpending.period.week" = "Diese Woche";
+"intent.checkSpending.period.month" = "Diesen Monat";
+"intent.checkSpending.answer" = "Sie haben %@ ausgegeben.";

@@ -1627,6 +1627,7 @@
 "intent.log.title" = "Log a transaction";
 "intent.log.description" = "Say an amount and what it was for, and Tenra records it.";
 "intent.log.parameter.phrase" = "Phrase";
+"intent.log.parameter.phrase.prompt" = "What did you spend, and on what?";
 "intent.log.notUnderstood" = "I could not find an amount in that.";
 "intent.log.openingApp" = "Opening Tenra so you can finish this one.";
 "intent.log.confirm" = "Add this transaction?";

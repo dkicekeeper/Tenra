@@ -1622,3 +1622,35 @@
 "settings.pro.restore.restored" = "복원됨";
 "settings.pro.restore.none" = "구매 내역 없음";
 "settings.pro.restore.failed" = "복원 실패";
+
+/* MARK: - App Intents / Siri */
+"intent.log.title" = "거래 기록";
+"intent.log.description" = "금액과 용도를 말하면 Tenra가 기록합니다.";
+"intent.log.parameter.phrase" = "문구";
+"intent.log.parameter.phrase.prompt" = "얼마를 어디에 쓰셨나요?";
+"intent.log.notUnderstood" = "금액을 찾지 못했습니다.";
+"intent.log.openingApp" = "마무리하실 수 있도록 Tenra를 엽니다.";
+"intent.log.confirm" = "이 거래를 추가할까요?";
+"intent.log.saved" = "추가했습니다: %1$@, %2$@.";
+"intent.log.savedWithProHint" = "추가했습니다: %1$@, %2$@. 문구에 %3$lld건의 거래가 더 있었습니다. 여러 건을 한 번에 기록하는 기능은 Tenra Pro에 포함됩니다.";
+"intent.snippet.category" = "카테고리";
+"intent.snippet.account" = "계좌";
+"intent.snippet.guessed" = "(추정)";
+"intent.addExpense.title" = "지출 추가";
+"intent.addExpense.description" = "금액, 카테고리, 계좌를 지정해 지출을 기록합니다.";
+"intent.addExpense.parameter.amount" = "금액";
+"intent.addExpense.parameter.category" = "카테고리";
+"intent.addExpense.parameter.account" = "계좌";
+"intent.addExpense.parameter.note" = "메모";
+"intent.addExpense.confirm" = "이 지출을 추가할까요?";
+"intent.addExpense.openingApp" = "마무리하실 수 있도록 Tenra를 엽니다.";
+"intent.addExpense.saved" = "추가했습니다: %1$@, %2$@.";
+"intent.entity.account" = "계좌";
+"intent.entity.category" = "카테고리";
+"intent.checkSpending.title" = "지출 확인";
+"intent.checkSpending.description" = "얼마를 썼는지 Tenra에게 물어보세요.";
+"intent.checkSpending.period" = "기간";
+"intent.checkSpending.period.today" = "오늘";
+"intent.checkSpending.period.week" = "이번 주";
+"intent.checkSpending.period.month" = "이번 달";
+"intent.checkSpending.answer" = "%@ 사용하셨습니다.";

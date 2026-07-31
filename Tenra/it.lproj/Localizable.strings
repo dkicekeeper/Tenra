@@ -1622,3 +1622,35 @@
 "settings.pro.restore.restored" = "Ripristinato";
 "settings.pro.restore.none" = "Nessun acquisto trovato";
 "settings.pro.restore.failed" = "Ripristino non riuscito";
+
+/* MARK: - App Intents / Siri */
+"intent.log.title" = "Registra un'operazione";
+"intent.log.description" = "Dì un importo e a cosa si riferisce, Tenra lo registra.";
+"intent.log.parameter.phrase" = "Frase";
+"intent.log.parameter.phrase.prompt" = "Quanto hai speso e per cosa?";
+"intent.log.notUnderstood" = "Non ho trovato un importo.";
+"intent.log.openingApp" = "Apro Tenra così puoi completare l'operazione.";
+"intent.log.confirm" = "Aggiungere questa operazione?";
+"intent.log.saved" = "Aggiunto: %1$@, %2$@.";
+"intent.log.savedWithProHint" = "Aggiunto: %1$@, %2$@. La frase conteneva altre %3$lld operazioni. Registrarne più di una alla volta fa parte di Tenra Pro.";
+"intent.snippet.category" = "Categoria";
+"intent.snippet.account" = "Conto";
+"intent.snippet.guessed" = "(dedotto)";
+"intent.addExpense.title" = "Aggiungi una spesa";
+"intent.addExpense.description" = "Registra una spesa con importo, categoria e conto specifici.";
+"intent.addExpense.parameter.amount" = "Importo";
+"intent.addExpense.parameter.category" = "Categoria";
+"intent.addExpense.parameter.account" = "Conto";
+"intent.addExpense.parameter.note" = "Nota";
+"intent.addExpense.confirm" = "Aggiungere questa spesa?";
+"intent.addExpense.openingApp" = "Apro Tenra così puoi completare l'operazione.";
+"intent.addExpense.saved" = "Aggiunto: %1$@, %2$@.";
+"intent.entity.account" = "Conto";
+"intent.entity.category" = "Categoria";
+"intent.checkSpending.title" = "Controlla le spese";
+"intent.checkSpending.description" = "Chiedi a Tenra quanto hai speso.";
+"intent.checkSpending.period" = "Periodo";
+"intent.checkSpending.period.today" = "Oggi";
+"intent.checkSpending.period.week" = "Questa settimana";
+"intent.checkSpending.period.month" = "Questo mese";
+"intent.checkSpending.answer" = "Hai speso %@.";

@@ -1,0 +1,12 @@
+/*
+  AppShortcuts.strings
+  Spoken Siri phrases. Separate from Localizable.strings by system
+  requirement. Every phrase must keep ${applicationName}.
+*/
+
+"Log a transaction in ${applicationName}" = "Registrar uma transação no ${applicationName}";
+"Log an expense in ${applicationName}" = "Registrar uma despesa no ${applicationName}";
+"Record a transaction in ${applicationName}" = "Anotar uma transação no ${applicationName}";
+"How much did I spend in ${applicationName}" = "Quanto eu gastei no ${applicationName}";
+"Check my spending in ${applicationName}" = "Ver meus gastos no ${applicationName}";
+"Add an expense in ${applicationName}" = "Adicionar uma despesa no ${applicationName}";

@@ -28,7 +28,14 @@ struct LogTransactionIntent: AppIntent {
     /// and cannot express a per-invocation decision.
     static var openAppWhenRun: Bool = false
 
-    @Parameter(title: "intent.log.parameter.phrase")
+    /// Free text, parsed by VoiceInputParser. It cannot be interpolated into an
+    /// App Shortcut phrase (only AppEntity/AppEnum parameters can be), so Siri
+    /// asks for it with requestValueDialog as a second turn. In the Shortcuts
+    /// app it is filled in directly.
+    @Parameter(
+        title: "intent.log.parameter.phrase",
+        requestValueDialog: "intent.log.parameter.phrase.prompt"
+    )
     var phrase: String
 
     @MainActor

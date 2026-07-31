@@ -1622,3 +1622,35 @@
 "settings.pro.restore.restored" = "Restauré";
 "settings.pro.restore.none" = "Aucun achat trouvé";
 "settings.pro.restore.failed" = "Échec de la restauration";
+
+/* MARK: - App Intents / Siri */
+"intent.log.title" = "Enregistrer une opération";
+"intent.log.description" = "Dites un montant et à quoi il correspond, Tenra l'enregistre.";
+"intent.log.parameter.phrase" = "Phrase";
+"intent.log.parameter.phrase.prompt" = "Combien avez-vous dépensé, et pour quoi ?";
+"intent.log.notUnderstood" = "Je n'y ai pas trouvé de montant.";
+"intent.log.openingApp" = "Ouverture de Tenra pour que vous puissiez terminer.";
+"intent.log.confirm" = "Ajouter cette opération ?";
+"intent.log.saved" = "Ajouté : %1$@, %2$@.";
+"intent.log.savedWithProHint" = "Ajouté : %1$@, %2$@. La phrase contenait %3$lld opérations de plus. Enregistrer plusieurs dépenses à la fois fait partie de Tenra Pro.";
+"intent.snippet.category" = "Catégorie";
+"intent.snippet.account" = "Compte";
+"intent.snippet.guessed" = "(déduit)";
+"intent.addExpense.title" = "Ajouter une dépense";
+"intent.addExpense.description" = "Enregistrer une dépense avec un montant, une catégorie et un compte précis.";
+"intent.addExpense.parameter.amount" = "Montant";
+"intent.addExpense.parameter.category" = "Catégorie";
+"intent.addExpense.parameter.account" = "Compte";
+"intent.addExpense.parameter.note" = "Note";
+"intent.addExpense.confirm" = "Ajouter cette dépense ?";
+"intent.addExpense.openingApp" = "Ouverture de Tenra pour que vous puissiez terminer.";
+"intent.addExpense.saved" = "Ajouté : %1$@, %2$@.";
+"intent.entity.account" = "Compte";
+"intent.entity.category" = "Catégorie";
+"intent.checkSpending.title" = "Vérifier les dépenses";
+"intent.checkSpending.description" = "Demandez à Tenra combien vous avez dépensé.";
+"intent.checkSpending.period" = "Période";
+"intent.checkSpending.period.today" = "Aujourd'hui";
+"intent.checkSpending.period.week" = "Cette semaine";
+"intent.checkSpending.period.month" = "Ce mois-ci";
+"intent.checkSpending.answer" = "Vous avez dépensé %@.";

@@ -450,7 +450,8 @@ struct VoiceInputConfirmationView: View {
             accounts: accountsViewModel.accounts,
             categories: categoriesViewModel.customCategories,
             learned: .shared,
-            conversion: .cachedOnly
+            conversion: .cachedOnly,
+            suggestAccount: suggestAccountId
         )
 
         // Пользователь на экране, поэтому промах FX-кэша стоит сетевого
@@ -513,6 +514,17 @@ struct VoiceInputConfirmationView: View {
                 HapticManager.error()
             }
         }
+    }
+
+    /// Та же history-based рекомендация, что использует модалка добавления
+    /// операции в приложении. Здесь store уже загружен, поэтому идём прямым
+    /// путём через AccountsViewModel, без узкой выборки из CoreData.
+    private func suggestAccountId(forCategory category: String) -> String? {
+        guard !category.isEmpty else { return nil }
+        return accountsViewModel.suggestedAccount(
+            forCategory: category,
+            transactions: transactionStore.transactions
+        )?.id
     }
 
     /// Воспроизводит доработочные предупреждения для блокирующих условий.

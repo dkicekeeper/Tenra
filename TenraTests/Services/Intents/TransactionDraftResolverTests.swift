@@ -195,6 +195,90 @@ struct TransactionDraftResolverTests {
         #expect(draft.accountId == "a2")
     }
 
+    @Test("A history-based suggestion beats the first-eligible fallback")
+    func suggestedAccountBeatsFirstEligible() throws {
+        // The suggester is how the caller injects the same ranking the in-app
+        // add-expense modal uses (AccountsViewModel.suggestedAccount).
+        let op = ParsedOperation(type: .expense, amount: 3000, categoryName: "Food")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1"), account("a2")],
+            categories: [category("Food")],
+            learned: emptyLearningStore("draft.tests.20"),
+            suggestAccount: { category in category == "Food" ? "a2" : nil }
+        )
+        let draft = try result.get()
+        #expect(draft.accountId == "a2")
+        #expect(draft.warnings.contains(.accountInferred))
+    }
+
+    @Test("The suggester is called with the RESOLVED category name")
+    func suggesterReceivesResolvedCategory() throws {
+        var seen: String?
+        let op = ParsedOperation(type: .expense, amount: 3000, categoryName: "Еда")
+        _ = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1"), account("a2")],
+            categories: [category("Еда вне дома")],
+            learned: emptyLearningStore("draft.tests.21"),
+            suggestAccount: { category in
+                seen = category
+                return "a2"
+            }
+        )
+        #expect(seen == "Еда вне дома")
+    }
+
+    @Test("An explicit voice confirmation still outranks the history suggestion")
+    func learnedAccountBeatsSuggestion() throws {
+        // The learning store only fills up from choices the user confirmed in
+        // the voice flow, so it is a deliberate correction and outranks
+        // inference from general history.
+        let learned = emptyLearningStore("draft.tests.22")
+        learned.recordSave(category: "Food", accountId: "a3")
+        learned.recordSave(category: "Food", accountId: "a3")
+
+        let op = ParsedOperation(type: .expense, amount: 3000, categoryName: "Food")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1"), account("a2"), account("a3")],
+            categories: [category("Food")],
+            learned: learned,
+            suggestAccount: { _ in "a2" }
+        )
+        let draft = try result.get()
+        #expect(draft.accountId == "a3")
+    }
+
+    @Test("A named account still beats every inference")
+    func namedAccountBeatsSuggestion() throws {
+        let op = ParsedOperation(type: .expense, amount: 3000, accountId: "a1", categoryName: "Food")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1"), account("a2")],
+            categories: [category("Food")],
+            learned: emptyLearningStore("draft.tests.23"),
+            suggestAccount: { _ in "a2" }
+        )
+        let draft = try result.get()
+        #expect(draft.accountId == "a1")
+        #expect(draft.warnings.isEmpty)
+    }
+
+    @Test("A suggestion pointing at an ineligible account is ignored")
+    func suggestionMustBeEligible() throws {
+        let op = ParsedOperation(type: .expense, amount: 3000, categoryName: "Food")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1"), account("d1", deposit: depositInfo())],
+            categories: [category("Food")],
+            learned: emptyLearningStore("draft.tests.24"),
+            suggestAccount: { _ in "d1" }
+        )
+        let draft = try result.get()
+        #expect(draft.accountId == "a1")
+    }
+
     @Test("Falls back to the first eligible account and warns")
     func firstEligibleAccountFallback() throws {
         let op = ParsedOperation(type: .expense, amount: 3000, categoryName: "Food")

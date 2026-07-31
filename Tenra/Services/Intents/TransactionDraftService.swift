@@ -23,7 +23,16 @@ enum TransactionDraftService {
         categories: [CustomCategory],
         learned: VoiceLearningStore,
         conversion: ConversionPolicy = .cachedOnly,
-        note: String = ""
+        note: String = "",
+        /// Injects the same history-based ranking the in-app add-expense modal
+        /// uses (`AccountsViewModel.suggestedAccount(forCategory:transactions:)`,
+        /// backed by `AccountRankingService`). Passed in rather than called
+        /// directly so this function stays pure and so each caller can supply
+        /// the cheapest source of history it has: the loaded store in the app,
+        /// a bounded CoreData fetch in an intent process.
+        ///
+        /// Receives the RESOLVED category name, never the parser's raw guess.
+        suggestAccount: ((String) -> String?)? = nil
     ) -> Result<TransactionDraft, DraftIssue> {
 
         var warnings: [DraftWarning] = []
@@ -63,10 +72,21 @@ enum TransactionDraftService {
         } else {
             warnings.append(.accountInferred)
             let eligibleIds = Set(eligible.map(\.id))
+
+            // Priority order, strongest signal first:
+            //   1. a choice the user explicitly confirmed in the voice flow at
+            //      least twice (VoiceLearningStore's confidence threshold),
+            //   2. the history-based ranking the in-app modal uses,
+            //   3. the first eligible account.
+            // Learning outranks ranking because it is a deliberate correction
+            // for this exact flow, not an inference over general history.
             if let learnedId = learned.preferredAccountID(
                 forCategory: categoryName,
                 where: { eligibleIds.contains($0) }
             ), let match = eligible.first(where: { $0.id == learnedId }) {
+                account = match
+            } else if let suggestedId = suggestAccount?(categoryName),
+                      let match = eligible.first(where: { $0.id == suggestedId }) {
                 account = match
             } else {
                 account = firstEligible

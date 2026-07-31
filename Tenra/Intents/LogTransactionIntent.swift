@@ -16,6 +16,7 @@
 //
 
 import AppIntents
+import CoreData
 import OSLog
 import SwiftUI
 
@@ -76,7 +77,15 @@ struct LogTransactionIntent: AppIntent {
             categories: services.categories.customCategories,
             learned: .shared,
             conversion: .cachedOnly,
-            note: phrase
+            note: phrase,
+            suggestAccount: { category in
+                IntentAccountSuggester.suggestedAccountId(
+                    forCategory: category,
+                    accounts: services.accounts.accounts,
+                    amount: first.amount.map { NSDecimalNumber(decimal: $0).doubleValue },
+                    context: CoreDataStack.shared.persistentContainer.viewContext
+                )
+            }
         )
 
         switch result {

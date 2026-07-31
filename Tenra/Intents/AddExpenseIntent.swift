@@ -11,6 +11,7 @@
 //
 
 import AppIntents
+import CoreData
 import SwiftUI
 
 struct AddExpenseIntent: AppIntent {
@@ -53,7 +54,15 @@ struct AddExpenseIntent: AppIntent {
             categories: services.categories.customCategories,
             learned: .shared,
             conversion: .cachedOnly,
-            note: note ?? ""
+            note: note ?? "",
+            suggestAccount: { category in
+                IntentAccountSuggester.suggestedAccountId(
+                    forCategory: category,
+                    accounts: services.accounts.accounts,
+                    amount: amount,
+                    context: CoreDataStack.shared.persistentContainer.viewContext
+                )
+            }
         )
 
         switch result {

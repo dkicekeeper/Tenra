@@ -106,4 +106,61 @@ enum TransactionDraftService {
             warnings: warnings
         ))
     }
+
+    // MARK: - Commit
+
+    /// Writes the draft through TransactionStore and performs the side effects
+    /// the manual add path performs, so an intent-created transaction is
+    /// indistinguishable from a hand-entered one.
+    @discardableResult
+    static func commit(
+        _ draft: TransactionDraft,
+        store: TransactionStore,
+        categoriesViewModel: CategoriesViewModel,
+        hooks: CommitHooks = .production
+    ) async throws -> Transaction {
+
+        let dateString = DateFormatters.dateFormatter.string(from: draft.date)
+
+        // Legacy `subcategory` field carries the first subcategory NAME, not its
+        // id — matching VoiceInputConfirmationView.swift:476-480.
+        var legacySubcategoryName: String?
+        if !draft.subcategoryIds.isEmpty {
+            legacySubcategoryName = categoriesViewModel.subcategories
+                .first { draft.subcategoryIds.contains($0.id) }?
+                .name
+        }
+
+        let transaction = Transaction(
+            id: "",
+            date: dateString,
+            description: draft.note,
+            amount: draft.amount,
+            currency: draft.currency,
+            convertedAmount: draft.convertedAmount,
+            type: draft.type,
+            category: draft.categoryName,
+            subcategory: legacySubcategoryName,
+            accountId: draft.accountId,
+            targetAccountId: nil,
+            recurringSeriesId: nil,
+            recurringOccurrenceId: nil
+        )
+
+        let saved = try await store.add(transaction)
+
+        if !saved.id.isEmpty, !draft.subcategoryIds.isEmpty {
+            categoriesViewModel.linkSubcategoriesToTransaction(
+                transactionId: saved.id,
+                subcategoryIds: draft.subcategoryIds
+            )
+        }
+
+        hooks.recordLearning(saved.category, saved.accountId)
+        // Records the success moment only. The native prompt is never presented
+        // from here: this path can run in a background, UI-less process.
+        hooks.recordRating()
+
+        return saved
+    }
 }

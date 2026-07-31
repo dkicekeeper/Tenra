@@ -113,9 +113,19 @@ prefilled into the existing confirmation screen (`openAppWhenRun`):
 
 | `DraftIssue` | Condition |
 |---|---|
-| `missingAmount` | Parser found no amount. |
+| `missingAmount` | Parser found no amount, or it is ≤ 0. |
 | `noEligibleAccount` | No regular accounts exist (fresh install / onboarding incomplete) → open onboarding instead. |
+| `noFallbackCategory` | Category unresolved **and** no `category.other` exists for that transaction type. Mirrors the existing `categoryNotFound` early return in `VoiceInputConfirmationView.swift:461-462`. |
 | `needsFXConversion` | Phrase currency ≠ account currency and no cached rate. |
+
+**Conversion policy.** `makeDraft` is synchronous and pure, so it can only consult the FX
+cache. The two callers differ in what they do about a miss, which is expressed as a
+parameter rather than two code paths:
+
+- Intents pass `.cachedOnly` and treat `needsFXConversion` as blocking.
+- `VoiceInputConfirmationView` passes `.cachedOnly`, and on `needsFXConversion` performs the
+  existing `await CurrencyConverter.convert(...)` (network allowed, the user is present) and
+  calls `makeDraft` again with `.provided(converted)`. This preserves today's behavior.
 
 Opening the app is a normal branch, not a failure: it is still faster than manual entry.
 
@@ -200,7 +210,10 @@ func commit(_ draft: TransactionDraft) async throws -> Transaction
 ```
 
 `TransactionDraft` carries `warnings: [DraftWarning]` (`categorySubstituted`,
-`accountInferred`, `dateAssumedToday`) alongside the resolved fields. `DraftIssue` is only
+`accountInferred`) alongside the resolved fields. A "date was assumed" warning was
+considered and dropped: `ParsedOperation.date` defaults to `Date()` and carries no flag
+distinguishing a parsed date from the default, so the warning could not be produced
+honestly. `DraftIssue` is only
 for the blocking conditions in §3.3; anything the resolver could guess becomes a warning
 instead. Both consumers read the same warnings: the intent snippet marks the guessed field,
 and `VoiceInputConfirmationView` renders them through its existing
@@ -298,12 +311,13 @@ makes the extraction provably behavior-preserving instead of hopefully behavior-
 | No amount parsed | `.failure(.missingAmount)` |
 | No regular accounts exist | `.failure(.noEligibleAccount)` |
 | Only loan and deposit accounts exist | `.failure(.noEligibleAccount)` |
-| Unknown category | `.success` + `.categorySubstituted`, category is `category.other` of the right type |
+| Unknown category, `category.other` exists | `.success` + `.categorySubstituted`, category is `category.other` of the right type |
+| Unknown category, no `category.other` for that type | `.failure(.noFallbackCategory)` |
 | No account named, learned account exists for the category | `.success` + `.accountInferred`, learned account chosen |
 | No account named, nothing learned | `.success` + `.accountInferred`, first regular account |
 | Phrase currency ≠ account currency, rate cached | `.success`, converted amount set |
 | Phrase currency ≠ account currency, cache cold | `.failure(.needsFXConversion)` |
-| No date in phrase | `.success` + `.dateAssumedToday` |
+| Amount parsed as zero or negative | `.failure(.missingAmount)` |
 
 **Step 3 — `TransactionDraftService.commit`:** transaction reaches the store; subcategories
 linked; `VoiceLearningStore.recordSave` called; `RatingPromptService.recordTransactionAdded`
@@ -364,7 +378,7 @@ followed by a full relaunch.
 | `AppShortcutsProvider` is cached by the system; phrase edits do not apply immediately. | Reinstall during debugging; documented in the plan. |
 | Intent execution budget. | Fast path is <50 ms and no network call is made; large margin. |
 | Duplicate submissions (user repeats the phrase to Siri). | Verify `TransactionIDGenerator.generateID(for:)` behavior for identical field sets during implementation; the confirmation snippet is the primary guard. Open item, not a designed feature. |
-| Refactoring `VoiceInputConfirmationView` touches a shipped path. | Covered by `TransactionDraftServiceTests`; the view keeps its current behavior by rendering `TransactionDraft.warnings` through its existing warning labels rather than duplicating resolution logic. |
+| Refactoring `VoiceInputConfirmationView` touches a shipped path. | Covered by `TransactionDraftResolverTests` and `TransactionDraftCommitTests`; the view keeps its current behavior by rendering `TransactionDraft.warnings` through its existing warning labels rather than duplicating resolution logic. |
 
 ---
 

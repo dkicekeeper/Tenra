@@ -77,6 +77,7 @@ Tenra is a native iOS finance management application built with SwiftUI and Core
 
 ```
 Tenra/
+├── Intents/             # App Intents / Siri surface (adapters only; logic in Services/Intents)
 ├── Models/              # CoreData entities and business models
 ├── ViewModels/          # Observable view models (@MainActor)
 │   └── Balance/         # Balance calculation helpers
@@ -140,6 +141,7 @@ New file needed?
 │  ├─ PDF parsing? → Services/Import/
 │  ├─ Recurring? → Services/Recurring/
 │  ├─ Loans? → Services/Loans/
+│  ├─ App Intents / Siri? → Services/Intents/
 │  ├─ Caching? → Services/Cache/
 │  ├─ Settings? → Services/Settings/
 │  ├─ Core protocol/shared? → Services/Core/
@@ -186,6 +188,7 @@ New file needed?
 | FX rates, currency conversion, prewarm, providers, base-currency aggregation (`convertSync` vs `convertedAmount`) | [docs/domains/currency.md](docs/domains/currency.md) |
 | Logo providers, ServiceLogoRegistry, jsDelivr | [docs/domains/logos.md](docs/domains/logos.md) |
 | Performance hot-paths, SwiftUI Layout gotchas, `#Preview` crashes, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |
+| `Tenra/Intents/**`, `Services/Intents/**`, Siri, App Shortcuts | [specs/2026-07-31-app-intents-design.md](docs/superpowers/specs/2026-07-31-app-intents-design.md) |
 | Adding a CoreData entity/attribute, bumping `Tenra.xcdatamodeld` | `/coredata-schema-bump` skill |
 
 **Rule**: before editing files in a domain, Read the matching doc.

@@ -39,12 +39,26 @@ Three intents, plus discoverability, plus the refactor that makes them possible.
 
 ### 2.1 `LogTransactionIntent` — primary
 
-One free-form phrase, one shot. The whole phrase is passed to `VoiceInputParser.parse`.
+One free-form phrase. The whole phrase is passed to `VoiceInputParser.parse`.
 
-App Shortcut phrase shape: `"Добавь \(\.$phrase) в \(.applicationName)"` — the parameter is
-embedded in the spoken phrase itself, so `«Добавь 3000 на кофе в Tenra»` completes without
-Siri interrogating the user field by field. This one-shot property is the entire point; a
-three-turn Siri dialogue is slower than opening the app and defeats the purpose.
+> **Corrected during implementation (2026-07-31).** The original design assumed the phrase
+> could be embedded in the spoken App Shortcut sentence
+> (`"Добавь \(\.$phrase) в \(.applicationName)"`), making it a single utterance. **That is
+> not expressible.** App Shortcut phrases may only interpolate `AppEntity` and `AppEnum`
+> parameters; a `String` parameter is rejected at build time by
+> `appintentsmetadataprocessor`: *"Invalid parameter type. AppEntity and AppEnum are the only
+> allowed types for phrase."*
+
+The shipped flow is therefore two turns via Siri: the user says «Запиши операцию в Tenra»,
+Siri asks what it was (the parameter's `requestValueDialog`), and the user speaks the
+phrase. In the **Shortcuts app** the free-text parameter is still filled in one step,
+because typed `String` parameters are allowed there.
+
+This is a real reduction against the original premise. It remains materially faster than
+opening the app, unlocking it, navigating and typing, and the friction it removes is still
+the point of the release. If a true one-shot is wanted later, the only route is modelling
+categories and amounts as `AppEnum`/`AppEntity` parameters, which trades free-form phrasing
+for a fixed grammar.
 
 ### 2.2 `AddExpenseIntent` — parameterized
 
@@ -370,6 +384,18 @@ followed by a full relaunch.
 ---
 
 ## 8. Risks
+
+Two further API facts established against the iOS 26.5 SDK interface during implementation,
+both of which contradict the obvious reading of the documentation:
+
+- **`openAppWhenRun` cannot be set from inside `perform()`.** The static is read before the
+  intent runs, so it cannot express a per-invocation decision. The correct primitive is
+  `continueInForeground(_ dialog:alwaysConfirm:)`, an `AppIntent` extension method
+  (iOS 26+), which is what the blocking branches call.
+- **The `.result(dialog:view:)` snippet factories are not in `AppIntents`.** They live in the
+  `_AppIntents_SwiftUI` cross-import overlay, which only activates when both `AppIntents`
+  and `SwiftUI` are imported. `import SwiftUI` in the intent files is load-bearing, not
+  decorative.
 
 | Risk | Mitigation |
 |---|---|

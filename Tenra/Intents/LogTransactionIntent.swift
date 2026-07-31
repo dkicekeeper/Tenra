@@ -116,6 +116,14 @@ struct LogTransactionIntent: AppIntent {
             let accountName = services.accounts.accounts
                 .first { $0.id == draft.accountId }?.name ?? ""
 
+            Self.log.info("""
+                resolved: category=\(draft.categoryName, privacy: .public) \
+                account=\(accountName, privacy: .public) \
+                inferred=\(draft.warnings.contains(.accountInferred), privacy: .public) \
+                learned=\(VoiceLearningStore.shared.preferredAccountID(forCategory: draft.categoryName) ?? "none", privacy: .public) \
+                ranked=\(IntentAccountSuggester.suggestedAccountId(forCategory: draft.categoryName, accounts: services.accounts.accounts, amount: draft.amount, context: CoreDataStack.shared.persistentContainer.viewContext) ?? "none", privacy: .public)
+                """)
+
             try await requestConfirmation(
                 result: .result(dialog: "intent.log.confirm") {
                     TransactionConfirmationSnippet(draft: draft, accountName: accountName)

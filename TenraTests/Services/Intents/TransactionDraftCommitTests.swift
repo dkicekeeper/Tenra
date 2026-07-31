@@ -61,6 +61,42 @@ struct TransactionDraftCommitTests {
         #expect(harness.learningCalls.first?.accountId == "a1")
     }
 
+    @Test("An inferred account is NOT recorded as a learned preference")
+    func inferredAccountIsNotLearned() async throws {
+        // Otherwise confirming a guess teaches the store that guess. Since the
+        // learning store outranks history-based ranking, two confirmations lock
+        // the original guess in permanently: a self-reinforcing loop that ends
+        // with every transaction landing on whatever account was picked first.
+        let harness = IntentTestHarness()
+        var draft = makeDraft()
+        draft.warnings = [.accountInferred]
+
+        _ = try await TransactionDraftService.commit(
+            draft,
+            store: harness.store,
+            categoriesViewModel: harness.categories,
+            hooks: harness.hooks
+        )
+
+        #expect(harness.learningCalls.isEmpty)
+    }
+
+    @Test("An explicitly chosen account is still recorded")
+    func chosenAccountIsLearned() async throws {
+        let harness = IntentTestHarness()
+        var draft = makeDraft()
+        draft.warnings = [.categorySubstituted(original: "x")]
+
+        _ = try await TransactionDraftService.commit(
+            draft,
+            store: harness.store,
+            categoriesViewModel: harness.categories,
+            hooks: harness.hooks
+        )
+
+        #expect(harness.learningCalls.count == 1)
+    }
+
     @Test("Commit feeds the rating prompt counter")
     func commitRecordsRating() async throws {
         let harness = IntentTestHarness()

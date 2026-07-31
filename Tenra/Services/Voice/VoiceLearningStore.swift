@@ -29,7 +29,16 @@ final class VoiceLearningStore: @unchecked Sendable {
     /// Prevents one accidental tap from locking in a wrong account forever.
     private static let confidenceThreshold = 2
 
-    private static let storageKey = "voice.learning.preferences.v1"
+    /// v2 abandons every v1 blob on purpose.
+    ///
+    /// Until the App Intents work, the confirmation flow recorded a preference
+    /// on every save, including saves where the account had merely been guessed
+    /// for the user. Those entries are indistinguishable from deliberate
+    /// choices, and because this store outranks the history-based ranking they
+    /// pin an arbitrary account forever. There is no migration that can tell
+    /// the two apart, so the safe move is to start clean; the store refills
+    /// after two genuine confirmations.
+    private static let storageKey = "voice.learning.preferences.v2"
 
     // MARK: - State
 

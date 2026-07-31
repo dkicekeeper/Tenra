@@ -245,7 +245,18 @@ enum TransactionDraftService {
             )
         }
 
-        hooks.recordLearning(saved.category, saved.accountId)
+        // Only an account the user actually chose counts as a preference.
+        //
+        // Recording an inferred one creates a self-reinforcing loop: the guess
+        // gets confirmed, two confirmations cross VoiceLearningStore's
+        // confidence threshold, and from then on the learned guess outranks the
+        // history-based ranking. Every later transaction lands on whatever
+        // account happened to be picked first, which is exactly what "the same
+        // old account every time" looks like from the outside.
+        if !draft.warnings.contains(.accountInferred) {
+            hooks.recordLearning(saved.category, saved.accountId)
+        }
+
         // Records the success moment only. The native prompt is never presented
         // from here: this path can run in a background, UI-less process.
         hooks.recordRating()

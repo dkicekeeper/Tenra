@@ -17,7 +17,7 @@ import Foundation
 @testable import Tenra
 
 @MainActor
-@Suite(.serialized)
+@Suite(.serialized, .sharedProcessState)
 struct SpendingQueryServiceTests {
 
     // MARK: - Fixtures

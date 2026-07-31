@@ -19,7 +19,7 @@ import Foundation
 /// Run serially to prevent NSInMemoryStoreType cross-test contamination.
 /// Swift Testing runs tests in parallel by default; parallel in-memory containers
 /// with the same name can share backing stores, causing flaky count assertions.
-@Suite("CoreData Round-Trip Tests", .serialized)
+@Suite("CoreData Round-Trip Tests", .serialized, .sharedProcessState)
 struct CoreDataRoundTripTests {
 
     // MARK: - Helpers

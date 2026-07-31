@@ -12,6 +12,7 @@
 import Testing
 @testable import Tenra
 
+@Suite(.sharedProcessState)
 struct CategoryBudgetCurrencyTests {
 
     @Test("identity conversion: amount preserved, not flagged stale")

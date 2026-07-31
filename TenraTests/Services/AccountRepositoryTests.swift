@@ -16,7 +16,7 @@ import Foundation
 
 /// Verifies that AccountRepositoryProtocol's method signatures are stable.
 /// Acts as a compile-time regression guard — if the protocol changes, these tests break at build time.
-@Suite("AccountRepositoryProtocol Contract")
+@Suite("AccountRepositoryProtocol Contract", .sharedProcessState)
 struct AccountRepositoryProtocolTests {
 
     @Test("Protocol has loadAccounts → [Account]")
@@ -113,7 +113,7 @@ private final class MockAccountRepository: AccountRepositoryProtocol {
 
 // MARK: - Mock-Based Behaviour Tests
 
-@Suite("AccountRepository Mock Behaviour")
+@Suite("AccountRepository Mock Behaviour", .sharedProcessState)
 struct AccountRepositoryMockTests {
 
     @Test("saveAccounts stores accounts")

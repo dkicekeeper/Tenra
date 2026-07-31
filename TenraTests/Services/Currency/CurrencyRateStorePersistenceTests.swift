@@ -15,6 +15,7 @@ import Foundation
 @testable import Tenra
 
 @MainActor
+@Suite(.sharedProcessState)
 struct CurrencyRateStorePersistenceTests {
 
     private static let userDefaultsKey = "currency.rates.cache.v1"

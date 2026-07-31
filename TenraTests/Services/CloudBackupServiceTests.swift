@@ -18,7 +18,7 @@ import Foundation
 /// @MainActor because the suite constructs CoreDataStack, which is implicitly
 /// MainActor-isolated under the project's SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor.
 @MainActor
-@Suite("CloudBackupServiceTests", .serialized)
+@Suite("CloudBackupServiceTests", .serialized, .sharedProcessState)
 struct CloudBackupServiceTests {
 
     // MARK: - Fixture helpers

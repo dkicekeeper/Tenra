@@ -19,6 +19,7 @@ import Foundation
 @testable import Tenra
 
 @MainActor
+@Suite(.sharedProcessState)
 struct TransactionDraftResolverTests {
 
     // MARK: - Fixtures

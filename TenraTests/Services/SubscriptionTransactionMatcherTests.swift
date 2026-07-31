@@ -8,6 +8,7 @@ import Testing
 @testable import Tenra
 
 @MainActor
+@Suite(.sharedProcessState)
 struct SubscriptionTransactionMatcherTests {
 
     init() {

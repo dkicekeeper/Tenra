@@ -17,7 +17,7 @@ import CoreData
 import Foundation
 @testable import Tenra
 
-@Suite("AccountEntity Round-Trip Tests", .serialized)
+@Suite("AccountEntity Round-Trip Tests", .serialized, .sharedProcessState)
 struct AccountEntityRoundTripTests {
 
     // MARK: - In-Memory Container

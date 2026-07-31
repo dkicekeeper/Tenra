@@ -18,7 +18,7 @@ import Foundation
 // suites that mutate the process-wide `CurrencyRateStore.shared` (the persistence and
 // matcher suites are already @MainActor) — otherwise a concurrent write/clear here
 // races their assertions.
-@Suite("Insights FX-stale resolver (H-7 residual)", .serialized)
+@Suite("Insights FX-stale resolver (H-7 residual)", .serialized, .sharedProcessState)
 @MainActor
 struct InsightsFXStaleResolverTests {
 

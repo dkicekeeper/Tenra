@@ -12,7 +12,7 @@ import Foundation
 @testable import Tenra
 
 @MainActor
-@Suite(.serialized)
+@Suite(.serialized, .sharedProcessState)
 struct IntentAccountSuggesterTests {
 
     // MARK: - Fixtures

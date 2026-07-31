@@ -1635,6 +1635,7 @@
 "intent.log.savedWithProHint" = "Hinzugefügt: %1$@, %2$@. Die Eingabe enthielt %3$lld weitere Buchungen. Mehrere auf einmal zu erfassen gehört zu Tenra Pro.";
 "intent.snippet.category" = "Kategorie";
 "intent.snippet.account" = "Konto";
+"intent.snippet.noCategory" = "Keine Kategorie";
 "intent.snippet.guessed" = "(ergänzt)";
 "intent.addExpense.title" = "Ausgabe hinzufügen";
 "intent.addExpense.description" = "Eine Ausgabe mit Betrag, Kategorie und Konto erfassen.";

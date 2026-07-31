@@ -35,7 +35,11 @@ struct TransactionConfirmationSnippet: View {
 
             row(
                 label: String(localized: "intent.snippet.category"),
-                value: draft.categoryName,
+                // Empty means "uncategorized", which is a valid outcome; show a
+                // readable placeholder rather than a blank row.
+                value: draft.categoryName.isEmpty
+                    ? String(localized: "intent.snippet.noCategory")
+                    : draft.categoryName,
                 guessed: categoryWasGuessed
             )
 

@@ -1635,6 +1635,7 @@
 "intent.log.savedWithProHint" = "추가했습니다: %1$@, %2$@. 문구에 %3$lld건의 거래가 더 있었습니다. 여러 건을 한 번에 기록하는 기능은 Tenra Pro에 포함됩니다.";
 "intent.snippet.category" = "카테고리";
 "intent.snippet.account" = "계좌";
+"intent.snippet.noCategory" = "카테고리 없음";
 "intent.snippet.guessed" = "(추정)";
 "intent.addExpense.title" = "지출 추가";
 "intent.addExpense.description" = "금액, 카테고리, 계좌를 지정해 지출을 기록합니다.";

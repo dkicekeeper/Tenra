@@ -482,8 +482,15 @@ struct VoiceInputConfirmationView: View {
 
             for warning in draft.warnings {
                 if case .categorySubstituted = warning {
-                    selectedCategoryName = draft.categoryName
-                    categoryWarning = String(localized: "voiceConfirmation.warning.categoryNotSelected")
+                    // Пустое имя означает «без категории»: хранилище это
+                    // допускает, но на экране выбор оставляем пустым и просим
+                    // человека указать категорию самому.
+                    if draft.categoryName.isEmpty {
+                        categoryWarning = String(localized: "voiceConfirmation.warning.categoryNotFound")
+                    } else {
+                        selectedCategoryName = draft.categoryName
+                        categoryWarning = String(localized: "voiceConfirmation.warning.categoryNotSelected")
+                    }
                 }
             }
 
@@ -516,9 +523,6 @@ struct VoiceInputConfirmationView: View {
 
         case .noEligibleAccount:
             accountWarning = String(localized: "voiceConfirmation.warning.selectAccount")
-
-        case .noFallbackCategory:
-            categoryWarning = String(localized: "voiceConfirmation.warning.categoryNotFound")
 
         case .needsFXConversion:
             // Недостижимо: resolveAndCommit повторяет попытку с .provided выше.

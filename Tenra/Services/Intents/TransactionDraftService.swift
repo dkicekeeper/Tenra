@@ -55,19 +55,17 @@ enum TransactionDraftService {
             }
         }
 
-        // 3. Category — must exist AND match the operation type, else fall back
-        //    to the localized "Other" of the same type.
-        let categoryName: String
-        if let parsedName = operation.categoryName,
-           categories.contains(where: { $0.name == parsedName && $0.type == operation.type }) {
-            categoryName = parsedName
-        } else {
-            let fallback = String(localized: "category.other")
-            guard categories.contains(where: { $0.name == fallback && $0.type == operation.type }) else {
-                return .failure(.noFallbackCategory)
-            }
+        // 3. Category — resolved through a widening chain, and never a reason to
+        //    refuse the transaction (TransactionStore.validate deliberately
+        //    allows an empty category, meaning "uncategorized").
+        let resolution = resolveCategory(
+            named: operation.categoryName,
+            type: operation.type,
+            in: categories
+        )
+        let categoryName = resolution.name
+        if !resolution.isExact {
             warnings.append(.categorySubstituted(original: operation.categoryName))
-            categoryName = fallback
         }
 
         // 4. Currency — convert only when it differs from the account currency.
@@ -105,6 +103,72 @@ enum TransactionDraftService {
             note: note.isEmpty ? operation.note : note,
             warnings: warnings
         ))
+    }
+
+    // MARK: - Category resolution
+
+    struct CategoryResolution {
+        /// Empty means "uncategorized", which the store accepts.
+        let name: String
+        /// True only when the user's category was identified unambiguously, so
+        /// the caller knows whether to warn.
+        let isExact: Bool
+    }
+
+    /// Substring matching is skipped below this length: two-letter fragments
+    /// match far too much to be a useful guess.
+    private static let minimumSubstringMatchLength = 3
+
+    /// Widening chain: exact name, then case-insensitive, then a substring
+    /// relation in either direction, then the localized "Other", then
+    /// uncategorized.
+    ///
+    /// The substring step exists because `VoiceInputParser` maps keywords onto
+    /// hardcoded category names ("кофе" -> "Еда") while users rename their
+    /// categories freely. Without it, an account whose food category is called
+    /// "Еда вне дома" gets nothing at all out of the parser, which is what made
+    /// Siri logging fail on device.
+    ///
+    /// Ties are broken by the user's own category order (the array is already
+    /// ordered), so the result is deterministic rather than dictionary-random.
+    static func resolveCategory(
+        named parsedName: String?,
+        type: TransactionType,
+        in categories: [CustomCategory]
+    ) -> CategoryResolution {
+
+        let candidates = categories.filter { $0.type == type }
+
+        if let parsedName, !parsedName.isEmpty {
+            if let exact = candidates.first(where: { $0.name == parsedName }) {
+                return CategoryResolution(name: exact.name, isExact: true)
+            }
+
+            let needle = parsedName.lowercased()
+
+            // A pure case difference is the same category, not a guess.
+            if let insensitive = candidates.first(where: { $0.name.lowercased() == needle }) {
+                return CategoryResolution(name: insensitive.name, isExact: true)
+            }
+
+            if needle.count >= Self.minimumSubstringMatchLength {
+                let related = candidates.first { candidate in
+                    let name = candidate.name.lowercased()
+                    return name.contains(needle)
+                        || (name.count >= Self.minimumSubstringMatchLength && needle.contains(name))
+                }
+                if let related {
+                    return CategoryResolution(name: related.name, isExact: false)
+                }
+            }
+        }
+
+        let other = String(localized: "category.other")
+        if let fallback = candidates.first(where: { $0.name == other }) {
+            return CategoryResolution(name: fallback.name, isExact: false)
+        }
+
+        return CategoryResolution(name: "", isExact: false)
     }
 
     // MARK: - Commit

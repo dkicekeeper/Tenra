@@ -34,10 +34,12 @@ enum DraftWarning: Equatable {
 
 /// A condition the resolver cannot resolve on its own. Intents treat these as
 /// "open the app with the operation prefilled".
+/// Note there is deliberately no "category could not be resolved" case: the
+/// store accepts an empty category as "uncategorized", so a category miss is a
+/// warning, never a refusal to record the transaction.
 enum DraftIssue: Error, Equatable {
     case missingAmount
     case noEligibleAccount
-    case noFallbackCategory
     case needsFXConversion(amount: Double, from: String, to: String)
 }
 

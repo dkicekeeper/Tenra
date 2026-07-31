@@ -1635,6 +1635,7 @@
 "intent.log.savedWithProHint" = "Добавлено: %1$@, %2$@. Во фразе было ещё операций: %3$lld. Разбор нескольких трат сразу доступен в Tenra Pro.";
 "intent.snippet.category" = "Категория";
 "intent.snippet.account" = "Счёт";
+"intent.snippet.noCategory" = "Без категории";
 "intent.snippet.guessed" = "(подставлено)";
 "intent.addExpense.title" = "Добавить трату";
 "intent.addExpense.description" = "Записать трату с конкретной суммой, категорией и счётом.";

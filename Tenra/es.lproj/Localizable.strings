@@ -1635,6 +1635,7 @@
 "intent.log.savedWithProHint" = "Añadido: %1$@, %2$@. La frase contenía %3$lld operaciones más. Registrar varias a la vez forma parte de Tenra Pro.";
 "intent.snippet.category" = "Categoría";
 "intent.snippet.account" = "Cuenta";
+"intent.snippet.noCategory" = "Sin categoría";
 "intent.snippet.guessed" = "(supuesto)";
 "intent.addExpense.title" = "Añadir un gasto";
 "intent.addExpense.description" = "Registrar un gasto con importe, categoría y cuenta concretos.";

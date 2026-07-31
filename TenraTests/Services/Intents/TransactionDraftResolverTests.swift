@@ -217,8 +217,11 @@ struct TransactionDraftResolverTests {
         #expect(draft.categoryName == otherName)
     }
 
-    @Test("Unknown category with no Other fallback is a blocking issue")
-    func noFallbackCategory() {
+    @Test("An unresolvable category never blocks; the draft is uncategorized and warns")
+    func unresolvedCategoryFallsBackToUncategorized() throws {
+        // TransactionStore.validate deliberately allows an empty category
+        // ("uncategorized"), so a category the resolver cannot match is not a
+        // reason to refuse the whole transaction.
         let op = ParsedOperation(type: .expense, amount: 3000, accountId: "a1", categoryName: "Nonexistent")
         let result = TransactionDraftService.makeDraft(
             from: op,
@@ -226,7 +229,81 @@ struct TransactionDraftResolverTests {
             categories: [category("Food")],
             learned: emptyLearningStore("draft.tests.10")
         )
-        #expect(result == .failure(.noFallbackCategory))
+        let draft = try result.get()
+        #expect(draft.categoryName.isEmpty)
+        #expect(draft.warnings.contains(.categorySubstituted(original: "Nonexistent")))
+    }
+
+    @Test("A parsed name matches a longer user category containing it")
+    func categoryMatchedBySubstring() throws {
+        // The parser's built-in map yields "Еда" for "кофе", but real users
+        // rename categories. This is the case that made Siri logging fail on
+        // device: the account had "Еда вне дома" and nothing named exactly "Еда".
+        let op = ParsedOperation(type: .expense, amount: 3000, accountId: "a1", categoryName: "Еда")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1")],
+            categories: [category("Транспорт"), category("Еда вне дома")],
+            learned: emptyLearningStore("draft.tests.14")
+        )
+        let draft = try result.get()
+        #expect(draft.categoryName == "Еда вне дома")
+        #expect(draft.warnings.contains(.categorySubstituted(original: "Еда")))
+    }
+
+    @Test("Matching ignores case")
+    func categoryMatchedCaseInsensitively() throws {
+        let op = ParsedOperation(type: .expense, amount: 3000, accountId: "a1", categoryName: "food")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1")],
+            categories: [category("Food")],
+            learned: emptyLearningStore("draft.tests.15")
+        )
+        let draft = try result.get()
+        #expect(draft.categoryName == "Food")
+    }
+
+    @Test("Substring matching respects the transaction type")
+    func substringMatchRespectsType() throws {
+        // "Еда вне дома" exists only as income here, so an expense must not
+        // borrow it; it falls through to uncategorized instead.
+        let op = ParsedOperation(type: .expense, amount: 3000, accountId: "a1", categoryName: "Еда")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1")],
+            categories: [category("Еда вне дома", type: .income)],
+            learned: emptyLearningStore("draft.tests.16")
+        )
+        let draft = try result.get()
+        #expect(draft.categoryName.isEmpty)
+    }
+
+    @Test("The first matching category in user order wins, for determinism")
+    func substringMatchIsDeterministic() throws {
+        let op = ParsedOperation(type: .expense, amount: 3000, accountId: "a1", categoryName: "Еда")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1")],
+            categories: [category("Еда вне дома"), category("Еда дома")],
+            learned: emptyLearningStore("draft.tests.17")
+        )
+        let draft = try result.get()
+        #expect(draft.categoryName == "Еда вне дома")
+    }
+
+    @Test("An exact match still wins over a substring match")
+    func exactMatchPreferredOverSubstring() throws {
+        let op = ParsedOperation(type: .expense, amount: 3000, accountId: "a1", categoryName: "Еда")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1")],
+            categories: [category("Еда вне дома"), category("Еда")],
+            learned: emptyLearningStore("draft.tests.18")
+        )
+        let draft = try result.get()
+        #expect(draft.categoryName == "Еда")
+        #expect(draft.warnings.isEmpty)
     }
 
     // MARK: - Currency (pins lines 466-491)

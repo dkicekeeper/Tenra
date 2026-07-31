@@ -1635,6 +1635,7 @@
 "intent.log.savedWithProHint" = "Added %1$@, %2$@. The phrase contained %3$lld more operations. Logging several at once is part of Tenra Pro.";
 "intent.snippet.category" = "Category";
 "intent.snippet.account" = "Account";
+"intent.snippet.noCategory" = "No category";
 "intent.snippet.guessed" = "(guessed)";
 "intent.addExpense.title" = "Add an expense";
 "intent.addExpense.description" = "Record an expense with a specific amount, category and account.";

@@ -48,15 +48,14 @@ struct LogTransactionIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
 
-        Self.log.info("perform() entered, phrase=\(phrase, privacy: .public)")
+        // The spoken phrase is the user's own financial data and is never
+        // logged. Only structural facts are public; anything derived from user
+        // content stays redacted (os_log's default) so it does not land in the
+        // system log on a release build.
+        Self.log.debug("perform() entered")
 
         let services = await IntentEnvironment.shared.services()
         let parser = services.makeParser()
-
-        Self.log.info("""
-            context: accounts=\(services.accounts.accounts.count, privacy: .public) \
-            categories=\(services.categories.customCategories.count, privacy: .public)
-            """)
 
         let operations = parser.parseMulti(phrase)
         guard let first = operations.first else {
@@ -64,11 +63,11 @@ struct LogTransactionIntent: AppIntent {
             return .result(dialog: "intent.log.notUnderstood")
         }
 
-        Self.log.info("""
-            parsed: amount=\(String(describing: first.amount), privacy: .public) \
-            category=\(first.categoryName ?? "nil", privacy: .public) \
-            currency=\(first.currencyCode ?? "nil", privacy: .public) \
-            accountId=\(first.accountId ?? "nil", privacy: .public)
+        Self.log.debug("""
+            parsed: operations=\(operations.count, privacy: .public) \
+            hasAmount=\(first.amount != nil, privacy: .public) \
+            hasCategory=\(first.categoryName != nil, privacy: .public) \
+            namedAccount=\(first.accountId != nil, privacy: .public)
             """)
 
         let result = TransactionDraftService.makeDraft(
@@ -91,11 +90,9 @@ struct LogTransactionIntent: AppIntent {
         switch result {
         case .failure(let issue):
             Self.log.error("""
-                makeDraft BLOCKED: \(String(describing: issue), privacy: .public) \
+                makeDraft blocked: \(String(describing: issue), privacy: .public) \
                 | eligibleAccounts=\(services.accounts.accounts.filter { !$0.isLoan && !$0.isDeposit }.count, privacy: .public) \
-                | firstAccountCurrency=\(services.accounts.accounts.first?.currency ?? "nil", privacy: .public) \
-                | expenseCategories=\(services.categories.customCategories.filter { $0.type == .expense }.map(\.name).joined(separator: ","), privacy: .public) \
-                | otherKey=\(String(localized: "category.other"), privacy: .public)
+                | expenseCategories=\(services.categories.customCategories.filter { $0.type == .expense }.count, privacy: .public)
                 """)
             // Amount missing, no eligible account, no Other category, or a cold
             // FX cache. Hand it to the UI with the fields prefilled. No network
@@ -116,12 +113,11 @@ struct LogTransactionIntent: AppIntent {
             let accountName = services.accounts.accounts
                 .first { $0.id == draft.accountId }?.name ?? ""
 
-            Self.log.info("""
-                resolved: category=\(draft.categoryName, privacy: .public) \
-                account=\(accountName, privacy: .public) \
-                inferred=\(draft.warnings.contains(.accountInferred), privacy: .public) \
-                learned=\(VoiceLearningStore.shared.preferredAccountID(forCategory: draft.categoryName) ?? "none", privacy: .public) \
-                ranked=\(IntentAccountSuggester.suggestedAccountId(forCategory: draft.categoryName, accounts: services.accounts.accounts, amount: draft.amount, context: CoreDataStack.shared.persistentContainer.viewContext) ?? "none", privacy: .public)
+            Self.log.debug("""
+                resolved: hasCategory=\(!draft.categoryName.isEmpty, privacy: .public) \
+                accountInferred=\(draft.warnings.contains(.accountInferred), privacy: .public) \
+                hadLearnedPreference=\(VoiceLearningStore.shared.preferredAccountID(forCategory: draft.categoryName) != nil, privacy: .public) \
+                hadRankedSuggestion=\(IntentAccountSuggester.suggestedAccountId(forCategory: draft.categoryName, accounts: services.accounts.accounts, amount: draft.amount, context: CoreDataStack.shared.persistentContainer.viewContext) != nil, privacy: .public)
                 """)
 
             try await requestConfirmation(

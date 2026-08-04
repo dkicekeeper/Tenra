@@ -97,6 +97,15 @@ final class InsightsViewModel {
     /// Financial Health Score (computed once per recompute cycle, using .month granularity data)
     private(set) var healthScore: FinancialHealthScore? = nil
 
+    /// Running-wealth series for the balance stat card's sparkline: the current
+    /// `availableBalance` walked backwards through each period's net flow. Uses the same
+    /// helper as the wealth insight, so the card and that insight plot one line.
+    /// O(M) over the period points (M ≤ ~24), recomputed on read — no cache to invalidate.
+    var balanceTrendPoints: [PeriodDataPoint] {
+        guard periodDataPoints.count >= 2 else { return [] }
+        return InsightsService.cumulativeBalancePoints(periodDataPoints, endingBalance: availableBalance)
+    }
+
     // MARK: - Granularity (replaces TimeFilter for Insights)
 
     /// Settable from View via @Bindable — didSet handles applyPrecomputed side-effect.
@@ -309,7 +318,7 @@ final class InsightsViewModel {
             }
         }
 
-        return insightsService.generateCategoryDeepDive(
+        let result = insightsService.generateCategoryDeepDive(
             categoryName: categoryName,
             allTransactions: allTransactions,
             timeFilter: currentFilter,
@@ -319,6 +328,24 @@ final class InsightsViewModel {
             currencyService: transactionsViewModel.currencyService,
             subcategoryNameByTxId: subcategoryNameByTxId
         )
+
+        // Synthetic categories break down by account (loans / deposits), and their rows
+        // carry the account's own logo. The generator is nonisolated and can't read the
+        // store, so the icons are attached here — item.id IS the account id there.
+        guard InsightsService.DeepDiveGrouping.forCategory(categoryName).groupsByAccount else {
+            return result
+        }
+        let withIcons = result.subcategories.map { item -> SubcategoryBreakdownItem in
+            guard let icon = transactionStore.accountById[item.id]?.iconSource else { return item }
+            return SubcategoryBreakdownItem(
+                id: item.id,
+                name: item.name,
+                amount: item.amount,
+                percentage: item.percentage,
+                iconSource: icon
+            )
+        }
+        return (withIcons, result.prevBucketTotal)
     }
 
     // MARK: - Private: Background Loading

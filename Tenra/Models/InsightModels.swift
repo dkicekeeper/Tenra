@@ -346,6 +346,12 @@ struct SubcategoryBreakdownItem: Identifiable, Hashable {
     let name: String
     let amount: Double
     let percentage: Double
+    /// Icon of the entity behind the row, when the row IS an entity rather than a
+    /// subcategory name: loan / deposit accounts in the synthetic-category deep dives
+    /// (`InsightsService.DeepDiveGrouping`). `id` is then the account id, so the view
+    /// layer fills this in from the store — the nonisolated generator has no access to
+    /// account icons. `nil` for plain subcategory rows.
+    var iconSource: IconSource? = nil
 }
 
 // MARK: - Budget Insight Item

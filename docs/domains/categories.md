@@ -97,6 +97,31 @@ Pattern is established in:
 
 `TransactionStore.reorderCategories(orderedIds:)` performs ONE batch persist for a drag operation. Earlier the management view called `updateCategory(_:)` per moved category — each did a full `saveCategoriesSync(...)`, i.e. O(N²) CoreData writes per drag. Always go through the batch entry point.
 
+## Subcategory tagging surfaces
+
+Subcategories are **type-agnostic**: the catalog is global, `CategorySubcategoryLink` and
+`TransactionSubcategoryLink` carry no transaction type, and `TransactionType
+.allowsSubcategoryPicker` is true for everything except internal transfers and interest
+accruals. Income transactions tag exactly like expenses.
+
+Every composer that writes a transaction must therefore also write the links itself — there is
+no central hook. The contract is: `transactionStore.add(...)` first (it assigns the id when you
+pass `id: ""`), then `linkSubcategoryToCategory` per id (so the tag joins that category's
+carousel next time), then `linkSubcategoriesToTransaction`. Reference implementation:
+[TransactionAddCoordinator.linkSubcategories](../../Tenra/Views/Transactions/TransactionAddCoordinator.swift);
+also implemented in `LoanPaymentView`, `LoanEarlyRepaymentView` and
+[AccountActionViewModel](../../Tenra/ViewModels/AccountActionViewModel.swift) (the "Пополнение"
+top-up flow).
+
+⚠️ Resolve the category id by **name + type**, not through `categoryIdByName` — that index is
+keyed by lowercased name alone, so an income and an expense category sharing a name collide and
+the tag would attach to the wrong one.
+
+Selection is per category: clear `selectedSubcategoryIds` whenever the picked category (or the
+form's mode) changes. `CategoryCardSelectorView`/`CategorySelectorView` write the binding
+*before* invoking `onSelectionChange`, so a handler comparing the new value against the current
+selection never fires — clear unconditionally.
+
 ## When to read this doc
 
 - Before mutating `categories` / `subcategories` / link arrays directly (don't — go through `TransactionStore` CRUD).

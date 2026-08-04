@@ -150,8 +150,12 @@ nonisolated final class InsightsService {
         /// "no subcategory" bucket. Built on MainActor by the caller from the store indexes.
         subcategoryNameByTxId: [String: String] = [:]
     ) -> (subcategories: [SubcategoryBreakdownItem], prevBucketTotal: Double) {
-        // All category expense transactions (used for prev-bucket comparison)
-        let allCategoryTransactions = allTransactions.filter { $0.category == categoryName && $0.type == .expense }
+        // All transactions of this category (used for prev-bucket comparison). Keyed via
+        // `categoryKey` so the synthetic categories drill down into the transactions that
+        // make them up, and income categories (deposit interest) work too — not just expenses.
+        let allCategoryTransactions = allTransactions.filter {
+            Self.moneyBucket($0.type) != Self.MoneyBucket.none && Self.categoryKey(for: $0) == categoryName
+        }
 
         // Period-scoped transactions for the subcategory breakdown (respects the selected filter)
         let range = timeFilter.dateRange()
@@ -159,16 +163,36 @@ nonisolated final class InsightsService {
 
         let totalAmount = periodCategoryTransactions.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
 
-        // Subcategory breakdown — scoped to the selected time period. Prefer the linked-
-        // subcategory name (real source) over the legacy `tx.subcategory` string field.
-        let subcategories = Dictionary(grouping: periodCategoryTransactions, by: {
-            subcategoryNameByTxId[$0.id] ?? $0.subcategory ?? String(localized: "insights.noSubcategory")
-        })
+        // Grouping key per transaction. Ordinary categories break down by subcategory
+        // (preferring the linked-subcategory name — the add flow leaves the legacy
+        // `tx.subcategory` string nil); the synthetic ones have no subcategories and
+        // break down by the loan / deposit account behind each transaction instead.
+        //
+        // The account groupings key on the account **id** (not its name) so the view
+        // layer can look the account up and attach its logo; the label rides along.
+        let grouping = Self.DeepDiveGrouping.forCategory(categoryName)
+        struct GroupKey: Hashable { let id: String; let name: String }
+        let groupKey: (Transaction) -> GroupKey = { tx in
+            switch grouping {
+            case .subcategory:
+                let name = subcategoryNameByTxId[tx.id] ?? tx.subcategory ?? String(localized: "insights.noSubcategory")
+                return GroupKey(id: name, name: name)
+            case .loanAccount:
+                // The loan is the payment's TARGET (source = the bank account paying it).
+                let label = Self.accountLabel(tx.targetAccountName, fallbackFor: tx.type)
+                return GroupKey(id: tx.targetAccountId ?? label, name: label)
+            case .depositAccount:
+                let label = Self.accountLabel(tx.accountName, fallbackFor: tx.type)
+                return GroupKey(id: tx.accountId ?? label, name: label)
+            }
+        }
+
+        let subcategories = Dictionary(grouping: periodCategoryTransactions, by: groupKey)
             .map { key, txns -> SubcategoryBreakdownItem in
                 let amount = txns.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
                 return SubcategoryBreakdownItem(
-                    id: key,
-                    name: key,
+                    id: key.id,
+                    name: key.name,
                     amount: amount,
                     percentage: totalAmount > 0 ? (amount / totalAmount) * 100 : 0
                 )
@@ -604,10 +628,10 @@ nonisolated final class InsightsService {
                   LedgerPolicyRule.isRealized(date) else { continue }
             let key = granularity.groupingKey(for: date)
             let amount = resolveAmount(tx, baseCurrency: baseCurrency)
-            switch tx.type {
+            switch Self.moneyBucket(tx.type) {
             case .income:  incomeByKey[key, default: 0] += amount
             case .expense: expensesByKey[key, default: 0] += amount
-            default: break
+            case .none:    break
             }
         }
 
@@ -764,17 +788,18 @@ nonisolated final class InsightsService {
         var acc: [Key: (income: Double, expenses: Double)] = [:]
 
         for tx in transactions {
-            guard tx.type == .income || tx.type == .expense else { continue }
+            let bucket = moneyBucket(tx.type)
+            guard bucket != .none else { continue }
             guard let txDate = FastDateParser.date(from: tx.date),
                   txDate >= startDate, txDate < endDate else { continue }
             let comps = calendar.dateComponents([.year, .month], from: txDate)
             guard let year = comps.year, let month = comps.month else { continue }
             let key = Key(year: year, month: month)
             let amount = resolveAmountStatic(tx, baseCurrency: baseCurrency)
-            switch tx.type {
+            switch bucket {
             case .income:  acc[key, default: (0, 0)].income += amount
             case .expense: acc[key, default: (0, 0)].expenses += amount
-            default: break
+            case .none:    break
             }
         }
 
@@ -816,12 +841,14 @@ nonisolated final class InsightsService {
         var acc: [Key: Double] = [:]
 
         for tx in transactions {
-            guard tx.type == .expense, !tx.category.isEmpty else { continue }
+            guard moneyBucket(tx.type) == .expense else { continue }
+            let categoryKey = categoryKey(for: tx)
+            guard !categoryKey.isEmpty else { continue }
             guard let txDate = FastDateParser.date(from: tx.date),
                   txDate >= startDate, txDate < endDate else { continue }
             let comps = calendar.dateComponents([.year, .month], from: txDate)
             guard let year = comps.year, let month = comps.month else { continue }
-            let key = Key(category: tx.category, year: year, month: month)
+            let key = Key(category: categoryKey, year: year, month: month)
             acc[key, default: 0] += resolveAmountStatic(tx, baseCurrency: baseCurrency)
         }
 
@@ -986,7 +1013,8 @@ nonisolated final class InsightsService {
                     }
                 }
 
-                guard tx.type == .income || tx.type == .expense else { continue }
+                let bucket = InsightsService.moneyBucket(tx.type)
+                guard bucket != .none else { continue }
                 // Realized money totals exclude future-dated tx (incl. generated recurring),
                 // matching balance/aggregates. Projections add future explicitly elsewhere
                 // (e.g. CashFlow recurringNet), so they must not be folded in here.
@@ -999,18 +1027,19 @@ nonisolated final class InsightsService {
                 if resolved.usedStaleFallback { fxStale = true }
                 let amount = resolved.amount
 
-                switch tx.type {
+                switch bucket {
                 case .income:
                     monthly[monthKey, default: MonthTotals(income: 0, expenses: 0)].income += amount
                 case .expense:
                     monthly[monthKey, default: MonthTotals(income: 0, expenses: 0)].expenses += amount
-                    if !tx.category.isEmpty {
-                        let catKey = CategoryMonthKey(category: tx.category, year: year, month: month)
+                    let categoryKey = InsightsService.categoryKey(for: tx)
+                    if !categoryKey.isEmpty {
+                        let catKey = CategoryMonthKey(category: categoryKey, year: year, month: month)
                         categoryMonth[catKey, default: 0] += amount
                         // Accumulate all-time category total (piggyback on existing loop)
-                        categoryTotals[tx.category, default: 0] += amount
+                        categoryTotals[categoryKey, default: 0] += amount
                     }
-                default: break
+                case .none: break
                 }
             }
 
@@ -1036,6 +1065,141 @@ nonisolated final class InsightsService {
                 fxStale: fxStale
             )
         }
+    }
+
+    // MARK: - Money Bucket Classification
+
+    /// Which money bucket a transaction falls into for Insights aggregation.
+    enum MoneyBucket {
+        case income
+        case expense
+        /// Outside income/expense math (internal transfers, deposit principal moves).
+        case none
+    }
+
+    /// THE type-classification rule for every Insights aggregation.
+    ///
+    /// Delegates to `TransactionType.summaryContribution` — the same rule the Home and
+    /// History summary cards use (CLAUDE.md ⚠️ #11) — so loan payments count as expense
+    /// and deposit interest accrual as income here too. Insights used to run its own
+    /// `switch tx.type` matching only `.income`/`.expense`, which silently dropped both
+    /// from every total, chart and derived metric (savings rate, health score, forecast).
+    ///
+    /// Realized-vs-future is NOT decided here: each call site keeps its own
+    /// `LedgerPolicyRule.isRealized` gate, so this always asks for the realized rule.
+    nonisolated static func moneyBucket(_ type: TransactionType) -> MoneyBucket {
+        switch type.summaryContribution(isFuture: false) {
+        case .income:  return .income
+        case .expense: return .expense
+        case .internalTransfer, .plannedExpense, .ignored: return .none
+        }
+    }
+
+    /// Category key a transaction is grouped under in Insights breakdowns.
+    ///
+    /// Loan payments carry an empty `category` (the UI infers their label from the type)
+    /// and interest accruals carry a *localized* one, so both map to locale-independent
+    /// synthetic keys. Without them loan payments would land in the expense total but
+    /// vanish from the category breakdown (per-category sum ≠ total), and interest would
+    /// split into a new income source on every locale change.
+    ///
+    /// Loan payments map to the synthetic key even when the user tagged one with a real
+    /// category: `TransactionStore`'s category aggregates count `expenseAmount` for
+    /// `type == .expense` only (rule C-6), so folding a loan payment into a user category
+    /// here would make the Insights budget figures disagree with the Categories screen.
+    nonisolated static func categoryKey(for tx: Transaction) -> String {
+        switch tx.type {
+        case .loanPayment, .loanEarlyRepayment:
+            return TransactionType.loanPaymentCategoryName
+        case .depositInterestAccrual:
+            return TransactionType.depositInterestCategoryName
+        default:
+            return tx.category
+        }
+    }
+
+    /// User-facing label for a breakdown/spike category key. Maps the technical
+    /// synthetic keys to their localized labels; user categories pass through.
+    nonisolated static func categoryLabel(for key: String) -> String {
+        switch key {
+        case TransactionType.loanPaymentCategoryName:
+            return CategoryDisplay.displayName(for: key, type: .loanPayment)
+        case TransactionType.depositInterestCategoryName:
+            return CategoryDisplay.displayName(for: key, type: .depositInterestAccrual)
+        default:
+            return key
+        }
+    }
+
+    /// Icon + tint for the synthetic categories, which have no `CustomCategory` to read
+    /// a style from. Mirrors `CategoryStyleCache.systemTypeStyle` so a loan payment looks
+    /// the same in Insights as it does in the transaction list. `nil` for user categories.
+    nonisolated static func syntheticCategoryStyle(for key: String) -> (icon: IconSource, color: Color)? {
+        switch key {
+        case TransactionType.loanPaymentCategoryName:
+            return (.sfSymbol("creditcard.fill"), AppColors.expense)
+        case TransactionType.depositInterestCategoryName:
+            return (.sfSymbol("percent"), AppColors.income)
+        default:
+            return nil
+        }
+    }
+
+    /// Grouping applied when drilling into a category. The synthetic categories have no
+    /// subcategories — a loan payment breaks down by *which loan* it repaid, an interest
+    /// accrual by *which deposit* paid it.
+    enum DeepDiveGrouping {
+        case subcategory
+        /// Group by the loan account the payment went to (`targetAccountName`).
+        case loanAccount
+        /// Group by the deposit account the interest was posted on (`accountName`).
+        case depositAccount
+
+        /// `true` when rows are accounts (loans / deposits) rather than subcategory names —
+        /// the view then renders each row's account logo instead of a colour dot.
+        var groupsByAccount: Bool { self != .subcategory }
+
+        nonisolated static func forCategory(_ key: String) -> DeepDiveGrouping {
+            switch key {
+            case TransactionType.loanPaymentCategoryName:     return .loanAccount
+            case TransactionType.depositInterestCategoryName: return .depositAccount
+            default:                                          return .subcategory
+            }
+        }
+    }
+
+    /// Walks `points` backwards from a known end balance to fill in `cumulativeBalance`
+    /// per period — the running-wealth series.
+    ///
+    /// THE single derivation: the wealth insight and the Insights balance card must plot
+    /// the same line, and both start from the same "balance now" figure (non-loan,
+    /// `includeInBalance` accounts) minus the net flows since.
+    nonisolated static func cumulativeBalancePoints(
+        _ points: [PeriodDataPoint],
+        endingBalance: Double
+    ) -> [PeriodDataPoint] {
+        var running = endingBalance - points.reduce(0.0) { $0 + $1.netFlow }
+        return points.map { point in
+            running += point.netFlow
+            return PeriodDataPoint(
+                id: point.id,
+                granularity: point.granularity,
+                key: point.key,
+                periodStart: point.periodStart,
+                periodEnd: point.periodEnd,
+                label: point.label,
+                income: point.income,
+                expenses: point.expenses,
+                cumulativeBalance: running
+            )
+        }
+    }
+
+    /// Display label for an account-grouped deep-dive row. Falls back to the transaction
+    /// type's own label ("Платёж по кредиту") when the denormalized account name is missing.
+    nonisolated static func accountLabel(_ name: String?, fallbackFor type: TransactionType) -> String {
+        let trimmed = (name ?? "").trimmingCharacters(in: .whitespaces)
+        return trimmed.isEmpty ? CategoryDisplay.displayName(for: "", type: type) : trimmed
     }
 
     /// Result of resolving a transaction amount into `baseCurrency`.
@@ -1116,10 +1280,10 @@ nonisolated final class InsightsService {
             guard let date = txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date),
                   date <= today else { continue }
             let amount = resolveAmount(tx, baseCurrency: baseCurrency)
-            switch tx.type {
+            switch Self.moneyBucket(tx.type) {
             case .income:  income += amount
             case .expense: expenses += amount
-            default: break
+            case .none:    break
             }
         }
         return (income, expenses)

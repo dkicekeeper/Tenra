@@ -18,6 +18,8 @@ struct AccountActionView: View {
     @State private var viewModel: AccountActionViewModel
     @State private var showingAccountHistory = false
     @State private var calc = CalculatorInputModel()
+    @State private var showingSubcategorySearch = false
+    @State private var subcategorySearchText = ""
     @FocusState private var descriptionFocused: Bool
 
     init(
@@ -37,6 +39,7 @@ struct AccountActionView: View {
             account: account,
             accountsViewModel: accountsViewModel,
             transactionsViewModel: transactionsViewModel,
+            categoriesViewModel: categoriesViewModel,
             defaultAction: defaultAction
         ))
     }
@@ -50,6 +53,8 @@ struct AccountActionView: View {
                     .glassEffectID("account-card-\(account.id)", in: namespace)
 
                 fromSection
+
+                subcategorySection
 
                 toSection
 
@@ -89,6 +94,19 @@ struct AccountActionView: View {
         }
         .onChange(of: calc.amountText) { _, newValue in
             viewModel.amountText = newValue
+        }
+        .sheet(isPresented: $showingSubcategorySearch) {
+            if let categoryId = viewModel.selectedCategoryId {
+                SubcategorySearchView(
+                    categoriesViewModel: categoriesViewModel,
+                    categoryId: categoryId,
+                    selectedSubcategoryIds: $viewModel.selectedSubcategoryIds,
+                    searchText: $subcategorySearchText
+                )
+                .onAppear { subcategorySearchText = "" }
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+            }
         }
         .sheet(isPresented: $showingAccountHistory) {
             NavigationStack {
@@ -140,9 +158,28 @@ struct AccountActionView: View {
                     type: .income,
                     customCategories: transactionsViewModel.customCategories,
                     selectedCategory: $viewModel.selectedCategory,
+                    onSelectionChange: { _ in
+                        viewModel.handleCategorySelectionChange()
+                    },
                     emptyStateMessage: String(localized: "transactionForm.noCategories")
                 )
             }
+        }
+    }
+
+    /// Subcategory tags for a top-up, shown right under the income category carousel
+    /// (same component and behavior as the main add-transaction form). Hidden for
+    /// transfers and until a category is picked — subcategories are per category.
+    @ViewBuilder
+    private var subcategorySection: some View {
+        @Bindable var viewModel = viewModel
+        if viewModel.selectedCategoryId != nil {
+            SubcategorySelectorView(
+                categoriesViewModel: categoriesViewModel,
+                categoryId: viewModel.selectedCategoryId,
+                selectedSubcategoryIds: $viewModel.selectedSubcategoryIds,
+                onSearchTap: { showingSubcategorySearch = true }
+            )
         }
     }
 

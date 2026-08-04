@@ -44,7 +44,6 @@ enum PeriodListMetric {
 /// Line 1: label on the left, netFlow (or `singleValue`) on the right.
 /// Line 2 (cash-flow triple only): income/expenses pair, trailing-aligned,
 /// spanning the full row width so large amounts never wrap.
-/// - Parameter showDivider: adds a `Divider` at the bottom (InsightsSummaryDetailView)
 /// - Parameter singleValue: when non-nil, render only this value instead of the triple
 struct PeriodBreakdownRow: View {
     let label: String
@@ -52,7 +51,6 @@ struct PeriodBreakdownRow: View {
     let expenses: Double
     let netFlow: Double
     let currency: String
-    var showDivider: Bool = false
     var singleValue: Double? = nil
     var singleColor: Color = AppColors.textPrimary
 
@@ -107,11 +105,6 @@ struct PeriodBreakdownRow: View {
                 }
             }
             .padding(.vertical, AppSpacing.md)
-
-            if showDivider {
-                Divider()
-                    .screenPadding()
-            }
         }
     }
 }
@@ -123,13 +116,6 @@ struct PeriodBreakdownRow: View {
         PeriodBreakdownRow(label: "Jan 2026", income: 530_000, expenses: 320_000, netFlow: 210_000, currency: "KZT")
         PeriodBreakdownRow(label: "Dec 2025", income: 480_000, expenses: 390_000, netFlow: 90_000, currency: "KZT")
         PeriodBreakdownRow(label: "Nov 2025", income: 510_000, expenses: 540_000, netFlow: -30_000, currency: "KZT")
-    }
-}
-
-#Preview("With divider") {
-    VStack(spacing: 0) {
-        PeriodBreakdownRow(label: "Январь 2026", income: 530_000, expenses: 320_000, netFlow: 210_000, currency: "KZT", showDivider: true)
-        PeriodBreakdownRow(label: "Декабрь 2025", income: 480_000, expenses: 390_000, netFlow: 90_000, currency: "KZT", showDivider: true)
     }
 }
 

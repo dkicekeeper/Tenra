@@ -26,7 +26,9 @@ extension InsightsService {
         txDateMap: [String: Date]? = nil
     ) -> [Insight] {
         var insights: [Insight] = []
-        let incomeTransactions = filterService.filterByType(filtered, type: .income)
+        // Deposit interest accrual counts as income (canonical summaryContribution rule),
+        // so this can't use filterService.filterByType(_:type:) — raw `.income` only.
+        let incomeTransactions = filtered.filter { Self.moneyBucket($0.type) == .income }
         guard !incomeTransactions.isEmpty else {
             Self.logger.debug("💵 [Insights] Income — SKIPPED (no income transactions in period)")
             return insights
@@ -89,14 +91,14 @@ extension InsightsService {
                 // Use txDateMap fast path when available — eliminates DateFormatter parse
                 // (~16μs/tx × 19k = ~300ms saved per legacy MoM income call).
                 if let map = txDateMap {
-                    for tx in allTransactions where tx.type == .income {
+                    for tx in allTransactions where Self.moneyBucket(tx.type) == .income {
                         guard let txDate = map[tx.date] else { continue }
                         let amount = resolveAmount(tx, baseCurrency: baseCurrency)
                         if txDate >= thisMonthStart && txDate < thisMonthEnd { thisTotal += amount }
                         else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevTotal += amount }
                     }
                 } else {
-                    for tx in allTransactions where tx.type == .income {
+                    for tx in allTransactions where Self.moneyBucket(tx.type) == .income {
                         guard let txDate = FastDateParser.date(from: tx.date) else { continue }
                         let amount = resolveAmount(tx, baseCurrency: baseCurrency)
                         if txDate >= thisMonthStart && txDate < thisMonthEnd { thisTotal += amount }

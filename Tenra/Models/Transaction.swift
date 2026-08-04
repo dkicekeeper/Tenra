@@ -22,6 +22,11 @@ enum TransactionType: String, Codable, Sendable {
     nonisolated static let transferCategoryName = "Transfer"
     /// Locale-independent category name for loan payment transactions.
     nonisolated static let loanPaymentCategoryName = "Loan Payment"
+    /// Locale-independent grouping key for deposit interest accruals. Accrual
+    /// transactions store a *localized* category string ("Interest" / "Проценты"),
+    /// so aggregations key off this constant instead — a locale change must not
+    /// split one category into two. `CategoryDisplay` renders it localized.
+    nonisolated static let depositInterestCategoryName = "Deposit Interest"
 
     /// `true` for transaction types that can change a deposit's running principal when
     /// the deposit appears as either source or target. The reconcile walk uses this to

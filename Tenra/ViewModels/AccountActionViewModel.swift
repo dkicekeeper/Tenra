@@ -19,6 +19,10 @@ final class AccountActionViewModel {
     var selectedCurrency: String
     var descriptionText: String = ""
     var selectedCategory: String? = nil
+    /// Subcategory tags for a top-up. Income transactions support subcategories exactly
+    /// like expenses do (the catalog and the link tables are type-agnostic); this screen
+    /// simply had no picker before. Always empty for transfers.
+    var selectedSubcategoryIds: Set<String> = []
     var selectedSourceAccountId: String? = nil
     var selectedTargetAccountId: String? = nil
     var selectedDate: Date = Date()
@@ -31,6 +35,7 @@ final class AccountActionViewModel {
     @ObservationIgnored let account: Account
     @ObservationIgnored let accountsViewModel: AccountsViewModel
     @ObservationIgnored let transactionsViewModel: TransactionsViewModel
+    @ObservationIgnored let categoriesViewModel: CategoriesViewModel
     @ObservationIgnored private let logger = Logger(subsystem: "Tenra", category: "AccountActionViewModel")
 
     /// Set once the user picks a transfer target themselves. After that we stop
@@ -68,6 +73,23 @@ final class AccountActionViewModel {
         return transactionsViewModel.incomeCategories.filter { validNames.contains($0) }
     }
 
+    /// Custom-category id of the selected income category — feeds the subcategory picker.
+    /// `nil` while nothing is selected (or for transfers), which hides the picker.
+    var selectedCategoryId: String? {
+        guard selectedAction == .income, let name = selectedCategory else { return nil }
+        return transactionsViewModel.customCategories.first {
+            $0.type == .income && $0.name == name
+        }?.id
+    }
+
+    /// Income category changed — its subcategories don't carry over to another category.
+    /// Cleared unconditionally: `CategoryCardSelectorView` writes the binding *before*
+    /// calling back (and only on a real change), so comparing against `selectedCategory`
+    /// here would always see the new value and never fire.
+    func handleCategorySelectionChange() {
+        selectedSubcategoryIds.removeAll()
+    }
+
     var navigationTitleText: String {
         selectedAction == .income
             ? String(localized: "transactionForm.accountTopUp")
@@ -84,11 +106,13 @@ final class AccountActionViewModel {
         account: Account,
         accountsViewModel: AccountsViewModel,
         transactionsViewModel: TransactionsViewModel,
+        categoriesViewModel: CategoriesViewModel,
         defaultAction: ActionType? = nil
     ) {
         self.account = account
         self.accountsViewModel = accountsViewModel
         self.transactionsViewModel = transactionsViewModel
+        self.categoriesViewModel = categoriesViewModel
         self.selectedCurrency = account.currency
         self.selectedAction = defaultAction ?? .transfer
         applyDefaultsForAction()
@@ -99,6 +123,9 @@ final class AccountActionViewModel {
     /// - transfer: tapped account is the source; target is unselected.
     /// - income:   tapped account is the target; source is a category.
     private func applyDefaultsForAction() {
+        // Subcategory tags belong to the income category that was picked for the
+        // previous action; a switch invalidates them (transfers have none at all).
+        selectedSubcategoryIds.removeAll()
         switch selectedAction {
         case .transfer:
             selectedSourceAccountId = account.id
@@ -274,7 +301,10 @@ final class AccountActionViewModel {
         )
 
         do {
-            _ = try await transactionStore.add(transaction)
+            let created = try await transactionStore.add(transaction)
+            // Subcategory links need the STORE-assigned id (we send `id: ""`), so they
+            // are written after the add — same order as TransactionAddCoordinator.
+            linkSelectedSubcategories(to: created)
             HapticManager.success()
             shouldDismiss = true
         } catch {
@@ -283,6 +313,31 @@ final class AccountActionViewModel {
             showingError = true
             HapticManager.error()
         }
+    }
+
+    /// Attaches the picked subcategories to the saved top-up. Mirrors
+    /// `TransactionAddCoordinator.linkSubcategories`: first make sure each subcategory is
+    /// linked to the category (so it shows up in that category's carousel next time),
+    /// then link it to the transaction itself.
+    private func linkSelectedSubcategories(to transaction: Transaction) {
+        guard !selectedSubcategoryIds.isEmpty, !transaction.id.isEmpty else { return }
+
+        // Resolved the same way the picker resolved it (income category, matched by
+        // name + type) rather than through `categoryIdByName`, which is keyed by name
+        // alone and would hand back the expense category when both share a name.
+        if let categoryId = selectedCategoryId {
+            for subcategoryId in selectedSubcategoryIds {
+                categoriesViewModel.linkSubcategoryToCategory(
+                    subcategoryId: subcategoryId,
+                    categoryId: categoryId
+                )
+            }
+        }
+
+        categoriesViewModel.linkSubcategoriesToTransaction(
+            transactionId: transaction.id,
+            subcategoryIds: Array(selectedSubcategoryIds)
+        )
     }
 
     // MARK: - Private: Transfer

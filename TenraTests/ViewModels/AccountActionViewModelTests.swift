@@ -43,6 +43,7 @@ struct AccountActionViewModelTests {
             account: regularAccount(),
             accountsViewModel: coord.accountsViewModel,
             transactionsViewModel: coord.transactionsViewModel,
+            categoriesViewModel: coord.categoriesViewModel,
             defaultAction: nil
         )
         #expect(vm.selectedAction == .transfer)
@@ -55,6 +56,7 @@ struct AccountActionViewModelTests {
             account: depositAccount(),
             accountsViewModel: coord.accountsViewModel,
             transactionsViewModel: coord.transactionsViewModel,
+            categoriesViewModel: coord.categoriesViewModel,
             defaultAction: nil
         )
         #expect(vm.selectedAction == .transfer)
@@ -67,8 +69,57 @@ struct AccountActionViewModelTests {
             account: depositAccount(),
             accountsViewModel: coord.accountsViewModel,
             transactionsViewModel: coord.transactionsViewModel,
+            categoriesViewModel: coord.categoriesViewModel,
             defaultAction: .transfer
         )
         #expect(vm.selectedAction == .transfer)
+    }
+
+    // MARK: - Subcategory tags (top-up)
+
+    @Test("switching action drops the picked subcategories")
+    func switchingActionClearsSubcategories() {
+        let coord = AppCoordinator()
+        let vm = AccountActionViewModel(
+            account: regularAccount(),
+            accountsViewModel: coord.accountsViewModel,
+            transactionsViewModel: coord.transactionsViewModel,
+            categoriesViewModel: coord.categoriesViewModel,
+            defaultAction: .income
+        )
+        vm.selectedSubcategoryIds = ["sub-1", "sub-2"]
+
+        vm.selectedAction = .transfer
+        #expect(vm.selectedSubcategoryIds.isEmpty)
+    }
+
+    @Test("changing the income category drops the picked subcategories")
+    func changingCategoryClearsSubcategories() {
+        let coord = AppCoordinator()
+        let vm = AccountActionViewModel(
+            account: regularAccount(),
+            accountsViewModel: coord.accountsViewModel,
+            transactionsViewModel: coord.transactionsViewModel,
+            categoriesViewModel: coord.categoriesViewModel,
+            defaultAction: .income
+        )
+        vm.selectedSubcategoryIds = ["sub-1"]
+
+        vm.handleCategorySelectionChange()
+        #expect(vm.selectedSubcategoryIds.isEmpty)
+    }
+
+    @Test("subcategory picker stays hidden for transfers")
+    func transferHasNoSubcategoryPicker() {
+        let coord = AppCoordinator()
+        let vm = AccountActionViewModel(
+            account: regularAccount(),
+            accountsViewModel: coord.accountsViewModel,
+            transactionsViewModel: coord.transactionsViewModel,
+            categoriesViewModel: coord.categoriesViewModel,
+            defaultAction: .transfer
+        )
+        vm.selectedCategory = "Salary"
+        #expect(vm.selectedCategoryId == nil)
     }
 }

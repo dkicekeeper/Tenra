@@ -45,7 +45,10 @@ extension InsightsService {
         categories: [CustomCategory]
     ) -> [Insight] {
         var insights: [Insight] = []
-        let expenses = filterService.filterByType(filtered, type: .expense)
+        // Loan payments count as expense here (canonical summaryContribution rule),
+        // so this can't use filterService.filterByType(_:type:) — that matches the
+        // raw `.expense` type only.
+        let expenses = filtered.filter { InsightsService.moneyBucket($0.type) == .expense }
         guard !expenses.isEmpty else {
             Self.logger.debug("🛒 [Insights] Spending — SKIPPED (no expenses in period)")
             return insights
@@ -76,7 +79,7 @@ extension InsightsService {
         // `periodTotal` drives the percentage so it stays consistent with the period's
         // realized expense total (cp.expenses).
         let makeBreakdown: ([Transaction], Double) -> [CategoryBreakdownItem] = { txns, periodTotal in
-            let groups = Dictionary(grouping: txns, by: { $0.category })
+            let groups = Dictionary(grouping: txns, by: { InsightsService.categoryKey(for: $0) })
             return groups
                 .map { key, catTxns -> (key: String, total: Double, txns: [Transaction]) in
                     let total = catTxns.reduce(0.0) { $0 + self.resolveAmount($1, baseCurrency: baseCurrency) }
@@ -86,7 +89,10 @@ extension InsightsService {
                 .sorted { $0.total > $1.total }
                 .map { item in
                     let cat = categoryByName[item.key]
-                    let catColor = cat.map { Color(hex: $0.colorHex) } ?? AppColors.accent
+                    // Synthetic categories (loan payments) have no CustomCategory —
+                    // fall back to the baked-in system style so they still get an icon.
+                    let synthetic = InsightsService.syntheticCategoryStyle(for: item.key)
+                    let catColor = cat.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? AppColors.accent
                     let subcategoryTotals = Dictionary(grouping: item.txns, by: { $0.subcategory ?? "" })
                         .compactMap { subKey, subTxns -> SubcategoryBreakdownItem? in
                             guard !subKey.isEmpty else { return nil }
@@ -103,7 +109,7 @@ extension InsightsService {
                         amount: item.total,
                         percentage: periodTotal > 0 ? (item.total / periodTotal) * 100 : 0,
                         color: catColor,
-                        iconSource: cat?.iconSource,
+                        iconSource: cat?.iconSource ?? synthetic?.icon,
                         subcategories: subcategoryTotals
                     )
                 }
@@ -146,7 +152,7 @@ extension InsightsService {
                     formattedValue: Formatting.formatCurrencySmart(top.amount, currency: baseCurrency),
                     currency: baseCurrency, unit: nil
                 )
-                subtitle = top.categoryName
+                subtitle = Self.categoryLabel(for: top.categoryName)
                 trend = InsightTrend(
                     direction: .down, changePercent: pct, changeAbsolute: nil,
                     comparisonPeriod: String(format: "%.0f%% %@", pct, String(localized: "insights.ofTotal"))
@@ -232,10 +238,10 @@ extension InsightsService {
                 .map { (key: $0.key, total: $0.value) }
                 .sorted { $0.total > $1.total }
             // categoryGroups needed only for subcategory breakdown — build lazily only if needed
-            categoryGroups = Dictionary(grouping: topExpenses, by: { $0.category })
+            categoryGroups = Dictionary(grouping: topExpenses, by: { InsightsService.categoryKey(for: $0) })
         } else {
             // Original O(N) path for non-allTime granularities
-            categoryGroups = Dictionary(grouping: topExpenses, by: { $0.category })
+            categoryGroups = Dictionary(grouping: topExpenses, by: { InsightsService.categoryKey(for: $0) })
             sortedCategories = categoryGroups
                 .map { key, txns in
                     let total = txns.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
@@ -261,7 +267,8 @@ extension InsightsService {
             let breakdownItems: [CategoryBreakdownItem] = sortedCategories.map { item in
                 let pct = topTotalExpenses > 0 ? (item.total / topTotalExpenses) * 100 : 0
                 let cat = categoryByName[item.key]
-                let catColor = cat.map { Color(hex: $0.colorHex) } ?? AppColors.accent
+                let synthetic = InsightsService.syntheticCategoryStyle(for: item.key)
+                let catColor = cat.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? AppColors.accent
                 let txns = categoryGroups[item.key] ?? []
 
                 let subcategoryTotals = Dictionary(grouping: txns, by: { $0.subcategory ?? "" })
@@ -283,7 +290,7 @@ extension InsightsService {
                     amount: item.total,
                     percentage: pct,
                     color: catColor,
-                    iconSource: cat?.iconSource,
+                    iconSource: cat?.iconSource ?? synthetic?.icon,
                     subcategories: subcategoryTotals
                 )
             }
@@ -292,7 +299,7 @@ extension InsightsService {
                 id: "top_spending_\(top.key)",
                 type: .topSpendingCategory,
                 title: String(localized: "insights.topCategory"),
-                subtitle: top.key,
+                subtitle: Self.categoryLabel(for: top.key),
                 metric: InsightMetric(
                     value: top.total,
                     formattedValue: Formatting.formatCurrencySmart(top.total, currency: baseCurrency),
@@ -376,14 +383,14 @@ extension InsightsService {
                 // Use txDateMap fast path when available — eliminates DateFormatter parse
                 // (~16μs/tx × 19k = ~300ms saved per legacy MoM call).
                 if let map = txDateMap {
-                    for tx in allTransactions where tx.type == .expense {
+                    for tx in allTransactions where Self.moneyBucket(tx.type) == .expense {
                         guard let txDate = map[tx.date] else { continue }
                         let amount = resolveAmount(tx, baseCurrency: baseCurrency)
                         if txDate >= thisMonthStart && txDate < thisMonthEnd { thisMonthTotal += amount }
                         else if txDate >= prevMonthStart && txDate < prevMonthEnd { prevMonthTotal += amount }
                     }
                 } else {
-                    for tx in allTransactions where tx.type == .expense {
+                    for tx in allTransactions where Self.moneyBucket(tx.type) == .expense {
                         guard let txDate = FastDateParser.date(from: tx.date) else { continue }
                         let amount = resolveAmount(tx, baseCurrency: baseCurrency)
                         if txDate >= thisMonthStart && txDate < thisMonthEnd { thisMonthTotal += amount }
@@ -545,7 +552,7 @@ extension InsightsService {
             id: "spending_spike",
             type: .spendingSpike,
             title: String(localized: "insights.spendingSpike"),
-            subtitle: catName,
+            subtitle: Self.categoryLabel(for: catName),
             metric: InsightMetric(
                 value: spikeAmount,
                 formattedValue: Formatting.formatCurrencySmart(spikeAmount, currency: baseCurrency),

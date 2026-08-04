@@ -51,7 +51,9 @@ struct CategoryBreakdownRow: View {
             )
         ) {
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text(item.categoryName)
+                // `categoryName` carries the raw grouping key (it drives the deep-dive
+                // lookup), so the technical "Loan Payment" key is localized here.
+                Text(CategoryDisplay.displayName(for: item.categoryName, type: .expense))
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textPrimary)
                 if !item.subcategories.isEmpty {

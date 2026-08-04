@@ -1069,11 +1069,40 @@ Rendering a money amount?
 | `Formatting.formatCurrency(...)` **for display** | Always shows `.00` ("14 924 515.00 ₸") — looks broken for round numbers | `formatCurrencySmart` (or `FormattedAmountText`). `formatCurrency` is reserved for accessibilityLabel and storage |
 | `Decimal` / `NSDecimalNumber` rendered via interpolation | Same — no symbol, no grouping | Convert with `NSDecimalNumber(decimal:).doubleValue` and pass to a formatter |
 
+#### Overflow: `AmountDisplayPolicy`
+
+`FormattedAmountText` decides for itself what to do when the container is too narrow — no
+call site should hand-shorten an amount.
+
+| Policy | Behaviour | Where |
+|---|---|---|
+| `.adaptive` (**default**) | `ViewThatFits`: full number → "1,2 млн ₸" → "1 млн ₸" | everything by default |
+| `.full` | never abbreviates | amount editors, calculator display |
+| `.compact` | always abbreviated | very tight chrome |
+
+Rules that make this safe:
+- **A value that fits always renders in full**, so adopting `.adaptive` changed nothing on
+  screens whose amounts already fitted. Never pre-shorten by calling
+  `Formatting.formatCurrencyCompact` directly in a view.
+- Abbreviations come from the system's compact notation
+  (`Formatting.formatCurrencyCompact`), so unit names follow the reader's locale —
+  including ja/ko, which group by 10 000 (万 / 억), not 1 000. A hand-rolled K/M table
+  prints the wrong magnitude there. Pinned by `FormattingCompactTests`.
+- A compact string can be **longer** than the full one ("10 тыс. ₸" vs "10 000 ₸"), so a
+  candidate is offered only when it is actually shorter; otherwise the full text repeats
+  in that slot. Never put an `if` inside `ViewThatFits` — an absent candidate becomes an
+  `EmptyView`, which always "fits" and renders nothing.
+- VoiceOver always reads the FULL amount (`accessibilityLabel`). An abbreviation is a
+  layout concession, not a change of value.
+- `.minimumScaleFactor` at the call site still applies, as the last resort after the
+  smallest candidate.
+
 #### Reference table
 
 | Context | Function / Component | Decimals |
 |---------|----------------------|----------|
-| Standalone view display | **`FormattedAmountText`** | Smart (hides `.00`, dims `.XX`) |
+| Standalone view display | **`FormattedAmountText`** | Smart (hides `.00`, dims `.XX`); abbreviates only when it doesn't fit |
+| Abbreviated amount (fallback only) | `Formatting.formatCurrencyCompact(_:currency:)` | Localized compact ("1,2 млн ₸") |
 | InfoRow / InfoRowConfig | **`init(... amount: currency:)`** | Smart (delegates to `FormattedAmountText`) |
 | Composed display string | **`Formatting.formatCurrencySmart(_:currency:)`** | Smart (0 or 2) |
 | Accessibility / VoiceOver / CSV | `Formatting.formatCurrency(_:currency:)` | Always 2 (legacy compat — DO NOT use for display) |

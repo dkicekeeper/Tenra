@@ -75,4 +75,34 @@ nonisolated struct Formatting {
 
         return "\(formattedAmount) \(symbol)"
     }
+
+    // MARK: - Compact (abbreviated) amounts
+
+    /// Abbreviated amount with currency symbol — "1.2M ₸", "1,2 млн ₸", "120万 ₸".
+    ///
+    /// Used ONLY as a fallback by `FormattedAmountText` when the full amount does not fit
+    /// its container (see `AmountDisplayPolicy.adaptive`). Never call it to pre-shorten an
+    /// amount by hand: a value that fits must always render in full.
+    ///
+    /// The unit names come from the system compact notation, so they follow the reader's
+    /// locale — including languages that group by 10 000 rather than 1 000 (ja 万, ko 억).
+    /// A hand-rolled K/M table produces wrong magnitudes there, which is exactly the case
+    /// this is meant to serve (currencies counted in hundreds of millions).
+    ///
+    /// - Parameter maxFractionDigits: `1` → "1.2M", `0` → "1M".
+    /// - Parameter locale: injectable for tests; defaults to the reader's locale.
+    static func formatCurrencyCompact(
+        _ amount: Double,
+        currency: String,
+        maxFractionDigits: Int = 1,
+        locale: Locale = .current
+    ) -> String {
+        let symbol = currencySymbol(for: currency)
+        let style = FloatingPointFormatStyle<Double>
+            .number
+            .notation(.compactName)
+            .precision(.fractionLength(0...max(0, maxFractionDigits)))
+            .locale(locale)
+        return "\(amount.formatted(style)) \(symbol)"
+    }
 }

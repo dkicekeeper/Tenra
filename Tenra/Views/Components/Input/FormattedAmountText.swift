@@ -8,12 +8,27 @@
 
 import SwiftUI
 
+/// How an amount behaves when its container is too narrow for the full number.
+enum AmountDisplayPolicy {
+    /// Always the full number. Truncation/scaling is the caller's problem — use where
+    /// the exact figure IS the content (amount editors, calculator display).
+    case full
+    /// Full number when it fits, abbreviated ("1,2 млн ₸") when it doesn't. Default:
+    /// nothing changes visually anywhere the amount already fitted.
+    case adaptive
+    /// Always abbreviated (tight chrome: chart labels, badges).
+    case compact
+}
+
 /// Универсальный компонент для отображения денежных сумм с умной обработкой дробной части
 ///
 /// Логика отображения:
 /// - Если сотые = 0 и showDecimalsWhenZero = false → не показывает дробную часть (1000 ₸)
 /// - Если сотые > 0 → показывает с прозрачностью decimalOpacity (1000.50 ₸)
 /// - Если showDecimalsWhenZero = true → всегда показывает (1000.00 ₸)
+///
+/// Overflow: see `AmountDisplayPolicy`. VoiceOver always reads the FULL amount, whichever
+/// variant is drawn — an abbreviation is a layout concession, not a change of value.
 struct FormattedAmountText: View {
     let amount: Double
     let currency: String
@@ -23,6 +38,7 @@ struct FormattedAmountText: View {
     let color: Color
     let showDecimalsWhenZero: Bool
     let decimalOpacity: Double
+    let policy: AmountDisplayPolicy
 
     /// Инициализатор с полным набором параметров
     init(
@@ -33,7 +49,8 @@ struct FormattedAmountText: View {
         fontWeight: Font.Weight = .semibold,
         color: Color = .primary,
         showDecimalsWhenZero: Bool = AmountDisplayConfiguration.shared.showDecimalsWhenZero,
-        decimalOpacity: Double = AmountDisplayConfiguration.shared.decimalOpacity
+        decimalOpacity: Double = AmountDisplayConfiguration.shared.decimalOpacity,
+        policy: AmountDisplayPolicy = .adaptive
     ) {
         self.amount = amount
         self.currency = currency
@@ -43,6 +60,7 @@ struct FormattedAmountText: View {
         self.color = color
         self.showDecimalsWhenZero = showDecimalsWhenZero
         self.decimalOpacity = decimalOpacity
+        self.policy = policy
     }
 
     private var formattedParts: (integer: String, decimal: String, symbol: String) {
@@ -94,10 +112,56 @@ struct FormattedAmountText: View {
         return Text("\(integerRun)\(symbolRun)")
     }
 
+    // MARK: - Compact variants
+
+    /// Abbreviated string for `digits` fraction digits, as one styled `Text`.
+    /// No dimmed decimal run here: in "1,2 млн" the digit after the separator is a
+    /// significant figure, not a cents tail.
+    private func compactText(digits: Int) -> Text {
+        Text(prefix + Formatting.formatCurrencyCompact(amount, currency: currency, maxFractionDigits: digits))
+            .font(fontSize).fontWeight(fontWeight).foregroundStyle(color)
+    }
+
+    /// Fallback candidate for `ViewThatFits`, or the full text when abbreviating wouldn't
+    /// actually help.
+    ///
+    /// Compact unit names are localized words, so "10 тыс. ₸" is LONGER than "10 000 ₸";
+    /// swapping in a longer string would overflow harder, not less. Falling back to the
+    /// full text keeps every `ViewThatFits` slot filled — an `if` here would leave an
+    /// `EmptyView` candidate, which always "fits" and would render nothing at all.
+    private func candidate(digits: Int) -> Text {
+        let parts = formattedParts
+        let fullLength = (prefix + parts.integer + parts.symbol).count
+        let compact = prefix + Formatting.formatCurrencyCompact(amount, currency: currency, maxFractionDigits: digits)
+        guard compact.count < fullLength else { return composedText }
+        return compactText(digits: digits)
+    }
+
+    /// Full amount, always — VoiceOver must not lose precision to a layout decision.
+    private var accessibilityText: String {
+        prefix + Formatting.formatCurrencySmart(amount, currency: currency, showDecimalsWhenZero: showDecimalsWhenZero)
+    }
+
     var body: some View {
-        composedText
-            .contentTransition(.numericText())
-            .animation(AppAnimation.gentleSpring, value: amount)
+        Group {
+            switch policy {
+            case .full:
+                composedText
+            case .compact:
+                compactText(digits: 1)
+            case .adaptive:
+                // First candidate that fits wins, so an amount with room to spare renders
+                // exactly as it did before this policy existed.
+                ViewThatFits(in: .horizontal) {
+                    composedText.lineLimit(1)
+                    candidate(digits: 1).lineLimit(1)
+                    candidate(digits: 0).lineLimit(1)
+                }
+            }
+        }
+        .contentTransition(.numericText())
+        .animation(AppAnimation.gentleSpring, value: amount)
+        .accessibilityLabel(accessibilityText)
     }
 }
 
@@ -107,6 +171,34 @@ struct FormattedAmountText: View {
         FormattedAmountText(amount: 1234.56, currency: "USD", prefix: "-", color: .primary)
         FormattedAmountText(amount: 500.50, currency: "EUR", prefix: "", color: .blue)
         FormattedAmountText(amount: 999.00, currency: "RUB", prefix: "", color: .orange)
+    }
+    .padding()
+}
+
+#Preview("Adaptive — narrowing container") {
+    // Same amount, shrinking width: full → "1,2 млн ₸" → "1 млн ₸".
+    VStack(alignment: .leading, spacing: 16) {
+        ForEach([260.0, 150.0, 110.0, 80.0], id: \.self) { width in
+            HStack {
+                Text("Баланс")
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(AppColors.textSecondary)
+                Spacer()
+                FormattedAmountText(amount: 148_920_450, currency: "KZT")
+            }
+            .frame(width: width)
+            .padding(8)
+            .background(AppColors.bgCard)
+        }
+        HStack {
+            Text("full policy")
+                .font(AppTypography.bodySmall)
+            Spacer()
+            FormattedAmountText(amount: 148_920_450, currency: "KZT", policy: .full)
+        }
+        .frame(width: 110)
+        .padding(8)
+        .background(AppColors.bgCard)
     }
     .padding()
 }

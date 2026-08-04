@@ -21,13 +21,30 @@ struct InsightsStatCard: View {
     var previous: Double? = nil
     /// Whether an increase is good (income, net flow) or bad (expenses) — colours the delta.
     var upIsGood: Bool = true
+    /// Trend behind the number. The card is a summary, so the sparkline answers
+    /// "is this normal for me?" without a tap. Needs ≥2 points to mean anything.
+    var trendPoints: [PeriodDataPoint] = []
+    /// Which series the sparkline plots. `nil` hides it.
+    var trendSeries: PeriodChartSeries? = nil
+    /// Rendered when the card is a navigation link — signals the drill-down.
+    var showsChevron: Bool = false
+
+    private var showsTrend: Bool { trendSeries != nil && trendPoints.count >= 2 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text(title)
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textSecondary)
-                .lineLimit(1)
+            HStack(spacing: AppSpacing.xxs) {
+                Text(title)
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(AppColors.textSecondary)
+                    .lineLimit(1)
+                if showsChevron {
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: AppIconSize.sm, weight: .semibold))
+                        .foregroundStyle(AppColors.textTertiary)
+                }
+            }
 
             FormattedAmountText(
                 amount: amount,
@@ -41,6 +58,18 @@ struct InsightsStatCard: View {
 
             if let previous {
                 Self.deltaBadge(current: amount, previous: previous, upIsGood: upIsGood)
+            }
+
+            if showsTrend, let trendSeries {
+                MiniSparkline(
+                    dataPoints: trendPoints,
+                    series: trendSeries,
+                    lineWidth: 1.2,
+                    height: 28,
+                    endDotRadius: 2.5
+                )
+                .padding(.top, AppSpacing.xxs)
+                .accessibilityHidden(true)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -82,6 +111,26 @@ struct InsightsStatCard: View {
                          color: AppColors.destructive, previous: 350_000, upIsGood: false)
         InsightsStatCard(title: "Доходы", amount: 530_000, currency: "KZT",
                          color: AppColors.success, previous: 480_000, upIsGood: true)
+    }
+    .screenPadding()
+}
+
+#Preview("2×2 grid — trends + drill-down") {
+    let points = PeriodDataPoint.mockMonthly()
+    return LazyVGrid(columns: [GridItem(.flexible(), spacing: AppSpacing.md),
+                               GridItem(.flexible(), spacing: AppSpacing.md)],
+                     spacing: AppSpacing.md) {
+        InsightsStatCard(title: "Доступный баланс", amount: 148_920_450, currency: "KZT",
+                         trendPoints: points, trendSeries: .wealth, showsChevron: true)
+        InsightsStatCard(title: "Чистый поток", amount: 210_000, currency: "KZT",
+                         previous: 130_000, upIsGood: true,
+                         trendPoints: points, trendSeries: .cashFlow, showsChevron: true)
+        InsightsStatCard(title: "Расходы", amount: 320_000, currency: "KZT",
+                         color: AppColors.destructive, previous: 350_000, upIsGood: false,
+                         trendPoints: points, trendSeries: .spending, showsChevron: true)
+        InsightsStatCard(title: "Доходы", amount: 530_000, currency: "KZT",
+                         color: AppColors.success, previous: 480_000, upIsGood: true,
+                         trendPoints: points, trendSeries: .income, showsChevron: true)
     }
     .screenPadding()
 }

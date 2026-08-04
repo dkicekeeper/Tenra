@@ -131,29 +131,33 @@ struct InsightsView: View {
 
     private var insightsSummaryHeaderSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.lg) {
-            NavigationLink(destination: InsightsSummaryDetailView(
-                totalIncome: insightsViewModel.totalIncome,
-                totalExpenses: insightsViewModel.totalExpenses,
-                netFlow: insightsViewModel.netFlow,
-                currentBucketIncome: insightsViewModel.currentBucketIncome,
-                currentBucketExpenses: insightsViewModel.currentBucketExpenses,
-                currentBucketNetFlow: insightsViewModel.currentBucketNetFlow,
-                previousBucketIncome: insightsViewModel.previousBucketIncome,
-                previousBucketExpenses: insightsViewModel.previousBucketExpenses,
-                previousBucketNetFlow: insightsViewModel.previousBucketNetFlow,
-                bucketLabel: insightsViewModel.currentBucketLabel,
-                currency: insightsViewModel.baseCurrency,
-                periodDataPoints: insightsViewModel.periodDataPoints,
-                granularity: insightsViewModel.currentGranularity
-            )) {
-                summaryStatsGrid
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+            summaryStatsGrid
             // Health score card moved into the «Важное сейчас» section (2026-07 UX pass).
         }
         .screenPadding()
         .contentReveal(isReady: !insightsViewModel.isLoading)
+    }
+
+    /// Summary detail scoped to one metric. Each stat card gets its own destination so
+    /// the screen answers the question the card asked (the whole grid used to be one
+    /// link to the same generic overview — and one VoiceOver button).
+    private func summaryDetail(focus: SummaryDetailFocus) -> InsightsSummaryDetailView {
+        InsightsSummaryDetailView(
+            totalIncome: insightsViewModel.totalIncome,
+            totalExpenses: insightsViewModel.totalExpenses,
+            netFlow: insightsViewModel.netFlow,
+            currentBucketIncome: insightsViewModel.currentBucketIncome,
+            currentBucketExpenses: insightsViewModel.currentBucketExpenses,
+            currentBucketNetFlow: insightsViewModel.currentBucketNetFlow,
+            previousBucketIncome: insightsViewModel.previousBucketIncome,
+            previousBucketExpenses: insightsViewModel.previousBucketExpenses,
+            previousBucketNetFlow: insightsViewModel.previousBucketNetFlow,
+            bucketLabel: insightsViewModel.currentBucketLabel,
+            currency: insightsViewModel.baseCurrency,
+            periodDataPoints: insightsViewModel.periodDataPoints,
+            granularity: insightsViewModel.currentGranularity,
+            focus: focus
+        )
     }
 
     /// Health score as an insight-style card, navigating to the health detail.
@@ -184,37 +188,83 @@ struct InsightsView: View {
                     .foregroundStyle(AppColors.textPrimary)
             }
             LazyVGrid(columns: columns, spacing: AppSpacing.md) {
-                InsightsStatCard(
-                    title: String(localized: "insights.availableBalance"),
-                    amount: insightsViewModel.availableBalance,
-                    currency: currency,
-                    color: insightsViewModel.availableBalance >= 0 ? AppColors.textPrimary : AppColors.destructive
-                )
-                InsightsStatCard(
-                    title: String(localized: "insights.netFlow"),
-                    amount: netFlow,
-                    currency: currency,
-                    color: netFlow >= 0 ? AppColors.textPrimary : AppColors.destructive,
-                    previous: insightsViewModel.previousBucketNetFlow,
-                    upIsGood: true
-                )
-                InsightsStatCard(
-                    title: String(localized: "insights.expenses"),
-                    amount: insightsViewModel.currentBucketExpenses,
-                    currency: currency,
-                    color: AppColors.destructive,
-                    previous: insightsViewModel.previousBucketExpenses,
-                    upIsGood: false
-                )
-                InsightsStatCard(
-                    title: String(localized: "insights.income"),
-                    amount: insightsViewModel.currentBucketIncome,
-                    currency: currency,
-                    color: AppColors.success,
-                    previous: insightsViewModel.previousBucketIncome,
-                    upIsGood: true
-                )
+                // Balance is a point-in-time figure, so it drills into the wealth
+                // insight (per-account composition) rather than a period trend.
+                statCardLink(destination: balanceDestination) {
+                    InsightsStatCard(
+                        title: String(localized: "insights.availableBalance"),
+                        amount: insightsViewModel.availableBalance,
+                        currency: currency,
+                        color: insightsViewModel.availableBalance >= 0 ? AppColors.textPrimary : AppColors.destructive,
+                        trendPoints: insightsViewModel.balanceTrendPoints,
+                        trendSeries: .wealth,
+                        showsChevron: true
+                    )
+                }
+                statCardLink(destination: summaryDetail(focus: .netFlow)) {
+                    InsightsStatCard(
+                        title: String(localized: "insights.netFlow"),
+                        amount: netFlow,
+                        currency: currency,
+                        color: netFlow >= 0 ? AppColors.textPrimary : AppColors.destructive,
+                        previous: insightsViewModel.previousBucketNetFlow,
+                        upIsGood: true,
+                        trendPoints: insightsViewModel.periodDataPoints,
+                        trendSeries: .cashFlow,
+                        showsChevron: true
+                    )
+                }
+                statCardLink(destination: summaryDetail(focus: .expenses)) {
+                    InsightsStatCard(
+                        title: String(localized: "insights.expenses"),
+                        amount: insightsViewModel.currentBucketExpenses,
+                        currency: currency,
+                        color: AppColors.destructive,
+                        previous: insightsViewModel.previousBucketExpenses,
+                        upIsGood: false,
+                        trendPoints: insightsViewModel.periodDataPoints,
+                        trendSeries: .spending,
+                        showsChevron: true
+                    )
+                }
+                statCardLink(destination: summaryDetail(focus: .income)) {
+                    InsightsStatCard(
+                        title: String(localized: "insights.income"),
+                        amount: insightsViewModel.currentBucketIncome,
+                        currency: currency,
+                        color: AppColors.success,
+                        previous: insightsViewModel.previousBucketIncome,
+                        upIsGood: true,
+                        trendPoints: insightsViewModel.periodDataPoints,
+                        trendSeries: .income,
+                        showsChevron: true
+                    )
+                }
             }
+        }
+    }
+
+    /// One tappable stat card. Each card is its own link so VoiceOver announces four
+    /// buttons instead of reading the whole grid as a single one.
+    private func statCardLink<Destination: View, Label: View>(
+        destination: Destination,
+        @ViewBuilder label: () -> Label
+    ) -> some View {
+        NavigationLink(destination: destination) {
+            label().contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Wealth insight (per-account composition) when it exists — it is computed from the
+    /// SAME account filter as `availableBalance`, so the totals agree. Falls back to the
+    /// overview summary before the first insights pass completes.
+    @ViewBuilder
+    private var balanceDestination: some View {
+        if let wealth = insightsViewModel.insights.first(where: { $0.type == .totalWealth }) {
+            insightDetailView(for: wealth)
+        } else {
+            summaryDetail(focus: .overview)
         }
     }
 
@@ -403,12 +453,13 @@ struct InsightsView: View {
     // MARK: - Navigation Detail Builder
 
     /// Builds the correct InsightDetailView variant depending on category.
-    /// Spending insights get category drill-down; all others are read-only.
+    /// Spending and income insights get category drill-down (income so the deposit-interest
+    /// source opens the deposits behind it); all others are read-only.
     /// @ViewBuilder enables conditional branches with different generic specialisations
     /// (InsightDetailView<InsightDeepDiveView> vs InsightDetailView<Never>) without AnyView.
     @ViewBuilder
     private func insightDetailView(for insight: Insight) -> some View {
-        if insight.category == .spending {
+        if insight.category == .spending || insight.category == .income {
             InsightDetailView(insight: insight, currency: insightsViewModel.baseCurrency) { item, periodKey in
                 InsightDeepDiveView(
                     categoryName: item.categoryName,
@@ -416,7 +467,8 @@ struct InsightsView: View {
                     iconSource: item.iconSource,
                     currency: insightsViewModel.baseCurrency,
                     viewModel: insightsViewModel,
-                    periodKey: periodKey
+                    periodKey: periodKey,
+                    isExpenseContext: insight.category == .spending
                 )
             }
         } else {

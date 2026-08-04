@@ -67,7 +67,7 @@ extension InsightsService {
         // Direct in-memory expense sum for last 30 days.
         // This 30-day filter doesn't align to month boundaries, so it can't use preAggregated.
         let last30Spent = transactions
-            .filter { $0.type == .expense }
+            .filter { Self.moneyBucket($0.type) == .expense }
             .reduce(0.0) { total, tx in
                 guard let txDate = FastDateParser.date(from: tx.date),
                       txDate >= thirtyDaysAgo, txDate < now else { return total }
@@ -299,10 +299,14 @@ extension InsightsService {
         txDateMap: [String: Date]? = nil
     ) -> Insight? {
         let incomeCategories = categories.filter { $0.type == .income }
-        guard incomeCategories.count >= 2 else { return nil }
 
-        let incomeTransactions = allTransactions.filter { $0.type == .income }
+        let incomeTransactions = allTransactions.filter { Self.moneyBucket($0.type) == .income }
         guard !incomeTransactions.isEmpty else { return nil }
+
+        // A breakdown needs at least two sources. Deposit interest is a source of its own
+        // (synthetic category), so it counts even though it has no CustomCategory.
+        let hasInterestSource = incomeTransactions.contains { $0.type == .depositInterestAccrual }
+        guard incomeCategories.count >= 2 || (incomeCategories.count >= 1 && hasInterestSource) else { return nil }
 
         // Realized-only, matching the period totals (pt.income) the percentages divide by.
         // Without this a future-dated income in the current bucket inflates the breakdown
@@ -316,7 +320,9 @@ extension InsightsService {
         for cat in categories { categoryByName[cat.name] = cat }
 
         let makeBreakdown: ([Transaction], Double) -> [CategoryBreakdownItem] = { txns, periodTotal in
-            Dictionary(grouping: txns, by: { $0.category })
+            // Keyed via categoryKey so deposit interest groups under one locale-independent
+            // source instead of whatever localized string each accrual happened to store.
+            Dictionary(grouping: txns, by: { InsightsService.categoryKey(for: $0) })
                 .map { catName, catTxns -> (key: String, total: Double) in
                     (key: catName, total: catTxns.reduce(0.0) { $0 + self.resolveAmount($1, baseCurrency: baseCurrency) })
                 }
@@ -324,13 +330,16 @@ extension InsightsService {
                 .sorted { $0.total > $1.total }
                 .map { item in
                     let cat = categoryByName[item.key]
+                    // Synthetic categories (deposit interest) have no CustomCategory —
+                    // fall back to the baked-in system style so they still get an icon.
+                    let synthetic = InsightsService.syntheticCategoryStyle(for: item.key)
                     return CategoryBreakdownItem(
                         id: item.key,
                         categoryName: item.key,
                         amount: item.total,
                         percentage: periodTotal > 0 ? (item.total / periodTotal) * 100 : 0,
-                        color: Color(hex: cat?.colorHex ?? "#5856D6"),
-                        iconSource: cat?.iconSource,
+                        color: cat.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? Color(hex: "#5856D6"),
+                        iconSource: cat?.iconSource ?? synthetic?.icon,
                         subcategories: []
                     )
                 }
@@ -365,7 +374,7 @@ extension InsightsService {
                 id: "income_source_breakdown",
                 type: .incomeSourceBreakdown,
                 title: String(localized: "insights.incomeSourceBreakdown"),
-                subtitle: top.categoryName,
+                subtitle: Self.categoryLabel(for: top.categoryName),
                 metric: InsightMetric(
                     value: topPercent,
                     formattedValue: String(format: "%.0f%%", topPercent),

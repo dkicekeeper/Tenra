@@ -27,6 +27,86 @@ Split into 10 files: main service (~1095 LOC) + 9 domain extensions:
 - Threaded through entire computation chain
 - ⚠️ **No `transactionStore` access in extension methods** — all data comes via parameters (snapshot fields). Adding new generators must follow this pattern.
 
+## Summary stat grid (2×2)
+
+Each of the four cards is its **own** `NavigationLink` — the grid used to be one link
+around everything, so every card landed on the same generic overview and VoiceOver
+announced the whole grid as a single button.
+
+| Card | Destination |
+|---|---|
+| Доступный баланс | the `total_wealth` insight (per-account composition). Its total is computed from the SAME account filter as `availableBalance` (`!isLoan && includeInBalance`), so the figures agree; falls back to the overview before the first insights pass lands |
+| Чистый поток / Расходы / Доходы | `InsightsSummaryDetailView(focus:)` — `SummaryDetailFocus` picks the hero metric, the `PeriodChartSeries` drawn, the `PeriodListMetric` of the period list and the screen title |
+
+Cards also carry a `MiniSparkline` so the summary answers "is this normal for me?" without
+a tap. The balance card's series is the running-wealth line from
+`InsightsService.cumulativeBalancePoints(_:endingBalance:)` — **the** derivation, shared
+with the wealth insight's chart so the two never disagree (pinned by
+`CumulativeBalancePointsTests`). Don't re-implement that walk locally.
+
+`SummaryDetailFocus` reuses existing section titles (`insights.spendingTrend`,
+`insights.incomeGrowth`, `insights.cashFlowTrend`) — no new localization keys.
+
+## Money bucket classification (income vs expense)
+
+⚠️ **Never write a bare `tx.type == .expense` / `== .income` in an Insights aggregation.**
+Use `InsightsService.moneyBucket(_:)`, which delegates to the canonical
+`TransactionType.summaryContribution(isFuture:)` (CLAUDE.md ⚠️ #11) — the same rule the
+Home and History summary cards use:
+
+- `.loanPayment` / `.loanEarlyRepayment` → **expense**
+- `.depositInterestAccrual` → **income**
+- `.internalTransfer`, `.depositTopUp`, `.depositWithdrawal` → neither
+
+Until 2026-08 Insights ran its own `switch tx.type` matching only `.income`/`.expense`, so
+loan payments and deposit interest were silently missing from every total, chart and derived
+metric (savings rate, health score, forecast, cash flow). `filterService.filterByType(_:type:)`
+matches the raw type and must NOT be used for the expense/income slice.
+
+Realized-vs-future is **not** decided by `moneyBucket` — every call site keeps its own
+`LedgerPolicyRule.isRealized` gate.
+
+### Synthetic categories: `InsightsService.categoryKey(for:)`
+
+Two transaction types have no usable `category` string, so they get locale-independent
+synthetic keys (both rendered through `CategoryDisplay.displayName`):
+
+| Type | Key | Why |
+|---|---|---|
+| `.loanPayment` / `.loanEarlyRepayment` | `TransactionType.loanPaymentCategoryName` | `category` is empty (UI infers the label from the type) |
+| `.depositInterestAccrual` | `TransactionType.depositInterestCategoryName` | `category` stores a *localized* string, so a locale change would split the income source in two |
+
+Without the keys, loan payments would land in the expense total but vanish from the category
+breakdown (per-category sum ≠ total). A loan payment tagged with a real user category **still**
+maps to the synthetic key: `TransactionStore`'s category aggregates count `expenseAmount` for
+`type == .expense` only (rule C-6), so folding it into a user category would desync Insights
+budget figures from the Categories screen.
+
+`CategoryBreakdownItem.categoryName` and `InsightDeepDiveView.categoryName` carry the **raw**
+key (it drives the deep-dive lookup) — localize at render time with `CategoryDisplay`, or with
+`InsightsService.categoryLabel(for:)` when the service builds a card subtitle.
+
+**Icon/tint** — synthetic categories have no `CustomCategory`, so
+`InsightsService.syntheticCategoryStyle(for:)` supplies one (`creditcard.fill` / expense tint,
+`percent` / income tint), mirroring `CategoryStyleCache.systemTypeStyle` so a loan payment looks
+the same in Insights as in the transaction list. Every `CategoryBreakdownItem` builder falls back
+to it: `cat?.iconSource ?? synthetic?.icon`.
+
+**Deep dive** — `InsightsService.DeepDiveGrouping.forCategory(_:)` decides what a drill-down
+breaks a category into: user categories → subcategories, `"Loan Payment"` → the loan account of
+each payment (`targetAccountId`), `"Deposit Interest"` → the deposit that paid it (`accountId`).
+Account groupings key on the account **id**, so `SubcategoryBreakdownItem.id` is an account id
+there and `InsightsViewModel.categoryDeepDive` fills `iconSource` from
+`transactionStore.accountById` (the nonisolated generator can't read account icons).
+`InsightDeepDiveView` then renders the account logo instead of a colour dot and recolors its orb
+slices with each logo's dominant colour via `DominantColorExtractor` — the same async resolve
+`heroAccentGlow` and `WealthOrbSection` use. `generateCategoryDeepDive` filters on `moneyBucket != .none` (not expense-only),
+so income categories drill down too; `InsightsView` therefore enables the drill-down closure for
+`.income` insights as well and passes `isExpenseContext: false` so the comparison card colors a
+rise green.
+
+Pinned by `InsightsMoneyBucketTests`.
+
 ## PreAggregatedData
 
 Single O(N) pass builds:

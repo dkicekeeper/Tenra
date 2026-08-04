@@ -19,23 +19,37 @@ struct InsightDeepDiveView: View {
     /// breakdowns). Threaded so a drill-down from a non-current month shows that
     /// month's data, not the current period's.
     let periodKey: String?
+    /// Drives the comparison card's good/bad coloring: a rise is red for spending,
+    /// green for income (deposit interest drills down here too).
+    let isExpenseContext: Bool
 
     @State private var subcategories: [SubcategoryBreakdownItem] = []
     /// Previous-bucket total for the comparison card.
     @State private var prevBucketAmount: Double = 0
+    /// Accent color per account row, extracted from its logo (empty for subcategory rows).
+    @State private var brandColorByID: [String: Color] = [:]
 
     private static let logger = Logger(subsystem: "Tenra", category: "CategoryDeepDive")
 
     // MARK: - Initializers
 
     /// Production initializer
-    init(categoryName: String, color: Color, iconSource: IconSource?, currency: String, viewModel: InsightsViewModel, periodKey: String? = nil) {
+    init(
+        categoryName: String,
+        color: Color,
+        iconSource: IconSource?,
+        currency: String,
+        viewModel: InsightsViewModel,
+        periodKey: String? = nil,
+        isExpenseContext: Bool = true
+    ) {
         self.categoryName = categoryName
         self.color = color
         self.iconSource = iconSource
         self.currency = currency
         self.viewModel = viewModel
         self.periodKey = periodKey
+        self.isExpenseContext = isExpenseContext
     }
 
     /// Preview initializer — pre-populates state, no ViewModel needed
@@ -45,7 +59,8 @@ struct InsightDeepDiveView: View {
         iconSource: IconSource?,
         currency: String,
         subcategories: [SubcategoryBreakdownItem],
-        prevBucketAmount: Double = 0
+        prevBucketAmount: Double = 0,
+        isExpenseContext: Bool = true
     ) {
         self.categoryName = categoryName
         self.color = color
@@ -53,6 +68,7 @@ struct InsightDeepDiveView: View {
         self.currency = currency
         self.viewModel = nil
         self.periodKey = nil
+        self.isExpenseContext = isExpenseContext
         _subcategories = State(initialValue: subcategories)
         _prevBucketAmount = State(initialValue: prevBucketAmount)
     }
@@ -83,7 +99,8 @@ struct InsightDeepDiveView: View {
         // Amount uses HeroSection's built-in slot (consistent with InsightDetailView).
         return HeroSection(
             icon: nil,
-            title: categoryName,
+            // Raw grouping key in, localized label out (e.g. "Loan Payment").
+            title: CategoryDisplay.displayName(for: categoryName, type: isExpenseContext ? .expense : .income),
             iconTint: .monochrome(color),
             showsIcon: false,
             primaryAmount: totalAmount > 0 ? totalAmount : nil,
@@ -95,9 +112,16 @@ struct InsightDeepDiveView: View {
     // MARK: - Subcategories
 
     private var subcategorySection: some View {
-        // Build slices once so the chart and the list draw each subcategory in the
-        // exact same color — keyed by id, not by a separate per-view index formula.
-        let slices = DonutSlice.from(subcategories, baseColor: color)
+        // Build slices once so the chart and the list draw each row in the exact same
+        // color — keyed by id, not by a separate per-view index formula. Account rows
+        // (loans / deposits) override the opacity ramp with each logo's own accent color
+        // once `brandColorByID` resolves, the same treatment `heroAccentGlow` applies.
+        let baseSlices = DonutSlice.from(subcategories, baseColor: color)
+        let slices = baseSlices.map { slice in
+            guard let brand = brandColorByID[slice.id] else { return slice }
+            return DonutSlice(id: slice.id, amount: slice.amount, color: brand,
+                              label: slice.label, percentage: slice.percentage)
+        }
         let colorByID = Dictionary(uniqueKeysWithValues: slices.map { ($0.id, $0.color) })
         return VStack(alignment: .leading, spacing: AppSpacing.lg) {
             OrbChart(slices: slices, showLabels: true, centerIcon: iconSource)
@@ -106,9 +130,15 @@ struct InsightDeepDiveView: View {
             // List
             ForEach(subcategories) { item in
                 HStack (alignment:.top){
-                    Circle()
-                        .fill(colorByID[item.id] ?? color)
-                        .frame(width: 24, height: 24)
+                    // Entity rows (a loan, a deposit) show the account's own logo;
+                    // plain subcategory rows keep the slice-colored dot.
+                    if let itemIcon = item.iconSource {
+                        IconView(source: itemIcon, size: AppIconSize.xxl)
+                    } else {
+                        Circle()
+                            .fill(colorByID[item.id] ?? color)
+                            .frame(width: 24, height: 24)
+                    }
 
                     Text(item.name)
                         .font(AppTypography.body)
@@ -127,6 +157,23 @@ struct InsightDeepDiveView: View {
             }
         }
         .screenPadding()
+        .task(id: subcategories.map(\.id)) { await resolveBrandColors() }
+    }
+
+    /// Resolves each account row's accent color from its logo (in-memory cached, so
+    /// usually instant). Mirrors `WealthOrbSection` in InsightDetailView — the generator
+    /// can't do this itself: it runs nonisolated with no access to logo images.
+    private func resolveBrandColors() async {
+        var resolved: [String: Color] = [:]
+        for item in subcategories {
+            guard case .brandService(let brand) = item.iconSource,
+                  let color = await DominantColorExtractor.accentColor(forBrand: brand) else { continue }
+            resolved[item.id] = color
+        }
+        guard resolved != brandColorByID else { return }
+        withAnimation(AppAnimation.gentleSpring) {
+            brandColorByID = resolved
+        }
     }
 
     // MARK: - Comparison
@@ -144,7 +191,7 @@ struct InsightDeepDiveView: View {
                 previousLabel: previousLabel,
                 previousAmount: prevBucketAmount,
                 currency: currency,
-                isExpenseContext: true
+                isExpenseContext: isExpenseContext
             )
         }
         .screenPadding()

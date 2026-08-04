@@ -24,7 +24,9 @@ enum CategoryDisplay {
     /// - User-defined categories pass through unchanged.
     /// - Empty categories fall back to a generic "Without category" label rather than
     ///   rendering an empty UI region.
-    static func displayName(for category: String, type: TransactionType) -> String {
+    /// `nonisolated`: also called off MainActor by `InsightsService` when it labels a
+    /// breakdown item built on the background insights thread.
+    nonisolated static func displayName(for category: String, type: TransactionType) -> String {
         let trimmed = category.trimmingCharacters(in: .whitespaces)
 
         if trimmed.isEmpty {
@@ -40,6 +42,10 @@ enum CategoryDisplay {
             }
         }
 
+        if trimmed == TransactionType.depositInterestCategoryName {
+            return String(localized: "transaction.type.depositInterestAccrual", defaultValue: "Начисление процентов")
+        }
+
         if trimmed == TransactionType.transferCategoryName {
             return String(localized: "transaction.type.internalTransfer", defaultValue: "Перевод")
         }
@@ -47,7 +53,7 @@ enum CategoryDisplay {
         return trimmed
     }
 
-    private static func fallbackLabel(for type: TransactionType) -> String {
+    nonisolated private static func fallbackLabel(for type: TransactionType) -> String {
         switch type {
         case .loanPayment:
             return String(localized: "transaction.type.loanPayment", defaultValue: "Платёж по кредиту")

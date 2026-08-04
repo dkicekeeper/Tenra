@@ -49,23 +49,9 @@ extension InsightsService {
             )
         }.sorted { $0.balance > $1.balance }
 
-        // Build cumulative balance data points
-        let initialBalance = totalWealth - periodPoints.reduce(0.0) { $0 + $1.netFlow }
-        var running = initialBalance
-        let cumulativePoints: [PeriodDataPoint] = periodPoints.map { point in
-            running += point.netFlow
-            return PeriodDataPoint(
-                id: point.id,
-                granularity: point.granularity,
-                key: point.key,
-                periodStart: point.periodStart,
-                periodEnd: point.periodEnd,
-                label: point.label,
-                income: point.income,
-                expenses: point.expenses,
-                cumulativeBalance: running
-            )
-        }
+        // Build cumulative balance data points (shared derivation — the Insights
+        // balance stat card plots the same line from the same helper).
+        let cumulativePoints = Self.cumulativeBalancePoints(periodPoints, endingBalance: totalWealth)
 
         // Period-over-period comparison
         let currentKey = granularity.currentPeriodKey

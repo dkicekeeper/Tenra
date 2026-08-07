@@ -3062,6 +3062,319 @@ git commit -m "feat(import): localize import strings, remove legacy StatementTex
 
 ---
 
+### Task 13: Column-level date order detection
+
+**Execute this immediately after Task 5, before Task 6.** It resolves a defect found during Task 2: `DD/MM/YYYY` and `MM/DD/YYYY` are indistinguishable per token, so a US statement's `01/08/2026` (8 January) was silently read as 1 August. A single token cannot be disambiguated, but a whole column can: if any token in the column has a first component above 12 the column is day-first, and if any has a second component above 12 it is month-first.
+
+**Files:**
+- Create: `Tenra/Services/Import/DateOrderDetector.swift`
+- Modify: `Tenra/Services/Import/DateTokenParser.swift`
+- Modify: `Tenra/Services/Import/StatementInterpreter.swift`
+- Test: `TenraTests/Services/Import/DateOrderDetectorTests.swift`
+- Test: `TenraTests/Services/Import/DateTokenParserTests.swift` (add cases)
+
+**Interfaces:**
+- Consumes: `DateTokenParser` (Task 2), `ColumnRoles` (Task 4), `StatementInterpreter` (Task 5), `DocumentSnapshot` (Task 1).
+- Produces: `DateOrder` enum (`.dayFirst`, `.monthFirst`), `DateOrderDetector.detect(tokens: [String]) -> DateOrder`, `DateTokenParser.parse(_ token: String, order: DateOrder) -> String?`, and an order-agnostic `DateTokenParser.looksLikeDate(_ token: String) -> Bool`.
+
+Three behaviours must hold together, so read all three before writing code:
+
+1. `looksLikeDate` becomes **order-agnostic**: it returns true when the token is a valid date under *either* order. Without this, `ColumnRoleResolver` (Task 4) scores a US date column below its 0.6 threshold and never identifies it as the date column at all.
+2. `parse(_:)` without an order keeps its current day-first behaviour, so every existing Task 2 test stays green and unchanged.
+3. `parse(_:order:)` applies the given order, falling back to the other order only when the given one yields no valid date.
+
+- [ ] **Step 1: Write the failing tests**
+
+Create `TenraTests/Services/Import/DateOrderDetectorTests.swift`:
+
+```swift
+//
+//  DateOrderDetectorTests.swift
+//  TenraTests
+//
+//  A single token cannot tell DD/MM from MM/DD. A column can: one token with a
+//  component above 12 pins the order for every other token in that column.
+//
+
+import Testing
+@testable import Tenra
+
+struct DateOrderDetectorTests {
+
+    @Test("a day above 12 anywhere in the column pins day-first")
+    func dayFirstEvidence() {
+        let tokens = ["01/08/2026", "13/08/2026", "05/09/2026"]
+        #expect(DateOrderDetector.detect(tokens: tokens) == .dayFirst)
+    }
+
+    @Test("a month position above 12 anywhere in the column pins month-first")
+    func monthFirstEvidence() {
+        let tokens = ["01/08/2026", "01/25/2026", "02/03/2026"]
+        #expect(DateOrderDetector.detect(tokens: tokens) == .monthFirst)
+    }
+
+    @Test("a fully ambiguous column defaults to day-first")
+    func ambiguousDefaultsToDayFirst() {
+        let tokens = ["01/08/2026", "02/09/2026", "03/10/2026"]
+        #expect(DateOrderDetector.detect(tokens: tokens) == .dayFirst)
+    }
+
+    @Test("ISO tokens carry no ambiguity and do not sway the verdict")
+    func isoTokensIgnored() {
+        let tokens = ["2026-01-08", "2026-08-13", "01/25/2026"]
+        #expect(DateOrderDetector.detect(tokens: tokens) == .monthFirst)
+    }
+
+    @Test("conflicting evidence favours day-first, the dominant world convention")
+    func conflictingEvidence() {
+        // A column cannot really be both. Real cause is OCR noise, so prefer
+        // the convention used by more of the app's markets rather than
+        // rejecting the whole column.
+        let tokens = ["13/08/2026", "01/25/2026"]
+        #expect(DateOrderDetector.detect(tokens: tokens) == .dayFirst)
+    }
+
+    @Test("an empty or dateless column defaults to day-first")
+    func noDates() {
+        #expect(DateOrderDetector.detect(tokens: []) == .dayFirst)
+        #expect(DateOrderDetector.detect(tokens: ["Purchase", "Total"]) == .dayFirst)
+    }
+}
+```
+
+Append these cases to the existing `DateTokenParserTests` struct in `TenraTests/Services/Import/DateTokenParserTests.swift`. Do not modify any existing case in that file:
+
+```swift
+    @Test("looksLikeDate is order-agnostic so US date columns are still detected")
+    func looksLikeDateIsOrderAgnostic() {
+        // Invalid day-first, valid month-first. ColumnRoleResolver must still
+        // count this cell towards the date-column score.
+        #expect(DateTokenParser.looksLikeDate("08.13.2026"))
+        #expect(DateTokenParser.looksLikeDate("12/25/2026"))
+        // Valid under neither order.
+        #expect(!DateTokenParser.looksLikeDate("13/25/2026"))
+        #expect(!DateTokenParser.looksLikeDate("YANDEX.GO"))
+    }
+
+    @Test("explicit month-first order reads US dates correctly")
+    func explicitMonthFirst() {
+        #expect(DateTokenParser.parse("01/08/2026", order: .monthFirst) == "2026-01-08")
+        #expect(DateTokenParser.parse("12/25/2026", order: .monthFirst) == "2026-12-25")
+    }
+
+    @Test("explicit day-first order reads EU dates correctly")
+    func explicitDayFirst() {
+        #expect(DateTokenParser.parse("01/08/2026", order: .dayFirst) == "2026-08-01")
+        #expect(DateTokenParser.parse("13/08/2026", order: .dayFirst) == "2026-08-13")
+    }
+
+    @Test("an explicit order falls back to the other order when its own reading is invalid")
+    func explicitOrderFallsBack() {
+        // Told month-first, but 25 is not a month, so day-first is the only
+        // valid reading. Better a correct date than a dropped row.
+        #expect(DateTokenParser.parse("25/12/2026", order: .monthFirst) == "2026-12-25")
+    }
+
+    @Test("ISO tokens ignore the order parameter")
+    func isoIgnoresOrder() {
+        #expect(DateTokenParser.parse("2026-01-08", order: .monthFirst) == "2026-01-08")
+        #expect(DateTokenParser.parse("2026-01-08", order: .dayFirst) == "2026-01-08")
+    }
+```
+
+- [ ] **Step 2: Run the tests to verify they fail**
+
+Run:
+```bash
+xcodebuild test -scheme Tenra -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:TenraTests/DateOrderDetectorTests 2>&1 | grep -aE "error:|\*\* TEST (SUCCEEDED|FAILED)"
+```
+Expected: compile error, `cannot find 'DateOrderDetector' in scope`.
+
+- [ ] **Step 3: Create DateOrderDetector**
+
+Create `Tenra/Services/Import/DateOrderDetector.swift`:
+
+```swift
+//
+//  DateOrderDetector.swift
+//  Tenra
+//
+//  "01/08/2026" is 8 January on a US statement and 1 August on a European one.
+//  No amount of cleverness resolves that from one token. A column resolves it:
+//  a single "13/08/2026" proves the column is day-first, a single "01/25/2026"
+//  proves it is month-first.
+//
+
+import Foundation
+
+enum DateOrder: Sendable, Equatable {
+    case dayFirst
+    case monthFirst
+}
+
+nonisolated enum DateOrderDetector {
+
+    /// Two 1-2 digit components followed by a 2-4 digit year, with a separator
+    /// that carries no ordering information. ISO dates are excluded by
+    /// requiring the year last.
+    private static let ambiguousPattern = /\b(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{2,4})\b/
+
+    /// Day-first is the default: it is the convention in every market the app
+    /// ships in except the United States, and it is what the previous importer
+    /// assumed, so an ambiguous column behaves as it always has.
+    static func detect(tokens: [String]) -> DateOrder {
+        var dayFirstEvidence = 0
+        var monthFirstEvidence = 0
+
+        for token in tokens {
+            guard let match = token.firstMatch(of: ambiguousPattern) else { continue }
+            guard let first = Int(match.1), let second = Int(match.2) else { continue }
+
+            // Only a component above 12 is evidence. Anything 1...12 is
+            // consistent with both orders and tells us nothing.
+            if first > 12 { dayFirstEvidence += 1 }
+            if second > 12 { monthFirstEvidence += 1 }
+        }
+
+        // Conflicting evidence means OCR noise or a mixed column. Prefer
+        // day-first rather than rejecting the column outright.
+        if dayFirstEvidence > 0 { return .dayFirst }
+        if monthFirstEvidence > 0 { return .monthFirst }
+        return .dayFirst
+    }
+}
+```
+
+- [ ] **Step 4: Extend DateTokenParser**
+
+In `Tenra/Services/Import/DateTokenParser.swift`, replace `parse(_:)` and `looksLikeDate(_:)` with:
+
+```swift
+    /// Parses the first date found in `token`, returning canonical "yyyy-MM-dd".
+    /// Assumes day-first ordering. Callers that know the column's ordering
+    /// should use `parse(_:order:)` instead.
+    static func parse(_ token: String) -> String? {
+        parse(token, order: .dayFirst)
+    }
+
+    /// Parses using a known column ordering, falling back to the opposite
+    /// ordering when the given one yields no valid calendar date. The fallback
+    /// is safe here in a way it is not for a lone token: the order came from
+    /// evidence across the whole column, so the fallback only fires on the
+    /// outliers that contradict it.
+    static func parse(_ token: String, order: DateOrder) -> String? {
+        if let match = token.firstMatch(of: isoPattern) {
+            return canonical(year: Int(match.1) ?? 0,
+                             month: Int(match.2) ?? 0,
+                             day: Int(match.3) ?? 0)
+        }
+
+        guard let match = token.firstMatch(of: dayFirstPattern) else { return nil }
+        let first = Int(match.1) ?? 0
+        let second = Int(match.2) ?? 0
+        let year = normalizeYear(Int(match.3) ?? 0)
+
+        switch order {
+        case .dayFirst:
+            return canonical(year: year, month: second, day: first)
+                ?? canonical(year: year, month: first, day: second)
+        case .monthFirst:
+            return canonical(year: year, month: first, day: second)
+                ?? canonical(year: year, month: second, day: first)
+        }
+    }
+
+    /// True when `token` is a valid date under EITHER ordering.
+    ///
+    /// Order-agnostic on purpose: ColumnRoleResolver uses this to score which
+    /// column holds dates, and that scoring happens before any ordering is
+    /// known. A day-first-only check would score a US date column below the
+    /// detection threshold and the column would never be found.
+    static func looksLikeDate(_ token: String) -> Bool {
+        parse(token, order: .dayFirst) != nil || parse(token, order: .monthFirst) != nil
+    }
+```
+
+Note that `parse(_:)` now inherits the fallback through `parse(_:order:)`, so `parse("08.13.2026")` returns `"2026-08-13"` rather than nil. Update the one existing assertion in `DateTokenParserTests.invalidDates()` accordingly: remove `#expect(DateTokenParser.parse("08.13.2026") == nil)` and add to the same test `#expect(DateTokenParser.parse("13/25/2026") == nil)`, which is invalid under both orderings and is the honest test of "no valid calendar date". Leave every other assertion in that file untouched.
+
+- [ ] **Step 5: Wire the order into StatementInterpreter**
+
+In `Tenra/Services/Import/StatementInterpreter.swift`, inside `interpret(snapshot:roles:defaultCurrency:)`, detect the order once per table before the row loop and use it for every row.
+
+Immediately after the `guard table.columnCount > roles.date else { continue }` line, add:
+
+```swift
+            // Detect the column's date ordering once, from every cell in it.
+            // Per-row detection would be worthless: ambiguity only resolves
+            // when the whole column is in view.
+            let dateOrder = DateOrderDetector.detect(
+                tokens: table.rows.compactMap { row in
+                    row.indices.contains(roles.date) ? row[roles.date] : nil
+                }
+            )
+```
+
+Then change the date guard inside the row loop from:
+
+```swift
+                guard let date = cell(row, roles.date).flatMap(DateTokenParser.parse) else {
+```
+
+to:
+
+```swift
+                guard let date = cell(row, roles.date)
+                    .flatMap({ DateTokenParser.parse($0, order: dateOrder) }) else {
+```
+
+- [ ] **Step 6: Add a StatementInterpreter test for US ordering**
+
+Append this case to the existing `StatementInterpreterTests` struct. Do not modify existing cases:
+
+```swift
+    @Test("a US-ordered date column is read month-first across every row")
+    func usDateOrdering() {
+        let doc = snapshot([
+            ["Date", "Description", "Amount"],
+            ["01/08/2026", "UBER TRIP", "-24.50"],
+            ["01/25/2026", "TESCO", "-13.20"]
+        ])
+        let roles = ColumnRoleResolver.resolve(table: doc.allTables[0])!
+        let result = StatementInterpreter.interpret(snapshot: doc, roles: roles, defaultCurrency: "USD")
+
+        // 01/25 can only be month-first, which pins the whole column, so
+        // 01/08 must read as 8 January and not 1 August.
+        #expect(result.transactions.count == 2)
+        #expect(result.transactions[0].date == "2026-01-08")
+        #expect(result.transactions[1].date == "2026-01-25")
+    }
+```
+
+- [ ] **Step 7: Run all affected suites**
+
+Run:
+```bash
+xcodebuild test -scheme Tenra -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:TenraTests/DateOrderDetectorTests -only-testing:TenraTests/DateTokenParserTests -only-testing:TenraTests/StatementInterpreterTests -only-testing:TenraTests/ColumnRoleResolverTests 2>&1 | grep -aE "Test case .* (passed|failed)|\*\* TEST (SUCCEEDED|FAILED)"
+```
+Expected: all tests pass, `** TEST SUCCEEDED **`. `ColumnRoleResolverTests` is included because `looksLikeDate` changed underneath it and its scoring must be unaffected.
+
+- [ ] **Step 8: Run the full test target**
+
+Run:
+```bash
+xcodebuild test -scheme Tenra -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:TenraTests 2>&1 | grep -aE "Test case .* failed|\*\* TEST (SUCCEEDED|FAILED)"
+```
+Expected: `** TEST SUCCEEDED **` with no failing test-case lines.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add Tenra/Services/Import/DateOrderDetector.swift Tenra/Services/Import/DateTokenParser.swift Tenra/Services/Import/StatementInterpreter.swift TenraTests/Services/Import/DateOrderDetectorTests.swift TenraTests/Services/Import/DateTokenParserTests.swift TenraTests/Services/Import/StatementInterpreterTests.swift
+git commit -m "fix(import): detect date ordering per column so US statements read month-first"
+```
+
+---
+
 ## Manual verification (device required)
 
 Automated tests cover the deterministic layers. These four checks need a real device and cannot be scripted here. Run them on the physical iPhone (`Dkicekeeper 17`), building with `-destination 'platform=iOS,name=Dkicekeeper 17'`. A Simulator build never reaches the device.

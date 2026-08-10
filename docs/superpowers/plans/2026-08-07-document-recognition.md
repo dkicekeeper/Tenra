@@ -1989,7 +1989,10 @@ nonisolated struct DocumentImportService {
         var roles = ColumnRoleResolver.resolve(table: table)
 
         if (roles?.confidence ?? 0) < confidenceEscalationThreshold {
-            if let inferred = await IntelligentColumnRoleResolver.resolve(table: table) {
+            // `resolve` is `async throws`: it rethrows CancellationError so a
+            // user backing out of an import actually stops the work, and returns
+            // nil for every genuine model failure.
+            if let inferred = try await IntelligentColumnRoleResolver.resolve(table: table) {
                 roles = inferred
             }
         }

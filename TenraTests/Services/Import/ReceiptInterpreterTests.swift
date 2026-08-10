@@ -68,4 +68,60 @@ struct ReceiptInterpreterTests {
         let draft = ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "USD")
         #expect(draft?.currency == "EUR")
     }
+
+    // MARK: - Fix 1: Cyrillic homoglyph in "мwst"
+
+    @Test("a Latin MwSt line is excluded from the largest-amount fallback")
+    func germanVATLineExcludedFromFallback() {
+        // Regression for the "мwst" entry that was spelled with Cyrillic У+043C
+        // instead of Latin "m": a real, all-Latin "MwSt" line never matched it,
+        // so the VAT amount leaked into the largest-amount fallback and beat
+        // the real (smaller) line item.
+        let snapshot = receipt([
+            "REWE",
+            "Milch 1L        1,29",
+            "MwSt 19%       25,00"
+        ])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "EUR")
+        #expect(draft?.total == 1.29)
+    }
+
+    // MARK: - Fix 2: word-boundary keyword matching
+
+    @Test("TAXI TOTAL is not excluded as a tax line")
+    func taxiNotExcludedAsTax() {
+        // "tax" used to be matched as a bare substring, so it matched inside
+        // "taxi" and suppressed the real total on ride-hailing receipts.
+        let snapshot = receipt(["YANDEX GO", "TAXI TOTAL 25.00"])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "USD")
+        #expect(draft?.total == 25.00)
+    }
+
+    @Test("a genuine subtotal line is still excluded under word-boundary matching")
+    func genuineSubtotalStillExcluded() {
+        let snapshot = receipt(["CAFE", "Subtotal 10.00", "TOTAL 12.00"])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "USD")
+        #expect(draft?.total == 12.00)
+    }
+
+    // MARK: - Fix 3: rightmost money-shaped run, not field splitting
+
+    @Test("a quantity marker is not concatenated into the amount")
+    func quantityMarkerNotFabricatedIntoAmount() {
+        // The old field split fell through to parsing the whole line when
+        // there was no wide gap, and MoneyTokenParser.parse concatenated
+        // every digit run: "Item x2 500" became 2500, a number that appears
+        // nowhere on the receipt.
+        let snapshot = receipt(["SHOP", "Item x2 500"])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "USD")
+        #expect(draft?.total == 500)
+    }
+
+    @Test("the rightmost money run keeps its trailing currency marker")
+    func rightmostAmountKeepsCurrencyMarker() {
+        let snapshot = receipt(["CAFE", "TOTAL   1 200,50 €"])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "USD")
+        #expect(draft?.total == 1200.50)
+        #expect(draft?.currency == "EUR")
+    }
 }

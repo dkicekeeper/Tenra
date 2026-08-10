@@ -90,6 +90,16 @@ nonisolated struct ReceiptInterpreter {
             let extracted = response.content
             guard extracted.total > 0 else { return nil }
 
+            // The model is allowed to *choose* among numbers printed on the
+            // receipt (e.g. pick the final total over a subtotal), but it
+            // must never invent one. Ground it: at least one money-shaped run
+            // anywhere in the recognized text has to equal the reported
+            // total, or the draft is discarded in favor of the heuristic.
+            let groundedAmounts = allMoneyRuns(in: snapshot.allLines)
+            guard groundedAmounts.contains(where: { abs($0 - extracted.total) < 0.005 }) else {
+                return nil
+            }
+
             return ReceiptDraft(
                 merchant: extracted.merchant.trimmingCharacters(in: .whitespacesAndNewlines),
                 total: extracted.total,
@@ -110,7 +120,11 @@ nonisolated struct ReceiptInterpreter {
 
     // MARK: - Deterministic path
 
-    /// Total-line keywords in the 11 shipped locales, lowercased.
+    /// Total-line keywords in the 11 shipped locales, lowercased. Every entry
+    /// here must be pure ASCII/Latin, Cyrillic, or CJK/Hangul as appropriate
+    /// for its language — never a mix, which is how a Cyrillic homoglyph
+    /// (У+043C "м" vs Latin "m") silently broke a Latin match. See the
+    /// audit note above `excludedKeywords`.
     private static let totalKeywords = [
         "total", "итого", "всего", "к оплате", "сумма", "gesamt", "summe",
         "gesamtbetrag", "total a pagar", "importe total", "montant total",
@@ -118,9 +132,19 @@ nonisolated struct ReceiptInterpreter {
     ]
 
     /// Lines that carry an amount but are never the final total.
+    ///
+    /// Homoglyph audit (Fix 1): every entry in this list and in
+    /// `totalKeywords` was checked character-by-character for a script mix
+    /// (Cyrillic а е о р с у х vs visually identical Latin a e o p c y x).
+    /// Only one entry was affected: "мwst" had a Cyrillic У+043C "м" where a
+    /// real German "MwSt" line is all-Latin, so it never matched. Fixed to
+    /// "mwst". Every other Cyrillic entry (итого, всего, к оплате, сумма,
+    /// подытог, промежуточный, ндс, сдача, чаевые) is pure Cyrillic
+    /// end-to-end, every Latin entry is pure Latin, and 合計/합계/총액 are pure
+    /// CJK/Hangul. Nothing else in either list is affected.
     private static let excludedKeywords = [
-        "subtotal", "подытог", "промежуточн", "zwischensumme", "sous-total",
-        "subtotale", "ara toplam", "tax", "vat", "ндс", "мwst", "iva", "tva",
+        "subtotal", "подытог", "промежуточный", "zwischensumme", "sous-total",
+        "subtotale", "ara toplam", "tax", "vat", "ндс", "mwst", "iva", "tva",
         "kdv", "change", "сдача", "rückgeld", "cambio", "monnaie", "tip", "чаевые"
     ]
 
@@ -148,8 +172,9 @@ nonisolated struct ReceiptInterpreter {
         // Search from the bottom: the final total is the last one printed.
         for line in lines.reversed() {
             let lowered = line.lowercased()
-            guard totalKeywords.contains(where: { lowered.contains($0) }) else { continue }
-            guard !excludedKeywords.contains(where: { lowered.contains($0) }) else { continue }
+            let tokens = wordTokens(in: lowered)
+            guard totalKeywords.contains(where: { lineMatches($0, tokens: tokens, lowered: lowered) }) else { continue }
+            guard !excludedKeywords.contains(where: { lineMatches($0, tokens: tokens, lowered: lowered) }) else { continue }
             if let money = lastAmount(in: line), money.amount > 0 { return money }
         }
         return nil
@@ -159,30 +184,102 @@ nonisolated struct ReceiptInterpreter {
         lines
             .filter { line in
                 let lowered = line.lowercased()
-                return !excludedKeywords.contains { lowered.contains($0) }
+                let tokens = wordTokens(in: lowered)
+                return !excludedKeywords.contains { lineMatches($0, tokens: tokens, lowered: lowered) }
             }
             .compactMap(lastAmount(in:))
             .max { $0.amount < $1.amount }
     }
 
-    /// Receipt lines lay out label and amount as columns separated by a wide
-    /// gap (2+ spaces); a lone space inside the amount itself is a
-    /// thousands-grouping separator ("2 500"), not a field boundary.
-    /// Splitting on single spaces would tear a grouped amount apart and pick
-    /// up only its last digit run, so the field boundary must be the wider
-    /// gap instead.
-    private static let fieldGapPattern = /\s{2,}/
+    /// Splits a lowercased line into word tokens on every non-letter
+    /// character (digits, punctuation, whitespace). `.isLetter` is
+    /// script-agnostic, so a CJK/Hangul run of letters with no internal
+    /// separator still comes out as a single token.
+    private static func wordTokens(in lowered: String) -> Set<String> {
+        Set(lowered.split(whereSeparator: { !$0.isLetter }).map(String.init))
+    }
 
-    /// The amount on a receipt line is the rightmost field, since the label
-    /// sits on the left.
-    private static func lastAmount(in line: String) -> MoneyTokenParser.ParsedMoney? {
-        let fields = line.split(separator: fieldGapPattern).map(String.init)
-        for field in fields.reversed() {
-            if let money = MoneyTokenParser.parse(field), money.amount > 0 { return money }
+    /// True when `phrase` occurs in `text` with a non-letter (or string-edge)
+    /// boundary on both sides, so a multi-word or hyphenated keyword like
+    /// "ara toplam" / "sous-total" cannot match inside a longer, unrelated
+    /// run of letters. Multi-word keywords can never satisfy plain token
+    /// equality (they are never a single token), so they need this separate,
+    /// boundary-aware containment check instead.
+    private static func containsAsPhrase(_ phrase: String, in text: String) -> Bool {
+        var searchStart = text.startIndex
+        while let range = text.range(of: phrase, range: searchStart..<text.endIndex) {
+            let beforeIsBoundary = range.lowerBound == text.startIndex
+                || !text[text.index(before: range.lowerBound)].isLetter
+            let afterIsBoundary = range.upperBound == text.endIndex
+                || !text[range.upperBound].isLetter
+            if beforeIsBoundary && afterIsBoundary { return true }
+            searchStart = range.upperBound
         }
-        // Fall back to parsing the whole line, for lines with no wide gap at
-        // all (e.g. a bare "3 600" total on its own line).
-        return MoneyTokenParser.parse(line)
+        return false
+    }
+
+    /// A keyword matches a line only at a word boundary: a single-word
+    /// keyword must equal one of the line's tokens (so "tax" no longer
+    /// matches inside "taxi"); a keyword that contains a space or hyphen can
+    /// never be one token, so it is matched as a boundary-aware phrase
+    /// instead.
+    private static func lineMatches(_ keyword: String, tokens: Set<String>, lowered: String) -> Bool {
+        if keyword.contains(where: { !$0.isLetter }) {
+            return containsAsPhrase(keyword, in: lowered)
+        }
+        return tokens.contains(keyword)
+    }
+
+    /// Grouping-space characters PDF/OCR output uses for digit runs. Kept
+    /// narrower than `MoneyTokenParser`'s own set since it only needs to
+    /// cover the characters that plausibly separate thousands in a run.
+    private static let groupingSpaceChars = " \u{00A0}\u{2009}\u{202F}"
+
+    /// A money-shaped run: a digit group, optionally space-grouped into
+    /// thousands, with an optional 1-2 digit decimal part. The negative
+    /// lookbehind for a letter excludes a run that starts immediately after
+    /// one, e.g. the "2" in "x2 500", so a quantity marker is never read as
+    /// part of the price.
+    ///
+    /// Built via `NSRegularExpression` (ICU), not a Swift `Regex` literal:
+    /// the compiled literal syntax in this toolchain rejects lookbehind
+    /// ("lookbehind is not currently supported"), while ICU supports it.
+    private static let moneyRunPattern: NSRegularExpression = {
+        let pattern = #"(?<![\p{L}])\d{1,3}(?:[\#(groupingSpaceChars)]\d{3})*(?:[.,]\d{1,2})?|(?<![\p{L}])\d+(?:[.,]\d{1,2})?"#
+        // swiftlint:disable:next force_try
+        return try! NSRegularExpression(pattern: pattern)
+    }()
+
+    /// Every money-shaped run in `line`, left to right, as String ranges.
+    private static func moneyRunRanges(in line: String) -> [Range<String.Index>] {
+        let fullRange = NSRange(line.startIndex..<line.endIndex, in: line)
+        return moneyRunPattern.matches(in: line, range: fullRange).compactMap { match in
+            Range(match.range, in: line)
+        }
+    }
+
+    /// The amount on a receipt line is the rightmost money-shaped run, since
+    /// the label sits on the left. Parsed from the run's start through the
+    /// end of the line (not the run text alone) so a trailing currency
+    /// marker like "€" or "KZT" is still picked up by
+    /// `MoneyTokenParser.parse`'s own currency detection.
+    private static func lastAmount(in line: String) -> MoneyTokenParser.ParsedMoney? {
+        guard let rightmost = moneyRunRanges(in: line).last else { return nil }
+        let candidate = String(line[rightmost.lowerBound...])
+        guard let money = MoneyTokenParser.parse(candidate), money.amount > 0 else { return nil }
+        return money
+    }
+
+    /// Every money-shaped run across the whole recognized text, in reading
+    /// order. Shared by `lastAmount` above (per-line, used by the heuristic
+    /// path) and by `intelligentDraft`'s grounding check: a model-reported
+    /// total is only trusted when it equals one of these.
+    private static func allMoneyRuns(in lines: [String]) -> [Double] {
+        lines.flatMap { line in
+            moneyRunRanges(in: line).compactMap { range in
+                MoneyTokenParser.parse(String(line[range]))?.amount
+            }
+        }
     }
 
     private static func merchant(from lines: [String]) -> String {

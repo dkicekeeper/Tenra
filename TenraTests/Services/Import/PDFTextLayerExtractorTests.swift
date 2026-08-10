@@ -73,4 +73,57 @@ struct PDFTextLayerExtractorTests {
         let document = PDFDocument(data: data)!
         #expect(PDFTextLayerExtractor.extract(document: document) == nil)
     }
+
+    /// Draws a single visual row's two cells in REVERSE content-stream order:
+    /// the right-hand amount is painted before the left-hand date, even
+    /// though both sit at the same y. Real column-major table renderers (and
+    /// right-aligned amount columns) do this. `selectionsByLine()` inserts a
+    /// synthetic `\n` when it sees words at the same y painted out of visual
+    /// order, splitting one visual row into two `PDFSelection` "lines" — a
+    /// row-grouping strategy built on `selectionsByLine()` misreads this as
+    /// two single-cell rows instead of one two-cell row.
+    private func makeReversePaintOrderPDF() -> PDFDocument {
+        let bounds = CGRect(x: 0, y: 0, width: 400, height: 100)
+        let renderer = UIGraphicsPDFRenderer(bounds: bounds)
+        let data = renderer.pdfData { context in
+            context.beginPage()
+            let attrs: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 12)]
+            // Amount (right column) painted FIRST, date (left column) SECOND,
+            // both at the same y — reverse of visual left-to-right order.
+            ("150.00" as NSString).draw(at: CGPoint(x: 300, y: 20), withAttributes: attrs)
+            ("01.01.2026" as NSString).draw(at: CGPoint(x: 20, y: 20), withAttributes: attrs)
+            // A second, ordinary-order prose row elsewhere on the page. This
+            // is required so the column-gap threshold (median inter-word gap
+            // on the page * 3) has more than one gap sample to work with —
+            // with only the single wide date/amount gap on the page, the
+            // "median" IS that gap, and a gap can never exceed 3x itself, so
+            // no split would ever fire. Mirrors makeStatementPDF's baseline.
+            ("just a note" as NSString).draw(at: CGPoint(x: 20, y: 60), withAttributes: attrs)
+        }
+        return PDFDocument(data: data)!
+    }
+
+    @Test("row grouping survives reverse paint order (geometry, not PDF line breaks)")
+    func rowGroupingSurvivesReversePaintOrder() throws {
+        let document = makeReversePaintOrderPDF()
+        let snapshot = try #require(PDFTextLayerExtractor.extract(document: document))
+
+        let table = try #require(snapshot.allTables.first)
+
+        // Must be ONE row containing both cells, not two single-cell rows.
+        let matchingRows = table.rows.filter { row in
+            row.contains { $0.contains("01.01.2026") } || row.contains { $0.contains("150.00") }
+        }
+        #expect(matchingRows.count == 1)
+
+        let row = try #require(matchingRows.first)
+        #expect(row.count >= 2)
+
+        // Left-to-right order: date cell must come before amount cell.
+        let dateColumnIndex = row.firstIndex { $0.contains("01.01.2026") }
+        let amountColumnIndex = row.firstIndex { $0.contains("150.00") }
+        let dateIndex = try #require(dateColumnIndex)
+        let amountIndex = try #require(amountColumnIndex)
+        #expect(dateIndex < amountIndex)
+    }
 }

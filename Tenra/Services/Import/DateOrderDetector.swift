@@ -10,7 +10,7 @@
 
 import Foundation
 
-enum DateOrder: Sendable, Equatable {
+nonisolated enum DateOrder: Sendable, Equatable {
     case dayFirst
     case monthFirst
 }

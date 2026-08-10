@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "Ausgewählte hinzufügen (%d)";
 "transactionPreview.noAccount" = "Kein Konto";
 "transactionPreview.account" = "Konto";
-"navigation.statementText" = "Auszugstext";
 "navigation.voiceInput" = "Spracheingabe";
 "navigation.subcategorySearch" = "Unterkategorien suchen";
 "navigation.selectDate" = "Datum wählen";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "Spracheingabe-Präferenzen zurücksetzen?";
 "alert.resetLearning.message" = "Der Parser vergisst, welches Konto Sie üblicherweise für jede Kategorie wählen. Ihre Transaktionen werden nicht gelöscht.";
 "alert.resetLearning.confirm" = "Zurücksetzen";
-"alert.textCopied.title" = "Text kopiert";
-"alert.textCopied.message" = "Der erkannte Text wurde in die Zwischenablage kopiert.";
-"alert.parseError.title" = "Analysefehler";
 "alert.importError.title" = "Importfehler";
 "alert.errorTitle" = "Fehler";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "PDF wird verarbeitet...";
 "progress.recognizingText" = "Text wird erkannt: Seite %d von %d";
 "progress.page" = "Seite %d von %d";
-"progress.parsingStatement" = "Auszug wird analysiert...";
 
 // MARK: - Errors
 "error.generic.title" = "Fehler";
-"error.loadTextFailed" = "Text konnte nicht geladen werden";
-"error.tryAgain" = "Erneut versuchen";
-"error.noTransactionsFound" = "Keine Transaktionen im erkannten Text gefunden. Stellen Sie sicher, dass der Text eine Transaktionstabelle enthält.";
-"error.noTransactionsStructured" = "Keine Transaktionen in den strukturierten Daten gefunden. Das Format des Auszugs weicht möglicherweise vom erwarteten Format ab.";
-"error.pdfExtraction" = "Text konnte nicht aus der PDF extrahiert werden. Das Dokument ist möglicherweise beschädigt oder leer.";
 "error.importFailed" = "Import fehlgeschlagen";
 "error.coredata.migrationFailed" = "Datenmigration fehlgeschlagen. Bitte starten Sie die App neu oder kontaktieren Sie den Support.";
 "error.coredata.initializationFailed" = "Lokaler Speicher konnte nicht initialisiert werden. Die App läuft im eingeschränkten Modus.";
-"error.pdfRecognitionFailed" = "Erkennungsfehler: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@, Kontostand %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "Unterkategorien suchen";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "Erkannter Text";
-"modal.recognizedText.message" = "Der Text wurde erfolgreich erkannt. Sie können Transaktionen importieren oder den Text kopieren.";
 "modal.newAccount" = "Neues Konto";
 "modal.editAccount" = "Konto bearbeiten";
 "modal.newCategory" = "Neue Kategorie";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "Hey Siri, Buchung in Tenra erfassen";
 "settings.siri.example2" = "Hey Siri, wie viel habe ich in Tenra ausgegeben";
 "settings.siri.example3" = "Hey Siri, Ausgabe in Tenra hinzufügen";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "Kontoauszug";
+"import.source.statement.subtitle" = "PDF-Kontoauszug Ihrer Bank importieren";
+"import.source.receipt.title" = "Beleg scannen";
+"import.source.receipt.subtitle" = "Richten Sie die Kamera auf einen Papierbeleg";
+"import.tab.subtitle" = "Fügen Sie Buchungen aus einem Kontoauszug oder Beleg hinzu, statt sie einzutippen";
+"import.diagnostics.title" = "Importbericht";
+"import.diagnostics.recognized" = "Erkannt";
+"import.diagnostics.skipped" = "Übersprungen";
+"import.diagnostics.skippedRows" = "Übersprungene Zeilen";
+"import.skip.noDate" = "In dieser Zeile wurde kein Datum gefunden";
+"import.skip.noAmount" = "In dieser Zeile wurde kein Betrag gefunden";
+"import.skip.tableShapeMismatch" = "Diese Tabelle entsprach nicht dem Layout des Kontoauszugs";
+"pdf.error.layoutNotRecognized" = "Der Kontoauszug wurde gelesen, aber sein Spaltenlayout wurde nicht erkannt";
+"pdf.error.noTransactionsRecognized" = "Aus diesem Kontoauszug konnten keine Buchungen gelesen werden";
+"import.error.noContentRecognized" = "In diesem Dokument konnte nichts erkannt werden";
+"import.error.receiptNotRecognized" = "Die Summe auf diesem Beleg konnte nicht gelesen werden. Versuchen Sie es bei besserer Beleuchtung erneut.";
+"import.intelligence.deviceNotEligible" = "Dieses iPhone unterstützt Apple Intelligence nicht, daher müssen unbekannte Kontoauszugslayouts möglicherweise manuell zugeordnet werden.";
+"import.intelligence.notEnabled" = "Aktivieren Sie Apple Intelligence in den Einstellungen, um unbekannte Kontoauszugslayouts automatisch zu erkennen.";
+"import.intelligence.modelNotReady" = "Apple Intelligence wird noch heruntergeladen. Die Erkennung verbessert sich, sobald der Vorgang abgeschlossen ist.";

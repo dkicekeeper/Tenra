@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "Add Selected (%d)";
 "transactionPreview.noAccount" = "No Account";
 "transactionPreview.account" = "Account";
-"navigation.statementText" = "Statement Text";
 "navigation.voiceInput" = "Voice Input";
 "navigation.subcategorySearch" = "Search Subcategories";
 "navigation.selectDate" = "Select Date";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "Reset voice preferences?";
 "alert.resetLearning.message" = "The parser will forget which account you usually pick for each category. Your transactions won't be deleted.";
 "alert.resetLearning.confirm" = "Reset";
-"alert.textCopied.title" = "Text copied";
-"alert.textCopied.message" = "Recognized text has been copied to clipboard.";
-"alert.parseError.title" = "Parse Error";
 "alert.importError.title" = "Import Error";
 "alert.errorTitle" = "Error";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "Processing PDF...";
 "progress.recognizingText" = "Recognizing text: page %d of %d";
 "progress.page" = "Page %d of %d";
-"progress.parsingStatement" = "Parsing statement...";
 
 // MARK: - Errors
 "error.generic.title" = "Error";
-"error.loadTextFailed" = "Failed to load text";
-"error.tryAgain" = "Try again";
-"error.noTransactionsFound" = "No transactions found in recognized text. Make sure the text contains a transaction table.";
-"error.noTransactionsStructured" = "No transactions found in structured data. The statement format may differ from expected.";
-"error.pdfExtraction" = "Failed to extract text from PDF. The document may be corrupted or empty.";
 "error.importFailed" = "Import failed";
 "error.coredata.migrationFailed" = "Data migration failed. Please restart the app or contact support.";
 "error.coredata.initializationFailed" = "Failed to initialize local storage. The app will work in limited mode.";
-"error.pdfRecognitionFailed" = "Recognition error: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ balance %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "Search subcategories";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "Recognized Text";
-"modal.recognizedText.message" = "Text has been successfully recognized. You can import transactions or copy the text.";
 "modal.newAccount" = "New Account";
 "modal.editAccount" = "Edit Account";
 "modal.newCategory" = "New Category";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "Hey Siri, log a transaction in Tenra";
 "settings.siri.example2" = "Hey Siri, how much did I spend in Tenra";
 "settings.siri.example3" = "Hey Siri, add an expense in Tenra";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "Bank statement";
+"import.source.statement.subtitle" = "Import a PDF statement from your bank";
+"import.source.receipt.title" = "Scan a receipt";
+"import.source.receipt.subtitle" = "Point the camera at a paper receipt";
+"import.tab.subtitle" = "Add transactions from a statement or a receipt instead of typing them in";
+"import.diagnostics.title" = "Import report";
+"import.diagnostics.recognized" = "Recognized";
+"import.diagnostics.skipped" = "Skipped";
+"import.diagnostics.skippedRows" = "Skipped rows";
+"import.skip.noDate" = "No date found in this row";
+"import.skip.noAmount" = "No amount found in this row";
+"import.skip.tableShapeMismatch" = "This table did not match the statement layout";
+"pdf.error.layoutNotRecognized" = "The statement was read, but its column layout was not recognized";
+"pdf.error.noTransactionsRecognized" = "No transactions could be read from this statement";
+"import.error.noContentRecognized" = "Nothing could be recognized in this document";
+"import.error.receiptNotRecognized" = "Could not read a total from this receipt. Try again with better lighting.";
+"import.intelligence.deviceNotEligible" = "This iPhone does not support Apple Intelligence, so unfamiliar statement layouts may need manual column mapping.";
+"import.intelligence.notEnabled" = "Turn on Apple Intelligence in Settings to recognize unfamiliar statement layouts automatically.";
+"import.intelligence.modelNotReady" = "Apple Intelligence is still downloading. Recognition will improve once it finishes.";

@@ -184,6 +184,7 @@ New file needed?
 | Recurring transactions, RecurringStore, series + occurrences | [docs/domains/recurring.md](docs/domains/recurring.md) |
 | Swift Charts (PeriodChart, IncomeExpense, scrollable, MiniSparkline) | [docs/domains/charts.md](docs/domains/charts.md) |
 | CSV import/export round-trip rules | [docs/domains/csv.md](docs/domains/csv.md) |
+| `Services/Import/**`, statement/receipt recognition, Vision documents, Apple Intelligence parsing | [domains/import.md](docs/domains/import.md) |
 | VoiceInput, speech recognition, SiriGlowView | [docs/domains/voice.md](docs/domains/voice.md) |
 | FX rates, currency conversion, prewarm, providers, base-currency aggregation (`convertSync` vs `convertedAmount`) | [docs/domains/currency.md](docs/domains/currency.md) |
 | Logo providers, ServiceLogoRegistry, jsDelivr | [docs/domains/logos.md](docs/domains/logos.md) |
@@ -358,6 +359,7 @@ Active reference docs in `docs/`:
 | [domains/recurring.md](docs/domains/recurring.md) | Series + occurrences, frequency cases |
 | [domains/charts.md](docs/domains/charts.md) | Swift Charts patterns, scrollable, mini-charts |
 | [domains/csv.md](docs/domains/csv.md) | CSV round-trip rules |
+| [domains/import.md](docs/domains/import.md) | Statement + receipt recognition pipeline, DocumentSnapshot seam, Apple Intelligence policy |
 | [domains/voice.md](docs/domains/voice.md) | VoiceInput architecture, speech recognition |
 | [domains/currency.md](docs/domains/currency.md) | FX rates, providers, prewarm |
 | [domains/logos.md](docs/domains/logos.md) | Logo provider chain, ServiceLogoRegistry |

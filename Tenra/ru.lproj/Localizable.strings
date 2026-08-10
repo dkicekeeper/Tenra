@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "Добавить выбранные (%d)";
 "transactionPreview.noAccount" = "Без счета";
 "transactionPreview.account" = "Счет";
-"navigation.statementText" = "Текст выписки";
 "navigation.voiceInput" = "Голосовой ввод";
 "navigation.subcategorySearch" = "Поиск подкатегорий";
 "navigation.selectDate" = "Выберите дату";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "Сбросить голосовые предпочтения?";
 "alert.resetLearning.message" = "Парсер забудет, какой счёт вы обычно выбираете для каждой категории. Это не удалит сами операции.";
 "alert.resetLearning.confirm" = "Сбросить";
-"alert.textCopied.title" = "Текст скопирован";
-"alert.textCopied.message" = "Распознанный текст скопирован в буфер обмена.";
-"alert.parseError.title" = "Ошибка парсинга";
 "alert.importError.title" = "Ошибка импорта";
 "alert.errorTitle" = "Ошибка";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "Обработка PDF...";
 "progress.recognizingText" = "Распознавание текста: страница %d из %d";
 "progress.page" = "Страница %d из %d";
-"progress.parsingStatement" = "Парсинг выписки...";
 
 // MARK: - Errors
 "error.generic.title" = "Ошибка";
-"error.loadTextFailed" = "Ошибка загрузки текста";
-"error.tryAgain" = "Попробуйте еще раз";
-"error.noTransactionsFound" = "Не удалось найти операции в распознанном тексте. Убедитесь, что текст содержит таблицу операций выписки.";
-"error.noTransactionsStructured" = "Не удалось найти операции в структурированных данных. Возможно, формат выписки отличается от ожидаемого.";
-"error.pdfExtraction" = "Не удалось извлечь текст из PDF. Возможно, документ поврежден или пуст.";
 "error.importFailed" = "Ошибка импорта";
 "error.coredata.migrationFailed" = "Миграция данных не удалась. Пожалуйста, перезапустите приложение или обратитесь в поддержку.";
 "error.coredata.initializationFailed" = "Не удалось инициализировать локальное хранилище. Приложение будет работать в ограниченном режиме.";
-"error.pdfRecognitionFailed" = "Ошибка при распознавании: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ баланс %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "Поиск подкатегорий";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "Распознанный текст";
-"modal.recognizedText.message" = "Текст успешно распознан. Вы можете импортировать операции или скопировать текст.";
 "modal.newAccount" = "Новый счёт";
 "modal.editAccount" = "Редактировать счёт";
 "modal.newCategory" = "Новая категория";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "Привет, Siri, запиши операцию в Tenra";
 "settings.siri.example2" = "Привет, Siri, сколько я потратил в Tenra";
 "settings.siri.example3" = "Привет, Siri, добавь трату в Tenra";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "Банковская выписка";
+"import.source.statement.subtitle" = "Импортируйте PDF-выписку из банка";
+"import.source.receipt.title" = "Сканировать чек";
+"import.source.receipt.subtitle" = "Наведите камеру на бумажный чек";
+"import.tab.subtitle" = "Добавляйте операции из выписки или чека, не вводя их вручную";
+"import.diagnostics.title" = "Отчёт об импорте";
+"import.diagnostics.recognized" = "Распознано";
+"import.diagnostics.skipped" = "Пропущено";
+"import.diagnostics.skippedRows" = "Пропущенные строки";
+"import.skip.noDate" = "В строке не найдена дата";
+"import.skip.noAmount" = "В строке не найдена сумма";
+"import.skip.tableShapeMismatch" = "Эта таблица не совпала с форматом выписки";
+"pdf.error.layoutNotRecognized" = "Выписка прочитана, но структура колонок не распознана";
+"pdf.error.noTransactionsRecognized" = "Из этой выписки не удалось прочитать ни одной операции";
+"import.error.noContentRecognized" = "В этом документе ничего не распознано";
+"import.error.receiptNotRecognized" = "Не удалось прочитать итог на чеке. Попробуйте при лучшем освещении.";
+"import.intelligence.deviceNotEligible" = "Этот iPhone не поддерживает Apple Intelligence, поэтому незнакомые форматы выписок могут потребовать ручной разметки колонок.";
+"import.intelligence.notEnabled" = "Включите Apple Intelligence в Настройках, чтобы незнакомые форматы выписок распознавались автоматически.";
+"import.intelligence.modelNotReady" = "Apple Intelligence ещё загружается. Распознавание улучшится после завершения.";

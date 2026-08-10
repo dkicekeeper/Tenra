@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "選択した項目を追加（%d）";
 "transactionPreview.noAccount" = "口座なし";
 "transactionPreview.account" = "口座";
-"navigation.statementText" = "明細テキスト";
 "navigation.voiceInput" = "音声入力";
 "navigation.subcategorySearch" = "サブカテゴリを検索";
 "navigation.selectDate" = "日付を選択";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "音声入力の設定をリセットしますか？";
 "alert.resetLearning.message" = "各カテゴリでいつも選んでいる口座を、パーサーが忘れます。取引は削除されません。";
 "alert.resetLearning.confirm" = "リセット";
-"alert.textCopied.title" = "テキストをコピーしました";
-"alert.textCopied.message" = "認識されたテキストをクリップボードにコピーしました。";
-"alert.parseError.title" = "解析エラー";
 "alert.importError.title" = "インポートエラー";
 "alert.errorTitle" = "エラー";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "PDFを処理しています…";
 "progress.recognizingText" = "テキストを認識中：%d / %d ページ";
 "progress.page" = "%d / %d ページ";
-"progress.parsingStatement" = "明細を解析しています…";
 
 // MARK: - Errors
 "error.generic.title" = "エラー";
-"error.loadTextFailed" = "テキストの読み込みに失敗しました";
-"error.tryAgain" = "もう一度お試しください";
-"error.noTransactionsFound" = "認識されたテキストから取引が見つかりませんでした。テキストに取引明細の表が含まれているかご確認ください。";
-"error.noTransactionsStructured" = "構造化データから取引が見つかりませんでした。明細の形式が想定と異なる可能性があります。";
-"error.pdfExtraction" = "PDFからテキストを抽出できませんでした。ファイルが破損しているか、内容が空の可能性があります。";
 "error.importFailed" = "インポートに失敗しました";
 "error.coredata.migrationFailed" = "データの移行に失敗しました。アプリを再起動するか、サポートにお問い合わせください。";
 "error.coredata.initializationFailed" = "ローカルストレージの初期化に失敗しました。アプリは制限された状態で動作します。";
-"error.pdfRecognitionFailed" = "認識エラー：%@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ 残高 %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "サブカテゴリを検索";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "認識されたテキスト";
-"modal.recognizedText.message" = "テキストを正常に認識しました。取引をインポートするか、テキストをコピーできます。";
 "modal.newAccount" = "新しい口座";
 "modal.editAccount" = "口座を編集";
 "modal.newCategory" = "新しいカテゴリ";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "ヘイ Siri、Tenra に取引を記録";
 "settings.siri.example2" = "ヘイ Siri、Tenra でいくら使った";
 "settings.siri.example3" = "ヘイ Siri、Tenra に支出を追加";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "銀行明細書";
+"import.source.statement.subtitle" = "銀行のPDF明細書をインポート";
+"import.source.receipt.title" = "レシートをスキャン";
+"import.source.receipt.subtitle" = "紙のレシートにカメラを向けてください";
+"import.tab.subtitle" = "入力する代わりに、明細書やレシートから取引を追加します";
+"import.diagnostics.title" = "インポートレポート";
+"import.diagnostics.recognized" = "認識済み";
+"import.diagnostics.skipped" = "スキップ";
+"import.diagnostics.skippedRows" = "スキップされた行";
+"import.skip.noDate" = "この行に日付が見つかりません";
+"import.skip.noAmount" = "この行に金額が見つかりません";
+"import.skip.tableShapeMismatch" = "この表は明細書のレイアウトと一致しませんでした";
+"pdf.error.layoutNotRecognized" = "明細書は読み込まれましたが、列のレイアウトを認識できませんでした";
+"pdf.error.noTransactionsRecognized" = "この明細書から取引を読み取れませんでした";
+"import.error.noContentRecognized" = "この書類から何も認識できませんでした";
+"import.error.receiptNotRecognized" = "このレシートから合計金額を読み取れませんでした。明るい場所でもう一度お試しください。";
+"import.intelligence.deviceNotEligible" = "このiPhoneはApple Intelligenceに対応していないため、見慣れない明細書のレイアウトでは列を手動で設定する必要がある場合があります。";
+"import.intelligence.notEnabled" = "見慣れない明細書のレイアウトを自動で認識するには、設定でApple Intelligenceをオンにしてください。";
+"import.intelligence.modelNotReady" = "Apple Intelligenceはまだダウンロード中です。ダウンロードが完了すると認識精度が向上します。";

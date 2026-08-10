@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "Añadir seleccionadas (%d)";
 "transactionPreview.noAccount" = "Sin cuenta";
 "transactionPreview.account" = "Cuenta";
-"navigation.statementText" = "Texto del extracto";
 "navigation.voiceInput" = "Entrada por voz";
 "navigation.subcategorySearch" = "Buscar subcategorías";
 "navigation.selectDate" = "Seleccionar fecha";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "¿Restablecer preferencias de voz?";
 "alert.resetLearning.message" = "El analizador olvidará qué cuenta sueles elegir para cada categoría. Tus transacciones no se eliminarán.";
 "alert.resetLearning.confirm" = "Restablecer";
-"alert.textCopied.title" = "Texto copiado";
-"alert.textCopied.message" = "El texto reconocido se copió al portapapeles.";
-"alert.parseError.title" = "Error de análisis";
 "alert.importError.title" = "Error de importación";
 "alert.errorTitle" = "Error";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "Procesando PDF...";
 "progress.recognizingText" = "Reconociendo texto: página %d de %d";
 "progress.page" = "Página %d de %d";
-"progress.parsingStatement" = "Analizando el extracto...";
 
 // MARK: - Errors
 "error.generic.title" = "Error";
-"error.loadTextFailed" = "No se pudo cargar el texto";
-"error.tryAgain" = "Inténtalo de nuevo";
-"error.noTransactionsFound" = "No se encontraron transacciones en el texto reconocido. Asegúrate de que el texto contenga una tabla de transacciones.";
-"error.noTransactionsStructured" = "No se encontraron transacciones en los datos estructurados. El formato del extracto puede diferir del esperado.";
-"error.pdfExtraction" = "No se pudo extraer el texto del PDF. El documento puede estar dañado o vacío.";
 "error.importFailed" = "Error al importar";
 "error.coredata.migrationFailed" = "La migración de datos falló. Reinicia la app o contacta con soporte.";
 "error.coredata.initializationFailed" = "No se pudo inicializar el almacenamiento local. La app funcionará en modo limitado.";
-"error.pdfRecognitionFailed" = "Error de reconocimiento: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@, saldo %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "Buscar subcategorías";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "Texto reconocido";
-"modal.recognizedText.message" = "El texto se reconoció correctamente. Puedes importar las transacciones o copiar el texto.";
 "modal.newAccount" = "Nueva cuenta";
 "modal.editAccount" = "Editar cuenta";
 "modal.newCategory" = "Nueva categoría";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "Oye Siri, registrar una operación en Tenra";
 "settings.siri.example2" = "Oye Siri, cuánto he gastado en Tenra";
 "settings.siri.example3" = "Oye Siri, añadir un gasto en Tenra";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "Extracto bancario";
+"import.source.statement.subtitle" = "Importa un extracto en PDF de tu banco";
+"import.source.receipt.title" = "Escanear un recibo";
+"import.source.receipt.subtitle" = "Apunta la cámara a un recibo en papel";
+"import.tab.subtitle" = "Añade movimientos desde un extracto o un recibo en lugar de escribirlos";
+"import.diagnostics.title" = "Informe de importación";
+"import.diagnostics.recognized" = "Reconocidos";
+"import.diagnostics.skipped" = "Omitidos";
+"import.diagnostics.skippedRows" = "Filas omitidas";
+"import.skip.noDate" = "No se encontró ninguna fecha en esta fila";
+"import.skip.noAmount" = "No se encontró ningún importe en esta fila";
+"import.skip.tableShapeMismatch" = "Esta tabla no coincide con el formato del extracto";
+"pdf.error.layoutNotRecognized" = "Se leyó el extracto, pero no se reconoció el formato de sus columnas";
+"pdf.error.noTransactionsRecognized" = "No se pudo leer ningún movimiento de este extracto";
+"import.error.noContentRecognized" = "No se pudo reconocer nada en este documento";
+"import.error.receiptNotRecognized" = "No se pudo leer el total de este recibo. Inténtalo de nuevo con mejor iluminación.";
+"import.intelligence.deviceNotEligible" = "Este iPhone no admite Apple Intelligence, así que los formatos de extracto desconocidos podrían necesitar una asignación manual de columnas.";
+"import.intelligence.notEnabled" = "Activa Apple Intelligence en Ajustes para reconocer automáticamente formatos de extracto desconocidos.";
+"import.intelligence.modelNotReady" = "Apple Intelligence todavía se está descargando. El reconocimiento mejorará cuando termine.";

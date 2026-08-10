@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "Додати вибрані (%d)";
 "transactionPreview.noAccount" = "Без рахунку";
 "transactionPreview.account" = "Рахунок";
-"navigation.statementText" = "Текст виписки";
 "navigation.voiceInput" = "Голосове введення";
 "navigation.subcategorySearch" = "Пошук підкатегорій";
 "navigation.selectDate" = "Виберіть дату";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "Скинути голосові вподобання?";
 "alert.resetLearning.message" = "Парсер забуде, який рахунок ви зазвичай обираєте для кожної категорії. Ваші операції не буде видалено.";
 "alert.resetLearning.confirm" = "Скинути";
-"alert.textCopied.title" = "Текст скопійовано";
-"alert.textCopied.message" = "Розпізнаний текст скопійовано до буфера обміну.";
-"alert.parseError.title" = "Помилка розбору";
 "alert.importError.title" = "Помилка імпорту";
 "alert.errorTitle" = "Помилка";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "Обробка PDF...";
 "progress.recognizingText" = "Розпізнавання тексту: сторінка %d з %d";
 "progress.page" = "Сторінка %d з %d";
-"progress.parsingStatement" = "Розбір виписки...";
 
 // MARK: - Errors
 "error.generic.title" = "Помилка";
-"error.loadTextFailed" = "Не вдалося завантажити текст";
-"error.tryAgain" = "Спробувати ще раз";
-"error.noTransactionsFound" = "У розпізнаному тексті не знайдено операцій. Переконайтеся, що текст містить таблицю операцій.";
-"error.noTransactionsStructured" = "У структурованих даних не знайдено операцій. Формат виписки може відрізнятися від очікуваного.";
-"error.pdfExtraction" = "Не вдалося видобути текст із PDF. Документ може бути пошкоджений або порожній.";
 "error.importFailed" = "Не вдалося імпортувати";
 "error.coredata.migrationFailed" = "Не вдалося перенести дані. Перезапустіть застосунок або зверніться до підтримки.";
 "error.coredata.initializationFailed" = "Не вдалося ініціалізувати локальне сховище. Застосунок працюватиме в обмеженому режимі.";
-"error.pdfRecognitionFailed" = "Помилка розпізнавання: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ баланс %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "Пошук підкатегорій";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "Розпізнаний текст";
-"modal.recognizedText.message" = "Текст успішно розпізнано. Ви можете імпортувати операції або скопіювати текст.";
 "modal.newAccount" = "Новий рахунок";
 "modal.editAccount" = "Редагувати рахунок";
 "modal.newCategory" = "Нова категорія";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "Привіт, Siri, запиши операцію в Tenra";
 "settings.siri.example2" = "Привіт, Siri, скільки я витратив у Tenra";
 "settings.siri.example3" = "Привіт, Siri, додай витрату в Tenra";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "Банківська виписка";
+"import.source.statement.subtitle" = "Імпортуйте PDF-виписку з вашого банку";
+"import.source.receipt.title" = "Сканувати чек";
+"import.source.receipt.subtitle" = "Наведіть камеру на паперовий чек";
+"import.tab.subtitle" = "Додавайте операції з виписки або чека, не вводячи їх вручну";
+"import.diagnostics.title" = "Звіт про імпорт";
+"import.diagnostics.recognized" = "Розпізнано";
+"import.diagnostics.skipped" = "Пропущено";
+"import.diagnostics.skippedRows" = "Пропущені рядки";
+"import.skip.noDate" = "У цьому рядку не знайдено дату";
+"import.skip.noAmount" = "У цьому рядку не знайдено суму";
+"import.skip.tableShapeMismatch" = "Ця таблиця не відповідає формату виписки";
+"pdf.error.layoutNotRecognized" = "Виписку прочитано, але структуру колонок не розпізнано";
+"pdf.error.noTransactionsRecognized" = "З цієї виписки не вдалося прочитати жодної операції";
+"import.error.noContentRecognized" = "У цьому документі нічого не розпізнано";
+"import.error.receiptNotRecognized" = "Не вдалося прочитати суму на цьому чеку. Спробуйте ще раз за кращого освітлення.";
+"import.intelligence.deviceNotEligible" = "Цей iPhone не підтримує Apple Intelligence, тому незнайомі формати виписок можуть потребувати ручного зіставлення колонок.";
+"import.intelligence.notEnabled" = "Увімкніть Apple Intelligence в Налаштуваннях, щоб незнайомі формати виписок розпізнавались автоматично.";
+"import.intelligence.modelNotReady" = "Apple Intelligence ще завантажується. Розпізнавання покращиться після завершення завантаження.";

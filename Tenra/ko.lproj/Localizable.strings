@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "선택 항목 추가 (%d)";
 "transactionPreview.noAccount" = "계좌 없음";
 "transactionPreview.account" = "계좌";
-"navigation.statementText" = "명세서 텍스트";
 "navigation.voiceInput" = "음성 입력";
 "navigation.subcategorySearch" = "하위 카테고리 검색";
 "navigation.selectDate" = "날짜 선택";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "음성 설정을 초기화할까요?";
 "alert.resetLearning.message" = "파서가 각 카테고리에 자주 선택하던 계좌를 잊게 돼요. 거래는 삭제되지 않아요.";
 "alert.resetLearning.confirm" = "초기화";
-"alert.textCopied.title" = "텍스트가 복사됐어요";
-"alert.textCopied.message" = "인식된 텍스트가 클립보드에 복사됐어요.";
-"alert.parseError.title" = "분석 오류";
 "alert.importError.title" = "가져오기 오류";
 "alert.errorTitle" = "오류";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "PDF를 처리하는 중...";
 "progress.recognizingText" = "텍스트 인식 중: %d / %d 페이지";
 "progress.page" = "%d / %d 페이지";
-"progress.parsingStatement" = "명세서를 분석하는 중...";
 
 // MARK: - Errors
 "error.generic.title" = "오류";
-"error.loadTextFailed" = "텍스트를 불러오지 못했어요";
-"error.tryAgain" = "다시 시도";
-"error.noTransactionsFound" = "인식된 텍스트에서 거래를 찾지 못했어요. 텍스트에 거래 표가 포함되어 있는지 확인하세요.";
-"error.noTransactionsStructured" = "구조화된 데이터에서 거래를 찾지 못했어요. 명세서 형식이 예상과 다를 수 있어요.";
-"error.pdfExtraction" = "PDF에서 텍스트를 추출하지 못했어요. 문서가 손상되었거나 비어 있을 수 있어요.";
 "error.importFailed" = "가져오기에 실패했어요";
 "error.coredata.migrationFailed" = "데이터 마이그레이션에 실패했어요. 앱을 다시 시작하거나 지원팀에 문의하세요.";
 "error.coredata.initializationFailed" = "로컬 저장소를 초기화하지 못했어요. 앱이 제한된 모드로 작동해요.";
-"error.pdfRecognitionFailed" = "인식 오류: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ 잔액 %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "하위 카테고리 검색";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "인식된 텍스트";
-"modal.recognizedText.message" = "텍스트가 성공적으로 인식됐어요. 거래를 가져오거나 텍스트를 복사할 수 있어요.";
 "modal.newAccount" = "새 계좌";
 "modal.editAccount" = "계좌 편집";
 "modal.newCategory" = "새 카테고리";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "시리야, Tenra에 거래 기록";
 "settings.siri.example2" = "시리야, Tenra에서 얼마 썼어";
 "settings.siri.example3" = "시리야, Tenra에 지출 추가";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "은행 명세서";
+"import.source.statement.subtitle" = "은행의 PDF 명세서를 가져오기";
+"import.source.receipt.title" = "영수증 스캔";
+"import.source.receipt.subtitle" = "카메라를 종이 영수증에 비춰주세요";
+"import.tab.subtitle" = "직접 입력하는 대신 명세서나 영수증에서 거래를 추가하세요";
+"import.diagnostics.title" = "가져오기 결과";
+"import.diagnostics.recognized" = "인식됨";
+"import.diagnostics.skipped" = "건너뜀";
+"import.diagnostics.skippedRows" = "건너뛴 행";
+"import.skip.noDate" = "이 행에서 날짜를 찾을 수 없습니다";
+"import.skip.noAmount" = "이 행에서 금액을 찾을 수 없습니다";
+"import.skip.tableShapeMismatch" = "이 표가 명세서 레이아웃과 일치하지 않습니다";
+"pdf.error.layoutNotRecognized" = "명세서를 읽었지만 열 레이아웃을 인식하지 못했습니다";
+"pdf.error.noTransactionsRecognized" = "이 명세서에서 거래 내역을 읽을 수 없습니다";
+"import.error.noContentRecognized" = "이 문서에서 아무것도 인식하지 못했습니다";
+"import.error.receiptNotRecognized" = "이 영수증에서 합계를 읽을 수 없습니다. 조명을 밝게 하고 다시 시도해 주세요.";
+"import.intelligence.deviceNotEligible" = "이 iPhone은 Apple Intelligence를 지원하지 않으므로 낯선 명세서 레이아웃은 열을 수동으로 지정해야 할 수 있습니다.";
+"import.intelligence.notEnabled" = "낯선 명세서 레이아웃을 자동으로 인식하려면 설정에서 Apple Intelligence를 켜세요.";
+"import.intelligence.modelNotReady" = "Apple Intelligence를 아직 다운로드하는 중입니다. 다운로드가 끝나면 인식 정확도가 향상됩니다.";

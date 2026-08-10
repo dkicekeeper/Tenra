@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "Ajouter la sélection (%d)";
 "transactionPreview.noAccount" = "Aucun compte";
 "transactionPreview.account" = "Compte";
-"navigation.statementText" = "Texte du relevé";
 "navigation.voiceInput" = "Saisie vocale";
 "navigation.subcategorySearch" = "Rechercher des sous-catégories";
 "navigation.selectDate" = "Sélectionner la date";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "Réinitialiser les préférences vocales?";
 "alert.resetLearning.message" = "L'analyseur oubliera le compte que vous choisissez habituellement pour chaque catégorie. Vos opérations ne seront pas supprimées.";
 "alert.resetLearning.confirm" = "Réinitialiser";
-"alert.textCopied.title" = "Texte copié";
-"alert.textCopied.message" = "Le texte reconnu a été copié dans le presse-papiers.";
-"alert.parseError.title" = "Erreur d'analyse";
 "alert.importError.title" = "Erreur d'import";
 "alert.errorTitle" = "Erreur";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "Traitement du PDF...";
 "progress.recognizingText" = "Reconnaissance du texte: page %d sur %d";
 "progress.page" = "Page %d sur %d";
-"progress.parsingStatement" = "Analyse du relevé...";
 
 // MARK: - Errors
 "error.generic.title" = "Erreur";
-"error.loadTextFailed" = "Échec du chargement du texte";
-"error.tryAgain" = "Réessayer";
-"error.noTransactionsFound" = "Aucune opération trouvée dans le texte reconnu. Vérifiez que le texte contient un tableau d'opérations.";
-"error.noTransactionsStructured" = "Aucune opération trouvée dans les données structurées. Le format du relevé peut différer du format attendu.";
-"error.pdfExtraction" = "Impossible d'extraire le texte du PDF. Le document est peut-être endommagé ou vide.";
 "error.importFailed" = "Échec de l'import";
 "error.coredata.migrationFailed" = "Échec de la migration des données. Veuillez redémarrer l'app ou contacter l'assistance.";
 "error.coredata.initializationFailed" = "Impossible d'initialiser le stockage local. L'app fonctionnera en mode limité.";
-"error.pdfRecognitionFailed" = "Erreur de reconnaissance: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ solde %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "Rechercher des sous-catégories";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "Texte reconnu";
-"modal.recognizedText.message" = "Le texte a été reconnu avec succès. Vous pouvez importer les opérations ou copier le texte.";
 "modal.newAccount" = "Nouveau compte";
 "modal.editAccount" = "Modifier le compte";
 "modal.newCategory" = "Nouvelle catégorie";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "Dis Siri, enregistrer une opération dans Tenra";
 "settings.siri.example2" = "Dis Siri, combien ai-je dépensé dans Tenra";
 "settings.siri.example3" = "Dis Siri, ajouter une dépense dans Tenra";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "Relevé bancaire";
+"import.source.statement.subtitle" = "Importer un relevé PDF de votre banque";
+"import.source.receipt.title" = "Scanner un reçu";
+"import.source.receipt.subtitle" = "Pointez la caméra vers un reçu papier";
+"import.tab.subtitle" = "Ajoutez des opérations à partir d'un relevé ou d'un reçu au lieu de les saisir";
+"import.diagnostics.title" = "Rapport d'import";
+"import.diagnostics.recognized" = "Reconnues";
+"import.diagnostics.skipped" = "Ignorées";
+"import.diagnostics.skippedRows" = "Lignes ignorées";
+"import.skip.noDate" = "Aucune date trouvée dans cette ligne";
+"import.skip.noAmount" = "Aucun montant trouvé dans cette ligne";
+"import.skip.tableShapeMismatch" = "Ce tableau ne correspond pas à la mise en page du relevé";
+"pdf.error.layoutNotRecognized" = "Le relevé a été lu, mais la disposition de ses colonnes n'a pas été reconnue";
+"pdf.error.noTransactionsRecognized" = "Aucune opération n'a pu être lue dans ce relevé";
+"import.error.noContentRecognized" = "Rien n'a pu être reconnu dans ce document";
+"import.error.receiptNotRecognized" = "Impossible de lire un total sur ce reçu. Réessayez avec un meilleur éclairage.";
+"import.intelligence.deviceNotEligible" = "Cet iPhone ne prend pas en charge Apple Intelligence, les mises en page de relevé inconnues pourraient donc nécessiter une correspondance manuelle des colonnes.";
+"import.intelligence.notEnabled" = "Activez Apple Intelligence dans Réglages pour reconnaître automatiquement les mises en page de relevé inconnues.";
+"import.intelligence.modelNotReady" = "Apple Intelligence est encore en cours de téléchargement. La reconnaissance s'améliorera une fois le téléchargement terminé.";

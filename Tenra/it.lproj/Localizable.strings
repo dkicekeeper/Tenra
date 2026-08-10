@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "Aggiungi selezionate (%d)";
 "transactionPreview.noAccount" = "Nessun conto";
 "transactionPreview.account" = "Conto";
-"navigation.statementText" = "Testo estratto conto";
 "navigation.voiceInput" = "Inserimento vocale";
 "navigation.subcategorySearch" = "Cerca sottocategorie";
 "navigation.selectDate" = "Seleziona data";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "Reimpostare le preferenze vocali?";
 "alert.resetLearning.message" = "Il parser dimenticherà quale conto scegli di solito per ogni categoria. Le tue operazioni non verranno eliminate.";
 "alert.resetLearning.confirm" = "Reimposta";
-"alert.textCopied.title" = "Testo copiato";
-"alert.textCopied.message" = "Il testo riconosciuto è stato copiato negli appunti.";
-"alert.parseError.title" = "Errore di analisi";
 "alert.importError.title" = "Errore di importazione";
 "alert.errorTitle" = "Errore";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "Elaborazione PDF...";
 "progress.recognizingText" = "Riconoscimento testo: pagina %d di %d";
 "progress.page" = "Pagina %d di %d";
-"progress.parsingStatement" = "Analisi estratto conto...";
 
 // MARK: - Errors
 "error.generic.title" = "Errore";
-"error.loadTextFailed" = "Impossibile caricare il testo";
-"error.tryAgain" = "Riprova";
-"error.noTransactionsFound" = "Nessuna operazione trovata nel testo riconosciuto. Assicurati che il testo contenga una tabella di operazioni.";
-"error.noTransactionsStructured" = "Nessuna operazione trovata nei dati strutturati. Il formato dell'estratto conto potrebbe differire da quello previsto.";
-"error.pdfExtraction" = "Impossibile estrarre il testo dal PDF. Il documento potrebbe essere danneggiato o vuoto.";
 "error.importFailed" = "Importazione non riuscita";
 "error.coredata.migrationFailed" = "Migrazione dei dati non riuscita. Riavvia l'app o contatta l'assistenza.";
 "error.coredata.initializationFailed" = "Impossibile inizializzare l'archivio locale. L'app funzionerà in modalità limitata.";
-"error.pdfRecognitionFailed" = "Errore di riconoscimento: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ saldo %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "Cerca sottocategorie";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "Testo riconosciuto";
-"modal.recognizedText.message" = "Il testo è stato riconosciuto correttamente. Puoi importare le operazioni o copiare il testo.";
 "modal.newAccount" = "Nuovo conto";
 "modal.editAccount" = "Modifica conto";
 "modal.newCategory" = "Nuova categoria";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "Ehi Siri, registra un'operazione in Tenra";
 "settings.siri.example2" = "Ehi Siri, quanto ho speso in Tenra";
 "settings.siri.example3" = "Ehi Siri, aggiungi una spesa in Tenra";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "Estratto conto";
+"import.source.statement.subtitle" = "Importa un estratto conto PDF dalla tua banca";
+"import.source.receipt.title" = "Scansiona uno scontrino";
+"import.source.receipt.subtitle" = "Inquadra uno scontrino cartaceo con la fotocamera";
+"import.tab.subtitle" = "Aggiungi movimenti da un estratto conto o uno scontrino invece di digitarli";
+"import.diagnostics.title" = "Report di importazione";
+"import.diagnostics.recognized" = "Riconosciuti";
+"import.diagnostics.skipped" = "Ignorati";
+"import.diagnostics.skippedRows" = "Righe ignorate";
+"import.skip.noDate" = "Nessuna data trovata in questa riga";
+"import.skip.noAmount" = "Nessun importo trovato in questa riga";
+"import.skip.tableShapeMismatch" = "Questa tabella non corrisponde al layout dell'estratto conto";
+"pdf.error.layoutNotRecognized" = "L'estratto conto è stato letto, ma il layout delle colonne non è stato riconosciuto";
+"pdf.error.noTransactionsRecognized" = "Non è stato possibile leggere alcun movimento da questo estratto conto";
+"import.error.noContentRecognized" = "Non è stato possibile riconoscere nulla in questo documento";
+"import.error.receiptNotRecognized" = "Non è stato possibile leggere il totale di questo scontrino. Riprova con una luce migliore.";
+"import.intelligence.deviceNotEligible" = "Questo iPhone non supporta Apple Intelligence, quindi i layout di estratto conto sconosciuti potrebbero richiedere una mappatura manuale delle colonne.";
+"import.intelligence.notEnabled" = "Attiva Apple Intelligence in Impostazioni per riconoscere automaticamente i layout di estratto conto sconosciuti.";
+"import.intelligence.modelNotReady" = "Apple Intelligence è ancora in fase di download. Il riconoscimento migliorerà al termine del download.";

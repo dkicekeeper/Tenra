@@ -24,7 +24,6 @@
 "transactionPreview.addSelected" = "Seçilenleri Ekle (%d)";
 "transactionPreview.noAccount" = "Hesap Yok";
 "transactionPreview.account" = "Hesap";
-"navigation.statementText" = "Ekstre Metni";
 "navigation.voiceInput" = "Sesli Giriş";
 "navigation.subcategorySearch" = "Alt Kategori Ara";
 "navigation.selectDate" = "Tarih Seç";
@@ -122,9 +121,6 @@
 "alert.resetLearning.title" = "Sesli giriş tercihleri sıfırlansın mı?";
 "alert.resetLearning.message" = "Ayrıştırıcı, her kategori için genellikle hangi hesabı seçtiğini unutacak. İşlemlerin silinmeyecek.";
 "alert.resetLearning.confirm" = "Sıfırla";
-"alert.textCopied.title" = "Metin kopyalandı";
-"alert.textCopied.message" = "Tanınan metin panoya kopyalandı.";
-"alert.parseError.title" = "Ayrıştırma Hatası";
 "alert.importError.title" = "İçe Aktarma Hatası";
 "alert.errorTitle" = "Hata";
 
@@ -133,19 +129,12 @@
 "progress.processingPDF" = "PDF işleniyor...";
 "progress.recognizingText" = "Metin tanınıyor: sayfa %d / %d";
 "progress.page" = "Sayfa %d / %d";
-"progress.parsingStatement" = "Ekstre ayrıştırılıyor...";
 
 // MARK: - Errors
 "error.generic.title" = "Hata";
-"error.loadTextFailed" = "Metin yüklenemedi";
-"error.tryAgain" = "Tekrar dene";
-"error.noTransactionsFound" = "Tanınan metinde işlem bulunamadı. Metnin bir işlem tablosu içerdiğinden emin ol.";
-"error.noTransactionsStructured" = "Yapılandırılmış veride işlem bulunamadı. Ekstre formatı beklenenden farklı olabilir.";
-"error.pdfExtraction" = "PDF'ten metin çıkarılamadı. Belge bozuk ya da boş olabilir.";
 "error.importFailed" = "İçe aktarma başarısız";
 "error.coredata.migrationFailed" = "Veri taşıma başarısız oldu. Lütfen uygulamayı yeniden başlat ya da destekle iletişime geç.";
 "error.coredata.initializationFailed" = "Yerel depolama başlatılamadı. Uygulama sınırlı modda çalışacak.";
-"error.pdfRecognitionFailed" = "Tanıma hatası: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ bakiyesi %@";
@@ -183,8 +172,6 @@
 "search.subcategories" = "Alt kategori ara";
 
 // MARK: - Modals
-"modal.recognizedText.title" = "Tanınan Metin";
-"modal.recognizedText.message" = "Metin başarıyla tanındı. İşlemleri içe aktarabilir ya da metni kopyalayabilirsin.";
 "modal.newAccount" = "Yeni Hesap";
 "modal.editAccount" = "Hesabı Düzenle";
 "modal.newCategory" = "Yeni Kategori";
@@ -1662,3 +1649,25 @@
 "settings.siri.example1" = "Hey Siri, Tenra uygulamasına işlem kaydet";
 "settings.siri.example2" = "Hey Siri, Tenra uygulamasında ne kadar harcadım";
 "settings.siri.example3" = "Hey Siri, Tenra uygulamasına gider ekle";
+
+
+/* MARK: - Document import */
+"import.source.statement.title" = "Banka ekstresi";
+"import.source.statement.subtitle" = "Bankanızdan bir PDF ekstre içe aktarın";
+"import.source.receipt.title" = "Fiş tara";
+"import.source.receipt.subtitle" = "Kamerayı kağıt bir fişe doğrultun";
+"import.tab.subtitle" = "İşlemleri elle yazmak yerine bir ekstreden veya fişten ekleyin";
+"import.diagnostics.title" = "İçe aktarma raporu";
+"import.diagnostics.recognized" = "Tanınan";
+"import.diagnostics.skipped" = "Atlanan";
+"import.diagnostics.skippedRows" = "Atlanan satırlar";
+"import.skip.noDate" = "Bu satırda tarih bulunamadı";
+"import.skip.noAmount" = "Bu satırda tutar bulunamadı";
+"import.skip.tableShapeMismatch" = "Bu tablo ekstre düzeniyle eşleşmedi";
+"pdf.error.layoutNotRecognized" = "Ekstre okundu ancak sütun düzeni tanınamadı";
+"pdf.error.noTransactionsRecognized" = "Bu ekstreden hiçbir işlem okunamadı";
+"import.error.noContentRecognized" = "Bu belgede hiçbir şey tanınamadı";
+"import.error.receiptNotRecognized" = "Bu fişten toplam tutar okunamadı. Daha iyi bir ışıkta tekrar deneyin.";
+"import.intelligence.deviceNotEligible" = "Bu iPhone Apple Intelligence'ı desteklemiyor, bu nedenle alışılmadık ekstre düzenleri için elle sütun eşleme gerekebilir.";
+"import.intelligence.notEnabled" = "Alışılmadık ekstre düzenlerinin otomatik olarak tanınması için Ayarlar'dan Apple Intelligence'ı açın.";
+"import.intelligence.modelNotReady" = "Apple Intelligence hâlâ indiriliyor. İndirme tamamlandığında tanıma iyileşecek.";

@@ -109,4 +109,71 @@ struct IntelligentColumnRoleResolverTests {
         #expect(roles?.currency == nil)
         #expect(roles?.description == nil)
     }
+
+    @Test("date and amount claiming the same column rejects the layout")
+    func collidingDateAndAmountColumnsRejectsLayout() {
+        let layout = InferredColumnLayout(
+            dateColumn: 0,
+            amountColumn: 0,
+            debitColumn: -1,
+            creditColumn: -1,
+            currencyColumn: 2,
+            descriptionColumn: 1
+        )
+        let roles = IntelligentColumnRoleResolver.columnRoles(from: layout, columnCount: 4)
+        #expect(roles == nil)
+    }
+
+    @Test("debit and credit claiming the same column rejects the layout")
+    func collidingDebitAndCreditColumnsRejectsLayout() {
+        let layout = InferredColumnLayout(
+            dateColumn: 0,
+            amountColumn: -1,
+            debitColumn: 2,
+            creditColumn: 2,
+            currencyColumn: -1,
+            descriptionColumn: 1
+        )
+        let roles = IntelligentColumnRoleResolver.columnRoles(from: layout, columnCount: 4)
+        #expect(roles == nil)
+    }
+
+    @Test("layout with every role resolved to a distinct column still resolves")
+    func allDistinctIndicesResolve() {
+        let layout = InferredColumnLayout(
+            dateColumn: 0,
+            amountColumn: 1,
+            debitColumn: -1,
+            creditColumn: -1,
+            currencyColumn: 2,
+            descriptionColumn: 3
+        )
+        let roles = IntelligentColumnRoleResolver.columnRoles(from: layout, columnCount: 4)
+        #expect(roles?.date == 0)
+        #expect(roles?.amount == 1)
+        #expect(roles?.currency == 2)
+        #expect(roles?.description == 3)
+    }
+
+    // MARK: - Cancellation
+
+    /// `resolve(table:)` checks `Task.checkCancellation()` before doing any
+    /// Apple Intelligence work, so an already-cancelled task must throw
+    /// `CancellationError` rather than returning nil (which would read as
+    /// "model unavailable, fall back" instead of "the user backed out").
+    /// This is the only slice of the cancellation behavior testable in the
+    /// Simulator without Apple Intelligence: it does not exercise
+    /// cancellation mid-`session.respond`.
+    @Test("an already-cancelled task throws CancellationError instead of returning nil")
+    func alreadyCancelledTaskThrows() async {
+        let table = DocumentSnapshot.Table(rows: [["Date", "Amount"], ["2026-01-01", "10.00"]])
+        let task = Task {
+            try await IntelligentColumnRoleResolver.resolve(table: table)
+        }
+        task.cancel()
+
+        await #expect(throws: CancellationError.self) {
+            try await task.value
+        }
+    }
 }

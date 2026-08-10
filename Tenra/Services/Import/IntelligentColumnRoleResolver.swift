@@ -50,7 +50,18 @@ nonisolated struct IntelligentColumnRoleResolver {
 
     /// Returns nil when Apple Intelligence is unavailable or the model could
     /// not produce a usable layout. Callers must always have a fallback.
-    static func resolve(table: DocumentSnapshot.Table) async -> ColumnRoles? {
+    ///
+    /// Throws only `CancellationError`, when the enclosing task was cancelled
+    /// (e.g. the user backed out of the import). Callers must let that
+    /// propagate rather than treating it as "no layout, fall back": a
+    /// cancelled import should stop, not silently continue on the
+    /// deterministic path.
+    static func resolve(table: DocumentSnapshot.Table) async throws -> ColumnRoles? {
+        // Checked first, before any availability/session work, so an
+        // already-cancelled task exits immediately regardless of whether
+        // Apple Intelligence is available on this device.
+        try Task.checkCancellation()
+
         guard IntelligenceAvailability.isAvailable else { return nil }
         guard table.columnCount > 0, !table.rows.isEmpty else { return nil }
 
@@ -64,8 +75,12 @@ nonisolated struct IntelligentColumnRoleResolver {
                 options: GenerationOptions(sampling: .greedy)
             )
             return columnRoles(from: response.content, columnCount: table.columnCount)
+        } catch let cancellationError as CancellationError {
+            // Cancellation means "the user backed out of the import": it must
+            // propagate, not be absorbed into "model unavailable, fall back".
+            throw cancellationError
         } catch {
-            // Every FoundationModels failure mode (exceededContextWindowSize,
+            // Every other FoundationModels failure mode (exceededContextWindowSize,
             // assetsUnavailable, guardrailViolation, rateLimited, ...) means the
             // same thing here: fall back to the deterministic resolver.
             return nil
@@ -106,13 +121,27 @@ nonisolated struct IntelligentColumnRoleResolver {
         let credit = validate(layout.creditColumn)
         guard amount != nil || debit != nil || credit != nil else { return nil }
 
+        let currency = validate(layout.currencyColumn)
+        let description = validate(layout.descriptionColumn)
+
+        // The deterministic ColumnRoleResolver structurally cannot assign two
+        // roles to the same column (its money scoring excludes the date
+        // column, etc.). If the model does, the layout is semantically
+        // impossible: a same-index debit/credit pair makes every
+        // transaction's money-in equal its money-out, and a date column read
+        // as the amount column corrupts every amount. Reject the whole
+        // layout so the caller falls back to the deterministic resolver
+        // instead of trusting a plausible-looking but wrong mapping.
+        let resolvedIndices = [dateColumn, amount, debit, credit, currency, description].compactMap { $0 }
+        guard Set(resolvedIndices).count == resolvedIndices.count else { return nil }
+
         return ColumnRoles(
             date: dateColumn,
             amount: amount,
             debit: debit,
             credit: credit,
-            currency: validate(layout.currencyColumn),
-            description: validate(layout.descriptionColumn),
+            currency: currency,
+            description: description,
             // Model-resolved layouts are trusted, but never above a confidently
             // header-matched deterministic result.
             confidence: 0.8

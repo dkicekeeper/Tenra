@@ -2823,7 +2823,7 @@ git commit -m "feat(import): add import source picker and skipped-row diagnostic
 - Consumes: every localization key referenced in Tasks 6, 8, 10, 11.
 - Produces: nothing consumed by code.
 
-The complete set of new keys:
+The complete set of new keys (17 in total):
 
 | Key | English value |
 |---|---|
@@ -2838,6 +2838,7 @@ The complete set of new keys:
 | `import.diagnostics.skippedRows` | `Skipped rows` |
 | `import.skip.noDate` | `No date found in this row` |
 | `import.skip.noAmount` | `No amount found in this row` |
+| `import.skip.tableShapeMismatch` | `This table did not match the statement layout` |
 | `import.error.noContentRecognized` | `Nothing could be recognized in this document` |
 | `import.error.receiptNotRecognized` | `Could not read a total from this receipt. Try again with better lighting.` |
 | `import.intelligence.deviceNotEligible` | `This iPhone does not support Apple Intelligence, so unfamiliar statement layouts may need manual column mapping.` |
@@ -2868,6 +2869,7 @@ TRANSLATIONS = {
         "import.diagnostics.skippedRows": "Skipped rows",
         "import.skip.noDate": "No date found in this row",
         "import.skip.noAmount": "No amount found in this row",
+        "import.skip.tableShapeMismatch": "This table did not match the statement layout",
         "import.error.noContentRecognized": "Nothing could be recognized in this document",
         "import.error.receiptNotRecognized": "Could not read a total from this receipt. Try again with better lighting.",
         "import.intelligence.deviceNotEligible": "This iPhone does not support Apple Intelligence, so unfamiliar statement layouts may need manual column mapping.",
@@ -2886,6 +2888,7 @@ TRANSLATIONS = {
         "import.diagnostics.skippedRows": "Пропущенные строки",
         "import.skip.noDate": "В строке не найдена дата",
         "import.skip.noAmount": "В строке не найдена сумма",
+        "import.skip.tableShapeMismatch": "Эта таблица не совпала с форматом выписки",
         "import.error.noContentRecognized": "В этом документе ничего не распознано",
         "import.error.receiptNotRecognized": "Не удалось прочитать итог на чеке. Попробуйте при лучшем освещении.",
         "import.intelligence.deviceNotEligible": "Этот iPhone не поддерживает Apple Intelligence, поэтому незнакомые форматы выписок могут потребовать ручной разметки колонок.",
@@ -2924,12 +2927,12 @@ for locale, entries in TRANSLATIONS.items():
 
 - [ ] **Step 2: Fill in the nine remaining locales, then run the script**
 
-Add `de`, `es`, `fr`, `tr`, `pt-BR`, `it`, `uk`, `ja`, `ko` blocks to `TRANSLATIONS` with the same 16 keys, then:
+Add `de`, `es`, `fr`, `tr`, `pt-BR`, `it`, `uk`, `ja`, `ko` blocks to `TRANSLATIONS` with the same 17 keys, then:
 
 ```bash
 cd /Users/dauletkydrali/Documents/GitHub/Tenra && python3 /private/tmp/claude-501/-Users-dauletkydrali-Documents-GitHub-Tenra/scratchpad/add_import_keys.py
 ```
-Expected: 11 lines, each reading `<locale>: added 16 keys`.
+Expected: 11 lines, each reading `<locale>: added 17 keys`.
 
 - [ ] **Step 3: Verify key parity across all locales**
 

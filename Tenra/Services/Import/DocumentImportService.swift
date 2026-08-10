@@ -84,7 +84,10 @@ nonisolated struct DocumentImportService {
             }
         }
 
-        guard let resolvedRoles = roles else { throw PDFError.noTextFound }
+        // Distinct from noTextFound: we DID read the document, we just could not
+        // work out which column means what. Telling the user "no text found"
+        // there is both wrong and unactionable.
+        guard let resolvedRoles = roles else { throw PDFError.layoutNotRecognized }
 
         let statement = StatementInterpreter.interpret(
             snapshot: snapshot,
@@ -92,7 +95,9 @@ nonisolated struct DocumentImportService {
             defaultCurrency: defaultCurrency
         )
 
-        guard !statement.transactions.isEmpty else { throw PDFError.noTextFound }
+        // Layout resolved, rows read, but nothing survived interpretation.
+        // statement.skipped explains why, and the diagnostics screen shows it.
+        guard !statement.transactions.isEmpty else { throw PDFError.noTransactionsRecognized }
 
         return ImportOutcome(
             csvFile: StatementInterpreter.csvFile(from: statement),

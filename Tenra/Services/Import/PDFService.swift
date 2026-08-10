@@ -48,6 +48,8 @@ nonisolated enum PDFService {
 enum PDFError: LocalizedError {
     case invalidDocument
     case noTextFound
+    case layoutNotRecognized
+    case noTransactionsRecognized
     case unsupportedFormat
     case ocrError(String)
 
@@ -57,6 +59,10 @@ enum PDFError: LocalizedError {
             return String(localized: "pdf.error.invalidDocument")
         case .noTextFound:
             return String(localized: "pdf.error.noTextFound")
+        case .layoutNotRecognized:
+            return String(localized: "pdf.error.layoutNotRecognized")
+        case .noTransactionsRecognized:
+            return String(localized: "pdf.error.noTransactionsRecognized")
         case .unsupportedFormat:
             return String(localized: "pdf.error.unsupportedFormat")
         case .ocrError(let message):

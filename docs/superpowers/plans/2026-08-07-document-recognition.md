@@ -2826,7 +2826,7 @@ git commit -m "feat(import): add import source picker and skipped-row diagnostic
 - Consumes: every localization key referenced in Tasks 6, 8, 10, 11.
 - Produces: nothing consumed by code.
 
-The complete set of new keys (17 in total):
+The complete set of new keys (19 in total):
 
 | Key | English value |
 |---|---|
@@ -2842,6 +2842,8 @@ The complete set of new keys (17 in total):
 | `import.skip.noDate` | `No date found in this row` |
 | `import.skip.noAmount` | `No amount found in this row` |
 | `import.skip.tableShapeMismatch` | `This table did not match the statement layout` |
+| `pdf.error.layoutNotRecognized` | `The statement was read, but its column layout was not recognized` |
+| `pdf.error.noTransactionsRecognized` | `No transactions could be read from this statement` |
 | `import.error.noContentRecognized` | `Nothing could be recognized in this document` |
 | `import.error.receiptNotRecognized` | `Could not read a total from this receipt. Try again with better lighting.` |
 | `import.intelligence.deviceNotEligible` | `This iPhone does not support Apple Intelligence, so unfamiliar statement layouts may need manual column mapping.` |
@@ -2873,6 +2875,8 @@ TRANSLATIONS = {
         "import.skip.noDate": "No date found in this row",
         "import.skip.noAmount": "No amount found in this row",
         "import.skip.tableShapeMismatch": "This table did not match the statement layout",
+        "pdf.error.layoutNotRecognized": "The statement was read, but its column layout was not recognized",
+        "pdf.error.noTransactionsRecognized": "No transactions could be read from this statement",
         "import.error.noContentRecognized": "Nothing could be recognized in this document",
         "import.error.receiptNotRecognized": "Could not read a total from this receipt. Try again with better lighting.",
         "import.intelligence.deviceNotEligible": "This iPhone does not support Apple Intelligence, so unfamiliar statement layouts may need manual column mapping.",
@@ -2892,6 +2896,8 @@ TRANSLATIONS = {
         "import.skip.noDate": "В строке не найдена дата",
         "import.skip.noAmount": "В строке не найдена сумма",
         "import.skip.tableShapeMismatch": "Эта таблица не совпала с форматом выписки",
+        "pdf.error.layoutNotRecognized": "Выписка прочитана, но структура колонок не распознана",
+        "pdf.error.noTransactionsRecognized": "Из этой выписки не удалось прочитать ни одной операции",
         "import.error.noContentRecognized": "В этом документе ничего не распознано",
         "import.error.receiptNotRecognized": "Не удалось прочитать итог на чеке. Попробуйте при лучшем освещении.",
         "import.intelligence.deviceNotEligible": "Этот iPhone не поддерживает Apple Intelligence, поэтому незнакомые форматы выписок могут потребовать ручной разметки колонок.",
@@ -2930,12 +2936,12 @@ for locale, entries in TRANSLATIONS.items():
 
 - [ ] **Step 2: Fill in the nine remaining locales, then run the script**
 
-Add `de`, `es`, `fr`, `tr`, `pt-BR`, `it`, `uk`, `ja`, `ko` blocks to `TRANSLATIONS` with the same 17 keys, then:
+Add `de`, `es`, `fr`, `tr`, `pt-BR`, `it`, `uk`, `ja`, `ko` blocks to `TRANSLATIONS` with the same 19 keys, then:
 
 ```bash
 cd /Users/dauletkydrali/Documents/GitHub/Tenra && python3 /private/tmp/claude-501/-Users-dauletkydrali-Documents-GitHub-Tenra/scratchpad/add_import_keys.py
 ```
-Expected: 11 lines, each reading `<locale>: added 17 keys`.
+Expected: 11 lines, each reading `<locale>: added 19 keys`.
 
 - [ ] **Step 3: Verify key parity across all locales**
 
@@ -2960,6 +2966,20 @@ Run:
 cd /Users/dauletkydrali/Documents/GitHub/Tenra && grep -n "—" Tenra/*.lproj/Localizable.strings | grep "import\." | head
 ```
 Expected: no output.
+
+- [ ] **Step 5b: Remove localization keys orphaned by Task 9**
+
+Task 9 deleted `RecognizedTextView.swift`, orphaning its keys in all 11 locales. Remove them so the string files do not accumulate dead translations:
+
+`navigation.statementText`, `alert.textCopied.title`, `alert.textCopied.message`, `alert.parseError.title`, `progress.parsingStatement`, `error.loadTextFailed`, `error.tryAgain`, `error.noTransactionsFound`, `error.noTransactionsStructured`, `error.pdfExtraction`, `error.pdfRecognitionFailed`, `modal.recognizedText.title`, `modal.recognizedText.message`
+
+Before deleting each one, confirm it really has no remaining caller:
+
+```bash
+for K in navigation.statementText alert.textCopied.title alert.textCopied.message alert.parseError.title progress.parsingStatement error.loadTextFailed error.tryAgain error.noTransactionsFound error.noTransactionsStructured error.pdfExtraction error.pdfRecognitionFailed modal.recognizedText.title modal.recognizedText.message; do echo "$K: $(grep -rl "$K" --include='*.swift' Tenra | wc -l) swift refs"; done
+```
+
+Delete only the keys reporting 0 refs. Any key with a live reference stays.
 
 - [ ] **Step 6: Delete the legacy parser**
 

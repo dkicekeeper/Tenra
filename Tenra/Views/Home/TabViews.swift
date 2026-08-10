@@ -141,7 +141,7 @@ struct OCRTab: View {
                     Text(String(localized: "tab.ocr"))
                         .font(AppTypography.h3)
 
-                    Text(String(localized: "accessibility.importStatementHint"))
+                    Text(String(localized: "import.tab.subtitle"))
                         .font(AppTypography.bodySmall)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)

@@ -8,6 +8,7 @@
 
 import SwiftUI
 import PDFKit
+import CoreGraphics
 
 /// Coordinates the entire PDF import flow: file picker → DocumentImportService → CSV preview
 /// Single responsibility: PDF import orchestration
@@ -22,15 +23,56 @@ struct PDFImportCoordinator: View {
     @State private var importOutcome: ImportOutcome? = nil
     @State private var showingCSVPreview = false
     @State private var parsedCSVFile: CSVFile? = nil
+    @State private var showingScanner = false
+    @State private var showingDiagnostics = false
+    @State private var receiptDraft: ReceiptDraft? = nil
 
     // MARK: - Body
     var body: some View {
-        importButton
+        VStack(spacing: AppSpacing.md) {
+            sourcePicker
+
+            if let outcome = importOutcome {
+                diagnosticsLink(for: outcome)
+            }
+        }
             .sheet(isPresented: $showingFilePicker) {
                 filePicker
             }
             .sheet(isPresented: $showingCSVPreview) {
                 csvPreviewSheet
+            }
+            .fullScreenCover(isPresented: $showingScanner) {
+                DocumentScannerView(
+                    onScan: { images in
+                        showingScanner = false
+                        Task { await analyzeReceipt(images: images) }
+                    },
+                    onCancel: { showingScanner = false }
+                )
+                .ignoresSafeArea()
+            }
+            .sheet(isPresented: $showingDiagnostics) {
+                if let outcome = importOutcome {
+                    NavigationStack {
+                        ImportDiagnosticsView(
+                            statement: outcome.statement,
+                            intelligenceStatus: outcome.intelligenceStatus
+                        )
+                    }
+                }
+            }
+            .sheet(isPresented: Binding(
+                get: { receiptDraft != nil },
+                set: { isPresented in if !isPresented { receiptDraft = nil } }
+            )) {
+                if let draft = receiptDraft {
+                    ReceiptConfirmationView(
+                        draft: draft,
+                        baseCurrency: transactionsViewModel.transactionStore?.baseCurrency ?? "KZT",
+                        transactionsViewModel: transactionsViewModel
+                    )
+                }
             }
             .overlay {
                 if transactionsViewModel.isLoading {
@@ -39,20 +81,44 @@ struct PDFImportCoordinator: View {
             }
     }
 
-    // MARK: - Import Button
-    private var importButton: some View {
-        Button(action: {
-            HapticManager.light()
-            showingFilePicker = true
-        }) {
-            Image(systemName: "doc.badge.plus")
-                .font(.system(size: AppIconSize.lg))
-                .fontWeight(.semibold)
-                .frame(width: 64, height: 64)
+    // MARK: - Source Picker
+    private var sourcePicker: some View {
+        ImportSourcePicker(
+            onPickPDF: { showingFilePicker = true },
+            onScanReceipt: { showingScanner = true }
+        )
+    }
+
+    // MARK: - Diagnostics Link
+    /// Reuses the same UniversalRow shell as `ImportSourcePicker.sourceRow`
+    /// rather than hand-rolling another card. Shown once an import has run, so
+    /// the user always has a path to the skipped-row reasons — not just when
+    /// something got skipped.
+    private func diagnosticsLink(for outcome: ImportOutcome) -> some View {
+        let summary = "\(outcome.statement.transactions.count) / \(outcome.statement.transactions.count + outcome.statement.skipped.count)"
+        return UniversalRow(
+            config: .standard,
+            leadingIcon: .custom(
+                source: .sfSymbol("list.bullet.clipboard"),
+                style: .circle(size: AppIconSize.xxl,
+                               tint: .monochrome(AppColors.accent),
+                               backgroundColor: AppColors.accent.opacity(0.15))
+            ),
+            hint: summary,
+            title: String(localized: "import.diagnostics.title")
+        ) {
+            Image(systemName: "chevron.right")
+                .font(.system(size: AppIconSize.sm, weight: .semibold))
+                .foregroundStyle(.tertiary)
         }
-        .buttonStyle(.glass)
-        .accessibilityLabel(String(localized: "accessibility.importStatement"))
-        .accessibilityHint(String(localized: "accessibility.importStatementHint"))
+        .cardStyle()
+        .actionRow {
+            HapticManager.light()
+            showingDiagnostics = true
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, AppSpacing.lg)
+        .accessibilityLabel(String(localized: "import.diagnostics.title"))
     }
 
     // MARK: - File Picker
@@ -128,5 +194,33 @@ struct PDFImportCoordinator: View {
 
         transactionsViewModel.isLoading = false
         ocrProgress = nil
+    }
+
+    // MARK: - Receipt Analysis
+    private func analyzeReceipt(images: [CGImage]) async {
+        transactionsViewModel.isLoading = true
+        transactionsViewModel.errorMessage = nil
+
+        do {
+            let snapshot = try await VisionDocumentExtractor.extract(images: images)
+            let baseCurrency = transactionsViewModel.transactionStore?.baseCurrency ?? "KZT"
+            let draft = try await ReceiptInterpreter.interpret(
+                snapshot: snapshot,
+                defaultCurrency: baseCurrency
+            )
+            if let draft {
+                receiptDraft = draft
+            } else {
+                transactionsViewModel.errorMessage = String(localized: "import.error.receiptNotRecognized")
+            }
+        } catch is CancellationError {
+            // The user backed out of the scan mid-interpretation. Per
+            // ReceiptInterpreter's contract this must stop silently, not
+            // surface as an error the user never asked to see.
+        } catch {
+            transactionsViewModel.errorMessage = error.localizedDescription
+        }
+
+        transactionsViewModel.isLoading = false
     }
 }

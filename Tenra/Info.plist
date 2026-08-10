@@ -40,6 +40,8 @@
 	<string>pk_Riva83iaQH6NOq-Q9GcAfQ</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Tenra uses the camera to scan paper receipts so you do not have to type them in by hand.</string>
 	<key>NSDocumentPickerUsageDescription</key>
 	<string>This app needs access to your documents to analyze bank statements.</string>
 	<key>NSMicrophoneUsageDescription</key>

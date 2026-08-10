@@ -2,7 +2,11 @@
 //  PDFImportCoordinator.swift
 //  Tenra
 //
-//  PDF import flow coordinator - handles file picker, OCR, and CSV preview
+//  PDF import flow coordinator - handles file picker, OCR, and the
+//  transaction-card review screen (Task 15: recognized statement
+//  transactions are reviewed as real transaction cards, not the CSV
+//  preview / column-mapping flow — that flow remains a separate path for
+//  actual .csv file imports, see ImportFlowCoordinator).
 //  Extracted from ContentView for Single Responsibility Principle
 //
 
@@ -10,7 +14,7 @@ import SwiftUI
 import PDFKit
 import CoreGraphics
 
-/// Coordinates the entire PDF import flow: file picker → DocumentImportService → CSV preview
+/// Coordinates the entire PDF import flow: file picker → DocumentImportService → transaction preview
 /// Single responsibility: PDF import orchestration
 struct PDFImportCoordinator: View {
     // MARK: - Dependencies
@@ -22,8 +26,8 @@ struct PDFImportCoordinator: View {
     @State private var showingFilePicker = false
     @State private var ocrProgress: (current: Int, total: Int)? = nil
     @State private var importOutcome: ImportOutcome? = nil
-    @State private var showingCSVPreview = false
-    @State private var parsedCSVFile: CSVFile? = nil
+    @State private var showingTransactionPreview = false
+    @State private var parsedTransactions: [Transaction] = []
     @State private var showingScanner = false
     @State private var showingDiagnostics = false
     @State private var receiptDraft: ReceiptDraft? = nil
@@ -40,8 +44,8 @@ struct PDFImportCoordinator: View {
             .sheet(isPresented: $showingFilePicker) {
                 filePicker
             }
-            .sheet(isPresented: $showingCSVPreview) {
-                csvPreviewSheet
+            .sheet(isPresented: $showingTransactionPreview) {
+                transactionPreviewSheet
             }
             .fullScreenCover(isPresented: $showingScanner) {
                 DocumentScannerView(
@@ -132,22 +136,18 @@ struct PDFImportCoordinator: View {
         }
     }
 
-    // MARK: - CSV Preview Sheet
-    @ViewBuilder
-    private var csvPreviewSheet: some View {
-        if let csvFile = parsedCSVFile {
-            CSVPreviewView(
-                csvFile: csvFile,
-                onContinue: {
-                    // TODO: Navigate to column mapping or import flow
-                    showingCSVPreview = false
-                },
-                onCancel: {
-                    showingCSVPreview = false
-                    parsedCSVFile = nil
-                }
-            )
-        }
+    // MARK: - Transaction Preview Sheet
+    /// Recognized statement transactions are reviewed as real transaction
+    /// cards, the way voice input presents its result, rather than the CSV
+    /// preview / column-mapping flow. `ImportTransactionPreviewView` reads
+    /// `TransactionStore` from the environment, inherited here from
+    /// `MainTabView`'s `.environment(coordinator.transactionStore)`.
+    private var transactionPreviewSheet: some View {
+        ImportTransactionPreviewView(
+            transactionsViewModel: transactionsViewModel,
+            accountsViewModel: accountsViewModel,
+            transactions: parsedTransactions
+        )
     }
 
     // MARK: - Loading Overlay
@@ -188,8 +188,11 @@ struct PDFImportCoordinator: View {
                 }
             }
             importOutcome = outcome
-            parsedCSVFile = outcome.csvFile
-            showingCSVPreview = true
+            parsedTransactions = ParsedTransactionMapper.transactions(
+                from: outcome.statement,
+                defaultCurrency: baseCurrency
+            )
+            showingTransactionPreview = true
         } catch {
             transactionsViewModel.errorMessage = error.localizedDescription
         }

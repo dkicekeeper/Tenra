@@ -188,9 +188,17 @@ struct ImportTransactionPreviewRow: View {
     let onToggle: () -> Void
     let onAccountSelect: (String) -> Void
 
+    // Imported transactions are not customized yet — an empty categories list
+    // resolves the same fallback style CategoryStyleCache uses for every
+    // uncategorized/transfer transaction (matches the `[]` used throughout
+    // this codebase's own #Preview blocks for the same category/type pair).
+    private var styleData: CategoryStyleData {
+        CategoryStyleHelper.cached(category: transaction.category, type: transaction.type, customCategories: [])
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            HStack {
+            HStack(alignment: .center, spacing: AppSpacing.sm) {
                 // Checkbox button with spring animation
                 Button(action: onToggle) {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
@@ -198,44 +206,26 @@ struct ImportTransactionPreviewRow: View {
                         .font(AppTypography.h4)
                         .animation(AppAnimation.contentSpring, value: isSelected)
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel(isSelected
                     ? String(localized: "button.select")
                     : String(localized: "transactionPreview.selectHint")
                 )
                 .accessibilityAddTraits(.isButton)
 
-                VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                    Text(transaction.description)
-                        .font(AppTypography.body)
-                        .fontWeight(.medium)
-
-                    Text(transaction.date)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textSecondary)
-
-                    Text(transaction.category)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.accent)
-                        .padding(.horizontal, AppSpacing.sm)
-                        .padding(.vertical, AppSpacing.xxs)
-                        .background(AppColors.accent.opacity(0.1))
-                        .clipShape(.rect(cornerRadius: AppRadius.xs))
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: AppSpacing.xs) {
-                    FormattedAmountText(
-                        amount: transaction.amount,
-                        currency: transaction.currency,
-                        fontSize: AppTypography.body.weight(.semibold),
-                        color: transaction.type == .income ? AppColors.income : AppColors.expense
-                    )
-
-                    Text(transactionTypeLabel)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textSecondary)
-                }
+                // Pure, side-effect-free card (per TransactionCard.swift's own
+                // header: "For read-only / selection UIs use TransactionCardView
+                // directly — it has no env dependencies and no side effects").
+                // These transactions do not exist in TransactionStore yet, so
+                // TransactionCard's tap-to-edit / swipe-to-delete / recurring
+                // actions would resolve against a transaction the store has
+                // never seen — this screen's own checkbox and account picker
+                // are the only actions that make sense before import.
+                TransactionCardView(
+                    transaction: transaction,
+                    currency: transaction.currency,
+                    styleData: styleData
+                )
             }
 
             // Account selector (visible only when selected)
@@ -255,14 +245,6 @@ struct ImportTransactionPreviewRow: View {
             }
         }
         .padding(.vertical, AppSpacing.xs)
-    }
-
-    private var transactionTypeLabel: String {
-        switch transaction.type {
-        case .income: return String(localized: "transactionType.income")
-        case .expense: return String(localized: "transactionType.expense")
-        default: return String(localized: "transactionType.transfer")
-        }
     }
 }
 

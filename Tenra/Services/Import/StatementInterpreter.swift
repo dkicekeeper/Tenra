@@ -58,8 +58,18 @@ nonisolated enum StatementInterpreter {
 
         for table in snapshot.allTables {
             // Re-resolving per table would be wrong: the caller resolved roles
-            // for the table it chose. Only interpret tables of matching width.
-            guard table.columnCount > roles.date else { continue }
+            // for the table it chose. A table whose shape doesn't match the
+            // resolved roles cannot be interpreted with them, but its rows
+            // must still be reported rather than vanishing without a trace.
+            guard table.columnCount > roles.date else {
+                for row in table.rows {
+                    rowIndex += 1
+                    skipped.append(SkippedRow(rowIndex: rowIndex,
+                                              cells: row,
+                                              reason: "import.skip.tableShapeMismatch"))
+                }
+                continue
+            }
 
             for row in table.rows {
                 rowIndex += 1
@@ -106,7 +116,11 @@ nonisolated enum StatementInterpreter {
             [
                 transaction.date,
                 transaction.direction.rawValue,
-                String(transaction.amount),
+                // Explicit two-decimal formatting: bare `String(Double)` emits
+                // "300000.0" for whole amounts, and can switch to scientific
+                // notation for very large magnitudes, either of which the
+                // downstream CSV re-parse would mis-handle.
+                String(format: "%.2f", transaction.amount),
                 transaction.currency ?? "",
                 transaction.descriptionText,
                 "",   // Account, filled during entity mapping
@@ -126,19 +140,23 @@ nonisolated enum StatementInterpreter {
     }
 
     private static func extractMoney(from row: [String], roles: ColumnRoles) -> MoneyWithDirection? {
-        // Debit/credit layout: whichever side is populated decides direction.
+        // Debit/credit layout: whichever side is populated decides direction,
+        // but a negative value in either cell (a storno/reversal, which banks
+        // do print) inverts that direction just like the signed-amount branch
+        // below. A negative debit (money-out) means money came back in, so
+        // it's income; a negative credit (money-in) is an expense.
         if roles.debit != nil || roles.credit != nil {
             if let debitCell = cell(row, roles.debit),
                let parsed = MoneyTokenParser.parse(debitCell), parsed.amount > 0 {
                 return MoneyWithDirection(amount: parsed.amount,
                                           currency: parsed.currency,
-                                          direction: .expense)
+                                          direction: parsed.isNegative ? .income : .expense)
             }
             if let creditCell = cell(row, roles.credit),
                let parsed = MoneyTokenParser.parse(creditCell), parsed.amount > 0 {
                 return MoneyWithDirection(amount: parsed.amount,
                                           currency: parsed.currency,
-                                          direction: .income)
+                                          direction: parsed.isNegative ? .expense : .income)
             }
             return nil
         }
@@ -156,13 +174,16 @@ nonisolated enum StatementInterpreter {
             return clean(text)
         }
         // No description column: join every cell that is neither the date nor
-        // an amount, so the user still sees something recognizable.
+        // an amount, so the user still sees something recognizable. Also skip
+        // any cell that merely looks like money but wasn't assigned a role
+        // (e.g. an unassigned running-balance column) - otherwise a balance
+        // figure leaks into what reads as a merchant name.
         let structuralColumns = Set([roles.date, roles.amount, roles.debit,
                                      roles.credit, roles.currency].compactMap { $0 })
         let parts = row.enumerated()
             .filter { !structuralColumns.contains($0.offset) }
             .map(\.element)
-            .filter { !$0.isEmpty }
+            .filter { !$0.isEmpty && !MoneyTokenParser.looksLikeMoney($0) }
         return clean(parts.joined(separator: " "))
     }
 
@@ -196,9 +217,14 @@ nonisolated enum StatementInterpreter {
         return candidate.count == 3 && candidate.allSatisfy(\.isLetter) ? candidate : nil
     }
 
-    /// A row with no date and no parseable money is almost certainly a header
-    /// or a section label. Reporting those as "skipped" would be noise.
+    /// A row is treated as a header only when it carries no digits at all
+    /// ("Date | Description | Amount"). Checking `looksLikeMoney` instead
+    /// would have false negatives: an OCR-damaged transaction row whose
+    /// amount cell failed to parse still has no digits detected as money,
+    /// and would be silently swallowed instead of reported as skipped. A
+    /// digit anywhere - a partial amount, a reference number, a date
+    /// fragment - means this is very likely a real row, not a header.
     private static func isLikelyHeader(_ row: [String]) -> Bool {
-        !row.contains { MoneyTokenParser.looksLikeMoney($0) }
+        !row.contains { cell in cell.contains { $0.isNumber } }
     }
 }

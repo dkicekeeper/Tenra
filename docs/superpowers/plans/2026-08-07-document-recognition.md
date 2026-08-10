@@ -379,7 +379,7 @@ The current parser accepts a five-currency whitelist and defaults everything els
 - Test: `TenraTests/Services/Import/MoneyTokenParserTests.swift`
 
 **Interfaces:**
-- Consumes: nothing.
+- Consumes: `DateTokenParser.looksLikeDate` (Task 2), as a guard so a date token can never be misread as an amount.
 - Produces: `MoneyTokenParser.ParsedMoney` (`amount: Double`, `currency: String?`, `isNegative: Bool`), `MoneyTokenParser.parse(_ token: String) -> ParsedMoney?`, `MoneyTokenParser.looksLikeMoney(_ token: String) -> Bool`.
 
 - [ ] **Step 1: Write the failing test**

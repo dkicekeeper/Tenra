@@ -10,12 +10,12 @@
 import Foundation
 
 /// A fully extracted document, independent of how it was extracted.
-struct DocumentSnapshot: Sendable, Equatable {
+nonisolated struct DocumentSnapshot: Sendable, Equatable {
 
     /// A rectangular table. `rows` is always rectangular: every row has
     /// exactly `columnCount` entries, padded with "" where a cell is missing
     /// or spans. Cell text is already trimmed.
-    struct Table: Sendable, Equatable {
+    nonisolated struct Table: Sendable, Equatable {
         let rows: [[String]]
         let columnCount: Int
 
@@ -36,14 +36,14 @@ struct DocumentSnapshot: Sendable, Equatable {
         var bodyRows: ArraySlice<[String]> { rows.dropFirst() }
     }
 
-    struct Barcode: Sendable, Equatable {
+    nonisolated struct Barcode: Sendable, Equatable {
         let payload: String
         /// Raw symbology identifier, e.g. "qr", "ean13". Free-form on purpose:
         /// interpretation only pattern-matches the payload.
         let symbology: String
     }
 
-    struct Page: Sendable, Equatable {
+    nonisolated struct Page: Sendable, Equatable {
         let index: Int
         let tables: [Table]
         /// Every text line on the page in reading order, table content included.

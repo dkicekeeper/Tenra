@@ -86,4 +86,93 @@ struct ColumnRoleResolverTests {
         #expect(roles != nil)
         #expect(roles!.confidence < 0.7)
     }
+
+    // MARK: - Fix 1: deterministic tie-breaking
+
+    @Test("a date-score tie resolves to the lower column index, every time")
+    func dateColumnTieBreaksToLowerIndexDeterministically() {
+        // Two columns both fully parse as dates (e.g. a "posting date" and a
+        // "value date" pair). Dictionary.max(by:) over [Int: Double] would
+        // pick whichever key iteration happened to surface first, which
+        // Swift randomizes per process. The lower index must win, and it
+        // must win the same way on every call within this process.
+        let table = DocumentSnapshot.Table(rows: [
+            ["Col1", "Col2", "Amount"],
+            ["08.01.2026", "09.01.2026", "2 500"],
+            ["09.01.2026", "10.01.2026", "7 300"],
+            ["10.01.2026", "11.01.2026", "3 100"]
+        ])
+
+        for _ in 0..<20 {
+            let roles = ColumnRoleResolver.resolve(table: table)
+            #expect(roles?.date == 0)
+        }
+    }
+
+    // MARK: - Fix 2: amount+balance vs debit/credit adjacency
+
+    @Test("a headerless debit/credit pair still resolves to debit/credit")
+    func headerlessDebitCreditPairResolves() {
+        // No recognizable header. Two adjacent money columns where each row
+        // populates exactly one of the two - the debit/credit signature.
+        let table = DocumentSnapshot.Table(rows: [
+            ["07.01.2026", "10.00", ""],
+            ["08.01.2026", "24.50", ""],
+            ["09.01.2026", "", "3 200.00"],
+            ["10.01.2026", "15.00", ""]
+        ])
+        let roles = ColumnRoleResolver.resolve(table: table)
+        #expect(roles?.date == 0)
+        #expect(roles?.debit == 1)
+        #expect(roles?.credit == 2)
+    }
+
+    @Test("a headerless amount+balance pair resolves to amount only, never debit/credit")
+    func headerlessAmountBalancePairResolvesToAmountOnly() {
+        // No recognizable header. Two adjacent money columns, but both are
+        // populated on essentially every row - a running balance, not a
+        // debit/credit pair. Must not be read as income.
+        let table = DocumentSnapshot.Table(rows: [
+            ["07.01.2026", "500", "10500"],
+            ["08.01.2026", "-200", "10300"],
+            ["09.01.2026", "1000", "11300"],
+            ["10.01.2026", "-150", "11150"]
+        ])
+        let roles = ColumnRoleResolver.resolve(table: table)
+        #expect(roles?.date == 0)
+        #expect(roles?.amount == 1)
+        #expect(roles?.debit == nil)
+        #expect(roles?.credit == nil)
+    }
+
+    // MARK: - Fix 3: "operation"/"операция" restored as weak description fallback
+
+    @Test("Operation is used as description when it is the only narrative column")
+    func operationOnlyColumnResolvesAsDescription() {
+        let table = DocumentSnapshot.Table(rows: [
+            ["Date", "Operation", "Amount"],
+            ["08.01.2026", "UBER TRIP", "-24.50"],
+            ["09.01.2026", "TESCO", "-13.20"]
+        ])
+        let roles = ColumnRoleResolver.resolve(table: table)
+        #expect(roles?.date == 0)
+        #expect(roles?.amount == 2)
+        #expect(roles?.description == 1)
+    }
+
+    // MARK: - Fix 4: debit-only header match no longer strands a named amount column
+
+    @Test("a debit column plus a separately named Amount column both resolve")
+    func debitColumnWithSeparateAmountColumnResolves() {
+        let table = DocumentSnapshot.Table(rows: [
+            ["Date", "Narrative", "Debit", "Amount"],
+            ["08.01.2026", "REWE MARKT", "24.50", ""],
+            ["09.01.2026", "GEHALT", "", "500.00"]
+        ])
+        let roles = ColumnRoleResolver.resolve(table: table)
+        #expect(roles?.date == 0)
+        #expect(roles?.debit == 2)
+        #expect(roles?.credit == nil)
+        #expect(roles?.amount == 3)
+    }
 }

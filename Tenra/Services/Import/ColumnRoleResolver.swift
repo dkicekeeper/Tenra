@@ -57,17 +57,26 @@ nonisolated enum ColumnRoleResolver {
                   "alacak", "entrada", "入金", "입금"],
         .currency: ["currency", "валюта", "währung", "moneda", "devise", "moeda",
                     "valuta", "para birimi", "通貨", "통화"],
-        // Deliberately excludes "operation"/"операция": that word labels a
-        // transaction-type/category field (e.g. "Покупка" = "Purchase"),
-        // not free-text merchant detail. Conflating the two misclassifies
-        // any statement that has both an operation-type column and a
-        // separate details column (see russianHeaders test).
-        .description: ["description", "details", "detail", "narrative", "merchant",
-                       "payee", "описание", "детали",
-                       "назначение", "получатель", "verwendungszweck", "buchungstext",
-                       "beschreibung", "concepto", "descripción", "libellé",
-                       "descrição", "descrizione", "açıklama", "内容", "摘要", "내용"]
+        // Description matching is priority-ordered, not positional (see
+        // descriptionColumnMatching). Strong keywords name a free-text
+        // narrative field unambiguously. "operation"/"операция" is weak: it
+        // often labels a transaction-type/category field (e.g. "Покупка" =
+        // "Purchase") rather than merchant detail, so it only wins when no
+        // strong keyword matched anywhere in the header (see russianHeaders,
+        // which has both "операция" and "детали", and must keep resolving to
+        // "детали").
+        .description: descriptionKeywordsStrong + descriptionKeywordsWeak
     ]
+
+    private static let descriptionKeywordsStrong: [String] = [
+        "description", "details", "detail", "narrative", "merchant",
+        "payee", "описание", "детали", "назначение", "получатель",
+        "verwendungszweck", "buchungstext", "beschreibung", "concepto",
+        "descripción", "libellé", "descrição", "descrizione", "açıklama",
+        "内容", "摘要", "내용"
+    ]
+
+    private static let descriptionKeywordsWeak: [String] = ["operation", "операция"]
 
     /// Fraction of body cells that must parse for a content-based role claim.
     private static let contentThreshold = 0.6
@@ -104,9 +113,7 @@ nonisolated enum ColumnRoleResolver {
             textScores[column] = (total - dateHits - moneyHits) / total
         }
 
-        guard let dateColumn = dateScores
-            .filter({ $0.value >= contentThreshold })
-            .max(by: { $0.value < $1.value })?.key
+        guard let dateColumn = bestColumn(in: dateScores, atLeast: contentThreshold)
         else { return nil }
 
         let currencyColumn = header.flatMap { columnMatching(.currency, in: $0) }
@@ -127,20 +134,33 @@ nonisolated enum ColumnRoleResolver {
             creditColumn = columnMatching(.credit, in: header).flatMap {
                 moneyColumns.contains($0) ? $0 : nil
             }
-            if debitColumn == nil, creditColumn == nil {
-                amountColumn = columnMatching(.amount, in: header).flatMap {
-                    moneyColumns.contains($0) ? $0 : nil
+            // Run even when only one of debit/credit matched: a header can
+            // legitimately carry a "Debit" column and a separate, genuinely
+            // named "Amount" column. Only "both matched" means the pair is
+            // already fully accounted for.
+            if debitColumn == nil || creditColumn == nil {
+                amountColumn = columnMatching(.amount, in: header).flatMap { column -> Int? in
+                    guard moneyColumns.contains(column),
+                          column != debitColumn,
+                          column != creditColumn
+                    else { return nil }
+                    return column
                 }
             }
         }
 
         // Content fallback: no usable header signal, so pick money columns
-        // positionally. Two adjacent money columns read as debit/credit.
+        // positionally. Two adjacent money columns are debit/credit only when
+        // most rows populate exactly one of the two (an amount/balance pair
+        // populates both on essentially every row instead); otherwise the
+        // first money column is the amount and the second - most likely a
+        // running balance - is left unassigned rather than misread as income.
         if amountColumn == nil, debitColumn == nil, creditColumn == nil {
             if moneyColumns.count >= 2,
                let last = moneyColumns.last,
                let secondLast = moneyColumns.dropLast().last,
-               last - secondLast == 1 {
+               last - secondLast == 1,
+               isDebitCreditPair(secondLast, last, in: rows) {
                 debitColumn = secondLast
                 creditColumn = last
             } else {
@@ -148,10 +168,8 @@ nonisolated enum ColumnRoleResolver {
             }
         }
 
-        let descriptionColumn = header.flatMap { columnMatching(.description, in: $0) }
-            ?? textScores
-                .filter { $0.value >= contentThreshold }
-                .max(by: { $0.value < $1.value })?.key
+        let descriptionColumn = header.flatMap { descriptionColumnMatching(in: $0) }
+            ?? bestColumn(in: textScores, atLeast: contentThreshold)
 
         let confidence = confidenceScore(
             headerRecognized: headerIsRecognized,
@@ -181,6 +199,52 @@ nonisolated enum ColumnRoleResolver {
     private static func columnMatching(_ role: ColumnRole, in header: [String]) -> Int? {
         guard let list = keywords[role] else { return nil }
         return header.firstIndex { cell in list.contains { cell.contains($0) } }
+    }
+
+    /// Description matching, priority-ordered rather than positional: strong
+    /// narrative keywords are tried across the whole header first, and the
+    /// weak ("operation"/"операция") keywords are only consulted if no
+    /// strong keyword matched anywhere. This keeps a genuine narrative
+    /// column ("Детали") winning over a transaction-type column
+    /// ("Операция") when both are present, while still letting a statement
+    /// whose only narrative-ish column is literally "Operation" resolve.
+    private static func descriptionColumnMatching(in header: [String]) -> Int? {
+        if let strongMatch = header.firstIndex(where: { cell in
+            descriptionKeywordsStrong.contains { cell.contains($0) }
+        }) {
+            return strongMatch
+        }
+        return header.firstIndex { cell in
+            descriptionKeywordsWeak.contains { cell.contains($0) }
+        }
+    }
+
+    /// Deterministic column selection: highest score wins, ties broken by
+    /// the lowest column index. `Dictionary.max(by:)`/`min(by:)` over
+    /// `[Int: Double]` is non-deterministic on ties because dictionary
+    /// iteration order depends on Swift's per-process hash seed - the same
+    /// statement could resolve to a different column on different launches.
+    private static func bestColumn(in scores: [Int: Double], atLeast threshold: Double) -> Int? {
+        scores
+            .filter { $0.value >= threshold }
+            .sorted { lhs, rhs in
+                lhs.value == rhs.value ? lhs.key < rhs.key : lhs.value > rhs.value
+            }
+            .first?.key
+    }
+
+    /// True when a clear majority of the given rows populate exactly one of
+    /// the two columns - the population signature of a genuine debit/credit
+    /// pair. An amount/balance pair populates both columns on essentially
+    /// every row instead.
+    private static func isDebitCreditPair(_ first: Int, _ second: Int, in rows: [[String]]) -> Bool {
+        guard !rows.isEmpty else { return false }
+        let exclusiveRows = rows.filter { row in
+            let firstFilled = row.indices.contains(first) && !row[first].isEmpty
+            let secondFilled = row.indices.contains(second) && !row[second].isEmpty
+            return firstFilled != secondFilled
+        }.count
+        return Double(exclusiveRows) / Double(rows.count) >= contentThreshold
     }
 
     private static func confidenceScore(

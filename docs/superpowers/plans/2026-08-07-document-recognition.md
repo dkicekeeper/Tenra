@@ -3401,6 +3401,106 @@ git commit -m "fix(import): detect date ordering per column so US statements rea
 
 ---
 
+### Task 14: Account selection for receipt transactions
+
+Receipt transactions currently save with an empty `accountId`. In Tenra `accountId` drives balance calculation, so an accountless transaction is not merely "uncategorized", it is invisible to every balance figure. The user asked for an account picker.
+
+**Files:**
+- Modify: `Tenra/Views/Import/ReceiptConfirmationView.swift`
+- Modify: `Tenra/Views/Import/PDFImportCoordinator.swift` (pass `accountsViewModel` through if it is not already available)
+
+**Interfaces:**
+- Consumes: `AccountSelectorView` (`Tenra/Views/Components/Input/AccountSelectorView.swift:10`) with `accounts: [Account]`, `selectedAccountId: Binding<String?>`, `onSelectionChange: ((String?) -> Void)?`, `emptyStateMessage: String?`, `warningMessage: String?`, `balanceCoordinator: BalanceCoordinator`. `AccountsViewModel.regularAccounts` (`AccountsViewModel.swift:365`), `accountsViewModel.balanceCoordinator`.
+- Produces: a receipt transaction that always carries a real `accountId`.
+
+Follow the precedent in `Tenra/Views/VoiceInput/VoiceInputConfirmationView.swift:137-146`, which solves the identical problem for voice input. Reuse `AccountSelectorView`; do not build a second account picker.
+
+- [ ] **Step 1: Default the selection the way voice does**
+
+`VoiceInputConfirmationView` initialises `selectedAccountId` to the first regular account (`VoiceInputConfirmationView.swift:79-87`). Do the same, but prefer an account whose currency matches the receipt's currency when one exists, falling back to `accountsViewModel.regularAccounts.first?.id`. Currency-matching matters here because the receipt carries its own currency.
+
+- [ ] **Step 2: Render the selector**
+
+Place `AccountSelectorView` in the confirmation form, guarded by `if let balanceCoordinator = accountsViewModel.balanceCoordinator` exactly as the voice screen does. Use `emptyStateMessage` for the no-accounts case.
+
+- [ ] **Step 3: Block saving without an account**
+
+Disable the save button while `selectedAccountId == nil`. A receipt must not persist without an account. Pass the selected id into the created transaction instead of the current empty value.
+
+- [ ] **Step 4: Build and verify**
+
+```bash
+xcodebuild build -scheme Tenra -destination 'platform=iOS Simulator,name=iPhone 17 Pro' 2>&1 | grep -E "error:" | head -30
+```
+Expected: no output. Then run the full `TenraTests` target; it must stay green.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add Tenra/Views/Import/ReceiptConfirmationView.swift Tenra/Views/Import/PDFImportCoordinator.swift
+git commit -m "feat(import): require an account when saving a scanned receipt"
+```
+
+---
+
+### Task 15: Review recognized statement transactions as transaction cards
+
+Today a recognized statement goes straight to the CSV preview and column-mapping flow. The user asked to review recognized operations as real transaction cards, the way voice input presents its result.
+
+`Tenra/Views/Import/ImportTransactionPreviewView.swift` already implements exactly this screen — per-row selection, per-row account assignment defaulted by currency, and persistence through `transactionStore.add` in `addSelectedTransactions()`. It is currently dead code: nothing constructs it, only its own `#Preview` blocks. This task revives it and gives its rows real transaction cards.
+
+**Files:**
+- Create: `Tenra/Services/Import/ParsedTransactionMapper.swift`
+- Modify: `Tenra/Views/Import/ImportTransactionPreviewView.swift`
+- Modify: `Tenra/Views/Import/PDFImportCoordinator.swift`
+- Test: `TenraTests/Services/Import/ParsedTransactionMapperTests.swift`
+
+**Interfaces:**
+- Consumes: `ParsedTransaction` (`date: String` canonical `yyyy-MM-dd`, `amount: Double` always positive, `currency: String?`, `descriptionText: String`, `direction: TransactionDirection`), `ImportOutcome.statement`, and the `Transaction` initializer whose full parameter list appears in `ImportTransactionPreviewView.addSelectedTransactions()`.
+- Produces: `ParsedTransactionMapper.transactions(from: ParsedStatement, defaultCurrency: String) -> [Transaction]`.
+
+- [ ] **Step 1: Write the failing mapper test**
+
+The mapper is pure and must be tested. Cover: `.expense` maps to the expense `TransactionType` and `.income` to income; amount stays positive (direction carries the sign, per `SummaryContribution`); a nil `ParsedTransaction.currency` falls back to the passed default; `descriptionText` lands in `description`; the canonical date string is preserved verbatim; each produced `Transaction` gets a unique id.
+
+Verify `Transaction.date`'s actual type before writing assertions:
+```bash
+grep -n "let date" Tenra/Models/Transaction.swift
+```
+and map `TransactionDirection.transfer` to whatever the codebase's transfer/internal case is called, confirming with:
+```bash
+grep -n "enum TransactionType" -A 20 Tenra/Models/Transaction.swift
+```
+
+- [ ] **Step 2: Implement the mapper**
+
+`nonisolated enum ParsedTransactionMapper` in `Tenra/Services/Import/`, Foundation-only, matching the directory convention. Leave `accountId` nil: `ImportTransactionPreviewView` assigns it per row.
+
+- [ ] **Step 3: Give the preview rows real transaction cards**
+
+`ImportTransactionPreviewRow` currently hand-rolls its own layout. Replace its transaction-summary portion with `TransactionCard` (`Tenra/Views/Components/Cards/TransactionCard.swift:15`), which takes `transaction`, `currency`, `styleData: CategoryStyleData`, `sourceAccount`, `targetAccount`, and optional view models. Keep the row's existing selection checkbox and account picker around it; those are what make this screen useful.
+
+Resolve `styleData` the way the history list does. Read `Tenra/Views/Components/Cards/HistoryTransactionsList.swift` for the canonical construction and follow it rather than inventing one. Do not create a per-feature icon-style wrapper.
+
+- [ ] **Step 4: Route the import flow through it**
+
+In `PDFImportCoordinator`, after a successful `DocumentImportService.importStatement`, present `ImportTransactionPreviewView` with `ParsedTransactionMapper.transactions(from:defaultCurrency:)` instead of going to the CSV preview. Keep the diagnostics sheet reachable from that screen so skipped rows stay visible.
+
+`ImportTransactionPreviewView` needs `accountsViewModel` and reads `TransactionStore` from the environment; make sure both are supplied where it is presented.
+
+- [ ] **Step 5: Build, test, commit**
+
+```bash
+xcodebuild test -scheme Tenra -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:TenraTests/ParsedTransactionMapperTests 2>&1 | grep -aE "Test case .* (passed|failed)|\*\* TEST (SUCCEEDED|FAILED)"
+```
+Then the full target, then:
+```bash
+git add Tenra/Services/Import/ParsedTransactionMapper.swift TenraTests/Services/Import/ParsedTransactionMapperTests.swift Tenra/Views/Import/ImportTransactionPreviewView.swift Tenra/Views/Import/PDFImportCoordinator.swift
+git commit -m "feat(import): review recognized statement transactions as transaction cards"
+```
+
+---
+
 ## Manual verification (device required)
 
 Automated tests cover the deterministic layers. These four checks need a real device and cannot be scripted here. Run them on the physical iPhone (`Dkicekeeper 17`), building with `-destination 'platform=iOS,name=Dkicekeeper 17'`. A Simulator build never reaches the device.

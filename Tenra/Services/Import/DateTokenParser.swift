@@ -19,13 +19,22 @@ nonisolated enum DateTokenParser {
     private static let isoPattern = /(\d{4})-(\d{1,2})-(\d{1,2})/
 
     /// Parses the first date found in `token`, returning canonical "yyyy-MM-dd".
-    /// Returns nil when no valid calendar date is present.
+    /// Assumes day-first ordering. Callers that know the column's ordering
+    /// should use `parse(_:order:)` instead.
     static func parse(_ token: String) -> String? {
+        parse(token, order: .dayFirst)
+    }
+
+    /// Parses using a known column ordering, falling back to the opposite
+    /// ordering when the given one yields no valid calendar date. The fallback
+    /// is safe here in a way it is not for a lone token: the order came from
+    /// evidence across the whole column, so the fallback only fires on the
+    /// outliers that contradict it.
+    static func parse(_ token: String, order: DateOrder) -> String? {
         if let match = token.firstMatch(of: isoPattern) {
-            let year = Int(match.1) ?? 0
-            let month = Int(match.2) ?? 0
-            let day = Int(match.3) ?? 0
-            return canonical(year: year, month: month, day: day)
+            return canonical(year: Int(match.1) ?? 0,
+                             month: Int(match.2) ?? 0,
+                             day: Int(match.3) ?? 0)
         }
 
         guard let match = token.firstMatch(of: dayFirstPattern) else { return nil }
@@ -33,18 +42,24 @@ nonisolated enum DateTokenParser {
         let second = Int(match.2) ?? 0
         let year = normalizeYear(Int(match.3) ?? 0)
 
-        // Day-first is the sole convention for the ambiguous separator group
-        // (EU, CIS, LATAM statements). We deliberately do NOT fall back to a
-        // month-first reading when day-first is invalid (e.g. "08.13.2026"):
-        // guessing which side is the month for a token we already failed to
-        // parse one way risks silently accepting a wrong date, which is worse
-        // than dropping the row. ISO yyyy-mm-dd is handled separately above.
-        return canonical(year: year, month: second, day: first)
+        switch order {
+        case .dayFirst:
+            return canonical(year: year, month: second, day: first)
+                ?? canonical(year: year, month: first, day: second)
+        case .monthFirst:
+            return canonical(year: year, month: first, day: second)
+                ?? canonical(year: year, month: second, day: first)
+        }
     }
 
-    /// True when `token` contains a parseable date.
+    /// True when `token` is a valid date under EITHER ordering.
+    ///
+    /// Order-agnostic on purpose: ColumnRoleResolver uses this to score which
+    /// column holds dates, and that scoring happens before any ordering is
+    /// known. A day-first-only check would score a US date column below the
+    /// detection threshold and the column would never be found.
     static func looksLikeDate(_ token: String) -> Bool {
-        parse(token) != nil
+        parse(token, order: .dayFirst) != nil || parse(token, order: .monthFirst) != nil
     }
 
     private static func normalizeYear(_ raw: Int) -> Int {

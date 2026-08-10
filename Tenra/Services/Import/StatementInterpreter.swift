@@ -71,10 +71,20 @@ nonisolated enum StatementInterpreter {
                 continue
             }
 
+            // Detect the column's date ordering once, from every cell in it.
+            // Per-row detection would be worthless: ambiguity only resolves
+            // when the whole column is in view.
+            let dateOrder = DateOrderDetector.detect(
+                tokens: table.rows.compactMap { row in
+                    row.indices.contains(roles.date) ? row[roles.date] : nil
+                }
+            )
+
             for row in table.rows {
                 rowIndex += 1
 
-                guard let date = cell(row, roles.date).flatMap(DateTokenParser.parse) else {
+                guard let date = cell(row, roles.date)
+                    .flatMap({ DateTokenParser.parse($0, order: dateOrder) }) else {
                     // A header row is expected to have no date; do not report it.
                     if !isLikelyHeader(row) {
                         skipped.append(SkippedRow(rowIndex: rowIndex,

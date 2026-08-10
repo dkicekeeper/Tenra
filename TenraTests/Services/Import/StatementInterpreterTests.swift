@@ -249,4 +249,21 @@ struct StatementInterpreterTests {
 
         #expect(csv.rows[0][2] == "300000.00")
     }
+
+    @Test("a US-ordered date column is read month-first across every row")
+    func usDateOrdering() {
+        let doc = snapshot([
+            ["Date", "Description", "Amount"],
+            ["01/08/2026", "UBER TRIP", "-24.50"],
+            ["01/25/2026", "TESCO", "-13.20"]
+        ])
+        let roles = ColumnRoleResolver.resolve(table: doc.allTables[0])!
+        let result = StatementInterpreter.interpret(snapshot: doc, roles: roles, defaultCurrency: "USD")
+
+        // 01/25 can only be month-first, which pins the whole column, so
+        // 01/08 must read as 8 January and not 1 August.
+        #expect(result.transactions.count == 2)
+        #expect(result.transactions[0].date == "2026-01-08")
+        #expect(result.transactions[1].date == "2026-01-25")
+    }
 }

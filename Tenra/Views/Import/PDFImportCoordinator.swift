@@ -19,9 +19,7 @@ struct PDFImportCoordinator: View {
     // MARK: - State
     @State private var showingFilePicker = false
     @State private var ocrProgress: (current: Int, total: Int)? = nil
-    @State private var recognizedText: String? = nil
-    @State private var structuredRows: [[String]]? = nil
-    @State private var showingRecognizedText = false
+    @State private var importOutcome: ImportOutcome? = nil
     @State private var showingCSVPreview = false
     @State private var parsedCSVFile: CSVFile? = nil
 
@@ -30,9 +28,6 @@ struct PDFImportCoordinator: View {
         importButton
             .sheet(isPresented: $showingFilePicker) {
                 filePicker
-            }
-            .sheet(isPresented: $showingRecognizedText) {
-                recognizedTextSheet
             }
             .sheet(isPresented: $showingCSVPreview) {
                 csvPreviewSheet
@@ -65,43 +60,6 @@ struct PDFImportCoordinator: View {
         DocumentPicker { url in
             Task {
                 await analyzePDF(url: url)
-            }
-        }
-    }
-
-    // MARK: - Recognized Text Sheet
-    @ViewBuilder
-    private var recognizedTextSheet: some View {
-        if let text = recognizedText, !text.isEmpty {
-            RecognizedTextView(
-                recognizedText: text,
-                structuredRows: structuredRows,
-                viewModel: transactionsViewModel,
-                onImport: { csvFile in
-                    showingRecognizedText = false
-                    recognizedText = nil
-                    structuredRows = nil
-                    // Open CSVPreviewView for continued import
-                    showingCSVPreview = true
-                    parsedCSVFile = csvFile
-                },
-                onCancel: {
-                    showingRecognizedText = false
-                    recognizedText = nil
-                    structuredRows = nil
-                    transactionsViewModel.isLoading = false
-                }
-            )
-        } else {
-            // Fallback - empty screen if text not loaded
-            NavigationStack {
-                VStack(spacing: AppSpacing.md) {
-                    Text(String(localized: "error.loadTextFailed"))
-                        .font(AppTypography.h4)
-                    Text(String(localized: "error.tryAgain"))
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(.secondary)
-                }
             }
         }
     }
@@ -150,46 +108,25 @@ struct PDFImportCoordinator: View {
         transactionsViewModel.isLoading = true
         transactionsViewModel.errorMessage = nil
         ocrProgress = nil
-        recognizedText = nil
 
         do {
-            // Extract text via PDFKit or OCR
-            let ocrResult = try await PDFService.shared.extractText(from: url) { current, total in
+            let baseCurrency = transactionsViewModel.transactionStore?.baseCurrency ?? "KZT"
+            let outcome = try await DocumentImportService.importStatement(
+                from: url,
+                defaultCurrency: baseCurrency
+            ) { current, total in
                 Task { @MainActor in
                     ocrProgress = (current: current, total: total)
                 }
             }
-
-            // Check that text is not empty
-            let trimmedText = ocrResult.fullText.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmedText.isEmpty else {
-                transactionsViewModel.errorMessage = String(localized: "error.pdfExtraction")
-                transactionsViewModel.isLoading = false
-                ocrProgress = nil
-                return
-            }
-
-            recognizedText = ocrResult.fullText
-            structuredRows = ocrResult.structuredRows
-            ocrProgress = nil
-            transactionsViewModel.isLoading = false
-            showingRecognizedText = true
-
-        } catch let error as PDFError {
-            transactionsViewModel.errorMessage = error.localizedDescription
-            transactionsViewModel.isLoading = false
-            ocrProgress = nil
-            recognizedText = nil
-            structuredRows = nil
+            importOutcome = outcome
+            parsedCSVFile = outcome.csvFile
+            showingCSVPreview = true
         } catch {
-            transactionsViewModel.errorMessage = String(
-                format: String(localized: "error.pdfRecognitionFailed"),
-                error.localizedDescription
-            )
-            transactionsViewModel.isLoading = false
-            ocrProgress = nil
-            recognizedText = nil
-            structuredRows = nil
+            transactionsViewModel.errorMessage = error.localizedDescription
         }
+
+        transactionsViewModel.isLoading = false
+        ocrProgress = nil
     }
 }

@@ -104,9 +104,27 @@ nonisolated struct VisionDocumentExtractor {
     /// Every text line on the page, in reading order. Line breaks are preserved
     /// deliberately: the previous implementation joined recognized strings with
     /// a single space, which destroyed every line-oriented fallback.
+    ///
+    /// Table rows are folded in as lines too. `Container.Table.Cell.content` is
+    /// itself a nested `Container`, and the SDK does not document whether cell
+    /// text also surfaces in the parent's `text.lines`. On a bank statement the
+    /// transactions live almost entirely inside tables, so if it does not, this
+    /// "fallback" would be empty exactly when it is needed. Building it from
+    /// both sources makes it complete regardless of which way the SDK behaves.
+    /// Rows already present verbatim are not appended twice.
     private static func lines(from container: DocumentObservation.Container) -> [String] {
-        container.text.lines
+        var lines = container.text.lines
             .map { $0.transcript.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
+
+        var seen = Set(lines)
+        for table in container.tables {
+            for row in snapshotTable(from: table).rows {
+                let line = row.filter { !$0.isEmpty }.joined(separator: " ")
+                guard !line.isEmpty, seen.insert(line).inserted else { continue }
+                lines.append(line)
+            }
+        }
+        return lines
     }
 }

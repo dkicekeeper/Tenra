@@ -151,7 +151,8 @@ struct OCRTab: View {
                 // PDFImportCoordinator renders the import button + manages all sheets
                 PDFImportCoordinator(
                     transactionsViewModel: coordinator.transactionsViewModel,
-                    categoriesViewModel: coordinator.categoriesViewModel
+                    categoriesViewModel: coordinator.categoriesViewModel,
+                    accountsViewModel: coordinator.accountsViewModel
                 )
 
                 Spacer()

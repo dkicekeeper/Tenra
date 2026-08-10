@@ -16,6 +16,7 @@ struct PDFImportCoordinator: View {
     // MARK: - Dependencies
     let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
+    let accountsViewModel: AccountsViewModel
 
     // MARK: - State
     @State private var showingFilePicker = false
@@ -70,7 +71,8 @@ struct PDFImportCoordinator: View {
                     ReceiptConfirmationView(
                         draft: draft,
                         baseCurrency: transactionsViewModel.transactionStore?.baseCurrency ?? "KZT",
-                        transactionsViewModel: transactionsViewModel
+                        transactionsViewModel: transactionsViewModel,
+                        accountsViewModel: accountsViewModel
                     )
                 }
             }

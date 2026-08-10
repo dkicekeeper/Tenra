@@ -25,8 +25,33 @@ struct ReceiptConfirmationView: View {
     let draft: ReceiptDraft
     let baseCurrency: String
     let transactionsViewModel: TransactionsViewModel
+    let accountsViewModel: AccountsViewModel
 
     @Environment(\.dismiss) private var dismiss
+
+    // Receipt carries its own currency, so the default prefers a regular
+    // account already denominated in it over the plain "first regular
+    // account" rule voice input uses (voice operations don't have a
+    // receipt-scoped currency to match against).
+    @State private var selectedAccountId: String?
+
+    init(
+        draft: ReceiptDraft,
+        baseCurrency: String,
+        transactionsViewModel: TransactionsViewModel,
+        accountsViewModel: AccountsViewModel
+    ) {
+        self.draft = draft
+        self.baseCurrency = baseCurrency
+        self.transactionsViewModel = transactionsViewModel
+        self.accountsViewModel = accountsViewModel
+
+        let receiptCurrency = draft.currency ?? baseCurrency
+        let defaultAccountId = accountsViewModel.regularAccounts
+            .first(where: { $0.currency == receiptCurrency })?.id
+            ?? accountsViewModel.regularAccounts.first?.id
+        _selectedAccountId = State(initialValue: defaultAccountId)
+    }
 
     private var currency: String { draft.currency ?? baseCurrency }
     private var dateString: String {
@@ -69,6 +94,16 @@ struct ReceiptConfirmationView: View {
                     }
                     .screenPadding()
 
+                    if let balanceCoordinator = accountsViewModel.balanceCoordinator {
+                        AccountSelectorView(
+                            accounts: accountsViewModel.regularAccounts,
+                            selectedAccountId: $selectedAccountId,
+                            emptyStateMessage: String(localized: "voiceConfirmation.noAccounts"),
+                            balanceCoordinator: balanceCoordinator
+                        )
+                        .screenPadding()
+                    }
+
                     addButton
                 }
                 .padding(.top, AppSpacing.lg)
@@ -91,7 +126,8 @@ struct ReceiptConfirmationView: View {
     private var addButton: some View {
         Button {
             HapticManager.light()
-            transactionsViewModel.addTransaction(makeTransaction())
+            guard let selectedAccountId else { return }
+            transactionsViewModel.addTransaction(makeTransaction(accountId: selectedAccountId))
             dismiss()
         } label: {
             Text(String(localized: "import.receipt.add"))
@@ -102,10 +138,12 @@ struct ReceiptConfirmationView: View {
                 .clipShape(.rect(cornerRadius: AppRadius.button))
         }
         .buttonStyle(BounceButtonStyle())
+        .disabled(selectedAccountId == nil)
+        .opacity(selectedAccountId == nil ? 0.5 : 1)
         .screenPadding()
     }
 
-    private func makeTransaction() -> Transaction {
+    private func makeTransaction(accountId: String) -> Transaction {
         Transaction(
             id: "",
             date: dateString,
@@ -113,7 +151,8 @@ struct ReceiptConfirmationView: View {
             amount: draft.total,
             currency: currency,
             type: .expense,
-            category: ""
+            category: "",
+            accountId: accountId
         )
     }
 }
@@ -123,6 +162,7 @@ struct ReceiptConfirmationView: View {
     ReceiptConfirmationView(
         draft: ReceiptDraft(merchant: "Green Grocer", total: 4590, currency: "KZT", date: "2026-08-09"),
         baseCurrency: "KZT",
-        transactionsViewModel: coordinator.transactionsViewModel
+        transactionsViewModel: coordinator.transactionsViewModel,
+        accountsViewModel: coordinator.accountsViewModel
     )
 }

@@ -9,7 +9,7 @@
 import SwiftUI
 import PDFKit
 
-/// Coordinates the entire PDF import flow: file picker → OCR → recognized text → CSV preview
+/// Coordinates the entire PDF import flow: file picker → DocumentImportService → CSV preview
 /// Single responsibility: PDF import orchestration
 struct PDFImportCoordinator: View {
     // MARK: - Dependencies

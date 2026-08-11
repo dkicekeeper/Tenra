@@ -23,6 +23,7 @@
 "transactionPreview.deselectAll" = "Deselect All";
 "transactionPreview.addSelected" = "Add Selected (%d)";
 "transactionPreview.noAccount" = "No Account";
+"transactionPreview.noMatchingAccount" = "No account in this currency";
 "transactionPreview.account" = "Account";
 "navigation.voiceInput" = "Voice Input";
 "navigation.subcategorySearch" = "Search Subcategories";
@@ -1663,11 +1664,12 @@
 "import.diagnostics.recognized" = "Recognized";
 "import.diagnostics.skipped" = "Skipped";
 "import.diagnostics.skippedRows" = "Skipped rows";
+"import.diagnostics.page" = "Page";
 "import.skip.noDate" = "No date found in this row";
 "import.skip.noAmount" = "No amount found in this row";
 "import.skip.tableShapeMismatch" = "This table did not match the statement layout";
+"import.skip.pageUnreadable" = "This page could not be prepared for text recognition";
 "pdf.error.layoutNotRecognized" = "The statement was read, but its column layout was not recognized";
-"pdf.error.noTransactionsRecognized" = "No transactions could be read from this statement";
 "import.error.noContentRecognized" = "Nothing could be recognized in this document";
 "import.error.receiptNotRecognized" = "Could not read a total from this receipt. Try again with better lighting.";
 "import.intelligence.deviceNotEligible" = "This iPhone does not support Apple Intelligence, so unfamiliar statement layouts may need manual column mapping.";

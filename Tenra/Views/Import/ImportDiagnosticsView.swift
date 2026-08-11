@@ -39,7 +39,7 @@ struct ImportDiagnosticsView: View {
                 Section(String(localized: "import.diagnostics.skippedRows")) {
                     ForEach(statement.skipped, id: \.rowIndex) { row in
                         VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                            Text(row.cells.filter { !$0.isEmpty }.joined(separator: "  "))
+                            Text(rowSummary(for: row))
                                 .font(AppTypography.caption)
                                 .lineLimit(2)
                             Text(String(localized: String.LocalizationValue(row.reason)))
@@ -52,6 +52,18 @@ struct ImportDiagnosticsView: View {
         }
         .navigationTitle(String(localized: "import.diagnostics.title"))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// `SkippedRow.cells` is raw data everywhere except the page-unreadable
+    /// case (Fix 6), where it is deliberately just the 1-based page number
+    /// so DocumentImportService's merge logic stays locale-independent and
+    /// testable. This is the one place that number becomes the localized
+    /// "Page N" the user sees.
+    private func rowSummary(for row: SkippedRow) -> String {
+        if row.reason == "import.skip.pageUnreadable", let pageNumber = row.cells.first {
+            return "\(String(localized: "import.diagnostics.page")) \(pageNumber)"
+        }
+        return row.cells.filter { !$0.isEmpty }.joined(separator: "  ")
     }
 }
 

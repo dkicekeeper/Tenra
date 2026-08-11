@@ -23,6 +23,7 @@
 "transactionPreview.deselectAll" = "Deseleziona tutto";
 "transactionPreview.addSelected" = "Aggiungi selezionate (%d)";
 "transactionPreview.noAccount" = "Nessun conto";
+"transactionPreview.noMatchingAccount" = "Nessun conto in questa valuta";
 "transactionPreview.account" = "Conto";
 "navigation.voiceInput" = "Inserimento vocale";
 "navigation.subcategorySearch" = "Cerca sottocategorie";
@@ -1663,11 +1664,12 @@
 "import.diagnostics.recognized" = "Riconosciuti";
 "import.diagnostics.skipped" = "Ignorati";
 "import.diagnostics.skippedRows" = "Righe ignorate";
+"import.diagnostics.page" = "Pagina";
 "import.skip.noDate" = "Nessuna data trovata in questa riga";
 "import.skip.noAmount" = "Nessun importo trovato in questa riga";
 "import.skip.tableShapeMismatch" = "Questa tabella non corrisponde al layout dell'estratto conto";
+"import.skip.pageUnreadable" = "Non è stato possibile preparare questa pagina per il riconoscimento del testo";
 "pdf.error.layoutNotRecognized" = "L'estratto conto è stato letto, ma il layout delle colonne non è stato riconosciuto";
-"pdf.error.noTransactionsRecognized" = "Non è stato possibile leggere alcun movimento da questo estratto conto";
 "import.error.noContentRecognized" = "Non è stato possibile riconoscere nulla in questo documento";
 "import.error.receiptNotRecognized" = "Non è stato possibile leggere il totale di questo scontrino. Riprova con una luce migliore.";
 "import.intelligence.deviceNotEligible" = "Questo iPhone non supporta Apple Intelligence, quindi i layout di estratto conto sconosciuti potrebbero richiedere una mappatura manuale delle colonne.";

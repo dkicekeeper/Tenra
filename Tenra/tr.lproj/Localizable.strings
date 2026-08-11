@@ -23,6 +23,7 @@
 "transactionPreview.deselectAll" = "Seçimi Kaldır";
 "transactionPreview.addSelected" = "Seçilenleri Ekle (%d)";
 "transactionPreview.noAccount" = "Hesap Yok";
+"transactionPreview.noMatchingAccount" = "Bu para biriminde hesap yok";
 "transactionPreview.account" = "Hesap";
 "navigation.voiceInput" = "Sesli Giriş";
 "navigation.subcategorySearch" = "Alt Kategori Ara";
@@ -1663,11 +1664,12 @@
 "import.diagnostics.recognized" = "Tanınan";
 "import.diagnostics.skipped" = "Atlanan";
 "import.diagnostics.skippedRows" = "Atlanan satırlar";
+"import.diagnostics.page" = "Sayfa";
 "import.skip.noDate" = "Bu satırda tarih bulunamadı";
 "import.skip.noAmount" = "Bu satırda tutar bulunamadı";
 "import.skip.tableShapeMismatch" = "Bu tablo ekstre düzeniyle eşleşmedi";
+"import.skip.pageUnreadable" = "Bu sayfa metin tanıma için hazırlanamadı";
 "pdf.error.layoutNotRecognized" = "Ekstre okundu ancak sütun düzeni tanınamadı";
-"pdf.error.noTransactionsRecognized" = "Bu ekstreden hiçbir işlem okunamadı";
 "import.error.noContentRecognized" = "Bu belgede hiçbir şey tanınamadı";
 "import.error.receiptNotRecognized" = "Bu fişten toplam tutar okunamadı. Daha iyi bir ışıkta tekrar deneyin.";
 "import.intelligence.deviceNotEligible" = "Bu iPhone Apple Intelligence'ı desteklemiyor, bu nedenle alışılmadık ekstre düzenleri için elle sütun eşleme gerekebilir.";

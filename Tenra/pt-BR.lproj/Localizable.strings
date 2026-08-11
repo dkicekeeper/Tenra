@@ -23,6 +23,7 @@
 "transactionPreview.deselectAll" = "Desmarcar tudo";
 "transactionPreview.addSelected" = "Adicionar selecionadas (%d)";
 "transactionPreview.noAccount" = "Sem conta";
+"transactionPreview.noMatchingAccount" = "Nenhuma conta nesta moeda";
 "transactionPreview.account" = "Conta";
 "navigation.voiceInput" = "Entrada por voz";
 "navigation.subcategorySearch" = "Buscar subcategorias";
@@ -1663,11 +1664,12 @@
 "import.diagnostics.recognized" = "Reconhecidas";
 "import.diagnostics.skipped" = "Ignoradas";
 "import.diagnostics.skippedRows" = "Linhas ignoradas";
+"import.diagnostics.page" = "Página";
 "import.skip.noDate" = "Nenhuma data encontrada nesta linha";
 "import.skip.noAmount" = "Nenhum valor encontrado nesta linha";
 "import.skip.tableShapeMismatch" = "Esta tabela não corresponde ao layout do extrato";
+"import.skip.pageUnreadable" = "Não foi possível preparar esta página para o reconhecimento de texto";
 "pdf.error.layoutNotRecognized" = "O extrato foi lido, mas o layout das colunas não foi reconhecido";
-"pdf.error.noTransactionsRecognized" = "Não foi possível ler nenhuma transação deste extrato";
 "import.error.noContentRecognized" = "Nada pôde ser reconhecido neste documento";
 "import.error.receiptNotRecognized" = "Não foi possível ler o total deste recibo. Tente novamente com uma iluminação melhor.";
 "import.intelligence.deviceNotEligible" = "Este iPhone não é compatível com a Apple Intelligence, então layouts de extrato desconhecidos podem exigir mapeamento manual de colunas.";

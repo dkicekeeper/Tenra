@@ -16,17 +16,29 @@ nonisolated enum PDFService {
     ///
     /// `scale` 3.5 puts an A4 page at roughly 250 dpi. The previous 2.0 gave
     /// about 144 dpi, below what small statement type needs.
+    ///
+    /// Returns exactly `document.pageCount` entries, one per page, in order.
+    /// A `nil` entry means that page could not be rendered (`page(at:)`
+    /// returned nil, or the renderer produced no `cgImage` — more likely now
+    /// that scale 3.5 raises memory pressure on large multi-page
+    /// statements). The 1:1 index alignment is load-bearing: the caller
+    /// feeds this straight into per-page OCR, and a page silently dropped
+    /// from the array would shift every later page's index, misattributing
+    /// their recognized text to the wrong page number.
     static func renderPages(
         of document: PDFDocument,
         scale: CGFloat,
         progress: (@Sendable (Int, Int) -> Void)? = nil
-    ) -> [CGImage] {
-        var images: [CGImage] = []
+    ) -> [CGImage?] {
+        var images: [CGImage?] = []
         let pageCount = document.pageCount
 
         for pageIndex in 0..<pageCount {
             progress?(pageIndex + 1, pageCount)
-            guard let page = document.page(at: pageIndex) else { continue }
+            guard let page = document.page(at: pageIndex) else {
+                images.append(nil)
+                continue
+            }
 
             let pageRect = page.bounds(for: .mediaBox)
             let size = CGSize(width: pageRect.width * scale, height: pageRect.height * scale)
@@ -39,7 +51,7 @@ nonisolated enum PDFService {
                 page.draw(with: .mediaBox, to: context.cgContext)
                 context.cgContext.restoreGState()
             }
-            if let cgImage = image.cgImage { images.append(cgImage) }
+            images.append(image.cgImage)
         }
         return images
     }
@@ -49,7 +61,6 @@ enum PDFError: LocalizedError {
     case invalidDocument
     case noTextFound
     case layoutNotRecognized
-    case noTransactionsRecognized
     case unsupportedFormat
     case ocrError(String)
 
@@ -61,8 +72,6 @@ enum PDFError: LocalizedError {
             return String(localized: "pdf.error.noTextFound")
         case .layoutNotRecognized:
             return String(localized: "pdf.error.layoutNotRecognized")
-        case .noTransactionsRecognized:
-            return String(localized: "pdf.error.noTransactionsRecognized")
         case .unsupportedFormat:
             return String(localized: "pdf.error.unsupportedFormat")
         case .ocrError(let message):

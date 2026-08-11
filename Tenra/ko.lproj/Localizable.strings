@@ -23,6 +23,7 @@
 "transactionPreview.deselectAll" = "전체 해제";
 "transactionPreview.addSelected" = "선택 항목 추가 (%d)";
 "transactionPreview.noAccount" = "계좌 없음";
+"transactionPreview.noMatchingAccount" = "이 통화의 계좌가 없습니다";
 "transactionPreview.account" = "계좌";
 "navigation.voiceInput" = "음성 입력";
 "navigation.subcategorySearch" = "하위 카테고리 검색";
@@ -1663,11 +1664,12 @@
 "import.diagnostics.recognized" = "인식됨";
 "import.diagnostics.skipped" = "건너뜀";
 "import.diagnostics.skippedRows" = "건너뛴 행";
+"import.diagnostics.page" = "페이지";
 "import.skip.noDate" = "이 행에서 날짜를 찾을 수 없습니다";
 "import.skip.noAmount" = "이 행에서 금액을 찾을 수 없습니다";
 "import.skip.tableShapeMismatch" = "이 표가 명세서 레이아웃과 일치하지 않습니다";
+"import.skip.pageUnreadable" = "이 페이지를 텍스트 인식용으로 준비할 수 없었습니다";
 "pdf.error.layoutNotRecognized" = "명세서를 읽었지만 열 레이아웃을 인식하지 못했습니다";
-"pdf.error.noTransactionsRecognized" = "이 명세서에서 거래 내역을 읽을 수 없습니다";
 "import.error.noContentRecognized" = "이 문서에서 아무것도 인식하지 못했습니다";
 "import.error.receiptNotRecognized" = "이 영수증에서 합계를 읽을 수 없습니다. 조명을 밝게 하고 다시 시도해 주세요.";
 "import.intelligence.deviceNotEligible" = "이 iPhone은 Apple Intelligence를 지원하지 않으므로 낯선 명세서 레이아웃은 열을 수동으로 지정해야 할 수 있습니다.";

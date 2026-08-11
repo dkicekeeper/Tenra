@@ -121,6 +121,20 @@ nonisolated struct IntelligentColumnRoleResolver {
         let credit = validate(layout.creditColumn)
         guard amount != nil || debit != nil || credit != nil else { return nil }
 
+        // The model's own @Guide text says to use -1 for amountColumn "if
+        // the table instead has separate money-out and money-in columns" —
+        // amount and debit/credit are mutually exclusive by design. A model
+        // response that reports both is self-contradictory: StatementInterpreter
+        // gives debit/credit absolute priority and never reads roles.amount
+        // when either is set, so a spuriously-tagged debit/credit column
+        // (e.g. a running-balance column mistaken for credit, next to a
+        // correctly identified Amount column) would silently replace every
+        // row's real amount with that column's value instead of being
+        // caught by the same-index guard below (their indices differ).
+        // Reject the whole layout so the caller falls back to the
+        // deterministic resolver.
+        guard amount == nil || (debit == nil && credit == nil) else { return nil }
+
         let currency = validate(layout.currencyColumn)
         let description = validate(layout.descriptionColumn)
 

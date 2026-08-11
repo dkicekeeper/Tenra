@@ -235,17 +235,31 @@ nonisolated struct ReceiptInterpreter {
     /// cover the characters that plausibly separate thousands in a run.
     private static let groupingSpaceChars = " \u{00A0}\u{2009}\u{202F}"
 
-    /// A money-shaped run: a digit group, optionally space-grouped into
-    /// thousands, with an optional 1-2 digit decimal part. The negative
-    /// lookbehind for a letter excludes a run that starts immediately after
-    /// one, e.g. the "2" in "x2 500", so a quantity marker is never read as
-    /// part of the price.
+    /// A money-shaped run: a digit group, optionally grouped into thousands
+    /// by a space OR by "." or "," (each followed by exactly three digits),
+    /// with an optional 1-2 digit decimal part. The negative lookbehind for
+    /// a letter excludes a run that starts immediately after one, e.g. the
+    /// "2" in "x2 500", so a quantity marker is never read as part of the
+    /// price. The trailing `(?!\d)` on the first alternative stops it from
+    /// matching only a prefix of a longer plain digit run: without it,
+    /// "1234.56" matched as "123" + "4.56" (the grouping branch is willing to
+    /// stop after any 1-3 leading digits), silently truncating any total of
+    /// 1000 or more to its last few digits. When the grouped alternative
+    /// can't consume the whole run, the second alternative (plain
+    /// `\d+(?:[.,]\d{1,2})?`, no grouping separators) matches it whole
+    /// instead.
+    ///
+    /// Which separator is the decimal point vs. thousands grouping is
+    /// deliberately NOT decided here — `MoneyTokenParser.parse` already does
+    /// that correctly (last separator with 1-2 trailing digits wins) and is
+    /// separately tested. This regex only has to find the full run; the
+    /// whole matched text is handed to `MoneyTokenParser.parse`.
     ///
     /// Built via `NSRegularExpression` (ICU), not a Swift `Regex` literal:
     /// the compiled literal syntax in this toolchain rejects lookbehind
     /// ("lookbehind is not currently supported"), while ICU supports it.
     private static let moneyRunPattern: NSRegularExpression = {
-        let pattern = #"(?<![\p{L}])\d{1,3}(?:[\#(groupingSpaceChars)]\d{3})*(?:[.,]\d{1,2})?|(?<![\p{L}])\d+(?:[.,]\d{1,2})?"#
+        let pattern = #"(?<![\p{L}])\d{1,3}(?:[\#(groupingSpaceChars).,]\d{3})*(?:[.,]\d{1,2})?(?!\d)|(?<![\p{L}])\d+(?:[.,]\d{1,2})?"#
         // swiftlint:disable:next force_try
         return try! NSRegularExpression(pattern: pattern)
     }()

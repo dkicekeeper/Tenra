@@ -124,6 +124,44 @@ struct IntelligentColumnRoleResolverTests {
         #expect(roles == nil)
     }
 
+    // MARK: - Fix 2 (CRITICAL): amount + debit/credit exclusivity
+
+    @Test("amount and credit both resolved to distinct columns rejects the layout")
+    func amountAndCreditBothResolvedRejectsLayout() {
+        // The model's own @Guide text says amountColumn should be -1 "if the
+        // table instead has separate money-out and money-in columns" — amount
+        // and debit/credit are mutually exclusive by design. Before this fix,
+        // only same-index collisions were rejected, so this layout (a real
+        // Amount column plus a spuriously credit-tagged Balance column, at
+        // different indices) passed validation. StatementInterpreter then
+        // gives debit/credit absolute priority, so the running balance would
+        // silently replace every row's real transaction amount.
+        let layout = InferredColumnLayout(
+            dateColumn: 0,
+            amountColumn: 2,
+            debitColumn: -1,
+            creditColumn: 3,
+            currencyColumn: -1,
+            descriptionColumn: 1
+        )
+        let roles = IntelligentColumnRoleResolver.columnRoles(from: layout, columnCount: 4)
+        #expect(roles == nil)
+    }
+
+    @Test("amount and debit both resolved to distinct columns rejects the layout")
+    func amountAndDebitBothResolvedRejectsLayout() {
+        let layout = InferredColumnLayout(
+            dateColumn: 0,
+            amountColumn: 2,
+            debitColumn: 3,
+            creditColumn: -1,
+            currencyColumn: -1,
+            descriptionColumn: 1
+        )
+        let roles = IntelligentColumnRoleResolver.columnRoles(from: layout, columnCount: 4)
+        #expect(roles == nil)
+    }
+
     @Test("debit and credit claiming the same column rejects the layout")
     func collidingDebitAndCreditColumnsRejectsLayout() {
         let layout = InferredColumnLayout(

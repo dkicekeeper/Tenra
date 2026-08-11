@@ -23,6 +23,7 @@
 "transactionPreview.deselectAll" = "Tout désélectionner";
 "transactionPreview.addSelected" = "Ajouter la sélection (%d)";
 "transactionPreview.noAccount" = "Aucun compte";
+"transactionPreview.noMatchingAccount" = "Aucun compte dans cette devise";
 "transactionPreview.account" = "Compte";
 "navigation.voiceInput" = "Saisie vocale";
 "navigation.subcategorySearch" = "Rechercher des sous-catégories";
@@ -1663,11 +1664,12 @@
 "import.diagnostics.recognized" = "Reconnues";
 "import.diagnostics.skipped" = "Ignorées";
 "import.diagnostics.skippedRows" = "Lignes ignorées";
+"import.diagnostics.page" = "Page";
 "import.skip.noDate" = "Aucune date trouvée dans cette ligne";
 "import.skip.noAmount" = "Aucun montant trouvé dans cette ligne";
 "import.skip.tableShapeMismatch" = "Ce tableau ne correspond pas à la mise en page du relevé";
+"import.skip.pageUnreadable" = "Cette page n'a pas pu être préparée pour la reconnaissance de texte";
 "pdf.error.layoutNotRecognized" = "Le relevé a été lu, mais la disposition de ses colonnes n'a pas été reconnue";
-"pdf.error.noTransactionsRecognized" = "Aucune opération n'a pu être lue dans ce relevé";
 "import.error.noContentRecognized" = "Rien n'a pu être reconnu dans ce document";
 "import.error.receiptNotRecognized" = "Impossible de lire un total sur ce reçu. Réessayez avec un meilleur éclairage.";
 "import.intelligence.deviceNotEligible" = "Cet iPhone ne prend pas en charge Apple Intelligence, les mises en page de relevé inconnues pourraient donc nécessiter une correspondance manuelle des colonnes.";

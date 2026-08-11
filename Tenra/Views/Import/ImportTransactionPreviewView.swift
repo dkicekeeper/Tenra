@@ -44,15 +44,21 @@ struct ImportTransactionPreviewView: View {
                             transaction: transaction,
                             isSelected: selectedTransactions.contains(transaction.id),
                             selectedAccountId: accountMapping[transaction.id],
-                            availableAccounts: accountsViewModel.accounts.filter { $0.currency == transaction.currency },
+                            availableAccounts: availableAccounts(for: transaction),
                             onToggle: {
+                                let accounts = availableAccounts(for: transaction)
+                                // No account exists in this transaction's currency:
+                                // the row must never become selectable, or it would
+                                // save with a nil accountId and become invisible to
+                                // every balance calculation.
+                                guard !accounts.isEmpty else { return }
                                 withAnimation(AppAnimation.contentSpring) {
                                     if selectedTransactions.contains(transaction.id) {
                                         selectedTransactions.remove(transaction.id)
                                         accountMapping.removeValue(forKey: transaction.id)
                                     } else {
                                         selectedTransactions.insert(transaction.id)
-                                        if let account = accountsViewModel.accounts.first(where: { $0.currency == transaction.currency }) {
+                                        if let account = accounts.first {
                                             accountMapping[transaction.id] = account.id
                                         }
                                     }
@@ -70,9 +76,13 @@ struct ImportTransactionPreviewView: View {
                 HStack(spacing: AppSpacing.md) {
                     Button {
                         withAnimation(AppAnimation.contentSpring) {
-                            selectedTransactions = Set(transactions.map { $0.id })
-                            for transaction in transactions {
-                                if let account = accountsViewModel.accounts.first(where: { $0.currency == transaction.currency }) {
+                            // Only select rows that have a matching account —
+                            // mirrors the per-row guard in onToggle so "Select All"
+                            // can never leave a selected row without an account.
+                            let selectable = transactions.filter { !availableAccounts(for: $0).isEmpty }
+                            selectedTransactions = Set(selectable.map { $0.id })
+                            for transaction in selectable {
+                                if let account = availableAccounts(for: transaction).first {
                                     accountMapping[transaction.id] = account.id
                                 }
                             }
@@ -134,9 +144,10 @@ struct ImportTransactionPreviewView: View {
                 }
             }
             .onAppear {
-                selectedTransactions = Set(transactions.map { $0.id })
-                for transaction in transactions {
-                    if let account = accountsViewModel.accounts.first(where: { $0.currency == transaction.currency }) {
+                let selectable = transactions.filter { !availableAccounts(for: $0).isEmpty }
+                selectedTransactions = Set(selectable.map { $0.id })
+                for transaction in selectable {
+                    if let account = availableAccounts(for: transaction).first {
                         accountMapping[transaction.id] = account.id
                     }
                 }
@@ -144,12 +155,40 @@ struct ImportTransactionPreviewView: View {
         }
     }
 
+    private func availableAccounts(for transaction: Transaction) -> [Account] {
+        Self.availableAccounts(for: transaction, regularAccounts: accountsViewModel.regularAccounts)
+    }
+
+    /// Pure account-matching rule, factored out so it is unit-testable without
+    /// standing up a View or an AccountsViewModel.
+    ///
+    /// Callers MUST pass `regularAccounts`, never `accounts` (Fix 5): assigning
+    /// a plain income/expense transaction to a deposit or loan account would
+    /// move its derived balance directly, bypassing DepositInterestService's
+    /// principal/interest bookkeeping and LoanPaymentService's leg accounting.
+    /// Every other transaction-entry surface (ReceiptConfirmationView,
+    /// VoiceInputConfirmationView, TransactionAddCoordinator, SubscriptionEditView)
+    /// uses `regularAccounts` for the same reason.
+    ///
+    /// An empty result (Fix 4) means the row must not be selectable: a
+    /// transaction saved with a nil accountId is invisible to every balance
+    /// calculation, since accountId drives balance derivation throughout
+    /// this codebase.
+    static func availableAccounts(for transaction: Transaction, regularAccounts: [Account]) -> [Account] {
+        regularAccounts.filter { $0.currency == transaction.currency }
+    }
+
     private func addSelectedTransactions() {
         let transactionsToAdd = transactions.filter { selectedTransactions.contains($0.id) }
 
         Task {
             for transaction in transactionsToAdd {
-                let accountId = accountMapping[transaction.id]
+                // A row can only be selected when availableAccounts(for:) is
+                // non-empty (see onToggle/onAppear/Select All above), but this
+                // guard is the last line of defense: nothing with a nil
+                // accountId may reach transactionStore.add regardless of UI
+                // state, since accountId drives every balance calculation.
+                guard let accountId = accountMapping[transaction.id] else { continue }
                 let updatedTransaction = Transaction(
                     id: transaction.id,
                     date: transaction.date,
@@ -196,20 +235,35 @@ struct ImportTransactionPreviewRow: View {
         CategoryStyleHelper.cached(category: transaction.category, type: transaction.type, customCategories: [])
     }
 
+    /// No regular account exists in this transaction's currency. The row
+    /// must stay unselectable (Fix 4): saving with a nil accountId makes the
+    /// transaction invisible to every balance calculation, since accountId
+    /// drives balance derivation throughout this codebase.
+    private var hasNoMatchingAccount: Bool { availableAccounts.isEmpty }
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             HStack(alignment: .center, spacing: AppSpacing.sm) {
                 // Checkbox button with spring animation
                 Button(action: onToggle) {
-                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(isSelected ? AppColors.accent : AppColors.textSecondary)
+                    Image(systemName: hasNoMatchingAccount
+                        ? "exclamationmark.circle"
+                        : (isSelected ? "checkmark.circle.fill" : "circle")
+                    )
+                        .foregroundStyle(hasNoMatchingAccount
+                            ? AppColors.warning
+                            : (isSelected ? AppColors.accent : AppColors.textSecondary)
+                        )
                         .font(AppTypography.h4)
                         .animation(AppAnimation.contentSpring, value: isSelected)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(isSelected
-                    ? String(localized: "button.select")
-                    : String(localized: "transactionPreview.selectHint")
+                .disabled(hasNoMatchingAccount)
+                .accessibilityLabel(hasNoMatchingAccount
+                    ? String(localized: "transactionPreview.noMatchingAccount")
+                    : (isSelected
+                        ? String(localized: "button.select")
+                        : String(localized: "transactionPreview.selectHint"))
                 )
                 .accessibilityAddTraits(.isButton)
 
@@ -226,6 +280,15 @@ struct ImportTransactionPreviewRow: View {
                     currency: transaction.currency,
                     styleData: styleData
                 )
+            }
+
+            // No account in this currency: tell the user why the row cannot
+            // be imported rather than letting it disappear silently.
+            if hasNoMatchingAccount {
+                Text(String(localized: "transactionPreview.noMatchingAccount"))
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.warning)
+                    .padding(.leading, AppSpacing.xl)
             }
 
             // Account selector (visible only when selected)

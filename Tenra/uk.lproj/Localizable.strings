@@ -23,6 +23,7 @@
 "transactionPreview.deselectAll" = "Зняти вибір";
 "transactionPreview.addSelected" = "Додати вибрані (%d)";
 "transactionPreview.noAccount" = "Без рахунку";
+"transactionPreview.noMatchingAccount" = "Немає рахунку в цій валюті";
 "transactionPreview.account" = "Рахунок";
 "navigation.voiceInput" = "Голосове введення";
 "navigation.subcategorySearch" = "Пошук підкатегорій";
@@ -1663,11 +1664,12 @@
 "import.diagnostics.recognized" = "Розпізнано";
 "import.diagnostics.skipped" = "Пропущено";
 "import.diagnostics.skippedRows" = "Пропущені рядки";
+"import.diagnostics.page" = "Сторінка";
 "import.skip.noDate" = "У цьому рядку не знайдено дату";
 "import.skip.noAmount" = "У цьому рядку не знайдено суму";
 "import.skip.tableShapeMismatch" = "Ця таблиця не відповідає формату виписки";
+"import.skip.pageUnreadable" = "Не вдалося підготувати цю сторінку для розпізнавання тексту";
 "pdf.error.layoutNotRecognized" = "Виписку прочитано, але структуру колонок не розпізнано";
-"pdf.error.noTransactionsRecognized" = "З цієї виписки не вдалося прочитати жодної операції";
 "import.error.noContentRecognized" = "У цьому документі нічого не розпізнано";
 "import.error.receiptNotRecognized" = "Не вдалося прочитати суму на цьому чеку. Спробуйте ще раз за кращого освітлення.";
 "import.intelligence.deviceNotEligible" = "Цей iPhone не підтримує Apple Intelligence, тому незнайомі формати виписок можуть потребувати ручного зіставлення колонок.";

@@ -124,4 +124,55 @@ struct ReceiptInterpreterTests {
         #expect(draft?.total == 1200.50)
         #expect(draft?.currency == "EUR")
     }
+
+    // MARK: - Fix 1 (CRITICAL): totals of 1000+ were fragmented by the money-run regex
+
+    @Test("a comma-grouped total over 1000 is read whole, not fragmented to its last group")
+    func commaGroupedTotalOver1000ReadWhole() {
+        // Before the fix, moneyRunRanges produced ["1,23", "4.56"] for this
+        // line: `\d{1,3}` was willing to stop after 1-3 leading digits with
+        // no lookahead stopping it mid-run, so lastAmount took "4.56" as the
+        // total instead of the real 1234.56.
+        // Currency is deliberately not asserted here: `lastAmount` slices from
+        // the money run's *start* to end of line (see rightmostAmountKeepsCurrencyMarker
+        // below), so a leading "$" before the digits was never captured even
+        // before this fix — only a trailing marker like "€" is. That is a
+        // separate, pre-existing limitation, not something Fix 1 touches.
+        let snapshot = receipt(["SHOP", "TOTAL $1,234.56"])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "KZT")
+        #expect(draft?.total == 1234.56)
+    }
+
+    @Test("a dot-grouped, comma-decimal total over 1000 is read whole")
+    func dotGroupedCommaDecimalTotalReadWhole() {
+        let snapshot = receipt(["SHOP", "TOTAL 1.234,56 €"])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "KZT")
+        #expect(draft?.total == 1234.56)
+        #expect(draft?.currency == "EUR")
+    }
+
+    @Test("a plain 4-digit decimal total with no grouping separator is read whole")
+    func plainFourDigitDecimalTotalReadWhole() {
+        // Before the fix this fragmented into ["123", "4.56"] even with no
+        // thousands separator at all, because the grouping alternative could
+        // match just the leading "123" and stop.
+        let snapshot = receipt(["SHOP", "TOTAL 1234.56"])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "KZT")
+        #expect(draft?.total == 1234.56)
+    }
+
+    @Test("space-grouped totals under 1000 still parse correctly after the fix")
+    func spaceGroupedTotalStillWorks() {
+        // Regression guard: the fix must not disturb the existing
+        // space-grouping behavior these two cases already pinned.
+        let quantitySnapshot = receipt(["SHOP", "Item x2 500"])
+        #expect(ReceiptInterpreter.heuristicDraft(snapshot: quantitySnapshot, defaultCurrency: "USD")?.total == 500)
+
+        let totalSnapshot = receipt([
+            "MAGNUM CASH & CARRY",
+            "TOTAL            2 500",
+            "08.01.2026 17:19"
+        ])
+        #expect(ReceiptInterpreter.heuristicDraft(snapshot: totalSnapshot, defaultCurrency: "KZT")?.total == 2500)
+    }
 }

@@ -188,11 +188,20 @@ struct PDFImportCoordinator: View {
                 }
             }
             importOutcome = outcome
-            parsedTransactions = ParsedTransactionMapper.transactions(
-                from: outcome.statement,
-                defaultCurrency: baseCurrency
-            )
-            showingTransactionPreview = true
+            if outcome.statement.transactions.isEmpty {
+                // Nothing survived interpretation. Route straight to
+                // diagnostics instead of presenting an empty transaction
+                // preview sheet with no explanation — outcome.statement.skipped
+                // carries every row (and every unreadable page) with its
+                // reason, which is exactly what the user needs to see here.
+                showingDiagnostics = true
+            } else {
+                parsedTransactions = ParsedTransactionMapper.transactions(
+                    from: outcome.statement,
+                    defaultCurrency: baseCurrency
+                )
+                showingTransactionPreview = true
+            }
         } catch {
             transactionsViewModel.errorMessage = error.localizedDescription
         }

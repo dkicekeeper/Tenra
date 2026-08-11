@@ -23,6 +23,7 @@
 "transactionPreview.deselectAll" = "Alle abwählen";
 "transactionPreview.addSelected" = "Ausgewählte hinzufügen (%d)";
 "transactionPreview.noAccount" = "Kein Konto";
+"transactionPreview.noMatchingAccount" = "Kein Konto in dieser Währung";
 "transactionPreview.account" = "Konto";
 "navigation.voiceInput" = "Spracheingabe";
 "navigation.subcategorySearch" = "Unterkategorien suchen";
@@ -1663,11 +1664,12 @@
 "import.diagnostics.recognized" = "Erkannt";
 "import.diagnostics.skipped" = "Übersprungen";
 "import.diagnostics.skippedRows" = "Übersprungene Zeilen";
+"import.diagnostics.page" = "Seite";
 "import.skip.noDate" = "In dieser Zeile wurde kein Datum gefunden";
 "import.skip.noAmount" = "In dieser Zeile wurde kein Betrag gefunden";
 "import.skip.tableShapeMismatch" = "Diese Tabelle entsprach nicht dem Layout des Kontoauszugs";
+"import.skip.pageUnreadable" = "Diese Seite konnte nicht für die Texterkennung vorbereitet werden";
 "pdf.error.layoutNotRecognized" = "Der Kontoauszug wurde gelesen, aber sein Spaltenlayout wurde nicht erkannt";
-"pdf.error.noTransactionsRecognized" = "Aus diesem Kontoauszug konnten keine Buchungen gelesen werden";
 "import.error.noContentRecognized" = "In diesem Dokument konnte nichts erkannt werden";
 "import.error.receiptNotRecognized" = "Die Summe auf diesem Beleg konnte nicht gelesen werden. Versuchen Sie es bei besserer Beleuchtung erneut.";
 "import.intelligence.deviceNotEligible" = "Dieses iPhone unterstützt Apple Intelligence nicht, daher müssen unbekannte Kontoauszugslayouts möglicherweise manuell zugeordnet werden.";

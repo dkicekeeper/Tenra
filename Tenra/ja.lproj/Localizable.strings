@@ -23,6 +23,7 @@
 "transactionPreview.deselectAll" = "選択を解除";
 "transactionPreview.addSelected" = "選択した項目を追加（%d）";
 "transactionPreview.noAccount" = "口座なし";
+"transactionPreview.noMatchingAccount" = "この通貨の口座がありません";
 "transactionPreview.account" = "口座";
 "navigation.voiceInput" = "音声入力";
 "navigation.subcategorySearch" = "サブカテゴリを検索";
@@ -1663,11 +1664,12 @@
 "import.diagnostics.recognized" = "認識済み";
 "import.diagnostics.skipped" = "スキップ";
 "import.diagnostics.skippedRows" = "スキップされた行";
+"import.diagnostics.page" = "ページ";
 "import.skip.noDate" = "この行に日付が見つかりません";
 "import.skip.noAmount" = "この行に金額が見つかりません";
 "import.skip.tableShapeMismatch" = "この表は明細書のレイアウトと一致しませんでした";
+"import.skip.pageUnreadable" = "このページはテキスト認識用に準備できませんでした";
 "pdf.error.layoutNotRecognized" = "明細書は読み込まれましたが、列のレイアウトを認識できませんでした";
-"pdf.error.noTransactionsRecognized" = "この明細書から取引を読み取れませんでした";
 "import.error.noContentRecognized" = "この書類から何も認識できませんでした";
 "import.error.receiptNotRecognized" = "このレシートから合計金額を読み取れませんでした。明るい場所でもう一度お試しください。";
 "import.intelligence.deviceNotEligible" = "このiPhoneはApple Intelligenceに対応していないため、見慣れない明細書のレイアウトでは列を手動で設定する必要がある場合があります。";

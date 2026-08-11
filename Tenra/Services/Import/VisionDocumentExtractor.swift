@@ -45,6 +45,28 @@ nonisolated struct VisionDocumentExtractor {
         return DocumentSnapshot(pages: pages, hadTextLayer: false)
     }
 
+    /// Overload for `PDFService.renderPages`, whose output can contain `nil`
+    /// entries for pages that failed to rasterize. A `nil` entry produces an
+    /// empty page at the same index rather than being skipped, so later
+    /// pages keep their correct index (see `PDFService.renderPages`'s doc
+    /// comment for why that alignment matters). The caller is responsible
+    /// for telling the user which pages were unreadable; this layer only
+    /// guarantees their index is not corrupted.
+    static func extract(images: [CGImage?]) async throws -> DocumentSnapshot {
+        var pages: [DocumentSnapshot.Page] = []
+        for (index, image) in images.enumerated() {
+            if let image {
+                pages.append(try await extract(image: image, pageIndex: index))
+            } else {
+                pages.append(DocumentSnapshot.Page(index: index, tables: [], lines: [], barcodes: []))
+            }
+        }
+        guard pages.contains(where: { !$0.tables.isEmpty || !$0.lines.isEmpty }) else {
+            throw DocumentExtractionError.noContentRecognized
+        }
+        return DocumentSnapshot(pages: pages, hadTextLayer: false)
+    }
+
     static func extract(image: CGImage, pageIndex: Int) async throws -> DocumentSnapshot.Page {
         var request = RecognizeDocumentsRequest()
         request.textRecognitionOptions.automaticallyDetectLanguage = true

@@ -42,6 +42,12 @@ nonisolated struct DocumentImportService {
         }
 
         let snapshot: DocumentSnapshot
+        // Indices of pages `PDFService.renderPages` could not rasterize
+        // (page(at:) or cgImage nil — more likely now that scale 3.5 raises
+        // memory pressure on large multi-page statements). Reported to the
+        // user as skipped rows rather than silently vanishing, which would
+        // otherwise shift every later page's index into the wrong slot.
+        var unreadablePages: [Int] = []
         if let textLayer = PDFTextLayerExtractor.extract(document: document) {
             progress?(document.pageCount, document.pageCount)
             snapshot = textLayer
@@ -49,10 +55,11 @@ nonisolated struct DocumentImportService {
             let images = PDFService.renderPages(of: document, scale: 3.5) { current, total in
                 progress?(current, total)
             }
+            unreadablePages = images.enumerated().compactMap { $0.element == nil ? $0.offset : nil }
             snapshot = try await VisionDocumentExtractor.extract(images: images)
         }
 
-        return try await interpret(snapshot: snapshot, defaultCurrency: defaultCurrency)
+        return try await interpret(snapshot: snapshot, defaultCurrency: defaultCurrency, unreadablePages: unreadablePages)
     }
 
     static func importStatement(
@@ -63,11 +70,13 @@ nonisolated struct DocumentImportService {
         return try await interpret(snapshot: snapshot, defaultCurrency: defaultCurrency)
     }
 
-    // MARK: - Private
+    // MARK: - Internal (not private: exercised directly by DocumentImportServiceTests
+    // against hand-built DocumentSnapshot values, the same way bestTable(in:) below is).
 
-    private static func interpret(
+    static func interpret(
         snapshot: DocumentSnapshot,
-        defaultCurrency: String
+        defaultCurrency: String,
+        unreadablePages: [Int] = []
     ) async throws -> ImportOutcome {
         guard let table = bestTable(in: snapshot) else {
             throw PDFError.noTextFound
@@ -89,16 +98,37 @@ nonisolated struct DocumentImportService {
         // there is both wrong and unactionable.
         guard let resolvedRoles = roles else { throw PDFError.layoutNotRecognized }
 
-        let statement = StatementInterpreter.interpret(
+        var statement = StatementInterpreter.interpret(
             snapshot: snapshot,
             roles: resolvedRoles,
             defaultCurrency: defaultCurrency
         )
 
-        // Layout resolved, rows read, but nothing survived interpretation.
-        // statement.skipped explains why, and the diagnostics screen shows it.
-        guard !statement.transactions.isEmpty else { throw PDFError.noTransactionsRecognized }
+        if !unreadablePages.isEmpty {
+            // `cells` deliberately holds the raw 1-based page number, not a
+            // localized "Page N" string: everywhere else in this pipeline
+            // `cells` is raw document content and `reason` is a pure
+            // localization key (see SkippedRow's doc comment), and mixing
+            // resolved UI text into `cells` here would be the only
+            // exception. ImportDiagnosticsView prefixes the localized
+            // "Page" label at render time instead.
+            let pageSkips = unreadablePages.map { pageIndex in
+                SkippedRow(rowIndex: -(pageIndex + 1),
+                          cells: ["\(pageIndex + 1)"],
+                          reason: "import.skip.pageUnreadable")
+            }
+            statement = ParsedStatement(transactions: statement.transactions,
+                                        skipped: pageSkips + statement.skipped,
+                                        resolvedRoles: statement.resolvedRoles)
+        }
 
+        // Layout resolved, rows read, but nothing survived interpretation:
+        // still returned rather than thrown, with an empty transaction list
+        // and a populated `skipped` array. The all-skipped case must reach
+        // the diagnostics screen just like the partial-recognition case
+        // does — that screen exists precisely so a user importing a
+        // statement the interpreter misreads can see which rows failed and
+        // why, instead of a generic error and no way to find out.
         return ImportOutcome(
             csvFile: StatementInterpreter.csvFile(from: statement),
             statement: statement,

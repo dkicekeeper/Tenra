@@ -365,8 +365,6 @@
 // MARK: - Accessibility Labels
 "accessibility.voiceInput" = "Voice input";
 "accessibility.voiceInputHint" = "Record a transaction using voice";
-"accessibility.importStatement" = "Import bank statement";
-"accessibility.importStatementHint" = "Import transactions from PDF or CSV file";
 "accessibility.calendar" = "Calendar";
 "accessibility.calendarHint" = "Select date range for filtering transactions";
 "accessibility.settings" = "Settings";
@@ -1656,6 +1654,10 @@
 "import.source.statement.subtitle" = "Import a PDF statement from your bank";
 "import.source.receipt.title" = "Scan a receipt";
 "import.source.receipt.subtitle" = "Point the camera at a paper receipt";
+"import.receipt.title" = "Review Receipt";
+"import.receipt.detailsHeader" = "Receipt Details";
+"import.receipt.merchant" = "Merchant";
+"import.receipt.total" = "Total";
 "import.tab.subtitle" = "Add transactions from a statement or a receipt instead of typing them in";
 "import.diagnostics.title" = "Import report";
 "import.diagnostics.recognized" = "Recognized";

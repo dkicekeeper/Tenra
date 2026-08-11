@@ -365,8 +365,6 @@
 // MARK: - Accessibility Labels
 "accessibility.voiceInput" = "Entrada por voz";
 "accessibility.voiceInputHint" = "Grave uma transação usando a voz";
-"accessibility.importStatement" = "Importar extrato bancário";
-"accessibility.importStatementHint" = "Importe transações de um arquivo PDF ou CSV";
 "accessibility.calendar" = "Calendário";
 "accessibility.calendarHint" = "Selecione o período para filtrar as transações";
 "accessibility.settings" = "Ajustes";
@@ -1656,6 +1654,10 @@
 "import.source.statement.subtitle" = "Importe um extrato em PDF do seu banco";
 "import.source.receipt.title" = "Escanear um recibo";
 "import.source.receipt.subtitle" = "Aponte a câmera para um recibo em papel";
+"import.receipt.title" = "Revisar recibo";
+"import.receipt.detailsHeader" = "Detalhes do recibo";
+"import.receipt.merchant" = "Estabelecimento";
+"import.receipt.total" = "Total";
 "import.tab.subtitle" = "Adicione transações a partir de um extrato ou recibo em vez de digitá-las";
 "import.diagnostics.title" = "Relatório de importação";
 "import.diagnostics.recognized" = "Reconhecidas";

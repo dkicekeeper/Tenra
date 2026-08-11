@@ -365,8 +365,6 @@
 // MARK: - Accessibility Labels
 "accessibility.voiceInput" = "음성 입력";
 "accessibility.voiceInputHint" = "음성으로 거래 기록";
-"accessibility.importStatement" = "은행 명세서 가져오기";
-"accessibility.importStatementHint" = "PDF 또는 CSV 파일에서 거래 가져오기";
 "accessibility.calendar" = "캘린더";
 "accessibility.calendarHint" = "거래 필터링을 위한 기간 선택";
 "accessibility.settings" = "설정";
@@ -1656,6 +1654,10 @@
 "import.source.statement.subtitle" = "은행의 PDF 명세서를 가져오기";
 "import.source.receipt.title" = "영수증 스캔";
 "import.source.receipt.subtitle" = "카메라를 종이 영수증에 비춰주세요";
+"import.receipt.title" = "영수증 확인";
+"import.receipt.detailsHeader" = "영수증 정보";
+"import.receipt.merchant" = "가맹점";
+"import.receipt.total" = "합계";
 "import.tab.subtitle" = "직접 입력하는 대신 명세서나 영수증에서 거래를 추가하세요";
 "import.diagnostics.title" = "가져오기 결과";
 "import.diagnostics.recognized" = "인식됨";

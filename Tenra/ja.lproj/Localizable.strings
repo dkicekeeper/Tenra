@@ -365,8 +365,6 @@
 // MARK: - Accessibility Labels
 "accessibility.voiceInput" = "音声入力";
 "accessibility.voiceInputHint" = "音声で取引を記録します";
-"accessibility.importStatement" = "銀行明細をインポート";
-"accessibility.importStatementHint" = "PDFまたはCSVファイルから取引をインポートします";
 "accessibility.calendar" = "カレンダー";
 "accessibility.calendarHint" = "取引を絞り込む期間を選択します";
 "accessibility.settings" = "設定";
@@ -1656,6 +1654,10 @@
 "import.source.statement.subtitle" = "銀行のPDF明細書をインポート";
 "import.source.receipt.title" = "レシートをスキャン";
 "import.source.receipt.subtitle" = "紙のレシートにカメラを向けてください";
+"import.receipt.title" = "レシートを確認";
+"import.receipt.detailsHeader" = "レシート詳細";
+"import.receipt.merchant" = "店舗";
+"import.receipt.total" = "合計金額";
 "import.tab.subtitle" = "入力する代わりに、明細書やレシートから取引を追加します";
 "import.diagnostics.title" = "インポートレポート";
 "import.diagnostics.recognized" = "認識済み";

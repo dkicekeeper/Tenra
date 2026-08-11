@@ -365,8 +365,6 @@
 // MARK: - Accessibility Labels
 "accessibility.voiceInput" = "Голосове введення";
 "accessibility.voiceInputHint" = "Записати операцію голосом";
-"accessibility.importStatement" = "Імпортувати банківську виписку";
-"accessibility.importStatementHint" = "Імпортувати операції з файлу PDF або CSV";
 "accessibility.calendar" = "Календар";
 "accessibility.calendarHint" = "Виберіть діапазон дат для фільтрування операцій";
 "accessibility.settings" = "Налаштування";
@@ -1656,6 +1654,10 @@
 "import.source.statement.subtitle" = "Імпортуйте PDF-виписку з вашого банку";
 "import.source.receipt.title" = "Сканувати чек";
 "import.source.receipt.subtitle" = "Наведіть камеру на паперовий чек";
+"import.receipt.title" = "Перевірка чека";
+"import.receipt.detailsHeader" = "Дані чека";
+"import.receipt.merchant" = "Продавець";
+"import.receipt.total" = "Сума";
 "import.tab.subtitle" = "Додавайте операції з виписки або чека, не вводячи їх вручну";
 "import.diagnostics.title" = "Звіт про імпорт";
 "import.diagnostics.recognized" = "Розпізнано";

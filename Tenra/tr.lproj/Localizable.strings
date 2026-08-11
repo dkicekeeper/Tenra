@@ -365,8 +365,6 @@
 // MARK: - Accessibility Labels
 "accessibility.voiceInput" = "Sesli giriş";
 "accessibility.voiceInputHint" = "Sesle işlem kaydet";
-"accessibility.importStatement" = "Banka ekstresi içe aktar";
-"accessibility.importStatementHint" = "PDF ya da CSV dosyasından işlem içe aktar";
 "accessibility.calendar" = "Takvim";
 "accessibility.calendarHint" = "İşlemleri filtrelemek için tarih aralığı seç";
 "accessibility.settings" = "Ayarlar";
@@ -1656,6 +1654,10 @@
 "import.source.statement.subtitle" = "Bankanızdan bir PDF ekstre içe aktarın";
 "import.source.receipt.title" = "Fiş tara";
 "import.source.receipt.subtitle" = "Kamerayı kağıt bir fişe doğrultun";
+"import.receipt.title" = "Fişi Gözden Geçir";
+"import.receipt.detailsHeader" = "Fiş Bilgileri";
+"import.receipt.merchant" = "Satıcı";
+"import.receipt.total" = "Toplam";
 "import.tab.subtitle" = "İşlemleri elle yazmak yerine bir ekstreden veya fişten ekleyin";
 "import.diagnostics.title" = "İçe aktarma raporu";
 "import.diagnostics.recognized" = "Tanınan";

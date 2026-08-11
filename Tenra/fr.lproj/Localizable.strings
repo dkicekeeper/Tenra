@@ -365,8 +365,6 @@
 // MARK: - Accessibility Labels
 "accessibility.voiceInput" = "Saisie vocale";
 "accessibility.voiceInputHint" = "Enregistrez une opération à la voix";
-"accessibility.importStatement" = "Importer un relevé bancaire";
-"accessibility.importStatementHint" = "Importez des opérations depuis un fichier PDF ou CSV";
 "accessibility.calendar" = "Calendrier";
 "accessibility.calendarHint" = "Sélectionnez une plage de dates pour filtrer les opérations";
 "accessibility.settings" = "Réglages";
@@ -1656,6 +1654,10 @@
 "import.source.statement.subtitle" = "Importer un relevé PDF de votre banque";
 "import.source.receipt.title" = "Scanner un reçu";
 "import.source.receipt.subtitle" = "Pointez la caméra vers un reçu papier";
+"import.receipt.title" = "Vérifier le reçu";
+"import.receipt.detailsHeader" = "Détails du reçu";
+"import.receipt.merchant" = "Commerçant";
+"import.receipt.total" = "Total";
 "import.tab.subtitle" = "Ajoutez des opérations à partir d'un relevé ou d'un reçu au lieu de les saisir";
 "import.diagnostics.title" = "Rapport d'import";
 "import.diagnostics.recognized" = "Reconnues";

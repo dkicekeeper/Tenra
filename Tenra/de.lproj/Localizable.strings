@@ -365,8 +365,6 @@
 // MARK: - Accessibility Labels
 "accessibility.voiceInput" = "Spracheingabe";
 "accessibility.voiceInputHint" = "Transaktion per Sprache erfassen";
-"accessibility.importStatement" = "Kontoauszug importieren";
-"accessibility.importStatementHint" = "Transaktionen aus PDF- oder CSV-Datei importieren";
 "accessibility.calendar" = "Kalender";
 "accessibility.calendarHint" = "Zeitraum zum Filtern der Transaktionen wählen";
 "accessibility.settings" = "Einstellungen";
@@ -1656,6 +1654,10 @@
 "import.source.statement.subtitle" = "PDF-Kontoauszug Ihrer Bank importieren";
 "import.source.receipt.title" = "Beleg scannen";
 "import.source.receipt.subtitle" = "Richten Sie die Kamera auf einen Papierbeleg";
+"import.receipt.title" = "Beleg prüfen";
+"import.receipt.detailsHeader" = "Belegdetails";
+"import.receipt.merchant" = "Händler";
+"import.receipt.total" = "Gesamtbetrag";
 "import.tab.subtitle" = "Fügen Sie Buchungen aus einem Kontoauszug oder Beleg hinzu, statt sie einzutippen";
 "import.diagnostics.title" = "Importbericht";
 "import.diagnostics.recognized" = "Erkannt";

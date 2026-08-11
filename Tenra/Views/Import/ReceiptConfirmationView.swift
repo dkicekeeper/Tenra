@@ -86,7 +86,7 @@ struct ReceiptConfirmationView: View {
 
                         InfoRow(
                             icon: "calendar",
-                            label: String(localized: "import.receipt.date"),
+                            label: String(localized: "transaction.date"),
                             value: dateString
                         )
                         .padding(.horizontal, AppSpacing.lg)
@@ -130,7 +130,7 @@ struct ReceiptConfirmationView: View {
             transactionsViewModel.addTransaction(makeTransaction(accountId: selectedAccountId))
             dismiss()
         } label: {
-            Text(String(localized: "import.receipt.add"))
+            Text(String(localized: "button.add"))
                 .frame(maxWidth: .infinity)
                 .padding(AppSpacing.md)
                 .background(AppColors.accent)

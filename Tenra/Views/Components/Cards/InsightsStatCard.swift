@@ -23,28 +23,28 @@ struct InsightsStatCard: View {
     var upIsGood: Bool = true
     /// Trend behind the number. The card is a summary, so the sparkline answers
     /// "is this normal for me?" without a tap. Needs ≥2 points to mean anything.
+    /// Pass the full series — the card plots only its tail (see `trendPeriodLimit`).
     var trendPoints: [PeriodDataPoint] = []
     /// Which series the sparkline plots. `nil` hides it.
     var trendSeries: PeriodChartSeries? = nil
-    /// Rendered when the card is a navigation link — signals the drill-down.
-    var showsChevron: Bool = false
 
-    private var showsTrend: Bool { trendSeries != nil && trendPoints.count >= 2 }
+    /// Periods drawn in the sparkline. At ~150pt wide a full 24-month window collapses
+    /// into noise; the recent tail is what "is this normal for me?" actually asks about.
+    /// The full history stays one tap away in the detail screen.
+    private static let trendPeriodLimit = 6
+
+    private var visibleTrendPoints: [PeriodDataPoint] {
+        Array(trendPoints.suffix(Self.trendPeriodLimit))
+    }
+
+    private var showsTrend: Bool { trendSeries != nil && visibleTrendPoints.count >= 2 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            HStack(spacing: AppSpacing.xxs) {
-                Text(title)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
-                    .lineLimit(1)
-                if showsChevron {
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: AppIconSize.sm, weight: .semibold))
-                        .foregroundStyle(AppColors.textTertiary)
-                }
-            }
+            Text(title)
+                .font(AppTypography.bodySmall)
+                .foregroundStyle(AppColors.textSecondary)
+                .lineLimit(1)
 
             FormattedAmountText(
                 amount: amount,
@@ -62,10 +62,10 @@ struct InsightsStatCard: View {
 
             if showsTrend, let trendSeries {
                 MiniSparkline(
-                    dataPoints: trendPoints,
+                    dataPoints: visibleTrendPoints,
                     series: trendSeries,
                     lineWidth: 1.2,
-                    height: 28,
+                    height: 24,
                     endDotRadius: 2.5
                 )
                 .padding(.top, AppSpacing.xxs)
@@ -115,22 +115,22 @@ struct InsightsStatCard: View {
     .screenPadding()
 }
 
-#Preview("2×2 grid — trends + drill-down") {
+#Preview("2×2 grid — trends (tail only)") {
     let points = PeriodDataPoint.mockMonthly()
     return LazyVGrid(columns: [GridItem(.flexible(), spacing: AppSpacing.md),
                                GridItem(.flexible(), spacing: AppSpacing.md)],
                      spacing: AppSpacing.md) {
         InsightsStatCard(title: "Доступный баланс", amount: 148_920_450, currency: "KZT",
-                         trendPoints: points, trendSeries: .wealth, showsChevron: true)
+                         trendPoints: points, trendSeries: .wealth)
         InsightsStatCard(title: "Чистый поток", amount: 210_000, currency: "KZT",
                          previous: 130_000, upIsGood: true,
-                         trendPoints: points, trendSeries: .cashFlow, showsChevron: true)
+                         trendPoints: points, trendSeries: .cashFlow)
         InsightsStatCard(title: "Расходы", amount: 320_000, currency: "KZT",
                          color: AppColors.destructive, previous: 350_000, upIsGood: false,
-                         trendPoints: points, trendSeries: .spending, showsChevron: true)
+                         trendPoints: points, trendSeries: .spending)
         InsightsStatCard(title: "Доходы", amount: 530_000, currency: "KZT",
                          color: AppColors.success, previous: 480_000, upIsGood: true,
-                         trendPoints: points, trendSeries: .income, showsChevron: true)
+                         trendPoints: points, trendSeries: .income)
     }
     .screenPadding()
 }

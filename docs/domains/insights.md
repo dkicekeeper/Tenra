@@ -39,7 +39,10 @@ announced the whole grid as a single button.
 | Чистый поток / Расходы / Доходы | `InsightsSummaryDetailView(focus:)` — `SummaryDetailFocus` picks the hero metric, the `PeriodChartSeries` drawn, the `PeriodListMetric` of the period list and the screen title |
 
 Cards also carry a `MiniSparkline` so the summary answers "is this normal for me?" without
-a tap. The balance card's series is the running-wealth line from
+a tap. It plots only the **last `InsightsStatCard.trendPeriodLimit` (6) periods** — a full
+24-month window inside a ~150pt card is unreadable noise, and the whole history is one tap
+away in the detail screen. Callers pass the full series; the card slices it.
+The balance card's series is the running-wealth line from
 `InsightsService.cumulativeBalancePoints(_:endingBalance:)` — **the** derivation, shared
 with the wealth insight's chart so the two never disagree (pinned by
 `CumulativeBalancePointsTests`). Don't re-implement that walk locally.

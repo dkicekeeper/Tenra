@@ -197,8 +197,7 @@ struct InsightsView: View {
                         currency: currency,
                         color: insightsViewModel.availableBalance >= 0 ? AppColors.textPrimary : AppColors.destructive,
                         trendPoints: insightsViewModel.balanceTrendPoints,
-                        trendSeries: .wealth,
-                        showsChevron: true
+                        trendSeries: .wealth
                     )
                 }
                 statCardLink(destination: summaryDetail(focus: .netFlow)) {
@@ -210,8 +209,7 @@ struct InsightsView: View {
                         previous: insightsViewModel.previousBucketNetFlow,
                         upIsGood: true,
                         trendPoints: insightsViewModel.periodDataPoints,
-                        trendSeries: .cashFlow,
-                        showsChevron: true
+                        trendSeries: .cashFlow
                     )
                 }
                 statCardLink(destination: summaryDetail(focus: .expenses)) {
@@ -223,8 +221,7 @@ struct InsightsView: View {
                         previous: insightsViewModel.previousBucketExpenses,
                         upIsGood: false,
                         trendPoints: insightsViewModel.periodDataPoints,
-                        trendSeries: .spending,
-                        showsChevron: true
+                        trendSeries: .spending
                     )
                 }
                 statCardLink(destination: summaryDetail(focus: .income)) {
@@ -236,8 +233,7 @@ struct InsightsView: View {
                         previous: insightsViewModel.previousBucketIncome,
                         upIsGood: true,
                         trendPoints: insightsViewModel.periodDataPoints,
-                        trendSeries: .income,
-                        showsChevron: true
+                        trendSeries: .income
                     )
                 }
             }

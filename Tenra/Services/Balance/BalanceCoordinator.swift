@@ -309,6 +309,17 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
 
         var newBalances: [String: Double] = [:]
 
+        // Same math as `engine.calculateBalance` (initialBalance + Σ contribution),
+        // but inverted: ONE pass over all transactions, dispatching each to only the
+        // accounts it can touch (tx.accountId / tx.targetAccountId — `contribution`
+        // returns 0 for every other account by construction). The per-account
+        // `calculateBalance` loop was O(N_accounts × N_tx) on the MainActor and was
+        // the dominant cold-start freeze after a day away (day-change recalc path).
+        // Per-account FP summation order is unchanged (tx array order), so results
+        // are bit-identical to the old loop.
+        var summedAccounts: [String: AccountBalance] = [:]
+        summedAccounts.reserveCapacity(accounts.count)
+
         for account in accounts {
             guard let accountBalance = store.getAccount(account.id) else {
                 continue
@@ -320,12 +331,25 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
                 continue
             }
 
-            let calculatedBalance = engine.calculateBalance(
-                account: accountBalance,
-                transactions: transactions
-            )
+            // No initial balance set → nothing to sum onto; keep current
+            // (mirrors engine.calculateBalance's guard).
+            guard let initialBalance = accountBalance.initialBalance else {
+                newBalances[account.id] = accountBalance.currentBalance
+                continue
+            }
 
-            newBalances[account.id] = calculatedBalance
+            newBalances[account.id] = initialBalance
+            summedAccounts[account.id] = accountBalance
+        }
+
+        for tx in transactions {
+            if let sourceId = tx.accountId, let accountBalance = summedAccounts[sourceId] {
+                newBalances[sourceId]! += engine.contribution(of: tx, to: accountBalance, policy: .currentBalance)
+            }
+            if let targetId = tx.targetAccountId, targetId != tx.accountId,
+               let accountBalance = summedAccounts[targetId] {
+                newBalances[targetId]! += engine.contribution(of: tx, to: accountBalance, policy: .currentBalance)
+            }
         }
 
         store.updateBalances(newBalances, source: .recalculation)

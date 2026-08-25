@@ -10,6 +10,8 @@
 //    so a budget that stays overspent doesn't nag daily.
 //  - Global cap of 5 pushes per rolling week (anti notification-fatigue; 43% of
 //    users disable notifications because of noise).
+//  - At most 2 pushes per recompute, staggered — a post-absence launch must not
+//    dump the whole weekly budget as one burst of banners.
 //  - Only critical/warning severities are push-worthy; neutral/positive insights
 //    stay in the in-app feed.
 //  - Every signal kind is individually toggleable (InsightSignalSettings).
@@ -77,6 +79,14 @@ final class InsightSignalService {
     nonisolated static let dedupWindow: TimeInterval = 7 * 24 * 3600
     /// Hard ceiling on pushes per rolling week across all signal kinds.
     nonisolated static let weeklyCap = 5
+    /// Ceiling per single recompute. After a multi-day absence the weekly budget
+    /// is fully replenished AND several signals flip at once (catch-up recurring
+    /// tx push budgets over, dedup records expired) — without this cap the first
+    /// recompute after launch dumped up to 5 pushes back-to-back.
+    nonisolated static let perRunCap = 2
+    /// Spacing between pushes selected in the same run (the first fires
+    /// immediately, the next after this interval).
+    nonisolated static let staggerInterval: TimeInterval = 3 * 60
     private static let historyKey = "insightSignals.history"
     /// Notification identifier prefix — AppDelegate routes taps on it to the Analytics tab.
     nonisolated static let notificationIdPrefix = "insightSignal_"
@@ -103,7 +113,7 @@ final class InsightSignalService {
         let windowStart = now.addingTimeInterval(-dedupWindow)
         let recent = history.filter { $0.date > windowStart }
         let recentIds = Set(recent.map(\.id))
-        let budget = max(0, weeklyCap - recent.count)
+        let budget = max(0, min(perRunCap, weeklyCap - recent.count))
         guard budget > 0 else { return [] }
 
         return Array(
@@ -155,15 +165,20 @@ final class InsightSignalService {
 
         // Prune expired records while we're writing anyway.
         var history = loadHistory().filter { $0.date > now.addingTimeInterval(-Self.dedupWindow) }
-        for insight in selected {
+        for (index, insight) in selected.enumerated() {
             let content = UNMutableNotificationContent()
             content.title = insight.title
             content.body = Self.notificationBody(for: insight)
             content.sound = .default
+            // First signal delivers now; the rest are staggered so a post-absence
+            // recompute never lands several banners back-to-back.
+            let trigger: UNNotificationTrigger? = index == 0
+                ? nil
+                : UNTimeIntervalNotificationTrigger(timeInterval: Self.staggerInterval * Double(index), repeats: false)
             let request = UNNotificationRequest(
                 identifier: Self.notificationIdPrefix + insight.id,
                 content: content,
-                trigger: nil // deliver now
+                trigger: trigger
             )
             do {
                 try await center.add(request)

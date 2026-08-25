@@ -376,17 +376,25 @@ extension TransactionStore {
         for tx in transactions {
             guard let seriesId = tx.recurringSeriesId else { continue }
             if seriesIdsWithFutureTx.contains(seriesId) { continue }
-            guard let date = DateFormatters.dateFormatter.date(from: tx.date) else { continue }
+            guard let date = FastDateParser.date(from: tx.date) else { continue }
             if date > today {
                 seriesIdsWithFutureTx.insert(seriesId)
             }
         }
 
+        // Collect every series' backfill first, then persist ONCE. The previous
+        // per-series apply() ran a CoreData save + FRC section rebuild over 19k rows
+        // for EVERY series with a backlog — after N days away that was S main-thread
+        // hitches in a row at startup. Series are independent (deterministic per-series
+        // tx ids), so generating against one pre-loop snapshot is equivalent.
+        let existingTransactionIds = transactionIdSet
+        var pendingTransactions: [Transaction] = []
+        var pendingOccurrences: [RecurringOccurrence] = []
+
         for series in activeSeries {
             guard !seriesIdsWithFutureTx.contains(series.id) else { continue }
 
             // Generate backfill (past gaps) + 1 future
-            let existingTransactionIds = transactionIdSet
             let result = recurringGenerator.generateUpToNextFuture(
                 series: series,
                 existingOccurrences: recurringOccurrences,
@@ -396,24 +404,25 @@ extension TransactionStore {
             )
 
             guard !result.transactions.isEmpty else { continue }
-
-            // Persist transactions
-            let bulkEvent = TransactionEvent.bulkAdded(result.transactions)
-            do {
-                try await apply(bulkEvent)
-            } catch {
-                Self.recurringLogger.error("extendAllActiveSeriesHorizons: failed to apply bulk event for series \(series.id): \(error.localizedDescription)")
-            }
-
-            // Track occurrences
-            recurringStore.appendOccurrences(result.occurrences)
-            recurringStore.saveOccurrences()
+            pendingTransactions.append(contentsOf: result.transactions)
+            pendingOccurrences.append(contentsOf: result.occurrences)
 
             // Yield between series so the MainActor can interleave higher-priority UI
-            // work (input handling, layout). Each apply() above already does heavy work;
-            // without yielding, a many-series backlog freezes the UI for seconds at startup.
+            // work (input handling, layout) while a many-series backlog generates.
             await Task.yield()
         }
+
+        guard !pendingTransactions.isEmpty else { return }
+
+        do {
+            try await apply(TransactionEvent.bulkAdded(pendingTransactions))
+        } catch {
+            Self.recurringLogger.error("extendAllActiveSeriesHorizons: failed to apply bulk event for \(pendingTransactions.count) generated tx: \(error.localizedDescription)")
+        }
+
+        // Track occurrences
+        recurringStore.appendOccurrences(pendingOccurrences)
+        recurringStore.saveOccurrences()
     }
 
     /// Invalidate cache for a specific series

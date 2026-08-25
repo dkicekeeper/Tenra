@@ -5,7 +5,7 @@ Series + occurrence model for subscriptions and recurring payments.
 ## Single-Next-Occurrence Model
 
 - `generateUpToNextFuture()` — backfills all past occurrences + creates exactly **1 future occurrence**
-- `extendAllActiveSeriesHorizons()` — called on `loadData` and foreground resume
+- `extendAllActiveSeriesHorizons()` — called on `loadData` and foreground resume; collects EVERY series' backfill first, then persists via ONE `apply(.bulkAdded)` (a per-series apply ran one CoreData save + full FRC section rebuild per series — S main-thread hitches at cold start after N days away)
 
 ## Active vs Status
 

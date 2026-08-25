@@ -88,6 +88,21 @@ struct InsightSignalServiceTests {
         #expect(reselected.count == 1)
     }
 
+    @Test("per-run cap limits a single recompute to 2 signals, critical first")
+    func perRunCap() {
+        let insights = [
+            makeInsight(id: "w1", type: .subscriptionPriceIncrease, severity: .warning),
+            makeInsight(id: "c1", type: .projectedBalance, severity: .critical),
+            makeInsight(id: "w2", type: .spendingSpike, severity: .warning),
+            makeInsight(id: "c2", type: .budgetOverspend, severity: .critical)
+        ]
+        // Empty history = full weekly budget of 5, but one run may only take 2.
+        let selected = InsightSignalService.selectSignals(
+            from: insights, enabledKinds: allKinds, history: [], now: now
+        )
+        #expect(selected.map(\.id) == ["c1", "c2"])
+    }
+
     @Test("weekly cap of 5 limits output, critical signals win the budget")
     func weeklyCap() {
         // 4 already fired this week → budget of 1 left.

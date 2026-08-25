@@ -322,12 +322,15 @@ struct BalanceCalculationEngine {
 
     // MARK: - Private Helpers
 
-    /// Parse date with cache support
+    /// Parse date with cache support. Fallback uses FastDateParser — the engine's
+    /// `contribution` runs once per tx per touched account during full recalcs, and
+    /// BalanceCoordinator constructs the engine without a cacheManager, so a
+    /// DateFormatter here was N_tx DateFormatter parses per recalc (~13 µs each).
     private func parseDate(_ dateString: String) -> Date? {
         if let cache = cacheManager {
             return cache.getParsedDate(for: dateString)
         }
-        return DateFormatters.dateFormatter.date(from: dateString)
+        return FastDateParser.date(from: dateString)
     }
 
     /// Get transaction amount in target currency

@@ -202,11 +202,15 @@ struct HistoryView: View {
         .searchable(
             text: $filterCoordinator.searchText,
             isPresented: $filterCoordinator.isSearchActive,
+            placement: .navigationBarDrawer(displayMode: .always),
             prompt: searchPrompt
         )
-        // No `.searchToolbarBehavior(.minimize)` — minimize merges the input capsule and
-        // the dismiss control into one bubble. Omitting it gives separate input + × bubbles,
-        // matching the subcategory search (SubcategorySearchView).
+        // `displayMode: .always` is load-bearing: the default collapsible drawer's
+        // reveal gesture claims touches over the `.safeAreaInset(.top)` filter bar
+        // while collapsed, making the filter chips untappable unless scrolled to the
+        // very top (gotchas.md §searchable drawer). `.searchToolbarBehavior(.minimize)`
+        // is the rejected alternative — it merges the input capsule and the dismiss
+        // control into one bubble.
         .onAppear {
             handleOnAppear()
         }

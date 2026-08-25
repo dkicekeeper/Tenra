@@ -553,8 +553,19 @@ class AppCoordinator {
             allTransactions: transactionStore.transactions,
             onTransactionCreated: { created.append($0) }
         )
-        for tx in created {
-            _ = try? await transactionStore.add(tx)
+        guard !created.isEmpty else { return }
+        do {
+            // One bulk event: single CoreData batch insert + single FRC rebuild.
+            // The previous per-tx add() ran insertTransaction's performAndWait on the
+            // main thread once per posted interest day — a visible stall after a
+            // multi-day absence with several deposits.
+            try await transactionStore.addBatch(created)
+        } catch {
+            // addBatch rejects the whole batch if one tx fails validation — retry
+            // individually so one bad tx can't drop the rest (CSV import precedent).
+            for tx in created {
+                _ = try? await transactionStore.add(tx)
+            }
         }
     }
 

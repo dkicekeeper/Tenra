@@ -84,9 +84,16 @@ final class InsightSignalService {
     /// tx push budgets over, dedup records expired) — without this cap the first
     /// recompute after launch dumped up to 5 pushes back-to-back.
     nonisolated static let perRunCap = 2
-    /// Spacing between pushes selected in the same run (the first fires
-    /// immediately, the next after this interval).
-    nonisolated static let staggerInterval: TimeInterval = 3 * 60
+    /// Delivery window: signals are only delivered between these local hours.
+    /// A signal falling outside is moved to the next morning slot.
+    nonisolated static let deliveryWindowStartHour = 9
+    nonisolated static let deliveryWindowEndHour = 21
+    /// Morning slot = 09:00 + random 0...90 min, so post-night deliveries do not
+    /// all land at exactly 09:00 (subscription reminders and digest live there).
+    nonisolated static let morningJitterMinutes = 90
+    /// Random spacing between pushes selected in the same run.
+    nonisolated static let minRunSpacing: TimeInterval = 2 * 3600
+    nonisolated static let maxRunSpacing: TimeInterval = 4 * 3600
     private static let historyKey = "insightSignals.history"
     /// Notification identifier prefix — AppDelegate routes taps on it to the Analytics tab.
     nonisolated static let notificationIdPrefix = "insightSignal_"
@@ -142,6 +149,63 @@ final class InsightSignalService {
         return parts.joined(separator: " · ")
     }
 
+    // MARK: - Delivery window scheduling (pure, unit-tested)
+
+    /// Returns `count` delivery dates: the first is `now` when inside the
+    /// 09:00-21:00 window (otherwise the next morning slot), each subsequent one
+    /// is 2-4 h after the previous, overflowing past 21:00 into the next morning.
+    /// Pure given an injected RNG - tests pass a seeded generator.
+    nonisolated static func deliveryDates(
+        count: Int,
+        now: Date,
+        calendar: Calendar = .current,
+        rng: inout some RandomNumberGenerator
+    ) -> [Date] {
+        guard count > 0 else { return [] }
+        var dates: [Date] = []
+        dates.reserveCapacity(count)
+        var cursor = now
+        for index in 0..<count {
+            var candidate: Date
+            if index == 0 {
+                candidate = isInsideWindow(now, calendar: calendar)
+                    ? now
+                    : nextMorningSlot(after: now, calendar: calendar, rng: &rng)
+            } else {
+                let spacing = TimeInterval.random(in: minRunSpacing...maxRunSpacing, using: &rng)
+                candidate = cursor.addingTimeInterval(spacing)
+                if !isInsideWindow(candidate, calendar: calendar) {
+                    candidate = nextMorningSlot(after: candidate, calendar: calendar, rng: &rng)
+                }
+            }
+            dates.append(candidate)
+            cursor = candidate
+        }
+        return dates
+    }
+
+    private nonisolated static func isInsideWindow(_ date: Date, calendar: Calendar) -> Bool {
+        let hour = calendar.component(.hour, from: date)
+        return hour >= deliveryWindowStartHour && hour < deliveryWindowEndHour
+    }
+
+    /// 09:00 + 0...90 min jitter on the next day whose window start is still ahead
+    /// of `date` (05:00 resolves to the SAME day's morning).
+    private nonisolated static func nextMorningSlot(
+        after date: Date,
+        calendar: Calendar,
+        rng: inout some RandomNumberGenerator
+    ) -> Date {
+        var day = calendar.startOfDay(for: date)
+        var windowStart = calendar.date(byAdding: .hour, value: deliveryWindowStartHour, to: day) ?? date
+        if date >= windowStart {
+            day = calendar.date(byAdding: .day, value: 1, to: day) ?? day
+            windowStart = calendar.date(byAdding: .hour, value: deliveryWindowStartHour, to: day) ?? date
+        }
+        let jitterSeconds = Int.random(in: 0...(morningJitterMinutes * 60), using: &rng)
+        return windowStart.addingTimeInterval(TimeInterval(jitterSeconds))
+    }
+
     // MARK: - Processing
 
     /// Diffs freshly computed insights against the alert history and fires local
@@ -170,11 +234,10 @@ final class InsightSignalService {
             content.title = insight.title
             content.body = Self.notificationBody(for: insight)
             content.sound = .default
-            // First signal delivers now; the rest are staggered so a post-absence
-            // recompute never lands several banners back-to-back.
+            // Temporary bridge - Task 3 replaces this with windowed deliveryDates.
             let trigger: UNNotificationTrigger? = index == 0
                 ? nil
-                : UNTimeIntervalNotificationTrigger(timeInterval: Self.staggerInterval * Double(index), repeats: false)
+                : UNTimeIntervalNotificationTrigger(timeInterval: 180 * Double(index), repeats: false)
             let request = UNNotificationRequest(
                 identifier: Self.notificationIdPrefix + insight.id,
                 content: content,

@@ -136,4 +136,79 @@ struct InsightSignalServiceTests {
         let noTrend = makeInsight(id: "b", type: .budgetOverspend, severity: .critical, subtitle: "2 категории")
         #expect(InsightSignalService.notificationBody(for: noTrend) == "2 категории · 100 ₸")
     }
+
+    // MARK: - Delivery window scheduling
+
+    /// Deterministic RNG for delivery-date tests (SplitMix64).
+    private struct SeededRNG: RandomNumberGenerator {
+        var state: UInt64
+        mutating func next() -> UInt64 {
+            state &+= 0x9E3779B97F4A7C15
+            var z = state
+            z = (z ^ (z >> 30)) &* 0xBF58476D1CE4E5B9
+            z = (z ^ (z >> 27)) &* 0x94D049BB133111EB
+            return z ^ (z >> 31)
+        }
+    }
+
+    private func date(_ y: Int, _ mo: Int, _ d: Int, _ h: Int, _ mi: Int) -> Date {
+        Calendar.current.date(from: DateComponents(year: y, month: mo, day: d, hour: h, minute: mi))!
+    }
+
+    @Test("first delivery is immediate when now is inside the 09:00-21:00 window")
+    func deliveryFirstInsideWindow() {
+        var rng = SeededRNG(state: 1)
+        let now = date(2026, 8, 25, 14, 0)
+        let dates = InsightSignalService.deliveryDates(count: 1, now: now, rng: &rng)
+        #expect(dates == [now])
+    }
+
+    @Test("night-time delivery moves to next morning 09:00-10:30")
+    func deliveryNightMovesToMorning() {
+        var rng = SeededRNG(state: 2)
+        let now = date(2026, 8, 25, 23, 30)
+        let dates = InsightSignalService.deliveryDates(count: 1, now: now, rng: &rng)
+        let cal = Calendar.current
+        #expect(dates.count == 1)
+        #expect(cal.component(.day, from: dates[0]) == 26)
+        let minutes = cal.component(.hour, from: dates[0]) * 60 + cal.component(.minute, from: dates[0])
+        #expect(minutes >= 9 * 60 && minutes <= 10 * 60 + 30)
+    }
+
+    @Test("early morning (05:00) uses the SAME day's morning slot")
+    func deliveryEarlyMorningSameDay() {
+        var rng = SeededRNG(state: 3)
+        let now = date(2026, 8, 25, 5, 0)
+        let dates = InsightSignalService.deliveryDates(count: 1, now: now, rng: &rng)
+        #expect(Calendar.current.component(.day, from: dates[0]) == 25)
+        #expect(Calendar.current.component(.hour, from: dates[0]) >= 9)
+    }
+
+    @Test("subsequent deliveries are spaced 2-4h and never leave the window")
+    func deliverySpacingAndWindow() {
+        var rng = SeededRNG(state: 4)
+        let now = date(2026, 8, 25, 20, 30) // near window end -> overflow to next morning
+        let dates = InsightSignalService.deliveryDates(count: 3, now: now, rng: &rng)
+        #expect(dates.count == 3)
+        #expect(dates[0] == now)
+        let cal = Calendar.current
+        for d in dates {
+            let hour = cal.component(.hour, from: d)
+            #expect(hour >= 9 && hour < 21)
+        }
+        for i in 1..<dates.count {
+            #expect(dates[i] > dates[i - 1])
+        }
+    }
+
+    @Test("deliveryDates is deterministic under a seeded RNG and empty for count 0")
+    func deliveryDeterminismAndZero() {
+        let now = date(2026, 8, 25, 22, 0)
+        var rng1 = SeededRNG(state: 42)
+        var rng2 = SeededRNG(state: 42)
+        #expect(InsightSignalService.deliveryDates(count: 2, now: now, rng: &rng1)
+             == InsightSignalService.deliveryDates(count: 2, now: now, rng: &rng2))
+        var rng3 = SeededRNG(state: 42)
+        #expect(InsightSignalService.deliveryDates(count: 0, now: now, rng: &rng3).isEmpty)
+    }
 }

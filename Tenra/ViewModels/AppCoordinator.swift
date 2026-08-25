@@ -199,7 +199,6 @@ class AppCoordinator {
         // reference is therefore unused here.
         let insightsBudgetService = CategoryBudgetService(store: nil)
         let insightsService = InsightsService(
-            transactionStore: self.transactionStore,
             filterService: insightsFilterService,
             queryService: insightsQueryService,
             budgetService: insightsBudgetService

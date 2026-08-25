@@ -39,7 +39,6 @@ nonisolated final class InsightsService {
     // MARK: - Dependencies
     // Internal (no `private`) so cross-file extensions can access them directly.
 
-    let transactionStore: TransactionStore
     let filterService: TransactionFilterService
     let queryService: TransactionQueryService
     let budgetService: CategoryBudgetService
@@ -67,12 +66,10 @@ nonisolated final class InsightsService {
     // MARK: - Init
 
     init(
-        transactionStore: TransactionStore,
         filterService: TransactionFilterService,
         queryService: TransactionQueryService,
         budgetService: CategoryBudgetService
     ) {
-        self.transactionStore = transactionStore
         self.filterService = filterService
         self.queryService = queryService
         self.budgetService = budgetService

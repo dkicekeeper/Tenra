@@ -22,7 +22,9 @@ final class WeeklyDigestScheduler {
     private static let logger = Logger(subsystem: "Tenra", category: "WeeklyDigestScheduler")
 
     /// Reuses the insight-signal prefix so a tap deep-links to the Analytics tab.
-    static let notificationId = InsightSignalService.notificationIdPrefix + "weekly_digest"
+    /// `nonisolated` so `InsightSignalService.staleSignalRequestIds` (a pure,
+    /// nonisolated function) can exclude it without hopping onto MainActor.
+    nonisolated static let notificationId = InsightSignalService.notificationIdPrefix + "weekly_digest"
 
     private let settings: InsightSignalSettings
 

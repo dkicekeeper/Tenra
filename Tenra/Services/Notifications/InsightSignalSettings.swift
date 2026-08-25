@@ -11,6 +11,7 @@
 
 import Foundation
 import Observation
+import UserNotifications
 
 @MainActor
 @Observable
@@ -27,7 +28,26 @@ final class InsightSignalSettings {
     /// Master switch. Defaults to ON — individual kinds are conservative
     /// (critical/warning transitions only, ≤5 pushes/week).
     var isEnabled: Bool {
-        didSet { defaults.set(isEnabled, forKey: Self.masterKey) }
+        didSet {
+            defaults.set(isEnabled, forKey: Self.masterKey)
+            // didSet doesn't fire on the `init` assignment, only on a real toggle —
+            // turning the master switch off must not leave already-scheduled signal
+            // pushes live for up to a day until the next recompute's stale sweep.
+            guard !isEnabled else { return }
+            Task { await Self.cancelPendingSignalRequests() }
+        }
+    }
+
+    /// Removes all pending `insightSignal_`-prefixed requests except the weekly
+    /// digest (it has its own toggle/cancel path in WeeklyDigestScheduler).
+    /// Reuses `staleSignalRequestIds` with an empty eligible set, which by
+    /// definition returns exactly "every signal request minus the digest".
+    private nonisolated static func cancelPendingSignalRequests() async {
+        let center = UNUserNotificationCenter.current()
+        let pendingIds = await center.pendingNotificationRequests().map(\.identifier)
+        let toCancel = InsightSignalService.staleSignalRequestIds(pendingIds: pendingIds, eligibleIds: [])
+        guard !toCancel.isEmpty else { return }
+        center.removePendingNotificationRequests(withIdentifiers: toCancel)
     }
 
     /// Monday-09:00 weekly summary push (Phase D). Separate from the diff

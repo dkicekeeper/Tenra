@@ -232,4 +232,34 @@ struct InsightSignalServiceTests {
 
         #expect(InsightSignalService.eligibleSignalIds(from: [], enabledKinds: allKinds).isEmpty)
     }
+
+    // MARK: - Stale pending sweep (never cancels the weekly digest)
+
+    @Test("staleSignalRequestIds never returns the weekly digest or unrelated ids, but does return non-eligible signals")
+    func staleSignalRequestIdsProtectsDigestAndUnrelatedIds() {
+        let pendingIds = [
+            "insightSignal_weekly_digest",       // digest — must survive
+            "insightSignal_budget_over",          // still eligible — must survive
+            "insightSignal_stale_one",             // no longer eligible — must be cancelled
+            "com.tenra.someOtherNotification"     // unrelated, non-prefixed — must survive
+        ]
+        let eligible: Set<String> = ["budget_over"]
+
+        let stale = InsightSignalService.staleSignalRequestIds(pendingIds: pendingIds, eligibleIds: eligible)
+
+        #expect(stale == ["insightSignal_stale_one"])
+        #expect(!stale.contains("insightSignal_weekly_digest"))
+        #expect(!stale.contains("com.tenra.someOtherNotification"))
+    }
+
+    @Test("staleSignalRequestIds with an empty eligible set cancels every signal except the digest")
+    func staleSignalRequestIdsEmptyEligibleKeepsOnlyDigest() {
+        let pendingIds = [
+            "insightSignal_weekly_digest",
+            "insightSignal_budget_over",
+            "insightSignal_spending_spike"
+        ]
+        let stale = InsightSignalService.staleSignalRequestIds(pendingIds: pendingIds, eligibleIds: [])
+        #expect(Set(stale) == ["insightSignal_budget_over", "insightSignal_spending_spike"])
+    }
 }

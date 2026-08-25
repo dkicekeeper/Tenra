@@ -190,17 +190,24 @@ final class InsightSignalService {
     }
 
     /// 09:00 + 0...90 min jitter on the next day whose window start is still ahead
-    /// of `date` (05:00 resolves to the SAME day's morning).
+    /// of `date` (05:00 resolves to the SAME day's morning). Uses
+    /// `bySettingHour:minute:second:of:` (exact local wall-clock time) rather than
+    /// `startOfDay + 9h` — the latter is an absolute time offset that lands on
+    /// 08:00 or 10:00 local on a DST-transition day.
     private nonisolated static func nextMorningSlot(
         after date: Date,
         calendar: Calendar,
         rng: inout some RandomNumberGenerator
     ) -> Date {
-        var day = calendar.startOfDay(for: date)
-        var windowStart = calendar.date(byAdding: .hour, value: deliveryWindowStartHour, to: day) ?? date
+        let today = calendar.startOfDay(for: date)
+        var windowStart = calendar.date(
+            bySettingHour: deliveryWindowStartHour, minute: 0, second: 0, of: today
+        ) ?? date
         if date >= windowStart {
-            day = calendar.date(byAdding: .day, value: 1, to: day) ?? day
-            windowStart = calendar.date(byAdding: .hour, value: deliveryWindowStartHour, to: day) ?? date
+            let nextDay = calendar.date(byAdding: .day, value: 1, to: today) ?? today
+            windowStart = calendar.date(
+                bySettingHour: deliveryWindowStartHour, minute: 0, second: 0, of: nextDay
+            ) ?? windowStart
         }
         let jitterSeconds = Int.random(in: 0...(morningJitterMinutes * 60), using: &rng)
         return windowStart.addingTimeInterval(TimeInterval(jitterSeconds))
@@ -223,6 +230,20 @@ final class InsightSignalService {
         })
     }
 
+    /// Ids of pending signal requests to cancel: prefixed requests whose insight id
+    /// no longer qualifies. The weekly digest shares the prefix (tap routing) but is
+    /// NOT a signal — never cancel it here.
+    nonisolated static func staleSignalRequestIds(
+        pendingIds: [String],
+        eligibleIds: Set<String>
+    ) -> [String] {
+        pendingIds.filter { requestId in
+            guard requestId.hasPrefix(notificationIdPrefix),
+                  requestId != WeeklyDigestScheduler.notificationId else { return false }
+            return !eligibleIds.contains(String(requestId.dropFirst(notificationIdPrefix.count)))
+        }
+    }
+
     // MARK: - Processing
 
     /// Diffs freshly computed insights against the alert history, cancels pending
@@ -242,18 +263,12 @@ final class InsightSignalService {
         // (signal left critical/warning, or its kind was toggled off). Their
         // history records stay - a flapping signal must not re-push.
         let enabledKinds = settings.enabledKinds
-        let pendingSignalIds = await center.pendingNotificationRequests()
-            .map(\.identifier)
-            .filter { $0.hasPrefix(Self.notificationIdPrefix) }
-        if !pendingSignalIds.isEmpty {
-            let eligible = Self.eligibleSignalIds(from: insights, enabledKinds: enabledKinds)
-            let stale = pendingSignalIds.filter {
-                !eligible.contains(String($0.dropFirst(Self.notificationIdPrefix.count)))
-            }
-            if !stale.isEmpty {
-                center.removePendingNotificationRequests(withIdentifiers: stale)
-                Self.logger.debug("🔔 [Signals] cancelled \(stale.count) stale pending signal(s)")
-            }
+        let pendingIds = await center.pendingNotificationRequests().map(\.identifier)
+        let eligible = Self.eligibleSignalIds(from: insights, enabledKinds: enabledKinds)
+        let stale = Self.staleSignalRequestIds(pendingIds: pendingIds, eligibleIds: eligible)
+        if !stale.isEmpty {
+            center.removePendingNotificationRequests(withIdentifiers: stale)
+            Self.logger.debug("🔔 [Signals] cancelled \(stale.count) stale pending signal(s)")
         }
 
         let selected = Self.selectSignals(

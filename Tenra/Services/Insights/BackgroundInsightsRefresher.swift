@@ -157,12 +157,15 @@ final class BackgroundInsightsRefresher {
         let auth = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
         guard auth == .authorized || auth == .provisional else { return true }
 
-        let baseCurrency: String
-        if let appSettings = try? await SettingsStorageService().loadSettings() {
-            baseCurrency = appSettings.baseCurrency
-        } else {
-            baseCurrency = AppSettings.makeDefault().baseCurrency
+        // A failed load must NOT fall back to the default currency — that silently
+        // computes and pushes amounts in the wrong currency for anyone whose base
+        // currency isn't the default. Skip this pass instead; it's a no-op success,
+        // not a failure, so the BG task isn't retried aggressively.
+        guard let appSettings = try? await SettingsStorageService().loadSettings() else {
+            Self.logger.warning("BG refresh: settings load failed — skipping pass")
+            return true
         }
+        let baseCurrency = appSettings.baseCurrency
 
         let repository = CoreDataRepository()
         let service = InsightsService(
@@ -190,6 +193,7 @@ final class BackgroundInsightsRefresher {
             if let monthInsights = result.results[.month]?.insights {
                 await InsightSignalService.shared.processInsights(monthInsights)
             }
+            guard !Task.isCancelled else { return false }
             if let weekPoints = result.results[.week]?.periodPoints {
                 await WeeklyDigestScheduler.shared.reschedule(
                     weekPoints: weekPoints,

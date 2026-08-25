@@ -169,10 +169,10 @@ Full rationale + benchmarks (archived): [archive/INSIGHTS_PRODUCT_AUDIT_2026_07_
 - `accountDormancy` — reframed as "money sitting idle / missed deposit yield" (copy only)
 
 ### Signal notifications (Phase C/D)
-- `InsightSignalService` (`Services/Notifications/`) — diff engine: fires local pushes for NEW critical/warning signals only (7-day per-id dedup + 5/week global cap + 2-per-recompute cap with a 3-min stagger — a post-absence launch replenishes the weekly budget AND flips several signals at once, so without the per-run cap the first recompute dumped up to 5 banners back-to-back; history in UserDefaults). Pure core `selectSignals` is unit-tested (`InsightSignalServiceTests`). Wired at the END of `loadInsightsBackground` phase 2 (`.month` insights).
+- `InsightSignalService` (`Services/Notifications/`) — diff engine: fires local pushes for NEW critical/warning signals only (7-day per-id dedup + 5/week global cap + 2-per-recompute cap; delivery inside a 09:00-21:00 window with randomized spacing (deliveryDates; night signals move to next morning 09:00-10:30); pending signals that stop qualifying are cancelled on the next recompute (history kept — no flapping re-push); history in UserDefaults). Pure core `selectSignals` is unit-tested (`InsightSignalServiceTests`). Wired at the END of `loadInsightsBackground` phase 2 (`.month` insights).
 - `WeeklyDigestScheduler` — Monday-09:00 digest from `.week` periodPoints, rescheduled on every recompute; body names the week it covers (stale-content guard). Toggle + per-kind toggles: `InsightSignalSettings` → `InsightSignalSettingsView` (Settings).
 - Notification ids use prefix `insightSignal_` — AppDelegate routes taps to the Analytics tab via `.insightSignalNotificationTapped`.
-- ⚠️ Known limitation: signals/digest only (re)compute when InsightsViewModel recomputes (Analytics tab usage). BGAppRefresh follow-up in the audit doc.
+- `BackgroundInsightsRefresher` (`Services/Insights/`) — BGAppRefreshTask (`dakacom.Tenra.insightsRefresh`, earliest +4h, registered in AppDelegate, submitted on scenePhase → .background): headless recompute straight from `CoreDataRepository` (no TransactionStore/AppCoordinator), feeds `processInsights(.month)` + digest `reschedule(.week)`. Does NOT run recurring/deposit catch-up — sees data as of the last foreground session. Simulator does not run BGTasks; verify on device via LLDB `_simulateLaunchForTaskWithIdentifier:`.
 
 ## Recent Metric Changes (2026-04 audit)
 

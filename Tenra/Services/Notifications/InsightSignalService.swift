@@ -10,8 +10,8 @@
 //    so a budget that stays overspent doesn't nag daily.
 //  - Global cap of 5 pushes per rolling week (anti notification-fatigue; 43% of
 //    users disable notifications because of noise).
-//  - At most 2 pushes per recompute, staggered — a post-absence launch must not
-//    dump the whole weekly budget as one burst of banners.
+//  - At most 2 pushes per recompute, delivered inside a 09:00-21:00 window with
+//    randomized spacing (deliveryDates) — no burst of banners, no night pushes.
 //  - Only critical/warning severities are push-worthy; neutral/positive insights
 //    stay in the in-app feed.
 //  - Every signal kind is individually toggleable (InsightSignalSettings).
@@ -225,36 +225,66 @@ final class InsightSignalService {
 
     // MARK: - Processing
 
-    /// Diffs freshly computed insights against the alert history and fires local
-    /// notifications for new critical/warning signals. Call after every insight
-    /// recompute — dedup and the weekly cap make repeated calls safe.
+    /// Diffs freshly computed insights against the alert history, cancels pending
+    /// signals that no longer qualify, and schedules new critical/warning signals
+    /// at organic times inside the 09:00-21:00 delivery window. Call after every
+    /// insight recompute (foreground or BGAppRefresh) - dedup, the weekly cap and
+    /// the per-run cap make repeated calls safe.
     func processInsights(_ insights: [Insight], now: Date = Date()) async {
+        let center = UNUserNotificationCenter.current()
+        let auth = await center.notificationSettings().authorizationStatus
+        guard auth == .authorized || auth == .provisional else {
+            Self.logger.debug("🔔 [Signals] notifications not authorized — skipped")
+            return
+        }
+
+        // Cancel scheduled-but-undelivered signals that no longer qualify
+        // (signal left critical/warning, or its kind was toggled off). Their
+        // history records stay - a flapping signal must not re-push.
+        let enabledKinds = settings.enabledKinds
+        let pendingSignalIds = await center.pendingNotificationRequests()
+            .map(\.identifier)
+            .filter { $0.hasPrefix(Self.notificationIdPrefix) }
+        if !pendingSignalIds.isEmpty {
+            let eligible = Self.eligibleSignalIds(from: insights, enabledKinds: enabledKinds)
+            let stale = pendingSignalIds.filter {
+                !eligible.contains(String($0.dropFirst(Self.notificationIdPrefix.count)))
+            }
+            if !stale.isEmpty {
+                center.removePendingNotificationRequests(withIdentifiers: stale)
+                Self.logger.debug("🔔 [Signals] cancelled \(stale.count) stale pending signal(s)")
+            }
+        }
+
         let selected = Self.selectSignals(
             from: insights,
-            enabledKinds: settings.enabledKinds,
+            enabledKinds: enabledKinds,
             history: loadHistory(),
             now: now
         )
         guard !selected.isEmpty else { return }
 
-        let center = UNUserNotificationCenter.current()
-        let auth = await center.notificationSettings().authorizationStatus
-        guard auth == .authorized || auth == .provisional else {
-            Self.logger.debug("🔔 [Signals] \(selected.count) signal(s) selected but notifications not authorized — skipped")
-            return
-        }
+        var rng = SystemRandomNumberGenerator()
+        let fireDates = Self.deliveryDates(count: selected.count, now: now, rng: &rng)
 
         // Prune expired records while we're writing anyway.
         var history = loadHistory().filter { $0.date > now.addingTimeInterval(-Self.dedupWindow) }
-        for (index, insight) in selected.enumerated() {
+        for (insight, fireDate) in zip(selected, fireDates) {
             let content = UNMutableNotificationContent()
             content.title = insight.title
             content.body = Self.notificationBody(for: insight)
             content.sound = .default
-            // Temporary bridge - Task 3 replaces this with windowed deliveryDates.
-            let trigger: UNNotificationTrigger? = index == 0
-                ? nil
-                : UNTimeIntervalNotificationTrigger(timeInterval: 180 * Double(index), repeats: false)
+            // Near-immediate dates deliver now; future ones get a calendar trigger
+            // so they survive the app being suspended or relaunched.
+            let trigger: UNNotificationTrigger?
+            if fireDate.timeIntervalSince(now) < 60 {
+                trigger = nil
+            } else {
+                let comps = Calendar.current.dateComponents(
+                    [.year, .month, .day, .hour, .minute], from: fireDate
+                )
+                trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
+            }
             let request = UNNotificationRequest(
                 identifier: Self.notificationIdPrefix + insight.id,
                 content: content,
@@ -263,7 +293,7 @@ final class InsightSignalService {
             do {
                 try await center.add(request)
                 history.append(FiredRecord(id: insight.id, date: now))
-                Self.logger.debug("🔔 [Signals] fired '\(insight.id, privacy: .public)' (\(String(describing: insight.severity), privacy: .public))")
+                Self.logger.debug("🔔 [Signals] scheduled '\(insight.id, privacy: .public)' for \(fireDate, privacy: .public)")
             } catch {
                 Self.logger.warning("🔔 [Signals] failed to schedule '\(insight.id, privacy: .public)': \(error.localizedDescription, privacy: .public)")
             }

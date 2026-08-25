@@ -108,6 +108,10 @@ struct TenraApp: App {
                         }
                     }
                 }
+                if phase == .background {
+                    // Ask iOS for a background insights recompute while we're away.
+                    BackgroundInsightsRefresher.shared.scheduleNextRefresh()
+                }
             }
         }
     }

@@ -206,6 +206,23 @@ final class InsightSignalService {
         return windowStart.addingTimeInterval(TimeInterval(jitterSeconds))
     }
 
+    // MARK: - Eligible set (stale-pending cancellation)
+
+    /// Ids of insights that would currently qualify as signals (severity gate +
+    /// enabled kind), IGNORING dedup history - a signal already scheduled is in
+    /// history by design, yet must stay pending as long as it still qualifies.
+    /// Pending ids outside this set are cancelled by `processInsights`.
+    nonisolated static func eligibleSignalIds(
+        from insights: [Insight],
+        enabledKinds: Set<InsightSignalKind>
+    ) -> Set<String> {
+        Set(insights.compactMap { insight in
+            guard let kind = InsightSignalKind.from(insight),
+                  enabledKinds.contains(kind) else { return nil }
+            return insight.id
+        })
+    }
+
     // MARK: - Processing
 
     /// Diffs freshly computed insights against the alert history and fires local

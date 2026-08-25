@@ -211,4 +211,25 @@ struct InsightSignalServiceTests {
         var rng3 = SeededRNG(state: 42)
         #expect(InsightSignalService.deliveryDates(count: 0, now: now, rng: &rng3).isEmpty)
     }
+
+    // MARK: - Eligible set (stale-pending cancellation)
+
+    @Test("eligibleSignalIds keeps critical/warning of enabled kinds, drops the rest")
+    func eligibleSet() {
+        let insights = [
+            makeInsight(id: "budget_over", type: .budgetOverspend, severity: .critical),
+            makeInsight(id: "spending_spike", type: .spendingSpike, severity: .warning),
+            makeInsight(id: "neutral_one", type: .budgetOverspend, severity: .neutral),   // severity-gated out
+            makeInsight(id: "net_cash", type: .netCashFlow, severity: .critical)          // non-signal type
+        ]
+        let all = InsightSignalService.eligibleSignalIds(from: insights, enabledKinds: allKinds)
+        #expect(all == ["budget_over", "spending_spike"])
+
+        let noSpike = InsightSignalService.eligibleSignalIds(
+            from: insights, enabledKinds: allKinds.subtracting([.spendingSpike])
+        )
+        #expect(noSpike == ["budget_over"])
+
+        #expect(InsightSignalService.eligibleSignalIds(from: [], enabledKinds: allKinds).isEmpty)
+    }
 }

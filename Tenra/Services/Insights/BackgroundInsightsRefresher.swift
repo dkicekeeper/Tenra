@@ -76,6 +76,79 @@ final class BackgroundInsightsRefresher {
         }
     }
 
+    /// Outcome of `loadAndCompute`: distinguishes "no data to act on" (a normal,
+    /// successful no-op) from "cancelled mid-flight" (expiration cut work short).
+    private enum LoadComputeOutcome {
+        case empty
+        case cancelled
+        case computed(
+            result: (results: [InsightGranularity: (insights: [Insight], periodPoints: [PeriodDataPoint])], sharedInsights: [Insight]),
+            transactionsCount: Int
+        )
+    }
+
+    /// Repository loads + InsightsService compute, entirely OFF the main actor and
+    /// entirely STRUCTURED: `nonisolated` means the `await` from `refresh()` hops off
+    /// MainActor right at the call boundary (no `Task.detached` needed), and the
+    /// `async let` loads below are structured child tasks of the caller's `Task` — so
+    /// `work.cancel()` in `handle(_:)` propagates all the way down into `Task.isCancelled`
+    /// checks here, unlike the previous `Task.detached` usage which created unstructured
+    /// top-level tasks that ignored cancellation and kept running past BG-task expiration.
+    private nonisolated static func loadAndCompute(
+        repository: CoreDataRepository,
+        baseCurrency: String,
+        service: InsightsService,
+        cacheManager: TransactionCacheManager,
+        // TransactionCurrencyService is a @MainActor class (project default isolation)
+        // consumed here off-main — same accepted pattern as InsightsViewModel's detached
+        // recompute; it's stateless, so this compiles and runs safely under
+        // SWIFT_STRICT_CONCURRENCY = minimal.
+        currencyService: TransactionCurrencyService
+    ) async -> LoadComputeOutcome {
+        async let transactionsLoad = repository.loadTransactions(dateRange: nil)
+        async let accountsLoad = repository.loadAccounts()
+        async let categoriesLoad = repository.loadCategories()
+        async let seriesLoad = repository.loadRecurringSeries()
+        let transactions = await transactionsLoad
+        let accounts = await accountsLoad
+        let categories = await categoriesLoad
+        let series = await seriesLoad
+
+        guard !transactions.isEmpty, !accounts.isEmpty else { return .empty }
+        guard !Task.isCancelled else { return .cancelled }
+
+        // Persisted balances (maintained by BalanceCoordinator.persistBalance while
+        // the app runs) stand in for the in-memory balance snapshot.
+        let balances = Dictionary(accounts.map { ($0.id, $0.balance) },
+                                  uniquingKeysWith: { first, _ in first })
+        let snapshot = InsightsService.DataSnapshot(
+            transactions: transactions,
+            categories: categories,
+            recurringSeries: series,
+            accounts: accounts,
+            balanceFor: { balances[$0] ?? 0 }
+        )
+
+        let preAggregated = InsightsService.PreAggregatedData.build(
+            from: transactions,
+            baseCurrency: baseCurrency,
+            recurringSeries: series
+        )
+        let result = service.computeGranularities(
+            [.month, .week],
+            transactions: transactions,
+            baseCurrency: baseCurrency,
+            cacheManager: cacheManager,
+            currencyService: currencyService,
+            snapshot: snapshot,
+            firstTransactionDate: preAggregated.firstDate,
+            preAggregated: preAggregated,
+            sharedInsights: nil
+        )
+        guard !Task.isCancelled else { return .cancelled }
+        return .computed(result: result, transactionsCount: transactions.count)
+    }
+
     /// Headless recompute: repository load → InsightsService → signal pushes +
     /// weekly digest. Returns false only when work was cut short (cancellation).
     func refresh() async -> Bool {
@@ -91,39 +164,7 @@ final class BackgroundInsightsRefresher {
             baseCurrency = AppSettings.makeDefault().baseCurrency
         }
 
-        // Repository fetches are nonisolated — run them off the main thread.
         let repository = CoreDataRepository()
-        async let transactionsLoad = Task.detached(priority: .utility) {
-            repository.loadTransactions(dateRange: nil)
-        }.value
-        async let accountsLoad = Task.detached(priority: .utility) {
-            repository.loadAccounts()
-        }.value
-        async let categoriesLoad = Task.detached(priority: .utility) {
-            repository.loadCategories()
-        }.value
-        async let seriesLoad = Task.detached(priority: .utility) {
-            repository.loadRecurringSeries()
-        }.value
-        let transactions = await transactionsLoad
-        let accounts = await accountsLoad
-        let categories = await categoriesLoad
-        let series = await seriesLoad
-
-        guard !transactions.isEmpty, !accounts.isEmpty else { return true }
-        guard !Task.isCancelled else { return false }
-
-        // Persisted balances (maintained by BalanceCoordinator.persistBalance while
-        // the app runs) stand in for the in-memory balance snapshot.
-        let balances = Dictionary(accounts.map { ($0.id, $0.balance) },
-                                  uniquingKeysWith: { first, _ in first })
-        let snapshot = InsightsService.DataSnapshot(
-            transactions: transactions,
-            categories: categories,
-            recurringSeries: series,
-            accounts: accounts,
-            balanceFor: { balances[$0] ?? 0 }
-        )
         let service = InsightsService(
             filterService: TransactionFilterService(),
             queryService: TransactionQueryService(),
@@ -132,36 +173,31 @@ final class BackgroundInsightsRefresher {
         let cacheManager = TransactionCacheManager()
         let currencyService = TransactionCurrencyService()
 
-        let result = await Task.detached(priority: .utility) {
-            let preAggregated = InsightsService.PreAggregatedData.build(
-                from: transactions,
-                baseCurrency: baseCurrency,
-                recurringSeries: series
-            )
-            return service.computeGranularities(
-                [.month, .week],
-                transactions: transactions,
-                baseCurrency: baseCurrency,
-                cacheManager: cacheManager,
-                currencyService: currencyService,
-                snapshot: snapshot,
-                firstTransactionDate: preAggregated.firstDate,
-                preAggregated: preAggregated,
-                sharedInsights: nil
-            )
-        }.value
-        guard !Task.isCancelled else { return false }
+        let outcome = await Self.loadAndCompute(
+            repository: repository,
+            baseCurrency: baseCurrency,
+            service: service,
+            cacheManager: cacheManager,
+            currencyService: currencyService
+        )
 
-        if let monthInsights = result.results[.month]?.insights {
-            await InsightSignalService.shared.processInsights(monthInsights)
+        switch outcome {
+        case .cancelled:
+            return false
+        case .empty:
+            return true
+        case .computed(let result, let transactionsCount):
+            if let monthInsights = result.results[.month]?.insights {
+                await InsightSignalService.shared.processInsights(monthInsights)
+            }
+            if let weekPoints = result.results[.week]?.periodPoints {
+                await WeeklyDigestScheduler.shared.reschedule(
+                    weekPoints: weekPoints,
+                    baseCurrency: baseCurrency
+                )
+            }
+            Self.logger.debug("BG refresh done: \(transactionsCount) tx, month insights: \(result.results[.month]?.insights.count ?? 0)")
+            return true
         }
-        if let weekPoints = result.results[.week]?.periodPoints {
-            await WeeklyDigestScheduler.shared.reschedule(
-                weekPoints: weekPoints,
-                baseCurrency: baseCurrency
-            )
-        }
-        Self.logger.debug("BG refresh done: \(transactions.count) tx, month insights: \(result.results[.month]?.insights.count ?? 0)")
-        return true
     }
 }

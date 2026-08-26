@@ -37,7 +37,7 @@ Background hierarchy: `bgBase` → `bgCard` → `bgMuted` (base screen → eleva
 | `textPrimary` | `.primary` | Main text |
 | `textSecondary` | `.secondary` | Subtitles, metadata |
 | `textTertiary` | `.gray` | Hints, placeholders |
-| `accent` | `.indigo` | Interactive elements, primary CTA tint |
+| `accent` | `.indigo` | Interactive elements, primary CTA tint. The asset-catalog `AccentColor` (Assets.xcassets) is set to the SAME system indigo (light 0x5856D6 / dark 0x5E5CE6) — it drives system chrome (active tab tint, default buttons, search cursor). Keep the two in sync: an empty AccentColor silently falls back to system blue (was the case until 2026-08-26). |
 | `destructive` | `.red` | Delete, errors |
 | `success` | `.green` | Positive UI feedback (active status, success banners) |
 | `warning` | `.orange` | Caution feedback (paused status, warning banners) |

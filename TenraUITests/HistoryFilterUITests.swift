@@ -29,6 +29,7 @@ final class HistoryFilterUITests: XCTestCase {
 
         let historyLink = app.descendants(matching: .any)["home.historyLink"].firstMatch
         XCTAssertTrue(historyLink.waitForExistence(timeout: 90), "Home did not load")
+        snap("home-before-navigation")
         historyLink.tap()
     }
 

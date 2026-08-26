@@ -216,18 +216,20 @@ struct HistoryView: View {
         }
         .navigationTitle(String(localized: "navigation.history"))
         .navigationBarTitleDisplayMode(.inline)
-        // Default collapsible placement: search hidden until the user pulls down /
-        // scrolls to top, and the nav bar keeps its transparent look (`.always`
-        // forced an opaque bar plate). Safe again on iOS 26/27 ONLY because the
-        // filter bar is no longer a `.safeAreaInset` (see the VStack + spacer
-        // comments above) — the original tap-swallowing was the drawer's gesture
-        // claiming the inset band. Re-verify HistoryFilterUITests ON DEVICE before
-        // touching this placement.
+        // Search lives as a magnifying-glass toolbar button (`.minimize`) — the
+        // user's explicit pick after the alternatives failed: the default
+        // collapsible drawer never revealed on scroll here (iOS 27), and
+        // `displayMode: .always` forced an opaque bar plate + always-visible
+        // field. Known accepted `.minimize` quirk: expanded field + dismiss render
+        // as one merged glass capsule (gotchas.md). The VStack + spacer structure
+        // above stays load-bearing for chip hit-testing either way — re-verify
+        // HistoryFilterUITests ON DEVICE before touching any of this.
         .searchable(
             text: $filterCoordinator.searchText,
             isPresented: $filterCoordinator.isSearchActive,
             prompt: searchPrompt
         )
+        .searchToolbarBehavior(.minimize)
         .onAppear {
             handleOnAppear()
         }

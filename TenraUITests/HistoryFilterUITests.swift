@@ -68,4 +68,18 @@ final class HistoryFilterUITests: XCTestCase {
         list.swipeUp()
         assertAccountSheetOpens(context: "scrolled-down")
     }
+
+    // Search is a magnifying-glass toolbar button (`.searchToolbarBehavior(.minimize)`);
+    // tapping it must expand the search field.
+    func testSearchToolbarButtonExpandsField() throws {
+        launchToHistory()
+        let searchButton = app.buttons["Search"].firstMatch
+        XCTAssertTrue(searchButton.waitForExistence(timeout: 10), "Search toolbar button not found")
+        snap("before-search-tap")
+        searchButton.tap()
+        let field = app.searchFields.firstMatch
+        let expanded = field.waitForExistence(timeout: 5)
+        snap("after-search-tap")
+        XCTAssertTrue(expanded, "Search field did not expand from the toolbar button")
+    }
 }

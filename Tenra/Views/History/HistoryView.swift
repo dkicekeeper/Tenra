@@ -168,22 +168,24 @@ struct HistoryView: View {
     }
 
     private var historyContent: some View {
-        Group {
-            if isHistoryListReady {
-                HistoryTransactionsList(
-                    paginationController: paginationController,
-                    expensesCache: expensesCache,
-                    transactionsViewModel: transactionsViewModel,
-                    categoriesViewModel: categoriesViewModel,
-                    accountsViewModel: accountsViewModel,
-                    debouncedSearchText: filterCoordinator.debouncedSearchText,
-                    selectedAccountFilter: filterCoordinator.selectedAccountFilter,
-                    todayKey: todayKey,
-                    yesterdayKey: yesterdayKey
-                )
-            }
-        }
-        .safeAreaInset(edge: .top) {
+        // The filter bar is a PLAIN VStack sibling above the list — deliberately NOT
+        // a `.safeAreaInset(.top)`. The nav-bar search drawer claims touches in the
+        // safe-area-inset band: on iOS 26 the collapsed default drawer swallowed chip
+        // taps unless scrolled to top, and on iOS 27 even the `.always` drawer
+        // swallows them at every scroll position (reproduced by HistoryFilterUITests
+        // on-device). Keeping the bar out of that band sidesteps the drawer's gesture
+        // territory entirely. `displayMode: .always` stays: the collapsible default
+        // drawer's reveal gesture also rubber-bands content near the nav bar
+        // (gotchas.md §searchable drawer); `.searchToolbarBehavior(.minimize)` is the
+        // rejected alternative (merges input + dismiss into one bubble).
+        VStack(spacing: 0) {
+            // Top spacer is LOAD-BEARING, not cosmetic: on iOS 27, when the filter
+            // carousel's horizontal ScrollView is the topmost content view under the
+            // nav bar + always-visible search drawer, its frame extends up under the
+            // bar and the bar claims EVERY touch in the carousel's strip — chips dead
+            // at all scroll positions (reproduced by HistoryFilterUITests on-device;
+            // passing once a non-scroll view abuts the safe-area edge instead).
+            Color.clear.frame(height: AppSpacing.xs)
             HistoryFilterSection(
                 timeFilterDisplayName: timeFilterManager.currentFilter.displayName,
                 accounts: accountsViewModel.accounts,
@@ -196,6 +198,21 @@ struct HistoryView: View {
                 onTimeFilterTap: { showingTimeFilter = true },
                 balanceCoordinator: accountsViewModel.balanceCoordinator
             )
+            if isHistoryListReady {
+                HistoryTransactionsList(
+                    paginationController: paginationController,
+                    expensesCache: expensesCache,
+                    transactionsViewModel: transactionsViewModel,
+                    categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel,
+                    debouncedSearchText: filterCoordinator.debouncedSearchText,
+                    selectedAccountFilter: filterCoordinator.selectedAccountFilter,
+                    todayKey: todayKey,
+                    yesterdayKey: yesterdayKey
+                )
+            } else {
+                Spacer(minLength: 0)
+            }
         }
         .navigationTitle(String(localized: "navigation.history"))
         .navigationBarTitleDisplayMode(.inline)
@@ -205,12 +222,6 @@ struct HistoryView: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: searchPrompt
         )
-        // `displayMode: .always` is load-bearing: the default collapsible drawer's
-        // reveal gesture claims touches over the `.safeAreaInset(.top)` filter bar
-        // while collapsed, making the filter chips untappable unless scrolled to the
-        // very top (gotchas.md §searchable drawer). `.searchToolbarBehavior(.minimize)`
-        // is the rejected alternative — it merges the input capsule and the dismiss
-        // control into one bubble.
         .onAppear {
             handleOnAppear()
         }

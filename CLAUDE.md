@@ -176,6 +176,7 @@ New file needed?
 | `Services/Notifications/**` (insight signals, weekly digest, subscription reminders) | [docs/domains/insights.md](docs/domains/insights.md) §Signal notifications |
 | Per-metric formulas, granularity, severity behavior | [docs/INSIGHTS_METRICS_REFERENCE.md](docs/INSIGHTS_METRICS_REFERENCE.md) |
 | Localization, adding/editing UI strings, `*.lproj`, `.stringsdict`, ASO metadata | [docs/localization/README.md](docs/localization/README.md) |
+| Release prep, ASC versions/metadata, ASO, downloads/MRR analytics, ratings, ads | [docs/PROMOTION_PLAN.md](docs/PROMOTION_PLAN.md) — living doc, UPDATE it in the same session (snapshot, checklists, §7 metrics) |
 | TransactionStore CRUD, FRC, addBatch, NSBatchDeleteRequest | [docs/domains/transactions.md](docs/domains/transactions.md) |
 | Categories, subcategories, budgets, category/subcategory indexes, style cache, reorder | [docs/domains/categories.md](docs/domains/categories.md) |
 | Accounts indexes (accountAggregatesByAccountId, transactionsBySeriesId, parsedDateById), AccountDetailView, ranking | [docs/domains/accounts.md](docs/domains/accounts.md) |
@@ -312,6 +313,7 @@ When working with this project:
 7. **Performance first**: consider performance implications; consult [gotchas.md](docs/gotchas.md) for known hot-paths
 8. **Test changes**: verify builds and runs after modifications
 9. **Document refactoring**: update affected docs in `docs/` when architecture changes
+10. **Growth work updates the plan**: any release prep, ASO/metadata change, or ASC/RevenueCat analytics pull must also refresh [docs/PROMOTION_PLAN.md](docs/PROMOTION_PLAN.md) (data snapshot, checklists, §7 weekly metrics table) — it is the single source of truth for growth state
 
 ### Preferred Tools
 - Use SwiftUI Expert skill for SwiftUI-specific tasks

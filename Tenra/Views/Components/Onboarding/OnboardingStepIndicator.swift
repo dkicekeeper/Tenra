@@ -83,19 +83,7 @@ struct OnboardingStepIndicator: View {
 
 private struct GlassCapsuleModifier: ViewModifier {
     func body(content: Content) -> some View {
-        if #available(iOS 26, *) {
-            content.glassEffect(.regular, in: Capsule())
-        } else {
-            content
-                .background(
-                    Capsule()
-                        .fill(AppColors.textSecondary.opacity(0.08))
-                )
-                .overlay(
-                    Capsule()
-                        .stroke(AppColors.textSecondary.opacity(0.15), lineWidth: 0.5)
-                )
-        }
+        content.glassEffect(.regular, in: Capsule())
     }
 }
 

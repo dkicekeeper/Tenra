@@ -58,21 +58,11 @@ struct MessageBanner: View {
     }
 
     var body: some View {
-        Group {
-            if #available(iOS 26, *) {
-                bannerContent
-                    .clipShape(.rect(cornerRadius: AppRadius.xl))
-                    .glassEffect(.regular
-                        .tint(type.tintColor.opacity(0.15))
-                        .interactive())
-            } else {
-                bannerContent
-                    .background(
-                        type.tintColor.opacity(0.15),
-                        in: RoundedRectangle(cornerRadius: AppRadius.xl)
-                    )
-            }
-        }
+        bannerContent
+            .clipShape(.rect(cornerRadius: AppRadius.xl))
+            .glassEffect(.regular
+                .tint(type.tintColor.opacity(0.15))
+                .interactive())
         // Under Reduce Motion the banner is a feedback surface, so the opacity fade
         // stays — only the scale/offset movement is dropped.
         .scaleEffect(isVisible || reduceMotion ? 1 : BannerAnimation.hiddenScale)

@@ -128,17 +128,10 @@ struct EditableHeroSection: View {
                 )
             } else {
                 // Glass hero icon (e.g. accounts, subscriptions)
-                if #available(iOS 18.0, *) {
-                    IconView(
-                        source: iconSource,
-                        style: .glassHero()
-                    )
-                } else {
-                    IconView(
-                        source: iconSource,
-                        size: AppIconSize.ultra
-                    )
-                }
+                IconView(
+                    source: iconSource,
+                    style: .glassHero()
+                )
             }
         }
         .buttonStyle(.plain)

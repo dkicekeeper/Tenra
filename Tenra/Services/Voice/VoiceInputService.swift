@@ -83,17 +83,8 @@ class VoiceInputService: NSObject {
     
     // Запрос разрешений
     func requestAuthorization() async -> Bool {
-        // Запрос разрешения на микрофон (iOS 17+)
-        let micStatus: Bool
-        if #available(iOS 17.0, *) {
-            micStatus = await AVAudioApplication.requestRecordPermission()
-        } else {
-            micStatus = await withCheckedContinuation { continuation in
-                AVAudioSession.sharedInstance().requestRecordPermission { granted in
-                    continuation.resume(returning: granted)
-                }
-            }
-        }
+        // Запрос разрешения на микрофон
+        let micStatus = await AVAudioApplication.requestRecordPermission()
         guard micStatus else {
             errorMessage = String(localized: "voiceError.microphoneDenied")
             return false
@@ -182,24 +173,14 @@ class VoiceInputService: NSObject {
         recognitionRequest.shouldReportPartialResults = true
         
         // Улучшаем распознавание: включаем контекстные подсказки
-        if #available(iOS 13.0, *) {
-            recognitionRequest.taskHint = .dictation
-            // Включаем on-device recognition если доступно
-            if recognizer.supportsOnDeviceRecognition {
-                recognitionRequest.requiresOnDeviceRecognition = true
-            }
+        recognitionRequest.taskHint = .dictation
+        // Включаем on-device recognition если доступно
+        if recognizer.supportsOnDeviceRecognition {
+            recognitionRequest.requiresOnDeviceRecognition = true
         }
 
-        // Dynamic Context Injection (iOS 17+)
-        if #available(iOS 17.0, *) {
-            let contextualStrings = buildContextualStrings()
-            recognitionRequest.contextualStrings = contextualStrings
-
-            #if DEBUG
-            if VoiceInputConstants.enableParsingDebugLogs {
-            }
-            #endif
-        }
+        // Dynamic Context Injection
+        recognitionRequest.contextualStrings = buildContextualStrings()
         
         // Настраиваем аудио engine
         audioEngine = AVAudioEngine()
@@ -337,11 +318,10 @@ class VoiceInputService: NSObject {
         return finalTranscription.isEmpty ? transcribedText : finalTranscription
     }
 
-    // MARK: - Dynamic Context Injection (iOS 17+)
+    // MARK: - Dynamic Context Injection
 
     /// Build contextual strings for improved Speech Recognition
     /// - Returns: Array of contextual strings for better recognition of custom categories, accounts, etc.
-    @available(iOS 17.0, *)
     private func buildContextualStrings() -> [String] {
         var context: [String] = []
 

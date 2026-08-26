@@ -143,16 +143,9 @@ struct SubcategorySearchView: View {
                 // Кнопка создания внизу над полем поиска
                 if canCreateFromSearch {
                     let subcategoryName = searchText.trimmingCharacters(in: .whitespaces)
-                    Group {
-                        if #available(iOS 26, *) {
-                            VStack(spacing: 0) { createButton(subcategoryName: subcategoryName) }
-                                .glassEffect(.regular)
-                        } else {
-                            VStack(spacing: 0) { createButton(subcategoryName: subcategoryName) }
-                                .background(.ultraThinMaterial)
-                        }
-                    }
-                    .screenPadding()
+                    VStack(spacing: 0) { createButton(subcategoryName: subcategoryName) }
+                        .glassEffect(.regular)
+                        .screenPadding()
                 }
             }
             .toolbar {

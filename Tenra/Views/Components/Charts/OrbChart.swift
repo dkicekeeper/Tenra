@@ -407,16 +407,10 @@ final class OrbMotionModel {
 // MARK: - Glass surface
 
 private extension View {
-    /// Liquid Glass sphere surface (iOS 26+). `.clear` keeps content visible and saturated
+    /// Liquid Glass sphere surface. `.clear` keeps content visible and saturated
     /// — it adds the reflective glass sheen without the frosted blur `.regular` would apply.
-    /// Falls back to the plain gradient orb on earlier systems.
-    @ViewBuilder
     func glassSphere() -> some View {
-        if #available(iOS 26, *) {
-            glassEffect(.clear, in: .circle)
-        } else {
-            self
-        }
+        glassEffect(.clear, in: .circle)
     }
 }
 

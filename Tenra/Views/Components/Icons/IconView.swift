@@ -155,22 +155,12 @@ struct IconView: View {
                 .foregroundStyle(color)
 
         case .hierarchical(let color):
-            if #available(iOS 15, *) {
-                image
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(color)
-            } else {
-                image
-                    .foregroundStyle(color)
-            }
+            image
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(color)
 
         case .palette(let colors):
-            if #available(iOS 15, *) {
-                applyPalette(to: image, colors: colors)
-            } else {
-                image
-                    .foregroundStyle(colors.first ?? AppColors.accent)
-            }
+            applyPalette(to: image, colors: colors)
 
         case .original:
             image
@@ -178,7 +168,6 @@ struct IconView: View {
         }
     }
 
-    @available(iOS 15, *)
     @ViewBuilder
     private func applyPalette(to image: some View, colors: [Color]) -> some View {
         switch colors.count {
@@ -289,21 +278,16 @@ struct IconView: View {
 
         // Применяем glass effect если требуется
         if style.hasGlassEffect {
-            if #available(iOS 18.0, *) {
-                switch style.shape {
-                case .circle:
-                    viewWithShape
-                        .glassEffect(in: Circle())
-                case .roundedSquare(let radius):
-                    viewWithShape
-                        .glassEffect(in: RoundedRectangle(cornerRadius: radius))
-                case .square:
-                    viewWithShape
-                        .glassEffect(in: Rectangle())
-                }
-            } else {
-                // Fallback для более старых версий iOS
+            switch style.shape {
+            case .circle:
                 viewWithShape
+                    .glassEffect(in: Circle())
+            case .roundedSquare(let radius):
+                viewWithShape
+                    .glassEffect(in: RoundedRectangle(cornerRadius: radius))
+            case .square:
+                viewWithShape
+                    .glassEffect(in: Rectangle())
             }
         } else {
             viewWithShape

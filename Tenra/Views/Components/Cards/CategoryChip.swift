@@ -65,31 +65,16 @@ struct CategoryChip: View {
                         )
                     }
 
-                    if #available(iOS 26, *) {
-                        Image(systemName: styleData.iconName)
-                            .font(AppTypography.h2)
-                            .foregroundStyle(styleData.iconColor)
-                            .frame(width: AppIconSize.mega, height: AppIconSize.mega)
-                            .glassEffect(
-                                isSelected
-                                    ? .regular.tint(styleData.coinColor).interactive()
-                                    : .regular.interactive(),
-                                in: .circle
-                            )
-                    } else {
-                        Circle()
-                            .fill(isSelected ? styleData.coinColor.opacity(0.2) : AppColors.bgMuted)
-                            .frame(width: AppIconSize.mega, height: AppIconSize.mega)
-                            .overlay(
-                                Image(systemName: styleData.iconName)
-                                    .font(AppTypography.h2)
-                                    .foregroundStyle(styleData.iconColor)
-                            )
-                            .overlay(
-                                Circle()
-                                    .stroke(isSelected ? styleData.coinBorderColor : Color.clear, lineWidth: 3)
-                            )
-                    }
+                    Image(systemName: styleData.iconName)
+                        .font(AppTypography.h2)
+                        .foregroundStyle(styleData.iconColor)
+                        .frame(width: AppIconSize.mega, height: AppIconSize.mega)
+                        .glassEffect(
+                            isSelected
+                                ? .regular.tint(styleData.coinColor).interactive()
+                                : .regular.interactive(),
+                            in: .circle
+                        )
                 }
                 .matchedTransitionSourceIfPresent(
                     id: transitionSourceID,

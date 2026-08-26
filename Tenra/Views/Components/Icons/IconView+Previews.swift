@@ -87,12 +87,10 @@ import SwiftUI
             style: .circle(size: AppIconSize.xl, tint: .hierarchical(AppColors.accent))
         )
 
-        if #available(iOS 15, *) {
-            TintRow(
-                title: String(localized: "iconStyle.tint.palette"),
-                style: .circle(size: AppIconSize.xl, tint: .palette([.blue, .green, .red]))
-            )
-        }
+        TintRow(
+            title: String(localized: "iconStyle.tint.palette"),
+            style: .circle(size: AppIconSize.xl, tint: .palette([.blue, .green, .red]))
+        )
     }
     .padding(AppSpacing.lg)
 }
@@ -282,8 +280,7 @@ import SwiftUI
 }
 
 #Preview("Glass Effect") {
-    if #available(iOS 18.0, *) {
-        VStack(spacing: AppSpacing.xxl) {
+    VStack(spacing: AppSpacing.xxl) {
             VStack(spacing: AppSpacing.md) {
                 Text("Glass Hero (Circle)")
                     .font(AppTypography.h4)
@@ -321,14 +318,8 @@ import SwiftUI
                     )
                 }
             }
-        }
-        .padding(AppSpacing.lg)
-    } else {
-        Text("Glass Effect requires iOS 18.0+")
-            .font(AppTypography.body)
-            .foregroundStyle(AppColors.textSecondary)
-            .padding(AppSpacing.lg)
     }
+    .padding(AppSpacing.lg)
 }
 
 // MARK: - Preview Helpers

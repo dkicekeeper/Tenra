@@ -10,7 +10,6 @@ import CoreML
 
 /// ML-предсказатель категорий транзакций
 /// Работает как fallback для rule-based парсера
-@available(iOS 14.0, *)
 nonisolated class CategoryMLPredictor {
 
     // MARK: - Properties

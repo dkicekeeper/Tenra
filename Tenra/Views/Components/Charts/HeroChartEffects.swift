@@ -37,14 +37,9 @@ extension View {
         modifier(MaterializeModifier(delay: delay, animatesOnAppear: animatesOnAppear))
     }
 
-    /// Liquid Glass sheen for rounded bar marks (iOS 26+); no-op fallback earlier.
-    @ViewBuilder
+    /// Liquid Glass sheen for rounded bar marks.
     func glassBar(cornerRadius: CGFloat) -> some View {
-        if #available(iOS 26, *) {
-            glassEffect(.clear, in: .rect(cornerRadius: cornerRadius))
-        } else {
-            self
-        }
+        glassEffect(.clear, in: .rect(cornerRadius: cornerRadius))
     }
 }
 

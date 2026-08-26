@@ -40,6 +40,9 @@ struct HistoryView: View {
     /// instance on each push — @State properties start fresh on every navigation.
     @State private var isHistoryListReady = false
 
+    /// Focus for the custom inline search field (see `searchRow`).
+    @FocusState private var isSearchFieldFocused: Bool
+
     // MARK: - Initial Filters
 
     let initialCategory: String?
@@ -186,6 +189,10 @@ struct HistoryView: View {
             // at all scroll positions (reproduced by HistoryFilterUITests on-device;
             // passing once a non-scroll view abuts the safe-area edge instead).
             Color.clear.frame(height: AppSpacing.xs)
+            if filterCoordinator.isSearchActive {
+                searchRow
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
             HistoryFilterSection(
                 timeFilterDisplayName: timeFilterManager.currentFilter.displayName,
                 accounts: accountsViewModel.accounts,
@@ -216,22 +223,78 @@ struct HistoryView: View {
         }
         .navigationTitle(String(localized: "navigation.history"))
         .navigationBarTitleDisplayMode(.inline)
-        // Search lives as a magnifying-glass toolbar button (`.minimize`) — the
-        // user's explicit pick after the alternatives failed: the default
-        // collapsible drawer never revealed on scroll here (iOS 27), and
-        // `displayMode: .always` forced an opaque bar plate + always-visible
-        // field. Known accepted `.minimize` quirk: expanded field + dismiss render
-        // as one merged glass capsule (gotchas.md). The VStack + spacer structure
-        // above stays load-bearing for chip hit-testing either way — re-verify
+        // Search is fully CUSTOM (loupe toolbar button + inline `searchRow` above
+        // the chips) — deliberately NO `.searchable`: any `.searchable` in the nav
+        // bar forces an opaque scroll-edge plate behind the whole top block
+        // (gotchas.md — no API turns it off), and every system drawer variant
+        // failed here (default: never reveals on scroll + swallows chip taps;
+        // `.always`: opaque plate + permanent field; `.minimize`: dismiss stopped
+        // working after typing + erasing on iOS 27). The VStack + spacer structure
+        // above stays load-bearing for chip hit-testing — re-verify
         // HistoryFilterUITests ON DEVICE before touching any of this.
-        .searchable(
-            text: $filterCoordinator.searchText,
-            isPresented: $filterCoordinator.isSearchActive,
-            prompt: searchPrompt
-        )
-        .searchToolbarBehavior(.minimize)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    if filterCoordinator.isSearchActive {
+                        closeSearch()
+                    } else {
+                        withAnimation(AppAnimation.contentSpring) {
+                            filterCoordinator.isSearchActive = true
+                        }
+                        isSearchFieldFocused = true
+                    }
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                }
+                .accessibilityLabel(String(localized: "subscription.linkPayments.searchPlaceholder"))
+            }
+        }
         .onAppear {
             handleOnAppear()
+        }
+    }
+
+    /// Inline search field shown above the filter chips while search is active.
+    /// Mirrors the chips' capsule styling; the trailing xmark clears + collapses.
+    private var searchRow: some View {
+        HStack(spacing: AppSpacing.sm) {
+            HStack(spacing: AppSpacing.sm) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: AppIconSize.sm))
+                    .foregroundStyle(AppColors.textSecondary)
+                TextField(searchPrompt, text: $filterCoordinator.searchText)
+                    .focused($isSearchFieldFocused)
+                    .submitLabel(.search)
+                    .autocorrectionDisabled()
+                if !filterCoordinator.searchText.isEmpty {
+                    Button {
+                        filterCoordinator.searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: AppIconSize.sm))
+                            .foregroundStyle(AppColors.textSecondary)
+                    }
+                    .accessibilityLabel(String(localized: "common.cancel"))
+                }
+            }
+            .filterChipStyle()
+            .frame(maxWidth: .infinity)
+
+            Button(action: closeSearch) {
+                Image(systemName: "xmark")
+                    .filterChipStyle()
+            }
+            .accessibilityLabel(String(localized: "common.cancel"))
+        }
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.bottom, AppSpacing.xs)
+    }
+
+    private func closeSearch() {
+        isSearchFieldFocused = false
+        filterCoordinator.searchText = ""
+        withAnimation(AppAnimation.contentSpring) {
+            filterCoordinator.isSearchActive = false
         }
     }
 

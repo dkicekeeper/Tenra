@@ -69,17 +69,26 @@ final class HistoryFilterUITests: XCTestCase {
         assertAccountSheetOpens(context: "scrolled-down")
     }
 
-    // Search is a magnifying-glass toolbar button (`.searchToolbarBehavior(.minimize)`);
-    // tapping it must expand the search field.
-    func testSearchToolbarButtonExpandsField() throws {
+    // Search is a magnifying-glass toolbar button revealing a CUSTOM inline field
+    // (no .searchable — see HistoryView.searchRow). Covers the full lifecycle that
+    // broke the system variants: expand -> type -> erase -> close must collapse.
+    func testSearchToolbarButtonExpandTypeEraseClose() throws {
         launchToHistory()
         let searchButton = app.buttons["Search"].firstMatch
         XCTAssertTrue(searchButton.waitForExistence(timeout: 10), "Search toolbar button not found")
         snap("before-search-tap")
         searchButton.tap()
-        let field = app.searchFields.firstMatch
-        let expanded = field.waitForExistence(timeout: 5)
-        snap("after-search-tap")
-        XCTAssertTrue(expanded, "Search field did not expand from the toolbar button")
+        let field = app.textFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "Search field did not expand from the toolbar button")
+        field.tap()
+        field.typeText("abc")
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3))
+        snap("after-type-erase")
+        let closeButton = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(closeButton.waitForExistence(timeout: 5), "Close (xmark) button not found")
+        closeButton.tap()
+        let collapsed = field.waitForNonExistence(timeout: 5)
+        snap("after-close")
+        XCTAssertTrue(collapsed, "Search field did not collapse after typing, erasing and tapping close")
     }
 }

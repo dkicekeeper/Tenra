@@ -199,6 +199,7 @@ struct HistoryView: View {
                     showingTimeFilter = true
                 } label: {
                     Image(systemName: isTimeFilterActive ? "calendar.badge.clock" : "calendar")
+                        .font(.title3)
                 }
                 .tint(isTimeFilterActive ? AppColors.accent : nil)
                 .accessibilityLabel(timeFilterManager.currentFilter.displayName)
@@ -208,6 +209,7 @@ struct HistoryView: View {
                 } label: {
                     Image(systemName: filterCoordinator.selectedAccountFilter != nil
                           ? "wallet.bifold.fill" : "wallet.bifold")
+                        .font(.title3)
                 }
                 .tint(filterCoordinator.selectedAccountFilter != nil ? AppColors.accent : nil)
                 .accessibilityLabel(String(localized: "filter.allAccounts"))
@@ -217,6 +219,7 @@ struct HistoryView: View {
                 } label: {
                     Image(systemName: transactionsViewModel.selectedCategories?.isEmpty == false
                           ? "tag.fill" : "tag")
+                        .font(.title3)
                 }
                 .tint(transactionsViewModel.selectedCategories?.isEmpty == false ? AppColors.accent : nil)
                 .accessibilityLabel(String(localized: "filter.allCategories"))
@@ -226,11 +229,16 @@ struct HistoryView: View {
             // UI/behavior is the system's — custom search is banned in this repo.
             DefaultToolbarItem(kind: .search, placement: .bottomBar)
         }
+        // `.controlSize(.large)` scales the bottom-bar capsules up to the main
+        // tab bar's height; `.minimize` collapses the search to a prominent
+        // loupe-icon button (Photos-style) instead of an inline compact field.
+        .controlSize(.large)
         .searchable(
             text: $filterCoordinator.searchText,
             isPresented: $filterCoordinator.isSearchActive,
             prompt: searchPrompt
         )
+        .searchToolbarBehavior(.minimize)
         .onAppear {
             handleOnAppear()
         }

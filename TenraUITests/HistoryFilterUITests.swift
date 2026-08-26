@@ -74,10 +74,14 @@ final class HistoryFilterUITests: XCTestCase {
     // nav-drawer variants: expand -> type -> erase -> close must collapse.
     func testSearchToolbarButtonExpandTypeEraseClose() throws {
         launchToHistory()
-        // The system renders bottom-bar search as a compact SearchField, not a Button.
-        let field = app.searchFields.firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: 10), "Bottom search field not found")
+        // `.minimize` collapses bottom-bar search to a loupe icon Button; expanding
+        // it produces the system SearchField.
+        let searchButton = app.buttons["Search"].firstMatch
+        XCTAssertTrue(searchButton.waitForExistence(timeout: 10), "Minimized search button not found")
         snap("before-search-tap")
+        searchButton.tap()
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "System search field did not expand")
         field.tap()
         field.typeText("abc")
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3))

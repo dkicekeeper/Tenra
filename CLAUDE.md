@@ -271,6 +271,11 @@ Schema version-bump checklist (currently v12) lives in the `/coredata-schema-bum
 
 - Unit tests: `TenraTests/`
 - UI tests: `TenraUITests/`
+- ⚠️ **The user's iPhone runs a NEWER iOS (27 beta) than any installed Simulator (max 26.5).** Hit-testing / nav-bar / search-drawer behavior differs: a green Simulator run does NOT clear an interactive-UI bug. Verify touch/layout bugs ON DEVICE with UI tests against real data:
+  `TEST_RUNNER_NO_DEMO=1 xcodebuild test -destination 'platform=iOS,name=Dkicekeeper 17' -only-testing:TenraUITests/<Suite>`
+  NEVER pass `-ScreenshotDemo` on the personal device — it overwrites UserDefaults and seeds the real CoreData store (the `NO_DEMO=1` env in HistoryFilterUITests exists exactly for this). Phone must be unlocked; a "Lost pending connection to the test runner" system failure = screen locked, retry.
+- Failed UI tests attach screenshots + a full AX hierarchy dump — the primary diagnostic for layout/hit-test bugs: `xcrun xcresulttool export attachments --path <bundle.xcresult> --output-path <dir>` (manifest.json maps files to names). Brighten dark screenshots (PIL `ImageEnhance.Brightness`) to expose plates invisible on black.
+- Run UI test suites with `-parallel-testing-enabled NO` — simulator clones double-print every test case line and can flake the runner launch.
 - Test ViewModels with mock repositories
 - Test CoreData operations with in-memory stores
 - ⚠️ Currency conversion tests must call `CurrencyRateStore.shared.clearAll()` in suite `init()`, AND any suite that mutates `CurrencyRateStore.shared` must be `@MainActor` so its synchronous tests serialize on the main actor (else they race other suites' rate writes → intermittent failures). See [domains/currency.md](docs/domains/currency.md)
@@ -315,6 +320,7 @@ When working with this project:
 - Use Glob for finding files by pattern
 
 ### Don't
+- **Don't build custom search UI — system search only** (`.searchable`, bottom-bar `DefaultToolbarItem(kind: .search)`, `.searchToolbarBehavior(.minimize)`). If a system variant misbehaves, pick another SYSTEM variant or restructure the screen (see gotchas.md §searchable drawer for the History precedent). User rule.
 - **Don't use em dashes (—) in any user-facing text**: UI strings (`Localizable.strings`), ASC metadata (description/promo/What's New), release notes, screenshot captions, push/notification copy. Reads as AI-generated. Rephrase with a comma, colon, period, or split the sentence. (Legitimate uses stay: minus signs for amounts, list bullets in code/docs.)
 - Don't create unnecessary abstractions
 - Don't ignore existing architectural patterns
@@ -370,6 +376,6 @@ Historical docs (305 files) archived to `docs/archive/`.
 
 ---
 
-**Last Updated**: 2026-07-03
+**Last Updated**: 2026-08-26
 **iOS Target**: 26.0+ (requires Xcode 26+ beta)
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

@@ -40,9 +40,6 @@ struct HistoryView: View {
     /// instance on each push — @State properties start fresh on every navigation.
     @State private var isHistoryListReady = false
 
-    /// Focus for the custom inline search field (see `searchRow`).
-    @FocusState private var isSearchFieldFocused: Bool
-
     // MARK: - Initial Filters
 
     let initialCategory: String?
@@ -171,40 +168,14 @@ struct HistoryView: View {
     }
 
     private var historyContent: some View {
-        // The filter bar is a PLAIN VStack sibling above the list — deliberately NOT
-        // a `.safeAreaInset(.top)`. The nav-bar search drawer claims touches in the
-        // safe-area-inset band: on iOS 26 the collapsed default drawer swallowed chip
-        // taps unless scrolled to top, and on iOS 27 even the `.always` drawer
-        // swallows them at every scroll position (reproduced by HistoryFilterUITests
-        // on-device). Keeping the bar out of that band sidesteps the drawer's gesture
-        // territory entirely. `displayMode: .always` stays: the collapsible default
-        // drawer's reveal gesture also rubber-bands content near the nav bar
-        // (gotchas.md §searchable drawer); `.searchToolbarBehavior(.minimize)` is the
-        // rejected alternative (merges input + dismiss into one bubble).
-        VStack(spacing: 0) {
-            // Top spacer is LOAD-BEARING, not cosmetic: on iOS 27, when the filter
-            // carousel's horizontal ScrollView is the topmost content view under the
-            // nav bar + always-visible search drawer, its frame extends up under the
-            // bar and the bar claims EVERY touch in the carousel's strip — chips dead
-            // at all scroll positions (reproduced by HistoryFilterUITests on-device;
-            // passing once a non-scroll view abuts the safe-area edge instead).
-            Color.clear.frame(height: AppSpacing.xs)
-            if filterCoordinator.isSearchActive {
-                searchRow
-                    .transition(.move(edge: .top).combined(with: .opacity))
-            }
-            HistoryFilterSection(
-                timeFilterDisplayName: timeFilterManager.currentFilter.displayName,
-                accounts: accountsViewModel.accounts,
-                selectedCategories: transactionsViewModel.selectedCategories,
-                customCategories: categoriesViewModel.customCategories,
-                incomeCategories: transactionsViewModel.incomeCategories,
-                selectedAccountFilter: $filterCoordinator.selectedAccountFilter,
-                showingAccountFilter: $filterCoordinator.showingAccountFilter,
-                showingCategoryFilter: $filterCoordinator.showingCategoryFilter,
-                onTimeFilterTap: { showingTimeFilter = true },
-                balanceCoordinator: accountsViewModel.balanceCoordinator
-            )
+        // Photos-style navigation (spec: 2026-08-26-history-bottom-navigation):
+        // the top is ONLY the system nav bar; filters and search live in the
+        // system BOTTOM toolbar (the app tab bar is hidden on this screen).
+        // History of why nothing interactive may sit at the top: every system
+        // `.searchable` nav-drawer variant + a top filter bar broke on iOS 26/27
+        // (tap swallowing, forced opaque plate, broken dismiss) — see
+        // gotchas.md §searchable drawer and HistoryFilterUITests (run ON DEVICE).
+        Group {
             if isHistoryListReady {
                 HistoryTransactionsList(
                     paginationController: paginationController,
@@ -217,85 +188,57 @@ struct HistoryView: View {
                     todayKey: todayKey,
                     yesterdayKey: yesterdayKey
                 )
-            } else {
-                Spacer(minLength: 0)
             }
         }
         .navigationTitle(String(localized: "navigation.history"))
         .navigationBarTitleDisplayMode(.inline)
-        // Search is fully CUSTOM (loupe toolbar button + inline `searchRow` above
-        // the chips) — deliberately NO `.searchable`: any `.searchable` in the nav
-        // bar forces an opaque scroll-edge plate behind the whole top block
-        // (gotchas.md — no API turns it off), and every system drawer variant
-        // failed here (default: never reveals on scroll + swallows chip taps;
-        // `.always`: opaque plate + permanent field; `.minimize`: dismiss stopped
-        // working after typing + erasing on iOS 27). The VStack + spacer structure
-        // above stays load-bearing for chip hit-testing — re-verify
-        // HistoryFilterUITests ON DEVICE before touching any of this.
+        .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .bottomBar) {
                 Button {
-                    if filterCoordinator.isSearchActive {
-                        closeSearch()
-                    } else {
-                        withAnimation(AppAnimation.contentSpring) {
-                            filterCoordinator.isSearchActive = true
-                        }
-                        isSearchFieldFocused = true
-                    }
+                    showingTimeFilter = true
                 } label: {
-                    Image(systemName: "magnifyingglass")
+                    Image(systemName: isTimeFilterActive ? "calendar.badge.clock" : "calendar")
                 }
-                .accessibilityLabel(String(localized: "subscription.linkPayments.searchPlaceholder"))
+                .tint(isTimeFilterActive ? AppColors.accent : nil)
+                .accessibilityLabel(timeFilterManager.currentFilter.displayName)
+
+                Button {
+                    filterCoordinator.showingAccountFilter = true
+                } label: {
+                    Image(systemName: filterCoordinator.selectedAccountFilter != nil
+                          ? "wallet.bifold.fill" : "wallet.bifold")
+                }
+                .tint(filterCoordinator.selectedAccountFilter != nil ? AppColors.accent : nil)
+                .accessibilityLabel(String(localized: "filter.allAccounts"))
+
+                Button {
+                    filterCoordinator.showingCategoryFilter = true
+                } label: {
+                    Image(systemName: transactionsViewModel.selectedCategories?.isEmpty == false
+                          ? "tag.fill" : "tag")
+                }
+                .tint(transactionsViewModel.selectedCategories?.isEmpty == false ? AppColors.accent : nil)
+                .accessibilityLabel(String(localized: "filter.allCategories"))
             }
+            ToolbarSpacer(.flexible, placement: .bottomBar)
+            // System search lives in the bottom bar (Photos pattern). All search
+            // UI/behavior is the system's — custom search is banned in this repo.
+            DefaultToolbarItem(kind: .search, placement: .bottomBar)
         }
+        .searchable(
+            text: $filterCoordinator.searchText,
+            isPresented: $filterCoordinator.isSearchActive,
+            prompt: searchPrompt
+        )
         .onAppear {
             handleOnAppear()
         }
     }
 
-    /// Inline search field shown above the filter chips while search is active.
-    /// Mirrors the chips' capsule styling; the trailing xmark clears + collapses.
-    private var searchRow: some View {
-        HStack(spacing: AppSpacing.sm) {
-            HStack(spacing: AppSpacing.sm) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: AppIconSize.sm))
-                    .foregroundStyle(AppColors.textSecondary)
-                TextField(searchPrompt, text: $filterCoordinator.searchText)
-                    .focused($isSearchFieldFocused)
-                    .submitLabel(.search)
-                    .autocorrectionDisabled()
-                if !filterCoordinator.searchText.isEmpty {
-                    Button {
-                        filterCoordinator.searchText = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: AppIconSize.sm))
-                            .foregroundStyle(AppColors.textSecondary)
-                    }
-                    .accessibilityLabel(String(localized: "common.cancel"))
-                }
-            }
-            .filterChipStyle()
-            .frame(maxWidth: .infinity)
-
-            Button(action: closeSearch) {
-                Image(systemName: "xmark")
-                    .filterChipStyle()
-            }
-            .accessibilityLabel(String(localized: "common.cancel"))
-        }
-        .padding(.horizontal, AppSpacing.lg)
-        .padding(.bottom, AppSpacing.xs)
-    }
-
-    private func closeSearch() {
-        isSearchFieldFocused = false
-        filterCoordinator.searchText = ""
-        withAnimation(AppAnimation.contentSpring) {
-            filterCoordinator.isSearchActive = false
-        }
+    /// Whether the period filter differs from the "no filtering" default.
+    private var isTimeFilterActive: Bool {
+        timeFilterManager.currentFilter.preset != .allTime
     }
 
     // MARK: - Private Methods

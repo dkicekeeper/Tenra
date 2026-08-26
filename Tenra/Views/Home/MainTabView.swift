@@ -126,6 +126,9 @@ struct MainTabView: View {
         // LinkPaymentsView, AccountActionView) keep working; only an explicit
         // `isHidden` forces `.hidden` from this stable owner.
         .toolbar(tabBarVisibility.isHidden ? .hidden : .automatic, for: .tabBar)
+        // Instagram/Music-style: the tab bar collapses into a compact capsule on
+        // scroll down and re-expands on scroll up, on every tab.
+        .tabBarMinimizeBehavior(.onScrollDown)
         .environment(tabBarVisibility)
         .onChange(of: selectedTab) { _, new in
             handleTabSelection(new)

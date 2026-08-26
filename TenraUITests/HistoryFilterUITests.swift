@@ -69,26 +69,28 @@ final class HistoryFilterUITests: XCTestCase {
         assertAccountSheetOpens(context: "scrolled-down")
     }
 
-    // Search is a magnifying-glass toolbar button revealing a CUSTOM inline field
-    // (no .searchable — see HistoryView.searchRow). Covers the full lifecycle that
-    // broke the system variants: expand -> type -> erase -> close must collapse.
+    // Search is the SYSTEM bottom-toolbar search (DefaultToolbarItem(kind: .search)
+    // + .searchable, Photos pattern). Covers the full lifecycle that broke the
+    // nav-drawer variants: expand -> type -> erase -> close must collapse.
     func testSearchToolbarButtonExpandTypeEraseClose() throws {
         launchToHistory()
-        let searchButton = app.buttons["Search"].firstMatch
-        XCTAssertTrue(searchButton.waitForExistence(timeout: 10), "Search toolbar button not found")
+        // The system renders bottom-bar search as a compact SearchField, not a Button.
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 10), "Bottom search field not found")
         snap("before-search-tap")
-        searchButton.tap()
-        let field = app.textFields.firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: 5), "Search field did not expand from the toolbar button")
         field.tap()
         field.typeText("abc")
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3))
         snap("after-type-erase")
-        let closeButton = app.buttons["Cancel"].firstMatch
-        XCTAssertTrue(closeButton.waitForExistence(timeout: 5), "Close (xmark) button not found")
-        closeButton.tap()
-        let collapsed = field.waitForNonExistence(timeout: 5)
+        // The system bottom search's dismiss control is labeled 'close' (lowercase).
+        let cancelButton = app.buttons["close"].firstMatch
+        XCTAssertTrue(cancelButton.waitForExistence(timeout: 5), "Search close control not found")
+        cancelButton.tap()
+        // Collapsed bottom-bar search is STILL a SearchField (compact form) — assert
+        // the expanded-state artifacts are gone instead: the close control and keyboard.
+        let closeGone = cancelButton.waitForNonExistence(timeout: 5)
+        let keyboardGone = app.keyboards.firstMatch.waitForNonExistence(timeout: 5)
         snap("after-close")
-        XCTAssertTrue(collapsed, "Search field did not collapse after typing, erasing and tapping close")
+        XCTAssertTrue(closeGone && keyboardGone, "Search did not collapse after typing, erasing and closing")
     }
 }

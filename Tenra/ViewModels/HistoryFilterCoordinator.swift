@@ -72,7 +72,7 @@ class HistoryFilterCoordinator {
 
     /// Fires haptic for account filter change.
     /// The actual `selectedAccountFilter` mutation is done by the binding in
-    /// `HistoryFilterSection` before this method is called — no reassignment needed.
+    /// the History bottom-toolbar filter UI before this method is called — no reassignment needed.
     func applyAccountFilter() {
         HapticManager.selection()
     }

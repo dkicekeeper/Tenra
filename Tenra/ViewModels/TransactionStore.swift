@@ -808,8 +808,12 @@ final class TransactionStore {
         logger.debug("finishImport DONE")
     }
 
-    /// Update an existing transaction
-    func update(_ transaction: Transaction) async throws {
+    /// Update an existing transaction.
+    /// - Parameter allowSeriesDetach: pass `true` when the caller *intends* to unlink the
+    ///   transaction from its recurring series (the edit screen's explicit "Never" option).
+    ///   Left `false`, an edit that drops a live `recurringSeriesId` is rejected — that is
+    ///   almost always a caller forgetting to carry the field over, not user intent.
+    func update(_ transaction: Transaction, allowSeriesDetach: Bool = false) async throws {
         guard let old = transactionById[transaction.id] else {
             throw TransactionStoreError.transactionNotFound
         }
@@ -822,8 +826,17 @@ final class TransactionStore {
             throw TransactionStoreError.idMismatch
         }
 
-        // Cannot change recurring series to non-recurring
-        if old.recurringSeriesId != nil && transaction.recurringSeriesId == nil {
+        // Cannot silently drop a link to a series that still exists.
+        // A DANGLING link (series already deleted, or lost while its transactions
+        // survived) is not worth protecting: refusing the edit only made such a
+        // transaction permanently uneditable — the visible symptom was
+        // "cannot remove recurring series" when editing an auto-posted deposit
+        // interest accrual, whose edit screen hides the recurring control and
+        // therefore always saves `recurringSeriesId == nil`.
+        if !allowSeriesDetach,
+           let oldSeriesId = old.recurringSeriesId,
+           transaction.recurringSeriesId == nil,
+           recurringStore.seriesById[oldSeriesId] != nil {
             throw TransactionStoreError.cannotRemoveRecurring
         }
 

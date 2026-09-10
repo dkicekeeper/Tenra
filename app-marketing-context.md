@@ -11,7 +11,7 @@
 - **Platform:** iOS only, iPhone-only (iPad planned in 1.1, not shipped yet)
 - **Price Model:** Freemium + Subscription (Tenra Pro) + Lifetime IAP
 - **Launch Date:** ~April 2026 (v1.0 READY_FOR_SALE)
-- **Current Version:** 1.0.2 (READY_FOR_SALE since 2026-07-14); 1.1 in PREPARE_FOR_SUBMISSION (Siri / App Intents, created 2026-07-31)
+- **Current Version:** 1.2 (READY_FOR_SALE since 2026-08-27: receipt scanner, PDF statement import, insight notifications + weekly digest). 1.1 shipped 2026-07-31 (Siri / App Intents)
 - **Monetization live since:** ~2026-07-09 (1.0.1 build 4 approved after one rejection)
 
 ## Value Proposition
@@ -35,10 +35,10 @@
 - **Subtitle (US):** Money Manager & Subscriptions
 - **Title (RU/KZ):** Tenra: Бюджет, Учёт Расходов
 - **Subtitle (RU/KZ):** Финансы, подписки и контроль
-- **Keywords:** see docs/RELEASE_1.1_PLAN.md (locked 1.0 set; volume-unvalidated guesses). 1.1 appends `siri` only where it fits free (en-US, ru, ja, ko); the other 9 locales are already at the 100-char cap and no existing keyword was sacrificed for it.
+- **Keywords:** ru updated in 1.2 (data-driven, 99/100: `трата,деньги,кошелёк,счёт,долг,кредит,депозит,валюта,планировщик,копилка,доход,трекер,семейный,siri`); other locales still on the locked 1.0 set (see docs/archive/RELEASE_1.1_PLAN.md) — parity pass pending per PROMOTION_PLAN §5.
 - **ASC metadata locales:** 13 (de-DE, en-US, es-ES, es-MX, fr-CA, fr-FR, it, ja, ko, pt-BR, ru, tr, uk), all with description+keywords+promo text
 - **In-app locales:** 11 (en, ru, de, es, fr, tr, pt-BR, it, uk, ja, ko)
-- **Rating:** 0 written reviews worldwide, all time (as of 2026-07-17). CRITICAL GAP.
+- **Rating:** 0 written reviews and 0 ratings worldwide, all time (re-verified 2026-08-27). CRITICAL GAP.
 - **Rating prompt:** RatingPromptService live since 1.0.1 (sessions ≥ 3, tx ≥ 5, days ≥ 3)
 
 ## Monetization (live)
@@ -50,7 +50,8 @@
 - Small Business Program: enrolled (2026-07-17) → 15% commission. DSA trader status submitted 2026-07-17, pending Apple review.
 
 ## Goals
-1. **MRR growth** — from ~0 to first $200-500 MRR by end of Q3 2026, via conversion fixes + ASA pilot.
+1. **MRR growth** — from $0 to first $200-500 MRR by end of Q4 2026, via conversion fixes + ASA pilot (deadline moved from Q3 on 2026-08-27: still zero purchases, ASA not launched).
+0. **Constraint (2026-08-27):** founder does NO manual promotion — no asking friends for ratings, no social media, no personal outreach. All growth must come from in-app automation, Claude-driven ASO, paid ASA, and the weekly autopilot session (PROMOTION_PLAN §0).
 2. **Social proof** — 25+ ratings, avg ≥ 4.5 in KZ + US by mid-August 2026.
 3. **Measurement** — full funnel numbers (impressions → page views → installs → trials → paid) visible weekly.
 
@@ -68,7 +69,7 @@
 
 ## Key References
 - Monetization strategy: docs/MONETIZATION_STRATEGY.md
-- Old 1.1 release plan (iPad + rating prompt + ASO iteration): docs/RELEASE_1.1_PLAN.md
+- Old 1.1 release plan (iPad + rating prompt + ASO iteration): docs/archive/RELEASE_1.1_PLAN.md
 - **Active promotion plan: docs/PROMOTION_PLAN.md**
 - Screenshot pipeline: -ScreenshotDemo scheme + capture_screenshots.sh + Figma "Screenshots L10n"
 - Legal: dkicekeeper.github.io/Tenra/{terms-of-use,privacy-policy,support}.html

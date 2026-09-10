@@ -65,7 +65,12 @@ Task { @MainActor in rebuildSections() }
 
 ## Update Restrictions
 
-⚠️ **`TransactionStore.update()` blocks removing `recurringSeriesId`** — throws `cannotRemoveRecurring`. To unlink (e.g. bulk unlink from subscription), use `apply(.updated(old: tx, new: updatedTx))` directly. See `unlinkAllTransactions(fromSeriesId:)` in `TransactionStore+Recurring.swift`.
+⚠️ **`TransactionStore.update()` blocks removing a LIVE `recurringSeriesId`** — throws `cannotRemoveRecurring`. Scope of the guard:
+- it fires only when the old series still exists in `recurringStore.seriesById`. A **dangling** link (series deleted/lost while its transactions survived) is allowed to be cleared — refusing it made such a transaction permanently uneditable (the "cannot remove recurring series" error when editing an auto-posted deposit-interest accrual, whose edit screen hides the recurring control and therefore always saves `nil`).
+- pass `update(tx, allowSeriesDetach: true)` for a deliberate unlink of a single transaction (the edit screen's explicit "Never"). Never pass it just to silence the error.
+- ⚠️ A caller that rebuilds a `Transaction` MUST carry `recurringSeriesId` over. `TransactionEditCoordinator` only nils it when `transaction.type.allowsRecurring` **and** the user picked "Never"; for types whose recurring control is hidden it copies the existing link through. Pinned by `TransactionSeriesDetachTests`.
+
+To unlink in bulk, use `apply(.updated(old: tx, new: updatedTx))` directly. See `unlinkAllTransactions(fromSeriesId:)` in `TransactionStore+Recurring.swift`.
 
 ## Edit-Screen Field Gating by Type
 

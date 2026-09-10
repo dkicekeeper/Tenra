@@ -255,9 +255,20 @@ final class TransactionEditCoordinator {
             dateString: dateString
         )
         var finalRecurringOccurrenceId: String? = transaction.recurringOccurrenceId
-        if case .never = formData.recurring {
+
+        // Only an explicit "Never" chosen by the user detaches the transaction from its
+        // series. For types whose recurring control is hidden (`allowsRecurring == false`
+        // — deposit interest accruals, deposit/loan operations) `formData.recurring` is
+        // `.never` by default, and treating that as intent silently dropped the link and
+        // made `update()` reject the whole edit with "cannot remove recurring series".
+        var detachesFromSeries = false
+        if case .never = formData.recurring, transaction.type.allowsRecurring {
+            detachesFromSeries = transaction.recurringSeriesId != nil
             finalRecurringSeriesId = nil
             finalRecurringOccurrenceId = nil
+        } else if finalRecurringSeriesId == nil {
+            // Control hidden — carry the existing link over untouched.
+            finalRecurringSeriesId = transaction.recurringSeriesId
         }
 
         // Currency conversion
@@ -282,7 +293,7 @@ final class TransactionEditCoordinator {
         )
 
         do {
-            try await transactionStore.update(updatedTransaction)
+            try await transactionStore.update(updatedTransaction, allowSeriesDetach: detachesFromSeries)
 
             // Link subcategories
             categoriesViewModel.linkSubcategoriesToTransaction(

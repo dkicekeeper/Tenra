@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import os
 
 struct SubscriptionDetailView: View {
+    private static let logger = Logger(subsystem: "Tenra", category: "SubscriptionDetail")
+
     let transactionStore: TransactionStore
     let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
@@ -141,17 +144,11 @@ struct SubscriptionDetailView: View {
             Button(String(localized: "quickAdd.cancel"), role: .cancel) {}
 
             Button(String(localized: "subscriptions.deleteOnlySubscription"), role: .destructive) {
-                Task {
-                    try await transactionStore.deleteSeries(id: subscription.id, deleteTransactions: false)
-                    dismiss()
-                }
+                Task { await deleteSeries(deleteTransactions: false) }
             }
 
             Button(String(localized: "subscriptions.deleteSubscriptionAndTransactions"), role: .destructive) {
-                Task {
-                    try await transactionStore.deleteSeries(id: subscription.id, deleteTransactions: true)
-                    dismiss()
-                }
+                Task { await deleteSeries(deleteTransactions: true) }
             }
         } message: {
             Text(String(localized: "subscriptions.deleteConfirmMessage"))
@@ -182,6 +179,23 @@ struct SubscriptionDetailView: View {
         }
         .task(id: refreshTrigger) {
             await refreshTransactions()
+        }
+    }
+
+    /// Deletes the series and dismisses only on success. Errors are logged rather than
+    /// dropped on the floor: an unstructured `Task { try await … }` swallows them silently.
+    private func deleteSeries(deleteTransactions: Bool) async {
+        do {
+            try await transactionStore.deleteSeries(
+                id: subscription.id,
+                deleteTransactions: deleteTransactions
+            )
+            dismiss()
+        } catch {
+            Self.logger.error("""
+                deleteSeries(deleteTransactions: \(deleteTransactions, privacy: .public)) failed: \
+                \(String(describing: error), privacy: .public)
+                """)
         }
     }
 
@@ -243,7 +257,11 @@ struct SubscriptionDetailView: View {
         if liveSubscription.subscriptionStatus == .active {
             Button {
                 Task {
-                    try await transactionStore.pauseSubscription(id: liveSubscription.id)
+                    do {
+                        try await transactionStore.pauseSubscription(id: liveSubscription.id)
+                    } catch {
+                        Self.logger.error("pauseSubscription failed: \(String(describing: error), privacy: .public)")
+                    }
                 }
             } label: {
                 Label(String(localized: "subscriptions.pause"), systemImage: "pause.circle")
@@ -262,7 +280,12 @@ struct SubscriptionDetailView: View {
 
                     let idsBefore = Set(transactionStore.transactions.map { $0.id })
 
-                    try await transactionStore.resumeSubscription(id: liveSubscription.id)
+                    do {
+                        try await transactionStore.resumeSubscription(id: liveSubscription.id)
+                    } catch {
+                        Self.logger.error("resumeSubscription failed: \(String(describing: error), privacy: .public)")
+                        return
+                    }
 
                     if !subcategoryIds.isEmpty {
                         let idsAfter = Set(transactionStore.transactions.map { $0.id })

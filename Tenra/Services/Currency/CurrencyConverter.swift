@@ -180,9 +180,11 @@ nonisolated final class CurrencyConverter: @unchecked Sendable {
         let isHistorical = !(date == nil || Calendar.current.isDateInToday(date!))
         let key = isHistorical ? Self.dateKey(for: date!) : "__today__"
 
-        inflightLock.lock()
-        if let existing = inflight[key] {
-            inflightLock.unlock()
+        // `withLock` instead of bare lock()/unlock(): the latter is unavailable from
+        // async contexts (a hard error in the Swift 6 language mode) because the
+        // compiler cannot prove the lock is not held across a suspension point.
+        let existing: Task<ExchangeRates?, Never>? = inflightLock.withLock { inflight[key] }
+        if let existing {
             return await existing.value
         }
 
@@ -204,13 +206,10 @@ nonisolated final class CurrencyConverter: @unchecked Sendable {
             }
             return snapshot
         }
-        inflight[key] = task
-        inflightLock.unlock()
+        inflightLock.withLock { inflight[key] = task }
 
         let result = await task.value
-        inflightLock.lock()
-        inflight.removeValue(forKey: key)
-        inflightLock.unlock()
+        inflightLock.withLock { _ = inflight.removeValue(forKey: key) }
         return result
     }
 

@@ -25,7 +25,10 @@ struct EmptyCardView: View {
 
     let sectionTitle: String
     let emptyTitle: String
-    var action: (@Sendable () -> Void)? = nil
+    /// Not `@Sendable`: the closure runs on MainActor from the card's Button and
+    /// callers mutate view state inside it (`showingAddAccount = true`). Marking it
+    /// `@Sendable` stripped the MainActor isolation at every call site.
+    var action: (() -> Void)? = nil
 
     var body: some View {
         if let action {

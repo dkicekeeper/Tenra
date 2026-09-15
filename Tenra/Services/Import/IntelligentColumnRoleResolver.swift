@@ -72,7 +72,7 @@ nonisolated struct IntelligentColumnRoleResolver {
             let response = try await session.respond(
                 to: prompt,
                 generating: InferredColumnLayout.self,
-                options: GenerationOptions(sampling: .greedy)
+                options: GenerationOptions(samplingMode: .greedy)
             )
             return columnRoles(from: response.content, columnCount: table.columnCount)
         } catch let cancellationError as CancellationError {

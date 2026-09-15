@@ -28,8 +28,10 @@ final class WeeklyDigestScheduler {
 
     private let settings: InsightSignalSettings
 
-    init(settings: InsightSignalSettings = .shared) {
-        self.settings = settings
+    /// Optional instead of a `.shared` default argument — see `InsightSignalService.init`
+    /// for why a MainActor singleton cannot sit in a default argument expression.
+    init(settings: InsightSignalSettings? = nil) {
+        self.settings = settings ?? .shared
     }
 
     /// Builds the digest body from weekly period points. Exposed for tests.

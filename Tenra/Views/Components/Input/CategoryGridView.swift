@@ -13,7 +13,8 @@ struct CategoryGridView: View {
     let baseCurrency: String
     let gridColumns: Int?
     let onCategoryTap: (String, TransactionType) -> Void
-    let emptyStateAction: (@Sendable () -> Void)?
+    /// Not `@Sendable` — forwarded to `EmptyCardView.action`, which runs on MainActor.
+    let emptyStateAction: (() -> Void)?
     var sourceNamespace: Namespace.ID? = nil
 
     // MARK: - Body

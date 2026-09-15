@@ -451,9 +451,12 @@ nonisolated final class TransactionRepository: TransactionRepositoryProtocol, @u
                 let result = try bgContext.execute(insertRequest) as? NSBatchInsertResult
                 // Merge inserted object IDs into viewContext so @Observable picks them up.
                 // Must be dispatched to main queue because viewContext is main-thread-only.
-                Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    self.stack.mergeBatchInsertResult(result)
+                // Captures `stack`, not `self`: the enclosing `perform` closure already
+                // holds `self` strongly, so a `[weak self]` capture here contradicts it
+                // (and buys nothing — the task outlives neither).
+                let stack = self.stack
+                Task { @MainActor in
+                    stack.mergeBatchInsertResult(result)
                 }
             } catch {
                 Self.logger.error("⚠️ [TransactionRepository] batchInsertTransactions failed: \(error.localizedDescription, privacy: .public)")

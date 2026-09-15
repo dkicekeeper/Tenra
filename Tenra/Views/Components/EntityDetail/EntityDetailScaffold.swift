@@ -120,6 +120,10 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
             }
             .padding(.vertical, AppSpacing.md)
         }
+        // The history rows render in a LazyVStack, where `.swipeActions` used to be a
+        // no-op. iOS 27 honors them once the scroll container opts in; on iOS 26 the
+        // `.contextMenu` mirror on TransactionCard remains the only path.
+        .swipeActionsContainerIfAvailable()
         .onScrollGeometryChange(for: Bool.self) { geo in
             geo.contentOffset.y > entityDetailNavTitleThreshold
         } action: { _, shouldShow in

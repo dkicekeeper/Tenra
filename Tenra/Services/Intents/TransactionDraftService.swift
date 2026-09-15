@@ -206,8 +206,12 @@ enum TransactionDraftService {
         _ draft: TransactionDraft,
         store: TransactionStore,
         categoriesViewModel: CategoriesViewModel,
-        hooks: CommitHooks = .production
+        hooks: CommitHooks? = nil
     ) async throws -> Transaction {
+        // Resolved here rather than as a `= .production` default argument: default
+        // arguments are evaluated in the caller's isolation, and `.production` captures
+        // MainActor singletons (VoiceLearningStore, RatingPromptService).
+        let hooks = hooks ?? .production
 
         let dateString = DateFormatters.dateFormatter.string(from: draft.date)
 

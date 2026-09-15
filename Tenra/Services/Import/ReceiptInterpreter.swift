@@ -85,7 +85,7 @@ nonisolated struct ReceiptInterpreter {
             let response = try await session.respond(
                 to: "Receipt text:\n\n\(text)",
                 generating: ExtractedReceipt.self,
-                options: GenerationOptions(sampling: .greedy)
+                options: GenerationOptions(samplingMode: .greedy)
             )
             let extracted = response.content
             guard extracted.total > 0 else { return nil }

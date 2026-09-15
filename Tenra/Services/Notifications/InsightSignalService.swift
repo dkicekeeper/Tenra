@@ -101,9 +101,13 @@ final class InsightSignalService {
     private let defaults: UserDefaults
     private let settings: InsightSignalSettings
 
-    init(defaults: UserDefaults = .standard, settings: InsightSignalSettings = .shared) {
+    /// `settings` is optional rather than defaulting to `.shared` directly: default
+    /// argument expressions are evaluated in the *caller's* isolation, so a
+    /// MainActor-isolated singleton in that position warns (and is an error in the
+    /// Swift 6 language mode). Resolving inside the initializer keeps the same behavior.
+    init(defaults: UserDefaults = .standard, settings: InsightSignalSettings? = nil) {
         self.defaults = defaults
-        self.settings = settings
+        self.settings = settings ?? .shared
     }
 
     // MARK: - Pure selection core (unit-tested)

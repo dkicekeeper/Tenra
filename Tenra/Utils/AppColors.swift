@@ -63,7 +63,9 @@ enum AppColors {
 
     /// Income transactions — финансово-специфичный зелёный.
     /// Не зависит от `success`: если дизайн меняет success, income не изменится.
-    static let income = Color(red: 0.13, green: 0.70, blue: 0.37)
+    /// `nonisolated` so the nonisolated `InsightsService` can read it without a
+    /// MainActor hop (`Color` is `Sendable`).
+    nonisolated static let income = Color(red: 0.13, green: 0.70, blue: 0.37)
 
     /// Expense transactions.
     /// Сознательно НЕ красный (как могло бы подсказать "destructive"-чтение расхода):
@@ -73,7 +75,7 @@ enum AppColors {
     /// и `transfer` (cyan). Резолвится в тот же цвет, что и `textPrimary`,
     /// но семантически это отдельный токен — менять расход на другой цвет
     /// (если когда-нибудь понадобится) можно будет в одной точке.
-    static let expense = Color.primary
+    nonisolated static let expense = Color.primary
 
     /// Transfer / internal transactions (distinct cyan-teal, not accent blue)
     static let transfer = Color(red: 0.0, green: 0.75, blue: 0.85)

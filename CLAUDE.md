@@ -17,21 +17,29 @@ Available gstack skills:
 ## Quick Start
 
 ```bash
-# Open project (requires Xcode 26+ beta)
+# Open project (built with Xcode 27 / SDK 27; deployment target stays iOS 26.0)
 open Tenra.xcodeproj
 
 # Build via CLI
 xcodebuild build \
   -scheme Tenra \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+  -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0'
 
 # Run unit tests
 xcodebuild test \
   -scheme Tenra \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0' \
   -only-testing:TenraTests
 
-# Available destinations (Xcode 26 beta): iPhone 17 Pro (iOS 26.2), iPhone Air, iPhone 16e
+# ⚠️ Since Xcode 27, a bare `name=iPhone 17 Pro` FAILS ("Unable to find a device matching
+# the provided destination specifier"): the implied OS:latest is now 27.0, and that model
+# only exists on 26.5. Always pass OS= together with an older model name, or use a
+# 27.0 model (iPhone 18 Pro). `-destination 'generic/platform=iOS Simulator'` compiles
+# without booting anything and sidesteps the whole issue.
+
+# Available destinations (Xcode 27): iPhone 17 Pro / 17 / Air / 17e (iOS 26.5),
+#   iPhone 18 Pro / 18 Pro Max / 17e (iOS 27.0) — an iOS 27 Simulator now exists,
+#   so iOS 27-gated code (`swipeActionsContainer`, toolbar overflow) is testable there.
 # Physical device: name:Dkicekeeper 17
 
 # ⚠️ If the user is testing on the physical device, build/run to it (-destination 'id=...' or
@@ -40,7 +48,7 @@ xcodebuild test \
 
 # Quickly isolate build errors (skip swiftc log noise)
 xcodebuild build -scheme Tenra \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' 2>&1 | grep -E "error:" | head -30
+  -destination 'generic/platform=iOS Simulator' 2>&1 | grep -E "error:" | head -30
 
 # If xcodebuild reports "accessing build database ... database is locked", another
 # xcodebuild instance is still finishing — wait ~5s and retry, no other action needed.
@@ -249,8 +257,8 @@ Pattern used in CategoriesManagementView, CategoryDetailView, CategorySubcategor
 ### Entity detail view refresh trigger
 Account/Category/Subscription/Deposit/Loan detail views cache `[Transaction]` via `@State` and refresh through `.task(id: refreshTrigger)`. The trigger MUST key on `transactionStore.mutationVersion` (bumps on every add/update/delete) — NOT on a count of linked tx, which stays constant when an existing tx is edited and silently skips the refresh (visible bug: user edits tx → UI stale until re-navigation). Because `mutationVersion` is `@ObservationIgnored`, the trigger property must also touch the observable `transactions` array (`_ = transactionStore.transactions.count`) so the body re-evaluates on tx mutations. Precedents: [AccountDetailView](Tenra/Views/Accounts/AccountDetailView.swift), [CategoryDetailView](Tenra/Views/Categories/CategoryDetailView.swift), [SubscriptionDetailView](Tenra/Views/Subscriptions/SubscriptionDetailView.swift).
 
-### SwiftUI `.swipeActions` requires `List`
-Outside a `List` (e.g. `LazyVStack`, `ScrollView`), `.swipeActions` silently no-ops. [GroupedTransactionList](Tenra/Views/Components/History/GroupedTransactionList.swift) renders in `LazyVStack`, so entity-detail screens get their delete/recurring actions via [`TransactionCard`](Tenra/Views/Components/Cards/TransactionCard.swift)'s `.contextMenu` (long press). Keep `.contextMenu` and `.swipeActions` mirrored when adding new actions.
+### SwiftUI `.swipeActions` outside a `List`
+On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `ScrollView`). iOS 27 honors it once the enclosing scroll container calls `swipeActionsContainer()` — gated once in [`swipeActionsContainerIfAvailable()`](Tenra/Extensions/View+SwipeActionsContainer.swift) and applied to the `ScrollView` in [EntityDetailScaffold](Tenra/Views/Components/EntityDetail/EntityDetailScaffold.swift). [GroupedTransactionList](Tenra/Views/Components/History/GroupedTransactionList.swift) still renders in `LazyVStack`, so on iOS 26 entity-detail screens reach delete/recurring only through [`TransactionCard`](Tenra/Views/Components/Cards/TransactionCard.swift)'s `.contextMenu` (long press). Keep `.contextMenu` and `.swipeActions` mirrored when adding new actions — the context menu stays on both versions.
 
 ## Monetization (Tenra Pro)
 
@@ -272,7 +280,7 @@ Schema version-bump checklist (currently v12) lives in the `/coredata-schema-bum
 
 - Unit tests: `TenraTests/`
 - UI tests: `TenraUITests/`
-- ⚠️ **The user's iPhone runs a NEWER iOS (27 beta) than any installed Simulator (max 26.5).** Hit-testing / nav-bar / search-drawer behavior differs: a green Simulator run does NOT clear an interactive-UI bug. Verify touch/layout bugs ON DEVICE with UI tests against real data:
+- ⚠️ **Simulator ≠ device for interactive UI.** An iOS 27.0 Simulator now exists (iPhone 18 Pro), so the OS-version gap with the user's iPhone is closed, but hit-testing / nav-bar / search-drawer behavior still differs from real touch input: a green Simulator run does NOT clear an interactive-UI bug. Verify touch/layout bugs ON DEVICE with UI tests against real data:
   `TEST_RUNNER_NO_DEMO=1 xcodebuild test -destination 'platform=iOS,name=Dkicekeeper 17' -only-testing:TenraUITests/<Suite>`
   NEVER pass `-ScreenshotDemo` on the personal device — it overwrites UserDefaults and seeds the real CoreData store (the `NO_DEMO=1` env in HistoryFilterUITests exists exactly for this). Phone must be unlocked; a "Lost pending connection to the test runner" system failure = screen locked, retry.
 - Failed UI tests attach screenshots + a full AX hierarchy dump — the primary diagnostic for layout/hit-test bugs: `xcrun xcresulttool export attachments --path <bundle.xcresult> --output-path <dir>` (manifest.json maps files to names). Brighten dark screenshots (PIL `ImageEnhance.Brightness`) to expose plates invisible on black.
@@ -283,7 +291,7 @@ Schema version-bump checklist (currently v12) lives in the `/coredata-schema-bum
 - ⚠️ A test suite that constructs MainActor-isolated types (most `Services/`/`Stores` — project default `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`; e.g. `TransactionQueryService`, `TransactionCacheManager`, `TransactionStore`) must be annotated `@MainActor`, else `call to main actor-isolated initializer in a synchronous nonisolated context`.
 - ⚠️ `CategoryStyleCache.shared` is a process-global singleton (like `CurrencyRateStore`) — assertions on resolved category icon/colour flake across parallel suites; test the cache-key/invalidation layer instead of the resolved style, or invalidate it in the suite.
 - ⚠️ swift-testing `-only-testing:TenraTests/Suite/method()` runs **0 tests** but still prints `** TEST SUCCEEDED **` — method-level filtering doesn't work; filter at the **suite** level. `Suite` must be the **type name** (e.g. `ExpressionEvaluatorTests`), NOT the `@Suite("display name")` — the display name also silently runs 0 tests.
-- ⚠️ Parse test results reliably with `grep -aE "Test case .* (passed|failed)|\*\* TEST (SUCCEEDED|FAILED)"` — do NOT grep `expect`, it matches `#expect` compiler warnings.
+- ⚠️ Parse test results with `grep -aE "Test run with .* (passed|failed)|Executed [0-9]+ tests|\*\* TEST (SUCCEEDED|FAILED)"` — do NOT grep `expect`, it matches `#expect` compiler warnings. Under Xcode 27, swift-testing prints ONLY a run summary (`✔ Test run with 666 tests in 101 suites passed after 2.9 seconds`) and no per-case lines; `Test case … passed` now comes only from the XCTest suites (`Executed 40 tests, with 0 failures`). Grepping `Test case` alone reports "0 passed" on a fully green run.
 - ⚠️ **Suites touching process-global state must carry `.sharedProcessState`** ([TenraTests/SharedProcessStateTrait.swift](TenraTests/SharedProcessStateTrait.swift)). `.serialized` only orders tests *within* one suite, so two suites that both build in-memory `NSPersistentContainer(name: "Tenra")` or both mutate `CurrencyRateStore.shared` corrupted each other and made the full run fail ~half the time, blaming a different random set of tests each run. The trait serializes annotated suites against each other process-wide.
 - ⚠️ A full-suite run can still occasionally print `** TEST FAILED **` with ZERO failing `Test case` lines, or a burst of `failed … (0.000 seconds)` across unrelated suites — both are harness-level flakes, not tests. Re-run once; if the re-run fails the same way, `grep -aE "error:|The following build commands failed"` the log before blaming the harness.
 - ⚠️ Tests that build a `TransactionStore` must **retain** it — `AccountsViewModel.transactionStore` is `weak`, so `accounts` (= `transactionStore?.accounts`) goes empty once the store deallocates.
@@ -379,5 +387,5 @@ Historical docs (305 files) archived to `docs/archive/`.
 ---
 
 **Last Updated**: 2026-08-26
-**iOS Target**: 26.0+ (requires Xcode 26+ beta)
+**iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)`)
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

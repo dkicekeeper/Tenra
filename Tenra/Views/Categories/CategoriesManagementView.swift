@@ -116,12 +116,75 @@ struct CategoriesManagementView: View {
 
     // MARK: - Methods
 
+    /// iOS 26 path: edit-mode drag handles report an `IndexSet` + offset.
     private func moveCategory(from source: IndexSet, to destination: Int) {
         var updatedCategories = filteredCategories
         updatedCategories.move(fromOffsets: source, toOffset: destination)
-        // Atomic reorder + single CoreData persist; was N× saveCategoriesSync.
-        transactionStore.reorderCategories(orderedIds: updatedCategories.map { $0.id })
+        applyReorder(orderedIds: updatedCategories.map { $0.id })
+    }
+
+    /// Atomic reorder + single CoreData persist; was N× saveCategoriesSync.
+    private func applyReorder(orderedIds: [String]) {
+        transactionStore.reorderCategories(orderedIds: orderedIds)
         HapticManager.selection()
+    }
+
+    // MARK: - List
+
+    /// On iOS 27 rows drag directly (`reorderable()` + the `reorderContainer` in `body`);
+    /// iOS 26 keeps `onMove`, which only works while `mode == .reordering`.
+    @ViewBuilder
+    private var categoriesList: some View {
+        List(selection: mode.isSelecting ? $selection : nil) {
+            if #available(iOS 27, *) {
+                ForEach(filteredCategories) { category in
+                    categoryRow(category)
+                }
+                .reorderable()
+            } else {
+                ForEach(filteredCategories) { category in
+                    categoryRow(category)
+                }
+                .onMove(perform: mode.isReordering ? moveCategory : nil)
+            }
+        }
+        .environment(\.editMode, .constant(mode.editMode))
+    }
+
+    @ViewBuilder
+    private func categoryRow(_ category: CustomCategory) -> some View {
+        CategoryRow(
+            category: category,
+            isDefault: false,
+            budgetProgress: budgetProgressMap[category.id],
+            currency: transactionsViewModel.appSettings.baseCurrency,
+            onEdit: {
+                guard !mode.isSelecting else { return }
+                navigatingCategory = category
+            },
+            onDelete: {
+                categoryToDelete = category
+                showingDeleteDialog = true
+            },
+            transitionSourceID: category.id,
+            transitionNamespace: categoryNamespace
+        )
+        .equatable()
+        .contextMenu {
+            Button {
+                editingCategory = category
+            } label: {
+                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+            }
+
+            Button(role: .destructive) {
+                HapticManager.warning()
+                categoryToDelete = category
+                showingDeleteDialog = true
+            } label: {
+                Label(String(localized: "button.delete"), systemImage: "trash")
+            }
+        }
     }
 
     /// Empty state is gated on the **source of truth** (store.categories), not
@@ -146,45 +209,15 @@ struct CategoriesManagementView: View {
                         showingAddCategory = true
                     }
                 )
-            } else {
-                List(selection: mode.isSelecting ? $selection : nil) {
-                    ForEach(filteredCategories) { category in
-                        CategoryRow(
-                            category: category,
-                            isDefault: false,
-                            budgetProgress: budgetProgressMap[category.id],
-                            currency: transactionsViewModel.appSettings.baseCurrency,
-                            onEdit: {
-                                guard !mode.isSelecting else { return }
-                                navigatingCategory = category
-                            },
-                            onDelete: {
-                                categoryToDelete = category
-                                showingDeleteDialog = true
-                            },
-                            transitionSourceID: category.id,
-                            transitionNamespace: categoryNamespace
-                        )
-                        .equatable()
-                        .contextMenu {
-                            Button {
-                                editingCategory = category
-                            } label: {
-                                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
-                            }
-
-                            Button(role: .destructive) {
-                                HapticManager.warning()
-                                categoryToDelete = category
-                                showingDeleteDialog = true
-                            } label: {
-                                Label(String(localized: "button.delete"), systemImage: "trash")
-                            }
-                        }
+            } else if #available(iOS 27, *) {
+                categoriesList
+                    .reorderContainer(for: CustomCategory.self) { difference in
+                        var reordered = filteredCategories
+                        difference.apply(to: &reordered)
+                        applyReorder(orderedIds: reordered.map(\.id))
                     }
-                    .onMove(perform: mode.isReordering ? moveCategory : nil)
-                }
-                .environment(\.editMode, .constant(mode.editMode))
+            } else {
+                categoriesList
             }
         }
         .animation(AppAnimation.contentSpring, value: selectedType)

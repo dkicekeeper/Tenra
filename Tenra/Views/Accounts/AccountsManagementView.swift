@@ -92,14 +92,77 @@ struct AccountsManagementView: View {
 
     // MARK: - Methods
 
+    /// iOS 26 path: edit-mode drag handles report an `IndexSet` + offset.
     private func moveAccount(from source: IndexSet, to destination: Int) {
         var reordered = sortedAccounts
         reordered.move(fromOffsets: source, toOffset: destination)
+        applyReorder(orderedIds: reordered.map(\.id))
+    }
 
-        // Only update order — bypass AccountsViewModel.updateAccount which triggers balance recalc
-        transactionStore.reorderAccounts(reordered.map(\.id))
-
+    /// Only updates order — bypasses `AccountsViewModel.updateAccount`, which would
+    /// trigger a balance recalculation.
+    private func applyReorder(orderedIds: [String]) {
+        transactionStore.reorderAccounts(orderedIds)
         HapticManager.selection()
+    }
+
+    // MARK: - List
+
+    /// On iOS 27 rows are draggable directly (`reorderable()`, paired with the
+    /// `reorderContainer` in `body`), so reordering no longer needs the edit-mode
+    /// detour. iOS 26 keeps `onMove`, which only works while `mode == .reordering`.
+    @ViewBuilder
+    private func accountsList(coordinator: BalanceCoordinator) -> some View {
+        List(selection: mode.isSelecting ? $selection : nil) {
+            if #available(iOS 27, *) {
+                ForEach(sortedAccounts) { account in
+                    accountRow(account, coordinator: coordinator)
+                }
+                .reorderable()
+            } else {
+                ForEach(sortedAccounts) { account in
+                    accountRow(account, coordinator: coordinator)
+                }
+                .onMove(perform: mode.isReordering ? moveAccount : nil)
+            }
+        }
+        .environment(\.editMode, .constant(mode.editMode))
+    }
+
+    @ViewBuilder
+    private func accountRow(_ account: Account, coordinator: BalanceCoordinator) -> some View {
+        AccountRow(
+            account: account,
+            onEdit: {
+                guard !mode.isSelecting else { return }
+                navigatingAccount = account
+            },
+            onDelete: {
+                HapticManager.warning()
+                accountToDelete = account
+                showingAccountDeleteDialog = true
+            },
+            balanceCoordinator: coordinator,
+            interestToday: depositsViewModel.interestToday(for: account),
+            nextPostingDate: depositsViewModel.nextPostingDate(for: account),
+            transitionSourceID: account.id,
+            transitionNamespace: accountNamespace
+        )
+        .contextMenu {
+            Button {
+                editingAccount = account
+            } label: {
+                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+            }
+
+            Button(role: .destructive) {
+                HapticManager.warning()
+                accountToDelete = account
+                showingAccountDeleteDialog = true
+            } label: {
+                Label(String(localized: "button.delete"), systemImage: "trash")
+            }
+        }
     }
     
     var body: some View {
@@ -115,44 +178,16 @@ struct AccountsManagementView: View {
                     }
                 )
             } else if let coordinator = accountsViewModel.balanceCoordinator {
-                List(selection: mode.isSelecting ? $selection : nil) {
-                    ForEach(sortedAccounts) { account in
-                        AccountRow(
-                            account: account,
-                            onEdit: {
-                                guard !mode.isSelecting else { return }
-                                navigatingAccount = account
-                            },
-                            onDelete: {
-                                HapticManager.warning()
-                                accountToDelete = account
-                                showingAccountDeleteDialog = true
-                            },
-                            balanceCoordinator: coordinator,
-                            interestToday: depositsViewModel.interestToday(for: account),
-                            nextPostingDate: depositsViewModel.nextPostingDate(for: account),
-                            transitionSourceID: account.id,
-                            transitionNamespace: accountNamespace
-                        )
-                        .contextMenu {
-                            Button {
-                                editingAccount = account
-                            } label: {
-                                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
-                            }
-
-                            Button(role: .destructive) {
-                                HapticManager.warning()
-                                accountToDelete = account
-                                showingAccountDeleteDialog = true
-                            } label: {
-                                Label(String(localized: "button.delete"), systemImage: "trash")
-                            }
+                if #available(iOS 27, *) {
+                    accountsList(coordinator: coordinator)
+                        .reorderContainer(for: Account.self) { difference in
+                            var reordered = sortedAccounts
+                            difference.apply(to: &reordered)
+                            applyReorder(orderedIds: reordered.map(\.id))
                         }
-                    }
-                    .onMove(perform: mode.isReordering ? moveAccount : nil)
+                } else {
+                    accountsList(coordinator: coordinator)
                 }
-                .environment(\.editMode, .constant(mode.editMode))
             } else {
                 // balanceCoordinator not yet initialized — show loading state
                 VStack(spacing: AppSpacing.md) {

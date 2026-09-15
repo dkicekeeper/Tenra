@@ -150,7 +150,7 @@ struct CSVColumnMappingView: View {
 
     private var toolbarContent: some ToolbarContent {
         Group {
-            ToolbarItem(placement: .navigationBarLeading) {
+            ToolbarItem(placement: .topBarLeading) {
                 Button {
                     onCancel()
                 } label: {
@@ -158,7 +158,7 @@ struct CSVColumnMappingView: View {
                 }
             }
 
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     if canProceed {
                         onComplete(mapping)

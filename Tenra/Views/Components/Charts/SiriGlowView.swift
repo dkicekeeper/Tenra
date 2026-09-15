@@ -26,18 +26,17 @@ struct SiriGlowView: View {
 
     @State private var aspect: Double = 1.0
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
     var body: some View {
-        Group {
-            if reduceMotion {
-                // Reduce Motion: freeze the mesh (t = 0). Full-screen ambient motion is
-                // exactly the class of animation this setting exists to suppress.
-                meshGlow(t: 0)
-            } else {
+        AmbientMotionGate { allowsAmbientMotion in
+            if allowsAmbientMotion {
                 TimelineView(.periodic(from: .now, by: Self.frameInterval)) { timeline in
                     meshGlow(t: timeline.date.timeIntervalSinceReferenceDate)
                 }
+            } else {
+                // Reduce Motion, or the system asking for reduced resource usage:
+                // freeze the mesh (t = 0). Full-screen ambient motion is exactly the
+                // class of animation both signals exist to suppress.
+                meshGlow(t: 0)
             }
         }
         .onGeometryChange(for: Double.self) { proxy in

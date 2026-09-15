@@ -143,14 +143,14 @@ struct CSVEntityMappingView: View {
             .navigationTitle(String(localized: "csvMapping.title", defaultValue: "Entity Mapping"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "arrow.left")
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         entityMapping.accountMappings = accountMappings
                         entityMapping.categoryMappings = categoryMappings

@@ -226,7 +226,7 @@ struct TransactionEditView: View {
                 .accessibilityLabel(String(localized: "button.close"))
             }
             if coordinator.transaction.type.allowsRecurring {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     recurringMenuButton
                 }
             }

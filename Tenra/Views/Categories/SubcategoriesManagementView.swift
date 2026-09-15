@@ -93,6 +93,40 @@ struct SubcategoriesManagementView: View {
         )
     }
 
+    // MARK: - Toolbar
+
+    /// Add subcategory (normal) / select-all (selecting) — the screen's primary action.
+    /// Extracted so iOS 27 can mark it `.visibilityPriority(.high)`; see
+    /// `AccountsManagementView.primaryTrailingItem` for the rationale.
+    @ToolbarContentBuilder
+    private var primaryTrailingItem: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            if mode == .normal {
+                Button(action: {
+                    HapticManager.light()
+                    showingAddSubcategory = true
+                }) {
+                    Image(systemName: "plus")
+                }
+                .primaryButton()
+            } else if mode.isSelecting {
+                Button {
+                    HapticManager.selection()
+                    let allIds = Set(sortedSubcategories.map(\.id))
+                    if selection == allIds {
+                        selection.removeAll()
+                    } else {
+                        selection = allIds
+                    }
+                } label: {
+                    Text(selection.count == sortedSubcategories.count
+                         ? String(localized: "bulk.deselectAll")
+                         : String(localized: "bulk.selectAll"))
+                }
+            }
+        }
+    }
+
     var body: some View {
         Group {
             if categoriesViewModel.subcategories.isEmpty {
@@ -160,30 +194,10 @@ struct SubcategoriesManagementView: View {
                 }
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItem(placement: .topBarTrailing) {
-                if mode == .normal {
-                    Button(action: {
-                        HapticManager.light()
-                        showingAddSubcategory = true
-                    }) {
-                        Image(systemName: "plus")
-                    }
-                    .primaryButton()
-                } else if mode.isSelecting {
-                    Button {
-                        HapticManager.selection()
-                        let allIds = Set(sortedSubcategories.map(\.id))
-                        if selection == allIds {
-                            selection.removeAll()
-                        } else {
-                            selection = allIds
-                        }
-                    } label: {
-                        Text(selection.count == sortedSubcategories.count
-                             ? String(localized: "bulk.deselectAll")
-                             : String(localized: "bulk.selectAll"))
-                    }
-                }
+            if #available(iOS 27, *) {
+                primaryTrailingItem.visibilityPriority(.high)
+            } else {
+                primaryTrailingItem
             }
         }
         .onChange(of: sortOrder) { _, newValue in

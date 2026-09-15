@@ -222,7 +222,7 @@ struct AccountActionView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarTrailing) {
+        ToolbarItem(placement: .topBarTrailing) {
             Button(action: {
                 showingAccountHistory = true
             }) {

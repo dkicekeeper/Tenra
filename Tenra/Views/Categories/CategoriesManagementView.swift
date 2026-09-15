@@ -80,6 +80,40 @@ struct CategoriesManagementView: View {
         budgetProgressMap = map
     }
 
+    // MARK: - Toolbar
+
+    /// Add category (normal) / select-all (selecting) — the screen's primary action.
+    /// Extracted so iOS 27 can mark it `.visibilityPriority(.high)`; see
+    /// `AccountsManagementView.primaryTrailingItem` for the rationale.
+    @ToolbarContentBuilder
+    private var primaryTrailingItem: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            if mode == .normal {
+                Button {
+                    HapticManager.light()
+                    showingAddCategory = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .primaryButton()
+            } else if mode.isSelecting {
+                Button {
+                    HapticManager.selection()
+                    let filteredIds = Set(filteredCategories.map(\.id))
+                    if selection == filteredIds {
+                        selection.removeAll()
+                    } else {
+                        selection = filteredIds
+                    }
+                } label: {
+                    Text(selection.count == filteredCategories.count
+                         ? String(localized: "bulk.deselectAll")
+                         : String(localized: "bulk.selectAll"))
+                }
+            }
+        }
+    }
+
     // MARK: - Methods
 
     private func moveCategory(from source: IndexSet, to destination: Int) {
@@ -201,30 +235,10 @@ struct CategoriesManagementView: View {
                 }
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItem(placement: .topBarTrailing) {
-                if mode == .normal {
-                    Button {
-                        HapticManager.light()
-                        showingAddCategory = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .primaryButton()
-                } else if mode.isSelecting {
-                    Button {
-                        HapticManager.selection()
-                        let filteredIds = Set(filteredCategories.map(\.id))
-                        if selection == filteredIds {
-                            selection.removeAll()
-                        } else {
-                            selection = filteredIds
-                        }
-                    } label: {
-                        Text(selection.count == filteredCategories.count
-                             ? String(localized: "bulk.deselectAll")
-                             : String(localized: "bulk.selectAll"))
-                    }
-                }
+            if #available(iOS 27, *) {
+                primaryTrailingItem.visibilityPriority(.high)
+            } else {
+                primaryTrailingItem
             }
         }
         .safeAreaInset(edge: .top) {

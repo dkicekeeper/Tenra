@@ -14,7 +14,8 @@ import SwiftUI
 /// Two-layer render: a sharp stroke on top plus a blurred, wider copy below for the glow.
 /// Driven by `TimelineView(.animation)` so it ticks only while the overlay is visible —
 /// flipping `isActive` to `false` stops the work entirely (no orphan animation).
-/// Respects Reduce Motion — the overlay is skipped when enabled.
+/// The overlay is skipped under Reduce Motion, and (iOS 27+) while the system prefers
+/// reduced resource usage — both routed through `AmbientMotionGate`.
 struct BorderBeamModifier: ViewModifier {
     var isActive: Bool
     var colors: [Color]
@@ -22,26 +23,26 @@ struct BorderBeamModifier: ViewModifier {
     var lineWidth: CGFloat
     var duration: Double
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
     func body(content: Content) -> some View {
         content
             .overlay {
-                if isActive && !reduceMotion {
-                    // Display-synced redraw — at 60–120 Hz the gradient sweep
-                    // looks fluid. The per-tick work is now a single
-                    // un-blurred stroke; the static halo is provided by the
-                    // companion `borderGlow` modifier so we no longer pay for
-                    // a full-overlay Gaussian on every frame.
-                    TimelineView(.animation) { context in
-                        let phase = context.date.timeIntervalSinceReferenceDate
-                            .truncatingRemainder(dividingBy: duration) / duration
-                        let degrees = phase * 360
+                AmbientMotionGate { allowsAmbientMotion in
+                    if isActive && allowsAmbientMotion {
+                        // Display-synced redraw — at 60–120 Hz the gradient sweep
+                        // looks fluid. The per-tick work is now a single
+                        // un-blurred stroke; the static halo is provided by the
+                        // companion `borderGlow` modifier so we no longer pay for
+                        // a full-overlay Gaussian on every frame.
+                        TimelineView(.animation) { context in
+                            let phase = context.date.timeIntervalSinceReferenceDate
+                                .truncatingRemainder(dividingBy: duration) / duration
+                            let degrees = phase * 360
 
-                        RoundedRectangle(cornerRadius: cornerRadius)
-                            .stroke(beamGradient(rotation: degrees), lineWidth: lineWidth)
+                            RoundedRectangle(cornerRadius: cornerRadius)
+                                .stroke(beamGradient(rotation: degrees), lineWidth: lineWidth)
+                        }
+                        .allowsHitTesting(false)
                     }
-                    .allowsHitTesting(false)
                 }
             }
     }

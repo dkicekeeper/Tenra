@@ -47,6 +47,49 @@ struct AccountsManagementView: View {
         accountsViewModel.accounts.filter { !$0.isLoan && !$0.isDeposit }.sortedByOrder()
     }
 
+    // MARK: - Toolbar
+
+    /// Add account (normal) / select-all (selecting) — the screen's primary action.
+    /// Extracted so iOS 27 can mark it `.visibilityPriority(.high)`: when the bar runs
+    /// out of room (narrow window on iPad or iPhone Mirroring), the select and reorder
+    /// items move into the overflow menu first and this one stays put.
+    @ToolbarContentBuilder
+    private var primaryTrailingItem: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            if mode == .normal {
+                Button {
+                    HapticManager.light()
+                    // Free tier caps regular accounts; Pro is unlimited. The
+                    // empty-state add (0 accounts) is never gated — only the
+                    // (limit+1)-th account routes to the paywall.
+                    if premium.isPro || sortedAccounts.count < PremiumConfig.freeAccountLimit {
+                        showingAddAccount = true
+                    } else {
+                        pendingConvertAccount = nil  // this paywall resumes add-account
+                        showingPaywall = true
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .primaryButton()
+                .accessibilityLabel(String(localized: "account.newAccount"))
+            } else if mode.isSelecting {
+                Button {
+                    HapticManager.selection()
+                    if selection.count == sortedAccounts.count {
+                        selection.removeAll()
+                    } else {
+                        selection = Set(sortedAccounts.map(\.id))
+                    }
+                } label: {
+                    Text(selection.count == sortedAccounts.count
+                         ? String(localized: "bulk.deselectAll")
+                         : String(localized: "bulk.selectAll"))
+                }
+            }
+        }
+    }
+
     // MARK: - Methods
 
     private func moveAccount(from source: IndexSet, to destination: Int) {
@@ -171,38 +214,10 @@ struct AccountsManagementView: View {
                 }
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItem(placement: .topBarTrailing) {
-                if mode == .normal {
-                    Button {
-                        HapticManager.light()
-                        // Free tier caps regular accounts; Pro is unlimited. The
-                        // empty-state add (0 accounts) is never gated — only the
-                        // (limit+1)-th account routes to the paywall.
-                        if premium.isPro || sortedAccounts.count < PremiumConfig.freeAccountLimit {
-                            showingAddAccount = true
-                        } else {
-                            pendingConvertAccount = nil  // this paywall resumes add-account
-                            showingPaywall = true
-                        }
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .primaryButton()
-                    .accessibilityLabel(String(localized: "account.newAccount"))
-                } else if mode.isSelecting {
-                    Button {
-                        HapticManager.selection()
-                        if selection.count == sortedAccounts.count {
-                            selection.removeAll()
-                        } else {
-                            selection = Set(sortedAccounts.map(\.id))
-                        }
-                    } label: {
-                        Text(selection.count == sortedAccounts.count
-                             ? String(localized: "bulk.deselectAll")
-                             : String(localized: "bulk.selectAll"))
-                    }
-                }
+            if #available(iOS 27, *) {
+                primaryTrailingItem.visibilityPriority(.high)
+            } else {
+                primaryTrailingItem
             }
         }
         .navigationDestination(item: $navigatingAccount) { account in

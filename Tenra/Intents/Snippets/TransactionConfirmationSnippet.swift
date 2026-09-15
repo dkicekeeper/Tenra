@@ -10,25 +10,52 @@ import SwiftUI
 
 struct TransactionConfirmationSnippet: View {
 
-    let draft: TransactionDraft
+    // Plain display fields rather than the draft itself: `TransactionConfirmationSnippetIntent`
+    // rebuilds this card from its own `@Parameter`s (a SnippetIntent may be re-run by the
+    // system at any time) and has no `TransactionDraft` to hand over.
+    let amount: Double
+    let currency: String
+    let categoryName: String
     let accountName: String
+    let categoryWasGuessed: Bool
+    let accountWasGuessed: Bool
 
-    private var categoryWasGuessed: Bool {
-        draft.warnings.contains { warning in
-            if case .categorySubstituted = warning { return true }
-            return false
-        }
+    init(
+        amount: Double,
+        currency: String,
+        categoryName: String,
+        accountName: String,
+        categoryWasGuessed: Bool,
+        accountWasGuessed: Bool
+    ) {
+        self.amount = amount
+        self.currency = currency
+        self.categoryName = categoryName
+        self.accountName = accountName
+        self.categoryWasGuessed = categoryWasGuessed
+        self.accountWasGuessed = accountWasGuessed
     }
 
-    private var accountWasGuessed: Bool {
-        draft.warnings.contains(.accountInferred)
+    /// Convenience path for callers that already hold the resolved draft.
+    init(draft: TransactionDraft, accountName: String) {
+        self.init(
+            amount: draft.amount,
+            currency: draft.currency,
+            categoryName: draft.categoryName,
+            accountName: accountName,
+            categoryWasGuessed: draft.warnings.contains { warning in
+                if case .categorySubstituted = warning { return true }
+                return false
+            },
+            accountWasGuessed: draft.warnings.contains(.accountInferred)
+        )
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             FormattedAmountText(
-                amount: draft.amount,
-                currency: draft.currency,
+                amount: amount,
+                currency: currency,
                 fontSize: .title2,
                 fontWeight: .semibold
             )
@@ -37,9 +64,9 @@ struct TransactionConfirmationSnippet: View {
                 label: String(localized: "intent.snippet.category"),
                 // Empty means "uncategorized", which is a valid outcome; show a
                 // readable placeholder rather than a blank row.
-                value: draft.categoryName.isEmpty
+                value: categoryName.isEmpty
                     ? String(localized: "intent.snippet.noCategory")
-                    : draft.categoryName,
+                    : categoryName,
                 guessed: categoryWasGuessed
             )
 

@@ -342,7 +342,7 @@ struct ContentView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarLeading) {
+        ToolbarItem(placement: .topBarLeading) {
             timeFilterButton
         }
         ToolbarItem(placement: .topBarTrailing) {

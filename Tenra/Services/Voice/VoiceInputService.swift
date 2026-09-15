@@ -51,6 +51,12 @@ class VoiceInputService: NSObject {
     @ObservationIgnored private var finalTranscription: String = ""
     @ObservationIgnored private var isStopping: Bool = false
 
+    /// Invalidates a start that is still bringing the audio stack up. Session activation
+    /// and engine start both suspend (they run off the main actor), so a stop requested
+    /// in that window would otherwise be ignored and leave a live microphone behind.
+    /// Every start takes a token; every stop bumps it.
+    @ObservationIgnored private var startToken: UInt64 = 0
+
     // MARK: - Voice Activity Detection (always-on)
 
     /// Silence detector for automatic stop
@@ -153,14 +159,21 @@ class VoiceInputService: NSObject {
         // Always-on silence detector
         silenceDetector = SilenceDetector()
         
-        // Настраиваем аудио сессию
-        let audioSession = AVAudioSession.sharedInstance()
+        // Claim a token for this start; a stop arriving during the awaits below bumps it.
+        startToken &+= 1
+        let token = startToken
+
+        // Настраиваем аудио сессию — вне главного актора (см. VoiceAudioSession):
+        // setCategory/setActive блокируют вызывающий поток на десятки миллисекунд.
         do {
-            // Используем .playAndRecord для лучшего качества
-            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.duckOthers, .defaultToSpeaker])
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            try await VoiceAudioSession.activateForRecording()
         } catch {
             throw VoiceInputError.audioEngineError(String(localized: "voiceError.audioSessionSetup \(error.localizedDescription)"))
+        }
+
+        guard token == startToken else {
+            await VoiceAudioSession.deactivate()
+            return
         }
         
         // Создаем запрос на распознавание
@@ -182,30 +195,30 @@ class VoiceInputService: NSObject {
         // Dynamic Context Injection
         recognitionRequest.contextualStrings = buildContextualStrings()
         
-        // Настраиваем аудио engine
-        audioEngine = AVAudioEngine()
-        guard let audioEngine = audioEngine else {
-            throw VoiceInputError.audioEngineError(String(localized: "voiceError.audioEngineCreateFailed"))
-        }
-        
-        let inputNode = audioEngine.inputNode
-        let recordingFormat = inputNode.outputFormat(forBus: 0)
-
-        inputNode.installTap(onBus: 0, bufferSize: VoiceInputConstants.audioBufferSize, format: recordingFormat) { buffer, _ in
-            // Forward the buffer to speech recognition. The wave visualization
-            // is time-driven and no longer needs an amplitude side channel,
-            // which previously dispatched ~43 main-thread writes per second.
-            recognitionRequest.append(buffer)
-        }
-        
-        // Запускаем аудио engine
-        audioEngine.prepare()
+        // Собираем и запускаем аудио engine — тоже вне главного актора
+        // (см. VoiceRecordingEngine): inputNode, prepare() и start() блокируют поток.
+        let engine: AVAudioEngine
         do {
-            try audioEngine.start()
+            engine = try await VoiceRecordingEngine.makeAndStart(
+                request: recognitionRequest,
+                bufferSize: VoiceInputConstants.audioBufferSize
+            )
         } catch {
+            await VoiceAudioSession.deactivate()
             throw VoiceInputError.audioEngineError(String(localized: "voiceError.audioEngineStartFailed \(error.localizedDescription)"))
         }
-        
+
+        // Stop requested while the engine was coming up: tear it back down instead of
+        // leaving the microphone open behind a view that has already gone away.
+        guard token == startToken else {
+            await VoiceRecordingEngine.stop(engine)
+            await VoiceAudioSession.deactivate()
+            return
+        }
+
+        audioEngine = engine
+
+
         // Запускаем распознавание
         recognitionTask = recognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
             guard let self = self else { return }
@@ -266,6 +279,11 @@ class VoiceInputService: NSObject {
     // Синхронная остановка записи
     // @MainActor гарантирует thread-safety, так как все вызовы происходят на главном потоке
     private func stopRecordingSync() async {
+        // Invalidate any start still bringing the audio stack up (see `startToken`).
+        // Must run before the guards below: during startup `isRecording` is still false,
+        // so without this the stop would return here and the start would finish anyway.
+        startToken &+= 1
+
         // Предотвращаем множественные вызовы
         guard !isStopping else { return }
         guard isRecording else { return }
@@ -284,10 +302,9 @@ class VoiceInputService: NSObject {
         // Даем время на финализацию результата
         try? await Task.sleep(for: .milliseconds(VoiceInputConstants.audioEngineStopDelayMs))
 
-        // Останавливаем аудио engine
-        if let engine = currentAudioEngine, engine.isRunning {
-            engine.stop()
-            engine.inputNode.removeTap(onBus: 0)
+        // Останавливаем аудио engine — вне главного актора, stop() тоже блокирует.
+        if let engine = currentAudioEngine {
+            await VoiceRecordingEngine.stop(engine)
         }
         audioEngine = nil
 
@@ -297,12 +314,8 @@ class VoiceInputService: NSObject {
         currentRecognitionTask?.cancel()
         recognitionTask = nil
 
-        // Деактивируем аудио сессию
-        do {
-            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-        } catch {
-            logger.warning("Failed to deactivate audio session: \(error.localizedDescription)")
-        }
+        // Деактивируем аудио сессию — тоже вне главного актора.
+        await VoiceAudioSession.deactivate()
 
         // Reset silence detector
         silenceDetector?.reset()

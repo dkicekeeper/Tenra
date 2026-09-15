@@ -197,14 +197,14 @@ struct VoiceInputConfirmationView: View {
             .navigationTitle(String(localized: "voiceConfirmation.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         if onUpdate != nil {
                             returnUpdatedOperation()

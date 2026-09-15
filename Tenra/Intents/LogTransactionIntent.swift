@@ -30,10 +30,11 @@ struct LogTransactionIntent: AppIntent {
     static var title: LocalizedStringResource = "intent.log.title"
     static var description = IntentDescription("intent.log.description")
 
-    /// Stays false. Blocking issues bring the app forward at runtime through
-    /// continueInForeground(), because this static is read before perform() runs
-    /// and cannot express a per-invocation decision.
-    static var openAppWhenRun: Bool = false
+    /// Starts headless and escalates only when a blocking issue appears, through
+    /// `continueInForeground()` — the per-invocation decision the deprecated
+    /// `openAppWhenRun` static could never express, since it was read before
+    /// `perform()` ran. `.foreground(.dynamic)` is what permits that escalation.
+    static var supportedModes: IntentModes { [.background, .foreground(.dynamic)] }
 
     /// Free text, parsed by VoiceInputParser. It cannot be interpolated into an
     /// App Shortcut phrase (only AppEntity/AppEnum parameters can be), so Siri
@@ -98,6 +99,14 @@ struct LogTransactionIntent: AppIntent {
             // FX cache. Hand it to the UI with the fields prefilled. No network
             // call is attempted here on purpose.
             IntentHandoff.shared.request(first)
+            // Voice-only surfaces (HomePod, AirPods) cannot bring the app forward, and
+            // calling continueInForeground there throws. Ask the system to prompt instead.
+            guard systemContext.currentMode.canContinueInForeground else {
+                Self.log.info("cannot continue in foreground — asking the system to prompt")
+                throw needsToContinueInForegroundError(
+                    IntentDialog(stringLiteral: String(localized: "intent.log.openingApp"))
+                )
+            }
             do {
                 try await continueInForeground(
                     IntentDialog(stringLiteral: String(localized: "intent.log.openingApp"))
@@ -121,9 +130,11 @@ struct LogTransactionIntent: AppIntent {
                 """)
 
             try await requestConfirmation(
-                result: .result(dialog: "intent.log.confirm") {
-                    TransactionConfirmationSnippet(draft: draft, accountName: accountName)
-                }
+                dialog: IntentDialog("intent.log.confirm"),
+                snippetIntent: TransactionConfirmationSnippetIntent(
+                    draft: draft,
+                    accountName: accountName
+                )
             )
 
             _ = try await TransactionDraftService.commit(

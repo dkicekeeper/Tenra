@@ -22,6 +22,33 @@ Present via `.sheet()`, **NEVER via `.navigationDestination()`** (nested `Naviga
 
 Build a custom preview card with `Button` + same subcomponents (`IconView`, `FormattedAmountView`).
 
+## Audio session must stay off the main actor
+
+`VoiceInputService` is `@MainActor`, but `AVAudioSession.setCategory` / `setActive` are blocking
+CoreAudio calls (tens of milliseconds, more on a cold audio stack). Calling them inline stalled
+whatever animation was running — the visible symptom was a hitch when the "+" tab expands and
+`VoiceInputView.onAppear` auto-starts recording. iOS 27 also logs it outright:
+`AVAudioSession_iOS.mm:978 This method can lead to UI unresponsiveness if called on the main thread`.
+
+All session work therefore goes through [`VoiceAudioSession`](../../Tenra/Services/Voice/VoiceAudioSession.swift),
+whose functions are `nonisolated async` (so they run on the cooperative pool, not the caller's
+actor) and which uses the genuinely asynchronous `activate(options:)` / `deactivate(options:)`
+on iOS 27, falling back to the synchronous calls — still off the main thread — on iOS 26.
+Never call `AVAudioSession` directly from the service again.
+
+The `AVAudioEngine` lifecycle moved off the main actor too, into
+[`VoiceRecordingEngine`](../../Tenra/Services/Voice/VoiceRecordingEngine.swift): the first
+`inputNode` access, `outputFormat(forBus:)`, `prepare()`, `start()` and `stop()` all block
+inside CoreAudio.
+
+⚠️ **Because both helpers suspend, `startRecording` is now interruptible.** `VoiceInputService`
+guards that with `startToken`: each start claims a token, every `stopRecordingSync` bumps it
+(before its own `isRecording` guard, which does not hold yet during startup), and the start
+tears the half-built stack down if the token changed. `VoiceInputView.onDisappear` therefore
+calls `stopRecording()` unconditionally — the old `if voiceService.isRecording` check skipped
+the call during startup and left the microphone open behind a dismissed view. Keep both
+properties in place when touching this path.
+
 ## Speech Recognition Gotchas
 
 ### `cancel()` fires callback with empty/truncated text

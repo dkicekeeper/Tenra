@@ -18,7 +18,12 @@ struct AddExpenseIntent: AppIntent {
 
     static var title: LocalizedStringResource = "intent.addExpense.title"
     static var description = IntentDescription("intent.addExpense.description")
-    static var openAppWhenRun: Bool = false
+
+    /// Runs headlessly and escalates to the app only when `makeDraft` cannot
+    /// resolve the operation. `.foreground(.dynamic)` is what allows the
+    /// `continueInForeground()` call below; the deprecated `openAppWhenRun = false`
+    /// it replaces could not express a per-invocation decision.
+    static var supportedModes: IntentModes { [.background, .foreground(.dynamic)] }
 
     @Parameter(title: "intent.addExpense.parameter.amount")
     var amount: Double
@@ -68,6 +73,13 @@ struct AddExpenseIntent: AppIntent {
         switch result {
         case .failure:
             IntentHandoff.shared.request(operation)
+            // Voice-only surfaces (HomePod, AirPods) cannot bring the app forward, and
+            // calling continueInForeground there throws. Ask the system to prompt instead.
+            guard systemContext.currentMode.canContinueInForeground else {
+                throw needsToContinueInForegroundError(
+                    IntentDialog(stringLiteral: String(localized: "intent.addExpense.openingApp"))
+                )
+            }
             try await continueInForeground(
                 IntentDialog(stringLiteral: String(localized: "intent.addExpense.openingApp"))
             )
@@ -78,9 +90,11 @@ struct AddExpenseIntent: AppIntent {
                 let accountName = services.accounts.accounts
                     .first { $0.id == draft.accountId }?.name ?? ""
                 try await requestConfirmation(
-                    result: .result(dialog: "intent.addExpense.confirm") {
-                        TransactionConfirmationSnippet(draft: draft, accountName: accountName)
-                    }
+                    dialog: IntentDialog("intent.addExpense.confirm"),
+                    snippetIntent: TransactionConfirmationSnippetIntent(
+                        draft: draft,
+                        accountName: accountName
+                    )
                 )
             }
 

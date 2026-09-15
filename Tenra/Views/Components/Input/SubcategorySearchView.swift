@@ -149,7 +149,7 @@ struct SubcategorySearchView: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     if selectionMode == .single {
                         Button {
                             dismiss()

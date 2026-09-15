@@ -40,7 +40,10 @@ struct CheckSpendingIntent: AppIntent {
 
     static var title: LocalizedStringResource = "intent.checkSpending.title"
     static var description = IntentDescription("intent.checkSpending.description")
-    static var openAppWhenRun: Bool = false
+
+    /// Read-only query answered with a dialog and a snippet — never needs the app
+    /// in front. Replaces the deprecated `openAppWhenRun = false`.
+    static var supportedModes: IntentModes { .background }
 
     @Parameter(title: "intent.checkSpending.period", default: .today)
     var period: SpendingPeriodAppEnum

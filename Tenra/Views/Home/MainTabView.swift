@@ -62,6 +62,19 @@ struct MainTabView: View {
     /// Storing state here keeps it alive and passes it down via @Environment.
     @State private var homeState = HomePersistentState()
 
+    // MARK: Tabs
+
+    /// The "+" tab. Its content is never displayed — the tap is intercepted in
+    /// `onChange(of: selectedTab)`. The role is passed in so the body can pick
+    /// `.prominent` on iOS 27 and fall back to `.search` on iOS 26.
+    private func actionTab(role: TabRole) -> some TabContent<AppTab> {
+        Tab(value: AppTab.plusAction, role: role) {
+            Color.clear.ignoresSafeArea()
+        } label: {
+            PlusTabLabel(isExpanded: tabBarMode == .expanded)
+        }
+    }
+
     // MARK: Body
 
     var body: some View {
@@ -113,12 +126,14 @@ struct MainTabView: View {
                 }
             }
 
-            // ── Action tab — visually separated (like Search in Apple Music) ─
-            Tab(value: AppTab.plusAction, role: .search) {
-                // Content is never shown — tap is intercepted in onChange
-                Color.clear.ignoresSafeArea()
-            } label: {
-                PlusTabLabel(isExpanded: tabBarMode == .expanded)
+            // ── Action tab — visually separated from the navigation tabs ─────
+            // iOS 27 has a role for exactly this (a creation action rather than a
+            // destination); before that, `.search` was the only role that detached
+            // a tab from the group, which is why it was used as a stand-in.
+            if #available(iOS 27, *) {
+                actionTab(role: .prominent)
+            } else {
+                actionTab(role: .search)
             }
         }
         // `.automatic` (not `.visible`) is the default so pushed views that hide

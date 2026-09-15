@@ -123,7 +123,7 @@ transaction type. This is safe precisely because the snippet displays it.
 ### 3.3 Blocking issues → open the app
 
 Only three conditions abort the background path and open the app with the parsed operation
-prefilled into the existing confirmation screen (`openAppWhenRun`):
+prefilled into the existing confirmation screen (foreground escalation — see §8):
 
 | `DraftIssue` | Condition |
 |---|---|
@@ -392,6 +392,22 @@ both of which contradict the obvious reading of the documentation:
   intent runs, so it cannot express a per-invocation decision. The correct primitive is
   `continueInForeground(_ dialog:alwaysConfirm:)`, an `AppIntent` extension method
   (iOS 26+), which is what the blocking branches call.
+  **Update 2026-09-15 (SDK 27):** `openAppWhenRun` is deprecated and gone from the code.
+  The three intents now declare `supportedModes` instead — `[.background, .foreground(.dynamic)]`
+  for `LogTransactionIntent` / `AddExpenseIntent` (that `.dynamic` is what authorizes the
+  `continueInForeground` escalation) and `.background` for `CheckSpendingIntent`. Both
+  escalating branches first check `systemContext.currentMode.canContinueInForeground` and
+  throw `needsToContinueInForegroundError(_:)` when the surface cannot foreground
+  (voice-only Siri on HomePod or AirPods), where `continueInForeground` would otherwise throw.
+- **Update 2026-09-15 (SDK 27): the confirmation snippet is now a `SnippetIntent`.**
+  `requestConfirmation(result:confirmationActionName:showPrompt:)` is deprecated; the
+  replacement takes a `SnippetIntent` the system can re-run to redraw, so the card's inputs
+  travel as `@Parameter`s rather than a captured `TransactionDraft`
+  ([TransactionConfirmationSnippetIntent](../../../Tenra/Intents/Snippets/TransactionConfirmationSnippetIntent.swift),
+  `isDiscoverable = false` so it stays out of the Shortcuts app). Its `perform()` only renders:
+  the system may run it repeatedly for one confirmation, so any write there would repeat too.
+  `TransactionConfirmationSnippet` keeps a `init(draft:accountName:)` convenience for the
+  non-intent call path.
 - **The `.result(dialog:view:)` snippet factories are not in `AppIntents`.** They live in the
   `_AppIntents_SwiftUI` cross-import overlay, which only activates when both `AppIntents`
   and `SwiftUI` are imported. `import SwiftUI` in the intent files is load-bearing, not

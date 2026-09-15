@@ -135,7 +135,7 @@ struct ImportTransactionPreviewView: View {
             .navigationTitle(String(localized: "navigation.transactionPreview"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         dismiss()
                     } label: {

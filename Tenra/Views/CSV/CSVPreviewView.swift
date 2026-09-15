@@ -39,7 +39,7 @@ struct CSVPreviewView: View {
             .navigationTitle(String(localized: "csvImport.preview.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         onCancel()
                     } label: {

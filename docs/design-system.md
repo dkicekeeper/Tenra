@@ -1243,6 +1243,20 @@ Movement-based decorative animations respect Reduce Motion. Two mechanisms:
 
 **Opacity-only fades are NOT gated** — they aid comprehension and contain no movement, so they should survive Reduce Motion (`chartBannerFade`, `ContentRevealModifier`, banner opacity). Reduce Motion means *fewer and gentler* motion, not zero feedback.
 
+### Ambient motion (continuous redraw)
+
+A `TimelineView`-driven animation that never ends — the voice glow's 30 fps mesh, the border
+beam's display-rate sweep — is *ambient*: decorative, information-free, and paying a render
+cost every frame it is on screen. Those views go through
+[`AmbientMotionGate`](../Tenra/Utils/AmbientMotionGate.swift), which suspends them under
+Reduce Motion **and**, on iOS 27, while `systemPrefersReducedResourceUsage` is true (the system
+asking apps to back off under thermal or power pressure).
+
+The gate hands its content a `Bool`; render a **static frame** when it is false (`SiriGlowView`
+freezes the mesh at `t = 0`) rather than removing the view, so nothing shifts in layout. Put new
+`TimelineView` decoration behind this gate instead of reading `accessibilityReduceMotion`
+directly — the iOS 27 signal then comes for free.
+
 ---
 
 ## 10. cardStyle Padding Contract

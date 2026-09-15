@@ -4,8 +4,9 @@
 //
 //  Carries a ParsedOperation from an intent that could not complete headlessly
 //  into the running UI, where the existing voice confirmation screen finishes
-//  the job. Set by the intent immediately before it returns .openAppWhenRun;
-//  consumed and cleared by MainTabView.
+//  the job. Set by the intent immediately before it escalates to the foreground
+//  (continueInForeground / needsToContinueInForegroundError); consumed and
+//  cleared by MainTabView.
 //
 
 import Foundation

@@ -57,7 +57,7 @@ struct VoiceInputView: View {
             NavigationStack {
                 coreContent
                     .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
+                        ToolbarItem(placement: .topBarLeading) {
                             Button {
                                 voiceService.stopRecording()
                                 dismiss()
@@ -191,7 +191,11 @@ struct VoiceInputView: View {
             parseDebounceTask?.cancel()
             silenceTimer?.cancel()
             announcementTask?.cancel()
-            if voiceService.isRecording { voiceService.stopRecording() }
+            // Unconditional: `isRecording` is still false while the audio stack is
+            // coming up, and skipping the call there left the microphone open once the
+            // pending start finished. `stopRecording()` guards itself and also cancels
+            // an in-flight start (see `VoiceInputService.startToken`).
+            voiceService.stopRecording()
         }
     }
 

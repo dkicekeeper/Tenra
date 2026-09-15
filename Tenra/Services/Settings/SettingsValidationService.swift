@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import UIKit
+import ImageIO
 
 /// Service for validating settings
 /// Centralizes all validation rules
@@ -43,9 +43,14 @@ final class SettingsValidationService: SettingsValidationServiceProtocol {
             throw SettingsValidationError.wallpaperFileNotFound(fileName)
         }
 
-        // Check file is readable and valid image
-        guard let data = try? Data(contentsOf: fileURL),
-              UIImage(data: data) != nil else {
+        // Check the file is a readable image — by its header, not by decoding it.
+        // `Data(contentsOf:)` + `UIImage(data:)` pulled a multi-megabyte photo into
+        // memory and decoded it on the main thread (this type is MainActor-isolated by
+        // the project's default isolation) on every settings load AND save, only to
+        // answer "is this still a valid image?". `CGImageSource` reads the header alone.
+        guard let source = CGImageSourceCreateWithURL(fileURL as CFURL, nil),
+              CGImageSourceGetType(source) != nil,
+              CGImageSourceGetCount(source) > 0 else {
             throw SettingsValidationError.wallpaperFileCorrupted(fileName)
         }
     }

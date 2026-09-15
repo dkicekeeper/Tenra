@@ -28,8 +28,10 @@ final class WallpaperManagementService: WallpaperManagementServiceProtocol {
 
     func saveWallpaper(_ image: UIImage) async throws -> String {
 
-        // Compress image
-        guard let data = image.jpegData(compressionQuality: 0.8) else {
+        // Compress image — off the main actor (see `WallpaperFileIO`): JPEG encoding of a
+        // full-size photo takes hundreds of milliseconds, and this type is MainActor-isolated
+        // by the project's default isolation.
+        guard let data = await WallpaperFileIO.encodeJPEG(image, quality: 0.8) else {
             throw WallpaperError.compressionFailed
         }
 
@@ -50,10 +52,9 @@ final class WallpaperManagementService: WallpaperManagementServiceProtocol {
         let fileName = "wallpaper_\(UUID().uuidString).jpg"
         let fileURL = getDocumentsURL().appendingPathComponent(fileName)
 
-        // Save to disk
+        // Save to disk — also off the main actor.
         do {
-            try data.write(to: fileURL, options: .atomic)
-
+            try await WallpaperFileIO.write(data, to: fileURL)
         } catch {
             throw WallpaperError.saveFailed(underlying: error)
         }
@@ -82,14 +83,13 @@ final class WallpaperManagementService: WallpaperManagementServiceProtocol {
         }
 
         do {
-            let data = try Data(contentsOf: fileURL)
-            guard let image = UIImage(data: data) else {
+            // Reading a multi-megabyte photo off disk, off the main actor.
+            guard let image = try await WallpaperFileIO.readImage(at: fileURL) else {
                 throw WallpaperError.corruptedFile(fileName)
             }
 
             // Add to cache for future access
             cache.set(fileName, value: image)
-
 
             return image
         } catch {
@@ -191,5 +191,29 @@ final class WallpaperManagementService: WallpaperManagementServiceProtocol {
             throw WallpaperError.insufficientSpace(0, 0)
         }
         return freeSize
+    }
+}
+
+// MARK: - Off-main file work
+
+/// Wallpaper bytes are a full-size photo: encoding, writing and reading one costs
+/// enough to be visible as a stutter. `WallpaperManagementService` is MainActor-isolated
+/// (the project's default), so the work moves here — every function is `nonisolated async`
+/// and therefore runs on the cooperative pool instead of the caller's actor.
+private enum WallpaperFileIO {
+
+    nonisolated static func encodeJPEG(_ image: UIImage, quality: CGFloat) async -> Data? {
+        image.jpegData(compressionQuality: quality)
+    }
+
+    nonisolated static func write(_ data: Data, to url: URL) async throws {
+        try data.write(to: url, options: .atomic)
+    }
+
+    /// Returns `nil` when the bytes are not a decodable image — the caller maps that to
+    /// `WallpaperError.corruptedFile`.
+    nonisolated static func readImage(at url: URL) async throws -> UIImage? {
+        let data = try Data(contentsOf: url)
+        return UIImage(data: data)
     }
 }

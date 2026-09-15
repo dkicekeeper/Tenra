@@ -13,6 +13,9 @@
 
 import Foundation
 import FoundationModels
+import os
+
+private nonisolated let logger = Logger(subsystem: "Tenra", category: "ReceiptInterpreter")
 
 struct ReceiptDraft: Sendable, Equatable {
     let merchant: String
@@ -64,9 +67,15 @@ nonisolated struct ReceiptInterpreter {
         // Apple Intelligence is available on this device.
         try Task.checkCancellation()
 
-        if IntelligenceAvailability.isAvailable,
-           let draft = try await intelligentDraft(snapshot: snapshot, defaultCurrency: defaultCurrency) {
-            return draft
+        if IntelligenceAvailability.isAvailable {
+            // Probe only: tells us whether sending the receipt photo itself (rather than
+            // just its OCR text) is even possible on real devices. Capture with
+            // Console.app, subsystem "Tenra", category "ReceiptInterpreter".
+            logger.info("model vision capability: \(IntelligenceAvailability.supportsVision, privacy: .public)")
+
+            if let draft = try await intelligentDraft(snapshot: snapshot, defaultCurrency: defaultCurrency) {
+                return draft
+            }
         }
         return heuristicDraft(snapshot: snapshot, defaultCurrency: defaultCurrency)
     }

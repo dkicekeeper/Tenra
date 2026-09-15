@@ -48,4 +48,19 @@ nonisolated enum IntelligenceAvailability {
     }
 
     static var isAvailable: Bool { status == .available }
+
+    /// Whether the on-device model accepts image input (iOS 27+).
+    ///
+    /// A probe, not yet a feature: if this is true on real devices, a receipt photo
+    /// could go to the model directly instead of only its OCR text, which is the one
+    /// case where layout carries meaning the text loses. Adopting that would have to
+    /// cross the `DocumentSnapshot` seam (see docs/domains/import.md, rule 1), so the
+    /// capability is measured before the design is chosen.
+    ///
+    /// False on iOS 26, on models without the capability, and whenever the model is
+    /// unavailable — callers keep the text path either way.
+    static var supportsVision: Bool {
+        guard #available(iOS 27, *), isAvailable else { return false }
+        return SystemLanguageModel.default.capabilities.contains(.vision)
+    }
 }

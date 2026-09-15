@@ -41,6 +41,28 @@ page rasteriser.
    mostly numbers, merchant names, and reference codes; language correction
    silently rewrites them.
 
+## Open question: receipt photo straight to the model (iOS 27)
+
+iOS 27 lets the on-device model take image input (`Attachment(cgImage)` inside a
+`Prompt`, gated on `LanguageModelCapabilities.Capability.vision`). Receipts are the one
+place where that could beat OCR text, since a receipt's layout carries meaning the flat
+text loses.
+
+Adopting it collides with rule 1: interpretation would need pixels, which today stop at
+the extraction stage. Two designs, neither chosen yet:
+
+1. Extend the seam — an optional `CGImage` on `DocumentSnapshot` (CoreGraphics, not
+   Vision/PDFKit/UIKit, so the import ban holds). Costs the struct its synthesized
+   `Equatable`, which the hand-built test snapshots rely on.
+2. Keep the seam — a separate vision interpreter above `ReceiptInterpreter`, which falls
+   through to the text path.
+
+`IntelligenceAvailability.supportsVision` is in place as a **probe** and
+`ReceiptInterpreter` logs it on every intelligent run (Console.app, subsystem `Tenra`,
+category `ReceiptInterpreter`). Decide the design only after that log shows the
+capability actually exists on real devices; rule 2 still applies either way, so the
+text and heuristic paths stay.
+
 ## Tests
 
 `TenraTests/Services/Import/` covers `DateTokenParser`, `MoneyTokenParser`,

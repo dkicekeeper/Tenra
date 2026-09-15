@@ -113,7 +113,7 @@ struct AccountsManagementView: View {
     /// detour. iOS 26 keeps `onMove`, which only works while `mode == .reordering`.
     @ViewBuilder
     private func accountsList(coordinator: BalanceCoordinator) -> some View {
-        List(selection: mode.isSelecting ? $selection : nil) {
+        List {
             if #available(iOS 27, *) {
                 ForEach(sortedAccounts) { account in
                     accountRow(account, coordinator: coordinator)
@@ -129,14 +129,42 @@ struct AccountsManagementView: View {
         .environment(\.editMode, .constant(mode.editMode))
     }
 
+    /// Selecting mode toggles on the row's own tap: `AccountRow` is a `Button`, so a
+    /// `List(selection:)` binding never sees the tap. See `SelectionIndicator`.
+    private func handleRowTap(_ account: Account) {
+        guard mode.isSelecting else {
+            navigatingAccount = account
+            return
+        }
+        HapticManager.selection()
+        if selection.contains(account.id) {
+            selection.remove(account.id)
+        } else {
+            selection.insert(account.id)
+        }
+    }
+
     @ViewBuilder
     private func accountRow(_ account: Account, coordinator: BalanceCoordinator) -> some View {
+        let isSelected = selection.contains(account.id)
+
+        HStack(spacing: AppSpacing.md) {
+            if mode.isSelecting {
+                SelectionIndicator(isSelected: isSelected)
+                    .transition(.scale.combined(with: .opacity))
+            }
+
+            accountRowContent(account, coordinator: coordinator)
+        }
+        .animation(AppAnimation.contentSpring, value: mode)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    @ViewBuilder
+    private func accountRowContent(_ account: Account, coordinator: BalanceCoordinator) -> some View {
         AccountRow(
             account: account,
-            onEdit: {
-                guard !mode.isSelecting else { return }
-                navigatingAccount = account
-            },
+            onEdit: { handleRowTap(account) },
             onDelete: {
                 HapticManager.warning()
                 accountToDelete = account
@@ -236,16 +264,20 @@ struct AccountsManagementView: View {
                     .accessibilityLabel(String(localized: "accessibility.accounts.doneReordering"))
                 }
             }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItem(placement: .topBarTrailing) {
-                if mode == .normal {
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) { mode = .reordering }
-                    } label: {
-                        Image(systemName: "arrow.up.arrow.down")
+            // iOS 27 drags rows directly (`reorderable()`), so the mode this button
+            // switches into exists only for iOS 26, where `onMove` needs edit mode.
+            if #unavailable(iOS 27) {
+                ToolbarSpacer(.fixed, placement: .topBarTrailing)
+                ToolbarItem(placement: .topBarTrailing) {
+                    if mode == .normal {
+                        Button {
+                            HapticManager.light()
+                            withAnimation(AppAnimation.contentSpring) { mode = .reordering }
+                        } label: {
+                            Image(systemName: "arrow.up.arrow.down")
+                        }
+                        .accessibilityLabel(String(localized: "accessibility.accounts.reorder"))
                     }
-                    .accessibilityLabel(String(localized: "accessibility.accounts.reorder"))
                 }
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)

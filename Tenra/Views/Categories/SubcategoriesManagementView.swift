@@ -76,21 +76,43 @@ struct SubcategoriesManagementView: View {
     /// incrementally on every transaction / link mutation. The previous
     /// background-built `stats` cache became unnecessary once those indexes
     /// landed (see TransactionStore+SubcategoryIndex).
-    @ViewBuilder
     private func subcategoryRow(for subcategory: Subcategory) -> some View {
-        SubcategoryManagementRow(
-            subcategory: subcategory,
-            usageCount: categoriesViewModel.subcategoryUsageCount(for: subcategory.id),
-            lastUsedDate: categoriesViewModel.subcategoryLastUsedDate(for: subcategory.id),
-            onEdit: {
-                guard !mode.isSelecting else { return }
-                editingSubcategory = subcategory
-            },
-            onDelete: {
-                HapticManager.warning()
-                categoriesViewModel.deleteSubcategory(subcategory.id)
+        let isSelected = selection.contains(subcategory.id)
+
+        return HStack(spacing: AppSpacing.md) {
+            if mode.isSelecting {
+                SelectionIndicator(isSelected: isSelected)
+                    .transition(.scale.combined(with: .opacity))
             }
-        )
+
+            SubcategoryManagementRow(
+                subcategory: subcategory,
+                usageCount: categoriesViewModel.subcategoryUsageCount(for: subcategory.id),
+                lastUsedDate: categoriesViewModel.subcategoryLastUsedDate(for: subcategory.id),
+                onEdit: { handleRowTap(subcategory) },
+                onDelete: {
+                    HapticManager.warning()
+                    categoriesViewModel.deleteSubcategory(subcategory.id)
+                }
+            )
+        }
+        .animation(AppAnimation.contentSpring, value: mode)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    /// Selecting mode toggles on the row's own tap: the row is a `Button`, so a
+    /// `List(selection:)` binding never sees the tap. See `SelectionIndicator`.
+    private func handleRowTap(_ subcategory: Subcategory) {
+        guard mode.isSelecting else {
+            editingSubcategory = subcategory
+            return
+        }
+        HapticManager.selection()
+        if selection.contains(subcategory.id) {
+            selection.remove(subcategory.id)
+        } else {
+            selection.insert(subcategory.id)
+        }
     }
 
     // MARK: - Toolbar
@@ -140,7 +162,7 @@ struct SubcategoriesManagementView: View {
                     }
                 )
             } else {
-                List(selection: mode.isSelecting ? $selection : nil) {
+                List {
                     ForEach(sortedSubcategories) { subcategory in
                         subcategoryRow(for: subcategory)
                     }

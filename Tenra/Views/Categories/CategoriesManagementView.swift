@@ -135,7 +135,7 @@ struct CategoriesManagementView: View {
     /// iOS 26 keeps `onMove`, which only works while `mode == .reordering`.
     @ViewBuilder
     private var categoriesList: some View {
-        List(selection: mode.isSelecting ? $selection : nil) {
+        List {
             if #available(iOS 27, *) {
                 ForEach(filteredCategories) { category in
                     categoryRow(category)
@@ -151,17 +151,45 @@ struct CategoriesManagementView: View {
         .environment(\.editMode, .constant(mode.editMode))
     }
 
+    /// Selecting mode toggles on the row's own tap: `CategoryRow` is a `Button`, so a
+    /// `List(selection:)` binding never sees the tap. See `SelectionIndicator`.
+    private func handleRowTap(_ category: CustomCategory) {
+        guard mode.isSelecting else {
+            navigatingCategory = category
+            return
+        }
+        HapticManager.selection()
+        if selection.contains(category.id) {
+            selection.remove(category.id)
+        } else {
+            selection.insert(category.id)
+        }
+    }
+
     @ViewBuilder
     private func categoryRow(_ category: CustomCategory) -> some View {
+        let isSelected = selection.contains(category.id)
+
+        HStack(spacing: AppSpacing.md) {
+            if mode.isSelecting {
+                SelectionIndicator(isSelected: isSelected)
+                    .transition(.scale.combined(with: .opacity))
+            }
+
+            categoryRowContent(category)
+        }
+        .animation(AppAnimation.contentSpring, value: mode)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    @ViewBuilder
+    private func categoryRowContent(_ category: CustomCategory) -> some View {
         CategoryRow(
             category: category,
             isDefault: false,
             budgetProgress: budgetProgressMap[category.id],
             currency: transactionsViewModel.appSettings.baseCurrency,
-            onEdit: {
-                guard !mode.isSelecting else { return }
-                navigatingCategory = category
-            },
+            onEdit: { handleRowTap(category) },
             onDelete: {
                 categoryToDelete = category
                 showingDeleteDialog = true
@@ -256,14 +284,18 @@ struct CategoriesManagementView: View {
                     .primaryButton()
                 }
             }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItem(placement: .topBarTrailing) {
-                if mode == .normal {
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) { mode = .reordering }
-                    } label: {
-                        Image(systemName: "arrow.up.arrow.down")
+            // iOS 27 drags rows directly (`reorderable()`), so the mode this button
+            // switches into exists only for iOS 26, where `onMove` needs edit mode.
+            if #unavailable(iOS 27) {
+                ToolbarSpacer(.fixed, placement: .topBarTrailing)
+                ToolbarItem(placement: .topBarTrailing) {
+                    if mode == .normal {
+                        Button {
+                            HapticManager.light()
+                            withAnimation(AppAnimation.contentSpring) { mode = .reordering }
+                        } label: {
+                            Image(systemName: "arrow.up.arrow.down")
+                        }
                     }
                 }
             }

@@ -13,6 +13,44 @@ Critical patterns for thread safety in this codebase. Project ships with `SWIFT_
 - **`@NSManaged` order**: `@NSManaged public nonisolated var` — attribute first, access level second, `nonisolated` third
 - **`nonisolated(unsafe)`** only for mutable `static var` / stored properties with no actor protection — always add a comment explaining the accepted race
 
+### ⚠️ A plain `final class` service runs its blocking work on the main thread
+
+This is the most common consequence of the default isolation, and it hides well: the code
+reads like a background service, compiles clean, and stalls the UI. One session of 2026-09-15
+found four instances, three of them user-visible.
+
+Blocking work means **file I/O, image encode/decode, CoreAudio, CoreData on `viewContext`** —
+anything that waits on something outside the CPU. Marking the type `nonisolated` is *not*
+enough on its own: a synchronous `nonisolated` method still runs on the caller's thread. The
+work has to be in a `nonisolated` **`async`** function, which runs on the cooperative pool.
+
+```swift
+// ❌ implicitly @MainActor — the read and decode happen on the main thread
+final class LogoDiskCache {
+    func load(for name: String) -> UIImage? { UIImage(data: try! Data(contentsOf: url(name))) }
+}
+
+// ✅ nonisolated async — runs on the cooperative pool, awaited from the actor
+nonisolated final class LogoDiskCache: @unchecked Sendable {
+    func load(for name: String) async -> UIImage? { … }
+}
+```
+
+When the surrounding type must stay MainActor (a view model, or a service whose state is
+MainActor), put the blocking calls in a small `nonisolated` helper type instead of moving the
+whole class. Precedents: [`VoiceAudioSession`](../Tenra/Services/Voice/VoiceAudioSession.swift),
+[`VoiceRecordingEngine`](../Tenra/Services/Voice/VoiceRecordingEngine.swift), `WallpaperFileIO`
+in [WallpaperManagementService](../Tenra/Services/Settings/WallpaperManagementService.swift).
+
+⚠️ **Moving work off the actor makes the caller interruptible.** A sequence that was atomic
+now has suspension points, so state can change mid-flight. `VoiceInputService.startToken` is
+the pattern: the start claims a token, a stop bumps it, and the start tears down what it
+built if the token changed. Check for this whenever you add an `await` to a setup path.
+
+Cheaper than moving work: don't do it. `SettingsValidationService` proved a wallpaper was a
+valid image by reading and decoding the whole photo; a `CGImageSource` header probe answers
+the same question without either.
+
 ## Sendable Types in iOS 26 SDK
 
 These are `Sendable` in iOS 26 — use plain `nonisolated static let`, NOT `nonisolated(unsafe) static let`:

@@ -53,8 +53,8 @@ final class LogoService {
             return cached
         }
 
-        // 2. Disk cache
-        if let diskImage = diskCache.load(for: domain) {
+        // 2. Disk cache — the read and decode happen off the main actor.
+        if let diskImage = await diskCache.load(for: domain) {
             memoryCache.setObject(diskImage, forKey: cacheKey)
             return diskImage
         }
@@ -93,7 +93,7 @@ final class LogoService {
 
     /// Check if a logo is cached (memory or disk).
     @MainActor
-    func isCached(brandName: String) -> Bool {
+    func isCached(brandName: String) async -> Bool {
         let normalizedName = brandName.trimmingCharacters(in: .whitespacesAndNewlines)
         let domain = ServiceLogoRegistry.resolveDomain(from: normalizedName)
 
@@ -101,6 +101,6 @@ final class LogoService {
             return true
         }
 
-        return diskCache.exists(for: domain)
+        return await diskCache.exists(for: domain)
     }
 }

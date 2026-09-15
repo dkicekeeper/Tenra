@@ -8,8 +8,17 @@
 import Foundation
 import UIKit
 
-/// Кеш логотипов на диске
-final class LogoDiskCache {
+/// Кеш логотипов на диске.
+///
+/// `nonisolated` on purpose: under the project's default MainActor isolation this class
+/// used to be MainActor-bound, so every lookup read a PNG off disk and decoded it on the
+/// main thread — once per brand, but N brands in a row on the first render of an account
+/// or subscription list. Reads and writes are `async` so the work lands on the
+/// cooperative pool rather than on the caller's actor.
+///
+/// `@unchecked Sendable`: all stored state is immutable, and `FileManager` is safe to use
+/// from multiple threads for the file operations below.
+nonisolated final class LogoDiskCache: @unchecked Sendable {
     static let shared = LogoDiskCache()
     
     private let cacheDirectory: URL
@@ -59,13 +68,14 @@ final class LogoDiskCache {
     /// - Parameters:
     ///   - image: Изображение для сохранения
     ///   - brandName: Название бренда
+    /// Fire-and-forget: the caller already has the image and must not wait for the write.
+    /// PNG encoding moved inside the task — it used to run on the caller's thread (the
+    /// main one), and only the write was dispatched away.
     func save(_ image: UIImage, for brandName: String) {
-        guard let data = image.pngData() else { return }
-        
         let url = fileURL(for: brandName)
-        
-        // Сохраняем асинхронно на background queue
-        DispatchQueue.global(qos: .utility).async {
+
+        Task.detached(priority: .utility) {
+            guard let data = image.pngData() else { return }
             try? data.write(to: url)
         }
     }
@@ -73,22 +83,22 @@ final class LogoDiskCache {
     /// Загружает изображение из кеша
     /// - Parameter brandName: Название бренда
     /// - Returns: Изображение или nil, если не найдено
-    func load(for brandName: String) -> UIImage? {
+    func load(for brandName: String) async -> UIImage? {
         let url = fileURL(for: brandName)
-        
+
         guard fileManager.fileExists(atPath: url.path),
               let data = try? Data(contentsOf: url),
               let image = UIImage(data: data) else {
             return nil
         }
-        
+
         return image
     }
     
     /// Проверяет наличие файла в кеше
     /// - Parameter brandName: Название бренда
     /// - Returns: true, если файл существует
-    func exists(for brandName: String) -> Bool {
+    func exists(for brandName: String) async -> Bool {
         let url = fileURL(for: brandName)
         return fileManager.fileExists(atPath: url.path)
     }

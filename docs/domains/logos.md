@@ -50,6 +50,18 @@ https://data.jsdelivr.com/v1/packages/gh/dkicekeeper/tenra-assets@main?structure
 
 `LogoDiskCache` has `cacheVersion` — bump it to invalidate stale cache on next launch.
 
+⚠️ **The cache is `nonisolated`, and `load` / `exists` are `async` on purpose.** As a plain
+class it inherited the project's MainActor default, so every miss read a PNG off disk and
+decoded it on the main thread — once per brand, but N brands back to back on the first
+render of an account or subscription list. `save` stays fire-and-forget (the caller already
+has the image) and now does the PNG *encoding* inside its detached task too; previously only
+the write was dispatched away and the encode ran on the caller's thread. Keep new file work
+in this class `async`, and do not make it MainActor to "simplify" a call site.
+
+Every provider in the chain is already `nonisolated`, so their network and disk work never
+touched the main actor. `LogoService` stays `@MainActor` — between awaits it only does NSCache
+lookups and string normalization.
+
 ## DominantColorExtractor
 
 `Services/Utilities/DominantColorExtractor.swift` — derives a brand-accent colour from a logo (`accentColor(forBrand:)`) for the entity-detail hero glow (`.heroAccentGlow`, see design-system.md). Histogram over a 24×24 downsample (off-MainActor), filters transparent/near-white/near-black/gray pixels, normalizes the winner via HSB. Returns `nil` for logos with no saturated pixels — callers keep their fallback tint. Results cached in-memory per resolved domain (logos are immutable per domain; `cacheVersion` bump is the escape hatch). Lettermark fallbacks yield their deterministic djb2 background colour — stable, but not a real brand colour.

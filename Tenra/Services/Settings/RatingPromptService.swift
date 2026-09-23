@@ -6,13 +6,21 @@
 //
 //  Strategy (see ASO rating-prompt-strategy):
 //  • Only prompt users who have experienced value — never on cold open or after an error.
-//  • Success moment = the user has actively tracked finances (>= `txThreshold` manual
-//    transactions added) AND is a returning user (>= `sessionThreshold` sessions,
-//    >= `daysThreshold` days since install).
+//  • Eligible = the user has actively tracked finances (>= `txThreshold` transactions
+//    added through ANY path: manual form, voice, receipt scan, statement/CSV import,
+//    Siri) AND is a returning user (>= `sessionThreshold` sessions OR >= `daysThreshold`
+//    days since install). v1 required all three and only checked on manual adds, which
+//    for a small user base meant the survey practically never fired.
+//  • Eligibility is re-checked at three moments: a transaction save, a returning
+//    session (delayed, never on cold open), and a success moment (e.g. the user opens
+//    an insight / weekly digest notification).
 //  • A neutral pre-prompt survey ("Are you enjoying Tenra?") filters out unhappy users
 //    BEFORE the native StoreKit prompt, so only satisfied users reach the rating UI.
 //  • The native prompt itself goes through Apple's official `AppStore.requestReview(in:)`,
 //    which Apple throttles to at most 3×/365 days regardless of how often we call it.
+//  • The survey is presented only when no other sheet is on screen (most saves happen
+//    inside a modal) and at most once per version — shown counts as asked, even if the
+//    user swipes it away.
 //
 //  iOS resets ratings per version, so `lastPromptedVersion` is keyed on the marketing
 //  version — a fresh version can prompt an engaged user again.
@@ -30,20 +38,28 @@ final class RatingPromptService {
 
     // MARK: Thresholds (tunable)
 
-    private let sessionThreshold = 3
-    private let txThreshold = 5
-    private let daysThreshold = 3
+    nonisolated static let sessionThreshold = 2
+    nonisolated static let txThreshold = 5
+    nonisolated static let daysThreshold = 2
+
+    /// Pure eligibility rule, pinned by `RatingPromptServiceTests`.
+    nonisolated static func meetsThresholds(sessions: Int, transactions: Int, daysSinceInstall: Double) -> Bool {
+        guard transactions >= txThreshold else { return false }
+        return sessions >= sessionThreshold || daysSinceInstall >= Double(daysThreshold)
+    }
 
     // MARK: Observable trigger
 
-    /// Set true at a success moment when the user is eligible. MainTabView observes this
-    /// and presents the pre-prompt survey sheet. Reset to false when the sheet closes.
+    /// Set true when an eligible user reaches a prompt moment and nothing else is on
+    /// screen. MainTabView observes this and presents the pre-prompt survey sheet.
+    /// Reset to false when the sheet closes.
     var shouldShowSurvey = false
 
     // MARK: Storage
 
-    private let defaults = UserDefaults.standard
-    private let log = Logger(subsystem: "Tenra", category: "RatingPrompt")
+    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let log = Logger(subsystem: "Tenra", category: "RatingPrompt")
+    @ObservationIgnored private var presentationTask: Task<Void, Never>?
 
     private enum Key {
         static let installDate = "rating.installDate"
@@ -56,41 +72,88 @@ final class RatingPromptService {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
     }
 
-    private init() {}
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
 
     // MARK: Signals
 
-    /// Call once when the app becomes active (cold launch or foreground).
+    /// Call once when the app becomes active (cold launch or foreground). A returning
+    /// user who is already eligible gets the survey after they've settled in, not on open.
     func recordSession() {
         if defaults.object(forKey: Key.installDate) == nil {
             defaults.set(Date(), forKey: Key.installDate)
         }
         defaults.set(defaults.integer(forKey: Key.sessionCount) + 1, forKey: Key.sessionCount)
+        scheduleSurveyIfEligible(after: .seconds(20))
     }
 
-    /// Call after every successfully added manual transaction. Fires the survey if the
-    /// user just crossed into eligibility — this is the "success moment".
-    func recordTransactionAdded() {
-        let newCount = defaults.integer(forKey: Key.txCount) + 1
-        defaults.set(newCount, forKey: Key.txCount)
-
-        if isEligible {
-            log.debug("Rating prompt eligible — presenting survey")
-            shouldShowSurvey = true
+    /// Call after transactions are successfully saved by the user (form, voice, receipt,
+    /// import, Siri). `count` > 1 for batch saves such as a statement import.
+    /// `promptNow: false` only counts — for flows that stay busy after the save (the Voice
+    /// tab re-arms the microphone); eligibility is then picked up on the next session.
+    func recordTransactionAdded(count: Int = 1, promptNow: Bool = true) {
+        guard count > 0 else { return }
+        defaults.set(defaults.integer(forKey: Key.txCount) + count, forKey: Key.txCount)
+        if promptNow {
+            scheduleSurveyIfEligible(after: .seconds(1))
         }
+    }
+
+    /// Call at a positive moment that is not a save, e.g. the user opened an insight
+    /// or weekly-digest notification.
+    func recordSuccessMoment() {
+        scheduleSurveyIfEligible(after: .seconds(3))
     }
 
     // MARK: Eligibility
 
-    private var isEligible: Bool {
+    var isEligible: Bool {
         guard OnboardingState.isCompleted else { return false }
         // Already prompted on this version — don't ask again.
         guard defaults.string(forKey: Key.lastPromptedVersion) != appVersion else { return false }
-        guard defaults.integer(forKey: Key.sessionCount) >= sessionThreshold else { return false }
-        guard defaults.integer(forKey: Key.txCount) >= txThreshold else { return false }
-        guard let install = defaults.object(forKey: Key.installDate) as? Date,
-              Date().timeIntervalSince(install) >= Double(daysThreshold) * 86_400 else { return false }
-        return true
+        let days = (defaults.object(forKey: Key.installDate) as? Date)
+            .map { Date().timeIntervalSince($0) / 86_400 } ?? 0
+        return Self.meetsThresholds(
+            sessions: defaults.integer(forKey: Key.sessionCount),
+            transactions: defaults.integer(forKey: Key.txCount),
+            daysSinceInstall: days
+        )
+    }
+
+    // MARK: Presentation
+
+    /// Waits `delay`, then presents the survey once no other modal is on screen. Most
+    /// saves happen inside a sheet (add form, import, voice), and SwiftUI silently drops
+    /// a second sheet while one is presented — so poll for a clear screen (bounded).
+    private func scheduleSurveyIfEligible(after delay: Duration) {
+        guard presentationTask == nil, !shouldShowSurvey, isEligible else { return }
+        presentationTask = Task { [weak self] in
+            try? await Task.sleep(for: delay)
+            for _ in 0..<60 {
+                guard let self, !Task.isCancelled else { return }
+                guard self.isEligible else { self.presentationTask = nil; return }
+                if Self.isScreenClear {
+                    self.log.debug("Rating prompt eligible — presenting survey")
+                    // Shown counts as asked: a swipe-dismissed survey must not return on
+                    // every later save of the same version.
+                    self.markPromptedThisVersion()
+                    self.shouldShowSurvey = true
+                    self.presentationTask = nil
+                    return
+                }
+                try? await Task.sleep(for: .seconds(2))
+            }
+            self?.presentationTask = nil
+        }
+    }
+
+    /// True when the app is in the foreground and its root has nothing presented on top.
+    private static var isScreenClear: Bool {
+        guard let scene = UIApplication.shared.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+              let root = scene.keyWindow?.rootViewController else { return false }
+        return root.presentedViewController == nil
     }
 
     // MARK: Native prompt
@@ -107,8 +170,7 @@ final class RatingPromptService {
         AppStore.requestReview(in: scene)
     }
 
-    /// Call when the user answers "Not really" — we don't show the native prompt, but we
-    /// still mark this version as handled so we don't nag them again on the same version.
+    /// Records that this version has been handled, so we don't nag again on it.
     func markPromptedThisVersion() {
         defaults.set(appVersion, forKey: Key.lastPromptedVersion)
     }

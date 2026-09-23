@@ -134,6 +134,7 @@ final class ImportFlowCoordinator {
 
         importResult = result
         currentStep = .result
+        RatingPromptService.shared.recordTransactionAdded(count: result.importedCount)
 
 
         // Trigger haptic feedback

@@ -134,6 +134,7 @@ final class TransactionAddCoordinator {
             // The generator creates occurrences for ALL dates (past, today, future).
             // Never fall through to add a separate individual transaction — it would
             // duplicate today's generated occurrence (which already carries a recurring badge).
+            RatingPromptService.shared.recordTransactionAdded()
             return .valid
         }
 
@@ -171,6 +172,7 @@ final class TransactionAddCoordinator {
             await linkSubcategories(to: createdTransaction)
         }
 
+        RatingPromptService.shared.recordTransactionAdded()
         return .valid
     }
 

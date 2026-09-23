@@ -441,6 +441,8 @@ struct VoiceInputView: View {
             do {
                 try await transactionStore.addBatch(transactions)
                 HapticManager.success()
+                // Count only: recording restarts right below, don't pop the survey over the mic.
+                RatingPromptService.shared.recordTransactionAdded(count: transactions.count, promptNow: false)
                 // Feed the learning store every confirmed (category → account)
                 // pair so the next parse can prefer the user's actual choice.
                 for tx in transactions {

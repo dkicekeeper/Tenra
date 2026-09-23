@@ -176,6 +176,8 @@ struct MainTabView: View {
             }
             selectedTab = .analytics
             previousTab = .analytics
+            // Opening an insight / weekly digest is a positive moment for the survey.
+            ratingPrompt.recordSuccessMoment()
         }
         // Rating pre-prompt survey. Fired by RatingPromptService at a success moment.
         .sheet(isPresented: $ratingPrompt.shouldShowSurvey) {

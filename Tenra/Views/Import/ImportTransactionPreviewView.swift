@@ -182,6 +182,7 @@ struct ImportTransactionPreviewView: View {
         let transactionsToAdd = transactions.filter { selectedTransactions.contains($0.id) }
 
         Task {
+            var savedCount = 0
             for transaction in transactionsToAdd {
                 // A row can only be selected when availableAccounts(for:) is
                 // non-empty (see onToggle/onAppear/Select All above), but this
@@ -208,10 +209,12 @@ struct ImportTransactionPreviewView: View {
 
                 do {
                     _ = try await transactionStore.add(updatedTransaction)
+                    savedCount += 1
                 } catch {
                 }
             }
 
+            RatingPromptService.shared.recordTransactionAdded(count: savedCount)
             dismiss()
         }
     }

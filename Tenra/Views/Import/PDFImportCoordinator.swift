@@ -28,6 +28,7 @@ struct PDFImportCoordinator: View {
     @State private var importOutcome: ImportOutcome? = nil
     @State private var showingTransactionPreview = false
     @State private var parsedTransactions: [Transaction] = []
+    @State private var suggestedCategories: [String: String] = [:]
     @State private var showingScanner = false
     @State private var showingDiagnostics = false
     @State private var receiptDraft: ReceiptDraft? = nil
@@ -76,7 +77,8 @@ struct PDFImportCoordinator: View {
                         draft: draft,
                         baseCurrency: transactionsViewModel.transactionStore?.baseCurrency ?? "KZT",
                         transactionsViewModel: transactionsViewModel,
-                        accountsViewModel: accountsViewModel
+                        accountsViewModel: accountsViewModel,
+                        categoriesViewModel: categoriesViewModel
                     )
                 }
             }
@@ -146,7 +148,9 @@ struct PDFImportCoordinator: View {
         ImportTransactionPreviewView(
             transactionsViewModel: transactionsViewModel,
             accountsViewModel: accountsViewModel,
-            transactions: parsedTransactions
+            transactions: parsedTransactions,
+            customCategories: categoriesViewModel.customCategories,
+            suggestedCategories: suggestedCategories
         )
     }
 
@@ -196,10 +200,25 @@ struct PDFImportCoordinator: View {
                 // reason, which is exactly what the user needs to see here.
                 showingDiagnostics = true
             } else {
-                parsedTransactions = ParsedTransactionMapper.transactions(
+                let mapped = ParsedTransactionMapper.transactions(
                     from: outcome.statement,
                     defaultCurrency: baseCurrency
                 )
+                // Recognized rows arrive uncategorized; pre-fill the review
+                // screen's category pickers from history, known merchants and
+                // the voice keyword dictionary.
+                let parser = VoiceInputParser(
+                    categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel,
+                    transactionsViewModel: transactionsViewModel
+                )
+                suggestedCategories = await CategorySuggestionProvider.suggestions(
+                    for: mapped,
+                    history: transactionsViewModel.transactionStore?.transactions ?? [],
+                    categories: categoriesViewModel.customCategories,
+                    keywordMatcher: { parser.keywordCategory(in: $0) }
+                )
+                parsedTransactions = mapped
                 showingTransactionPreview = true
             }
         } catch {

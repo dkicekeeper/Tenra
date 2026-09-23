@@ -1131,6 +1131,21 @@ class VoiceInputParser {
             .filter { !$0.isEmpty && !stopWords.contains($0) }
     }
     
+    /// Suggestion-only lookup into `categoryMap` for imported merchant strings.
+    /// Unlike `parseCategory`, it never falls back to "Other" and matches whole
+    /// words (`CategorySuggestionService.matches`), so "medicine" does not hit
+    /// "cine". Returns the map's raw category name (e.g. "Транспорт"); the caller
+    /// resolves it against the user's categories.
+    func keywordCategory(in text: String) -> String? {
+        let merchant = CategorySuggestionService.normalizedMerchant(text)
+        guard !merchant.isEmpty else { return nil }
+        for keyword in sortedCategoryKeys
+        where CategorySuggestionService.matches(keyword: keyword, inNormalized: merchant) {
+            if let entry = categoryMap[keyword] { return entry.category }
+        }
+        return nil
+    }
+
     // 6. Парсинг категории и подкатегорий (сначала подкатегории, потом категории)
     private func parseCategory(from text: String) -> (category: String?, subcategories: [String]) {
         // Сначала ищем подкатегории, потом категории

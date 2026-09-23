@@ -13,8 +13,8 @@ your row when done. The maintainer commits directly to `main`; do not push.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 001 | [Face ID / Touch ID / passcode lock + app-switcher cover](001-app-lock-face-id.md) | P1 | S | none | TODO |
-| 002 | [Category suggestions for statement import and receipts](002-import-category-suggestions.md) | P1 | M | none | TODO |
+| 001 | [Face ID / Touch ID / passcode lock + app-switcher cover](001-app-lock-face-id.md) | P1 | S | none | DONE (5c323704; device check pending) |
+| 002 | [Category suggestions for statement import and receipts](002-import-category-suggestions.md) | P1 | M | none | DONE (see git log; device check pending) |
 | 003 | [Apply a changed category to same-merchant transactions](003-apply-category-to-similar.md) | P2 | M | 002 | TODO |
 | 004 | [Spike: Apple Pay logging via the Shortcuts "Wallet" automation](004-spike-wallet-automation.md) | P2 | S + 1 week of device data | none (002 optional) | TODO |
 

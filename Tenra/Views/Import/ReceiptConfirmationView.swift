@@ -12,11 +12,11 @@
 //  transactionStore.update, never .add. There is no "add transaction with
 //  prefill" seam to reuse without redesigning that view's initializer, which
 //  is out of scope here. This is a minimal, purpose-built confirmation
-//  surface instead: merchant, total, currency, date, with a single action
-//  that persists through TransactionsViewModel.addTransaction — the same
-//  entry point CSV/voice import already use for account-less, category-less
-//  transactions (TransactionStore.validate explicitly allows both nil
-//  accountId and an empty category as "uncategorized").
+//  surface instead: merchant, total, currency, date, a category (pre-filled
+//  by CategorySuggestionProvider from the merchant name, optional), with a
+//  single action that persists through TransactionsViewModel.addTransaction.
+//  TransactionStore.validate still accepts an empty category as
+//  "uncategorized" when the user leaves it unset.
 //
 
 import SwiftUI
@@ -26,6 +26,7 @@ struct ReceiptConfirmationView: View {
     let baseCurrency: String
     let transactionsViewModel: TransactionsViewModel
     let accountsViewModel: AccountsViewModel
+    let categoriesViewModel: CategoriesViewModel
 
     @Environment(\.dismiss) private var dismiss
 
@@ -35,16 +36,21 @@ struct ReceiptConfirmationView: View {
     // receipt-scoped currency to match against).
     @State private var selectedAccountId: String?
 
+    /// Pre-filled from CategorySuggestionProvider; nil saves as uncategorized.
+    @State private var selectedCategoryName: String?
+
     init(
         draft: ReceiptDraft,
         baseCurrency: String,
         transactionsViewModel: TransactionsViewModel,
-        accountsViewModel: AccountsViewModel
+        accountsViewModel: AccountsViewModel,
+        categoriesViewModel: CategoriesViewModel
     ) {
         self.draft = draft
         self.baseCurrency = baseCurrency
         self.transactionsViewModel = transactionsViewModel
         self.accountsViewModel = accountsViewModel
+        self.categoriesViewModel = categoriesViewModel
 
         let receiptCurrency = draft.currency ?? baseCurrency
         let defaultAccountId = accountsViewModel.regularAccounts
@@ -94,6 +100,18 @@ struct ReceiptConfirmationView: View {
                     }
                     .screenPadding()
 
+                    CategorySelectorView(
+                        categories: categoriesViewModel.customCategories
+                            .filter { $0.type == .expense }
+                            .sortedByOrder()
+                            .map { $0.name },
+                        type: .expense,
+                        customCategories: categoriesViewModel.customCategories,
+                        selectedCategory: $selectedCategoryName,
+                        emptyStateMessage: String(localized: "transactionForm.noCategories")
+                    )
+                    .screenPadding()
+
                     if let balanceCoordinator = accountsViewModel.balanceCoordinator {
                         AccountSelectorView(
                             accounts: accountsViewModel.regularAccounts,
@@ -108,6 +126,7 @@ struct ReceiptConfirmationView: View {
                 }
                 .padding(.top, AppSpacing.lg)
             }
+            .task { await suggestCategory() }
             .navigationTitle(String(localized: "import.receipt.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -151,9 +170,39 @@ struct ReceiptConfirmationView: View {
             amount: draft.total,
             currency: currency,
             type: .expense,
-            category: "",
+            category: selectedCategoryName ?? "",
             accountId: accountId
         )
+    }
+
+    /// Receipts carry no category; suggest one from the merchant name. Never
+    /// overwrites a category the user picked while the suggestion was computing.
+    private func suggestCategory() async {
+        guard selectedCategoryName == nil else { return }
+        let probeId = "receipt-probe"
+        let probe = Transaction(
+            id: probeId,
+            date: dateString,
+            description: draft.merchant,
+            amount: draft.total,
+            currency: currency,
+            type: .expense,
+            category: ""
+        )
+        let parser = VoiceInputParser(
+            categoriesViewModel: categoriesViewModel,
+            accountsViewModel: accountsViewModel,
+            transactionsViewModel: transactionsViewModel
+        )
+        let suggestions = await CategorySuggestionProvider.suggestions(
+            for: [probe],
+            history: transactionsViewModel.transactionStore?.transactions ?? [],
+            categories: categoriesViewModel.customCategories,
+            keywordMatcher: { parser.keywordCategory(in: $0) }
+        )
+        if selectedCategoryName == nil, let suggested = suggestions[probeId] {
+            selectedCategoryName = suggested
+        }
     }
 }
 
@@ -163,6 +212,7 @@ struct ReceiptConfirmationView: View {
         draft: ReceiptDraft(merchant: "Green Grocer", total: 4590, currency: "KZT", date: "2026-08-09"),
         baseCurrency: "KZT",
         transactionsViewModel: coordinator.transactionsViewModel,
-        accountsViewModel: coordinator.accountsViewModel
+        accountsViewModel: coordinator.accountsViewModel,
+        categoriesViewModel: coordinator.categoriesViewModel
     )
 }

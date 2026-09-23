@@ -17,10 +17,16 @@ struct ImportTransactionPreviewView: View {
     let accountsViewModel: AccountsViewModel
     @Environment(TransactionStore.self) private var transactionStore
     let transactions: [Transaction]
+    let customCategories: [CustomCategory]
+    /// transactionId -> suggested category name (CategorySuggestionProvider).
+    var suggestedCategories: [String: String] = [:]
     @Environment(\.dismiss) var dismiss
 
     @State private var selectedTransactions: Set<String> = Set()
     @State private var accountMapping: [String: String] = [:] // transactionId -> accountId
+    @State private var categoryMapping: [String: String] = [:] // transactionId -> category name ("" = uncategorized)
+    /// Rows whose category the user picked by hand; same-merchant propagation never overrides them.
+    @State private var manuallyCategorized: Set<String> = []
 
     var body: some View {
         NavigationStack {
@@ -66,6 +72,12 @@ struct ImportTransactionPreviewView: View {
                             },
                             onAccountSelect: { accountId in
                                 accountMapping[transaction.id] = accountId
+                            },
+                            category: effectiveCategory(for: transaction),
+                            categoryOptions: categoryOptions(for: transaction),
+                            customCategories: customCategories,
+                            onCategorySelect: { name in
+                                selectCategory(name, for: transaction)
                             }
                         )
                     }
@@ -144,6 +156,7 @@ struct ImportTransactionPreviewView: View {
                 }
             }
             .onAppear {
+                categoryMapping = suggestedCategories
                 let selectable = transactions.filter { !availableAccounts(for: $0).isEmpty }
                 selectedTransactions = Set(selectable.map { $0.id })
                 for transaction in selectable {
@@ -157,6 +170,54 @@ struct ImportTransactionPreviewView: View {
 
     private func availableAccounts(for transaction: Transaction) -> [Account] {
         Self.availableAccounts(for: transaction, regularAccounts: accountsViewModel.regularAccounts)
+    }
+
+    // MARK: - Categories
+
+    private static func isCategorizable(_ transaction: Transaction) -> Bool {
+        transaction.type == .expense || transaction.type == .income
+    }
+
+    /// The category shown and saved for a row: the user's choice or the
+    /// suggestion for income/expense rows; transfers keep their technical category.
+    private func effectiveCategory(for transaction: Transaction) -> String {
+        guard Self.isCategorizable(transaction) else { return transaction.category }
+        return categoryMapping[transaction.id] ?? transaction.category
+    }
+
+    private func categoryOptions(for transaction: Transaction) -> [String] {
+        customCategories
+            .filter { $0.type == transaction.type }
+            .sortedByOrder()
+            .map(\.name)
+    }
+
+    /// `TransactionStore.validate` rejects a non-empty category the user does
+    /// not have, and `addSelectedTransactions` would then drop the row silently.
+    /// Anything that is not one of the user's categories saves as uncategorized.
+    private func savableCategory(for transaction: Transaction) -> String {
+        let category = effectiveCategory(for: transaction)
+        guard Self.isCategorizable(transaction), !category.isEmpty else { return category }
+        let known = customCategories.contains { $0.type == transaction.type && $0.name == category }
+        return known ? category : ""
+    }
+
+    /// Sets the row's category and carries it to the other rows of the same
+    /// merchant and type in this import, except rows the user already set by hand.
+    private func selectCategory(_ name: String, for transaction: Transaction) {
+        let merchant = CategorySuggestionService.normalizedMerchant(transaction.description)
+        withAnimation(AppAnimation.contentSpring) {
+            categoryMapping[transaction.id] = name
+            manuallyCategorized.insert(transaction.id)
+            guard merchant.count >= CategorySuggestionService.minimumMerchantLength else { return }
+            for other in transactions
+            where other.id != transaction.id
+                && other.type == transaction.type
+                && !manuallyCategorized.contains(other.id)
+                && CategorySuggestionService.normalizedMerchant(other.description) == merchant {
+                categoryMapping[other.id] = name
+            }
+        }
     }
 
     /// Pure account-matching rule, factored out so it is unit-testable without
@@ -198,7 +259,7 @@ struct ImportTransactionPreviewView: View {
                     currency: transaction.currency,
                     convertedAmount: transaction.convertedAmount,
                     type: transaction.type,
-                    category: transaction.category,
+                    category: savableCategory(for: transaction),
                     subcategory: transaction.subcategory,
                     accountId: accountId,
                     targetAccountId: transaction.targetAccountId,
@@ -229,13 +290,51 @@ struct ImportTransactionPreviewRow: View {
     let availableAccounts: [Account]
     let onToggle: () -> Void
     let onAccountSelect: (String) -> Void
+    /// Effective category for this row (suggested or picked; "" = uncategorized).
+    let category: String
+    let categoryOptions: [String]
+    let customCategories: [CustomCategory]
+    let onCategorySelect: (String) -> Void
 
-    // Imported transactions are not customized yet — an empty categories list
-    // resolves the same fallback style CategoryStyleCache uses for every
-    // uncategorized/transfer transaction (matches the `[]` used throughout
-    // this codebase's own #Preview blocks for the same category/type pair).
+    private var isCategorizable: Bool {
+        transaction.type == .expense || transaction.type == .income
+    }
+
+    // Resolved against the user's real categories, so a suggested category
+    // shows its own icon and colour on the card.
     private var styleData: CategoryStyleData {
-        CategoryStyleHelper.cached(category: transaction.category, type: transaction.type, customCategories: [])
+        CategoryStyleHelper.cached(category: category, type: transaction.type, customCategories: customCategories)
+    }
+
+    /// The card renders the row as it will be saved, i.e. with the effective category.
+    private var displayTransaction: Transaction {
+        Transaction(
+            id: transaction.id,
+            date: transaction.date,
+            description: transaction.description,
+            amount: transaction.amount,
+            currency: transaction.currency,
+            convertedAmount: transaction.convertedAmount,
+            type: transaction.type,
+            category: category,
+            subcategory: transaction.subcategory,
+            accountId: transaction.accountId,
+            targetAccountId: transaction.targetAccountId,
+            accountName: transaction.accountName,
+            targetAccountName: transaction.targetAccountName,
+            targetCurrency: transaction.targetCurrency,
+            targetAmount: transaction.targetAmount,
+            recurringSeriesId: transaction.recurringSeriesId,
+            recurringOccurrenceId: transaction.recurringOccurrenceId,
+            createdAt: transaction.createdAt
+        )
+    }
+
+    /// Picker options; keeps a current value that is not in the list (should not
+    /// happen) selectable, so the Picker never holds an unmatched selection.
+    private var pickerCategories: [String] {
+        guard !category.isEmpty, !categoryOptions.contains(category) else { return categoryOptions }
+        return categoryOptions + [category]
     }
 
     /// No regular account exists in this transaction's currency. The row
@@ -279,7 +378,7 @@ struct ImportTransactionPreviewRow: View {
                 // never seen — this screen's own checkbox and account picker
                 // are the only actions that make sense before import.
                 TransactionCardView(
-                    transaction: transaction,
+                    transaction: displayTransaction,
                     currency: transaction.currency,
                     styleData: styleData
                 )
@@ -309,6 +408,22 @@ struct ImportTransactionPreviewRow: View {
                 .padding(.leading, AppSpacing.xl)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
+
+            // Category selector (income/expense rows, visible only when selected)
+            if isSelected && isCategorizable {
+                Picker(String(localized: "transaction.category"), selection: Binding(
+                    get: { category },
+                    set: { onCategorySelect($0) }
+                )) {
+                    Text(String(localized: "category.uncategorized")).tag("")
+                    ForEach(pickerCategories, id: \.self) { name in
+                        Text(name).tag(name)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .padding(.leading, AppSpacing.xl)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
         .padding(.vertical, AppSpacing.xs)
     }
@@ -321,7 +436,8 @@ struct ImportTransactionPreviewRow: View {
     ImportTransactionPreviewView(
         transactionsViewModel: coordinator.transactionsViewModel,
         accountsViewModel: coordinator.accountsViewModel,
-        transactions: []
+        transactions: [],
+        customCategories: coordinator.categoriesViewModel.customCategories
     )
     .environment(coordinator.transactionStore)
 }
@@ -365,7 +481,8 @@ struct ImportTransactionPreviewRow: View {
     ImportTransactionPreviewView(
         transactionsViewModel: coordinator.transactionsViewModel,
         accountsViewModel: coordinator.accountsViewModel,
-        transactions: sampleTransactions
+        transactions: sampleTransactions,
+        customCategories: coordinator.categoriesViewModel.customCategories
     )
     .environment(coordinator.transactionStore)
 }

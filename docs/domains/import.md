@@ -63,6 +63,31 @@ category `ReceiptInterpreter`). Decide the design only after that log shows the
 capability actually exists on real devices; rule 2 still applies either way, so the
 text and heuristic paths stay.
 
+## Category suggestions
+
+Recognition output stays uncategorized (`ParsedTransactionMapper`); categories are
+suggested at review time, because an empty category drops a row out of every category
+aggregate and budget. `CategorySuggestionProvider` (`Services/Categories/`) fills the
+pickers in `ImportTransactionPreviewView` and `ReceiptConfirmationView`, tier by tier:
+
+1. **History**: the category the user used most for the same merchant and type
+   (`CategorySuggestionService.buildHistoryIndex`, built in `Task.detached` on every
+   import and never cached, so it always reflects the store). This tier is the
+   "learning": accepted suggestions become history, no separate store exists.
+2. **Brand list** (expense only): `CategorySuggestionService.brandPresets` maps known
+   merchants to `CategoryPreset` ids, resolved to the user's localized preset name.
+   It is an array of pairs, not a dictionary literal (Red Flag 16). Add merchants there.
+3. **Voice keywords** (expense only): `VoiceInputParser.keywordCategory(in:)`.
+
+Merchants are compared after `normalizedMerchant` (letters only, lowercased); keywords
+of 4 characters or fewer must match a whole word. Every candidate goes through
+`TransactionDraftService.resolveCategory`; landing on "Other" counts as no suggestion.
+Picking a category on one review row fills the other rows of the same merchant that the
+user has not set by hand. Rows whose category is not one of the user's categories save
+as uncategorized, because `TransactionStore.validate` would reject them and the import
+loop would drop them. An Apple Intelligence tier was deliberately left out: on-device
+language support for the Russian-speaking primary market is uncertain.
+
 ## Tests
 
 `TenraTests/Services/Import/` covers `DateTokenParser`, `MoneyTokenParser`,

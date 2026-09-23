@@ -1675,3 +1675,14 @@
 "import.intelligence.deviceNotEligible" = "This iPhone does not support Apple Intelligence, so unfamiliar statement layouts may need manual column mapping.";
 "import.intelligence.notEnabled" = "Turn on Apple Intelligence in Settings to recognize unfamiliar statement layouts automatically.";
 "import.intelligence.modelNotReady" = "Apple Intelligence is still downloading. Recognition will improve once it finishes.";
+
+/* App lock */
+"settings.privacy.header" = "Privacy";
+"settings.appLock.faceID" = "Lock with Face ID";
+"settings.appLock.touchID" = "Lock with Touch ID";
+"settings.appLock.passcode" = "Lock with passcode";
+"settings.appLock.footer" = "Tenra asks for Face ID, Touch ID or your passcode after you have been away for more than a minute, and hides its screen in the app switcher.";
+"settings.appLock.unavailable" = "Set up a passcode in iOS Settings to lock Tenra.";
+"appLock.title" = "Tenra is locked";
+"appLock.unlock" = "Unlock";
+"appLock.reason" = "Unlock to see your finances";

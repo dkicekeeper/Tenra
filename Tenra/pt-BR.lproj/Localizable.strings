@@ -1675,3 +1675,14 @@
 "import.intelligence.deviceNotEligible" = "Este iPhone não é compatível com a Apple Intelligence, então layouts de extrato desconhecidos podem exigir mapeamento manual de colunas.";
 "import.intelligence.notEnabled" = "Ative a Apple Intelligence em Ajustes para reconhecer automaticamente layouts de extrato desconhecidos.";
 "import.intelligence.modelNotReady" = "A Apple Intelligence ainda está sendo baixada. O reconhecimento vai melhorar quando o download terminar.";
+
+/* App lock */
+"settings.privacy.header" = "Privacidade";
+"settings.appLock.faceID" = "Bloquear com Face ID";
+"settings.appLock.touchID" = "Bloquear com Touch ID";
+"settings.appLock.passcode" = "Bloquear com código";
+"settings.appLock.footer" = "O Tenra pede Face ID, Touch ID ou seu código quando você fica fora por mais de um minuto e oculta a tela no alternador de apps.";
+"settings.appLock.unavailable" = "Defina um código nos Ajustes do iOS para bloquear o Tenra.";
+"appLock.title" = "O Tenra está bloqueado";
+"appLock.unlock" = "Desbloquear";
+"appLock.reason" = "Desbloqueie para ver suas finanças";

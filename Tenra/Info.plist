@@ -48,6 +48,8 @@
 	<string>Tenra uses the camera to scan paper receipts so you do not have to type them in by hand.</string>
 	<key>NSDocumentPickerUsageDescription</key>
 	<string>This app needs access to your documents to analyze bank statements.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Tenra uses Face ID to keep your finances locked when you turn on the app lock.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs access to microphone to record voice for adding transactions.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

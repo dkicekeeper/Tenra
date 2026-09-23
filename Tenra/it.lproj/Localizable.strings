@@ -1675,3 +1675,14 @@
 "import.intelligence.deviceNotEligible" = "Questo iPhone non supporta Apple Intelligence, quindi i layout di estratto conto sconosciuti potrebbero richiedere una mappatura manuale delle colonne.";
 "import.intelligence.notEnabled" = "Attiva Apple Intelligence in Impostazioni per riconoscere automaticamente i layout di estratto conto sconosciuti.";
 "import.intelligence.modelNotReady" = "Apple Intelligence è ancora in fase di download. Il riconoscimento migliorerà al termine del download.";
+
+/* App lock */
+"settings.privacy.header" = "Privacy";
+"settings.appLock.faceID" = "Blocca con Face ID";
+"settings.appLock.touchID" = "Blocca con Touch ID";
+"settings.appLock.passcode" = "Blocca con codice";
+"settings.appLock.footer" = "Tenra chiede Face ID, Touch ID o il tuo codice dopo più di un minuto di assenza e nasconde la schermata nel selettore delle app.";
+"settings.appLock.unavailable" = "Imposta un codice nelle Impostazioni di iOS per bloccare Tenra.";
+"appLock.title" = "Tenra è bloccato";
+"appLock.unlock" = "Sblocca";
+"appLock.reason" = "Sblocca per vedere le tue finanze";

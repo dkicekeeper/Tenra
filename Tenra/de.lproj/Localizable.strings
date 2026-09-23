@@ -1675,3 +1675,14 @@
 "import.intelligence.deviceNotEligible" = "Dieses iPhone unterstützt Apple Intelligence nicht, daher müssen unbekannte Kontoauszugslayouts möglicherweise manuell zugeordnet werden.";
 "import.intelligence.notEnabled" = "Aktivieren Sie Apple Intelligence in den Einstellungen, um unbekannte Kontoauszugslayouts automatisch zu erkennen.";
 "import.intelligence.modelNotReady" = "Apple Intelligence wird noch heruntergeladen. Die Erkennung verbessert sich, sobald der Vorgang abgeschlossen ist.";
+
+/* App lock */
+"settings.privacy.header" = "Datenschutz";
+"settings.appLock.faceID" = "Mit Face ID sperren";
+"settings.appLock.touchID" = "Mit Touch ID sperren";
+"settings.appLock.passcode" = "Mit Code sperren";
+"settings.appLock.footer" = "Tenra fragt nach Face ID, Touch ID oder Ihrem Code, wenn Sie länger als eine Minute weg waren, und verbirgt den Bildschirm im App-Umschalter.";
+"settings.appLock.unavailable" = "Richten Sie in den iOS-Einstellungen einen Code ein, um Tenra zu sperren.";
+"appLock.title" = "Tenra ist gesperrt";
+"appLock.unlock" = "Entsperren";
+"appLock.reason" = "Entsperren, um Ihre Finanzen zu sehen";

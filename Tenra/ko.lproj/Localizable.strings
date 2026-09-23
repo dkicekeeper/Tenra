@@ -1675,3 +1675,14 @@
 "import.intelligence.deviceNotEligible" = "이 iPhone은 Apple Intelligence를 지원하지 않으므로 낯선 명세서 레이아웃은 열을 수동으로 지정해야 할 수 있습니다.";
 "import.intelligence.notEnabled" = "낯선 명세서 레이아웃을 자동으로 인식하려면 설정에서 Apple Intelligence를 켜세요.";
 "import.intelligence.modelNotReady" = "Apple Intelligence를 아직 다운로드하는 중입니다. 다운로드가 끝나면 인식 정확도가 향상됩니다.";
+
+/* App lock */
+"settings.privacy.header" = "개인정보 보호";
+"settings.appLock.faceID" = "Face ID로 잠금";
+"settings.appLock.touchID" = "Touch ID로 잠금";
+"settings.appLock.passcode" = "암호로 잠금";
+"settings.appLock.footer" = "1분 넘게 자리를 비우면 Tenra가 Face ID, Touch ID 또는 암호를 요청하고 앱 전환기에서 화면을 가립니다.";
+"settings.appLock.unavailable" = "Tenra를 잠그려면 iOS 설정에서 암호를 설정하세요.";
+"appLock.title" = "Tenra가 잠겨 있습니다";
+"appLock.unlock" = "잠금 해제";
+"appLock.reason" = "재무 정보를 보려면 잠금을 해제하세요";

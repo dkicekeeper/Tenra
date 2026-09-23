@@ -1675,3 +1675,14 @@
 "import.intelligence.deviceNotEligible" = "Цей iPhone не підтримує Apple Intelligence, тому незнайомі формати виписок можуть потребувати ручного зіставлення колонок.";
 "import.intelligence.notEnabled" = "Увімкніть Apple Intelligence в Налаштуваннях, щоб незнайомі формати виписок розпізнавались автоматично.";
 "import.intelligence.modelNotReady" = "Apple Intelligence ще завантажується. Розпізнавання покращиться після завершення завантаження.";
+
+/* App lock */
+"settings.privacy.header" = "Конфіденційність";
+"settings.appLock.faceID" = "Блокування Face ID";
+"settings.appLock.touchID" = "Блокування Touch ID";
+"settings.appLock.passcode" = "Блокування код-паролем";
+"settings.appLock.footer" = "Tenra запитає Face ID, Touch ID або код-пароль, якщо вас не було довше хвилини, і приховає екран у перемикачі програм.";
+"settings.appLock.unavailable" = "Щоб увімкнути блокування, задайте код-пароль у налаштуваннях iOS.";
+"appLock.title" = "Tenra заблоковано";
+"appLock.unlock" = "Розблокувати";
+"appLock.reason" = "Розблокуйте, щоб побачити свої фінанси";

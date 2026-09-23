@@ -1675,3 +1675,14 @@
 "import.intelligence.deviceNotEligible" = "Bu iPhone Apple Intelligence'ı desteklemiyor, bu nedenle alışılmadık ekstre düzenleri için elle sütun eşleme gerekebilir.";
 "import.intelligence.notEnabled" = "Alışılmadık ekstre düzenlerinin otomatik olarak tanınması için Ayarlar'dan Apple Intelligence'ı açın.";
 "import.intelligence.modelNotReady" = "Apple Intelligence hâlâ indiriliyor. İndirme tamamlandığında tanıma iyileşecek.";
+
+/* App lock */
+"settings.privacy.header" = "Gizlilik";
+"settings.appLock.faceID" = "Face ID ile kilitle";
+"settings.appLock.touchID" = "Touch ID ile kilitle";
+"settings.appLock.passcode" = "Parola ile kilitle";
+"settings.appLock.footer" = "Bir dakikadan uzun süre uzak kaldığınızda Tenra Face ID, Touch ID veya parolanızı ister ve uygulama değiştiricide ekranını gizler.";
+"settings.appLock.unavailable" = "Tenra'yı kilitlemek için iOS Ayarlar'da bir parola belirleyin.";
+"appLock.title" = "Tenra kilitli";
+"appLock.unlock" = "Kilidi aç";
+"appLock.reason" = "Finanslarınızı görmek için kilidi açın";

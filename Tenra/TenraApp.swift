@@ -23,6 +23,13 @@ struct TenraApp: App {
     @State private var timeFilterManager = TimeFilterManager()
     @State private var coordinator: AppCoordinator? = nil
 
+    init() {
+        // The optional app lock draws in its own window above every sheet.
+        AppLockService.shared.onOverlayVisibilityChange = { visible in
+            AppLockWindowPresenter.shared.setVisible(visible)
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -74,6 +81,8 @@ struct TenraApp: App {
                 coordinator = c
             }
             .onChange(of: scenePhase) { _, phase in
+                AppLockService.shared.handleScenePhase(phase)
+
                 // Clear app icon badge whenever the app becomes active. SwiftUI's
                 // scenePhase fires reliably for both cold launch and background→foreground;
                 // AppDelegate's applicationDidBecomeActive can be skipped under

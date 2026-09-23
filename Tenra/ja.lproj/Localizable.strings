@@ -1675,3 +1675,14 @@
 "import.intelligence.deviceNotEligible" = "このiPhoneはApple Intelligenceに対応していないため、見慣れない明細書のレイアウトでは列を手動で設定する必要がある場合があります。";
 "import.intelligence.notEnabled" = "見慣れない明細書のレイアウトを自動で認識するには、設定でApple Intelligenceをオンにしてください。";
 "import.intelligence.modelNotReady" = "Apple Intelligenceはまだダウンロード中です。ダウンロードが完了すると認識精度が向上します。";
+
+/* App lock */
+"settings.privacy.header" = "プライバシー";
+"settings.appLock.faceID" = "Face IDでロック";
+"settings.appLock.touchID" = "Touch IDでロック";
+"settings.appLock.passcode" = "パスコードでロック";
+"settings.appLock.footer" = "1分以上離れると、TenraはFace ID、Touch ID、またはパスコードを求め、Appスイッチャーでは画面を隠します。";
+"settings.appLock.unavailable" = "Tenraをロックするには、iOSの設定でパスコードを設定してください。";
+"appLock.title" = "Tenraはロックされています";
+"appLock.unlock" = "ロックを解除";
+"appLock.reason" = "財務情報を表示するにはロックを解除してください";

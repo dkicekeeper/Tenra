@@ -153,7 +153,7 @@ final class RatingPromptService {
         guard let scene = UIApplication.shared.connectedScenes
             .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
               let root = scene.keyWindow?.rootViewController else { return false }
-        return root.presentedViewController == nil
+        return root.presentedViewController == nil && !AppLockService.shared.shouldShowOverlay
     }
 
     // MARK: Native prompt

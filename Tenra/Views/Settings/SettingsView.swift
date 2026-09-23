@@ -66,6 +66,7 @@ struct SettingsView: View {
             List {
                 SettingsProSection()
                 generalSection
+                SettingsPrivacySection()
                 notificationsSection
                 SettingsSiriSection()
                 cloudSection

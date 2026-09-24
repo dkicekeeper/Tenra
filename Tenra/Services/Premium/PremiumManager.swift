@@ -95,6 +95,7 @@ final class PremiumManager {
         static let isFounder            = "tenra.premium.isFounder.v1"
         static let softPaywallCount     = "tenra.premium.softPaywallCount.v1"
         static let softPaywallLastShown = "tenra.premium.softPaywallLastShown.v1"
+        static let lastKnownSubscriber  = "tenra.premium.lastKnownSubscriber.v1"
     }
 
     // MARK: - Soft paywall (aha-moment trigger)
@@ -126,7 +127,13 @@ final class PremiumManager {
         defaults.set(Date(), forKey: Key.softPaywallLastShown)
     }
 
-    private init() {}
+    private init() {
+        // Start from the last entitlement RevenueCat reported. It arrives asynchronously
+        // on every launch, and starting from `false` made paying subscribers see the
+        // locked Voice/Import tabs flash (and treated cold intent runs as free) until then.
+        // The live CustomerInfo stream corrects it either way within moments.
+        isSubscriber = UserDefaults.standard.bool(forKey: Key.lastKnownSubscriber)
+    }
 
     // MARK: - Configuration
 
@@ -184,6 +191,7 @@ final class PremiumManager {
 
         // Compare the full snapshot, not just `active` — plan switches and
         // renewal-date changes must reach the Settings status block too.
+        defaults.set(active, forKey: Key.lastKnownSubscriber)
         guard active != isSubscriber || status != proStatus else { return }
         isSubscriber = active
         proStatus = status

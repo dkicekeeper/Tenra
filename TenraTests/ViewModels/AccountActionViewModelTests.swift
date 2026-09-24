@@ -75,6 +75,29 @@ struct AccountActionViewModelTests {
         #expect(vm.selectedAction == .transfer)
     }
 
+    // MARK: - Income categories (top-up)
+
+    @Test("a new income category with no transactions is offered for top-up")
+    func newIncomeCategoryIsOffered() {
+        let coord = AppCoordinator()
+        let saved = coord.transactionStore.categories
+        defer { coord.transactionStore.categories = saved }
+        coord.transactionStore.categories = [
+            CustomCategory(name: "Salary", colorHex: "#16a34a", type: .income, order: 1),
+            CustomCategory(name: "Bonus", colorHex: "#16a34a", type: .income, order: 0),
+            CustomCategory(name: "Food", colorHex: "#22c55e", type: .expense, order: 0)
+        ]
+        let vm = AccountActionViewModel(
+            account: regularAccount(),
+            accountsViewModel: coord.accountsViewModel,
+            transactionsViewModel: coord.transactionsViewModel,
+            categoriesViewModel: coord.categoriesViewModel,
+            defaultAction: .income
+        )
+        #expect(vm.incomeCategories == ["Bonus", "Salary"])
+        #expect(vm.selectedCategory == "Bonus")
+    }
+
     // MARK: - Subcategory tags (top-up)
 
     @Test("switching action drops the picked subcategories")

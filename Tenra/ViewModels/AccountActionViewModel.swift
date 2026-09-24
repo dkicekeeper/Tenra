@@ -64,13 +64,15 @@ final class AccountActionViewModel {
         accountsViewModel.accounts
     }
 
+    /// Every income category the user has, in their order. Previously this was the
+    /// intersection with categories that already appear on income TRANSACTIONS, so a
+    /// new income category (including the onboarding presets) never showed up here
+    /// until some other flow had used it: the first top-up was impossible.
     var incomeCategories: [String] {
-        let validNames = Set(
-            transactionsViewModel.customCategories
-                .filter { $0.type == .income }
-                .map { $0.name }
-        )
-        return transactionsViewModel.incomeCategories.filter { validNames.contains($0) }
+        transactionsViewModel.customCategories
+            .filter { $0.type == .income }
+            .sortedByOrder()
+            .map(\.name)
     }
 
     /// Custom-category id of the selected income category — feeds the subcategory picker.

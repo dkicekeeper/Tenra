@@ -47,4 +47,12 @@ extension CategoryPreset {
         .init(id: "services",      nameKey: "onboarding.preset.services",      iconSource: .sfSymbol("wrench.and.screwdriver.fill"),   colorHex: "#64748b", type: .expense),
         .init(id: "other",         nameKey: "onboarding.preset.other",         iconSource: .sfSymbol("ellipsis.circle.fill"),          colorHex: "#9ca3af", type: .expense)
     ]
+
+    /// Created automatically when onboarding finishes (not shown in the selection grid),
+    /// so a new user's first income never dead-ends on "create a category first".
+    /// The Russian name of `salary` must stay "Зарплата": voice keywords target it.
+    static let defaultIncome: [CategoryPreset] = [
+        .init(id: "salary",      nameKey: "onboarding.preset.salary",      iconSource: .sfSymbol("briefcase.fill"),   colorHex: "#16a34a", type: .income),
+        .init(id: "otherIncome", nameKey: "onboarding.preset.otherIncome", iconSource: .sfSymbol("plus.circle.fill"), colorHex: "#64748b", type: .income)
+    ]
 }

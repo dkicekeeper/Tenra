@@ -1692,3 +1692,8 @@
 "transaction.applySimilar.message" = "„%1$@“: %2$lld weitere mit derselben Kategorie. Sollen sie ebenfalls nach „%3$@“ verschoben werden?";
 "transaction.applySimilar.apply" = "Alle ändern";
 "transaction.applySimilar.skip" = "Nur diese";
+
+/* Income presets and add-income-category action */
+"onboarding.preset.salary" = "Gehalt";
+"onboarding.preset.otherIncome" = "Sonstige Einnahmen";
+"transactionForm.addIncomeCategory" = "Einnahmekategorie hinzufügen";

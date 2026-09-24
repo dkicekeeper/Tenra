@@ -1692,3 +1692,8 @@
 "transaction.applySimilar.message" = "“%1$@”: %2$lld more with the same category. Move them to “%3$@” as well?";
 "transaction.applySimilar.apply" = "Update all";
 "transaction.applySimilar.skip" = "Only this one";
+
+/* Income presets and add-income-category action */
+"onboarding.preset.salary" = "Salary";
+"onboarding.preset.otherIncome" = "Other income";
+"transactionForm.addIncomeCategory" = "Add income category";

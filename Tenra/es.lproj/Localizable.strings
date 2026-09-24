@@ -1692,3 +1692,8 @@
 "transaction.applySimilar.message" = "«%1$@»: %2$lld más con la misma categoría. ¿Moverlas también a «%3$@»?";
 "transaction.applySimilar.apply" = "Actualizar todas";
 "transaction.applySimilar.skip" = "Solo esta";
+
+/* Income presets and add-income-category action */
+"onboarding.preset.salary" = "Salario";
+"onboarding.preset.otherIncome" = "Otros ingresos";
+"transactionForm.addIncomeCategory" = "Añadir categoría de ingresos";

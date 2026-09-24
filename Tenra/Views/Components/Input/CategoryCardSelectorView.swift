@@ -15,6 +15,10 @@ struct CategoryCardSelectorView: View {
     @Binding var selectedCategory: String?
     let onSelectionChange: ((String?) -> Void)?
     let emptyStateMessage: String?
+    /// Optional button under the empty-state message (e.g. "Add income category"),
+    /// so an empty list is never a dead end.
+    let emptyStateAction: (() -> Void)?
+    let emptyStateActionTitle: String?
 
     // Mirrors AccountSelectorView's carousel geometry so the cards line up identically.
     private let cardSpacing: CGFloat = AppSpacing.md
@@ -29,7 +33,9 @@ struct CategoryCardSelectorView: View {
         customCategories: [CustomCategory],
         selectedCategory: Binding<String?>,
         onSelectionChange: ((String?) -> Void)? = nil,
-        emptyStateMessage: String? = nil
+        emptyStateMessage: String? = nil,
+        emptyStateAction: (() -> Void)? = nil,
+        emptyStateActionTitle: String? = nil
     ) {
         self.categories = categories
         self.type = type
@@ -37,6 +43,8 @@ struct CategoryCardSelectorView: View {
         self._selectedCategory = selectedCategory
         self.onSelectionChange = onSelectionChange
         self.emptyStateMessage = emptyStateMessage
+        self.emptyStateAction = emptyStateAction
+        self.emptyStateActionTitle = emptyStateActionTitle
     }
 
     var body: some View {
@@ -48,6 +56,11 @@ struct CategoryCardSelectorView: View {
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
                         .padding(AppSpacing.lg)
+                }
+                if let action = emptyStateAction, let title = emptyStateActionTitle {
+                    Button(title, action: action)
+                        .secondaryButton()
+                        .frame(maxWidth: .infinity)
                 }
             } else {
                 carousel

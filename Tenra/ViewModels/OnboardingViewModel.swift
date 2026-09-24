@@ -150,6 +150,22 @@ final class OnboardingViewModel {
             coordinator.categoriesViewModel.addCategory(category)
         }
 
+        // Income categories are not offered in the grid; create them so the first
+        // income can be recorded right away.
+        for preset in CategoryPreset.defaultIncome {
+            let name = String(localized: String.LocalizationValue(preset.nameKey))
+            let exists = coordinator.categoriesViewModel.customCategories.contains {
+                $0.type == preset.type && $0.name == name
+            }
+            guard !exists else { continue }
+            coordinator.categoriesViewModel.addCategory(CustomCategory(
+                name: name,
+                iconSource: preset.iconSource,
+                colorHex: preset.colorHex,
+                type: preset.type
+            ))
+        }
+
         coordinator.completeOnboarding()
         logger.info("onboarding_finished selectedCount=\(self.selectedPresetCount, privacy: .public)")
     }

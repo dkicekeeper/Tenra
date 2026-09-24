@@ -20,6 +20,7 @@ struct AccountActionView: View {
     @State private var calc = CalculatorInputModel()
     @State private var showingSubcategorySearch = false
     @State private var subcategorySearchText = ""
+    @State private var showingAddIncomeCategory = false
     @FocusState private var descriptionFocused: Bool
 
     init(
@@ -108,6 +109,25 @@ struct AccountActionView: View {
                 .presentationDragIndicator(.visible)
             }
         }
+        .sheet(isPresented: $showingAddIncomeCategory) {
+            CategoryEditView(
+                categoriesViewModel: categoriesViewModel,
+                transactionsViewModel: transactionsViewModel,
+                category: nil,
+                type: .income,
+                onSave: { category in
+                    HapticManager.success()
+                    categoriesViewModel.addCategory(category)
+                    transactionsViewModel.invalidateCaches()
+                    viewModel.selectedCategory = category.name
+                    viewModel.handleCategorySelectionChange()
+                    showingAddIncomeCategory = false
+                },
+                onCancel: { showingAddIncomeCategory = false }
+            )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
         .sheet(isPresented: $showingAccountHistory) {
             NavigationStack {
                 HistoryView(
@@ -161,7 +181,9 @@ struct AccountActionView: View {
                     onSelectionChange: { _ in
                         viewModel.handleCategorySelectionChange()
                     },
-                    emptyStateMessage: String(localized: "transactionForm.noCategories")
+                    emptyStateMessage: String(localized: "transactionForm.noCategories"),
+                    emptyStateAction: { showingAddIncomeCategory = true },
+                    emptyStateActionTitle: String(localized: "transactionForm.addIncomeCategory")
                 )
             }
         }

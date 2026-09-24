@@ -1692,3 +1692,8 @@
 "transaction.applySimilar.message" = "“%1$@”: aynı kategoride %2$lld işlem daha var. Bunlar da “%3$@” kategorisine taşınsın mı?";
 "transaction.applySimilar.apply" = "Tümünü güncelle";
 "transaction.applySimilar.skip" = "Yalnızca bunu";
+
+/* Income presets and add-income-category action */
+"onboarding.preset.salary" = "Maaş";
+"onboarding.preset.otherIncome" = "Diğer gelirler";
+"transactionForm.addIncomeCategory" = "Gelir kategorisi ekle";

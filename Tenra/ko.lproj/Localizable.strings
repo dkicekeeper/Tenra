@@ -1692,3 +1692,8 @@
 "transaction.applySimilar.message" = "“%1$@”: 같은 카테고리의 거래가 %2$lld건 더 있습니다. 이 거래들도 “%3$@”(으)로 옮길까요?";
 "transaction.applySimilar.apply" = "모두 변경";
 "transaction.applySimilar.skip" = "이 거래만";
+
+/* Income presets and add-income-category action */
+"onboarding.preset.salary" = "급여";
+"onboarding.preset.otherIncome" = "기타 수입";
+"transactionForm.addIncomeCategory" = "수입 카테고리 추가";

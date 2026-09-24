@@ -1692,3 +1692,8 @@
 "transaction.applySimilar.message" = "「%1$@」: 同じカテゴリの取引が他に%2$lld件あります。これらも「%3$@」に移動しますか？";
 "transaction.applySimilar.apply" = "すべて変更";
 "transaction.applySimilar.skip" = "この取引のみ";
+
+/* Income presets and add-income-category action */
+"onboarding.preset.salary" = "給与";
+"onboarding.preset.otherIncome" = "その他の収入";
+"transactionForm.addIncomeCategory" = "収入カテゴリを追加";

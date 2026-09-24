@@ -1692,3 +1692,8 @@
 "transaction.applySimilar.message" = "«%1$@»: ще %2$lld з тією ж категорією. Перенести їх теж у «%3$@»?";
 "transaction.applySimilar.apply" = "Змінити всі";
 "transaction.applySimilar.skip" = "Лише цю";
+
+/* Income presets and add-income-category action */
+"onboarding.preset.salary" = "Зарплата";
+"onboarding.preset.otherIncome" = "Інші доходи";
+"transactionForm.addIncomeCategory" = "Додати категорію доходу";

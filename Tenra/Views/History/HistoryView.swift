@@ -343,7 +343,7 @@ struct HistoryView: View {
             searchQuery: filterCoordinator.debouncedSearchText,
             searchMatchedTransactionIds: .some(matchedTxIds),
             selectedAccountId: .some(filterCoordinator.selectedAccountFilter),
-            selectedCategoryId: .some(transactionsViewModel.selectedCategories?.first),
+            selectedCategoryNames: .some(transactionsViewModel.selectedCategories),
             dateRange: .some(resolvedDateRange)
         )
 
@@ -368,7 +368,7 @@ struct HistoryView: View {
             searchQuery: "",
             searchMatchedTransactionIds: .some(nil),
             selectedAccountId: .some(nil),
-            selectedCategoryId: .some(nil),
+            selectedCategoryNames: .some(nil),
             selectedType: .some(nil)
             // dateRange: intentionally NOT reset — see comment above
         )

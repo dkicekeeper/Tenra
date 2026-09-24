@@ -94,8 +94,9 @@ final class TransactionPaginationController: NSObject {
         didSet { if selectedAccountId != oldValue { scheduleFilterUpdate() } }
     }
 
-    var selectedCategoryId: String? {
-        didSet { if selectedCategoryId != oldValue { scheduleFilterUpdate() } }
+    /// Category names from the filter sheet (a multi-selection). nil = no category filter.
+    var selectedCategoryNames: Set<String>? {
+        didSet { if selectedCategoryNames != oldValue { scheduleFilterUpdate() } }
     }
 
     var selectedType: TransactionType? {
@@ -233,7 +234,7 @@ final class TransactionPaginationController: NSObject {
         searchQuery: String? = nil,
         searchMatchedTransactionIds: Set<String>?? = nil,
         selectedAccountId: String?? = nil,
-        selectedCategoryId: String?? = nil,
+        selectedCategoryNames: Set<String>?? = nil,
         selectedType: TransactionType?? = nil,
         dateRange: (start: Date, end: Date)?? = nil
     ) {
@@ -242,7 +243,7 @@ final class TransactionPaginationController: NSObject {
         if let q = searchQuery { self.searchQuery = q }
         if let ids = searchMatchedTransactionIds { self.searchMatchedTransactionIds = ids }
         if let a = selectedAccountId { self.selectedAccountId = a }
-        if let c = selectedCategoryId { self.selectedCategoryId = c }
+        if let c = selectedCategoryNames { self.selectedCategoryNames = c }
         if let t = selectedType { self.selectedType = t }
         if let d = dateRange { self.dateRange = d }
 
@@ -251,6 +252,16 @@ final class TransactionPaginationController: NSObject {
         isBatchUpdating = false
         // Single fetch + rebuild after all filter changes are applied.
         scheduleFilterUpdate()
+    }
+
+    /// Predicate for a category multi-selection. The filter sheet lists empty
+    /// categories under the localized "Uncategorized" label, while those rows are
+    /// stored with category "", so the label is mapped back before matching.
+    /// Previously only ONE name (`Set.first`, i.e. an arbitrary one) was applied and
+    /// the label never matched anything.
+    nonisolated static func categoryPredicate(for names: Set<String>, uncategorizedLabel: String) -> NSPredicate {
+        let stored = names.map { $0 == uncategorizedLabel ? "" : $0 }
+        return NSPredicate(format: "category IN %@", stored)
     }
 
     private func applyCurrentFilters() {
@@ -282,9 +293,11 @@ final class TransactionPaginationController: NSObject {
             ))
         }
 
-        if let categoryId = selectedCategoryId {
-            // category stores the category name/id string on TransactionEntity
-            predicates.append(NSPredicate(format: "category == %@", categoryId))
+        if let names = selectedCategoryNames, !names.isEmpty {
+            predicates.append(Self.categoryPredicate(
+                for: names,
+                uncategorizedLabel: String(localized: "category.uncategorized")
+            ))
         }
 
         if let type = selectedType {

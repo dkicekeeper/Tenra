@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ExperimentsListView: View {
 
+    @Environment(AppCoordinator.self) private var coordinator
     @State private var snapshot = IntentUsageCounters.shared.snapshot()
     #if DEBUG
     @State private var walletProbeEntries: [WalletPaymentProbeEntry] = []
@@ -31,6 +32,30 @@ struct ExperimentsListView: View {
             }
 
             #if DEBUG
+            // Deposits converted before the conversionTimestamp fix (read-only).
+            // Suspicious = negative accrued interest or plain income/expense/transfer
+            // rows after startDate, i.e. inherited history the balance may re-sum.
+            Section("Legacy deposits (read-only)") {
+                let reports = LegacyDepositDiagnostics.inspect(
+                    accounts: coordinator.transactionStore.accounts,
+                    transactions: coordinator.transactionStore.transactions
+                )
+                if reports.isEmpty {
+                    Text("No deposits without a conversion marker")
+                        .foregroundStyle(.secondary)
+                }
+                ForEach(reports) { report in
+                    VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                        Text("\(report.isSuspicious ? "⚠️ " : "")\(report.name)")
+                        Text("start: \(report.startDate), initial: \(NSDecimalNumber(decimal: report.initialPrincipal).stringValue)")
+                        Text("accrued this period: \(NSDecimalNumber(decimal: report.accruedThisPeriod).stringValue)")
+                        Text("plain rows after start: \(report.plainRowsAfterStart)")
+                    }
+                    .font(.caption)
+                    .textSelection(.enabled)
+                }
+            }
+
             // Wallet automation spike (plans/004-spike-wallet-automation.md):
             // raw payloads the Shortcuts "Wallet" automation passed to the probe.
             Section("Wallet probe (local only)") {
@@ -74,4 +99,5 @@ struct ExperimentsListView: View {
     NavigationStack {
         ExperimentsListView()
     }
+    .environment(AppCoordinator())
 }

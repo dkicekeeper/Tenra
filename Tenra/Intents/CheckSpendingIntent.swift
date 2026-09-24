@@ -45,6 +45,10 @@ struct CheckSpendingIntent: AppIntent {
     /// in front. Replaces the deprecated `openAppWhenRun = false`.
     static var supportedModes: IntentModes { .background }
 
+    /// Spending totals are private: Siri must not read them from a locked iPhone.
+    /// The in-app lock does not apply to Siri, and the default policy is `.alwaysAllowed`.
+    static var authenticationPolicy: IntentAuthenticationPolicy { .requiresAuthentication }
+
     @Parameter(title: "intent.checkSpending.period", default: .today)
     var period: SpendingPeriodAppEnum
 

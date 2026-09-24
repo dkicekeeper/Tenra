@@ -26,7 +26,7 @@ your row when done. The maintainer commits directly to `main`; do not push.
 | 011 | [Siri spending total follows the summary rule](011-siri-spending-uses-summary-rule.md) | P3 | S | none | TODO |
 | 012 | [Russian voice keywords target real onboarding categories](012-voice-ru-categories-match-onboarding.md) | P1 | S | 013 (for "Зарплата") | DONE (see git log) |
 | 013 | [Income categories for new users + add-category in top-up](013-income-categories-for-new-users.md) | P1 | S-M | none | DONE (see git log; also fixed: top-up listed only income categories already used on transactions) |
-| 014 | [Siri spending query requires an unlocked iPhone](014-siri-spending-requires-unlock.md) | P2 | S | none | TODO |
+| 014 | [Siri spending query requires an unlocked iPhone](014-siri-spending-requires-unlock.md) | P2 | S | none | DONE (see git log) |
 | 015 | [Localized system permission prompts (InfoPlist.strings)](015-localized-permission-prompts.md) | P2 | S | none | TODO |
 | 016 | [Recurring occurrences anchored to the start date (no month-end drift)](016-recurring-dates-anchored-to-start.md) | P2 | M | none | TODO |
 | 017 | [Loan schedule after reduce-payment + next payment date](017-loan-schedule-and-next-payment-date.md) | P2 | M | none | TODO |

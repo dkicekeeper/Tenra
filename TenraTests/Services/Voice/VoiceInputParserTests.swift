@@ -35,7 +35,7 @@ struct VoiceInputParserTests {
         // Seed a handful of categories so the live-category lookup in
         // parseCategory() finds a match and returns the seeded name.
         // The parser also has a built-in categoryMap keyed on RU keywords
-        // ("такси" → "Транспорт", "кофе" → "Еда", etc.); when no live
+        // ("такси" → "Транспорт", "кофе" → "Кафе и рестораны", etc.); when no live
         // category matches it falls back to the hardcoded string directly,
         // so the assertions below work whether or not these inserts land
         // before parse() runs — but seeding makes the path deterministic.
@@ -46,7 +46,7 @@ struct VoiceInputParserTests {
             type: .expense
         ))
         categoriesVM.addCategory(CustomCategory(
-            name: "Еда",
+            name: "Кафе и рестораны",
             iconSource: .sfSymbol("fork.knife"),
             colorHex: "#f97316",
             type: .expense
@@ -631,7 +631,23 @@ struct VoiceInputParserTests {
     /// category matching that name, if any). We verify the result is non-nil
     /// and not one of the seeded category names — i.e. it's the fallback, not
     /// a false match.
-    @Test("Unknown category phrase → fallback category (not Транспорт/Еда/Продукты)")
+    /// Real onboarding names: "кофе" and "магазин" used to target "Еда"/"Покупки",
+    /// which no preset creates, and fell through to "Прочее".
+    @Test("RU: 'кофе 500' lands in the onboarding dining category")
+    func coffeeLandsInDiningPreset() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+        #expect(parser.parse("кофе 500").categoryName == "Кафе и рестораны")
+    }
+
+    @Test("RU: 'магазин 3000' lands in groceries")
+    func shopLandsInGroceries() {
+        let (parser, cat, acc, tx) = Self.makeParser()
+        _ = (cat, acc, tx)
+        #expect(parser.parse("магазин 3000").categoryName == "Продукты")
+    }
+
+    @Test("Unknown category phrase → fallback category (not Транспорт/Кафе и рестораны/Продукты)")
     func unknownCategoryFallsBack() {
         let (parser, cat, acc, tx) = Self.makeParser()
         _ = (cat, acc, tx)
@@ -642,7 +658,7 @@ struct VoiceInputParserTests {
         #expect(result.categoryName != nil)
         // Must not be one of the seeded categories whose keywords appear in the phrase.
         #expect(result.categoryName != "Транспорт")
-        #expect(result.categoryName != "Еда")
+        #expect(result.categoryName != "Кафе и рестораны")
         #expect(result.categoryName != "Продукты")
     }
 }

@@ -21,7 +21,7 @@ your row when done. The maintainer commits directly to `main`; do not push.
 | 006 | [Category rename rewrites transactions and series](006-category-rename-rewrites-transactions.md) | P1 | M | none | DONE (see git log) |
 | 007 | [Statement import keeps the account's current balance](007-import-keeps-account-balance.md) | P1 | M | 005 | TODO |
 | 008 | [Statement import flags duplicates and subscription occurrences](008-import-duplicate-detection.md) | P1 | M | none (after 007: same file) | TODO |
-| 009 | [Provisional notification permission for digest and signals](009-provisional-notification-permission.md) | P1 | S | none | TODO |
+| 009 | [Provisional notification permission for digest and signals](009-provisional-notification-permission.md) | P1 | S | none | DONE (see git log) |
 | 010 | [History category filter: all selected + uncategorized](010-history-category-filter.md) | P2 | S | none | TODO |
 | 011 | [Siri spending total follows the summary rule](011-siri-spending-uses-summary-rule.md) | P3 | S | none | TODO |
 | 012 | [Russian voice keywords target real onboarding categories](012-voice-ru-categories-match-onboarding.md) | P1 | S | 013 (for "Зарплата") | TODO |

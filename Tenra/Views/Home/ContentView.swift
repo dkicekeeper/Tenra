@@ -129,6 +129,9 @@ struct ContentView: View {
                 // full initialize() — which loads all 19k transactions and warms FRC —
                 // still needs to run here.
                 await coordinator.initialize()
+                // Quiet (provisional) permission so the default-ON weekly digest and
+                // insight signals are actually delivered. Shows no system prompt.
+                await NotificationPermissionManager.shared.requestProvisionalIfUndetermined()
             }
             // Reactive summary
             // Fires whenever transactions count, active filter, import state, or

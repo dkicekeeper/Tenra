@@ -59,17 +59,18 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - **Widgets / Control Center / Lock Screen quick add**: spec §10 milestones 1-3. No widget target and no App Group today; use a small snapshot file in an App Group rather than moving the CoreData store.
 - **Personal debts ("Долги")**: `долг` is in the ru keyword field; loans model bank loans only (`LoanInfo` in `Tenra/Models/Transaction.swift`). Bundle its schema change with savings goals into one v13 bump.
 
-## Findings recorded but not yet planned (see the audit reports for evidence)
+## Findings recorded outside the numbered plans (status 2026-09-24)
 
-- F8 statement operation-type column dropped (own transfers / top-ups / cash withdrawals count as spending): needs a real Kaspi PDF sample first.
-- F9 subscription reminders only for the next charge; BG refresh does not reschedule them.
-- F10 backups manual-only, iCloud location off by default.
-- F11 dead `updateTransactionCategory` / `CategoryRule` code.
-- DP1 deposits converted before the `conversionTimestamp` fix are still corrupted; the documented recovery was never implemented (investigate with the affected data first).
-- P1 `TransactionEditCoordinator.availableCategories` full scan per render; P2 `SubscriptionDetailView.linkedTransactionCount` full scan per render.
-- PW1 `isSubscriber` starts false every launch (locked tabs flash for subscribers).
-- S2 unencrypted SQLite backups in a user-visible iCloud Drive folder; S3 brand names sent to logo providers.
-- DP2 deposit daily interest divides by 365 in leap years.
+- DONE F8 statement operation column: detected, classified, movement rows labeled, cash withdrawals start unchecked (`0855b4e6`).
+- DONE F9 subscription reminders roll forward in background refresh (`f8fd11ea`).
+- DONE F10 automatic weekly backup with a toggle (`a3a44af1`). iCloud location stays opt-in.
+- DONE F11 dead category-rule view-model code removed; repository methods and the CoreData entity kept (`6a3edc98`).
+- DONE P1/P2 full transaction scans on the edit and subscription screens (`b5e71557`).
+- DONE PW1 subscriber state starts from the last known entitlement (`b83aabf5`).
+- STARTED DP1 legacy converted deposits: read-only DEBUG diagnostic in Settings > Experiments (`7bacdc12`). Recovery waits for real data.
+- OPEN (decision) DP2 deposit daily interest divides by 365 in leap years; depends on how the user's bank counts days.
+- OPEN (decision) S2 iCloud backups are unencrypted SQLite in a user-visible iCloud Drive folder.
+- OPEN (decision) S3 logo lookups send brand names to Google favicons and logo.dev.
 - Direction: set the account balance from the statement's closing balance; subscriptions as "expected" payments merged with real charges.
 
 ## Findings considered and rejected

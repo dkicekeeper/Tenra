@@ -31,7 +31,7 @@ your row when done. The maintainer commits directly to `main`; do not push.
 | 016 | [Recurring occurrences anchored to the start date (no month-end drift)](016-recurring-dates-anchored-to-start.md) | P2 | M | none | DONE (see git log) |
 | 017 | [Loan schedule after reduce-payment + next payment date](017-loan-schedule-and-next-payment-date.md) | P2 | M | none | DONE (see git log) |
 | 018 | [Category chip names readable](018-category-chip-names-readable.md) | P3 | S | none | DONE (see git log; visual check pending) |
-| 019 | [Characterization tests: add/edit flows, reminder dates](019-core-flow-characterization-tests.md) | P2 | M | best after 006, 016 | TODO |
+| 019 | [Characterization tests: add/edit flows, reminder dates](019-core-flow-characterization-tests.md) | P2 | M | best after 006, 016 | DONE (see git log) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 

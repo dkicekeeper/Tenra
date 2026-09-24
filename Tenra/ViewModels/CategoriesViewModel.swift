@@ -20,7 +20,6 @@ class CategoriesViewModel {
         transactionStore?.categories ?? []
     }
 
-    var categoryRules: [CategoryRule] = []
     var subcategories: [Subcategory] = []
     var categorySubcategoryLinks: [CategorySubcategoryLink] = []
     var transactionSubcategoryLinks: [TransactionSubcategoryLink] = []
@@ -69,7 +68,6 @@ class CategoriesViewModel {
         // AppCoordinator after the store is attached).
         self.budgetService = CategoryBudgetService(store: nil)
 
-        self.categoryRules = repository.loadCategoryRules()
         self.subcategories = repository.loadSubcategories()
         self.categorySubcategoryLinks = repository.loadCategorySubcategoryLinks()
         self.transactionSubcategoryLinks = repository.loadTransactionSubcategoryLinks()
@@ -106,7 +104,6 @@ class CategoriesViewModel {
 
     /// Перезагружает все данные из хранилища (используется после импорта)
     func reloadFromStorage() {
-        categoryRules = repository.loadCategoryRules()
         subcategories = repository.loadSubcategories()
         categorySubcategoryLinks = repository.loadCategorySubcategoryLinks()
         transactionSubcategoryLinks = repository.loadTransactionSubcategoryLinks()
@@ -144,31 +141,6 @@ class CategoriesViewModel {
 
         // Single batch delete + single persist (avoids savingInProgress race)
         transactionStore?.deleteCategories(ids)
-    }
-
-    // MARK: - Category Rules Operations
-
-    func addRule(_ rule: CategoryRule) {
-        // Проверяем, нет ли уже правила с таким описанием
-        if !categoryRules.contains(where: { $0.description.lowercased() == rule.description.lowercased() }) {
-            categoryRules.append(rule)
-            repository.saveCategoryRules(categoryRules)
-        }
-    }
-
-    func updateRule(_ rule: CategoryRule) {
-        // CategoryRule не имеет id, поэтому ищем по description
-        if let index = categoryRules.firstIndex(where: { $0.description.lowercased() == rule.description.lowercased() }) {
-            var newRules = categoryRules
-            newRules[index] = rule
-            categoryRules = newRules
-            repository.saveCategoryRules(categoryRules)
-        }
-    }
-
-    func deleteRule(_ rule: CategoryRule) {
-        categoryRules.removeAll { $0.description.lowercased() == rule.description.lowercased() }
-        repository.saveCategoryRules(categoryRules)
     }
 
     // MARK: - Subcategory CRUD Operations

@@ -25,7 +25,6 @@ class TransactionsViewModel {
         transactionStore?.transactions ?? []
     }
 
-    var categoryRules: [CategoryRule] = []
 
     /// Accounts — reads directly from TransactionStore
     var accounts: [Account] {
@@ -261,46 +260,6 @@ class TransactionsViewModel {
         }
     }
 
-    func updateTransactionCategory(_ transactionId: String, category: String, subcategory: String?) {
-        guard let transaction = allTransactions.first(where: { $0.id == transactionId }) else { return }
-
-        let newRule = CategoryRule(
-            description: transaction.description,
-            category: category,
-            subcategory: subcategory
-        )
-
-        categoryRules.removeAll { $0.description.lowercased() == newRule.description.lowercased() }
-        categoryRules.append(newRule)
-
-        guard let store = transactionStore else { return }
-        let matchingDescription = newRule.description.lowercased()
-
-        Task {
-            for tx in store.transactions where tx.description.lowercased() == matchingDescription {
-                let updated = Transaction(
-                    id: tx.id,
-                    date: tx.date,
-                    description: tx.description,
-                    amount: tx.amount,
-                    currency: tx.currency,
-                    convertedAmount: tx.convertedAmount,
-                    type: tx.type,
-                    category: category,
-                    subcategory: subcategory,
-                    accountId: tx.accountId,
-                    targetAccountId: tx.targetAccountId,
-                    targetCurrency: tx.targetCurrency,
-                    targetAmount: tx.targetAmount,
-                    recurringSeriesId: tx.recurringSeriesId,
-                    recurringOccurrenceId: tx.recurringOccurrenceId,
-                    createdAt: tx.createdAt
-                )
-                try? await store.update(updated)
-            }
-        }
-    }
-
     // MARK: - Account Operations
 
     func transfer(from sourceId: String, to targetId: String, amount: Double, date: String, description: String) {
@@ -405,12 +364,10 @@ class TransactionsViewModel {
     // MARK: - Data Management
 
     func clearHistory() {
-        categoryRules = []
         repository.clearAllData()
     }
 
     func resetAllData() {
-        categoryRules = []
         recurringOccurrences = []
         subcategories = []
         categorySubcategoryLinks = []

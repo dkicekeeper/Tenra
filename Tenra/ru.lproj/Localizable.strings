@@ -1729,3 +1729,11 @@
 "transactionPreview.coveredByLoanPaymentOf" = "Уже учтено как платёж по кредиту «%1$@», %2$@";
 "transactionPreview.alreadyTransferOf" = "Уже учтено переводом %1$@ → %2$@, %3$@";
 "transactionPreview.transferMergeOf" = "Совпадает с «%1$@» на счёте %2$@, %3$@: сохранится как один перевод";
+
+/* Statement import review: the statement's closing balance against the account's balance after import (%@ is a date) */
+"transactionPreview.reconcile.statement" = "Остаток по выписке на %@";
+"transactionPreview.reconcile.tenra" = "В Tenra после импорта";
+"transactionPreview.reconcile.match" = "Сходится";
+"transactionPreview.reconcile.less" = "В Tenra меньше на";
+"transactionPreview.reconcile.more" = "В Tenra больше на";
+"transactionPreview.reconcile.hint" = "Проверьте строки без галочки и ручные записи за этот период";

@@ -1729,3 +1729,11 @@
 "transactionPreview.coveredByLoanPaymentOf" = "Zaten “%1$@” kredi ödemesi olarak sayıldı, %2$@";
 "transactionPreview.alreadyTransferOf" = "Zaten %1$@ → %2$@ transferi olarak kayıtlı, %3$@";
 "transactionPreview.transferMergeOf" = "%2$@ hesabındaki “%1$@” ile eşleşiyor, %3$@: tek transfer olarak kaydedilir";
+
+/* Statement import review: the statement's closing balance against the account's balance after import (%@ is a date) */
+"transactionPreview.reconcile.statement" = "%@ tarihli ekstre bakiyesi";
+"transactionPreview.reconcile.tenra" = "İçe aktarma sonrası Tenra";
+"transactionPreview.reconcile.match" = "Bakiyeler eşleşiyor";
+"transactionPreview.reconcile.less" = "Tenra'da şu kadar az";
+"transactionPreview.reconcile.more" = "Tenra'da şu kadar fazla";
+"transactionPreview.reconcile.hint" = "İşaretsiz satırları ve bu dönemdeki manuel kayıtlarınızı kontrol edin";

@@ -161,7 +161,8 @@ struct PDFImportCoordinator: View {
             transferHistory: transferHistory,
             uncheckedMoves: uncheckedMoves,
             transferEligibleIds: transferEligibleIds,
-            defaultStatementAccountId: statementAccountId
+            defaultStatementAccountId: statementAccountId,
+            closingBalances: importOutcome?.closingBalances ?? []
         )
     }
 

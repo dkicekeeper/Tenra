@@ -23,6 +23,9 @@ struct ImportOutcome: Sendable {
     /// Registry domain of the bank that issued the statement ("kaspi.kz"), when its
     /// web domain is printed on the pages. Picks the review screen's default account.
     var bankDomain: String? = nil
+    /// Closing balances the statement prints (StatementBalanceParser), for the
+    /// review screen's balance check.
+    var closingBalances: [StatementBalance] = []
 }
 
 nonisolated struct DocumentImportService {
@@ -136,7 +139,8 @@ nonisolated struct DocumentImportService {
             csvFile: StatementInterpreter.csvFile(from: statement),
             statement: statement,
             intelligenceStatus: IntelligenceAvailability.status,
-            bankDomain: StatementBankDetector.bankDomain(in: snapshot.allLines)
+            bankDomain: StatementBankDetector.bankDomain(in: snapshot.allLines),
+            closingBalances: StatementBalanceParser.closingBalances(in: snapshot.allLines)
         )
     }
 

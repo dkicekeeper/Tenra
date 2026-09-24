@@ -1729,3 +1729,11 @@
 "transactionPreview.coveredByLoanPaymentOf" = "ローン返済「%1$@」として計上済み、%2$@";
 "transactionPreview.alreadyTransferOf" = "%1$@ → %2$@ の振替として記録済み、%3$@";
 "transactionPreview.transferMergeOf" = "%2$@の「%1$@」と一致、%3$@：1件の振替として保存します";
+
+/* Statement import review: the statement's closing balance against the account's balance after import (%@ is a date) */
+"transactionPreview.reconcile.statement" = "%@時点の明細残高";
+"transactionPreview.reconcile.tenra" = "インポート後のTenra";
+"transactionPreview.reconcile.match" = "残高が一致しています";
+"transactionPreview.reconcile.less" = "Tenraの方が少ない額";
+"transactionPreview.reconcile.more" = "Tenraの方が多い額";
+"transactionPreview.reconcile.hint" = "未選択の行とこの期間の手入力を確認してください";

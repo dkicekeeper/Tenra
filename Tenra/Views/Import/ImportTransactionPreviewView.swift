@@ -39,6 +39,8 @@ struct ImportTransactionPreviewView: View {
     var transferEligibleIds: Set<String> = []
     /// The account the statement belongs to (StatementBankDetector), when known.
     var defaultStatementAccountId: String? = nil
+    /// Closing balances the statement prints (StatementBalanceParser).
+    var closingBalances: [StatementBalance] = []
     @Environment(\.dismiss) var dismiss
 
     @State private var statementAccountId = ""
@@ -56,6 +58,19 @@ struct ImportTransactionPreviewView: View {
     @State private var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
     @State private var transferMatches: [String: ImportTransferMatcher.Match] = [:]
     @State private var isSaving = false
+    /// The statement account's balance at the statement's closing date before the
+    /// import, next to the balance the statement prints. Nil when either is unknown.
+    @State private var reconciliationBase: ReconciliationBase?
+
+    private struct ReconciliationBase: Equatable {
+        let accountId: String
+        let currency: String
+        let asOf: String
+        let statementBalance: Double
+        let tenraBalanceAsOf: Double
+        /// Rows before this day keep the entered balance (ImportBalanceCompensation).
+        let creationDay: String?
+    }
 
     var body: some View {
         NavigationStack {
@@ -79,6 +94,9 @@ struct ImportTransactionPreviewView: View {
                             }
                             .pickerStyle(MenuPickerStyle())
                         }
+                    }
+                    if let check = reconciliation {
+                        reconciliationView(check)
                     }
                 }
                 .cardContentPadding()
@@ -199,6 +217,86 @@ struct ImportTransactionPreviewView: View {
     }
 
     private var regularAccounts: [Account] { accountsViewModel.regularAccounts }
+
+    // MARK: - Balance check
+
+    /// What the statement account will hold at the statement's closing date once
+    /// the checked rows are saved, against the balance the bank printed. Recomputed
+    /// as rows are checked, so a missed or doubled row shows up before saving.
+    private var reconciliation: (asOf: String, currency: String, statement: Double, projected: Double)? {
+        guard let base = reconciliationBase else { return nil }
+        let rows = transactions.filter {
+            selectedTransactions.contains($0.id)
+                && accountMapping[$0.id] == base.accountId
+                && $0.currency == base.currency
+        }
+        let effect = ImportReconciliation.importEffect(of: rows, asOf: base.asOf, compensatedBefore: base.creationDay)
+        return (base.asOf, base.currency, base.statementBalance, base.tenraBalanceAsOf + effect)
+    }
+
+    private func makeReconciliationBase() -> ReconciliationBase? {
+        guard let account = regularAccounts.first(where: { $0.id == statementAccountId }),
+              let printed = closingBalances.first(where: { $0.currency == account.currency })
+                ?? closingBalances.first(where: { $0.currency == nil })
+        else { return nil }
+        let current = accountsViewModel.balanceCoordinator?.balances[account.id] ?? account.balance
+        // Roll the current balance back to the statement's closing date.
+        let engine = BalanceCalculationEngine()
+        let accountBalance = AccountBalance.from(account)
+        let later = Set(transactionStore.transactionIdsByAccount[account.id] ?? [])
+            .compactMap { transactionStore.transactionById[$0] }
+            .filter { $0.date > printed.asOf }
+            .reduce(0) { $0 + engine.contribution(of: $1, to: accountBalance, policy: .currentBalance) }
+        let compensates = !account.shouldCalculateFromTransactions && account.initialBalance != nil
+        return ReconciliationBase(
+            accountId: account.id,
+            currency: account.currency,
+            asOf: printed.asOf,
+            statementBalance: printed.amount,
+            tenraBalanceAsOf: current - later,
+            creationDay: compensates ? account.createdDate.map { DateFormatters.dateFormatter.string(from: $0) } : nil
+        )
+    }
+
+    @ViewBuilder
+    private func reconciliationView(_ check: (asOf: String, currency: String, statement: Double, projected: Double)) -> some View {
+        let difference = check.projected - check.statement
+        VStack(spacing: AppSpacing.xs) {
+            HStack {
+                Text(String(format: String(localized: "transactionPreview.reconcile.statement"),
+                            DateFormatters.displayString(from: check.asOf)))
+                Spacer()
+                FormattedAmountText(amount: check.statement, currency: check.currency,
+                                    fontSize: AppTypography.bodySmall, color: AppColors.textSecondary)
+            }
+            HStack {
+                Text(String(localized: "transactionPreview.reconcile.tenra"))
+                Spacer()
+                FormattedAmountText(amount: check.projected, currency: check.currency,
+                                    fontSize: AppTypography.bodySmall, color: AppColors.textSecondary)
+            }
+            if abs(difference) < 0.5 {
+                Label(String(localized: "transactionPreview.reconcile.match"), systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(AppColors.success)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                HStack {
+                    Label(String(localized: difference < 0 ? "transactionPreview.reconcile.less" : "transactionPreview.reconcile.more"),
+                          systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(AppColors.warning)
+                    Spacer()
+                    FormattedAmountText(amount: abs(difference), currency: check.currency,
+                                        fontSize: AppTypography.bodySmall, color: AppColors.warning)
+                }
+                Text(String(localized: "transactionPreview.reconcile.hint"))
+                    .foregroundStyle(AppColors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .font(AppTypography.bodySmall)
+        .foregroundStyle(AppColors.textSecondary)
+        .padding(.top, AppSpacing.xs)
+    }
 
     private func availableAccounts(for transaction: Transaction) -> [Account] {
         Self.availableAccounts(for: transaction, regularAccounts: regularAccounts)
@@ -340,6 +438,7 @@ struct ImportTransactionPreviewView: View {
         guard !Task.isCancelled else { return }
         duplicateReasons = duplicates
         transferMatches = matches
+        reconciliationBase = makeReconciliationBase()
 
         // The other side of a transfer already in Tenra wins; otherwise what the
         // user did with the same description on this account before.

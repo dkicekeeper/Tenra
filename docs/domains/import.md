@@ -152,8 +152,20 @@ noise.
   10 сентября"; the category when the entry has no description), so a coincidence can be told
   from a real duplicate on the spot.
 
+- **Balance check.** `StatementBalanceParser` reads the closing balance the statement prints: a
+  labelled line ("Доступно на 24.09.26: + 12 345,67 ₸", latest date wins, Kaspi prints the opening
+  one too) or an account-table row ("KZ… KZT 27,000.50 ₸", dated by the period end; the row's ISO
+  code beats the symbol, "¥" is also CNY). Only amounts with cents count. The review header shows
+  it next to the statement account's balance at that date after import: the current balance rolled
+  back past later transactions, plus the checked rows up to that date
+  (`ImportReconciliation.importEffect`, pre-creation rows excluded like the compensation does).
+  "Сходится" or "В Tenra меньше/больше на X" live as rows are checked, so misses that row matching
+  cannot catch (amount off by a few tenge, two days late, entered on another account, rows on the
+  account's creation day entered after the balance) show before saving. On the real statements the
+  Kaspi opening balance plus every parsed row equals its printed closing balance to the tiyn.
+
 Pinned by `ImportLearningTests`, `ImportCommitterTests`, `ImportBalanceCompensationTests`,
-`ImportDuplicateDetectorTests`.
+`ImportDuplicateDetectorTests`, `StatementBalanceParserTests`.
 
 ## Category suggestions
 

@@ -1729,3 +1729,11 @@
 "transactionPreview.coveredByLoanPaymentOf" = "Already counted as the loan payment “%1$@”, %2$@";
 "transactionPreview.alreadyTransferOf" = "Already recorded as a transfer %1$@ → %2$@, %3$@";
 "transactionPreview.transferMergeOf" = "Matches “%1$@” on %2$@, %3$@: saved as one transfer";
+
+/* Statement import review: the statement's closing balance against the account's balance after import (%@ is a date) */
+"transactionPreview.reconcile.statement" = "Statement balance on %@";
+"transactionPreview.reconcile.tenra" = "In Tenra after import";
+"transactionPreview.reconcile.match" = "Balances match";
+"transactionPreview.reconcile.less" = "Tenra shows less by";
+"transactionPreview.reconcile.more" = "Tenra shows more by";
+"transactionPreview.reconcile.hint" = "Check unchecked rows and your manual entries for this period";

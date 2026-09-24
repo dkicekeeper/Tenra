@@ -1729,3 +1729,11 @@
 "transactionPreview.coveredByLoanPaymentOf" = "Bereits als Kreditrate „%1$@“ erfasst, %2$@";
 "transactionPreview.alreadyTransferOf" = "Bereits als Überweisung %1$@ → %2$@ erfasst, %3$@";
 "transactionPreview.transferMergeOf" = "Passt zu „%1$@“ auf %2$@, %3$@: wird als eine Überweisung gespeichert";
+
+/* Statement import review: the statement's closing balance against the account's balance after import (%@ is a date) */
+"transactionPreview.reconcile.statement" = "Saldo laut Auszug am %@";
+"transactionPreview.reconcile.tenra" = "In Tenra nach dem Import";
+"transactionPreview.reconcile.match" = "Stimmt überein";
+"transactionPreview.reconcile.less" = "Tenra zeigt weniger um";
+"transactionPreview.reconcile.more" = "Tenra zeigt mehr um";
+"transactionPreview.reconcile.hint" = "Prüfe nicht markierte Zeilen und deine manuellen Einträge für diesen Zeitraum";

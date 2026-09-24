@@ -1729,3 +1729,11 @@
 "transactionPreview.coveredByLoanPaymentOf" = "대출 상환 “%1$@”(으)로 이미 반영됨, %2$@";
 "transactionPreview.alreadyTransferOf" = "%1$@ → %2$@ 이체로 이미 기록됨, %3$@";
 "transactionPreview.transferMergeOf" = "%2$@의 “%1$@”와(과) 일치, %3$@: 하나의 이체로 저장됩니다";
+
+/* Statement import review: the statement's closing balance against the account's balance after import (%@ is a date) */
+"transactionPreview.reconcile.statement" = "%@ 기준 명세서 잔액";
+"transactionPreview.reconcile.tenra" = "가져오기 후 Tenra";
+"transactionPreview.reconcile.match" = "잔액이 일치합니다";
+"transactionPreview.reconcile.less" = "Tenra가 적은 금액";
+"transactionPreview.reconcile.more" = "Tenra가 많은 금액";
+"transactionPreview.reconcile.hint" = "선택하지 않은 행과 이 기간의 직접 입력을 확인하세요";

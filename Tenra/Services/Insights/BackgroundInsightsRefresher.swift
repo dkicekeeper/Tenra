@@ -149,9 +149,27 @@ final class BackgroundInsightsRefresher {
         return .computed(result: result, transactionsCount: transactions.count)
     }
 
+    /// Loads recurring series straight from CoreData (no TransactionStore in a BG task)
+    /// and reschedules the next-charge reminders of every active subscription.
+    private static func rescheduleSubscriptionReminders() async {
+        let series = await Task.detached(priority: .utility) {
+            CoreDataRepository().loadRecurringSeries()
+        }.value
+        let active = series.filter { $0.isSubscription && $0.subscriptionStatus == .active && $0.isActive }
+        guard !active.isEmpty else { return }
+        await SubscriptionNotificationScheduler.shared.rescheduleAllActiveSubscriptions(subscriptions: active)
+    }
+
     /// Headless recompute: repository load → InsightsService → signal pushes +
     /// weekly digest. Returns false only when work was cut short (cancellation).
     func refresh() async -> Bool {
+        // Subscription reminders are scheduled one charge ahead and used to roll
+        // forward only when the app became active, so someone who did not open Tenra
+        // for a billing cycle got one reminder and then silence. Roll them forward
+        // here too, independent of the insight settings below.
+        await Self.rescheduleSubscriptionReminders()
+        guard !Task.isCancelled else { return false }
+
         let settings = InsightSignalSettings.shared
         guard settings.isEnabled || settings.weeklyDigestEnabled else { return true }
         let auth = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus

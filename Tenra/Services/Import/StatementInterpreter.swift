@@ -190,7 +190,7 @@ nonisolated enum StatementInterpreter {
 
     private static func description(from row: [String], roles: ColumnRoles) -> String {
         if let text = cell(row, roles.description), !text.isEmpty {
-            return clean(text)
+            return counterparty(in: text) ?? clean(text)
         }
         // No description column: join every cell that is neither the date nor
         // an amount, so the user still sees something recognizable. Also skip
@@ -215,7 +215,9 @@ nonisolated enum StatementInterpreter {
             #"(?i)Код авторизации:\s*\S+"#,
             #"(?i)Reference:\s*\S+"#,
             #"(?i)Auth(?:orization)? code:\s*\S+"#,
-            #"(?i)Ref\.?\s*No\.?:?\s*\S+"#
+            #"(?i)Ref\.?\s*No\.?:?\s*\S+"#,
+            // Account numbers (IBAN): noise in a description, and the user's own.
+            #"№?\s?\b[A-Z]{2}\d{2}[A-Z0-9]{12,30}\b"#
         ]
         for pattern in noisePatterns {
             cleaned = cleaned.replacingOccurrences(of: pattern, with: "", options: .regularExpression)
@@ -223,6 +225,19 @@ nonisolated enum StatementInterpreter {
         cleaned = cleaned.replacingOccurrences(of: "\n", with: " ")
         cleaned = cleaned.replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
         return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Transfer details that spell out a whole payment order ("Плательщик: <you>
+    /// Получатель: <bank> Назначение: ФИО: Асан Б.. Мобильный: ... БИК: ...")
+    /// shrink to the counterparty's name, which is how the user knows the row and
+    /// what category history keys on.
+    private static func counterparty(in text: String) -> String? {
+        let flat = text.replacingOccurrences(of: "\n", with: " ")
+        guard let match = flat.firstMatch(of: /(?i)ФИО:\s*(.+?)\s*(?:Мобильный:|Телефон:|Референс:|БИК:|ИИН:|$)/)
+        else { return nil }
+        var name = String(match.1).trimmingCharacters(in: .whitespaces)
+        while name.hasSuffix("..") { name.removeLast() }
+        return name.contains(where: \.isLetter) ? name : nil
     }
 
     /// Transfers, top-ups and cash withdrawals carry the statement's own operation

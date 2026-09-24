@@ -63,6 +63,38 @@ category `ReceiptInterpreter`). Decide the design only after that log shows the
 capability actually exists on real devices; rule 2 still applies either way, so the
 text and heuristic paths stay.
 
+## Header-anchored tables (`StatementTableAssembler`)
+
+Real statements rarely start a page with the table header, and their cells wrap. Checked
+against a Kaspi Gold and a Freedom Card statement (2026-09-24): the gap-split rows lost every
+Kaspi merchant name (the header sat under the account summary, so columns were guessed from
+content and "Операция" won the description), turned the summary block ("Доступно на ...") into
+fake income rows, and scattered Freedom's vertically centered cells ("Сумма в / обработке",
+10-line transfer details half above the date line) across columns.
+
+When `ColumnRoleResolver.transactionHeaderDateIndex` finds a header line (date keyword + amount
+keyword, no digits) anywhere in the document, `PDFTextLayerExtractor` hands its lines to the
+pure `StatementTableAssembler` instead:
+
+- **Records**: a date line is a line whose first word under the date header is a bare date.
+  Wrapped lines between two date lines split at the widest vertical gap (record padding); when
+  no gap stands out (Kaspi's steady pitch) they continue the record above. Lines above the first
+  and below the last date line join only as a chain of close steps (1.25× the widest wrap step
+  seen), and a line with a word straddling a column river stops the chain (footnotes, page
+  headers). A centered record broken by the page end is carried to the next page's first record.
+- **Columns**: the boundary between two header cells is the middle of the least-covered x run
+  between their centers, measured on date lines and the lines between them. Header text position
+  itself is not trusted (Freedom centers "Детали" 70pt right of its text).
+- **Numbers**: date and amount columns take words from the date line only (or a line level with
+  it), so a stray wrapped line never changes an amount. `isNumericCell` allows at most 3 letters;
+  plain `looksLikeMoney` would call reference-number details numeric and drop their wraps.
+- Lines above the first header never become rows, and a header-less continuation page reuses the
+  last layout. No header anywhere: the gap-split tables stay as before.
+
+Both real statements reconcile with the totals the banks print (per operation type, to the
+tiyn). The PDFs themselves are personal and not in the repo; `StatementTableAssemblerTests`
+holds anonymized geometry of both layouts.
+
 ## Operation column (Покупка / Перевод / Пополнение / Снятие)
 
 When a statement has a separate transaction-type column (Kaspi: "Операция" next to "Детали"),
@@ -71,9 +103,17 @@ in `ParsedTransaction.operation`. `StatementOperationKind.classify` maps it (mul
 purchase / transfer / top-up / cash withdrawal / other. Money-movement rows carry the statement's own
 label in the description ("Перевод · Асан Б."); purchases stay bare merchant names. Cash withdrawals
 start unchecked on the review screen: the cash is spent later and logged separately, so importing the
-withdrawal as an expense would count it twice. Transfers and top-ups stay checked (a transfer to a
-person is real spending); the label lets the user uncheck own-account moves. Before 2026-09-24 the
-column was dropped entirely. Pinned by `StatementOperationTests`.
+withdrawal as an expense would count it twice. Own-account moves (`.ownAccountTransfer`: Kaspi
+"Перевод на свой счет" / "Поступление со своего счета", or a transfer/top-up whose details name a
+deposit, like Freedom's "Перевод вклада по Договору") start unchecked for the same reason, with their
+own hint. `classify(operation:details:)` reads the details only for transfers, top-ups and "other",
+never for purchases (a merchant name is not a marker). Ordinary transfers and top-ups stay checked (a
+transfer to a person is real spending). Before 2026-09-24 the column was dropped entirely. Pinned by
+`StatementOperationTests`.
+
+Descriptions: a details cell that is a whole payment order ("Плательщик: ... Назначение: ФИО: Асан
+Б.. Мобильный: ...") shrinks to the counterparty's name, and IBAN account numbers are stripped as
+noise.
 
 ## Category suggestions
 

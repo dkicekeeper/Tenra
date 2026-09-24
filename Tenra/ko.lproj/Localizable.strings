@@ -1708,3 +1708,6 @@
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "현금 인출: 현금 지출은 따로 기록하세요";
+
+/* Statement import review: a row that moves money between the user's own accounts starts unchecked */
+"transactionPreview.ownAccountTransfer" = "본인 계좌 간 이체: 지출도 수입도 아닙니다";

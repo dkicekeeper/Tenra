@@ -34,21 +34,13 @@ import CoreGraphics
 
 nonisolated struct PDFTextLayerExtractor {
 
-    private struct PositionedWord {
-        let text: String
-        let minX: CGFloat
-        let maxX: CGFloat
-        let minY: CGFloat
-        let maxY: CGFloat
-        /// Vertical center of the word's glyph bounds. Used to group words
-        /// into visual rows independent of PDF paint order (see `rows(from:)`).
-        var midY: CGFloat { (minY + maxY) / 2 }
-    }
+    private typealias PositionedWord = StatementTableAssembler.Word
 
     /// Returns nil when the document has no text layer, so the caller can fall
     /// back to rendering pages and running VisionDocumentExtractor.
     static func extract(document: PDFDocument) -> DocumentSnapshot? {
         var pages: [DocumentSnapshot.Page] = []
+        var pageLines: [[StatementTableAssembler.Line]] = []
         var sawText = false
 
         for pageIndex in 0..<document.pageCount {
@@ -56,6 +48,7 @@ nonisolated struct PDFTextLayerExtractor {
             guard let pageText = page.string,
                   !pageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 pages.append(.init(index: pageIndex, tables: [], lines: [], barcodes: []))
+                pageLines.append([])
                 continue
             }
             sawText = true
@@ -79,6 +72,7 @@ nonisolated struct PDFTextLayerExtractor {
             }
 
             let lineWords = rows(from: pageWords)
+            pageLines.append(lineWords)
             let lines = lineWords.map { rowWords in
                 rowWords.map(\.text).joined(separator: " ")
             }
@@ -93,6 +87,18 @@ nonisolated struct PDFTextLayerExtractor {
         }
 
         guard sawText else { return nil }
+
+        // A statement whose transaction header can be found is rebuilt record by
+        // record (wrapped cells, columns placed by whitespace rivers, summary and
+        // footer lines left out). Anything else keeps the gap-split tables.
+        if let assembled = StatementTableAssembler.assemble(pages: pageLines) {
+            pages = pages.map { page in
+                DocumentSnapshot.Page(index: page.index,
+                                      tables: assembled[page.index],
+                                      lines: page.lines,
+                                      barcodes: page.barcodes)
+            }
+        }
         return DocumentSnapshot(pages: pages, hadTextLayer: true)
     }
 
@@ -153,10 +159,10 @@ nonisolated struct PDFTextLayerExtractor {
                 if isWhitespace {
                     if !currentCharacters.isEmpty {
                         result.append(PositionedWord(text: currentCharacters,
-                                                      minX: currentMinX,
-                                                      maxX: currentMaxX,
-                                                      minY: currentMinY,
-                                                      maxY: currentMaxY))
+                                                      minX: Double(currentMinX),
+                                                      maxX: Double(currentMaxX),
+                                                      minY: Double(currentMinY),
+                                                      maxY: Double(currentMaxY)))
                         currentCharacters = ""
                         currentMinX = .greatestFiniteMagnitude
                         currentMaxX = -.greatestFiniteMagnitude
@@ -179,10 +185,10 @@ nonisolated struct PDFTextLayerExtractor {
 
             if !currentCharacters.isEmpty {
                 result.append(PositionedWord(text: currentCharacters,
-                                              minX: currentMinX,
-                                              maxX: currentMaxX,
-                                              minY: currentMinY,
-                                              maxY: currentMaxY))
+                                              minX: Double(currentMinX),
+                                              maxX: Double(currentMaxX),
+                                              minY: Double(currentMinY),
+                                              maxY: Double(currentMaxY)))
             }
         }
 
@@ -231,7 +237,7 @@ nonisolated struct PDFTextLayerExtractor {
     /// page's own typography rather than a fixed page-width fraction, so it
     /// adapts to dense and sparse statements alike.
     private static func table(from lineWords: [[PositionedWord]]) -> DocumentSnapshot.Table? {
-        let allGaps: [CGFloat] = lineWords.flatMap { words -> [CGFloat] in
+        let allGaps: [Double] = lineWords.flatMap { words -> [Double] in
             guard words.count > 1 else { return [] }
             return (0..<(words.count - 1)).map { words[$0 + 1].minX - words[$0].maxX }
         }

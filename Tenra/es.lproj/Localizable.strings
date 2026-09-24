@@ -1708,3 +1708,6 @@
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "Retiro de efectivo: registra aparte lo que gastes en efectivo";
+
+/* Statement import review: a row that moves money between the user's own accounts starts unchecked */
+"transactionPreview.ownAccountTransfer" = "Entre tus propias cuentas: no es gasto ni ingreso";

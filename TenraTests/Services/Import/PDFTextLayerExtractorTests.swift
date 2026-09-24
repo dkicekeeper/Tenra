@@ -208,4 +208,52 @@ struct PDFTextLayerExtractorTests {
         })
         #expect(cyrillicRow[0] == "Собор старт буфет")
     }
+
+    /// A statement page as banks print it: a summary line that carries a date and
+    /// an amount above the transaction header, then the table. The extractor must
+    /// hand the header-anchored table over (header first, summary left out), so the
+    /// resolver sees "Детали" and the summary never becomes an income row.
+    /// Words avoid the letter "к" (see makeFiveLineStatementPDF).
+    private func makeHeaderAnchoredStatementPDF() -> PDFDocument {
+        let bounds = CGRect(x: 0, y: 0, width: 440, height: 200)
+        let renderer = UIGraphicsPDFRenderer(bounds: bounds)
+        let data = renderer.pdfData { context in
+            context.beginPage()
+            let attrs: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 10)]
+            func draw(_ text: String, _ x: CGFloat, _ y: CGFloat) {
+                (text as NSString).draw(at: CGPoint(x: x, y: y), withAttributes: attrs)
+            }
+            draw("Отчет о движении денег за период с 24.08.26 по 24.09.26", 40, 10)
+            draw("Доступно на 24.09.26:", 40, 30)
+            draw("+ 12 345,67", 150, 30)
+            draw("Дата", 50, 60)
+            draw("Сумма", 130, 60)
+            draw("Операция", 230, 60)
+            draw("Детали", 330, 60)
+            draw("24.09.26", 50, 80)
+            draw("- 995,00", 130, 80)
+            draw("Перевод", 230, 80)
+            draw("Асан Б.", 330, 80)
+            draw("22.09.26", 50, 100)
+            draw("+ 25 000,00", 130, 100)
+            draw("Пополнение", 230, 100)
+            draw("MAGNUM", 330, 100)
+        }
+        return PDFDocument(data: data)!
+    }
+
+    @Test("a page with a transaction header yields the header-anchored table")
+    func headerAnchoredTable() throws {
+        let snapshot = try #require(PDFTextLayerExtractor.extract(document: makeHeaderAnchoredStatementPDF()))
+        let table = try #require(snapshot.allTables.first)
+        #expect(snapshot.allTables.count == 1)
+        #expect(table.rows == [
+            ["Дата", "Сумма", "Операция", "Детали"],
+            ["24.09.26", "- 995,00", "Перевод", "Асан Б."],
+            ["22.09.26", "+ 25 000,00", "Пополнение", "MAGNUM"]
+        ])
+        // The summary line stays readable as text, it just is not a table row.
+        #expect(snapshot.allLines.contains { $0.contains("Доступно") })
+    }
 }
+

@@ -1708,3 +1708,6 @@
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "Зняття готівки: витрати готівкою враховуйте окремо";
+
+/* Statement import review: a row that moves money between the user's own accounts starts unchecked */
+"transactionPreview.ownAccountTransfer" = "Між своїми рахунками: це не витрата і не дохід";

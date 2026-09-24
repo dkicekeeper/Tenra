@@ -31,8 +31,37 @@ struct StatementOperationTests {
         #expect(StatementOperationKind.classify("Purchase") == .purchase)
     }
 
+    @Test func ownAccountMovesAreRecognized() {
+        #expect(StatementOperationKind.classify("Перевод на свой счет") == .ownAccountTransfer)
+        #expect(StatementOperationKind.classify("Поступление со своего счета") == .ownAccountTransfer)
+        #expect(StatementOperationKind.classify("Transfer to own account") == .ownAccountTransfer)
+        // "Поступление" alone is an ordinary top-up, not an own-account move.
+        #expect(StatementOperationKind.classify("Поступление") == .topUp)
+    }
+
+    @Test func ownAccountMoveNamedOnlyInTheDetails() {
+        // Freedom: the operation says "Пополнение", the details say it came from a deposit.
+        #expect(StatementOperationKind.classify(
+            operation: "Пополнение", details: "Перевод вклада по Договору от 19.09.2026") == .ownAccountTransfer)
+        #expect(StatementOperationKind.classify(
+            operation: "Другое", details: "Прием вклада по договору в сумме 950000 KZT") == .ownAccountTransfer)
+        #expect(StatementOperationKind.classify(
+            operation: "Пополнение", details: "С карты другого банка") == .topUp)
+        // A merchant name never turns a purchase into a transfer.
+        #expect(StatementOperationKind.classify(operation: "Покупка", details: "Депозит Маркет") == .purchase)
+    }
+
+    @Test func cashAndOwnAccountMovesStartUnchecked() {
+        #expect(StatementOperationKind.cashWithdrawal.startsUnchecked)
+        #expect(StatementOperationKind.ownAccountTransfer.startsUnchecked)
+        #expect(!StatementOperationKind.transfer.startsUnchecked)
+        #expect(!StatementOperationKind.topUp.startsUnchecked)
+        #expect(!StatementOperationKind.purchase.startsUnchecked)
+    }
+
     @Test func onlyMovementsAreLabeled() {
         #expect(StatementOperationKind.transfer.isMoneyMovement)
+        #expect(StatementOperationKind.ownAccountTransfer.isMoneyMovement)
         #expect(StatementOperationKind.cashWithdrawal.isMoneyMovement)
         #expect(!StatementOperationKind.purchase.isMoneyMovement)
         #expect(!StatementOperationKind.other.isMoneyMovement)
@@ -80,5 +109,26 @@ struct StatementOperationTests {
         #expect(result.transactions[1].descriptionText == "Перевод · Асан Б.")
         #expect(result.transactions[2].descriptionText == "Снятие · ATM Halyk")
         #expect(StatementOperationKind.classify(result.transactions[2].operation) == .cashWithdrawal)
+    }
+
+    @Test func paymentOrderDetailsShrinkToTheCounterparty() throws {
+        let table = DocumentSnapshot.Table(rows: [
+            ["Дата", "Сумма", "Операция", "Детали"],
+            ["19.09.2026", "-30,000.00 ₸", "Перевод",
+             "Плательщик: Тестов Тест Получатель: АО Банк Назначение: ФИО: Асан Б.. Мобильный: 77000000000. Референс: FBK1-abc. БИК: TESTKZKA."],
+            ["18.09.2026", "+50,000.00 ₸", "Пополнение",
+             "Перевод вклада по Договору №KZ00000A0000000000 от 18.09.2026. Вкладчик: Тестов Т."]
+        ])
+        let snapshot = DocumentSnapshot(
+            pages: [.init(index: 0, tables: [table], lines: [], barcodes: [])],
+            hadTextLayer: true
+        )
+        let roles = try #require(ColumnRoleResolver.resolve(table: table))
+        let result = StatementInterpreter.interpret(snapshot: snapshot, roles: roles, defaultCurrency: "KZT")
+
+        #expect(result.transactions.map(\.descriptionText) == [
+            "Перевод · Асан Б.",
+            "Пополнение · Перевод вклада по Договору от 18.09.2026. Вкладчик: Тестов Т."
+        ])
     }
 }

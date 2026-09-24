@@ -1708,3 +1708,6 @@
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "現金の引き出し：現金での支出は別に記録してください";
+
+/* Statement import review: a row that moves money between the user's own accounts starts unchecked */
+"transactionPreview.ownAccountTransfer" = "自分の口座間の移動：支出でも収入でもありません";

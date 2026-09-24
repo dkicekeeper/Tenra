@@ -175,4 +175,15 @@ struct ColumnRoleResolverTests {
         #expect(roles?.credit == nil)
         #expect(roles?.amount == 3)
     }
+
+    @Test("a transaction header is found by its date and amount keywords")
+    func transactionHeaderDateIndex() {
+        #expect(ColumnRoleResolver.transactionHeaderDateIndex(in: ["Дата", "Сумма", "Операция", "Детали"]) == 0)
+        #expect(ColumnRoleResolver.transactionHeaderDateIndex(in: ["№", "Date", "Description", "Debit", "Credit"]) == 1)
+        // A field with a value, a summary heading, and a header with no money column.
+        #expect(ColumnRoleResolver.transactionHeaderDateIndex(in: ["Дата:", "20.09.2026"]) == nil)
+        #expect(ColumnRoleResolver.transactionHeaderDateIndex(in: ["Сумма на счете в теңге", "Эквивалент в USD"]) == nil)
+        #expect(ColumnRoleResolver.transactionHeaderDateIndex(in: ["Дата", "Детали"]) == nil)
+    }
 }
+

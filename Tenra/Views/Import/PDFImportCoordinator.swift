@@ -30,7 +30,7 @@ struct PDFImportCoordinator: View {
     @State private var parsedTransactions: [Transaction] = []
     @State private var suggestedCategories: [String: String] = [:]
     @State private var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
-    @State private var cashWithdrawalIds: Set<String> = []
+    @State private var uncheckedMoves: [String: StatementOperationKind] = [:]
     @State private var showingScanner = false
     @State private var showingDiagnostics = false
     @State private var receiptDraft: ReceiptDraft? = nil
@@ -154,7 +154,7 @@ struct PDFImportCoordinator: View {
             customCategories: categoriesViewModel.customCategories,
             suggestedCategories: suggestedCategories,
             duplicateReasons: duplicateReasons,
-            cashWithdrawalIds: cashWithdrawalIds
+            uncheckedMoves: uncheckedMoves
         )
     }
 
@@ -241,12 +241,18 @@ struct PDFImportCoordinator: View {
                         existing: existing
                     )
                 }.value
-                // Cash withdrawals move money into cash; the spending happens later
-                // (and is logged separately), so importing them as expenses would count
-                // it twice. They start unchecked. The mapper keeps statement order.
-                cashWithdrawalIds = Set(zip(outcome.statement.transactions, mapped).compactMap { parsed, tx in
-                    StatementOperationKind.classify(parsed.operation) == .cashWithdrawal ? tx.id : nil
-                })
+                // Cash withdrawals and own-account moves start unchecked: the cash is
+                // spent (and logged) later, and an own-account move lands in another
+                // account the user keeps, so importing either as spending or income
+                // would count the money twice. The mapper keeps statement order.
+                uncheckedMoves = Dictionary(
+                    zip(outcome.statement.transactions, mapped).compactMap { parsed, tx in
+                        let kind = StatementOperationKind.classify(operation: parsed.operation,
+                                                                   details: parsed.descriptionText)
+                        return kind.startsUnchecked ? (tx.id, kind) : nil
+                    },
+                    uniquingKeysWith: { first, _ in first }
+                )
                 parsedTransactions = mapped
                 showingTransactionPreview = true
             }

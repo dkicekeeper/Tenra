@@ -23,8 +23,9 @@ struct ImportTransactionPreviewView: View {
     /// transactionId -> why the row looks already present (ImportDuplicateDetector).
     /// Such rows start unchecked but stay selectable.
     var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
-    /// Cash withdrawals from the statement's operation column; they start unchecked.
-    var cashWithdrawalIds: Set<String> = []
+    /// transactionId -> cash withdrawal or own-account move (statement operation
+    /// column); such rows start unchecked.
+    var uncheckedMoves: [String: StatementOperationKind] = [:]
     @Environment(\.dismiss) var dismiss
 
     @State private var selectedTransactions: Set<String> = Set()
@@ -82,7 +83,7 @@ struct ImportTransactionPreviewView: View {
                             categoryOptions: categoryOptions(for: transaction),
                             customCategories: customCategories,
                             duplicateReason: duplicateReasons[transaction.id],
-                            isCashWithdrawal: cashWithdrawalIds.contains(transaction.id),
+                            uncheckedMove: uncheckedMoves[transaction.id],
                             onCategorySelect: { name in
                                 selectCategory(name, for: transaction)
                             }
@@ -180,11 +181,11 @@ struct ImportTransactionPreviewView: View {
     }
 
     /// Rows checked by default (and by "Select All"): importable, not already in
-    /// Tenra, and not a cash withdrawal.
+    /// Tenra, and not a cash withdrawal or own-account move.
     private func startsSelected(_ transaction: Transaction) -> Bool {
         !availableAccounts(for: transaction).isEmpty
             && duplicateReasons[transaction.id] == nil
-            && !cashWithdrawalIds.contains(transaction.id)
+            && uncheckedMoves[transaction.id] == nil
     }
 
     // MARK: - Categories
@@ -316,7 +317,8 @@ struct ImportTransactionPreviewRow: View {
     let customCategories: [CustomCategory]
     /// Set when the row looks already present; the row starts unchecked.
     let duplicateReason: ImportDuplicateDetector.Reason?
-    let isCashWithdrawal: Bool
+    /// Cash withdrawal or own-account move; the row starts unchecked.
+    let uncheckedMove: StatementOperationKind?
     let onCategorySelect: (String) -> Void
 
     private var isCategorizable: Bool {
@@ -432,8 +434,10 @@ struct ImportTransactionPreviewRow: View {
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.warning)
                     .padding(.leading, AppSpacing.xl)
-            } else if isCashWithdrawal {
-                Text(String(localized: "transactionPreview.cashWithdrawal"))
+            } else if let uncheckedMove {
+                Text(uncheckedMove == .cashWithdrawal
+                     ? String(localized: "transactionPreview.cashWithdrawal")
+                     : String(localized: "transactionPreview.ownAccountTransfer"))
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.textSecondary)
                     .padding(.leading, AppSpacing.xl)

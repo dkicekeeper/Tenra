@@ -208,6 +208,23 @@ nonisolated enum ColumnRoleResolver {
         "tipo de operação", "tipo operazione", "işlem türü"
     ]
 
+    /// Index of the date cell when `cells` read as a transaction table's header row:
+    /// a date keyword plus an amount/debit/credit keyword in another cell, and no digits
+    /// ("Дата: 20.09.2026" is a field, not a header). Used by StatementTableAssembler to
+    /// find the header inside a page, where it is rarely the first line.
+    static func transactionHeaderDateIndex(in cells: [String]) -> Int? {
+        let lowered = cells.map { $0.lowercased() }
+        guard lowered.count >= 2,
+              !lowered.contains(where: { cell in cell.contains(where: \.isNumber) }),
+              let date = columnMatching(.date, in: lowered) else { return nil }
+        let hasMoney = [ColumnRole.amount, .debit, .credit].contains { role in
+            keywords[role]?.contains { keyword in
+                lowered.indices.contains { $0 != date && lowered[$0].contains(keyword) }
+            } == true
+        }
+        return hasMoney ? date : nil
+    }
+
     private static func hasAnyKeyword(_ header: [String]) -> Bool {
         keywords.values.contains { list in
             header.contains { cell in list.contains { cell.contains($0) } }

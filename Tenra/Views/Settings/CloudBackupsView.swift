@@ -47,6 +47,20 @@ struct CloudBackupsView: View {
                     : "settings.cloud.iCloud.unavailable"))
             }
 
+            Section {
+                Toggle(isOn: Binding(
+                    get: { cloudSyncViewModel.automaticBackupsEnabled },
+                    set: { cloudSyncViewModel.automaticBackupsEnabled = $0 }
+                )) {
+                    Text(String(localized: "settings.cloud.autoBackup.toggle"))
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppColors.textPrimary)
+                }
+                .tint(AppColors.accent)
+            } footer: {
+                Text(String(localized: "settings.cloud.autoBackup.footer"))
+            }
+
             if !cloudSyncViewModel.backups.isEmpty {
                 Section {
                     ForEach(cloudSyncViewModel.backups) { backup in

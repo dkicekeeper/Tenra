@@ -132,6 +132,12 @@ struct ContentView: View {
                 // Quiet (provisional) permission so the default-ON weekly digest and
                 // insight signals are actually delivered. Shows no system prompt.
                 await NotificationPermissionManager.shared.requestProvisionalIfUndetermined()
+                // Weekly automatic backup; a no-op unless the newest backup is a week old.
+                await coordinator.cloudSyncViewModel.runAutomaticBackupIfDue(
+                    transactionCount: coordinator.transactionStore.transactions.count,
+                    accountCount: coordinator.transactionStore.accounts.count,
+                    categoryCount: coordinator.transactionStore.categories.count
+                )
             }
             // Reactive summary
             // Fires whenever transactions count, active filter, import state, or

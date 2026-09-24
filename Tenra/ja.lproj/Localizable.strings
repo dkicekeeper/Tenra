@@ -1701,3 +1701,7 @@
 /* Statement import duplicate markers */
 "transactionPreview.possibleDuplicate" = "すでに追加済みのようです";
 "transactionPreview.coveredBySubscription" = "サブスクリプションの支払いとして計上済みです";
+
+/* Automatic weekly backups */
+"settings.cloud.autoBackup.toggle" = "毎週の自動バックアップ";
+"settings.cloud.autoBackup.footer" = "Tenraはアプリを開いたときに週に1回バックアップを作成し、最新の5件を保持します。";

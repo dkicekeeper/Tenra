@@ -1701,3 +1701,7 @@
 /* Statement import duplicate markers */
 "transactionPreview.possibleDuplicate" = "Scheint bereits hinzugefügt";
 "transactionPreview.coveredBySubscription" = "Bereits als Abozahlung erfasst";
+
+/* Automatic weekly backups */
+"settings.cloud.autoBackup.toggle" = "Automatisches wöchentliches Backup";
+"settings.cloud.autoBackup.footer" = "Tenra erstellt einmal pro Woche beim Öffnen der App ein Backup und behält die 5 neuesten.";

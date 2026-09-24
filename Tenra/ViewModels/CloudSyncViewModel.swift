@@ -35,6 +35,14 @@ final class CloudSyncViewModel {
     /// True while migrating existing backups between local and iCloud storage.
     var isMigratingICloud = false
 
+    /// Weekly automatic backup (default ON). Before 2026-09-24 backups existed only if
+    /// the user tapped "Create backup" by hand.
+    var automaticBackupsEnabled: Bool {
+        didSet { UserDefaults.standard.set(automaticBackupsEnabled, forKey: Self.automaticBackupsKey) }
+    }
+    private static let automaticBackupsKey = "backups.auto.enabled"
+    nonisolated static let automaticBackupInterval: TimeInterval = 7 * 86_400
+
     // MARK: - Dependencies
 
     @ObservationIgnored private let backupService: CloudBackupService
@@ -52,6 +60,52 @@ final class CloudSyncViewModel {
         self.backupService = backupService
         self.coreDataStack = coreDataStack
         self.iCloudEnabled = backupService.isICloudEnabled
+        self.automaticBackupsEnabled =
+            (UserDefaults.standard.object(forKey: Self.automaticBackupsKey) as? Bool) ?? true
+    }
+
+    // MARK: - Automatic backups
+
+    /// Pure rule, pinned by `AutomaticBackupPolicyTests`: back up when enabled, there is
+    /// something to back up, and the newest backup (manual or automatic) is a week old.
+    nonisolated static func isAutomaticBackupDue(
+        lastBackup: Date?,
+        now: Date,
+        enabled: Bool,
+        transactionCount: Int
+    ) -> Bool {
+        guard enabled, transactionCount > 0 else { return false }
+        guard let lastBackup else { return true }
+        return now.timeIntervalSince(lastBackup) >= automaticBackupInterval
+    }
+
+    /// Creates a backup silently when one is due. Called once the full data load has
+    /// finished; cheap when nothing is due (one directory listing off the main actor).
+    func runAutomaticBackupIfDue(transactionCount: Int, accountCount: Int, categoryCount: Int) async {
+        guard !isCreatingBackup, !isRestoringBackup, !isMigratingICloud else { return }
+        let service = backupService
+        let lastBackup = await Task.detached(priority: .utility) {
+            service.listBackups().first?.date
+        }.value
+        guard Self.isAutomaticBackupDue(
+            lastBackup: lastBackup,
+            now: Date(),
+            enabled: automaticBackupsEnabled,
+            transactionCount: transactionCount
+        ) else { return }
+
+        do {
+            let metadata = try await service.createBackup(
+                transactionCount: transactionCount,
+                accountCount: accountCount,
+                categoryCount: categoryCount
+            )
+            backups = service.listBackups()
+            storageUsed = service.estimateStorageUsed()
+            Self.logger.info("Automatic backup created: \(metadata.id, privacy: .public)")
+        } catch {
+            Self.logger.error("Automatic backup failed: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     // MARK: - Backups

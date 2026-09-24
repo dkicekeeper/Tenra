@@ -1701,3 +1701,7 @@
 /* Statement import duplicate markers */
 "transactionPreview.possibleDuplicate" = "Zaten eklenmiş görünüyor";
 "transactionPreview.coveredBySubscription" = "Zaten abonelik ödemesi olarak sayıldı";
+
+/* Automatic weekly backups */
+"settings.cloud.autoBackup.toggle" = "Haftalık otomatik yedek";
+"settings.cloud.autoBackup.footer" = "Tenra, uygulamayı açtığınızda haftada bir yedek alır ve en son 5 yedeği saklar.";

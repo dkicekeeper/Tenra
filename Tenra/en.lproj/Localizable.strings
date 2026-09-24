@@ -1737,3 +1737,7 @@
 "transactionPreview.reconcile.less" = "Tenra shows less by";
 "transactionPreview.reconcile.more" = "Tenra shows more by";
 "transactionPreview.reconcile.hint" = "Check unchecked rows and your manual entries for this period";
+
+/* Statement import review: categories picked by the on-device Apple Intelligence model */
+"transactionPreview.intelligence.progress" = "Apple Intelligence is picking categories…";
+"transactionPreview.intelligence.suggested" = "Picked by Apple Intelligence";

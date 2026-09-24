@@ -1737,3 +1737,7 @@
 "transactionPreview.reconcile.less" = "Tenraの方が少ない額";
 "transactionPreview.reconcile.more" = "Tenraの方が多い額";
 "transactionPreview.reconcile.hint" = "未選択の行とこの期間の手入力を確認してください";
+
+/* Statement import review: categories picked by the on-device Apple Intelligence model */
+"transactionPreview.intelligence.progress" = "Apple Intelligenceがカテゴリを選択中…";
+"transactionPreview.intelligence.suggested" = "Apple Intelligenceが選択";

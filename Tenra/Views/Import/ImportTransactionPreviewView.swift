@@ -58,6 +58,9 @@ struct ImportTransactionPreviewView: View {
     @State private var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
     @State private var transferMatches: [String: ImportTransferMatcher.Match] = [:]
     @State private var isSaving = false
+    /// Rows whose category Apple Intelligence picked and the user has not changed.
+    @State private var intelligenceSuggested: Set<String> = []
+    @State private var isAskingIntelligence = false
     /// The statement account's balance at the statement's closing date before the
     /// import, next to the balance the statement prints. Nil when either is unknown.
     @State private var reconciliationBase: ReconciliationBase?
@@ -98,6 +101,16 @@ struct ImportTransactionPreviewView: View {
                     if let check = reconciliation {
                         reconciliationView(check)
                     }
+                    if isAskingIntelligence {
+                        HStack(spacing: AppSpacing.xs) {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text(String(localized: "transactionPreview.intelligence.progress"))
+                                .font(AppTypography.caption)
+                                .foregroundStyle(AppColors.textSecondary)
+                        }
+                        .transition(.opacity)
+                    }
                 }
                 .cardContentPadding()
                 .frame(maxWidth: .infinity)
@@ -125,6 +138,7 @@ struct ImportTransactionPreviewView: View {
                             },
                             transferOptions: transferOptions(for: transaction),
                             notice: notice(for: transaction),
+                            isIntelligenceSuggestion: intelligenceSuggested.contains(transaction.id),
                             onCategorySelect: { name in
                                 selectCategory(name, for: transaction)
                             },
@@ -212,6 +226,10 @@ struct ImportTransactionPreviewView: View {
             // depend on the statement's account; re-run when the user changes it.
             .task(id: statementAccountId) {
                 await analyze()
+            }
+            // Last category tier, after the screen is up: rows fill in as answers arrive.
+            .task {
+                await suggestWithIntelligence()
             }
         }
     }
@@ -528,6 +546,7 @@ struct ImportTransactionPreviewView: View {
         withAnimation(AppAnimation.contentSpring) {
             categoryMapping[transaction.id] = name
             manuallyCategorized.insert(transaction.id)
+            intelligenceSuggested.remove(transaction.id)
             // A subcategory picked for the old category does not carry over.
             manuallySubcategorized.remove(transaction.id)
             refreshSubcategory(for: transaction)
@@ -538,7 +557,50 @@ struct ImportTransactionPreviewView: View {
                 && !manuallyCategorized.contains(other.id)
                 && CategorySuggestionService.normalizedMerchant(other.description) == merchant {
                 categoryMapping[other.id] = name
+                intelligenceSuggested.remove(other.id)
                 refreshSubcategory(for: other)
+            }
+        }
+    }
+
+    // MARK: - Apple Intelligence
+
+    /// Asks the on-device model about rows no other tier placed. Cash withdrawals and
+    /// own-account moves are left out: they are not spending or income.
+    private func suggestWithIntelligence() async {
+        guard IntelligenceAvailability.isAvailable else { return }
+        let items = transactions.compactMap { transaction -> IntelligentCategorySuggester.Item? in
+            guard Self.isCategorizable(transaction),
+                  (categoryMapping[transaction.id] ?? "").isEmpty,
+                  uncheckedMoves[transaction.id] == nil else { return nil }
+            return IntelligentCategorySuggester.Item(
+                id: transaction.id, description: transaction.description, type: transaction.type
+            )
+        }
+        guard !items.isEmpty else { return }
+        var categories: [TransactionType: [String]] = [:]
+        for type in [TransactionType.expense, .income] {
+            categories[type] = customCategories.filter { $0.type == type }.sortedByOrder().map(\.name)
+        }
+
+        withAnimation { isAskingIntelligence = true }
+        try? await IntelligentCategorySuggester.suggest(items: items, categories: categories) { assigned in
+            applyIntelligence(assigned)
+        }
+        withAnimation { isAskingIntelligence = false }
+    }
+
+    /// Fills rows still without a category; a choice the user made meanwhile wins.
+    private func applyIntelligence(_ assigned: [String: String]) {
+        let byId = Dictionary(transactions.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        withAnimation(AppAnimation.contentSpring) {
+            for (id, name) in assigned {
+                guard (categoryMapping[id] ?? "").isEmpty,
+                      !manuallyCategorized.contains(id),
+                      let transaction = byId[id] else { continue }
+                categoryMapping[id] = name
+                intelligenceSuggested.insert(id)
+                refreshSubcategory(for: transaction)
             }
         }
     }
@@ -750,6 +812,8 @@ struct ImportTransactionPreviewRow: View {
     let transferAccount: Account?
     let transferOptions: [Account]
     let notice: ImportRowNotice?
+    /// The category came from Apple Intelligence and is still the model's choice.
+    let isIntelligenceSuggestion: Bool
     let onCategorySelect: (String) -> Void
     let onSubcategorySelect: (String) -> Void
     let onTransferSelect: (String) -> Void
@@ -884,6 +948,13 @@ struct ImportTransactionPreviewRow: View {
                 Text(String(localized: "transactionPreview.noMatchingAccount"))
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.warning)
+                    .padding(.leading, AppSpacing.xl)
+            }
+
+            if isIntelligenceSuggestion && transferAccount == nil && !category.isEmpty {
+                Label(String(localized: "transactionPreview.intelligence.suggested"), systemImage: "sparkles")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.textSecondary)
                     .padding(.leading, AppSpacing.xl)
             }
 

@@ -1737,3 +1737,7 @@
 "transactionPreview.reconcile.less" = "Tenra'da şu kadar az";
 "transactionPreview.reconcile.more" = "Tenra'da şu kadar fazla";
 "transactionPreview.reconcile.hint" = "İşaretsiz satırları ve bu dönemdeki manuel kayıtlarınızı kontrol edin";
+
+/* Statement import review: categories picked by the on-device Apple Intelligence model */
+"transactionPreview.intelligence.progress" = "Apple Intelligence kategorileri seçiyor…";
+"transactionPreview.intelligence.suggested" = "Apple Intelligence tarafından seçildi";

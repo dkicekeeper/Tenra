@@ -1737,3 +1737,7 @@
 "transactionPreview.reconcile.less" = "Tenra가 적은 금액";
 "transactionPreview.reconcile.more" = "Tenra가 많은 금액";
 "transactionPreview.reconcile.hint" = "선택하지 않은 행과 이 기간의 직접 입력을 확인하세요";
+
+/* Statement import review: categories picked by the on-device Apple Intelligence model */
+"transactionPreview.intelligence.progress" = "Apple Intelligence가 카테고리를 고르는 중…";
+"transactionPreview.intelligence.suggested" = "Apple Intelligence가 선택함";

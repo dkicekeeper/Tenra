@@ -202,6 +202,20 @@ struct ReceiptConfirmationView: View {
         )
         if selectedCategoryName == nil, let suggested = suggestions[probeId] {
             selectedCategoryName = suggested
+            return
+        }
+        // Nothing learned or known about this merchant: ask the on-device model.
+        let expenseCategories = categoriesViewModel.customCategories
+            .filter { $0.type == .expense }
+            .sortedByOrder()
+            .map(\.name)
+        try? await IntelligentCategorySuggester.suggest(
+            items: [IntelligentCategorySuggester.Item(id: probeId, description: draft.merchant, type: .expense)],
+            categories: [.expense: expenseCategories]
+        ) { assigned in
+            if selectedCategoryName == nil, let suggested = assigned[probeId] {
+                selectedCategoryName = suggested
+            }
         }
     }
 }

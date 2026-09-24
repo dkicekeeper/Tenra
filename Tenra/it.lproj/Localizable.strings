@@ -1737,3 +1737,7 @@
 "transactionPreview.reconcile.less" = "Tenra mostra meno di";
 "transactionPreview.reconcile.more" = "Tenra mostra più di";
 "transactionPreview.reconcile.hint" = "Controlla le righe non selezionate e le tue voci manuali di questo periodo";
+
+/* Statement import review: categories picked by the on-device Apple Intelligence model */
+"transactionPreview.intelligence.progress" = "Apple Intelligence sta scegliendo le categorie…";
+"transactionPreview.intelligence.suggested" = "Scelta da Apple Intelligence";

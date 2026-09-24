@@ -1737,3 +1737,7 @@
 "transactionPreview.reconcile.less" = "В Tenra меньше на";
 "transactionPreview.reconcile.more" = "В Tenra больше на";
 "transactionPreview.reconcile.hint" = "Проверьте строки без галочки и ручные записи за этот период";
+
+/* Statement import review: categories picked by the on-device Apple Intelligence model */
+"transactionPreview.intelligence.progress" = "Apple Intelligence подбирает категории…";
+"transactionPreview.intelligence.suggested" = "Подобрано Apple Intelligence";

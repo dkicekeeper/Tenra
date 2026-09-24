@@ -189,8 +189,22 @@ of 4 characters or fewer must match a whole word. Every candidate goes through
 Picking a category on one review row fills the other rows of the same merchant that the
 user has not set by hand. Rows whose category is not one of the user's categories save
 as uncategorized, because `TransactionStore.validate` would reject them and the import
-loop would drop them. An Apple Intelligence tier was deliberately left out: on-device
-language support for the Russian-speaking primary market is uncertain.
+loop would drop them.
+
+4. **Apple Intelligence** (`IntelligentCategorySuggester`, `Services/Categories/`): only for rows
+   the three tiers above left empty (cash withdrawals and own-account moves excluded), and only
+   when `IntelligenceAvailability.isAvailable`. It runs AFTER the review screen appears
+   (`.task`) and fills rows batch by batch, marked "Подобрано Apple Intelligence" until the user
+   changes them; a slow model never delays the import. The answer schema is a run-time
+   `DynamicGenerationSchema` `anyOf` over the user's own category names plus `NONE`, so the model
+   cannot invent a category. Merchants are deduplicated by `normalizedMerchant` and sent 15 per
+   request, one fresh `LanguageModelSession` each, greedy sampling. Two failed batches end the run
+   (an unsupported language fails all of them alike). An accepted answer becomes history, so the
+   same merchant is not asked again next time. Receipts ask it for the merchant when nothing else
+   matched. Console.app, subsystem `Tenra`, category `CategoryIntelligence` logs batch sizes,
+   timings and failures. Language caveat: Apple Intelligence must be enabled, which needs a
+   supported device language; for a Russian-language iPhone it is usually off and the tier is
+   simply skipped. Pinned (deterministic half) by `IntelligentCategorySuggesterTests`.
 
 ## Balance on import
 

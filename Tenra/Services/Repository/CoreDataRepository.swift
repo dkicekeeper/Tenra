@@ -69,6 +69,10 @@ nonisolated final class CoreDataRepository: DataRepositoryProtocol, @unchecked S
         transactionRepository.updateTransactionFields(transaction)
     }
 
+    func renameTransactionsCategory(ids: [String], to newName: String) {
+        transactionRepository.renameTransactionsCategory(ids: ids, to: newName)
+    }
+
     func batchInsertTransactions(_ transactions: [Transaction]) {
         transactionRepository.batchInsertTransactions(transactions)
     }

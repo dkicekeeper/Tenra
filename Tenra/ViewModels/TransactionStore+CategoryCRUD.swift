@@ -77,6 +77,7 @@ extension TransactionStore {
         // and miss everything. Done inline so the rename is atomic with the persist.
         if old.name != category.name {
             renameCategoryIndexKeys(from: old.name, to: category.name)
+            renameCategoryInTransactions(from: old.name, to: category.name, type: old.type)
         }
 
         categoriesMutationVersion &+= 1

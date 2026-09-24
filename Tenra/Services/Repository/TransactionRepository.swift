@@ -25,6 +25,8 @@ protocol TransactionRepositoryProtocol: Sendable {
     nonisolated func updateTransactionFields(_ transaction: Transaction)
     /// Batch-insert using NSBatchInsertRequest. O(N) — ideal for CSV import.
     nonisolated func batchInsertTransactions(_ transactions: [Transaction])
+    /// Rewrite the category of the given transactions in one background save. Used by category rename.
+    nonisolated func renameTransactionsCategory(ids: [String], to newName: String)
 }
 
 /// CoreData implementation of TransactionRepositoryProtocol
@@ -353,6 +355,26 @@ nonisolated final class TransactionRepository: TransactionRepositoryProtocol, @u
                 try bgContext.save()
             } catch {
                 Self.logger.error("⚠️ [TransactionRepository] insertTransaction save failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    func renameTransactionsCategory(ids: [String], to newName: String) {
+        guard !ids.isEmpty else { return }
+        let bgContext = stack.newBackgroundContext()
+        // performAndWait for the same reason as updateTransactionFields: the rename
+        // must be on disk before any later per-row update/delete of these entities.
+        bgContext.performAndWait {
+            let req = TransactionEntity.fetchRequest()
+            req.predicate = NSPredicate(format: "id IN %@", ids)
+            guard let entities = try? bgContext.fetch(req), !entities.isEmpty else { return }
+            for entity in entities {
+                entity.category = newName
+            }
+            do {
+                try bgContext.save()
+            } catch {
+                Self.logger.error("⚠️ [TransactionRepository] renameTransactionsCategory save failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

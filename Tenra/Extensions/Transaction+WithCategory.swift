@@ -32,4 +32,29 @@ extension Transaction {
             createdAt: createdAt
         )
     }
+
+    /// Same transaction under a renamed category. Unlike `withCategory`, keeps
+    /// the legacy `subcategory`, because a rename does not change the category's content.
+    nonisolated func renamingCategory(to newName: String) -> Transaction {
+        Transaction(
+            id: id,
+            date: date,
+            description: description,
+            amount: amount,
+            currency: currency,
+            convertedAmount: convertedAmount,
+            type: type,
+            category: newName,
+            subcategory: subcategory,
+            accountId: accountId,
+            targetAccountId: targetAccountId,
+            accountName: accountName,
+            targetAccountName: targetAccountName,
+            targetCurrency: targetCurrency,
+            targetAmount: targetAmount,
+            recurringSeriesId: recurringSeriesId,
+            recurringOccurrenceId: recurringOccurrenceId,
+            createdAt: createdAt
+        )
+    }
 }

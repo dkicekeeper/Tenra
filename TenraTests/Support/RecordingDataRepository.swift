@@ -19,13 +19,24 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
     )
     private let lock = NSLock()
     private var _persistedInitialBalances: [[String: Double]] = []
+    private var _categoryRenames: [(ids: [String], newName: String)] = []
 
     /// Every `updateInitialBalancesSync` argument, in call order.
     var persistedInitialBalances: [[String: Double]] {
         lock.withLock { _persistedInitialBalances }
     }
 
+    /// Every `renameTransactionsCategory` call, in call order.
+    var categoryRenames: [(ids: [String], newName: String)] {
+        lock.withLock { _categoryRenames }
+    }
+
     // MARK: - Recorded
+
+    func renameTransactionsCategory(ids: [String], to newName: String) {
+        lock.withLock { _categoryRenames.append((ids, newName)) }
+        inner.renameTransactionsCategory(ids: ids, to: newName)
+    }
 
     func updateInitialBalancesSync(_ balances: [String: Double]) async {
         lock.withLock { _persistedInitialBalances.append(balances) }

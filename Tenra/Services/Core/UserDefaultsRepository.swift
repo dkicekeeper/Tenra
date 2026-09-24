@@ -78,6 +78,10 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol, @uncheck
         // UserDefaults fallback: no-op. Targeted update only applies to CoreData.
     }
 
+    func renameTransactionsCategory(ids: [String], to newName: String) {
+        // UserDefaults fallback: no-op. Targeted update only applies to CoreData.
+    }
+
     func batchInsertTransactions(_ transactions: [Transaction]) {
         // UserDefaults fallback: no-op. NSBatchInsertRequest only applies to CoreData.
     }

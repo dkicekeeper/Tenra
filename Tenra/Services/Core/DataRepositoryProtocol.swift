@@ -39,6 +39,10 @@ protocol DataRepositoryProtocol: Sendable {
     /// accountId/targetAccountId String columns are used as fallbacks by toTransaction().
     nonisolated func batchInsertTransactions(_ transactions: [Transaction])
 
+    /// Rewrite the category of the given transactions in one background save.
+    /// Used by category rename so stored names follow the renamed category.
+    nonisolated func renameTransactionsCategory(ids: [String], to newName: String)
+
     // MARK: - Accounts
     nonisolated func loadAccounts() -> [Account]
     nonisolated func saveAccounts(_ accounts: [Account])

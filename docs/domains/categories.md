@@ -49,6 +49,13 @@ Touch points that must keep indexes in sync:
 
 This is centralised in `renameCategoryIndexKeys(from:to:)` and called from `updateCategory(_:)` when `old.name != new.name`.
 
+Right after it, `updateCategory` calls `TransactionStore.renameCategoryInTransactions(from:to:type:)`, which rewrites the
+stored name on every transaction of that category type (`categoryPickerSourceType`) and on recurring series, and persists
+it in one background save (`renameTransactionsCategory(ids:to:)`). Categories are referenced by NAME everywhere; before this,
+a rename left old transactions with the old name, so editing one failed `validate` with `categoryNotFound` and the category
+emptied after relaunch. Transactions orphaned by renames made before 2026-09-24 still carry old names and show up in the
+History filter under "deleted categories". Pinned by `CategoryRenameTests`.
+
 ## Aggregate buckets
 
 `CategoryAggregate` keys are 4-granularity: `daily`, `monthly`, `yearly`, `all-time` (see [Models/CategoryAggregate.swift](../../Tenra/Models/CategoryAggregate.swift)).

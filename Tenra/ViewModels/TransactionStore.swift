@@ -848,6 +848,52 @@ final class TransactionStore {
 
     }
 
+    /// Rewrites a renamed category on every transaction and recurring series that
+    /// still carries the old name. Call AFTER `renameCategoryIndexKeys`, which has
+    /// already moved the name-keyed indexes and aggregates; this makes the stored
+    /// strings agree with them, so relaunch, `validate` and series generation see
+    /// the new name. Categories are referenced by name everywhere, so without this a
+    /// rename left old transactions uneditable (`categoryNotFound`) and emptied the
+    /// category after relaunch.
+    ///
+    /// Deliberately not routed through `apply(.updated)` per row: that would re-run the
+    /// category index update against indexes already moved, and costs O(N) per row.
+    func renameCategoryInTransactions(from oldName: String, to newName: String, type: TransactionType) {
+        guard oldName != newName else { return }
+
+        var renamedIds: [String] = []
+        for index in transactions.indices {
+            let tx = transactions[index]
+            guard tx.category == oldName,
+                  tx.type != .internalTransfer,
+                  tx.type.categoryPickerSourceType == type else { continue }
+            let renamed = tx.renamingCategory(to: newName)
+            transactions[index] = renamed
+            transactionById[renamed.id] = renamed
+            renamedIds.append(renamed.id)
+        }
+
+        // A same-named category of the other type would make a series ambiguous
+        // (series carry no category type), so only rename when the old name is gone.
+        if !categories.contains(where: { $0.name == oldName }) {
+            var seriesChanged = false
+            for series in recurringStore.recurringSeries where series.category == oldName {
+                var updated = series
+                updated.category = newName
+                recurringStore.handleSeriesUpdated(old: series, new: updated)
+                seriesChanged = true
+            }
+            if seriesChanged {
+                recurringStore.saveSeries()
+            }
+        }
+
+        guard !renamedIds.isEmpty else { return }
+        repository.renameTransactionsCategory(ids: renamedIds, to: newName)
+        cache.invalidateAll()
+        mutationVersion &+= 1
+    }
+
     /// Delete a transaction
     func delete(_ transaction: Transaction) async throws {
         guard transactionById[transaction.id] != nil else {

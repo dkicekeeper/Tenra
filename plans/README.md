@@ -15,8 +15,8 @@ your row when done. The maintainer commits directly to `main`; do not push.
 |------|-------|----------|--------|------------|--------|
 | 001 | [Face ID / Touch ID / passcode lock + app-switcher cover](001-app-lock-face-id.md) | P1 | S | none | DONE (5c323704; device check pending) |
 | 002 | [Category suggestions for statement import and receipts](002-import-category-suggestions.md) | P1 | M | none | DONE (8b184aea; device check pending) |
-| 003 | [Apply a changed category to same-merchant transactions](003-apply-category-to-similar.md) | P2 | M | 002 | DONE (see git log; device check pending) |
-| 004 | [Spike: Apple Pay logging via the Shortcuts "Wallet" automation](004-spike-wallet-automation.md) | P2 | S + 1 week of device data | none (002 optional) | TODO |
+| 003 | [Apply a changed category to same-merchant transactions](003-apply-category-to-similar.md) | P2 | M | 002 | DONE (ae99e4b8; device check pending) |
+| 004 | [Spike: Apple Pay logging via the Shortcuts "Wallet" automation](004-spike-wallet-automation.md) | P2 | S + 1 week of device data | none (002 optional) | BLOCKED (2026-09-24: probe in DEBUG builds, waiting for a week of device data) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 

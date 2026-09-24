@@ -88,6 +88,17 @@ as uncategorized, because `TransactionStore.validate` would reject them and the 
 loop would drop them. An Apple Intelligence tier was deliberately left out: on-device
 language support for the Russian-speaking primary market is uncertain.
 
+## Balance on import
+
+An account's balance is `initialBalance + Σ realized transactions` with no creation-date cutoff, and
+accounts are usually created with the user's REAL current balance. `ImportBalanceCompensation.apply`
+(`Services/Balance/`) runs after the review screen saves rows: for each touched account it shifts
+`initialBalance` by the contribution of rows dated strictly BEFORE the account's creation day (they are
+already in the entered balance), persisted through `BalanceCoordinator.persistInitialBalance`. Rows on or
+after the creation day are new money movement and still move the balance. Accounts with
+`shouldCalculateFromTransactions` are never compensated. The CSV path into existing accounts does not use
+it yet. Pinned by `ImportBalanceCompensationTests`.
+
 ## Tests
 
 `TenraTests/Services/Import/` covers `DateTokenParser`, `MoneyTokenParser`,

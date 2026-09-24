@@ -19,7 +19,7 @@ your row when done. The maintainer commits directly to `main`; do not push.
 | 004 | [Spike: Apple Pay logging via the Shortcuts "Wallet" automation](004-spike-wallet-automation.md) | P2 | S + 1 week of device data | none (002 optional) | BLOCKED (2026-09-24: probe in DEBUG builds, waiting for a week of device data) |
 | 005 | [Manual balance correction survives relaunch](005-persist-balance-correction.md) | P1 | S | none | DONE (see git log) |
 | 006 | [Category rename rewrites transactions and series](006-category-rename-rewrites-transactions.md) | P1 | M | none | DONE (see git log) |
-| 007 | [Statement import keeps the account's current balance](007-import-keeps-account-balance.md) | P1 | M | 005 | TODO |
+| 007 | [Statement import keeps the account's current balance](007-import-keeps-account-balance.md) | P1 | M | 005 | DONE (see git log) |
 | 008 | [Statement import flags duplicates and subscription occurrences](008-import-duplicate-detection.md) | P1 | M | none (after 007: same file) | TODO |
 | 009 | [Provisional notification permission for digest and signals](009-provisional-notification-permission.md) | P1 | S | none | DONE (see git log) |
 | 010 | [History category filter: all selected + uncategorized](010-history-category-filter.md) | P2 | S | none | DONE (see git log) |

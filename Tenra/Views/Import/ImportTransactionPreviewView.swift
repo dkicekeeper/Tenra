@@ -243,7 +243,7 @@ struct ImportTransactionPreviewView: View {
         let transactionsToAdd = transactions.filter { selectedTransactions.contains($0.id) }
 
         Task {
-            var savedCount = 0
+            var saved: [Transaction] = []
             for transaction in transactionsToAdd {
                 // A row can only be selected when availableAccounts(for:) is
                 // non-empty (see onToggle/onAppear/Select All above), but this
@@ -269,13 +269,18 @@ struct ImportTransactionPreviewView: View {
                 )
 
                 do {
-                    _ = try await transactionStore.add(updatedTransaction)
-                    savedCount += 1
+                    saved.append(try await transactionStore.add(updatedTransaction))
                 } catch {
                 }
             }
 
-            RatingPromptService.shared.recordTransactionAdded(count: savedCount)
+            // Rows that predate an account are already in the balance the user
+            // entered when creating it; keep that balance instead of double-counting.
+            if let coordinator = accountsViewModel.balanceCoordinator {
+                await ImportBalanceCompensation.apply(saved: saved, store: transactionStore, coordinator: coordinator)
+            }
+
+            RatingPromptService.shared.recordTransactionAdded(count: saved.count)
             dismiss()
         }
     }

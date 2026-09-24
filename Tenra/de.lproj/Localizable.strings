@@ -1686,3 +1686,9 @@
 "appLock.title" = "Tenra ist gesperrt";
 "appLock.unlock" = "Entsperren";
 "appLock.reason" = "Entsperren, um Ihre Finanzen zu sehen";
+
+/* Apply category to similar transactions */
+"transaction.applySimilar.title" = "Ähnliche Transaktionen ändern?";
+"transaction.applySimilar.message" = "„%1$@“: %2$lld weitere mit derselben Kategorie. Sollen sie ebenfalls nach „%3$@“ verschoben werden?";
+"transaction.applySimilar.apply" = "Alle ändern";
+"transaction.applySimilar.skip" = "Nur diese";

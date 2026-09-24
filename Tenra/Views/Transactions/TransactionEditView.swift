@@ -200,6 +200,31 @@ struct TransactionEditView: View {
                     .presentationDragIndicator(.visible)
                 }
             }
+            // After a category change: offer the same category to the other
+            // transactions of this merchant. The buttons take the proposal from
+            // the closure, so the binding clearing it first cannot lose it.
+            .alert(
+                String(localized: "transaction.applySimilar.title"),
+                isPresented: Binding(
+                    get: { coordinator.bulkCategoryProposal != nil },
+                    set: { if !$0 { coordinator.bulkCategoryProposal = nil } }
+                ),
+                presenting: coordinator.bulkCategoryProposal
+            ) { proposal in
+                Button(String(localized: "transaction.applySimilar.apply")) {
+                    Task { await coordinator.applyBulkCategory(proposal) }
+                }
+                Button(String(localized: "transaction.applySimilar.skip"), role: .cancel) {
+                    coordinator.finishBulkPrompt()
+                }
+            } message: { proposal in
+                Text(String(
+                    format: String(localized: "transaction.applySimilar.message"),
+                    proposal.merchant,
+                    proposal.transactionIds.count,
+                    proposal.newCategory
+                ))
+            }
             .onChange(of: coordinator.formData.selectedAccountId) { _, _ in
                 coordinator.updateCurrencyForSelectedAccount()
             }

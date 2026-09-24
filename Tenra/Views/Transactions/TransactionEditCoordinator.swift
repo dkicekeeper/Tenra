@@ -31,6 +31,19 @@ struct EditTransactionFormData {
     var showingRecurringDisableDialog: Bool = false
 }
 
+// MARK: - Bulk Category Proposal
+
+/// Offered after a save that changed the category: the other saved
+/// transactions of the same merchant that still carry the old category.
+struct BulkCategoryProposal: Identifiable, Equatable {
+    let id = UUID()
+    /// The edited description, trimmed and capped for the alert text.
+    let merchant: String
+    let previousCategory: String
+    let newCategory: String
+    let transactionIds: [String]
+}
+
 // MARK: - TransactionEditCoordinator
 
 @Observable
@@ -54,6 +67,12 @@ final class TransactionEditCoordinator {
 
     /// Error message to display in MessageBanner, nil when no error.
     var errorMessage: String?
+
+    /// Non-nil while the "apply to similar transactions" alert is up.
+    var bulkCategoryProposal: BulkCategoryProposal?
+
+    /// The save's `onSuccess` (dismisses the sheet), held until the user answers the alert.
+    @ObservationIgnored private var pendingSuccess: (() -> Void)?
 
     // MARK: - Computed: Available Categories
 
@@ -302,11 +321,65 @@ final class TransactionEditCoordinator {
             )
 
             HapticManager.success()
-            onSuccess()
+            if let proposal = await makeBulkCategoryProposal(saved: updatedTransaction) {
+                pendingSuccess = onSuccess
+                bulkCategoryProposal = proposal
+            } else {
+                onSuccess()
+            }
         } catch {
             errorMessage = error.localizedDescription
             HapticManager.error()
         }
+    }
+
+    // MARK: - Bulk Category ("apply to similar")
+
+    /// Other saved transactions of the same merchant that still carry the
+    /// category this one had before the edit. Swept off the main actor
+    /// (CLAUDE.md Red Flag 9); nil when the category did not change or nothing matches.
+    private func makeBulkCategoryProposal(saved: Transaction) async -> BulkCategoryProposal? {
+        let previous = transaction.category
+        guard saved.type == .expense || saved.type == .income,
+              !saved.category.isEmpty,
+              saved.category != previous else { return nil }
+
+        let all = transactionStore.transactions
+        let links = transactionStore.subcategoryIdsByTransactionId
+        let ids = await Task.detached(priority: .userInitiated) {
+            CategorySuggestionService.similarTransactionIds(
+                to: saved,
+                previousCategory: previous,
+                in: all,
+                subcategoryLinks: links
+            )
+        }.value
+        guard !ids.isEmpty else { return nil }
+
+        let merchant = String(saved.description.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40))
+        return BulkCategoryProposal(
+            merchant: merchant,
+            previousCategory: previous,
+            newCategory: saved.category,
+            transactionIds: ids
+        )
+    }
+
+    func applyBulkCategory(_ proposal: BulkCategoryProposal) async {
+        _ = await transactionStore.recategorize(
+            ids: proposal.transactionIds,
+            from: proposal.previousCategory,
+            to: proposal.newCategory
+        )
+        finishBulkPrompt()
+    }
+
+    /// Closes the prompt and runs the held `onSuccess`, which dismisses the edit sheet.
+    func finishBulkPrompt() {
+        bulkCategoryProposal = nil
+        let done = pendingSuccess
+        pendingSuccess = nil
+        done?()
     }
 
     // MARK: - Private: Recurring Series

@@ -1686,3 +1686,9 @@
 "appLock.title" = "Tenra заблокирована";
 "appLock.unlock" = "Разблокировать";
 "appLock.reason" = "Разблокируйте, чтобы увидеть свои финансы";
+
+/* Apply category to similar transactions */
+"transaction.applySimilar.title" = "Изменить похожие операции?";
+"transaction.applySimilar.message" = "«%1$@»: ещё %2$lld с той же категорией. Перенести их тоже в «%3$@»?";
+"transaction.applySimilar.apply" = "Изменить все";
+"transaction.applySimilar.skip" = "Только эту";

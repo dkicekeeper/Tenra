@@ -1686,3 +1686,9 @@
 "appLock.title" = "Tenra kilitli";
 "appLock.unlock" = "Kilidi aç";
 "appLock.reason" = "Finanslarınızı görmek için kilidi açın";
+
+/* Apply category to similar transactions */
+"transaction.applySimilar.title" = "Benzer işlemler güncellensin mi?";
+"transaction.applySimilar.message" = "“%1$@”: aynı kategoride %2$lld işlem daha var. Bunlar da “%3$@” kategorisine taşınsın mı?";
+"transaction.applySimilar.apply" = "Tümünü güncelle";
+"transaction.applySimilar.skip" = "Yalnızca bunu";

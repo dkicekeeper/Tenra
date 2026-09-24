@@ -106,6 +106,40 @@ nonisolated enum CategorySuggestionService {
         "\(type.rawValue)|\(merchant)"
     }
 
+    // MARK: - Similar saved transactions
+
+    /// Saved transactions that look like `edited` and still carry
+    /// `previousCategory`, for the "apply to similar" prompt after an edit.
+    /// A candidate must have the same income/expense type, the same normalized
+    /// merchant (at least `minimumMerchantLength` characters), the previous
+    /// category, no recurring series (series edits go through the subscription
+    /// screen) and no subcategory links (they belong to the old category).
+    /// Sorted by date descending, then id, for determinism.
+    static func similarTransactionIds(
+        to edited: Transaction,
+        previousCategory: String,
+        in transactions: [Transaction],
+        subcategoryLinks: [String: [String]]
+    ) -> [String] {
+        guard edited.type == .expense || edited.type == .income else { return [] }
+        let merchant = normalizedMerchant(edited.description)
+        guard merchant.count >= minimumMerchantLength else { return [] }
+
+        return transactions
+            .filter { candidate in
+                candidate.id != edited.id
+                    && candidate.type == edited.type
+                    && candidate.category == previousCategory
+                    && candidate.recurringSeriesId == nil
+                    && (subcategoryLinks[candidate.id]?.isEmpty ?? true)
+                    && normalizedMerchant(candidate.description) == merchant
+            }
+            .sorted { lhs, rhs in
+                lhs.date != rhs.date ? lhs.date > rhs.date : lhs.id < rhs.id
+            }
+            .map(\.id)
+    }
+
     // MARK: - Brand tier
 
     /// Well-known merchants → `CategoryPreset` id. An ARRAY of pairs, not a

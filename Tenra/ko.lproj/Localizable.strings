@@ -1686,3 +1686,9 @@
 "appLock.title" = "Tenra가 잠겨 있습니다";
 "appLock.unlock" = "잠금 해제";
 "appLock.reason" = "재무 정보를 보려면 잠금을 해제하세요";
+
+/* Apply category to similar transactions */
+"transaction.applySimilar.title" = "비슷한 거래도 변경할까요?";
+"transaction.applySimilar.message" = "“%1$@”: 같은 카테고리의 거래가 %2$lld건 더 있습니다. 이 거래들도 “%3$@”(으)로 옮길까요?";
+"transaction.applySimilar.apply" = "모두 변경";
+"transaction.applySimilar.skip" = "이 거래만";

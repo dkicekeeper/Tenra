@@ -1686,3 +1686,9 @@
 "appLock.title" = "Tenra is locked";
 "appLock.unlock" = "Unlock";
 "appLock.reason" = "Unlock to see your finances";
+
+/* Apply category to similar transactions */
+"transaction.applySimilar.title" = "Update similar transactions?";
+"transaction.applySimilar.message" = "“%1$@”: %2$lld more with the same category. Move them to “%3$@” as well?";
+"transaction.applySimilar.apply" = "Update all";
+"transaction.applySimilar.skip" = "Only this one";

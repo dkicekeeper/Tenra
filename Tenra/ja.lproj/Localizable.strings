@@ -1686,3 +1686,9 @@
 "appLock.title" = "Tenraはロックされています";
 "appLock.unlock" = "ロックを解除";
 "appLock.reason" = "財務情報を表示するにはロックを解除してください";
+
+/* Apply category to similar transactions */
+"transaction.applySimilar.title" = "似た取引も変更しますか？";
+"transaction.applySimilar.message" = "「%1$@」: 同じカテゴリの取引が他に%2$lld件あります。これらも「%3$@」に移動しますか？";
+"transaction.applySimilar.apply" = "すべて変更";
+"transaction.applySimilar.skip" = "この取引のみ";

@@ -1686,3 +1686,9 @@
 "appLock.title" = "Tenra est verrouillé";
 "appLock.unlock" = "Déverrouiller";
 "appLock.reason" = "Déverrouillez pour voir vos finances";
+
+/* Apply category to similar transactions */
+"transaction.applySimilar.title" = "Modifier les opérations similaires ?";
+"transaction.applySimilar.message" = "« %1$@ » : %2$lld autres avec la même catégorie. Les déplacer aussi vers « %3$@ » ?";
+"transaction.applySimilar.apply" = "Tout modifier";
+"transaction.applySimilar.skip" = "Seulement celle-ci";

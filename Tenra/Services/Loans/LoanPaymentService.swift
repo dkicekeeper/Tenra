@@ -64,7 +64,13 @@ nonisolated enum LoanPaymentService {
         let isPaid: Bool
     }
 
-    /// Генерация полного графика амортизации
+    /// Генерация полного графика амортизации.
+    ///
+    /// Replays the loan from `originalPrincipal`, applying early repayments in date order,
+    /// with the monthly payment that was in force in each month. A "reduce payment"
+    /// repayment overwrites `loanInfo.monthlyPayment`, so replaying every month with the
+    /// CURRENT payment (the old behavior) made all rows before the repayment wrong, and
+    /// `LoansViewModel.markPaymentsPaid` then wrote a wrong remaining principal from them.
     static func generateAmortizationSchedule(loanInfo: LoanInfo) -> [AmortizationEntry] {
         var schedule: [AmortizationEntry] = []
         var remaining = loanInfo.originalPrincipal
@@ -74,11 +80,11 @@ nonisolated enum LoanPaymentService {
             return []
         }
 
-        // Собираем даты досрочных погашений для учёта
-        var earlyRepaymentsByMonth: [String: Decimal] = [:]
-        for er in loanInfo.earlyRepayments {
-            earlyRepaymentsByMonth[er.date, default: 0] += er.amount
-        }
+        let repayments = loanInfo.earlyRepayments.sorted { $0.date < $1.date }
+        let reducePayment = repayments.filter { $0.type == .reducePayment }
+        var payment = initialMonthlyPayment(loanInfo: loanInfo, reducePayment: reducePayment)
+        var nextRepayment = 0
+        var reduceApplied = 0
 
         for i in 1...loanInfo.termMonths {
             guard remaining > 0 else { break }
@@ -86,17 +92,28 @@ nonisolated enum LoanPaymentService {
             guard let paymentDate = calendar.date(byAdding: .month, value: i, to: startDate) else { break }
             let dateStr = DateFormatters.dateFormatter.string(from: paymentDate)
 
-            // Применяем досрочные погашения, произошедшие до этой даты
-            let applicableKeys = earlyRepaymentsByMonth.keys.filter { $0 < dateStr }
-            for erDate in applicableKeys {
-                remaining -= earlyRepaymentsByMonth.removeValue(forKey: erDate) ?? 0
+            // Early repayments made before this payment date, in date order.
+            while nextRepayment < repayments.count, repayments[nextRepayment].date < dateStr {
+                let repayment = repayments[nextRepayment]
+                remaining -= repayment.amount
+                nextRepayment += 1
+                if repayment.type == .reducePayment {
+                    reduceApplied += 1
+                    payment = paymentAfterReduction(
+                        loanInfo: loanInfo,
+                        reducePayment: reducePayment,
+                        applied: reduceApplied,
+                        remaining: remaining,
+                        paymentNumber: i
+                    )
+                }
             }
             guard remaining > 0 else { break }
 
             let (interest, principalPart) = paymentBreakdown(
                 remainingPrincipal: remaining,
                 annualRate: loanInfo.interestRateAnnual,
-                monthlyPayment: loanInfo.monthlyPayment
+                monthlyPayment: payment
             )
 
             // Последний платёж: очищаем остаток точно
@@ -119,6 +136,40 @@ nonisolated enum LoanPaymentService {
         return schedule
     }
 
+    /// Payment before any "reduce payment" repayment: recorded on the first one, or
+    /// recomputed from the original terms for repayments recorded before the field existed.
+    private static func initialMonthlyPayment(loanInfo: LoanInfo, reducePayment: [EarlyRepayment]) -> Decimal {
+        guard let first = reducePayment.first else { return loanInfo.monthlyPayment }
+        return first.paymentBefore ?? calculateMonthlyPayment(
+            principal: loanInfo.originalPrincipal,
+            annualRate: loanInfo.interestRateAnnual,
+            termMonths: loanInfo.termMonths
+        )
+    }
+
+    /// Payment in force after the `applied`-th "reduce payment" repayment: the next
+    /// repayment's recorded `paymentBefore`, the current payment after the last one, or
+    /// (legacy entries) the same recomputation `applyEarlyRepayment` performed.
+    private static func paymentAfterReduction(
+        loanInfo: LoanInfo,
+        reducePayment: [EarlyRepayment],
+        applied: Int,
+        remaining: Decimal,
+        paymentNumber: Int
+    ) -> Decimal {
+        if applied >= reducePayment.count {
+            return loanInfo.monthlyPayment
+        }
+        if let recorded = reducePayment[applied].paymentBefore {
+            return recorded
+        }
+        return calculateMonthlyPayment(
+            principal: remaining,
+            annualRate: loanInfo.interestRateAnnual,
+            termMonths: max(1, loanInfo.termMonths - (paymentNumber - 1))
+        )
+    }
+
     // MARK: - Summary Stats
 
     /// Общая сумма процентов по графику
@@ -136,19 +187,31 @@ nonisolated enum LoanPaymentService {
     // MARK: - Progress & Helpers
 
     static func nextPaymentDate(loanInfo: LoanInfo) -> Date? {
+        nextPaymentDate(loanInfo: loanInfo, today: Date(), calendar: .current)
+    }
+
+    /// The payment day is clamped separately in each month (day 31 → Feb 28 → Mar 31),
+    /// never by adding a month to an already-clamped date (which gave Mar 28). A payment
+    /// due today is returned as today.
+    static func nextPaymentDate(loanInfo: LoanInfo, today now: Date, calendar: Calendar) -> Date? {
         guard loanInfo.remainingPrincipal > 0 else { return nil }
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        var components = calendar.dateComponents([.year, .month], from: today)
-        components.day = min(loanInfo.paymentDay, daysInMonth(date: today))
+        let today = calendar.startOfDay(for: now)
 
-        guard let currentMonthDate = calendar.date(from: components) else { return nil }
-
-        if currentMonthDate <= today {
-            // Платёж уже прошёл в этом месяце — следующий в следующем месяце
-            return calendar.date(byAdding: .month, value: 1, to: currentMonthDate)
+        func paymentDate(inMonthOf reference: Date) -> Date? {
+            var components = calendar.dateComponents([.year, .month], from: reference)
+            let days = calendar.range(of: .day, in: .month, for: reference)?.count ?? 30
+            components.day = min(loanInfo.paymentDay, days)
+            return calendar.date(from: components)
         }
-        return currentMonthDate
+
+        guard let thisMonth = paymentDate(inMonthOf: today) else { return nil }
+        if thisMonth >= today {
+            return thisMonth
+        }
+        guard let nextMonthReference = calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today) else {
+            return nil
+        }
+        return paymentDate(inMonthOf: nextMonthReference)
     }
 
     static func remainingPayments(loanInfo: LoanInfo) -> Int {
@@ -171,9 +234,10 @@ nonisolated enum LoanPaymentService {
         type: EarlyRepaymentType,
         note: String? = nil
     ) {
+        let paymentBefore = loanInfo.monthlyPayment
         loanInfo.remainingPrincipal -= amount
         loanInfo.earlyRepayments.append(EarlyRepayment(
-            date: date, amount: amount, type: type, note: note
+            date: date, amount: amount, type: type, note: note, paymentBefore: paymentBefore
         ))
 
         let remaining = remainingPayments(loanInfo: loanInfo)
@@ -375,12 +439,6 @@ nonisolated enum LoanPaymentService {
         loanInfo.totalInterestPaid = totalInterest
     }
 
-    // MARK: - Private Helpers
-
-    private static func daysInMonth(date: Date) -> Int {
-        let calendar = Calendar.current
-        return calendar.range(of: .day, in: .month, for: date)?.count ?? 30
-    }
 }
 
 // MARK: - Decimal Rounding Helper

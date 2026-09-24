@@ -379,12 +379,18 @@ struct EarlyRepayment: Codable, Equatable, Hashable {
     let amount: Decimal     // Сумма досрочного погашения
     let type: EarlyRepaymentType
     let note: String?
+    /// Monthly payment in force BEFORE this repayment. Lets the amortization schedule
+    /// replay past months with the payment they really had after a "reduce payment"
+    /// repayment overwrote `LoanInfo.monthlyPayment`. nil for repayments recorded
+    /// before 2026-09-24 (synthesized Codable decodes a missing key as nil).
+    let paymentBefore: Decimal?
 
-    nonisolated init(date: String, amount: Decimal, type: EarlyRepaymentType, note: String? = nil) {
+    nonisolated init(date: String, amount: Decimal, type: EarlyRepaymentType, note: String? = nil, paymentBefore: Decimal? = nil) {
         self.date = date
         self.amount = amount
         self.type = type
         self.note = note
+        self.paymentBefore = paymentBefore
     }
 }
 

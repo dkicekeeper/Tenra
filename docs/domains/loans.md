@@ -27,6 +27,18 @@ Loan payments are **never** generated automatically. The user records every paym
 
 Rationale: real-world loan payments rarely match the calculated annuity exactly (users round up, pay early, vary amounts). Auto-generated phantom payments diverged from real bank withdrawals and confused state. Deposits still auto-reconcile interest accrual — only loans are user-driven.
 
+## Amortization schedule replay
+
+`generateAmortizationSchedule` replays the loan from `originalPrincipal`, applying early repayments in
+date order with the monthly payment that was in force in each month. `applyEarlyRepayment` records
+`EarlyRepayment.paymentBefore`; repayments recorded before 2026-09-24 have it nil and the replay
+recomputes it exactly as `applyEarlyRepayment` did. Before this, every month was replayed with the
+CURRENT payment, so after a "reduce payment" repayment all earlier rows were wrong and
+`LoansViewModel.markPaymentsPaid` (which copies `remainingBalance` / interest from the rows) wrote a
+wrong `remainingPrincipal`. `nextPaymentDate` clamps the payment day inside each month separately
+(day 31 → Feb 28 → Mar 31) and returns today when the payment is due today.
+Pinned by `LoanScheduleReplayTests`.
+
 ## Paid-off Lifecycle
 
 A loan is **closed** when `LoanInfo.isPaidOff` — i.e. `remainingPrincipal <= LoanInfo.paidOffThreshold` (0.01). There is **no persisted closed flag**: the status is derived so it can never drift from the balance when a payment is edited, unlinked, or the amount is corrected. Threshold rather than `<= 0` because annuity rounding and FX leave sub-cent residue on the final payment, which would pin a loan "active" at a displayed debt of 0.00 forever.

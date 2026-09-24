@@ -97,6 +97,53 @@ struct RecurringTransactionGeneratorTests {
         #expect(dates.contains("2024-02-29"), "Expected Feb 29 occurrence for leap year 2024; got: \(dates)")
     }
 
+    // MARK: - Month-end series keep their day (anchored to the start date)
+
+    /// Stepping from the previous occurrence used to clamp once in February and
+    /// stay on the 28th forever (Mar 28, Apr 28...). Occurrences are now anchored.
+    @Test("Jan 31 monthly continues on Mar 31 and Apr 30, never Mar 28")
+    func testJan31MonthlyKeepsMonthEndAfterFebruary() {
+        let generator = RecurringTransactionGenerator(dateFormatter: makeFormatter())
+        let series = makeSeries(startDate: "2025-01-31", frequency: .monthly)
+
+        let result = generator.generateTransactions(
+            series: [series],
+            existingOccurrences: [],
+            existingTransactionIds: [],
+            accounts: [],
+            baseCurrency: "USD",
+            horizonMonths: 3
+        )
+
+        let dates = result.occurrences.map { $0.occurrenceDate }
+        #expect(dates.contains("2025-03-31"), "got: \(dates)")
+        #expect(dates.contains("2025-04-30"), "got: \(dates)")
+        #expect(!dates.contains("2025-03-28"), "must not drift to the 28th; got: \(dates)")
+    }
+
+    /// Series whose stored occurrences already drifted (…, Mar 28) resume in the
+    /// NEXT month on the anchored day, without a second March occurrence.
+    @Test("Resuming after a drifted Mar 28 occurrence generates Apr 30, not Mar 31")
+    func testResumeAfterDriftedOccurrence() {
+        let generator = RecurringTransactionGenerator(dateFormatter: makeFormatter())
+        let series = makeSeries(id: "drift", startDate: "2025-01-31", frequency: .monthly)
+        let existing = ["2025-01-31", "2025-02-28", "2025-03-28"].enumerated().map { index, date in
+            RecurringOccurrence(id: "o\(index)", seriesId: "drift", occurrenceDate: date, transactionId: "t\(index)")
+        }
+
+        let result = generator.generateUpToNextFuture(
+            series: series,
+            existingOccurrences: existing,
+            existingTransactionIds: [],
+            accounts: [],
+            baseCurrency: "USD"
+        )
+
+        let dates = result.occurrences.map { $0.occurrenceDate }
+        #expect(dates.first == "2025-04-30", "got: \(dates.prefix(3))")
+        #expect(!dates.contains("2025-03-31"), "no second March occurrence")
+    }
+
     // MARK: - Test C: Feb 29 yearly → Feb 28 on non-leap year
 
     /// Yearly series starting 2024-02-29 must produce 2025-02-28.

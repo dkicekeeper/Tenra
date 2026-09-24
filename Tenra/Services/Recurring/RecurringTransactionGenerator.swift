@@ -108,6 +108,7 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
         var newTransactions: [Transaction] = []
         var newOccurrences: [RecurringOccurrence] = []
         var currentDate = startDate
+        var occurrenceIndex = 0
         var iterationCount = 0
 
         while currentDate <= horizonDate && iterationCount < maxIterations {
@@ -190,8 +191,12 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
                 }
             }
 
-            // Calculate next date based on frequency
-            guard let nextDate = calculateNextDate(from: currentDate, frequency: series.frequency) else {
+            // Next occurrence, anchored to the start date (RecurringDateMath) so a
+            // series on the 29th-31st keeps its day instead of drifting to the 28th.
+            occurrenceIndex += 1
+            guard let nextDate = RecurringDateMath.occurrence(
+                occurrenceIndex, start: startDate, frequency: series.frequency, calendar: calendar
+            ) else {
                 break
             }
 
@@ -228,22 +233,6 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
             return min((daysBetweenStartAndHorizon / 90) + 10, 200)
         case .yearly:
             return min((daysBetweenStartAndHorizon / 365) + 10, 100)
-        }
-    }
-
-    /// Calculate next date based on frequency
-    private func calculateNextDate(from currentDate: Date, frequency: RecurringFrequency) -> Date? {
-        switch frequency {
-        case .daily:
-            return calendar.date(byAdding: .day, value: 1, to: currentDate)
-        case .weekly:
-            return calendar.date(byAdding: .day, value: 7, to: currentDate)
-        case .monthly:
-            return calendar.date(byAdding: .month, value: 1, to: currentDate)
-        case .quarterly:
-            return calendar.date(byAdding: .month, value: 3, to: currentDate)
-        case .yearly:
-            return calendar.date(byAdding: .year, value: 1, to: currentDate)
         }
     }
 
@@ -292,15 +281,22 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
             .compactMap { dateFormatter.date(from: $0.occurrenceDate) }
             .max()
 
-        // Determine starting candidate: right after the last known occurrence
-        var candidateDate: Date
+        // Starting candidate: the occurrence of the period after the last known one,
+        // anchored to the start date. Resuming by period (not "latest + 1 month")
+        // keeps month-end series on their day, and never adds a second occurrence
+        // to a period whose stored occurrence drifted under the old stepping.
+        var candidateIndex: Int
         if let latest = latestOccurrenceDate {
-            guard let next = calculateNextDate(from: latest, frequency: series.frequency) else {
-                return ([], [])
-            }
-            candidateDate = next
+            candidateIndex = RecurringDateMath.periodIndex(
+                of: latest, start: startDate, frequency: series.frequency, calendar: calendar
+            ) + 1
         } else {
-            candidateDate = startDate
+            candidateIndex = 0
+        }
+        guard var candidateDate = RecurringDateMath.occurrence(
+            candidateIndex, start: startDate, frequency: series.frequency, calendar: calendar
+        ) else {
+            return ([], [])
         }
 
         var newTransactions: [Transaction] = []
@@ -316,8 +312,10 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
 
             // Skip if this occurrence already exists (shouldn't happen, but defensive)
             if existingOccurrenceKeys.contains(occurrenceKey) {
-                guard let next = calculateNextDate(from: candidateDate, frequency: series.frequency),
-                      next > candidateDate else { break }
+                candidateIndex += 1
+                guard let next = RecurringDateMath.occurrence(
+                    candidateIndex, start: startDate, frequency: series.frequency, calendar: calendar
+                ), next > candidateDate else { break }
                 candidateDate = next
                 // If we've moved past today and skipped a future — it means future already exists
                 if candidateDate > today { break }
@@ -394,9 +392,11 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
                 break
             }
 
-            // Advance to the next date
-            guard let next = calculateNextDate(from: candidateDate, frequency: series.frequency),
-                  next > candidateDate else { break }
+            // Advance to the next anchored occurrence
+            candidateIndex += 1
+            guard let next = RecurringDateMath.occurrence(
+                candidateIndex, start: startDate, frequency: series.frequency, calendar: calendar
+            ), next > candidateDate else { break }
             candidateDate = next
         }
 

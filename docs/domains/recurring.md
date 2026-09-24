@@ -7,6 +7,16 @@ Series + occurrence model for subscriptions and recurring payments.
 - `generateUpToNextFuture()` — backfills all past occurrences + creates exactly **1 future occurrence**
 - `extendAllActiveSeriesHorizons()` — called on `loadData` and foreground resume; collects EVERY series' backfill first, then persists via ONE `apply(.bulkAdded)` (a per-series apply ran one CoreData save + full FRC section rebuild per series — S main-thread hitches at cold start after N days away)
 
+## Occurrence dates are anchored to the start
+
+`RecurringDateMath` computes occurrence k as `start + k × period`, used by both the generator
+(`generateTransactions`, `generateUpToNextFuture`) and `SubscriptionNotificationScheduler`.
+Stepping from the previous occurrence (the pre-2026-09-24 generator) clamped Jan 31 to Feb 28
+and stayed on the 28th forever, while reminders targeted the 31st. Resuming after the latest
+stored occurrence goes to the NEXT period (`periodIndex + 1`, day ignored), so series whose
+stored occurrences already drifted never get a second occurrence in the same month.
+Pinned by `RecurringDateMathTests` and the month-end cases in `RecurringTransactionGeneratorTests`.
+
 ## Active vs Status
 
 Two flags must be updated **in tandem**:
@@ -28,6 +38,7 @@ Both are updated by `stopSeries` / `resumeSeries`.
 4. `Services/Notifications/SubscriptionNotificationScheduler.swift`
 5. `Services/Insights/InsightsService.swift` (2 switches)
 6. `Services/Insights/InsightsService+Recurring.swift`
+7. `Services/Recurring/RecurringDateMath.swift` (occurrence dates for the generator and reminders)
 
 ## Generator Linking — Subcategories
 

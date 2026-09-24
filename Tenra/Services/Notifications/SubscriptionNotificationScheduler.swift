@@ -155,74 +155,32 @@ class SubscriptionNotificationScheduler {
 
     }
 
-    /// Calculate next charge date for a subscription
-    /// This method properly calculates the next occurrence based on startDate and frequency
+    /// Calculate next charge date for a subscription: the start date if it is still
+    /// ahead, otherwise the first occurrence strictly after today. A charge due TODAY
+    /// is treated as passed (its reminders fired before today), matching the previous
+    /// behavior. Dates come from `RecurringDateMath`, the same anchored math the
+    /// generator uses, so reminders and the recorded occurrences agree on the day.
     func calculateNextChargeDate(for series: RecurringSeries) -> Date? {
+        calculateNextChargeDate(for: series, today: Date())
+    }
+
+    func calculateNextChargeDate(for series: RecurringSeries, today now: Date, calendar: Calendar = .current) -> Date? {
         guard series.isSubscription,
               series.subscriptionStatus == .active else {
             return nil
         }
 
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let dateFormatter = DateFormatters.dateFormatter
-
-        guard let startDate = dateFormatter.date(from: series.startDate) else {
+        let today = calendar.startOfDay(for: now)
+        guard let startDate = DateFormatters.dateFormatter.date(from: series.startDate) else {
             return nil
         }
-
         let normalizedStartDate = calendar.startOfDay(for: startDate)
 
-        // If startDate is in the future, return it
         if normalizedStartDate > today {
             return normalizedStartDate
         }
-
-        // Calculate how many periods have passed since startDate
-        var nextDate = normalizedStartDate
-
-        switch series.frequency {
-        case .daily:
-            // Calculate days between start and today
-            let daysPassed = calendar.dateComponents([.day], from: normalizedStartDate, to: today).day ?? 0
-            // Next charge is (daysPassed + 1) days from start
-            if let date = calendar.date(byAdding: .day, value: daysPassed + 1, to: normalizedStartDate) {
-                nextDate = date
-            }
-
-        case .weekly:
-            // Calculate weeks between start and today
-            let weeksPassed = calendar.dateComponents([.weekOfYear], from: normalizedStartDate, to: today).weekOfYear ?? 0
-            // Next charge is (weeksPassed + 1) weeks from start
-            if let date = calendar.date(byAdding: .weekOfYear, value: weeksPassed + 1, to: normalizedStartDate) {
-                nextDate = date
-            }
-
-        case .monthly:
-            // Calculate months between start and today
-            let monthsPassed = calendar.dateComponents([.month], from: normalizedStartDate, to: today).month ?? 0
-            // Next charge is (monthsPassed + 1) months from start
-            if let date = calendar.date(byAdding: .month, value: monthsPassed + 1, to: normalizedStartDate) {
-                nextDate = date
-            }
-
-        case .quarterly:
-            let monthsPassed = calendar.dateComponents([.month], from: normalizedStartDate, to: today).month ?? 0
-            let quartersPassed = monthsPassed / 3
-            if let date = calendar.date(byAdding: .month, value: (quartersPassed + 1) * 3, to: normalizedStartDate) {
-                nextDate = date
-            }
-
-        case .yearly:
-            // Calculate years between start and today
-            let yearsPassed = calendar.dateComponents([.year], from: normalizedStartDate, to: today).year ?? 0
-            // Next charge is (yearsPassed + 1) years from start
-            if let date = calendar.date(byAdding: .year, value: yearsPassed + 1, to: normalizedStartDate) {
-                nextDate = date
-            }
-        }
-
-
-        return nextDate
+        return RecurringDateMath.firstOccurrence(
+            after: today, start: normalizedStartDate, frequency: series.frequency, calendar: calendar
+        )
     }
 }

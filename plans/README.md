@@ -28,7 +28,7 @@ your row when done. The maintainer commits directly to `main`; do not push.
 | 013 | [Income categories for new users + add-category in top-up](013-income-categories-for-new-users.md) | P1 | S-M | none | DONE (see git log; also fixed: top-up listed only income categories already used on transactions) |
 | 014 | [Siri spending query requires an unlocked iPhone](014-siri-spending-requires-unlock.md) | P2 | S | none | DONE (see git log) |
 | 015 | [Localized system permission prompts (InfoPlist.strings)](015-localized-permission-prompts.md) | P2 | S | none | DONE (see git log) |
-| 016 | [Recurring occurrences anchored to the start date (no month-end drift)](016-recurring-dates-anchored-to-start.md) | P2 | M | none | TODO |
+| 016 | [Recurring occurrences anchored to the start date (no month-end drift)](016-recurring-dates-anchored-to-start.md) | P2 | M | none | DONE (see git log) |
 | 017 | [Loan schedule after reduce-payment + next payment date](017-loan-schedule-and-next-payment-date.md) | P2 | M | none | TODO |
 | 018 | [Category chip names readable](018-category-chip-names-readable.md) | P3 | S | none | TODO |
 | 019 | [Characterization tests: add/edit flows, reminder dates](019-core-flow-characterization-tests.md) | P2 | M | best after 006, 016 | TODO |

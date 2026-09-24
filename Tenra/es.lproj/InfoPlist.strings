@@ -1,0 +1,6 @@
+/* System permission prompts (Info.plist usage descriptions). */
+"NSCameraUsageDescription" = "Tenra usa la cámara para escanear tickets en papel y que no tengas que escribirlos a mano.";
+"NSMicrophoneUsageDescription" = "Tenra usa el micrófono para que puedas añadir gastos por voz.";
+"NSSpeechRecognitionUsageDescription" = "Tenra convierte lo que dices en transacciones. Apple procesa la voz.";
+"NSDocumentPickerUsageDescription" = "Tenra lee los extractos bancarios que elijas para importarlos.";
+"NSFaceIDUsageDescription" = "Tenra usa Face ID para proteger tus finanzas cuando activas el bloqueo de la app.";

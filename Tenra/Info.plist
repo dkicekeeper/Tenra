@@ -47,13 +47,13 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Tenra uses the camera to scan paper receipts so you do not have to type them in by hand.</string>
 	<key>NSDocumentPickerUsageDescription</key>
-	<string>This app needs access to your documents to analyze bank statements.</string>
+	<string>Tenra reads the bank statements you choose to import them.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Tenra uses Face ID to keep your finances locked when you turn on the app lock.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app needs access to microphone to record voice for adding transactions.</string>
+	<string>Tenra uses the microphone so you can add expenses by voice.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>This app needs access to speech recognition to add transactions by voice.</string>
+	<string>Tenra turns what you say into transactions. Speech is processed by Apple.</string>
 	<key>NSUbiquitousContainers</key>
 	<dict>
 		<key>iCloud.dakacom.Tenra</key>
@@ -66,8 +66,6 @@
 			<string>Any</string>
 		</dict>
 	</dict>
-	<key>NSUserNotificationUsageDescription</key>
-	<string>Разрешите уведомления, чтобы получать напоминания о предстоящих списаниях по подпискам и не пропускать важные платежи.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Inter-VariableFont_opsz,wght.ttf</string>

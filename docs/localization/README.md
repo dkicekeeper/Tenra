@@ -135,3 +135,11 @@ Pro: безлимит счетов, голос, импорт PDF/CSV, депоз
 
 Фаза 1 (de) — пилот процесса: на нём отлаживаем pipeline, дальше языки идут конвейером.
 Ворота между фазами: конверсия установок и trial→paid на уже запущенных локалях (ASC + RevenueCat, 6–8 недель).
+
+## System permission prompts (InfoPlist.strings)
+
+Every locale has `Tenra/<locale>.lproj/InfoPlist.strings` with the five usage strings
+(`NSCameraUsageDescription`, `NSMicrophoneUsageDescription`, `NSSpeechRecognitionUsageDescription`,
+`NSDocumentPickerUsageDescription`, `NSFaceIDUsageDescription`). `Info.plist` holds the English
+fallback. Adding a new `NS...UsageDescription` key means adding it to all 11 files; before
+2026-09-24 there were none and every permission alert was English for all locales.

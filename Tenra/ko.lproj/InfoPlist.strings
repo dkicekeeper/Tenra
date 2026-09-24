@@ -1,0 +1,6 @@
+/* System permission prompts (Info.plist usage descriptions). */
+"NSCameraUsageDescription" = "Tenra는 카메라로 종이 영수증을 스캔하여 직접 입력할 필요가 없게 합니다.";
+"NSMicrophoneUsageDescription" = "Tenra는 음성으로 지출을 추가할 수 있도록 마이크를 사용합니다.";
+"NSSpeechRecognitionUsageDescription" = "Tenra는 말한 내용을 거래로 변환합니다. 음성은 Apple이 처리합니다.";
+"NSDocumentPickerUsageDescription" = "Tenra는 선택한 은행 명세서를 읽어 가져옵니다.";
+"NSFaceIDUsageDescription" = "Tenra는 앱 잠금이 켜져 있을 때 Face ID로 금융 정보를 보호합니다.";

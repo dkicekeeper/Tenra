@@ -1721,3 +1721,11 @@
 "transactionPreview.noSubcategory" = "Sans sous-catégorie";
 "transactionPreview.transferMerge" = "Correspond à une opération sur %@ : enregistré comme un seul virement";
 "transactionPreview.alreadyTransfer" = "Déjà enregistré comme virement entre vos comptes";
+
+/* Statement import review: hints that name the saved entry a row matched (%1$@ entry, %2$@ date; transfer: from, to, date; merge: entry, account, date) */
+"transactionPreview.possibleDuplicateOf" = "Semble déjà ajoutée : « %1$@ », %2$@";
+"transactionPreview.coveredBySubscriptionOf" = "Déjà comptée comme le paiement « %1$@ », %2$@";
+"transactionPreview.coveredByLoanPayment" = "Déjà comptée comme remboursement de prêt";
+"transactionPreview.coveredByLoanPaymentOf" = "Déjà comptée comme le remboursement « %1$@ », %2$@";
+"transactionPreview.alreadyTransferOf" = "Déjà enregistrée comme virement %1$@ → %2$@, %3$@";
+"transactionPreview.transferMergeOf" = "Correspond à « %1$@ » sur %2$@, %3$@ : enregistré comme un seul virement";

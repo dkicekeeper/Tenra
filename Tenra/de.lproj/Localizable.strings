@@ -1721,3 +1721,11 @@
 "transactionPreview.noSubcategory" = "Keine Unterkategorie";
 "transactionPreview.transferMerge" = "Passt zu einer Buchung auf %@: wird als eine Überweisung gespeichert";
 "transactionPreview.alreadyTransfer" = "Bereits als Überweisung zwischen deinen Konten erfasst";
+
+/* Statement import review: hints that name the saved entry a row matched (%1$@ entry, %2$@ date; transfer: from, to, date; merge: entry, account, date) */
+"transactionPreview.possibleDuplicateOf" = "Scheint schon erfasst: „%1$@“, %2$@";
+"transactionPreview.coveredBySubscriptionOf" = "Bereits als Zahlung „%1$@“ erfasst, %2$@";
+"transactionPreview.coveredByLoanPayment" = "Bereits als Kreditrate erfasst";
+"transactionPreview.coveredByLoanPaymentOf" = "Bereits als Kreditrate „%1$@“ erfasst, %2$@";
+"transactionPreview.alreadyTransferOf" = "Bereits als Überweisung %1$@ → %2$@ erfasst, %3$@";
+"transactionPreview.transferMergeOf" = "Passt zu „%1$@“ auf %2$@, %3$@: wird als eine Überweisung gespeichert";

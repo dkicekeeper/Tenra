@@ -1721,3 +1721,11 @@
 "transactionPreview.noSubcategory" = "No subcategory";
 "transactionPreview.transferMerge" = "Matches an operation on %@: saved as one transfer";
 "transactionPreview.alreadyTransfer" = "Already recorded as a transfer between your accounts";
+
+/* Statement import review: hints that name the saved entry a row matched (%1$@ entry, %2$@ date; transfer: from, to, date; merge: entry, account, date) */
+"transactionPreview.possibleDuplicateOf" = "Looks already added: “%1$@”, %2$@";
+"transactionPreview.coveredBySubscriptionOf" = "Already counted as the “%1$@” payment, %2$@";
+"transactionPreview.coveredByLoanPayment" = "Already counted as a loan payment";
+"transactionPreview.coveredByLoanPaymentOf" = "Already counted as the loan payment “%1$@”, %2$@";
+"transactionPreview.alreadyTransferOf" = "Already recorded as a transfer %1$@ → %2$@, %3$@";
+"transactionPreview.transferMergeOf" = "Matches “%1$@” on %2$@, %3$@: saved as one transfer";

@@ -1721,3 +1721,11 @@
 "transactionPreview.noSubcategory" = "サブカテゴリなし";
 "transactionPreview.transferMerge" = "%@の取引と一致：1件の振替として保存します";
 "transactionPreview.alreadyTransfer" = "口座間の振替としてすでに記録済み";
+
+/* Statement import review: hints that name the saved entry a row matched (%1$@ entry, %2$@ date; transfer: from, to, date; merge: entry, account, date) */
+"transactionPreview.possibleDuplicateOf" = "追加済みの可能性：「%1$@」、%2$@";
+"transactionPreview.coveredBySubscriptionOf" = "「%1$@」の支払いとして計上済み、%2$@";
+"transactionPreview.coveredByLoanPayment" = "ローン返済として計上済み";
+"transactionPreview.coveredByLoanPaymentOf" = "ローン返済「%1$@」として計上済み、%2$@";
+"transactionPreview.alreadyTransferOf" = "%1$@ → %2$@ の振替として記録済み、%3$@";
+"transactionPreview.transferMergeOf" = "%2$@の「%1$@」と一致、%3$@：1件の振替として保存します";

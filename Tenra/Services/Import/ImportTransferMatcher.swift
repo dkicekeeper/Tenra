@@ -17,7 +17,8 @@
 //
 //  Only rows whose statement operation can be a money movement are matched
 //  (not purchases or cash withdrawals), saved rows that are themselves an
-//  own-account move from elsewhere (a deposit) are never a counterpart, and each
+//  own-account move from elsewhere (a deposit) are never a counterpart, a saved
+//  row with a real category must read like a money movement, and each
 //  saved transaction is claimed by at most one row. Checked against a real
 //  Kaspi + Freedom pair (2026-09): 10 true pairs, and the two false ones this
 //  deposit rule removes. Pure and `nonisolated`: runs over every saved transaction.
@@ -65,7 +66,13 @@ nonisolated enum ImportTransferMatcher {
                       // вклада по Договору": deposit to card) is not this transfer's
                       // other side, even when the chain deposit → card → other bank →
                       // a person repeats the same amount on the same day.
-                      StatementOperationKind.classify(operation: nil, details: tx.description) != .ownAccountTransfer
+                      StatementOperationKind.classify(operation: nil, details: tx.description) != .ownAccountTransfer,
+                      // Never re-file real income or spending as a transfer: a saved row
+                      // qualifies only when it has no category yet or reads like a money
+                      // movement ("Пополнение · С карты другого банка"). A salary filed
+                      // under "Зарплата" stays a salary even when a transfer of the same
+                      // amount left the other bank that day.
+                      tx.category.isEmpty || looksLikeMovement(tx.description)
                 else { continue }
                 byAmount[amountKey(tx.currency, tx.amount), default: []].append(Candidate(tx: tx, day: day))
             case .internalTransfer:
@@ -119,6 +126,13 @@ nonisolated enum ImportTransferMatcher {
             }
         }
         return result
+    }
+
+    private static func looksLikeMovement(_ description: String) -> Bool {
+        switch StatementOperationKind.classify(description) {
+        case .transfer, .topUp, .ownAccountTransfer: return true
+        case .purchase, .cashWithdrawal, .other: return false
+        }
     }
 
     private static func amountKey(_ currency: String, _ amount: Double) -> String {

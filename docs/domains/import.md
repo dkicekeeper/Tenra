@@ -144,7 +144,16 @@ noise.
   `ImportBalanceCompensation.apply(saved:convertedLegs:)`, which now also covers a transfer's target
   account and, for a conversion, only the statement account's new leg.
 
-Pinned by `ImportLearningTests`, `ImportCommitterTests`, `ImportBalanceCompensationTests`.
+- **Guards against wrong matches.** A saved row with a real category is a transfer counterpart only
+  when its description reads like a money movement (a salary under "Зарплата" never becomes half of
+  a transfer). Loan payments recorded through the loans screen (`accountId` = the paying account)
+  cover the statement's plain expense row (`ImportDuplicateDetector.Reason.loanPayment`, ±3 days,
+  exact amount). Every hint names the saved entry it matched ("Похоже, уже добавлено: «Кофе»,
+  10 сентября"; the category when the entry has no description), so a coincidence can be told
+  from a real duplicate on the spot.
+
+Pinned by `ImportLearningTests`, `ImportCommitterTests`, `ImportBalanceCompensationTests`,
+`ImportDuplicateDetectorTests`.
 
 ## Category suggestions
 

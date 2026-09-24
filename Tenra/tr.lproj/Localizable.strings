@@ -1721,3 +1721,11 @@
 "transactionPreview.noSubcategory" = "Alt kategori yok";
 "transactionPreview.transferMerge" = "%@ hesabındaki bir işlemle eşleşiyor: tek transfer olarak kaydedilir";
 "transactionPreview.alreadyTransfer" = "Hesaplarınız arasında transfer olarak zaten kayıtlı";
+
+/* Statement import review: hints that name the saved entry a row matched (%1$@ entry, %2$@ date; transfer: from, to, date; merge: entry, account, date) */
+"transactionPreview.possibleDuplicateOf" = "Zaten eklenmiş görünüyor: “%1$@”, %2$@";
+"transactionPreview.coveredBySubscriptionOf" = "Zaten “%1$@” ödemesi olarak sayıldı, %2$@";
+"transactionPreview.coveredByLoanPayment" = "Zaten kredi ödemesi olarak sayıldı";
+"transactionPreview.coveredByLoanPaymentOf" = "Zaten “%1$@” kredi ödemesi olarak sayıldı, %2$@";
+"transactionPreview.alreadyTransferOf" = "Zaten %1$@ → %2$@ transferi olarak kayıtlı, %3$@";
+"transactionPreview.transferMergeOf" = "%2$@ hesabındaki “%1$@” ile eşleşiyor, %3$@: tek transfer olarak kaydedilir";

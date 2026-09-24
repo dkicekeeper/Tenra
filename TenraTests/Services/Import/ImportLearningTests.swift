@@ -141,6 +141,24 @@ struct ImportLearningTests {
         #expect(matches["topUp"] == .counterpart(existingId: "card", accountId: "freedom"))
     }
 
+    @Test func categorizedIncomeIsNotTurnedIntoATransfer() {
+        // A salary filed under "Зарплата" and a transfer of the same amount the same day.
+        let salary = tx("s1", "2026-09-10", "ТОО Работа", 50_000, .income, account: "kaspi", category: "Зарплата")
+        let row = tx("r1", "2026-09-10", "Перевод · Асан Б.", 50_000, .expense, account: nil)
+        let matches = ImportTransferMatcher.detect(
+            imported: [row], importedAccounts: ["r1": "freedom"], eligibleRowIds: ["r1"],
+            ownAccountIds: own, existing: [salary])
+        #expect(matches.isEmpty)
+
+        // A categorized row that reads like a money movement still pairs.
+        let topUp = tx("k1", "2026-09-10", "Пополнение · С карты другого банка", 50_000, .income,
+                       account: "kaspi", category: "Другое")
+        let paired = ImportTransferMatcher.detect(
+            imported: [row], importedAccounts: ["r1": "freedom"], eligibleRowIds: ["r1"],
+            ownAccountIds: own, existing: [topUp])
+        #expect(paired["r1"] == .counterpart(existingId: "k1", accountId: "kaspi"))
+    }
+
     @Test func purchaseRowsAreNeverMatched() {
         let existing = [tx("f1", "2026-09-19", "x", 5_000, .income, account: "freedom")]
         let row = tx("r1", "2026-09-19", "MAGNUM", 5_000, .expense, account: nil)

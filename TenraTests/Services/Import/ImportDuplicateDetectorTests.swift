@@ -75,4 +75,19 @@ struct ImportDuplicateDetectorTests {
     @Test func differentTypeIsNotFlagged() {
         #expect(detect([row("r1", 2500, "2026-09-01", type: .income)], [saved("e1", 2500, "2026-09-01")]).isEmpty)
     }
+
+    @Test func loanPaymentFromThisAccountCoversTheStatementExpense() {
+        // Recorded through the loans screen: its own type, paid from a1.
+        let payment = Transaction(id: "loan", date: "2026-09-10", description: "Kaspi Red", amount: 39_000,
+                                  currency: "KZT", type: .loanPayment,
+                                  category: TransactionType.loanPaymentCategoryName,
+                                  accountId: "a1", targetAccountId: "loanAccount")
+        let result = detect([row("r1", 39_000, "2026-09-12")], [payment])
+        #expect(result["r1"] == .loanPayment(existingId: "loan"))
+        #expect(result["r1"]?.existingId == "loan")
+        // Four days apart, or another amount, is a different payment.
+        #expect(detect([row("r2", 39_000, "2026-09-14")], [payment]).isEmpty)
+        #expect(detect([row("r3", 38_000, "2026-09-10")], [payment]).isEmpty)
+    }
 }
+

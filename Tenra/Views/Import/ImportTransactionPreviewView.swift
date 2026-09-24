@@ -234,16 +234,48 @@ struct ImportTransactionPreviewView: View {
         return uncheckedMoves[transaction.id] == nil
     }
 
+    /// Why the row is flagged, naming the saved transaction it matched so the user
+    /// can tell a real duplicate from a coincidence without leaving the screen.
     private func notice(for transaction: Transaction) -> ImportRowNotice? {
-        if let reason = duplicateReasons[transaction.id] { return .duplicate(reason) }
-        if case .alreadyTransfer = transferMatches[transaction.id] { return .alreadyTransfer }
-        if case .counterpart(_, let accountId) = transferMatches[transaction.id],
+        if let reason = duplicateReasons[transaction.id] {
+            let record = matchedRecord(reason.existingId)
+            switch reason {
+            case .alreadyAdded: return .alreadyAdded(record)
+            case .subscriptionOccurrence: return .subscription(record)
+            case .loanPayment: return .loanPayment(record)
+            }
+        }
+        if case .alreadyTransfer(let existingId) = transferMatches[transaction.id] {
+            return .alreadyTransfer(transferRecord(existingId))
+        }
+        if case .counterpart(let existingId, let accountId) = transferMatches[transaction.id],
            transferMapping[transaction.id] == accountId,
            let account = regularAccounts.first(where: { $0.id == accountId }) {
-            return .merge(accountName: account.name)
+            return .merge(accountName: account.name, record: matchedRecord(existingId))
         }
         guard transferMapping[transaction.id] == nil, let move = uncheckedMoves[transaction.id] else { return nil }
         return move == .cashWithdrawal ? .cashWithdrawal : .ownAccountMove
+    }
+
+    /// A saved entry as a hint names it: its description (or its category when it
+    /// has none, as manual entries often do), shortened, and its date.
+    private func matchedRecord(_ id: String) -> ImportMatchedRecord? {
+        guard let saved = transactionStore.transactionById[id] else { return nil }
+        let description = saved.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        let label = description.isEmpty ? saved.category : description
+        guard !label.isEmpty else { return nil }
+        return ImportMatchedRecord(
+            label: label.count > 32 ? String(label.prefix(30)) + "…" : label,
+            date: DateFormatters.displayString(from: saved.date)
+        )
+    }
+
+    private func transferRecord(_ id: String) -> ImportTransferRecord? {
+        guard let saved = transactionStore.transactionById[id],
+              let from = transactionStore.accounts.first(where: { $0.id == saved.accountId })?.name,
+              let to = transactionStore.accounts.first(where: { $0.id == saved.targetAccountId })?.name
+        else { return nil }
+        return ImportTransferRecord(from: from, to: to, date: DateFormatters.displayString(from: saved.date))
     }
 
     // MARK: - Selection and accounts
@@ -538,24 +570,52 @@ struct ImportTransactionPreviewView: View {
 // MARK: - ImportRowNotice
 
 /// Why a review row is flagged, most important first.
+struct ImportMatchedRecord: Equatable {
+    let label: String
+    let date: String
+}
+
+struct ImportTransferRecord: Equatable {
+    let from: String
+    let to: String
+    let date: String
+}
+
 enum ImportRowNotice: Equatable {
-    case duplicate(ImportDuplicateDetector.Reason)
+    /// Same account, type and amount within a day (ImportDuplicateDetector).
+    case alreadyAdded(ImportMatchedRecord?)
+    /// A charge a subscription series already generated.
+    case subscription(ImportMatchedRecord?)
+    /// A loan payment recorded through the loans screen from this account.
+    case loanPayment(ImportMatchedRecord?)
     /// A saved transfer already moves this money in or out of the account.
-    case alreadyTransfer
+    case alreadyTransfer(ImportTransferRecord?)
     /// The other side of a transfer is in Tenra on `accountName`; they merge.
-    case merge(accountName: String)
+    case merge(accountName: String, record: ImportMatchedRecord?)
     case cashWithdrawal
     case ownAccountMove
 
     var text: String {
         switch self {
-        case .duplicate(.alreadyAdded):
+        case .alreadyAdded(let record?):
+            return String(format: String(localized: "transactionPreview.possibleDuplicateOf"), record.label, record.date)
+        case .alreadyAdded(nil):
             return String(localized: "transactionPreview.possibleDuplicate")
-        case .duplicate(.subscriptionOccurrence):
+        case .subscription(let record?):
+            return String(format: String(localized: "transactionPreview.coveredBySubscriptionOf"), record.label, record.date)
+        case .subscription(nil):
             return String(localized: "transactionPreview.coveredBySubscription")
-        case .alreadyTransfer:
+        case .loanPayment(let record?):
+            return String(format: String(localized: "transactionPreview.coveredByLoanPaymentOf"), record.label, record.date)
+        case .loanPayment(nil):
+            return String(localized: "transactionPreview.coveredByLoanPayment")
+        case .alreadyTransfer(let record?):
+            return String(format: String(localized: "transactionPreview.alreadyTransferOf"), record.from, record.to, record.date)
+        case .alreadyTransfer(nil):
             return String(localized: "transactionPreview.alreadyTransfer")
-        case .merge(let accountName):
+        case .merge(let accountName, let record?):
+            return String(format: String(localized: "transactionPreview.transferMergeOf"), record.label, accountName, record.date)
+        case .merge(let accountName, nil):
             return String(format: String(localized: "transactionPreview.transferMerge"), accountName)
         case .cashWithdrawal:
             return String(localized: "transactionPreview.cashWithdrawal")
@@ -566,7 +626,7 @@ enum ImportRowNotice: Equatable {
 
     var isWarning: Bool {
         switch self {
-        case .duplicate, .alreadyTransfer: return true
+        case .alreadyAdded, .subscription, .loanPayment, .alreadyTransfer: return true
         case .merge, .cashWithdrawal, .ownAccountMove: return false
         }
     }

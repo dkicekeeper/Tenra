@@ -1721,3 +1721,11 @@
 "transactionPreview.noSubcategory" = "하위 카테고리 없음";
 "transactionPreview.transferMerge" = "%@의 거래와 일치: 하나의 이체로 저장됩니다";
 "transactionPreview.alreadyTransfer" = "이미 계좌 간 이체로 기록됨";
+
+/* Statement import review: hints that name the saved entry a row matched (%1$@ entry, %2$@ date; transfer: from, to, date; merge: entry, account, date) */
+"transactionPreview.possibleDuplicateOf" = "이미 추가된 것 같습니다: “%1$@”, %2$@";
+"transactionPreview.coveredBySubscriptionOf" = "“%1$@” 결제로 이미 반영됨, %2$@";
+"transactionPreview.coveredByLoanPayment" = "대출 상환으로 이미 반영됨";
+"transactionPreview.coveredByLoanPaymentOf" = "대출 상환 “%1$@”(으)로 이미 반영됨, %2$@";
+"transactionPreview.alreadyTransferOf" = "%1$@ → %2$@ 이체로 이미 기록됨, %3$@";
+"transactionPreview.transferMergeOf" = "%2$@의 “%1$@”와(과) 일치, %3$@: 하나의 이체로 저장됩니다";

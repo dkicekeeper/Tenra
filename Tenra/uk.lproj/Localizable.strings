@@ -1721,3 +1721,11 @@
 "transactionPreview.noSubcategory" = "Без підкатегорії";
 "transactionPreview.transferMerge" = "Збігається з операцією на рахунку %@: збережеться як один переказ";
 "transactionPreview.alreadyTransfer" = "Уже враховано переказом між вашими рахунками";
+
+/* Statement import review: hints that name the saved entry a row matched (%1$@ entry, %2$@ date; transfer: from, to, date; merge: entry, account, date) */
+"transactionPreview.possibleDuplicateOf" = "Схоже, вже додано: «%1$@», %2$@";
+"transactionPreview.coveredBySubscriptionOf" = "Вже враховано як платіж «%1$@», %2$@";
+"transactionPreview.coveredByLoanPayment" = "Вже враховано як платіж за кредитом";
+"transactionPreview.coveredByLoanPaymentOf" = "Вже враховано як платіж за кредитом «%1$@», %2$@";
+"transactionPreview.alreadyTransferOf" = "Вже враховано переказом %1$@ → %2$@, %3$@";
+"transactionPreview.transferMergeOf" = "Збігається з «%1$@» на рахунку %2$@, %3$@: збережеться як один переказ";

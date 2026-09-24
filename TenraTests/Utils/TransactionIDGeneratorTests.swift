@@ -6,6 +6,7 @@
 //
 
 import Testing
+import Foundation
 @testable import Tenra
 
 struct TransactionIDGeneratorTests {
@@ -17,23 +18,29 @@ struct TransactionIDGeneratorTests {
         let amount = 100.0
         let type = TransactionType.expense
         let currency = "USD"
-        
+        // Without an explicit createdAt the generator mixes in the current time at
+        // millisecond precision, so two calls could straddle a millisecond and differ
+        // (an intermittent failure). Same inputs, same createdAt → same ID.
+        let createdAt: TimeInterval = 1_700_000_000.123
+
         let id1 = TransactionIDGenerator.generateID(
             date: date,
             description: description,
             amount: amount,
             type: type,
-            currency: currency
+            currency: currency,
+            createdAt: createdAt
         )
-        
+
         let id2 = TransactionIDGenerator.generateID(
             date: date,
             description: description,
             amount: amount,
             type: type,
-            currency: currency
+            currency: currency,
+            createdAt: createdAt
         )
-        
+
         #expect(id1 == id2)
     }
     

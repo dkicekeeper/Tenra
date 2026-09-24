@@ -273,50 +273,23 @@ struct BalanceCalculationEngine {
 
     // MARK: - Initial Balance Calculation
 
-    /// Calculate initial balance from current balance and transactions
-    /// Formula: initialBalance = currentBalance - Σtransactions
-    /// - Parameters:
-    ///   - currentBalance: Current account balance
-    ///   - accountId: Account ID
-    ///   - accountCurrency: Account currency
-    ///   - transactions: All transactions for this account
-    /// - Returns: Calculated initial balance
+    /// Back-calculate the `initialBalance` that makes the account show `currentBalance`:
+    /// `initialBalance = currentBalance - Σ contribution(.currentBalance)`.
+    ///
+    /// Derives from the same `contribution` rule as `calculateBalance` (CLAUDE.md Red Flag 8),
+    /// so the forward and backward calculations cannot disagree. A separate per-type table
+    /// used to live here; it counted future-dated transactions (e.g. a subscription's next
+    /// occurrence) that the forward calculation excludes, so a corrected balance came out
+    /// shifted by every planned expense.
     func calculateInitialBalance(
         currentBalance: Double,
-        accountId: String,
-        accountCurrency: String,
+        account: AccountBalance,
         transactions: [Transaction]
     ) -> Double {
         var transactionsSum: Double = 0
-
         for tx in transactions {
-            switch tx.type {
-            case .income:
-                if tx.accountId == accountId {
-                    transactionsSum += getTransactionAmount(tx, for: accountCurrency)
-                }
-            case .expense:
-                if tx.accountId == accountId {
-                    transactionsSum -= getTransactionAmount(tx, for: accountCurrency)
-                }
-            case .internalTransfer:
-                if tx.accountId == accountId {
-                    transactionsSum -= getSourceAmount(tx)
-                } else if tx.targetAccountId == accountId {
-                    transactionsSum += getTargetAmount(tx)
-                }
-            case .depositTopUp, .depositWithdrawal, .depositInterestAccrual:
-                break
-
-            case .loanPayment, .loanEarlyRepayment:
-                // Loan payments reduce balance on BOTH the source bank (accountId) and
-                // the loan (targetAccountId after the orientation flip).
-                if tx.accountId == accountId || tx.targetAccountId == accountId {
-                    transactionsSum -= getTransactionAmount(tx, for: accountCurrency)
-                }
-            }
+            transactionsSum += contribution(of: tx, to: account, policy: .currentBalance)
         }
-
         return currentBalance - transactionsSum
     }
 

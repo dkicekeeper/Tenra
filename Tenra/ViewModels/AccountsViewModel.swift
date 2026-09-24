@@ -93,12 +93,11 @@ class AccountsViewModel {
             // account.initialBalance here = desired CURRENT balance (from the edit view text field)
             let desiredBalance = account.initialBalance ?? oldAccount.balance
 
-            // Back-calculate correct initialBalance: initialBalance = desiredBalance - Σ(transactions)
+            // Back-calculate correct initialBalance: initialBalance = desiredBalance - Σ(realized contributions)
             let engine = BalanceCalculationEngine()
             let correctInitialBalance = engine.calculateInitialBalance(
                 currentBalance: desiredBalance,
-                accountId: account.id,
-                accountCurrency: account.currency,
+                account: AccountBalance.from(account),
                 transactions: store.transactions
             )
 
@@ -118,7 +117,10 @@ class AccountsViewModel {
                 if currencyChanged {
                     await coordinator.registerAccounts(store.accounts)
                 }
-                await coordinator.setInitialBalance(correctInitialBalance, for: account.id)
+                // Persist, not just set in memory: saveAccounts never writes initialBalance
+                // ("set once at creation"), so an in-memory-only correction is reverted by
+                // the next full recalc (a matured future tx, base-currency change, FX heal).
+                await coordinator.persistInitialBalance(correctInitialBalance, for: account.id)
                 await coordinator.recalculateAccounts(
                     [account.id],
                     accounts: store.accounts,

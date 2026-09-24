@@ -1711,3 +1711,13 @@
 
 /* Statement import review: a row that moves money between the user's own accounts starts unchecked */
 "transactionPreview.ownAccountTransfer" = "Entre vos propres comptes : ni dépense ni revenu";
+
+/* Statement import review: statement account, transfers between own accounts, subcategories */
+"transactionPreview.statementAccount" = "Compte du relevé";
+"transactionPreview.transfer.to" = "Virement vers mon compte";
+"transactionPreview.transfer.from" = "Virement depuis mon compte";
+"transactionPreview.transfer.none" = "Pas un virement";
+"transactionPreview.subcategory" = "Sous-catégorie";
+"transactionPreview.noSubcategory" = "Sans sous-catégorie";
+"transactionPreview.transferMerge" = "Correspond à une opération sur %@ : enregistré comme un seul virement";
+"transactionPreview.alreadyTransfer" = "Déjà enregistré comme virement entre vos comptes";

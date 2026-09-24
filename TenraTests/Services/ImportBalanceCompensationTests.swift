@@ -95,4 +95,40 @@ struct ImportBalanceCompensationTests {
         #expect(abs((coordinator.balances["a1"] ?? 0) - 140_000) < 0.5, "must survive a full recalc")
         #expect(repo.persistedInitialBalances.compactMap { $0["a1"] }.last.map { abs($0 - 200_000) < 0.5 } == true)
     }
+
+    @Test func transfersCompensateBothAccountsAndConversionsOnlyTheNewLeg() async throws {
+        let repo = RecordingDataRepository()
+        let coordinator = BalanceCoordinator(repository: repo)
+        let store = TransactionStore(repository: repo, balanceCoordinator: coordinator,
+                                     recurringStore: RecurringStore(repository: repo))
+        let kaspi = Self.account(id: "a1", initial: 150_000)
+        let freedom = Self.account(id: "a2", initial: 80_000)
+        store.addAccount(kaspi)
+        store.addAccount(freedom)
+        await coordinator.registerAccounts([kaspi, freedom])
+        await coordinator.setInitialBalance(150_000, for: "a1")
+        await coordinator.setInitialBalance(80_000, for: "a2")
+
+        // Both rows predate both accounts: the balances the user entered already hold them.
+        let transfer = try await store.add(Transaction(
+            id: "t1", date: "2026-08-15", description: "row", amount: 10_000, currency: "KZT",
+            type: .internalTransfer, category: TransactionType.transferCategoryName,
+            accountId: "a1", targetAccountId: "a2", targetCurrency: "KZT", targetAmount: 10_000))
+        let converted = Transaction(
+            id: "c1", date: "2026-08-20", description: "row", amount: 5_000, currency: "KZT",
+            type: .internalTransfer, category: TransactionType.transferCategoryName,
+            accountId: "a2", targetAccountId: "a1", targetCurrency: "KZT", targetAmount: 5_000)
+        _ = try await store.add(converted)
+        await coordinator.recalculateAll(accounts: store.accounts, transactions: store.transactions)
+
+        await ImportBalanceCompensation.apply(saved: [transfer], convertedLegs: [(converted, "a1")],
+                                              store: store, coordinator: coordinator)
+
+        // a1: −10 000 (transfer out) +5 000 (new leg of the conversion), both compensated.
+        #expect(abs((coordinator.balances["a1"] ?? 0) - 150_000) < 0.5)
+        // a2: +10 000 compensated; the conversion's a2 leg was counted before the import,
+        // so it still moves the balance (−5 000).
+        #expect(abs((coordinator.balances["a2"] ?? 0) - 75_000) < 0.5)
+    }
 }
+

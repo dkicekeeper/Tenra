@@ -52,6 +52,13 @@ enum IconSource: Codable, Equatable, Hashable {
         }
     }
 
+    /// Registry domain of a brand logo ("kaspi.kz"), resolving a stored alias or
+    /// display name. nil for SF Symbols.
+    var brandDomain: String? {
+        guard case .brandService(let name) = self else { return nil }
+        return ServiceLogoRegistry.resolveDomain(from: name).lowercased()
+    }
+
     /// Парсинг из строкового идентификатора
     static func from(displayIdentifier: String) -> IconSource? {
         if displayIdentifier.hasPrefix("sf:") {

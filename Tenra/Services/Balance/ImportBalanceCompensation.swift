@@ -46,13 +46,26 @@ enum ImportBalanceCompensation {
     /// predate the account do not change its current balance. Persists through
     /// `BalanceCoordinator.persistInitialBalance` (saveAccounts never writes
     /// initialBalance) and keeps the in-memory Account model in step.
-    static func apply(saved: [Transaction], store: TransactionStore, coordinator: BalanceCoordinator) async {
-        let accountIds = Set(saved.compactMap(\.accountId))
+    ///
+    /// `saved` rows count for every account they touch (a transfer's source AND
+    /// target). `convertedLegs` are saved transactions the import turned into a
+    /// transfer: only the leg on `accountId` is new money movement, the other leg was
+    /// already in the balance before the import.
+    static func apply(
+        saved: [Transaction],
+        convertedLegs: [(transaction: Transaction, accountId: String)] = [],
+        store: TransactionStore,
+        coordinator: BalanceCoordinator
+    ) async {
+        let accountIds = Set(saved.flatMap { [$0.accountId, $0.targetAccountId].compactMap { $0 } }
+            + convertedLegs.map(\.accountId))
         var changed = Set<String>()
 
         for accountId in accountIds {
             guard let account = store.accounts.first(where: { $0.id == accountId }) else { continue }
+            let legs = convertedLegs.filter { $0.accountId == accountId }.map(\.transaction)
             let shift = preCreationContribution(of: saved, to: account)
+                + preCreationContribution(of: legs, to: account)
             guard abs(shift) >= 0.005 else { continue }
             guard let oldInitial = await coordinator.getInitialBalance(for: accountId) else { continue }
 

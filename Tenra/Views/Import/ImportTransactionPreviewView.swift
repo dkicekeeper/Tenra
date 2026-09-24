@@ -9,6 +9,11 @@
 //  Moved from Views/Transactions/ → Views/Import/ (correct domain)
 //  Renamed: TransactionPreviewView → ImportTransactionPreviewView
 //
+//  2026-09-25: the statement's account is chosen once for all rows; rows can be
+//  marked as a transfer to/from another own account (learned from saved transfers,
+//  or matched to the other side already in Tenra); subcategories are picked and
+//  learned. Saving goes through ImportCommitPlanner / ImportCommitter.
+//
 
 import SwiftUI
 
@@ -18,21 +23,39 @@ struct ImportTransactionPreviewView: View {
     @Environment(TransactionStore.self) private var transactionStore
     let transactions: [Transaction]
     let customCategories: [CustomCategory]
+    /// Writes subcategory links on save. Nil only in previews.
+    var categoriesViewModel: CategoriesViewModel? = nil
     /// transactionId -> suggested category name (CategorySuggestionProvider).
     var suggestedCategories: [String: String] = [:]
-    /// transactionId -> why the row looks already present (ImportDuplicateDetector).
-    /// Such rows start unchecked but stay selectable.
-    var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
+    /// Subcategories the user linked before, per merchant and category.
+    var subcategoryHistory = CategorySuggestionService.SubcategoryIndex()
+    /// Transfers between own accounts the user saved before, per account and merchant.
+    var transferHistory = ImportTransferHistory.Index()
     /// transactionId -> cash withdrawal or own-account move (statement operation
-    /// column); such rows start unchecked.
+    /// column); such rows start unchecked unless their transfer account is known.
     var uncheckedMoves: [String: StatementOperationKind] = [:]
+    /// Rows whose operation can be a transfer (not a purchase or cash withdrawal);
+    /// only these are matched against the other side of a transfer.
+    var transferEligibleIds: Set<String> = []
+    /// The account the statement belongs to (StatementBankDetector), when known.
+    var defaultStatementAccountId: String? = nil
     @Environment(\.dismiss) var dismiss
 
+    @State private var statementAccountId = ""
     @State private var selectedTransactions: Set<String> = Set()
     @State private var accountMapping: [String: String] = [:] // transactionId -> accountId
     @State private var categoryMapping: [String: String] = [:] // transactionId -> category name ("" = uncategorized)
     /// Rows whose category the user picked by hand; same-merchant propagation never overrides them.
     @State private var manuallyCategorized: Set<String> = []
+    /// transactionId -> subcategory id (absent = none).
+    @State private var subcategoryMapping: [String: String] = [:]
+    @State private var manuallySubcategorized: Set<String> = []
+    /// transactionId -> the user's other account, when the row is a transfer between own accounts.
+    @State private var transferMapping: [String: String] = [:]
+    /// transactionId -> why the row looks already present (ImportDuplicateDetector).
+    @State private var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
+    @State private var transferMatches: [String: ImportTransferMatcher.Match] = [:]
+    @State private var isSaving = false
 
     var body: some View {
         NavigationStack {
@@ -44,6 +67,19 @@ struct ImportTransactionPreviewView: View {
                     Text(String(localized: "transactionPreview.selectHint"))
                         .font(AppTypography.bodySmall)
                         .foregroundStyle(AppColors.textSecondary)
+                    if !regularAccounts.isEmpty {
+                        HStack(spacing: AppSpacing.xs) {
+                            Text(String(localized: "transactionPreview.statementAccount"))
+                                .font(AppTypography.bodySmall)
+                                .foregroundStyle(AppColors.textSecondary)
+                            Picker(String(localized: "transactionPreview.statementAccount"), selection: $statementAccountId) {
+                                ForEach(regularAccounts) { account in
+                                    Text("\(account.name) (\(Formatting.currencySymbol(for: account.currency)))").tag(account.id)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                        }
+                    }
                 }
                 .cardContentPadding()
                 .frame(maxWidth: .infinity)
@@ -57,35 +93,28 @@ struct ImportTransactionPreviewView: View {
                             isSelected: selectedTransactions.contains(transaction.id),
                             selectedAccountId: accountMapping[transaction.id],
                             availableAccounts: availableAccounts(for: transaction),
-                            onToggle: {
-                                let accounts = availableAccounts(for: transaction)
-                                // No account exists in this transaction's currency:
-                                // the row must never become selectable, or it would
-                                // save with a nil accountId and become invisible to
-                                // every balance calculation.
-                                guard !accounts.isEmpty else { return }
-                                withAnimation(AppAnimation.contentSpring) {
-                                    if selectedTransactions.contains(transaction.id) {
-                                        selectedTransactions.remove(transaction.id)
-                                        accountMapping.removeValue(forKey: transaction.id)
-                                    } else {
-                                        selectedTransactions.insert(transaction.id)
-                                        if let account = accounts.first {
-                                            accountMapping[transaction.id] = account.id
-                                        }
-                                    }
-                                }
-                            },
+                            onToggle: { toggle(transaction) },
                             onAccountSelect: { accountId in
-                                accountMapping[transaction.id] = accountId
+                                selectAccount(accountId, for: transaction)
                             },
                             category: effectiveCategory(for: transaction),
                             categoryOptions: categoryOptions(for: transaction),
                             customCategories: customCategories,
-                            duplicateReason: duplicateReasons[transaction.id],
-                            uncheckedMove: uncheckedMoves[transaction.id],
+                            subcategory: subcategoryMapping[transaction.id].flatMap { transactionStore.subcategoryById[$0] },
+                            subcategoryOptions: subcategoryOptions(for: transaction),
+                            transferAccount: transferMapping[transaction.id].flatMap { id in
+                                regularAccounts.first { $0.id == id }
+                            },
+                            transferOptions: transferOptions(for: transaction),
+                            notice: notice(for: transaction),
                             onCategorySelect: { name in
                                 selectCategory(name, for: transaction)
+                            },
+                            onSubcategorySelect: { id in
+                                selectSubcategory(id, for: transaction)
+                            },
+                            onTransferSelect: { id in
+                                selectTransfer(id, for: transaction)
                             }
                         )
                     }
@@ -96,16 +125,9 @@ struct ImportTransactionPreviewView: View {
                 HStack(spacing: AppSpacing.md) {
                     Button {
                         withAnimation(AppAnimation.contentSpring) {
-                            // Only select rows that have a matching account —
-                            // mirrors the per-row guard in onToggle so "Select All"
-                            // can never leave a selected row without an account.
-                            let selectable = transactions.filter { startsSelected($0) }
-                            selectedTransactions = Set(selectable.map { $0.id })
-                            for transaction in selectable {
-                                if let account = availableAccounts(for: transaction).first {
-                                    accountMapping[transaction.id] = account.id
-                                }
-                            }
+                            // Only rows that start selected: importable, not already in
+                            // Tenra, not an unresolved cash/own-account move.
+                            selectedTransactions = Set(transactions.filter { startsSelected($0) }.map(\.id))
                         }
                     } label: {
                         Text("transactionPreview.selectAll")
@@ -120,7 +142,6 @@ struct ImportTransactionPreviewView: View {
                     Button {
                         withAnimation(AppAnimation.contentSpring) {
                             selectedTransactions.removeAll()
-                            accountMapping.removeAll()
                         }
                     } label: {
                         Text("transactionPreview.deselectAll")
@@ -146,7 +167,7 @@ struct ImportTransactionPreviewView: View {
                         .clipShape(.rect(cornerRadius: AppRadius.button))
                 }
                 .buttonStyle(BounceButtonStyle())
-                .disabled(selectedTransactions.isEmpty)
+                .disabled(selectedTransactions.isEmpty || isSaving)
                 .screenPadding()
                 .padding(.bottom, AppSpacing.md)
                 .accessibilityLabel(String(format: String(localized: "transactionPreview.addSelected"), selectedTransactions.count))
@@ -165,27 +186,178 @@ struct ImportTransactionPreviewView: View {
             }
             .onAppear {
                 categoryMapping = suggestedCategories
-                let selectable = transactions.filter { startsSelected($0) }
-                selectedTransactions = Set(selectable.map { $0.id })
-                for transaction in selectable {
-                    if let account = availableAccounts(for: transaction).first {
-                        accountMapping[transaction.id] = account.id
-                    }
+                for transaction in transactions {
+                    refreshSubcategory(for: transaction)
+                }
+            }
+            // Accounts, duplicates, transfer matches and the default selection all
+            // depend on the statement's account; re-run when the user changes it.
+            .task(id: statementAccountId) {
+                await analyze()
+            }
+        }
+    }
+
+    private var regularAccounts: [Account] { accountsViewModel.regularAccounts }
+
+    private func availableAccounts(for transaction: Transaction) -> [Account] {
+        Self.availableAccounts(for: transaction, regularAccounts: regularAccounts)
+    }
+
+    /// The statement's account when it holds this row's currency, otherwise the
+    /// first account in that currency (a multi-currency card's USD rows).
+    private func defaultAccount(for transaction: Transaction) -> Account? {
+        let accounts = availableAccounts(for: transaction)
+        return accounts.first { $0.id == statementAccountId } ?? accounts.first
+    }
+
+    /// The detected bank's account, else the first account in the currency most
+    /// rows use.
+    private func initialStatementAccountId() -> String {
+        if let id = defaultStatementAccountId, regularAccounts.contains(where: { $0.id == id }) {
+            return id
+        }
+        let counts = Dictionary(grouping: transactions, by: \.currency).mapValues(\.count)
+        let mainCurrency = counts.max { lhs, rhs in lhs.value != rhs.value ? lhs.value < rhs.value : lhs.key > rhs.key }?.key
+        return (regularAccounts.first { $0.currency == mainCurrency } ?? regularAccounts.first)?.id ?? ""
+    }
+
+    /// Rows checked by default (and by "Select All"): importable, not already in
+    /// Tenra, and not a cash withdrawal or own-account move whose other account is
+    /// unknown. A row with a transfer account is safe to import: it moves money
+    /// between two accounts instead of counting as spending or income.
+    private func startsSelected(_ transaction: Transaction) -> Bool {
+        guard accountMapping[transaction.id] != nil,
+              duplicateReasons[transaction.id] == nil else { return false }
+        if case .alreadyTransfer = transferMatches[transaction.id] { return false }
+        if transferMapping[transaction.id] != nil { return true }
+        return uncheckedMoves[transaction.id] == nil
+    }
+
+    private func notice(for transaction: Transaction) -> ImportRowNotice? {
+        if let reason = duplicateReasons[transaction.id] { return .duplicate(reason) }
+        if case .alreadyTransfer = transferMatches[transaction.id] { return .alreadyTransfer }
+        if case .counterpart(_, let accountId) = transferMatches[transaction.id],
+           transferMapping[transaction.id] == accountId,
+           let account = regularAccounts.first(where: { $0.id == accountId }) {
+            return .merge(accountName: account.name)
+        }
+        guard transferMapping[transaction.id] == nil, let move = uncheckedMoves[transaction.id] else { return nil }
+        return move == .cashWithdrawal ? .cashWithdrawal : .ownAccountMove
+    }
+
+    // MARK: - Selection and accounts
+
+    private func toggle(_ transaction: Transaction) {
+        // No account exists in this transaction's currency: the row must never
+        // become selectable, or it would save with a nil accountId and become
+        // invisible to every balance calculation.
+        guard let account = defaultAccount(for: transaction) else { return }
+        withAnimation(AppAnimation.contentSpring) {
+            if selectedTransactions.contains(transaction.id) {
+                selectedTransactions.remove(transaction.id)
+            } else {
+                selectedTransactions.insert(transaction.id)
+                if accountMapping[transaction.id] == nil {
+                    accountMapping[transaction.id] = account.id
                 }
             }
         }
     }
 
-    private func availableAccounts(for transaction: Transaction) -> [Account] {
-        Self.availableAccounts(for: transaction, regularAccounts: accountsViewModel.regularAccounts)
+    private func selectAccount(_ accountId: String, for transaction: Transaction) {
+        accountMapping[transaction.id] = accountId
+        if transferMapping[transaction.id] == accountId {
+            transferMapping.removeValue(forKey: transaction.id)
+        }
     }
 
-    /// Rows checked by default (and by "Select All"): importable, not already in
-    /// Tenra, and not a cash withdrawal or own-account move.
-    private func startsSelected(_ transaction: Transaction) -> Bool {
-        !availableAccounts(for: transaction).isEmpty
-            && duplicateReasons[transaction.id] == nil
-            && uncheckedMoves[transaction.id] == nil
+    /// Accounts, duplicates, transfer matches, learned transfers and the default
+    /// selection for the current statement account.
+    private func analyze() async {
+        guard !statementAccountId.isEmpty else {
+            // First run: pick the statement's account; the id change re-runs this task.
+            let initial = initialStatementAccountId()
+            if !initial.isEmpty { statementAccountId = initial }
+            return
+        }
+
+        var mapping: [String: String] = [:]
+        for transaction in transactions {
+            if let account = defaultAccount(for: transaction) { mapping[transaction.id] = account.id }
+        }
+        accountMapping = mapping
+
+        let rows = transactions
+        let existing = transactionStore.transactions
+        let eligible = transferEligibleIds
+        let ownAccountIds = Set(regularAccounts.map(\.id))
+        let (duplicates, matches) = await Task.detached(priority: .userInitiated) {
+            let duplicates = ImportDuplicateDetector.detect(
+                imported: rows, importedAccounts: mapping, existing: existing
+            )
+            let matches = ImportTransferMatcher.detect(
+                imported: rows,
+                importedAccounts: mapping,
+                eligibleRowIds: eligible.subtracting(duplicates.keys),
+                ownAccountIds: ownAccountIds,
+                existing: existing
+            )
+            return (duplicates, matches)
+        }.value
+        guard !Task.isCancelled else { return }
+        duplicateReasons = duplicates
+        transferMatches = matches
+
+        // The other side of a transfer already in Tenra wins; otherwise what the
+        // user did with the same description on this account before.
+        var transfers: [String: String] = [:]
+        for row in rows where row.type == .expense || row.type == .income {
+            guard let accountId = mapping[row.id], duplicates[row.id] == nil else { continue }
+            switch matches[row.id] {
+            case .counterpart(_, let other):
+                transfers[row.id] = other
+            case .alreadyTransfer:
+                continue
+            case nil:
+                let direction: ImportTransferHistory.Direction = row.type == .expense ? .outgoing : .incoming
+                if let learned = ImportTransferHistory.counterpart(
+                    accountId: accountId, direction: direction, description: row.description, in: transferHistory
+                ), transferOptions(for: row, accountId: accountId).contains(where: { $0.id == learned }) {
+                    transfers[row.id] = learned
+                }
+            }
+        }
+        transferMapping = transfers
+        selectedTransactions = Set(rows.filter { startsSelected($0) }.map(\.id))
+    }
+
+    // MARK: - Transfers
+
+    /// The user's other accounts a row can move money to or from: same currency,
+    /// not the row's own account.
+    private func transferOptions(for transaction: Transaction, accountId: String? = nil) -> [Account] {
+        guard Self.isCategorizable(transaction) else { return [] }
+        let own = accountId ?? accountMapping[transaction.id]
+        return regularAccounts.filter { $0.currency == transaction.currency && $0.id != own }
+    }
+
+    private func selectTransfer(_ accountId: String, for transaction: Transaction) {
+        withAnimation(AppAnimation.contentSpring) {
+            if accountId.isEmpty {
+                transferMapping.removeValue(forKey: transaction.id)
+            } else {
+                transferMapping[transaction.id] = accountId
+            }
+        }
+    }
+
+    /// The saved expense/income this row merges with: the matcher's counterpart,
+    /// as long as the row is still a transfer to that same account.
+    private func mergeTarget(for transaction: Transaction) -> Transaction? {
+        guard case .counterpart(let existingId, let accountId) = transferMatches[transaction.id],
+              transferMapping[transaction.id] == accountId else { return nil }
+        return transactionStore.transactionById[existingId]
     }
 
     // MARK: - Categories
@@ -209,8 +381,8 @@ struct ImportTransactionPreviewView: View {
     }
 
     /// `TransactionStore.validate` rejects a non-empty category the user does
-    /// not have, and `addSelectedTransactions` would then drop the row silently.
-    /// Anything that is not one of the user's categories saves as uncategorized.
+    /// not have, and the import would then drop the row silently. Anything that
+    /// is not one of the user's categories saves as uncategorized.
     private func savableCategory(for transaction: Transaction) -> String {
         let category = effectiveCategory(for: transaction)
         guard Self.isCategorizable(transaction), !category.isEmpty else { return category }
@@ -225,6 +397,9 @@ struct ImportTransactionPreviewView: View {
         withAnimation(AppAnimation.contentSpring) {
             categoryMapping[transaction.id] = name
             manuallyCategorized.insert(transaction.id)
+            // A subcategory picked for the old category does not carry over.
+            manuallySubcategorized.remove(transaction.id)
+            refreshSubcategory(for: transaction)
             guard merchant.count >= CategorySuggestionService.minimumMerchantLength else { return }
             for other in transactions
             where other.id != transaction.id
@@ -232,8 +407,77 @@ struct ImportTransactionPreviewView: View {
                 && !manuallyCategorized.contains(other.id)
                 && CategorySuggestionService.normalizedMerchant(other.description) == merchant {
                 categoryMapping[other.id] = name
+                refreshSubcategory(for: other)
             }
         }
+    }
+
+    // MARK: - Subcategories
+
+    /// The subcategories offered for the row's category: the ones linked to it,
+    /// or every subcategory when none is linked yet (picking one links it).
+    private func subcategoryOptions(for transaction: Transaction) -> [Subcategory] {
+        guard Self.isCategorizable(transaction),
+              let categoryId = categoryId(for: transaction) else { return [] }
+        let linked = (transactionStore.subcategoryIdsByCategoryId[categoryId] ?? [])
+            .compactMap { transactionStore.subcategoryById[$0] }
+        guard linked.isEmpty else { return linked }
+        return transactionStore.subcategories.sorted {
+            $0.name.localizedStandardCompare($1.name) == .orderedAscending
+        }
+    }
+
+    /// Resolved by name AND type: an income and an expense category may share a name.
+    private func categoryId(for transaction: Transaction) -> String? {
+        let category = effectiveCategory(for: transaction)
+        guard !category.isEmpty else { return nil }
+        return customCategories.first { $0.name == category && $0.type == transaction.type }?.id
+    }
+
+    /// Re-suggests the row's subcategory from history for its current category,
+    /// unless the user picked one by hand.
+    private func refreshSubcategory(for transaction: Transaction) {
+        guard !manuallySubcategorized.contains(transaction.id) else { return }
+        let category = effectiveCategory(for: transaction)
+        if Self.isCategorizable(transaction), !category.isEmpty,
+           let learned = CategorySuggestionService.historySubcategory(
+               for: transaction.description, type: transaction.type, category: category, in: subcategoryHistory
+           ),
+           transactionStore.subcategoryById[learned] != nil {
+            subcategoryMapping[transaction.id] = learned
+        } else {
+            subcategoryMapping.removeValue(forKey: transaction.id)
+        }
+    }
+
+    /// Sets the row's subcategory and carries it to the other rows of the same
+    /// merchant, type and category that the user has not set by hand.
+    private func selectSubcategory(_ id: String, for transaction: Transaction) {
+        let merchant = CategorySuggestionService.normalizedMerchant(transaction.description)
+        let category = effectiveCategory(for: transaction)
+        withAnimation(AppAnimation.contentSpring) {
+            func assign(_ rowId: String) {
+                if id.isEmpty { subcategoryMapping.removeValue(forKey: rowId) } else { subcategoryMapping[rowId] = id }
+            }
+            assign(transaction.id)
+            manuallySubcategorized.insert(transaction.id)
+            guard merchant.count >= CategorySuggestionService.minimumMerchantLength else { return }
+            for other in transactions
+            where other.id != transaction.id
+                && other.type == transaction.type
+                && !manuallySubcategorized.contains(other.id)
+                && effectiveCategory(for: other) == category
+                && CategorySuggestionService.normalizedMerchant(other.description) == merchant {
+                assign(other.id)
+            }
+        }
+    }
+
+    private func savableSubcategoryIds(for transaction: Transaction) -> [String] {
+        guard !savableCategory(for: transaction).isEmpty,
+              let id = subcategoryMapping[transaction.id],
+              transactionStore.subcategoryById[id] != nil else { return [] }
+        return [id]
     }
 
     /// Pure account-matching rule, factored out so it is unit-testable without
@@ -255,49 +499,75 @@ struct ImportTransactionPreviewView: View {
         regularAccounts.filter { $0.currency == transaction.currency }
     }
 
+    // MARK: - Save
+
     private func addSelectedTransactions() {
-        let transactionsToAdd = transactions.filter { selectedTransactions.contains($0.id) }
+        guard !isSaving else { return }
+        isSaving = true
+        // A row can only be selected when it has an account (see toggle/analyze),
+        // but nothing without one may reach the store regardless of UI state:
+        // accountId drives every balance calculation.
+        let decisions: [ImportRowDecision] = transactions.compactMap { transaction in
+            guard selectedTransactions.contains(transaction.id),
+                  let accountId = accountMapping[transaction.id], !accountId.isEmpty else { return nil }
+            let transferAccount = transferMapping[transaction.id]
+            return ImportRowDecision(
+                row: transaction,
+                accountId: accountId,
+                category: savableCategory(for: transaction),
+                subcategoryIds: transferAccount == nil ? savableSubcategoryIds(for: transaction) : [],
+                transferAccountId: transferAccount,
+                mergeWith: mergeTarget(for: transaction)
+            )
+        }
+        let operations = ImportCommitPlanner.operations(for: decisions)
 
         Task {
-            var saved: [Transaction] = []
-            for transaction in transactionsToAdd {
-                // A row can only be selected when availableAccounts(for:) is
-                // non-empty (see onToggle/onAppear/Select All above), but this
-                // guard is the last line of defense: nothing with a nil
-                // accountId may reach transactionStore.add regardless of UI
-                // state, since accountId drives every balance calculation.
-                guard let accountId = accountMapping[transaction.id] else { continue }
-                let updatedTransaction = Transaction(
-                    id: transaction.id,
-                    date: transaction.date,
-                    description: transaction.description,
-                    amount: transaction.amount,
-                    currency: transaction.currency,
-                    convertedAmount: transaction.convertedAmount,
-                    type: transaction.type,
-                    category: savableCategory(for: transaction),
-                    subcategory: transaction.subcategory,
-                    accountId: accountId,
-                    targetAccountId: transaction.targetAccountId,
-                    recurringSeriesId: transaction.recurringSeriesId,
-                    recurringOccurrenceId: transaction.recurringOccurrenceId,
-                    createdAt: transaction.createdAt
-                )
-
-                do {
-                    saved.append(try await transactionStore.add(updatedTransaction))
-                } catch {
-                }
-            }
-
-            // Rows that predate an account are already in the balance the user
-            // entered when creating it; keep that balance instead of double-counting.
-            if let coordinator = accountsViewModel.balanceCoordinator {
-                await ImportBalanceCompensation.apply(saved: saved, store: transactionStore, coordinator: coordinator)
-            }
-
-            RatingPromptService.shared.recordTransactionAdded(count: saved.count)
+            let saved = await ImportCommitter.commit(
+                operations,
+                store: transactionStore,
+                categories: categoriesViewModel,
+                balance: accountsViewModel.balanceCoordinator
+            )
+            RatingPromptService.shared.recordTransactionAdded(count: saved)
             dismiss()
+        }
+    }
+}
+
+// MARK: - ImportRowNotice
+
+/// Why a review row is flagged, most important first.
+enum ImportRowNotice: Equatable {
+    case duplicate(ImportDuplicateDetector.Reason)
+    /// A saved transfer already moves this money in or out of the account.
+    case alreadyTransfer
+    /// The other side of a transfer is in Tenra on `accountName`; they merge.
+    case merge(accountName: String)
+    case cashWithdrawal
+    case ownAccountMove
+
+    var text: String {
+        switch self {
+        case .duplicate(.alreadyAdded):
+            return String(localized: "transactionPreview.possibleDuplicate")
+        case .duplicate(.subscriptionOccurrence):
+            return String(localized: "transactionPreview.coveredBySubscription")
+        case .alreadyTransfer:
+            return String(localized: "transactionPreview.alreadyTransfer")
+        case .merge(let accountName):
+            return String(format: String(localized: "transactionPreview.transferMerge"), accountName)
+        case .cashWithdrawal:
+            return String(localized: "transactionPreview.cashWithdrawal")
+        case .ownAccountMove:
+            return String(localized: "transactionPreview.ownAccountTransfer")
+        }
+    }
+
+    var isWarning: Bool {
+        switch self {
+        case .duplicate, .alreadyTransfer: return true
+        case .merge, .cashWithdrawal, .ownAccountMove: return false
         }
     }
 }
@@ -315,25 +585,55 @@ struct ImportTransactionPreviewRow: View {
     let category: String
     let categoryOptions: [String]
     let customCategories: [CustomCategory]
-    /// Set when the row looks already present; the row starts unchecked.
-    let duplicateReason: ImportDuplicateDetector.Reason?
-    /// Cash withdrawal or own-account move; the row starts unchecked.
-    let uncheckedMove: StatementOperationKind?
+    let subcategory: Subcategory?
+    let subcategoryOptions: [Subcategory]
+    /// The user's other account when the row is saved as a transfer.
+    let transferAccount: Account?
+    let transferOptions: [Account]
+    let notice: ImportRowNotice?
     let onCategorySelect: (String) -> Void
+    let onSubcategorySelect: (String) -> Void
+    let onTransferSelect: (String) -> Void
 
     private var isCategorizable: Bool {
         transaction.type == .expense || transaction.type == .income
     }
 
+    private var isOutgoing: Bool { transaction.type == .expense }
+
+    private var ownAccount: Account? {
+        availableAccounts.first { $0.id == selectedAccountId }
+    }
+
     // Resolved against the user's real categories, so a suggested category
     // shows its own icon and colour on the card.
     private var styleData: CategoryStyleData {
-        CategoryStyleHelper.cached(category: category, type: transaction.type, customCategories: customCategories)
+        CategoryStyleHelper.cached(category: displayTransaction.category, type: displayTransaction.type,
+                                   customCategories: customCategories)
     }
 
-    /// The card renders the row as it will be saved, i.e. with the effective category.
+    /// The card renders the row as it will be saved: with the effective category,
+    /// or as a transfer between the two accounts.
     private var displayTransaction: Transaction {
-        Transaction(
+        if let transferAccount {
+            return Transaction(
+                id: transaction.id,
+                date: transaction.date,
+                description: transaction.description,
+                amount: transaction.amount,
+                currency: transaction.currency,
+                type: .internalTransfer,
+                category: TransactionType.transferCategoryName,
+                accountId: isOutgoing ? selectedAccountId : transferAccount.id,
+                targetAccountId: isOutgoing ? transferAccount.id : selectedAccountId,
+                accountName: isOutgoing ? ownAccount?.name : transferAccount.name,
+                targetAccountName: isOutgoing ? transferAccount.name : ownAccount?.name,
+                targetCurrency: transaction.currency,
+                targetAmount: transaction.amount,
+                createdAt: transaction.createdAt
+            )
+        }
+        return Transaction(
             id: transaction.id,
             date: transaction.date,
             description: transaction.description,
@@ -362,20 +662,18 @@ struct ImportTransactionPreviewRow: View {
         return categoryOptions + [category]
     }
 
+    private var pickerSubcategories: [Subcategory] {
+        guard let subcategory, !subcategoryOptions.contains(where: { $0.id == subcategory.id }) else {
+            return subcategoryOptions
+        }
+        return subcategoryOptions + [subcategory]
+    }
+
     /// No regular account exists in this transaction's currency. The row
     /// must stay unselectable (Fix 4): saving with a nil accountId makes the
     /// transaction invisible to every balance calculation, since accountId
     /// drives balance derivation throughout this codebase.
     private var hasNoMatchingAccount: Bool { availableAccounts.isEmpty }
-
-    private func duplicateLabel(for reason: ImportDuplicateDetector.Reason) -> String {
-        switch reason {
-        case .alreadyAdded:
-            return String(localized: "transactionPreview.possibleDuplicate")
-        case .subscriptionOccurrence:
-            return String(localized: "transactionPreview.coveredBySubscription")
-        }
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
@@ -409,12 +707,15 @@ struct ImportTransactionPreviewRow: View {
                 // These transactions do not exist in TransactionStore yet, so
                 // TransactionCard's tap-to-edit / swipe-to-delete / recurring
                 // actions would resolve against a transaction the store has
-                // never seen — this screen's own checkbox and account picker
-                // are the only actions that make sense before import.
+                // never seen — this screen's own checkbox and pickers are the
+                // only actions that make sense before import.
                 TransactionCardView(
                     transaction: displayTransaction,
                     currency: transaction.currency,
-                    styleData: styleData
+                    styleData: styleData,
+                    sourceAccount: transferAccount == nil ? nil : (isOutgoing ? ownAccount : transferAccount),
+                    targetAccount: transferAccount == nil ? nil : (isOutgoing ? transferAccount : ownAccount),
+                    linkedSubcategories: transferAccount == nil ? (subcategory.map { [$0] } ?? []) : []
                 )
             }
 
@@ -427,19 +728,11 @@ struct ImportTransactionPreviewRow: View {
                     .padding(.leading, AppSpacing.xl)
             }
 
-            // Already in Tenra (re-imported row, or a charge a subscription series
-            // already generated): say why the row starts unchecked.
-            if let duplicateReason {
-                Text(duplicateLabel(for: duplicateReason))
+            // Why the row is unchecked, or what saving it will do.
+            if let notice {
+                Text(notice.text)
                     .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.warning)
-                    .padding(.leading, AppSpacing.xl)
-            } else if let uncheckedMove {
-                Text(uncheckedMove == .cashWithdrawal
-                     ? String(localized: "transactionPreview.cashWithdrawal")
-                     : String(localized: "transactionPreview.ownAccountTransfer"))
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(notice.isWarning ? AppColors.warning : AppColors.textSecondary)
                     .padding(.leading, AppSpacing.xl)
             }
 
@@ -449,7 +742,6 @@ struct ImportTransactionPreviewRow: View {
                     get: { selectedAccountId ?? "" },
                     set: { onAccountSelect($0) }
                 )) {
-                    Text("transactionPreview.noAccount").tag("")
                     ForEach(availableAccounts) { account in
                         Text("\(account.name) (\(Formatting.currencySymbol(for: account.currency)))").tag(account.id)
                     }
@@ -459,8 +751,25 @@ struct ImportTransactionPreviewRow: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
-            // Category selector (income/expense rows, visible only when selected)
-            if isSelected && isCategorizable {
+            // Transfer between own accounts (income/expense rows, visible only when selected)
+            if isSelected && isCategorizable && !transferOptions.isEmpty {
+                Picker(String(localized: isOutgoing ? "transactionPreview.transfer.to" : "transactionPreview.transfer.from"),
+                       selection: Binding(
+                        get: { transferAccount?.id ?? "" },
+                        set: { onTransferSelect($0) }
+                       )) {
+                    Text(String(localized: "transactionPreview.transfer.none")).tag("")
+                    ForEach(transferOptions) { account in
+                        Text(account.name).tag(account.id)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .padding(.leading, AppSpacing.xl)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            // Category and subcategory (income/expense rows that stay plain)
+            if isSelected && isCategorizable && transferAccount == nil {
                 Picker(String(localized: "transaction.category"), selection: Binding(
                     get: { category },
                     set: { onCategorySelect($0) }
@@ -473,6 +782,21 @@ struct ImportTransactionPreviewRow: View {
                 .pickerStyle(MenuPickerStyle())
                 .padding(.leading, AppSpacing.xl)
                 .transition(.opacity.combined(with: .move(edge: .top)))
+
+                if !category.isEmpty && !pickerSubcategories.isEmpty {
+                    Picker(String(localized: "transactionPreview.subcategory"), selection: Binding(
+                        get: { subcategory?.id ?? "" },
+                        set: { onSubcategorySelect($0) }
+                    )) {
+                        Text(String(localized: "transactionPreview.noSubcategory")).tag("")
+                        ForEach(pickerSubcategories) { subcategory in
+                            Text(subcategory.name).tag(subcategory.id)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .padding(.leading, AppSpacing.xl)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
         }
         .padding(.vertical, AppSpacing.xs)

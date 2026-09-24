@@ -1711,3 +1711,13 @@
 
 /* Statement import review: a row that moves money between the user's own accounts starts unchecked */
 "transactionPreview.ownAccountTransfer" = "自分の口座間の移動：支出でも収入でもありません";
+
+/* Statement import review: statement account, transfers between own accounts, subcategories */
+"transactionPreview.statementAccount" = "明細の口座";
+"transactionPreview.transfer.to" = "自分の口座へ振替";
+"transactionPreview.transfer.from" = "自分の口座から振替";
+"transactionPreview.transfer.none" = "振替ではない";
+"transactionPreview.subcategory" = "サブカテゴリ";
+"transactionPreview.noSubcategory" = "サブカテゴリなし";
+"transactionPreview.transferMerge" = "%@の取引と一致：1件の振替として保存します";
+"transactionPreview.alreadyTransfer" = "口座間の振替としてすでに記録済み";

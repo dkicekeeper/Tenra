@@ -1711,3 +1711,13 @@
 
 /* Statement import review: a row that moves money between the user's own accounts starts unchecked */
 "transactionPreview.ownAccountTransfer" = "Kendi hesaplarınız arasında: harcama veya gelir değil";
+
+/* Statement import review: statement account, transfers between own accounts, subcategories */
+"transactionPreview.statementAccount" = "Ekstre hesabı";
+"transactionPreview.transfer.to" = "Hesabıma transfer";
+"transactionPreview.transfer.from" = "Hesabımdan transfer";
+"transactionPreview.transfer.none" = "Transfer değil";
+"transactionPreview.subcategory" = "Alt kategori";
+"transactionPreview.noSubcategory" = "Alt kategori yok";
+"transactionPreview.transferMerge" = "%@ hesabındaki bir işlemle eşleşiyor: tek transfer olarak kaydedilir";
+"transactionPreview.alreadyTransfer" = "Hesaplarınız arasında transfer olarak zaten kayıtlı";

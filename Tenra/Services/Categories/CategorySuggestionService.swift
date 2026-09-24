@@ -106,6 +106,68 @@ nonisolated enum CategorySuggestionService {
         "\(type.rawValue)|\(merchant)"
     }
 
+    // MARK: - Subcategory history tier
+
+    /// One saved transaction with subcategory links, as the sweep needs it. Built on
+    /// the main actor from `TransactionStore.subcategoryIdsByTransactionId` (only
+    /// linked transactions, so it stays small) and swept off it.
+    struct SubcategoryUse: Sendable, Equatable {
+        let description: String
+        let type: TransactionType
+        let category: String
+        let subcategoryIds: [String]
+        let date: String
+    }
+
+    struct SubcategoryIndex: Sendable, Equatable {
+        /// "\(type.rawValue)|\(normalizedMerchant)|\(category)" → subcategory id → stats
+        var stats: [String: [String: HistoryIndex.Stat]] = [:]
+    }
+
+    /// Counts, per (type, merchant, category), how often each subcategory was linked.
+    /// Keyed by category too: "Любимая" under "Семья" says nothing about the same
+    /// merchant filed under another category.
+    static func buildSubcategoryIndex(from uses: [SubcategoryUse]) -> SubcategoryIndex {
+        var index = SubcategoryIndex()
+        for use in uses where !use.category.isEmpty {
+            let merchant = normalizedMerchant(use.description)
+            guard merchant.count >= minimumMerchantLength else { continue }
+            let key = subcategoryKey(type: use.type, merchant: merchant, category: use.category)
+            var bySubcategory = index.stats[key, default: [:]]
+            for id in Set(use.subcategoryIds) {
+                var stat = bySubcategory[id] ?? HistoryIndex.Stat(count: 0, latestDate: "")
+                stat.count += 1
+                if use.date > stat.latestDate { stat.latestDate = use.date }
+                bySubcategory[id] = stat
+            }
+            index.stats[key] = bySubcategory
+        }
+        return index
+    }
+
+    /// Most-used subcategory for this merchant, type and category, with the same
+    /// tie-breaks as `historyCategory`. nil when nothing was learned.
+    static func historySubcategory(
+        for description: String,
+        type: TransactionType,
+        category: String,
+        in index: SubcategoryIndex
+    ) -> String? {
+        let merchant = normalizedMerchant(description)
+        guard merchant.count >= minimumMerchantLength, !category.isEmpty,
+              let bySubcategory = index.stats[subcategoryKey(type: type, merchant: merchant, category: category)]
+        else { return nil }
+        return bySubcategory.max { lhs, rhs in
+            if lhs.value.count != rhs.value.count { return lhs.value.count < rhs.value.count }
+            if lhs.value.latestDate != rhs.value.latestDate { return lhs.value.latestDate < rhs.value.latestDate }
+            return lhs.key > rhs.key
+        }?.key
+    }
+
+    private static func subcategoryKey(type: TransactionType, merchant: String, category: String) -> String {
+        "\(type.rawValue)|\(merchant)|\(category)"
+    }
+
     // MARK: - Similar saved transactions
 
     /// Saved transactions that look like `edited` and still carry

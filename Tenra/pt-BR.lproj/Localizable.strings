@@ -1711,3 +1711,13 @@
 
 /* Statement import review: a row that moves money between the user's own accounts starts unchecked */
 "transactionPreview.ownAccountTransfer" = "Entre suas próprias contas: não é gasto nem receita";
+
+/* Statement import review: statement account, transfers between own accounts, subcategories */
+"transactionPreview.statementAccount" = "Conta do extrato";
+"transactionPreview.transfer.to" = "Transferência para minha conta";
+"transactionPreview.transfer.from" = "Transferência da minha conta";
+"transactionPreview.transfer.none" = "Não é transferência";
+"transactionPreview.subcategory" = "Subcategoria";
+"transactionPreview.noSubcategory" = "Sem subcategoria";
+"transactionPreview.transferMerge" = "Corresponde a uma operação em %@: salva como uma única transferência";
+"transactionPreview.alreadyTransfer" = "Já registrada como transferência entre suas contas";

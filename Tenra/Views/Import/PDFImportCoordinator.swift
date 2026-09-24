@@ -29,8 +29,11 @@ struct PDFImportCoordinator: View {
     @State private var showingTransactionPreview = false
     @State private var parsedTransactions: [Transaction] = []
     @State private var suggestedCategories: [String: String] = [:]
-    @State private var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
     @State private var uncheckedMoves: [String: StatementOperationKind] = [:]
+    @State private var transferEligibleIds: Set<String> = []
+    @State private var statementAccountId: String?
+    @State private var subcategoryHistory = CategorySuggestionService.SubcategoryIndex()
+    @State private var transferHistory = ImportTransferHistory.Index()
     @State private var showingScanner = false
     @State private var showingDiagnostics = false
     @State private var receiptDraft: ReceiptDraft? = nil
@@ -152,9 +155,13 @@ struct PDFImportCoordinator: View {
             accountsViewModel: accountsViewModel,
             transactions: parsedTransactions,
             customCategories: categoriesViewModel.customCategories,
+            categoriesViewModel: categoriesViewModel,
             suggestedCategories: suggestedCategories,
-            duplicateReasons: duplicateReasons,
-            uncheckedMoves: uncheckedMoves
+            subcategoryHistory: subcategoryHistory,
+            transferHistory: transferHistory,
+            uncheckedMoves: uncheckedMoves,
+            transferEligibleIds: transferEligibleIds,
+            defaultStatementAccountId: statementAccountId
         )
     }
 
@@ -222,37 +229,47 @@ struct PDFImportCoordinator: View {
                     categories: categoriesViewModel.customCategories,
                     keywordMatcher: { parser.keywordCategory(in: $0) }
                 )
-                // Rows already in Tenra (a re-imported statement, or a charge a
-                // subscription series already generated) start unchecked.
-                let regularAccounts = accountsViewModel.regularAccounts
-                var importedAccounts: [String: String] = [:]
-                for tx in mapped {
-                    if let account = ImportTransactionPreviewView.availableAccounts(
-                        for: tx, regularAccounts: regularAccounts
-                    ).first {
-                        importedAccounts[tx.id] = account.id
+                // What the user did before: subcategories per merchant and category,
+                // transfers to their other accounts per account and description.
+                // Duplicates and transfer matches depend on the statement's account,
+                // which the review screen lets the user change, so it runs those.
+                let store = transactionsViewModel.transactionStore
+                let history = store?.transactions ?? []
+                let subcategoryUses: [CategorySuggestionService.SubcategoryUse] = (store?.subcategoryIdsByTransactionId ?? [:])
+                    .compactMap { transactionId, subcategoryIds in
+                        guard !subcategoryIds.isEmpty, let tx = store?.transactionById[transactionId] else { return nil }
+                        return CategorySuggestionService.SubcategoryUse(
+                            description: tx.description, type: tx.type, category: tx.category,
+                            subcategoryIds: subcategoryIds, date: tx.date
+                        )
                     }
-                }
-                let existing = transactionsViewModel.transactionStore?.transactions ?? []
-                duplicateReasons = await Task.detached(priority: .userInitiated) {
-                    ImportDuplicateDetector.detect(
-                        imported: mapped,
-                        importedAccounts: importedAccounts,
-                        existing: existing
-                    )
+                (subcategoryHistory, transferHistory) = await Task.detached(priority: .userInitiated) {
+                    (CategorySuggestionService.buildSubcategoryIndex(from: subcategoryUses),
+                     ImportTransferHistory.build(from: history))
                 }.value
+                // The statement's account: the bank whose web domain the pages print.
+                statementAccountId = outcome.bankDomain.flatMap { domain in
+                    StatementBankDetector.accountId(
+                        forBankDomain: domain,
+                        among: accountsViewModel.regularAccounts.map { account in
+                            (id: account.id, name: account.name, logoDomain: account.iconSource?.brandDomain)
+                        }
+                    )
+                }
                 // Cash withdrawals and own-account moves start unchecked: the cash is
                 // spent (and logged) later, and an own-account move lands in another
                 // account the user keeps, so importing either as spending or income
                 // would count the money twice. The mapper keeps statement order.
+                let kinds = zip(outcome.statement.transactions, mapped).map { parsed, tx in
+                    (tx.id, StatementOperationKind.classify(operation: parsed.operation,
+                                                            details: parsed.descriptionText))
+                }
                 uncheckedMoves = Dictionary(
-                    zip(outcome.statement.transactions, mapped).compactMap { parsed, tx in
-                        let kind = StatementOperationKind.classify(operation: parsed.operation,
-                                                                   details: parsed.descriptionText)
-                        return kind.startsUnchecked ? (tx.id, kind) : nil
-                    },
+                    kinds.filter { $0.1.startsUnchecked },
                     uniquingKeysWith: { first, _ in first }
                 )
+                // Purchases and cash withdrawals are never the other side of a transfer.
+                transferEligibleIds = Set(kinds.filter { $0.1 != .purchase && $0.1 != .cashWithdrawal }.map(\.0))
                 parsedTransactions = mapped
                 showingTransactionPreview = true
             }

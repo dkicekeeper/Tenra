@@ -115,6 +115,37 @@ Descriptions: a details cell that is a whole payment order ("Плательщи�
 Б.. Мобильный: ...") shrinks to the counterparty's name, and IBAN account numbers are stripped as
 noise.
 
+## Statement account, transfers and learning (review screen)
+
+- **Statement account.** `StatementBankDetector` finds the bank by the web domain its pages print
+  ("www.kaspi.kz", "bankffin.kz" → registry `ffin.kz`; bank NAMES are not searched, a Freedom
+  statement is full of "KASPI MAGAZIN" purchases) and matches it to an account by logo, then by name.
+  The review screen shows it as "Счёт выписки"; every row in that currency goes there. Before, each
+  row defaulted to the first account in its currency, so two tenge accounts meant re-picking the
+  account on every row. Duplicate and transfer detection run in the view (`.task(id:)` on the
+  statement account), because they depend on it.
+- **Other side of a transfer.** `ImportTransferMatcher`: a row whose operation can be a transfer
+  (not a purchase or cash withdrawal) and a saved plain expense/income on another regular account
+  with the opposite direction, same amount and currency, within 2 days, are one transfer. Saving
+  converts the saved transaction into the transfer (same id and date) and does not add the row.
+  A saved transfer that already covers the row makes it start unchecked. Saved rows that are
+  themselves a move from a deposit ("Перевод вклада по Договору") are never a counterpart: on real
+  Kaspi + Freedom statements the chain deposit → card → other bank → a person repeats one amount on
+  one day and paired the wrong rows. Real pair check (2026-09): 10 pairs, all correct.
+- **Learned transfers.** `ImportTransferHistory` reads the user's saved transfers: an outgoing row on
+  account A with a description that was saved as a transfer A → B is suggested as that transfer again.
+  Plain spending/income with the same description votes against it, so it never overrides a merchant.
+  Like category history there is no rule store: changing a row back teaches it too.
+- **Subcategories.** The review row has a subcategory picker (linked subcategories of the category,
+  or all when none is linked). `CategorySuggestionService.historySubcategory` suggests one per
+  (type, merchant, category) from existing links. Saving links it to the row and to the category.
+- **Saving.** `ImportCommitPlanner` (pure) turns row decisions into add / add-as-transfer / convert
+  operations; `ImportCommitter` runs them, batch-writes subcategory links and calls
+  `ImportBalanceCompensation.apply(saved:convertedLegs:)`, which now also covers a transfer's target
+  account and, for a conversion, only the statement account's new leg.
+
+Pinned by `ImportLearningTests`, `ImportCommitterTests`, `ImportBalanceCompensationTests`.
+
 ## Category suggestions
 
 Recognition output stays uncategorized (`ParsedTransactionMapper`); categories are

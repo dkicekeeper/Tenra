@@ -96,8 +96,9 @@ nonisolated enum ImportDuplicateDetector {
     }
 
     /// Whole days since the reference date for a "yyyy-MM-dd" key (FastDateParser, not
-    /// DateFormatter: this runs over every saved transaction).
-    private static func dayNumber(_ key: String) -> Int? {
+    /// DateFormatter: this runs over every saved transaction). Shared with
+    /// `ImportTransferMatcher`.
+    static func dayNumber(_ key: String) -> Int? {
         guard let date = FastDateParser.date(from: key) else { return nil }
         // Shift local midnight to UTC before dividing, so DST changes cannot make two
         // consecutive local days share a number.

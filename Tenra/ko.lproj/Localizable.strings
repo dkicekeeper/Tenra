@@ -1711,3 +1711,13 @@
 
 /* Statement import review: a row that moves money between the user's own accounts starts unchecked */
 "transactionPreview.ownAccountTransfer" = "본인 계좌 간 이체: 지출도 수입도 아닙니다";
+
+/* Statement import review: statement account, transfers between own accounts, subcategories */
+"transactionPreview.statementAccount" = "명세서 계좌";
+"transactionPreview.transfer.to" = "내 계좌로 이체";
+"transactionPreview.transfer.from" = "내 계좌에서 이체";
+"transactionPreview.transfer.none" = "이체 아님";
+"transactionPreview.subcategory" = "하위 카테고리";
+"transactionPreview.noSubcategory" = "하위 카테고리 없음";
+"transactionPreview.transferMerge" = "%@의 거래와 일치: 하나의 이체로 저장됩니다";
+"transactionPreview.alreadyTransfer" = "이미 계좌 간 이체로 기록됨";

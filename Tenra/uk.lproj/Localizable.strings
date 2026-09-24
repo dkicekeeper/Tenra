@@ -1711,3 +1711,13 @@
 
 /* Statement import review: a row that moves money between the user's own accounts starts unchecked */
 "transactionPreview.ownAccountTransfer" = "Між своїми рахунками: це не витрата і не дохід";
+
+/* Statement import review: statement account, transfers between own accounts, subcategories */
+"transactionPreview.statementAccount" = "Рахунок виписки";
+"transactionPreview.transfer.to" = "Переказ на мій рахунок";
+"transactionPreview.transfer.from" = "Переказ з мого рахунку";
+"transactionPreview.transfer.none" = "Не переказ";
+"transactionPreview.subcategory" = "Підкатегорія";
+"transactionPreview.noSubcategory" = "Без підкатегорії";
+"transactionPreview.transferMerge" = "Збігається з операцією на рахунку %@: збережеться як один переказ";
+"transactionPreview.alreadyTransfer" = "Уже враховано переказом між вашими рахунками";

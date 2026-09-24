@@ -20,6 +20,9 @@ struct ImportOutcome: Sendable {
     let csvFile: CSVFile
     let statement: ParsedStatement
     let intelligenceStatus: IntelligenceStatus
+    /// Registry domain of the bank that issued the statement ("kaspi.kz"), when its
+    /// web domain is printed on the pages. Picks the review screen's default account.
+    var bankDomain: String? = nil
 }
 
 nonisolated struct DocumentImportService {
@@ -132,7 +135,8 @@ nonisolated struct DocumentImportService {
         return ImportOutcome(
             csvFile: StatementInterpreter.csvFile(from: statement),
             statement: statement,
-            intelligenceStatus: IntelligenceAvailability.status
+            intelligenceStatus: IntelligenceAvailability.status,
+            bankDomain: StatementBankDetector.bankDomain(in: snapshot.allLines)
         )
     }
 

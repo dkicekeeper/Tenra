@@ -116,9 +116,10 @@ no central hook. The contract is: `transactionStore.add(...)` first (it assigns 
 pass `id: ""`), then `linkSubcategoryToCategory` per id (so the tag joins that category's
 carousel next time), then `linkSubcategoriesToTransaction`. Reference implementation:
 [TransactionAddCoordinator.linkSubcategories](../../Tenra/Views/Transactions/TransactionAddCoordinator.swift);
-also implemented in `LoanPaymentView`, `LoanEarlyRepaymentView` and
+also implemented in `LoanPaymentView`, `LoanEarlyRepaymentView`,
 [AccountActionViewModel](../../Tenra/ViewModels/AccountActionViewModel.swift) (the "Пополнение"
-top-up flow).
+top-up flow) and the statement import (`ImportCommitter`, one batch for all rows; the subcategory is
+suggested from history per merchant and category, see [import.md](import.md)).
 
 ⚠️ Resolve the category id by **name + type**, not through `categoryIdByName` — that index is
 keyed by lowercased name alone, so an income and an expense category sharing a name collide and

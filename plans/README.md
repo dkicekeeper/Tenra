@@ -62,6 +62,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 ## Findings recorded outside the numbered plans (status 2026-09-24)
 
 - DONE F8 statement operation column: detected, classified, movement rows labeled, cash withdrawals start unchecked (`0855b4e6`).
+- DONE F12 real Kaspi/Freedom statements: header-anchored table assembly (merchant names, wrapped cells, no summary rows), own-account moves start unchecked, payment orders shrink to the counterparty (`3c06f101`). Both statements reconcile with the bank-printed totals.
 - DONE F9 subscription reminders roll forward in background refresh (`f8fd11ea`).
 - DONE F10 automatic weekly backup with a toggle (`a3a44af1`). iCloud location stays opt-in.
 - DONE F11 dead category-rule view-model code removed; repository methods and the CoreData entity kept (`6a3edc98`).

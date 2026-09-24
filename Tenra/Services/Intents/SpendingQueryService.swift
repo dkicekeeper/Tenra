@@ -27,6 +27,15 @@ struct SpendingTotal: Equatable {
 
 enum SpendingQueryService {
 
+    /// Types the summary rule counts as spending (`summaryContribution(isFuture: false) == .expense`:
+    /// expense and loan payments). Derived, not listed, so Siri can never disagree with the home
+    /// summary again (CLAUDE.md Red Flag 11). Previously this fetched `type == expense` only.
+    static var spendingTypeRawValues: [String] {
+        TransactionType.allCases
+            .filter { $0.summaryContribution(isFuture: false) == .expense }
+            .map(\.rawValue)
+    }
+
     static func total(
         period: SpendingPeriod,
         baseCurrency: String,
@@ -42,10 +51,10 @@ enum SpendingQueryService {
 
         let request = NSFetchRequest<TransactionEntity>(entityName: "TransactionEntity")
         request.predicate = NSPredicate(
-            format: "date >= %@ AND date <= %@ AND type == %@",
+            format: "date >= %@ AND date <= %@ AND type IN %@",
             start as NSDate,
             now as NSDate,
-            TransactionType.expense.rawValue
+            spendingTypeRawValues
         )
 
         let rows = try context.fetch(request)

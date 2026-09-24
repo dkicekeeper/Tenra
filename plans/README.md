@@ -23,7 +23,7 @@ your row when done. The maintainer commits directly to `main`; do not push.
 | 008 | [Statement import flags duplicates and subscription occurrences](008-import-duplicate-detection.md) | P1 | M | none (after 007: same file) | DONE (see git log) |
 | 009 | [Provisional notification permission for digest and signals](009-provisional-notification-permission.md) | P1 | S | none | DONE (see git log) |
 | 010 | [History category filter: all selected + uncategorized](010-history-category-filter.md) | P2 | S | none | DONE (see git log) |
-| 011 | [Siri spending total follows the summary rule](011-siri-spending-uses-summary-rule.md) | P3 | S | none | TODO |
+| 011 | [Siri spending total follows the summary rule](011-siri-spending-uses-summary-rule.md) | P3 | S | none | DONE (see git log) |
 | 012 | [Russian voice keywords target real onboarding categories](012-voice-ru-categories-match-onboarding.md) | P1 | S | 013 (for "Зарплата") | DONE (see git log) |
 | 013 | [Income categories for new users + add-category in top-up](013-income-categories-for-new-users.md) | P1 | S-M | none | DONE (see git log; also fixed: top-up listed only income categories already used on transactions) |
 | 014 | [Siri spending query requires an unlocked iPhone](014-siri-spending-requires-unlock.md) | P2 | S | none | DONE (see git log) |

@@ -42,14 +42,15 @@ struct SpendingQueryServiceTests {
         in context: NSManagedObjectContext,
         amount: Double,
         currency: String,
-        dateKey: String
+        dateKey: String,
+        type: TransactionType = .expense
     ) throws {
         let entity = TransactionEntity(context: context)
         entity.id = UUID().uuidString
         entity.date = DateFormatters.dateFormatter.date(from: dateKey)
         entity.amount = amount
         entity.currency = currency
-        entity.type = TransactionType.expense.rawValue
+        entity.type = type.rawValue
         entity.category = "Food"
         entity.accountId = "a1"
         try context.save()
@@ -159,5 +160,37 @@ struct SpendingQueryServiceTests {
         )
         // 1000 KZT + (10 USD × 540) = 6400 KZT, not 1010.
         #expect(total.amount == 6400)
+    }
+
+    // MARK: - Same rule as the home summary (Red Flag 11)
+
+    @Test("Loan payments count as spending, like the home summary")
+    func loanPaymentsCount() throws {
+        let context = try makeContext()
+        try seedExpense(in: context, amount: 1_000, currency: "KZT", dateKey: "2026-07-31")
+        try seedExpense(in: context, amount: 50_000, currency: "KZT", dateKey: "2026-07-31", type: .loanPayment)
+
+        let total = try SpendingQueryService.total(period: .today, baseCurrency: "KZT", context: context, now: now)
+        #expect(total.amount == 51_000)
+    }
+
+    @Test("Transfers and income are not spending")
+    func transfersAndIncomeExcluded() throws {
+        let context = try makeContext()
+        try seedExpense(in: context, amount: 1_000, currency: "KZT", dateKey: "2026-07-31")
+        try seedExpense(in: context, amount: 7_000, currency: "KZT", dateKey: "2026-07-31", type: .internalTransfer)
+        try seedExpense(in: context, amount: 9_000, currency: "KZT", dateKey: "2026-07-31", type: .income)
+
+        let total = try SpendingQueryService.total(period: .today, baseCurrency: "KZT", context: context, now: now)
+        #expect(total.amount == 1_000)
+    }
+
+    @Test("Fetched types equal the summary rule's spending types, for every type")
+    func fetchedTypesFollowSummaryRule() {
+        let fetched = Set(SpendingQueryService.spendingTypeRawValues)
+        for type in TransactionType.allCases {
+            let isSpending = type.summaryContribution(isFuture: false) == .expense
+            #expect(fetched.contains(type.rawValue) == isSpending, "\(type)")
+        }
     }
 }

@@ -49,10 +49,25 @@ struct CategoryChip: View {
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: AppSpacing.sm) {
-                Text(category)
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
-                    .lineLimit(1)
+                // Up to two lines with gentle scaling: chips are ~80 pt wide, and one
+                // 18 pt line fit about 7 characters, so "Кафе и рестораны",
+                // "Коммунальные" or "Dienstleistungen" rendered as "Каф…". A hidden
+                // two-line placeholder reserves the height, so icons in a row stay
+                // aligned whether a name takes one line or two.
+                Text(verbatim: "A\nA")
+                    .font(AppTypography.bodySmall.weight(.semibold))
+                    .lineLimit(2)
+                    .hidden()
+                    .accessibilityHidden(true)
+                    .overlay(alignment: .bottom) {
+                        Text(category)
+                            .font(AppTypography.bodySmall.weight(.semibold))
+                            .foregroundStyle(AppColors.textPrimary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .frame(maxWidth: .infinity)
                 ZStack {
                     // Budget progress ring (expense categories only)
                     if let progress = budgetProgress, type == .expense {

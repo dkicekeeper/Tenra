@@ -17,8 +17,28 @@ your row when done. The maintainer commits directly to `main`; do not push.
 | 002 | [Category suggestions for statement import and receipts](002-import-category-suggestions.md) | P1 | M | none | DONE (8b184aea; device check pending) |
 | 003 | [Apply a changed category to same-merchant transactions](003-apply-category-to-similar.md) | P2 | M | 002 | DONE (ae99e4b8; device check pending) |
 | 004 | [Spike: Apple Pay logging via the Shortcuts "Wallet" automation](004-spike-wallet-automation.md) | P2 | S + 1 week of device data | none (002 optional) | BLOCKED (2026-09-24: probe in DEBUG builds, waiting for a week of device data) |
+| 005 | [Manual balance correction survives relaunch](005-persist-balance-correction.md) | P1 | S | none | TODO |
+| 006 | [Category rename rewrites transactions and series](006-category-rename-rewrites-transactions.md) | P1 | M | none | TODO |
+| 007 | [Statement import keeps the account's current balance](007-import-keeps-account-balance.md) | P1 | M | 005 | TODO |
+| 008 | [Statement import flags duplicates and subscription occurrences](008-import-duplicate-detection.md) | P1 | M | none (after 007: same file) | TODO |
+| 009 | [Provisional notification permission for digest and signals](009-provisional-notification-permission.md) | P1 | S | none | TODO |
+| 010 | [History category filter: all selected + uncategorized](010-history-category-filter.md) | P2 | S | none | TODO |
+| 011 | [Siri spending total follows the summary rule](011-siri-spending-uses-summary-rule.md) | P3 | S | none | TODO |
+| 012 | [Russian voice keywords target real onboarding categories](012-voice-ru-categories-match-onboarding.md) | P1 | S | 013 (for "Зарплата") | TODO |
+| 013 | [Income categories for new users + add-category in top-up](013-income-categories-for-new-users.md) | P1 | S-M | none | TODO |
+| 014 | [Siri spending query requires an unlocked iPhone](014-siri-spending-requires-unlock.md) | P2 | S | none | TODO |
+| 015 | [Localized system permission prompts (InfoPlist.strings)](015-localized-permission-prompts.md) | P2 | S | none | TODO |
+| 016 | [Recurring occurrences anchored to the start date (no month-end drift)](016-recurring-dates-anchored-to-start.md) | P2 | M | none | TODO |
+| 017 | [Loan schedule after reduce-payment + next payment date](017-loan-schedule-and-next-payment-date.md) | P2 | M | none | TODO |
+| 018 | [Category chip names readable](018-category-chip-names-readable.md) | P3 | S | none | TODO |
+| 019 | [Characterization tests: add/edit flows, reminder dates](019-core-flow-characterization-tests.md) | P2 | M | best after 006, 016 | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
+
+## Audit reports
+
+- [AUDIT-2026-09-24-product-defects.md](AUDIT-2026-09-24-product-defects.md): features that work technically but not as intended (plans 005-011).
+- [AUDIT-2026-09-24-part2-areas.md](AUDIT-2026-09-24-part2-areas.md): security, performance, tests, layout, deposit/loan math, voice, paywall, translations (plans 012-019).
 
 ## Dependency notes
 
@@ -27,11 +47,30 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - 004 can start any time. If 002 has landed first, the probe also measures the categorization hit rate on real Apple Pay merchant strings, which is one of the spike's questions.
 - 001, 002 and 003 touch `Localizable.strings` in all 11 locales (002 adds no keys). Run them one after another, not concurrently, to avoid append conflicts.
 
+- **Recommended order for 005-019:** 005 → 006 → 009 → 013 → 012 → 010 → 007 → 008 → 014 → 015 → 016 → 017 → 011 → 018 → 019.
+  005, 006, 009, 013 are small or high-impact and unblock others; 007 needs 005; 007 and 008 both edit
+  `ImportTransactionPreviewView.swift` (run sequentially); 012 uses the Russian income preset name from 013.
+- Plans that append to all 11 `Localizable.strings` (008, 013) or create per-locale files (015) must not run concurrently.
+- 019 pins behavior; run it after 006 and 016 so it pins the fixed behavior, or run it first and update the pinned cases when those land.
+
 ## Direction options not planned yet (from the same audit)
 
 - **Savings goals ("Копилка")**: stated as milestone 4 in `docs/superpowers/specs/2026-07-31-app-intents-design.md` §10; `копилка` is already in the ru keyword field while no goal feature exists. Needs CoreData v13 (`/coredata-schema-bump` skill). Suggested design: goal = target + optional deadline + linked account, progress = that account's balance (no new transaction types).
 - **Widgets / Control Center / Lock Screen quick add**: spec §10 milestones 1-3. No widget target and no App Group today; use a small snapshot file in an App Group rather than moving the CoreData store.
 - **Personal debts ("Долги")**: `долг` is in the ru keyword field; loans model bank loans only (`LoanInfo` in `Tenra/Models/Transaction.swift`). Bundle its schema change with savings goals into one v13 bump.
+
+## Findings recorded but not yet planned (see the audit reports for evidence)
+
+- F8 statement operation-type column dropped (own transfers / top-ups / cash withdrawals count as spending): needs a real Kaspi PDF sample first.
+- F9 subscription reminders only for the next charge; BG refresh does not reschedule them.
+- F10 backups manual-only, iCloud location off by default.
+- F11 dead `updateTransactionCategory` / `CategoryRule` code.
+- DP1 deposits converted before the `conversionTimestamp` fix are still corrupted; the documented recovery was never implemented (investigate with the affected data first).
+- P1 `TransactionEditCoordinator.availableCategories` full scan per render; P2 `SubscriptionDetailView.linkedTransactionCount` full scan per render.
+- PW1 `isSubscriber` starts false every launch (locked tabs flash for subscribers).
+- S2 unencrypted SQLite backups in a user-visible iCloud Drive folder; S3 brand names sent to logo providers.
+- DP2 deposit daily interest divides by 365 in leap years.
+- Direction: set the account balance from the statement's closing balance; subscriptions as "expected" payments merged with real charges.
 
 ## Findings considered and rejected
 

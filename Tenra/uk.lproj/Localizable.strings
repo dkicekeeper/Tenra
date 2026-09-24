@@ -1697,3 +1697,7 @@
 "onboarding.preset.salary" = "Зарплата";
 "onboarding.preset.otherIncome" = "Інші доходи";
 "transactionForm.addIncomeCategory" = "Додати категорію доходу";
+
+/* Statement import duplicate markers */
+"transactionPreview.possibleDuplicate" = "Схоже, вже додана";
+"transactionPreview.coveredBySubscription" = "Вже врахована як платіж за підпискою";

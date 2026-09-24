@@ -1697,3 +1697,7 @@
 "onboarding.preset.salary" = "Stipendio";
 "onboarding.preset.otherIncome" = "Altre entrate";
 "transactionForm.addIncomeCategory" = "Aggiungi categoria di entrata";
+
+/* Statement import duplicate markers */
+"transactionPreview.possibleDuplicate" = "Sembra già aggiunta";
+"transactionPreview.coveredBySubscription" = "Già conteggiata come pagamento di abbonamento";

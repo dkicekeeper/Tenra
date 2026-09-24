@@ -1697,3 +1697,7 @@
 "onboarding.preset.salary" = "Salaire";
 "onboarding.preset.otherIncome" = "Autres revenus";
 "transactionForm.addIncomeCategory" = "Ajouter une catégorie de revenus";
+
+/* Statement import duplicate markers */
+"transactionPreview.possibleDuplicate" = "Semble déjà ajoutée";
+"transactionPreview.coveredBySubscription" = "Déjà comptée comme paiement d'abonnement";

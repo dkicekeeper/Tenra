@@ -29,6 +29,7 @@ struct PDFImportCoordinator: View {
     @State private var showingTransactionPreview = false
     @State private var parsedTransactions: [Transaction] = []
     @State private var suggestedCategories: [String: String] = [:]
+    @State private var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
     @State private var showingScanner = false
     @State private var showingDiagnostics = false
     @State private var receiptDraft: ReceiptDraft? = nil
@@ -150,7 +151,8 @@ struct PDFImportCoordinator: View {
             accountsViewModel: accountsViewModel,
             transactions: parsedTransactions,
             customCategories: categoriesViewModel.customCategories,
-            suggestedCategories: suggestedCategories
+            suggestedCategories: suggestedCategories,
+            duplicateReasons: duplicateReasons
         )
     }
 
@@ -218,6 +220,25 @@ struct PDFImportCoordinator: View {
                     categories: categoriesViewModel.customCategories,
                     keywordMatcher: { parser.keywordCategory(in: $0) }
                 )
+                // Rows already in Tenra (a re-imported statement, or a charge a
+                // subscription series already generated) start unchecked.
+                let regularAccounts = accountsViewModel.regularAccounts
+                var importedAccounts: [String: String] = [:]
+                for tx in mapped {
+                    if let account = ImportTransactionPreviewView.availableAccounts(
+                        for: tx, regularAccounts: regularAccounts
+                    ).first {
+                        importedAccounts[tx.id] = account.id
+                    }
+                }
+                let existing = transactionsViewModel.transactionStore?.transactions ?? []
+                duplicateReasons = await Task.detached(priority: .userInitiated) {
+                    ImportDuplicateDetector.detect(
+                        imported: mapped,
+                        importedAccounts: importedAccounts,
+                        existing: existing
+                    )
+                }.value
                 parsedTransactions = mapped
                 showingTransactionPreview = true
             }

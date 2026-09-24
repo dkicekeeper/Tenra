@@ -1697,3 +1697,7 @@
 "onboarding.preset.salary" = "Gehalt";
 "onboarding.preset.otherIncome" = "Sonstige Einnahmen";
 "transactionForm.addIncomeCategory" = "Einnahmekategorie hinzufügen";
+
+/* Statement import duplicate markers */
+"transactionPreview.possibleDuplicate" = "Scheint bereits hinzugefügt";
+"transactionPreview.coveredBySubscription" = "Bereits als Abozahlung erfasst";

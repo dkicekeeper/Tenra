@@ -1697,3 +1697,7 @@
 "onboarding.preset.salary" = "Maaş";
 "onboarding.preset.otherIncome" = "Diğer gelirler";
 "transactionForm.addIncomeCategory" = "Gelir kategorisi ekle";
+
+/* Statement import duplicate markers */
+"transactionPreview.possibleDuplicate" = "Zaten eklenmiş görünüyor";
+"transactionPreview.coveredBySubscription" = "Zaten abonelik ödemesi olarak sayıldı";

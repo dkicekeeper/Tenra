@@ -20,6 +20,9 @@ struct ImportTransactionPreviewView: View {
     let customCategories: [CustomCategory]
     /// transactionId -> suggested category name (CategorySuggestionProvider).
     var suggestedCategories: [String: String] = [:]
+    /// transactionId -> why the row looks already present (ImportDuplicateDetector).
+    /// Such rows start unchecked but stay selectable.
+    var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
     @Environment(\.dismiss) var dismiss
 
     @State private var selectedTransactions: Set<String> = Set()
@@ -76,6 +79,7 @@ struct ImportTransactionPreviewView: View {
                             category: effectiveCategory(for: transaction),
                             categoryOptions: categoryOptions(for: transaction),
                             customCategories: customCategories,
+                            duplicateReason: duplicateReasons[transaction.id],
                             onCategorySelect: { name in
                                 selectCategory(name, for: transaction)
                             }
@@ -91,7 +95,9 @@ struct ImportTransactionPreviewView: View {
                             // Only select rows that have a matching account —
                             // mirrors the per-row guard in onToggle so "Select All"
                             // can never leave a selected row without an account.
-                            let selectable = transactions.filter { !availableAccounts(for: $0).isEmpty }
+                            let selectable = transactions.filter {
+                                !availableAccounts(for: $0).isEmpty && duplicateReasons[$0.id] == nil
+                            }
                             selectedTransactions = Set(selectable.map { $0.id })
                             for transaction in selectable {
                                 if let account = availableAccounts(for: transaction).first {
@@ -157,7 +163,9 @@ struct ImportTransactionPreviewView: View {
             }
             .onAppear {
                 categoryMapping = suggestedCategories
-                let selectable = transactions.filter { !availableAccounts(for: $0).isEmpty }
+                let selectable = transactions.filter {
+                    !availableAccounts(for: $0).isEmpty && duplicateReasons[$0.id] == nil
+                }
                 selectedTransactions = Set(selectable.map { $0.id })
                 for transaction in selectable {
                     if let account = availableAccounts(for: transaction).first {
@@ -299,6 +307,8 @@ struct ImportTransactionPreviewRow: View {
     let category: String
     let categoryOptions: [String]
     let customCategories: [CustomCategory]
+    /// Set when the row looks already present; the row starts unchecked.
+    let duplicateReason: ImportDuplicateDetector.Reason?
     let onCategorySelect: (String) -> Void
 
     private var isCategorizable: Bool {
@@ -348,6 +358,15 @@ struct ImportTransactionPreviewRow: View {
     /// drives balance derivation throughout this codebase.
     private var hasNoMatchingAccount: Bool { availableAccounts.isEmpty }
 
+    private func duplicateLabel(for reason: ImportDuplicateDetector.Reason) -> String {
+        switch reason {
+        case .alreadyAdded:
+            return String(localized: "transactionPreview.possibleDuplicate")
+        case .subscriptionOccurrence:
+            return String(localized: "transactionPreview.coveredBySubscription")
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             HStack(alignment: .center, spacing: AppSpacing.sm) {
@@ -393,6 +412,15 @@ struct ImportTransactionPreviewRow: View {
             // be imported rather than letting it disappear silently.
             if hasNoMatchingAccount {
                 Text(String(localized: "transactionPreview.noMatchingAccount"))
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.warning)
+                    .padding(.leading, AppSpacing.xl)
+            }
+
+            // Already in Tenra (re-imported row, or a charge a subscription series
+            // already generated): say why the row starts unchecked.
+            if let duplicateReason {
+                Text(duplicateLabel(for: duplicateReason))
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.warning)
                     .padding(.leading, AppSpacing.xl)

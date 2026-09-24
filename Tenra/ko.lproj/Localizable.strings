@@ -1697,3 +1697,7 @@
 "onboarding.preset.salary" = "급여";
 "onboarding.preset.otherIncome" = "기타 수입";
 "transactionForm.addIncomeCategory" = "수입 카테고리 추가";
+
+/* Statement import duplicate markers */
+"transactionPreview.possibleDuplicate" = "이미 추가된 것 같습니다";
+"transactionPreview.coveredBySubscription" = "이미 구독 결제로 반영되었습니다";

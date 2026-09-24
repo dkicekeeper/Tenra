@@ -1697,3 +1697,7 @@
 "onboarding.preset.salary" = "給与";
 "onboarding.preset.otherIncome" = "その他の収入";
 "transactionForm.addIncomeCategory" = "収入カテゴリを追加";
+
+/* Statement import duplicate markers */
+"transactionPreview.possibleDuplicate" = "すでに追加済みのようです";
+"transactionPreview.coveredBySubscription" = "サブスクリプションの支払いとして計上済みです";

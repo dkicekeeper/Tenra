@@ -1705,3 +1705,6 @@
 /* Automatic weekly backups */
 "settings.cloud.autoBackup.toggle" = "Haftalık otomatik yedek";
 "settings.cloud.autoBackup.footer" = "Tenra, uygulamayı açtığınızda haftada bir yedek alır ve en son 5 yedeği saklar.";
+
+/* Statement import: cash withdrawal hint */
+"transactionPreview.cashWithdrawal" = "Nakit çekim: nakit harcamalarınızı ayrıca kaydedin";

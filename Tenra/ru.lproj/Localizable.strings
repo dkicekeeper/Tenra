@@ -1705,3 +1705,6 @@
 /* Automatic weekly backups */
 "settings.cloud.autoBackup.toggle" = "Автоматическая копия раз в неделю";
 "settings.cloud.autoBackup.footer" = "Tenra раз в неделю при открытии приложения делает резервную копию и хранит 5 последних.";
+
+/* Statement import: cash withdrawal hint */
+"transactionPreview.cashWithdrawal" = "Снятие наличных: траты наличными учитывайте отдельно";

@@ -24,6 +24,9 @@ struct ParsedTransaction: Sendable, Equatable {
     let currency: String?       // nil means "use the caller's default"
     let descriptionText: String
     let direction: TransactionDirection
+    /// Raw text of the transaction-type column ("Перевод", "Снятие"...), when the
+    /// statement has one. Defaulted so existing initializers keep compiling.
+    var operation: String? = nil
 }
 
 struct SkippedRow: Sendable, Equatable {
@@ -104,12 +107,18 @@ nonisolated enum StatementInterpreter {
                 let explicitCurrency = cell(row, roles.currency)
                     .flatMap { MoneyTokenParser.parse($0)?.currency ?? normalizedISO($0) }
 
+                let operation = cell(row, roles.operation)
                 transactions.append(ParsedTransaction(
                     date: date,
                     amount: money.amount,
                     currency: money.currency ?? explicitCurrency ?? defaultCurrency,
-                    descriptionText: description(from: row, roles: roles),
-                    direction: money.direction
+                    descriptionText: labeledDescription(
+                        description(from: row, roles: roles),
+                        operation: operation,
+                        hasDescriptionColumn: roles.description != nil
+                    ),
+                    direction: money.direction,
+                    operation: operation
                 ))
             }
         }
@@ -214,6 +223,20 @@ nonisolated enum StatementInterpreter {
         cleaned = cleaned.replacingOccurrences(of: "\n", with: " ")
         cleaned = cleaned.replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
         return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Transfers, top-ups and cash withdrawals carry the statement's own operation
+    /// label in front of the details ("Перевод · Асан Б."), so the review screen and
+    /// History show what the row is. Purchases stay as the bare merchant name. Only
+    /// when a separate description column exists: without one, the fallback text
+    /// already includes the operation cell.
+    private static func labeledDescription(_ details: String, operation: String?, hasDescriptionColumn: Bool) -> String {
+        guard hasDescriptionColumn,
+              let operation,
+              StatementOperationKind.classify(operation).isMoneyMovement else { return details }
+        if details.isEmpty { return operation }
+        if details.lowercased().hasPrefix(operation.lowercased()) { return details }
+        return "\(operation) · \(details)"
     }
 
     private static func cell(_ row: [String], _ index: Int?) -> String? {

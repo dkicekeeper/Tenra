@@ -63,6 +63,18 @@ category `ReceiptInterpreter`). Decide the design only after that log shows the
 capability actually exists on real devices; rule 2 still applies either way, so the
 text and heuristic paths stay.
 
+## Operation column (Покупка / Перевод / Пополнение / Снятие)
+
+When a statement has a separate transaction-type column (Kaspi: "Операция" next to "Детали"),
+`ColumnRoleResolver` assigns it `ColumnRoles.operation` and `StatementInterpreter` keeps the raw text
+in `ParsedTransaction.operation`. `StatementOperationKind.classify` maps it (multilingual keywords) to
+purchase / transfer / top-up / cash withdrawal / other. Money-movement rows carry the statement's own
+label in the description ("Перевод · Асан Б."); purchases stay bare merchant names. Cash withdrawals
+start unchecked on the review screen: the cash is spent later and logged separately, so importing the
+withdrawal as an expense would count it twice. Transfers and top-ups stay checked (a transfer to a
+person is real spending); the label lets the user uncheck own-account moves. Before 2026-09-24 the
+column was dropped entirely. Pinned by `StatementOperationTests`.
+
 ## Category suggestions
 
 Recognition output stays uncategorized (`ParsedTransactionMapper`); categories are

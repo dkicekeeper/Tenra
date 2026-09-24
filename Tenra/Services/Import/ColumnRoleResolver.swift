@@ -34,6 +34,10 @@ nonisolated struct ColumnRoles: Sendable, Equatable {
     let description: Int?
     /// 0...1. Below 0.7 the caller should consider Apple Intelligence.
     let confidence: Double
+    /// Transaction-type column ("Операция": Покупка / Перевод / Пополнение / Снятие),
+    /// when it is a separate column from the description. Defaulted so existing
+    /// initializers (and the Apple Intelligence resolver) keep compiling.
+    var operation: Int? = nil
 
     /// True when the table carries usable amount information in some shape.
     var hasAmountSignal: Bool {
@@ -179,6 +183,12 @@ nonisolated enum ColumnRoleResolver {
             hasDescription: descriptionColumn != nil
         )
 
+        // A separate transaction-type column. Only a weak ("операция"/"operation")
+        // header counts, and only when the description resolved to another column.
+        let operationColumn = header.flatMap { header -> Int? in
+            header.firstIndex { cell in operationKeywords.contains { cell.contains($0) } }
+        }.flatMap { $0 == descriptionColumn || $0 == dateColumn ? nil : $0 }
+
         return ColumnRoles(
             date: dateColumn,
             amount: amountColumn,
@@ -186,9 +196,17 @@ nonisolated enum ColumnRoleResolver {
             credit: creditColumn,
             currency: currencyColumn,
             description: descriptionColumn,
-            confidence: confidence
+            confidence: confidence,
+            operation: operationColumn
         )
     }
+
+    /// Header keywords of a transaction-type column.
+    private static let operationKeywords: [String] = [
+        "операция", "тип операции", "вид операции", "operation", "transaction type",
+        "операція", "vorgang", "umsatzart", "tipo de operación", "type d'opération",
+        "tipo de operação", "tipo operazione", "işlem türü"
+    ]
 
     private static func hasAnyKeyword(_ header: [String]) -> Bool {
         keywords.values.contains { list in

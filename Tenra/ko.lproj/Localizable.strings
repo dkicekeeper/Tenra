@@ -1705,3 +1705,6 @@
 /* Automatic weekly backups */
 "settings.cloud.autoBackup.toggle" = "매주 자동 백업";
 "settings.cloud.autoBackup.footer" = "Tenra는 앱을 열 때 일주일에 한 번 백업을 만들고 최근 5개를 보관합니다.";
+
+/* Statement import: cash withdrawal hint */
+"transactionPreview.cashWithdrawal" = "현금 인출: 현금 지출은 따로 기록하세요";

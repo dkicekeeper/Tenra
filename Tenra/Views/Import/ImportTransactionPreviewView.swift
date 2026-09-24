@@ -23,6 +23,8 @@ struct ImportTransactionPreviewView: View {
     /// transactionId -> why the row looks already present (ImportDuplicateDetector).
     /// Such rows start unchecked but stay selectable.
     var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
+    /// Cash withdrawals from the statement's operation column; they start unchecked.
+    var cashWithdrawalIds: Set<String> = []
     @Environment(\.dismiss) var dismiss
 
     @State private var selectedTransactions: Set<String> = Set()
@@ -80,6 +82,7 @@ struct ImportTransactionPreviewView: View {
                             categoryOptions: categoryOptions(for: transaction),
                             customCategories: customCategories,
                             duplicateReason: duplicateReasons[transaction.id],
+                            isCashWithdrawal: cashWithdrawalIds.contains(transaction.id),
                             onCategorySelect: { name in
                                 selectCategory(name, for: transaction)
                             }
@@ -95,9 +98,7 @@ struct ImportTransactionPreviewView: View {
                             // Only select rows that have a matching account —
                             // mirrors the per-row guard in onToggle so "Select All"
                             // can never leave a selected row without an account.
-                            let selectable = transactions.filter {
-                                !availableAccounts(for: $0).isEmpty && duplicateReasons[$0.id] == nil
-                            }
+                            let selectable = transactions.filter { startsSelected($0) }
                             selectedTransactions = Set(selectable.map { $0.id })
                             for transaction in selectable {
                                 if let account = availableAccounts(for: transaction).first {
@@ -163,9 +164,7 @@ struct ImportTransactionPreviewView: View {
             }
             .onAppear {
                 categoryMapping = suggestedCategories
-                let selectable = transactions.filter {
-                    !availableAccounts(for: $0).isEmpty && duplicateReasons[$0.id] == nil
-                }
+                let selectable = transactions.filter { startsSelected($0) }
                 selectedTransactions = Set(selectable.map { $0.id })
                 for transaction in selectable {
                     if let account = availableAccounts(for: transaction).first {
@@ -178,6 +177,14 @@ struct ImportTransactionPreviewView: View {
 
     private func availableAccounts(for transaction: Transaction) -> [Account] {
         Self.availableAccounts(for: transaction, regularAccounts: accountsViewModel.regularAccounts)
+    }
+
+    /// Rows checked by default (and by "Select All"): importable, not already in
+    /// Tenra, and not a cash withdrawal.
+    private func startsSelected(_ transaction: Transaction) -> Bool {
+        !availableAccounts(for: transaction).isEmpty
+            && duplicateReasons[transaction.id] == nil
+            && !cashWithdrawalIds.contains(transaction.id)
     }
 
     // MARK: - Categories
@@ -309,6 +316,7 @@ struct ImportTransactionPreviewRow: View {
     let customCategories: [CustomCategory]
     /// Set when the row looks already present; the row starts unchecked.
     let duplicateReason: ImportDuplicateDetector.Reason?
+    let isCashWithdrawal: Bool
     let onCategorySelect: (String) -> Void
 
     private var isCategorizable: Bool {
@@ -423,6 +431,11 @@ struct ImportTransactionPreviewRow: View {
                 Text(duplicateLabel(for: duplicateReason))
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.warning)
+                    .padding(.leading, AppSpacing.xl)
+            } else if isCashWithdrawal {
+                Text(String(localized: "transactionPreview.cashWithdrawal"))
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.textSecondary)
                     .padding(.leading, AppSpacing.xl)
             }
 

@@ -30,6 +30,7 @@ struct PDFImportCoordinator: View {
     @State private var parsedTransactions: [Transaction] = []
     @State private var suggestedCategories: [String: String] = [:]
     @State private var duplicateReasons: [String: ImportDuplicateDetector.Reason] = [:]
+    @State private var cashWithdrawalIds: Set<String> = []
     @State private var showingScanner = false
     @State private var showingDiagnostics = false
     @State private var receiptDraft: ReceiptDraft? = nil
@@ -152,7 +153,8 @@ struct PDFImportCoordinator: View {
             transactions: parsedTransactions,
             customCategories: categoriesViewModel.customCategories,
             suggestedCategories: suggestedCategories,
-            duplicateReasons: duplicateReasons
+            duplicateReasons: duplicateReasons,
+            cashWithdrawalIds: cashWithdrawalIds
         )
     }
 
@@ -239,6 +241,12 @@ struct PDFImportCoordinator: View {
                         existing: existing
                     )
                 }.value
+                // Cash withdrawals move money into cash; the spending happens later
+                // (and is logged separately), so importing them as expenses would count
+                // it twice. They start unchecked. The mapper keeps statement order.
+                cashWithdrawalIds = Set(zip(outcome.statement.transactions, mapped).compactMap { parsed, tx in
+                    StatementOperationKind.classify(parsed.operation) == .cashWithdrawal ? tx.id : nil
+                })
                 parsedTransactions = mapped
                 showingTransactionPreview = true
             }

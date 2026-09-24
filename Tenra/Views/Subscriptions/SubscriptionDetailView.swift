@@ -30,14 +30,11 @@ struct SubscriptionDetailView: View {
         transactionStore.seriesById[subscription.id] ?? subscription
     }
 
-    /// Reactive trigger: cheap O(N) single pass on transactions (count only).
-    /// Intentionally avoids hashing all ids — that was the 3000-tx freeze culprit.
+    /// O(1) via the store's series index (it was a full pass over every transaction on
+    /// each body evaluation). The body still re-evaluates on tx mutations through
+    /// `refreshTrigger`, which touches the observable `transactions` array.
     private var linkedTransactionCount: Int {
-        var n = 0
-        for tx in transactionStore.transactions where tx.recurringSeriesId == subscription.id {
-            n += 1
-        }
-        return n
+        transactionStore.transactionIdsBySeriesId[subscription.id]?.count ?? 0
     }
 
     /// Combined refresh key — bumps on any transaction mutation (add/update/delete),
@@ -66,8 +63,7 @@ struct SubscriptionDetailView: View {
     }
 
     private func refreshTransactions() async {
-        let linked = transactionStore.transactions
-            .filter { $0.recurringSeriesId == subscription.id }
+        let linked = (transactionStore.transactionsBySeriesId[subscription.id] ?? [])
             .sorted { $0.date > $1.date }
         cachedTransactions = linked
         // Recompute cached sum off the main critical path; O(N) but only on store change.

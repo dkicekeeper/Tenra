@@ -87,12 +87,10 @@ final class TransactionEditCoordinator {
             categories.insert(customCategory.name)
         }
 
-        for tx in transactionsViewModel.allTransactions where tx.type == pickerType {
-            if !tx.category.isEmpty {
-                categories.insert(tx.category)
-            }
-        }
-
+        // Names that only exist on other transactions (deleted categories) are NOT offered:
+        // picking one failed `TransactionStore.validate` with categoryNotFound, and collecting
+        // them was a full pass over every transaction on each body evaluation (every
+        // calculator key press). The edited transaction's own category stays selectable.
         if !transaction.category.isEmpty {
             categories.insert(transaction.category)
         }

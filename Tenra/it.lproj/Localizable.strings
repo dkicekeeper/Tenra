@@ -1235,7 +1235,7 @@
 "settings.cloud.storageUsed" = "%@ di %@";
 "settings.cloud.backupMetadata" = "%d conti · %d operazioni · %@";
 "settings.cloud.iCloud.toggle" = "Salva i backup su iCloud";
-"settings.cloud.iCloud.footer" = "I backup sono salvati nel tuo iCloud Drive e disponibili sugli altri dispositivi.";
+"settings.cloud.iCloud.footer" = "I backup sono salvati nel tuo iCloud, nascosti nell'app File e disponibili in Tenra sugli altri tuoi dispositivi.";
 "settings.cloud.iCloud.unavailable" = "Accedi a iCloud in Impostazioni per salvare i backup su iCloud Drive.";
 "settings.cloud.iCloud.movedToICloud" = "Backup spostati su iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Backup spostati su questo dispositivo";

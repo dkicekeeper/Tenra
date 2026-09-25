@@ -59,7 +59,7 @@
 		<key>iCloud.dakacom.Tenra</key>
 		<dict>
 			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
-			<true/>
+			<false/>
 			<key>NSUbiquitousContainerName</key>
 			<string>Tenra</string>
 			<key>NSUbiquitousContainerSupportedFolderLevels</key>

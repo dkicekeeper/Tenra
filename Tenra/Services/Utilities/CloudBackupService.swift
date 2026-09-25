@@ -10,6 +10,14 @@
 //  Uses WAL checkpoint before copying for consistency.
 //  Uses CoreDataStack.swapStore() for safe restore.
 //
+//  The container's Documents folder is NOT public (Info.plist
+//  `NSUbiquitousContainerIsDocumentScopePublic = false`, since 2026-09-25): a
+//  backup is the whole financial history as a readable SQLite file, and it used to
+//  show up in the Files app as a "Tenra" folder anyone with the phone could open or
+//  share. Backups still sync through iCloud and restore from this screen on every
+//  device; data export stays available through CSV. iOS may keep showing the old
+//  folder until a build with a higher CFBundleVersion is installed.
+//
 
 import Foundation
 import CoreData

@@ -1235,7 +1235,7 @@
 "settings.cloud.storageUsed" = "%@ із %@";
 "settings.cloud.backupMetadata" = "%d рахунків · %d операцій · %@";
 "settings.cloud.iCloud.toggle" = "Зберігати резервні копії в iCloud";
-"settings.cloud.iCloud.footer" = "Резервні копії зберігаються у вашому iCloud Drive і доступні на інших ваших пристроях.";
+"settings.cloud.iCloud.footer" = "Копії зберігаються у вашому iCloud, приховані з програми «Файли» і доступні в Tenra на інших ваших пристроях.";
 "settings.cloud.iCloud.unavailable" = "Увійдіть в iCloud у Налаштуваннях, щоб зберігати резервні копії в iCloud Drive.";
 "settings.cloud.iCloud.movedToICloud" = "Резервні копії перенесено в iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Резервні копії перенесено на цей пристрій";

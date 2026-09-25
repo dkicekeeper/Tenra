@@ -72,9 +72,9 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - DONE P1/P2 full transaction scans on the edit and subscription screens (`b5e71557`).
 - DONE PW1 subscriber state starts from the last known entitlement (`b83aabf5`).
 - STARTED DP1 legacy converted deposits: read-only DEBUG diagnostic in Settings > Experiments (`7bacdc12`). Recovery waits for real data.
-- OPEN (decision) DP2 deposit daily interest divides by 365 in leap years; depends on how the user's bank counts days.
-- OPEN (decision) S2 iCloud backups are unencrypted SQLite in a user-visible iCloud Drive folder.
-- OPEN (decision) S3 logo lookups send brand names to Google favicons and logo.dev.
+- OPEN (decision) DP2 deposit day count. Research 2026-09-25: Kazakh banks mostly use a 360-day year (Kaspi and Alatau City Bank: 30 days a month / 360 a year; National Bank's own deposits: actual days / 360); Russian practice is actual days / 365 or 366. Tenra uses actual / 365 for everyone. Proposal: a per-deposit day-count setting.
+- DONE S2 iCloud backups hidden from the Files app (`NSUbiquitousContainerIsDocumentScopePublic = false`); still synced and restorable in-app. Own encryption not added: a key lost with the device would make every backup unrecoverable.
+- ACCEPTED S3 logo lookups send brand names to Google favicons and logo.dev: a conscious product decision by the maintainer (2026-09-25).
 - Direction: a one-tap "align the balance to the statement" after the balance check (F14 only shows the difference); subscriptions as "expected" payments merged with real charges.
 
 ## Findings considered and rejected

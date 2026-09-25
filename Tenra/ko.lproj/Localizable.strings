@@ -1235,7 +1235,7 @@
 "settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.backupMetadata" = "계좌 %d개 · 거래 %d건 · %@";
 "settings.cloud.iCloud.toggle" = "iCloud에 백업 저장";
-"settings.cloud.iCloud.footer" = "백업은 iCloud Drive에 저장되어 다른 기기에서도 사용할 수 있어요.";
+"settings.cloud.iCloud.footer" = "백업은 iCloud에 저장되며 파일 앱에는 표시되지 않고 다른 기기의 Tenra에서 사용할 수 있습니다.";
 "settings.cloud.iCloud.unavailable" = "iCloud Drive에 백업을 저장하려면 설정에서 iCloud에 로그인하세요.";
 "settings.cloud.iCloud.movedToICloud" = "백업을 iCloud로 옮겼어요";
 "settings.cloud.iCloud.movedToLocal" = "백업을 이 기기로 옮겼어요";

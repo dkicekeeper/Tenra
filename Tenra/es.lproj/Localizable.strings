@@ -1235,7 +1235,7 @@
 "settings.cloud.storageUsed" = "%@ de %@";
 "settings.cloud.backupMetadata" = "%d cuentas · %d transacciones · %@";
 "settings.cloud.iCloud.toggle" = "Guardar copias de seguridad en iCloud";
-"settings.cloud.iCloud.footer" = "Las copias de seguridad se guardan en tu iCloud Drive y están disponibles en tus otros dispositivos.";
+"settings.cloud.iCloud.footer" = "Las copias de seguridad se guardan en tu iCloud, ocultas en la app Archivos, y están disponibles en Tenra en tus otros dispositivos.";
 "settings.cloud.iCloud.unavailable" = "Inicia sesión en iCloud en Ajustes para guardar las copias de seguridad en iCloud Drive.";
 "settings.cloud.iCloud.movedToICloud" = "Copias de seguridad movidas a iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Copias de seguridad movidas a este dispositivo";

@@ -1235,7 +1235,7 @@
 "settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.backupMetadata" = "%d口座 · %d件の取引 · %@";
 "settings.cloud.iCloud.toggle" = "iCloudにバックアップを保存";
-"settings.cloud.iCloud.footer" = "バックアップはiCloud Driveに保存され、ほかのデバイスでも利用できます。";
+"settings.cloud.iCloud.footer" = "バックアップはiCloudに保存され、「ファイル」アプリには表示されず、他のデバイスのTenraで利用できます。";
 "settings.cloud.iCloud.unavailable" = "iCloud Driveにバックアップを保存するには、設定でiCloudにサインインしてください。";
 "settings.cloud.iCloud.movedToICloud" = "バックアップをiCloudに移動しました";
 "settings.cloud.iCloud.movedToLocal" = "バックアップをこのデバイスに移動しました";

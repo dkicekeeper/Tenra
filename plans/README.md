@@ -75,12 +75,11 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - OPEN (decision) DP2 deposit daily interest divides by 365 in leap years; depends on how the user's bank counts days.
 - OPEN (decision) S2 iCloud backups are unencrypted SQLite in a user-visible iCloud Drive folder.
 - OPEN (decision) S3 logo lookups send brand names to Google favicons and logo.dev.
-- Direction: set the account balance from the statement's closing balance; subscriptions as "expected" payments merged with real charges.
+- Direction: a one-tap "align the balance to the statement" after the balance check (F14 only shows the difference); subscriptions as "expected" payments merged with real charges.
 
 ## Findings considered and rejected
 
 - **Family / shared budget**: the ru keyword `семейный` promises it, but there is no sync at all (CloudKit sync was removed 2026-04-22 after data loss, `Tenra/CoreData/CoreDataStack.swift:110`). Sharing needs sync first: very large and it reopens the data-loss risk. Recommendation instead: drop `семейный` from the keyword field in the next ASO pass.
 - **iPad version**: already deferred by the maintainer in `docs/PROMOTION_PLAN.md` §1 (needed for featuring, not traffic).
 - **Training a Create ML model for `CategoryMLPredictor`**: history + brand + keyword tiers (plan 002) are cheaper and explainable; the stub is deleted in plan 002.
-- **Apple Intelligence (FoundationModels) category tier**: deferred inside plan 002; on-device model language support for the primary Russian-speaking market is uncertain.
 - **"Hide amounts" privacy mode**: deferred from plan 001; amounts render through several components and composed strings, so it needs its own design.

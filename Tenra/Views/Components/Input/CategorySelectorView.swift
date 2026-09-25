@@ -64,7 +64,7 @@ struct CategorySelectorView: View {
                             },
                             budgetProgress: budgetProgressMap?[category]
                         )
-                        .frame(width: 88)
+                        .frame(width: 80)
                         .id(category)
                     }
                 }

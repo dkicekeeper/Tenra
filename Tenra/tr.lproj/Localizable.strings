@@ -1755,3 +1755,11 @@
 "iconPicker.group.nature" = "Doğa ve hava";
 "iconPicker.group.symbols" = "Semboller";
 "iconPicker.searchIcons" = "Simge ara";
+
+/* Deposit interest day-count convention */
+"deposit.dayCount.title" = "Gün sayımı";
+"deposit.dayCount.hint" = "Mevduat sözleşmenize bakın. Kazakistan'daki bankaların çoğu ayı 30, yılı 360 gün sayar.";
+"deposit.dayCount.thirty360" = "30/360 (ay = 30 gün)";
+"deposit.dayCount.actual365" = "Gerçek gün / 365";
+"deposit.dayCount.actualActual" = "Gerçek gün / 365 veya 366";
+"deposit.dayCount.actual360" = "Gerçek gün / 360";

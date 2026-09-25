@@ -275,12 +275,16 @@ struct DepositInfo: Codable, Equatable, Hashable {
     /// same-day pre- vs post-conversion events are separable. `nil` for freshly-created
     /// deposits, which have no inherited history. See BalanceCalculationEngine.contribution.
     var conversionTimestamp: TimeInterval?
+    /// How the bank counts days for interest (DepositDayCount). Payloads saved before
+    /// the setting existed decode as `.legacy` (actual / 365), so their history keeps
+    /// its numbers; new deposits get `.defaultForNewDeposits` (30 / 360).
+    var dayCount: DepositDayCount
 
     enum CodingKeys: String, CodingKey {
         case bankName, capitalizationEnabled
         case interestRateAnnual, interestRateHistory, interestPostingDay
         case lastInterestCalculationDate, lastInterestPostingMonth, interestAccruedForCurrentPeriod
-        case initialPrincipal, startDate, conversionTimestamp
+        case initialPrincipal, startDate, conversionTimestamp, dayCount
         // Legacy keys retained for read-only migration of pre-unification payloads.
         case principalBalance
         case interestAccruedNotCapitalized
@@ -303,6 +307,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
             ?? 0
         startDate = (try container.decodeIfPresent(String.self, forKey: .startDate)) ?? lastInterestCalculationDate
         conversionTimestamp = try container.decodeIfPresent(TimeInterval.self, forKey: .conversionTimestamp)
+        dayCount = (try? container.decodeIfPresent(DepositDayCount.self, forKey: .dayCount)) ?? .legacy
     }
 
     init(
@@ -316,7 +321,8 @@ struct DepositInfo: Codable, Equatable, Hashable {
         lastInterestPostingMonth: String? = nil,
         interestAccruedForCurrentPeriod: Decimal = 0,
         startDate: String? = nil,
-        conversionTimestamp: TimeInterval? = nil
+        conversionTimestamp: TimeInterval? = nil,
+        dayCount: DepositDayCount = .legacy
     ) {
         self.bankName = bankName
         self.capitalizationEnabled = capitalizationEnabled
@@ -343,6 +349,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
         self.initialPrincipal = initialPrincipal
         self.startDate = startDate ?? lastInterestCalculationDate ?? today
         self.conversionTimestamp = conversionTimestamp
+        self.dayCount = dayCount
     }
 
     nonisolated func encode(to encoder: Encoder) throws {
@@ -358,6 +365,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
         try container.encode(initialPrincipal, forKey: .initialPrincipal)
         try container.encode(startDate, forKey: .startDate)
         try container.encodeIfPresent(conversionTimestamp, forKey: .conversionTimestamp)
+        try container.encode(dayCount, forKey: .dayCount)
     }
 }
 

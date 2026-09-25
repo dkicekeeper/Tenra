@@ -119,7 +119,8 @@ nonisolated enum DepositInterestService {
             }
 
             let rate = rateForDate(date: currentDate, history: depositInfo.interestRateHistory)
-            let dailyInterest = runningPrincipal * (rate / 100) / 365
+            let dailyInterest = runningPrincipal * (rate / 100)
+                * depositInfo.dayCount.dailyFraction(on: currentDate, calendar: calendar)
             totalAccrued += dailyInterest
 
             currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
@@ -249,7 +250,8 @@ nonisolated enum DepositInterestService {
                 eventIdx += 1
             }
             let rate = rateForDate(date: currentDate, history: depositInfo.interestRateHistory)
-            let dailyInterest = runningPrincipal * (rate / 100) / 365
+            let dailyInterest = runningPrincipal * (rate / 100)
+                * depositInfo.dayCount.dailyFraction(on: currentDate, calendar: calendar)
             totalAccrued += dailyInterest
 
             currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!

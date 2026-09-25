@@ -227,7 +227,8 @@ class AccountsViewModel {
             initialPrincipal: initialPrincipal,
             capitalizationEnabled: capitalizationEnabled,
             interestRateAnnual: interestRateAnnual,
-            interestPostingDay: interestPostingDay
+            interestPostingDay: interestPostingDay,
+            dayCount: .defaultForNewDeposits
         )
 
         let initialBalance = NSDecimalNumber(decimal: initialPrincipal).doubleValue

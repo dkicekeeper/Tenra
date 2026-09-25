@@ -1755,3 +1755,11 @@
 "iconPicker.group.nature" = "자연과 날씨";
 "iconPicker.group.symbols" = "기호";
 "iconPicker.searchIcons" = "아이콘 검색";
+
+/* Deposit interest day-count convention */
+"deposit.dayCount.title" = "이자 일수 계산";
+"deposit.dayCount.hint" = "예금 약관을 확인하세요. 카자흐스탄 대부분의 은행은 한 달을 30일, 1년을 360일로 계산합니다.";
+"deposit.dayCount.thirty360" = "30/360 (한 달 = 30일)";
+"deposit.dayCount.actual365" = "실제 일수 / 365";
+"deposit.dayCount.actualActual" = "실제 일수 / 365 또는 366";
+"deposit.dayCount.actual360" = "실제 일수 / 360";

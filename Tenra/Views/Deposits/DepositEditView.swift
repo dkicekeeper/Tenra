@@ -25,6 +25,7 @@ struct DepositEditView: View {
     @State private var interestRateText: String = ""
     @State private var interestPostingDay: Int = 1
     @State private var capitalizationEnabled: Bool = true
+    @State private var dayCount: DepositDayCount = .defaultForNewDeposits
 
     /// True when converting a regular account → deposit (account exists but has no depositInfo)
     private var isConverting: Bool {
@@ -76,6 +77,24 @@ struct DepositEditView: View {
                                 style: .inline,
                                 keyboardType: .decimalPad
                             )
+                        }
+
+                        Divider()
+
+                        // How the bank counts days: 30/360 for most Kazakh banks,
+                        // actual days / 365 or 366 in Russia (DepositDayCount).
+                        UniversalRow(
+                            leadingIcon: .sfSymbol("divide", color: AppColors.accent, size: AppIconSize.lg),
+                            hint: String(localized: "deposit.dayCount.hint"),
+                            title: String(localized: "deposit.dayCount.title")
+                        ) {
+                            Picker(String(localized: "deposit.dayCount.title"), selection: $dayCount) {
+                                ForEach(DepositDayCount.allCases, id: \.self) { method in
+                                    Text(method.localizedTitle).tag(method)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .labelsHidden()
                         }
                     }
 
@@ -134,6 +153,7 @@ struct DepositEditView: View {
                 interestRateText = AmountInputFormatting.bindingString(for: depositInfo.interestRateAnnual)
                 interestPostingDay = depositInfo.interestPostingDay
                 capitalizationEnabled = depositInfo.capitalizationEnabled
+                dayCount = depositInfo.dayCount
             } else if let account = account {
                 // Converting regular account → deposit: pre-fill from account
                 name = account.name
@@ -192,7 +212,10 @@ extension DepositEditView {
             // Preserve the conversion marker across edits of an already-converted deposit;
             // losing it would re-expose the inherited history to the recalc sum. For a fresh
             // conversion existingInfo is nil here — AccountsViewModel.updateDeposit stamps it.
-            conversionTimestamp: existingInfo?.conversionTimestamp
+            conversionTimestamp: existingInfo?.conversionTimestamp,
+            // New and converted deposits start on 30/360 (the picker's default); an
+            // edit keeps whatever the deposit had unless the user changes it.
+            dayCount: dayCount
         )
 
         let balance = NSDecimalNumber(decimal: principalBalance).doubleValue

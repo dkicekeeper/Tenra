@@ -13,8 +13,28 @@ Interest accrual, capitalization, and account ↔ deposit conversion.
 Simple daily interest, compound monthly at posting:
 
 ```
-dailyInterest = principalBalance × (rate/100) / 365
+dailyInterest = principalBalance × (rate/100) × depositInfo.dayCount.dailyFraction(on: day)
 ```
+
+### Day-count convention (`DepositDayCount`, since 2026-09-25)
+
+Each deposit stores how its bank counts days (`DepositInfo.dayCount`, inside `depositInfoData` JSON, no
+schema change). Research: Kazakh banks mostly use **30/360** (Kaspi and Alatau City Bank: 30 days a
+month, 360 a year; the National Bank's own deposits: actual days / 360); Russian banks use actual days /
+365 or 366.
+
+| Case | Daily fraction | Note |
+|------|----------------|------|
+| `.thirty360` | weight / 360 | the 31st weighs 0, the last day of February weighs 3 (2 in a leap year), others 1: every full month earns exactly rate / 12; a period from the 15th earns 16 days |
+| `.actual365` | 1 / 365 | Tenra's arithmetic before the setting; `.legacy` |
+| `.actualActual` | 1 / 365 or 1 / 366 | days of that calendar year |
+| `.actual360` | 1 / 360 | |
+
+New and converted deposits default to `.thirty360` (`DepositEditView` picker, `defaultForNewDeposits`).
+Payloads saved before the setting decode as `.actual365`, and `DepositInfo.init` defaults to it too, so
+existing deposits and tests keep their numbers. Changing the method affects only the current period and
+later: the walk recomputes from the period start, posted interest transactions are untouched. Pinned by
+`DepositDayCountTests`.
 
 ### Value date T+1 (start-of-day balance)
 

@@ -1755,3 +1755,11 @@
 "iconPicker.group.nature" = "Nature et météo";
 "iconPicker.group.symbols" = "Symboles";
 "iconPicker.searchIcons" = "Rechercher une icône";
+
+/* Deposit interest day-count convention */
+"deposit.dayCount.title" = "Base de calcul";
+"deposit.dayCount.hint" = "Voir votre contrat de dépôt. La plupart des banques au Kazakhstan comptent 30 jours par mois et 360 par an.";
+"deposit.dayCount.thirty360" = "30/360 (mois = 30 jours)";
+"deposit.dayCount.actual365" = "Jours réels / 365";
+"deposit.dayCount.actualActual" = "Jours réels / 365 ou 366";
+"deposit.dayCount.actual360" = "Jours réels / 360";

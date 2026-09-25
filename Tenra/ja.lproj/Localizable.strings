@@ -1755,3 +1755,11 @@
 "iconPicker.group.nature" = "自然と天気";
 "iconPicker.group.symbols" = "記号";
 "iconPicker.searchIcons" = "アイコンを検索";
+
+/* Deposit interest day-count convention */
+"deposit.dayCount.title" = "日数計算";
+"deposit.dayCount.hint" = "預金契約をご確認ください。カザフスタンの多くの銀行は1か月を30日、1年を360日で計算します。";
+"deposit.dayCount.thirty360" = "30/360（1か月＝30日）";
+"deposit.dayCount.actual365" = "実日数／365";
+"deposit.dayCount.actualActual" = "実日数／365または366";
+"deposit.dayCount.actual360" = "実日数／360";

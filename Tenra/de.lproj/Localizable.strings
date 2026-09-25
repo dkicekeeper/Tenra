@@ -1755,3 +1755,11 @@
 "iconPicker.group.nature" = "Natur & Wetter";
 "iconPicker.group.symbols" = "Symbole";
 "iconPicker.searchIcons" = "Symbole suchen";
+
+/* Deposit interest day-count convention */
+"deposit.dayCount.title" = "Zinsberechnung";
+"deposit.dayCount.hint" = "Siehe Einlagenvertrag. Die meisten Banken in Kasachstan rechnen mit 30 Tagen pro Monat und 360 pro Jahr.";
+"deposit.dayCount.thirty360" = "30/360 (Monat = 30 Tage)";
+"deposit.dayCount.actual365" = "Tatsächliche Tage / 365";
+"deposit.dayCount.actualActual" = "Tatsächliche Tage / 365 oder 366";
+"deposit.dayCount.actual360" = "Tatsächliche Tage / 360";

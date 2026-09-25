@@ -1755,3 +1755,11 @@
 "iconPicker.group.nature" = "Природа і погода";
 "iconPicker.group.symbols" = "Символи";
 "iconPicker.searchIcons" = "Пошук іконок";
+
+/* Deposit interest day-count convention */
+"deposit.dayCount.title" = "Метод нарахування";
+"deposit.dayCount.hint" = "Дивіться в договорі вкладу. Більшість банків Казахстану рахують 30 днів у місяці та 360 у році.";
+"deposit.dayCount.thirty360" = "30/360 (місяць = 30 днів)";
+"deposit.dayCount.actual365" = "Фактичні дні / 365";
+"deposit.dayCount.actualActual" = "Фактичні дні / 365 або 366";
+"deposit.dayCount.actual360" = "Фактичні дні / 360";

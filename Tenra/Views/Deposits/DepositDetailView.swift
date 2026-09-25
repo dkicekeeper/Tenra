@@ -290,6 +290,11 @@ struct DepositDetailView: View {
                         label: String(localized: "deposit.postingDay"),
                         value: "\(depositInfo.interestPostingDay)"
                     )
+                    InfoRow(
+                        icon: "divide",
+                        label: String(localized: "deposit.dayCount.title"),
+                        value: depositInfo.dayCount.localizedTitle
+                    )
                 }
                 .padding(AppSpacing.lg)
                 .cardStyle()

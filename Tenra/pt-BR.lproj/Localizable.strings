@@ -1755,3 +1755,11 @@
 "iconPicker.group.nature" = "Natureza e clima";
 "iconPicker.group.symbols" = "Símbolos";
 "iconPicker.searchIcons" = "Buscar ícones";
+
+/* Deposit interest day-count convention */
+"deposit.dayCount.title" = "Contagem de dias";
+"deposit.dayCount.hint" = "Veja o contrato do depósito. A maioria dos bancos do Cazaquistão conta 30 dias por mês e 360 por ano.";
+"deposit.dayCount.thirty360" = "30/360 (mês = 30 dias)";
+"deposit.dayCount.actual365" = "Dias corridos / 365";
+"deposit.dayCount.actualActual" = "Dias corridos / 365 ou 366";
+"deposit.dayCount.actual360" = "Dias corridos / 360";

@@ -1741,3 +1741,17 @@
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence добирає категорії…";
 "transactionPreview.intelligence.suggested" = "Дібрано Apple Intelligence";
+
+/* Icon picker: new icon groups and the icon search prompt */
+"iconPicker.group.beauty" = "Краса і догляд";
+"iconPicker.group.family" = "Сім'я та люди";
+"iconPicker.group.pets" = "Улюбленці";
+"iconPicker.group.educationWork" = "Навчання і робота";
+"iconPicker.group.travel" = "Подорожі";
+"iconPicker.group.sports" = "Спорт";
+"iconPicker.group.tech" = "Техніка і зв'язок";
+"iconPicker.group.services" = "Послуги та інструменти";
+"iconPicker.group.celebrations" = "Подарунки і свята";
+"iconPicker.group.nature" = "Природа і погода";
+"iconPicker.group.symbols" = "Символи";
+"iconPicker.searchIcons" = "Пошук іконок";

@@ -1741,3 +1741,17 @@
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence가 카테고리를 고르는 중…";
 "transactionPreview.intelligence.suggested" = "Apple Intelligence가 선택함";
+
+/* Icon picker: new icon groups and the icon search prompt */
+"iconPicker.group.beauty" = "뷰티와 관리";
+"iconPicker.group.family" = "가족과 사람";
+"iconPicker.group.pets" = "반려동물";
+"iconPicker.group.educationWork" = "교육과 일";
+"iconPicker.group.travel" = "여행";
+"iconPicker.group.sports" = "스포츠";
+"iconPicker.group.tech" = "기술과 통신";
+"iconPicker.group.services" = "서비스와 도구";
+"iconPicker.group.celebrations" = "선물과 기념일";
+"iconPicker.group.nature" = "자연과 날씨";
+"iconPicker.group.symbols" = "기호";
+"iconPicker.searchIcons" = "아이콘 검색";

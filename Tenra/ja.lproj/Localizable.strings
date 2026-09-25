@@ -1741,3 +1741,17 @@
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligenceがカテゴリを選択中…";
 "transactionPreview.intelligence.suggested" = "Apple Intelligenceが選択";
+
+/* Icon picker: new icon groups and the icon search prompt */
+"iconPicker.group.beauty" = "美容とケア";
+"iconPicker.group.family" = "家族と人";
+"iconPicker.group.pets" = "ペット";
+"iconPicker.group.educationWork" = "学びと仕事";
+"iconPicker.group.travel" = "旅行";
+"iconPicker.group.sports" = "スポーツ";
+"iconPicker.group.tech" = "テクノロジーと通信";
+"iconPicker.group.services" = "サービスと工具";
+"iconPicker.group.celebrations" = "ギフトとお祝い";
+"iconPicker.group.nature" = "自然と天気";
+"iconPicker.group.symbols" = "記号";
+"iconPicker.searchIcons" = "アイコンを検索";

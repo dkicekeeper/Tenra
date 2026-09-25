@@ -1741,3 +1741,17 @@
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence is picking categories…";
 "transactionPreview.intelligence.suggested" = "Picked by Apple Intelligence";
+
+/* Icon picker: new icon groups and the icon search prompt */
+"iconPicker.group.beauty" = "Beauty & Care";
+"iconPicker.group.family" = "Family & People";
+"iconPicker.group.pets" = "Pets";
+"iconPicker.group.educationWork" = "Education & Work";
+"iconPicker.group.travel" = "Travel";
+"iconPicker.group.sports" = "Sports";
+"iconPicker.group.tech" = "Tech & Communication";
+"iconPicker.group.services" = "Services & Tools";
+"iconPicker.group.celebrations" = "Gifts & Holidays";
+"iconPicker.group.nature" = "Nature & Weather";
+"iconPicker.group.symbols" = "Symbols";
+"iconPicker.searchIcons" = "Search icons";

@@ -68,50 +68,73 @@ struct IconPickerView: View {
 
 // MARK: - Icons Tab
 
+/// Every catalog symbol by group (IconCatalog, ~550 SF Symbols available on
+/// iOS 26), with system search across all 11 app languages.
 private struct IconsTabView: View {
     @Binding var selectedSource: IconSource?
     @Environment(\.dismiss) private var dismiss
 
-    private let iconCategories: [(String, [String])] = [
-        (String(localized: "iconPicker.frequentlyUsed"), ["banknote.fill", "cart.fill", "car.fill", "bag.fill", "fork.knife", "house.fill", "briefcase.fill", "heart.fill", "airplane", "gift.fill", "creditcard.fill", "tv.fill", "book.fill", "star.fill", "bolt.fill", "flame.fill"]),
-        (String(localized: "iconPicker.foodAndDrinks"), ["fork.knife", "cup.and.saucer.fill", "birthday.cake.fill", "takeoutbag.and.cup.and.straw.fill", "carrot.fill", "fish.fill", "leaf.fill", "mug.fill"]),
-        (String(localized: "iconPicker.transport"), ["car.fill", "bus.fill", "airplane", "tram.fill", "bicycle", "scooter", "ferry.fill", "fuelpump.fill"]),
-        (String(localized: "iconPicker.shopping"), ["bag.fill", "cart.fill", "creditcard.fill", "handbag.fill", "tshirt.fill", "giftcard.fill", "basket.fill", "tag.fill"]),
-        (String(localized: "iconPicker.entertainment"), ["film.fill", "gamecontroller.fill", "music.note", "theatermasks.fill", "paintpalette.fill", "book.fill", "sportscourt.fill", "figure.walk"]),
-        (String(localized: "iconPicker.health"), ["cross.case.fill", "heart.text.square.fill", "bandage.fill", "syringe.fill", "cross.fill", "eye.fill", "waveform.path.ecg", "figure.run"]),
-        (String(localized: "iconPicker.homeAndUtilities"), ["house.fill", "key.fill", "chair.fill", "bed.double.fill", "lightbulb.fill", "sparkles", "sofa.fill", "shower.fill"]),
-        (String(localized: "iconPicker.moneyAndFinance"), ["banknote.fill", "dollarsign.circle.fill", "creditcard.fill", "building.columns.fill", "chart.bar.fill", "rublesign.circle.fill", "eurosign.circle.fill"])
-    ]
+    @State private var searchText = ""
+
+    private var sections: [(title: String, symbols: [String])] {
+        [(String(localized: "iconPicker.frequentlyUsed"), IconCatalog.frequentlyUsed)]
+            + IconCatalog.groups.map { (String(localized: String.LocalizationValue($0.titleKey)), $0.symbols) }
+    }
+
+    private var trimmedSearch: String {
+        searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: AppSpacing.xxl) {
-                ForEach(iconCategories, id: \.0) { category in
-                    VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                        SectionHeaderView(category.0, style: .compact)
-
-                        LazyVGrid(
-                            columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.lg), count: 5),
-                            spacing: AppSpacing.lg
-                        ) {
-                            ForEach(category.1, id: \.self) { iconName in
-                                IconButton(
-                                    iconName: iconName,
-                                    isSelected: selectedSource == .sfSymbol(iconName),
-                                    onTap: {
-                                        HapticManager.selection()
-                                        selectedSource = .sfSymbol(iconName)
-                                        dismiss()
-                                    }
-                                )
+        Group {
+            if trimmedSearch.isEmpty {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: AppSpacing.xxl) {
+                        ForEach(sections, id: \.title) { section in
+                            VStack(alignment: .leading, spacing: AppSpacing.lg) {
+                                SectionHeaderView(section.title, style: .compact)
+                                iconGrid(section.symbols)
                             }
                         }
-                        .screenPadding()
+                    }
+                    .padding(.vertical, AppSpacing.lg)
+                }
+            } else {
+                let results = IconCatalog.search(
+                    trimmedSearch,
+                    groupTitles: IconCatalog.groups.map { String(localized: String.LocalizationValue($0.titleKey)) }
+                )
+                if results.isEmpty {
+                    ContentUnavailableView.search(text: trimmedSearch)
+                } else {
+                    ScrollView {
+                        iconGrid(results)
+                            .padding(.vertical, AppSpacing.lg)
                     }
                 }
             }
-            .padding(.vertical, AppSpacing.lg)
         }
+        .searchable(text: $searchText, prompt: String(localized: "iconPicker.searchIcons"))
+    }
+
+    private func iconGrid(_ symbols: [String]) -> some View {
+        LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.lg), count: 5),
+            spacing: AppSpacing.lg
+        ) {
+            ForEach(symbols, id: \.self) { iconName in
+                IconButton(
+                    iconName: iconName,
+                    isSelected: selectedSource == .sfSymbol(iconName),
+                    onTap: {
+                        HapticManager.selection()
+                        selectedSource = .sfSymbol(iconName)
+                        dismiss()
+                    }
+                )
+            }
+        }
+        .screenPadding()
     }
 }
 

@@ -68,6 +68,12 @@ xcrun xctrace record --template SwiftUI \
 # Verify an iOS 26 SDK API name (WWDC/docs names can be wrong — e.g. it's .minimize, NOT .minimizable)
 grep -n "searchToolbarBehavior" \
   "$(xcrun --sdk iphoneos --show-sdk-path)/System/Library/Frameworks/SwiftUI.framework/Modules/SwiftUI.swiftmodule/arm64e-apple-ios.swiftinterface"
+
+# Is an SF Symbol available on iOS 26? (Image(systemName:) renders blank otherwise; year_to_release maps years to iOS versions)
+python3 -c "import plistlib;d=plistlib.load(open('/System/Library/CoreServices/CoreGlyphs.bundle/Contents/Resources/name_availability.plist','rb'));print(d['symbols'].get('car.fill'), d['year_to_release'].get('2025'))"
+
+# Run the statement import pipeline on a real PDF on macOS (no simulator): main.swift + a `struct CSVFile` stub
+xcrun swiftc -enable-bare-slash-regex -default-isolation MainActor -o /tmp/run main.swift stub.swift Tenra/Services/Import/{PDFTextLayerExtractor,StatementTableAssembler,DocumentSnapshot,ColumnRoleResolver,StatementInterpreter,DateTokenParser,DateOrderDetector,MoneyTokenParser,StatementOperationKind}.swift
 ```
 
 ## Project Overview
@@ -200,6 +206,7 @@ New file needed?
 | Performance hot-paths, SwiftUI Layout gotchas, `#Preview` crashes, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |
 | `Tenra/Intents/**`, `Services/Intents/**`, Siri, App Shortcuts | [specs/2026-07-31-app-intents-design.md](docs/superpowers/specs/2026-07-31-app-intents-design.md) |
 | Adding a CoreData entity/attribute, bumping `Tenra.xcdatamodeld` | `/coredata-schema-bump` skill |
+| Audit plans, findings, their status | [plans/README.md](plans/README.md) — update the row/line when an item lands, is reverted, or is decided |
 
 **Rule**: before editing files in a domain, Read the matching doc.
 
@@ -291,12 +298,13 @@ Schema version-bump checklist (currently v12) lives in the `/coredata-schema-bum
 - ⚠️ A test suite that constructs MainActor-isolated types (most `Services/`/`Stores` — project default `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`; e.g. `TransactionQueryService`, `TransactionCacheManager`, `TransactionStore`) must be annotated `@MainActor`, else `call to main actor-isolated initializer in a synchronous nonisolated context`.
 - ⚠️ `CategoryStyleCache.shared` is a process-global singleton (like `CurrencyRateStore`) — assertions on resolved category icon/colour flake across parallel suites; test the cache-key/invalidation layer instead of the resolved style, or invalidate it in the suite.
 - ⚠️ swift-testing `-only-testing:TenraTests/Suite/method()` runs **0 tests** but still prints `** TEST SUCCEEDED **` — method-level filtering doesn't work; filter at the **suite** level. `Suite` must be the **type name** (e.g. `ExpressionEvaluatorTests`), NOT the `@Suite("display name")` — the display name also silently runs 0 tests.
-- ⚠️ Parse test results with `grep -aE "Test run with .* (passed|failed)|Executed [0-9]+ tests|\*\* TEST (SUCCEEDED|FAILED)"` — do NOT grep `expect`, it matches `#expect` compiler warnings. Under Xcode 27, swift-testing prints ONLY a run summary (`✔ Test run with 666 tests in 101 suites passed after 2.9 seconds`) and no per-case lines; `Test case … passed` now comes only from the XCTest suites (`Executed 40 tests, with 0 failures`). Grepping `Test case` alone reports "0 passed" on a fully green run.
+- ⚠️ The xcodebuild log may hold only `** TEST SUCCEEDED **`: no swift-testing summary line, and a run of 0 tests also "succeeds". Read counts from the result bundle: `xcrun xcresulttool get test-results summary --path <last *.xcresult in the log>` (`totalTestCount`/`passedTests`/`failedTests`); failing cases via `get test-results tests`. Don't grep `expect` (it matches `#expect` warnings).
 - ⚠️ **Suites touching process-global state must carry `.sharedProcessState`** ([TenraTests/SharedProcessStateTrait.swift](TenraTests/SharedProcessStateTrait.swift)). `.serialized` only orders tests *within* one suite, so two suites that both build in-memory `NSPersistentContainer(name: "Tenra")` or both mutate `CurrencyRateStore.shared` corrupted each other and made the full run fail ~half the time, blaming a different random set of tests each run. The trait serializes annotated suites against each other process-wide.
 - ⚠️ A full-suite run can still occasionally print `** TEST FAILED **` with ZERO failing `Test case` lines, or a burst of `failed … (0.000 seconds)` across unrelated suites — both are harness-level flakes, not tests. Re-run once; if the re-run fails the same way, `grep -aE "error:|The following build commands failed"` the log before blaming the harness.
 - ⚠️ Tests that build a `TransactionStore` must **retain** it — `AccountsViewModel.transactionStore` is `weak`, so `accounts` (= `transactionStore?.accounts`) goes empty once the store deallocates.
 - ⚠️ `xcodebuild test -only-testing:...` does NOT skip compilation — one broken test file fails the whole target, and the test target is the ONLY place test files compile: adding a parameter to a production `init` (e.g. a new ViewModel dependency) breaks them while `xcodebuild build` stays green. When a test file's API has drifted, wrap it in `#if false` / `#endif` with a header comment (existing precedent: `TenraTests/Onboarding/OnboardingViewModelTests.swift`, `TenraTests/Services/Voice/VoiceInputParserTests.swift`).
 - ⚠️ Swift filenames must be unique within a target. Xcode rejects two `.swift` files with the same name even in different directories of the same target. When replacing a legacy test file with a fresh-API rewrite, rename the new one (precedent: `CategoryBudgetServiceStoreBackedTests.swift` replaces the legacy `CategoryBudgetServiceTests.swift`).
+- ⚠️ `try #require(f(try #require(x)))` doesn't compile ("recursive expansion of macro"): unwrap the inner value into a `let` first.
 - Extract crash details from `.xcresult`: `xcrun xcresulttool get test-results tests --path <bundle.xcresult> --filter-by-test-id 'TenraTests/<Suite>/<test>'`
 - Re-test onboarding: `OnboardingState.reset()` clears the `hasCompletedOnboarding` UserDefaults key (a fresh Simulator install also resets it). Flow: `OnboardingFlowView` → welcome (`Начать`) → currency/account/categories steps.
 
@@ -343,6 +351,9 @@ When working with this project:
 - Don't write CLAUDE.md inline rules for things that fit in a domain doc — keep this file thin
 - Don't auto build/install/launch/screenshot the Simulator to verify UI changes — the user verifies visually. Build only to confirm compilation, then report what to check. (White-on-white plates are invisible in screenshots — `xcrun simctl ui <dev> appearance dark` exposes them.)
 - Don't treat a green `xcodebuild build` as "previews work" — it compiles `#Preview` bodies but never *renders* them, so preview-only breakage is invisible to every check available here. Adding `@Environment(T.self)` to a view means updating every `#Preview` in that file, else the preview process traps (`EXC_BREAKPOINT` in `EnvironmentValues.subscript.getter`) on a green build. Details in [gotchas.md](docs/gotchas.md).
+- To check a layout you changed, render it with `ImageRenderer` in a throwaway test that writes a PNG to a host path (e.g. your scratchpad), run it with `-parallel-testing-enabled NO` (parallel clones discard their tmp), look at it, delete the test.
+- **Don't change the layout of shipped UI components as a side effect of an audit or plan** (category grid: 3 per row, one-line titles). Report and ask first. User rule.
+- ⚠️ Bank statements the user shares contain name/IIN/IBAN/balances/counterparties: never commit the files or any value from them (tests, comments, docs, commit messages). Invent fixtures; grep the diff for real values before committing.
 
 ## Questions?
 

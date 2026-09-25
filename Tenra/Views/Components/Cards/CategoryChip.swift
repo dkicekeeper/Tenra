@@ -46,6 +46,23 @@ struct CategoryChip: View {
         return CategoryStyleHelper.cached(category: category, type: type, customCategories: customCategories)
     }
 
+    /// The name as the chip lays it out: one line when it is a single word or short,
+    /// otherwise two lines split at the word boundary that balances them. SwiftUI
+    /// breaks a word that is too wide instead of shrinking it ("Коммунальны / е")
+    /// while a spare line is left; once every line is spoken for, the only way to
+    /// fit is `minimumScaleFactor`, which shrinks the whole name instead.
+    static func displayLines(_ name: String) -> String {
+        let words = name.split(separator: " ").map(String.init)
+        guard words.count > 1, name.count > 11 else { return name }
+        let split = (1..<words.count).min { lhs, rhs in
+            func longer(_ index: Int) -> Int {
+                max(words[..<index].joined(separator: " ").count, words[index...].joined(separator: " ").count)
+            }
+            return longer(lhs) < longer(rhs)
+        } ?? 1
+        return words[..<split].joined(separator: " ") + "\n" + words[split...].joined(separator: " ")
+    }
+
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: AppSpacing.sm) {
@@ -53,21 +70,24 @@ struct CategoryChip: View {
                 // 18 pt line fit about 7 characters, so "Кафе и рестораны",
                 // "Коммунальные" or "Dienstleistungen" rendered as "Каф…". A hidden
                 // two-line placeholder reserves the height, so icons in a row stay
-                // aligned whether a name takes one line or two.
+                // aligned whether a name takes one line or two. The placeholder must
+                // take the full width BEFORE the name is overlaid: an overlay is
+                // proposed its base view's size, and the placeholder alone is one
+                // letter wide, which cut every name down to "Т…".
                 Text(verbatim: "A\nA")
                     .font(AppTypography.bodySmall.weight(.semibold))
                     .lineLimit(2)
                     .hidden()
                     .accessibilityHidden(true)
+                    .frame(maxWidth: .infinity)
                     .overlay(alignment: .bottom) {
-                        Text(category)
+                        Text(verbatim: Self.displayLines(category))
                             .font(AppTypography.bodySmall.weight(.semibold))
                             .foregroundStyle(AppColors.textPrimary)
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
-                            .minimumScaleFactor(0.7)
+                            .minimumScaleFactor(0.55)
                     }
-                    .frame(maxWidth: .infinity)
                 ZStack {
                     // Budget progress ring (expense categories only)
                     if let progress = budgetProgress, type == .expense {

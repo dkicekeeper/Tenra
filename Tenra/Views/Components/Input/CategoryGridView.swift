@@ -17,6 +17,8 @@ struct CategoryGridView: View {
     let emptyStateAction: (() -> Void)?
     var sourceNamespace: Namespace.ID? = nil
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     // MARK: - Body
 
     var body: some View {
@@ -61,7 +63,13 @@ struct CategoryGridView: View {
             )
         }
 
-        // 4 columns on standard iPhone; adaptive minimum keeps iPad layouts sensible.
+        // Exactly 4 columns on every iPhone. An adaptive minimum could not promise
+        // that: 108 pt fit only 3 columns in the ~370 pt a 402 pt iPhone leaves after
+        // screen padding. A column is ~83 pt here, enough for the 72 pt budget ring.
+        // iPad (regular width) keeps adaptive columns.
+        if horizontalSizeClass == .compact {
+            return Array(repeating: GridItem(.flexible(), spacing: AppSpacing.md), count: 4)
+        }
         return [GridItem(.adaptive(minimum: 108, maximum: 180), spacing: AppSpacing.lg)]
     }
 }

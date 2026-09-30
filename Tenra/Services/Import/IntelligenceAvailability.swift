@@ -60,7 +60,11 @@ nonisolated enum IntelligenceAvailability {
     /// False on iOS 26, on models without the capability, and whenever the model is
     /// unavailable — callers keep the text path either way.
     static var supportsVision: Bool {
+        #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds report false
         guard #available(iOS 27, *), isAvailable else { return false }
         return SystemLanguageModel.default.capabilities.contains(.vision)
+        #else
+        return false
+        #endif
     }
 }

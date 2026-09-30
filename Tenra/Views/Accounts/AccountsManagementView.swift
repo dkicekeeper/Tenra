@@ -114,6 +114,7 @@ struct AccountsManagementView: View {
     @ViewBuilder
     private func accountsList(coordinator: BalanceCoordinator) -> some View {
         List {
+            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
             if #available(iOS 27, *) {
                 ForEach(sortedAccounts) { account in
                     accountRow(account, coordinator: coordinator)
@@ -125,6 +126,12 @@ struct AccountsManagementView: View {
                 }
                 .onMove(perform: mode.isReordering ? moveAccount : nil)
             }
+            #else
+            ForEach(sortedAccounts) { account in
+                accountRow(account, coordinator: coordinator)
+            }
+            .onMove(perform: mode.isReordering ? moveAccount : nil)
+            #endif
         }
         .environment(\.editMode, .constant(mode.editMode))
     }
@@ -206,6 +213,7 @@ struct AccountsManagementView: View {
                     }
                 )
             } else if let coordinator = accountsViewModel.balanceCoordinator {
+                #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
                 if #available(iOS 27, *) {
                     accountsList(coordinator: coordinator)
                         .reorderContainer(for: Account.self) { difference in
@@ -216,6 +224,9 @@ struct AccountsManagementView: View {
                 } else {
                     accountsList(coordinator: coordinator)
                 }
+                #else
+                accountsList(coordinator: coordinator)
+                #endif
             } else {
                 // balanceCoordinator not yet initialized — show loading state
                 VStack(spacing: AppSpacing.md) {
@@ -281,11 +292,15 @@ struct AccountsManagementView: View {
                 }
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
             if #available(iOS 27, *) {
                 primaryTrailingItem.visibilityPriority(.high)
             } else {
                 primaryTrailingItem
             }
+            #else
+            primaryTrailingItem
+            #endif
         }
         .navigationDestination(item: $navigatingAccount) { account in
             Group {

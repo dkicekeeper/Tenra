@@ -38,11 +38,15 @@ enum VoiceAudioSession {
             options: [.duckOthers, .defaultToSpeaker]
         )
 
+        #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
         if #available(iOS 27, *) {
             _ = try await session.activate(options: [])
         } else {
             try session.setActive(true, options: .notifyOthersOnDeactivation)
         }
+        #else
+        try session.setActive(true, options: .notifyOthersOnDeactivation)
+        #endif
     }
 
     /// Deactivates the session, notifying other apps so their audio can resume.
@@ -51,11 +55,15 @@ enum VoiceAudioSession {
     nonisolated static func deactivate() async {
         let session = AVAudioSession.sharedInstance()
         do {
+            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
             if #available(iOS 27, *) {
                 _ = try await session.deactivate(options: .notifyOthersOnDeactivation)
             } else {
                 try session.setActive(false, options: .notifyOthersOnDeactivation)
             }
+            #else
+            try session.setActive(false, options: .notifyOthersOnDeactivation)
+            #endif
         } catch {
             logger.warning("Failed to deactivate audio session: \(error.localizedDescription, privacy: .public)")
         }

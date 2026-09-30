@@ -136,6 +136,7 @@ struct CategoriesManagementView: View {
     @ViewBuilder
     private var categoriesList: some View {
         List {
+            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
             if #available(iOS 27, *) {
                 ForEach(filteredCategories) { category in
                     categoryRow(category)
@@ -147,6 +148,12 @@ struct CategoriesManagementView: View {
                 }
                 .onMove(perform: mode.isReordering ? moveCategory : nil)
             }
+            #else
+            ForEach(filteredCategories) { category in
+                categoryRow(category)
+            }
+            .onMove(perform: mode.isReordering ? moveCategory : nil)
+            #endif
         }
         .environment(\.editMode, .constant(mode.editMode))
     }
@@ -237,15 +244,21 @@ struct CategoriesManagementView: View {
                         showingAddCategory = true
                     }
                 )
-            } else if #available(iOS 27, *) {
-                categoriesList
-                    .reorderContainer(for: CustomCategory.self) { difference in
-                        var reordered = filteredCategories
-                        difference.apply(to: &reordered)
-                        applyReorder(orderedIds: reordered.map(\.id))
-                    }
             } else {
+                #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
+                if #available(iOS 27, *) {
+                    categoriesList
+                        .reorderContainer(for: CustomCategory.self) { difference in
+                            var reordered = filteredCategories
+                            difference.apply(to: &reordered)
+                            applyReorder(orderedIds: reordered.map(\.id))
+                        }
+                } else {
+                    categoriesList
+                }
+                #else
                 categoriesList
+                #endif
             }
         }
         .animation(AppAnimation.contentSpring, value: selectedType)
@@ -300,11 +313,15 @@ struct CategoriesManagementView: View {
                 }
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
             if #available(iOS 27, *) {
                 primaryTrailingItem.visibilityPriority(.high)
             } else {
                 primaryTrailingItem
             }
+            #else
+            primaryTrailingItem
+            #endif
         }
         .safeAreaInset(edge: .top) {
             SegmentedPickerView(

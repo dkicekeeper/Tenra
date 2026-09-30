@@ -68,3 +68,16 @@ nonisolated enum IntelligenceAvailability {
         #endif
     }
 }
+
+extension GenerationOptions {
+    /// Deterministic (greedy) decoding for every structured-output call. The initializer
+    /// label changed in the iOS 27 SDK (`sampling:` → `samplingMode:`); CI still builds
+    /// with Xcode 26, so the spelling is chosen by compiler here, once.
+    nonisolated static var greedyDecoding: GenerationOptions {
+        #if compiler(>=6.4) // iOS 27 SDK (Xcode 27)
+        GenerationOptions(samplingMode: .greedy)
+        #else
+        GenerationOptions(sampling: .greedy)
+        #endif
+    }
+}

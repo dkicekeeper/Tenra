@@ -85,19 +85,24 @@ struct TransactionsSummaryCard: View {
 
     // MARK: - Loading State
 
+    /// Skeleton in the shape of the loaded card: the title, then the comparison bar.
     private var loadingState: some View {
-        VStack(spacing: AppSpacing.md) {
-            ProgressView()
-                .scaleEffect(1.2)
-                .accessibilityLabel(String(localized: "progress.loadingTransactions"))
-            Text(String(localized: "progress.loadingData"))
-                .font(AppTypography.caption)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: AppSpacing.lg) {
+            SkeletonView(height: 24, width: 120)
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                SkeletonView(height: 12, cornerRadius: 6)
+                HStack {
+                    SkeletonView(height: 14, width: 90)
+                    Spacer()
+                    SkeletonView(height: 14, width: 90)
+                }
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(AppSpacing.lg)
         .cardStyle()
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(localized: "progress.loadingTransactions"))
     }
 }
 

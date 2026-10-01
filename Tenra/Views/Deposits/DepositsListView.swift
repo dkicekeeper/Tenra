@@ -88,13 +88,13 @@ struct DepositsListView: View {
                     }
                 }
             } else {
-                VStack(spacing: AppSpacing.md) {
-                    ProgressView().scaleEffect(1.2)
-                    Text(String(localized: "progress.loadingData"))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(.secondary)
+                VStack(spacing: 0) {
+                    ForEach(0..<3, id: \.self) { _ in SkeletonRow() }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .screenPadding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(String(localized: "progress.loadingData"))
             }
         }
         .navigationTitle(String(localized: "deposit.listTitle", defaultValue: "Deposits"))

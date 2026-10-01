@@ -657,8 +657,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/dkicekeeper/DesignKit";
 			requirement = {
-				branch = "claude/zen-gauss-l30uvy";
-				kind = branch;
+				kind = exactVersion;
+				version = 0.3.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

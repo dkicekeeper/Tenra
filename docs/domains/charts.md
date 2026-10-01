@@ -2,6 +2,15 @@
 
 Swift Charts patterns for `LineChart` / `BarChart` (multi-series), the `OrbChart` breakdown chart, and mini-charts.
 
+> **Where the code lives (2026-10).** The charts themselves are DesignKit's (0.5.0): `LineChart`,
+> `BarChart`, `ChartSwitcher`, `HeroSparkline`, `Sparkline` (= `MiniSparkline` here, a typealias),
+> `ChartSelectionBanner`, plus their cache/axis helpers, over a generic `ChartPoint` / `ChartSeries`
+> model. Tenra keeps `Views/Components/Charts/PeriodChartAdapters.swift`: `PeriodDataPoint: ChartPoint`
+> (axis labels per granularity, banner title), `PeriodChartSeries` → `ChartSeries` (`.chart`), and
+> inits with the old `granularity:` / `currency:` signatures. Change chart drawing by DesignKit PR; its
+> `docs/charts.md` is the canonical copy of the rules below. A new `PeriodChartSeries` case needs a
+> `value(for:)` arm and a `chart` arm (exhaustive switches).
+
 ## 2026-07 charts refactor — rename map
 
 Feature-bound names replaced with reusable ones (old → new; grep for the new name):

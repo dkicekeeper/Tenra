@@ -1058,7 +1058,7 @@ Rendering a money amount?
 │       (these use AmountInputFormatting internally — do not bypass)
 │
 ├── Compact chart axis label?
-│   └── → ChartAxisHelpers.formatCompact(amount)
+│   └── → ChartValueFormat.compactString(amount)  (DesignKit)
 │
 ├── Storage, CSV, search-match key, persistence?
 │   └── → AmountFormatter.format(_:) / .parse(_:)
@@ -1125,7 +1125,7 @@ Rules that make this safe:
 | Accessibility / VoiceOver / CSV | `Formatting.formatCurrency(_:currency:)` | Always 2 (legacy compat — DO NOT use for display) |
 | Storage / parse | `AmountFormatter.format(_:)` / `.parse(_:)` | Always 2 |
 | User typing | `AmountInputFormatting.displayAmount(for:)` | 0–2 |
-| Chart axis (compact) | `ChartAxisHelpers.formatCompact(_:)` | Compact ("12K", "1.2M") |
+| Chart axis (compact) | `ChartValueFormat.compactString(_:)` (DesignKit) | Compact ("12K", "1.2M") |
 | `NumberFormatter` instance in hot path | `AmountDisplayConfiguration.formatter` (cached) | Configured |
 
 **Never call `AmountDisplayConfiguration.makeNumberFormatter()` in List/ForEach** — use `.formatter` (cached).

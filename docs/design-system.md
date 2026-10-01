@@ -1,6 +1,13 @@
 # UI Components & Design System Guide
 
 > Reference for Claude: which components to use, where, and how.
+>
+> **Where the code lives (2026-10).** Tokens and shared components moved to the **DesignKit**
+> package (github.com/dkicekeeper/DesignKit, `Sources/DesignTokens|DesignSupport|DesignComponents`),
+> shared with Dalada and re-exported here by `Tenra/Utils/DesignKitBridge.swift`. File paths
+> below that point into `Tenra/Utils` or `Tenra/Views/Components` for those components are
+> historical — the canonical copy of this guide is DesignKit's `docs/design-system.md` (§0 lists
+> what ships there and what stays app-side). Change shared components by DesignKit PR.
 
 ---
 

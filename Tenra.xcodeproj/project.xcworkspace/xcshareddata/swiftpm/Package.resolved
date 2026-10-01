@@ -2,6 +2,15 @@
   "originHash" : "533de208f7207fdd36b99a2f0036707fca012c23defe0e4e99a820106aff336d",
   "pins" : [
     {
+      "identity" : "designkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dkicekeeper/DesignKit",
+      "state" : {
+        "revision" : "8835c76e8bc7fae09807991e38f04ea021d97b98",
+        "version" : "0.3.0"
+      }
+    },
+    {
       "identity" : "purchases-ios-spm",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/RevenueCat/purchases-ios-spm.git",

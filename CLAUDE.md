@@ -253,7 +253,9 @@ These cause silent data corruption or crashes — internalize even without readi
 - ⚠️ To change an account's `initialBalance` after creation (deposit conversion, balance correction), use `BalanceCoordinator.persistInitialBalance` (writes CoreData **and** memory). `AccountRepository.saveAccountsInternal` deliberately NEVER overwrites `AccountEntity.initialBalance` ("set once at creation"), so the in-memory-only `setInitialBalance` is lost on relaunch — the full recalc then reads the stale creation-time value (caused the converted-deposit "balance drops to 0 on day 2" bug). `AccountBalance.isDeposit` is computed (`depositInfo != nil`), never a stored flag.
 
 ### UI Components
-- Reusable components live in `Views/Components/`
+- **The design system lives in the DesignKit package** (github.com/dkicekeeper/DesignKit, shared with Dalada): tokens (`AppColors`, `AppSpacing`, `AppTypography`, `AppAnimation`, modifiers, buttons) and the shared components (`UniversalRow`, `FormSection`, `FinanceCard`, `IconView`, charts, …). They are re-exported to the whole app by [DesignKitBridge.swift](Tenra/Utils/DesignKitBridge.swift) — no per-file imports.
+- **Changing a shared component or token = a DesignKit PR** (its CI builds Tenra and Dalada against the change). Don't fork a copy into Tenra. Develop with Xcode's local package override: drag a local DesignKit checkout into the project. Tenra pins an exact DesignKit version (Package Dependencies); the **DesignKit update** workflow (`.github/workflows/designkit.yml`) checks daily for a newer release, builds + runs TenraTests, and commits the bump to `main`. Visual changes are listed in DesignKit's release notes; check them on device.
+- `Views/Components/` keeps only Tenra-bound components (transactions, accounts, categories, loans, insights charts on `PeriodDataPoint`, …) and the adapters in `DesignKitBridge.swift` (custom category colours, `IconSource.brandDomain`, `DonutSlice.from(...)`, the `InsightsStatCard` sparkline, logo/FX hooks).
 - See [design-system.md](docs/design-system.md) for tokens, components, decision trees, padding contract
 
 ### Snapshot `@State` driven by store mutation versions

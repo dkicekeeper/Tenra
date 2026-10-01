@@ -24,6 +24,8 @@ struct TenraApp: App {
     @State private var coordinator: AppCoordinator? = nil
 
     init() {
+        // Shared design system: logo and FX hooks for DesignKit components.
+        DesignKitBridge.configure()
         // The optional app lock draws in its own window above every sheet.
         AppLockService.shared.onOverlayVisibilityChange = { visible in
             AppLockWindowPresenter.shared.setVisible(visible)

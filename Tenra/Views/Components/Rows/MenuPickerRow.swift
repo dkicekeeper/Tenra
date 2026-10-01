@@ -2,73 +2,11 @@
 //  MenuPickerRow.swift
 //  Tenra
 //
-//  Reusable menu picker row with icon, title, and compact menu selection
-//  Universal component for all single-select scenarios
+//  Tenra's domain convenience inits for DesignKit's MenuPickerRow (frequency,
+//  recurring option, loan type, reminder). The row itself lives in DesignKit.
 //
 
 import SwiftUI
-
-/// Universal menu picker row for forms.
-/// Shows `icon + title` on the left and a native `Menu` trigger (selected
-/// label + chevron) on the right. Tapping the trigger opens an iOS menu with
-/// the selectable options; iOS handles the open transition, checkmark on the
-/// current selection, and dismissal.
-///
-/// The menu uses a `Picker` inside `Menu` — Apple's canonical pattern for a
-/// single-select dropdown bound to a `Hashable` value. iOS renders the
-/// options as native menu items with a built-in checkmark on the selected
-/// row, so we don't draw the checkmark ourselves.
-struct MenuPickerRow<T: Hashable>: View {
-    let icon: String?
-    let title: String
-    @Binding var selection: T
-    let options: [(label: String, value: T)]
-
-    init(
-        icon: String? = nil,
-        title: String,
-        selection: Binding<T>,
-        options: [(label: String, value: T)]
-    ) {
-        self.icon = icon
-        self.title = title
-        self._selection = selection
-        self.options = options
-    }
-
-    var body: some View {
-        UniversalRow(
-            config: .standard,
-            leadingIcon: icon.map { .sfSymbol($0, color: AppColors.accent, size: AppIconSize.lg) }
-        ) {
-            Text(title)
-                .font(AppTypography.body)
-                .foregroundStyle(AppColors.textPrimary)
-        } trailing: {
-            Menu {
-                Picker(title, selection: $selection) {
-                    ForEach(options, id: \.value) { option in
-                        Text(option.label).tag(option.value)
-                    }
-                }
-            } label: {
-                if let selectedOption = options.first(where: { $0.value == selection }) {
-                    HStack(spacing: AppSpacing.xs) {
-                        Text(selectedOption.label)
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textPrimary)
-                            .lineLimit(1)
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(AppColors.textPrimary)
-                    }
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Convenience Initializers
 
 extension MenuPickerRow where T == RecurringFrequency {
     /// Convenience initializer for RecurringFrequency (subscription frequency)
@@ -77,12 +15,14 @@ extension MenuPickerRow where T == RecurringFrequency {
         title: String = String(localized: "common.frequency"),
         selection: Binding<RecurringFrequency>
     ) {
-        self.icon = icon
-        self.title = title
-        self._selection = selection
-        self.options = RecurringFrequency.allCases.map {
-            (label: $0.displayName, value: $0)
-        }
+        self.init(
+            icon: icon,
+            title: title,
+            selection: selection,
+            options: RecurringFrequency.allCases.map {
+                (label: $0.displayName, value: $0)
+            }
+        )
     }
 }
 
@@ -93,15 +33,17 @@ extension MenuPickerRow where T == RecurringOption {
         title: String = String(localized: "transactionForm.makeRecurring"),
         selection: Binding<RecurringOption>
     ) {
-        self.icon = icon
-        self.title = title
-        self._selection = selection
         // Включаем "Никогда" + все частоты
-        self.options = [
-            (label: String(localized: "recurring.never"), value: .never)
-        ] + RecurringFrequency.allCases.map {
-            (label: $0.displayName, value: .frequency($0))
-        }
+        self.init(
+            icon: icon,
+            title: title,
+            selection: selection,
+            options: [
+                (label: String(localized: "recurring.never"), value: .never)
+            ] + RecurringFrequency.allCases.map {
+                (label: $0.displayName, value: .frequency($0))
+            }
+        )
     }
 }
 
@@ -114,13 +56,15 @@ extension MenuPickerRow where T == LoanType {
         title: String = String(localized: "loan.typePicker", defaultValue: "Type"),
         selection: Binding<LoanType>
     ) {
-        self.icon = icon
-        self.title = title
-        self._selection = selection
-        self.options = [
-            (label: String(localized: "loan.typeAnnuityShort", defaultValue: "Credit"), value: .annuity),
-            (label: String(localized: "loan.typeInstallmentShort", defaultValue: "Installment"), value: .installment)
-        ]
+        self.init(
+            icon: icon,
+            title: title,
+            selection: selection,
+            options: [
+                (label: String(localized: "loan.typeAnnuityShort", defaultValue: "Credit"), value: .annuity),
+                (label: String(localized: "loan.typeInstallmentShort", defaultValue: "Installment"), value: .installment)
+            ]
+        )
     }
 }
 
@@ -131,17 +75,19 @@ extension MenuPickerRow where T == ReminderOption {
         title: String = String(localized: "subscription.reminders"),
         selection: Binding<ReminderOption>
     ) {
-        self.icon = icon
-        self.title = title
-        self._selection = selection
         // "Никогда" + стандартные напоминания
-        self.options = [
-            (label: String(localized: "reminder.none"), value: .none),
-            (label: String(localized: "reminder.dayBefore.one"), value: .daysBefore(1)),
-            (label: String(localized: "reminder.daysBefore.3"), value: .daysBefore(3)),
-            (label: String(localized: "reminder.daysBefore.7"), value: .daysBefore(7)),
-            (label: String(localized: "reminder.daysBefore.30"), value: .daysBefore(30))
-        ]
+        self.init(
+            icon: icon,
+            title: title,
+            selection: selection,
+            options: [
+                (label: String(localized: "reminder.none"), value: .none),
+                (label: String(localized: "reminder.dayBefore.one"), value: .daysBefore(1)),
+                (label: String(localized: "reminder.daysBefore.3"), value: .daysBefore(3)),
+                (label: String(localized: "reminder.daysBefore.7"), value: .daysBefore(7)),
+                (label: String(localized: "reminder.daysBefore.30"), value: .daysBefore(30))
+            ]
+        )
     }
 }
 

@@ -15,15 +15,16 @@ struct SettingsPrivacySection: View {
 
     var body: some View {
         Section {
-            Toggle(isOn: Binding(
-                get: { lock.isEnabled },
-                set: { newValue in
-                    Task { await lock.setEnabled(newValue) }
-                }
-            )) {
-                Label(toggleTitle, systemImage: symbolName)
-            }
-            .tint(AppColors.accent)
+            ToggleSettingsRow(
+                icon: symbolName,
+                title: toggleTitle,
+                isOn: Binding(
+                    get: { lock.isEnabled },
+                    set: { newValue in
+                        Task { await lock.setEnabled(newValue) }
+                    }
+                )
+            )
             .disabled(biometry == .unavailable && !lock.isEnabled)
         } header: {
             Text(String(localized: "settings.privacy.header"))

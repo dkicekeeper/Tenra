@@ -23,8 +23,9 @@ import SwiftUI
 enum DesignKitBridge {
     /// Call once from `TenraApp.init()`, before any view renders.
     static func configure() {
-        // Inter is registered by Tenra's own Info.plist (UIAppFonts); DesignKitFonts is not
-        // needed. The accent stays DesignKit's default, system indigo (= Tenra's AccentColor).
+        // Inter comes from DesignKit's bundle (Tenra's own copy and UIAppFonts were removed).
+        // The accent stays DesignKit's default, system indigo (= Tenra's AccentColor).
+        DesignKitFonts.registerIfNeeded()
         DesignKitLogoLoader.loader = { brandName in
             await LogoService.shared.logoImage(brandName: brandName)
         }

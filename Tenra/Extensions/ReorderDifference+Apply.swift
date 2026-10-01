@@ -12,6 +12,7 @@
 
 import SwiftUI
 
+#if compiler(>=6.4) // iOS 27 SDK (Xcode 27)
 @available(iOS 27, *)
 extension ReorderDifference where CollectionID == ReorderableSingleCollectionIdentifier {
 
@@ -31,3 +32,4 @@ extension ReorderDifference where CollectionID == ReorderableSingleCollectionIde
         collection = ReorderApplier.reordered(collection, moving: sources, to: target)
     }
 }
+#endif

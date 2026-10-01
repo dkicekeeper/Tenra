@@ -25,14 +25,19 @@ struct AmbientMotionGate<Content: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
         if #available(iOS 27, *) {
             ResourceAwareAmbientMotionGate(reduceMotion: reduceMotion, content: content)
         } else {
             content(!reduceMotion)
         }
+        #else
+        content(!reduceMotion)
+        #endif
     }
 }
 
+#if compiler(>=6.4)
 /// Split into its own type because `@Environment(\.systemPrefersReducedResourceUsage)`
 /// is iOS 27-only: a stored property cannot carry an availability annotation, so the
 /// type carries it instead.
@@ -48,3 +53,4 @@ private struct ResourceAwareAmbientMotionGate<Content: View>: View {
         content(!reduceMotion && !prefersReducedResourceUsage)
     }
 }
+#endif

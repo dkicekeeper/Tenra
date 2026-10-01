@@ -130,11 +130,15 @@ struct MainTabView: View {
             // iOS 27 has a role for exactly this (a creation action rather than a
             // destination); before that, `.search` was the only role that detached
             // a tab from the group, which is why it was used as a stand-in.
+            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
             if #available(iOS 27, *) {
                 actionTab(role: .prominent)
             } else {
                 actionTab(role: .search)
             }
+            #else
+            actionTab(role: .search)
+            #endif
         }
         // `.automatic` (not `.visible`) is the default so pushed views that hide
         // the bar via their own per-destination modifier (CloudBackupsView,

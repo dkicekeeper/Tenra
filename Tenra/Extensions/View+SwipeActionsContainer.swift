@@ -18,10 +18,14 @@ extension View {
     /// which stays in place on both versions as the long-press affordance.
     @ViewBuilder
     func swipeActionsContainerIfAvailable() -> some View {
+        #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
         if #available(iOS 27.0, *) {
             swipeActionsContainer()
         } else {
             self
         }
+        #else
+        self
+        #endif
     }
 }

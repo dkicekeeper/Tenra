@@ -173,7 +173,7 @@ nonisolated enum IntelligentCategorySuggester {
         let response = try await session.respond(
             to: prompt(for: batch),
             schema: schema,
-            options: GenerationOptions(samplingMode: .greedy)
+            options: .greedyDecoding
         )
         var result: [String: String] = [:]
         for (index, merchant) in batch.merchants.enumerated() {

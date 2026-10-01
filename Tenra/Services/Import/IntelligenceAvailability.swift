@@ -60,7 +60,24 @@ nonisolated enum IntelligenceAvailability {
     /// False on iOS 26, on models without the capability, and whenever the model is
     /// unavailable — callers keep the text path either way.
     static var supportsVision: Bool {
+        #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds report false
         guard #available(iOS 27, *), isAvailable else { return false }
         return SystemLanguageModel.default.capabilities.contains(.vision)
+        #else
+        return false
+        #endif
+    }
+}
+
+extension GenerationOptions {
+    /// Deterministic (greedy) decoding for every structured-output call. The initializer
+    /// label changed in the iOS 27 SDK (`sampling:` → `samplingMode:`); CI still builds
+    /// with Xcode 26, so the spelling is chosen by compiler here, once.
+    nonisolated static var greedyDecoding: GenerationOptions {
+        #if compiler(>=6.4) // iOS 27 SDK (Xcode 27)
+        GenerationOptions(samplingMode: .greedy)
+        #else
+        GenerationOptions(sampling: .greedy)
+        #endif
     }
 }

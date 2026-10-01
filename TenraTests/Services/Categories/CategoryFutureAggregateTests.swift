@@ -67,8 +67,10 @@ struct CategoryFutureAggregateTests {
         )
         cat.budgetStartDate = nil  // legacy data: budget set but no start date persisted
         let start = CategoryBudgetService.legacyBudgetPeriodStart(for: cat)
-        // With resetDay=1 the period started on the 1st of this month — comfortably
-        // more than a day ago. The old nil short-circuit returned ~now (≈0s ago).
-        #expect(Date().timeIntervalSince(start) > 86_400)
+        // With resetDay=1 the period starts at midnight on the 1st of this month. The old
+        // nil short-circuit returned ~now instead. (Compare with the month start, not
+        // "more than a day ago": on the 1st the period is only hours old.)
+        let monthStart = Calendar.current.dateInterval(of: .month, for: Date())?.start
+        #expect(start == monthStart)
     }
 }

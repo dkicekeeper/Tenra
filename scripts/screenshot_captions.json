@@ -1,5 +1,5 @@
 {
-  "comment": "App Store screenshot captions per locale. Source of truth: docs/localization/<lang>.md §4 (order per README.md §Подписи скриншотов; tr puts the multicurrency frame first per tr.md §4). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice, fx=08-multicurrency.",
+  "comment": "App Store screenshot captions per locale. Source of truth: docs/localization/<lang>.md §4 (en-US, ru: this file) (order per README.md §Подписи скриншотов; tr puts the multicurrency frame first per tr.md §4). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice, fx=08-multicurrency.",
   "defaultOrder": ["home", "finances", "insights", "score", "topcat", "history", "voice", "fx"],
   "locales": {
     "de-DE": {
@@ -133,6 +133,30 @@
         "history":  { "title": "모든 내역이 한 줄로", "subtitle": "지출, 수입, 예금 이자까지 하나의 타임라인에" },
         "voice":    { "title": "음성으로 지출을 기록해요", "subtitle": "\"점심 12,000원 썼어\"라고 말하면 바로 입력돼요" },
         "fx":       { "title": "₩, $, €: 하나의 진짜 합계", "subtitle": "통화가 달라도 실시간 환율로 정확하게 합산해요" }
+      }
+    },
+    "en-US": {
+      "frames": {
+        "home":     { "title": "A budget for every category", "subtitle": "Limits, spending and what's left this month, right on the home screen" },
+        "finances": { "title": "All your finances in one place", "subtitle": "Accounts, deposits, subscriptions and loans, no bank login" },
+        "insights": { "title": "See where your money goes", "subtitle": "Balance, spending and net cash flow for the month at a glance" },
+        "score":    { "title": "Your financial health in one score", "subtitle": "Savings, budgets and safety cushion in one clear number" },
+        "topcat":   { "title": "Know your biggest expenses", "subtitle": "Spending categories with a clear monthly breakdown" },
+        "history":  { "title": "Every transaction under control", "subtitle": "Expenses, income and deposit interest in one feed" },
+        "voice":    { "title": "Add expenses by voice", "subtitle": "“12 dollars for lunch”: said and saved" },
+        "fx":       { "title": "USD, EUR, KZT: one true total", "subtitle": "Accounts in several currencies, one balance in yours" }
+      }
+    },
+    "ru": {
+      "frames": {
+        "home":     { "title": "Бюджет по каждой категории", "subtitle": "Лимиты, траты и остаток на месяц сразу на главном экране" },
+        "finances": { "title": "Все ваши финансы в одном месте", "subtitle": "Счета, депозиты, подписки и кредиты без привязки банка" },
+        "insights": { "title": "Видно, куда уходят деньги", "subtitle": "Баланс, расходы и чистый поток за месяц с первого взгляда" },
+        "score":    { "title": "Оценка вашего финансового здоровья", "subtitle": "Сбережения, бюджеты и подушка в одном понятном балле" },
+        "topcat":   { "title": "Узнайте свои главные траты", "subtitle": "Категории расходов с наглядной разбивкой по месяцам" },
+        "history":  { "title": "Каждая операция под контролем", "subtitle": "Траты, доходы и проценты по депозитам в одной ленте" },
+        "voice":    { "title": "Добавляйте траты голосом", "subtitle": "«5 000 на продукты»: сказали и записали" },
+        "fx":       { "title": "KZT, USD, EUR: один честный итог", "subtitle": "Счета в разных валютах, общий баланс в вашей валюте" }
       }
     }
   }

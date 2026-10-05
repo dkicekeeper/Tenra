@@ -18,7 +18,8 @@ protocol DataRepositoryProtocol: Sendable {
     // MARK: - Transactions
 
     /// Load transactions with optional date range filter
-    /// - Parameter dateRange: Optional date range to filter transactions. If nil, loads all transactions
+    /// - Parameter dateRange: Optional date range to filter transactions, half-open
+    ///   `[start, end)` like `TimeFilter`. If nil, loads all transactions
     /// - Returns: Array of transactions matching the filter
     nonisolated func loadTransactions(dateRange: DateInterval?) -> [Transaction]
 

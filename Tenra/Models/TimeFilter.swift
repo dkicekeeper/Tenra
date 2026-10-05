@@ -130,16 +130,37 @@ struct TimeFilter: Codable, Equatable, Hashable {
         }
     }
     
+    /// A `.custom` filter covering the whole calendar days `firstDay` through `lastDay`,
+    /// both inclusive (what the user picks in TimeFilterView). Stored half-open like every
+    /// preset: `[start of firstDay, start of the day after lastDay)`, so `contains`, the
+    /// History predicate and the summaries all include the last picked day.
+    nonisolated static func customDays(
+        from firstDay: Date,
+        through lastDay: Date,
+        calendar: Calendar = .current
+    ) -> TimeFilter {
+        let start = calendar.startOfDay(for: firstDay)
+        let lastDayStart = calendar.startOfDay(for: max(firstDay, lastDay))
+        let end = calendar.date(byAdding: .day, value: 1, to: lastDayStart) ?? lastDayStart
+        return TimeFilter(preset: .custom, startDate: start, endDate: end)
+    }
+
     nonisolated func dateRange() -> (start: Date, end: Date) {
         return (startDate, endDate)
     }
-    
+
+    /// The last calendar day the range covers (`endDate` is exclusive). For display:
+    /// a custom range picked as 1–30 Sep stores `endDate` = 1 Oct.
+    var lastIncludedDay: Date {
+        Calendar.current.startOfDay(for: endDate.addingTimeInterval(-1))
+    }
+
     var displayName: String {
         if preset == .custom {
             let formatter = DateFormatter()
             formatter.dateFormat = "d MMM"
             formatter.locale = Locale.current // Use system locale instead of hardcoded "ru_RU"
-            return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
+            return "\(formatter.string(from: startDate)) - \(formatter.string(from: lastIncludedDay))"
         }
         return preset.localizedName
     }

@@ -54,7 +54,8 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol, @uncheck
             guard let transactionDate = dateFormatter.date(from: transaction.date) else {
                 return false
             }
-            return transactionDate >= dateRange.start && transactionDate <= dateRange.end
+            // Half-open [start, end), same as TransactionRepository and TimeFilter.contains.
+            return transactionDate >= dateRange.start && transactionDate < dateRange.end
         }
     }
     

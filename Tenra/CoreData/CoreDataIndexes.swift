@@ -60,8 +60,8 @@ struct CoreDataIndexes {
         
         var predicates: [NSPredicate] = []
         
-        // Предикат по дате (использует индекс)
-        predicates.append(NSPredicate(format: "date >= %@ AND date <= %@", startDate as NSDate, endDate as NSDate))
+        // Предикат по дате (использует индекс). Half-open [startDate, endDate), as TimeFilter.
+        predicates.append(NSPredicate(format: "date >= %@ AND date < %@", startDate as NSDate, endDate as NSDate))
         
         // Предикат по типу (использует индекс)
         if let type = type {

@@ -70,8 +70,9 @@ nonisolated final class TransactionRepository: TransactionRepositoryProtocol, @u
             request.fetchBatchSize = 500
 
             if let dateRange = dateRange {
+                // Half-open [start, end), same as TimeFilter.contains.
                 request.predicate = NSPredicate(
-                    format: "date >= %@ AND date <= %@",
+                    format: "date >= %@ AND date < %@",
                     dateRange.start as NSDate,
                     dateRange.end as NSDate
                 )

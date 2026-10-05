@@ -305,8 +305,12 @@ final class TransactionPaginationController: NSObject {
         }
 
         if let range = dateRange {
+            // Half-open [start, end) like TimeFilter.contains: `end` is the first instant
+            // of the next period, and stored dates are local midnight, so `<=` pulled in
+            // every transaction dated the 1st of the next period (e.g. "1 Oct" under
+            // "Last month").
             predicates.append(NSPredicate(
-                format: "date >= %@ AND date <= %@",
+                format: "date >= %@ AND date < %@",
                 range.start as NSDate,
                 range.end as NSDate
             ))

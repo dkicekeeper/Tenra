@@ -46,6 +46,18 @@ class TimeFilterManager {
             // Fallback - use .allTime
             self.currentFilter = TimeFilter(preset: .allTime)
         }
+
+        // MIGRATION: custom ranges were stored with `endDate` = the last picked day
+        // (start of day, inclusive). They are half-open now, so re-derive the
+        // exclusive end once, or a saved "1–30 Sep" would silently drop 30 Sep.
+        let halfOpenMigrationKey = "timeFilterCustomHalfOpenV2"
+        if !UserDefaults.standard.bool(forKey: halfOpenMigrationKey) {
+            if currentFilter.preset == .custom {
+                currentFilter = .customDays(from: currentFilter.startDate, through: currentFilter.endDate)
+                saveToStorage()
+            }
+            UserDefaults.standard.set(true, forKey: halfOpenMigrationKey)
+        }
     }
     
     func setFilter(_ filter: TimeFilter) {
@@ -76,8 +88,10 @@ class TimeFilterManager {
         }
     }
     
-    func setCustomRange(start: Date, end: Date) {
-        currentFilter = TimeFilter(preset: .custom, startDate: start, endDate: end)
+    /// `firstDay`/`lastDay` are the picked calendar days, both inclusive; the stored
+    /// filter is half-open (see `TimeFilter.customDays`).
+    func setCustomRange(from firstDay: Date, through lastDay: Date) {
+        currentFilter = .customDays(from: firstDay, through: lastDay)
     }
     
     private func saveToStorage() {

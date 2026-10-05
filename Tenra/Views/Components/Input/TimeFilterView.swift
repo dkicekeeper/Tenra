@@ -21,7 +21,9 @@ struct TimeFilterView: View {
         let currentFilter = filterManager.currentFilter
         _selectedPreset = State(initialValue: currentFilter.preset)
         if currentFilter.preset == .custom {
-            _customDateRange = State(initialValue: currentFilter.startDate...currentFilter.endDate)
+            // endDate is exclusive (the day after the last picked one); show the picked days.
+            let lastDay = max(currentFilter.startDate, currentFilter.lastIncludedDay)
+            _customDateRange = State(initialValue: currentFilter.startDate...lastDay)
         } else {
             // Non-custom presets (e.g. .allTime) carry sentinel dates like 1970/2125 that
             // would render as the picker default — anchor on today instead.
@@ -94,7 +96,7 @@ struct TimeFilterView: View {
             }
             .sheet(isPresented: $showingCustomPicker) {
                 CustomPeriodPickerSheet(dateRange: $customDateRange) { range in
-                    filterManager.setCustomRange(start: range.lowerBound, end: range.upperBound)
+                    filterManager.setCustomRange(from: range.lowerBound, through: range.upperBound)
                     showingCustomPicker = false
                     dismiss()
                 }
@@ -205,8 +207,8 @@ private struct CustomPeriodPickerSheet: View {
 #Preview("Custom Range") {
     let manager = TimeFilterManager()
     manager.setCustomRange(
-        start: Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date(),
-        end: Date()
+        from: Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date(),
+        through: Date()
     )
     return TimeFilterView(filterManager: manager)
 }

@@ -2,9 +2,8 @@
 //  InsightsTotalsCard.swift
 //  Tenra
 //
-//  Three-column income / expenses / net-flow summary card.
-//  Extracted from InsightsSummaryHeader (summaryItem) and
-//  InsightsSummaryDetailView (totalItem) — Phase 26.
+//  Income / expenses / net-flow totals of the Insights summary. Adapter over DesignKit's
+//  `TotalsCard`: the three items, their titles and colours are Tenra's; the card is DesignKit's.
 //
 
 import SwiftUI
@@ -27,92 +26,37 @@ struct InsightsTotalsCard: View {
     var amountFont: Font = AppTypography.body
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.md) {
-            if let label = periodLabel {
-                Text(label)
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
-            }
-
-            HStack(alignment: .top, spacing: AppSpacing.xs) {
-                totalItem(
+        TotalsCard(
+            [
+                .init(
+                    id: "income",
                     title: String(localized: "insights.income"),
                     amount: income,
                     previous: previousIncome,
                     color: AppColors.success,
-                    upIsGood: true
-                )
-                Spacer()
-                totalItem(
+                    increaseIsGood: true
+                ),
+                .init(
+                    id: "expenses",
                     title: String(localized: "insights.expenses"),
                     amount: expenses,
                     previous: previousExpenses,
                     color: AppColors.destructive,
-                    upIsGood: false
-                )
-                Spacer()
-                totalItem(
+                    increaseIsGood: false
+                ),
+                .init(
+                    id: "netFlow",
                     title: String(localized: "insights.netFlow"),
                     amount: netFlow,
                     previous: previousNetFlow,
                     color: netFlow >= 0 ? AppColors.textPrimary : AppColors.destructive,
-                    upIsGood: true
-                )
-            }
-        }
-        .padding(AppSpacing.lg)
-        .cardStyle()
-    }
-
-    private func totalItem(
-        title: String,
-        amount: Double,
-        previous: Double?,
-        color: Color,
-        upIsGood: Bool
-    ) -> some View {
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text(title)
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textSecondary)
-
-            // Always render the full amount with currency symbol via the
-            // design-system formatter — no compact "1.2M" abbreviation.
-            FormattedAmountText(
-                amount: amount,
-                currency: currency,
-                fontSize: amountFont,
-                fontWeight: .semibold,
-                color: color
-            )
-            .lineLimit(1)
-            .minimumScaleFactor(0.5)
-
-            if let prev = previous {
-                Self.deltaBadge(current: amount, previous: prev, upIsGood: upIsGood)
-            }
-        }
-    }
-
-    /// Builds a tiny delta badge ("+12%" / "−4%") coloured by direction.
-    /// Returns EmptyView when previous is zero (delta undefined) or values are equal.
-    @ViewBuilder
-    private static func deltaBadge(current: Double, previous: Double, upIsGood: Bool) -> some View {
-        if abs(previous) > 0.01 {
-            let delta = ((current - previous) / abs(previous)) * 100
-            if abs(delta) >= 0.5 {
-                let isUp = delta > 0
-                let color: Color = (isUp == upIsGood) ? AppColors.success : AppColors.destructive
-                HStack(spacing: 2) {
-                    Image(systemName: isUp ? "arrow.up" : "arrow.down")
-                        .font(.system(size: 9, weight: .bold))
-                    Text(String(format: "%.0f%%", abs(delta)))
-                        .font(AppTypography.caption)
-                        .fontWeight(.semibold)
-                }
-                .foregroundStyle(color)
-            }
-        }
+                    increaseIsGood: true
+                ),
+            ],
+            currency: currency,
+            title: periodLabel,
+            amountFont: amountFont
+        )
     }
 }
 

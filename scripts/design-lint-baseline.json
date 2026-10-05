@@ -21,13 +21,6 @@
     "raw-padding": 1,
     "raw-radius": 1
   },
-  "Views/Components/Cards/HealthScoreWeightingCard.swift": {
-    "raw-radius": 1
-  },
-  "Views/Components/Cards/InsightsTotalsCard.swift": {
-    "raw-spacing": 1,
-    "system-font": 1
-  },
   "Views/Components/Cards/TransactionCard.swift": {
     "system-color": 1
   },

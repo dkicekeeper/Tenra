@@ -45,6 +45,8 @@ enum PeriodListMetric {
 /// Line 2 (cash-flow triple only): income/expenses pair, trailing-aligned,
 /// spanning the full row width so large amounts never wrap.
 /// - Parameter singleValue: when non-nil, render only this value instead of the triple
+/// A period row: net flow with income / expenses under it, or one metric. Adapter over
+/// DesignKit's `NetAmountRow`.
 struct PeriodBreakdownRow: View {
     let label: String
     let income: Double
@@ -55,57 +57,15 @@ struct PeriodBreakdownRow: View {
     var singleColor: Color = AppColors.textPrimary
 
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(alignment: .trailing, spacing: AppSpacing.xs) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(label)
-                        .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textPrimary)
-
-                    Spacer()
-
-                    if let singleValue {
-                        FormattedAmountText(
-                            amount: singleValue,
-                            currency: currency,
-                            fontSize: AppTypography.body,
-                            fontWeight: .semibold,
-                            color: singleColor
-                        )
-                    } else {
-                        FormattedAmountText(
-                            amount: netFlow,
-                            currency: currency,
-                            fontSize: AppTypography.body,
-                            fontWeight: .semibold,
-                            color: netFlow >= 0 ? AppColors.textPrimary : AppColors.destructive
-                        )
-                    }
-                }
-
-                if singleValue == nil {
-                    HStack(spacing: AppSpacing.md) {
-                        FormattedAmountText(
-                            amount: income,
-                            currency: currency,
-                            prefix: "+",
-                            fontSize: AppTypography.bodySmall,
-                            fontWeight: .regular,
-                            color: AppColors.success
-                        )
-                        FormattedAmountText(
-                            amount: expenses,
-                            currency: currency,
-                            prefix: "-",
-                            fontSize: AppTypography.bodySmall,
-                            fontWeight: .regular,
-                            color: AppColors.destructive
-                        )
-                    }
-                }
-            }
-            .padding(.vertical, AppSpacing.md)
-        }
+        NetAmountRow(
+            label: label,
+            inflow: income,
+            outflow: expenses,
+            net: netFlow,
+            currency: currency,
+            singleValue: singleValue,
+            singleColor: singleColor
+        )
     }
 }
 

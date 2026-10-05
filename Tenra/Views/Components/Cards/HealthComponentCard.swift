@@ -4,7 +4,8 @@
 //
 //  One component card on the Financial Health detail screen.
 //  Header → score contribution → current/target value → progress bar →
-//  explainer → contextual recommendation.
+//  explainer → contextual recommendation. Adapter over DesignKit's
+//  `TargetProgressCard`: resolves the component's copy keys.
 //
 
 import SwiftUI
@@ -29,110 +30,22 @@ struct HealthComponentDisplayModel: Identifiable, Sendable {
 struct HealthComponentCard: View {
     let model: HealthComponentDisplayModel
 
-    private var progressColor: Color {
-        switch model.progress {
-        case ..<0.33: return AppColors.destructive
-        case ..<0.66: return AppColors.warning
-        default:      return AppColors.success
-        }
-    }
-
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.md) {
-            headerRow
-            scoreRow
-            valueRow
-            progressBar
-            explainer
-            recommendationBox
-        }
-        .padding(AppSpacing.lg)
-        .cardStyle()
-        .opacity(model.isMuted ? 0.6 : 1.0)
-    }
-
-    // MARK: - Header
-
-    private var headerRow: some View {
-        HStack(spacing: AppSpacing.md) {
-            Image(systemName: model.icon)
-                .font(.system(size: AppIconSize.md))
-                .foregroundStyle(model.color)
-                .frame(width: 28)
-
-            Text(String(localized: String.LocalizationValue(model.titleKey)))
-                .font(AppTypography.bodyEmphasis)
-                .foregroundStyle(AppColors.textPrimary)
-
-            Spacer()
-
-            Text(String(format: String(localized: "insights.health.weightLabel"), model.weight))
-                .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textSecondary)
-                .padding(.horizontal, AppSpacing.sm)
-                .padding(.vertical, AppSpacing.xxs)
-                .background(AppColors.textSecondary.opacity(0.12))
-                .clipShape(Capsule())
-        }
-    }
-
-    // MARK: - Score
-
-    private var scoreRow: some View {
-        Text(String(format: String(localized: "insights.health.scoreContribution"), model.componentScore))
-            .font(AppTypography.body)
-            .foregroundStyle(AppColors.textSecondary)
-    }
-
-    // MARK: - Current vs Target
-
-    private var valueRow: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                Text(String(localized: "insights.health.currentValue"))
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textTertiary)
-                Text(model.currentValueText)
-                    .font(AppTypography.h2.bold())
-                    .foregroundStyle(AppColors.textPrimary)
-            }
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
-                Text(String(localized: "insights.health.target"))
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textTertiary)
-                Text(String(localized: String.LocalizationValue(model.targetTextKey)))
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
-        }
-    }
-
-    // MARK: - Progress bar
-
-    private var progressBar: some View {
-        LinearProgressBar(
-            percentage: model.progress * 100,
-            isOverBudget: false,
-            color: progressColor
+        TargetProgressCard(
+            systemImage: model.icon,
+            color: model.color,
+            title: String(localized: String.LocalizationValue(model.titleKey)),
+            badge: String(format: String(localized: "insights.health.weightLabel"), model.weight),
+            summary: String(format: String(localized: "insights.health.scoreContribution"), model.componentScore),
+            currentLabel: String(localized: "insights.health.currentValue"),
+            currentValue: model.currentValueText,
+            targetLabel: String(localized: "insights.health.target"),
+            targetValue: String(localized: String.LocalizationValue(model.targetTextKey)),
+            progress: model.progress,
+            explanation: String(localized: String.LocalizationValue(model.explainerKey)),
+            recommendation: model.recommendation,
+            isMuted: model.isMuted
         )
-    }
-
-    // MARK: - Explainer
-
-    private var explainer: some View {
-        Text(String(localized: String.LocalizationValue(model.explainerKey)))
-            .font(AppTypography.bodySmall)
-            .foregroundStyle(AppColors.textSecondary)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    // MARK: - Recommendation
-
-    private var recommendationBox: some View {
-        RecommendationBox(text: model.recommendation, color: model.color)
     }
 }
 

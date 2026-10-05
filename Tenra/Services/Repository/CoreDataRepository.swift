@@ -31,9 +31,10 @@ nonisolated final class CoreDataRepository: DataRepositoryProtocol, @unchecked S
 
     // MARK: - Initialization
 
-    init() {
-        let stack = CoreDataStack.shared
-        let saveCoordinator = CoreDataSaveCoordinator()
+    /// `stack` is injectable so tests can run the real repository over an
+    /// in-memory container.
+    init(stack: CoreDataStack = CoreDataStack.shared) {
+        let saveCoordinator = CoreDataSaveCoordinator(stack: stack)
         self.stack = stack
         self.saveCoordinator = saveCoordinator
         self.transactionRepository = TransactionRepository(stack: stack, saveCoordinator: saveCoordinator)

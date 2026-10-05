@@ -7,6 +7,8 @@
 //  + score + grade capsule + grade-band subtitle. 2026-07 visual refresh:
 //  the full progress ring became a HeroHalfGauge — the score has a fixed
 //  0–100 scale with meaningful zone boundaries, which is gauge semantics.
+//  Adapter over DesignKit's `ScoreGaugeCard`: maps the score, its grade colour
+//  and the grade-band copy.
 //
 
 import SwiftUI
@@ -27,45 +29,16 @@ struct HealthScoreHeroCard: View {
     }
 
     var body: some View {
-        VStack(spacing: AppSpacing.lg) {
-            ZStack(alignment: .bottom) {
-                HeroHalfGauge(
-                    value: isAvailable ? Double(score.score) : 0,
-                    maxValue: 100,
-                    zoneTicks: [40, 70],
-                    color: score.gradeColor,
-                    diameter: 220,
-                    lineWidth: 16
-                )
-
-                // Score + grade sit inside the semicircle's interior.
-                VStack(spacing: AppSpacing.xs) {
-                    Text(isAvailable ? "\(score.score)" : "—")
-                        .font(AppTypography.h1.bold())
-                        .foregroundStyle(isAvailable ? score.gradeColor : AppColors.textTertiary)
-                        .materialize(delay: 0.35)
-
-                    Text(score.grade)
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(score.gradeColor)
-                        .padding(.horizontal, AppSpacing.md)
-                        .padding(.vertical, AppSpacing.xs)
-                        .background(score.gradeColor.opacity(0.12))
-                        .clipShape(Capsule())
-                        .materialize(delay: 0.45)
-                }
-            }
-
-            Text(String(localized: isAvailable
-                        ? String.LocalizationValue(gradeBandSubtitleKey)
-                        : "insights.health.unavailable.title"))
-                .font(AppTypography.bodyEmphasis)
-                .foregroundStyle(AppColors.textSecondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(AppSpacing.lg)
-        .cardStyle()
+        ScoreGaugeCard(
+            score: isAvailable ? score.score : nil,
+            maxScore: 100,
+            zoneTicks: [40, 70],
+            grade: score.grade,
+            color: score.gradeColor,
+            subtitle: String(localized: isAvailable
+                             ? String.LocalizationValue(gradeBandSubtitleKey)
+                             : "insights.health.unavailable.title")
+        )
     }
 }
 

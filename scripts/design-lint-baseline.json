@@ -1,0 +1,62 @@
+{
+  "Intents/Snippets/SpendingSummarySnippet.swift": {
+    "system-font": 2
+  },
+  "Intents/Snippets/TransactionConfirmationSnippet.swift": {
+    "system-font": 2
+  },
+  "Services/Core/LettermarkProvider.swift": {
+    "raw-color": 14
+  },
+  "Services/Insights/InsightsService+Forecasting.swift": {
+    "raw-color": 1
+  },
+  "TenraApp.swift": {
+    "raw-animation": 1
+  },
+  "Utils/CategoryFilterHelper.swift": {
+    "system-font": 1
+  },
+  "Views/CSV/CSVPreviewView.swift": {
+    "raw-padding": 1,
+    "raw-radius": 1
+  },
+  "Views/Components/Cards/TransactionCard.swift": {
+    "system-color": 1
+  },
+  "Views/Components/EntityDetail/EntityDetailScaffold.swift": {
+    "raw-animation": 1,
+    "raw-spacing": 1
+  },
+  "Views/Components/Feedback/AnimatedTranscriptionText.swift": {
+    "raw-spacing": 1
+  },
+  "Views/Components/Feedback/RatingSurveyView.swift": {
+    "raw-radius": 1,
+    "system-font": 5
+  },
+  "Views/History/HistoryView.swift": {
+    "system-font": 3
+  },
+  "Views/Insights/InsightDetailView.swift": {
+    "system-font": 1
+  },
+  "Views/Insights/InsightsView.swift": {
+    "raw-spacing": 1
+  },
+  "Views/Onboarding/OnboardingWelcomeStep.swift": {
+    "raw-animation": 1
+  },
+  "Views/Settings/CurrencyListContent.swift": {
+    "raw-spacing": 1
+  },
+  "Views/Settings/QuickAccessCurrencyPickerView.swift": {
+    "raw-spacing": 2
+  },
+  "Views/Settings/SettingsSiriSection.swift": {
+    "system-font": 1
+  },
+  "Views/VoiceInput/VoiceInputView.swift": {
+    "raw-animation": 2
+  }
+}

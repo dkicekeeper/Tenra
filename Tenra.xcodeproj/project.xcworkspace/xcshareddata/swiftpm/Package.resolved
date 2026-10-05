@@ -1,13 +1,13 @@
 {
-  "originHash" : "533de208f7207fdd36b99a2f0036707fca012c23defe0e4e99a820106aff336d",
+  "originHash" : "6e9c7ecf68240a64c78dd9e2a39f0f9d7851ef9966df2feed0a5ecccb4c1b2dc",
   "pins" : [
     {
       "identity" : "designkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dkicekeeper/DesignKit",
       "state" : {
-        "revision" : "8835c76e8bc7fae09807991e38f04ea021d97b98",
-        "version" : "0.3.0"
+        "revision" : "7d1ceefe9bf9a4a7363dc9811007195133cc039e",
+        "version" : "1.2.0"
       }
     },
     {

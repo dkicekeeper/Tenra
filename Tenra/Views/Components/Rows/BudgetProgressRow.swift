@@ -2,65 +2,30 @@
 //  BudgetProgressRow.swift
 //  Tenra
 //
-//  Full budget progress row: icon + name + LinearProgressBar + spent/budget amounts.
-//  Extracted from InsightDetailView.budgetChartSection — Phase 26.
+//  One row in the budget breakdown list: icon + name + progress bar + spent/budget amounts +
+//  remaining days. Adapter over DesignKit's `LimitProgressCard`.
 //
 
 import SwiftUI
 
-/// One row in the budget breakdown list.
-/// Shows category name, progress bar, spent vs budget amounts, and remaining days.
 struct BudgetProgressRow: View {
     let item: BudgetInsightItem
     let currency: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            // Icon + name + percentage
-            HStack {
-                IconView(
-                    source: item.iconSource,
-                    style: .circle(
-                        size: AppIconSize.xxl,
-                        tint: .monochrome(item.color),
-                        backgroundColor: item.color.opacity(0.15)
-                    )
-                )
-                Text(item.categoryName)
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
-                Spacer()
-                Text(String(format: "%.0f%%", item.percentage))
-                    .font(AppTypography.body)
-                    .foregroundStyle(item.isOverBudget ? AppColors.destructive : AppColors.textPrimary)
-            }
-
-            // Progress bar
-            LinearProgressBar(
-                percentage: item.percentage,
-                isOverBudget: item.isOverBudget,
-                color: item.color
-            )
-
-            // Spent / Budget / Days left
-            HStack {
-                SpentBudgetText(
-                    spent: item.spent,
-                    budget: item.budgetAmount,
-                    currency: currency,
-                    font: AppTypography.caption,
-                    separatorColor: AppColors.textTertiary
-                )
-                Spacer()
-                if item.daysRemaining > 0 {
-                    Text(String(format: String(localized: "insights.daysLeft"), item.daysRemaining))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textTertiary)
-                }
-            }
-        }
-        .padding(AppSpacing.lg)
-        .cardStyle(radius: AppRadius.xl)
+        LimitProgressCard(
+            iconSource: item.iconSource,
+            title: item.categoryName,
+            color: item.color,
+            spent: item.spent,
+            limit: item.budgetAmount,
+            currency: currency,
+            percentage: item.percentage,
+            isOverLimit: item.isOverBudget,
+            caption: item.daysRemaining > 0
+                ? String(format: String(localized: "insights.daysLeft"), item.daysRemaining)
+                : nil
+        )
     }
 }
 

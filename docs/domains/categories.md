@@ -125,6 +125,14 @@ suggested from history per merchant and category, see [import.md](import.md)).
 keyed by lowercased name alone, so an income and an expense category sharing a name collide and
 the tag would attach to the wrong one.
 
+⚠️ **Never link through `CategoriesViewModel` before `TransactionStore.hasCompletedInitialLoad`.**
+`saveTransactionSubcategoryLinks` replaces the whole table: it deletes every row not in the list it
+gets. Before the full load (a process launched only for an App Intent stops after
+`initializeFastPath()`) the in-memory link list is empty, so linking one transaction there would
+wipe every other transaction's subcategories. `TransactionDraftService.commit` checks the flag and
+inserts rows one at a time through [IntentSubcategoryStore](../../Tenra/Services/Intents/IntentSubcategoryStore.swift)
+instead; intent-side subcategory reads go to CoreData through the same helper.
+
 Selection is per category: clear `selectedSubcategoryIds` whenever the picked category (or the
 form's mode) changes. `CategoryCardSelectorView`/`CategorySelectorView` write the binding
 *before* invoking `onSelectionChange`, so a handler comparing the new value against the current

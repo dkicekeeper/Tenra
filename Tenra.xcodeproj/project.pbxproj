@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA0003002F477D4A0010A953 /* Inter-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001002F477D4A0010A953 /* Inter-VariableFont_opsz,wght.ttf */; };
-		AA0004002F477D4A0010A953 /* Inter-Italic-VariableFont_opsz,wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0002002F477D4A0010A953 /* Inter-Italic-VariableFont_opsz,wght.ttf */; };
 		D686A8C92FE1CCCF00A8B7D5 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = D686A8C82FE1CCCF00A8B7D5 /* RevenueCat */; };
 		D686A8CB2FE1CCCF00A8B7D5 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = D686A8CA2FE1CCCF00A8B7D5 /* RevenueCatUI */; };
 		D6DE51A32FF0A00100DE5100 /* DesignKit in Frameworks */ = {isa = PBXBuildFile; productRef = D6DE51A22FF0A00100DE5100 /* DesignKit */; };
@@ -32,8 +30,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		AA0001002F477D4A0010A953 /* Inter-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
-		AA0002002F477D4A0010A953 /* Inter-Italic-VariableFont_opsz,wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-Italic-VariableFont_opsz,wght.ttf"; sourceTree = "<group>"; };
 		D62A09912F0D7B0D004AF1FA /* Tenra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tenra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D62A099E2F0D7B0E004AF1FA /* TenraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D62A09A82F0D7B0E004AF1FA /* TenraUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenraUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -101,7 +97,6 @@
 		D62A09882F0D7B0D004AF1FA = {
 			isa = PBXGroup;
 			children = (
-				D69F99D72F477D4A0010A953 /* Fonts */,
 				D62A09932F0D7B0D004AF1FA /* Tenra */,
 				D62A09A12F0D7B0E004AF1FA /* TenraTests */,
 				D62A09AB2F0D7B0E004AF1FA /* TenraUITests */,
@@ -117,15 +112,6 @@
 				D62A09A82F0D7B0E004AF1FA /* TenraUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		D69F99D72F477D4A0010A953 /* Fonts */ = {
-			isa = PBXGroup;
-			children = (
-				AA0001002F477D4A0010A953 /* Inter-VariableFont_opsz,wght.ttf */,
-				AA0002002F477D4A0010A953 /* Inter-Italic-VariableFont_opsz,wght.ttf */,
-			);
-			path = Fonts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -265,8 +251,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA0003002F477D4A0010A953 /* Inter-VariableFont_opsz,wght.ttf in Resources */,
-				AA0004002F477D4A0010A953 /* Inter-Italic-VariableFont_opsz,wght.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -467,7 +451,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = dakacom.Tenra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -504,7 +488,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = dakacom.Tenra;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -526,7 +510,7 @@
 				DEVELOPMENT_TEAM = SY2L2VMQP7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = dakacom.TenraTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -548,7 +532,7 @@
 				DEVELOPMENT_TEAM = SY2L2VMQP7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = dakacom.TenraTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -569,7 +553,7 @@
 				DEVELOPMENT_TEAM = SY2L2VMQP7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = dakacom.TenraUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -590,7 +574,7 @@
 				DEVELOPMENT_TEAM = SY2L2VMQP7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = dakacom.TenraUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -658,7 +642,7 @@
 			repositoryURL = "https://github.com/dkicekeeper/DesignKit";
 			requirement = {
 				kind = exactVersion;
-				version = 0.3.0;
+				version = 1.2.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

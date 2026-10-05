@@ -228,15 +228,13 @@ struct AccountsManagementView: View {
                 accountsList(coordinator: coordinator)
                 #endif
             } else {
-                // balanceCoordinator not yet initialized — show loading state
-                VStack(spacing: AppSpacing.md) {
-                    ProgressView()
-                        .scaleEffect(1.2)
-                    Text(String(localized: "progress.loadingData"))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(.secondary)
+                // balanceCoordinator not yet initialized — skeleton rows in place of the list
+                VStack(spacing: 0) {
+                    ForEach(0..<4, id: \.self) { _ in SkeletonRow() }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .screenPadding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .accessibilityElement(children: .ignore)
                 .accessibilityLabel(String(localized: "progress.loadingAccounts"))
             }
         }

@@ -11,6 +11,17 @@ on:
   workflow_dispatch:
 
 jobs:
+  # No literal colours, fonts, spacing, radii or animations outside DesignKit tokens.
+  # Fails only on values beyond scripts/design-lint-baseline.json (CLAUDE.md, UI Components).
+  design-lint:
+    name: Design lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: No raw design values beyond the baseline
+        run: python3 scripts/design_lint.py
+
   build-and-test:
     runs-on: macos-26
     timeout-minutes: 60

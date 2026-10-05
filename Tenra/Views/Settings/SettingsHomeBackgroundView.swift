@@ -73,15 +73,14 @@ struct SettingsHomeBackgroundView: View {
             // Wallpaper-specific controls
             if currentMode == .wallpaper {
                 Section {
-                    Toggle(isOn: Binding(
-                        get: { blurWallpaper },
-                        set: { onBlurChange($0) }
-                    )) {
-                        Label(
-                            String(localized: "settings.background.blurWallpaper"),
-                            systemImage: "camera.filters"
+                    ToggleSettingsRow(
+                        icon: "camera.filters",
+                        title: String(localized: "settings.background.blurWallpaper"),
+                        isOn: Binding(
+                            get: { blurWallpaper },
+                            set: { onBlurChange($0) }
                         )
-                    }
+                    )
 
                     if wallpaperImage != nil {
                         UniversalRow(

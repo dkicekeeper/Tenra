@@ -2,29 +2,20 @@
 //  InsightTrendBadge.swift
 //  Tenra
 //
-//  Trend indicator badge for Insights cards and detail headers.
-//  Extracted from InsightsCardView (pill) and InsightDetailView (inline) — Phase 26.
+//  Trend indicator for Insights cards and detail headers. The badge itself is
+//  DesignKit's TrendBadge (0.4.0); this adapter maps InsightTrend onto it.
 //
 
 import SwiftUI
 
-/// Compact trend indicator displaying direction icon + percentage change.
+/// `InsightTrend` → DesignKit `TrendBadge` (direction icon + percentage change).
 ///
-/// Three styles:
-/// - `.pill` — colored semi-transparent Capsule background (InsightsCardView)
-/// - `.inline` — flat, no background (InsightDetailView header)
-/// - `.changeIndicator` — vertical VStack: icon above percentage (PeriodComparisonCard)
+/// Styles: `.pill` (InsightsCardView), `.inline` (InsightDetailView header),
+/// `.changeIndicator` (PeriodComparisonCard).
 struct InsightTrendBadge: View {
     let trend: InsightTrend
 
-    enum Style {
-        /// Colored capsule background.
-        case pill
-        /// Flat, no background.
-        case inline
-        /// Vertical layout: icon on top, percentage below. No background.
-        case changeIndicator
-    }
+    typealias Style = TrendBadge.Style
 
     var style: Style = .pill
 
@@ -32,57 +23,23 @@ struct InsightTrendBadge: View {
     /// (e.g., expense context where up = bad). Falls back to `trend.trendColor` when `nil`.
     var colorOverride: Color? = nil
 
-    private var effectiveColor: Color { colorOverride ?? trend.trendColor }
-
     var body: some View {
-        if style == .changeIndicator {
-            VStack(spacing: AppSpacing.xs) {
-                Image(systemName: trend.trendIcon)
-                if let percent = trend.changePercent {
-                    Text(String(format: "%+.1f%%", percent))
-                        .font(AppTypography.bodyEmphasis)
-                        .lineLimit(1)
-                }
-            }
-            .foregroundStyle(effectiveColor)
-        } else {
-            HStack(spacing: AppSpacing.xs) {
-                Image(systemName: trend.trendIcon)
-                    .font(AppTypography.bodyEmphasis)
-
-                if let percent = trend.changePercent {
-                    Text(String(format: "%+.1f%%", percent))
-                        .font(AppTypography.bodyEmphasis)
-                        .fontWeight(.semibold)
-                }
-            }
-            .lineLimit(1)
-            .foregroundStyle(effectiveColor)
-            .modifier(PillModifier(isActive: style == .pill, color: effectiveColor))
-            // Keep the pill's intrinsic width — never let a tight parent (e.g. the
-            // reserved mini-chart column) squeeze the icon+percent into a wrap.
-            // ViewThatFits then measures the true width and drops the badge to a
-            // second line instead of distorting it.
-            .fixedSize(horizontal: true, vertical: false)
-        }
+        TrendBadge(
+            direction: trend.direction.badgeDirection,
+            changePercent: trend.changePercent,
+            style: style,
+            color: colorOverride ?? trend.trendColor
+        )
     }
 }
 
-// MARK: - Pill modifier
-
-private struct PillModifier: ViewModifier {
-    let isActive: Bool
-    let color: Color
-
-    func body(content: Content) -> some View {
-        if isActive {
-            content
-                .padding(.horizontal, AppSpacing.sm)
-                .padding(.vertical, AppSpacing.xs)
-                .background(color.opacity(0.12))
-                .clipShape(Capsule())
-        } else {
-            content
+extension TrendDirection {
+    /// The matching DesignKit `TrendBadge` direction.
+    var badgeDirection: TrendBadge.Direction {
+        switch self {
+        case .up: return .up
+        case .down: return .down
+        case .flat: return .flat
         }
     }
 }

@@ -243,10 +243,16 @@ enum TransactionDraftService {
         let saved = try await store.add(transaction)
 
         if !saved.id.isEmpty, !draft.subcategoryIds.isEmpty {
-            categoriesViewModel.linkSubcategoriesToTransaction(
-                transactionId: saved.id,
-                subcategoryIds: draft.subcategoryIds
-            )
+            if store.hasCompletedInitialLoad {
+                categoriesViewModel.linkSubcategoriesToTransaction(
+                    transactionId: saved.id,
+                    subcategoryIds: draft.subcategoryIds
+                )
+            } else {
+                // Before the full load the in-memory link list is empty, and
+                // saving it would delete every other transaction's links.
+                hooks.linkSubcategoriesBeforeFullLoad(saved.id, draft.subcategoryIds)
+            }
         }
 
         // Only an account the user actually chose counts as a preference.

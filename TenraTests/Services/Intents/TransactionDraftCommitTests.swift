@@ -109,4 +109,61 @@ struct TransactionDraftCommitTests {
 
         #expect(harness.ratingCallCount == 1)
     }
+
+    @Test("Before the full load, subcategories are linked without the in-memory list")
+    func subcategoriesBeforeFullLoadBypassMemory() async throws {
+        // In a process launched only for an intent the in-memory link list is
+        // empty; saving it with the new link would delete every other link.
+        let harness = IntentTestHarness()
+        #expect(!harness.store.hasCompletedInitialLoad)
+        var draft = makeDraft()
+        draft.subcategoryIds = ["s-coffee"]
+
+        let saved = try await TransactionDraftService.commit(
+            draft,
+            store: harness.store,
+            categoriesViewModel: harness.categories,
+            hooks: harness.hooks
+        )
+
+        #expect(harness.directLinkCalls.count == 1)
+        #expect(harness.directLinkCalls.first?.transactionId == saved.id)
+        #expect(harness.directLinkCalls.first?.subcategoryIds == ["s-coffee"])
+        #expect(harness.categories.transactionSubcategoryLinks.isEmpty)
+        #expect(harness.store.transactionSubcategoryLinks.isEmpty)
+    }
+
+    @Test("After the full load, subcategories go through the in-memory links")
+    func subcategoriesAfterFullLoadUseMemory() async throws {
+        let harness = IntentTestHarness()
+        harness.store.hasCompletedInitialLoad = true
+        var draft = makeDraft()
+        draft.subcategoryIds = ["s-coffee"]
+
+        let saved = try await TransactionDraftService.commit(
+            draft,
+            store: harness.store,
+            categoriesViewModel: harness.categories,
+            hooks: harness.hooks
+        )
+
+        #expect(harness.directLinkCalls.isEmpty)
+        #expect(harness.categories.transactionSubcategoryLinks.contains {
+            $0.transactionId == saved.id && $0.subcategoryId == "s-coffee"
+        })
+    }
+
+    @Test("Without subcategories nothing is linked either way")
+    func noSubcategoriesNoLinks() async throws {
+        let harness = IntentTestHarness()
+        _ = try await TransactionDraftService.commit(
+            makeDraft(),
+            store: harness.store,
+            categoriesViewModel: harness.categories,
+            hooks: harness.hooks
+        )
+
+        #expect(harness.directLinkCalls.isEmpty)
+        #expect(harness.categories.transactionSubcategoryLinks.isEmpty)
+    }
 }

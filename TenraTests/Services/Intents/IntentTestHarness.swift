@@ -22,6 +22,7 @@ final class IntentTestHarness {
 
     private(set) var learningCalls: [(category: String?, accountId: String?)] = []
     private(set) var ratingCallCount = 0
+    private(set) var directLinkCalls: [(transactionId: String, subcategoryIds: [String])] = []
 
     var hooks: CommitHooks {
         CommitHooks(
@@ -30,6 +31,9 @@ final class IntentTestHarness {
             },
             recordRating: { [weak self] in
                 self?.ratingCallCount += 1
+            },
+            linkSubcategoriesBeforeFullLoad: { [weak self] transactionId, subcategoryIds in
+                self?.directLinkCalls.append((transactionId, subcategoryIds))
             }
         )
     }

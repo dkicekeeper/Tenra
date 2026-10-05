@@ -17,6 +17,24 @@
 5. Keep logging manually: the probe saves nothing.
 6. Open Settings → Experiments → **Wallet probe (local only)**, select the text of the entries and send it (or fill the sections below).
 
+## Shipped meanwhile: category memory in `AddExpenseIntent` (2026-10-05)
+
+The maintainer runs a real Wallet automation on `AddExpenseIntent` (not the probe), so the
+"asked for a category on every payment" friction was fixed ahead of the recommendation:
+
+- Automation setup: Amount ← Amount, **Note ← Merchant**, Account fixed, **Category left empty**
+  (not "Ask Each Time": that prompt comes from Shortcuts before `perform()` runs, so the app cannot skip it).
+- With no category and a merchant note, the category and subcategory come from `MerchantCategoryMemory`
+  (`Services/Categories/MerchantCategoryMemory.swift`: normalized merchant → category id + subcategory ids, UserDefaults).
+  An unknown merchant is asked once via `$category.requestValue`, then, if that category has
+  subcategories, via `$subcategory.requestDisambiguation` (first option "No subcategory"); the answers
+  are remembered after the save.
+- A category passed by the automation is remembered too; changing the category or subcategory of such a
+  transaction in the app (`TransactionEditCoordinator`) corrects an already remembered merchant.
+- Subcategory links from a cold intent process go straight to CoreData (`IntentSubcategoryStore`),
+  see docs/domains/categories.md §Subcategory tagging surfaces.
+- A remembered category resolves exactly, so with a fixed Account the payment saves without any prompt.
+
 ## Setup used
 
 - iOS version:

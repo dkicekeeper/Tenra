@@ -135,6 +135,13 @@ struct SettingsView: View {
                 }
             }
         }
+        // Here, not on exportImportSection: that view is a multi-row Section, and in
+        // a List a modifier on it is copied onto every row. Two presenters on one
+        // binding opened the paywall and dropped it at once.
+        .paywallSheet(isPresented: $showingImportPaywall) {
+            // After unlocking Pro, continue straight into the import picker.
+            showingImportPicker = true
+        }
         .task {
             // Load wallpaper on view appear
             await settingsViewModel.loadInitialData()
@@ -197,10 +204,6 @@ struct SettingsView: View {
                 }
             }
         )
-        .paywallSheet(isPresented: $showingImportPaywall) {
-            // After unlocking Pro, continue straight into the import picker.
-            showingImportPicker = true
-        }
     }
 
     // MARK: - Notifications Section

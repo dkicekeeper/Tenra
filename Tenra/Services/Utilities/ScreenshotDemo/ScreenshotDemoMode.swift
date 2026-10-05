@@ -57,9 +57,11 @@ enum ScreenshotDemoMode {
         defaults.set(true, forKey: "tenra.premium.isFounder.v1")
 
         // Home budgets/summary read best with a month window (budget rings show
-        // progress); .allTime is the migration default otherwise.
+        // progress); .allTime is the migration default otherwise. The previous,
+        // complete month rather than .thisMonth, so a capture early in the month
+        // doesn't show mostly-empty rings (.last30Days would hide budgets entirely).
         defaults.set(true, forKey: "timeFilterMigrationV1")
-        if let filterData = try? JSONEncoder().encode(TimeFilter(preset: .thisMonth)) {
+        if let filterData = try? JSONEncoder().encode(TimeFilter(preset: .lastMonth)) {
             defaults.set(filterData, forKey: "timeFilter")
         }
 

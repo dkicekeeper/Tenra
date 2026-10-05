@@ -10,12 +10,16 @@
 # Usage:
 #   ./scripts/capture_screenshots.sh            # all locales
 #   ONLY=de-DE ./scripts/capture_screenshots.sh # single locale
-#   SIM_NAME="iPhone 17 Pro" ./scripts/capture_screenshots.sh
+#   SIM_NAME="iPhone 17 Pro" SIM_OS=26.5 ./scripts/capture_screenshots.sh
+#
+# SIM_OS is required since Xcode 27: a bare name implies the newest OS, and
+# iPhone 17 Pro only exists on 26.5. Store shots stay on the public iOS.
 #
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
 SIM_NAME="${SIM_NAME:-iPhone 17 Pro}"
+SIM_OS="${SIM_OS:-26.5}"
 OUT_ROOT="screenshots/raw"
 RESULTS_ROOT="build/screenshot-results"
 BUNDLE_ID="dakacom.Tenra"
@@ -67,7 +71,7 @@ for entry in "${LOCALES[@]}"; do
   TEST_RUNNER_SCREENSHOT_DEMO_CURRENCY="$currency" \
   xcodebuild test \
     -scheme Tenra \
-    -destination "platform=iOS Simulator,name=$SIM_NAME" \
+    -destination "platform=iOS Simulator,name=$SIM_NAME,OS=$SIM_OS" \
     -only-testing:TenraUITests/ScreenshotCaptureTests \
     -parallel-testing-enabled NO \
     -resultBundlePath "$result_bundle" \

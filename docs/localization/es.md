@@ -200,8 +200,8 @@ depósito, transferencia, deuda, saldo, comisión, tarjeta — одинаков�
 | 4 | Финансовый скор | Tu salud financiera en un número | Ahorros, presupuestos y colchón en una puntuación clara |
 | 5 | Топ категория | Descubre tus mayores gastos | Categorías de gasto con un desglose claro mes a mes |
 | 6 | История | Cada movimiento bajo control | Gastos, ingresos e intereses de depósitos — en una sola lista |
-| 7 | Голос | 🇪🇸 Añade gastos con tu voz / 🇲🇽 Agrega gastos con tu voz | — |
-| 8 | Мультивалютность | 🇪🇸 EUR, USD, GBP — un total real / 🇲🇽 MXN, USD, EUR — un total real | — |
+| 7 | Голос | 🇪🇸 Añade gastos con tu voz / 🇲🇽 Agrega gastos con tu voz | 🇪🇸 Di el importe y la categoría, y queda registrado / 🇲🇽 Di el monto y la categoría, y queda registrado |
+| 8 | Мультивалютность | 🇪🇸 EUR, USD, GBP: un total real / 🇲🇽 MXN, USD, EUR: un total real | 🇪🇸 Cuentas en varias divisas, un saldo total en tu moneda / 🇲🇽 Cuentas en varias monedas, un saldo total en tu moneda |
 
 Примечание к №7: «añadir» в Мексике понятно, но «agregar» — узус; разница в одном слове,
 дешёвая и заметная нейтиву. К №5 для es-MX опционально A/B: подзаголовок

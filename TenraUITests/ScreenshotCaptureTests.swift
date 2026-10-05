@@ -90,6 +90,13 @@ final class ScreenshotCaptureTests: XCTestCase {
         XCTAssertTrue(topCategoryCard.exists, "Top-spending insight card not found")
         topCategoryCard.tap()
         sleep(2)
+        // The current month is partial (one rent payment dominates early in the
+        // month), so show the previous, complete month.
+        let previousPeriod = app.buttons["insightDetail.previousPeriod"].firstMatch
+        if previousPeriod.waitForExistence(timeout: 5) && previousPeriod.isEnabled {
+            previousPeriod.tap()
+            sleep(2)
+        }
         snap("05-top-category")
         goBack()
 

@@ -476,6 +476,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
         .buttonStyle(.plain)
         .foregroundStyle(enabled ? AppColors.accent : AppColors.textTertiary)
         .disabled(!enabled)
+        .accessibilityIdentifier(delta < 0 ? "insightDetail.previousPeriod" : "insightDetail.nextPeriod")
     }
 
     private func step(_ delta: Int) {

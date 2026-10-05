@@ -671,11 +671,15 @@ struct LoanDetailView: View {
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.textSecondary)
             } else {
-                ForEach(displayedEntries) { entry in
-                    AmortizationScheduleRow(entry: entry, currency: account.currency)
-                        .contextMenu {
-                            scheduleRowMenu(entry: entry, accountId: account.id)
-                        }
+                // Rows pad themselves vertically (DesignKit's row rule); `sm` between them, as in
+                // the other row lists in cards.
+                VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                    ForEach(displayedEntries) { entry in
+                        AmortizationScheduleRow(entry: entry, currency: account.currency)
+                            .contextMenu {
+                                scheduleRowMenu(entry: entry, accountId: account.id)
+                            }
+                    }
                 }
 
                 if schedule.count > 6 && !showFullSchedule {

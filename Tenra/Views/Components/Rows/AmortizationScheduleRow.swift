@@ -2,9 +2,9 @@
 //  AmortizationScheduleRow.swift
 //  Tenra
 //
-//  Reusable row for a single loan amortization-schedule entry: payment number
-//  + date on the left, payment amount (and interest portion, if any) on the
-//  right, and a paid/upcoming indicator. Unpaid rows are dimmed.
+//  One loan amortization-schedule entry: payment number + date, payment amount (and the
+//  interest portion, if any), a paid/upcoming indicator; unpaid rows are dimmed. Adapter
+//  over DesignKit's `ScheduleRow`.
 //
 
 import SwiftUI
@@ -14,43 +14,25 @@ struct AmortizationScheduleRow: View {
     let currency: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppSpacing.md) {
-            Image(systemName: entry.isPaid ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: AppIconSize.lg))
-                .foregroundStyle(entry.isPaid ? AppColors.income : AppColors.textSecondary)
-            
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text("#\(entry.paymentNumber)")
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
-                Text(DateFormatters.displayString(from: entry.date))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
+        ScheduleRow(
+            title: "#\(entry.paymentNumber)",
+            subtitle: DateFormatters.displayString(from: entry.date),
+            amount: NSDecimalNumber(decimal: entry.payment).doubleValue,
+            currency: currency,
+            detail: interestText,
+            isDone: entry.isPaid
+        )
+    }
 
-            Spacer(minLength: AppSpacing.sm)
-
-            VStack(alignment: .trailing, spacing: AppSpacing.xs) {
-                FormattedAmountText(
-                    amount: NSDecimalNumber(decimal: entry.payment).doubleValue,
-                    currency: currency,
-                    fontSize: AppTypography.bodyEmphasis
-                )
-                if entry.interest > 0 {
-                    Text(String(
-                        format: String(localized: "loan.interestShort", defaultValue: "int: %@"),
-                        Formatting.formatCurrencySmart(
-                            NSDecimalNumber(decimal: entry.interest).doubleValue,
-                            currency: currency
-                        )
-                    ))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.expense)
-                }
-            }
-        }
-        .futureTransactionStyle(isFuture: !entry.isPaid)
-        .accessibilityElement(children: .combine)
+    private var interestText: String? {
+        guard entry.interest > 0 else { return nil }
+        return String(
+            format: String(localized: "loan.interestShort", defaultValue: "int: %@"),
+            Formatting.formatCurrencySmart(
+                NSDecimalNumber(decimal: entry.interest).doubleValue,
+                currency: currency
+            )
+        )
     }
 }
 

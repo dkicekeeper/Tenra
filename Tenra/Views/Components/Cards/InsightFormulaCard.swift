@@ -2,9 +2,10 @@
 //  InsightFormulaCard.swift
 //  Tenra
 //
-//  Reusable detail card for insights with formula-style breakdown.
-//  Mirrors HealthComponentCard's visual language: header → hero value →
-//  formula rows → explainer → recommendation.
+//  Detail card for insights with a formula-style breakdown: header → hero value →
+//  formula rows → explainer → recommendation. Adapter over DesignKit's `CalculationCard`:
+//  the formula model, its localization keys and value formats are Tenra's; the card is
+//  DesignKit's.
 //
 
 import SwiftUI
@@ -16,95 +17,35 @@ struct InsightFormulaCard: View {
     var showsHero: Bool = true
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.lg) {
-            headerRow
-            if showsHero {
-                heroRow
-            }
-            formulaSection
-            explainer
-            recommendationBox
-        }
-        .padding(AppSpacing.lg)
-        .cardStyle()
+        CalculationCard(
+            systemImage: model.icon,
+            color: model.color,
+            // Static "How it's calculated": the metric name is already the navigation
+            // title of the detail screen; repeating it here read as a duplicate.
+            title: String(localized: "insights.formula.howCalculated"),
+            heroLabel: String(localized: String.LocalizationValue(model.heroLabelKey)),
+            heroValue: showsHero ? model.heroValueText : nil,
+            rows: model.formulaRows.map { calculationRow($0) },
+            explanation: String(localized: String.LocalizationValue(model.explainerKey)),
+            recommendation: model.recommendation
+        )
     }
 
-    // MARK: - Header
-
-    private var headerRow: some View {
-        HStack(spacing: AppSpacing.md) {
-            Image(systemName: model.icon)
-                .font(.system(size: AppIconSize.md))
-                .foregroundStyle(model.color)
-                .frame(width: 28)
-
-            // Static "How it's calculated" — the metric name is already the
-            // navigation title of the detail screen; repeating it here
-            // (model.titleKey) read as a duplicate.
-            Text(String(localized: "insights.formula.howCalculated"))
-                .font(AppTypography.bodyEmphasis)
-                .foregroundStyle(AppColors.textPrimary)
-
-            Spacer()
+    private func calculationRow(_ row: InsightFormulaRow) -> CalculationCard.Row {
+        // Currency rows go through FormattedAmountText (inside the card); the other kinds
+        // are formatted here.
+        let value: CalculationCard.Row.Value
+        if case .currency = row.kind {
+            value = .amount(row.value, currency: model.baseCurrency)
+        } else {
+            value = .text(formattedValue(row))
         }
-    }
-
-    // MARK: - Hero value
-
-    private var heroRow: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text(String(localized: String.LocalizationValue(model.heroLabelKey)))
-                .font(AppTypography.body)
-                .foregroundStyle(AppColors.textSecondary)
-            Text(model.heroValueText)
-                .font(AppTypography.h1.bold())
-                .foregroundStyle(AppColors.textPrimary)
-        }
-        .padding(.vertical, AppSpacing.md)
-    }
-
-    // MARK: - Formula breakdown
-
-    // No section sub-header here: the card title is already the static
-    // "How it's calculated" — `model.formulaHeaderKey` duplicated it in gray.
-    private var formulaSection: some View {
-        VStack(spacing: AppSpacing.xs) {
-            ForEach(model.formulaRows) { row in
-                formulaRow(row)
-                if row.id != model.formulaRows.last?.id {
-                    Divider().opacity(0.4)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func formulaRow(_ row: InsightFormulaRow) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(row.labelText ?? String(localized: String.LocalizationValue(row.labelKey)))
-                .font(row.isEmphasised ? AppTypography.bodyEmphasis : AppTypography.body)
-                .foregroundStyle(row.isEmphasised ? AppColors.textPrimary : AppColors.textSecondary)
-            Spacer()
-            // Currency rows go through the design-system formatter (FormattedAmountText)
-            // so symbol, grouping separators, and decimals match the rest of the app.
-            // Non-currency rows render the formatted value as a plain Text.
-            if case .currency = row.kind {
-                FormattedAmountText(
-                    amount: row.value,
-                    currency: model.baseCurrency,
-                    fontSize: row.isEmphasised ? AppTypography.bodyEmphasis : AppTypography.body,
-                    fontWeight: row.isEmphasised ? .bold : .semibold,
-                    color: row.isEmphasised ? model.color : AppColors.textPrimary
-                )
-            } else {
-                Text(formattedValue(row))
-                    .font(row.isEmphasised ? AppTypography.bodyEmphasis : AppTypography.body)
-                    .fontWeight(row.isEmphasised ? .bold : .semibold)
-                    .foregroundStyle(row.isEmphasised ? model.color : AppColors.textPrimary)
-                    .monospacedDigit()
-            }
-        }
-        .padding(.vertical, AppSpacing.xs)
+        return CalculationCard.Row(
+            id: row.id,
+            label: row.labelText ?? String(localized: String.LocalizationValue(row.labelKey)),
+            value: value,
+            isEmphasised: row.isEmphasised
+        )
     }
 
     private func formattedValue(_ row: InsightFormulaRow) -> String {
@@ -120,21 +61,6 @@ struct InsightFormulaCard: View {
         case .rawText(let s):
             return s
         }
-    }
-
-    // MARK: - Explainer
-
-    private var explainer: some View {
-        Text(String(localized: String.LocalizationValue(model.explainerKey)))
-            .font(AppTypography.bodySmall)
-            .foregroundStyle(AppColors.textSecondary)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    // MARK: - Recommendation
-
-    private var recommendationBox: some View {
-        RecommendationBox(text: model.recommendation, color: model.color)       
     }
 }
 

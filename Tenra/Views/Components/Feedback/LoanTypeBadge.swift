@@ -2,8 +2,8 @@
 //  LoanTypeBadge.swift
 //  Tenra
 //
-//  Capsule badge displaying loan type (Credit / Installment)
-//  with a tinted background color.
+//  Capsule badge displaying loan type (Credit / Installment) or "Paid off".
+//  Adapter over DesignKit's `BadgeView` (tinted): maps the loan type to its label and colour.
 //
 
 import SwiftUI
@@ -30,12 +30,6 @@ struct LoanTypeBadge: View {
     }
 
     var body: some View {
-        Text(label)
-            .font(AppTypography.bodySmall)
-            .foregroundStyle(isPaidOff ? AppColors.income : Color.primary)
-            .padding(.horizontal, AppSpacing.sm)
-            .padding(.vertical, AppSpacing.xs)
-            .background(tint.opacity(0.15))
-            .clipShape(Capsule())
+        BadgeView(label, color: tint)
     }
 }

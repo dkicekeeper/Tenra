@@ -39,7 +39,6 @@ struct SettingsProSection: View {
                 restorePurchasesRow
             }
         }
-        .paywallSheet(isPresented: $showingPaywall)
     }
 
     // MARK: - Free: purchase CTA + restore
@@ -66,6 +65,10 @@ struct SettingsProSection: View {
             HapticManager.light()
             showingPaywall = true
         }
+        // On this row, not on the Section: in a List a modifier on a Section is
+        // copied onto each of its rows, and two presenters on one binding (the
+        // free state has two rows) opened the paywall and dropped it at once.
+        .paywallSheet(isPresented: $showingPaywall)
     }
 
     private var restorePurchasesRow: some View {

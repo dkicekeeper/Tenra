@@ -2,7 +2,8 @@
 //  SubscriptionCard.swift
 //  Tenra
 //
-//  Reusable subscription card component
+//  Subscription card. Adapter over DesignKit's `RecurringPaymentCard`: maps the
+//  recurring series and its next-charge copy.
 //
 
 import SwiftUI
@@ -22,58 +23,19 @@ struct SubscriptionCard: View, Equatable {
     }
 
     var body: some View {
-        HStack(spacing: AppSpacing.md) {
-            IconView(
-                source: subscription.iconSource,
-                size: AppIconSize.xxl
-            )
-
-            // Info
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text(subscription.description)
-                    .font(AppTypography.bodyEmphasis)
-
-                FormattedAmountText(
-                    amount: NSDecimalNumber(decimal: subscription.amount).doubleValue,
-                    currency: subscription.currency,
-                    fontSize: AppTypography.body,
-                    color: .secondary
-                )
-
-                if !baseCurrency.isEmpty, subscription.currency != baseCurrency {
-                    ConvertedAmountView(
-                        amount: NSDecimalNumber(decimal: subscription.amount).doubleValue,
-                        fromCurrency: subscription.currency,
-                        toCurrency: baseCurrency,
-                        fontSize: AppTypography.caption,
-                        color: .secondary.opacity(0.7)
-                    )
-                }
-
-                if let nextChargeDate = nextChargeDate {
-                    Text(String(format: String(localized: "subscriptions.nextChargeOn"), formatDate(nextChargeDate)))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            
-            Spacer()
-            
-            // Status indicator
-            statusIndicator
-        }
-        .padding(AppSpacing.lg)
-        .cardStyle()
-        .accessibilityElement(children: .combine)
+        RecurringPaymentCard(
+            iconSource: subscription.iconSource,
+            title: subscription.description,
+            amount: NSDecimalNumber(decimal: subscription.amount).doubleValue,
+            currency: subscription.currency,
+            baseCurrency: baseCurrency,
+            caption: nextChargeDate.map {
+                String(format: String(localized: "subscriptions.nextChargeOn"), formatDate($0))
+            },
+            status: subscription.entityStatus
+        )
     }
-    
-    @ViewBuilder
-    private var statusIndicator: some View {
-        if let entityStatus = subscription.entityStatus {
-            StatusIndicatorBadge(status: entityStatus, font: AppTypography.h4)
-        }
-    }
-    
+
     private func formatDate(_ date: Date) -> String {
         DateFormatters.displayDateOmittingCurrentYear(date)
     }

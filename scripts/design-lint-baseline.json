@@ -24,9 +24,6 @@
   "Views/Components/Cards/TransactionCard.swift": {
     "system-color": 1
   },
-  "Views/Components/Cards/TransactionsSummaryCard.swift": {
-    "raw-radius": 1
-  },
   "Views/Components/EntityDetail/EntityDetailScaffold.swift": {
     "raw-animation": 1,
     "raw-spacing": 1

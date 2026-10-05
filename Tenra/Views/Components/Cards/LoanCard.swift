@@ -3,7 +3,8 @@
 //  Tenra
 //
 //  Card displaying loan summary: icon, name, bank, type badge,
-//  progress bar, next payment date, and remaining count.
+//  progress bar, next payment date, and remaining count. Adapter over DesignKit's
+//  `PayoffProgressCard`: the payment maths, the copy and `LoanTypeBadge` stay here.
 //
 
 import SwiftUI
@@ -18,83 +19,27 @@ struct LoanCard: View {
             let nextDate = isPaidOff ? nil : LoanPaymentService.nextPaymentDate(loanInfo: loanInfo)
             let remaining = LoanPaymentService.remainingPayments(loanInfo: loanInfo)
 
-            VStack(alignment: .leading, spacing: AppSpacing.md) {
-                // Header: icon + name + bank + type badge
-                HStack(alignment: .top) {
-                    IconView(source: loan.iconSource, size: AppIconSize.xxl)
-
-                    VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                        Text(loan.name)
-                            .font(AppTypography.h4)
-                        Text(loanInfo.bankName)
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
-                    }
-
-                    Spacer()
-
-                    LoanTypeBadge(loanType: loanInfo.loanType, isPaidOff: isPaidOff)
-                }
-
-                // Progress
-                VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                    HStack {
-                        FormattedAmountText(
-                            amount: NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue,
-                            currency: loan.currency,
-                            fontSize: AppTypography.body,
-                            fontWeight: .regular,
-                            color: AppColors.textSecondary
+            PayoffProgressCard(
+                iconSource: loan.iconSource,
+                title: loan.name,
+                subtitle: loanInfo.bankName,
+                remaining: NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue,
+                total: NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue,
+                currency: loan.currency,
+                progress: progress,
+                // A closed loan has no next payment or count: it shows when it was paid off.
+                phase: isPaidOff
+                    ? .done(caption: closedFooterText(loanInfo: loanInfo))
+                    : .inProgress(
+                        nextDate: nextDate.map { DateFormatters.displayDateFormatter.string(from: $0) },
+                        remainingCaption: String(
+                            format: String(localized: "loan.remainingShort", defaultValue: "%d left"),
+                            remaining
                         )
-                        Spacer()
-                        FormattedAmountText(
-                            amount: NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue,
-                            currency: loan.currency,
-                            fontSize: AppTypography.body,
-                            fontWeight: .regular,
-                            color: AppColors.textSecondary
-                        )
-                    }
-                    ProgressView(value: progress)
-                        .tint(AppColors.income)
-                        .accessibilityValue(String(format: "%.0f%%", progress * 100))
-                }
-
-                // Footer: next payment + remaining. A closed loan has neither — it shows
-                // when it was paid off instead.
-                HStack {
-                    if isPaidOff {
-                        HStack(spacing: AppSpacing.xs) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(AppTypography.bodySmall)
-                                .foregroundStyle(AppColors.income)
-                            Text(closedFooterText(loanInfo: loanInfo))
-                                .font(AppTypography.bodySmall)
-                                .foregroundStyle(AppColors.textSecondary)
-                        }
-                        Spacer()
-                    } else {
-                        if let nextDate = nextDate {
-                            HStack(spacing: AppSpacing.xs) {
-                                Image(systemName: "calendar")
-                                    .font(AppTypography.bodySmall)
-                                    .foregroundStyle(AppColors.textSecondary)
-                                Text(DateFormatters.displayDateFormatter.string(from: nextDate))
-                                    .font(AppTypography.bodySmall)
-                                    .foregroundStyle(AppColors.textSecondary)
-                            }
-                        }
-
-                        Spacer()
-
-                        Text(String(format: String(localized: "loan.remainingShort", defaultValue: "%d left"), remaining))
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
-                    }
-                }
+                    )
+            ) {
+                LoanTypeBadge(loanType: loanInfo.loanType, isPaidOff: isPaidOff)
             }
-            .padding(AppSpacing.lg)
-            .cardStyle()
         }
     }
 

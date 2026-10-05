@@ -1632,6 +1632,7 @@
 "intent.addExpense.confirm" = "この支出を追加しますか？";
 "intent.addExpense.openingApp" = "Tenra を開きます。続きを入力してください。";
 "intent.addExpense.saved" = "追加しました: %1$@、%2$@。";
+"intent.addExpense.askCategory" = "%@ のカテゴリは？Tenra が覚えておきます。";
 "intent.entity.account" = "口座";
 "intent.entity.category" = "カテゴリ";
 "intent.checkSpending.title" = "支出を確認";

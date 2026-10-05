@@ -9,6 +9,10 @@
 //  specified call from an automation must not stop and ask, or automations
 //  become unusable.
 //
+//  Category memory: with no category but a merchant in the note (the Wallet
+//  automation), the category comes from MerchantCategoryMemory; an unknown
+//  merchant is asked about once, and the answer is remembered.
+//
 
 import AppIntents
 import CoreData
@@ -42,13 +46,36 @@ struct AddExpenseIntent: AppIntent {
 
         let services = await IntentEnvironment.shared.services()
 
+        // Category: the one passed in, else the one the user chose for this
+        // merchant before, else ask once and remember the answer. The Wallet
+        // automation passes the merchant as the note; without a usable note the
+        // old behavior stands ("Other", marked as a guess in the confirmation).
+        var chosenCategory = category
+        if chosenCategory == nil, let note, MerchantCategoryMemory.key(forMerchant: note) != nil {
+            if let remembered = MerchantCategoryMemory.shared.category(
+                forMerchant: note,
+                in: services.categories.customCategories
+            ) {
+                chosenCategory = CategoryAppEntity(id: remembered.id, name: remembered.name)
+            } else {
+                let question = String(
+                    format: String(localized: "intent.addExpense.askCategory"),
+                    note.trimmingCharacters(in: .whitespacesAndNewlines)
+                )
+                let picked: CategoryAppEntity? = try await $category.requestValue(
+                    IntentDialog(stringLiteral: question)
+                )
+                chosenCategory = picked
+            }
+        }
+
         let operation = ParsedOperation(
             type: .expense,
             amount: Decimal(amount),
             currencyCode: account?.currency,
             date: Date(),
             accountId: account?.id,
-            categoryName: category?.name,
+            categoryName: chosenCategory?.name,
             subcategoryNames: [],
             note: note ?? ""
         )
@@ -104,6 +131,12 @@ struct AddExpenseIntent: AppIntent {
                 categoriesViewModel: services.categories
             )
             IntentUsageCounters.shared.record(.intentAdd)
+
+            // Remembered only once the expense is saved with exactly that
+            // category, so a cancelled run or a substituted name teaches nothing.
+            if let chosenCategory, let note, draft.categoryName == chosenCategory.name {
+                MerchantCategoryMemory.shared.remember(categoryId: chosenCategory.id, forMerchant: note)
+            }
 
             let amountText = Formatting.formatCurrencySmart(
                 draft.amount,

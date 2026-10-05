@@ -1632,6 +1632,7 @@
 "intent.addExpense.confirm" = "Adicionar esta despesa?";
 "intent.addExpense.openingApp" = "Abrindo o Tenra para você concluir.";
 "intent.addExpense.saved" = "Adicionado: %1$@, %2$@.";
+"intent.addExpense.askCategory" = "Qual categoria para %@? O Tenra vai lembrar.";
 "intent.entity.account" = "Conta";
 "intent.entity.category" = "Categoria";
 "intent.checkSpending.title" = "Ver gastos";

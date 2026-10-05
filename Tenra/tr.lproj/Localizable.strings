@@ -1632,6 +1632,7 @@
 "intent.addExpense.confirm" = "Bu gider eklensin mi?";
 "intent.addExpense.openingApp" = "Tamamlayabilmeniz için Tenra açılıyor.";
 "intent.addExpense.saved" = "Eklendi: %1$@, %2$@.";
+"intent.addExpense.askCategory" = "%@ için hangi kategori? Tenra bunu hatırlayacak.";
 "intent.entity.account" = "Hesap";
 "intent.entity.category" = "Kategori";
 "intent.checkSpending.title" = "Harcamaları kontrol et";

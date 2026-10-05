@@ -1632,6 +1632,7 @@
 "intent.addExpense.confirm" = "Diese Ausgabe hinzufügen?";
 "intent.addExpense.openingApp" = "Tenra wird geöffnet, damit Sie das abschließen können.";
 "intent.addExpense.saved" = "Hinzugefügt: %1$@, %2$@.";
+"intent.addExpense.askCategory" = "Welche Kategorie für %@? Tenra merkt sie sich.";
 "intent.entity.account" = "Konto";
 "intent.entity.category" = "Kategorie";
 "intent.checkSpending.title" = "Ausgaben prüfen";

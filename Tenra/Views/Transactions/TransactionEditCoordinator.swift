@@ -318,6 +318,19 @@ final class TransactionEditCoordinator {
                 subcategoryIds: Array(formData.selectedSubcategoryIds)
             )
 
+            // A category fixed here also fixes what the Wallet automation
+            // will pick next time for this merchant.
+            if transaction.type == .expense,
+               updatedTransaction.category != transaction.category,
+               let newCategoryId = categoriesViewModel.customCategories
+                   .first(where: { $0.type == .expense && $0.name == updatedTransaction.category })?.id {
+                MerchantCategoryMemory.shared.correct(
+                    categoryId: newCategoryId,
+                    // The original text: that is what the automation sends again.
+                    forMerchant: transaction.description
+                )
+            }
+
             HapticManager.success()
             if let proposal = await makeBulkCategoryProposal(saved: updatedTransaction) {
                 pendingSuccess = onSuccess

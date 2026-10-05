@@ -127,43 +127,53 @@ final class OnboardingViewModel {
         defer { isFinishing = false }
 
         // Account — deferred from Step 2 so that skipping any step creates nothing.
-        // Only the final "Done" tap persists the drafted account.
+        // Only the final "Done" tap persists the drafted account. Built the same way
+        // as AccountsViewModel.addAccount.
         let trimmedName = draftAccount.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmedName.isEmpty {
-            await coordinator.accountsViewModel.addAccount(
-                name: trimmedName,
-                initialBalance: draftAccount.balance,
-                currency: draftCurrency,
-                iconSource: draftAccount.iconSource,
-                shouldCalculateFromTransactions: false
-            )
-        }
+        let account: Account? = trimmedName.isEmpty ? nil : Account(
+            name: trimmedName,
+            currency: draftCurrency,
+            iconSource: draftAccount.iconSource,
+            shouldCalculateFromTransactions: false,
+            initialBalance: draftAccount.balance,
+            includeInBalance: true
+        )
 
-        for selectable in draftCategories where selectable.isSelected {
-            let preset = selectable.preset
-            let category = CustomCategory(
+        var categories: [CustomCategory] = draftCategories
+            .filter(\.isSelected)
+            .map { selectable in
+                let preset = selectable.preset
+                return CustomCategory(
+                    name: String(localized: String.LocalizationValue(preset.nameKey)),
+                    iconSource: preset.iconSource,
+                    colorHex: preset.colorHex,
+                    type: preset.type
+                )
+            }
+
+        // Income categories are not offered in the grid; create them so the first
+        // income can be recorded right away. An existing one (onboarding re-run) is
+        // skipped by the store's name + type dedupe.
+        categories += CategoryPreset.defaultIncome.map { preset in
+            CustomCategory(
                 name: String(localized: String.LocalizationValue(preset.nameKey)),
                 iconSource: preset.iconSource,
                 colorHex: preset.colorHex,
                 type: preset.type
             )
-            coordinator.categoriesViewModel.addCategory(category)
         }
 
-        // Income categories are not offered in the grid; create them so the first
-        // income can be recorded right away.
-        for preset in CategoryPreset.defaultIncome {
-            let name = String(localized: String.LocalizationValue(preset.nameKey))
-            let exists = coordinator.categoriesViewModel.customCategories.contains {
-                $0.type == preset.type && $0.name == name
-            }
-            guard !exists else { continue }
-            coordinator.categoriesViewModel.addCategory(CustomCategory(
-                name: name,
-                iconSource: preset.iconSource,
-                colorHex: preset.colorHex,
-                type: preset.type
-            ))
+        // One synchronous save for everything, finished before Home appears and
+        // the first full load reads CoreData. See TransactionStore+Onboarding.
+        do {
+            try coordinator.transactionStore.commitOnboarding(account: account, categories: categories)
+        } catch {
+            logger.error("onboarding_commit_failed error=\(error.localizedDescription, privacy: .public)")
+        }
+
+        if let account {
+            await coordinator.balanceCoordinator.registerAccounts([account])
+            await coordinator.balanceCoordinator.setInitialBalance(account.initialBalance ?? 0, for: account.id)
         }
 
         coordinator.completeOnboarding()

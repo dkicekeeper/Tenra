@@ -2,31 +2,15 @@
 //  CategoryBreakdownRow.swift
 //  Tenra
 //
-//  Shared category breakdown row for Insights detail screens.
-//  Replaces the two duplicated `categoryRow` builders in InsightDetailView
-//  (static breakdown) and PagedCategoryBreakdownView (paged breakdown).
+//  Shared category breakdown row for Insights detail screens. Adapter over
+//  DesignKit's `BreakdownRow` (which also ships `AmountPercentageView`): maps the
+//  breakdown item and localizes its category name.
 //
 //  Navigation is left to the caller: wrap this row in a `NavigationLink` and pass
 //  `showsChevron: true` so it renders the native disclosure indicator.
 //
 
 import SwiftUI
-
-/// Trailing "amount + percentage" stack shared by category / subcategory rows.
-struct AmountPercentageView: View {
-    let amount: Double
-    let currency: String
-    let percentage: Double
-
-    var body: some View {
-        VStack(alignment: .trailing, spacing: AppSpacing.xs) {
-            FormattedAmountText(amount: amount, currency: currency, color: AppColors.textPrimary)
-            Text(String(format: "%.1f%%", percentage))
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textSecondary)
-        }
-    }
-}
 
 /// One category row in an Insights breakdown: tinted icon, name, up to three
 /// subcategory names, and a trailing amount + share. Pass `showsChevron: true`
@@ -37,40 +21,20 @@ struct CategoryBreakdownRow: View {
     var showsChevron: Bool = false
 
     var body: some View {
-        // Built on UniversalRow(.info) — same base as InsightEntityRow, so both
-        // breakdown rows share icon slot, spacing (md) and vertical padding (sm).
-        UniversalRow(
-            config: .info,
-            leadingIcon: .custom(
-                source: item.iconSource,
-                style: .circle(
-                    size: AppIconSize.xxl,
-                    tint: .monochrome(item.color),
-                    backgroundColor: item.color.opacity(0.15)
-                )
-            )
-        ) {
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                // `categoryName` carries the raw grouping key (it drives the deep-dive
-                // lookup), so the technical "Loan Payment" key is localized here.
-                Text(CategoryDisplay.displayName(for: item.categoryName, type: .expense))
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-                if !item.subcategories.isEmpty {
-                    Text(item.subcategories.prefix(3).map(\.name).joined(separator: ", "))
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
-                        .lineLimit(1)
-                }
-            }
-        } trailing: {
-            HStack(spacing: AppSpacing.md) {
-                AmountPercentageView(amount: item.amount, currency: currency, percentage: item.percentage)
-                if showsChevron {
-                    DisclosureChevron()
-                }
-            }
-        }
+        BreakdownRow(
+            iconSource: item.iconSource,
+            color: item.color,
+            // `categoryName` carries the raw grouping key (it drives the deep-dive
+            // lookup), so the technical "Loan Payment" key is localized here.
+            title: CategoryDisplay.displayName(for: item.categoryName, type: .expense),
+            subtitle: item.subcategories.isEmpty
+                ? nil
+                : item.subcategories.prefix(3).map(\.name).joined(separator: ", "),
+            amount: item.amount,
+            currency: currency,
+            percentage: item.percentage,
+            showsChevron: showsChevron
+        )
     }
 }
 

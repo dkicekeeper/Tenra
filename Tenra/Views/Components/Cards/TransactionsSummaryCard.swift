@@ -2,9 +2,9 @@
 //  TransactionsSummaryCard.swift
 //  Tenra
 //
-//  Unified transactions summary card with empty state handling.
-//  Gradient background is now rendered at ContentView level (homeBackground),
-//  so this card stays a pure glass card without per-card colour logic.
+//  Unified transactions summary card with empty state handling. Adapter over DesignKit's
+//  `CashFlowCard`: maps the summary model and the home-screen copy.
+//  Gradient background is rendered at ContentView level (homeBackground).
 //
 
 import SwiftUI
@@ -22,87 +22,23 @@ struct TransactionsSummaryCard: View {
     // MARK: - Body
 
     var body: some View {
-        // Fix #14: ZStack + .transition(.opacity) + .animation gives a smooth fade
-        // between loading → loaded → empty states instead of abrupt view replacement.
-        ZStack {
-            if isEmpty {
-                EmptyCardView(
-                    sectionTitle: String(localized: "analytics.history"),
-                    emptyTitle: String(localized: "emptyState.noTransactions")
+        CashFlowCard(
+            title: String(localized: "analytics.history", defaultValue: "History"),
+            totals: summary.map { summary in
+                CashFlowCard.Totals(
+                    income: summary.totalIncome,
+                    expenses: summary.totalExpenses,
+                    extra: summary.plannedAmount > 0
+                        ? .init(label: String(localized: "analytics.planned", defaultValue: "Planned"),
+                                amount: summary.plannedAmount)
+                        : nil
                 )
-                .transition(.opacity)
-            } else if let summary {
-                // Fix #8: removed .id("summary-…") — it forced SwiftUI to throw away and
-                // recreate AnalyticsCard on every income/expense change, preventing smooth
-                // number transitions. @Observable's structural diffing handles updates correctly.
-                loadedState(summary: summary)
-                    .transition(.opacity)
-            } else {
-                loadingState
-                    .transition(.opacity)
-            }
-        }
-        .animation(AppAnimation.gentleSpring, value: isEmpty)
-        .animation(AppAnimation.gentleSpring, value: summary != nil)
-    }
-
-    // MARK: - Loaded State
-
-    private func loadedState(summary: Summary) -> some View {
-        VStack(alignment: .leading, spacing: AppSpacing.lg) {
-            HStack {
-                Text(String(localized: "analytics.history", defaultValue: "History"))
-                    .font(AppTypography.h3)
-                    .foregroundStyle(AppColors.textPrimary)
-                Spacer()
-            }
-
-            AmountComparisonBar(
-                expenseAmount: summary.totalExpenses,
-                incomeAmount: summary.totalIncome,
-                currency: currency
-            )
-
-            if summary.plannedAmount > 0 {
-                HStack {
-                    Text(String(localized: "analytics.planned", defaultValue: "Planned"))
-                        .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textPrimary)
-                    Spacer()
-                    FormattedAmountText(
-                        amount: summary.plannedAmount,
-                        currency: currency,
-                        fontSize: AppTypography.body,
-                        color: AppColors.textPrimary
-                    )
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(AppSpacing.lg)
-        .cardStyle()
-    }
-
-    // MARK: - Loading State
-
-    /// Skeleton in the shape of the loaded card: the title, then the comparison bar.
-    private var loadingState: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.lg) {
-            SkeletonView(height: 24, width: 120)
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                SkeletonView(height: 12, cornerRadius: 6)
-                HStack {
-                    SkeletonView(height: 14, width: 90)
-                    Spacer()
-                    SkeletonView(height: 14, width: 90)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(AppSpacing.lg)
-        .cardStyle()
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(localized: "progress.loadingTransactions"))
+            },
+            currency: currency,
+            isEmpty: isEmpty,
+            emptyMessage: String(localized: "emptyState.noTransactions"),
+            loadingLabel: String(localized: "progress.loadingTransactions")
+        )
     }
 }
 

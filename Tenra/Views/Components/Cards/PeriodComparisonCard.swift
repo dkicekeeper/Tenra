@@ -2,14 +2,14 @@
 //  PeriodComparisonCard.swift
 //  Tenra
 //
-//  Period-over-period comparison card (current vs previous).
-//  Extracted from InsightDeepDiveView.comparisonSection — Phase 26.
+//  Period-over-period comparison card (current vs previous). Adapter over DesignKit's
+//  `ComparisonCard`: keeps the expense / income wording.
 //
 
 import SwiftUI
 
 /// Glass card comparing two adjacent time periods.
-/// Shows: current amount | direction arrow + change% | previous amount.
+/// Shows: previous amount | direction arrow + change% | current amount.
 ///
 /// - Parameter isExpenseContext: if true, an increase is shown in red (costs more = bad).
 ///   If false (income), an increase is shown in green (earns more = good).
@@ -21,71 +21,15 @@ struct PeriodComparisonCard: View {
     let currency: String
     var isExpenseContext: Bool = true
 
-    private var change: Double {
-        guard previousAmount > 0 else { return 0 }
-        return ((currentAmount - previousAmount) / previousAmount) * 100
-    }
-
-    private var direction: TrendDirection {
-        change > 2 ? .up : (change < -2 ? .down : .flat)
-    }
-
-    private var changeColor: Color {
-        switch direction {
-        case .up: return isExpenseContext ? AppColors.destructive : AppColors.success
-        case .down: return isExpenseContext ? AppColors.success : AppColors.destructive
-        case .flat: return AppColors.textSecondary
-        }
-    }
-
     var body: some View {
-        HStack {
-            // Previous period
-            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                Text(previousLabel)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
-                FormattedAmountText(
-                    amount: previousAmount,
-                    currency: currency,
-                    fontSize: AppTypography.h3,
-                    fontWeight: .semibold,
-                    color: AppColors.textSecondary
-                )
-            }
-
-            Spacer()
-
-            // Change indicator
-            InsightTrendBadge(
-                trend: InsightTrend(
-                    direction: direction,
-                    changePercent: change,
-                    changeAbsolute: nil,
-                    comparisonPeriod: ""
-                ),
-                style: .changeIndicator,
-                colorOverride: changeColor
-            )
-
-            Spacer()
-
-            // Current period
-            VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
-                Text(currentLabel)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
-                FormattedAmountText(
-                    amount: currentAmount,
-                    currency: currency,
-                    fontSize: AppTypography.h3,
-                    fontWeight: .bold,
-                    color: AppColors.textPrimary
-                )
-            }
-        }
-        .padding(AppSpacing.lg)
-        .cardStyle()
+        ComparisonCard(
+            previousLabel: previousLabel,
+            previousAmount: previousAmount,
+            currentLabel: currentLabel,
+            currentAmount: currentAmount,
+            currency: currency,
+            increaseIsGood: !isExpenseContext
+        )
     }
 }
 

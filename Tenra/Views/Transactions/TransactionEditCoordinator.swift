@@ -312,20 +312,26 @@ final class TransactionEditCoordinator {
         do {
             try await transactionStore.update(updatedTransaction, allowSeriesDetach: detachesFromSeries)
 
+            let previousSubcategoryIds = Set(
+                categoriesViewModel.getSubcategoriesForTransaction(transaction.id).map(\.id)
+            )
+
             // Link subcategories
             categoriesViewModel.linkSubcategoriesToTransaction(
                 transactionId: transaction.id,
                 subcategoryIds: Array(formData.selectedSubcategoryIds)
             )
 
-            // A category fixed here also fixes what the Wallet automation
-            // will pick next time for this merchant.
+            // A category or subcategory fixed here also fixes what the Wallet
+            // automation will pick next time for this merchant.
             if transaction.type == .expense,
-               updatedTransaction.category != transaction.category,
+               updatedTransaction.category != transaction.category
+                   || formData.selectedSubcategoryIds != previousSubcategoryIds,
                let newCategoryId = categoriesViewModel.customCategories
                    .first(where: { $0.type == .expense && $0.name == updatedTransaction.category })?.id {
                 MerchantCategoryMemory.shared.correct(
                     categoryId: newCategoryId,
+                    subcategoryIds: Array(formData.selectedSubcategoryIds),
                     // The original text: that is what the automation sends again.
                     forMerchant: transaction.description
                 )

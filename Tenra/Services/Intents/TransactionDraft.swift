@@ -56,6 +56,12 @@ enum ConversionPolicy: Equatable {
 struct CommitHooks {
     var recordLearning: (String?, String?) -> Void
     var recordRating: () -> Void
+    /// Links subcategories while the store has not run its full load (a
+    /// process launched only for an intent). See IntentSubcategoryStore for
+    /// why the in-memory path must not be used then. Arguments: transaction
+    /// id, subcategory ids. A no-op unless set, so test hooks never touch the
+    /// on-disk store.
+    var linkSubcategoriesBeforeFullLoad: (String, [String]) -> Void = { _, _ in }
 
     static let production = CommitHooks(
         recordLearning: { category, accountId in
@@ -63,6 +69,13 @@ struct CommitHooks {
         },
         recordRating: {
             RatingPromptService.shared.recordTransactionAdded()
+        },
+        linkSubcategoriesBeforeFullLoad: { transactionId, subcategoryIds in
+            IntentSubcategoryStore.addLinks(
+                transactionId: transactionId,
+                subcategoryIds: subcategoryIds,
+                context: CoreDataStack.shared.viewContext
+            )
         }
     )
 }

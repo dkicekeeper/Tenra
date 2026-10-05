@@ -84,21 +84,64 @@ struct MerchantCategoryMemoryTests {
     @Test("An in-app correction updates a remembered merchant only")
     func correctionTouchesKnownMerchantsOnly() {
         let memory = MerchantCategoryMemory(defaults: makeDefaults())
-        memory.correct(categoryId: cafe.id, forMerchant: "Corner Bakery")
+        memory.correct(categoryId: cafe.id, subcategoryIds: ["sub-pastry"], forMerchant: "Corner Bakery")
         #expect(memory.category(forMerchant: "Corner Bakery", in: categories) == nil)
+        #expect(memory.subcategoryIds(forMerchant: "Corner Bakery") == nil)
 
         memory.remember(categoryId: groceries.id, forMerchant: "Corner Bakery")
-        memory.correct(categoryId: cafe.id, forMerchant: "CORNER BAKERY 2")
+        memory.correct(categoryId: cafe.id, subcategoryIds: ["sub-pastry"], forMerchant: "CORNER BAKERY 2")
         #expect(memory.category(forMerchant: "Corner Bakery", in: categories)?.id == cafe.id)
+        #expect(memory.subcategoryIds(forMerchant: "Corner Bakery") == ["sub-pastry"])
+    }
+
+    // MARK: - Subcategories
+
+    @Test("A subcategory is remembered with the category")
+    func remembersSubcategory() {
+        let memory = MerchantCategoryMemory(defaults: makeDefaults())
+        memory.remember(categoryId: groceries.id, subcategoryIds: ["sub-veg"], forMerchant: "Greenmart 12")
+
+        #expect(memory.subcategoryIds(forMerchant: "GREENMART 7") == ["sub-veg"])
+    }
+
+    @Test("Choosing no subcategory is remembered as a decision, not as unknown")
+    func remembersNoSubcategory() {
+        let memory = MerchantCategoryMemory(defaults: makeDefaults())
+        memory.remember(categoryId: groceries.id, subcategoryIds: [], forMerchant: "Greenmart")
+        #expect(memory.subcategoryIds(forMerchant: "Greenmart") == [])
+
+        memory.remember(categoryId: cafe.id, forMerchant: "Corner Bakery")
+        #expect(memory.subcategoryIds(forMerchant: "Corner Bakery") == nil)
+    }
+
+    @Test("A category passed alone keeps the subcategory chosen for the same category")
+    func categoryAloneKeepsSubcategory() {
+        let memory = MerchantCategoryMemory(defaults: makeDefaults())
+        memory.remember(categoryId: groceries.id, subcategoryIds: ["sub-veg"], forMerchant: "Greenmart")
+        memory.remember(categoryId: groceries.id, forMerchant: "Greenmart")
+
+        #expect(memory.subcategoryIds(forMerchant: "Greenmart") == ["sub-veg"])
+    }
+
+    @Test("A different category drops the old category's subcategory")
+    func newCategoryDropsSubcategory() {
+        let memory = MerchantCategoryMemory(defaults: makeDefaults())
+        memory.remember(categoryId: groceries.id, subcategoryIds: ["sub-veg"], forMerchant: "Greenmart")
+        memory.remember(categoryId: cafe.id, forMerchant: "Greenmart")
+
+        #expect(memory.category(forMerchant: "Greenmart", in: categories)?.id == cafe.id)
+        #expect(memory.subcategoryIds(forMerchant: "Greenmart") == nil)
     }
 
     @Test("Choices survive a new instance over the same defaults")
     func persists() {
         let defaults = makeDefaults()
-        MerchantCategoryMemory(defaults: defaults).remember(categoryId: groceries.id, forMerchant: "Corner Bakery")
+        MerchantCategoryMemory(defaults: defaults)
+            .remember(categoryId: groceries.id, subcategoryIds: ["sub-veg"], forMerchant: "Corner Bakery")
 
         let reloaded = MerchantCategoryMemory(defaults: defaults)
         #expect(reloaded.category(forMerchant: "Corner Bakery", in: categories)?.id == groceries.id)
+        #expect(reloaded.subcategoryIds(forMerchant: "Corner Bakery") == ["sub-veg"])
 
         reloaded.reset()
         #expect(MerchantCategoryMemory(defaults: defaults).category(forMerchant: "Corner Bakery", in: categories) == nil)

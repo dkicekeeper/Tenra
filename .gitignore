@@ -5,3 +5,6 @@
 # Xcode per-user state — window layout, breakpoints, last-open files.
 # Machine-local noise: it changes on every Xcode session and lands in every commit.
 **/xcuserdata/
+
+# Derived build output (e.g. scripts/capture_screenshots.sh result bundles): regenerated on every run.
+build/

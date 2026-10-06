@@ -133,79 +133,124 @@ nonisolated final class InsightsService {
 
     // MARK: - Category Deep Dive
 
-    nonisolated func generateCategoryDeepDive(
+    /// A category's drill-down for EVERY period in `periodKeys` (chronological — the
+    /// periods the paged breakdown steps through), built in one pass over `transactions`
+    /// so the deep dive pages between periods without recomputing. Pure and nonisolated:
+    /// `InsightsViewModel.categoryDeepDivePages` runs it off the main actor.
+    ///
+    /// - Realized only (`LedgerPolicyRule.isRealized`) and scoped to `bucket`, like the
+    ///   paged breakdown it opens from, so a page's total equals the category row the
+    ///   user tapped (even when an income and an expense category share a name).
+    /// - Keyed via `categoryKey(for:)`, so the synthetic categories (loan payments,
+    ///   deposit interest) drill down into the transactions that make them up.
+    /// - `previousTotal` reads the bucket before each period even when it lies outside
+    ///   `periodKeys` (the first page, the edge of the 52-week window).
+    ///
+    /// - Parameters:
+    ///   - bucket: `.expense` for spending breakdowns, `.income` for income sources.
+    ///   - rates: one FX table for the whole walk (docs/domains/currency.md §RateSnapshot).
+    ///   - subcategoryName: transaction id → its (primary) linked subcategory name. The
+    ///     link table is the source of truth; the add flow leaves the legacy
+    ///     `tx.subcategory` nil, so without it every linked tx lands in "no subcategory".
+    nonisolated static func categoryDeepDivePeriods(
         categoryName: String,
-        allTransactions: [Transaction],
-        timeFilter: TimeFilter,
-        comparisonFilter: TimeFilter? = nil,
+        bucket: MoneyBucket,
+        transactions: [Transaction],
+        granularity: InsightGranularity,
+        periodKeys: [String],
         baseCurrency: String,
-        cacheManager: TransactionCacheManager,
-        currencyService: TransactionCurrencyService,
-        /// Maps transaction id → its (primary) linked subcategory name. The linked-
-        /// subcategory table is the source of truth; the legacy `tx.subcategory` string is
-        /// left nil by the add flow, so without this map every linked tx falls into the
-        /// "no subcategory" bucket. Built on MainActor by the caller from the store indexes.
-        subcategoryNameByTxId: [String: String] = [:]
-    ) -> (subcategories: [SubcategoryBreakdownItem], prevBucketTotal: Double) {
-        // All transactions of this category (used for prev-bucket comparison). Keyed via
-        // `categoryKey` so the synthetic categories drill down into the transactions that
-        // make them up, and income categories (deposit interest) work too — not just expenses.
-        let allCategoryTransactions = allTransactions.filter {
-            Self.moneyBucket($0.type) != Self.MoneyBucket.none && Self.categoryKey(for: $0) == categoryName
-        }
+        rates: RateSnapshot,
+        subcategoryName: (String) -> String?
+    ) -> [CategoryDeepDivePeriod] {
+        let grouping = DeepDiveGrouping.forCategory(categoryName)
+        let noSubcategory = String(localized: "insights.noSubcategory")
 
-        // Period-scoped transactions for the subcategory breakdown (respects the selected filter)
-        let range = timeFilter.dateRange()
-        let periodCategoryTransactions = filterService.filterByTimeRange(allCategoryTransactions, start: range.start, end: range.end)
+        // Per period: the category total and its rows. Rows key on the id ALONE — an
+        // account renamed between payments must stay one row (duplicate ids also trap
+        // the view's id → colour map), shown under its most recent name.
+        typealias RowTotal = (name: String, nameDate: String, amount: Double)
+        var totalByKey: [String: Double] = [:]
+        var rowsByKey: [String: [String: RowTotal]] = [:]
+        // Period key per date STRING — many transactions share a date (docs/gotchas.md).
+        // Unparseable and not-yet-realized dates are remembered as skipped.
+        var keyByDate: [String: String] = [:]
+        var skippedDates = Set<String>()
 
-        let totalAmount = periodCategoryTransactions.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
+        for tx in transactions {
+            guard moneyBucket(tx.type) == bucket, categoryKey(for: tx) == categoryName,
+                  !skippedDates.contains(tx.date) else { continue }
+            let key: String
+            if let cached = keyByDate[tx.date] {
+                key = cached
+            } else if let date = FastDateParser.date(from: tx.date), LedgerPolicyRule.isRealized(date) {
+                key = granularity.groupingKey(for: date)
+                keyByDate[tx.date] = key
+            } else {
+                skippedDates.insert(tx.date)
+                continue
+            }
 
-        // Grouping key per transaction. Ordinary categories break down by subcategory
-        // (preferring the linked-subcategory name — the add flow leaves the legacy
-        // `tx.subcategory` string nil); the synthetic ones have no subcategories and
-        // break down by the loan / deposit account behind each transaction instead.
-        //
-        // The account groupings key on the account **id** (not its name) so the view
-        // layer can look the account up and attach its logo; the label rides along.
-        let grouping = Self.DeepDiveGrouping.forCategory(categoryName)
-        struct GroupKey: Hashable { let id: String; let name: String }
-        let groupKey: (Transaction) -> GroupKey = { tx in
+            let amount = resolveAmountToBase(tx, baseCurrency: baseCurrency, rates: rates).amount
+            totalByKey[key, default: 0] += amount
+
+            // Ordinary categories break down by subcategory; the synthetic ones have none
+            // and break down by the loan / deposit account behind each transaction. The
+            // account groupings key on the account id so the view can attach its logo.
+            let rowID: String
+            let rowName: String
             switch grouping {
             case .subcategory:
-                let name = subcategoryNameByTxId[tx.id] ?? tx.subcategory ?? String(localized: "insights.noSubcategory")
-                return GroupKey(id: name, name: name)
+                rowName = subcategoryName(tx.id) ?? tx.subcategory ?? noSubcategory
+                rowID = rowName
             case .loanAccount:
                 // The loan is the payment's TARGET (source = the bank account paying it).
-                let label = Self.accountLabel(tx.targetAccountName, fallbackFor: tx.type)
-                return GroupKey(id: tx.targetAccountId ?? label, name: label)
+                rowName = accountLabel(tx.targetAccountName, fallbackFor: tx.type)
+                rowID = tx.targetAccountId ?? rowName
             case .depositAccount:
-                let label = Self.accountLabel(tx.accountName, fallbackFor: tx.type)
-                return GroupKey(id: tx.accountId ?? label, name: label)
+                rowName = accountLabel(tx.accountName, fallbackFor: tx.type)
+                rowID = tx.accountId ?? rowName
             }
+            var row: RowTotal = rowsByKey[key]?[rowID] ?? (name: rowName, nameDate: tx.date, amount: 0)
+            row.amount += amount
+            if tx.date >= row.nameDate {
+                row.name = rowName
+                row.nameDate = tx.date
+            }
+            rowsByKey[key, default: [:]][rowID] = row
         }
 
-        let subcategories = Dictionary(grouping: periodCategoryTransactions, by: groupKey)
-            .map { key, txns -> SubcategoryBreakdownItem in
-                let amount = txns.reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
-                return SubcategoryBreakdownItem(
-                    id: key.id,
-                    name: key.name,
-                    amount: amount,
-                    percentage: totalAmount > 0 ? (amount / totalAmount) * 100 : 0
-                )
-            }
-            .sorted { $0.amount > $1.amount }
-
-        // Previous-bucket total for period comparison card
-        var prevBucketTotal: Double = 0
-        if let cf = comparisonFilter {
-            let cfRange = cf.dateRange()
-            prevBucketTotal = filterService
-                .filterByTimeRange(allCategoryTransactions, start: cfRange.start, end: cfRange.end)
-                .reduce(0.0) { $0 + resolveAmount($1, baseCurrency: baseCurrency) }
+        var labelByKey: [String: String] = [:]
+        for key in periodKeys where labelByKey[key] == nil {
+            labelByKey[key] = granularity.headingLabel(for: key)
         }
 
-        return (subcategories, prevBucketTotal)
+        return periodKeys.map { key -> CategoryDeepDivePeriod in
+            let total = totalByKey[key] ?? 0
+            let rows = (rowsByKey[key] ?? [:])
+                .map { id, row -> CategoryDeepDiveRow in
+                    CategoryDeepDiveRow(
+                        id: id,
+                        name: row.name,
+                        amount: row.amount,
+                        percentage: total > 0 ? (row.amount / total) * 100 : 0
+                    )
+                }
+                // Name breaks ties so equal rows don't swap places between reloads.
+                .sorted { $0.amount != $1.amount ? $0.amount > $1.amount : $0.name < $1.name }
+            // `.allTime` is one bucket: its "previous" key is itself — no comparison.
+            let previousKey = granularity.previousPeriodKey(before: key)
+            let hasPrevious = previousKey != key
+            return CategoryDeepDivePeriod(
+                id: key,
+                label: labelByKey[key] ?? granularity.headingLabel(for: key),
+                total: total,
+                rows: rows,
+                previousLabel: hasPrevious
+                    ? (labelByKey[previousKey] ?? granularity.headingLabel(for: previousKey))
+                    : nil,
+                previousTotal: hasPrevious ? (totalByKey[previousKey] ?? 0) : 0
+            )
+        }
     }
 
     // MARK: - Granularity-based API
@@ -1230,6 +1275,22 @@ nonisolated final class InsightsService {
         }
         // Cold cache, cross-currency: skip (0) and flag stale. Never blend the
         // account-currency convertedAmount into a base-currency total.
+        return ResolvedAmount(amount: 0, usedStaleFallback: true)
+    }
+
+    /// `resolveAmountToBase` against a pinned rate table, for walks over many
+    /// transactions (docs/domains/currency.md §RateSnapshot). Same skip-and-flag rule.
+    nonisolated static func resolveAmountToBase(
+        _ tx: Transaction,
+        baseCurrency: String,
+        rates: RateSnapshot
+    ) -> ResolvedAmount {
+        guard tx.currency != baseCurrency else {
+            return ResolvedAmount(amount: tx.amount, usedStaleFallback: false)
+        }
+        if let fx = rates.convert(tx.amount, from: tx.currency, to: baseCurrency) {
+            return ResolvedAmount(amount: fx, usedStaleFallback: false)
+        }
         return ResolvedAmount(amount: 0, usedStaleFallback: true)
     }
 

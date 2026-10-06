@@ -81,7 +81,7 @@ If `MagnifyGesture` is unavoidable, attach `.simultaneousGesture(...)` so native
 
 ### Horizontal paging vs swipe-back
 
-⚠️ **For swipeable horizontal paging inside a pushed detail, use `TabView(.page(indexDisplayMode:))`, NOT a custom horizontal `DragGesture`.** A `DragGesture` fights the NavigationStack edge swipe-to-go-back (the user gets inconsistent paging vs. dismiss). TabView paging consumes content-area horizontal swipes; edge-back still works from the screen edge. Precedent: `PagedCategoryBreakdownView` in `InsightDetailView.swift`.
+⚠️ **For swipeable horizontal paging inside a pushed detail, use `TabView(.page(indexDisplayMode:))`, NOT a custom horizontal `DragGesture`.** A `DragGesture` fights the NavigationStack edge swipe-to-go-back (the user gets inconsistent paging vs. dismiss). TabView paging consumes content-area horizontal swipes; edge-back still works from the screen edge. Precedents: `PagedCategoryBreakdownView` in `InsightDetailView.swift` and `InsightDeepDiveView`, which share the chevrons/band/empty page in `Views/Insights/PeriodPager.swift`.
 
 ### Adding a `PeriodChartSeries` case
 

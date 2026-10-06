@@ -379,11 +379,6 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
 
     @State private var index: Int
 
-    /// Chart band and list pager page together, so their page transition must stay
-    /// in lockstep — one value instead of three hand-typed `easeInOut(0.25)`.
-    /// (Computed, not `static let` — this type is generic, which bars stored statics.)
-    private var pageAnimation: Animation { .easeInOut(duration: AppAnimation.standard) }
-
     init(
         pages: [PeriodCategoryBreakdown],
         currentIndex: Int,
@@ -395,8 +390,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
         self.currency = currency
         self.emptyTitle = emptyTitle
         self.onCategoryTap = onCategoryTap
-        let clamped = min(max(0, currentIndex), max(0, pages.count - 1))
-        _index = State(initialValue: clamped)
+        _index = State(initialValue: PeriodPaging.clamped(currentIndex, count: pages.count))
     }
 
     var body: some View {
@@ -431,7 +425,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
                 chartBand(page)
 
                 if page.items.isEmpty {
-                    emptyState
+                    PeriodPagerEmptyState(title: emptyTitle)
                         .frame(maxWidth: .infinity)
                 } else {
                     InsightCategoryBreakdownList(
@@ -448,50 +442,12 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
 
     // MARK: - Chart band (donut + centered side arrows)
 
+    /// Shared with the category drill-down (`PeriodPagerChartBand`, PeriodPager.swift).
     private func chartBand(_ page: PeriodCategoryBreakdown) -> some View {
-        ZStack {
-            // Empty periods keep the band height stable so the arrows stay put.
-            if !page.items.isEmpty {
-                OrbChart(slices: DonutSlice.from(page.items), animatesOnAppear: true)
-                    .screenPadding()
-            } else {
-                Color.clear.frame(height: 280)
-            }
-
-            // Arrows are vertically centered on the donut by the ZStack.
-            HStack {
-                arrowButton(step: -1, systemImage: "chevron.left", enabled: index > 0)
-                Spacer()
-                arrowButton(step: 1, systemImage: "chevron.right", enabled: index < pages.count - 1)
-            }
-            .screenPadding()
+        PeriodPagerChartBand(index: $index, count: pages.count, isEmpty: page.items.isEmpty) {
+            OrbChart(slices: DonutSlice.from(page.items), animatesOnAppear: true)
+                .screenPadding()
         }
-    }
-
-    private func arrowButton(step delta: Int, systemImage: String, enabled: Bool) -> some View {
-        Button { step(delta) } label: {
-            Image(systemName: systemImage)
-                .font(AppTypography.bodyEmphasis)
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(enabled ? AppColors.accent : AppColors.textTertiary)
-        .disabled(!enabled)
-        .accessibilityIdentifier(delta < 0 ? "insightDetail.previousPeriod" : "insightDetail.nextPeriod")
-    }
-
-    private func step(_ delta: Int) {
-        let next = index + delta
-        guard pages.indices.contains(next) else { return }
-        withAnimation(pageAnimation) { index = next }
-    }
-
-    private var emptyState: some View {
-        EmptyStateView(
-            icon: "tray",
-            title: emptyTitle,
-            description: String(localized: "insights.swipeHint")
-        )
-        .padding(.vertical, AppSpacing.xxl)
     }
 }
 

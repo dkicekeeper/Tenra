@@ -3,7 +3,9 @@
 //  Tenra
 //
 //  Phase 17: Financial Insights Feature
-//  Full category detail: subcategory breakdown, spending trends, anomalies
+//  Full category detail: subcategory breakdown, spending trends, anomalies.
+//  Pages through the periods of the selected granularity like the paged breakdown it
+//  opens from (TabView swipe + the chevrons on the orb, PeriodPager.swift).
 //
 
 import SwiftUI
@@ -15,17 +17,22 @@ struct InsightDeepDiveView: View {
     let iconSource: IconSource?
     let currency: String
     let viewModel: InsightsViewModel?
-    /// Period bucket the user drilled in from. `nil` = current period (non-paged
-    /// breakdowns). Threaded so a drill-down from a non-current month shows that
-    /// month's data, not the current period's.
+    /// Period bucket the user drilled in from — the page the drill-down opens on.
+    /// `nil` = current period (non-paged breakdowns).
     let periodKey: String?
     /// Drives the comparison card's good/bad coloring: a rise is red for spending,
     /// green for income (deposit interest drills down here too).
     let isExpenseContext: Bool
 
-    @State private var subcategories: [SubcategoryBreakdownItem] = []
-    /// Previous-bucket total for the comparison card.
-    @State private var prevBucketAmount: Double = 0
+    /// One page per period of the granularity the drill-down was loaded at. Empty
+    /// only until the first load lands.
+    @State private var pages: [CategoryDeepDivePage] = []
+    /// Selected page — the TabView swipe and the chevrons both drive it.
+    @State private var index = 0
+    /// Granularity the pages were computed for (`.allTime` has nothing to step through).
+    @State private var pagesGranularity: InsightGranularity = .month
+    /// Base currency the pages were computed in (a reload follows a base-currency change).
+    @State private var pagesCurrency: String?
     /// Accent color per account row, extracted from its logo (empty for subcategory rows).
     @State private var brandColorByID: [String: Color] = [:]
 
@@ -52,14 +59,14 @@ struct InsightDeepDiveView: View {
         self.isExpenseContext = isExpenseContext
     }
 
-    /// Preview initializer — pre-populates state, no ViewModel needed
+    /// Preview initializer — pre-populates the pages, no ViewModel needed
     fileprivate init(
         categoryName: String,
         color: Color,
         iconSource: IconSource?,
         currency: String,
-        subcategories: [SubcategoryBreakdownItem],
-        prevBucketAmount: Double = 0,
+        pages: [CategoryDeepDivePage],
+        index: Int,
         isExpenseContext: Bool = true
     ) {
         self.categoryName = categoryName
@@ -69,66 +76,117 @@ struct InsightDeepDiveView: View {
         self.viewModel = nil
         self.periodKey = nil
         self.isExpenseContext = isExpenseContext
-        _subcategories = State(initialValue: subcategories)
-        _prevBucketAmount = State(initialValue: prevBucketAmount)
+        _pages = State(initialValue: pages)
+        _index = State(initialValue: PeriodPaging.clamped(index, count: pages.count))
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: AppSpacing.lg) {
-                headerSection
+        content
+            // Reloads on every dimension the pages depend on (CLAUDE.md ⚠️ #12); paging
+            // itself never reloads — every period is computed at once.
+            .task(id: viewModel?.categoryDeepDiveKey) { await reload() }
+    }
 
-                if !subcategories.isEmpty {
-                    subcategorySection
+    @ViewBuilder
+    private var content: some View {
+        if pages.isEmpty {
+            // Before the first load: the header alone, never the empty state (it would
+            // flash "no expenses" while the pages compute).
+            ScrollView {
+                VStack(spacing: AppSpacing.lg) {
+                    headerSection(total: 0, periodLabel: nil)
                 }
-                
-                if !subcategories.isEmpty {
-                    comparisonSection
+            }
+        } else {
+            // The pager owns the screen; each page scrolls on its own, hero and orb
+            // together with the rows (same layout as PagedCategoryBreakdownView). The
+            // TabView takes the horizontal swipe, so it doesn't fight edge swipe-back.
+            TabView(selection: $index) {
+                ForEach(pages.indices, id: \.self) { i in
+                    pageContent(pages[i])
+                        .tag(i)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+        }
+    }
 
+    // MARK: - Page
+
+    private func pageContent(_ page: CategoryDeepDivePage) -> some View {
+        // Build slices once so the chart and the list draw each row in the exact same
+        // color — keyed by id, not by a separate per-view index formula.
+        let slices = orbSlices(for: page.items)
+        let colorByID = Dictionary(slices.map { ($0.id, $0.color) }, uniquingKeysWith: { first, _ in first })
+        return ScrollView {
+            VStack(spacing: AppSpacing.lg) {
+                headerSection(total: page.period.total, periodLabel: page.period.label)
+
+                // Icon lives in the centre of the orb; the arrows sit on it.
+                PeriodPagerChartBand(
+                    index: $index,
+                    count: pages.count,
+                    isEmpty: page.items.isEmpty,
+                    showsArrows: pagesGranularity != .allTime
+                ) {
+                    OrbChart(slices: slices, showLabels: true, centerIcon: iconSource)
+                        .screenPadding()
+                }
+
+                if page.items.isEmpty {
+                    PeriodPagerEmptyState(title: emptyTitle)
+                        .frame(maxWidth: .infinity)
+                } else {
+                    subcategorySection(page.items, colorByID: colorByID)
+                    comparisonSection(page.period)
                 }
             }
         }
-        .task { await loadDataAsync() }
+    }
+
+    private var displayCurrency: String { pagesCurrency ?? currency }
+
+    private var emptyTitle: String {
+        isExpenseContext
+            ? String(localized: "insights.noExpensesForPeriod")
+            : String(localized: "insights.noIncomeForPeriod")
     }
 
     // MARK: - Header
 
-    private var headerSection: some View {
-        let totalAmount = subcategories.reduce(0.0) { $0 + $1.amount }
+    private func headerSection(total: Double, periodLabel: String?) -> some View {
         // Icon is hidden here — it now lives in the centre of the orb chart below.
-        // Amount uses HeroSection's built-in slot (consistent with InsightDetailView).
-        return HeroSection(
+        // Amount uses HeroSection's built-in slot (consistent with InsightDetailView);
+        // the period label is what changes as the user pages.
+        HeroSection(
             icon: nil,
             // Raw grouping key in, localized label out (e.g. "Loan Payment").
             title: CategoryDisplay.displayName(for: categoryName, type: isExpenseContext ? .expense : .income),
             iconTint: .monochrome(color),
             showsIcon: false,
-            primaryAmount: totalAmount > 0 ? totalAmount : nil,
-            primaryCurrency: currency,
-            primaryAmountColor: color
+            primaryAmount: total > 0 ? total : nil,
+            primaryCurrency: displayCurrency,
+            primaryAmountColor: color,
+            subtitle: periodLabel
         )
     }
 
     // MARK: - Subcategories
 
-    private var subcategorySection: some View {
-        // Build slices once so the chart and the list draw each row in the exact same
-        // color — keyed by id, not by a separate per-view index formula. Account rows
-        // (loans / deposits) override the opacity ramp with each logo's own accent color
-        // once `brandColorByID` resolves, the same treatment `heroAccentGlow` applies.
-        let baseSlices = DonutSlice.from(subcategories, baseColor: color)
-        let slices = baseSlices.map { slice in
+    /// Orb slices for a page. Account rows (loans / deposits) override the opacity ramp
+    /// with each logo's own accent color once `brandColorByID` resolves, the same
+    /// treatment `heroAccentGlow` applies.
+    private func orbSlices(for items: [SubcategoryBreakdownItem]) -> [DonutSlice] {
+        DonutSlice.from(items, baseColor: color).map { slice in
             guard let brand = brandColorByID[slice.id] else { return slice }
             return DonutSlice(id: slice.id, amount: slice.amount, color: brand,
                               label: slice.label, percentage: slice.percentage)
         }
-        let colorByID = Dictionary(uniqueKeysWithValues: slices.map { ($0.id, $0.color) })
-        return VStack(alignment: .leading, spacing: AppSpacing.lg) {
-            OrbChart(slices: slices, showLabels: true, centerIcon: iconSource)
+    }
 
-
-            // List
-            ForEach(subcategories) { item in
+    private func subcategorySection(_ items: [SubcategoryBreakdownItem], colorByID: [String: Color]) -> some View {
+        VStack(alignment: .leading, spacing: AppSpacing.lg) {
+            ForEach(items) { item in
                 HStack (alignment:.top){
                     // Entity rows (a loan, a deposit) show the account's own logo;
                     // plain subcategory rows keep the slice-colored dot.
@@ -147,7 +205,7 @@ struct InsightDeepDiveView: View {
                     Spacer()
 
                     VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
-                        FormattedAmountText(amount: item.amount, currency: currency, color: AppColors.textPrimary)
+                        FormattedAmountText(amount: item.amount, currency: displayCurrency, color: AppColors.textPrimary)
                         Text(String(format: "%.1f%%", item.percentage))
                             .font(AppTypography.bodySmall)
                             .foregroundStyle(AppColors.textSecondary)
@@ -157,15 +215,18 @@ struct InsightDeepDiveView: View {
             }
         }
         .screenPadding()
-        .task(id: subcategories.map(\.id)) { await resolveBrandColors() }
     }
 
     /// Resolves each account row's accent color from its logo (in-memory cached, so
-    /// usually instant). Mirrors `WealthOrbSection` in InsightDetailView — the generator
-    /// can't do this itself: it runs nonisolated with no access to logo images.
+    /// usually instant), across every page. Mirrors `WealthOrbSection` in
+    /// InsightDetailView — the builder can't do this itself: it runs nonisolated with
+    /// no access to logo images.
     private func resolveBrandColors() async {
         var resolved: [String: Color] = [:]
-        for item in subcategories {
+        var seen = Set<String>()
+        for item in pages.flatMap({ $0.items }) {
+            guard !seen.contains(item.id) else { continue }
+            seen.insert(item.id)
             guard case .brandService(let brand) = item.iconSource,
                   let color = await DominantColorExtractor.accentColor(forBrand: brand) else { continue }
             resolved[item.id] = color
@@ -178,61 +239,69 @@ struct InsightDeepDiveView: View {
 
     // MARK: - Comparison
 
-    private var comparisonSection: some View {
-        let gran = viewModel?.currentGranularity ?? .month
-        let curKey = periodKey ?? gran.currentPeriodKey
-        let currentLabel  = gran.headingLabel(for: curKey)
-        let previousLabel = gran.headingLabel(for: gran.previousPeriodKey(before: curKey))
-        let currentAmount = subcategories.reduce(0.0) { $0 + $1.amount }
-        return VStack(spacing: AppSpacing.md) {
+    /// This period against the one before it. No card for `.allTime` — one bucket,
+    /// no previous period.
+    @ViewBuilder
+    private func comparisonSection(_ period: CategoryDeepDivePeriod) -> some View {
+        if let previousLabel = period.previousLabel {
             PeriodComparisonCard(
-                currentLabel: currentLabel,
-                currentAmount: currentAmount,
+                currentLabel: period.label,
+                currentAmount: period.total,
                 previousLabel: previousLabel,
-                previousAmount: prevBucketAmount,
-                currency: currency,
+                previousAmount: period.previousTotal,
+                currency: displayCurrency,
                 isExpenseContext: isExpenseContext
             )
+            .screenPadding()
         }
-        .screenPadding()
     }
 
     // MARK: - Data Loading
 
-    /// Async because categoryDeepDive is CPU-heavy (filter + grouping).
-    /// .task cancels automatically on view disappear.
+    /// Every period of the selected granularity in one off-main pass (the view model
+    /// detaches it), so paging is instant. `.task(id:)` cancels a superseded reload.
     @MainActor
-    private func loadDataAsync() async {
-        guard let viewModel else { return } // Preview mode — data pre-populated
-        Self.logger.debug("🔍 [CategoryDeepDive] OPEN — category='\(categoryName, privacy: .public)' gran='\(viewModel.currentGranularity.rawValue, privacy: .public)'")
+    private func reload() async {
+        guard let viewModel else { return } // Preview mode — pages pre-populated
+        Self.logger.debug("🔍 [CategoryDeepDive] LOAD — category='\(categoryName, privacy: .public)' gran='\(viewModel.currentGranularity.rawValue, privacy: .public)' period='\(periodKey ?? "current", privacy: .public)'")
 
-        // categoryDeepDive is @MainActor — call directly; Swift hops actors automatically.
-        let result = viewModel.categoryDeepDive(categoryName: categoryName, periodKey: periodKey)
+        let result = await viewModel.categoryDeepDivePages(
+            categoryName: categoryName,
+            isExpenseContext: isExpenseContext
+        )
+        guard !Task.isCancelled else { return }
 
-        // Write results (already on MainActor)
-        subcategories    = result.subcategories
-        prevBucketAmount = result.prevBucketTotal
+        // A reload keeps the period on screen; the first load opens on the period the
+        // user drilled in from (the current one when the breakdown wasn't paged).
+        let selectedKey: String? = pages.indices.contains(index) ? pages[index].id : periodKey
+        index = PeriodPaging.index(
+            of: selectedKey,
+            in: result.pages.map { $0.period.id },
+            fallbackKey: result.granularity.currentPeriodKey
+        )
+        pages = result.pages
+        pagesGranularity = result.granularity
+        pagesCurrency = result.currency
 
-        let totalAmount = subcategories.reduce(0.0) { $0 + $1.amount }
-        Self.logger.debug("🔍 [CategoryDeepDive] LOADED — subcategories=\(subcategories.count), prevBucket=\(String(format: "%.0f", prevBucketAmount), privacy: .public), total=\(String(format: "%.0f", totalAmount), privacy: .public)")
+        let page: CategoryDeepDivePage? = pages.indices.contains(index) ? pages[index] : nil
+        Self.logger.debug("🔍 [CategoryDeepDive] LOADED — pages=\(pages.count), index=\(index), rows=\(page?.items.count ?? 0), total=\(String(format: "%.0f", page?.period.total ?? 0), privacy: .public)")
+
+        await resolveBrandColors()
     }
 }
 
 // MARK: - Previews
 
 #Preview("Insight Deep Dive — Food") {
-    NavigationStack {
+    let pages = CategoryDeepDivePage.mockPages()
+    return NavigationStack {
         InsightDeepDiveView(
             categoryName: "Food",
             color: AppColors.warning,
             iconSource: .sfSymbol("fork.knife"),
             currency: "KZT",
-            subcategories: [
-                SubcategoryBreakdownItem(id: "restaurants", name: "Restaurants", amount: 42_000, percentage: 49),
-                SubcategoryBreakdownItem(id: "groceries",   name: "Groceries",   amount: 28_000, percentage: 33),
-                SubcategoryBreakdownItem(id: "delivery",    name: "Delivery",    amount: 15_000, percentage: 18)
-            ],
-            prevBucketAmount: 78_000
+            pages: pages,
+            index: pages.count - 1
         )
     }
 }

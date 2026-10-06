@@ -109,7 +109,23 @@ if tx.currency == baseCurrency {
 }
 ```
 
-This is the pattern enforced in `TransactionCurrencyService`, `SummaryCalculator`, `CategoryBudgetService`, `InsightsService.resolveAmount(Static)`, `GroupedTransactionList`, `LinkPaymentsView.summaryAmountFor`.
+This is the pattern enforced in `TransactionCurrencyService`, `SummaryCalculator`, `CategoryBudgetService`, `InsightsService.resolveAmount(Static)`, `GroupedTransactionList`, `LinkPaymentsView.summaryAmountFor` and `LinkPaymentsView.amountInBaseCurrency` (the selected total, which used to prefer `convertedAmount`).
+
+### Writing the conversion fields: `TransactionConversion`
+
+Every path that creates or rewrites a transaction's `convertedAmount` / `targetCurrency` / `targetAmount` goes through [`TransactionConversion`](../../Tenra/Services/Transactions/TransactionConversion.swift) (add screen, edit screen, recurring occurrences, subscription edits):
+
+| Case | `convertedAmount` | `targetCurrency` / `targetAmount` |
+|------|-------------------|-----------------------------------|
+| one account, tx currency ≠ account | amount in account currency | account currency / same value (the row's equivalent) |
+| one account, tx currency = account ≠ base | nil | base currency / base value (display only) |
+| transfer | amount in SOURCE account currency, nil when the transfer is entered in it | target account currency / what it receives |
+
+- ⚠️ **A missing rate refuses the save** (`currency.error.conversionFailed`) on user-driven paths: add, edit, transfer (`AccountActionViewModel`), voice (`ConversionPolicy.provided(nil)` is `.needsFXConversion`), subscription save, loan payments. Saved anyway, the balance moved by the raw foreign amount. Try the cache first (`TransactionConversion.cachedRate`), load rates (`loadRates`) only on a miss. Recurring generation can't refuse: on a cold cache it still stores nothing.
+- **Edits keep the stored rate** (`TransactionConversion.storedRate`): a currency pair the transaction already holds a conversion for is scaled by the new amount instead of re-priced at today's rate, so editing only the description changes nothing, and an import's bank figure survives.
+- Loan payments are in the loan's currency; `LoansViewModel.convertingSourceLeg` sets `convertedAmount` for a paying card in another currency, and the payment forms convert the amount typed in another currency (`LoanPaymentService.amountInLoanCurrency`).
+- Transfers created from an account (`AccountActionViewModel`) store the source leg as `convertedAmount` too (`TransactionStore.transfer(convertedAmount:)`).
+- Pinned by `TransactionConversionTests`, `TransactionCurrencyEditTests`, `RecurringOccurrenceCurrencyTests`, `LoanPaymentCurrencyTests`, `LinkPaymentsSelectedTotalTests`, `TransactionDraftResolverTests.providedNilConversionBlocks`.
 
 ### When `convertedAmount` IS the right field
 

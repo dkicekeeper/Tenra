@@ -48,6 +48,10 @@ final class CloudSyncViewModel {
     @ObservationIgnored private let backupService: CloudBackupService
     @ObservationIgnored private let coreDataStack: CoreDataStack
 
+    /// Bumped by every write to `backups`, so a background listing that finishes after a
+    /// newer create/delete doesn't put the old list back.
+    @ObservationIgnored private var listGeneration = 0
+
     /// Set by AppCoordinator after init — used for full re-initialization after restore
     @ObservationIgnored weak var appCoordinator: AppCoordinator?
 
@@ -100,8 +104,9 @@ final class CloudSyncViewModel {
                 accountCount: accountCount,
                 categoryCount: categoryCount
             )
-            backups = service.listBackups()
-            storageUsed = service.estimateStorageUsed()
+            backups.insert(metadata, at: 0)
+            listGeneration += 1
+            storageUsed = Self.storageUsed(by: backups)
             Self.logger.info("Automatic backup created: \(metadata.id, privacy: .public)")
         } catch {
             Self.logger.error("Automatic backup failed: \(error.localizedDescription, privacy: .public)")
@@ -110,16 +115,29 @@ final class CloudSyncViewModel {
 
     // MARK: - Backups
 
+    /// Refreshes the list, the storage total and iCloud availability. The listing runs off
+    /// the main actor: with iCloud backups on it resolves the ubiquity container, which can
+    /// block for hundreds of ms, and AppCoordinator calls this right after the first frame.
+    /// One listing serves both the list and the total (estimateStorageUsed lists again).
     func loadBackups() {
-        backups = backupService.listBackups()
-        storageUsed = backupService.estimateStorageUsed()
         iCloudEnabled = backupService.isICloudEnabled
-        // Resolving the ubiquity container can block; do it off the main actor.
+        listGeneration += 1
+        let generation = listGeneration
         let service = backupService
         Task {
-            let available = await Task.detached { service.isICloudAvailable }.value
+            let (listed, available) = await Task.detached(priority: .utility) {
+                (service.listBackups(), service.isICloudAvailable)
+            }.value
             iCloudAvailable = available
+            guard generation == listGeneration else { return }
+            backups = listed
+            storageUsed = Self.storageUsed(by: listed)
         }
+    }
+
+    /// What `CloudBackupService.estimateStorageUsed()` computes, from a list in hand.
+    private nonisolated static func storageUsed(by backups: [BackupMetadata]) -> Int64 {
+        backups.reduce(0) { $0 + $1.fileSize }
     }
 
     /// Toggles iCloud backup storage and migrates existing backups to match.
@@ -153,7 +171,8 @@ final class CloudSyncViewModel {
                 categoryCount: categoryCount
             )
             backups.insert(metadata, at: 0)
-            storageUsed = backupService.estimateStorageUsed()
+            listGeneration += 1
+            storageUsed = Self.storageUsed(by: backups)
             await showSuccess(String(localized: "settings.cloud.backupCreated"))
         } catch {
             await showError(error.localizedDescription)
@@ -185,7 +204,8 @@ final class CloudSyncViewModel {
         do {
             try backupService.deleteBackup(metadata)
             backups.removeAll { $0.id == metadata.id }
-            storageUsed = backupService.estimateStorageUsed()
+            listGeneration += 1
+            storageUsed = Self.storageUsed(by: backups)
         } catch {
             Task { await showError(error.localizedDescription) }
         }

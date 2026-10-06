@@ -77,6 +77,28 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 - ACCEPTED S3 logo lookups send brand names to Google favicons and logo.dev: a conscious product decision by the maintainer (2026-09-25).
 - Direction: a one-tap "align the balance to the statement" after the balance check (F14 only shows the difference); subscriptions as "expected" payments merged with real charges.
 
+## Findings 2026-10-06 (the owner's nine-item list + performance and silent-failure audit)
+
+Landed on branch `claude/batch-2026-10-06`.
+
+- DONE Making a saved one-off recurring no longer leaves two transactions on its date (`15fb9ff1`). The add screen already saved one; the second row there is the series' next planned occurrence, one period later (by design; asked the owner).
+- DONE Filter lists use plated `IconView` icons and logos (`2a37c3a8`); loan payments are coloured `AppColors.warning` instead of primary (`ffcb676a`).
+- DONE The Insights category drill-down pages through periods at the chosen granularity (`ceb5527c`).
+- DONE Currency: an edit keeps the "≈" equivalent and the rate the transaction was saved with, and a missing rate refuses the save instead of storing the raw foreign amount. One rule (`TransactionConversion`) now writes the conversion fields for add, edit, transfers, recurring occurrences, subscription edits, loan payments and voice; the Link payments total converts to base currency (`ce09afbe` to `c636a0a1`).
+- DONE A subscription price increase shows for 30 days from the first charge at the new price and is pushed once (`f8aaf240`).
+- DONE Category colour picker: 30 colours (DesignKit 1.11.0; the 14 auto-assigned colours are unchanged).
+- DONE Loans show whether this month's payment is made, and the list header the unpaid total (`17dcea47`).
+- DONE Audit fixes: the app adopts the coordinator an intent already built (`a9a26916`); a cold intent run no longer wipes category and account totals (`b6697675`); provisional notification users are asked for banners again (`5408e747`); a missing wallpaper no longer resets every setting (`dddcf271`); a time-zone change no longer moves every transaction a day (`ea15df86`); voice Confirm no longer silently saves nothing (`7c0ce72c`); entity detail screens show an edit right away (`8cff1983`); voice account suggestion no longer parses every date (`a4a8a71a`); backups are listed once, off the main actor (`5efe344c`).
+- OPEN Edits made while the full load runs are dropped when it lands.
+- OPEN A store that fails to open is never shown to the user.
+- OPEN Backups are not a consistent snapshot, and restore deletes the live store before the copy is verified.
+- OPEN Recurring occurrence ids hash with `Hasher` (seeded per process), so the generator's id check only deduplicates within one launch: a lost occurrence record regenerates a duplicate. A stable hash alone would make a CSV re-import collide with existing ids (import dedups by fingerprint, not id), so it needs an id-uniqueness check on insert first.
+- OPEN Balance saves can land out of order; deposit `saveAccounts` calls come in bursts.
+- OPEN No telemetry: a silent failure (like the paywall's missing App Store agreements, unnoticed from release) stays invisible. Suggested: MetricKit plus a launch self-check for offerings and store health.
+- OPEN Founding User status lives in UserDefaults on one device: a reinstall or a new phone loses it.
+- OPEN Currency, found with the fix above: a transfer out of a deposit lowers its interest base by the raw amount (pinned by a characterization test); CSV export drops a transfer's source-side conversion and labels the converted column with the wrong currency, and import doesn't convert rows in another currency than the account's; occurrences generated with no cached rate store no conversion; changing an account's currency doesn't reconvert its transactions; DesignKit `CurrencyAmountInput` keeps a stale "≈" line after a failed conversion and always shows the base currency; account-detail totals use today's rate; the import merge drops the matched transaction's conversion.
+- OPEN Performance: the day-rollover rebuild runs on the main actor; bulk operations save row by row; subcategory-link stats are rebuilt per link; the Home category grid parses dates with a DateFormatter and goes stale across a month change; budgets are computed five times per refresh; `CategoriesViewModel.init` fetches what it discards; History's numeric search; `recalculateBalances(for:)`.
+
 ## Findings considered and rejected
 
 - **Family / shared budget**: the ru keyword `семейный` promises it, but there is no sync at all (CloudKit sync was removed 2026-04-22 after data loss, `Tenra/CoreData/CoreDataStack.swift:110`). Sharing needs sync first: very large and it reopens the data-loss risk. Recommendation instead: drop `семейный` from the keyword field in the next ASO pass.

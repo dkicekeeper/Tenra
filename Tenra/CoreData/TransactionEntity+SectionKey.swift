@@ -32,6 +32,13 @@ extension TransactionEntity {
         super.willSave()
         // Skip for deletions — no point updating a value about to be removed.
         guard !isDeleted else { return }
+        // Re-key only when `date` itself was written (insert, or a changed date), or the key
+        // is missing. The key is the day the user picked, in the time zone of that write, and
+        // toTransaction() reads it as the transaction's day. Recomputing it on every save from
+        // the stored instant in the CURRENT zone re-dated any re-saved transaction a day
+        // earlier after travelling west.
+        let keyIsMissing = dateSectionKey?.isEmpty ?? true
+        guard isInserted || keyIsMissing || changedValues()["date"] != nil else { return }
         let newKey = self.date.map { TransactionSectionKeyFormatter.string(from: $0) } ?? "0000-00-00"
         if dateSectionKey != newKey {
             dateSectionKey = newKey

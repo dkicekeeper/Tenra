@@ -30,7 +30,7 @@ extension TransactionEntity {
 
         let tx = Transaction(
             id: id ?? "",
-            date: DateFormatters.dateFormatter.string(from: date ?? Date()),
+            date: Self.storedDay(dateSectionKey) ?? DateFormatters.dateFormatter.string(from: date ?? Date()),
             description: descriptionText ?? "",
             amount: amount,
             currency: currency ?? "KZT",
@@ -51,6 +51,17 @@ extension TransactionEntity {
         return tx
     }
     
+    /// The day the transaction was saved under: `dateSectionKey`, "yyyy-MM-dd" in the time
+    /// zone of the write that set `date`. `date` itself is that day's local midnight as an
+    /// instant, so formatting it in the CURRENT zone moved every transaction a day earlier
+    /// after travelling west (Almaty midnight is 21:00 the day before in Istanbul), and any
+    /// re-save made the shift permanent. nil for a missing or malformed key (rows from
+    /// before the v3 backfill): the caller then formats `date` as before.
+    nonisolated static func storedDay(_ key: String?) -> String? {
+        guard let key, key != "0000-00-00", FastDateParser.date(from: key) != nil else { return nil }
+        return key
+    }
+
     /// Create from domain model
     nonisolated static func from(_ transaction: Transaction, context: NSManagedObjectContext) -> TransactionEntity {
         let entity = TransactionEntity(context: context)

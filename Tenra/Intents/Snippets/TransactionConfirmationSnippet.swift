@@ -98,11 +98,11 @@ struct TransactionConfirmationSnippet: View {
 
                 if guessed {
                     Text(String(localized: "intent.snippet.guessed"))
-                        .font(.caption2)
+                        .font(.caption2) // design-lint:ignore Siri draws snippets in its own process, where Inter is not registered
                         .foregroundStyle(.secondary)
                 }
             }
         }
-        .font(.subheadline)
+        .font(.subheadline) // design-lint:ignore Siri draws snippets in its own process, where Inter is not registered
     }
 }

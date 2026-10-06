@@ -15,7 +15,7 @@ struct SettingsSiriSection: View {
         Section {
             ForEach(Self.examplePhrases, id: \.self) { phrase in
                 Label(phrase, systemImage: "quote.bubble")
-                    .font(.subheadline)
+                    .font(AppTypography.bodySmall)
             }
 
             ShortcutsLink()

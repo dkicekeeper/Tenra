@@ -103,7 +103,7 @@ struct CurrencyListContent: View {
             onTap(currency.code)
         } label: {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                     Text(currency.code)
                         .font(AppTypography.bodyEmphasis)
                         .foregroundStyle(AppColors.textPrimary)

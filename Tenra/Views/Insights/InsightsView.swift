@@ -54,7 +54,7 @@ struct InsightsView: View {
                     }
                     .pickerStyle(.inline)
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: AppSpacing.xs) {
                         Image(systemName: insightsViewModel.currentGranularity.icon)
                         Text(insightsViewModel.currentGranularity.displayName)
                     }

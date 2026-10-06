@@ -36,7 +36,7 @@ struct TransactionIconView: View {
                     style: .circle(
                         size: AppIconSize.xxl,
                         tint: .monochrome(transaction.type == .internalTransfer ? AppColors.transfer : styleData.primaryColor),
-                        backgroundColor: transaction.type == .internalTransfer ? AppColors.transfer.opacity(0.2) : styleData.lightBackgroundColor
+                        backgroundColor: transaction.type == .internalTransfer ? AppColors.pale(AppColors.transfer) : styleData.lightBackgroundColor
                     )
                 )
             }

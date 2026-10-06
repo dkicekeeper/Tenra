@@ -278,7 +278,7 @@ private struct LogoItemButton: View {
                 size: AppIconSize.xxxl
             )
             .frame(width: AppIconSize.mega, height: AppIconSize.mega)
-            .background(isSelected ? AppColors.accent.opacity(0.1) : AppColors.bgCard)
+            .background(isSelected ? AppColors.pale(AppColors.accent) : AppColors.bgCard)
             .clipShape(.rect(cornerRadius: AppRadius.lg))
             .overlay(
                 RoundedRectangle(cornerRadius: AppRadius.lg)

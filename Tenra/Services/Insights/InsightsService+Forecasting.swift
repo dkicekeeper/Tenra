@@ -338,7 +338,7 @@ extension InsightsService {
                         categoryName: item.key,
                         amount: item.total,
                         percentage: periodTotal > 0 ? (item.total / periodTotal) * 100 : 0,
-                        color: cat.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? Color(hex: "#5856D6"),
+                        color: cat.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? AppColors.accent,
                         iconSource: cat?.iconSource ?? synthetic?.icon,
                         subcategories: []
                     )

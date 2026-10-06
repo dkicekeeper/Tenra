@@ -5,6 +5,7 @@
 //  Generates lettermark icons with deterministic colors
 //
 
+import SwiftUI
 import UIKit
 
 /// Generates a lettermark image (1-2 letters on colored background).
@@ -12,23 +13,9 @@ import UIKit
 nonisolated final class LettermarkProvider: LogoProvider {
     let name = "lettermark"
 
-    // 14 colors matching CategoryColors palette
-    private static let palette: [UIColor] = [
-        UIColor(red: 0x3b/255.0, green: 0x82/255.0, blue: 0xf6/255.0, alpha: 1),
-        UIColor(red: 0x8b/255.0, green: 0x5c/255.0, blue: 0xf6/255.0, alpha: 1),
-        UIColor(red: 0xec/255.0, green: 0x48/255.0, blue: 0x99/255.0, alpha: 1),
-        UIColor(red: 0xf9/255.0, green: 0x73/255.0, blue: 0x16/255.0, alpha: 1),
-        UIColor(red: 0xea/255.0, green: 0xb3/255.0, blue: 0x08/255.0, alpha: 1),
-        UIColor(red: 0x22/255.0, green: 0xc5/255.0, blue: 0x5e/255.0, alpha: 1),
-        UIColor(red: 0x14/255.0, green: 0xb8/255.0, blue: 0xa6/255.0, alpha: 1),
-        UIColor(red: 0x06/255.0, green: 0xb6/255.0, blue: 0xd4/255.0, alpha: 1),
-        UIColor(red: 0x63/255.0, green: 0x66/255.0, blue: 0xf1/255.0, alpha: 1),
-        UIColor(red: 0xd9/255.0, green: 0x46/255.0, blue: 0xef/255.0, alpha: 1),
-        UIColor(red: 0xf4/255.0, green: 0x3f/255.0, blue: 0x5e/255.0, alpha: 1),
-        UIColor(red: 0xa8/255.0, green: 0x55/255.0, blue: 0xf7/255.0, alpha: 1),
-        UIColor(red: 0x10/255.0, green: 0xb9/255.0, blue: 0x81/255.0, alpha: 1),
-        UIColor(red: 0xf5/255.0, green: 0x9e/255.0, blue: 0x0b/255.0, alpha: 1),
-    ]
+    // DesignKit's category palette (CategoryColors.paletteColors): a lettermark takes the
+    // colour its name would have as a category.
+    private static let palette: [UIColor] = CategoryColors.paletteColors.map { UIColor($0) }
 
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
         let letters = Self.extractLetters(from: domain)

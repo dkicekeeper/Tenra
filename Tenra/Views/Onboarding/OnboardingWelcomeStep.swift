@@ -21,7 +21,7 @@ struct OnboardingWelcomeStep: View {
 
     /// Onboarding hero phase spring — component-local per design-system §9
     /// (no inline `.spring(...)` literals in view bodies).
-    private static let phaseSpring: Animation = .spring(response: 0.55, dampingFraction: 0.85)
+    private static let phaseSpring: Animation = .spring(response: 0.55, dampingFraction: 0.85) // design-lint:ignore the welcome choreography's own spring
 
     private static let phases: [LoopOnBoardingPhase] = [
         LoopOnBoardingPhase(

@@ -86,8 +86,8 @@ struct CSVPreviewView: View {
                     Text(header)
                         .font(AppTypography.caption)
                         .padding(AppSpacing.sm)
-                        .background(AppColors.accent.opacity(0.2))
-                        .clipShape(.rect(cornerRadius: 6))
+                        .background(AppColors.pale(AppColors.accent))
+                        .clipShape(.rect(cornerRadius: AppRadius.xs))
                 }
             }
         }
@@ -134,7 +134,7 @@ struct CSVPreviewView: View {
                         .font(AppTypography.caption)
                         .lineLimit(2)
                     }
-                    .padding(6)
+                    .padding(AppSpacing.sm)
                     .frame(width: 120, alignment: .leading)
                     .background(AppColors.bgCard)
                     .clipShape(.rect(cornerRadius: AppRadius.xs))

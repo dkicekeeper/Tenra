@@ -199,7 +199,7 @@ struct HistoryView: View {
                     showingTimeFilter = true
                 } label: {
                     Image(systemName: isTimeFilterActive ? "calendar.badge.clock" : "calendar")
-                        .font(.title3)
+                        .font(AppTypography.h4)
                 }
                 .tint(isTimeFilterActive ? AppColors.accent : nil)
                 .accessibilityLabel(timeFilterManager.currentFilter.displayName)
@@ -209,7 +209,7 @@ struct HistoryView: View {
                 } label: {
                     Image(systemName: filterCoordinator.selectedAccountFilter != nil
                           ? "wallet.bifold.fill" : "wallet.bifold")
-                        .font(.title3)
+                        .font(AppTypography.h4)
                 }
                 .tint(filterCoordinator.selectedAccountFilter != nil ? AppColors.accent : nil)
                 .accessibilityLabel(String(localized: "filter.allAccounts"))
@@ -219,7 +219,7 @@ struct HistoryView: View {
                 } label: {
                     Image(systemName: transactionsViewModel.selectedCategories?.isEmpty == false
                           ? "tag.fill" : "tag")
-                        .font(.title3)
+                        .font(AppTypography.h4)
                 }
                 .tint(transactionsViewModel.selectedCategories?.isEmpty == false ? AppColors.accent : nil)
                 .accessibilityLabel(String(localized: "filter.allCategories"))

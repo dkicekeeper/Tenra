@@ -618,9 +618,17 @@ struct TransactionSubcategoryFilterSheet: View {
                 Section {
                     ForEach(subcategories, id: \.self) { name in
                         let isSelected = selectedNames?.contains(name) == true
+                        // Plated like the category and account filters' icons.
                         UniversalRow(
                             config: .settings,
-                            leadingIcon: .sfSymbol("tag", color: AppColors.accent, size: AppIconSize.md)
+                            leadingIcon: .custom(
+                                source: .sfSymbol("tag"),
+                                style: .circle(
+                                    size: AppIconSize.xl,
+                                    tint: .monochrome(AppColors.accent),
+                                    backgroundColor: AppColors.pale(AppColors.accent)
+                                )
+                            )
                         ) {
                             Text(name)
                                 .font(AppTypography.h4)

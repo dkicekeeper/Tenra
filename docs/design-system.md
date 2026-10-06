@@ -320,6 +320,7 @@ Every row in `Views/Components/Rows/` follows these token rules. New rows MUST c
 | **Leading icon — content rows** | `AppIconSize.xxl` (44) | AccountRow, CategoryRow, CategoryBreakdownRow, InsightEntityRow, BudgetProgressRow |
 | **Leading icon — form rows** | `AppIconSize.lg` (24) | InfoRow, MenuPickerRow, DatePickerRow |
 | **Leading icon — settings rows** | `AppIconSize.md` (20) | ActionSettingsRow, NavigationSettingsRow |
+| **Leading icon — filter lists** | `AppIconSize.xl` (32), always plated | AccountFilterView, CategoryFilterView (`CheckmarkRow`), TransactionSubcategoryFilterSheet: an SF Symbol on `AppColors.pale` of its tint (category colour, accent; neutral: `AppColors.Status.neutralPale`), a logo `.serviceLogo` (fills its circle). Not `bgCard`: it matches the sheets' grouped rows in dark mode |
 | **HStack spacing (icon ↔ content)** | `AppSpacing.md` (12) | All rows |
 | **Inner VStack (title ↔ subtitle)** | `AppSpacing.xs` (4) | Never `xxs` |
 | **Title — management lists** | `AppTypography.h4` (20 semibold) | AccountRow, CategoryRow (larger touch lists) |

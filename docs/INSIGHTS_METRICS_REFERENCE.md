@@ -1,16 +1,16 @@
 # Insights Metrics Reference
 
-**Last Updated:** 2026-07-13
+**Last Updated:** 2026-10-06
 **Phase coverage:** Phase 17–31 + product audit 2026-07
 
 > ⚠️ **Product audit 2026-07** ([archive/INSIGHTS_PRODUCT_AUDIT_2026_07_13.md](archive/INSIGHTS_PRODUCT_AUDIT_2026_07_13.md), [domains/insights.md](domains/insights.md)):
 > - **Removed:** `incomeVsExpenseRatio` (дубль savingsRate+netCashFlow).
 > - **Merged:** `bestMonth`+`worstMonth` → одна карточка «Рекорды» (`period_records`, тип `.bestMonth`); `balanceRunway` → в деталь `emergencyFund` (severity = худшая из двух).
-> - **Added:** `subscriptionPriceIncrease` (shared, `price_increase_<seriesId>`, >5% и ≤300% к прошлому списанию в той же валюте; billing-period guard 2026-07: интервал между сравниваемыми списаниями обязан быть в 0.5–1.6× периода `series.frequency`, иначе это смена тарифного периода — месячный→годовой, Wolt-баг — и сигнал подавляется), `largeTransaction` (shared, `large_tx_<txId>`, ≥4× средней траты за 90д, non-recurring, ≥20 базовых tx).
+> - **Added:** `subscriptionPriceIncrease` (shared, `price_increase_<seriesId>`, >5% и ≤300% к прошлому списанию в той же валюте; billing-period guard 2026-07: интервал между сравниваемыми списаниями обязан быть в 0.5–1.6× периода `series.frequency`, иначе это смена тарифного периода — месячный→годовой, Wolt-баг — и сигнал подавляется; окно 2026-10: карточка видна 30 дней от первого списания по новой цене, см. [`subscriptionPriceIncrease`](#subscriptionpriceincrease)), `largeTransaction` (shared, `large_tx_<txId>`, ≥4× средней траты за 90д, non-recurring, ≥20 базовых tx).
 > - **Reframed:** `accountDormancy` → «деньги без дела / упущенная выгода» (только копирайт).
 > - **UI:** секция «Важное сейчас» — топ-5 critical/warning из всех секций, исключаются из своих секций.
 > - **Стало неактуально ниже:** описание `averageDailySpending` — метрика давно считается по текущему бакету с трендом (Phase 30+), не по всему окну.
-> - **Уведомления:** `InsightSignalService` (diff-переходы, дедуп 7д, колпак 5/нед) + `WeeklyDigestScheduler` (пн 09:00).
+> - **Уведомления:** `InsightSignalService` (diff-переходы, дедуп 7д, колпак 5/нед) + `WeeklyDigestScheduler` (пн 09:00). С 2026-10 подорожание подписки пушится один раз на (серия, новая цена): `Insight.signalKey`, запись хранится 365 дней.
 
 ## Легенда
 
@@ -125,6 +125,14 @@
 - **Данные:** `transactionStore.recurringSeries`, filtered by `startDate < 3_months_ago`
 - **Порог:** показывается только если |changePercent| > 5%
 - **Гранулярность:** 🔒 — фиксированный lookback 3 мес
+
+### `subscriptionPriceIncrease`
+- **Что считает:** *(audit 2026-07, окно 2026-10)* серия (активная, не доходная), у которой цена недавно выросла: первое списание по текущей цене vs последнее списание по прежней цене (или `series.amount`, если списание всего одно); >5% и ≤300%, одна валюта, интервал между этими двумя списаниями 0.5–1.6× периода `series.frequency`
+- **Первое списание по новой цене:** от последнего реализованного списания идём назад, пока соседние списания отличаются не больше чем на 5% (тот же уровень цены); первый больший скачок и есть смена цены
+- **Окно видимости:** `InsightsService.priceIncreaseVisibleDays` = 30 дней от первого списания по новой цене; потом карточка исчезает, хотя цена осталась выше. Следующие списания по той же цене окно не продлевают. До 2026-10 окна не было: карточка жила до следующего списания (месяц для monthly, год для yearly, бессрочно, пока новое списание не появлялось)
+- **Push:** `signalKey = price_increase_<seriesId>@<валюта>:<новая цена>`; `InsightSignalService` шлёт один push на ключ (запись `isEvent`, хранится 365 дней). Повторное подорожание той же серии (другая цена) может прислать новый push. До 2026-10 push повторялся раз в 7 дней, пока карточка была видна
+- **Детализация:** `formulaBreakdown` (старая цена, новая цена, %, эффект за год); карточка `barPair`
+- **Гранулярность:** 🔒 shared, считается один раз за пересчёт (prefix-match `price_increase_` в `extractSharedInsights`)
 
 ### `duplicateSubscriptions` *(Phase 24)*
 - **Что считает:** активные подписки с одинаковой категорией ИЛИ похожей стоимостью (±15%)

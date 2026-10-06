@@ -17,7 +17,8 @@ struct InsightSignalServiceTests {
         type: InsightType,
         severity: InsightSeverity,
         subtitle: String = "Подписка",
-        changePercent: Double? = nil
+        changePercent: Double? = nil,
+        signalKey: String? = nil
     ) -> Insight {
         Insight(
             id: id,
@@ -30,7 +31,8 @@ struct InsightSignalServiceTests {
             },
             severity: severity,
             category: .recurring,
-            detailData: nil
+            detailData: nil,
+            signalKey: signalKey
         )
     }
 
@@ -124,6 +126,84 @@ struct InsightSignalServiceTests {
             from: [warning, critical], enabledKinds: allKinds, history: full, now: now
         )
         #expect(none.isEmpty)
+    }
+
+    // MARK: - Event signals (price increase: one push per series + new amount)
+    // @MainActor: they compare FiredRecord values, whose synthesized Equatable is
+    // MainActor-isolated under the app's default isolation (see ImportTransactionPreviewViewTests).
+
+    private let day: TimeInterval = 24 * 3600
+    private let increaseKey = "price_increase_s1@KZT:1200.00"
+
+    @Test("a price increase pushes once and never again, however long it stays eligible")
+    @MainActor func eventSignalFiresOncePerKey() {
+        let increase = makeInsight(
+            id: "price_increase_s1", type: .subscriptionPriceIncrease, severity: .warning, signalKey: increaseKey
+        )
+        let first = InsightSignalService.selectSignals(
+            from: [increase], enabledKinds: allKinds, history: [], now: now
+        )
+        #expect(first.map(\.id) == ["price_increase_s1"])
+        let record = InsightSignalService.firedRecord(for: increase, at: now)
+        #expect(record == InsightSignalService.FiredRecord(id: increaseKey, date: now, isEvent: true))
+
+        // The old 7-day rule re-pushed after a week; the event record outlives the prune.
+        for daysLater in [1.0, 8, 29, 90] {
+            let later = now.addingTimeInterval(daysLater * day)
+            let history = InsightSignalService.retainedHistory([record], now: later)
+            #expect(history == [record])
+            let again = InsightSignalService.selectSignals(
+                from: [increase], enabledKinds: allKinds, history: history, now: later
+            )
+            #expect(again.isEmpty)
+        }
+    }
+
+    @Test("a later increase of the same series (new amount) may push again")
+    @MainActor func laterIncreasePushesAgain() {
+        let fired = [InsightSignalService.FiredRecord(id: increaseKey, date: now.addingTimeInterval(-2 * day), isEvent: true)]
+        let second = makeInsight(
+            id: "price_increase_s1", type: .subscriptionPriceIncrease, severity: .warning,
+            signalKey: "price_increase_s1@KZT:1500.00"
+        )
+        let selected = InsightSignalService.selectSignals(
+            from: [second], enabledKinds: allKinds, history: fired, now: now
+        )
+        #expect(selected.map(\.id) == ["price_increase_s1"])
+    }
+
+    @Test("history keeps event records for a year and state records for 7 days")
+    @MainActor func historyRetention() {
+        let staleState = InsightSignalService.FiredRecord(id: "budget_over", date: now.addingTimeInterval(-8 * day))
+        let freshState = InsightSignalService.FiredRecord(id: "spending_spike", date: now.addingTimeInterval(-2 * day))
+        let event = InsightSignalService.FiredRecord(id: increaseKey, date: now.addingTimeInterval(-200 * day), isEvent: true)
+        let oldEvent = InsightSignalService.FiredRecord(
+            id: "price_increase_s2@KZT:900.00", date: now.addingTimeInterval(-400 * day), isEvent: true
+        )
+        let kept = InsightSignalService.retainedHistory([staleState, freshState, event, oldEvent], now: now)
+        #expect(kept == [freshState, event])
+    }
+
+    @Test("a price increase pushed before the update is re-keyed and does not push again")
+    @MainActor func legacyRecordMigrates() {
+        let increase = makeInsight(
+            id: "price_increase_s1", type: .subscriptionPriceIncrease, severity: .warning, signalKey: increaseKey
+        )
+        let legacy = InsightSignalService.FiredRecord(id: "price_increase_s1", date: now.addingTimeInterval(-3 * day))
+        let unrelated = InsightSignalService.FiredRecord(id: "budget_over", date: now.addingTimeInterval(-1 * day))
+        let migrated = InsightSignalService.migratingLegacyEventRecords([legacy, unrelated], insights: [increase])
+        #expect(migrated == [
+            InsightSignalService.FiredRecord(id: increaseKey, date: now.addingTimeInterval(-3 * day), isEvent: true),
+            unrelated
+        ])
+
+        // The legacy record alone would have allowed a re-push 5 days from now.
+        let later = now.addingTimeInterval(5 * day)
+        let again = InsightSignalService.selectSignals(
+            from: [increase], enabledKinds: allKinds,
+            history: InsightSignalService.retainedHistory(migrated, now: later), now: later
+        )
+        #expect(again.isEmpty)
     }
 
     // MARK: - Notification body

@@ -14,7 +14,7 @@ final class SettingsStorageService: SettingsStorageServiceProtocol {
     private let userDefaults: UserDefaults
     private let validator: SettingsValidationServiceProtocol
 
-    private static let userDefaultsKey = "appSettings"
+    static let userDefaultsKey = "appSettings"
 
     init(
         userDefaults: UserDefaults = .standard,
@@ -34,19 +34,29 @@ final class SettingsStorageService: SettingsStorageServiceProtocol {
 
         // Try to load from UserDefaults
         if let data = userDefaults.data(forKey: Self.userDefaultsKey) {
+            let settings: AppSettings
             do {
-                let settings = try JSONDecoder().decode(AppSettings.self, from: data)
-
-                // Validate loaded settings
-                try validator.validateSettings(settings)
-
-
-                return settings
+                settings = try JSONDecoder().decode(AppSettings.self, from: data)
             } catch {
-
-                // Return default on decode/validation failure
+                // Undecodable blob: nothing to repair.
                 return AppSettings.makeDefault()
             }
+            // Repair the invalid field, never reset everything: a missing wallpaper file
+            // (not restored on a new device, or a replace that failed after the old file
+            // was deleted) used to fail validation and return the defaults, silently
+            // switching the base currency to KZT (USD totals then read as tenge) and
+            // dropping hidden amounts and every other preference.
+            do {
+                try validator.validateWallpaper(settings.wallpaperImageName)
+            } catch {
+                settings.wallpaperImageName = nil
+            }
+            do {
+                try validator.validateCurrency(settings.baseCurrency)
+            } catch {
+                settings.baseCurrency = AppSettings.defaultCurrency
+            }
+            return settings
         }
 
 

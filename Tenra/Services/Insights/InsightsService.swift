@@ -1134,7 +1134,7 @@ nonisolated final class InsightsService {
     nonisolated static func syntheticCategoryStyle(for key: String) -> (icon: IconSource, color: Color)? {
         switch key {
         case TransactionType.loanPaymentCategoryName:
-            return (.sfSymbol("creditcard.fill"), AppColors.expense)
+            return (.sfSymbol("creditcard.fill"), TransactionDisplayHelper.loanPaymentColor)
         case TransactionType.depositInterestCategoryName:
             return (.sfSymbol("percent"), AppColors.income)
         default:

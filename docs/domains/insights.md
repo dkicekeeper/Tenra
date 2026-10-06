@@ -90,10 +90,11 @@ key (it drives the deep-dive lookup) — localize at render time with `CategoryD
 `InsightsService.categoryLabel(for:)` when the service builds a card subtitle.
 
 **Icon/tint** — synthetic categories have no `CustomCategory`, so
-`InsightsService.syntheticCategoryStyle(for:)` supplies one (`creditcard.fill` / expense tint,
-`percent` / income tint), mirroring `CategoryStyleCache.systemTypeStyle` so a loan payment looks
-the same in Insights as in the transaction list. Every `CategoryBreakdownItem` builder falls back
-to it: `cat?.iconSource ?? synthetic?.icon`.
+`InsightsService.syntheticCategoryStyle(for:)` supplies one (`creditcard.fill` /
+`TransactionDisplayHelper.loanPaymentColor`, `percent` / income tint), mirroring
+`CategoryStyleCache.systemTypeStyle` so a loan payment looks the same in Insights as in the
+transaction list (both read the one loan colour; pinned by `CategoryStyleCacheTests`). Every
+`CategoryBreakdownItem` builder falls back to it: `cat?.iconSource ?? synthetic?.icon`.
 
 **Deep dive** — `InsightsService.DeepDiveGrouping.forCategory(_:)` decides what a drill-down
 breaks a category into: user categories → subcategories, `"Loan Payment"` → the loan account of

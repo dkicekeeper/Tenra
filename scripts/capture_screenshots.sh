@@ -41,18 +41,36 @@ LOCALES=(
   "ru|ru|ru_RU|KZT"
 )
 
-echo "▶ Booting simulator: $SIM_NAME"
-xcrun simctl boot "$SIM_NAME" 2>/dev/null || true
-xcrun simctl bootstatus "$SIM_NAME" -b
+# Resolve the device by name AND runtime. Since Xcode 27 a bare `name=` destination
+# implies OS:latest, so a model that exists only on an older runtime ("iPhone 17 Pro"
+# lives on 26.5) is "not found"; simctl by name is ambiguous across runtimes too.
+SIM_UDID=$(xcrun simctl list devices available -j | python3 -c '
+import json, sys
+name, runtime_suffix = sys.argv[1], "iOS-" + sys.argv[2].replace(".", "-")
+for runtime, devices in json.load(sys.stdin)["devices"].items():
+    if runtime.endswith(runtime_suffix):
+        for device in devices:
+            if device["name"] == name:
+                print(device["udid"])
+                sys.exit()
+' "$SIM_NAME" "$SIM_OS")
+if [[ -z "$SIM_UDID" ]]; then
+  echo "✗ No available simulator '$SIM_NAME' on iOS $SIM_OS (see: xcrun simctl list devices available)"
+  exit 1
+fi
+
+echo "▶ Booting simulator: $SIM_NAME, iOS $SIM_OS ($SIM_UDID)"
+xcrun simctl boot "$SIM_UDID" 2>/dev/null || true
+xcrun simctl bootstatus "$SIM_UDID" -b
 
 # Clean marketing status bar (9:41, full battery/signal).
-xcrun simctl status_bar "$SIM_NAME" override \
+xcrun simctl status_bar "$SIM_UDID" override \
   --time "9:41" --batteryState charged --batteryLevel 100 \
   --cellularBars 4 --wifiBars 3 2>/dev/null || true
 
 # Mic permission for the Voice screen (no-op until the app is installed once;
 # the UI test's interruption monitor covers the speech-recognition alert).
-xcrun simctl privacy "$SIM_NAME" grant microphone "$BUNDLE_ID" 2>/dev/null || true
+xcrun simctl privacy "$SIM_UDID" grant microphone "$BUNDLE_ID" 2>/dev/null || true
 
 mkdir -p "$OUT_ROOT" "$RESULTS_ROOT"
 failures=()
@@ -71,7 +89,7 @@ for entry in "${LOCALES[@]}"; do
   TEST_RUNNER_SCREENSHOT_DEMO_CURRENCY="$currency" \
   xcodebuild test \
     -scheme Tenra \
-    -destination "platform=iOS Simulator,name=$SIM_NAME,OS=$SIM_OS" \
+    -destination "platform=iOS Simulator,id=$SIM_UDID" \
     -only-testing:TenraUITests/ScreenshotCaptureTests \
     -parallel-testing-enabled NO \
     -resultBundlePath "$result_bundle" \

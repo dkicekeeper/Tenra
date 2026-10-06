@@ -2,7 +2,8 @@
 //  AccountRadioButton.swift
 //  Tenra
 //
-//  Reusable account radio button component
+//  Account option of a picker. Adapter over DesignKit's `SelectableBalanceCard`: reading the
+//  balance from BalanceCoordinator stays here.
 //
 
 import SwiftUI
@@ -18,35 +19,14 @@ struct AccountRadioButton: View {
     }
     
     var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: AppSpacing.md) {
-                IconView(source: account.iconSource, size: AppIconSize.xxl)
-
-                VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                    Text(account.name)
-                        .font(AppTypography.body)
-                        .foregroundStyle(.secondary)
-                    
-                    FormattedAmountText(
-                        amount: balance,
-                        currency: account.currency,
-                        fontSize: AppTypography.body,
-                        fontWeight: .semibold,
-                        color: .primary
-                    )
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(AppSpacing.lg)
-            .cardStyle()
-            .overlay {
-                RoundedRectangle(cornerRadius: AppRadius.xl, style: .continuous)
-                    .stroke(AppColors.accent, lineWidth: 2)
-                    .opacity(isSelected ? 1 : 0)
-                    .animation(AppAnimation.gentleSpring, value: isSelected)
-            }
-        }
-        .buttonStyle(.bounce)
+        SelectableBalanceCard(
+            iconSource: account.iconSource,
+            title: account.name,
+            amount: balance,
+            currency: account.currency,
+            isSelected: isSelected,
+            action: onTap
+        )
     }
 }
 

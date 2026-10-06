@@ -2,7 +2,9 @@
 //  CategoryRow.swift
 //  Tenra
 //
-//  Reusable category row component for displaying categories in lists
+//  Category row of the categories list. Adapter over DesignKit's `ProgressRingRow`: the
+//  category, its budget, the tap, the swipe-to-delete, the over-budget haptic and the
+//  VoiceOver label stay here.
 //
 
 import SwiftUI
@@ -47,62 +49,16 @@ struct CategoryRow: View, Equatable {
 
     var body: some View {
         Button(action: onEdit) {
-            HStack(spacing: AppSpacing.md) {
-                    // Иконка с бюджетным прогрессом
-                    ZStack {
-                        // Budget progress ring (if budget exists)
-                        if let progress = budgetProgress {
-                            ProgressRing(
-                                progress: progress.percentage / 100,
-                                size: AppIconSize.categoryIcon,
-                                lineWidth: 3,
-                                isOverBudget: progress.isOverBudget,
-                                animatesOnAppear: false // list row — onAppear re-fires on scroll
-                            )
-                        }
-
-                        // Иконка с цветом категории на мягком фоне
-                        IconView(
-                            source: category.iconSource,
-                            style: .circle(
-                                size: AppIconSize.xxl,
-                                tint: .monochrome(category.color),
-                                backgroundColor: category.color.opacity(0.15)
-                            )
-                        )
-                    }
-                    .matchedTransitionSourceIfPresent(
-                        id: transitionSourceID,
-                        namespace: transitionNamespace
-                    )
-
-                    // Название и бюджет
-                    VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                        Text(category.name)
-                            .font(AppTypography.h4)
-
-                        if let progress = budgetProgress {
-                            HStack(spacing: AppSpacing.xs) {
-                                SpentBudgetText(
-                                    spent: progress.spent,
-                                    budget: progress.budgetAmount,
-                                    currency: currency,
-                                    fontWeight: .semibold,
-                                    amountColor: progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary,
-                                    separatorColor: progress.isOverBudget ? AppColors.destructive : AppColors.textSecondary
-                                )
-
-                                Text("(\(Int(progress.percentage))%)")
-                                    .font(AppTypography.bodySmall)
-                                    .foregroundStyle(AppColors.textSecondary)
-                            }
-                        } else if category.type == .expense {
-                            Text(String(localized: "category.noBudgetSet"))
-                                .font(AppTypography.bodySmall)
-                                .foregroundStyle(AppColors.textSecondary)
-                        }
-                    }
-                }
+            ProgressRingRow(
+                iconSource: category.iconSource,
+                color: category.color,
+                title: category.name,
+                progress: budgetProgress.map { LimitProgress($0) },
+                currency: currency,
+                placeholder: category.type == .expense ? String(localized: "category.noBudgetSet") : nil,
+                transitionSourceID: transitionSourceID,
+                transitionNamespace: transitionNamespace
+            )
         }
         .buttonStyle(.plain)
         .contentShape(Rectangle())
@@ -124,8 +80,6 @@ struct CategoryRow: View, Equatable {
         }
     }
 }
-
-// formatAmount больше не нужен - используем FormattedAmountText
 
 #Preview {
     let sampleCategory = CustomCategory(

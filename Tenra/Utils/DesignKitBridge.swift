@@ -92,6 +92,20 @@ extension DonutSlice {
     }
 }
 
+// MARK: - Budget progress
+
+extension LimitProgress {
+    /// A category budget as the ring of `ProgressRingRow` / `ProgressRingTile`.
+    init(_ budget: BudgetProgress) {
+        self.init(
+            spent: budget.spent,
+            limit: budget.budgetAmount,
+            percentage: budget.percentage,
+            isOverLimit: budget.isOverBudget
+        )
+    }
+}
+
 // MARK: - Stat card sparkline
 
 /// Trend footer of `InsightsStatCard`: the recent tail of a `PeriodDataPoint` series.

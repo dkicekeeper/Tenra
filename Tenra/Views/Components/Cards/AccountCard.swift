@@ -2,7 +2,8 @@
 //  AccountCard.swift
 //  Tenra
 //
-//  Reusable account card component
+//  Account card of the home carousel. Adapter over DesignKit's `BalanceCard`: the account,
+//  the navigation link, the zoom transition and the VoiceOver copy stay here.
 //
 
 import SwiftUI
@@ -18,25 +19,12 @@ struct AccountCard: View {
 
     var body: some View {
         NavigationLink(value: account) {
-            HStack(spacing: AppSpacing.sm) {
-                IconView(source: account.iconSource, size: AppIconSize.xxl)
-
-                VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                    Text(account.name)
-                        .font(AppTypography.h4)
-                        .foregroundStyle(.primary)
-
-                    FormattedAmountText(
-                        amount: balance,
-                        currency: account.currency,
-                        fontSize: AppTypography.bodySmall,
-                        fontWeight: .semibold,
-                        color: .primary
-                    )
-                }
-            }
-            .padding(AppSpacing.lg)
-            .cardStyle()
+            BalanceCard(
+                iconSource: account.iconSource,
+                title: account.name,
+                amount: balance,
+                currency: account.currency
+            )
             .glassEffectID("account-card-\(account.id)", in: namespace)
         }
         .buttonStyle(.bounce)

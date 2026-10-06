@@ -265,7 +265,7 @@ nonisolated enum ServiceLogoRegistry {
 }
 
 
-enum ServiceCategory: String, CaseIterable {
+nonisolated enum ServiceCategory: String, CaseIterable {
     case banks
     case streaming
     case productivity

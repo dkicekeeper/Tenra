@@ -557,7 +557,7 @@ private struct StaggeredCard<Content: View>: View {
             .task {
                 try? await Task.sleep(for: .milliseconds(index * 80))
                 guard !Task.isCancelled else { return }
-                withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : AppAnimation.gentleSpring) {
+                withAnimation(reduceMotion ? .easeInOut(duration: AppAnimation.standard) : AppAnimation.gentleSpring) {
                     visible = true
                 }
             }
@@ -582,7 +582,7 @@ private struct PulsingText: View {
             .animation(
                 reduceMotion
                     ? nil
-                    : .easeInOut(duration: 1.2).repeatForever(autoreverses: true),
+                    : .easeInOut(duration: 1.2).repeatForever(autoreverses: true), // design-lint:ignore the microphone's slow breathing pulse, one of a kind
                 value: isPulsing
             )
             .onAppear { isPulsing = true }

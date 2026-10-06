@@ -45,7 +45,7 @@ struct ImportSourcePicker: View {
                 source: .sfSymbol(icon),
                 style: .circle(size: AppIconSize.xxl,
                                tint: .monochrome(AppColors.accent),
-                               backgroundColor: AppColors.accent.opacity(0.15))
+                               backgroundColor: AppColors.pale(AppColors.accent))
             ),
             hint: subtitle,
             title: title

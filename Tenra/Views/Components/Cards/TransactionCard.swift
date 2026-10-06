@@ -170,7 +170,7 @@ struct TransactionCard: View, Equatable {
             } label: {
                 Label(String(localized: "button.delete"), systemImage: "trash")
             }
-            .tint(.red)
+            .tint(AppColors.destructive)
             .accessibilityLabel(String(localized: "accessibility.deleteTransaction"))
 
             if isSeriesActive {

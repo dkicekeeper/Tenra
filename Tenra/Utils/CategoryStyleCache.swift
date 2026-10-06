@@ -40,7 +40,7 @@ extension CategoryStyleData {
         coinBorderColor: .gray.opacity(0.6),
         iconColor: .gray,
         primaryColor: .gray,
-        lightBackgroundColor: .gray.opacity(0.15),
+        lightBackgroundColor: AppColors.Status.neutralPale,
         iconName: "questionmark.circle.fill"
     )
 }
@@ -170,7 +170,7 @@ final class CategoryStyleCache {
             coinBorderColor: tint.opacity(0.6),
             iconColor: tint,
             primaryColor: tint,
-            lightBackgroundColor: tint.opacity(0.15),
+            lightBackgroundColor: AppColors.pale(tint),
             iconName: iconName
         )
     }

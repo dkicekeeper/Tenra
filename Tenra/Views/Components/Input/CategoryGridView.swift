@@ -35,81 +35,39 @@ struct CategoryGridView: View {
 
     // MARK: - Category Grid
 
+    /// DesignKit's `ProgressRingTileGrid` (1.10.0): the tiles, the totals under them and the
+    /// columns (4 on an iPhone, or `gridColumns`). Budget rings for expense categories only.
     private var categoryGrid: some View {
-        LazyVGrid(columns: adaptiveColumns, spacing: AppSpacing.xxxl) {
-            ForEach(categories) { category in
-                CategoryGridItem(
-                    category: category,
-                    baseCurrency: baseCurrency,
-                    sourceNamespace: sourceNamespace,
-                    onTap: {
-                        onCategoryTap(category.name, category.type)
-                    }
-                )
-            }
+        ProgressRingTileGrid(
+            items: categories.map(tileItem),
+            currency: baseCurrency,
+            columns: gridColumns,
+            transitionNamespace: sourceNamespace
+        ) { item in
+            guard let category = categories.first(where: { Self.tileID($0) == item.id }) else { return }
+            onCategoryTap(category.name, category.type)
         }
-//        .padding(AppSpacing.lg)
     }
 
-    // MARK: - Adaptive Columns
-
-    private var adaptiveColumns: [GridItem] {
-        if let columns = gridColumns {
-            return Array(
-                repeating: GridItem(.flexible(), spacing: AppSpacing.lg),
-                count: columns
-            )
-        }
-
-        // 4 columns on standard iPhone; adaptive minimum keeps iPad layouts sensible.
-        return [GridItem(.adaptive(minimum: 108, maximum: 180), spacing: AppSpacing.lg)]
+    /// The zoom-transition source id the category detail matches.
+    private static func tileID(_ category: CategoryDisplayData) -> String {
+        "\(category.name)_\(category.type.rawValue)"
     }
-}
 
-// MARK: - Category Grid Item
-
-private struct CategoryGridItem: View {
-    let category: CategoryDisplayData
-    let baseCurrency: String
-    var sourceNamespace: Namespace.ID? = nil
-    let onTap: () -> Void
-
-    var body: some View {
-        VStack(spacing: AppSpacing.xs) {
-            CategoryChip(
-                category: category.name,
-                type: category.type,
-                customCategories: [],
-                isSelected: false,
-                onTap: onTap,
-                budgetProgress: category.budgetProgress,
-                iconName: category.iconName,
-                iconColor: category.iconColor,
-                transitionSourceID: "\(category.name)_\(category.type.rawValue)",
-                transitionNamespace: sourceNamespace
-            )
-
-            FormattedAmountText(
-                amount: category.total,
-                currency: baseCurrency,
-                fontSize: AppTypography.bodySmall,
-                fontWeight: .regular,
-                color: .primary
-            )
-            .lineLimit(1)
-
-            if let budget = category.budgetAmount {
-                FormattedAmountText(
-                    amount: budget,
-                    currency: baseCurrency,
-                    fontSize: AppTypography.bodySmall,
-                    fontWeight: .regular,
-                    color: .secondary
-                )
-                .lineLimit(1)
-            }
-            Spacer()
-        }
+    private func tileItem(_ category: CategoryDisplayData) -> ProgressRingTileGridItem {
+        ProgressRingTileGridItem(
+            id: Self.tileID(category),
+            title: category.name,
+            systemImage: category.iconName,
+            color: category.iconColor,
+            progress: category.type == .expense ? category.budgetProgress.map { LimitProgress($0) } : nil,
+            amount: category.total,
+            limit: category.budgetAmount,
+            accessibilityLabel: String(format: String(localized: "accessibility.category.label"), category.name),
+            accessibilityHint: category.budgetProgress.map {
+                String(format: String(localized: "accessibility.category.budgetHint"), Int($0.percentage))
+            } ?? ""
+        )
     }
 }
 

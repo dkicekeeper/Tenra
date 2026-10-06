@@ -32,6 +32,26 @@ enum DesignKitBridge {
         DesignKitCurrencyConverter.convert = { amount, from, to in
             await CurrencyConverter.convert(amount: amount, from: from, to: to)
         }
+        DesignKitCurrencyConverter.convertSync = { amount, from, to in
+            CurrencyConverter.convertSync(amount: amount, from: from, to: to)
+        }
+        // The icon picker's brands: Tenra's registry, by category; typed names try .com and .kz.
+        DesignKitLogoCatalog.sections = {
+            ServiceCategory.allCases.map { category in
+                DesignKitLogoCatalog.Section(
+                    title: category.localizedTitle,
+                    entries: ServiceLogoRegistry.services(for: category).map {
+                        DesignKitLogoCatalog.Entry(domain: $0.domain, name: $0.displayName)
+                    }
+                )
+            }
+        }
+        DesignKitLogoCatalog.search = { query in
+            ServiceLogoRegistry.search(query: query).map {
+                DesignKitLogoCatalog.Entry(domain: $0.domain, name: $0.displayName)
+            }
+        }
+        DesignKitLogoCatalog.domainSuffixes = ["com", "kz"]
     }
 }
 

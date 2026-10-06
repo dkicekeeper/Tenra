@@ -165,7 +165,7 @@ struct ImportTransactionPreviewView: View {
                         Text("transactionPreview.selectAll")
                             .frame(maxWidth: .infinity)
                             .padding(AppSpacing.md)
-                            .background(AppColors.accent.opacity(0.1))
+                            .background(AppColors.pale(AppColors.accent))
                             .foregroundStyle(AppColors.accent)
                             .clipShape(.rect(cornerRadius: AppRadius.button))
                     }

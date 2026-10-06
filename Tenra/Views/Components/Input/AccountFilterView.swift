@@ -35,18 +35,7 @@ struct AccountFilterView: View {
         NavigationStack {
             List {
                 Section {
-                    UniversalRow(config: .settings) {
-                        Text(String(localized: "filter.allAccounts"))
-                            .font(AppTypography.h4)
-                            .fontWeight(.medium)
-                    } trailing: {
-                        if selectedAccountId == nil {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(AppColors.accent)
-                        }
-                    }
-                    .selectableRow(isSelected: selectedAccountId == nil) {
-                        HapticManager.selection()
+                    CheckmarkRow(String(localized: "filter.allAccounts"), isSelected: selectedAccountId == nil) {
                         selectedAccountId = nil
                         dismiss()
                     }
@@ -95,34 +84,14 @@ struct AccountFilterView: View {
             ForEach(accounts) { account in
                 let balance = balanceCoordinator?.balances[account.id] ?? 0
 
-                UniversalRow(
-                    config: .settings,
-                    leadingIcon: .custom(
-                        source: account.iconSource,
-                        style: .roundedSquare(size: AppIconSize.xl)
-                    )
+                CheckmarkRow(
+                    account.name,
+                    icon: .custom(source: account.iconSource, style: .roundedSquare(size: AppIconSize.xl)),
+                    value: amountsHidden
+                        ? Formatting.hiddenAmount(currency: account.currency)
+                        : Formatting.formatCurrencySmart(balance, currency: account.currency),
+                    isSelected: selectedAccountId == account.id
                 ) {
-                    HStack(spacing: 0) {
-                        Text(account.name)
-                            .font(AppTypography.h4)
-                            .fontWeight(.medium)
-
-                        Spacer()
-
-                        Text(amountsHidden
-                             ? Formatting.hiddenAmount(currency: account.currency)
-                             : Formatting.formatCurrencySmart(balance, currency: account.currency))
-                            .font(AppTypography.h4)
-                            .foregroundStyle(AppColors.textSecondary)
-                    }
-                } trailing: {
-                    if selectedAccountId == account.id {
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(AppColors.accent)
-                    }
-                }
-                .selectableRow(isSelected: selectedAccountId == account.id) {
-                    HapticManager.selection()
                     selectedAccountId = account.id
                     dismiss()
                 }

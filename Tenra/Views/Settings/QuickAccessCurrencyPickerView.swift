@@ -77,7 +77,7 @@ struct QuickAccessCurrencyPickerView: View {
 
     private func lockedRow(_ currency: CurrencyInfo) -> some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                 Text(currency.code)
                     .font(AppTypography.bodyEmphasis)
                     .foregroundStyle(AppColors.textPrimary)
@@ -108,7 +108,7 @@ struct QuickAccessCurrencyPickerView: View {
             HapticManager.selection()
         } label: {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                     Text(currency.code)
                         .font(AppTypography.bodyEmphasis)
                         .foregroundStyle(AppColors.textPrimary)

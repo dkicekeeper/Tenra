@@ -471,7 +471,7 @@ struct PagedCategoryBreakdownView<CategoryDestination: View>: View {
     private func arrowButton(step delta: Int, systemImage: String, enabled: Bool) -> some View {
         Button { step(delta) } label: {
             Image(systemName: systemImage)
-                .font(.body.weight(.semibold))
+                .font(AppTypography.bodyEmphasis)
         }
         .buttonStyle(.plain)
         .foregroundStyle(enabled ? AppColors.accent : AppColors.textTertiary)

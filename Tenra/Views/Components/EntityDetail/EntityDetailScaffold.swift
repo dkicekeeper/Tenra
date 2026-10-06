@@ -132,7 +132,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                VStack(spacing: 2) {
+                VStack(spacing: AppSpacing.xxs) {
                     Text(navigationTitle)
                         .font(AppTypography.bodyEmphasis)
                         .lineLimit(1)
@@ -147,7 +147,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                     }
                 }
                 .opacity(isNavTitleVisible ? 1 : 0)
-                .animation(.easeInOut(duration: 0.2), value: isNavTitleVisible)
+                .animation(.easeInOut(duration: AppAnimation.standard), value: isNavTitleVisible)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

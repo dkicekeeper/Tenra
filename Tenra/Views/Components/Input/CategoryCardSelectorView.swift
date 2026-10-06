@@ -151,7 +151,7 @@ private struct CategoryCardButton: View {
                     style: .circle(
                         size: AppIconSize.xxl,
                         tint: .monochrome(style.iconColor),
-                        backgroundColor: style.iconColor.opacity(0.15)
+                        backgroundColor: AppColors.pale(style.iconColor)
                     )
                 )
 

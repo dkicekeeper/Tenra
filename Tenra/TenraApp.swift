@@ -55,7 +55,7 @@ struct TenraApp: App {
                     .transition(.opacity)
                 }
             }
-            .animation(.easeOut(duration: 0.2), value: coordinator == nil)
+            .animation(.easeOut(duration: AppAnimation.standard), value: coordinator == nil)
             .task {
                 // Wait for CoreData pre-warm to finish (already started in AppDelegate).
                 // If preWarm() finishes before this task runs, this await returns instantly.

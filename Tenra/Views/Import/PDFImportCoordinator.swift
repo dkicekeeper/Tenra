@@ -115,7 +115,7 @@ struct PDFImportCoordinator: View {
                 source: .sfSymbol("list.bullet.clipboard"),
                 style: .circle(size: AppIconSize.xxl,
                                tint: .monochrome(AppColors.accent),
-                               backgroundColor: AppColors.accent.opacity(0.15))
+                               backgroundColor: AppColors.pale(AppColors.accent))
             ),
             hint: summary,
             title: String(localized: "import.diagnostics.title")

@@ -34,7 +34,7 @@ struct AnimatedTranscriptionText: View {
     @State private var nextWordID: Int = 0
 
     var body: some View {
-        WordFlowLayout(spacing: 8, lineSpacing: 6, alignment: alignment) {
+        WordFlowLayout(spacing: AppSpacing.sm, lineSpacing: 6, alignment: alignment) {
             ForEach(tokens) { token in
                 Text(token.text)
                     .font(font)

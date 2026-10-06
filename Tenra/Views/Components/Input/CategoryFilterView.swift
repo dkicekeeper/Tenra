@@ -51,18 +51,7 @@ struct CategoryFilterView: View {
             List {
                 // "All Categories" option
                 Section {
-                    UniversalRow(config: .settings) {
-                        Text(String(localized: "categoryFilter.allCategories"))
-                            .font(AppTypography.h4)
-                            .fontWeight(.medium)
-                    } trailing: {
-                        if isAllDeselected {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(AppColors.accent)
-                        }
-                    }
-                    .selectableRow(isSelected: isAllDeselected) {
-                        HapticManager.selection()
+                    CheckmarkRow(String(localized: "categoryFilter.allCategories"), isSelected: isAllDeselected) {
                         selectedExpenseCategories.removeAll()
                         selectedIncomeCategories.removeAll()
                         selectedDeletedCategories.removeAll()
@@ -147,7 +136,6 @@ struct CategoryFilterView: View {
                         category: category,
                         isSelected: selected.wrappedValue.contains(category)
                     ) {
-                        HapticManager.selection()
                         if selected.wrappedValue.contains(category) {
                             selected.wrappedValue.remove(category)
                         } else {
@@ -165,22 +153,7 @@ struct CategoryFilterView: View {
 
     @ViewBuilder
     private func categoryRow(category: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        let iconConfig = iconConfig(for: category)
-
-        UniversalRow(
-            config: .settings,
-            leadingIcon: iconConfig
-        ) {
-            Text(category)
-                .font(AppTypography.h4)
-                .fontWeight(.medium)
-        } trailing: {
-            if isSelected {
-                Image(systemName: "checkmark")
-                    .foregroundStyle(AppColors.accent)
-            }
-        }
-        .selectableRow(isSelected: isSelected, action: action)
+        CheckmarkRow(category, icon: iconConfig(for: category), isSelected: isSelected, action: action)
     }
 
     private func iconConfig(for categoryName: String) -> IconConfig {

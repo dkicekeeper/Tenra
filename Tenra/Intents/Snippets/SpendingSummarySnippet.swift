@@ -21,7 +21,7 @@ struct SpendingSummarySnippet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text(periodLabel)
-                .font(.subheadline)
+                .font(.subheadline) // design-lint:ignore Siri draws snippets in its own process, where Inter is not registered
                 .foregroundStyle(.secondary)
 
             FormattedAmountText(
@@ -35,7 +35,7 @@ struct SpendingSummarySnippet: View {
                 format: String(localized: "intent.checkSpending.transactionCount"),
                 total.transactionCount
             ))
-            .font(.footnote)
+            .font(.footnote) // design-lint:ignore Siri draws snippets in its own process, where Inter is not registered
             .foregroundStyle(.secondary)
         }
         // The snippet container hands the view the full card width. Without

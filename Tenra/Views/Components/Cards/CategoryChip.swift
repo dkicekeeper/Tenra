@@ -41,7 +41,7 @@ struct CategoryChip: View {
                 coinBorderColor: color.opacity(0.6),
                 iconColor: color,
                 primaryColor: color,
-                lightBackgroundColor: color.opacity(0.15),
+                lightBackgroundColor: AppColors.pale(color),
                 iconName: name
             )
         }

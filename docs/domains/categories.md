@@ -76,6 +76,8 @@ All amounts are stored in `baseCurrency`. Conversion happens once at `applyAggre
 
 ⚠️ Per CLAUDE.md ⚠️ #6, `Transaction.convertedAmount` is in account currency — DO NOT use it as a base-currency proxy.
 
+⚠️ **Persistence is whole-table and is the next launch's warm start.** `saveAggregates` / `saveAccountAggregatesSync` delete every row not in the snapshot, and `loadData` seeds from a non-empty table instead of rebuilding. Before the full load (`hasCompletedInitialLoad == false`: a process launched only for an App Intent, the first seconds of launch) the in-memory maps hold only the deltas applied since launch, so `categoryAggregatesToPersist()` / `accountAggregatesToPersist()` return empty: the table is cleared and the next full load rebuilds from the transactions. Persisting the partial map made every Wallet-automation payment wipe category totals, budget "spent" and account totals down to that one payment.
+
 ## Style cache contract
 
 `CategoryStyleCache.shared` is keyed by `"<name>_<type.rawValue>"`.

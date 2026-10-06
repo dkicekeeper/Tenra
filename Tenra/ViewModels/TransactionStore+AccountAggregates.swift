@@ -74,11 +74,19 @@ extension TransactionStore {
     /// import/rebuild end (after `isImporting = false`), NOT in the per-row hot
     /// loop, so awaiting it does not affect the import hot path.
     internal func flushAccountAggregatePersist() async {
-        let snapshot = accountAggregatesByAccountId
+        let snapshot = accountAggregatesToPersist()
         var currencyById: [String: String] = [:]
         currencyById.reserveCapacity(accounts.count)
         for acc in accounts { currencyById[acc.id] = acc.currency }
         await repository.saveAccountAggregatesSync(snapshot, currencyByAccountId: currencyById)
+    }
+
+    /// What a flush writes; see `categoryAggregatesToPersist`. Before the full load the map
+    /// holds only the accounts touched since launch, and the whole-table save would drop
+    /// every other account's totals from the warm start. Empty instead: the next full load
+    /// rebuilds them from the transactions.
+    internal func accountAggregatesToPersist() -> [String: AccountAggregates] {
+        hasCompletedInitialLoad ? accountAggregatesByAccountId : [:]
     }
 
     // MARK: - Cold Rebuild

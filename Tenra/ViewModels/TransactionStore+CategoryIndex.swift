@@ -153,9 +153,18 @@ extension TransactionStore {
     /// Immediate persist of the current aggregate snapshot. Use after a
     /// wholesale rebuild (FX reconcile, baseCurrency change, finishImport).
     internal func flushAggregatePersist() async {
-        let snapshot = Array(categoryAggregatesByKey.values)
         // Already routes through `saveCoordinator.performSave(...)` on a background context.
-        repository.saveAggregates(snapshot)
+        repository.saveAggregates(categoryAggregatesToPersist())
+    }
+
+    /// What a flush writes. `saveAggregates` replaces the whole table, and the next launch
+    /// warm-starts from it. Before the full load (a process launched only for an App Intent,
+    /// e.g. the Wallet automation) the map holds just the deltas applied since launch, so
+    /// persisting it left one payment's buckets as every category total and budget "spent".
+    /// Write an empty table instead: the next full load finds it empty and rebuilds the
+    /// aggregates from the transactions, as on first launch.
+    internal func categoryAggregatesToPersist() -> [CategoryAggregate] {
+        hasCompletedInitialLoad ? Array(categoryAggregatesByKey.values) : []
     }
 
     /// Reseed `categoryById` and `categoryIdByName` from the canonical `categories` array.

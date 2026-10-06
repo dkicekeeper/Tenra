@@ -26,6 +26,10 @@ struct TransactionFlowTestGraph {
         let store = TransactionStore(repository: repo, balanceCoordinator: balance, recurringStore: RecurringStore(repository: repo))
 
         let transactions = TransactionsViewModel(repository: repo)
+        // Pinned: the view model reads AppSettings from the process-wide UserDefaults, and
+        // another base there would send these KZT-only flows to the network for the "≈"
+        // equivalent (TransactionConversion.lacksEquivalent) on every save.
+        transactions.appSettings.baseCurrency = "KZT"
         transactions.transactionStore = store
         transactions.balanceCoordinator = balance
         let accounts = AccountsViewModel(repository: repo)

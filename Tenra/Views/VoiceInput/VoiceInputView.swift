@@ -404,10 +404,16 @@ struct VoiceInputView: View {
         silenceTimer?.cancel()
     }
 
+    /// One operation ready to save, before its currency conversion (`converted`).
+    private struct QuickSaveDraft {
+        let transaction: Transaction
+        let accountCurrency: String
+    }
+
     /// Voice quick-save creates regular income/expense, never loan/deposit ops.
     /// Resolve account: parsed id wins only if it's a regular account; fall
     /// back to the first regular account otherwise.
-    private func makeTransaction(from parsed: ParsedOperation) -> Transaction? {
+    private func makeDraft(from parsed: ParsedOperation) -> QuickSaveDraft? {
         let resolvedAccount: Account? = {
             if let parsedId = parsed.accountId,
                let acc = accountsViewModel.accounts.first(where: { $0.id == parsedId }),
@@ -433,7 +439,7 @@ struct VoiceInputView: View {
             in: categoriesViewModel.customCategories
         ).name
 
-        return Transaction(
+        let transaction = Transaction(
             id: "",
             date: DateFormatters.dateFormatter.string(from: parsed.date),
             description: parsed.note.isEmpty ? currentText : parsed.note,
@@ -443,15 +449,72 @@ struct VoiceInputView: View {
             category: category,
             accountId: account.id
         )
+        return QuickSaveDraft(transaction: transaction, accountCurrency: account.currency)
+    }
+
+    /// The draft's transaction with its conversion fields (`TransactionConversion`), nil
+    /// when its amount is in another currency than the account's and no rate is cached.
+    private func converted(_ draft: QuickSaveDraft, baseCurrency: String) -> Transaction? {
+        let tx = draft.transaction
+        guard let fields = TransactionConversion.singleAccount(
+            amount: tx.amount,
+            currency: tx.currency,
+            accountCurrency: draft.accountCurrency,
+            baseCurrency: baseCurrency,
+            convert: TransactionConversion.cachedRate
+        ) else { return nil }
+        return Transaction(
+            id: tx.id,
+            date: tx.date,
+            description: tx.description,
+            amount: tx.amount,
+            currency: tx.currency,
+            convertedAmount: fields.convertedAmount,
+            type: tx.type,
+            category: tx.category,
+            accountId: tx.accountId,
+            targetCurrency: fields.targetCurrency,
+            targetAmount: fields.targetAmount,
+            createdAt: tx.createdAt
+        )
+    }
+
+    /// Every draft converted, or nil when one of them has no rate.
+    private func convertedForSaving(_ drafts: [QuickSaveDraft], baseCurrency: String) -> [Transaction]? {
+        var transactions: [Transaction] = []
+        for draft in drafts {
+            guard let tx = converted(draft, baseCurrency: baseCurrency) else { return nil }
+            transactions.append(tx)
+        }
+        return transactions
     }
 
     /// Saves every operation in one atomic batch via `TransactionStore.addBatch`.
     /// Used by both the single-clause and multi-clause flows — same path.
     private func quickSaveAll(_ operations: [ParsedOperation]) {
-        let transactions = operations.compactMap(makeTransaction(from:))
-        guard !transactions.isEmpty else { return }
+        let drafts = operations.compactMap(makeDraft(from:))
+        guard !drafts.isEmpty else { return }
+        let baseCurrency = transactionStore.baseCurrency
 
         Task {
+            // An amount in another currency than its account's posts converted, like the
+            // add screen. It was saved raw: 10 USD came off a KZT card as 10 ₸. Rates are
+            // loaded once on a miss (or a missing "≈" equivalent); still without a rate the
+            // batch is refused and says why.
+            var ready = convertedForSaving(drafts, baseCurrency: baseCurrency)
+            let lacksEquivalent = ready?.contains { $0.currency != baseCurrency && $0.targetAmount == nil } ?? true
+            if lacksEquivalent {
+                let currencies = drafts.flatMap { [$0.transaction.currency, $0.accountCurrency] }
+                await TransactionConversion.loadRates(Set(currencies + [baseCurrency]))
+                ready = convertedForSaving(drafts, baseCurrency: baseCurrency)
+            }
+            guard let transactions = ready else {
+                HapticManager.error()
+                errorAlertMessage = String(localized: "currency.error.conversionFailed")
+                showingErrorAlert = true
+                return
+            }
+
             do {
                 try await transactionStore.addBatch(transactions)
                 HapticManager.success()

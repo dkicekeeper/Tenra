@@ -59,6 +59,14 @@ categoriesViewModel.linkSubcategoriesToTransaction(
 
 Generated recurring txs need explicit linking after creation.
 
+## Making an Existing Transaction Recurring
+
+⚠️ **Never `createSeries(_:)` and then link an existing transaction to the new series.** The generator emits occurrence 0 on `startDate`, which is that transaction's own date, so the date ends up with two transactions (the edit screen's "one-off → Monthly" bug). Use `createSeries(_:firstOccurrence:)`: it links the transaction, records it as the occurrence on `series.startDate`, and the generator resumes from the next period (generates nothing more when that date is already in the future). The transaction keeps its id, so its subcategory links survive. `TransactionEditCoordinator.handleRecurringSeries` uses it and aborts the save with the error if the series cannot be created (it used to `try?` and leave a dangling link). Pinned by `RecurringFirstOccurrenceTests` and `TransactionEditCoordinatorTests`.
+
+The add screen saves no separate one-off when a frequency is picked: the generated occurrence on the chosen date is the user's transaction (plus the next occurrence ahead, per the single-next-occurrence model). Pinned by `TransactionAddCoordinatorTests`.
+
+Occurrence records, not transaction ids, are what stop regeneration across launches: `TransactionIDGenerator` hashes with Swift's per-process `Hasher` seed, so the generator's `existingTransactionIds` check only matches ids made in the same process.
+
 ## Deprecated APIs
 
 ⚠️ **`getPlannedTransactions(horizon:)` deprecated** — filter `transactionStore.transactions` directly.

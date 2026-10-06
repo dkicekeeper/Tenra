@@ -100,4 +100,28 @@ struct TransactionAddCoordinatorTests {
         #expect(graph.store.transactions.contains { $0.recurringSeriesId != nil })
         #expect(TransactionFlowTestGraph.ratingTxCount == countBefore + 1)
     }
+
+    /// The recurring branch saves no separate one-off: the series' occurrence on the chosen
+    /// date is the user's transaction, with the selected subcategory (Red Flag 5).
+    @Test func recurringAddLeavesOneLinkedTransactionOnTheChosenDate() async {
+        let graph = await TransactionFlowTestGraph.make()
+        graph.store.addSubcategory(Subcategory(id: "s1", name: "Coffee"))
+        let add = coordinator(graph)
+        add.formData.amountText = "1500"
+        add.formData.accountId = "a1"
+        add.formData.subcategoryIds = ["s1"]
+        add.formData.recurring = .frequency(.monthly)
+        let chosenDate = DateFormatters.dateFormatter.string(from: add.formData.selectedDate)
+
+        let result = await add.save()
+
+        #expect(result.isValid)
+        let onChosenDate = graph.store.transactions.filter { $0.date == chosenDate }
+        #expect(onChosenDate.count == 1, "one transaction for the first occurrence")
+        let first = onChosenDate.first
+        #expect(first?.recurringSeriesId != nil)
+        let firstSubcategoryIds = first.flatMap { graph.store.subcategoryIdsByTransactionId[$0.id] }
+        #expect(firstSubcategoryIds == ["s1"])
+        #expect(graph.store.transactions.count == 2, "plus the next occurrence, generated ahead")
+    }
 }

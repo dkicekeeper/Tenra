@@ -81,6 +81,39 @@ struct TransactionEditCoordinatorTests {
         #expect(graph.store.transactionById["t1"]?.amount == 900)
     }
 
+    /// Making a saved one-off recurring left two transactions on its date: the series'
+    /// generator added occurrence 0 on that date, then the edited transaction was linked
+    /// to the same series. The edited transaction is now that first occurrence.
+    @Test func makingOneOffRecurringKeepsOneTransactionOnItsDate() async throws {
+        let graph = await TransactionFlowTestGraph.make()
+        let today = DateFormatters.dateFormatter.string(from: Date())
+        let original = try await graph.store.add(Transaction(
+            id: "t1", date: today, description: "Gym", amount: 5000, currency: "KZT",
+            type: .expense, category: "Food", accountId: "a1"
+        ))
+        graph.store.addSubcategory(Subcategory(id: "s1", name: "Membership"))
+        graph.categories.linkSubcategoriesToTransaction(transactionId: "t1", subcategoryIds: ["s1"])
+
+        let edit = editor(graph, original)
+        edit.formData.amountText = "5000"
+        edit.formData.recurring = .frequency(.monthly)
+        let succeeded = await saveAndWait(edit)
+
+        #expect(succeeded, "error: \(edit.errorMessage ?? "none")")
+        #expect(graph.store.recurringSeries.count == 1)
+        let series = try #require(graph.store.recurringSeries.first)
+        let onItsDate = graph.store.transactions.filter { $0.date == today }.map(\.id)
+        #expect(onItsDate == ["t1"], "the edited transaction is the first occurrence, not joined by a generated copy")
+        #expect(graph.store.transactionById["t1"]?.recurringSeriesId == series.id)
+        let linked = graph.store.transactions.filter { $0.recurringSeriesId == series.id }
+        #expect(linked.count == 2, "the edited transaction plus the next occurrence")
+        // Red Flag 5: its subcategory survives, and the generated occurrence gets it too.
+        #expect(graph.store.subcategoryIdsByTransactionId["t1"] == ["s1"])
+        for tx in linked where tx.id != "t1" {
+            #expect(graph.store.subcategoryIdsByTransactionId[tx.id] == ["s1"])
+        }
+    }
+
     @Test func categoryChangeProposesSameMerchantTransactions() async throws {
         let graph = await TransactionFlowTestGraph.make()
         let first = try await add(graph, "t1", category: "")

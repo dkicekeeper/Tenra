@@ -31,10 +31,6 @@
   "Views/Components/Feedback/AnimatedTranscriptionText.swift": {
     "raw-spacing": 1
   },
-  "Views/Components/Feedback/RatingSurveyView.swift": {
-    "raw-radius": 1,
-    "system-font": 5
-  },
   "Views/History/HistoryView.swift": {
     "system-font": 3
   },

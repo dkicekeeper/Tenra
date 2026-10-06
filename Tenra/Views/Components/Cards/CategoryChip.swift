@@ -2,7 +2,9 @@
 //  CategoryChip.swift
 //  Tenra
 //
-//  Reusable category chip/button component
+//  Category tile of the category grids. Adapter over DesignKit's `ProgressRingTile`: the
+//  category style lookup (CategoryStyleCache, icon/colour overrides), its budget and the
+//  VoiceOver copy stay here.
 //
 
 import SwiftUI
@@ -47,47 +49,19 @@ struct CategoryChip: View {
     }
 
     var body: some View {
-        Button(action: onTap) {
-            VStack(spacing: AppSpacing.sm) {
-                Text(category)
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
-                    .lineLimit(1)
-                ZStack {
-                    // Budget progress ring (expense categories only)
-                    if let progress = budgetProgress, type == .expense {
-                        ProgressRing(
-                            progress: progress.percentage / 100,
-                            size: AppIconSize.budgetRing,
-                            lineWidth: 4,
-                            isOverBudget: progress.isOverBudget,
-                            animatesOnAppear: false // lazy grid — onAppear re-fires on scroll
-                        )
-                    }
-
-                    Image(systemName: styleData.iconName)
-                        .font(AppTypography.h2)
-                        .foregroundStyle(styleData.iconColor)
-                        .frame(width: AppIconSize.mega, height: AppIconSize.mega)
-                        .glassEffect(
-                            isSelected
-                                ? .regular.tint(styleData.coinColor).interactive()
-                                : .regular.interactive(),
-                            in: .circle
-                        )
-                }
-                .matchedTransitionSourceIfPresent(
-                    id: transitionSourceID,
-                    namespace: transitionNamespace
-                )
-                // Same height with or without the budget ring (72 vs 64 pt), so amounts
-                // under chips without a budget line up with their neighbours.
-                .frame(height: AppIconSize.budgetRing)
-            }
-        }
-        .buttonStyle(.plain) 
+        ProgressRingTile(
+            title: category,
+            systemImage: styleData.iconName,
+            // The selected glass tint is this colour at 30%, which is styleData.coinColor.
+            color: styleData.iconColor,
+            // Budget ring for expense categories only
+            progress: type == .expense ? budgetProgress.map { LimitProgress($0) } : nil,
+            isSelected: isSelected,
+            transitionSourceID: transitionSourceID,
+            transitionNamespace: transitionNamespace,
+            action: onTap
+        )
         .accessibilityLabel(String(format: String(localized: "accessibility.category.label"), category))
-        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
         .accessibilityHint(budgetProgress.map {
             String(format: String(localized: "accessibility.category.budgetHint"), Int($0.percentage))
         } ?? "")

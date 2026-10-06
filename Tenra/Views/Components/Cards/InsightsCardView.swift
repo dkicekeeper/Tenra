@@ -3,7 +3,8 @@
 //  Tenra
 //
 //  Phase 17: Financial Insights Feature
-//  Reusable insight card with mini-chart, metric, and trend indicator
+//  Insight card of the insights feed. Adapter over DesignKit's `MetricCard`: the insight
+//  model and the choice of mini chart for each kind of insight stay here.
 //
 
 import SwiftUI
@@ -60,108 +61,54 @@ struct InsightsCardView<BottomChart: View>: View {
         }
     }
 
-    // Mini-chart footprint. The chart is overlaid (not a layout sibling) so it can
-    // bleed to the card's trailing edge; the text column reserves matching room so
-    // titles/amounts/badges never run underneath it. Keep these in sync.
-    private static var miniChartWidth: CGFloat { 120 }
-    private static var miniChartHeight: CGFloat { 120 }
+    private var value: MetricCardValue {
+        if let currency = insight.metric.currency {
+            return .amount(insight.metric.value, currency: currency)
+        }
+        return .text(insight.metric.formattedValue)
+    }
+
+    private var trend: MetricCardTrend? {
+        insight.trend.map { trend in
+            MetricCardTrend(
+                direction: trend.direction.badgeDirection,
+                changePercent: trend.changePercent,
+                color: insight.trendBadgeColorOverride ?? trend.trendColor
+            )
+        }
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            // Text column. Reserves trailing room for the mini-chart overlay below
-            // so the title and amount+badge row can't collide with it.
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                Text(insight.title)
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
-                    .lineLimit(1)
-//                    .fixedSize(horizontal: false, vertical: true)
-
-                Text(insight.subtitle)
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
-                    .lineLimit(3)
-
-                metricRow
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            // Keep clear of the full-bleed mini-chart; full width when a bottom chart
-            // replaces it OR when this insight renders no mini-chart at all.
-            .padding(.trailing, (hasBottomChart || !hasMiniChart) ? 0 : Self.miniChartWidth + AppSpacing.sm)
-
-            // Full-size chart — shown only when injected via init(insight:bottomChart:)
-            if hasBottomChart {
-                bottomChartContent()
-            }
-        }
-        .padding(AppSpacing.lg)
-        .cardStyle()
-        // Mini chart overlaid OUTSIDE the clip region so it can bleed to the trailing edge.
-        // Hidden when a full-size bottom chart is injected.
-        .overlay(alignment: .trailing) {
-            if !hasBottomChart && hasMiniChart {
+        if hasBottomChart {
+            // Full-size chart, injected via init(insight:bottomChart:), replaces the mini chart.
+            MetricCard(
+                title: insight.title,
+                subtitle: insight.subtitle,
+                value: value,
+                unit: insight.metric.unit,
+                trend: trend,
+                chartPlacement: .bottom,
+                chart: bottomChartContent
+            )
+        } else if hasMiniChart {
+            MetricCard(
+                title: insight.title,
+                subtitle: insight.subtitle,
+                value: value,
+                unit: insight.metric.unit,
+                trend: trend
+            ) {
                 miniChart
-                    .frame(width: Self.miniChartWidth, height: Self.miniChartHeight)
-                    .padding(.trailing, AppSpacing.lg)
-                    .allowsHitTesting(false)
-            }
-        }
-    }
-
-    // MARK: - Metric Row
-
-    /// Amount (+ optional unit) with the trend badge. Keeps both on one line when they
-    /// fit the reserved width, otherwise drops the badge to a second line.
-    @ViewBuilder
-    private var metricRow: some View {
-        if insight.trend != nil {
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .center, spacing: AppSpacing.sm) {
-                    amountWithUnit
-                    trendBadge
-                }
-                VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                    amountWithUnit
-                    trendBadge
-                }
             }
         } else {
-            amountWithUnit
-        }
-    }
-
-    @ViewBuilder
-    private var amountWithUnit: some View {
-        HStack(alignment: .firstTextBaseline, spacing: AppSpacing.sm) {
-            // Large metric — use FormattedAmountText for currency amounts
-            if let currency = insight.metric.currency {
-                FormattedAmountText(
-                    amount: insight.metric.value,
-                    currency: currency,
-                    fontSize: AppTypography.h2,
-                    fontWeight: .bold,
-                    color: AppColors.textPrimary
-                )
-            } else {
-                Text(insight.metric.formattedValue)
-                    .font(AppTypography.h2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(AppColors.textPrimary)
-            }
-
-            if let unit = insight.metric.unit {
-                Text(unit)
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
-        }
-        .lineLimit(1)
-    }
-
-    @ViewBuilder
-    private var trendBadge: some View {
-        if let trend = insight.trend {
-            InsightTrendBadge(trend: trend, style: .pill, colorOverride: insight.trendBadgeColorOverride)
+            // No mini chart for this insight: the text takes the full card width.
+            MetricCard(
+                title: insight.title,
+                subtitle: insight.subtitle,
+                value: value,
+                unit: insight.metric.unit,
+                trend: trend
+            )
         }
     }
 

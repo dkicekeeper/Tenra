@@ -118,6 +118,33 @@ nonisolated enum LoanMonthStatusService {
         return total
     }
 
+    /// The loans summary's "Total Debt" and "Monthly": remaining principal and monthly
+    /// payment summed over `loans`. In the loans' own currency when they share one
+    /// (nothing to convert), else in `baseCurrency`, each loan converted first through
+    /// `rates` (unconverted on a missing rate, as in `unpaidTotal`). Summed raw, a 5 000 USD
+    /// loan and a 500 000 ₸ loan showed 505 000 in the first loan's currency.
+    /// `currency` is nil when there are no loans.
+    static func summaryTotals(
+        loans: [Account],
+        baseCurrency: String,
+        rates: RateSnapshot
+    ) -> (currency: String?, debt: Double, monthly: Double) {
+        let currencies = Set(loans.map(\.currency))
+        guard let currency = currencies.count > 1 ? baseCurrency : currencies.first else {
+            return (nil, 0, 0)
+        }
+        var debt = 0.0
+        var monthly = 0.0
+        for loan in loans {
+            guard let info = loan.loanInfo else { continue }
+            let principal = NSDecimalNumber(decimal: info.remainingPrincipal).doubleValue
+            let payment = NSDecimalNumber(decimal: info.monthlyPayment).doubleValue
+            debt += rates.convert(principal, from: loan.currency, to: currency) ?? principal
+            monthly += rates.convert(payment, from: loan.currency, to: currency) ?? payment
+        }
+        return (currency, debt, monthly)
+    }
+
     // MARK: - Calendar helpers
 
     private static func startOfMonth(_ date: Date, calendar: Calendar) -> Date? {

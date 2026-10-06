@@ -188,6 +188,31 @@ struct LoanMonthStatusTests {
         #expect(total == 300)
     }
 
+    // MARK: - Summary totals
+
+    @Test func summaryTotalsConvertOnlyWhenLoanCurrenciesDiffer() {
+        let rates = RateSnapshot(rates: ["USD": 500]) // 1 USD = 500 KZT
+
+        // One currency: summed in it, whatever the base currency.
+        let dollars = [
+            loan(id: "a", currency: "USD", remaining: 5_000, monthlyPayment: 200),
+            loan(id: "b", currency: "USD", remaining: 1_000, monthlyPayment: 100),
+        ]
+        let same = LoanMonthStatusService.summaryTotals(loans: dollars, baseCurrency: "KZT", rates: rates)
+        #expect(same.currency == "USD")
+        #expect(same.debt == 6_000)
+        #expect(same.monthly == 300)
+
+        // Several: each loan in the base currency first, not 500 000 + 5 000 = 505 000.
+        let mixed = [loan(id: "kzt"), loan(id: "usd", currency: "USD", remaining: 5_000, monthlyPayment: 200)]
+        let converted = LoanMonthStatusService.summaryTotals(loans: mixed, baseCurrency: "KZT", rates: rates)
+        #expect(converted.currency == "KZT")
+        #expect(converted.debt == 3_000_000)   // 500 000 + 5 000 × 500
+        #expect(converted.monthly == 150_000)  // 50 000 + 200 × 500
+
+        #expect(LoanMonthStatusService.summaryTotals(loans: [], baseCurrency: "KZT", rates: rates).currency == nil)
+    }
+
     @Test func amountDueIsCappedAtWhatIsLeftToRepay() throws {
         // Regular month: the monthly payment.
         let regular = try #require(loan().loanInfo)

@@ -252,22 +252,23 @@ struct LoansListView: View {
         // Закрытые кредиты исключены из всех сводных чисел: их остаток равен нулю, а
         // monthlyPayment остаётся заполненным навсегда и раздувал бы «Ежемесячно».
         let active = loansViewModel.activeLoans
-        let totalDebt = active.compactMap { $0.loanInfo?.remainingPrincipal }
-            .reduce(Decimal(0), +)
-        let totalMonthlyPayment = active.compactMap { $0.loanInfo?.monthlyPayment }
-            .reduce(Decimal(0), +)
-        let primaryCurrency = active.first?.currency ?? loansViewModel.loans.first?.currency ?? "KZT"
-
-        // This month's payments not made yet, in the base currency (loans may be in several
-        // currencies). Hidden when no active loan has a payment due this month. Reading
-        // `currencyRatesVersion` re-renders the total once FX rates land.
         let baseCurrency = transactionsViewModel.appSettings.baseCurrency
+        // Reading `currencyRatesVersion` re-renders the totals below once FX rates land.
         _ = transactionStore.currencyRatesVersion
+        let rates = RateSnapshot()
+
+        // Loans in several currencies are summed in the base currency (they were summed
+        // raw, labelled with the first loan's currency); one currency stays as it is.
+        let totals = LoanMonthStatusService.summaryTotals(loans: active, baseCurrency: baseCurrency, rates: rates)
+        let summaryCurrency = totals.currency ?? loansViewModel.loans.first?.currency ?? "KZT"
+
+        // This month's payments not made yet, in the base currency. Hidden when no active
+        // loan has a payment due this month.
         let unpaidThisMonth: Double? = monthStatuses.isEmpty ? nil : LoanMonthStatusService.unpaidTotal(
             loans: active,
             statuses: monthStatuses,
             baseCurrency: baseCurrency,
-            rates: RateSnapshot()
+            rates: rates
         )
 
         return VStack(alignment: .leading, spacing: AppSpacing.md) {
@@ -277,8 +278,8 @@ struct LoansListView: View {
                         .font(AppTypography.bodySmall)
                         .foregroundStyle(AppColors.textSecondary)
                     FormattedAmountText(
-                        amount: NSDecimalNumber(decimal: totalDebt).doubleValue,
-                        currency: primaryCurrency,
+                        amount: totals.debt,
+                        currency: summaryCurrency,
                         fontSize: AppTypography.h3
                     )
                 }
@@ -288,8 +289,8 @@ struct LoansListView: View {
                         .font(AppTypography.bodySmall)
                         .foregroundStyle(AppColors.textSecondary)
                     FormattedAmountText(
-                        amount: NSDecimalNumber(decimal: totalMonthlyPayment).doubleValue,
-                        currency: primaryCurrency,
+                        amount: totals.monthly,
+                        currency: summaryCurrency,
                         fontSize: AppTypography.h3,
                         color: AppColors.expense
                     )

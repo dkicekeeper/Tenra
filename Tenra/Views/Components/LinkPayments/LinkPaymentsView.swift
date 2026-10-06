@@ -357,7 +357,17 @@ struct LinkPaymentsView: View {
         .scrollDismissesKeyboard(.interactively)
         .overlay {
             if isBaselineLoading && cachedFilteredCandidates.isEmpty {
-                ProgressView()
+                // A day of transaction rows in their shape while the candidates load.
+                VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                    SectionHeaderViewSkeleton()
+                        .padding(.top, AppSpacing.sm)
+                    ForEach(0..<5, id: \.self) { _ in
+                        UniversalRowSkeleton(config: .info, showsSubtitle: true, trailing: .value)
+                    }
+                }
+                .screenPadding()
+                .frame(maxHeight: .infinity, alignment: .top)
+                .skeletonLoadingLabel()
             } else if cachedFilteredCandidates.isEmpty {
                 if searchText.isEmpty {
                     ContentUnavailableView {

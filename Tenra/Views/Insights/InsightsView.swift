@@ -27,6 +27,8 @@ struct InsightsView: View {
             VStack(spacing: AppSpacing.xl) {
                 if !insightsViewModel.isLoading && !insightsViewModel.hasData {
                     emptyState
+                } else if insightsViewModel.isLoading && !insightsViewModel.hasData {
+                    insightsSkeleton
                 } else {
                     insightsSummaryHeaderSection
                     insightsFilterSection
@@ -125,6 +127,43 @@ struct InsightsView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Loading Skeleton
+
+    /// First load: the screen's own shapes (stat cards, filter chips, a section of insight
+    /// cards) instead of a blank page. Later reloads keep the shown content.
+    private var insightsSkeleton: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xl) {
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
+                SkeletonText(AppTypography.bodyEmphasis, width: 120)
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible(), spacing: AppSpacing.md),
+                        GridItem(.flexible(), spacing: AppSpacing.md)
+                    ],
+                    spacing: AppSpacing.md
+                ) {
+                    ForEach(0..<4, id: \.self) { _ in InsightsStatCardSkeleton() }
+                }
+            }
+            .screenPadding()
+
+            HStack(spacing: AppSpacing.sm) {
+                ForEach(0..<4, id: \.self) { _ in
+                    SkeletonView(height: 36, width: 88, cornerRadius: AppRadius.xl)
+                }
+            }
+            .shimmer()
+            .screenPadding()
+
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
+                SectionHeaderViewSkeleton(style: .large)
+                ForEach(0..<3, id: \.self) { _ in MetricCardSkeleton() }
+            }
+            .screenPadding()
+        }
+        .skeletonLoadingLabel()
     }
 
     // MARK: - Summary Header Section

@@ -156,14 +156,28 @@ struct CategoryFilterView: View {
         CheckmarkRow(category, icon: iconConfig(for: category), isSelected: isSelected, action: action)
     }
 
+    /// Plated like the category rows (`CategoryRow`): the icon in the category's colour on a
+    /// pale circle of it. A category deleted since keeps the neutral folder, on a neutral
+    /// plate. `xl`, the size the category icons here already had.
     private func iconConfig(for categoryName: String) -> IconConfig {
         if let custom = customCategories.first(where: { $0.name == categoryName }) {
             return .custom(
                 source: custom.iconSource,
-                style: .circle(size: AppIconSize.xl, tint: .monochrome(custom.color))
+                style: .circle(
+                    size: AppIconSize.xl,
+                    tint: .monochrome(custom.color),
+                    backgroundColor: AppColors.pale(custom.color)
+                )
             )
         }
-        return .sfSymbol("folder", color: AppColors.textSecondary)
+        return .custom(
+            source: .sfSymbol("folder"),
+            style: .circle(
+                size: AppIconSize.xl,
+                tint: .monochrome(AppColors.textSecondary),
+                backgroundColor: AppColors.Status.neutralPale
+            )
+        )
     }
 
     // MARK: - Apply

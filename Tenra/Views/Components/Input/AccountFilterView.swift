@@ -86,7 +86,7 @@ struct AccountFilterView: View {
 
                 CheckmarkRow(
                     account.name,
-                    icon: .custom(source: account.iconSource, style: .roundedSquare(size: AppIconSize.xl)),
+                    icon: iconConfig(for: account),
                     value: amountsHidden
                         ? Formatting.hiddenAmount(currency: account.currency)
                         : Formatting.formatCurrencySmart(balance, currency: account.currency),
@@ -99,6 +99,34 @@ struct AccountFilterView: View {
         } header: {
             SectionHeaderView(title)
         }
+    }
+
+    // MARK: - Account Icon
+
+    /// Plated like the rest of the app. A logo fills its circle, as in the account rows
+    /// (`IconView(source:size:)`). An SF Symbol, which the account rows draw in the accent,
+    /// sits on a pale accent circle, the category-row plate: the account rows' `bgCard`
+    /// plate is the colour of this sheet's grouped rows in dark mode and would vanish. No
+    /// icon: the placeholder on a neutral plate. `xl`, the size these icons already had.
+    private func iconConfig(for account: Account) -> IconConfig {
+        let style: IconStyle
+        switch account.iconSource {
+        case .brandService:
+            style = .serviceLogo(size: AppIconSize.xl)
+        case .sfSymbol:
+            style = .circle(
+                size: AppIconSize.xl,
+                tint: .monochrome(AppColors.accent),
+                backgroundColor: AppColors.pale(AppColors.accent)
+            )
+        case .none:
+            style = .circle(
+                size: AppIconSize.xl,
+                tint: .monochrome(AppColors.textSecondary),
+                backgroundColor: AppColors.Status.neutralPale
+            )
+        }
+        return .custom(source: account.iconSource, style: style)
     }
 }
 

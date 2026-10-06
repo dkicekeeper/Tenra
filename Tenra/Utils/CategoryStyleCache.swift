@@ -150,7 +150,7 @@ final class CategoryStyleCache {
 
         switch type {
         case .loanPayment, .loanEarlyRepayment:
-            return systemStyle(tint: AppColors.expense, iconName: "creditcard.fill")
+            return systemStyle(tint: TransactionDisplayHelper.loanPaymentColor, iconName: "creditcard.fill")
         case .depositTopUp:
             return systemStyle(tint: AppColors.income, iconName: "banknote.fill")
         case .depositWithdrawal:

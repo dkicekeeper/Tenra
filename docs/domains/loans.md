@@ -106,6 +106,8 @@ The `TransactionEditView` allows users to override the category with any `.expen
 
 `CategoryStyleCache.systemTypeStyle(category:type:)` provides a baked-in style for system types when the user is on the technical default; the regular custom-category path takes over once a real category is chosen.
 
+**Colour:** loan payments and early repayments have their own type colour, `TransactionDisplayHelper.loanPaymentColor` (`AppColors.warning`, orange: a debt obligation, not an error, and no other type uses it). It tints the row's `creditcard.fill` fallback and the plate behind the loan's own icon (`systemTypeStyle`), and the "Loan payment" slice and icon in Insights (`InsightsService.syntheticCategoryStyle`). Until 2026-10 it was `AppColors.expense` (black / white). The amount stays `.primary`, like every outflow (`TransactionDisplayHelper.amountColor`).
+
 ## Every Financial Mutation Creates a Transaction
 
 | Method | Transaction Type |

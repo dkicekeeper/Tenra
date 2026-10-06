@@ -1063,6 +1063,7 @@
 "loan.emptyDescription" = "신용대출과 할부를 추가해 상환과 진행 상황을 추적하세요";
 "loan.totalDebt" = "총 부채";
 "loan.monthlyTotal" = "월별";
+"loan.unpaidThisMonth" = "이번 달 미상환";
 "loan.activeCount" = "활성 대출 %d개";
 "loan.typeAnnuityShort" = "신용대출";
 "loan.typeInstallmentShort" = "할부";
@@ -1080,6 +1081,8 @@
 "loan.deleteMessage" = "이 대출의 상환 내역은 계좌의 실제 지출이에요. 내역을 남겨 두거나 대출과 함께 삭제할 수 있어요.";
 "loan.closedSection" = "상환 완료";
 "loan.statusPaidOff" = "상환 완료";
+"loan.statusPaidThisMonth" = "이번 달 상환 완료";
+"loan.statusNotPaid" = "미상환";
 "loan.closedOn" = "%@에 상환 완료";
 "loan.deleteKeepPayments" = "삭제하고 상환 내역 유지";
 "loan.deleteWithPayments" = "모두 삭제";

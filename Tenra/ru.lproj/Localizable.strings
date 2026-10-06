@@ -1063,6 +1063,7 @@
 "loan.emptyDescription" = "Добавьте кредиты и рассрочки для отслеживания платежей и прогресса";
 "loan.totalDebt" = "Общий долг";
 "loan.monthlyTotal" = "Ежемесячно";
+"loan.unpaidThisMonth" = "Не оплачено в этом месяце";
 "loan.activeCount" = "%d активных кредитов";
 "loan.typeAnnuityShort" = "Кредит";
 "loan.typeInstallmentShort" = "Рассрочка";
@@ -1080,6 +1081,8 @@
 "loan.deleteMessage" = "Платежи по кредиту записаны как реальные расходы по вашим счетам. Их можно оставить в истории или удалить вместе с кредитом.";
 "loan.closedSection" = "Закрытые";
 "loan.statusPaidOff" = "Погашен";
+"loan.statusPaidThisMonth" = "Оплачено в этом месяце";
+"loan.statusNotPaid" = "Не оплачено";
 "loan.closedOn" = "Закрыт %@";
 "loan.deleteKeepPayments" = "Удалить, оставить платежи";
 "loan.deleteWithPayments" = "Удалить всё";

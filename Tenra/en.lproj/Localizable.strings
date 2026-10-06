@@ -1063,6 +1063,7 @@
 "loan.emptyDescription" = "Add your credits and installments to track payments and progress";
 "loan.totalDebt" = "Total Debt";
 "loan.monthlyTotal" = "Monthly";
+"loan.unpaidThisMonth" = "Unpaid this month";
 "loan.activeCount" = "%d active loans";
 "loan.typeAnnuityShort" = "Credit";
 "loan.typeInstallmentShort" = "Installment";
@@ -1080,6 +1081,8 @@
 "loan.deleteMessage" = "Payments on this loan are recorded as real expenses on your accounts. You can keep them in history, or delete them together with the loan.";
 "loan.closedSection" = "Closed";
 "loan.statusPaidOff" = "Paid off";
+"loan.statusPaidThisMonth" = "Paid this month";
+"loan.statusNotPaid" = "Not paid";
 "loan.closedOn" = "Closed %@";
 "loan.deleteKeepPayments" = "Delete, keep payments";
 "loan.deleteWithPayments" = "Delete everything";

@@ -1063,6 +1063,7 @@
 "loan.emptyDescription" = "Ödemeleri ve ilerlemeyi takip etmek için kredilerini ve taksitlerini ekle";
 "loan.totalDebt" = "Toplam Borç";
 "loan.monthlyTotal" = "Aylık";
+"loan.unpaidThisMonth" = "Bu ay ödenmemiş";
 "loan.activeCount" = "%d aktif kredi";
 "loan.typeAnnuityShort" = "Kredi";
 "loan.typeInstallmentShort" = "Taksit";
@@ -1080,6 +1081,8 @@
 "loan.deleteMessage" = "Bu kredinin ödemeleri hesaplarınızdaki gerçek harcamalardır. Bunları geçmişte tutabilir veya krediyle birlikte silebilirsiniz.";
 "loan.closedSection" = "Kapananlar";
 "loan.statusPaidOff" = "Ödendi";
+"loan.statusPaidThisMonth" = "Bu ay ödendi";
+"loan.statusNotPaid" = "Ödenmedi";
 "loan.closedOn" = "%@ tarihinde kapandı";
 "loan.deleteKeepPayments" = "Sil, ödemeleri koru";
 "loan.deleteWithPayments" = "Hepsini sil";

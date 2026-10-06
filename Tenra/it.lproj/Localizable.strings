@@ -1063,6 +1063,7 @@
 "loan.emptyDescription" = "Aggiungi i tuoi crediti e le rateizzazioni per monitorare pagamenti e avanzamento";
 "loan.totalDebt" = "Debito totale";
 "loan.monthlyTotal" = "Mensile";
+"loan.unpaidThisMonth" = "Da pagare questo mese";
 "loan.activeCount" = "%d prestiti attivi";
 "loan.typeAnnuityShort" = "Credito";
 "loan.typeInstallmentShort" = "Rateizzazione";
@@ -1080,6 +1081,8 @@
 "loan.deleteMessage" = "I pagamenti di questo prestito sono spese reali sui tuoi conti. Puoi mantenerli nella cronologia o eliminarli insieme al prestito.";
 "loan.closedSection" = "Estinti";
 "loan.statusPaidOff" = "Estinto";
+"loan.statusPaidThisMonth" = "Pagato questo mese";
+"loan.statusNotPaid" = "Non pagato";
 "loan.closedOn" = "Estinto il %@";
 "loan.deleteKeepPayments" = "Elimina, mantieni i pagamenti";
 "loan.deleteWithPayments" = "Elimina tutto";

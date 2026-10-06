@@ -23,6 +23,10 @@ struct LoansListView: View {
     @State private var selectedFilter: LoanFilter = .all
     @State private var payAllError: String? = nil
     @State private var isClosedSectionExpanded = false
+    /// "Today" for this month's payment statuses. Refreshed on a significant time change,
+    /// which fires at midnight and, when midnight passed in the background, on return to the
+    /// foreground: a new month must not keep last month's statuses.
+    @State private var today = Date()
 
     private let logger = Logger(subsystem: "Tenra", category: "LoansListView")
 
@@ -78,10 +82,11 @@ struct LoansListView: View {
                     }
                 )
             } else {
+                let monthStatuses = currentMonthStatuses
                 ScrollView {
                     VStack(spacing: AppSpacing.md) {
                         // Summary card
-                        loansSummary
+                        loansSummary(monthStatuses: monthStatuses)
                             .chartAppear()
                             .screenPadding()
 
@@ -99,7 +104,7 @@ struct LoansListView: View {
                         // Loan cards
                         ForEach(Array(filteredLoans.enumerated()), id: \.element.id) { index, loan in
                             NavigationLink(value: FinancesDestination.loanDetail(loan.id)) {
-                                LoanCard(loan: loan)
+                                LoanCard(loan: loan, monthStatus: monthStatuses[loan.id])
                             }
                             .buttonStyle(.plain)
                             .chartAppear(delay: Double(index) * 0.05)
@@ -166,6 +171,30 @@ struct LoansListView: View {
             }
         }
         .animation(AppAnimation.gentleSpring, value: payAllError)
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            today = Date()
+        }
+    }
+
+    // MARK: - Month status
+
+    /// This month's payment status of each active loan, by loan id (no entry: nothing due this
+    /// month). Computed in `body`, not cached, so it can't go stale: reading `transactions`
+    /// subscribes the screen to every add, edit and delete (`mutationVersion` itself is
+    /// @ObservationIgnored), the loans' own state comes through `activeLoans`, and `today`
+    /// turns over with the day. A handful of loans, each with its own small bucket.
+    private var currentMonthStatuses: [String: LoanMonthStatus] {
+        _ = transactionStore.transactions.count
+        let transactionsByAccount = transactionStore.transactionsByAccount
+        var statuses: [String: LoanMonthStatus] = [:]
+        for loan in loansViewModel.activeLoans {
+            statuses[loan.id] = LoanMonthStatusService.status(
+                loan: loan,
+                loanTransactions: transactionsByAccount[loan.id] ?? [],
+                today: today
+            )
+        }
+        return statuses
     }
 
     // MARK: - Closed loans
@@ -219,7 +248,7 @@ struct LoansListView: View {
 
     // MARK: - Summary
 
-    private var loansSummary: some View {
+    private func loansSummary(monthStatuses: [String: LoanMonthStatus]) -> some View {
         // Закрытые кредиты исключены из всех сводных чисел: их остаток равен нулю, а
         // monthlyPayment остаётся заполненным навсегда и раздувал бы «Ежемесячно».
         let active = loansViewModel.activeLoans
@@ -228,6 +257,18 @@ struct LoansListView: View {
         let totalMonthlyPayment = active.compactMap { $0.loanInfo?.monthlyPayment }
             .reduce(Decimal(0), +)
         let primaryCurrency = active.first?.currency ?? loansViewModel.loans.first?.currency ?? "KZT"
+
+        // This month's payments not made yet, in the base currency (loans may be in several
+        // currencies). Hidden when no active loan has a payment due this month. Reading
+        // `currencyRatesVersion` re-renders the total once FX rates land.
+        let baseCurrency = transactionsViewModel.appSettings.baseCurrency
+        _ = transactionStore.currencyRatesVersion
+        let unpaidThisMonth: Double? = monthStatuses.isEmpty ? nil : LoanMonthStatusService.unpaidTotal(
+            loans: active,
+            statuses: monthStatuses,
+            baseCurrency: baseCurrency,
+            rates: RateSnapshot()
+        )
 
         return VStack(alignment: .leading, spacing: AppSpacing.md) {
             HStack(alignment: .top) {
@@ -251,6 +292,21 @@ struct LoansListView: View {
                         currency: primaryCurrency,
                         fontSize: AppTypography.h3,
                         color: AppColors.expense
+                    )
+                }
+            }
+
+            if let unpaidThisMonth {
+                HStack {
+                    Text(String(localized: "loan.unpaidThisMonth", defaultValue: "Unpaid this month"))
+                        .font(AppTypography.bodySmall)
+                        .foregroundStyle(AppColors.textSecondary)
+                    Spacer()
+                    FormattedAmountText(
+                        amount: unpaidThisMonth,
+                        currency: baseCurrency,
+                        fontSize: AppTypography.bodyEmphasis,
+                        color: unpaidThisMonth > 0 ? AppColors.warning : AppColors.income
                     )
                 }
             }

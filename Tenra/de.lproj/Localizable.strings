@@ -1063,6 +1063,7 @@
 "loan.emptyDescription" = "Fügen Sie Ihre Kredite und Ratenkäufe hinzu, um Zahlungen und Fortschritt zu verfolgen";
 "loan.totalDebt" = "Gesamtschulden";
 "loan.monthlyTotal" = "Monatlich";
+"loan.unpaidThisMonth" = "Diesen Monat offen";
 "loan.activeCount" = "%d aktive Kredite";
 "loan.typeAnnuityShort" = "Kredit";
 "loan.typeInstallmentShort" = "Ratenkauf";
@@ -1080,6 +1081,8 @@
 "loan.deleteMessage" = "Zahlungen für diesen Kredit sind echte Ausgaben auf Ihren Konten. Sie können sie im Verlauf behalten oder zusammen mit dem Kredit löschen.";
 "loan.closedSection" = "Abgeschlossen";
 "loan.statusPaidOff" = "Abbezahlt";
+"loan.statusPaidThisMonth" = "Diesen Monat bezahlt";
+"loan.statusNotPaid" = "Nicht bezahlt";
 "loan.closedOn" = "Abgeschlossen am %@";
 "loan.deleteKeepPayments" = "Löschen, Zahlungen behalten";
 "loan.deleteWithPayments" = "Alles löschen";

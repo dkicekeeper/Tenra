@@ -1063,6 +1063,7 @@
 "loan.emptyDescription" = "Ajoutez vos crédits et paiements échelonnés pour suivre les remboursements et la progression";
 "loan.totalDebt" = "Dette totale";
 "loan.monthlyTotal" = "Par mois";
+"loan.unpaidThisMonth" = "Reste à payer ce mois-ci";
 "loan.activeCount" = "%d crédits actifs";
 "loan.typeAnnuityShort" = "Crédit";
 "loan.typeInstallmentShort" = "Échelonné";
@@ -1080,6 +1081,8 @@
 "loan.deleteMessage" = "Les paiements de ce crédit sont de vraies dépenses sur vos comptes. Vous pouvez les garder dans l'historique ou les supprimer avec le crédit.";
 "loan.closedSection" = "Clôturés";
 "loan.statusPaidOff" = "Remboursé";
+"loan.statusPaidThisMonth" = "Payé ce mois-ci";
+"loan.statusNotPaid" = "Non payé";
 "loan.closedOn" = "Clôturé le %@";
 "loan.deleteKeepPayments" = "Supprimer, garder les paiements";
 "loan.deleteWithPayments" = "Tout supprimer";

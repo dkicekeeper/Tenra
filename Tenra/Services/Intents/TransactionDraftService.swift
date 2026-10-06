@@ -99,6 +99,15 @@ enum TransactionDraftService {
         if currency != account.currency {
             switch conversion {
             case .provided(let value):
+                // nil = the caller's network conversion failed too. Committing anyway
+                // would move the account by the raw foreign amount.
+                guard let value else {
+                    return .failure(.needsFXConversion(
+                        amount: amount,
+                        from: currency,
+                        to: account.currency
+                    ))
+                }
                 convertedAmount = value
             case .cachedOnly:
                 guard let cached = CurrencyConverter.convertSync(

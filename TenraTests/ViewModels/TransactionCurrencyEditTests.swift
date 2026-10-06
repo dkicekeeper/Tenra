@@ -86,8 +86,12 @@ struct TransactionCurrencyEditTests {
     private func saveAndWait(_ editor: TransactionEditCoordinator) async -> Bool {
         var succeeded = false
         editor.save { succeeded = true }
-        for _ in 0..<2000 where !succeeded && editor.errorMessage == nil && editor.bulkCategoryProposal == nil {
-            await Task.yield()
+        // Bounded by time, not by a count of yields: a rate lookup runs off the main actor,
+        // and on a loaded CI simulator 2000 yields ran out before its error arrived.
+        let deadline = ContinuousClock.now + .seconds(30)
+        while !succeeded && editor.errorMessage == nil && editor.bulkCategoryProposal == nil
+                && ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(10))
         }
         return succeeded
     }

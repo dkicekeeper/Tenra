@@ -33,6 +33,9 @@ struct GroupedTransactionList<Overlay: View>: View {
 
     @State private var visibleLimit: Int
     @State private var cachedSections: [DaySection] = []
+    /// Count the sections were last built from: a change means rows were added or
+    /// removed (reset pagination), an equal count with new content means an edit.
+    @State private var builtCount = 0
 
     private struct DaySection: Identifiable {
         let date: String
@@ -248,17 +251,24 @@ struct GroupedTransactionList<Overlay: View>: View {
                         }
                 }
             }
-            // `.task(id: transactions.count)` replaces `.onAppear`: prevents re-fire on
-            // back-navigation when the count is unchanged. SwiftUI cancels the previous task
-            // automatically. visibleLimit reset is handled here as well.
-            .task(id: transactions.count) {
-                // When sections already exist, a count change is a delete/insert (not the
-                // first load or a back-nav) — animate the ForEach diff so removed rows
-                // collapse smoothly instead of the list teleporting up one frame. The
-                // initial populate (empty → filled) stays instant to avoid a whole-list
-                // entrance on every screen open.
+            // Keyed on the transactions themselves, not their count: an edit (amount,
+            // category, date) keeps the count, and a count key left the detail screens
+            // showing the old rows and day totals until they were reopened. Comparing is
+            // cheap when nothing changed: Array == short-circuits on the shared buffer, so
+            // a back-navigation with the same array doesn't re-fire. SwiftUI cancels the
+            // previous task automatically.
+            .task(id: transactions) {
+                // When sections already exist, this is a mutation (not the first load or a
+                // back-nav): animate the ForEach diff so removed rows collapse smoothly
+                // instead of the list teleporting up one frame. The initial populate
+                // (empty → filled) stays instant to avoid a whole-list entrance on every
+                // screen open. Pagination resets only when rows were added or removed, so
+                // an edit deep in the list doesn't jump back to the first page.
                 let isMutation = !cachedSections.isEmpty
-                visibleLimit = pageSize
+                if transactions.count != builtCount {
+                    visibleLimit = pageSize
+                }
+                builtCount = transactions.count
                 if isMutation {
                     withAnimation(AppAnimation.gentleSpring) { rebuildSections() }
                 } else {

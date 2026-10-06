@@ -355,6 +355,9 @@ struct LoanDetailView: View {
                                     showPaymentError(String(localized: "loan.paymentFailed", defaultValue: "Payment failed. Please try again."))
                                 }
                             }
+                        } else {
+                            // e.g. no rate to convert the payment into the paying card's currency
+                            showPaymentError(String(localized: "loan.paymentFailed", defaultValue: "Payment failed. Please try again."))
                         }
                     }
                 )
@@ -404,6 +407,9 @@ struct LoanDetailView: View {
                                     showPaymentError(String(localized: "loan.earlyRepaymentFailed", defaultValue: "Early repayment failed. Please try again."))
                                 }
                             }
+                        } else {
+                            // e.g. no rate to convert the repayment into the paying card's currency
+                            showPaymentError(String(localized: "loan.earlyRepaymentFailed", defaultValue: "Early repayment failed. Please try again."))
                         }
                     }
                 )

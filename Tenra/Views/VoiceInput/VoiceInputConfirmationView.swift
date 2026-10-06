@@ -537,8 +537,9 @@ struct VoiceInputConfirmationView: View {
             accountWarning = String(localized: "voiceConfirmation.warning.selectAccount")
 
         case .needsFXConversion:
-            // Недостижимо: resolveAndCommit повторяет попытку с .provided выше.
-            amountWarning = String(localized: "voiceConfirmation.warning.enterValidAmount")
+            // Курса нет ни в кэше, ни в сети (resolveAndCommit уже повторил попытку
+            // с .provided): без конвертации счёт изменился бы на сумму в чужой валюте.
+            amountWarning = String(localized: "currency.error.conversionFailed")
         }
     }
 }

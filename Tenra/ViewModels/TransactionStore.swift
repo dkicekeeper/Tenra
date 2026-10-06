@@ -914,11 +914,14 @@ final class TransactionStore {
     }
 
     /// Transfer between accounts (convenience method)
+    /// - Parameter convertedAmount: what leaves the source account, in its currency, when
+    ///   `currency` is another one. Without it the source is debited the raw `amount`.
     func transfer(
         from sourceId: String,
         to targetId: String,
         amount: Double,
         currency: String,
+        convertedAmount: Double? = nil,
         targetAmount: Double? = nil,
         targetCurrency: String? = nil,
         date: String,
@@ -940,6 +943,7 @@ final class TransactionStore {
             description: description,
             amount: amount,
             currency: currency,
+            convertedAmount: convertedAmount,
             type: .internalTransfer,
             category: TransactionType.transferCategoryName,
             accountId: sourceId,

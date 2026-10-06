@@ -124,7 +124,19 @@ final class TransactionAddCoordinator {
             return ValidationResult(isValid: false, errors: [.accountNotFound])
         }
 
-        // Step 2: Handle recurring series if enabled
+        // Step 2: Conversion fields (TransactionConversion): the amount in the account's
+        // currency when it differs, which the balance moves by, and the equivalent the row
+        // shows. `convertedAmount` used to hold the BASE-currency value instead, and a
+        // missing rate saved the raw foreign amount; now it refuses the save. Checked
+        // before the recurring branch too: its occurrences convert from the same cache.
+        guard let conversion = await conversionFields(account: account) else {
+            return ValidationResult(
+                isValid: false,
+                errors: [.custom(String(localized: "currency.error.conversionFailed"))]
+            )
+        }
+
+        // Step 3: Handle recurring series if enabled
         if case .frequency = formData.recurring {
             do {
                 try await createRecurringSeriesWithSubcategories()
@@ -138,27 +150,8 @@ final class TransactionAddCoordinator {
             return .valid
         }
 
-        // Step 3: Convert currency to base currency
-        let baseCurrency = transactionsViewModel.appSettings.baseCurrency
-        let conversionResult = await convertCurrency(
-            amount: formData.parsedAmount!,
-            from: formData.currency,
-            to: baseCurrency
-        )
-
-        // Step 4: Calculate target amounts (for different currency scenarios)
-        let targetAmounts = await calculateTargetAmounts(
-            amount: formData.parsedAmount!,
-            currency: formData.currency,
-            account: account,
-            baseCurrency: baseCurrency
-        )
-
-        // Step 5: Create and add transaction via TransactionStore
-        let transaction = createTransaction(
-            convertedAmount: conversionResult.convertedAmount,
-            targetAmounts: targetAmounts
-        )
+        // Step 4: Create and add transaction via TransactionStore
+        let transaction = createTransaction(conversion: conversion)
 
         let createdTransaction: Transaction
         do {
@@ -167,7 +160,7 @@ final class TransactionAddCoordinator {
             return ValidationResult(isValid: false, errors: [.custom(error.localizedDescription)])
         }
 
-        // Step 6: Link subcategories if any selected
+        // Step 5: Link subcategories if any selected
         if !formData.subcategoryIds.isEmpty {
             await linkSubcategories(to: createdTransaction)
         }
@@ -211,24 +204,21 @@ final class TransactionAddCoordinator {
         }
     }
 
-    private func createTransaction(
-        convertedAmount: Double?,
-        targetAmounts: TargetAmounts
-    ) -> Transaction {
+    private func createTransaction(conversion: TransactionConversion) -> Transaction {
         Transaction(
             id: "",
             date: DateFormatters.dateFormatter.string(from: formData.selectedDate),
             description: formData.description,
             amount: formData.amountDouble!,
             currency: formData.currency,
-            convertedAmount: convertedAmount,
+            convertedAmount: conversion.convertedAmount,
             type: formData.type,
             category: formData.category,
             subcategory: nil,
             accountId: formData.accountId!,
             targetAccountId: nil,
-            targetCurrency: targetAmounts.targetCurrency,
-            targetAmount: targetAmounts.targetAmount,
+            targetCurrency: conversion.targetCurrency,
+            targetAmount: conversion.targetAmount,
             recurringSeriesId: nil,
             recurringOccurrenceId: nil,
             createdAt: Date().timeIntervalSince1970
@@ -290,93 +280,26 @@ final class TransactionAddCoordinator {
         return .valid
     }
 
-    private func convertCurrency(
-        amount: Decimal,
-        from sourceCurrency: String,
-        to targetCurrency: String
-    ) async -> CurrencyConversionResult {
-        // No conversion needed if currencies match
-        guard sourceCurrency != targetCurrency else {
-            return CurrencyConversionResult(convertedAmount: nil, exchangeRate: nil)
-        }
+    /// Conversion fields for the new transaction on `account`, nil when the amount must be
+    /// converted into the account's currency and no rate can be had (cache, then network).
+    private func conversionFields(account: Account) async -> TransactionConversion? {
+        guard let amount = formData.amountDouble else { return nil }
+        let currency = formData.currency
+        let baseCurrency = transactionsViewModel.appSettings.baseCurrency
 
-        let amountDouble = NSDecimalNumber(decimal: amount).doubleValue
-
-        // Pre-fetch exchange rates
-        _ = await CurrencyConverter.getExchangeRate(for: sourceCurrency)
-        _ = await CurrencyConverter.getExchangeRate(for: targetCurrency)
-
-        // Try sync conversion first (uses cache)
-        if let convertedAmount = CurrencyConverter.convertSync(
-            amount: amountDouble,
-            from: sourceCurrency,
-            to: targetCurrency
-        ) {
-            let rate = convertedAmount / amountDouble
-            return CurrencyConversionResult(
-                convertedAmount: convertedAmount,
-                exchangeRate: rate
-            )
-        }
-
-        // Fallback to async conversion
-        if let convertedAmount = await CurrencyConverter.convert(
-            amount: amountDouble,
-            from: sourceCurrency,
-            to: targetCurrency
-        ) {
-            let rate = convertedAmount / amountDouble
-            return CurrencyConversionResult(
-                convertedAmount: convertedAmount,
-                exchangeRate: rate
-            )
-        }
-
-        return CurrencyConversionResult(convertedAmount: nil, exchangeRate: nil)
-    }
-
-    private func calculateTargetAmounts(
-        amount: Decimal,
-        currency: String,
-        account: Account,
-        baseCurrency: String
-    ) async -> TargetAmounts {
-        let accountCurrency = account.currency
-
-        // Case 1: Transaction currency differs from account currency
-        // Need to convert to account currency for correct balance update
-        if currency != accountCurrency {
-            let conversionResult = await convertCurrency(
+        func fields() -> TransactionConversion? {
+            TransactionConversion.singleAccount(
                 amount: amount,
-                from: currency,
-                to: accountCurrency
-            )
-
-            return TargetAmounts(
-                targetCurrency: accountCurrency,
-                targetAmount: conversionResult.convertedAmount
+                currency: currency,
+                accountCurrency: account.currency,
+                baseCurrency: baseCurrency,
+                convert: TransactionConversion.cachedRate
             )
         }
 
-        // Case 2: Transaction currency == Account currency, but differs from base currency
-        // Show equivalent in base currency for UI display
-        if currency == accountCurrency && currency != baseCurrency {
-            let conversionResult = await convertCurrency(
-                amount: amount,
-                from: currency,
-                to: baseCurrency
-            )
-
-            if conversionResult.convertedAmount != nil {
-                return TargetAmounts(
-                    targetCurrency: baseCurrency,
-                    targetAmount: conversionResult.convertedAmount
-                )
-            }
-        }
-
-        // Case 3: All currencies match or no conversion available
-        return .none
+        if let cached = fields() { return cached }
+        await TransactionConversion.loadRates(Set([currency, account.currency, baseCurrency]))
+        return fields()
     }
 
 }

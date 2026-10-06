@@ -456,4 +456,20 @@ struct TransactionDraftResolverTests {
         let draft = try result.get()
         #expect(draft.convertedAmount == 5400)
     }
+
+    @Test("A failed caller-provided conversion blocks instead of committing the raw amount")
+    func providedNilConversionBlocks() {
+        // The voice screen retries a cache miss over the network and passes the result
+        // back as `.provided`; nil used to commit the expense with no conversion, moving
+        // a KZT account by 10 instead of the tenge value.
+        let op = ParsedOperation(type: .expense, amount: 10, currencyCode: "USD", accountId: "a1", categoryName: "Food")
+        let result = TransactionDraftService.makeDraft(
+            from: op,
+            accounts: [account("a1", currency: "KZT")],
+            categories: [category("Food")],
+            learned: emptyLearningStore("draft.tests.25"),
+            conversion: .provided(nil)
+        )
+        #expect(result == .failure(.needsFXConversion(amount: 10, from: "USD", to: "KZT")))
+    }
 }

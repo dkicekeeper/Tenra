@@ -198,12 +198,15 @@ class LoansViewModel {
             note: note,
             category: category
         )
+        guard let repayment = Self.convertingSourceLeg(transaction, sourceCurrency: sourceAccount?.currency) else {
+            return nil
+        }
 
         account.loanInfo = updatedLoanInfo
         // updateLoan re-syncs the loan account balance to the new remainingPrincipal.
         accountsViewModel.updateLoan(account)
 
-        return transaction
+        return repayment
     }
 
     // MARK: - Manual Payment
@@ -239,12 +242,48 @@ class LoansViewModel {
             description: description,
             category: category
         )
+        guard let payment = Self.convertingSourceLeg(transaction, sourceCurrency: sourceAccount?.currency) else {
+            return nil
+        }
 
         account.loanInfo = updatedLoanInfo
         // updateLoan re-syncs the loan account balance to the new remainingPrincipal.
         accountsViewModel.updateLoan(account)
 
-        return transaction
+        return payment
+    }
+
+    /// `transaction` (in the loan's currency) with `convertedAmount` set to what leaves the
+    /// source account, in its currency. Without it a loan in another currency than the
+    /// paying card took the raw amount off the card (a 500 USD payment as 500 ₸). Nil when
+    /// no rate is cached; callers return before the loan's principal is touched.
+    static func convertingSourceLeg(_ transaction: Transaction, sourceCurrency: String?) -> Transaction? {
+        guard let sourceCurrency, sourceCurrency != transaction.currency else { return transaction }
+        guard let inSource = CurrencyConverter.convertSync(
+            amount: transaction.amount,
+            from: transaction.currency,
+            to: sourceCurrency
+        ) else { return nil }
+        return Transaction(
+            id: transaction.id,
+            date: transaction.date,
+            description: transaction.description,
+            amount: transaction.amount,
+            currency: transaction.currency,
+            convertedAmount: inSource,
+            type: transaction.type,
+            category: transaction.category,
+            subcategory: transaction.subcategory,
+            accountId: transaction.accountId,
+            targetAccountId: transaction.targetAccountId,
+            accountName: transaction.accountName,
+            targetAccountName: transaction.targetAccountName,
+            targetCurrency: transaction.targetCurrency,
+            targetAmount: transaction.targetAmount,
+            recurringSeriesId: transaction.recurringSeriesId,
+            recurringOccurrenceId: transaction.recurringOccurrenceId,
+            createdAt: transaction.createdAt
+        )
     }
 
     // MARK: - Mark Payments Paid (no transactions)

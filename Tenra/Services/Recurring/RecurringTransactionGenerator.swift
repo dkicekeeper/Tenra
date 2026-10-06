@@ -140,22 +140,12 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
                     let accountName = series.accountId.flatMap { accountById[$0]?.name }
                     let targetAccountName = series.targetAccountId.flatMap { accountById[$0]?.name }
 
-                    // Calculate target currency and amount for display
-                    var targetCurrency: String? = nil
-                    var targetAmount: Double? = nil
-
-                    // If subscription currency differs from base currency, show equivalent
-                    if series.currency != baseCurrency {
-                        // Use sync conversion (from cache)
-                        if let convertedValue = CurrencyConverter.convertSync(
-                            amount: amountDouble,
-                            from: series.currency,
-                            to: baseCurrency
-                        ) {
-                            targetCurrency = baseCurrency
-                            targetAmount = convertedValue
-                        }
-                    }
+                    let conversion = conversionFields(
+                        amount: amountDouble,
+                        series: series,
+                        accountById: accountById,
+                        baseCurrency: baseCurrency
+                    )
 
                     let transaction = Transaction(
                         id: transactionId,
@@ -163,7 +153,7 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
                         description: series.description,
                         amount: amountDouble,
                         currency: series.currency,
-                        convertedAmount: nil,
+                        convertedAmount: conversion.convertedAmount,
                         type: .expense,
                         category: series.category,
                         subcategory: series.subcategory,
@@ -171,8 +161,8 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
                         targetAccountId: series.targetAccountId,
                         accountName: accountName,
                         targetAccountName: targetAccountName,
-                        targetCurrency: targetCurrency,
-                        targetAmount: targetAmount,
+                        targetCurrency: conversion.targetCurrency,
+                        targetAmount: conversion.targetAmount,
                         recurringSeriesId: series.id,
                         recurringOccurrenceId: occurrenceId,
                         createdAt: createdAt
@@ -212,6 +202,29 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
     }
 
     // MARK: - Helper Methods
+
+    /// Conversion fields of one occurrence (`TransactionConversion`): the amount in the
+    /// account's currency when the series is in another, which the balance moves by.
+    ///
+    /// Occurrences used to store only a BASE-currency `targetAmount`, and the balance
+    /// engine reads `targetAmount` in the account's currency: a USD subscription paid
+    /// from a EUR account took its KZT value off the balance in euros. Without a cached
+    /// rate (or without an account) nothing is stored, as before.
+    private func conversionFields(
+        amount: Double,
+        series: RecurringSeries,
+        accountById: [String: Account],
+        baseCurrency: String
+    ) -> TransactionConversion {
+        let accountCurrency = series.accountId.flatMap { accountById[$0]?.currency } ?? series.currency
+        return TransactionConversion.singleAccount(
+            amount: amount,
+            currency: series.currency,
+            accountCurrency: accountCurrency,
+            baseCurrency: baseCurrency,
+            convert: TransactionConversion.cachedRate
+        ) ?? TransactionConversion()
+    }
 
     /// Calculate maximum iterations based on frequency and date range
     private func calculateMaxIterations(
@@ -341,18 +354,12 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
                 let accountName = series.accountId.flatMap { accountById[$0]?.name }
                 let targetAccountName = series.targetAccountId.flatMap { accountById[$0]?.name }
 
-                var targetCurrency: String? = nil
-                var targetAmount: Double? = nil
-                if series.currency != baseCurrency {
-                    if let converted = CurrencyConverter.convertSync(
-                        amount: amountDouble,
-                        from: series.currency,
-                        to: baseCurrency
-                    ) {
-                        targetCurrency = baseCurrency
-                        targetAmount = converted
-                    }
-                }
+                let conversion = conversionFields(
+                    amount: amountDouble,
+                    series: series,
+                    accountById: accountById,
+                    baseCurrency: baseCurrency
+                )
 
                 let transaction = Transaction(
                     id: transactionId,
@@ -360,7 +367,7 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
                     description: series.description,
                     amount: amountDouble,
                     currency: series.currency,
-                    convertedAmount: nil,
+                    convertedAmount: conversion.convertedAmount,
                     type: .expense,
                     category: series.category,
                     subcategory: series.subcategory,
@@ -368,8 +375,8 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
                     targetAccountId: series.targetAccountId,
                     accountName: accountName,
                     targetAccountName: targetAccountName,
-                    targetCurrency: targetCurrency,
-                    targetAmount: targetAmount,
+                    targetCurrency: conversion.targetCurrency,
+                    targetAmount: conversion.targetAmount,
                     recurringSeriesId: series.id,
                     recurringOccurrenceId: occurrenceId,
                     createdAt: createdAt

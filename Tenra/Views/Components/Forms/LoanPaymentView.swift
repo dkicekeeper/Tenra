@@ -354,13 +354,22 @@ struct LoanPaymentView: View {
             HapticManager.error()
             return
         }
+        guard let paymentAmount = LoanPaymentService.amountInLoanCurrency(
+            amount, currency: selectedCurrency, loanCurrency: account.currency
+        ) else {
+            withAnimation(AppAnimation.contentSpring) {
+                validationError = String(localized: "currency.error.conversionFailed")
+            }
+            HapticManager.error()
+            return
+        }
         validationError = nil
 
         let dateStr = DateFormatters.dateFormatter.string(from: paymentDate)
         let trimmedNote = noteText.trimmingCharacters(in: .whitespacesAndNewlines)
         let resolvedNote = trimmedNote.isEmpty ? nil : trimmedNote
         let result = LoanPaymentFormResult(
-            amount: amount,
+            amount: paymentAmount,
             date: dateStr,
             sourceAccountId: sourceId,
             note: resolvedNote,

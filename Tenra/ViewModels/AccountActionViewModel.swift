@@ -446,12 +446,25 @@ final class AccountActionViewModel {
             precomputedTargetAmount = amount
         }
 
+        // What leaves the source account, in its currency. The conversion was checked
+        // above but never stored, so a transfer entered in another currency than the
+        // source account's debited it by the raw amount (10 USD off a KZT card as 10 ₸).
+        var sourceAmount: Double?
+        if selectedCurrency != sourceCurrency {
+            sourceAmount = await CurrencyConverter.convert(
+                amount: amount,
+                from: selectedCurrency,
+                to: sourceCurrency
+            )
+        }
+
         do {
             try await transactionStore.transfer(
                 from: sourceId,
                 to: targetId,
                 amount: amount,
                 currency: selectedCurrency,
+                convertedAmount: sourceAmount,
                 targetAmount: precomputedTargetAmount,
                 targetCurrency: targetCurrency,
                 date: transactionDate,

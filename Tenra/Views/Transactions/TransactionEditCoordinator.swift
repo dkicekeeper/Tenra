@@ -267,11 +267,22 @@ final class TransactionEditCoordinator {
         let dateString = DateFormatters.dateFormatter.string(from: formData.selectedDate)
 
         // Handle recurring series
-        var finalRecurringSeriesId: String? = await handleRecurringSeries(
-            amount: amount,
-            dateString: dateString
-        )
-        var finalRecurringOccurrenceId: String? = transaction.recurringOccurrenceId
+        var finalRecurringSeriesId: String?
+        do {
+            finalRecurringSeriesId = try await handleRecurringSeries(
+                amount: amount,
+                dateString: dateString
+            )
+        } catch {
+            // Nothing was saved: the series could not be created.
+            errorMessage = error.localizedDescription
+            HapticManager.error()
+            return
+        }
+        // Read the link back from the store: a one-off made recurring was just linked
+        // there as the series' first occurrence.
+        let storedOccurrenceId = transactionStore.transactionById[transaction.id]?.recurringOccurrenceId
+        var finalRecurringOccurrenceId: String? = storedOccurrenceId ?? transaction.recurringOccurrenceId
 
         // Only an explicit "Never" chosen by the user detaches the transaction from its
         // series. For types whose recurring control is hidden (`allowsRecurring == false`
@@ -402,7 +413,12 @@ final class TransactionEditCoordinator {
     // MARK: - Private: Recurring Series
 
     /// Manages recurring series creation when the user enables recurring on a previously
-    /// one-off transaction. Returns the final recurringSeriesId.
+    /// one-off transaction. Returns the final recurringSeriesId. Throws when the series
+    /// cannot be created; nothing is saved then.
+    ///
+    /// The edited transaction becomes the series' FIRST occurrence
+    /// (`createSeries(_:firstOccurrence:)`). Creating the series on its own generated an
+    /// occurrence on the same date, so the user got two transactions for that date.
     ///
     /// Editing a transaction that is ALREADY linked to a series must NOT propagate
     /// the edit back to the series — the series carries the canonical subscription
@@ -412,17 +428,21 @@ final class TransactionEditCoordinator {
     /// and `series.isActive` with the edited transaction's values on every save —
     /// so changing one occurrence's amount silently rewrote the subscription's
     /// canonical amount, and resumed paused series as a side effect.
-    private func handleRecurringSeries(amount: Double, dateString: String) async -> String? {
+    private func handleRecurringSeries(amount: Double, dateString: String) async throws -> String? {
         guard case .frequency(let freq) = formData.recurring else {
             return nil
         }
 
-        // Already linked — leave the series untouched.
-        if let existingSeriesId = transaction.recurringSeriesId {
+        // Already linked — leave the series untouched. The store copy counts too: a repeated
+        // save (double tap, or a retry after a failed update) must not create a second
+        // series for a transaction that the first save already linked.
+        let linkedSeriesId = transaction.recurringSeriesId ?? transactionStore.transactionById[transaction.id]?.recurringSeriesId
+        if let existingSeriesId = linkedSeriesId {
             return existingSeriesId
         }
 
-        // Create new series — await so generated transactions are in the store
+        // Create new series with this transaction as its first occurrence — await so
+        // generated transactions are in the store
         let series = RecurringSeries(
             amount: Decimal(amount),
             currency: formData.selectedCurrency,
@@ -434,12 +454,14 @@ final class TransactionEditCoordinator {
             frequency: freq,
             startDate: dateString
         )
-        try? await transactionStore.createSeries(series)
+        try await transactionStore.createSeries(series, firstOccurrence: transaction)
 
-        // Link selected subcategories to all generated transactions (backfill + future)
+        // Link selected subcategories to all generated transactions (backfill + future).
+        // This transaction's own links are saved by performSave, which compares them
+        // with the previous ones for the merchant memory.
         if !formData.selectedSubcategoryIds.isEmpty {
             let generated = transactionStore.transactions.filter {
-                $0.recurringSeriesId == series.id
+                $0.recurringSeriesId == series.id && $0.id != transaction.id
             }
             for tx in generated {
                 categoriesViewModel.linkSubcategoriesToTransaction(

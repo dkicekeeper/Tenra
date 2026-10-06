@@ -35,31 +35,98 @@ extension TransactionStore {
     /// - Parameter series: The recurring series to create
     /// - Throws: TransactionStoreError if validation fails
     func createSeries(_ series: RecurringSeries) async throws {
-        // 1. Validate series
+        try await createSeries(series, firstOccurrenceId: nil)
+    }
+
+    /// Create a new recurring series whose FIRST occurrence is a transaction that already
+    /// exists (a one-off made recurring on the edit screen).
+    ///
+    /// The transaction is linked to the series and recorded as its occurrence on
+    /// `series.startDate`, so the generator resumes from the next period; later occurrences
+    /// generate exactly as in `createSeries(_:)`. Calling plain `createSeries(_:)` and linking
+    /// the transaction afterwards left two transactions on that date: the user's one and the
+    /// generated occurrence 0. The transaction keeps its id, so its subcategory links stay.
+    ///
+    /// `series.startDate` is the date the transaction is saved with (the edit screen builds
+    /// both from the same date). Nothing changes when this throws.
+    /// - Throws: `transactionNotFound` if the transaction is not in the store, or the
+    ///   `createSeries(_:)` validation errors.
+    func createSeries(_ series: RecurringSeries, firstOccurrence transaction: Transaction) async throws {
+        try await createSeries(series, firstOccurrenceId: transaction.id)
+    }
+
+    private func createSeries(_ series: RecurringSeries, firstOccurrenceId: String?) async throws {
+        // 1. Validate series (and that its first occurrence exists) before changing anything
         try validateSeries(series)
+        if let firstOccurrenceId, transactionById[firstOccurrenceId] == nil {
+            throw TransactionStoreError.transactionNotFound
+        }
 
         // 2. Create event (this adds series to recurringSeries array)
         let event = TransactionEvent.seriesCreated(series)
         try await apply(event)
 
-        // 3. Generate initial transactions: past backfill + 1 future occurrence
-        //    (no horizon cap — works correctly for all frequencies including .yearly)
-        let existingTransactionIds = transactionIdSet
-        let result = recurringGenerator.generateUpToNextFuture(
-            series: series,
-            existingOccurrences: recurringOccurrences,
-            existingTransactionIds: existingTransactionIds,
-            accounts: accounts,
-            baseCurrency: baseCurrency
-        )
-
-        if !result.transactions.isEmpty {
-            try await apply(TransactionEvent.bulkAdded(result.transactions))
-            recurringStore.appendOccurrences(result.occurrences)
+        // 3. An existing first occurrence: link it and record its occurrence, so the
+        //    generator below does not add a copy of it for the start date.
+        var hasFutureOccurrence = false
+        if let firstOccurrenceId, let first = transactionById[firstOccurrenceId] {
+            let occurrence = RecurringOccurrence(
+                seriesId: series.id,
+                occurrenceDate: series.startDate,
+                transactionId: first.id
+            )
+            let linked = Transaction(
+                id: first.id,
+                date: first.date,
+                description: first.description,
+                amount: first.amount,
+                currency: first.currency,
+                convertedAmount: first.convertedAmount,
+                type: first.type,
+                category: first.category,
+                subcategory: first.subcategory,
+                accountId: first.accountId,
+                targetAccountId: first.targetAccountId,
+                accountName: first.accountName,
+                targetAccountName: first.targetAccountName,
+                targetCurrency: first.targetCurrency,
+                targetAmount: first.targetAmount,
+                recurringSeriesId: series.id,
+                recurringOccurrenceId: occurrence.id,
+                createdAt: first.createdAt
+            )
+            try await apply(TransactionEvent.updated(old: first, new: linked))
+            recurringStore.appendOccurrences([occurrence])
             recurringStore.saveOccurrences()
+
+            // A future-dated first occurrence already is the series' one future
+            // occurrence (the invariant extendAllActiveSeriesHorizons keeps).
+            let today = Calendar.current.startOfDay(for: Date())
+            if let startDate = FastDateParser.date(from: series.startDate), startDate > today {
+                hasFutureOccurrence = true
+            }
         }
 
-        // 4. Schedule notifications if subscription
+        // 4. Generate initial transactions: past backfill + 1 future occurrence
+        //    (no horizon cap — works correctly for all frequencies including .yearly)
+        if !hasFutureOccurrence {
+            let existingTransactionIds = transactionIdSet
+            let result = recurringGenerator.generateUpToNextFuture(
+                series: series,
+                existingOccurrences: recurringOccurrences,
+                existingTransactionIds: existingTransactionIds,
+                accounts: accounts,
+                baseCurrency: baseCurrency
+            )
+
+            if !result.transactions.isEmpty {
+                try await apply(TransactionEvent.bulkAdded(result.transactions))
+                recurringStore.appendOccurrences(result.occurrences)
+                recurringStore.saveOccurrences()
+            }
+        }
+
+        // 5. Schedule notifications if subscription
         if series.isSubscription, series.subscriptionStatus == .active {
             if let nextChargeDate = calculateNextChargeDate(for: series) {
                 await SubscriptionNotificationScheduler.shared.scheduleNotifications(

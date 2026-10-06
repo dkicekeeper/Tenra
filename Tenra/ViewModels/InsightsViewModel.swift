@@ -283,69 +283,106 @@ final class InsightsViewModel {
 
     // MARK: - Category Deep Dive
 
-    /// - Parameter periodKey: The period bucket to dive into. When `nil`, defaults to
-    ///   the current period (non-paged breakdowns). The paged "Top categories"
-    ///   breakdown passes the key of the page the user was viewing, so drilling into a
-    ///   non-current month shows that month's data — not the current one.
-    func categoryDeepDive(
-        categoryName: String,
-        periodKey: String? = nil
-    ) -> (subcategories: [SubcategoryBreakdownItem], prevBucketTotal: Double) {
-        // Use the selected granularity bucket only (not the full window).
-        let currentKey   = periodKey ?? currentGranularity.currentPeriodKey
-        let currentStart = currentGranularity.periodStart(for: currentKey)
-        let currentEnd   = currentGranularity.periodEnd(for: currentKey)
-        let currentFilter = TimeFilter(preset: .custom, startDate: currentStart, endDate: currentEnd)
+    /// Everything a category drill-down's pages depend on (CLAUDE.md ⚠️ #12). The deep
+    /// dive reloads whenever it changes: transactions (in-place edits included), base
+    /// currency, FX rates, the granularity and its period window, subcategory links,
+    /// account logos, and the day (the realized-only gate moves at midnight).
+    struct CategoryDeepDiveKey: Equatable {
+        let mutationVersion: Int
+        let transactionCount: Int
+        let baseCurrency: String
+        let ratesVersion: Int
+        let granularity: InsightGranularity
+        let periodKeys: [String]
+        let subcategoriesVersion: Int
+        let accountsVersion: Int
+        let accountCount: Int
+        let day: Date
+    }
 
-        // Previous bucket — for the comparison card in InsightDeepDiveView.
-        let prevKey   = currentGranularity.previousPeriodKey(before: currentKey)
-        let prevStart = currentGranularity.periodStart(for: prevKey)
-        let prevEnd   = currentStart   // prev bucket ends where current bucket begins
-        let prevFilter = TimeFilter(preset: .custom, startDate: prevStart, endDate: prevEnd)
-
-        // All transactions in memory — no window check needed.
-        let allTransactions = Array(transactionStore.transactions)
-
-        // Build txId → primary linked-subcategory name from the store indexes (MainActor).
-        // The deep-dive groups by this because the add flow records subcategories only in
-        // the link table, leaving the legacy `tx.subcategory` string nil.
-        var subcategoryNameByTxId: [String: String] = [:]
-        for tx in allTransactions where tx.category == categoryName {
-            if let ids = transactionStore.subcategoryIdsByTransactionId[tx.id],
-               let firstId = ids.first,
-               let name = transactionStore.subcategoryById[firstId]?.name {
-                subcategoryNameByTxId[tx.id] = name
-            }
-        }
-
-        let result = insightsService.generateCategoryDeepDive(
-            categoryName: categoryName,
-            allTransactions: allTransactions,
-            timeFilter: currentFilter,
-            comparisonFilter: prevFilter,
+    /// Read from a view's `body` as its `.task(id:)`. `mutationVersion` and
+    /// `accountsMutationVersion` are @ObservationIgnored, so the observable arrays are
+    /// read alongside them: that is what re-evaluates the body on every mutation
+    /// (the `transactionsCount` mirror misses in-place edits).
+    var categoryDeepDiveKey: CategoryDeepDiveKey {
+        CategoryDeepDiveKey(
+            mutationVersion: transactionStore.mutationVersion,
+            transactionCount: transactionStore.transactions.count,
             baseCurrency: baseCurrency,
-            cacheManager: transactionsViewModel.cacheManager,
-            currencyService: transactionsViewModel.currencyService,
-            subcategoryNameByTxId: subcategoryNameByTxId
+            ratesVersion: transactionStore.currencyRatesVersion,
+            granularity: currentGranularity,
+            periodKeys: periodDataPoints.map { $0.key },
+            subcategoriesVersion: transactionStore.subcategoriesMutationVersion,
+            accountsVersion: transactionStore.accountsMutationVersion,
+            accountCount: transactionStore.accounts.count,
+            day: Calendar.current.startOfDay(for: Date())
         )
+    }
+
+    /// One page per period of the current granularity — the periods the paged
+    /// breakdown steps through (current → first transaction; the 52-week window for
+    /// `.week`) — so the deep dive pages between them without recomputing.
+    ///
+    /// The O(N) walk runs off the main actor over a copy-on-write snapshot (CLAUDE.md
+    /// ⚠️ #9); only O(subcategories) and O(pages) work stays here.
+    ///
+    /// - Parameter isExpenseContext: drilled in from a spending breakdown (expenses
+    ///   only) or from income sources (income only).
+    func categoryDeepDivePages(
+        categoryName: String,
+        isExpenseContext: Bool
+    ) async -> (pages: [CategoryDeepDivePage], granularity: InsightGranularity, currency: String) {
+        let granularity = currentGranularity
+        let currency = baseCurrency
+        let pointKeys = periodDataPoints.map { $0.key }
+        let periodKeys = pointKeys.isEmpty ? [granularity.currentPeriodKey] : pointKeys
+        let transactions = transactionStore.transactions
+        let groupsByAccount = InsightsService.DeepDiveGrouping.forCategory(categoryName).groupsByAccount
+
+        // Subcategory rows read the LINKED subcategory: the add flow leaves the legacy
+        // `tx.subcategory` nil. Only the id → name map is built here (O(subcategories));
+        // the per-transaction lookups happen in the detached walk.
+        let subcategoryIdsByTx: [String: [String]] = groupsByAccount
+            ? [:]
+            : transactionStore.subcategoryIdsByTransactionId
+        let subcategoryNameById: [String: String] = groupsByAccount
+            ? [:]
+            : transactionStore.subcategoryById.mapValues { $0.name }
+
+        let periods = await Task.detached(priority: .userInitiated) {
+            InsightsService.categoryDeepDivePeriods(
+                categoryName: categoryName,
+                bucket: isExpenseContext ? .expense : .income,
+                transactions: transactions,
+                granularity: granularity,
+                periodKeys: periodKeys,
+                baseCurrency: currency,
+                rates: RateSnapshot(),
+                subcategoryName: { txId in
+                    guard let subcategoryId = subcategoryIdsByTx[txId]?.first else { return nil }
+                    return subcategoryNameById[subcategoryId]
+                }
+            )
+        }.value
 
         // Synthetic categories break down by account (loans / deposits), and their rows
-        // carry the account's own logo. The generator is nonisolated and can't read the
-        // store, so the icons are attached here — item.id IS the account id there.
-        guard InsightsService.DeepDiveGrouping.forCategory(categoryName).groupsByAccount else {
-            return result
-        }
-        let withIcons = result.subcategories.map { item -> SubcategoryBreakdownItem in
-            guard let icon = transactionStore.accountById[item.id]?.iconSource else { return item }
-            return SubcategoryBreakdownItem(
-                id: item.id,
-                name: item.name,
-                amount: item.amount,
-                percentage: item.percentage,
-                iconSource: icon
+        // carry the account's own logo. The builder is nonisolated and can't read the
+        // store, so the logos are attached here — the row id IS the account id there.
+        let pages = periods.map { period in
+            CategoryDeepDivePage(
+                period: period,
+                items: period.rows.map { row in
+                    SubcategoryBreakdownItem(
+                        id: row.id,
+                        name: row.name,
+                        amount: row.amount,
+                        percentage: row.percentage,
+                        iconSource: groupsByAccount ? transactionStore.accountById[row.id]?.iconSource : nil
+                    )
+                }
             )
         }
-        return (withIcons, result.prevBucketTotal)
+        return (pages, granularity, currency)
     }
 
     // MARK: - Private: Background Loading

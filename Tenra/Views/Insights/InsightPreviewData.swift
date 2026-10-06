@@ -24,6 +24,57 @@ extension CategoryBreakdownItem {
     }
 }
 
+// MARK: - Mock Category Deep Dive
+
+extension CategoryDeepDivePage {
+    /// Three consecutive periods ending at the current one; the oldest is empty so the
+    /// empty page shows too.
+    static func mockPages(granularity: InsightGranularity = .month) -> [CategoryDeepDivePage] {
+        let current = granularity.currentPeriodKey
+        let previous = granularity.previousPeriodKey(before: current)
+        let oldest = granularity.previousPeriodKey(before: previous)
+        let previousRows: [(id: String, name: String, amount: Double)] = [
+            ("groceries", "Groceries", 41_000),
+            ("restaurants", "Restaurants", 29_000)
+        ]
+        let currentRows: [(id: String, name: String, amount: Double)] = [
+            ("restaurants", "Restaurants", 42_000),
+            ("groceries", "Groceries", 28_000),
+            ("delivery", "Delivery", 15_000)
+        ]
+        return [
+            mockPage(key: oldest, rows: [], previousTotal: 0, granularity: granularity),
+            mockPage(key: previous, rows: previousRows, previousTotal: 0, granularity: granularity),
+            mockPage(key: current, rows: currentRows, previousTotal: 70_000, granularity: granularity)
+        ]
+    }
+
+    private static func mockPage(
+        key: String,
+        rows: [(id: String, name: String, amount: Double)],
+        previousTotal: Double,
+        granularity: InsightGranularity
+    ) -> CategoryDeepDivePage {
+        let total = rows.reduce(0.0) { $0 + $1.amount }
+        let items = rows.map {
+            SubcategoryBreakdownItem(id: $0.id, name: $0.name, amount: $0.amount, percentage: $0.amount / total * 100)
+        }
+        return CategoryDeepDivePage(
+            period: CategoryDeepDivePeriod(
+                id: key,
+                label: granularity.headingLabel(for: key),
+                total: total,
+                rows: items.map {
+                    CategoryDeepDiveRow(id: $0.id, name: $0.name, amount: $0.amount, percentage: $0.percentage)
+                },
+                previousLabel: granularity.headingLabel(for: granularity.previousPeriodKey(before: key)),
+                previousTotal: previousTotal
+            ),
+            items: items
+        )
+    }
+}
+
 // MARK: - Mock Budget Items
 
 extension BudgetInsightItem {

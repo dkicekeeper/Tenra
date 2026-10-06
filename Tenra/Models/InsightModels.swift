@@ -359,6 +359,47 @@ struct SubcategoryBreakdownItem: Identifiable, Hashable {
     var iconSource: IconSource? = nil
 }
 
+// MARK: - Category Deep Dive (paged)
+
+/// One row of a category drill-down period: a subcategory, or the loan / deposit account
+/// behind a synthetic category (`InsightsService.DeepDiveGrouping`, `id` = account id).
+/// Sendable: built off the main actor by `InsightsService.categoryDeepDivePeriods`.
+nonisolated struct CategoryDeepDiveRow: Identifiable, Equatable, Sendable {
+    let id: String
+    let name: String
+    let amount: Double
+    /// Share of the period total, 0–100.
+    let percentage: Double
+}
+
+/// A category's drill-down for one period at the selected granularity: its realized
+/// total, the breakdown rows and the previous period's total for the comparison card.
+nonisolated struct CategoryDeepDivePeriod: Identifiable, Equatable, Sendable {
+    /// Period grouping key ("2026-05", "2026-W19", "2026-Q2", "2026", "all").
+    let id: String
+    /// Heading label of the period (`InsightGranularity.headingLabel(for:)`).
+    let label: String
+    /// The category's realized total in the period, in base currency.
+    let total: Double
+    /// Largest first; empty when the category had no activity in the period.
+    let rows: [CategoryDeepDiveRow]
+    /// Heading label of the period before this one; `nil` when the granularity has
+    /// none (`.allTime`), which hides the comparison card.
+    let previousLabel: String?
+    /// The category's realized total in the previous period (0 when there is none).
+    let previousTotal: Double
+}
+
+/// A drill-down page ready to render: the period's figures plus its rows as breakdown
+/// items, with the account logos attached on the main actor (the off-main builder can't
+/// read them).
+struct CategoryDeepDivePage: Identifiable {
+    let period: CategoryDeepDivePeriod
+    let items: [SubcategoryBreakdownItem]
+
+    var id: String { period.id }
+}
+
 // MARK: - Budget Insight Item
 
 struct BudgetInsightItem: Identifiable, Hashable {

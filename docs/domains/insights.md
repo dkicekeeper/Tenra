@@ -99,17 +99,19 @@ transaction list (both read the one loan colour; pinned by `CategoryStyleCacheTe
 **Deep dive** — `InsightsService.DeepDiveGrouping.forCategory(_:)` decides what a drill-down
 breaks a category into: user categories → subcategories, `"Loan Payment"` → the loan account of
 each payment (`targetAccountId`), `"Deposit Interest"` → the deposit that paid it (`accountId`).
-Account groupings key on the account **id**, so `SubcategoryBreakdownItem.id` is an account id
-there and `InsightsViewModel.categoryDeepDive` fills `iconSource` from
-`transactionStore.accountById` (the nonisolated generator can't read account icons).
+Account groupings key on the account **id** (one row per id: a renamed account keeps one row,
+under its latest name), so `SubcategoryBreakdownItem.id` is an account id
+there and `InsightsViewModel.categoryDeepDivePages` fills `iconSource` from
+`transactionStore.accountById` (the nonisolated builder can't read account icons).
 `InsightDeepDiveView` then renders the account logo instead of a colour dot and recolors its orb
 slices with each logo's dominant colour via `DominantColorExtractor` — the same async resolve
-`heroAccentGlow` and `WealthOrbSection` use. `generateCategoryDeepDive` filters on `moneyBucket != .none` (not expense-only),
-so income categories drill down too; `InsightsView` therefore enables the drill-down closure for
-`.income` insights as well and passes `isExpenseContext: false` so the comparison card colors a
-rise green.
+`heroAccentGlow` and `WealthOrbSection` use. `InsightsService.categoryDeepDivePeriods` filters on the
+money bucket of the breakdown it opens from (`.expense` for spending, `.income` for income sources —
+an income and an expense category may share a name), so income categories drill down too;
+`InsightsView` therefore enables the drill-down closure for `.income` insights as well and passes
+`isExpenseContext: false`, which selects the income bucket and colors a rise green in the comparison card.
 
-Pinned by `InsightsMoneyBucketTests`.
+Pinned by `InsightsMoneyBucketTests` and `CategoryDeepDivePeriodsTests`.
 
 ## PreAggregatedData
 
@@ -215,7 +217,7 @@ Full rationale + benchmarks (archived): [archive/INSIGHTS_PRODUCT_AUDIT_2026_07_
 - **`healthScore` is published with the PHASE-1 write, not after phase 2.** It needs only `.month` period data, derivable from `preAggregated` (`computePeriodDataPointsFromPreAggregated(.month)` — internal for exactly this call). Publishing it in the final write made the health badge pop in seconds after the rest of the feed. Don't move it back.
 - **`applyPrecomputed` never applies a missing granularity** — it keeps `isLoading=true` instead of flashing empty/stale cards.
 - **The summary card shows the CURRENT bucket.** For `.week` the current week is often empty (totals = 0) while the 52-week window total is non-zero — correct, not a bug.
-- **Deep-dive subcategory breakdown reads the LINKED subcategory** (`TransactionSubcategoryLink` via store indexes), passed as `subcategoryNameByTxId`. The add flow leaves `tx.subcategory` nil, so grouping by `tx.subcategory` dumps everything into "no subcategory".
+- **Deep-dive subcategory breakdown reads the LINKED subcategory** (`TransactionSubcategoryLink` via store indexes), passed to `categoryDeepDivePeriods` as the `subcategoryName` lookup. The add flow leaves `tx.subcategory` nil, so grouping by `tx.subcategory` dumps everything into "no subcategory".
 
 ## Detail view & paging
 
@@ -231,6 +233,7 @@ Full rationale + benchmarks (archived): [archive/INSIGHTS_PRODUCT_AUDIT_2026_07_
 - **`InsightFormulaRow.labelText` overrides `labelKey`** — use it to put a data-driven label (date, category name) in the row heading instead of cramming `.rawText("amount — label")` into the value cell (yearOverYear rows).
 - **`.categoryBreakdownPaged` renders full-screen in `InsightDetailView.body`** via `TabView(.page)`, NOT inside `detailSection` (the detailSection case is a dead `EmptyView`). A TabView must own the vertical space — nesting it in the body's `ScrollView` collapses it. 2026-07 UX pass: the TabView is the OUTER container and **each page is its own `ScrollView { HeroSection → OrbChart (arrows overlaid) → category rows }`** — hero and orb scroll together with the list (they used to be pinned above a list-only pager).
 - **Top-spending is emitted for every finite granularity even when the current period is empty** (empty hero "Нет расходов", still tappable). It only falls back to the legacy single `.categoryBreakdown` for `.allTime`. Paged breakdowns cover all `periodPoints` (current → first tx); `.week` is bounded by its rolling 52-week window.
+- **The category drill-down (`InsightDeepDiveView`) pages the same periods** (2026-10): the TabView swipe + the chevrons on its orb, through `PeriodPagerChartBand` / `PeriodPagerEmptyState` / `PeriodPaging` ([PeriodPager.swift](../../Tenra/Views/Insights/PeriodPager.swift)), which `PagedCategoryBreakdownView` uses too — change the pager there, not per screen. Pages = `InsightsViewModel.periodDataPoints` keys at the current granularity, so it opens on the page tapped from (`periodKey`; current period for non-paged breakdowns) and steps exactly where the breakdown does. Every page (hero total + period subtitle, orb, rows, comparison) comes from ONE off-main pass, `InsightsService.categoryDeepDivePeriods` (realized only, like the breakdown, so the total equals the tapped row; previous total read even outside the window). It reloads on `InsightsViewModel.categoryDeepDiveKey` (mutationVersion + touched `transactions`, base currency, FX version, granularity + period keys, subcategory/account versions, the day) and keeps the selected period across reloads. `.allTime`: one page, no arrows, no comparison card. Stepping pinned by `PeriodPagingTests`.
 - **`incomeSourceBreakdown` pages the same way** (2026-07) — `generateIncomeSourceBreakdown` mirrors the spending paged path off `pt.income`. Two consequences for callers: it needs the **windowed** transactions, not the current bucket (`generateForecastingInsights(filteredTransactions:)` now receives `windowedTransactions`, and the old `currentBucketForForecasting` pre-narrowing is gone — it would have collapsed every page but the current one to empty); and `PeriodCategoryBreakdown.total` is flavor-neutral (expenses OR income), which is why it isn't named `totalExpenses`. `PagedCategoryBreakdownView` takes an `emptyTitle` for the same reason — an income page must not say "Нет расходов".
 - **Per-generator ad-hoc tx filters MUST apply `LedgerPolicyRule.isRealized`.** `computePeriodDataPoints` and `PreAggregatedData.build` already exclude future-dated tx, but breakdown lists that re-filter `expenses` by date range (e.g. top-spending) did not — caused future tx in the breakdown vs. a realized % total. Keep them consistent.
 - **Period-trend detail charts/lists choose metric by `insight.type`** (avg-daily → avg daily expenses, monthOverMonth → expenses, incomeGrowth → income; else cash-flow). Pass the FULL `periodPoints` (not `[prev, current]`) so the chart/list span all time. See `periodListMetric` / `periodChartSeries` in `InsightDetailView`.

@@ -1768,3 +1768,16 @@
 "deposit.dayCount.actual365" = "Actual days / 365";
 "deposit.dayCount.actualActual" = "Actual days / 365 or 366";
 "deposit.dayCount.actual360" = "Actual days / 360";
+
+/* Hidden amounts (eye button on Home, DesignKit .amountsHidden) */
+"amount.hidden" = "Hidden amount";
+"amount.hide" = "Hide amounts";
+"amount.show" = "Show amounts";
+
+/* DesignKit components: charts, MonthCalendar, skeletons (docs: DesignKit docs/localization-keys.md) */
+"chart.today" = "Today";
+"chart.empty.title" = "No data yet";
+"chart.empty.message" = "Add some data to see the chart.";
+"calendar.showMonth" = "Show month";
+"calendar.showWeek" = "Show week";
+"skeleton.loading" = "Loading";

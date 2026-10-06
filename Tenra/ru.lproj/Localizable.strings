@@ -1768,3 +1768,16 @@
 "deposit.dayCount.actual365" = "Фактические дни / 365";
 "deposit.dayCount.actualActual" = "Фактические дни / 365 или 366";
 "deposit.dayCount.actual360" = "Фактические дни / 360";
+
+/* Hidden amounts (eye button on Home, DesignKit .amountsHidden) */
+"amount.hidden" = "Сумма скрыта";
+"amount.hide" = "Скрыть суммы";
+"amount.show" = "Показать суммы";
+
+/* DesignKit components: charts, MonthCalendar, skeletons (docs: DesignKit docs/localization-keys.md) */
+"chart.today" = "Сегодня";
+"chart.empty.title" = "Пока нет данных";
+"chart.empty.message" = "Добавьте данные, чтобы увидеть график.";
+"calendar.showMonth" = "Показать месяц";
+"calendar.showWeek" = "Показать неделю";
+"skeleton.loading" = "Загрузка";

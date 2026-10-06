@@ -206,6 +206,9 @@ struct MainTabView: View {
             }
             .environment(coordinator.transactionStore)
         }
+        // The eye button on Home: every amount below (tabs, pushed screens, sheets) draws
+        // "•••• ₸" while it is on. Outermost, so the sheets above get it too.
+        .amountsHidden(coordinator.transactionsViewModel.appSettings.hidesAmounts)
     }
 
     // MARK: - Tap Handling

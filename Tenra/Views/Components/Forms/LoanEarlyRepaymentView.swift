@@ -26,6 +26,7 @@ struct LoanEarlyRepaymentFormResult {
 struct LoanEarlyRepaymentView: View {
     let account: Account
     let loanInfo: LoanInfo
+    @Environment(\.amountsHidden) private var amountsHidden
     let availableAccounts: [Account]
     let balanceCoordinator: BalanceCoordinator
     let baseCurrency: String
@@ -73,7 +74,7 @@ struct LoanEarlyRepaymentView: View {
     /// Subtitle shown under the hero: remaining principal so the user knows
     /// the maximum allowable repayment without scrolling away.
     private var heroSubtitle: String {
-        let remaining = Formatting.formatCurrencySmart(
+        let remaining = amountsHidden ? Formatting.hiddenAmount(currency: account.currency) : Formatting.formatCurrencySmart(
             NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue,
             currency: account.currency
         )

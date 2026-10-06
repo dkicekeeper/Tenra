@@ -28,6 +28,7 @@ struct LoanPaymentFormResult {
 struct LoanPaymentView: View {
     let account: Account
     let loanInfo: LoanInfo
+    @Environment(\.amountsHidden) private var amountsHidden
     let availableAccounts: [Account]
     let balanceCoordinator: BalanceCoordinator
     let baseCurrency: String
@@ -90,7 +91,7 @@ struct LoanPaymentView: View {
     /// Subtitle shown under the hero: scheduled monthly payment as reference so
     /// the user can compare what the formula expects vs what they're entering.
     private var heroSubtitle: String {
-        let scheduled = Formatting.formatCurrencySmart(
+        let scheduled = amountsHidden ? Formatting.hiddenAmount(currency: account.currency) : Formatting.formatCurrencySmart(
             NSDecimalNumber(decimal: loanInfo.monthlyPayment).doubleValue,
             currency: account.currency
         )

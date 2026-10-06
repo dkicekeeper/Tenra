@@ -16,6 +16,7 @@ struct AccountCard: View {
     /// owning ForEach row whose value actually changed re-renders.
     let balance: Double
     var namespace: Namespace.ID
+    @Environment(\.amountsHidden) private var amountsHidden
 
     var body: some View {
         NavigationLink(value: account) {
@@ -29,7 +30,7 @@ struct AccountCard: View {
         }
         .buttonStyle(.bounce)
         .matchedTransitionSource(id: account.id, in: namespace)
-        .accessibilityLabel(String(format: String(localized: "accessibility.accountCard.label"), account.name, Formatting.formatCurrency(balance, currency: account.currency)))
+        .accessibilityLabel(String(format: String(localized: "accessibility.accountCard.label"), account.name, amountsHidden ? String(localized: "amount.hidden") : Formatting.formatCurrency(balance, currency: account.currency)))
         .accessibilityHint(String(localized: "accessibility.accountCard.hint"))
     }
 }

@@ -227,6 +227,16 @@ final class SettingsViewModel {
         }
     }
 
+    /// Hide or show amounts across the app (the eye button on Home).
+    func updateHidesAmounts(_ hidden: Bool) async {
+        settings.hidesAmounts = hidden
+        do {
+            try await storageService.saveSettings(settings)
+        } catch {
+            await showError(error.localizedDescription)
+        }
+    }
+
     /// Adjust the expense-colour gradient opacity on the home screen.
     /// Clamped to 0.05…1.0 to avoid fully invisible / over-saturated states.
     func updateBackgroundOpacity(_ opacity: Double) async {

@@ -115,6 +115,7 @@ extension TransactionStore {
                 series: series,
                 existingOccurrences: recurringOccurrences,
                 existingTransactionIds: existingTransactionIds,
+                transactionDays: transactionDays(ofSeries: series.id),
                 accounts: accounts,
                 baseCurrency: baseCurrency
             )
@@ -179,6 +180,7 @@ extension TransactionStore {
                 series: series,
                 existingOccurrences: recurringOccurrences,
                 existingTransactionIds: existingTransactionIds,
+                transactionDays: transactionDays(ofSeries: series.id),
                 accounts: accounts,
                 baseCurrency: baseCurrency
             )
@@ -449,23 +451,44 @@ extension TransactionStore {
             }
         }
 
+        let dueSeries = activeSeries.filter { !seriesIdsWithFutureTx.contains($0.id) }
+        guard !dueSeries.isEmpty else { return }
+
+        // An occurrence in another currency than its account's posts converted
+        // (TransactionConversion). At launch the rate cache can still be cold (prewarm runs
+        // in parallel), and an occurrence generated then stored no conversion: the balance
+        // moved by the raw foreign amount. Load the missing rates first; a series still
+        // without one waits for the next pass instead of posting a wrong amount.
+        let missingRate = seriesMissingRate(dueSeries)
+        if !missingRate.currencies.isEmpty {
+            await TransactionConversion.loadRates(missingRate.currencies)
+        }
+        let stillMissing = seriesMissingRate(dueSeries).seriesIds
+        if !stillMissing.isEmpty {
+            Self.recurringLogger.info("extendAllActiveSeriesHorizons: \(stillMissing.count) series wait for an exchange rate")
+        }
+
         // Collect every series' backfill first, then persist ONCE. The previous
         // per-series apply() ran a CoreData save + FRC section rebuild over 19k rows
         // for EVERY series with a backlog — after N days away that was S main-thread
         // hitches in a row at startup. Series are independent (deterministic per-series
-        // tx ids), so generating against one pre-loop snapshot is equivalent.
+        // tx ids), so generating against one pre-loop snapshot is equivalent. Taken after
+        // the rate load above: a series created meanwhile already has its transactions.
         let existingTransactionIds = transactionIdSet
         var pendingTransactions: [Transaction] = []
         var pendingOccurrences: [RecurringOccurrence] = []
 
-        for series in activeSeries {
-            guard !seriesIdsWithFutureTx.contains(series.id) else { continue }
+        for series in dueSeries {
+            guard !stillMissing.contains(series.id) else { continue }
+            // The series' transactions are checked again here, after the await above.
+            guard !hasFutureTransaction(series.id, today: today) else { continue }
 
             // Generate backfill (past gaps) + 1 future
             let result = recurringGenerator.generateUpToNextFuture(
                 series: series,
                 existingOccurrences: recurringOccurrences,
                 existingTransactionIds: existingTransactionIds,
+                transactionDays: transactionDays(ofSeries: series.id),
                 accounts: accounts,
                 baseCurrency: baseCurrency
             )
@@ -490,6 +513,40 @@ extension TransactionStore {
         // Track occurrences
         recurringStore.appendOccurrences(pendingOccurrences)
         recurringStore.saveOccurrences()
+    }
+
+    /// The days ("yyyy-MM-dd") of the transactions linked to `seriesId`, from the series
+    /// index. The generator counts them as existing occurrences
+    /// (`RecurringTransactionGenerator.generateUpToNextFuture`).
+    func transactionDays(ofSeries seriesId: String) -> Set<String> {
+        guard let linked = transactionsBySeriesId[seriesId] else { return [] }
+        return Set(linked.map(\.date))
+    }
+
+    /// Whether `seriesId` already has a transaction dated after `today`.
+    private func hasFutureTransaction(_ seriesId: String, today: Date) -> Bool {
+        guard let linked = transactionsBySeriesId[seriesId] else { return false }
+        return linked.contains { tx in
+            guard let date = FastDateParser.date(from: tx.date) else { return false }
+            return date > today
+        }
+    }
+
+    /// The series among `series` whose occurrences need a rate the cache doesn't have (an
+    /// amount in another currency than the account's), and the currencies to load for them.
+    private func seriesMissingRate(_ series: [RecurringSeries]) -> (seriesIds: Set<String>, currencies: Set<String>) {
+        var seriesIds = Set<String>()
+        var currencies = Set<String>()
+        for item in series {
+            guard let accountCurrency = item.accountId.flatMap({ accountById[$0]?.currency }),
+                  accountCurrency != item.currency,
+                  TransactionConversion.cachedRate(1, item.currency, accountCurrency) == nil
+            else { continue }
+            seriesIds.insert(item.id)
+            currencies.insert(item.currency)
+            currencies.insert(accountCurrency)
+        }
+        return (seriesIds, currencies)
     }
 
     /// Invalidate cache for a specific series
@@ -582,6 +639,7 @@ extension TransactionStore {
             series: updated,
             existingOccurrences: recurringOccurrences,
             existingTransactionIds: existingTransactionIds,
+            transactionDays: transactionDays(ofSeries: updated.id),
             accounts: accounts,
             baseCurrency: baseCurrency
         )

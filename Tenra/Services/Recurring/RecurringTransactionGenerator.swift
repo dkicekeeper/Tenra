@@ -30,6 +30,8 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
     ///   - series: Array of recurring series
     ///   - existingOccurrences: Array of existing occurrences to avoid duplicates
     ///   - existingTransactionIds: Set of existing transaction IDs
+    ///   - transactionDaysBySeries: series id → the days ("yyyy-MM-dd") that series already
+    ///     has a transaction on; they count as existing occurrences (`generateUpToNextFuture`)
     ///   - accounts: Array of accounts for resolving account names
     ///   - baseCurrency: Base currency for conversion
     ///   - horizonMonths: Number of months to generate ahead (default: 3)
@@ -38,6 +40,7 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
         series: [RecurringSeries],
         existingOccurrences: [RecurringOccurrence],
         existingTransactionIds: Set<String>,
+        transactionDaysBySeries: [String: Set<String>] = [:],
         accounts: [Account],
         baseCurrency: String,
         horizonMonths: Int = 3
@@ -47,10 +50,16 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
             return ([], [])
         }
 
-        // Build set of existing occurrence keys
+        // Build set of existing occurrence keys: the occurrence records, and the days each
+        // series already has a transaction on.
         var existingOccurrenceKeys: Set<String> = []
         for occurrence in existingOccurrences {
             existingOccurrenceKeys.insert("\(occurrence.seriesId):\(occurrence.occurrenceDate)")
+        }
+        for (seriesId, days) in transactionDaysBySeries {
+            for day in days {
+                existingOccurrenceKeys.insert("\(seriesId):\(day)")
+            }
         }
 
         var newTransactions: [Transaction] = []
@@ -265,12 +274,22 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
     ///   3. While candidateDate <= today AND occurrence doesn't exist → generate (backfill)
     ///   4. Generate 1 more future occurrence (candidateDate > today) → STOP
     ///
+    /// A day the series already has a transaction on (`transactionDays`) counts as an
+    /// existing occurrence, and the latest of those days as a resume point, like the
+    /// occurrence records. The records alone were not enough: they are saved 300 ms after a
+    /// change, and transaction ids hash with a per-process seed, so a series whose records
+    /// were lost started over from its start date and added a second transaction on every
+    /// day it already had one.
+    ///
+    /// - Parameter transactionDays: the days ("yyyy-MM-dd") of the transactions already
+    ///   linked to this series.
     /// - Returns: new transactions + occurrences to add. Empty if series has no valid startDate
     ///            or already has a future transaction.
     func generateUpToNextFuture(
         series: RecurringSeries,
         existingOccurrences: [RecurringOccurrence],
         existingTransactionIds: Set<String>,
+        transactionDays: Set<String> = [],
         accounts: [Account],
         baseCurrency: String
     ) -> (transactions: [Transaction], occurrences: [RecurringOccurrence]) {
@@ -282,16 +301,20 @@ nonisolated class RecurringTransactionGenerator: @unchecked Sendable {
         // Build accountById once — replaces O(N) `accounts.first(where:)` × 2 per occurrence
         let accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
 
-        // Build fast lookup for existing occurrences of THIS series
+        // Build fast lookup for existing occurrences of THIS series: its occurrence records
+        // and the days it already has a transaction on.
         var existingOccurrenceKeys: Set<String> = []
+        var occurredDays: Set<String> = transactionDays
         for occ in existingOccurrences where occ.seriesId == series.id {
-            existingOccurrenceKeys.insert("\(occ.seriesId):\(occ.occurrenceDate)")
+            occurredDays.insert(occ.occurrenceDate)
+        }
+        for day in occurredDays {
+            existingOccurrenceKeys.insert("\(series.id):\(day)")
         }
 
         // Find the latest occurrence date for this series → advance from there
-        let latestOccurrenceDate: Date? = existingOccurrences
-            .filter { $0.seriesId == series.id }
-            .compactMap { dateFormatter.date(from: $0.occurrenceDate) }
+        let latestOccurrenceDate: Date? = occurredDays
+            .compactMap { dateFormatter.date(from: $0) }
             .max()
 
         // Starting candidate: the occurrence of the period after the last known one,

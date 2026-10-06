@@ -962,6 +962,16 @@ final class TransactionStore {
 
     /// Apply an event to the store: updates state, balances, cache, and persists
     internal func apply(_ event: TransactionEvent) async throws {
+        // 0. A batch never adds a transaction the store already holds. Two generation passes
+        //    over one series (or a re-delivered batch) appended a second copy with the same
+        //    id: listed twice, counted twice in balances and inserted twice into CoreData.
+        var event = event
+        if case .bulkAdded(let txs) = event {
+            let fresh = txs.filter { !transactionIdSet.contains($0.id) }
+            if fresh.isEmpty { return }
+            if fresh.count != txs.count { event = .bulkAdded(fresh) }
+        }
+
         // 1. Update state (SSOT)
         updateState(event)
         mutationVersion &+= 1

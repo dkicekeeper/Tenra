@@ -380,9 +380,18 @@ struct LoanEarlyRepaymentView: View {
     }
 
     private func saveRepayment() {
-        guard let amount = AmountFormatter.parse(amountText), amount > 0 else {
+        guard let enteredAmount = AmountFormatter.parse(amountText), enteredAmount > 0 else {
             withAnimation(AppAnimation.contentSpring) {
                 validationError = String(localized: "loan.error.invalidAmount", defaultValue: "Enter a valid amount")
+            }
+            HapticManager.error()
+            return
+        }
+        guard let amount = LoanPaymentService.amountInLoanCurrency(
+            enteredAmount, currency: selectedCurrency, loanCurrency: account.currency
+        ) else {
+            withAnimation(AppAnimation.contentSpring) {
+                validationError = String(localized: "currency.error.conversionFailed")
             }
             HapticManager.error()
             return

@@ -316,6 +316,9 @@ struct LoansListView: View {
                         logger.error("Failed to add payment for \(loan.name): \(error.localizedDescription)")
                         failedLoanNames.append(loan.name)
                     }
+                } else {
+                    // e.g. no rate to convert the payment into the paying card's currency
+                    failedLoanNames.append(loan.name)
                 }
             }
             transactionsViewModel.recalculateAccountBalances()

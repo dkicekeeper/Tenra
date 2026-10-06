@@ -439,6 +439,22 @@ nonisolated enum LoanPaymentService {
         loanInfo.totalInterestPaid = totalInterest
     }
 
+    // MARK: - Entered Currency
+
+    /// A payment typed in the amount field's `currency`, in the loan's own currency (the
+    /// one the schedule runs in), at the cached rate. Nil when no rate is cached. The
+    /// payment forms ignored the field's currency, so 100 typed as USD paid 100 ₸ off a
+    /// KZT loan.
+    static func amountInLoanCurrency(_ amount: Decimal, currency: String, loanCurrency: String) -> Decimal? {
+        guard !currency.isEmpty, currency != loanCurrency else { return amount }
+        guard let converted = CurrencyConverter.convertSync(
+            amount: NSDecimalNumber(decimal: amount).doubleValue,
+            from: currency,
+            to: loanCurrency
+        ) else { return nil }
+        return Decimal(converted).rounded(2)
+    }
+
 }
 
 // MARK: - Decimal Rounding Helper

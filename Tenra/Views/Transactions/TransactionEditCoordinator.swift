@@ -264,6 +264,14 @@ final class TransactionEditCoordinator {
     private func performSave(onSuccess: @escaping () -> Void) async {
         guard let amount = Double(formData.amountText.replacingOccurrences(of: ",", with: ".")) else { return }
 
+        // Currency conversion first: a missing rate refuses the save before anything
+        // (a new recurring series below) is written.
+        guard let conversion = await conversionFields(amount: amount) else {
+            errorMessage = String(localized: "currency.error.conversionFailed")
+            HapticManager.error()
+            return
+        }
+
         let dateString = DateFormatters.dateFormatter.string(from: formData.selectedDate)
 
         // Handle recurring series
@@ -288,9 +296,6 @@ final class TransactionEditCoordinator {
             finalRecurringSeriesId = transaction.recurringSeriesId
         }
 
-        // Currency conversion
-        let convertedAmount = await convertCurrencyIfNeeded(amount: amount)
-
         // Build updated transaction
         let updatedTransaction = Transaction(
             id: transaction.id,
@@ -298,12 +303,14 @@ final class TransactionEditCoordinator {
             description: formData.descriptionText,
             amount: amount,
             currency: formData.selectedCurrency,
-            convertedAmount: convertedAmount,
+            convertedAmount: conversion.convertedAmount,
             type: transaction.type,
             category: formData.selectedCategory,
             subcategory: nil,
             accountId: formData.selectedAccountId,
             targetAccountId: formData.selectedTargetAccountId,
+            targetCurrency: conversion.targetCurrency,
+            targetAmount: conversion.targetAmount,
             recurringSeriesId: finalRecurringSeriesId,
             recurringOccurrenceId: finalRecurringOccurrenceId,
             createdAt: transaction.createdAt
@@ -453,16 +460,56 @@ final class TransactionEditCoordinator {
 
     // MARK: - Private: Currency Conversion
 
-    private func convertCurrencyIfNeeded(amount: Double) async -> Double? {
-        let accountCurrency = accountsViewModel.accounts
-            .first(where: { $0.id == formData.selectedAccountId })?.currency ?? transaction.currency
+    /// The conversion fields to save (`TransactionConversion`), or nil when a rate the
+    /// edit needs is missing: the caller refuses the save rather than move the balance
+    /// by the raw foreign amount.
+    ///
+    /// Saving used to keep only `convertedAmount`, re-priced at today's rate: the
+    /// equivalent under the amount (`targetCurrency` / `targetAmount`) vanished on every
+    /// edit, a cross-currency transfer credited its target account with the source
+    /// amount, and a missing rate saved the raw amount silently. A currency pair the
+    /// transaction already holds a conversion for keeps that rate
+    /// (`TransactionConversion.storedRate`), so an edit that changes neither amount,
+    /// currency nor account leaves the stored conversion exactly as it was.
+    private func conversionFields(amount: Double) async -> TransactionConversion? {
+        let original = transaction
+        let accounts = accountsViewModel.accounts
+        let currency = formData.selectedCurrency
+        let baseCurrency = transactionsViewModel.appSettings.baseCurrency
+        let originalAccountCurrency = accounts.first { $0.id == original.accountId }?.currency
+        let accountCurrency = accounts.first { $0.id == formData.selectedAccountId }?.currency
+            ?? original.currency
+        let targetAccountCurrency = accounts.first { $0.id == formData.selectedTargetAccountId }?.currency
+            ?? original.targetCurrency
+            ?? accountCurrency
+        let isTransfer = original.type == .internalTransfer
 
-        guard formData.selectedCurrency != accountCurrency else { return nil }
+        func fields() -> TransactionConversion? {
+            let convert = TransactionConversion.keepingRates(
+                of: original, accountCurrency: originalAccountCurrency
+            )
+            if isTransfer {
+                return TransactionConversion.transfer(
+                    amount: amount,
+                    currency: currency,
+                    sourceCurrency: accountCurrency,
+                    targetCurrency: targetAccountCurrency,
+                    convert: convert
+                )
+            }
+            return TransactionConversion.singleAccount(
+                amount: amount,
+                currency: currency,
+                accountCurrency: accountCurrency,
+                baseCurrency: baseCurrency,
+                convert: convert
+            )
+        }
 
-        return await CurrencyConverter.convert(
-            amount: amount,
-            from: formData.selectedCurrency,
-            to: accountCurrency
+        if let cached = fields() { return cached }
+        await TransactionConversion.loadRates(
+            Set([currency, accountCurrency, isTransfer ? targetAccountCurrency : baseCurrency])
         )
+        return fields()
     }
 }

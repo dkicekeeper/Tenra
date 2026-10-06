@@ -6,7 +6,10 @@
 import Testing
 @testable import Tenra
 
+// `.sharedProcessState`: the bootstrap test runs AppCoordinator's fast path, which reads
+// the shared CoreData store and settings.
 @MainActor
+@Suite(.sharedProcessState)
 struct IntentEnvironmentTests {
 
     @Test("A registered coordinator is reused rather than replaced")
@@ -32,5 +35,22 @@ struct IntentEnvironmentTests {
 
         #expect(services.store === first.transactionStore)
         #expect(services.store !== second.transactionStore)
+    }
+
+    @Test("Without a coordinator there is nothing for the app to adopt")
+    func noExistingCoordinator() async {
+        let environment = IntentEnvironment()
+        #expect(await environment.existingCoordinator() == nil)
+    }
+
+    @Test("The app adopts the coordinator an intent built before the UI existed")
+    func appAdoptsTheIntentCoordinator() async {
+        let environment = IntentEnvironment()
+        // An intent ran first (cold background launch) and bootstrapped a coordinator.
+        let intentStore = await environment.services().store
+
+        let adopted = await environment.existingCoordinator()
+
+        #expect(adopted?.transactionStore === intentStore)
     }
 }

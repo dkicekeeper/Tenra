@@ -41,6 +41,18 @@ final class IntentEnvironment {
         IntentServices(coordinator: await resolveCoordinator())
     }
 
+    /// The coordinator this process already has, or nil: one an intent built before the
+    /// app's UI existed (the Wallet automation or Siri launched the process in the
+    /// background), including one still bootstrapping. TenraApp adopts it instead of
+    /// building a second: `register` keeps the first coordinator, so with two of them every
+    /// later intent wrote through the fast-path-only store, over the balances and the
+    /// whole-table saves of the store the UI uses.
+    func existingCoordinator() async -> AppCoordinator? {
+        if let coordinator { return coordinator }
+        if let bootstrap { return await bootstrap.value }
+        return nil
+    }
+
     private func resolveCoordinator() async -> AppCoordinator {
         if let coordinator { return coordinator }
         if let bootstrap { return await bootstrap.value }

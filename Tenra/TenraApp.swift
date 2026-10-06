@@ -74,12 +74,16 @@ struct TenraApp: App {
                 //
                 // reconcileOnboardingAfterFastPath() runs inside initializeFastPath(), so
                 // `needsOnboarding` is also settled before the conditional below evaluates.
-                let c = AppCoordinator()
-                // Register before the await: an App Intent can run in this same
-                // process, and it must reuse this coordinator rather than build a
-                // second TransactionStore alongside it.
+                //
+                // An App Intent can run in this same process, before or after the UI:
+                // - before: the Wallet automation / Siri launched the process in the
+                //   background and built a coordinator (fast path only). Adopt it, so the
+                //   UI and later intents share one TransactionStore; ContentView's
+                //   initialize() then runs the full load on it.
+                // - after: register before the await, so the intent reuses this one.
+                let c = await IntentEnvironment.shared.existingCoordinator() ?? AppCoordinator()
                 IntentEnvironment.shared.register(c)
-                await c.initializeFastPath()
+                await c.initializeFastPath() // returns at once when the intent already ran it
                 coordinator = c
             }
             .onChange(of: scenePhase) { _, phase in

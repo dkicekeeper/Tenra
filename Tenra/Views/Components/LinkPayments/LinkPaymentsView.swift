@@ -530,17 +530,21 @@ struct LinkPaymentsView: View {
         let idSet = selectedIds
         var total = 0.0
         for tx in candidates where idSet.contains(tx.id) {
-            if tx.currency == base {
-                total += tx.amount
-            } else if let converted = tx.convertedAmount {
-                total += converted
-            } else if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: base) {
-                total += fx
-            } else {
-                total += tx.amount
-            }
+            total += Self.amountInBaseCurrency(tx, base: base)
         }
         cachedSelectedTotalInBaseCurrency = total
+    }
+
+    /// `tx.amount` in `base` (docs/domains/currency.md canonical pattern). The selected
+    /// total used to prefer `convertedAmount`, which is in the ACCOUNT's currency
+    /// (CLAUDE.md red flag 6): a USD payment from a EUR card added its euros as tenge.
+    /// It stays only as the cold-cache fallback.
+    static func amountInBaseCurrency(_ tx: Transaction, base: String) -> Double {
+        if tx.currency == base { return tx.amount }
+        if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: base) {
+            return fx
+        }
+        return tx.convertedAmount ?? tx.amount
     }
 
     private func handleSearchChanged() {

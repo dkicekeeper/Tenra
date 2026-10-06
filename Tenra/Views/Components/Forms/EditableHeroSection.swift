@@ -5,12 +5,8 @@
 //  Phase 16: Hero-style Edit Views
 //  Updated: Phase 16 - AnimatedHeroInput
 //
-//  Universal hero section component for edit views with:
-//  - Large tappable IconView with spring animation
-//  - AnimatedTitleInput: per-character spring+fade animation
-//  - AnimatedAmountInput: per-digit spring+wobble animation
-//  - Inline currency picker as Menu button
-//  - Optional ColorPickerRow carousel
+//  Adapter over DesignKit's EditableHero (1.10.0): icon (opens the icon picker), name,
+//  optional amount and currency. HeroConfig presets and the hex tint stay Tenra's.
 //
 
 import SwiftUI
@@ -30,33 +26,22 @@ struct HeroConfig {
 
 // MARK: - EditableHeroSection
 
-/// Editable hero section for edit views with animated icon, title, and optional balance/color.
+/// Editable hero section for edit views: an adapter over DesignKit's `EditableHero` (1.10.0),
+/// which presents DesignKit's IconPicker and CurrencyList. Keeps Tenra's `HeroConfig`
+/// presets and the category colour as a stored hex.
 struct EditableHeroSection: View {
-    // MARK: - Bindings
-
     @Binding var iconSource: IconSource?
     @Binding var title: String
     @Binding var balance: String
     @Binding var currency: String
 
-    // MARK: - Configuration
-
     let titlePlaceholder: String
     let config: HeroConfig
-    /// When set, the icon renders as a tinted circle (e.g. for categories).
-    /// When nil, the icon renders as a glass hero (e.g. for accounts, subscriptions).
+    /// When set, the icon renders tinted with this colour on glass (e.g. for categories).
+    /// When nil, the icon keeps its own colours (e.g. accounts, subscriptions).
     let iconTintColor: String?
-    /// Forwarded to the underlying `AnimatedTitleInput` — when `true`, focus is
-    /// requested on first appear (e.g. onboarding account step).
+    /// Focus the title on first appear (e.g. onboarding account step).
     let autoFocusTitle: Bool
-
-    // MARK: - State
-
-    @State private var showingIconPicker = false
-    @State private var iconScale: CGFloat = AppAnimation.heroHiddenScale
-    @State private var iconOpacity: Double = 0
-
-    // MARK: - Initializer
 
     init(
         iconSource: Binding<IconSource?>,
@@ -78,98 +63,21 @@ struct EditableHeroSection: View {
         self.autoFocusTitle = autoFocusTitle
     }
 
-    // MARK: - Body
-
     var body: some View {
-        VStack(spacing: AppSpacing.lg) {
-            // Hero Icon
-            heroIconView
-                .scaleEffect(iconScale)
-                .opacity(iconOpacity)
-                .onAppear {
-                    withAnimation(AppAnimation.heroEntranceAnimation) {
-                        iconScale = 1.0
-                        iconOpacity = 1.0
-                    }
-                }
-
-            // Animated Title
-            AnimatedTitleInput(
-                text: $title,
-                placeholder: titlePlaceholder,
-                autoFocus: autoFocusTitle
-            )
-            .screenPadding()
-
-            // Balance (if enabled)
-            if config.showBalance {
-                balanceView
-            }
-        }
-        .padding(.vertical, AppSpacing.lg)
-        .sheet(isPresented: $showingIconPicker) {
-            IconPickerView(selectedSource: $iconSource, allowLogos: config.allowLogos)
-        }
-    }
-
-    // MARK: - Hero Icon View
-
-    private var heroIconView: some View {
-        Button {
-            HapticManager.light()
-            showingIconPicker = true
-        } label: {
-            if let tintHex = iconTintColor {
-                // Glass hero icon tinted with the category color (matches the
-                // read-only category detail hero).
-                IconView(
-                    source: iconSource ?? .sfSymbol("star.fill"),
-                    style: .glassHero(tint: .monochrome(Color(hex: tintHex)))
-                )
-            } else {
-                // Glass hero icon (e.g. accounts, subscriptions)
-                IconView(
-                    source: iconSource,
-                    style: .glassHero()
-                )
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(String(localized: "common.changeIcon"))
-    }
-
-    // MARK: - Balance View
-
-    private var balanceView: some View {
-        VStack(spacing: AppSpacing.sm) {
-            AmountInput(
-                amount: $balance,
-                baseFontSize: 48,
-                placeholderColor: AppColors.textTertiary
-            )
-            .padding(.horizontal, AppSpacing.lg)
-
-            if config.showCurrency {
-                NavigationLink {
-                    CurrencyPickerView(
-                        selectedCurrency: currency,
-                        onSelect: { newCurrency in
-                            currency = newCurrency
-                        }
-                    )
-                } label: {
-                    HStack(spacing: AppSpacing.sm) {
-                        Text(Formatting.currencySymbol(for: currency))
-                        Text(currency)
-                            .font(AppTypography.bodySmall)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: AppIconSize.sm))
-                    }
-                    .filterChipStyle(isSelected: false)
-                }
-                .buttonStyle(.plain)
-            }
-        }
+        EditableHero(
+            icon: $iconSource,
+            title: $title,
+            titlePlaceholder: titlePlaceholder,
+            amount: $balance,
+            currency: $currency,
+            iconTint: iconTintColor.map { Color(hex: $0) },
+            options: EditableHero.Options(
+                showsAmount: config.showBalance,
+                showsCurrency: config.showCurrency,
+                allowsLogos: config.allowLogos
+            ),
+            autoFocusTitle: autoFocusTitle
+        )
     }
 }
 

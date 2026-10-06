@@ -89,7 +89,11 @@ struct DepositsListView: View {
                 }
             } else {
                 VStack(spacing: 0) {
-                    ForEach(0..<3, id: \.self) { _ in SkeletonRow() }
+                    // The skeleton of the rows to come (AccountRow is DesignKit's BalanceRow).
+                    ForEach(0..<3, id: \.self) { _ in
+                        BalanceRowSkeleton()
+                            .padding(.vertical, AppSpacing.sm)
+                    }
                 }
                 .screenPadding()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

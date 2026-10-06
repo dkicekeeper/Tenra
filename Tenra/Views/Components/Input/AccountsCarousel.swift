@@ -36,7 +36,7 @@ struct AccountsCarousel: View {
                     balance: balancesById[account.id] ?? 0,
                     namespace: namespace
                 )
-                .modifier(CarouselScrollTransition(enabled: useScrollTransition))
+                .carouselItemTransition(isEnabled: useScrollTransition)
                 .id(account.id)
             }
         }
@@ -49,25 +49,6 @@ struct AccountsCarousel: View {
 /// Wraps `.scrollTransition` so it can be applied conditionally without changing
 /// the view's identity. Using `Group { if … } else { … }` would split identity
 /// between the two branches and undo `matchedGeometryEffect`-driven transitions.
-private struct CarouselScrollTransition: ViewModifier {
-    let enabled: Bool
-
-    func body(content: Content) -> some View {
-        if enabled {
-            // `.interactive` so opacity/scale track scroll offset continuously (cards
-            // move with the finger) instead of re-tweening with a fixed easing.
-            content.scrollTransition(.interactive) { content, phase in
-                content
-                    .opacity(phase.isIdentity ? 1 : 0.75)
-                    .scaleEffect(phase.isIdentity ? 1 : 0.95)
-            }
-        } else {
-            content
-        }
-    }
-}
-
-// MARK: - Preview
 #Preview {
     @Previewable @Namespace var ns
     let coordinator = AppCoordinator()

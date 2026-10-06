@@ -2,8 +2,9 @@
 //  CurrencySelectorView.swift
 //  Tenra
 //
-//  Configurable currency selector using Menu picker.
-//  Shows account currencies + user's quick-access picks + "Customize..." action.
+//  Adapter over DesignKit's CurrencyPickerMenu (1.10.0): the menu offers the account
+//  currencies plus the user's quick-access picks from AppSettings, and "Customize…" opens
+//  the quick-access sheet (Tenra settings, so it stays here).
 //
 
 import SwiftUI
@@ -15,20 +16,24 @@ struct CurrencySelectorView: View {
 
     @State private var showingCustomize = false
 
-    /// Merged, deduplicated, sorted currency list for the Menu.
-    private var menuCurrencies: [CurrencyInfo] {
-        let quickAccess = Set(appSettings.quickAccessCurrencies)
-        let allCodes = accountCurrencies.union(quickAccess)
-        return allCodes
-            .compactMap { CurrencyInfo.find($0) }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-    }
-
     var body: some View {
-        HStack(spacing: AppSpacing.sm) {
-            currencyMenu
+        CurrencyPickerMenu(
+            selection: $selectedCurrency,
+            currencies: Array(accountCurrencies.union(appSettings.quickAccessCurrencies))
+        ) {
+            showingCustomize = true
         }
-        .sheet(isPresented: $showingCustomize) {
+        .quickAccessCurrencySheet(isPresented: $showingCustomize, appSettings: appSettings,
+                                  accountCurrencies: accountCurrencies)
+    }
+}
+
+extension View {
+    /// The sheet behind "Customize…" in the currency menu: the user's quick-access currencies,
+    /// saved to AppSettings as they change.
+    func quickAccessCurrencySheet(isPresented: Binding<Bool>, appSettings: AppSettings,
+                                  accountCurrencies: Set<String>) -> some View {
+        sheet(isPresented: isPresented) {
             NavigationStack {
                 QuickAccessCurrencyPickerView(
                     selectedCurrencyCodes: Binding(
@@ -40,7 +45,7 @@ struct CurrencySelectorView: View {
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(String(localized: "button.done")) {
-                            showingCustomize = false
+                            isPresented.wrappedValue = false
                         }
                     }
                 }
@@ -48,43 +53,6 @@ struct CurrencySelectorView: View {
         }
         .onChange(of: appSettings.quickAccessCurrencies) { _, _ in
             appSettings.save()
-        }
-    }
-
-    private var currencyMenu: some View {
-        Menu {
-            ForEach(menuCurrencies) { currency in
-                Button(action: {
-                    selectedCurrency = currency.code
-                    HapticManager.selection()
-                }) {
-                    HStack {
-                        Text("\(currency.code) \(currency.symbol)")
-                        Spacer()
-                        if selectedCurrency == currency.code {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-            }
-
-            Divider()
-
-            Button(action: {
-                showingCustomize = true
-            }) {
-                Label(
-                    String(localized: "currency.customizeAction"),
-                    systemImage: "slider.horizontal.3"
-                )
-            }
-        } label: {
-            HStack(spacing: AppSpacing.sm) {
-                Text(Formatting.currencySymbol(for: selectedCurrency))
-                Image(systemName: "chevron.down")
-                    .font(.system(size: AppIconSize.sm))
-            }
-            .filterChipStyle(isSelected: false)
         }
     }
 }

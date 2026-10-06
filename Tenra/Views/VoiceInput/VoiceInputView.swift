@@ -417,16 +417,30 @@ struct VoiceInputView: View {
             return accountsViewModel.regularAccounts.first
         }()
         guard let account = resolvedAccount else { return nil }
+        // No positive amount: drop this one operation. Passed through as 0 it failed
+        // validation, and addBatch rejected the whole batch.
+        let amount = (parsed.amount as? NSDecimalNumber)?.doubleValue ?? 0
+        guard amount > 0 else { return nil }
         let currency = parsed.currencyCode ?? account.currency
+        // The parser maps keywords onto built-in names ("Еда", "Other") that the user's
+        // categories may not have (renamed or deleted). An unknown name failed validation
+        // and the whole batch was rejected, so Confirm saved nothing. Resolve it as the
+        // App Intents do: exact, case-insensitive, related name, the user's "Other", else
+        // uncategorized (which the store accepts).
+        let category = TransactionDraftService.resolveCategory(
+            named: parsed.categoryName,
+            type: parsed.type,
+            in: categoriesViewModel.customCategories
+        ).name
 
         return Transaction(
             id: "",
             date: DateFormatters.dateFormatter.string(from: parsed.date),
             description: parsed.note.isEmpty ? currentText : parsed.note,
-            amount: (parsed.amount as? NSDecimalNumber)?.doubleValue ?? 0,
+            amount: amount,
             currency: currency,
             type: parsed.type,
-            category: parsed.categoryName ?? String(localized: "category.other"),
+            category: category,
             accountId: account.id
         )
     }
@@ -456,7 +470,10 @@ struct VoiceInputView: View {
                 }
                 try? await voiceService.startRecording()
             } catch {
+                // Say why instead of only buzzing: nothing was saved.
                 HapticManager.error()
+                errorAlertMessage = error.localizedDescription
+                showingErrorAlert = true
             }
         }
     }

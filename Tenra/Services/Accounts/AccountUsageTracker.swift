@@ -80,29 +80,28 @@ class AccountUsageTracker {
     /// Score each candidate account inside the activity window.
     /// Returns nil if no account had any matching transactions.
     private func scoreAccounts(forCategory category: String?) -> [String: Double]? {
-        let dateFormatter = Self.recencyDateFormatter
         let now = Date()
         let cutoff = Calendar.current.date(byAdding: .day, value: -Self.activityWindowDays, to: now) ?? now
+        // Stored dates are the canonical "yyyy-MM-dd", which sorts like the date itself, so
+        // the window is a string compare: nothing outside it (or outside the category) is
+        // parsed. This runs on the main actor on every voice parse, over every transaction;
+        // a DateFormatter per row made each pause in dictation stall (CLAUDE.md red flag 15).
+        // `>` keeps the cutoff day out, as the old `midnight >= now - 90 days` test did.
+        let cutoffKey = FastDateParser.string(from: cutoff)
         let normalizedCategory = category?.lowercased()
 
+        var matchingByAccount: [String: [Transaction]] = [:]
+        for tx in transactions {
+            guard let accountId = tx.accountId, tx.date > cutoffKey else { continue }
+            if let needle = normalizedCategory, tx.category.lowercased() != needle { continue }
+            matchingByAccount[accountId, default: []].append(tx)
+        }
+
         var scores: [String: Double] = [:]
-        let grouped = Dictionary(grouping: transactions) { $0.accountId }
-
-        for (accountId, accountTransactions) in grouped {
-            guard let accountId = accountId else { continue }
-
-            let matching = accountTransactions.filter { tx in
-                guard let date = dateFormatter.date(from: tx.date), date >= cutoff else { return false }
-                if let needle = normalizedCategory {
-                    return tx.category.lowercased() == needle
-                }
-                return true
-            }
-            guard !matching.isEmpty else { continue }
-
+        for (accountId, matching) in matchingByAccount {
             let volumeScore = Double(matching.count) * 0.4
             let freshnessScore = matching
-                .map { recencyPoints(for: $0, now: now, dateFormatter: dateFormatter) }
+                .map { recencyPoints(for: $0, now: now) }
                 .max() ?? 0
 
             scores[accountId] = volumeScore + freshnessScore * 0.6
@@ -113,8 +112,8 @@ class AccountUsageTracker {
 
     /// Recency points for a single transaction. Pulled out so
     /// `getSmartDefaultAccount` can take the max instead of the sum.
-    private func recencyPoints(for transaction: Transaction, now: Date, dateFormatter: DateFormatter) -> Double {
-        guard let date = dateFormatter.date(from: transaction.date) else { return 0 }
+    private func recencyPoints(for transaction: Transaction, now: Date) -> Double {
+        guard let date = FastDateParser.date(from: transaction.date) else { return 0 }
         let days = Calendar.current.dateComponents([.day], from: date, to: now).day ?? 999
         switch days {
         case 0...1: return 100
@@ -126,25 +125,17 @@ class AccountUsageTracker {
 
     // MARK: - Private Helpers
 
-    /// Cached DateFormatter — DateFormatter is Sendable on iOS 26+ target
-    private static let recencyDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
-
     /// Calculate recency score based on transaction dates
     /// - Parameter transactions: Transactions to analyze
     /// - Returns: Recency score (0-100 per transaction)
     private func calculateRecencyScore(for transactions: [Transaction]) -> Double {
         let now = Date()
-        let dateFormatter = Self.recencyDateFormatter
 
         var totalRecencyScore: Double = 0
 
         for transaction in transactions {
             // Parse date string to Date
-            guard let transactionDate = dateFormatter.date(from: transaction.date) else {
+            guard let transactionDate = FastDateParser.date(from: transaction.date) else {
                 // If parsing fails, treat as old transaction
                 totalRecencyScore += 10
                 continue

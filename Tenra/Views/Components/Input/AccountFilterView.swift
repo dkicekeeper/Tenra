@@ -13,6 +13,7 @@ struct AccountFilterView: View {
     let balanceCoordinator: BalanceCoordinator?
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.amountsHidden) private var amountsHidden
 
     private var sortedAccounts: [Account] {
         accounts.sortedByOrder()
@@ -108,7 +109,9 @@ struct AccountFilterView: View {
 
                         Spacer()
 
-                        Text(Formatting.formatCurrencySmart(balance, currency: account.currency))
+                        Text(amountsHidden
+                             ? Formatting.hiddenAmount(currency: account.currency)
+                             : Formatting.formatCurrencySmart(balance, currency: account.currency))
                             .font(AppTypography.h4)
                             .foregroundStyle(AppColors.textSecondary)
                     }

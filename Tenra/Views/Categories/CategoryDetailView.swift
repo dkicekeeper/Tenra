@@ -19,6 +19,7 @@ struct CategoryDetailView: View {
     let categoriesViewModel: CategoriesViewModel
     let accountsViewModel: AccountsViewModel
     let category: CustomCategory
+    @Environment(\.amountsHidden) private var amountsHidden
 
     @State private var showingEdit = false
     @State private var showingSubcategoryManager = false
@@ -315,8 +316,12 @@ struct CategoryDetailView: View {
 
         // Budget (expense only, when set) — scaled to the selected period.
         if let budgetTotal = scaledBudgetTotal() {
-            let spent = Formatting.formatCurrencySmart(aggregates.amountInPeriod, currency: baseCurrency)
-            let total = Formatting.formatCurrencySmart(budgetTotal, currency: baseCurrency)
+            let spent = amountsHidden
+                ? Formatting.hiddenAmount(currency: baseCurrency)
+                : Formatting.formatCurrencySmart(aggregates.amountInPeriod, currency: baseCurrency)
+            let total = amountsHidden
+                ? Formatting.hiddenAmount(currency: baseCurrency)
+                : Formatting.formatCurrencySmart(budgetTotal, currency: baseCurrency)
             let pct = Int((min(max(aggregates.amountInPeriod / budgetTotal, 0), 1) * 100).rounded())
             let spentAmount = aggregates.amountInPeriod
             rows.append(InfoRowConfig(

@@ -12,6 +12,7 @@ import SwiftUI
 struct AmortizationScheduleRow: View {
     let entry: LoanPaymentService.AmortizationEntry
     let currency: String
+    @Environment(\.amountsHidden) private var amountsHidden
 
     var body: some View {
         ScheduleRow(
@@ -28,7 +29,7 @@ struct AmortizationScheduleRow: View {
         guard entry.interest > 0 else { return nil }
         return String(
             format: String(localized: "loan.interestShort", defaultValue: "int: %@"),
-            Formatting.formatCurrencySmart(
+            amountsHidden ? Formatting.hiddenAmount(currency: currency) : Formatting.formatCurrencySmart(
                 NSDecimalNumber(decimal: entry.interest).doubleValue,
                 currency: currency
             )

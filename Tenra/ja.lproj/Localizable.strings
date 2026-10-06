@@ -1768,3 +1768,16 @@
 "deposit.dayCount.actual365" = "実日数／365";
 "deposit.dayCount.actualActual" = "実日数／365または366";
 "deposit.dayCount.actual360" = "実日数／360";
+
+/* Hidden amounts (eye button on Home, DesignKit .amountsHidden) */
+"amount.hidden" = "非表示の金額";
+"amount.hide" = "金額を隠す";
+"amount.show" = "金額を表示";
+
+/* DesignKit components: charts, MonthCalendar, skeletons (docs: DesignKit docs/localization-keys.md) */
+"chart.today" = "今日";
+"chart.empty.title" = "まだデータがありません";
+"chart.empty.message" = "グラフを表示するにはデータを追加してください。";
+"calendar.showMonth" = "月を表示";
+"calendar.showWeek" = "週を表示";
+"skeleton.loading" = "読み込み中";

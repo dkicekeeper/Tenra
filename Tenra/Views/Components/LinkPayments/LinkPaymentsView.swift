@@ -69,6 +69,7 @@ struct LinkPaymentsView: View {
     let categoriesViewModel: CategoriesViewModel
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.amountsHidden) private var amountsHidden
 
     // MARK: - State
 
@@ -124,7 +125,7 @@ struct LinkPaymentsView: View {
                     VStack(spacing: 0) {
                         Text(title)
                             .font(AppTypography.body.weight(.semibold))
-                        Text(String(format: String(localized: "subscription.linkPayments.selectedWithAmount", defaultValue: "%d selected \u{00B7} %@"), selectedIds.count, Formatting.formatCurrencySmart(cachedSelectedTotalInBaseCurrency, currency: transactionStore.baseCurrency)))
+                        Text(String(format: String(localized: "subscription.linkPayments.selectedWithAmount", defaultValue: "%d selected \u{00B7} %@"), selectedIds.count, amountsHidden ? Formatting.hiddenAmount(currency: transactionStore.baseCurrency) : Formatting.formatCurrencySmart(cachedSelectedTotalInBaseCurrency, currency: transactionStore.baseCurrency)))
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
                     }

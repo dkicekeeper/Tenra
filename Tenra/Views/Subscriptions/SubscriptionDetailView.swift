@@ -16,6 +16,7 @@ struct SubscriptionDetailView: View {
     let categoriesViewModel: CategoriesViewModel
     let accountsViewModel: AccountsViewModel
     @Environment(TimeFilterManager.self) private var timeFilterManager
+    @Environment(\.amountsHidden) private var amountsHidden
     let subscription: RecurringSeries
     @State private var showingEditView = false
     @State private var showingDeleteConfirmation = false
@@ -322,6 +323,7 @@ struct SubscriptionDetailView: View {
         let subCurrency = liveSubscription.currency
         let baseCurrency = transactionsViewModel.appSettings.baseCurrency
         let subTotal = cachedSpentAllTimeInSubCurrency
+        if amountsHidden { return Formatting.hiddenAmount(currency: subCurrency) }
         let primary = Formatting.formatCurrencySmart(subTotal, currency: subCurrency)
 
         if subCurrency != baseCurrency,

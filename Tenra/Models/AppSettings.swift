@@ -44,6 +44,10 @@ class AppSettings: Codable {
     /// Account currencies are always included automatically (not stored here).
     var quickAccessCurrencies: [String]
 
+    /// Amounts drawn as "•••• ₸" everywhere (the eye button on Home): for showing the app to
+    /// someone or recording the screen. Applied at the root with `.amountsHidden(_:)`.
+    var hidesAmounts: Bool
+
     // MARK: - Constants
 
     nonisolated static let defaultCurrency = "KZT"
@@ -63,7 +67,8 @@ class AppSettings: Codable {
         homeBackgroundMode: HomeBackgroundMode = .none,
         blurWallpaper: Bool = false,
         homeBackgroundOpacity: Double = 0.35,
-        quickAccessCurrencies: [String] = ["USD", "EUR"]
+        quickAccessCurrencies: [String] = ["USD", "EUR"],
+        hidesAmounts: Bool = false
     ) {
         self.baseCurrency = baseCurrency
         self.wallpaperImageName = wallpaperImageName
@@ -71,6 +76,7 @@ class AppSettings: Codable {
         self.blurWallpaper = blurWallpaper
         self.homeBackgroundOpacity = homeBackgroundOpacity
         self.quickAccessCurrencies = quickAccessCurrencies
+        self.hidesAmounts = hidesAmounts
     }
 
     // MARK: - Codable
@@ -82,6 +88,7 @@ class AppSettings: Codable {
         case blurWallpaper
         case homeBackgroundOpacity
         case quickAccessCurrencies
+        case hidesAmounts
     }
 
     required init(from decoder: Decoder) throws {
@@ -93,6 +100,7 @@ class AppSettings: Codable {
         blurWallpaper = (try? container.decodeIfPresent(Bool.self, forKey: .blurWallpaper)) ?? false
         homeBackgroundOpacity = (try? container.decodeIfPresent(Double.self, forKey: .homeBackgroundOpacity)) ?? 0.35
         quickAccessCurrencies = (try? container.decodeIfPresent([String].self, forKey: .quickAccessCurrencies)) ?? ["USD", "EUR"]
+        hidesAmounts = (try? container.decodeIfPresent(Bool.self, forKey: .hidesAmounts)) ?? false
     }
 
     func encode(to encoder: Encoder) throws {
@@ -103,6 +111,7 @@ class AppSettings: Codable {
         try container.encode(blurWallpaper, forKey: .blurWallpaper)
         try container.encode(homeBackgroundOpacity, forKey: .homeBackgroundOpacity)
         try container.encode(quickAccessCurrencies, forKey: .quickAccessCurrencies)
+        try container.encode(hidesAmounts, forKey: .hidesAmounts)
     }
 
     // MARK: - In-place Update
@@ -119,6 +128,7 @@ class AppSettings: Codable {
         blurWallpaper = other.blurWallpaper
         homeBackgroundOpacity = other.homeBackgroundOpacity
         quickAccessCurrencies = other.quickAccessCurrencies
+        hidesAmounts = other.hidesAmounts
     }
 
     // MARK: - Factory Methods

@@ -355,8 +355,32 @@ struct ContentView: View {
             timeFilterButton
         }
         ToolbarItem(placement: .topBarTrailing) {
+            amountsVisibilityButton
+        }
+        ToolbarItem(placement: .topBarTrailing) {
             settingsButton
         }
+    }
+
+    /// Hides every amount in the app ("•••• ₸") or shows them again; the choice is kept in
+    /// the settings. Applied at the root (`MainTabView`).
+    private var amountsVisibilityButton: some View {
+        let hidden = viewModel.appSettings.hidesAmounts
+        return Button {
+            HapticManager.selection()
+            withAnimation(AppAnimation.contentSpring) {
+                viewModel.appSettings.hidesAmounts.toggle()
+            }
+            let newValue = viewModel.appSettings.hidesAmounts
+            Task { await coordinator.settingsViewModel.updateHidesAmounts(newValue) }
+        } label: {
+            Image(systemName: hidden ? "eye.slash" : "eye")
+                .foregroundStyle(.primary)
+                .contentTransition(.symbolEffect(.replace))
+        }
+        .accessibilityLabel(hidden
+            ? String(localized: "amount.show")
+            : String(localized: "amount.hide"))
     }
 
     private var settingsButton: some View {

@@ -159,4 +159,27 @@ struct TransactionConversionTests {
         #expect(convert(20, "USD", "KZT") == 9_600)        // 480 ₸/$, not today's 500
         #expect(close(convert(10, "EUR", "KZT"), 5_500))   // no saved EUR rate: cache
     }
+
+    @Test("a missing base-currency equivalent asks the caller to load rates once more")
+    func lacksEquivalentOnColdCache() {
+        // Dollars on a dollar account, tenge base, no rate: saved without the "≈" line.
+        let cold = TransactionConversion.singleAccount(
+            amount: 10, currency: "USD", accountCurrency: "USD", baseCurrency: "KZT",
+            convert: Self.noRates
+        )
+        #expect(cold == TransactionConversion())
+        if let cold {
+            #expect(TransactionConversion.lacksEquivalent(cold, currency: "USD", baseCurrency: "KZT"))
+        }
+
+        let warm = TransactionConversion.singleAccount(
+            amount: 10, currency: "USD", accountCurrency: "USD", baseCurrency: "KZT",
+            convert: Self.fixedRates
+        )
+        if let warm {
+            #expect(!TransactionConversion.lacksEquivalent(warm, currency: "USD", baseCurrency: "KZT"))
+        }
+        // In the base currency there is no equivalent to show.
+        #expect(!TransactionConversion.lacksEquivalent(TransactionConversion(), currency: "KZT", baseCurrency: "KZT"))
+    }
 }

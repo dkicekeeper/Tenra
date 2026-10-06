@@ -106,6 +106,14 @@ nonisolated struct TransactionConversion: Equatable, Sendable {
         return nil
     }
 
+    /// Whether `fields` miss the base-currency equivalent of a transaction in a foreign
+    /// currency. It is display only, so `singleAccount` doesn't fail without it, but a
+    /// cold rate cache (first launch, offline start) saved the row without its "≈" line:
+    /// callers load the rates once more when this is true.
+    static func lacksEquivalent(_ fields: TransactionConversion, currency: String, baseCurrency: String) -> Bool {
+        currency != baseCurrency && fields.targetAmount == nil
+    }
+
     /// `CurrencyConverter.convertSync` as a `Converter`: cached rates only, no network.
     static func cachedRate(_ amount: Double, _ from: String, _ to: String) -> Double? {
         CurrencyConverter.convertSync(amount: amount, from: from, to: to)

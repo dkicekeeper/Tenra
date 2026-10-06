@@ -297,7 +297,10 @@ final class TransactionAddCoordinator {
             )
         }
 
-        if let cached = fields() { return cached }
+        if let cached = fields(),
+           !TransactionConversion.lacksEquivalent(cached, currency: currency, baseCurrency: baseCurrency) {
+            return cached
+        }
         await TransactionConversion.loadRates(Set([currency, account.currency, baseCurrency]))
         return fields()
     }

@@ -300,6 +300,15 @@ struct SubscriptionEditView: View {
         isSaving = true
 
         Task {
+            guard await hasAccountRate(for: series) else {
+                isSaving = false
+                withAnimation(AppAnimation.contentSpring) {
+                    validationError = String(localized: "currency.error.conversionFailed")
+                }
+                HapticManager.error()
+                return
+            }
+
             // Check notification permission before saving so we can decide
             // whether to show the permission sheet instead of calling dismiss() directly.
             var needsPermissionSheet = false
@@ -415,13 +424,21 @@ struct SubscriptionEditView: View {
         let newCurrency = changes.currency ? series.currency : tx.currency
         let newCategory = changes.category ? series.category : tx.category
         let newAccountId = changes.accountId ? (series.accountId ?? tx.accountId) : tx.accountId
+        var conversion = TransactionConversion(
+            convertedAmount: tx.convertedAmount,
+            targetCurrency: tx.targetCurrency,
+            targetAmount: tx.targetAmount
+        )
+        if changes.amount || changes.currency || changes.accountId {
+            conversion = conversionFields(for: tx, amount: newAmount, currency: newCurrency, accountId: newAccountId)
+        }
         return Transaction(
             id: tx.id,
             date: tx.date,
             description: tx.description,
             amount: newAmount,
             currency: newCurrency,
-            convertedAmount: tx.convertedAmount,
+            convertedAmount: conversion.convertedAmount,
             type: tx.type,
             category: newCategory,
             subcategory: tx.subcategory,
@@ -429,12 +446,43 @@ struct SubscriptionEditView: View {
             targetAccountId: tx.targetAccountId,
             accountName: tx.accountName,
             targetAccountName: tx.targetAccountName,
-            targetCurrency: tx.targetCurrency,
-            targetAmount: tx.targetAmount,
+            targetCurrency: conversion.targetCurrency,
+            targetAmount: conversion.targetAmount,
             recurringSeriesId: tx.recurringSeriesId,
             recurringOccurrenceId: tx.recurringOccurrenceId,
             createdAt: tx.createdAt
         )
+    }
+
+    /// Conversion fields of `tx` after a propagated amount, currency or account change
+    /// (`TransactionConversion`). They used to be copied over unchanged: the balance kept
+    /// moving by the old equivalent, and after an account change read it in the new
+    /// account's currency. A currency pair the transaction already holds a conversion for
+    /// keeps that rate (`TransactionConversion.storedRate`).
+    private func conversionFields(for tx: Transaction, amount: Double, currency: String, accountId: String?) -> TransactionConversion {
+        let accountById = transactionStore.accountById
+        let originalAccountCurrency = tx.accountId.flatMap { accountById[$0]?.currency }
+        let accountCurrency = accountId.flatMap { accountById[$0]?.currency } ?? currency
+        // No rate: `hasAccountRate` refused the save for the subscription's own pair, so
+        // only a transaction whose currency or account drifted from it can end up here.
+        return TransactionConversion.singleAccount(
+            amount: amount,
+            currency: currency,
+            accountCurrency: accountCurrency,
+            baseCurrency: transactionStore.baseCurrency,
+            convert: TransactionConversion.keepingRates(of: tx, accountCurrency: originalAccountCurrency)
+        ) ?? TransactionConversion()
+    }
+
+    /// Whether the subscription's amount can be converted into its account's currency,
+    /// loading the rate on a cache miss. Its occurrences post in the account's currency;
+    /// without a rate they would move the balance by the raw foreign amount.
+    private func hasAccountRate(for series: RecurringSeries) async -> Bool {
+        guard let accountCurrency = series.accountId.flatMap({ transactionStore.accountById[$0]?.currency }),
+              accountCurrency != series.currency else { return true }
+        if TransactionConversion.cachedRate(1, series.currency, accountCurrency) != nil { return true }
+        await TransactionConversion.loadRates(Set([series.currency, accountCurrency]))
+        return TransactionConversion.cachedRate(1, series.currency, accountCurrency) != nil
     }
 
     /// Returns a copy of `tx` with `description` swapped out — used by the auto-rename pass

@@ -85,9 +85,18 @@ class NotificationPermissionManager {
         await checkAuthorizationStatus()
     }
 
-    /// Check if we should request permission (only once per install)
+    /// Whether to offer the full (banner + sound) permission request, once per session.
     var shouldRequestPermission: Bool {
-        return authorizationStatus == .notDetermined && !hasRequestedPermission
+        Self.shouldRequestFullPermission(status: authorizationStatus, alreadyAsked: hasRequestedPermission)
+    }
+
+    /// Pure policy, pinned by `ProvisionalNotificationPolicyTests`. Provisional counts as
+    /// undecided: `requestProvisionalIfUndetermined()` grants it to every onboarded user at
+    /// launch, and treating it as "already asked" meant subscription reminders were never
+    /// upgraded and arrived silently in Notification Center, with no banner or sound. From
+    /// provisional, a full request shows the system prompt.
+    nonisolated static func shouldRequestFullPermission(status: UNAuthorizationStatus, alreadyAsked: Bool) -> Bool {
+        (status == .notDetermined || status == .provisional) && !alreadyAsked
     }
 
     /// Check if notifications are enabled

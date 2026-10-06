@@ -34,4 +34,19 @@ struct ProvisionalNotificationPolicyTests {
         #expect(!policy(.authorized))
         #expect(!policy(.provisional))
     }
+
+    // MARK: - Full (banner + sound) request, e.g. subscription reminders
+
+    @Test("Provisional is upgraded: reminders must not stay silent")
+    func provisionalOffersTheFullRequest() {
+        #expect(NotificationPermissionManager.shouldRequestFullPermission(status: .provisional, alreadyAsked: false))
+        #expect(NotificationPermissionManager.shouldRequestFullPermission(status: .notDetermined, alreadyAsked: false))
+    }
+
+    @Test("Never twice in a session, never after a decision")
+    func fullRequestOnlyWhileUndecided() {
+        #expect(!NotificationPermissionManager.shouldRequestFullPermission(status: .provisional, alreadyAsked: true))
+        #expect(!NotificationPermissionManager.shouldRequestFullPermission(status: .authorized, alreadyAsked: false))
+        #expect(!NotificationPermissionManager.shouldRequestFullPermission(status: .denied, alreadyAsked: false))
+    }
 }

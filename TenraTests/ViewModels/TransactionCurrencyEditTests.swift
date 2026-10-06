@@ -10,7 +10,7 @@
 //    account with the source amount (10 USD arrived as 10 ₸);
 //  - a missing rate saved the raw foreign amount, silently;
 //  - editing only the description re-priced a foreign-currency transaction.
-//  The add screen shares the rule and is pinned here too.
+//  The add screen and transfer creation share the rule and are pinned here too.
 //
 //  @MainActor + .sharedProcessState: the tests seed the process-global
 //  CurrencyRateStore.shared (cleared in init) and swap CurrencyConverter.providerChain.
@@ -260,5 +260,35 @@ struct TransactionCurrencyEditTests {
             #expect(graph.store.transactions.isEmpty)
             #expect(graph.balance.balances["a1"] == 0)
         }
+    }
+
+    // MARK: - Transfer creation
+
+    @Test("a transfer typed in another currency than the source debits the source in its own")
+    func transferDebitsConvertedSourceAmount() async throws {
+        let graph = await makeGraph()
+        let source = try #require(graph.accounts.accounts.first { $0.id == "a1" })
+        let action = AccountActionViewModel(
+            account: source,
+            accountsViewModel: graph.accounts,
+            transactionsViewModel: graph.transactions,
+            categoriesViewModel: graph.categories,
+            defaultAction: .transfer
+        )
+        action.selectedTargetAccountId = "usd"
+        action.selectedCurrency = "USD"
+        action.amountText = "10"
+
+        await action.saveTransaction(date: Date(), transactionStore: graph.store)
+
+        #expect(!action.showingError, "error: \(action.errorMessage)")
+        let saved = try #require(graph.store.transactions.first)
+        #expect(saved.amount == 10)
+        #expect(saved.currency == "USD")
+        // Checked but never stored before: the tenge card lost 10 ₸.
+        #expect(saved.convertedAmount == 5_000)
+        #expect(saved.targetAmount == 10)
+        #expect(graph.balance.balances["a1"] == -5_000)
+        #expect(graph.balance.balances["usd"] == 10)
     }
 }

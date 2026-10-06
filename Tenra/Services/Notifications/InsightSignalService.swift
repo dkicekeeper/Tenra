@@ -8,6 +8,9 @@
 //  Benchmark-derived rules (docs/INSIGHTS_PRODUCT_AUDIT.md):
 //  - Push TRANSITIONS, not states: a signal id fires at most once per 7 days,
 //    so a budget that stays overspent doesn't nag daily.
+//  - Event signals (insights with a `signalKey`, e.g. a subscription price
+//    increase keyed by series + new amount) fire ONCE per key: the same increase
+//    never pushes again, including across relaunches and background refreshes.
 //  - Global cap of 5 pushes per rolling week (anti notification-fatigue; 43% of
 //    users disable notifications because of noise).
 //  - At most 2 pushes per recompute, delivered inside a 09:00-21:00 window with
@@ -73,10 +76,17 @@ final class InsightSignalService {
     struct FiredRecord: Codable, Equatable, Sendable {
         let id: String
         let date: Date
+        /// `true` = event record: `id` is an `Insight.signalKey`, kept for
+        /// `eventDedupWindow`. `nil` = state record keyed by the insight id (7 days).
+        /// Optional so history written before 2026-10 still decodes.
+        var isEvent: Bool? = nil
     }
 
     /// One signal id fires at most once per this window.
     nonisolated static let dedupWindow: TimeInterval = 7 * 24 * 3600
+    /// An event signal fires once per `signalKey`; its record is kept this long. A price
+    /// increase is visible for 30 days only, so the same increase never pushes again.
+    nonisolated static let eventDedupWindow: TimeInterval = 365 * 24 * 3600
     /// Hard ceiling on pushes per rolling week across all signal kinds.
     nonisolated static let weeklyCap = 5
     /// Ceiling per single recompute. After a multi-day absence the weekly budget
@@ -124,6 +134,10 @@ final class InsightSignalService {
         let windowStart = now.addingTimeInterval(-dedupWindow)
         let recent = history.filter { $0.date > windowStart }
         let recentIds = Set(recent.map(\.id))
+        let eventWindowStart = now.addingTimeInterval(-eventDedupWindow)
+        let firedEventKeys = Set(
+            history.filter { $0.isEvent == true && $0.date > eventWindowStart }.map(\.id)
+        )
         let budget = max(0, min(perRunCap, weeklyCap - recent.count))
         guard budget > 0 else { return [] }
 
@@ -131,13 +145,56 @@ final class InsightSignalService {
             insights
                 .compactMap { insight -> Insight? in
                     guard let kind = InsightSignalKind.from(insight),
-                          enabledKinds.contains(kind),
-                          !recentIds.contains(insight.id) else { return nil }
+                          enabledKinds.contains(kind) else { return nil }
+                    // Event signals: once per key. State signals: once per 7 days per id.
+                    if let key = insight.signalKey {
+                        guard !firedEventKeys.contains(key) else { return nil }
+                    } else {
+                        guard !recentIds.contains(insight.id) else { return nil }
+                    }
                     return insight
                 }
                 .sorted { $0.severity.sortOrder < $1.severity.sortOrder }
                 .prefix(budget)
         )
+    }
+
+    // MARK: - Fire history bookkeeping (pure, unit-tested)
+
+    /// The record written when `insight` is scheduled: keyed by its `signalKey` (event,
+    /// kept for `eventDedupWindow`) or by its id (state, kept for `dedupWindow`).
+    nonisolated static func firedRecord(for insight: Insight, at date: Date) -> FiredRecord {
+        if let key = insight.signalKey {
+            return FiredRecord(id: key, date: date, isEvent: true)
+        }
+        return FiredRecord(id: insight.id, date: date)
+    }
+
+    /// Records still in force at `now`; older ones are dropped when history is written.
+    nonisolated static func retainedHistory(_ history: [FiredRecord], now: Date) -> [FiredRecord] {
+        history.filter { record in
+            let window = record.isEvent == true ? eventDedupWindow : dedupWindow
+            return record.date > now.addingTimeInterval(-window)
+        }
+    }
+
+    /// Before 2026-10 a price increase was recorded under its plain insight id and pushed
+    /// again 7 days later. Re-keys such a record to the insight's current `signalKey`
+    /// (same date, so the weekly cap does not count it twice), so an increase pushed
+    /// before the update does not push once more under its new key.
+    nonisolated static func migratingLegacyEventRecords(
+        _ history: [FiredRecord],
+        insights: [Insight]
+    ) -> [FiredRecord] {
+        var keyByInsightId: [String: String] = [:]
+        for insight in insights {
+            if let key = insight.signalKey { keyByInsightId[insight.id] = key }
+        }
+        guard !keyByInsightId.isEmpty else { return history }
+        return history.map { record -> FiredRecord in
+            guard record.isEvent != true, let key = keyByInsightId[record.id] else { return record }
+            return FiredRecord(id: key, date: record.date, isEvent: true)
+        }
     }
 
     /// Notification body composed from the already-localized insight fields —
@@ -275,10 +332,14 @@ final class InsightSignalService {
             Self.logger.debug("🔔 [Signals] cancelled \(stale.count) stale pending signal(s)")
         }
 
+        let storedHistory = loadHistory()
+        let migratedHistory = Self.migratingLegacyEventRecords(storedHistory, insights: insights)
+        if migratedHistory != storedHistory { saveHistory(migratedHistory) }
+
         let selected = Self.selectSignals(
             from: insights,
             enabledKinds: enabledKinds,
-            history: loadHistory(),
+            history: migratedHistory,
             now: now
         )
         guard !selected.isEmpty else { return }
@@ -287,7 +348,7 @@ final class InsightSignalService {
         let fireDates = Self.deliveryDates(count: selected.count, now: now, rng: &rng)
 
         // Prune expired records while we're writing anyway.
-        var history = loadHistory().filter { $0.date > now.addingTimeInterval(-Self.dedupWindow) }
+        var history = Self.retainedHistory(migratedHistory, now: now)
         for (insight, fireDate) in zip(selected, fireDates) {
             let content = UNMutableNotificationContent()
             content.title = insight.title
@@ -311,7 +372,7 @@ final class InsightSignalService {
             )
             do {
                 try await center.add(request)
-                history.append(FiredRecord(id: insight.id, date: now))
+                history.append(Self.firedRecord(for: insight, at: now))
                 Self.logger.debug("🔔 [Signals] scheduled '\(insight.id, privacy: .public)' for \(fireDate, privacy: .public)")
             } catch {
                 Self.logger.warning("🔔 [Signals] failed to schedule '\(insight.id, privacy: .public)': \(error.localizedDescription, privacy: .public)")

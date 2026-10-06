@@ -26,6 +26,11 @@ struct Insight: Identifiable, Hashable {
     /// falls back to the legacy detailData-driven mini-chart. Defaulted so the dozens of
     /// existing construction sites stay valid.
     var cardVisual: InsightCardVisual? = nil
+    /// Push identity of an EVENT signal (a one-off happening, e.g. a subscription price
+    /// increase: series + new amount). When set, `InsightSignalService` pushes the
+    /// insight once per key instead of once per 7 days per `id` (the rule for STATE
+    /// signals such as a budget that stays overspent). Not part of `==`: never rendered.
+    var signalKey: String? = nil
 
     // Hash by id only (detailData holds non-Hashable Colors). Equality is VALUE-BASED on the
     // display-affecting fields, though — insight ids are stable across granularities

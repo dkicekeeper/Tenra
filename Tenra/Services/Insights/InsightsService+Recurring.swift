@@ -136,15 +136,24 @@ extension InsightsService {
 
     // MARK: - Subscription Price Increase (audit 2026-07)
 
-    /// Detects active expense series whose latest realized charge is noticeably higher
-    /// than the previous one (or than the series amount when only one occurrence is
-    /// linked). Emma/Rocket-style "your subscription got more expensive" signal.
-    /// Emits up to 3 insights, largest increase first. Granularity-independent (shared).
+    /// Days a price increase stays in the feed, counted from the FIRST charge at the new
+    /// price. Later charges at the same higher price do not extend it. Until 2026-10 there
+    /// was no window: the card stayed until a newer charge was recorded (a whole year for
+    /// a yearly series, indefinitely when none was) and its push repeated every 7 days.
+    nonisolated static let priceIncreaseVisibleDays = 30
+
+    /// Detects active expense series whose price went up recently: the first realized
+    /// charge at the current price is noticeably higher than the last charge at the
+    /// previous price (or than the series amount when only one charge is linked).
+    /// Emma/Rocket-style "your subscription got more expensive" signal, shown for
+    /// `priceIncreaseVisibleDays` after that first charge. Emits up to 3 insights,
+    /// largest increase first. Granularity-independent (shared).
     nonisolated func generateSubscriptionPriceIncreases(
         recurringSeries: [RecurringSeries],
         categories: [CustomCategory],
         transactions: [Transaction],
-        txDateMap: [String: Date]? = nil
+        txDateMap: [String: Date]? = nil,
+        now: Date = Date()
     ) -> [Insight] {
         let activeExpenseSeries = recurringSeries.filter { series in
             guard series.isActive else { return false }
@@ -154,7 +163,6 @@ extension InsightsService {
         let activeIds = Set(activeExpenseSeries.map(\.id))
 
         // Single pass: collect realized occurrences per active series.
-        let now = Date()
         var occurrences: [String: [(date: Date, amount: Double, currency: String)]] = [:]
         for tx in transactions where tx.type == .expense {
             guard let seriesId = tx.recurringSeriesId, activeIds.contains(seriesId) else { continue }
@@ -163,11 +171,15 @@ extension InsightsService {
         }
         guard !occurrences.isEmpty else { return [] }
 
+        let calendar = Calendar.current
         var found: [(insight: Insight, changePercent: Double)] = []
         for series in activeExpenseSeries {
             guard var occ = occurrences[series.id], !occ.isEmpty else { continue }
             occ.sort { $0.date > $1.date }
             let latest = occ[0]
+            // Only charges in the latest charge's currency are compared (a multi-currency
+            // comparison would need FX and reads as noise). Newest first.
+            let charges = occ.filter { $0.currency == latest.currency }
 
             let chargesPerYear: Double
             switch series.frequency {
@@ -179,27 +191,45 @@ extension InsightsService {
             }
             let expectedGapDays = 365.25 / chargesPerYear
 
-            // Baseline: previous occurrence in the SAME currency (multi-currency
-            // comparison would need FX and reads as noise); fall back to the series
-            // amount when only one occurrence is linked.
+            // First charge at the current price: walk back over older charges within the
+            // 5% noise band (FX wobble, rounding). The first bigger move between two
+            // consecutive charges is the price change.
+            var firstAtPrice = 0
+            while firstAtPrice + 1 < charges.count {
+                let newer = charges[firstAtPrice].amount
+                let older = charges[firstAtPrice + 1].amount
+                guard older > 0, abs(newer - older) / older * 100 <= 5 else { break }
+                firstAtPrice += 1
+            }
+            let newCharge = charges[firstAtPrice]
+
+            // Visibility window: shown for `priceIncreaseVisibleDays` after the first
+            // charge at the new price, then gone even though the higher price persists.
+            guard let visibleUntil = calendar.date(
+                byAdding: .day, value: Self.priceIncreaseVisibleDays, to: newCharge.date
+            ), now < visibleUntil else { continue }
+
+            // Baseline: the last charge at the previous price; fall back to the series
+            // amount when only one charge is linked.
             let baseline: Double
-            if let previous = occ.dropFirst().first(where: { $0.currency == latest.currency }) {
+            if firstAtPrice + 1 < charges.count {
+                let previous = charges[firstAtPrice + 1]
                 // Billing-period guard: the previous charge covers roughly the span
-                // up to the latest one. If that span doesn't match the series'
+                // up to the new one. If that span doesn't match the series'
                 // current frequency, the billing period changed (monthly → yearly
                 // plan switch) — comparing raw charge amounts would read as a huge
                 // fake "price increase" (real bug: Wolt 1 199/mo → 9 588/yr = +699%).
-                let gapDays = latest.date.timeIntervalSince(previous.date) / 86_400
+                let gapDays = newCharge.date.timeIntervalSince(previous.date) / 86_400
                 guard gapDays >= expectedGapDays * 0.5, gapDays <= expectedGapDays * 1.6 else { continue }
                 baseline = previous.amount
-            } else if series.currency == latest.currency {
+            } else if charges.count == 1, series.currency == latest.currency {
                 baseline = NSDecimalNumber(decimal: series.amount).doubleValue
             } else {
                 continue
             }
             guard baseline > 0 else { continue }
 
-            let delta = latest.amount - baseline
+            let delta = newCharge.amount - baseline
             let changePercent = (delta / baseline) * 100
             // >300% within one billing period is implausible as a price hike —
             // it's a plan/period switch or a mislinked charge, not a signal.
@@ -223,25 +253,25 @@ extension InsightsService {
                 formulaRows: [
                     InsightFormulaRow(id: "name", labelKey: "insights.formula.priceIncrease.row.name", value: 0, kind: .rawText(name)),
                     InsightFormulaRow(id: "oldPrice", labelKey: "insights.formula.priceIncrease.row.oldPrice", value: baseline, kind: .currency),
-                    InsightFormulaRow(id: "newPrice", labelKey: "insights.formula.priceIncrease.row.newPrice", value: latest.amount, kind: .currency),
+                    InsightFormulaRow(id: "newPrice", labelKey: "insights.formula.priceIncrease.row.newPrice", value: newCharge.amount, kind: .currency),
                     InsightFormulaRow(id: "delta", labelKey: "insights.formula.priceIncrease.row.delta", value: changePercent, kind: .percent),
                     InsightFormulaRow(id: "yearlyImpact", labelKey: "insights.formula.priceIncrease.row.yearlyImpact", value: yearlyImpact, kind: .currency, isEmphasised: true)
                 ],
                 explainerKey: "insights.formula.priceIncrease.explainer",
                 recommendation: String(localized: "insights.formula.priceIncrease.rec"),
-                baseCurrency: latest.currency
+                baseCurrency: newCharge.currency
             )
 
-            Self.logger.debug("🔁 [Insights] PriceIncrease — '\(name, privacy: .public)' \(String(format: "%.0f", baseline), privacy: .public) → \(String(format: "%.0f", latest.amount), privacy: .public) \(latest.currency, privacy: .public) (\(String(format: "%+.1f%%", changePercent), privacy: .public))")
+            Self.logger.debug("🔁 [Insights] PriceIncrease — '\(name, privacy: .public)' \(String(format: "%.0f", baseline), privacy: .public) → \(String(format: "%.0f", newCharge.amount), privacy: .public) \(newCharge.currency, privacy: .public) (\(String(format: "%+.1f%%", changePercent), privacy: .public))")
             found.append((Insight(
                 id: "price_increase_\(series.id)",
                 type: .subscriptionPriceIncrease,
                 title: String(localized: "insights.priceIncrease"),
                 subtitle: name,
                 metric: InsightMetric(
-                    value: latest.amount,
-                    formattedValue: Formatting.formatCurrencySmart(latest.amount, currency: latest.currency),
-                    currency: latest.currency,
+                    value: newCharge.amount,
+                    formattedValue: Formatting.formatCurrencySmart(newCharge.amount, currency: newCharge.currency),
+                    currency: newCharge.currency,
                     unit: nil
                 ),
                 trend: InsightTrend(
@@ -250,7 +280,7 @@ extension InsightsService {
                     changeAbsolute: delta,
                     comparisonPeriod: String(
                         format: String(localized: "insights.priceIncrease.was"),
-                        Formatting.formatCurrencySmart(baseline, currency: latest.currency)
+                        Formatting.formatCurrencySmart(baseline, currency: newCharge.currency)
                     )
                 ),
                 severity: severity,
@@ -259,10 +289,13 @@ extension InsightsService {
                 // Old charge vs new charge — the card IS a two-value comparison.
                 cardVisual: .barPair(
                     previous: baseline,
-                    current: latest.amount,
+                    current: newCharge.amount,
                     color: AppColors.warning,
                     isProjection: false
-                )
+                ),
+                // One push per series + new amount: the same increase never pushes
+                // again, a later increase (another amount) gets its own key.
+                signalKey: "price_increase_\(series.id)@\(newCharge.currency):\(String(format: "%.2f", newCharge.amount))"
             ), changePercent))
         }
 

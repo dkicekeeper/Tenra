@@ -29,6 +29,9 @@ struct LoanDetailView: View {
     @State private var cachedTransactions: [Transaction] = []
     @State private var paymentError: String? = nil
     @State private var payoffMessage: String? = nil
+    /// "Today" for this month's payment status; refreshed on a significant time change
+    /// (midnight, or back in the foreground after midnight passed), like `LoansListView`.
+    @State private var today = Date()
     @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
 
@@ -210,6 +213,9 @@ struct LoanDetailView: View {
                 payoffMessage = nil
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            today = Date()
+        }
     }
 
     private func showPaymentError(_ message: String) {
@@ -225,6 +231,7 @@ struct LoanDetailView: View {
         let accountsById = Dictionary(
             uniqueKeysWithValues: transactionsViewModel.accounts.map { ($0.id, $0) }
         )
+        let monthStatus = currentMonthStatus(for: account)
 
         EntityDetailScaffold(
             navigationTitle: account.name,
@@ -273,11 +280,15 @@ struct LoanDetailView: View {
                         NSDecimalNumber(decimal: $0.remainingPrincipal).doubleValue
                     } ?? 0,
                     primaryCurrency: account.currency,
-                    subtitle: heroSubtitle(for: account),
+                    subtitle: heroSubtitle(for: account, monthStatus: monthStatus),
                     progress: progressConfig(for: account),
                     showBaseConversion: true,
                     baseCurrency: transactionsViewModel.appSettings.baseCurrency
-                )
+                ) {
+                    if let monthStatus {
+                        LoanMonthStatusBadge(status: monthStatus)
+                    }
+                }
             },
             customSections: {
                 loanCustomSections(for: account)
@@ -480,7 +491,19 @@ struct LoanDetailView: View {
         )
     }
 
-    private func heroSubtitle(for account: Account) -> String? {
+    /// This month's regular payment, for the hero badge and subtitle. Read from the live index,
+    /// not `cachedTransactions`: that is empty until the refresh task runs and would flash
+    /// "Not paid". Reading `transactions` re-renders on every add, edit and delete.
+    private func currentMonthStatus(for account: Account) -> LoanMonthStatus? {
+        _ = transactionStore.transactions.count
+        return LoanMonthStatusService.status(
+            loan: account,
+            loanTransactions: transactionStore.transactionsByAccount[account.id] ?? [],
+            today: today
+        )
+    }
+
+    private func heroSubtitle(for account: Account, monthStatus: LoanMonthStatus?) -> String? {
         guard let info = account.loanInfo else { return nil }
         if info.isPaidOff {
             guard let lastPaymentDate = info.lastPaymentDate,
@@ -492,7 +515,9 @@ struct LoanDetailView: View {
                 formatDate(date)
             )
         }
-        if let nextDate = LoanPaymentService.nextPaymentDate(loanInfo: info) {
+        // With a status, the next payment is the one still to make: this month's while unpaid
+        // (even when overdue), next month's once paid.
+        if let nextDate = monthStatus?.nextDueDate ?? LoanPaymentService.nextPaymentDate(loanInfo: info) {
             return String(
                 format: String(localized: "loan.nextPayment", defaultValue: "Next payment: %@"),
                 formatDate(nextDate)

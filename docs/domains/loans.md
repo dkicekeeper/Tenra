@@ -45,11 +45,22 @@ A loan is **closed** when `LoanInfo.isPaidOff` — i.e. `remainingPrincipal <= L
 
 Convenience accessors on `Account`: `isPaidOffLoan`, `isActiveLoan` (both `false` for non-loan accounts).
 
-⚠️ **Every loan aggregate must read `LoansViewModel.activeLoans`, not `loans`.** A closed loan contributes 0 debt but keeps a non-zero `monthlyPayment` forever — summing `loans` inflates "Monthly" and the active count. Current call sites: `LoansListView.loansSummary`, `LoansListView.activeLoans` (Pay All), `LoansCardView`. `LoansCardView` deliberately keys its empty state on `loans.isEmpty` (any loans at all) so a user whose loans are all paid off still sees the card.
+⚠️ **Every loan aggregate must read `LoansViewModel.activeLoans`, not `loans`.** A closed loan contributes 0 debt but keeps a non-zero `monthlyPayment` forever — summing `loans` inflates "Monthly" and the active count. Current call sites: `LoansListView.loansSummary`, `LoansListView.currentMonthStatuses`, `LoansListView.activeLoans` (Pay All), `LoansCardView`. `LoansCardView` deliberately keys its empty state on `loans.isEmpty` (any loans at all) so a user whose loans are all paid off still sees the card.
 
 Closed loans surface in `LoansListView` under a collapsed "Closed" `DisclosureGroup`, below the active cards and outside the type filter's card list (`filteredClosedLoans` applies the same type filter separately).
 
 `LoanDetailView` when closed: `primaryAction`/`secondaryAction` are `nil` (paying a zero balance would drive `remainingPrincipal` negative and silently reopen the loan), "Change Rate" is hidden, the hero subtitle becomes "Closed <date>" (from `lastPaymentDate`), and a one-shot success banner fires on the `false → true` edge of `isPaidOffLoan`. The amortization schedule and payment history stay fully readable.
+
+## This Month's Payment Status
+
+`LoanMonthStatusService` (pure, `Services/Loans/`) gives each active loan `LoanMonthStatus`: `.paid(nextDueDate:)` or `.unpaid(dueDate:isOverdue:)`, shown by `LoanMonthStatusBadge` under the type badge in `LoanCard` and in the `LoanDetailView` hero. Pinned by `LoanMonthStatusTests`.
+
+- **Paid** = a regular payment recorded in the current calendar month: a `.loanPayment` with `targetAccountId == loan.id` dated from the 1st through today (future-dated rows are not realized), **or** `lastPaymentDate` on or after the 1st. The second branch is what "Mark as paid" in the schedule writes (payments made outside the app, no transaction); manual payment, Pay All and linking write it too. A `.loanEarlyRepayment` never counts and does not touch `lastPaymentDate`.
+- **No status (nil)**: paid off, not started (payment `i` falls `startDate + i` months, so payment #1 is the month after the start month), or past the last scheduled month (`termMonths`). These loans are not counted.
+- **Due date**: `paymentDay` clamped to the month's length. `nextDueDate` (this month's while unpaid, even when overdue; next month's once paid) replaces `nextPaymentDate` in the card footer and hero subtitle, so a paid loan no longer shows this month's date as "next payment".
+- **Summary**: "Unpaid this month" in `LoansListView` = `unpaidTotal`, the `amountDue` (monthly payment capped at remaining principal + the month's interest) of every `.unpaid` loan, converted to the base currency through `RateSnapshot` (missing rate: unconverted amount, the canonical cold-cache fallback). Hidden when no active loan has a status.
+- **Freshness**: computed in `body`, not cached. The views read `transactions` (re-render on any add/edit/delete; `mutationVersion` is `@ObservationIgnored`), `currencyRatesVersion` and `baseCurrency`, and keep `today` in `@State` refreshed by `UIApplication.significantTimeChangeNotification` (midnight, or on return to the foreground after it), so a new month never shows last month's statuses.
+- ⚠️ Deleting or re-dating a payment does not roll back `lastPaymentDate` (loans don't reconcile), so the status stays "paid" until the user marks the row unpaid. The same staleness already applies to `remainingPrincipal` / `paymentsMade`.
 
 ## Deleting a Loan — two intents
 

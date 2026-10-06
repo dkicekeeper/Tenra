@@ -1063,6 +1063,7 @@
 "loan.emptyDescription" = "Añade tus créditos y compras a plazos para seguir los pagos y el progreso";
 "loan.totalDebt" = "Deuda total";
 "loan.monthlyTotal" = "Mensual";
+"loan.unpaidThisMonth" = "Pendiente este mes";
 "loan.activeCount" = "%d préstamos activos";
 "loan.typeAnnuityShort" = "Crédito";
 "loan.typeInstallmentShort" = "A plazos";
@@ -1080,6 +1081,8 @@
 "loan.deleteMessage" = "Los pagos de este préstamo son gastos reales en tus cuentas. Puedes conservarlos en el historial o eliminarlos junto con el préstamo.";
 "loan.closedSection" = "Cerrados";
 "loan.statusPaidOff" = "Pagado";
+"loan.statusPaidThisMonth" = "Pagado este mes";
+"loan.statusNotPaid" = "Sin pagar";
 "loan.closedOn" = "Cerrado el %@";
 "loan.deleteKeepPayments" = "Eliminar y conservar pagos";
 "loan.deleteWithPayments" = "Eliminar todo";

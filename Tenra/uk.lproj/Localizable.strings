@@ -1063,6 +1063,7 @@
 "loan.emptyDescription" = "Додайте свої кредити та розстрочки, щоб відстежувати платежі й прогрес";
 "loan.totalDebt" = "Загальний борг";
 "loan.monthlyTotal" = "За місяць";
+"loan.unpaidThisMonth" = "Не оплачено цього місяця";
 "loan.activeCount" = "%d активних кредитів";
 "loan.typeAnnuityShort" = "Кредит";
 "loan.typeInstallmentShort" = "Розстрочка";
@@ -1080,6 +1081,8 @@
 "loan.deleteMessage" = "Платежі за цим кредитом записані як реальні витрати на ваших рахунках. Їх можна залишити в історії або видалити разом із кредитом.";
 "loan.closedSection" = "Закриті";
 "loan.statusPaidOff" = "Погашено";
+"loan.statusPaidThisMonth" = "Оплачено цього місяця";
+"loan.statusNotPaid" = "Не оплачено";
 "loan.closedOn" = "Закрито %@";
 "loan.deleteKeepPayments" = "Видалити, залишити платежі";
 "loan.deleteWithPayments" = "Видалити все";

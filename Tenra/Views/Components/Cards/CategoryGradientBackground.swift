@@ -2,18 +2,20 @@
 //  CategoryGradientBackground.swift
 //  Tenra
 //
-//  Soft blurred colour orbs as the home screen gradient background. Each orb maps to a top
-//  expense category; its size and brightness are proportional to that category's spend
-//  weight. Adapter over DesignKit's `GradientOrbsBackground`: resolving the categories'
-//  colours (custom categories included) stays here.
+//  The home screen's background: soft pools of colour, one per top expense category, each
+//  sized and brightened by that category's share of spending. Adapter over DesignKit's
+//  `AuroraBackground(_ spots:)` (a still mesh, no blur; it replaced the blurred
+//  `GradientOrbsBackground` in DesignKit 2.5.0): resolving the categories' colours (custom
+//  categories included) stays here.
 //
 
 import SwiftUI
 
-/// The user's top expense categories by spend proportion as `GradientOrbsBackground` orbs.
+/// The user's top expense categories by spend proportion as `AuroraBackground` spots.
 ///
-/// Place it *behind* the content (the home screen, the background picker's preview); the
-/// orbs are static, so the background composites once. Never embed inside `List`/`ForEach`.
+/// Place it *behind* the content (the home screen, the background picker's preview). It is
+/// still, so the glass cards over it never redraw for it; a change of weights flows in 0.6 s.
+/// Never embed inside `List`/`ForEach`.
 struct CategoryGradientBackground: View {
     /// Top expense categories with normalised weights (0.0–1.0, largest = 1.0).
     let weights: [CategoryColorWeight]
@@ -21,9 +23,9 @@ struct CategoryGradientBackground: View {
     let customCategories: [CustomCategory]
 
     var body: some View {
-        GradientOrbsBackground(
+        AuroraBackground(
             weights.map { item in
-                GradientOrbsBackground.Orb(
+                AuroraBackground.Spot(
                     color: CategoryColors.color(
                         for: item.category,
                         opacity: 1.0,

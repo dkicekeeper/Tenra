@@ -86,7 +86,7 @@ struct VoiceInputView: View {
     private var coreContent: some View {
         ZStack {
             if voiceService.isRecording || isScreenshotDemo {
-                SiriWave()
+                VoiceLevelGlow(voiceService: voiceService, followsVoice: !isScreenshotDemo)
                     .ignoresSafeArea()
                     .transition(.opacity.animation(AppAnimation.gentleSpring))
             }
@@ -710,4 +710,18 @@ struct RecordingIndicatorView: View {
         accountsViewModel: coordinator.accountsViewModel
     )
     .environment(coordinator.transactionStore)
+}
+
+// MARK: - Edge glow
+
+/// The recording screen's edge light, following the voice. Its own small view, so the level
+/// (about 47 updates a second) redraws the glow only, not the screen.
+private struct VoiceLevelGlow: View {
+    let voiceService: VoiceInputService
+    /// Off for screenshots, where nothing is recorded: the glow then breathes on its own.
+    let followsVoice: Bool
+
+    var body: some View {
+        EdgeGlow(level: followsVoice ? voiceService.audioLevel : nil)
+    }
 }

@@ -41,6 +41,9 @@ enum VoiceInputError: LocalizedError {
 @MainActor
 class VoiceInputService: NSObject {
     var isRecording = false
+    /// The voice level while recording, 0…1, for the recording screen's `EdgeGlow`.
+    /// Read it only in a small view: it changes about 47 times a second.
+    var audioLevel: Double = 0
     var transcribedText = ""
     var errorMessage: String?
 
@@ -201,7 +204,13 @@ class VoiceInputService: NSObject {
         do {
             engine = try await VoiceRecordingEngine.makeAndStart(
                 request: recognitionRequest,
-                bufferSize: VoiceInputConstants.audioBufferSize
+                bufferSize: VoiceInputConstants.audioBufferSize,
+                onLevel: { [weak self] level in
+                    Task { @MainActor [weak self] in
+                        guard let self, self.isRecording else { return }
+                        self.audioLevel = level
+                    }
+                }
             )
         } catch {
             await VoiceAudioSession.deactivate()
@@ -290,6 +299,7 @@ class VoiceInputService: NSObject {
 
         isStopping = true
         isRecording = false
+        audioLevel = 0
 
         // Сохраняем ссылки на объекты перед очисткой
         let currentAudioEngine = audioEngine

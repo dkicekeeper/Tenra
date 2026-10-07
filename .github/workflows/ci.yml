@@ -58,6 +58,33 @@ jobs:
             2>&1 | tee xcodebuild.log | grep -aE "Test case .* (passed|failed)|error:|\*\* TEST (SUCCEEDED|FAILED)" || true
           grep -aq "\*\* TEST SUCCEEDED \*\*" xcodebuild.log
 
+      # swift-testing's failed expectations reach only the result bundle, not the
+      # xcodebuild log: print every failure message with its test so a red run says why.
+      - name: Failing test details
+        if: failure()
+        run: |
+          RESULT=$(grep -aoE "/[^[:space:]]+\.xcresult" xcodebuild.log | tail -1)
+          if [ -z "$RESULT" ]; then echo "No result bundle in the log"; exit 0; fi
+          xcrun xcresulttool get test-results tests --path "$RESULT" > tests.json || exit 0
+          python3 - <<'EOF'
+          import json
+
+          def walk(node, test):
+              kind = node.get("nodeType", "")
+              name = node.get("name", "")
+              if kind == "Test Case":
+                  test = name
+                  if node.get("result") == "Failed":
+                      print(f"FAILED {name}")
+              if kind == "Failure Message":
+                  print(f"  {test}: {name}")
+              for child in node.get("children", []):
+                  walk(child, test)
+
+          for node in json.load(open("tests.json")).get("testNodes", []):
+              walk(node, "")
+          EOF
+
       - name: Upload log on failure
         if: failure()
         uses: actions/upload-artifact@v4

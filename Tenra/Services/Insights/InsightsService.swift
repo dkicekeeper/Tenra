@@ -395,12 +395,20 @@ nonisolated final class InsightsService {
             txDateMap: dateMap
         ))
 
-        insights.append(contentsOf: generateBudgetInsights(
-            transactions: windowedTransactions,
-            timeFilter: granularityTimeFilter,
-            baseCurrency: baseCurrency,
-            categories: snapshot.categories
-        ))
+        // Budget spent covers each budget's own period, not this granularity's window, so
+        // the budget insights are the same for every granularity: generated on the first
+        // granularity of a refresh, then taken from `sharedInsights`, in this same feed
+        // position (the urgent strip keeps array order among equal severities). They
+        // used to be recomputed for all five granularities.
+        if let sharedInsights {
+            insights.append(contentsOf: sharedInsights.filter { Self.budgetInsightIDs.contains($0.id) })
+        } else {
+            insights.append(contentsOf: generateBudgetInsights(
+                transactions: allTransactions,
+                baseCurrency: baseCurrency,
+                categories: snapshot.categories
+            ))
+        }
 
         insights.append(contentsOf: generateRecurringInsights(
             baseCurrency: baseCurrency,
@@ -486,8 +494,8 @@ nonisolated final class InsightsService {
                 insights.append(large)
             }
         } else {
-            // Merge pre-computed shared insights
-            insights.append(contentsOf: sharedInsights!)
+            // Merge pre-computed shared insights (the budget ones already sit in their slot above)
+            insights.append(contentsOf: sharedInsights!.filter { !Self.budgetInsightIDs.contains($0.id) })
         }
 
         // Timing — generators
@@ -555,7 +563,7 @@ nonisolated final class InsightsService {
     /// IDs of granularity-independent insights that produce identical results regardless of
     /// which granularity (week/month/quarter/year/allTime) is being computed.
     /// These are computed once on the first granularity and reused for all subsequent ones.
-    private static let sharedInsightIDs: Set<String> = [
+    private static let sharedInsightIDs: Set<String> = Set([
         "spending_spike",
         // "subscription_growth" — now granularity-dependent (lookback scales)
         // "balance_runway" — merged into emergency_fund (audit 2026-07)
@@ -563,7 +571,12 @@ nonisolated final class InsightsService {
         "emergency_fund",
         "spending_forecast",
         "year_over_year"
-    ]
+    ]).union(budgetInsightIDs)
+
+    /// Ids `generateBudgetInsights` emits. Shared: each budget's spent covers the budget's
+    /// own period whatever the granularity. `generateAllInsights` keeps them in their
+    /// feed slot when it reuses them, instead of appending them with the other shared ones.
+    static let budgetInsightIDs: Set<String> = ["budget_over", "budget_projected_over", "budget_under"]
 
     /// Per-entity shared insights carry the entity id in their insight id, so
     /// they're matched by prefix rather than exact id.

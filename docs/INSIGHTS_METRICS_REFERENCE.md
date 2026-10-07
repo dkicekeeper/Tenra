@@ -92,22 +92,21 @@
 
 ### `budgetOverspend`
 - **Что считает:** количество категорий, превысивших бюджет в текущем периоде
-- **Данные:** `windowedTransactions` → `budgetService.budgetProgress()`
-- **Fast path:** `BudgetSpendingCacheService` — O(1) cached spent per category
+- **Данные:** все транзакции снапшота → `CategoryBudgetService.budgetProgress(for:transactions:baseCurrency:rates:)` (O(N) на категорию с бюджетом, `FastDateParser`, один `RateSnapshot`)
 - **Детализация:** `budgetProgressList`, sorted by % utilization desc
-- **Гранулярность:** ✅
+- **Гранулярность:** 🔒 период самого бюджета (неделя / месяц от `budgetResetDay` / год); shared — считается один раз за пересчёт и стоит на своём месте в ленте при любой гранулярности (`budgetInsightIDs`, с 2026-10)
 
 ### `budgetHeadroom` *(was `budgetUnderutilized`)*
 - **Что считает:** суммарный оставшийся бюджет в валюте (сумма `budget - spent` по всем категориям с `0 < percentage < 80`)
 - **Данные:** то же, что `budgetOverspend`
 - **Условие:** `0 < percentage < 80`; значение — общая оставшаяся сумма в baseCurrency (не количество категорий)
-- **Гранулярность:** ✅
+- **Гранулярность:** 🔒 shared, как `budgetOverspend`
 
 ### `projectedOverspend`
 - **Что считает:** категории, которые превысят бюджет если темп расходов сохранится
 - **Формула:** `projected = (spent / daysElapsed) × totalDaysInBudgetPeriod`
-- **Данные:** `windowedTransactions` + текущий день месяца
-- **Гранулярность:** ✅
+- **Данные:** то же, что `budgetOverspend`, + прошедшие дни периода бюджета
+- **Гранулярность:** 🔒 shared, как `budgetOverspend`
 
 ---
 
@@ -252,9 +251,9 @@
 | `incomeGrowth` | income | ✅ (skip allTime) | periodPoints currentPeriodKey/previousPeriodKey |
 | `incomeVsExpenseRatio` | income | ✅ | periodSummary (windowed) |
 | `incomeSourceBreakdown` | income | ✅ paged per period | windowedTransactions + periodPoints (страница на период) |
-| `budgetOverspend` | budget | ✅ | BudgetSpendingCacheService O(1) |
-| `budgetHeadroom` | budget | ✅ | BudgetSpendingCacheService O(1) (сумма в валюте) |
-| `projectedOverspend` | budget | ✅ | windowedTransactions + day calc |
+| `budgetOverspend` | budget | 🔒 budget period, shared | все транзакции, O(N) на бюджет, раз за пересчёт |
+| `budgetHeadroom` | budget | 🔒 budget period, shared | то же (сумма в валюте) |
+| `projectedOverspend` | budget | 🔒 budget period, shared | то же + day calc |
 | `totalRecurringCost` | recurring | ❌ current | recurringSeries (active) |
 | `subscriptionGrowth` | recurring | 🔒 3mo | recurringSeries by startDate |
 | `duplicateSubscriptions` | recurring | ❌ current | recurringSeries (active subscriptions) |

@@ -26,6 +26,8 @@ struct HistoryView: View {
 
     @State private var filterCoordinator = HistoryFilterCoordinator()
     @State private var expensesCache = DateSectionExpensesCache()
+    /// Amount index for the numeric search, built off the main actor while typing.
+    @State private var amountSearch = TransactionAmountSearch.Cache()
 
     // MARK: - State
 
@@ -151,6 +153,7 @@ struct HistoryView: View {
             }
             .onChange(of: filterCoordinator.searchText) { _, newValue in
                 filterCoordinator.applySearch(newValue)
+                prepareAmountSearch(for: newValue)
             }
             .onChange(of: filterCoordinator.debouncedSearchText) { _, _ in
                 applyFiltersToController()
@@ -400,37 +403,37 @@ struct HistoryView: View {
 
     /// Resolves transaction IDs whose amount's canonical decimal string *starts with*
     /// the typed digits — so "15" finds 15, 150, 1500, 15.50 (prefix, not contains).
-    /// Returns nil for empty or non-numeric queries (so text searches skip the scan).
+    /// Returns nil for empty or non-numeric queries (so text searches skip the match).
     /// Accepts a comma as a decimal separator (RU keyboards).
+    ///
+    /// Reads `TransactionAmountSearch`'s index (binary search over the distinct amount
+    /// strings) instead of formatting all ~19k amounts with `String(format:)` on the
+    /// main actor per debounced keystroke. Same ids (`TransactionAmountSearchTests`).
     private func resolveAmountMatchingTxIds(query: String) -> Set<String>? {
-        let needle = query
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: ",", with: ".")
-        guard !needle.isEmpty,
-              needle.contains(where: \.isNumber),
-              needle.allSatisfy({ $0.isNumber || $0 == "." }),
-              needle.filter({ $0 == "." }).count <= 1
-        else { return nil }
-
-        let transactions = transactionsViewModel.transactionStore?.transactions ?? []
-        let matched = Set(
-            transactions
-                .lazy
-                .filter { Self.amountPrefixString($0.amount).hasPrefix(needle) }
-                .map(\.id)
-        )
+        guard let needle = TransactionAmountSearch.needle(from: query),
+              let store = transactionsViewModel.transactionStore else { return nil }
+        let matched = amountSearch.matchingIds(
+            needle: needle,
+            version: amountSearchVersion(of: store)
+        ) { store.transactions }
         return matched.isEmpty ? nil : matched
     }
 
-    /// Canonical, grouping-free decimal string of an amount for prefix matching:
-    /// 1500 → "1500", 15.5 → "15.5", -42 → "42". Rounded to currency precision (2 dp).
-    private static func amountPrefixString(_ amount: Double) -> String {
-        var s = String(format: "%.2f", abs(amount))
-        if s.contains(".") {
-            while s.hasSuffix("0") { s.removeLast() }
-            if s.hasSuffix(".") { s.removeLast() }
-        }
-        return s
+    /// Builds the amount index off the main actor as soon as the typed text is a number,
+    /// so it is ready when the debounced search applies 300 ms later.
+    private func prepareAmountSearch(for query: String) {
+        guard TransactionAmountSearch.needle(from: query) != nil,
+              let store = transactionsViewModel.transactionStore else { return }
+        amountSearch.prepare(transactions: store.transactions, version: amountSearchVersion(of: store))
+    }
+
+    /// The transaction set the amount index is built from: any add, edit or delete
+    /// bumps `mutationVersion`; the count also covers a full reload.
+    private func amountSearchVersion(of store: TransactionStore) -> TransactionAmountSearch.Cache.Version {
+        TransactionAmountSearch.Cache.Version(
+            mutationVersion: store.mutationVersion,
+            transactionCount: store.transactions.count
+        )
     }
 
     /// Union of two optional id sets. nil when both are nil; otherwise the union of

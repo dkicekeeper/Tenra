@@ -137,6 +137,8 @@ Deterministic djb2 hash of `(depositId, month, amount, currency)`. Survives proc
 
 ⚠️ **Never spawn `Task {}` inside synchronous `onTransactionCreated` callbacks** — collect into array, batch-persist after reconciliation completes. Same rule applies to loans (see [loans.md](loans.md)).
 
+⚠️ **One accounts save per pass.** `reconcileAllDeposits` collects the reconciled deposits and applies them with `TransactionStore.updateAccounts` (one whole-table save, unchanged accounts skipped); `recalculateInterest` reconciles the reset account and saves once. `updateAccount` per deposit started one save of the whole table each. Pinned by `DepositReconcileSaveTests`.
+
 ## Where Reconciliation Runs
 
 `AccountsManagementView` is the centralized reconciliation point for both deposits AND loans on `.task {}` appear.

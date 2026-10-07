@@ -18,6 +18,7 @@ Central dependency injection point. Located at [Tenra/ViewModels/AppCoordinator.
 - **Two-phase startup**:
   - `initializeFastPath()` — loads accounts + categories (<50ms) → UI visible instantly
   - `initialize()` — full 19k-transaction load runs in background
+- ⚠️ **The load window.** Until the full load lands, and while any later `loadData` runs (restore, reset), memory is provisional: the load would replace it with rows fetched before the user's change. Every change in that window is recorded (`loadJournal`, ids only; series and occurrences in `RecurringStore`) and `loadData` folds it into what it fetched: edited rows keep their in-memory version, deleted rows stay deleted, new rows are appended. Changed transactions also force the aggregate rebuild, since the persisted aggregate table predates them. Whole-table saves (accounts, categories, subcategories, both link tables, series, occurrences) wait while memory does not hold the whole table (`holdsCompleteTable`): accounts and categories are complete after the fast path, the rest only after `loadData`; a held save runs when the load lands. Loads run one at a time. A new whole-table save path must go through `mayWriteWholeTable`, and a new mutation path must record its change (`noteProvisionalChange`). See [TransactionStore+LoadMerge.swift](../Tenra/ViewModels/TransactionStore+LoadMerge.swift); pinned by `LoadWindowMergeTests`.
 - Observable flags `isFastPathDone` / `isFullyInitialized` drive per-section content reveal (staggered fade-in via `ContentRevealModifier`)
 - **`TransactionStore.loadAccountsOnly()` is misnamed** — it also loads categories. Both are needed for the home screen's first paint.
 - **`SettingsViewModel.loadSettingsOnly()`** is the fastPath variant (UserDefaults read only). `loadInitialData()` additionally decodes the full-resolution wallpaper UIImage on MainActor and is heavy — only `SettingsView.task` should call it.
@@ -86,6 +87,9 @@ self.balances = updated
 persistBalance(...)
 ```
 
+- **Balance writes are serial.** `persistBalance` / `persistBalances` hand the value to one `BalancePersistQueue`: newest value per account, one write at a time, so a burst cannot land out of order (launch shows the persisted balance). Never write `AccountEntity.balance` from a detached task of its own. Tests wait with `waitForPersistedBalances()`.
+- **Targeted recalculation reads the per-account index.** `recalculateAccounts(_:accounts:transactionsByAccount:)` sums each account's own bucket of `TransactionStore.transactionsByAccount`; use it (or `TransactionsViewModel.recalculateBalances(for:)`) for a known small set of accounts. The `transactions:` overload is one pass over the array, like `recalculateAll`.
+
 ## Repository Pattern
 
 All persistence goes through `DataRepositoryProtocol`. Specialized repositories under `Services/Repository/`:
@@ -97,6 +101,14 @@ All persistence goes through `DataRepositoryProtocol`. Specialized repositories 
 - **`RecurringRepository`** — recurring series and occurrences
 
 For Repository threading rules (`@unchecked Sendable`, `context.perform`) see [concurrency.md](concurrency.md).
+
+### Background saves: `CoreDataSaveCoordinator`
+
+Saves with the same operation name run one at a time; none is dropped (it used to throw `savingInProgress` at the second one, and every caller swallowed it).
+
+- **Whole-table saves are ticketed.** Take `saveCoordinator.nextTicket()` synchronously where the data is captured, then pass it to `performSave(operation:ticket:)` from the detached task. Saves run in ticket order; one still waiting when a newer one arrives is skipped (its caller waits for the newer one), and a ticket older than one already started is skipped. Tickets fix the order in which the data was produced, not the order detached tasks reach the actor.
+- **Unticketed saves** run in arrival order, all of them. Use them for writes that don't replace each other (balance batches, `updateInitialBalancesSync`).
+- The `*Sync` saves (`saveAccountsSync`, onboarding, import) bypass the coordinator.
 
 ## CoreData Schema
 

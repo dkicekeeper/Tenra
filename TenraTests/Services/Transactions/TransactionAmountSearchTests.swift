@@ -125,8 +125,9 @@ struct TransactionAmountSearchTests {
             #expect(Self.indexedMatch(query: query, index: index) == reference, "query '\(query)'")
             if reference != nil { matchedQueries += 1 }
         }
-        // Not vacuous: most queries match something.
-        #expect(matchedQueries > Self.queries.count / 2)
+        // Not vacuous: many queries match something (147 of the 346, the random ones
+        // often have six digits or a separator no amount contains).
+        #expect(matchedQueries > Self.queries.count / 3)
     }
 
     @Test("needle and canonical string are the scan's, unchanged")

@@ -164,7 +164,7 @@ struct CSVEntityMappingView: View {
                     } label: {
                         Image(systemName: "square.and.arrow.down")
                     }
-                    .primaryButton()
+                    .dsButton()
                 }
             }
             .onAppear {
@@ -275,7 +275,7 @@ struct AccountMappingDetailView: View {
                         selectedAccountId = account.id
                     }) {
                         HStack {
-                            IconView(source: account.iconSource, size: AppIconSize.lg)
+                            Icon(source: account.iconSource, size: AppIconSize.lg)
                             Text(account.name)
                             Spacer()
                             if selectedAccountId == account.id {

@@ -42,7 +42,7 @@ struct PremiumLockedView: View {
             } label: {
                 Label(String(localized: "premium.unlock"), systemImage: "crown.fill")
             }
-            .primaryButton()
+            .dsButton()
             .padding(.horizontal, AppSpacing.xxxl)
 
             Spacer()

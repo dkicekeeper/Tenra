@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Capsule badge for a loan's regular payment this month: "Paid this month" or "Not paid".
-//  Adapter over DesignKit's `BadgeView` (tinted), like `LoanTypeBadge`: maps the status to
+//  Adapter over DesignKit's `Badge` (tinted), like `LoanTypeBadge`: maps the status to
 //  its label and colour. The date that goes with it (this month's payment day while unpaid,
 //  next month's once paid) is shown by the caller from `LoanMonthStatus.nextDueDate`.
 //
@@ -33,6 +33,6 @@ struct LoanMonthStatusBadge: View {
     }
 
     var body: some View {
-        BadgeView(label, color: tint)
+        Badge(label, color: tint)
     }
 }

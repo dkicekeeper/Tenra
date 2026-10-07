@@ -13,7 +13,7 @@ struct SubscriptionsCardView: View {
     // Fix #7: Double instead of Decimal — avoids NSDecimalNumber round-trip at the use site.
     @State private var totalAmount: Double = 0
     @State private var isLoadingTotal: Bool = false
-    /// Subscription amounts converted to base currency for PackedCircleIconsView sizing.
+    /// Subscription amounts converted to base currency for PackedCircleIcons sizing.
     @State private var convertedAmounts: [String: Double] = [:]
 
     private var subscriptions: [RecurringSeries] {
@@ -38,7 +38,7 @@ struct SubscriptionsCardView: View {
         ) {
             RedactableAmount(amount: totalAmount, currency: baseCurrency, isLoading: isLoadingTotal)
         } trailing: {
-            PackedCircleIconsView(
+            PackedCircleIcons(
                 items: subscriptions.map { sub in
                     PackedCircleItem(
                         id: sub.id,

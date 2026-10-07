@@ -95,7 +95,7 @@ struct CategoriesManagementView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .primaryButton()
+                .dsButton()
             } else if mode.isSelecting {
                 Button {
                     HapticManager.selection()
@@ -224,7 +224,7 @@ struct CategoriesManagementView: View {
 
     /// Empty state is gated on the **source of truth** (store.categories), not
     /// on `filteredCategories` which is a @State snapshot populated by `.task(id:)`.
-    /// Otherwise the very first body render shows EmptyStateView for one frame
+    /// Otherwise the very first body render shows EmptyState for one frame
     /// before the task fires — a visible flash on every open.
     /// O(N_cat) check, N_cat ≤ ~30. Subscribes to `categories` which triggers
     /// .task via listKey on changes — correct behaviour.
@@ -235,7 +235,7 @@ struct CategoriesManagementView: View {
     var body: some View {
         Group {
             if !hasCategoriesForCurrentType {
-                EmptyStateView(
+                EmptyState(
                     icon: "folder",
                     title: String(localized: "emptyState.noCategories"),
                     description: String(localized: "emptyState.startTracking"),
@@ -286,7 +286,7 @@ struct CategoriesManagementView: View {
                     } label: {
                         Text(String(localized: "bulk.done"))
                     }
-                    .primaryButton()
+                    .dsButton()
                 case .reordering:
                     Button {
                         HapticManager.light()
@@ -294,7 +294,7 @@ struct CategoriesManagementView: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .primaryButton()
+                    .dsButton()
                 }
             }
             // iOS 27 drags rows directly (`reorderable()`), so the mode this button
@@ -324,7 +324,7 @@ struct CategoriesManagementView: View {
             #endif
         }
         .safeAreaInset(edge: .top) {
-            SegmentedPickerView(
+            SegmentedPicker(
                 title: "",
                 selection: $selectedType,
                 options: [
@@ -386,9 +386,18 @@ struct CategoriesManagementView: View {
         }
         .overlay(alignment: .bottom) {
             if mode.isSelecting && !selection.isEmpty {
-                BulkDeleteButton(count: selection.count) {
+                DSButton(
+                    String(format: String(localized: "bulk.deleteCount"), selection.count),
+                    role: .destructive,
+                    shape: .capsule,
+                    fullWidth: true
+                ) {
                     showingBulkDeleteDialog = true
                 }
+                .font(AppTypography.bodyEmphasis)
+                .screenPadding()
+                .padding(.bottom, AppSpacing.lg)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
                 .animation(AppAnimation.contentSpring, value: selection.count)
             }
         }

@@ -104,7 +104,7 @@ struct TransactionCardView: View {
                         depositAccountId: nil
                     )
                 } else {
-                    FormattedAmountView(
+                    FormattedAmountText(
                         amount: transaction.amount,
                         currency: transaction.currency,
                         prefix: amountPrefix,
@@ -118,7 +118,7 @@ struct TransactionCardView: View {
                         of: transaction,
                         accountCurrency: sourceAccount?.currency
                     ) {
-                        FormattedAmountView(
+                        FormattedAmountText(
                             amount: equivalent.amount,
                             currency: equivalent.currency,
                             prefix: "",

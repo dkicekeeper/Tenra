@@ -54,7 +54,7 @@ struct DepositsCardView: View {
 
     private var depositIcons: some View {
         let balancesById = balanceCoordinator.balances
-        return PackedCircleIconsView(
+        return PackedCircleIcons(
             items: deposits.map { deposit in
                 PackedCircleItem(
                     id: deposit.id,

@@ -33,7 +33,7 @@ struct SubcategoryReorderView: View {
         ) {
             Group {
                 if orderedSubcategories.isEmpty {
-                    EmptyStateView(
+                    EmptyState(
                         icon: "list.bullet",
                         title: String(localized: "emptyState.noSubcategories"),
                         description: String(localized: "emptyState.startTracking"),

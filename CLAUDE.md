@@ -185,7 +185,7 @@ New file needed?
 |---|---|
 | AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v12 model | [docs/architecture.md](docs/architecture.md) |
 | `@Observable`, `Task`, `MainActor`, `nonisolated`, CoreData threading, `Sendable` | [docs/concurrency.md](docs/concurrency.md) |
-| `Views/Components/**`, animations, IconView, AppSpacing/Colors/Animation tokens, cardStyle, AnimatedInputComponents, amount formatting | [docs/design-system.md](docs/design-system.md) |
+| `Views/Components/**`, animations, Icon, AppSpacing/Colors/Animation tokens, cardStyle, AnimatedInputComponents, amount formatting | [docs/design-system.md](docs/design-system.md) |
 | `Services/Insights/**` (operational guide) | [docs/domains/insights.md](docs/domains/insights.md) |
 | `Services/Notifications/**` (insight signals, weekly digest, subscription reminders) | [docs/domains/insights.md](docs/domains/insights.md) §Signal notifications |
 | Per-metric formulas, granularity, severity behavior | [docs/INSIGHTS_METRICS_REFERENCE.md](docs/INSIGHTS_METRICS_REFERENCE.md) |
@@ -200,7 +200,7 @@ New file needed?
 | Swift Charts (insight charts = DesignKit trend charts + `PeriodChartAdapters.swift`, scrollable, sparklines) | [docs/domains/charts.md](docs/domains/charts.md) |
 | CSV import/export round-trip rules | [docs/domains/csv.md](docs/domains/csv.md) |
 | `Services/Import/**`, statement/receipt recognition, Vision documents, Apple Intelligence parsing | [domains/import.md](docs/domains/import.md) |
-| VoiceInput, speech recognition, SiriGlowView | [docs/domains/voice.md](docs/domains/voice.md) |
+| VoiceInput, speech recognition, SiriGlow | [docs/domains/voice.md](docs/domains/voice.md) |
 | FX rates, currency conversion, prewarm, providers, base-currency aggregation (`convertSync` vs `convertedAmount`) | [docs/domains/currency.md](docs/domains/currency.md) |
 | Logo providers, ServiceLogoRegistry, jsDelivr | [docs/domains/logos.md](docs/domains/logos.md) |
 | Performance hot-paths, SwiftUI Layout gotchas, `#Preview` crashes, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |
@@ -253,7 +253,7 @@ These cause silent data corruption or crashes — internalize even without readi
 - ⚠️ To change an account's `initialBalance` after creation (deposit conversion, balance correction), use `BalanceCoordinator.persistInitialBalance` (writes CoreData **and** memory). `AccountRepository.saveAccountsInternal` deliberately NEVER overwrites `AccountEntity.initialBalance` ("set once at creation"), so the in-memory-only `setInitialBalance` is lost on relaunch — the full recalc then reads the stale creation-time value (caused the converted-deposit "balance drops to 0 on day 2" bug). `AccountBalance.isDeposit` is computed (`depositInfo != nil`), never a stored flag.
 
 ### UI Components
-- **The design system lives in the DesignKit package** (github.com/dkicekeeper/DesignKit, shared with Dalada): tokens (`AppColors`, `AppSpacing`, `AppTypography`, `AppAnimation`, modifiers, buttons) and the shared components (`UniversalRow`, `FormSection`, `FinanceCard`, `IconView`, charts, …). They are re-exported to the whole app by [DesignKitBridge.swift](Tenra/Utils/DesignKitBridge.swift) — no per-file imports.
+- **The design system lives in the DesignKit package** (github.com/dkicekeeper/DesignKit, shared with Dalada): tokens (`AppColors`, `AppSpacing`, `AppTypography`, `AppAnimation`, modifiers, buttons) and the shared components (`UniversalRow`, `FormSection`, `FinanceCard`, `Icon`, charts, …). They are re-exported to the whole app by [DesignKitBridge.swift](Tenra/Utils/DesignKitBridge.swift) — no per-file imports.
 - **Changing a shared component or token = a DesignKit PR** (its CI builds Tenra and Dalada against the change). Don't fork a copy into Tenra. Develop with Xcode's local package override: drag a local DesignKit checkout into the project. Tenra pins an exact DesignKit version (Package Dependencies); the **DesignKit update** workflow (`.github/workflows/designkit.yml`) checks daily for a newer release, builds + runs TenraTests, and commits the bump to `main`. Visual changes are listed in DesignKit's release notes; check them on device.
 - `Views/Components/` keeps only Tenra-bound components (transactions, accounts, categories, loans, …) and the adapters: `DesignKitBridge.swift` (custom category colours, `IconSource.brandDomain`, `DonutSlice.from(...)`, the `InsightsStatCard` sparkline, logo/FX hooks) and `Charts/PeriodChartAdapters.swift` (insight charts are DesignKit's `LineChart` / `BarChart` / `ChartSwitcher` / `HeroSparkline` / `Sparkline`; this file makes `PeriodDataPoint` a `ChartPoint`, maps `PeriodChartSeries` to `ChartSeries` and keeps the `granularity:` / `currency:` call-site signatures), and `Input/SubscriptionCalendarView.swift` (DesignKit's `MonthCalendar` with subscription logos as markers and the period total in the header). Inter comes from DesignKit (`DesignKitFonts.registerIfNeeded()` in `DesignKitBridge.configure()`); Tenra has no font files or `UIAppFonts` of its own.
 - **New component: DesignKit or Tenra?** Look in DesignKit first (Gallery in TestFlight, its `docs/design-system.md`). **Every component goes to DesignKit**, even if only Tenra uses it (owner's decision, 2026-10): DesignKit is the single source of truth for how things look. What stays in `Views/Components/`:
@@ -356,7 +356,7 @@ When working with this project:
 - Don't add features without understanding context
 - Don't skip reading existing code before modifications
 - Don't use Combine when Observation framework is preferred
-- Don't create per-feature icon-style wrappers (e.g. an `InsightIconStyle`) — reuse `IconView` with the canonical style: `IconView(source:, size: AppIconSize.Tile.sm)` (logos, like AccountRow) or `.circle(size: AppIconSize.Tile.sm, tint: .monochrome(color), backgroundColor: color.opacity(0.15))` (colored category icons, like CategoryRow)
+- Don't create per-feature icon-style wrappers (e.g. an `InsightIconStyle`) — reuse `Icon` with the canonical style: `Icon(source:, size: AppIconSize.Tile.sm)` (logos, like AccountRow) or `.circle(size: AppIconSize.Tile.sm, tint: .monochrome(color), backgroundColor: color.opacity(0.15))` (colored category icons, like CategoryRow)
 - Don't hand-roll card/row shells — reuse `FinanceCard`, `UniversalRow` and the shared sub-components (see design-system.md Card/Row contracts)
 - Don't flag `#Preview` block inconsistencies as production drifts in audits — distinguish preview-only from production usage when grep'ing
 - Don't write CLAUDE.md inline rules for things that fit in a domain doc — keep this file thin

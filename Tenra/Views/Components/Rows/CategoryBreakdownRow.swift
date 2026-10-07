@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Shared category breakdown row for Insights detail screens. Adapter over
-//  DesignKit's `BreakdownRow` (which also ships `AmountPercentageView`): maps the
+//  DesignKit's `BreakdownRow` (which also ships `AmountPercentage`): maps the
 //  breakdown item and localizes its category name.
 //
 //  Navigation is left to the caller: wrap this row in a `NavigationLink` and pass

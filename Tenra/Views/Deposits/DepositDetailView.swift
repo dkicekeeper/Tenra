@@ -83,7 +83,7 @@ struct DepositDetailView: View {
             if let account = liveAccount {
                 scaffold(for: account)
             } else {
-                EmptyStateView(
+                EmptyState(
                     icon: "banknote",
                     title: String(localized: "deposit.notFound"),
                     description: String(localized: "emptyState.tryDifferentSearch")

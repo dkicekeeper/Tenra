@@ -4,7 +4,7 @@
 //
 //  Detail lists for InsightDetailView (2026-07 UX pass) — extracted from the
 //  monolithic view file. Every list follows one contract: optional large
-//  SectionHeaderView above, rows inside a `.cardStyle()` card (inner padding
+//  SectionHeader above, rows inside a `.cardStyle()` card (inner padding
 //  AppSpacing.lg per the design-system card contract), `.screenPadding()`
 //  owned by the shared shell.
 //
@@ -26,7 +26,7 @@ private struct InsightDetailListCard<Rows: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
             if let title {
-                SectionHeaderView(title, style: .large)
+                SectionHeader(title, style: .large)
             }
             VStack(alignment: .leading, spacing: rowSpacing) {
                 rows()

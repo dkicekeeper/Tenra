@@ -2618,7 +2618,7 @@ struct ImportSourcePicker: View {
             action()
         } label: {
             HStack(spacing: AppSpacing.md) {
-                IconView(
+                Icon(
                     source: .system(icon),
                     style: .circle(size: .xxl,
                                    tint: .monochrome(AppColors.accent),
@@ -2651,7 +2651,7 @@ struct ImportSourcePicker: View {
 }
 ```
 
-Verify the exact `IconView` style API and `cardStyle()` availability before building:
+Verify the exact `Icon` style API and `cardStyle()` availability before building:
 
 ```bash
 grep -rn "static func circle\|case system" --include="*.swift" Tenra/Views/Components/Icons/ | head -10

@@ -59,7 +59,7 @@ struct CategoryCardSelectorView: View {
                 }
                 if let action = emptyStateAction, let title = emptyStateActionTitle {
                     Button(title, action: action)
-                        .secondaryButton()
+                        .dsButton(.secondary)
                         .frame(maxWidth: .infinity)
                 }
             } else {
@@ -146,7 +146,7 @@ private struct CategoryCardButton: View {
                 // category-color tint over a soft category-color background. The
                 // carousel previously used `xl` with no background, which read as a
                 // smaller, washed-out icon next to AccountRadioButton in the same flow.
-                IconView(
+                Icon(
                     source: .sfSymbol(style.iconName),
                     style: .circle(
                         size: AppIconSize.Tile.sm,

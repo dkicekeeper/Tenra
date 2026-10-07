@@ -130,7 +130,7 @@ struct SubcategoriesManagementView: View {
                 }) {
                     Image(systemName: "plus")
                 }
-                .primaryButton()
+                .dsButton()
             } else if mode.isSelecting {
                 Button {
                     HapticManager.selection()
@@ -152,7 +152,7 @@ struct SubcategoriesManagementView: View {
     var body: some View {
         Group {
             if categoriesViewModel.subcategories.isEmpty {
-                EmptyStateView(
+                EmptyState(
                     icon: "list.bullet",
                     title: String(localized: "emptyState.noSubcategories"),
                     description: String(localized: "emptyState.startTracking"),
@@ -210,7 +210,7 @@ struct SubcategoriesManagementView: View {
                     } label: {
                         Text(String(localized: "bulk.done"))
                     }
-                    .primaryButton()
+                    .dsButton()
                 case .reordering:
                     EmptyView()
                 }
@@ -231,9 +231,18 @@ struct SubcategoriesManagementView: View {
         }
         .overlay(alignment: .bottom) {
             if mode.isSelecting && !selection.isEmpty {
-                BulkDeleteButton(count: selection.count) {
+                DSButton(
+                    String(format: String(localized: "bulk.deleteCount"), selection.count),
+                    role: .destructive,
+                    shape: .capsule,
+                    fullWidth: true
+                ) {
                     showingBulkDeleteDialog = true
                 }
+                .font(AppTypography.bodyEmphasis)
+                .screenPadding()
+                .padding(.bottom, AppSpacing.lg)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
                 .animation(AppAnimation.contentSpring, value: selection.count)
             }
         }

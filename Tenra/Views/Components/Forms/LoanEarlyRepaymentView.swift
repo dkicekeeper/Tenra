@@ -169,7 +169,7 @@ struct LoanEarlyRepaymentView: View {
     @ViewBuilder
     private var fromSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(String(localized: "transactionForm.fromHeader"))
+            SectionHeader(String(localized: "transactionForm.fromHeader"))
                 .screenPadding()
 
             AccountSelectorView(
@@ -184,7 +184,7 @@ struct LoanEarlyRepaymentView: View {
     @ViewBuilder
     private var strategySection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(String(localized: "loan.strategy", defaultValue: "Strategy"))
+            SectionHeader(String(localized: "loan.strategy", defaultValue: "Strategy"))
                 .screenPadding()
 
             VStack(alignment: .leading, spacing: AppSpacing.sm) {
@@ -229,7 +229,7 @@ struct LoanEarlyRepaymentView: View {
         // picks a category).
         if let categoriesVM = categoriesViewModel, !availableCategories.isEmpty {
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                SectionHeaderView(String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"))
+                SectionHeader(String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"))
                     .screenPadding()
 
                 if selectedCategoryId != nil {
@@ -350,7 +350,7 @@ struct LoanEarlyRepaymentView: View {
             } label: {
                 Image(systemName: "checkmark")
             }
-            .primaryButton()
+            .dsButton()
             .disabled(!isFormValid)
             .accessibilityLabel(String(localized: "button.save"))
         }

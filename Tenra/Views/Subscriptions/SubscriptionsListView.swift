@@ -68,7 +68,7 @@ struct SubscriptionsListView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .primaryButton()
+                .dsButton()
             }
         }
         .sheet(item: $sheetItem) { item in
@@ -94,7 +94,7 @@ struct SubscriptionsListView: View {
     }
     
     private var emptyState: some View {
-        EmptyStateView(
+        EmptyState(
             icon: "creditcard",
             title: String(localized: "subscriptions.empty"),
             description: String(localized: "subscriptions.emptyDescription"),

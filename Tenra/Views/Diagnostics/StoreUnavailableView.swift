@@ -21,7 +21,7 @@ struct StoreUnavailableView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AppSpacing.xl) {
-                IconView(
+                Icon(
                     source: .sfSymbol("externaldrive.badge.exclamationmark"),
                     style: .circle(size: AppIconSize.Tile.xxxl, tint: .destructiveMonochrome)
                 )
@@ -42,26 +42,24 @@ struct StoreUnavailableView: View {
                 .multilineTextAlignment(.center)
 
                 VStack(spacing: AppSpacing.md) {
-                    Button {
+                    DSButton(
+                        String(localized: "button.retry"),
+                        systemImage: "arrow.clockwise",
+                        fullWidth: true,
+                        isLoading: isRetrying
+                    ) {
                         retry()
-                    } label: {
-                        LoadingButtonLabel(
-                            String(localized: "button.retry"),
-                            systemImage: "arrow.clockwise",
-                            isLoading: isRetrying
-                        )
-                        .frame(maxWidth: .infinity)
                     }
-                    .primaryButton(disabled: isRetrying)
 
                     if let supportURL {
-                        Button {
+                        DSButton(
+                            String(localized: "storeUnavailable.contactSupport"),
+                            systemImage: "envelope",
+                            appearance: .secondary,
+                            fullWidth: true
+                        ) {
                             openURL(supportURL)
-                        } label: {
-                            Label(String(localized: "storeUnavailable.contactSupport"), systemImage: "envelope")
-                                .frame(maxWidth: .infinity)
                         }
-                        .secondaryButton()
                     }
                 }
 

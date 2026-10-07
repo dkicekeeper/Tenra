@@ -58,10 +58,8 @@ struct SettingsHomeBackgroundView: View {
 
             // Gradient-specific control: opacity of the expense colour layer
             if currentMode == .gradient {
-                Section(header: SettingsSectionHeaderView(
-                    title: String(localized: "settings.background.opacityTitle",
-                                  defaultValue: "Expense colour")
-                )) {
+                Section(header: SectionHeader(String(localized: "settings.background.opacityTitle",
+                                  defaultValue: "Expense colour"), style: .list)) {
                     OpacitySliderRow(
                         value: backgroundOpacity,
                         onChange: onOpacityChange

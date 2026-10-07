@@ -59,7 +59,7 @@ struct AccountsCardView: View {
 
     private var accountIcons: some View {
         let balancesById = balanceCoordinator.balances
-        return PackedCircleIconsView(
+        return PackedCircleIcons(
             items: accounts.map { account in
                 PackedCircleItem(
                     id: account.id,

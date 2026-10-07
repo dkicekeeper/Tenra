@@ -79,7 +79,7 @@ private struct PaywallSheetContent: View {
             .task { await check() }
         case .unavailable(let availability):
             NavigationStack {
-                EmptyStateView(
+                EmptyState(
                     icon: availability == .offline ? "wifi.slash" : "",
                     title: String(localized: "paywall.unavailable.title"),
                     description: availability == .offline

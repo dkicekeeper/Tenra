@@ -71,7 +71,7 @@ struct AccountsManagementView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .primaryButton()
+                .dsButton()
                 .accessibilityLabel(String(localized: "account.newAccount"))
             } else if mode.isSelecting {
                 Button {
@@ -203,7 +203,7 @@ struct AccountsManagementView: View {
     var body: some View {
         Group {
             if sortedAccounts.isEmpty {
-                EmptyStateView(
+                EmptyState(
                     icon: "creditcard",
                     title: String(localized: "emptyState.noAccounts"),
                     description: String(localized: "emptyState.startTracking"),
@@ -265,7 +265,7 @@ struct AccountsManagementView: View {
                     } label: {
                         Text(String(localized: "bulk.done"))
                     }
-                    .primaryButton()
+                    .dsButton()
                 case .reordering:
                     Button {
                         HapticManager.light()
@@ -273,7 +273,7 @@ struct AccountsManagementView: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .primaryButton()
+                    .dsButton()
                     .accessibilityLabel(String(localized: "accessibility.accounts.doneReordering"))
                 }
             }
@@ -453,9 +453,18 @@ struct AccountsManagementView: View {
         }
         .overlay(alignment: .bottom) {
             if mode.isSelecting && !selection.isEmpty {
-                BulkDeleteButton(count: selection.count) {
+                DSButton(
+                    String(format: String(localized: "bulk.deleteCount"), selection.count),
+                    role: .destructive,
+                    shape: .capsule,
+                    fullWidth: true
+                ) {
                     showingBulkDeleteDialog = true
                 }
+                .font(AppTypography.bodyEmphasis)
+                .screenPadding()
+                .padding(.bottom, AppSpacing.lg)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
                 .animation(AppAnimation.contentSpring, value: selection.count)
             }
         }

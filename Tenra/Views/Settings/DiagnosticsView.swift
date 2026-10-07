@@ -74,7 +74,7 @@ struct DiagnosticsView: View {
             )
             .disabled(center.isChecking)
         } header: {
-            SettingsSectionHeaderView(title: String(localized: "diagnostics.launchCheck.header"))
+            SectionHeader(String(localized: "diagnostics.launchCheck.header"), style: .list)
         } footer: {
             if let report = center.lastReport {
                 Text(String(
@@ -201,7 +201,7 @@ struct DiagnosticsView: View {
                 }
             }
         } header: {
-            SettingsSectionHeaderView(title: String(localized: "diagnostics.reports.header"))
+            SectionHeader(String(localized: "diagnostics.reports.header"), style: .list)
         } footer: {
             Text(String(localized: "diagnostics.reports.footer"))
         }

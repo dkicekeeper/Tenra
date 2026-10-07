@@ -97,7 +97,7 @@ struct OnboardingWelcomeStep: View {
                     Text(String(localized: "onboarding.cta.start"))
                         .frame(maxWidth: .infinity)
                 }
-                .primaryButton()
+                .dsButton()
                 .screenPadding()
                 .padding(.bottom, AppSpacing.lg)
             }

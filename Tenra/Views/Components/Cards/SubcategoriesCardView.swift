@@ -4,7 +4,7 @@
 //
 //  Summary card showing subcategory count and the number of parent categories
 //  they're linked to. Subcategory has no icon/color of its own, so we render
-//  a single decorative `tag.fill` mark via IconView for visual parity with
+//  a single decorative `tag.fill` mark via Icon for visual parity with
 //  the other Finance cards.
 //
 
@@ -47,7 +47,7 @@ struct SubcategoriesCardView: View {
         } trailing: {
             // Facepile shows linked parent categories; hidden when none are linked yet.
             if !linkedCategories.isEmpty {
-                PackedCircleIconsView(
+                PackedCircleIcons(
                     items: linkedCategories.map { category in
                         PackedCircleItem(
                             id: category.id,

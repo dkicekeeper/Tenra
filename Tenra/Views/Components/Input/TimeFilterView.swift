@@ -55,7 +55,7 @@ struct TimeFilterView: View {
                         }
                     }
                 } header: {
-                    SectionHeaderView(String(localized: "timeFilter.presets", defaultValue: "Пресеты"))
+                    SectionHeader(String(localized: "timeFilter.presets", defaultValue: "Пресеты"))
                 }
 
                 // MARK: - Custom Range
@@ -82,7 +82,7 @@ struct TimeFilterView: View {
                         showingCustomPicker = true
                     }
                 } header: {
-                    SectionHeaderView(String(localized: "timeFilter.customRange", defaultValue: "Свой период"))
+                    SectionHeader(String(localized: "timeFilter.customRange", defaultValue: "Свой период"))
                 }
             }
             .navigationTitle(String(localized: "timeFilter.title", defaultValue: "Фильтр по времени"))

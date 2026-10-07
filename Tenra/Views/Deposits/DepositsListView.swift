@@ -38,7 +38,7 @@ struct DepositsListView: View {
     var body: some View {
         Group {
             if deposits.isEmpty {
-                EmptyStateView(
+                EmptyState(
                     icon: "lock.square.stack.fill",
                     title: String(localized: "deposit.emptyTitle", defaultValue: "No Deposits"),
                     description: String(localized: "deposit.emptyDescription", defaultValue: "Add a deposit to track interest accrual and capitalization"),
@@ -118,7 +118,7 @@ struct DepositsListView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .primaryButton()
+                .dsButton()
                 .accessibilityLabel(String(localized: "account.newDeposit", defaultValue: "New Deposit"))
             }
         }

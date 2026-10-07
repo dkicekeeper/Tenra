@@ -159,7 +159,7 @@ struct AccountActionView: View {
     private var fromSection: some View {
         @Bindable var viewModel = viewModel
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(String(localized: "transactionForm.fromHeader"))
+            SectionHeader(String(localized: "transactionForm.fromHeader"))
                 .screenPadding()
 
             switch viewModel.selectedAction {
@@ -213,7 +213,7 @@ struct AccountActionView: View {
         @Bindable var viewModel = viewModel
         if let coordinator = accountsViewModel.balanceCoordinator {
             VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                SectionHeaderView(String(localized: "transactionForm.toHeader"))
+                SectionHeader(String(localized: "transactionForm.toHeader"))
                     .screenPadding()
 
                 AccountSelectorView(
@@ -233,7 +233,7 @@ struct AccountActionView: View {
 
     private var topBar: some View {
         @Bindable var viewModel = viewModel
-        return SegmentedPickerView(
+        return SegmentedPicker(
             title: String(localized: "common.type"),
             selection: $viewModel.selectedAction,
             options: [

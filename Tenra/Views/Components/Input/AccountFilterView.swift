@@ -97,14 +97,14 @@ struct AccountFilterView: View {
                 }
             }
         } header: {
-            SectionHeaderView(title)
+            SectionHeader(title)
         }
     }
 
     // MARK: - Account Icon
 
     /// Plated like the rest of the app. A logo fills its circle, as in the account rows
-    /// (`IconView(source:size:)`). An SF Symbol, which the account rows draw in the accent,
+    /// (`Icon(source:size:)`). An SF Symbol, which the account rows draw in the accent,
     /// sits on a pale accent circle, the category-row plate: the account rows' `bgCard`
     /// plate is the colour of this sheet's grouped rows in dark mode and would vanish. No
     /// icon: the placeholder on a neutral plate. `xl`, the size these icons already had.

@@ -103,7 +103,7 @@ struct CategoryFilterView: View {
                     } label: {
                         Image(systemName: "checkmark")
                     }
-                    .primaryButton()
+                    .dsButton()
                 }
             }
             .onAppear {
@@ -145,7 +145,7 @@ struct CategoryFilterView: View {
                 }
             }
         } header: {
-            SectionHeaderView(title)
+            SectionHeader(title)
         }
     }
 

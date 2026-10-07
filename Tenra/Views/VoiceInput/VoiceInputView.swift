@@ -86,7 +86,7 @@ struct VoiceInputView: View {
     private var coreContent: some View {
         ZStack {
             if voiceService.isRecording || isScreenshotDemo {
-                SiriWaveRecordingView()
+                SiriWave()
                     .ignoresSafeArea()
                     .transition(.opacity.animation(AppAnimation.gentleSpring))
             }
@@ -258,7 +258,7 @@ struct VoiceInputView: View {
         } label: {
             HStack(spacing: AppSpacing.md) {
                 // Icon — same as TransactionIconView
-                IconView(
+                Icon(
                     source: .sfSymbol(styleData.iconName),
                     style: .circle(
                         size: AppIconSize.Tile.sm,
@@ -291,8 +291,8 @@ struct VoiceInputView: View {
 
                 Spacer()
 
-                // Amount — same as FormattedAmountView
-                FormattedAmountView(
+                // Amount — same as the transaction row
+                FormattedAmountText(
                     amount: amount,
                     currency: currency,
                     prefix: TransactionDisplayHelper.amountPrefix(for: parsed.type),
@@ -374,7 +374,7 @@ struct VoiceInputView: View {
                 Label(confirmButtonLabel(count: livePreviews.count), systemImage: "checkmark")
                     .frame(maxWidth: .infinity)
             }
-            .primaryButton()
+            .dsButton()
             .screenPadding()
             .padding(.bottom, AppSpacing.xl)
             .transition(.move(edge: .bottom).combined(with: .opacity))

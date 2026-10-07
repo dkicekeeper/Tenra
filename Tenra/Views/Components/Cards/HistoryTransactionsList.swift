@@ -104,7 +104,7 @@ struct HistoryTransactionsList: View {
             }
         }()
 
-        return EmptyStateView(
+        return EmptyState(
             icon: !debouncedSearchText.isEmpty ? "magnifyingglass" : "doc.text",
             title: !debouncedSearchText.isEmpty
                 ? String(localized: "emptyState.searchNoResults")
@@ -220,11 +220,18 @@ struct HistoryTransactionsList: View {
             viewModel: transactionsViewModel
         )
 
-        return DateSectionHeaderView(
-            dateKey: displayLabel,
-            amount: dayExpenses > 0 ? dayExpenses : nil,
-            currency: baseCurrency
-        )
+        return SectionHeader(displayLabel, style: .card) {
+            if dayExpenses > 0 {
+                FormattedAmountText(
+                    amount: dayExpenses,
+                    currency: baseCurrency,
+                    prefix: "-",
+                    fontSize: AppTypography.bodySmall,
+                    fontWeight: .semibold,
+                    color: AppColors.Text.tertiary
+                )
+            }
+        }
     }
 
     // MARK: - Auto Scroll

@@ -109,38 +109,22 @@ struct SettingsHomeBackgroundView: View {
 
 // MARK: - Opacity Slider Row
 
+/// The expense colour's intensity: DesignKit's `SliderRow` over the stored opacity.
 private struct OpacitySliderRow: View {
     let value: Double
     let onChange: (Double) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            HStack {
-                Label(
-                    String(localized: "settings.background.opacity",
-                           defaultValue: "Colour intensity"),
-                    systemImage: "circle.lefthalf.filled"
-                )
-                .font(AppTypography.body)
-                .foregroundStyle(AppColors.textPrimary)
-
-                Spacer()
-
-                Text("\(Int((value * 100).rounded()))%")
-                    .font(AppTypography.bodySmall.monospacedDigit())
-                    .foregroundStyle(AppColors.textSecondary)
-            }
-
-            Slider(
-                value: Binding(
-                    get: { value },
-                    set: { onChange($0) }
-                ),
-                in: 0.05...1.0
-            )
-            .tint(AppColors.accent)
-        }
-        .padding(.vertical, AppSpacing.xs)
+        SliderRow(
+            String(localized: "settings.background.opacity", defaultValue: "Colour intensity"),
+            systemImage: "circle.lefthalf.filled",
+            value: Binding(
+                get: { value },
+                set: { onChange($0) }
+            ),
+            in: 0.05...1.0,
+            valueText: "\(Int((value * 100).rounded()))%"
+        )
     }
 }
 

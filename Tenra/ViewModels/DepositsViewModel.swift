@@ -94,8 +94,13 @@ class DepositsViewModel {
     /// Per-account uses `transactionsByAccount[id]` instead of the full snapshot,
     /// so the service's internal "events on this deposit" filter walks O(M) per
     /// deposit (M = tx for that account) rather than O(N_tx × N_deposits) total.
+    ///
+    /// Saves once for the whole pass. It runs at every launch for users with deposits, and
+    /// one `updateAccount` per deposit started one whole-table save each; they collided
+    /// with each other and with a user's own account save landing at the same moment.
     func reconcileAllDeposits(allTransactions: [Transaction], onTransactionCreated: @escaping (Transaction) -> Void) {
         let store = accountsViewModel.transactionStore
+        var reconciled: [Account] = []
         for account in accountsViewModel.accounts where account.isDeposit {
             var updatedAccount = account
             let scoped = store?.transactionsByAccount[account.id] ?? allTransactions
@@ -104,9 +109,12 @@ class DepositsViewModel {
                 allTransactions: scoped,
                 onTransactionCreated: onTransactionCreated
             )
-            accountsViewModel.updateAccount(updatedAccount)
+            reconciled.append(updatedAccount)
             syncDepositBalance(updatedAccount)
         }
+        // Reconciliation only moves `depositInfo`, so the plain metadata update is the
+        // same path `accountsViewModel.updateAccount` takes for it, batched.
+        store?.updateAccounts(reconciled)
     }
 
     /// Reconcile interest for a specific deposit.
@@ -177,18 +185,30 @@ class DepositsViewModel {
         info.interestAccruedForCurrentPeriod = 0
 
         account.depositInfo = info
-        accountsViewModel.updateAccount(account)
 
-        // Re-run reconciliation — walks historical events day-by-day.
-        reconcileDepositInterest(
-            for: accountId,
-            allTransactions: transactionStore.transactions,
-            onTransactionCreated: { transaction in
-                Task {
-                    _ = try? await transactionStore.add(transaction)
-                }
-            }
+        // Re-run reconciliation on the reset account — walks historical events day-by-day —
+        // and save once. Saving the reset markers first started a second whole-table save
+        // that raced this one.
+        var created: [Transaction] = []
+        DepositInterestService.reconcileDepositInterest(
+            account: &account,
+            allTransactions: transactionStore.transactionsByAccount[accountId] ?? transactionStore.transactions,
+            onTransactionCreated: { created.append($0) }
         )
+        accountsViewModel.updateAccount(account)
+        syncDepositBalance(account)
+
+        // Collected, then added in one batch (deposits.md: never spawn a Task per
+        // reconciliation callback).
+        guard !created.isEmpty else { return }
+        do {
+            try await transactionStore.addBatch(created)
+        } catch {
+            // addBatch rejects the whole batch if one row fails validation.
+            for transaction in created {
+                _ = try? await transactionStore.add(transaction)
+            }
+        }
     }
 
     // MARK: - Link Existing Transactions as Deposit Interest

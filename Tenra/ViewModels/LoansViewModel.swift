@@ -295,6 +295,10 @@ class LoansViewModel {
     /// so the result matches the row the user tapped. Creates NO transactions —
     /// for payments made outside the app (e.g. combined bank withdrawals that
     /// can't be linked 1:1 to this loan).
+    ///
+    /// Also writes `markedPaidThrough` (the last row marked paid), which is how this
+    /// month's status knows the month was paid without a transaction: `lastPaymentDate`
+    /// alone can't say, payments write it too.
     func markPaymentsPaid(accountId: String, upToPaymentNumber paymentNumber: Int) {
         guard var account = accountsViewModel.getAccount(by: accountId),
               var loanInfo = account.loanInfo else { return }
@@ -307,11 +311,13 @@ class LoansViewModel {
             loanInfo.remainingPrincipal = loanInfo.originalPrincipal
             loanInfo.totalInterestPaid = 0
             loanInfo.lastPaymentDate = nil
+            loanInfo.markedPaidThrough = nil
         } else {
             let entry = schedule[target - 1]
             loanInfo.remainingPrincipal = entry.remainingBalance
             loanInfo.totalInterestPaid = schedule.prefix(target).reduce(Decimal(0)) { $0 + $1.interest }
             loanInfo.lastPaymentDate = entry.date
+            loanInfo.markedPaidThrough = entry.date
         }
 
         account.loanInfo = loanInfo

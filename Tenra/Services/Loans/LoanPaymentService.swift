@@ -439,6 +439,81 @@ nonisolated enum LoanPaymentService {
         loanInfo.totalInterestPaid = totalInterest
     }
 
+    // MARK: - Recorded Payments
+
+    /// A loan payment transaction the way its loan's state sees it: the type, the date and
+    /// the amount in the loan's currency.
+    struct RecordedPayment: Equatable, Sendable {
+        let type: TransactionType
+        let date: String
+        let amount: Decimal
+    }
+
+    /// `transaction`, a payment to a loan in `loanCurrency`, as a `RecordedPayment`.
+    ///
+    /// A payment in another currency converts through the conversion it was saved with
+    /// (`TransactionConversion.storedRate`: the equivalent its row shows, or the paying
+    /// account's leg in `sourceCurrency`), else at `rates`, else stays unconverted (the
+    /// canonical cold-cache fallback). Never `convertedAmount ?? amount` as it is: that is in
+    /// the paying account's currency, not the loan's (CLAUDE.md red flag 6).
+    static func recordedPayment(
+        _ transaction: Transaction,
+        loanCurrency: String,
+        sourceCurrency: String?,
+        rates: RateSnapshot
+    ) -> RecordedPayment {
+        let amount: Double
+        if transaction.currency == loanCurrency {
+            amount = transaction.amount
+        } else if let rate = TransactionConversion.storedRate(
+            in: transaction,
+            from: transaction.currency,
+            to: loanCurrency,
+            accountCurrency: sourceCurrency
+        ) {
+            amount = transaction.amount * rate
+        } else {
+            amount = rates.convert(transaction.amount, from: transaction.currency, to: loanCurrency)
+                ?? transaction.amount
+        }
+        return RecordedPayment(type: transaction.type, date: transaction.date, amount: Decimal(amount).rounded(2))
+    }
+
+    /// Interest and principal of a regular payment of `amount` (principal + interest, what
+    /// its transaction holds) that left `remainingAfter` owed: the inverse of
+    /// `createManualPayment` and `recalculateAfterLinking`, where the interest is the month's
+    /// rate on the principal owed before the payment. Owed before = (after + amount) / (1 + rate).
+    static func split(
+        recordedPayment amount: Decimal,
+        remainingAfter: Decimal,
+        annualRate: Decimal
+    ) -> (interest: Decimal, principal: Decimal) {
+        guard annualRate > 0 else { return (interest: 0, principal: amount) }
+        let monthlyRate = annualRate / 100 / 12
+        let owedBefore = (remainingAfter + amount) / (1 + monthlyRate)
+        let interest = (owedBefore * monthlyRate).rounded(2)
+        return (interest: interest, principal: amount - interest)
+    }
+
+    /// The principal owed before `payments` were made, given `remainingAfter`, what is owed
+    /// after all of them: each one undone, newest first. An early repayment took its whole
+    /// amount off the principal, a regular payment its principal part.
+    static func remainingBefore(
+        _ payments: [RecordedPayment],
+        remainingAfter: Decimal,
+        annualRate: Decimal
+    ) -> Decimal {
+        var remaining = remainingAfter
+        for payment in payments.sorted(by: { $0.date > $1.date }) {
+            if payment.type == .loanEarlyRepayment {
+                remaining += payment.amount
+            } else {
+                remaining += split(recordedPayment: payment.amount, remainingAfter: remaining, annualRate: annualRate).principal
+            }
+        }
+        return remaining
+    }
+
     // MARK: - Entered Currency
 
     /// A payment typed in the amount field's `currency`, in the loan's own currency (the

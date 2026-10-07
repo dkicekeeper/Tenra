@@ -497,15 +497,19 @@ struct LoanDetailView: View {
         )
     }
 
-    /// This month's regular payment, for the hero badge and subtitle. Read from the live index,
-    /// not `cachedTransactions`: that is empty until the refresh task runs and would flash
-    /// "Not paid". Reading `transactions` re-renders on every add, edit and delete.
+    /// This month's payment, for the hero badge and subtitle. Read from the live index, not
+    /// `cachedTransactions`: that is empty until the refresh task runs and would flash
+    /// "Not paid". Reading `transactions` re-renders on every add, edit and delete, and
+    /// `currencyRatesVersion` once the rates a payment in another currency needs land.
     private func currentMonthStatus(for account: Account) -> LoanMonthStatus? {
         _ = transactionStore.transactions.count
+        _ = transactionStore.currencyRatesVersion
         return LoanMonthStatusService.status(
             loan: account,
             loanTransactions: transactionStore.transactionsByAccount[account.id] ?? [],
-            today: today
+            today: today,
+            rates: RateSnapshot(),
+            accountsById: transactionStore.accountById
         )
     }
 

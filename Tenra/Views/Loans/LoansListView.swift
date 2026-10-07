@@ -181,17 +181,23 @@ struct LoansListView: View {
     /// This month's payment status of each active loan, by loan id (no entry: nothing due this
     /// month). Computed in `body`, not cached, so it can't go stale: reading `transactions`
     /// subscribes the screen to every add, edit and delete (`mutationVersion` itself is
-    /// @ObservationIgnored), the loans' own state comes through `activeLoans`, and `today`
+    /// @ObservationIgnored), `currencyRatesVersion` to the rates a payment in another
+    /// currency converts at, the loans' own state comes through `activeLoans`, and `today`
     /// turns over with the day. A handful of loans, each with its own small bucket.
     private var currentMonthStatuses: [String: LoanMonthStatus] {
         _ = transactionStore.transactions.count
+        _ = transactionStore.currencyRatesVersion
         let transactionsByAccount = transactionStore.transactionsByAccount
+        let accountsById = transactionStore.accountById
+        let rates = RateSnapshot()
         var statuses: [String: LoanMonthStatus] = [:]
         for loan in loansViewModel.activeLoans {
             statuses[loan.id] = LoanMonthStatusService.status(
                 loan: loan,
                 loanTransactions: transactionsByAccount[loan.id] ?? [],
-                today: today
+                today: today,
+                rates: rates,
+                accountsById: accountsById
             )
         }
         return statuses
@@ -262,8 +268,8 @@ struct LoansListView: View {
         let totals = LoanMonthStatusService.summaryTotals(loans: active, baseCurrency: baseCurrency, rates: rates)
         let summaryCurrency = totals.currency ?? loansViewModel.loans.first?.currency ?? "KZT"
 
-        // This month's payments not made yet, in the base currency. Hidden when no active
-        // loan has a payment due this month.
+        // What is still to pay this month (each unpaid loan's amount due minus this month's
+        // payments), in the base currency. Hidden when no active loan has a payment due.
         let unpaidThisMonth: Double? = monthStatuses.isEmpty ? nil : LoanMonthStatusService.unpaidTotal(
             loans: active,
             statuses: monthStatuses,

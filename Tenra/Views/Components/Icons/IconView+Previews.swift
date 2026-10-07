@@ -26,7 +26,7 @@ import SwiftUI
                 title: "Bank Logos",
                 examples: [
                     (.brandService("kaspi.kz"), IconStyle.roundedLogo()),
-                    (.brandService("halykbank.kz"), IconStyle.roundedLogo(size: AppIconSize.avatar)),
+                    (.brandService("halykbank.kz"), IconStyle.roundedLogo(size: AppIconSize.Tile.xs)),
                     (.brandService("tbank.kz"), IconStyle.roundedLogoLarge())
                 ]
             )
@@ -35,7 +35,7 @@ import SwiftUI
                 title: "Service Logos",
                 examples: [
                     (.brandService("netflix"), IconStyle.serviceLogo()),
-                    (.brandService("spotify"), IconStyle.serviceLogo(size: AppIconSize.avatar)),
+                    (.brandService("spotify"), IconStyle.serviceLogo(size: AppIconSize.Tile.xs)),
                     (.brandService("notion"), IconStyle.serviceLogoLarge())
                 ]
             )
@@ -363,8 +363,8 @@ private struct PlaceholderSection: View {
 
             HStack(spacing: AppSpacing.lg) {
                 IconView(source: nil, style: .placeholder(size: AppIconSize.xl))
-                IconView(source: nil, style: .placeholder(size: AppIconSize.avatar))
-                IconView(source: nil, style: .placeholder(size: AppIconSize.mega))
+                IconView(source: nil, style: .placeholder(size: AppIconSize.Tile.xs))
+                IconView(source: nil, style: .placeholder(size: AppIconSize.Tile.xl))
             }
         }
     }

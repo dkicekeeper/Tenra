@@ -21,7 +21,7 @@ struct AppLockOverlayView: View {
 
             VStack(spacing: AppSpacing.lg) {
                 Image(systemName: "lock.fill")
-                    .font(.system(size: AppIconSize.xxl, weight: .semibold))
+                    .font(.system(size: AppIconSize.Tile.sm, weight: .semibold))
                     .foregroundStyle(AppColors.accent)
 
                 Text("Tenra")

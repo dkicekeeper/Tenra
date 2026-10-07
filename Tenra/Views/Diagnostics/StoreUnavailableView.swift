@@ -23,7 +23,7 @@ struct StoreUnavailableView: View {
             VStack(spacing: AppSpacing.xl) {
                 IconView(
                     source: .sfSymbol("externaldrive.badge.exclamationmark"),
-                    style: .circle(size: AppIconSize.ultra, tint: .destructiveMonochrome)
+                    style: .circle(size: AppIconSize.Tile.xxxl, tint: .destructiveMonochrome)
                 )
                 .accessibilityHidden(true)
 

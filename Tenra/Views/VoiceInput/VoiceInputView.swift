@@ -261,7 +261,7 @@ struct VoiceInputView: View {
                 IconView(
                     source: .sfSymbol(styleData.iconName),
                     style: .circle(
-                        size: AppIconSize.xxl,
+                        size: AppIconSize.Tile.sm,
                         tint: .monochrome(styleData.primaryColor),
                         backgroundColor: styleData.lightBackgroundColor
                     )

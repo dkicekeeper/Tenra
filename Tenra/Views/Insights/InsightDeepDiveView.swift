@@ -191,7 +191,7 @@ struct InsightDeepDiveView: View {
                     // Entity rows (a loan, a deposit) show the account's own logo;
                     // plain subcategory rows keep the slice-colored dot.
                     if let itemIcon = item.iconSource {
-                        IconView(source: itemIcon, size: AppIconSize.xxl)
+                        IconView(source: itemIcon, size: AppIconSize.Tile.sm)
                     } else {
                         Circle()
                             .fill(colorByID[item.id] ?? color)

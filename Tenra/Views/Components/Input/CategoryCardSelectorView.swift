@@ -149,7 +149,7 @@ private struct CategoryCardButton: View {
                 IconView(
                     source: .sfSymbol(style.iconName),
                     style: .circle(
-                        size: AppIconSize.xxl,
+                        size: AppIconSize.Tile.sm,
                         tint: .monochrome(style.iconColor),
                         backgroundColor: AppColors.pale(style.iconColor)
                     )

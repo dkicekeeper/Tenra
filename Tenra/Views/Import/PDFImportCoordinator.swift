@@ -113,7 +113,7 @@ struct PDFImportCoordinator: View {
             config: .standard,
             leadingIcon: .custom(
                 source: .sfSymbol("list.bullet.clipboard"),
-                style: .circle(size: AppIconSize.xxl,
+                style: .circle(size: AppIconSize.Tile.sm,
                                tint: .monochrome(AppColors.accent),
                                backgroundColor: AppColors.pale(AppColors.accent))
             ),

@@ -43,7 +43,7 @@ struct ImportSourcePicker: View {
             config: .standard,
             leadingIcon: .custom(
                 source: .sfSymbol(icon),
-                style: .circle(size: AppIconSize.xxl,
+                style: .circle(size: AppIconSize.Tile.sm,
                                tint: .monochrome(AppColors.accent),
                                backgroundColor: AppColors.pale(AppColors.accent))
             ),

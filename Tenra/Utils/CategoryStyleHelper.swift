@@ -80,7 +80,7 @@ extension View {
         category: String,
         type: TransactionType,
         customCategories: [CustomCategory],
-        size: CGFloat = AppIconSize.xxl
+        size: CGFloat = AppIconSize.Tile.sm
     ) -> some View {
         let helper = CategoryStyleHelper(category: category, type: type, customCategories: customCategories)
 

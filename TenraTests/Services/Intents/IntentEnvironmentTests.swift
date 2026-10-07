@@ -13,25 +13,25 @@ import Testing
 struct IntentEnvironmentTests {
 
     @Test("A registered coordinator is reused rather than replaced")
-    func reusesRegisteredCoordinator() async {
+    func reusesRegisteredCoordinator() async throws {
         let environment = IntentEnvironment()
         let coordinator = AppCoordinator()
         environment.register(coordinator)
 
-        let services = await environment.services()
+        let services = try await environment.services()
 
         #expect(services.store === coordinator.transactionStore)
     }
 
     @Test("Registering twice keeps the first coordinator")
-    func registrationIsIdempotent() async {
+    func registrationIsIdempotent() async throws {
         let environment = IntentEnvironment()
         let first = AppCoordinator()
         let second = AppCoordinator()
         environment.register(first)
         environment.register(second)
 
-        let services = await environment.services()
+        let services = try await environment.services()
 
         #expect(services.store === first.transactionStore)
         #expect(services.store !== second.transactionStore)
@@ -44,10 +44,10 @@ struct IntentEnvironmentTests {
     }
 
     @Test("The app adopts the coordinator an intent built before the UI existed")
-    func appAdoptsTheIntentCoordinator() async {
+    func appAdoptsTheIntentCoordinator() async throws {
         let environment = IntentEnvironment()
         // An intent ran first (cold background launch) and bootstrapped a coordinator.
-        let intentStore = await environment.services().store
+        let intentStore = try await environment.services().store
 
         let adopted = await environment.existingCoordinator()
 

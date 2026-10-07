@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "Помилка";
 "error.importFailed" = "Не вдалося імпортувати";
-"error.coredata.migrationFailed" = "Не вдалося перенести дані. Перезапустіть застосунок або зверніться до підтримки.";
-"error.coredata.initializationFailed" = "Не вдалося ініціалізувати локальне сховище. Застосунок працюватиме в обмеженому режимі.";
+"storeUnavailable.title" = "Не вдається відкрити ваші дані";
+"storeUnavailable.message.migration" = "Не вдалося перенести ваші дані у формат цієї версії застосунку.";
+"storeUnavailable.message.diskFull" = "На пристрої закінчилося місце. Звільніть місце й спробуйте знову.";
+"storeUnavailable.message.other" = "Під час відкриття даних щось пішло не так.";
+"storeUnavailable.dataSafe" = "Ваші дані досі на цьому пристрої. Нічого не змінено й не видалено.";
+"storeUnavailable.contactSupport" = "Написати в підтримку";
+"storeUnavailable.errorCode" = "Код помилки: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ баланс %@";
@@ -1618,6 +1623,7 @@
 "intent.log.parameter.phrase" = "Фраза";
 "intent.log.parameter.phrase.prompt" = "Скільки й на що ви витратили?";
 "intent.log.notUnderstood" = "Не вдалося розібрати суму.";
+"intent.error.storeUnavailable" = "Tenra зараз не може відкрити ваші дані. Відкрийте застосунок, щоб дізнатися подробиці.";
 "intent.log.openingApp" = "Відкриваю Tenra, щоб ви могли завершити.";
 "intent.log.confirm" = "Додати цю операцію?";
 "intent.log.saved" = "Додано: %1$@, %2$@.";

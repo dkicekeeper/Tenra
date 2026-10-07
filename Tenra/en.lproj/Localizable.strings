@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "Error";
 "error.importFailed" = "Import failed";
-"error.coredata.migrationFailed" = "Data migration failed. Please restart the app or contact support.";
-"error.coredata.initializationFailed" = "Failed to initialize local storage. The app will work in limited mode.";
+"storeUnavailable.title" = "Your data can't be opened";
+"storeUnavailable.message.migration" = "Tenra couldn't convert your data for this version of the app.";
+"storeUnavailable.message.diskFull" = "This device is out of storage space. Free up some space, then try again.";
+"storeUnavailable.message.other" = "Something went wrong while opening your data.";
+"storeUnavailable.dataSafe" = "Your data is still on this device. Nothing has been changed or deleted.";
+"storeUnavailable.contactSupport" = "Contact Support";
+"storeUnavailable.errorCode" = "Error code: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ balance %@";
@@ -1618,6 +1623,7 @@
 "intent.log.parameter.phrase" = "Phrase";
 "intent.log.parameter.phrase.prompt" = "What did you spend, and on what?";
 "intent.log.notUnderstood" = "I could not find an amount in that.";
+"intent.error.storeUnavailable" = "Tenra can't open your data right now. Open the app to see what happened.";
 "intent.log.openingApp" = "Opening Tenra so you can finish this one.";
 "intent.log.confirm" = "Add this transaction?";
 "intent.log.saved" = "Added %1$@, %2$@.";

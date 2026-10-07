@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "Hata";
 "error.importFailed" = "İçe aktarma başarısız";
-"error.coredata.migrationFailed" = "Veri taşıma başarısız oldu. Lütfen uygulamayı yeniden başlat ya da destekle iletişime geç.";
-"error.coredata.initializationFailed" = "Yerel depolama başlatılamadı. Uygulama sınırlı modda çalışacak.";
+"storeUnavailable.title" = "Verilerin açılamıyor";
+"storeUnavailable.message.migration" = "Tenra verilerini uygulamanın bu sürümüne dönüştüremedi.";
+"storeUnavailable.message.diskFull" = "Bu cihazda boş alan kalmadı. Biraz yer aç ve tekrar dene.";
+"storeUnavailable.message.other" = "Verilerin açılırken bir sorun oluştu.";
+"storeUnavailable.dataSafe" = "Verilerin hâlâ bu cihazda. Hiçbir şey değiştirilmedi veya silinmedi.";
+"storeUnavailable.contactSupport" = "Destekle İletişime Geç";
+"storeUnavailable.errorCode" = "Hata kodu: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ bakiyesi %@";
@@ -1618,6 +1623,7 @@
 "intent.log.parameter.phrase" = "İfade";
 "intent.log.parameter.phrase.prompt" = "Ne kadar ve ne için harcadınız?";
 "intent.log.notUnderstood" = "Bunda bir tutar bulamadım.";
+"intent.error.storeUnavailable" = "Tenra şu anda verilerini açamıyor. Ne olduğunu görmek için uygulamayı aç.";
 "intent.log.openingApp" = "Tamamlayabilmeniz için Tenra açılıyor.";
 "intent.log.confirm" = "Bu işlem eklensin mi?";
 "intent.log.saved" = "Eklendi: %1$@, %2$@.";

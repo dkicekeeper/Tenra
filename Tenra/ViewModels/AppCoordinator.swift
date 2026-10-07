@@ -59,6 +59,12 @@ class AppCoordinator {
     private(set) var isFastPathDone = false       // accounts + categories ready (~50ms)
     private(set) var isFullyInitialized = false   // transactions + all data ready (~1-3s)
 
+    /// Set when the full load failed. TenraApp then shows the blocking error screen instead of
+    /// the app, so no screen can save over data that was never loaded, and `initialize()`
+    /// stops before anything that writes (maturation, migrations, the automatic backup).
+    /// Cleared by `retryAfterStartupFailure()`.
+    private(set) var startupFailure: StoreLoadFailure?
+
     /// Deep-link target set when the user taps a subscription push notification.
     /// FinancesView observes this and pushes the corresponding subscription detail
     /// once `transactionStore.subscriptions` contains a matching series. Cleared
@@ -268,7 +274,13 @@ class AppCoordinator {
         // Run accounts/categories fetch and settings read in parallel — they share no
         // state and used to be serialized through three sequential awaits.
         async let accountsLoad: Void = {
-            try? await self.transactionStore.loadAccountsOnly()
+            do {
+                try await self.transactionStore.loadAccountsOnly()
+            } catch {
+                // Not fatal here: initialize() runs the full load next and stops the app
+                // with the error screen if that fails too.
+                self.logger.error("Fast-path load failed: \(error.localizedDescription, privacy: .public)")
+            }
         }()
         async let settingsLoad: Void = self.settingsViewModel.loadSettingsOnly()
         _ = await (accountsLoad, settingsLoad)
@@ -334,7 +346,19 @@ class AppCoordinator {
             await CurrencyConverter.prewarm()
         }
         let t0 = CACurrentMediaTime()
-        try? await transactionStore.loadData()
+        do {
+            try await transactionStore.loadData()
+        } catch {
+            // Never carry on with whatever part of the data made it into memory: every later
+            // step (and any screen) would save it over the store. Show the error screen.
+            await frcSetupTask.value
+            prewarmTask.cancel()
+            let failure = StoreLoadFailure(error: error as NSError)
+            logger.critical("Full load failed (\(failure.reference, privacy: .public)): \(failure.details, privacy: .public)")
+            PerformanceProfiler.end("AppCoordinator.initialize")
+            startupFailure = failure
+            return
+        }
         let t1 = CACurrentMediaTime()
         logger.debug("📦 [INIT] loadData()            : \(String(format: "%.0f", (t1-t0)*1000))ms — tx:\(self.transactionStore.transactions.count) acc:\(self.transactionStore.accounts.count)")
 
@@ -477,6 +501,14 @@ class AppCoordinator {
         // wealth-breakdown and the health-score totalBalance all derive from accounts, and
         // previously stayed stale until an unrelated tx/FX/category mutation (cache audit #5).
         startObservingAccountChanges()
+    }
+
+    /// The error screen's retry after a failed full load: clears the failure, so the root shows
+    /// the app again and ContentView's `.task` runs `initialize()` once more.
+    func retryAfterStartupFailure() {
+        guard startupFailure != nil else { return }
+        startupFailure = nil
+        isInitialized = false
     }
 
     // MARK: - Private Methods

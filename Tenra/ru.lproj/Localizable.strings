@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "Ошибка";
 "error.importFailed" = "Ошибка импорта";
-"error.coredata.migrationFailed" = "Миграция данных не удалась. Пожалуйста, перезапустите приложение или обратитесь в поддержку.";
-"error.coredata.initializationFailed" = "Не удалось инициализировать локальное хранилище. Приложение будет работать в ограниченном режиме.";
+"storeUnavailable.title" = "Не удаётся открыть ваши данные";
+"storeUnavailable.message.migration" = "Не удалось перенести ваши данные в формат этой версии приложения.";
+"storeUnavailable.message.diskFull" = "На устройстве закончилось место. Освободите место и попробуйте снова.";
+"storeUnavailable.message.other" = "При открытии данных что-то пошло не так.";
+"storeUnavailable.dataSafe" = "Ваши данные по-прежнему на этом устройстве. Ничего не изменено и не удалено.";
+"storeUnavailable.contactSupport" = "Написать в поддержку";
+"storeUnavailable.errorCode" = "Код ошибки: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ баланс %@";
@@ -1618,6 +1623,7 @@
 "intent.log.parameter.phrase" = "Фраза";
 "intent.log.parameter.phrase.prompt" = "Сколько и на что вы потратили?";
 "intent.log.notUnderstood" = "Не удалось разобрать сумму.";
+"intent.error.storeUnavailable" = "Tenra сейчас не может открыть ваши данные. Откройте приложение, чтобы узнать подробности.";
 "intent.log.openingApp" = "Открываю Tenra, чтобы вы могли закончить.";
 "intent.log.confirm" = "Добавить эту операцию?";
 "intent.log.saved" = "Добавлено: %1$@, %2$@.";

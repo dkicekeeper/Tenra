@@ -34,7 +34,7 @@ struct AccountEntityQuery: EntityQuery {
 
     @MainActor
     func suggestedEntities() async throws -> [AccountAppEntity] {
-        let services = await IntentEnvironment.shared.services()
+        let services = try await IntentEnvironment.shared.services()
         // Loan and deposit accounts are technical and must never be offered as
         // the source of a plain expense, matching TransactionDraftService.
         return services.accounts.accounts

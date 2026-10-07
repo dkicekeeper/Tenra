@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "エラー";
 "error.importFailed" = "インポートに失敗しました";
-"error.coredata.migrationFailed" = "データの移行に失敗しました。アプリを再起動するか、サポートにお問い合わせください。";
-"error.coredata.initializationFailed" = "ローカルストレージの初期化に失敗しました。アプリは制限された状態で動作します。";
+"storeUnavailable.title" = "データを開けません";
+"storeUnavailable.message.migration" = "このバージョンのアプリ用にデータを変換できませんでした。";
+"storeUnavailable.message.diskFull" = "このデバイスの空き容量がありません。空き容量を確保してから、もう一度お試しください。";
+"storeUnavailable.message.other" = "データを開くときに問題が発生しました。";
+"storeUnavailable.dataSafe" = "データはこのデバイスに残っています。何も変更・削除されていません。";
+"storeUnavailable.contactSupport" = "サポートに問い合わせる";
+"storeUnavailable.errorCode" = "エラーコード: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ 残高 %@";
@@ -1618,6 +1623,7 @@
 "intent.log.parameter.phrase" = "フレーズ";
 "intent.log.parameter.phrase.prompt" = "いくら、何に使いましたか？";
 "intent.log.notUnderstood" = "金額を聞き取れませんでした。";
+"intent.error.storeUnavailable" = "現在、Tenraはデータを開けません。詳しくはアプリを開いてください。";
 "intent.log.openingApp" = "Tenra を開きます。続きを入力してください。";
 "intent.log.confirm" = "この取引を追加しますか？";
 "intent.log.saved" = "追加しました: %1$@、%2$@。";

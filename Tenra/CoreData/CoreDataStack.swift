@@ -20,13 +20,16 @@ final class CoreDataStack: @unchecked Sendable {
 
     nonisolated static let shared = CoreDataStack()
 
-    /// Флаг доступности CoreData. При ошибке инициализации = false → приложение работает через UserDefaults fallback.
-    /// nonisolated(unsafe): written once in loadPersistentStores callback, then only read — accepted race.
-    nonisolated(unsafe) private(set) var isCoreDataAvailable: Bool = true
+    /// Why the store could not be opened; nil while it is open (or not loaded yet).
+    /// Written in the `loadPersistentStores` callback, which runs synchronously inside
+    /// `createAndLoadContainer` while `containerLock` is held; read under the same lock
+    /// (`openStoreIfNeeded`, `isCoreDataAvailable`), so a reader never sees a stale value.
+    /// A failed store is never worked around: TenraApp shows a blocking error screen and
+    /// builds nothing that could read, write, back up or replace it (no UserDefaults fallback).
+    private nonisolated(unsafe) var _loadFailure: StoreLoadFailure?
 
-    /// Ошибка инициализации CoreData (для отображения пользователю)
-    /// nonisolated(unsafe): written once in loadPersistentStores callback, then only read — accepted race.
-    nonisolated(unsafe) private(set) var initializationError: String? = nil
+    /// False once loading the store has failed. Loads the store first if needed.
+    nonisolated var isCoreDataAvailable: Bool { openStoreIfNeeded() == nil }
 
     /// Lock protecting one-time initialization of _persistentContainer.
     /// Swift `lazy var` is NOT thread-safe. preWarm() accesses persistentContainer from
@@ -109,8 +112,12 @@ final class CoreDataStack: @unchecked Sendable {
 
     /// Creates and loads a local-only persistent container. iCloud/CloudKit sync was
     /// removed 2026-04-22 after `HistoryExpired` events caused data loss on restart.
-    private nonisolated func createAndLoadContainer() -> NSPersistentContainer {
-        let container = NSPersistentContainer(name: "Tenra")
+    /// Call with `containerLock` held. `model`: reuse an already loaded model (a retry), so the
+    /// process never holds two models claiming the same NSManagedObject subclasses.
+    private nonisolated func createAndLoadContainer(model: NSManagedObjectModel? = nil) -> NSPersistentContainer {
+        let container = model.map { NSPersistentContainer(name: "Tenra", managedObjectModel: $0) }
+            ?? NSPersistentContainer(name: "Tenra")
+        _loadFailure = nil
 
         let description = container.persistentStoreDescriptions.first
         description?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
@@ -126,16 +133,13 @@ final class CoreDataStack: @unchecked Sendable {
         description?.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
         description?.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
 
+        // SQLite stores load synchronously (shouldAddStoreAsynchronously is false), so the
+        // callback runs before loadPersistentStores returns, still under containerLock.
         container.loadPersistentStores { [self] storeDescription, error in
             if let error = error as NSError? {
-                CoreDataStack.logger.critical("Persistent store failed to load: \(error), \(error.userInfo)")
-                self.isCoreDataAvailable = false
-                if error.code == NSPersistentStoreIncompatibleVersionHashError ||
-                   error.code == NSMigrationMissingSourceModelError {
-                    self.initializationError = String(localized: "error.coredata.migrationFailed")
-                } else {
-                    self.initializationError = String(localized: "error.coredata.initializationFailed")
-                }
+                let failure = StoreLoadFailure(error: error)
+                CoreDataStack.logger.critical("Persistent store failed to load (\(failure.kind.rawValue, privacy: .public), \(failure.reference, privacy: .public)): \(error), \(error.userInfo)")
+                self._loadFailure = failure
             } else {
                 CoreDataStack.logger.info("✅ [CoreDataStack] Persistent store loaded: \(storeDescription.url?.lastPathComponent ?? "unknown", privacy: .public)")
             }
@@ -164,6 +168,28 @@ final class CoreDataStack: @unchecked Sendable {
         let container = createAndLoadContainer()
         _persistentContainer = container
         return container
+    }
+
+    /// Opens the store if this process hasn't yet, and says why it could not be opened
+    /// (nil = open). Blocks while the store loads, migrations included: call it off the main
+    /// thread. Every launch path checks this before building anything over the store.
+    nonisolated func openStoreIfNeeded() -> StoreLoadFailure? {
+        _ = persistentContainer
+        containerLock.lock()
+        defer { containerLock.unlock() }
+        return _loadFailure
+    }
+
+    /// Loads the store again after a failed attempt (the device was still locked, storage was
+    /// full, a transient I/O error). Never deletes, moves or rewrites the store file, and reuses
+    /// the model already loaded. Returns the new failure, nil once the store is open.
+    /// Blocking, like `openStoreIfNeeded`.
+    nonisolated func retryOpeningStore() -> StoreLoadFailure? {
+        containerLock.lock()
+        defer { containerLock.unlock() }
+        if _persistentContainer != nil, _loadFailure == nil { return nil }
+        _persistentContainer = createAndLoadContainer(model: _persistentContainer?.managedObjectModel)
+        return _loadFailure
     }
 
     /// URL of the primary persistent store file.

@@ -33,7 +33,7 @@ struct CategoryEntityQuery: EntityQuery {
 
     @MainActor
     func suggestedEntities() async throws -> [CategoryAppEntity] {
-        let services = await IntentEnvironment.shared.services()
+        let services = try await IntentEnvironment.shared.services()
         return services.categories.customCategories
             .filter { $0.type == .expense }
             .map { CategoryAppEntity(id: $0.id, name: $0.name) }

@@ -66,6 +66,9 @@ struct AccountActionView: View {
                     baseCurrency: transactionsViewModel.appSettings.baseCurrency,
                     accountCurrencies: Set(accountsViewModel.accounts.map(\.currency)),
                     appSettings: transactionsViewModel.appSettings,
+                    // The account credited: a top-up's account, a transfer's target.
+                    equivalentCurrency: accountsViewModel.accounts
+                        .first { $0.id == viewModel.selectedTargetAccountId }?.currency,
                     calculatorModel: calc,
                     onCalculatorTap: { descriptionFocused = false }
                 )

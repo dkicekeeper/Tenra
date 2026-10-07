@@ -123,6 +123,9 @@ struct LoanPaymentView: View {
                         baseCurrency: baseCurrency,
                         accountCurrencies: Set([account.currency]),
                         appSettings: appSettings,
+                        // The paying card, the account the payment's conversion is saved for.
+                        equivalentCurrency: availableAccounts
+                            .first { $0.id == selectedSourceAccountId }?.currency,
                         calculatorModel: calc,
                         onCalculatorTap: { descriptionFocused = false }
                     )

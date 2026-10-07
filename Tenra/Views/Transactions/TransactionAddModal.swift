@@ -161,6 +161,8 @@ struct TransactionAddModal: View {
                     baseCurrency: coordinator.transactionsViewModel.appSettings.baseCurrency,
                     accountCurrencies: Set(coordinator.accountsViewModel.accounts.map(\.currency)),
                     appSettings: coordinator.transactionsViewModel.appSettings,
+                    equivalentCurrency: coordinator.accountsViewModel.accounts
+                        .first { $0.id == coordinator.formData.accountId }?.currency,
                     calculatorModel: calc,
                     onCalculatorTap: { descriptionFocused = false },
                     onAmountChange: { _ in

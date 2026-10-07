@@ -53,6 +53,18 @@ struct TransactionEditView: View {
     // MARK: - Stored Properties (passed from parent, used for UI components)
 
     private let _accounts: [Account]
+
+    /// The "≈" line's currency, the way `TransactionEditCoordinator.conversionFields` saves
+    /// it: what the target account receives for a transfer, else the account's currency.
+    private var equivalentCurrency: String? {
+        let form = coordinator.formData
+        if coordinator.transaction.type == .internalTransfer {
+            return _accounts.first { $0.id == form.selectedTargetAccountId }?.currency
+                ?? coordinator.transaction.targetCurrency
+        }
+        return _accounts.first { $0.id == form.selectedAccountId }?.currency
+            ?? coordinator.transaction.currency
+    }
     private let _customCategories: [CustomCategory]
     private let _balanceCoordinator: BalanceCoordinator
 
@@ -85,6 +97,7 @@ struct TransactionEditView: View {
                             baseCurrency: coordinator.transactionsViewModel.appSettings.baseCurrency,
                             accountCurrencies: Set(_accounts.map(\.currency)),
                             appSettings: coordinator.transactionsViewModel.appSettings,
+                            equivalentCurrency: equivalentCurrency,
                             calculatorModel: calc,
                             onCalculatorTap: { descriptionFocused = false }
                         )

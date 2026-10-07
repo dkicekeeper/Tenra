@@ -15,6 +15,9 @@ struct AmountInputView: View {
     let baseCurrency: String
     let accountCurrencies: Set<String>
     let appSettings: AppSettings
+    /// Currency of the "≈" line (DesignKit 1.14.0): the account the amount goes to, as the
+    /// saved row shows it (TransactionConversion). nil shows the base currency.
+    var equivalentCurrency: String? = nil
     /// When set, the amount is entered via the in-app calculator keypad instead of the
     /// system keyboard: the large display reads from this model (the host owns it and
     /// mirrors `model.amountText` into `amount`). The keypad itself is placed by the host.
@@ -33,6 +36,7 @@ struct AmountInputView: View {
             amount: $amount,
             currency: $selectedCurrency,
             baseCurrency: baseCurrency,
+            equivalentCurrency: equivalentCurrency,
             currencies: Array(accountCurrencies.union(appSettings.quickAccessCurrencies)),
             errorMessage: errorMessage,
             calculatorModel: calculatorModel,

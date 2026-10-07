@@ -140,4 +140,69 @@ nonisolated struct TransactionConversion: Equatable, Sendable {
             _ = await CurrencyConverter.getExchangeRate(for: currency)
         }
     }
+
+    // MARK: - Reading the fields
+
+    /// The equivalent a transaction row shows under its amount, nil when there is none.
+    ///
+    /// `targetAmount` in `targetCurrency` when it is another currency than the
+    /// transaction's. A row that stores only `convertedAmount` (voice, Siri and App
+    /// Intents, deposit top-ups, statement and CSV imports, edits saved before the edit
+    /// screen kept the equivalent) shows that value in its account's currency: what the
+    /// balance moved by. Transfers show both legs instead (`TransferAmountView`).
+    ///
+    /// - Parameter accountCurrency: currency of the transaction's account, nil when the
+    ///   account is unknown (deleted): `convertedAmount` carries no currency of its own.
+    static func displayedEquivalent(
+        of transaction: Transaction,
+        accountCurrency: String?
+    ) -> (amount: Double, currency: String)? {
+        guard transaction.type != .internalTransfer else { return nil }
+        if let currency = transaction.targetCurrency,
+           let amount = transaction.targetAmount,
+           currency != transaction.currency {
+            return (amount, currency)
+        }
+        if transaction.targetAmount == nil,
+           let converted = transaction.convertedAmount,
+           let accountCurrency,
+           accountCurrency != transaction.currency {
+            return (converted, accountCurrency)
+        }
+        return nil
+    }
+
+    /// What `transaction` moved its account (a transfer's source account) by, in that
+    /// account's currency, as recorded when it was saved: the amount itself when it is in
+    /// `accountCurrency`, else the conversion stored with it. Nil when it holds none, so
+    /// the caller converts at today's rate.
+    ///
+    /// A stored conversion counts only when nothing says it is in another currency:
+    /// `targetAmount` labelled with the account's currency first, then `convertedAmount`
+    /// (unlabelled, the account's by contract) unless `targetCurrency` names a third
+    /// currency, the trace of an account whose currency changed after the save. A loan
+    /// payment's `targetCurrency` is the loan's, the transaction's own currency, and does
+    /// not count against it. For a transfer the target fields are the other leg, so only
+    /// `convertedAmount` is the source leg.
+    static func recordedAmount(of transaction: Transaction, inAccountCurrency accountCurrency: String) -> Double? {
+        if transaction.currency == accountCurrency { return transaction.amount }
+        if transaction.type == .internalTransfer { return transaction.convertedAmount }
+        if transaction.targetCurrency == accountCurrency, let target = transaction.targetAmount {
+            return target
+        }
+        guard let converted = transaction.convertedAmount else { return nil }
+        if let label = transaction.targetCurrency, label != accountCurrency, label != transaction.currency {
+            return nil
+        }
+        return converted
+    }
+
+    /// What `transaction` (any type but a transfer) moves its account by, in that account's
+    /// currency: the reading of `BalanceCalculationEngine.getTransactionAmount`, which takes
+    /// `targetAmount`, then `convertedAmount`, whatever their label. For code that must keep
+    /// a balance exactly where the engine put it, and can't call the MainActor engine.
+    static func balanceAmount(of transaction: Transaction, inAccountCurrency accountCurrency: String) -> Double {
+        guard transaction.currency != accountCurrency else { return transaction.amount }
+        return transaction.targetAmount ?? transaction.convertedAmount ?? transaction.amount
+    }
 }

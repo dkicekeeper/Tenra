@@ -30,6 +30,9 @@ struct BulkTransactionMutationTests {
     private static let main = "main"
     private static let savings = "savings"
     private static let loan = "loan"
+    /// `Account.init` stamps `createdDate = Date()` when none is given, so two harnesses
+    /// built a moment apart would never compare equal on `accounts`.
+    private static let created = Date(timeIntervalSince1970: 1_767_225_600)
 
     private static func makeHarness(withLoan: Bool = false) async -> Harness {
         let repository = RecordingDataRepository()
@@ -46,8 +49,8 @@ struct BulkTransactionMutationTests {
         ]
         store.rebuildCategoryLookups()
         var accounts = [
-            Account(id: main, name: "Main", currency: "KZT", initialBalance: 100_000),
-            Account(id: savings, name: "Savings", currency: "KZT", initialBalance: 50_000)
+            Account(id: main, name: "Main", currency: "KZT", createdDate: created, initialBalance: 100_000),
+            Account(id: savings, name: "Savings", currency: "KZT", createdDate: created, initialBalance: 50_000)
         ]
         if withLoan {
             accounts.append(Account(
@@ -58,6 +61,7 @@ struct BulkTransactionMutationTests {
                     monthlyPayment: 10_000, paymentDay: 15, paymentsMade: 1,
                     lastPaymentDate: "2026-02-15"
                 ),
+                createdDate: created,
                 initialBalance: 120_000
             ))
         }

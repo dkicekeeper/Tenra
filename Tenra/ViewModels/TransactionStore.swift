@@ -270,8 +270,9 @@ final class TransactionStore {
     @ObservationIgnored internal let cache: UnifiedTransactionCache
 
     // ✅ REFACTORED: Balance coordinator is now REQUIRED (not optional)
-    // This ensures balance updates always occur, no silent failures
-    @ObservationIgnored private let balanceCoordinator: BalanceCoordinator
+    // This ensures balance updates always occur, no silent failures.
+    // Internal for TransactionStore+LoanPayments (a deleted payment moves its loan's balance).
+    @ObservationIgnored internal let balanceCoordinator: BalanceCoordinator
 
     @ObservationIgnored internal let recurringStore: RecurringStore
 
@@ -316,6 +317,11 @@ final class TransactionStore {
     /// `aggregatePersistDebounceTask` for categories. Coalesces a burst of
     /// account aggregate patches into one CoreData write.
     @ObservationIgnored internal var accountAggregatePersistTask: Task<Void, Never>?
+
+    /// Debounced accounts save after deleted loan payments rolled their loans back
+    /// (TransactionStore+LoanPayments): one save per burst, after the account delete that
+    /// often follows it, instead of one per deleted row racing it.
+    @ObservationIgnored internal var loanRollbackPersistTask: Task<Void, Never>?
 
     // Lifecycle observer token for cleanup in deinit
     @ObservationIgnored private var lifecycleObserver: NSObjectProtocol?
@@ -968,6 +974,11 @@ final class TransactionStore {
 
         // 2. Update balances (incremental, awaited for consistency)
         await updateBalances(for: event)
+
+        // 2b. A deleted loan payment comes off its loan (TransactionStore+LoanPayments).
+        if case .deleted(let transaction) = event {
+            await rollBackLoanPayment(transaction)
+        }
 
         // 3. Granular cache invalidation — only invalidate what changed
         invalidateCache(for: event)

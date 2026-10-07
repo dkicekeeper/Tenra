@@ -64,6 +64,25 @@ Closed loans surface in `LoansListView` under a collapsed "Closed" `DisclosureGr
 - **Summary**: "Unpaid this month" in `LoansListView` = `unpaidTotal`, the `leftToPay` of every `.unpaid` loan (what is still due after this month's partial payments, never below zero), converted to the base currency through `RateSnapshot` (missing rate: unconverted amount, the canonical cold-cache fallback). Hidden when no active loan has a status.
 - **Freshness**: computed in `body`, not cached. The views read `transactions` (re-render on any add/edit/delete; `mutationVersion` is `@ObservationIgnored`), `currencyRatesVersion` (statuses and summary: payments in another currency) and `baseCurrency`, and keep `today` in `@State` refreshed by `UIApplication.significantTimeChangeNotification` (midnight, or on return to the foreground after it), so a new month never shows last month's statuses.
 
+## Deleting a Payment — rollback
+
+A loan's state lives in `LoanInfo` (remaining principal, interest paid, payments made, last payment date, early repayments), written when a payment is recorded. Deleting the payment now takes its own effect off the loan: `TransactionStore.apply(.deleted)` calls `rollBackLoanPayment` (`TransactionStore+LoanPayments.swift`), so every delete path is covered: a single delete (row swipe / context menu, history, the loan screen), an account deleted with its transactions (`deleteTransactions(forAccountId:)`, also on the paying card: its loans roll back), series delete / stop / pause (a linked expense keeps its `recurringSeriesId`). Before, the debt stayed reduced (red flag 8: the loan's balance IS `remainingPrincipal`, so the balance was wrong too) and the month kept showing "Paid".
+
+`LoanPaymentService.reversingPayment` (pure, pinned by `LoanPaymentRollbackTests`):
+
+| Deleted | Undone |
+|---|---|
+| `.loanPayment` | principal part back on the debt, interest part off `totalInterestPaid`, `paymentsMade - 1`; `lastPaymentDate` (only when it was this payment's date) = the latest remaining regular payment or `markedPaidThrough`, else nil |
+| `.loanEarlyRepayment` | amount back on the debt, its `EarlyRepayment` entry removed (same date and amount), the term (`EarlyRepayment.termBefore`, recorded since 2026-10-07) or the monthly payment (`paymentBefore`) restored, `endDate` recomputed |
+
+- **Split of a regular payment**: the inverse of `createManualPayment`: owed before = (owed after + amount) / (1 + monthly rate), interest = its rate, rounded like the forward split. The payments dated after the deleted one are undone first (`remainingBefore`) to find what was owed when it was made. Exact for the latest payment; the later payments keep the split they were recorded with (no replay), so deleting an old annuity payment differs slightly from a "never happened" replay.
+- **Never above `originalPrincipal`** (a "Mark as unpaid" reset to nothing paid already gave everything back), floors at 0 for the counters.
+- An early repayment without `termBefore` / `paymentBefore` (older entries), or with a later one of the same kind on top of it, is re-planned from the restored principal (`monthsToRepay` / `calculateMonthlyPayment`); the next entry of the same kind inherits the removed one's `paymentBefore` / `termBefore`, so the schedule replay stays right.
+- "Mark as paid" is untouched (`markedPaidThrough`): the marked month stays paid.
+- The loan's balance follows (`BalanceCoordinator.updateForAccount` + `setInitialBalance`, as `updateLoan` does). The accounts are saved by one debounced (300 ms) `persistAccountsToRepository()` per burst (`loanRollbackPersistTask`): a whole-table save per deleted row could still be running when the account delete that follows a bulk delete saves, and `CoreDataSaveCoordinator` drops a second `saveAccounts` in progress (the account came back on relaunch).
+- ⚠️ A future bulk-delete event must call `rollBackLoanPayment` for each transaction too.
+- ⚠️ Editing a payment's amount or date still doesn't touch `LoanInfo` (only the month status follows, it reads the transactions); deleting an edited payment reverses its current amount.
+
 ## Deleting a Loan — two intents
 
 ⚠️ **`deleteTransactions(forAccountId:)` matches BOTH `accountId` and `targetAccountId`**, so the old single-button delete wiped every bank-side expense that funded the loan. Loan payments are real expenses on real accounts; losing them is data loss, not cleanup.

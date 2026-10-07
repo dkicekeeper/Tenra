@@ -392,13 +392,25 @@ struct EarlyRepayment: Codable, Equatable, Hashable {
     /// repayment overwrote `LoanInfo.monthlyPayment`. nil for repayments recorded
     /// before 2026-09-24 (synthesized Codable decodes a missing key as nil).
     let paymentBefore: Decimal?
+    /// `LoanInfo.termMonths` BEFORE this repayment, so deleting a "reduce term" repayment
+    /// restores the term exactly (`LoanPaymentService.reversingPayment`). nil for
+    /// repayments recorded before 2026-10-07; their term is recomputed instead.
+    let termBefore: Int?
 
-    nonisolated init(date: String, amount: Decimal, type: EarlyRepaymentType, note: String? = nil, paymentBefore: Decimal? = nil) {
+    nonisolated init(
+        date: String,
+        amount: Decimal,
+        type: EarlyRepaymentType,
+        note: String? = nil,
+        paymentBefore: Decimal? = nil,
+        termBefore: Int? = nil
+    ) {
         self.date = date
         self.amount = amount
         self.type = type
         self.note = note
         self.paymentBefore = paymentBefore
+        self.termBefore = termBefore
     }
 }
 

@@ -1596,6 +1596,11 @@
 "premium.locked.voice.message" = "İşlemleri sesle ekle. Tutarı ve kategoriyi söylemen yeterli, gerisini Tenra tamamlar.";
 "premium.locked.import.title" = "Ekstre içe aktarma bir Pro özelliğidir";
 "premium.locked.import.message" = "PDF banka ekstrelerini ve CSV dosyalarını her işlemi tek tek yazmak yerine otomatik olarak içe aktar.";
+"paywall.unavailable.title" = "Satın alma geçici olarak kullanılamıyor";
+"paywall.unavailable.message" = "Tenra Pro şu anda satın alınamıyor. Lütfen daha sonra tekrar dene.";
+"paywall.unavailable.offline" = "İnternet bağlantını kontrol et ve tekrar dene.";
+"paywall.restore.none.title" = "Geri yüklenecek bir şey yok";
+"paywall.restore.none.message" = "Bu Apple Hesabı için Tenra Pro satın alımı bulunamadı.";
 "settings.supportID" = "Destek Kimliği";
 "settings.supportID.copied" = "Kopyalandı";
 

@@ -1596,6 +1596,11 @@
 "premium.locked.voice.message" = "음성으로 거래를 추가하세요. 금액과 카테고리만 말하면 나머지는 Tenra가 채워요.";
 "premium.locked.import.title" = "명세서 가져오기는 Pro 기능이에요";
 "premium.locked.import.message" = "거래를 하나하나 입력하는 대신 PDF 은행 명세서와 CSV 파일을 자동으로 가져오세요.";
+"paywall.unavailable.title" = "일시적으로 구매할 수 없어요";
+"paywall.unavailable.message" = "지금은 Tenra Pro를 구매할 수 없어요. 나중에 다시 시도해 주세요.";
+"paywall.unavailable.offline" = "인터넷 연결을 확인하고 다시 시도해 주세요.";
+"paywall.restore.none.title" = "복원할 항목이 없어요";
+"paywall.restore.none.message" = "이 Apple 계정에서 Tenra Pro 구매 내역을 찾을 수 없어요.";
 "settings.supportID" = "지원 ID";
 "settings.supportID.copied" = "복사됨";
 

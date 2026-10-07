@@ -76,6 +76,10 @@ final class PremiumManager {
     /// treats everyone as free (safe default before the API key / package is set up).
     private(set) var isConfigured = false
 
+    /// Whether the paywall has something to sell, from the last `checkOfferings()`; nil until
+    /// the first check (the launch health check runs one after the first frame).
+    private(set) var offeringsAvailability: OfferingsAvailability?
+
     /// RevenueCat anonymous app user ID. Shown in Settings → About as "Support ID"
     /// so users can share it for purchase-issue support and promotional entitlement
     /// grants (RevenueCat dashboard → Customers → find by this ID).
@@ -198,7 +202,44 @@ final class PremiumManager {
         log.info("pro entitlement active=\(active, privacy: .public)")
     }
 
+    // MARK: - Offerings
+
+    /// Asks RevenueCat whether the current offering has packages (its cache answers when warm)
+    /// and stores the answer in `offeringsAvailability`. The paywall shows RevenueCatUI only
+    /// when this says `.available`; otherwise RevenueCatUI would show its raw error alert,
+    /// whose OK closes the sheet.
+    @discardableResult
+    func checkOfferings() async -> OfferingsAvailability {
+        guard isConfigured else {
+            offeringsAvailability = .notConfigured
+            return .notConfigured
+        }
+        let availability: OfferingsAvailability
+        do {
+            let offerings = try await Purchases.shared.offerings()
+            availability = .loaded(currentPackageCount: offerings.current?.availablePackages.count)
+        } catch {
+            availability = .failure(revenueCatCode: (error as? RevenueCat.ErrorCode)?.rawValue)
+            log.error("Offerings failed to load: \(error.localizedDescription, privacy: .public)")
+        }
+        if !availability.canSell {
+            log.error("Paywall can't sell: \(String(describing: availability), privacy: .public)")
+        }
+        offeringsAvailability = availability
+        return availability
+    }
+
     // MARK: - Purchases / restore (used by custom flows; RevenueCatUI handles its own)
+
+    /// Applies the CustomerInfo a RevenueCatUI purchase or restore callback hands over, and says
+    /// whether the `pro` entitlement is now active. A restore "completes" even when it found
+    /// nothing, so the paywall closes only on true. The paywall passes the value through
+    /// without reading it, so it never needs RevenueCat.
+    @discardableResult
+    func applyPaywallResult(_ info: CustomerInfo) -> Bool {
+        apply(info)
+        return info.entitlements[PremiumConfig.entitlementID]?.isActive == true
+    }
 
     /// Restore previous purchases (App Store "Restore" requirement). RevenueCatUI's
     /// PaywallView exposes its own restore button; this is for any custom entry point.

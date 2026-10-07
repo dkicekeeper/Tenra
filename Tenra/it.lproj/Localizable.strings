@@ -1596,6 +1596,11 @@
 "premium.locked.voice.message" = "Aggiungi operazioni con la voce: di' importo e categoria, e Tenra completa il resto.";
 "premium.locked.import.title" = "L'importazione degli estratti conto è una funzione Pro";
 "premium.locked.import.message" = "Importa automaticamente estratti conto PDF e file CSV invece di digitare ogni operazione.";
+"paywall.unavailable.title" = "Acquisti temporaneamente non disponibili";
+"paywall.unavailable.message" = "Al momento non è possibile acquistare Tenra Pro. Riprova più tardi.";
+"paywall.unavailable.offline" = "Controlla la connessione a Internet e riprova.";
+"paywall.restore.none.title" = "Niente da ripristinare";
+"paywall.restore.none.message" = "Nessun acquisto di Tenra Pro trovato per questo Account Apple.";
 "settings.supportID" = "ID di supporto";
 "settings.supportID.copied" = "Copiato";
 

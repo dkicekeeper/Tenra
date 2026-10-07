@@ -1596,6 +1596,11 @@
 "premium.locked.voice.message" = "Добавляйте операции голосом: просто назовите сумму и категорию, Tenra заполнит остальное.";
 "premium.locked.import.title" = "Импорт выписок: функция Pro";
 "premium.locked.import.message" = "Импортируйте PDF-выписки банков и CSV-файлы автоматически, не вводя каждую операцию вручную.";
+"paywall.unavailable.title" = "Покупки временно недоступны";
+"paywall.unavailable.message" = "Сейчас Tenra Pro нельзя купить. Попробуйте позже.";
+"paywall.unavailable.offline" = "Проверьте подключение к интернету и попробуйте снова.";
+"paywall.restore.none.title" = "Нечего восстанавливать";
+"paywall.restore.none.message" = "Покупки Tenra Pro для этого аккаунта Apple не найдены.";
 "settings.supportID" = "ID для поддержки";
 "settings.supportID.copied" = "Скопировано";
 

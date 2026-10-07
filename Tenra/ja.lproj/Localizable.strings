@@ -1596,6 +1596,11 @@
 "premium.locked.voice.message" = "音声で取引を追加。金額とカテゴリを話すだけで、残りはTenraが入力します。";
 "premium.locked.import.title" = "明細の取り込みはProの機能です";
 "premium.locked.import.message" = "取引を1件ずつ入力する代わりに、銀行のPDF明細やCSVファイルを自動で取り込めます。";
+"paywall.unavailable.title" = "現在、購入できません";
+"paywall.unavailable.message" = "現在Tenra Proを購入できません。しばらくしてからもう一度お試しください。";
+"paywall.unavailable.offline" = "インターネット接続を確認して、もう一度お試しください。";
+"paywall.restore.none.title" = "復元する購入がありません";
+"paywall.restore.none.message" = "このApple AccountではTenra Proの購入が見つかりませんでした。";
 "settings.supportID" = "サポートID";
 "settings.supportID.copied" = "コピーしました";
 

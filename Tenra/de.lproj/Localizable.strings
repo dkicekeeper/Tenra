@@ -1596,6 +1596,11 @@
 "premium.locked.voice.message" = "Fügen Sie Transaktionen per Sprache hinzu – sagen Sie einfach Betrag und Kategorie, Tenra ergänzt den Rest.";
 "premium.locked.import.title" = "Kontoauszug-Import ist eine Pro-Funktion";
 "premium.locked.import.message" = "Importieren Sie PDF-Kontoauszüge und CSV-Dateien automatisch, statt jede Transaktion einzeln einzugeben.";
+"paywall.unavailable.title" = "Käufe sind vorübergehend nicht verfügbar";
+"paywall.unavailable.message" = "Tenra Pro kann gerade nicht gekauft werden. Bitte versuchen Sie es später erneut.";
+"paywall.unavailable.offline" = "Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.";
+"paywall.restore.none.title" = "Nichts wiederherzustellen";
+"paywall.restore.none.message" = "Für diesen Apple Account wurden keine Käufe von Tenra Pro gefunden.";
 "settings.supportID" = "Support-ID";
 "settings.supportID.copied" = "Kopiert";
 

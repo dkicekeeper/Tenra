@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Shared category breakdown row for Insights detail screens. Adapter over
-//  DesignKit's `BreakdownRow` (which also ships `AmountPercentage`): maps the
+//  DesignKit's `AmountRow` with a `.share` value: maps the
 //  breakdown item and localizes its category name.
 //
 //  Navigation is left to the caller: wrap this row in a `NavigationLink` and pass
@@ -21,19 +21,18 @@ struct CategoryBreakdownRow: View {
     var showsChevron: Bool = false
 
     var body: some View {
-        BreakdownRow(
-            iconSource: item.iconSource,
-            color: item.color,
+        AmountRow(
             // `categoryName` carries the raw grouping key (it drives the deep-dive
             // lookup), so the technical "Loan Payment" key is localized here.
-            title: CategoryDisplay.displayName(for: item.categoryName, type: .expense),
+            CategoryDisplay.displayName(for: item.categoryName, type: .expense),
             subtitle: item.subcategories.isEmpty
                 ? nil
                 : item.subcategories.prefix(3).map(\.name).joined(separator: ", "),
-            amount: item.amount,
+            subtitleLineLimit: 1,
+            leading: .tinted(item.iconSource, item.color),
+            value: .share(item.amount, percentage: item.percentage),
             currency: currency,
-            percentage: item.percentage,
-            showsChevron: showsChevron
+            accessory: showsChevron ? .chevron : .none
         )
     }
 }

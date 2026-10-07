@@ -75,7 +75,7 @@ extension InsightsService {
             DonutSlice(
                 id: item.id,
                 amount: item.balance,
-                color: CategoryColors.hexColor(for: item.accountName),
+                color: CategoryColors.color(for: item.accountName),
                 label: item.accountName,
                 percentage: totalWealth > 0 ? item.balance / totalWealth * 100 : 0
             )

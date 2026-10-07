@@ -56,7 +56,7 @@ Background hierarchy: `bgBase` → `bgCard` → `bgMuted` (base screen → eleva
 
 For archived/inactive UI use `Color(.systemGray)` directly — there is no dedicated token.
 
-**Category colors:** Use `CategoryColors.hexColor(for:opacity:customCategories:)` (or the store-backed `@MainActor` overload for O(1) lookup) — 14-color hex palette with custom category override.
+**Category colors:** Use `CategoryColors.color(for:opacity:customCategories:)` (or the store-backed `@MainActor` overload for O(1) lookup) — 14-color hex palette with custom category override.
 
 ### Spacing (`AppSpacing`)
 
@@ -328,7 +328,7 @@ Every row in `Views/Components/Rows/` follows these token rules. New rows MUST c
 
 | Slot | Token | Notes |
 |------|-------|-------|
-| **Leading icon — content rows** | `AppIconSize.Tile.sm` (44) | AccountRow, CategoryRow, CategoryBreakdownRow, InsightEntityRow, BudgetProgressRow |
+| **Leading icon — content rows** | `AppIconSize.Tile.sm` (44) | AccountRow, CategoryRow, CategoryBreakdownRow (all `AmountRow`), BudgetProgressRow; a limit row keeps the ring's 52 pt slot with or without a budget |
 | **Leading icon — form rows** | `AppIconSize.lg` (24) | InfoRow, MenuPickerRow, DatePickerRow |
 | **Leading icon — settings rows** | `AppIconSize.md` (20) | ActionSettingsRow, NavigationSettingsRow |
 | **Leading icon — filter lists** | `AppIconSize.xl` (32), always plated | AccountFilterView, CategoryFilterView (`CheckmarkRow`), TransactionSubcategoryFilterSheet: an SF Symbol on `AppColors.pale` of its tint (category colour, accent; neutral: `AppColors.Status.neutralPale`), a logo `.serviceLogo` (fills its circle). Not `bgCard`: it matches the sheets' grouped rows in dark mode |

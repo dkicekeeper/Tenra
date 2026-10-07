@@ -82,13 +82,12 @@ struct InsightRecurringBreakdownList: View {
     var body: some View {
         InsightDetailListCard(title: String(localized: "insights.breakdown")) {
             ForEach(items) { item in
-                InsightEntityRow(
-                    iconSource: item.iconSource,
-                    title: item.name,
+                AmountRow(
+                    item.name,
                     subtitle: item.frequency.displayName,
-                    amount: item.monthlyEquivalent,
-                    currency: currency,
-                    amountCaption: String(localized: "insights.perMonth")
+                    leading: item.iconSource.map(AmountRow.Leading.icon) ?? AmountRow.Leading.none,
+                    value: .amount(item.monthlyEquivalent, caption: String(localized: "insights.perMonth")),
+                    currency: currency
                 )
             }
         }
@@ -168,13 +167,15 @@ struct InsightAccountBreakdownList: View {
     var body: some View {
         InsightDetailListCard(title: String(localized: "insights.wealth.accounts")) {
             ForEach(accounts) { account in
-                InsightEntityRow(
-                    iconSource: account.iconSource,
-                    title: account.accountName,
+                AmountRow(
+                    account.accountName,
                     subtitle: account.currency,
-                    amount: account.balance,
-                    currency: currency,
-                    amountColor: account.balance >= 0 ? AppColors.textPrimary : AppColors.destructive
+                    leading: account.iconSource.map(AmountRow.Leading.icon) ?? AmountRow.Leading.none,
+                    value: .amount(
+                        account.balance,
+                        color: account.balance >= 0 ? AppColors.textPrimary : AppColors.destructive
+                    ),
+                    currency: currency
                 )
             }
         }
@@ -191,12 +192,11 @@ struct InsightDormantAccountList: View {
     var body: some View {
         InsightDetailListCard(title: String(localized: "insights.dormant.accounts")) {
             ForEach(accounts) { account in
-                InsightEntityRow(
-                    iconSource: account.iconSource,
-                    title: account.accountName,
-                    amount: account.balance,
-                    currency: currency,
-                    amountColor: AppColors.textSecondary
+                AmountRow(
+                    account.accountName,
+                    leading: account.iconSource.map(AmountRow.Leading.icon) ?? AmountRow.Leading.none,
+                    value: .amount(account.balance, color: AppColors.textSecondary),
+                    currency: currency
                 ) {
                     if let lastActivity = account.lastActivityDate {
                         Text(lastActivity, style: .relative)

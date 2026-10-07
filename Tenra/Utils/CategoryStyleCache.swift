@@ -125,14 +125,14 @@ final class CategoryStyleCache {
         // (resolved from customCategories, or a deterministic palette hash for
         // unknown names). Previously income was forced to a single green tint,
         // which collapsed every income card's icon to the same color.
-        let baseColor = CategoryColors.hexColor(for: category, opacity: 1.0, customCategories: customCategories)
+        let baseColor = CategoryColors.color(for: category, opacity: 1.0, customCategories: customCategories)
 
         return CategoryStyleData(
-            coinColor: CategoryColors.hexColor(for: category, opacity: 0.3, customCategories: customCategories),
-            coinBorderColor: CategoryColors.hexColor(for: category, opacity: 0.6, customCategories: customCategories),
+            coinColor: CategoryColors.color(for: category, opacity: 0.3, customCategories: customCategories),
+            coinBorderColor: CategoryColors.color(for: category, opacity: 0.6, customCategories: customCategories),
             iconColor: baseColor,
             primaryColor: baseColor,
-            lightBackgroundColor: CategoryColors.hexColor(for: category, opacity: 0.15, customCategories: customCategories),
+            lightBackgroundColor: CategoryColors.color(for: category, opacity: 0.15, customCategories: customCategories),
             iconName: CategoryIcon.iconName(for: category, type: type, customCategories: customCategories)
         )
     }

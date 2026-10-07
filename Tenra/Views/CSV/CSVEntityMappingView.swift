@@ -230,7 +230,7 @@ struct CSVEntityMappingView: View {
     
     private func createCategory(name: String, type: TransactionType = .expense) {
         let iconName = CategoryIcon.iconName(for: name, type: type, customCategories: categoriesViewModel.customCategories)
-        let colorHex = CategoryColors.hexColor(for: name, customCategories: categoriesViewModel.customCategories)
+        let colorHex = CategoryColors.color(for: name, customCategories: categoriesViewModel.customCategories)
         let hexString = colorToHex(colorHex)
 
         let newCategory = CustomCategory(

@@ -47,6 +47,7 @@ extension TransactionStore {
         categoryById[categoryToAdd.id] = categoryToAdd
         categoryIdByName[categoryToAdd.name.lowercased()] = categoryToAdd.id
         categoriesMutationVersion &+= 1
+        noteProvisionalChange(\.categories, changed: [categoryToAdd.id])
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
@@ -70,6 +71,7 @@ extension TransactionStore {
         let old = categories[index]
         categories[index] = category
         categoryById[category.id] = category
+        noteProvisionalChange(\.categories, changed: [category.id])
 
         // Move the name → id pointer if the user renamed the category. Aggregate
         // and per-name transaction buckets need to follow the new key, otherwise
@@ -110,6 +112,7 @@ extension TransactionStore {
         let removed = categoryById[categoryId]
         categories.removeAll { $0.id == categoryId }
         categoryById.removeValue(forKey: categoryId)
+        noteProvisionalChange(\.categories, deleted: [categoryId])
         if let name = removed?.name {
             categoryIdByName.removeValue(forKey: name.lowercased())
             dropAggregates(forCategoryName: name)
@@ -132,17 +135,18 @@ extension TransactionStore {
     /// replaces the previous loop of `updateCategory` calls (which did one
     /// full CoreData save per moved category, i.e. O(N²) on a single drag).
     func reorderCategories(orderedIds: [String]) {
-        var changed = false
+        var reordered: [String] = []
         for (index, id) in orderedIds.enumerated() {
             guard let i = categories.firstIndex(where: { $0.id == id }) else { continue }
             if categories[i].order != index {
                 categories[i].order = index
                 categoryById[id] = categories[i]
-                changed = true
+                reordered.append(id)
                 CategoryOrderManager.shared.setOrder(index, for: id)
             }
         }
-        guard changed else { return }
+        guard !reordered.isEmpty else { return }
+        noteProvisionalChange(\.categories, changed: reordered)
         categoriesMutationVersion &+= 1
         persistCategoriesToRepository()
     }
@@ -152,6 +156,7 @@ extension TransactionStore {
         let removed = ids.compactMap { categoryById[$0] }
         categories.removeAll { ids.contains($0.id) }
         for id in ids { categoryById.removeValue(forKey: id) }
+        noteProvisionalChange(\.categories, deleted: Array(ids))
         for cat in removed {
             categoryIdByName.removeValue(forKey: cat.name.lowercased())
             dropAggregates(forCategoryName: cat.name)
@@ -175,6 +180,7 @@ extension TransactionStore {
         subcategories.append(subcategory)
         subcategoryById[subcategory.id] = subcategory
         subcategoriesMutationVersion &+= 1
+        noteProvisionalChange(\.subcategories, changed: [subcategory.id])
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
@@ -185,6 +191,7 @@ extension TransactionStore {
 
     /// Update subcategories array (for bulk operations)
     func updateSubcategories(_ newSubcategories: [Subcategory]) {
+        noteProvisionalReplacement(\.subcategories, old: subcategories, new: newSubcategories, id: \.id)
         subcategories = newSubcategories
         rebuildSubcategoryById()
         subcategoriesMutationVersion &+= 1
@@ -200,6 +207,7 @@ extension TransactionStore {
     /// Persists are debounced (300ms) so rapid edits collapse to one CoreData
     /// write instead of one-per-keystroke.
     func updateCategorySubcategoryLinks(_ newLinks: [CategorySubcategoryLink]) {
+        noteProvisionalReplacement(\.categorySubcategoryLinks, old: categorySubcategoryLinks, new: newLinks, id: \.id)
         categorySubcategoryLinks = newLinks
         rebuildSubcategoryIdsByCategoryId()
         subcategoriesMutationVersion &+= 1
@@ -215,6 +223,7 @@ extension TransactionStore {
     /// Debounced (300ms). Heavy hitter — the tx edit screen used to write the
     /// full link table on every check-mark toggle in the subcategory picker.
     func updateTransactionSubcategoryLinks(_ newLinks: [TransactionSubcategoryLink]) {
+        noteProvisionalReplacement(\.transactionSubcategoryLinks, old: transactionSubcategoryLinks, new: newLinks, id: \.id)
         transactionSubcategoryLinks = newLinks
         rebuildSubcategoryIdsByTransactionId()
         rebuildSubcategoryUsageStats()
@@ -264,6 +273,7 @@ extension TransactionStore {
     /// This ensures TransactionStore knows about newly created categories
     /// before transactions are added
     func syncCategories(_ newCategories: [CustomCategory]) async {
+        noteProvisionalReplacement(\.categories, old: categories, new: newCategories, id: \.id)
         categories = newCategories
         rebuildCategoryLookups()
         categoriesMutationVersion &+= 1
@@ -275,26 +285,33 @@ extension TransactionStore {
         // Don't persist during import - will be done in finishImport()
         if !isImporting {
             // Only persist if not in import mode (e.g., manual sync)
-            repository.saveCategories(newCategories)
-        } else {
+            persistCategoriesToRepository()
         }
     }
 
     // MARK: - Category & Subcategory Persistence
+    //
+    // Each save replaces its whole table, so it waits until memory holds the whole table:
+    // before the full load the subcategory and link arrays are empty, and saving one
+    // deleted every row of that table (see TransactionStore+LoadMerge.swift).
 
     internal func persistCategoriesToRepository() {
+        guard mayWriteWholeTable(.categories) else { return }
         repository.saveCategories(categories)
     }
 
     internal func persistSubcategoriesToRepository() {
+        guard mayWriteWholeTable(.subcategories) else { return }
         repository.saveSubcategories(subcategories)
     }
 
     internal func persistCategorySubcategoryLinksToRepository() {
+        guard mayWriteWholeTable(.categorySubcategoryLinks) else { return }
         repository.saveCategorySubcategoryLinks(categorySubcategoryLinks)
     }
 
     internal func persistTransactionSubcategoryLinksToRepository() {
+        guard mayWriteWholeTable(.transactionSubcategoryLinks) else { return }
         repository.saveTransactionSubcategoryLinks(transactionSubcategoryLinks)
     }
 }

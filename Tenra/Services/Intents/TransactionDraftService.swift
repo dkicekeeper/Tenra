@@ -252,6 +252,14 @@ enum TransactionDraftService {
         let saved = try await store.add(transaction)
 
         if !saved.id.isEmpty, !draft.subcategoryIds.isEmpty {
+            if !store.hasCompletedInitialLoad, store.isLoadInFlight {
+                // The app's own full load is running in this process. Rows written around
+                // it may be missing from what it fetched, and the next whole-table link
+                // save would delete them: wait for it, then link through memory.
+                await store.waitForLoadInFlight()
+                // The view model's copies of the link tables predate the load.
+                categoriesViewModel.syncCategoriesFromStore()
+            }
             if store.hasCompletedInitialLoad {
                 categoriesViewModel.linkSubcategoriesToTransaction(
                     transactionId: saved.id,

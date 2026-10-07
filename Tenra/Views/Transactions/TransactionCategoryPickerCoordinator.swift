@@ -79,15 +79,51 @@ final class TransactionCategoryPickerCoordinator {
 
     // MARK: - Snapshot Refresh
 
+    /// Every input `categories` depends on (CLAUDE.md red flag 12). The view's
+    /// `.task(id:)` recomputes whenever it changes.
+    struct RefreshKey: Equatable {
+        /// The period's bounds, not its name: a relative preset (`.thisMonth`) keeps its
+        /// name across a month boundary while `refreshRelativePresetIfNeeded()` moves its
+        /// bounds, so a key on `displayName` left the grid on last month's totals.
+        let filterStart: Date
+        let filterEnd: Date
+        /// The mapper scales budgets differently for an exact preset (`.thisMonth` vs a
+        /// monthly budget) than for a custom range with the same bounds.
+        let filterPreset: TimeFilterPreset
+        let transactionsVersion: Int
+        let transactionCount: Int
+        let categoriesVersion: Int
+        let ratesVersion: Int
+        let baseCurrency: String
+        /// Future-dated expenses join the totals on their day.
+        let day: Date
+    }
+
+    /// Read from the view's `body`. `mutationVersion` is `@ObservationIgnored`, so the
+    /// observable `transactions` array is read alongside it: that is what re-evaluates the
+    /// body on every mutation, in-place edits included (the count mirror misses those).
+    var refreshKey: RefreshKey {
+        let filter = timeFilterManager.currentFilter
+        return RefreshKey(
+            filterStart: filter.startDate,
+            filterEnd: filter.endDate,
+            filterPreset: filter.preset,
+            transactionsVersion: transactionStore.mutationVersion,
+            transactionCount: transactionStore.transactions.count,
+            categoriesVersion: transactionStore.categoriesMutationVersion,
+            ratesVersion: transactionStore.currencyRatesVersion,
+            baseCurrency: baseCurrency,
+            day: Calendar.current.startOfDay(for: Date())
+        )
+    }
+
     /// Recompute `categories` for the current filter + transaction snapshot.
     ///
-    /// The expensive O(N_tx) category-expense walk (with date parsing + FX conversion)
-    /// runs in `Task.detached(priority: .userInitiated)`. Only the small
-    /// O(N_categories) mapper call returns to MainActor.
+    /// The O(N_tx) category-expense walk runs in `Task.detached(priority: .userInitiated)`.
+    /// Only the small O(N_categories) mapper call returns to MainActor.
     ///
-    /// Call from a view-level `.task(id:)` keyed on filter / mutation-version /
-    /// rates-version / baseCurrency; SwiftUI auto-cancels in-flight runs when the
-    /// key changes and starts a fresh one — no manual task tracking needed.
+    /// Call from a view-level `.task(id: refreshKey)`; SwiftUI auto-cancels in-flight
+    /// runs when the key changes and starts a fresh one — no manual task tracking needed.
     func recompute() async {
         // Capture every MainActor-bound input as a Sendable snapshot.
         let txs = transactionStore.transactions
@@ -103,7 +139,8 @@ final class TransactionCategoryPickerCoordinator {
                 filterStart: range.start,
                 filterEnd: range.end,
                 baseCurrency: baseCurrency,
-                validCategoryNames: validNames
+                validCategoryNames: validNames,
+                rates: RateSnapshot()
             )
         }.value
 
@@ -120,28 +157,28 @@ final class TransactionCategoryPickerCoordinator {
     }
 
     /// Pure mirror of `TransactionQueryService.calculateCategoryExpensesFromTransactions`.
-    /// Safe to call from any actor — every dependency (`DateFormatter`,
-    /// `CurrencyConverter.convertSync`, value types) is documented as actor-safe.
-    private nonisolated static func computeCategoryExpenses(
+    /// Safe to call from any actor: value types, `FastDateParser` and a `RateSnapshot`.
+    ///
+    /// Dates go through `FastDateParser` (identical `Date` to the en_US_POSIX
+    /// `DateFormatter` this used, pinned by `FastDateParserTests`) and amounts through
+    /// one `RateSnapshot` (same formula as `convertSync`, one rate table for the walk).
+    /// The `DateFormatter` + `convertSync` version cost 0.3–0.4 s of CPU per run over
+    /// ~15k expenses, so the tiles lagged the summary card on every change.
+    /// `CategoryGridExpensesTests` pins the totals to that version.
+    nonisolated static func computeCategoryExpenses(
         transactions: [Transaction],
         filterStart: Date,
         filterEnd: Date,
         baseCurrency: String,
-        validCategoryNames: Set<String>
+        validCategoryNames: Set<String>,
+        rates: RateSnapshot,
+        now: Date = Date()
     ) -> [String: CategoryExpense] {
-        // Thread-local formatter — DateFormatter is documented thread-safe since iOS 7
-        // but using a local instance avoids contention with the shared singleton.
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.timeZone = TimeZone.current
-
-        let now = Date()
         var result: [String: CategoryExpense] = [:]
         result.reserveCapacity(validCategoryNames.count)
 
         for tx in transactions where tx.type == .expense {
-            guard let date = dateFormatter.date(from: tx.date),
+            guard let date = FastDateParser.date(from: tx.date),
                   date >= filterStart && date < filterEnd,
                   date <= now else { continue }
 
@@ -158,7 +195,7 @@ final class TransactionCategoryPickerCoordinator {
             let amount: Double
             if tx.currency == baseCurrency {
                 amount = tx.amount
-            } else if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency) {
+            } else if let fx = rates.convert(tx.amount, from: tx.currency, to: baseCurrency) {
                 amount = fx
             } else {
                 amount = tx.convertedAmount ?? tx.amount

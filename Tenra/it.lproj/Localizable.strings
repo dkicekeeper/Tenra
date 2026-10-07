@@ -1756,6 +1756,7 @@
 "settings.cloud.autoBackup.toggle" = "Backup settimanale automatico";
 "settings.cloud.autoBackup.footer" = "Tenra crea un backup una volta a settimana quando apri l'app e conserva i 4 più recenti. I backup automatici non sostituiscono mai quelli che crei tu.";
 "settings.cloud.autoBackup.failed" = "L'ultimo backup automatico non è riuscito: %@";
+"settings.cloud.autoBackup.badge" = "Auto";
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "Prelievo di contanti: registra a parte le spese in contanti";

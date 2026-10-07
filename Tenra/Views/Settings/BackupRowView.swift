@@ -15,9 +15,17 @@ struct BackupRowView: View {
     var body: some View {
         HStack(spacing: AppSpacing.sm) {
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text(metadata.formattedDate)
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
+                HStack(spacing: AppSpacing.sm) {
+                    Text(metadata.formattedDate)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppColors.textPrimary)
+
+                    // Made by the weekly automatic backup: these have their own limit
+                    // and never replace the ones the user made.
+                    if metadata.isAutomatic == true {
+                        BadgeView(String(localized: "settings.cloud.autoBackup.badge"))
+                    }
+                }
 
                 Text(metadataLine)
                     .font(AppTypography.bodySmall)

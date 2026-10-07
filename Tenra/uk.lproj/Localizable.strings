@@ -1756,6 +1756,7 @@
 "settings.cloud.autoBackup.toggle" = "Автоматична копія щотижня";
 "settings.cloud.autoBackup.footer" = "Tenra раз на тиждень під час відкриття застосунку робить резервну копію і зберігає 4 останні. Автоматичні копії ніколи не замінюють ті, що ви створили самі.";
 "settings.cloud.autoBackup.failed" = "Не вдалося створити останню автоматичну копію: %@";
+"settings.cloud.autoBackup.badge" = "Авто";
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "Зняття готівки: витрати готівкою враховуйте окремо";

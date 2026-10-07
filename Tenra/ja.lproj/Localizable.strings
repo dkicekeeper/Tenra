@@ -1756,6 +1756,7 @@
 "settings.cloud.autoBackup.toggle" = "毎週の自動バックアップ";
 "settings.cloud.autoBackup.footer" = "Tenraはアプリを開いたときに週に1回バックアップを作成し、最新の4件を保持します。自動バックアップが、ご自身で作成したバックアップを置き換えることはありません。";
 "settings.cloud.autoBackup.failed" = "前回の自動バックアップに失敗しました：%@";
+"settings.cloud.autoBackup.badge" = "自動";
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "現金の引き出し：現金での支出は別に記録してください";

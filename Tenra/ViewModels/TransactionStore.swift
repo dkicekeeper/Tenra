@@ -310,6 +310,8 @@ final class TransactionStore {
     @ObservationIgnored var heldWholeTableSaves: Set<WholeTable> = []
     /// Callers of `waitForLoadInFlight()`, resumed when the load lands.
     @ObservationIgnored var loadWaiters: [CheckedContinuation<Void, Never>] = []
+    /// True while a load assigns what it fetched: that is not a change to record.
+    @ObservationIgnored var isAssigningLoadedRows: Bool = false
 
     // Debounce task for coalescing rapid mutations into single sync
     private var syncDebounceTask: Task<Void, Never>?
@@ -561,8 +563,10 @@ final class TransactionStore {
         } while !settled
 
         // Back on @MainActor — only assignments now, no per-tx loops.
+        isAssigningLoadedRows = true
         accounts = orderedAccounts
         rebuildAccountById()  // O(N_accounts), tiny
+        isAssigningLoadedRows = false
         transactions = mergedTransactions
         transactionsCount = mergedTransactions.count
         transactionIdSet = snapshot.transactionIdSet
@@ -656,8 +660,10 @@ final class TransactionStore {
             changedRows: journal.categories.changedIds.compactMap { categoryById[$0] },
             id: \.id
         )
+        isAssigningLoadedRows = true
         accounts = AccountOrderManager.shared.applyOrders(to: mergedAccounts)
         rebuildAccountById()
+        isAssigningLoadedRows = false
         categories = CategoryOrderManager.shared.applyOrders(to: mergedCategories)
         rebuildCategoryLookups()
         categoriesMutationVersion &+= 1
@@ -1365,9 +1371,17 @@ final class TransactionStore {
     /// so a full rebuild is cheap and easier to reason about than incremental sync.
     /// Also bumps `accountsMutationVersion` so downstream caches (AccountsViewModel
     /// regular/deposit/loan filters) can detect invalidation cheaply.
+    ///
+    /// It is also where account changes made while a load may overwrite memory are
+    /// recorded (TransactionStore+LoadMerge.swift): every path that mutates `accounts`
+    /// ends here, including ones outside the account CRUD (loan payment rollback).
     internal func rebuildAccountById() {
+        let previous = accountById
         accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
         accountsMutationVersion &+= 1
+        if !isAssigningLoadedRows {
+            noteProvisionalChanges(\.accounts, from: previous, to: accountById)
+        }
     }
 
     // MARK: - Per-Account Index Maintenance

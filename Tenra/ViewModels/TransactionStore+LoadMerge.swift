@@ -168,6 +168,19 @@ extension TransactionStore {
         loadJournal.version &+= 1
     }
 
+    /// Records the difference between two id-keyed versions of a table (`rebuildAccountById`
+    /// diffs the account map it replaces, so every account mutation path is covered).
+    func noteProvisionalChanges<Row: Equatable>(
+        _ table: WritableKeyPath<LoadJournal, LoadChanges>,
+        from old: [String: Row],
+        to new: [String: Row]
+    ) {
+        guard isLoadProvisional else { return }
+        let changed = new.compactMap { id, row in old[id] == row ? nil : id }
+        let deleted = old.keys.filter { new[$0] == nil }
+        noteProvisionalChange(table, changed: changed, deleted: deleted)
+    }
+
     /// Records a whole-array replacement (`updateSubcategories` and the link updates take
     /// the full new array) as the rows that differ.
     func noteProvisionalReplacement<Row: Equatable>(

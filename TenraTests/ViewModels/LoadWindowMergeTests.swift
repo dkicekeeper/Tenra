@@ -146,6 +146,28 @@ struct LoadWindowMergeTests {
         #expect(graph.repo.loadTransactionSubcategoryLinks().map(\.id) == ["t1-s1"])
     }
 
+    @Test("An account changed outside the account CRUD while the load runs is kept too")
+    func directAccountChangeDuringLoadIsKept() async throws {
+        let graph = Self.makeGraph()
+        let store = graph.store
+        let gate = LoadGate()
+        graph.repo.loadTransactionsGate = gate
+
+        let load = Task { try await store.loadData() }
+        #expect(await waitUntil { gate.isWaiting })
+
+        // Like the loan payment rollback: mutate the array, then rebuild the index.
+        store.accounts[0].name = "Card (renamed)"
+        store.rebuildAccountById()
+        store.persistAccountsToRepository()
+
+        gate.open()
+        try await load.value
+
+        #expect(store.accountById["a"]?.name == "Card (renamed)")
+        #expect(graph.repo.loadAccounts().first { $0.id == "a" }?.name == "Card (renamed)")
+    }
+
     @Test("A subcategory created before the first load does not wipe the table")
     func subcategoryBeforeLoadWaitsForIt() async throws {
         let graph = Self.makeGraph()

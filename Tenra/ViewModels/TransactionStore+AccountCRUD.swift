@@ -24,7 +24,6 @@ extension TransactionStore {
 
         accounts.append(account)
         rebuildAccountById()
-        noteProvisionalChange(\.accounts, changed: [account.id])
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
@@ -47,7 +46,6 @@ extension TransactionStore {
 
         accounts[index] = account
         rebuildAccountById()
-        noteProvisionalChange(\.accounts, changed: [account.id])
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
@@ -76,7 +74,6 @@ extension TransactionStore {
         }
         guard !changed.isEmpty else { return }
         rebuildAccountById()
-        noteProvisionalChange(\.accounts, changed: changed.map(\.id))
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
@@ -93,7 +90,6 @@ extension TransactionStore {
     func deleteAccount(_ accountId: String) {
         accounts.removeAll { $0.id == accountId }
         rebuildAccountById()
-        noteProvisionalChange(\.accounts, deleted: [accountId])
 
         // Don't persist during import mode - will be done in finishImport()
         if !isImporting {
@@ -115,7 +111,6 @@ extension TransactionStore {
         accountCRUDLogger.log("🗑️ deleteAccounts START: removing \(ids.count) ids=\(Array(ids), privacy: .public) totalAccountsBefore=\(self.accounts.count)")
         accounts.removeAll { ids.contains($0.id) }
         rebuildAccountById()
-        noteProvisionalChange(\.accounts, deleted: Array(ids))
         for a in accounts {
             accountCRUDLogger.log("🗑️ deleteAccounts remaining: id=\(a.id, privacy: .public) name=\(a.name, privacy: .public) balance=\(a.balance) initial=\(a.initialBalance ?? -1) shouldCalc=\(a.shouldCalculateFromTransactions)")
         }
@@ -162,16 +157,13 @@ extension TransactionStore {
     /// Only mutates `order` field — balances, names, and all other fields are preserved.
     func reorderAccounts(_ orderedIds: [String]) {
         var orderMap = [String: Int]()
-        var reordered: [String] = []
         for (index, id) in orderedIds.enumerated() {
             orderMap[id] = index
             if let accountIndex = accounts.firstIndex(where: { $0.id == id }) {
                 accounts[accountIndex].order = index
-                reordered.append(id)
             }
         }
         rebuildAccountById()
-        noteProvisionalChange(\.accounts, changed: reordered)
 
         persistAccountsToRepository()
         AccountOrderManager.shared.setOrders(orderMap)

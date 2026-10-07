@@ -167,6 +167,7 @@ struct CloudBackupsView: View {
         }
         .task {
             cloudSyncViewModel.loadBackups()
+            await cloudSyncViewModel.showAutomaticBackupFailureIfAny()
         }
     }
 }

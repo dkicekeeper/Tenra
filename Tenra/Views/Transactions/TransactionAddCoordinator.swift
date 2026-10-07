@@ -162,7 +162,7 @@ final class TransactionAddCoordinator {
 
         // Step 5: Link subcategories if any selected
         if !formData.subcategoryIds.isEmpty {
-            await linkSubcategories(to: createdTransaction)
+            linkSubcategories(toTransactionIds: [createdTransaction.id])
         }
 
         RatingPromptService.shared.recordTransactionAdded()
@@ -173,7 +173,7 @@ final class TransactionAddCoordinator {
 
     /// Creates a recurring series and links any selected subcategories to ALL generated transactions.
     /// Uses `await transactionStore.createSeries()` directly so that generated transactions
-    /// are already in the store when we call `linkSubcategories(to:)`.
+    /// are already in the store when we call `linkSubcategories(toTransactionIds:)`.
     private func createRecurringSeriesWithSubcategories() async throws {
         guard case .frequency(let freq) = formData.recurring else { return }
 
@@ -199,9 +199,9 @@ final class TransactionAddCoordinator {
         let generatedTransactions = transactionStore.transactions.filter {
             $0.recurringSeriesId == series.id
         }
-        for tx in generatedTransactions {
-            await linkSubcategories(to: tx)
-        }
+        // One batch for every occurrence: one link-table write and one usage-stats rebuild,
+        // not one per occurrence (seconds for a back-dated series).
+        linkSubcategories(toTransactionIds: generatedTransactions.map(\.id))
     }
 
     private func createTransaction(conversion: TransactionConversion) -> Transaction {
@@ -225,7 +225,8 @@ final class TransactionAddCoordinator {
         )
     }
 
-    private func linkSubcategories(to transaction: Transaction) async {
+    private func linkSubcategories(toTransactionIds transactionIds: [String]) {
+        guard !transactionIds.isEmpty else { return }
         // First, ensure subcategories are linked to the category — O(1) via index.
         if let categoryId = categoriesViewModel.transactionStore?
             .categoryIdByName[formData.category.lowercased()] {
@@ -237,11 +238,18 @@ final class TransactionAddCoordinator {
             }
         }
 
-        // Then link subcategories to the transaction
-        categoriesViewModel.linkSubcategoriesToTransaction(
-            transactionId: transaction.id,
-            subcategoryIds: Array(formData.subcategoryIds)
-        )
+        // Then link the subcategories to the transactions, in one write.
+        let subcategoryIds = Array(formData.subcategoryIds)
+        if transactionIds.count == 1 {
+            categoriesViewModel.linkSubcategoriesToTransaction(
+                transactionId: transactionIds[0],
+                subcategoryIds: subcategoryIds
+            )
+        } else {
+            var links: [String: [String]] = [:]
+            for id in transactionIds { links[id] = subcategoryIds }
+            categoriesViewModel.batchLinkSubcategoriesToTransaction(links)
+        }
     }
 
     // MARK: - Validation & Conversion

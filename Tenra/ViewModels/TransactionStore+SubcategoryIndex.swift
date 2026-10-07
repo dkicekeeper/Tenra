@@ -30,7 +30,7 @@ extension TransactionStore {
     /// explicit link write that happens after createSeries (see CLAUDE.md ⚠️ #5).
     internal func subcategoryIndexAdd(_ tx: Transaction) {
         guard let ids = subcategoryIdsByTransactionId[tx.id], !ids.isEmpty else { return }
-        let txDate = DateFormatters.dateFormatter.date(from: tx.date) ?? Date()
+        let txDate = usageDate(of: tx)
         for id in ids {
             subcategoryUsageCountById[id, default: 0] += 1
             let prev = subcategoryLastUsedById[id] ?? .distantPast
@@ -102,7 +102,11 @@ extension TransactionStore {
 
     /// Recompute `subcategoryUsageCountById` and `subcategoryLastUsedById` from
     /// the current `transactions` array and `subcategoryIdsByTransactionId` map.
-    /// One O(N_tx) pass — only called on cold-start, never on hot path.
+    /// One O(N_tx) pass of dictionary lookups. Runs on every link-table write
+    /// (`updateTransactionSubcategoryLinks`), so it must stay cheap: it used to parse each
+    /// linked transaction's date with a DateFormatter (~0.1 s at 5k links, per link). Loops
+    /// that link many transactions go through `batchLinkSubcategoriesToTransaction` (one
+    /// rebuild for the whole batch).
     internal func rebuildSubcategoryUsageStats() {
         var counts: [String: Int] = [:]
         var lastUsed: [String: Date] = [:]
@@ -111,7 +115,7 @@ extension TransactionStore {
 
         for tx in transactions {
             guard let ids = subcategoryIdsByTransactionId[tx.id], !ids.isEmpty else { continue }
-            let txDate = DateFormatters.dateFormatter.date(from: tx.date) ?? Date()
+            let txDate = usageDate(of: tx)
             for id in ids {
                 counts[id, default: 0] += 1
                 let prev = lastUsed[id] ?? .distantPast
@@ -121,6 +125,13 @@ extension TransactionStore {
 
         subcategoryUsageCountById = counts
         subcategoryLastUsedById = lastUsed
+    }
+
+    /// The date a transaction counts as "last used" on: its parsed date, or now when it
+    /// doesn't parse. Cached parse first; FastDateParser is pinned to
+    /// `DateFormatters.dateFormatter` (FastDateParserTests), so the values are unchanged.
+    private func usageDate(of tx: Transaction) -> Date {
+        parsedDateByDateString[tx.date] ?? FastDateParser.date(from: tx.date) ?? Date()
     }
 
     /// One-shot rebuild of all subcategory indexes. Cheap (O(N_links + N_tx))

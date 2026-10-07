@@ -470,11 +470,12 @@ final class TransactionEditCoordinator {
             let generated = transactionStore.transactions.filter {
                 $0.recurringSeriesId == series.id && $0.id != transaction.id
             }
-            for tx in generated {
-                categoriesViewModel.linkSubcategoriesToTransaction(
-                    transactionId: tx.id,
-                    subcategoryIds: Array(formData.selectedSubcategoryIds)
-                )
+            // One batch: one link-table write and one usage-stats rebuild for all of them.
+            let subcategoryIds = Array(formData.selectedSubcategoryIds)
+            var links: [String: [String]] = [:]
+            for tx in generated { links[tx.id] = subcategoryIds }
+            if !links.isEmpty {
+                categoriesViewModel.batchLinkSubcategoriesToTransaction(links)
             }
         }
         return series.id

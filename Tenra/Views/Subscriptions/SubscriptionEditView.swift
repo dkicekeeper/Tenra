@@ -538,16 +538,15 @@ struct SubscriptionEditView: View {
     }
 
     private func linkSubcategory(_ subcategory: Subcategory, toTransactions txs: [Transaction]) {
-        for tx in txs {
+        // One batch: one link-table write and one usage-stats rebuild, not one per transaction.
+        var links: [String: [String]] = [:]
+        for tx in txs where links[tx.id] == nil {
             let existing = categoriesViewModel.getSubcategoriesForTransaction(tx.id).map(\.id)
             if existing.contains(subcategory.id) { continue }
-            var updated = existing
-            updated.append(subcategory.id)
-            categoriesViewModel.linkSubcategoriesToTransaction(
-                transactionId: tx.id,
-                subcategoryIds: updated
-            )
+            links[tx.id] = existing + [subcategory.id]
         }
+        guard !links.isEmpty else { return }
+        categoriesViewModel.batchLinkSubcategoriesToTransaction(links)
     }
 }
 

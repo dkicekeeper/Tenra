@@ -129,6 +129,11 @@ also implemented in `LoanPaymentView`, `LoanEarlyRepaymentView`,
 top-up flow) and the statement import (`ImportCommitter`, one batch for all rows; the subcategory is
 suggested from history per merchant and category, see [import.md](import.md)).
 
+⚠️ **Link many transactions in ONE call: `batchLinkSubcategoriesToTransaction`.** Every link-table write
+(`updateTransactionSubcategoryLinks`) rebuilds `subcategoryIdsByTransactionId` and the usage stats over all
+transactions; calling `linkSubcategoriesToTransaction` per occurrence of a back-dated series paid that once per
+occurrence (seconds). The add / edit / subscription flows batch it.
+
 ⚠️ Resolve the category id by **name + type**, not through `categoryIdByName` — that index is
 keyed by lowercased name alone, so an income and an expense category sharing a name collide and
 the tag would attach to the wrong one.

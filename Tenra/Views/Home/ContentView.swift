@@ -321,7 +321,8 @@ struct ContentView: View {
             EmptyView()
 
         case .gradient:
-            // Category orbs fill the full screen behind all Liquid Glass cards.
+            // Pools of category colour fill the full screen behind all Liquid Glass cards
+            // (DesignKit's still AuroraBackground, so the glass never redraws for it).
             // Opacity is user-configurable in Settings (default 0.35) so that the
             // glass layer remains legible at conservative values but can be dialed up.
             //

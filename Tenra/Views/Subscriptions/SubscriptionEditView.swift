@@ -87,7 +87,7 @@ struct SubscriptionEditView: View {
                     if currency != transactionsViewModel.appSettings.baseCurrency,
                        let parsedAmount = Decimal(string: amountText.replacingOccurrences(of: ",", with: ".").replacingOccurrences(of: " ", with: "")),
                        parsedAmount > 0 {
-                        ConvertedAmountView(
+                        ConvertedAmount(
                             amount: NSDecimalNumber(decimal: parsedAmount).doubleValue,
                             fromCurrency: currency,
                             toCurrency: transactionsViewModel.appSettings.baseCurrency,
@@ -204,7 +204,7 @@ struct SubscriptionEditView: View {
             Text(String(localized: "subscription.edit.propagate.message", defaultValue: "Apply changes to existing transactions linked to this subscription?"))
         }
         .sheet(isPresented: $showingNotificationPermission, onDismiss: { dismiss() }) {
-            NotificationPermissionView(
+            NotificationPermissionPrompt(
                 onAllow: {
                     await NotificationPermissionManager.shared.requestAuthorization()
                 },

@@ -34,7 +34,7 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
     // MARK: - Body
 
     var body: some View {
-        Section(header: SettingsSectionHeaderView(title: String(localized: "settings.general"))) {
+        Section(header: SectionHeader(String(localized: "settings.general"), style: .list)) {
             // Base Currency Picker
             NavigationLink {
                 CurrencyPickerView(

@@ -229,7 +229,7 @@ struct InsightsSummaryDetailView: View {
 
     private var chartSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
-            SectionHeaderView(focus.chartHeader, style: .large)
+            SectionHeader(focus.chartHeader, style: .large)
                 .padding(.top, AppSpacing.lg)
 
             // Chart bleeds edge-to-edge so the scrollable plot area aligns

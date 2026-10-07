@@ -23,7 +23,7 @@ struct SubscriptionCalendarView: View {
 
     var body: some View {
         MonthCalendar(range: range, itemsByDay: subscriptionsByDay, itemName: { $0.description }) { sub in
-            IconView(source: sub.iconSource, size: AppIconSize.md)
+            Icon(source: sub.iconSource, size: AppIconSize.md)
         } accessory: { period in
             if let total = totals[period], total > 0 {
                 FormattedAmountText(

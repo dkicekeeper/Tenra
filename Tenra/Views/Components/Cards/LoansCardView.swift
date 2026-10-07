@@ -54,7 +54,7 @@ struct LoansCardView: View {
     // MARK: - Icons
 
     private var loanIcons: some View {
-        PackedCircleIconsView(
+        PackedCircleIcons(
             items: loans.map { loan in
                 PackedCircleItem(
                     id: loan.id,

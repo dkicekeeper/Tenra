@@ -13,7 +13,7 @@ struct CategoryGridView: View {
     let baseCurrency: String
     let gridColumns: Int?
     let onCategoryTap: (String, TransactionType) -> Void
-    /// Not `@Sendable` — forwarded to `EmptyCardView.action`, which runs on MainActor.
+    /// Not `@Sendable` — forwarded to `EmptyCard.action`, which runs on MainActor.
     let emptyStateAction: (() -> Void)?
     var sourceNamespace: Namespace.ID? = nil
 
@@ -22,7 +22,7 @@ struct CategoryGridView: View {
     var body: some View {
         Group {
             if categories.isEmpty {
-                EmptyCardView(
+                EmptyCard(
                     sectionTitle: String(localized: "categories.expenseCategories", defaultValue: "Expense Categories"),
                     emptyTitle: String(localized: "emptyState.noCategories", defaultValue: "No categories"),
                     action: emptyStateAction

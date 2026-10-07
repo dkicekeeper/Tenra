@@ -20,7 +20,7 @@ Present via `.sheet()`, **NEVER via `.navigationDestination()`** (nested `Naviga
 
 ⚠️ `TransactionCard` has built-in `.onTapGesture` + `.sheet` — inner gesture intercepts outer.
 
-Build a custom preview card with `Button` + same subcomponents (`IconView`, `FormattedAmountView`).
+Build a custom preview card with `Button` + same subcomponents (`Icon`, `FormattedAmountView`).
 
 ## Audio session must stay off the main actor
 
@@ -73,7 +73,7 @@ Asymmetric — fast attack (`0.6` weight), slow decay (`0.08`).
 
 Text-driven spikes via `onChange(of: transcribedText)` blended with `0.4/0.6`.
 
-## SiriGlowView Animation
+## SiriGlow Animation
 
 `MeshGradient` (iOS 18+) with `TimelineView(.animation)`.
 

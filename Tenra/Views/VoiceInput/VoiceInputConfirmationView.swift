@@ -95,7 +95,7 @@ struct VoiceInputConfirmationView: View {
             ScrollView {
                 VStack(spacing: AppSpacing.lg) {
                     // 1. Picker типа операции
-                    SegmentedPickerView(
+                    SegmentedPicker(
                         title: String(localized: "common.type"),
                         selection: $selectedType,
                         options: [

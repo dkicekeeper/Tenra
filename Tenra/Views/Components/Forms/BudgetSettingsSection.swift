@@ -145,7 +145,7 @@ struct BudgetSettingsSection: View {
         VStack(spacing: AppSpacing.lg) {
             // Category Name
             VStack(spacing: AppSpacing.md) {
-                IconView(
+                Icon(
                     source: .sfSymbol("fork.knife"),
                     style: .circle(
                         size: AppIconSize.Tile.xxxl,

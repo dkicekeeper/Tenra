@@ -37,7 +37,7 @@ struct CategoriesCardView: View {
     /// so all circles render at the same size. SF-symbol icons take the category's
     /// own color as their monochrome tint; brand-service logos render `.original`.
     private var categoryIcons: some View {
-        PackedCircleIconsView(
+        PackedCircleIcons(
             items: categories.map { category in
                 PackedCircleItem(
                     id: category.id,

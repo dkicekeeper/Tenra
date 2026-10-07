@@ -71,7 +71,7 @@ struct CategoryEditView: View {
                     if type == .expense {
                         VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             HStack {
-                                SectionHeaderView(
+                                SectionHeader(
                                     String(localized: "category.budget", defaultValue: "Budget"),
                                     style: .default
                                 )

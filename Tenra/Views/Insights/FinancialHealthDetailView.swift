@@ -30,7 +30,7 @@ struct FinancialHealthDetailView: View {
                 if isAvailable {
                     componentsSection
                 } else {
-                    EmptyStateView(
+                    EmptyState(
                         icon: "chart.bar.doc.horizontal",
                         title: String(localized: "insights.health.unavailable.title"),
                         description: String(localized: "insights.health.unavailable.message")

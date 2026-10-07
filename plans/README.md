@@ -82,7 +82,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 Landed on branch `claude/batch-2026-10-06`.
 
 - DONE Making a saved one-off recurring no longer leaves two transactions on its date (`15fb9ff1`). The add screen already saved one; the second row there is the series' next planned occurrence, one period later (by design; asked the owner).
-- DONE Filter lists use plated `IconView` icons and logos (`2a37c3a8`); loan payments are coloured `AppColors.warning` instead of primary (`ffcb676a`).
+- DONE Filter lists use plated `Icon` icons and logos (`2a37c3a8`); loan payments are coloured `AppColors.warning` instead of primary (`ffcb676a`).
 - DONE The Insights category drill-down pages through periods at the chosen granularity (`ceb5527c`).
 - DONE Currency: an edit keeps the "≈" equivalent and the rate the transaction was saved with, and a missing rate refuses the save instead of storing the raw foreign amount. One rule (`TransactionConversion`) now writes the conversion fields for add, edit, transfers, recurring occurrences, subscription edits, loan payments and voice; the Link payments total converts to base currency (`ce09afbe` to `c636a0a1`).
 - DONE A subscription price increase shows for 30 days from the first charge at the new price and is pushed once (`f8aaf240`).

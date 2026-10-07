@@ -111,7 +111,7 @@ struct PeriodPagerEmptyState: View {
     let title: String
 
     var body: some View {
-        EmptyStateView(
+        EmptyState(
             icon: "tray",
             title: title,
             description: String(localized: "insights.swipeHint")

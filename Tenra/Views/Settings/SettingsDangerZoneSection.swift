@@ -20,7 +20,7 @@ struct SettingsDangerZoneSection: View {
     // MARK: - Body
 
     var body: some View {
-        Section(header: SettingsSectionHeaderView(title: String(localized: "settings.dangerZone"))) {
+        Section(header: SectionHeader(String(localized: "settings.dangerZone"), style: .list)) {
             ActionSettingsRow(
                 icon: "trash",
                 title: String(localized: "settings.resetLearning"),

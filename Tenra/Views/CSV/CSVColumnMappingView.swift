@@ -171,7 +171,7 @@ struct CSVColumnMappingView: View {
                 } label: {
                     Image(systemName: "arrow.right")
                 }
-                .primaryButton()
+                .dsButton()
                 .disabled(!canProceed)
             }
         }

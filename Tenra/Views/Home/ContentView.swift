@@ -247,7 +247,7 @@ struct ContentView: View {
     private var accountsSection: some View {
         let nonLoanAccounts = accountsViewModel.accounts.filter { !$0.isLoan }
         if nonLoanAccounts.isEmpty {
-            EmptyCardView(
+            EmptyCard(
                 sectionTitle: String(localized: "accounts.title"),
                 emptyTitle: String(localized: "emptyState.noAccounts"),
                 action: { showingAddAccount = true }

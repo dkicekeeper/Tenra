@@ -102,7 +102,6 @@ Two scales, named like `AppSpacing` (DesignKit 1.13.0). **Glyphs** stand on thei
 
 | Token | Value | Use For |
 |-------|-------|---------|
-| `Tile.xs` | 40 | Subscription icons in rows, avatars |
 | `Tile.sm` | 44 | Category circles (QuickAdd), content-row icons |
 | `Tile.md` | 48 | Hero icons (empty states) |
 | `Tile.lg` | 52 | Category row icons |
@@ -125,7 +124,7 @@ All use Inter variable font with Dynamic Type scaling:
 | `h1` | 34 | bold | Screen titles |
 | `h2` | 28 | semibold | Detail view balances |
 | `h3` | 24 | semibold | Section titles (Insights) |
-| `h4` | 20 | semibold | Card headers, `EmptyStateView` titles |
+| `h4` | 20 | semibold | Card headers, `EmptyState` titles |
 | `bodyEmphasis` | 18 | semibold | Row names, button labels, section subheaders |
 | `body` | 18 | regular | Default text |
 | `bodySmall` | 16 | regular | Secondary text, subtitles |
@@ -178,17 +177,19 @@ For dynamic-size amount inputs use `Font.custom(AppTypography.fontFamily, …)` 
 | `.contentReveal(isReady:delay:)` | Opacity fade-in when ready | Staggered section reveals during initialization |
 | `.borderBeam(isActive:colors:cornerRadius:lineWidth:duration:)` | Animated glowing beam traveling around the border via rotating `AngularGradient`. Two-layer (sharp + blurred glow). `TimelineView`-driven; ticks only while `isActive == true`. Reduce-Motion aware | Highlighting cards during transient active states (voice recognition preview, focus, processing). Match `cornerRadius` to the underlying card |
 
-### Button Styles (`AppButton`)
+### Buttons (`DSButton`, `.dsButton`, DesignKit 2.0)
 
-| Style | Visual | Usage |
+| Call | Visual | Usage |
 |-------|--------|-------|
-| `.primaryButton(disabled:)` | `.glassProminent` + `.tint(AppColors.accent)` + `.controlSize(.large)` | Primary CTA. Sizing follows label — wrap with `.frame(maxWidth: .infinity)` for full-width |
-| `.secondaryButton()` | `.glass` + `.controlSize(.large)` | Cancel, Back, secondary actions |
+| `DSButton(title, systemImage:, iconPlacement:, appearance:, role:, size:, shape:, fullWidth:, isLoading:, isDisabled:) { }` | appearance `.primary` (`.glassProminent`) / `.secondary` (`.glass`) / `.flat`; role `.normal` / `.destructive` / `.neutral`; icon `.leading` / `.trailing` / `.top` (a tile) / `.only` | Every button: a CTA (`fullWidth: true`), a retry with `isLoading`, the detail screen's action tiles (`iconPlacement: .top`), the bulk delete bar (`role: .destructive, shape: .capsule`) |
+| `.dsButton(_:role:size:disabled:)` | the same styles on a `Button` with its own label | A label DSButton cannot draw |
 | `.buttonStyle(.bounce)` | Scale 0.96 on press | Interactive card taps (non-glass) |
 
-⚠️ **For destructive buttons, do NOT use `.primaryButton()`** — it forces `.tint(AppColors.accent)` which silently overrides `role: .destructive` (button looks accent-colored instead of red). Use native directly: `.buttonStyle(.glassProminent).tint(AppColors.destructive).controlSize(.large)` with `Button(role: .destructive, ...)`. See [BulkDeleteButton.swift](../Tenra/Views/Components/Input/BulkDeleteButton.swift) and [EntityActionButton.swift](../Tenra/Views/Components/EntityDetail/EntityActionButton.swift).
+The role is applied by the style: `DSButton(role: .destructive)` is red in every appearance.
+`.primaryButton()` / `.secondaryButton()`, `LoadingButtonLabel`, `BulkDeleteButton` and
+`EntityActionButton` are deprecated since DesignKit 2.0 (DesignKit docs/migration-2.0.md).
 
-**Group adjacent glass elements in `GlassEffectContainer`** (glass can't sample other glass → inconsistent rendering otherwise). Use it for rows of `.glass`/`.glassProminent` buttons or clusters of `.glassEffect()` views; set its `spacing:` to match the stack spacing. Used ungated in app code (app target = iOS 26). Precedents: `EntityDetailScaffold` action bar, `DateButtonsView`, `ChartZoomControls`. Leaf components that still support pre-iOS-26 (`CategoryChip`, `SegmentedPickerView`) gate glass with `#available(iOS 26)` + `.ultraThinMaterial` fallback.
+**Group adjacent glass elements in `GlassEffectContainer`** (glass can't sample other glass → inconsistent rendering otherwise). Use it for rows of `.glass`/`.glassProminent` buttons or clusters of `.glassEffect()` views; set its `spacing:` to match the stack spacing. Used ungated in app code (app target = iOS 26). Precedents: `EntityDetailScaffold` action bar, `DateButtons`, `ChartZoomControls`. Leaf components that still support pre-iOS-26 (`CategoryChip`, `SegmentedPicker`) gate glass with `#available(iOS 26)` + `.ultraThinMaterial` fallback.
 
 ---
 
@@ -337,10 +338,10 @@ Every row in `Views/Components/Rows/` follows these token rules. New rows MUST c
 | **Title — detail / breakdown rows** | `AppTypography.body` (18) or `bodyEmphasis` (18 semibold) | Insights detail rows. Use the `bodyEmphasis` **token** — never `body` + `.fontWeight(.semibold)` |
 | **Subtitle / secondary line** | `AppTypography.bodySmall` (16) / `AppColors.textSecondary` | One token for all secondary subtitles |
 | **Trailing amount** | `FormattedAmountText` (default body/semibold) | Never hand-format money |
-| **Horizontal inset** | per-row `.screenPadding()` | Rows declare `hPad 0` (UniversalRow `.info`) and own their inset at the call site, so the full width — incl. padding — is tappable inside `NavigationLink`. Lists do NOT wrap the whole `VStack` (would double-pad self-padding `SectionHeaderView(.large)`) |
+| **Horizontal inset** | per-row `.screenPadding()` | Rows declare `hPad 0` (UniversalRow `.info`) and own their inset at the call site, so the full width — incl. padding — is tappable inside `NavigationLink`. Lists do NOT wrap the whole `VStack` (would double-pad self-padding `SectionHeader(.large)`) |
 | **Navigation chevron (outside `List`)** | `DisclosureChevron` | `chevron.forward` (RTL-aware) + tertiary. Never hand-roll `chevron.right` |
 
-**Shared row sub-components:** `AmountPercentageView` (amount + %), `SpentBudgetText` (spent / budget), `DisclosureChevron`, `PeriodBreakdownRow`, `BudgetProgressRow`. Reuse before building a new row.
+**Shared row sub-components:** `AmountPercentage` (amount + %), `SpentBudgetText` (spent / budget), `DisclosureChevron`, `PeriodBreakdownRow`, `BudgetProgressRow`. Reuse before building a new row.
 
 #### `InfoRow`
 Read-only label + value. Wrapper for `UniversalRow(config: .info)`.
@@ -414,7 +415,7 @@ UniversalRow(leadingIcon: .sfSymbol("note.text"), title: "Note") {
 - Wrap the inline field in an `HStack` with a suffix `Text("%")` / `Text("KZT")` — bake the unit into the row's title ("Rate (year)", "Term (month)", "Amount, KZT"). Keeps the row stable when typing.
 - Roll a second TextField wrapper. There's exactly one component — `FormTextField`.
 
-Use in: subscription/deposit/loan form sections. NOT for transaction dates (use `DateButtonsView`).
+Use in: subscription/deposit/loan form sections. NOT for transaction dates (use `DateButtons`).
 
 #### `BudgetSettingsSection`
 Pre-built budget config card: amount + period + reset day.
@@ -444,7 +445,7 @@ FinanceCard(
 ) {
     RedactableAmount(amount: total, currency: base, isLoading: loading) // or FormattedAmountText / count Text
 } trailing: {
-    PackedCircleIconsView(items: ...)
+    PackedCircleIcons(items: ...)
 }
 ```
 
@@ -454,29 +455,29 @@ FinanceCard(
 #### `RecommendationBox`
 Tinted "lightbulb + advice" callout (icon + text on `color.opacity(0.10)`, `AppRadius.md`). Shared by `InsightFormulaCard` and `HealthComponentCard`. Use for any card-bottom recommendation line.
 
-#### `EmptyCardView`
+#### `EmptyCard`
 Distinct from `FinanceCard`'s inline empty state: a standalone, optionally-tappable empty card (section title + compact empty message) for empty home sections that act as an "add first item" CTA.
 
 ---
 
 ### Icon Components
 
-#### `IconView`
+#### `Icon`
 **The single rendering engine for all entity icons.**
 
 ```swift
 // Auto-style (convenience)
-IconView(source: .sfSymbol("star.fill"), size: AppIconSize.xl)
+Icon(source: .sfSymbol("star.fill"), size: AppIconSize.xl)
 
 // Explicit style
-IconView(source: .bankLogo(.kaspi), style: .bankLogo(size: AppIconSize.xl))
+Icon(source: .bankLogo(.kaspi), style: .bankLogo(size: AppIconSize.xl))
 ```
 
-**When to use `IconView`:** Entity/category icons with styled backgrounds — accounts, categories, subscriptions, brand logos.
+**When to use `Icon`:** Entity/category icons with styled backgrounds — accounts, categories, subscriptions, brand logos.
 
 **When to use `Image(systemName:)` directly:** Semantic UI indicators — chevron, checkmark, xmark, toolbar actions, inline arrows.
 
-**Accessibility:** `IconView.body` has `accessibilityHidden(true)` — it is always decorative within its parent row/card. The parent element owns the accessibility label. Do not override this unless `IconView` is the sole content of an interactive element with no other text.
+**Accessibility:** `Icon.body` has `accessibilityHidden(true)` — it is always decorative within its parent row/card. The parent element owns the accessibility label. Do not override this unless `Icon` is the sole content of an interactive element with no other text.
 
 **Icon picker catalog:** `IconPickerView` is an adapter over DesignKit's `IconPicker` (1.10.0). Its Icons tab shows
 DesignKit's `IconCatalog` (~550 SF Symbols in 18 groups, a search across the 11 app languages; generated by DesignKit's
@@ -577,7 +578,7 @@ AnimatedTitleInput(text: $name, placeholder: "Account Name", font: AppTypography
 
 Use in: `EditableHeroSection` title fields only.
 
-#### `DateButtonsView`
+#### `DateButtons`
 Yesterday / Today / Calendar picker for transaction forms.
 
 ```swift
@@ -652,11 +653,11 @@ StatusIndicatorBadge(status: .active, font: AppTypography.h4)
 
 Cases: `.active` (green checkmark), `.paused` (orange pause), `.archived` (gray archive), `.pending` (blue clock).
 
-#### `EmptyStateView`
+#### `EmptyState`
 Empty/error state display.
 
 ```swift
-EmptyStateView(
+EmptyState(
     icon: "tray",
     title: "No Transactions",
     description: "Add your first transaction to get started",
@@ -692,14 +693,14 @@ FormattedAmountText(
 
 Use for: ALL display-only amounts — detail view balances, row subtitles, card totals, section headers.
 
-#### `SectionHeaderView`
+#### `SectionHeader`
 Section header text with four styles.
 
 ```swift
-SectionHeaderView("Transactions", style: .default)       // bodyEmphasis
-SectionHeaderView("March 10", style: .emphasized)         // bodySmall semibold
-SectionHeaderView("SETTINGS", style: .compact)            // caption uppercase
-SectionHeaderView("Spending", systemImage: "chart.bar", style: .insights) // h3 + icon
+SectionHeader("Transactions", style: .default)       // bodyEmphasis
+SectionHeader("March 10", style: .emphasized)         // bodySmall semibold
+SectionHeader("SETTINGS", style: .compact)            // caption uppercase
+SectionHeader("Spending", systemImage: "chart.bar", style: .insights) // h3 + icon
 ```
 
 #### `DateSectionHeaderView`
@@ -745,7 +746,7 @@ Animates view entrance with scale + opacity pop-in. Used for facepile icon stack
 
 ```swift
 ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-    IconView(source: item.iconSource, style: iconStyle)
+    Icon(source: item.iconSource, style: iconStyle)
         .staggeredEntrance(delay: Double(index) * AppAnimation.facepileStagger)
 }
 ```
@@ -836,14 +837,14 @@ Used by: `SubscriptionDetailView`, `DepositDetailView`, `LoanDetailView`
 ScrollView
 └── VStack(spacing: AppSpacing.lg)
     ├── Card 1: Header (.cardStyle())
-    │   └── IconView(.glassHero) + Title + Balance
+    │   └── Icon(.glassHero) + Title + Balance
     ├── Card 2: Info (.cardStyle())
     │   └── InfoRow list
     ├── Card 3: Stats (.cardStyle())
     │   └── InfoRow / custom rows
     ├── Actions Section
-    │   ├── Button { }.primaryButton()
-    │   └── Button { }.secondaryButton()
+    │   ├── DSButton("…", fullWidth: true) { }
+    │   └── DSButton("…", appearance: .secondary, fullWidth: true) { }
     └── .toolbar { Menu("...") { edit, delete, ... } }
 ```
 
@@ -938,12 +939,12 @@ Text input?
 └── Single-line form field → FormTextField(style: .standard)
 
 Date input?
-├── Transaction (needs Yesterday/Today shortcuts) → DateButtonsView / .dateButtonsSafeArea()
+├── Transaction (needs Yesterday/Today shortcuts) → DateButtons / .dateButtonsSafeArea()
 └── Other (subscription start, deposit posting) → DatePickerRow
 
 Single-select picker?
 ├── Few options (2-5) in form → MenuPickerRow
-├── 2-4 exclusive modes → SegmentedPickerView
+├── 2-4 exclusive modes → SegmentedPicker
 └── Many options → NavigationLink to selection list
 
 Currency?
@@ -997,7 +998,7 @@ Card-style container?
 
 ```
 Entity icon with styled background?
-└── IconView(source:style:)
+└── Icon(source:style:)
     ├── Account → .bankLogo(size:) or .bankLogoLarge(size:)
     ├── Category → .categoryIcon(size:) or .categoryCoin(size:)
     ├── Subscription → .serviceLogo(size:) or .glassHero(size:)
@@ -1021,7 +1022,7 @@ Entity lifecycle status?
 └── StatusIndicatorBadge (.active/.paused/.archived/.pending)
 
 No data to show?
-└── EmptyStateView
+└── EmptyState
     ├── Full screen → .standard
     ├── Inside card → .compact
     └── Error/failure → .error
@@ -1250,7 +1251,7 @@ Cards with empty/loaded states must animate the transition:
 
 ```swift
 if items.isEmpty {
-    EmptyStateView(...).transition(.opacity)
+    EmptyState(...).transition(.opacity)
 } else {
     loadedContent.transition(.opacity)
 }
@@ -1276,7 +1277,7 @@ cost every frame it is on screen. Those views go through
 Reduce Motion **and**, on iOS 27, while `systemPrefersReducedResourceUsage` is true (the system
 asking apps to back off under thermal or power pressure).
 
-The gate hands its content a `Bool`; render a **static frame** when it is false (`SiriGlowView`
+The gate hands its content a `Bool`; render a **static frame** when it is false (`SiriGlow`
 freezes the mesh at `t = 0`) rather than removing the view, so nothing shifts in layout. Put new
 `TimelineView` decoration behind this gate instead of reading `accessibilityReduceMotion`
 directly — the iOS 27 signal then comes for free.

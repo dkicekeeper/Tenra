@@ -23,7 +23,7 @@ struct BackupRowView: View {
                     // Made by the weekly automatic backup: these have their own limit
                     // and never replace the ones the user made.
                     if metadata.isAutomatic == true {
-                        BadgeView(String(localized: "settings.cloud.autoBackup.badge"))
+                        Badge(String(localized: "settings.cloud.autoBackup.badge"))
                     }
                 }
 

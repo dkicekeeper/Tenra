@@ -78,7 +78,7 @@ struct SubcategorySearchView: View {
             Group {
                 if !searchText.isEmpty && searchResults.isEmpty {
                     // Empty state когда поиск не нашел результатов
-                    EmptyStateView(
+                    EmptyState(
                         icon: "magnifyingglass",
                         title: String(localized: "emptyState.searchNoResults"),
                         description: String(localized: "emptyState.tryDifferentSearch")
@@ -162,7 +162,7 @@ struct SubcategorySearchView: View {
                         } label: {
                             Image(systemName: "checkmark")
                         }
-                        .primaryButton()
+                        .dsButton()
                     }
                 }
             }

@@ -1,8 +1,8 @@
 //
-//  IconView+Previews.swift
+//  Icon+Previews.swift
 //  Tenra
 //
-//  Xcode previews for IconView — extracted for maintainability.
+//  Xcode previews for Icon — extracted for maintainability.
 //  Phase C: File split.
 //
 
@@ -26,7 +26,7 @@ import SwiftUI
                 title: "Bank Logos",
                 examples: [
                     (.brandService("kaspi.kz"), IconStyle.roundedLogo()),
-                    (.brandService("halykbank.kz"), IconStyle.roundedLogo(size: AppIconSize.Tile.xs)),
+                    (.brandService("halykbank.kz"), IconStyle.roundedLogo(size: AppIconSize.xxl)),
                     (.brandService("tbank.kz"), IconStyle.roundedLogoLarge())
                 ]
             )
@@ -35,7 +35,7 @@ import SwiftUI
                 title: "Service Logos",
                 examples: [
                     (.brandService("netflix"), IconStyle.serviceLogo()),
-                    (.brandService("spotify"), IconStyle.serviceLogo(size: AppIconSize.Tile.xs)),
+                    (.brandService("spotify"), IconStyle.serviceLogo(size: AppIconSize.xxl)),
                     (.brandService("notion"), IconStyle.serviceLogoLarge())
                 ]
             )
@@ -99,28 +99,28 @@ import SwiftUI
     VStack(spacing: AppSpacing.xl) {
         HStack(spacing: AppSpacing.lg) {
             VStack(spacing: AppSpacing.xs) {
-                IconView(source: .sfSymbol("star.fill"), size: AppIconSize.sm)
+                Icon(source: .sfSymbol("star.fill"), size: AppIconSize.sm)
                 Text("Small")
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.textSecondary)
             }
 
             VStack(spacing: AppSpacing.xs) {
-                IconView(source: .sfSymbol("star.fill"), size: AppIconSize.md)
+                Icon(source: .sfSymbol("star.fill"), size: AppIconSize.md)
                 Text("Medium")
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.textSecondary)
             }
 
             VStack(spacing: AppSpacing.xs) {
-                IconView(source: .sfSymbol("star.fill"), size: AppIconSize.lg)
+                Icon(source: .sfSymbol("star.fill"), size: AppIconSize.lg)
                 Text("Large")
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.textSecondary)
             }
 
             VStack(spacing: AppSpacing.xs) {
-                IconView(source: .sfSymbol("star.fill"), size: AppIconSize.xl)
+                Icon(source: .sfSymbol("star.fill"), size: AppIconSize.xl)
                 Text("XL")
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.textSecondary)
@@ -140,7 +140,7 @@ import SwiftUI
 
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .sfSymbol("star.fill"), size: 60)
+                        Icon(source: .sfSymbol("star.fill"), size: 60)
                             .background(AppColors.bgCard)
                         Text("star.fill")
                             .font(AppTypography.caption)
@@ -148,7 +148,7 @@ import SwiftUI
                     }
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .sfSymbol("heart.fill"), size: 60)
+                        Icon(source: .sfSymbol("heart.fill"), size: 60)
                             .background(AppColors.bgCard)
                         Text("heart.fill")
                             .font(AppTypography.caption)
@@ -156,7 +156,7 @@ import SwiftUI
                     }
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .sfSymbol("cart.fill"), size: 60)
+                        Icon(source: .sfSymbol("cart.fill"), size: 60)
                             .background(AppColors.bgCard)
                         Text("cart.fill")
                             .font(AppTypography.caption)
@@ -172,7 +172,7 @@ import SwiftUI
 
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .brandService("kaspi.kz"), size: 60)
+                        Icon(source: .brandService("kaspi.kz"), size: 60)
                             .background(AppColors.bgCard)
                         Text("Kaspi")
                             .font(AppTypography.caption)
@@ -180,7 +180,7 @@ import SwiftUI
                     }
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .brandService("halykbank.kz"), size: 60)
+                        Icon(source: .brandService("halykbank.kz"), size: 60)
                             .background(AppColors.bgCard)
                         Text("Halyk")
                             .font(AppTypography.caption)
@@ -188,7 +188,7 @@ import SwiftUI
                     }
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .brandService("tbank.kz"), size: 60)
+                        Icon(source: .brandService("tbank.kz"), size: 60)
                             .background(AppColors.bgCard)
                         Text("T-Bank")
                             .font(AppTypography.caption)
@@ -204,7 +204,7 @@ import SwiftUI
 
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .brandService("netflix"), size: 60)
+                        Icon(source: .brandService("netflix"), size: 60)
                             .background(AppColors.bgCard)
                         Text("Netflix")
                             .font(AppTypography.caption)
@@ -212,7 +212,7 @@ import SwiftUI
                     }
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .brandService("spotify"), size: 60)
+                        Icon(source: .brandService("spotify"), size: 60)
                             .background(AppColors.bgCard)
                         Text("Spotify")
                             .font(AppTypography.caption)
@@ -220,7 +220,7 @@ import SwiftUI
                     }
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: .brandService("notion"), size: 60)
+                        Icon(source: .brandService("notion"), size: 60)
                             .background(AppColors.bgCard)
                         Text("Notion")
                             .font(AppTypography.caption)
@@ -236,7 +236,7 @@ import SwiftUI
 
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: nil, size: 60)
+                        Icon(source: nil, size: 60)
                             .background(AppColors.bgCard)
                         Text("nil source")
                             .font(AppTypography.caption)
@@ -252,7 +252,7 @@ import SwiftUI
 
                 HStack(spacing: AppSpacing.lg) {
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(
+                        Icon(
                             source: .sfSymbol("star.fill"),
                             style: .circle(size: 60, tint: .accentMonochrome, padding: 5)
                         )
@@ -263,7 +263,7 @@ import SwiftUI
                     }
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(
+                        Icon(
                             source: .brandService("kaspi.kz"),
                             style: .roundedSquare(size: 60, padding: 10)
                         )
@@ -286,9 +286,9 @@ import SwiftUI
                     .font(AppTypography.h4)
 
                 HStack(spacing: AppSpacing.lg) {
-                    IconView(source: .sfSymbol("tv.fill"), style: .glassHero())
-                    IconView(source: .sfSymbol("music.note"), style: .glassHero())
-                    IconView(source: .sfSymbol("cloud.fill"), style: .glassHero())
+                    Icon(source: .sfSymbol("tv.fill"), style: .glassHero())
+                    Icon(source: .sfSymbol("music.note"), style: .glassHero())
+                    Icon(source: .sfSymbol("cloud.fill"), style: .glassHero())
                 }
             }
 
@@ -297,9 +297,9 @@ import SwiftUI
                     .font(AppTypography.h4)
 
                 HStack(spacing: AppSpacing.lg) {
-                    IconView(source: .brandService("netflix"), style: .glassService())
-                    IconView(source: .brandService("spotify"), style: .glassService())
-                    IconView(source: .brandService("notion"), style: .glassService())
+                    Icon(source: .brandService("netflix"), style: .glassService())
+                    Icon(source: .brandService("spotify"), style: .glassService())
+                    Icon(source: .brandService("notion"), style: .glassService())
                 }
             }
 
@@ -308,11 +308,11 @@ import SwiftUI
                     .font(AppTypography.h4)
 
                 HStack(spacing: AppSpacing.lg) {
-                    IconView(
+                    Icon(
                         source: .sfSymbol("star.fill"),
                         style: .circle(size: AppIconSize.xl, tint: .accentMonochrome, hasGlassEffect: true)
                     )
-                    IconView(
+                    Icon(
                         source: .sfSymbol("heart.fill"),
                         style: .roundedSquare(size: AppIconSize.xl, tint: .destructiveMonochrome, hasGlassEffect: true)
                     )
@@ -339,7 +339,7 @@ private struct PresetSection: View {
                     let (source, style) = examples[index]
 
                     VStack(spacing: AppSpacing.xs) {
-                        IconView(source: source, style: style)
+                        Icon(source: source, style: style)
 
                         if let presetName = style.localizedPresetName {
                             Text(presetName)
@@ -362,9 +362,9 @@ private struct PlaceholderSection: View {
                 .foregroundStyle(AppColors.textPrimary)
 
             HStack(spacing: AppSpacing.lg) {
-                IconView(source: nil, style: .placeholder(size: AppIconSize.xl))
-                IconView(source: nil, style: .placeholder(size: AppIconSize.Tile.xs))
-                IconView(source: nil, style: .placeholder(size: AppIconSize.Tile.xl))
+                Icon(source: nil, style: .placeholder(size: AppIconSize.xl))
+                Icon(source: nil, style: .placeholder(size: AppIconSize.xxl))
+                Icon(source: nil, style: .placeholder(size: AppIconSize.Tile.xl))
             }
         }
     }
@@ -376,7 +376,7 @@ private struct ShapeRow: View {
 
     var body: some View {
         HStack(spacing: AppSpacing.lg) {
-            IconView(source: .sfSymbol("star.fill"), style: style)
+            Icon(source: .sfSymbol("star.fill"), style: style)
             Text(title)
                 .font(AppTypography.body)
                 .foregroundStyle(AppColors.textPrimary)
@@ -391,7 +391,7 @@ private struct TintRow: View {
 
     var body: some View {
         HStack(spacing: AppSpacing.lg) {
-            IconView(source: .sfSymbol("paintpalette.fill"), style: style)
+            Icon(source: .sfSymbol("paintpalette.fill"), style: style)
             Text(title)
                 .font(AppTypography.body)
                 .foregroundStyle(AppColors.textPrimary)

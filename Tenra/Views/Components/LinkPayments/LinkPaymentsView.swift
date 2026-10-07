@@ -359,7 +359,7 @@ struct LinkPaymentsView: View {
             if isBaselineLoading && cachedFilteredCandidates.isEmpty {
                 // A day of transaction rows in their shape while the candidates load.
                 VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                    SectionHeaderViewSkeleton()
+                    SectionHeaderSkeleton()
                         .padding(.top, AppSpacing.sm)
                     ForEach(0..<5, id: \.self) { _ in
                         UniversalRowSkeleton(config: .info, showsSubtitle: true, trailing: .value)
@@ -392,7 +392,7 @@ struct LinkPaymentsView: View {
                              : String(localized: "subscription.linkPayments.selectAll", defaultValue: "Select All"))
                             .frame(maxWidth: .infinity)
                     }
-                    .secondaryButton()
+                    .dsButton(.secondary)
                     .disabled(cachedFilteredCandidates.isEmpty)
 
                     Button {
@@ -406,7 +406,7 @@ struct LinkPaymentsView: View {
                                 .frame(maxWidth: .infinity)
                         }
                     }
-                    .primaryButton(disabled: selectedIds.isEmpty || isLinking)
+                    .dsButton(disabled: selectedIds.isEmpty || isLinking)
                 }
                 .padding(AppSpacing.lg)
             }
@@ -659,7 +659,7 @@ struct TransactionSubcategoryFilterSheet: View {
                         }
                     }
                 } header: {
-                    SectionHeaderView(String(localized: "subscription.linkPayments.subcategories", defaultValue: "Subcategories"))
+                    SectionHeader(String(localized: "subscription.linkPayments.subcategories", defaultValue: "Subcategories"))
                 }
             }
             .navigationTitle(String(localized: "subscription.linkPayments.subcategories", defaultValue: "Subcategories"))

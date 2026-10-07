@@ -39,7 +39,7 @@ struct AppLockOverlayView: View {
                         Text(String(localized: "appLock.unlock"))
                             .frame(maxWidth: .infinity)
                     }
-                    .primaryButton()
+                    .dsButton()
                     .padding(.top, AppSpacing.md)
                 }
             }

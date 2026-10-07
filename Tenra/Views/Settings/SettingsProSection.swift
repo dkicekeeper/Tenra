@@ -30,7 +30,7 @@ struct SettingsProSection: View {
     }
 
     var body: some View {
-        Section(header: SettingsSectionHeaderView(title: "Tenra Pro")) {
+        Section(header: SectionHeader("Tenra Pro", style: .list)) {
             if premium.isSubscriber {
                 subscriberStatusRow
                 if premium.proStatus?.plan != .lifetime {

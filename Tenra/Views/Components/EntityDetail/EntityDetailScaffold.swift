@@ -167,18 +167,20 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
         GlassEffectContainer(spacing: AppSpacing.md) {
             HStack(spacing: AppSpacing.md) {
                 if let primaryAction {
-                    EntityActionButton(
-                        title: primaryAction.title,
+                    DSButton(
+                        primaryAction.title,
                         systemImage: primaryAction.systemImage,
-                        role: primaryAction.role,
+                        iconPlacement: .top,
+                        role: primaryAction.role == .destructive ? .destructive : .normal,
                         action: primaryAction.action
                     )
                 }
                 if let secondaryAction {
-                    EntityActionButton(
-                        title: secondaryAction.title,
+                    DSButton(
+                        secondaryAction.title,
                         systemImage: secondaryAction.systemImage,
-                        role: secondaryAction.role,
+                        iconPlacement: .top,
+                        role: secondaryAction.role == .destructive ? .destructive : .normal,
                         action: secondaryAction.action
                     )
                 }

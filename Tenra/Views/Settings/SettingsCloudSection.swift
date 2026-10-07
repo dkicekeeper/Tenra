@@ -14,7 +14,7 @@ struct SettingsCloudSection: View {
     let backupsDestination: CloudBackupsView
 
     var body: some View {
-        Section(header: SettingsSectionHeaderView(title: String(localized: "settings.cloud"))) {
+        Section(header: SectionHeader(String(localized: "settings.cloud"), style: .list)) {
             UniversalRow(
                 config: .settings,
                 leadingIcon: .sfSymbol("externaldrive", color: AppColors.accent, size: AppIconSize.md)

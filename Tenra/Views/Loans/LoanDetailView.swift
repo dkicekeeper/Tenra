@@ -174,7 +174,7 @@ struct LoanDetailView: View {
             if let account = liveAccount {
                 scaffold(for: account)
             } else {
-                EmptyStateView(
+                EmptyState(
                     icon: "creditcard",
                     title: String(localized: "loan.notFound", defaultValue: "Loan not found"),
                     description: String(localized: "emptyState.tryDifferentSearch")

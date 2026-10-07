@@ -22,7 +22,7 @@ struct TransactionIconView: View {
         ZStack(alignment: .topLeading) {
             // Main icon: subscription logo or category icon
             if let iconSource = subscriptionIconSource {
-                IconView(
+                Icon(
                     source: iconSource,
                     style: .circle(
                         size: AppIconSize.Tile.sm,
@@ -31,7 +31,7 @@ struct TransactionIconView: View {
                     )
                 )
             } else {
-                IconView(
+                Icon(
                     source: .sfSymbol(styleData.iconName),
                     style: .circle(
                         size: AppIconSize.Tile.sm,
@@ -119,13 +119,13 @@ struct TransferAccountInfo: View {
         // Stacked headline: top row = source (from), bottom row = direction arrow + target (to).
         // Sized to match the transaction amount (18pt semibold) so the transfer reads as the
         // row's primary content now that the "Перевод" title is gone. Existing accounts show
-        // their logo (IconView) in primary color; deleted accounts drop the logo and render
+        // their logo (Icon) in primary color; deleted accounts drop the logo and render
         // italic + secondary (the name is a stored snapshot, no live account to link to).
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
             if let sourceName {
                 HStack(spacing: AppSpacing.xs) {
                     if let sourceAccount {
-                        IconView(source: sourceAccount.iconSource, size: AppIconSize.sm)
+                        Icon(source: sourceAccount.iconSource, size: AppIconSize.sm)
                     }
                     accountText(sourceName, isDeleted: sourceAccount == nil)
                 }
@@ -138,7 +138,7 @@ struct TransferAccountInfo: View {
 
                 if let targetName {
                     if let targetAccount {
-                        IconView(source: targetAccount.iconSource, size: AppIconSize.sm)
+                        Icon(source: targetAccount.iconSource, size: AppIconSize.sm)
                     }
                     accountText(targetName, isDeleted: targetAccount == nil)
                 }
@@ -167,7 +167,7 @@ struct RegularAccountInfo: View {
     var body: some View {
         if let account {
             HStack(spacing: AppSpacing.xs) {
-                IconView(source: account.iconSource, size: AppIconSize.sm)
+                Icon(source: account.iconSource, size: AppIconSize.sm)
                 Text(account.name)
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.textSecondary)
@@ -205,7 +205,7 @@ struct TransferAmountView: View {
 
                 if let depositId = depositAccountId {
                     let isIncoming = transaction.targetAccountId == depositId
-                    FormattedAmountView(
+                    FormattedAmountText(
                         amount: isIncoming ? targetAmount : sourceAmount,
                         currency: isIncoming ? targetCurrency : sourceCurrency,
                         prefix: isIncoming ? "+" : "-",
@@ -213,15 +213,15 @@ struct TransferAmountView: View {
                     )
                 } else {
                     VStack(alignment: .trailing, spacing: AppSpacing.xs) {
-                        FormattedAmountView(amount: sourceAmount, currency: sourceCurrency, prefix: "-", color: .primary)
-                        FormattedAmountView(amount: targetAmount, currency: targetCurrency, prefix: "+", color: AppColors.income)
+                        FormattedAmountText(amount: sourceAmount, currency: sourceCurrency, prefix: "-", color: .primary)
+                        FormattedAmountText(amount: targetAmount, currency: targetCurrency, prefix: "+", color: AppColors.income)
                     }
                 }
             } else {
-                FormattedAmountView(amount: sourceAmount, currency: sourceCurrency, prefix: "-", color: .primary)
+                FormattedAmountText(amount: sourceAmount, currency: sourceCurrency, prefix: "-", color: .primary)
             }
         } else {
-            FormattedAmountView(
+            FormattedAmountText(
                 amount: transaction.amount,
                 currency: transaction.currency,
                 prefix: "",

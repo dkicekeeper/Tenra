@@ -178,7 +178,7 @@ struct LoanPaymentView: View {
     @ViewBuilder
     private var fromSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeaderView(String(localized: "transactionForm.fromHeader"))
+            SectionHeader(String(localized: "transactionForm.fromHeader"))
                 .screenPadding()
 
             AccountSelectorView(
@@ -217,7 +217,7 @@ struct LoanPaymentView: View {
         // discoverability test.
         if let categoriesVM = categoriesViewModel, !availableCategories.isEmpty {
             VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                SectionHeaderView(String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"))
+                SectionHeader(String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"))
                     .screenPadding()
 
                 if selectedCategoryId != nil {
@@ -302,7 +302,7 @@ struct LoanPaymentView: View {
             } label: {
                 Image(systemName: "checkmark")
             }
-            .primaryButton()
+            .dsButton()
             .disabled(!isFormValid)
             .accessibilityLabel(String(localized: "button.save"))
         }

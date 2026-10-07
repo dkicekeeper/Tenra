@@ -270,7 +270,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
     // MARK: - Detail Section
 
     // Lists live in InsightDetailLists.swift — carded per the detail structure
-    // contract (SectionHeaderView above, rows inside .cardStyle()).
+    // contract (SectionHeader above, rows inside .cardStyle()).
     @ViewBuilder
     private var detailSection: some View {
         switch insight.detailData {

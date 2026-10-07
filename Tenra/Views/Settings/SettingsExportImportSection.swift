@@ -19,7 +19,7 @@ struct SettingsExportImportSection: View {
     // MARK: - Body
 
     var body: some View {
-        Section(header: SettingsSectionHeaderView(title: String(localized: "settings.exportImport"))) {
+        Section(header: SectionHeader(String(localized: "settings.exportImport"), style: .list)) {
             ActionSettingsRow(
                 icon: "square.and.arrow.up",
                 title: String(localized: "settings.exportData"),

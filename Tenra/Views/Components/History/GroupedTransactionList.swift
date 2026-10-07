@@ -175,7 +175,7 @@ struct GroupedTransactionList<Overlay: View>: View {
             }
 
             if transactions.isEmpty {
-                EmptyStateView(
+                EmptyState(
                     icon: "doc.text",
                     title: String(localized: "emptyState.noTransactions", defaultValue: "No transactions"),
                     description: String(localized: "emptyState.startTracking", defaultValue: "Start tracking to see your activity here")
@@ -194,7 +194,7 @@ struct GroupedTransactionList<Overlay: View>: View {
                 ForEach(cachedSections) { section in
                     VStack(alignment: .leading, spacing: AppSpacing.sm) {
                         HStack {
-                            SectionHeaderView(section.displayLabel)
+                            SectionHeader(section.displayLabel)
                             Spacer()
                             if section.dayExpenseTotal > 0,
                                let headerCurrency = summaryCurrencyOverride ?? displayCurrency {

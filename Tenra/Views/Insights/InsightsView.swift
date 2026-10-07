@@ -151,14 +151,14 @@ struct InsightsView: View {
 
             HStack(spacing: AppSpacing.sm) {
                 ForEach(0..<4, id: \.self) { _ in
-                    SkeletonView(height: 36, width: 88, cornerRadius: AppRadius.xl)
+                    Skeleton(height: 36, width: 88, cornerRadius: AppRadius.xl)
                 }
             }
             .shimmer()
             .screenPadding()
 
             VStack(alignment: .leading, spacing: AppSpacing.md) {
-                SectionHeaderViewSkeleton(style: .large)
+                SectionHeaderSkeleton(style: .large)
                 ForEach(0..<3, id: \.self) { _ in MetricCardSkeleton() }
             }
             .screenPadding()
@@ -337,7 +337,7 @@ struct InsightsView: View {
             && insightsViewModel.healthScore != nil
 
         if filtered.isEmpty && !urgentHasHealthCard {
-            EmptyStateView(
+            EmptyState(
                 icon: "chart.line.uptrend.xyaxis",
                 title: String(localized: "insights.noInsightsForFilter")
             )
@@ -454,7 +454,7 @@ struct InsightsView: View {
         let urgent = insightsViewModel.urgentInsights
         if !urgent.isEmpty || insightsViewModel.healthScore != nil {
             VStack(alignment: .leading, spacing: AppSpacing.md) {
-                SectionHeaderView(
+                SectionHeader(
                     String(localized: "insights.urgentNow"),
                     systemImage: "exclamationmark.circle",
                     style: .large
@@ -478,7 +478,7 @@ struct InsightsView: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        EmptyStateView(
+        EmptyState(
             icon: "chart.line.uptrend.xyaxis",
             title: String(localized: "insights.emptyState.title"),
             description: String(localized: "insights.emptyState.description")

@@ -27,7 +27,7 @@ struct LoanMonthStatusBadge: View {
         switch status {
         case .paid:
             return AppColors.income
-        case .unpaid(_, let isOverdue):
+        case .unpaid(_, let isOverdue, _):
             return isOverdue ? AppColors.destructive : AppColors.warning
         }
     }

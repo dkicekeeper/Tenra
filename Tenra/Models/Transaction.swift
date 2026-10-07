@@ -392,13 +392,25 @@ struct EarlyRepayment: Codable, Equatable, Hashable {
     /// repayment overwrote `LoanInfo.monthlyPayment`. nil for repayments recorded
     /// before 2026-09-24 (synthesized Codable decodes a missing key as nil).
     let paymentBefore: Decimal?
+    /// `LoanInfo.termMonths` BEFORE this repayment, so deleting a "reduce term" repayment
+    /// restores the term exactly (`LoanPaymentService.reversingPayment`). nil for
+    /// repayments recorded before 2026-10-07; their term is recomputed instead.
+    let termBefore: Int?
 
-    nonisolated init(date: String, amount: Decimal, type: EarlyRepaymentType, note: String? = nil, paymentBefore: Decimal? = nil) {
+    nonisolated init(
+        date: String,
+        amount: Decimal,
+        type: EarlyRepaymentType,
+        note: String? = nil,
+        paymentBefore: Decimal? = nil,
+        termBefore: Int? = nil
+    ) {
         self.date = date
         self.amount = amount
         self.type = type
         self.note = note
         self.paymentBefore = paymentBefore
+        self.termBefore = termBefore
     }
 }
 
@@ -425,6 +437,12 @@ struct LoanInfo: Codable, Equatable, Hashable {
     var paymentDay: Int                 // 1-31, день месяца для платежа
     var paymentsMade: Int               // Количество совершённых платежей
     var lastPaymentDate: String?        // YYYY-MM-DD последнего платежа
+    /// Date (YYYY-MM-DD) of the last amortization-schedule row marked paid with "Mark as
+    /// paid": payments made outside the app, recorded without a transaction. Only
+    /// `LoansViewModel.markPaymentsPaid` writes it (nil once reset to nothing paid), so
+    /// `LoanMonthStatusService` can tell a month marked paid from a `lastPaymentDate` a
+    /// partial or deleted payment left behind. nil for marks made before 2026-10-07.
+    var markedPaidThrough: String?
 
     // Досрочные погашения
     var earlyRepayments: [EarlyRepayment]
@@ -456,7 +474,7 @@ struct LoanInfo: Codable, Equatable, Hashable {
         case bankName, loanType, originalPrincipal, remainingPrincipal
         case interestRateAnnual, interestRateHistory, totalInterestPaid
         case termMonths, startDate, endDate
-        case monthlyPayment, paymentDay, paymentsMade, lastPaymentDate
+        case monthlyPayment, paymentDay, paymentsMade, lastPaymentDate, markedPaidThrough
         case earlyRepayments
         case defaultCategory, defaultSubcategoryIds
     }
@@ -477,6 +495,7 @@ struct LoanInfo: Codable, Equatable, Hashable {
         paymentDay = try container.decode(Int.self, forKey: .paymentDay)
         paymentsMade = try container.decode(Int.self, forKey: .paymentsMade)
         lastPaymentDate = try container.decodeIfPresent(String.self, forKey: .lastPaymentDate)
+        markedPaidThrough = try container.decodeIfPresent(String.self, forKey: .markedPaidThrough)
         earlyRepayments = try container.decode([EarlyRepayment].self, forKey: .earlyRepayments)
         defaultCategory = try container.decodeIfPresent(String.self, forKey: .defaultCategory)
         defaultSubcategoryIds = try container.decodeIfPresent([String].self, forKey: .defaultSubcategoryIds) ?? []
@@ -497,6 +516,7 @@ struct LoanInfo: Codable, Equatable, Hashable {
         paymentDay: Int,
         paymentsMade: Int = 0,
         lastPaymentDate: String? = nil,
+        markedPaidThrough: String? = nil,
         earlyRepayments: [EarlyRepayment] = [],
         defaultCategory: String? = nil,
         defaultSubcategoryIds: [String] = []
@@ -541,6 +561,7 @@ struct LoanInfo: Codable, Equatable, Hashable {
         self.paymentDay = paymentDay
         self.paymentsMade = paymentsMade
         self.lastPaymentDate = lastPaymentDate
+        self.markedPaidThrough = markedPaidThrough
         self.earlyRepayments = earlyRepayments
         self.defaultCategory = defaultCategory
         self.defaultSubcategoryIds = defaultSubcategoryIds
@@ -562,6 +583,7 @@ struct LoanInfo: Codable, Equatable, Hashable {
         try container.encode(paymentDay, forKey: .paymentDay)
         try container.encode(paymentsMade, forKey: .paymentsMade)
         try container.encodeIfPresent(lastPaymentDate, forKey: .lastPaymentDate)
+        try container.encodeIfPresent(markedPaidThrough, forKey: .markedPaidThrough)
         try container.encode(earlyRepayments, forKey: .earlyRepayments)
         try container.encodeIfPresent(defaultCategory, forKey: .defaultCategory)
         if !defaultSubcategoryIds.isEmpty {

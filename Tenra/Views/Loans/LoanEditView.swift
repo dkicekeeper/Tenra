@@ -409,6 +409,7 @@ struct LoanEditView: View {
             paymentDay: paymentDay,
             paymentsMade: existingInfo?.paymentsMade ?? 0,
             lastPaymentDate: existingInfo?.lastPaymentDate,
+            markedPaidThrough: existingInfo?.markedPaidThrough,
             earlyRepayments: existingInfo?.earlyRepayments ?? [],
             defaultCategory: defaultCategory,
             defaultSubcategoryIds: defaultSubcategoryId.map { [$0] } ?? []

@@ -18,6 +18,7 @@ updateState → updateBalances → invalidateCache → persistIncremental
 
 - ⚠️ **`allTransactions` setter is a no-op** — to delete, use `TransactionStore.deleteTransactions(for...)` which routes through `apply(.deleted)`
 - **`updateState .deleted` uses index-based removal**: `firstIndex(where:) + remove(at:)` instead of `removeAll{ $0.id == tx.id }`. The latter never short-circuits and was the silent quadratic source for batch deletes.
+- **A deleted loan payment rolls its loan back**: `apply(.deleted)` calls `rollBackLoanPayment` (`TransactionStore+LoanPayments.swift`) after the balances, which undoes the payment's effect on `LoanInfo` and the loan's balance. Any new delete path (e.g. a bulk-delete event) must call it too. See [loans.md](loans.md) §Deleting a Payment.
 
 ## Index Maintenance
 

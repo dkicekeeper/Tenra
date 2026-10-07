@@ -235,9 +235,11 @@ nonisolated enum LoanPaymentService {
         note: String? = nil
     ) {
         let paymentBefore = loanInfo.monthlyPayment
+        let termBefore = loanInfo.termMonths
         loanInfo.remainingPrincipal -= amount
         loanInfo.earlyRepayments.append(EarlyRepayment(
-            date: date, amount: amount, type: type, note: note, paymentBefore: paymentBefore
+            date: date, amount: amount, type: type, note: note,
+            paymentBefore: paymentBefore, termBefore: termBefore
         ))
 
         let remaining = remainingPayments(loanInfo: loanInfo)
@@ -246,25 +248,7 @@ nonisolated enum LoanPaymentService {
         switch type {
         case .reduceTerm:
             // Пересчитываем сколько платежей осталось при текущем размере платежа
-            if loanInfo.interestRateAnnual > 0 {
-                var newTerm = 0
-                var testRemaining = loanInfo.remainingPrincipal
-                while testRemaining > 0 && newTerm < 600 {
-                    let (_, principal) = paymentBreakdown(
-                        remainingPrincipal: testRemaining,
-                        annualRate: loanInfo.interestRateAnnual,
-                        monthlyPayment: loanInfo.monthlyPayment
-                    )
-                    testRemaining -= principal
-                    newTerm += 1
-                }
-                loanInfo.termMonths = loanInfo.paymentsMade + newTerm
-            } else {
-                let newRemaining = Int(
-                    ceil(NSDecimalNumber(decimal: loanInfo.remainingPrincipal / loanInfo.monthlyPayment).doubleValue)
-                )
-                loanInfo.termMonths = loanInfo.paymentsMade + newRemaining
-            }
+            loanInfo.termMonths = loanInfo.paymentsMade + monthsToRepay(loanInfo)
 
         case .reducePayment:
             // Пересчитываем ежемесячный платёж для оставшегося срока
@@ -276,12 +260,37 @@ nonisolated enum LoanPaymentService {
         }
 
         // Пересчитываем дату окончания
-        if let start = DateFormatters.dateFormatter.date(from: loanInfo.startDate) {
-            let calendar = Calendar.current
-            if let end = calendar.date(byAdding: .month, value: loanInfo.termMonths, to: start) {
-                loanInfo.endDate = DateFormatters.dateFormatter.string(from: end)
+        refreshEndDate(&loanInfo)
+    }
+
+    /// Months the remaining principal takes to repay at the current monthly payment (at
+    /// most 600): the term a "reduce term" repayment leaves, and the one undoing it restores.
+    private static func monthsToRepay(_ loanInfo: LoanInfo) -> Int {
+        if loanInfo.interestRateAnnual > 0 {
+            var months = 0
+            var left = loanInfo.remainingPrincipal
+            while left > 0 && months < 600 {
+                let (_, principal) = paymentBreakdown(
+                    remainingPrincipal: left,
+                    annualRate: loanInfo.interestRateAnnual,
+                    monthlyPayment: loanInfo.monthlyPayment
+                )
+                left -= principal
+                months += 1
             }
+            return months
         }
+        // A zero payment divided the principal by zero and trapped converting NaN to Int.
+        guard loanInfo.monthlyPayment > 0 else { return remainingPayments(loanInfo: loanInfo) }
+        return Int(ceil(NSDecimalNumber(decimal: loanInfo.remainingPrincipal / loanInfo.monthlyPayment).doubleValue))
+    }
+
+    /// `endDate` = `startDate` + `termMonths`.
+    private static func refreshEndDate(_ loanInfo: inout LoanInfo) {
+        guard let start = DateFormatters.dateFormatter.date(from: loanInfo.startDate),
+              let end = Calendar.current.date(byAdding: .month, value: loanInfo.termMonths, to: start)
+        else { return }
+        loanInfo.endDate = DateFormatters.dateFormatter.string(from: end)
     }
 
     // MARK: - Early Repayment Transaction
@@ -437,6 +446,207 @@ nonisolated enum LoanPaymentService {
 
         loanInfo.remainingPrincipal = max(remaining, 0)
         loanInfo.totalInterestPaid = totalInterest
+    }
+
+    // MARK: - Recorded Payments
+
+    /// A loan payment transaction the way its loan's state sees it: the type, the date and
+    /// the amount in the loan's currency.
+    struct RecordedPayment: Equatable, Sendable {
+        let type: TransactionType
+        let date: String
+        let amount: Decimal
+    }
+
+    /// `transaction`, a payment to a loan in `loanCurrency`, as a `RecordedPayment`.
+    ///
+    /// A payment in another currency converts through the conversion it was saved with
+    /// (`TransactionConversion.storedRate`: the equivalent its row shows, or the paying
+    /// account's leg in `sourceCurrency`), else at `rates`, else stays unconverted (the
+    /// canonical cold-cache fallback). Never `convertedAmount ?? amount` as it is: that is in
+    /// the paying account's currency, not the loan's (CLAUDE.md red flag 6).
+    static func recordedPayment(
+        _ transaction: Transaction,
+        loanCurrency: String,
+        sourceCurrency: String?,
+        rates: RateSnapshot
+    ) -> RecordedPayment {
+        let amount: Double
+        if transaction.currency == loanCurrency {
+            amount = transaction.amount
+        } else if let rate = TransactionConversion.storedRate(
+            in: transaction,
+            from: transaction.currency,
+            to: loanCurrency,
+            accountCurrency: sourceCurrency
+        ) {
+            amount = transaction.amount * rate
+        } else {
+            amount = rates.convert(transaction.amount, from: transaction.currency, to: loanCurrency)
+                ?? transaction.amount
+        }
+        return RecordedPayment(type: transaction.type, date: transaction.date, amount: Decimal(amount).rounded(2))
+    }
+
+    /// Interest and principal of a regular payment of `amount` (principal + interest, what
+    /// its transaction holds) that left `remainingAfter` owed: the inverse of
+    /// `createManualPayment` and `recalculateAfterLinking`, where the interest is the month's
+    /// rate on the principal owed before the payment. Owed before = (after + amount) / (1 + rate).
+    static func split(
+        recordedPayment amount: Decimal,
+        remainingAfter: Decimal,
+        annualRate: Decimal
+    ) -> (interest: Decimal, principal: Decimal) {
+        guard annualRate > 0 else { return (interest: 0, principal: amount) }
+        let monthlyRate = annualRate / 100 / 12
+        let owedBefore = (remainingAfter + amount) / (1 + monthlyRate)
+        let interest = (owedBefore * monthlyRate).rounded(2)
+        return (interest: interest, principal: amount - interest)
+    }
+
+    /// The principal owed before `payments` were made, given `remainingAfter`, what is owed
+    /// after all of them: each one undone, newest first. An early repayment took its whole
+    /// amount off the principal, a regular payment its principal part.
+    static func remainingBefore(
+        _ payments: [RecordedPayment],
+        remainingAfter: Decimal,
+        annualRate: Decimal
+    ) -> Decimal {
+        var remaining = remainingAfter
+        for payment in payments.sorted(by: { $0.date > $1.date }) {
+            if payment.type == .loanEarlyRepayment {
+                remaining += payment.amount
+            } else {
+                remaining += split(recordedPayment: payment.amount, remainingAfter: remaining, annualRate: annualRate).principal
+            }
+        }
+        return remaining
+    }
+
+    // MARK: - Deleted Payment
+
+    /// `loanInfo` with a deleted payment's own effect taken off, so the loan stops counting
+    /// it: the debt (and with it the loan's balance, which is the remaining principal), the
+    /// interest paid, the payments made and the last payment date; for an early repayment,
+    /// its schedule entry and the term or monthly payment it re-planned.
+    ///
+    /// Only that payment is undone. The ones recorded after it keep the interest split they
+    /// were recorded with (a loan's state is written as each payment is recorded, it is not
+    /// replayed), and "Mark as paid" in the schedule stays as it is (`markedPaidThrough`).
+    ///
+    /// - Parameter otherPayments: the loan's payments that remain (both types). Those dated
+    ///   after `deleted` were applied on top of it and are undone first, to find the
+    ///   principal owed when it was made; the latest regular one becomes `lastPaymentDate`.
+    static func reversingPayment(
+        _ deleted: RecordedPayment,
+        in loanInfo: LoanInfo,
+        otherPayments: [RecordedPayment]
+    ) -> LoanInfo {
+        var info = loanInfo
+        switch deleted.type {
+        case .loanPayment:
+            let owedAfter = remainingBefore(
+                otherPayments.filter { $0.date > deleted.date },
+                remainingAfter: info.remainingPrincipal,
+                annualRate: info.interestRateAnnual
+            )
+            let parts = split(
+                recordedPayment: deleted.amount,
+                remainingAfter: owedAfter,
+                annualRate: info.interestRateAnnual
+            )
+            restorePrincipal(parts.principal, in: &info)
+            info.totalInterestPaid = max(0, info.totalInterestPaid - parts.interest)
+            info.paymentsMade = max(0, info.paymentsMade - 1)
+            // Only when this payment (or another one that day) wrote it; a later payment or
+            // a "Mark as paid" keeps theirs.
+            if info.lastPaymentDate == deleted.date {
+                let latestPayment = otherPayments.filter { $0.type == .loanPayment }.map(\.date).max()
+                info.lastPaymentDate = [latestPayment, info.markedPaidThrough].compactMap { $0 }.max()
+            }
+        case .loanEarlyRepayment:
+            reverseEarlyRepayment(deleted, in: &info)
+        default:
+            break
+        }
+        return info
+    }
+
+    /// Gives `principal` back to the debt. Never above the original principal (a "Mark as
+    /// unpaid" reset to nothing paid already gave everything back), unless the debt was
+    /// already above it.
+    private static func restorePrincipal(_ principal: Decimal, in info: inout LoanInfo) {
+        let ceiling = max(info.originalPrincipal, info.remainingPrincipal)
+        info.remainingPrincipal = max(0, min(info.remainingPrincipal + principal, ceiling))
+    }
+
+    /// The inverse of `applyEarlyRepayment`: the principal back, the schedule entry gone, and
+    /// the term ("reduce term") or the monthly payment ("reduce payment") it re-planned
+    /// restored from what the entry recorded, or recomputed from the restored principal when
+    /// it recorded nothing (older entries) or a later repayment of the same kind re-planned
+    /// on top of it.
+    private static func reverseEarlyRepayment(_ deleted: RecordedPayment, in info: inout LoanInfo) {
+        let entries = info.earlyRepayments
+        // The entry the transaction recorded: same date and amount (the newest such), or the
+        // only one that day when the amount no longer matches (an edited transaction).
+        let sameDay = entries.indices.filter { entries[$0].date == deleted.date }
+        let matching = sameDay.last { abs(entries[$0].amount - deleted.amount) <= LoanInfo.paidOffThreshold }
+        guard let index = matching ?? (sameDay.count == 1 ? sameDay.first : nil) else {
+            // No entry to undo: the debt still gets the money back, it is what the balance shows.
+            restorePrincipal(deleted.amount, in: &info)
+            return
+        }
+        let entry = entries[index]
+        restorePrincipal(entry.amount, in: &info)
+
+        // The next repayment of the same kind, in the schedule's (date) order.
+        let next = entries.indices
+            .filter { other in
+                other != index && entries[other].type == entry.type
+                    && (entries[other].date > entry.date || (entries[other].date == entry.date && other > index))
+            }
+            .min { (entries[$0].date, $0) < (entries[$1].date, $1) }
+
+        var remainingEntries = entries
+        if let next {
+            // It re-planned from the payment or term this one left. Hand it the one in force
+            // before this one, so the schedule replays the right payment up to it and
+            // deleting it later restores the right term.
+            let later = entries[next]
+            remainingEntries[next] = EarlyRepayment(
+                date: later.date,
+                amount: later.amount,
+                type: later.type,
+                note: later.note,
+                paymentBefore: entry.paymentBefore ?? later.paymentBefore,
+                termBefore: entry.termBefore ?? later.termBefore
+            )
+        }
+        remainingEntries.remove(at: index)
+        info.earlyRepayments = remainingEntries
+
+        switch entry.type {
+        case .reducePayment:
+            if next == nil, let paymentBefore = entry.paymentBefore {
+                info.monthlyPayment = paymentBefore
+            } else {
+                let months = remainingPayments(loanInfo: info)
+                if months > 0 {
+                    info.monthlyPayment = calculateMonthlyPayment(
+                        principal: info.remainingPrincipal,
+                        annualRate: info.interestRateAnnual,
+                        termMonths: months
+                    )
+                }
+            }
+        case .reduceTerm:
+            if next == nil, let termBefore = entry.termBefore {
+                info.termMonths = termBefore
+            } else if info.remainingPrincipal > 0 {
+                info.termMonths = info.paymentsMade + monthsToRepay(info)
+            }
+        }
+        refreshEndDate(&info)
     }
 
     // MARK: - Entered Currency

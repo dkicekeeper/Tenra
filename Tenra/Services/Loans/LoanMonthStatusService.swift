@@ -2,28 +2,32 @@
 //  LoanMonthStatusService.swift
 //  Tenra
 //
-//  Whether a loan's regular payment for the current calendar month has been made
-//  ("Paid this month" / "Not paid" on the loans list and the loan screen), and what the
-//  month's unpaid payments add up to in the base currency (loans list summary).
+//  Whether a loan's payment for the current calendar month has been made ("Paid this
+//  month" / "Not paid" on the loans list and the loan screen), and what is still to pay
+//  this month in the base currency (loans list summary). Paid means this month's payments
+//  to the loan add up to the month's amount due.
 //  Pure: today and the FX table are parameters.
 //
 
 import Foundation
 
-/// Where a loan's regular payment for the current calendar month stands.
+/// Where a loan's payment for the current calendar month stands.
 nonisolated enum LoanMonthStatus: Equatable, Sendable {
-    /// A regular payment is recorded this month. `nextDueDate` is next month's payment day.
+    /// This month's payments cover the month's amount due, or "Mark as paid" in the
+    /// schedule covered the month. `nextDueDate` is next month's payment day.
     case paid(nextDueDate: Date)
-    /// No regular payment recorded this month yet. `dueDate` is this month's payment day;
-    /// `isOverdue` once that day has passed (due today is not overdue).
-    case unpaid(dueDate: Date, isOverdue: Bool)
+    /// This month's payments fall short of the amount due (none, or partial ones).
+    /// `dueDate` is this month's payment day; `isOverdue` once that day has passed (due
+    /// today is not overdue). `leftToPay` is the amount due minus this month's payments,
+    /// in the loan's currency.
+    case unpaid(dueDate: Date, isOverdue: Bool, leftToPay: Double)
 
-    /// The date the next regular payment falls due: this month's payment day while it is
-    /// unpaid (even once it has passed), next month's once it is paid.
+    /// The date the next payment falls due: this month's payment day while it is unpaid
+    /// (even once it has passed), next month's once it is paid.
     var nextDueDate: Date {
         switch self {
         case .paid(let nextDueDate): return nextDueDate
-        case .unpaid(let dueDate, _): return dueDate
+        case .unpaid(let dueDate, _, _): return dueDate
         }
     }
 }
@@ -36,26 +40,33 @@ nonisolated enum LoanMonthStatusService {
     /// `startDate`, so the first one is due the month after the start month and the last one
     /// `termMonths` months after it.
     ///
-    /// Paid means a regular payment is recorded in this calendar month:
-    /// - a `.loanPayment` to this loan (orientation contract: `targetAccountId` = loan) dated
-    ///   from the 1st through today; a future-dated row is not realized yet, or
-    /// - the loan's own `lastPaymentDate` on or after the 1st. Every way of recording a payment
-    ///   writes it (manual payment, Pay All, linking), and so does "Mark as paid" in the
-    ///   amortization schedule, which records a payment made outside the app without a
-    ///   transaction.
+    /// Paid means this month's payments add up to at least the month's amount due
+    /// (`amountDue`): every `.loanPayment` and `.loanEarlyRepayment` to this loan
+    /// (orientation contract: `targetAccountId` = loan) dated from the 1st through today, in
+    /// the loan's currency (`LoanPaymentService.recordedPayment`; a payment in another
+    /// currency converts through the conversion it was saved with, else at `rates`). A
+    /// future-dated row is not realized yet. Partial payments leave the month unpaid with
+    /// the rest in `leftToPay`.
     ///
-    /// An early repayment is neither: it shortens the term or lowers the payment, and the
-    /// month's regular payment is still due.
+    /// "Mark as paid" in the amortization schedule (a payment made outside the app,
+    /// recorded without a transaction) also makes the month paid: `markedPaidThrough` on or
+    /// after the 1st. `lastPaymentDate` plays no part: a partial or a deleted payment leaves
+    /// it behind.
     ///
     /// Dates are read in the Gregorian calendar of the stored "yyyy-MM-dd" keys
     /// (`FastDateParser.calendar`), whatever calendar the device uses.
     ///
-    /// - Parameter loanTransactions: the loan's transactions (`transactionsByAccount[loan.id]`).
-    ///   Anything other than a regular payment to this loan is ignored.
+    /// - Parameters:
+    ///   - loanTransactions: the loan's transactions (`transactionsByAccount[loan.id]`).
+    ///     Anything other than a payment to this loan is ignored.
+    ///   - accountsById: the accounts, for the currency of a paying account whose leg a
+    ///     payment in another currency was converted into.
     static func status(
         loan: Account,
         loanTransactions: [Transaction],
-        today: Date
+        today: Date,
+        rates: RateSnapshot,
+        accountsById: [String: Account] = [:]
     ) -> LoanMonthStatus? {
         let calendar = FastDateParser.calendar
         guard let info = loan.loanInfo, !info.isPaidOff,
@@ -72,31 +83,65 @@ nonisolated enum LoanMonthStatusService {
         // "yyyy-MM-dd" keys compare chronologically as strings.
         let monthStartKey = FastDateParser.string(from: monthStart)
         let todayKey = FastDateParser.string(from: today)
-        let paidByTransaction = loanTransactions.contains { tx in
-            guard tx.type == .loanPayment, tx.targetAccountId == loan.id else { return false }
-            return tx.date >= monthStartKey && tx.date <= todayKey
-        }
-        let paidBySchedule = info.lastPaymentDate.map { $0 >= monthStartKey } ?? false
 
-        if paidByTransaction || paidBySchedule {
+        if let marked = info.markedPaidThrough, marked >= monthStartKey {
             return .paid(nextDueDate: nextDueDate)
         }
-        return .unpaid(dueDate: dueDate, isOverdue: dueDate < calendar.startOfDay(for: today))
+
+        // Every payment to this loan from the 1st on, in the loan's currency.
+        let sinceMonthStart: [LoanPaymentService.RecordedPayment] = loanTransactions.compactMap { tx in
+            guard tx.type == .loanPayment || tx.type == .loanEarlyRepayment,
+                  tx.targetAccountId == loan.id,
+                  tx.date >= monthStartKey else { return nil }
+            return LoanPaymentService.recordedPayment(
+                tx,
+                loanCurrency: loan.currency,
+                sourceCurrency: tx.accountId.flatMap { accountsById[$0]?.currency },
+                rates: rates
+            )
+        }
+        let paid = sinceMonthStart
+            .filter { $0.date <= todayKey }
+            .reduce(Decimal(0)) { $0 + $1.amount }
+
+        // The month asks for its payment capped at what was owed when it began: the
+        // payments already in `remainingPrincipal` are undone, so paying off the last
+        // 12 000 in two halves still asks for 12 000, not for the 6 000 left after the first.
+        let owedAtMonthStart = LoanPaymentService.remainingBefore(
+            sinceMonthStart,
+            remainingAfter: info.remainingPrincipal,
+            annualRate: info.interestRateAnnual
+        )
+        let leftToPay = max(0, amountDue(info, remainingPrincipal: owedAtMonthStart) - paid)
+
+        if leftToPay <= LoanInfo.paidOffThreshold {
+            return .paid(nextDueDate: nextDueDate)
+        }
+        return .unpaid(
+            dueDate: dueDate,
+            isOverdue: dueDate < calendar.startOfDay(for: today),
+            leftToPay: NSDecimalNumber(decimal: leftToPay).doubleValue
+        )
     }
 
-    /// One month's regular payment of a loan: `monthlyPayment`, but never more than what is
-    /// left to repay (the remaining principal plus the month's interest), so the final month
-    /// is not overstated.
-    static func amountDue(_ info: LoanInfo) -> Decimal {
+    /// One month's payment of a loan: `monthlyPayment`, but never more than what is left to
+    /// repay (the principal owed plus the month's interest), so the final month is not
+    /// overstated.
+    ///
+    /// - Parameter remainingPrincipal: the principal owed when the month began; the loan's
+    ///   current remaining principal by default.
+    static func amountDue(_ info: LoanInfo, remainingPrincipal: Decimal? = nil) -> Decimal {
+        let owed = remainingPrincipal ?? info.remainingPrincipal
         let interest = LoanPaymentService.paymentBreakdown(
-            remainingPrincipal: info.remainingPrincipal,
+            remainingPrincipal: owed,
             annualRate: info.interestRateAnnual,
             monthlyPayment: info.monthlyPayment
         ).interest
-        return min(info.monthlyPayment, info.remainingPrincipal + interest)
+        return min(info.monthlyPayment, owed + interest)
     }
 
-    /// Sum in `baseCurrency` of `amountDue` over the loans whose status is `.unpaid`.
+    /// Sum in `baseCurrency` of what is still to pay this month (`leftToPay`: the amount due
+    /// minus this month's payments) over the loans whose status is `.unpaid`.
     ///
     /// Each loan converts from its own currency through `rates`, which has the semantics of
     /// `CurrencyConverter.convertSync`. A missing rate falls back to the unconverted amount,
@@ -110,10 +155,8 @@ nonisolated enum LoanMonthStatusService {
     ) -> Double {
         var total = 0.0
         for loan in loans {
-            guard let status = statuses[loan.id], case .unpaid = status,
-                  let info = loan.loanInfo else { continue }
-            let amount = NSDecimalNumber(decimal: amountDue(info)).doubleValue
-            total += rates.convert(amount, from: loan.currency, to: baseCurrency) ?? amount
+            guard case .unpaid(_, _, let leftToPay)? = statuses[loan.id] else { continue }
+            total += rates.convert(leftToPay, from: loan.currency, to: baseCurrency) ?? leftToPay
         }
         return total
     }

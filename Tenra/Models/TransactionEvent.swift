@@ -8,6 +8,12 @@
 
 import Foundation
 
+/// One row of a `.bulkUpdated` event: the stored transaction and what replaces it.
+struct TransactionChange: Equatable, Sendable {
+    let old: Transaction
+    let new: Transaction
+}
+
 /// Event representing a transaction state change
 /// Used for event sourcing pattern - all transaction modifications go through events
 enum TransactionEvent {
@@ -16,6 +22,15 @@ enum TransactionEvent {
     case updated(old: Transaction, new: Transaction)
     case deleted(Transaction)
     case bulkAdded([Transaction])
+    /// Several existing transactions edited at once ("apply to similar", linking or
+    /// unlinking a series' payments, detaching a deleted series). Same index maintenance as
+    /// `.updated` per row, but one pass over the arrays, one balance recalculation for the
+    /// touched accounts and one CoreData save. See TransactionStore+BulkMutations.swift.
+    case bulkUpdated([TransactionChange])
+    /// Several transactions deleted at once (an account's or a category's transactions, a
+    /// series' occurrences). Must not carry a payment to a loan that still exists: those go
+    /// through `.deleted`, which rolls the loan back (`deleteTransactionsInBulk` splits them).
+    case bulkDeleted([Transaction])
 
     // MARK: - Recurring Series Events (Phase 9: Aggressive Integration)
     case seriesCreated(RecurringSeries)
@@ -41,6 +56,17 @@ enum TransactionEvent {
             return accountIds(from: tx)
 
         case .bulkAdded(let transactions):
+            return Set(transactions.flatMap { accountIds(from: $0) })
+
+        case .bulkUpdated(let changes):
+            var ids = Set<String>()
+            for change in changes {
+                ids.formUnion(accountIds(from: change.old))
+                ids.formUnion(accountIds(from: change.new))
+            }
+            return ids
+
+        case .bulkDeleted(let transactions):
             return Set(transactions.flatMap { accountIds(from: $0) })
 
         // MARK: - Recurring Series Events (Phase 9)
@@ -94,6 +120,12 @@ enum TransactionEvent {
         case .bulkAdded(let transactions):
             return Set(transactions.map { $0.category }.filter { !$0.isEmpty })
 
+        case .bulkUpdated(let changes):
+            return Set(changes.flatMap { [$0.old.category, $0.new.category] }.filter { !$0.isEmpty })
+
+        case .bulkDeleted(let transactions):
+            return Set(transactions.map { $0.category }.filter { !$0.isEmpty })
+
         case .seriesCreated(let series):
             return series.category.isEmpty ? Set() : Set([series.category])
 
@@ -126,6 +158,10 @@ enum TransactionEvent {
             return [tx]
         case .bulkAdded(let txs):
             return txs
+        case .bulkUpdated(let changes):
+            return changes.map(\.new)
+        case .bulkDeleted(let txs):
+            return txs
 
         case .seriesCreated, .seriesUpdated, .seriesStopped, .seriesDeleted:
             return []
@@ -143,6 +179,10 @@ enum TransactionEvent {
             return "DELETE: \(tx.category) \(tx.amount) \(tx.currency)"
         case .bulkAdded(let txs):
             return "BULK_ADD: \(txs.count) transactions"
+        case .bulkUpdated(let changes):
+            return "BULK_UPDATE: \(changes.count) transactions"
+        case .bulkDeleted(let txs):
+            return "BULK_DELETE: \(txs.count) transactions"
 
         // MARK: - Recurring Series Events (Phase 9)
         case .seriesCreated(let series):
@@ -189,6 +229,12 @@ extension TransactionEvent: Equatable {
             return lhsTx.id == rhsTx.id
 
         case (.bulkAdded(let lhsTxs), .bulkAdded(let rhsTxs)):
+            return lhsTxs.map { $0.id } == rhsTxs.map { $0.id }
+
+        case (.bulkUpdated(let lhsChanges), .bulkUpdated(let rhsChanges)):
+            return lhsChanges.map { $0.new.id } == rhsChanges.map { $0.new.id }
+
+        case (.bulkDeleted(let lhsTxs), .bulkDeleted(let rhsTxs)):
             return lhsTxs.map { $0.id } == rhsTxs.map { $0.id }
 
         // MARK: - Recurring Series Events (Phase 9)

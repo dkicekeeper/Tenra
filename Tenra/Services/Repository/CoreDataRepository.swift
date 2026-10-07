@@ -78,6 +78,14 @@ nonisolated final class CoreDataRepository: DataRepositoryProtocol, @unchecked S
         transactionRepository.batchInsertTransactions(transactions)
     }
 
+    func deleteTransactions(ids: [String]) async {
+        await transactionRepository.deleteTransactions(ids: ids)
+    }
+
+    func updateTransactionsFields(_ transactions: [Transaction]) async {
+        await transactionRepository.updateTransactionsFields(transactions)
+    }
+
     // MARK: - Accounts (Delegated to AccountRepository)
 
     func loadAccounts() -> [Account] {

@@ -26,6 +26,8 @@ Per event:
 | `.updated(old, new)` | `seriesIndexUpdate`, `accountAggregatesUpdate` |
 | `.deleted(tx)` | `seriesIndexRemove`, `accountAggregatesRemove` |
 | `.bulkAdded(txs)` | per-tx `seriesIndexAdd` + `accountAggregatesAdd` |
+| `.bulkUpdated(changes)` | `seriesIndexUpdateBulk` + per-row `accountAggregatesUpdate` |
+| `.bulkDeleted(txs)` | `seriesIndexRemoveBulk` + `accountAggregatesRemoveBulk` (one persist) |
 
 On cold start (`loadData()`):
 - `rebuildSeriesAndDateIndexes()` — one O(N_tx) walk over the loaded array.

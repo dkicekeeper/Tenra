@@ -87,6 +87,14 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol, @uncheck
         // UserDefaults fallback: no-op. NSBatchInsertRequest only applies to CoreData.
     }
 
+    func deleteTransactions(ids: [String]) async {
+        // UserDefaults fallback: no-op, like deleteTransactionImmediately.
+    }
+
+    func updateTransactionsFields(_ transactions: [Transaction]) async {
+        // UserDefaults fallback: no-op, like updateTransactionFields.
+    }
+
     // MARK: - Accounts
     
     func loadAccounts() -> [Account] {

@@ -12,7 +12,7 @@ updateState → updateBalances → invalidateCache → persistIncremental
 
 - Debounced sync with **16ms coalesce window**
 - Granular cache invalidation per event type
-- Event-driven via `TransactionStoreEvent` (`added` / `updated` / `deleted` / `bulkAdded`)
+- Event-driven via `TransactionEvent` (`added` / `updated` / `deleted` / `bulkAdded` / `bulkUpdated` / `bulkDeleted`)
 
 ## Deletion Semantics
 
@@ -29,6 +29,17 @@ updateState → updateBalances → invalidateCache → persistIncremental
 ### `addBatch` fallback pattern
 
 `TransactionStore.addBatch()` validates ALL transactions; one failure rejects the entire batch. `CSVImportCoordinator` retries individual `add()` calls after batch rejection.
+
+### Bulk edits and deletes (`.bulkUpdated` / `.bulkDeleted`)
+
+⚠️ **Never loop `update(_:)`, `apply(.updated)` or `apply(.deleted)` over many rows.** Each row paid an O(N) `firstIndex` scan of `transactions`, a blocking `performAndWait` fetch + save on a fresh context, a detached balance save and a merge into the view context (a history-list rebuild): "apply to similar" on 200 rows took 1–2 s, deleting a 5k-transaction account hung 25–50 s. Use the bulk entry points ([TransactionStore+BulkMutations](../../Tenra/ViewModels/TransactionStore+BulkMutations.swift)):
+
+- `updateBatch(_:)` — several edits, one `.bulkUpdated`. Each row gets `update(_:)`'s checks; a failing row is left out (not the whole batch). Used by `recategorize`.
+- `deleteTransactionsInBulk(_:)` — several deletes, one `.bulkDeleted`. Used by `deleteTransactions(forAccountId:)` / `(forCategoryName:type:)` and the series flows (`stopSeries`, `deleteSeries`, `pauseSubscription`, `updateSeries`). Series link/unlink/detach apply `.bulkUpdated` directly, like their per-row versions skipped `validate`.
+
+A bulk event runs the pipeline once: one pass over `transactions` and each index bucket, the aggregate deltas per row in row order (totals identical to the per-row path) with one debounced persist, one exact recalculation of the touched accounts (`recalculateAccounts` over just their rows, or `recalculateAll` when cheaper; skipped when the per-row path would have applied zero deltas: future-dated deletes, edits that keep every field `BalanceCalculationEngine.contribution` reads), full cache invalidation, and ONE awaited background save (`deleteTransactions(ids:)` / `updateTransactionsFields(_:)`: chunked `id IN` fetch, `context.delete`, one `save()`). Pinned against the per-row path by `BulkTransactionMutationTests`.
+
+⚠️ **A payment to a live loan never goes into `.bulkDeleted`.** `.deleted` rolls the payment off its loan, and the rollback reads the loan's other payments, so `deleteTransactionsInBulk` deletes those payments one at a time through `.deleted` (in order) and the rest in one bulk event. `updateStateForBulkDelete` asserts it.
 
 ## FRC (NSFetchedResultsController)
 

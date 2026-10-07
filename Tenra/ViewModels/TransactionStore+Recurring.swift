@@ -162,9 +162,8 @@ extension TransactionStore {
                 guard let date = DateFormatters.dateFormatter.date(from: tx.date) else { return false }
                 return date > today
             }
-            for tx in futureTxs {
-                try await apply(TransactionEvent.deleted(tx))
-            }
+            // One bulk event (TransactionStore+BulkMutations), not an apply per row.
+            try await deleteTransactionsInBulk(futureTxs)
             recurringStore.removeOccurrences(seriesId: series.id, afterDate: today)
         }
 
@@ -218,17 +217,15 @@ extension TransactionStore {
             throw TransactionStoreError.seriesNotFound
         }
 
-        // 2. Delete future recurring transactions (strictly after fromDate).
-        //    Each apply(.deleted) removes from self.transactions + CoreData atomically.
+        // 2. Delete future recurring transactions (strictly after fromDate), in one bulk
+        //    event: removed from self.transactions and CoreData together.
         let cutoff = DateFormatters.dateFormatter.date(from: fromDate) ?? Date()
         let futureTxs = transactions.filter { tx in
             guard tx.recurringSeriesId == seriesId else { return false }
             guard let txDate = DateFormatters.dateFormatter.date(from: tx.date) else { return false }
             return txDate > cutoff
         }
-        for tx in futureTxs {
-            try await apply(TransactionEvent.deleted(tx))
-        }
+        try await deleteTransactionsInBulk(futureTxs)
 
         // 3. Prune future occurrences from in-memory store.
         //    persistIncremental(.seriesStopped) calls saveOccurrences() which persists the result.
@@ -259,11 +256,11 @@ extension TransactionStore {
         let seriesTransactions = transactions.filter { $0.recurringSeriesId == seriesId }
         if deleteTransactions {
             // Delete all transactions for this series (same pattern as stopSeries)
-            for tx in seriesTransactions {
-                try await apply(TransactionEvent.deleted(tx))
-            }
+            try await deleteTransactionsInBulk(seriesTransactions)
         } else {
-            // Convert recurring transactions to regular (detach from series)
+            // Convert recurring transactions to regular (detach from series), one bulk event
+            var detached: [TransactionChange] = []
+            detached.reserveCapacity(seriesTransactions.count)
             for tx in seriesTransactions {
                 let converted = Transaction(
                     id: tx.id,
@@ -285,7 +282,10 @@ extension TransactionStore {
                     recurringOccurrenceId: nil,
                     createdAt: tx.createdAt
                 )
-                try await apply(TransactionEvent.updated(old: tx, new: converted))
+                detached.append(TransactionChange(old: tx, new: converted))
+            }
+            if !detached.isEmpty {
+                try await apply(TransactionEvent.bulkUpdated(detached))
             }
         }
 
@@ -526,9 +526,7 @@ extension TransactionStore {
             guard let txDate = DateFormatters.dateFormatter.date(from: tx.date) else { return false }
             return txDate > today
         }
-        for tx in futureTxs {
-            try await apply(TransactionEvent.deleted(tx))
-        }
+        try await deleteTransactionsInBulk(futureTxs)
 
         // Prune future occurrences too (M-5). updateSeries only prunes occurrences
         // when the schedule changes; a pause leaves them orphaned, so resume could
@@ -640,6 +638,8 @@ extension TransactionStore {
             throw TransactionStoreError.seriesNotFound
         }
 
+        var linked: [TransactionChange] = []
+        linked.reserveCapacity(transactions.count)
         for tx in transactions.sorted(by: { $0.date < $1.date }) {
             let updated = Transaction(
                 id: tx.id,
@@ -661,11 +661,14 @@ extension TransactionStore {
                 recurringOccurrenceId: tx.recurringOccurrenceId,
                 createdAt: tx.createdAt
             )
-            // Use apply() directly — skips validate() which would reject
-            // transactions whose category was renamed/deleted since creation.
-            // Safe because we only change recurringSeriesId on existing transactions.
-            try await apply(TransactionEvent.updated(old: tx, new: updated))
+            linked.append(TransactionChange(old: tx, new: updated))
         }
+        // Use apply() directly — skips validate() which would reject
+        // transactions whose category was renamed/deleted since creation.
+        // Safe because we only change recurringSeriesId on existing transactions.
+        // One bulk event for all of them (TransactionStore+BulkMutations).
+        guard !linked.isEmpty else { return }
+        try await apply(TransactionEvent.bulkUpdated(linked))
     }
 
     /// Unlink all transactions currently linked to a subscription series.
@@ -681,6 +684,8 @@ extension TransactionStore {
         let linked = transactions.filter { $0.recurringSeriesId == seriesId }
         guard !linked.isEmpty else { return 0 }
 
+        var unlinked: [TransactionChange] = []
+        unlinked.reserveCapacity(linked.count)
         for tx in linked {
             let updated = Transaction(
                 id: tx.id,
@@ -702,8 +707,10 @@ extension TransactionStore {
                 recurringOccurrenceId: nil,
                 createdAt: tx.createdAt
             )
-            try await apply(TransactionEvent.updated(old: tx, new: updated))
+            unlinked.append(TransactionChange(old: tx, new: updated))
         }
+        // One bulk event (TransactionStore+BulkMutations), not an apply per row.
+        try await apply(TransactionEvent.bulkUpdated(unlinked))
         return linked.count
     }
 }

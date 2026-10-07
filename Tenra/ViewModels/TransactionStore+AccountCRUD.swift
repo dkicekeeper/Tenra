@@ -101,28 +101,23 @@ extension TransactionStore {
 
     /// Deletes all transactions associated with an account (where accountId or targetAccountId matches).
     /// Call this before deleteAccount when you want to remove an account with all its transactions.
-    /// Each deletion goes through apply(.deleted) so aggregates, cache, and persistence are all updated.
+    /// One bulk event (`deleteTransactionsInBulk`): aggregates, cache, balances and
+    /// persistence are updated once for all rows, not once per row.
     func deleteTransactions(forAccountId accountId: String) async {
         let toDelete = transactions.filter {
             $0.accountId == accountId || $0.targetAccountId == accountId
         }
-        for transaction in toDelete {
-            let event = TransactionEvent.deleted(transaction)
-            try? await apply(event)
-        }
+        try? await deleteTransactionsInBulk(toDelete)
     }
 
     /// Deletes all transactions matching the given category name and type.
     /// Call this before deleteCategory when you want to remove a category with all its transactions.
-    /// Each deletion goes through apply(.deleted) so aggregates, cache, and persistence are all updated.
+    /// One bulk event (`deleteTransactionsInBulk`), as for an account.
     func deleteTransactions(forCategoryName categoryName: String, type: TransactionType) async {
         let toDelete = transactions.filter {
             $0.category == categoryName && $0.type == type
         }
-        for transaction in toDelete {
-            let event = TransactionEvent.deleted(transaction)
-            try? await apply(event)
-        }
+        try? await deleteTransactionsInBulk(toDelete)
     }
 
     // MARK: - Account Reordering

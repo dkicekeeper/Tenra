@@ -119,6 +119,16 @@ extension TransactionStore {
         return currencyById
     }
 
+    /// `accountAggregatesRemove` for many rows (`.bulkDeleted`): the same delta per row,
+    /// ONE debounced persist instead of a persist Task per row.
+    internal func accountAggregatesRemoveBulk(_ txs: [Transaction]) {
+        guard !txs.isEmpty else { return }
+        for tx in txs {
+            applyAccountAggregateDelta(tx: tx, sign: -1)
+        }
+        scheduleAccountAggregatePersist()
+    }
+
     // MARK: - Private
 
     /// Mirrors the legacy O(N_tx) loop inside `AccountAggregatesCalculator.compute`

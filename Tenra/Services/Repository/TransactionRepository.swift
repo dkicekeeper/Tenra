@@ -27,6 +27,12 @@ protocol TransactionRepositoryProtocol: Sendable {
     nonisolated func batchInsertTransactions(_ transactions: [Transaction])
     /// Rewrite the category of the given transactions in one background save. Used by category rename.
     nonisolated func renameTransactionsCategory(ids: [String], to newName: String)
+    /// Delete several transactions in ONE background save (`TransactionEvent.bulkDeleted`).
+    /// Awaited: the rows are gone from disk when it returns, as with the per-row delete.
+    nonisolated func deleteTransactions(ids: [String]) async
+    /// Write the fields of several existing transactions in ONE background save
+    /// (`TransactionEvent.bulkUpdated`); the same writes as `updateTransactionFields`. Awaited.
+    nonisolated func updateTransactionsFields(_ transactions: [Transaction]) async
 }
 
 /// CoreData implementation of TransactionRepositoryProtocol
@@ -391,22 +397,7 @@ nonisolated final class TransactionRepository: TransactionRepositoryProtocol, @u
             req.fetchLimit = 1
             guard let entity = (try? bgContext.fetch(req))?.first else { return }
 
-            entity.date             = DateFormatters.dateFormatter.date(from: transaction.date) ?? Date()
-            entity.descriptionText  = transaction.description
-            entity.amount           = transaction.amount
-            entity.currency         = transaction.currency
-            entity.convertedAmount  = transaction.convertedAmount ?? 0
-            entity.type             = transaction.type.rawValue
-            entity.category         = transaction.category
-            entity.subcategory      = transaction.subcategory
-            entity.targetAmount     = transaction.targetAmount ?? 0
-            entity.targetCurrency   = transaction.targetCurrency
-            entity.accountId        = transaction.accountId
-            entity.targetAccountId  = transaction.targetAccountId
-            entity.accountName      = transaction.accountName
-            entity.targetAccountName = transaction.targetAccountName
-            entity.recurringSeriesId = transaction.recurringSeriesId
-            entity.createdAt        = Date(timeIntervalSince1970: transaction.createdAt)
+            Self.writeFields(of: transaction, to: entity)
 
             // Sync recurringSeries relationship
             if let seriesId = transaction.recurringSeriesId, !seriesId.isEmpty {
@@ -422,6 +413,109 @@ nonisolated final class TransactionRepository: TransactionRepositoryProtocol, @u
                 try bgContext.save()
             } catch {
                 Self.logger.error("⚠️ [TransactionRepository] updateTransactionFields save failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    /// The scalar fields `updateTransactionFields` writes. Shared with the bulk update so
+    /// the two paths cannot drift. `dateSectionKey` follows `date` in `willSave()`.
+    private nonisolated static func writeFields(of transaction: Transaction, to entity: TransactionEntity) {
+        entity.date             = DateFormatters.dateFormatter.date(from: transaction.date) ?? Date()
+        entity.descriptionText  = transaction.description
+        entity.amount           = transaction.amount
+        entity.currency         = transaction.currency
+        entity.convertedAmount  = transaction.convertedAmount ?? 0
+        entity.type             = transaction.type.rawValue
+        entity.category         = transaction.category
+        entity.subcategory      = transaction.subcategory
+        entity.targetAmount     = transaction.targetAmount ?? 0
+        entity.targetCurrency   = transaction.targetCurrency
+        entity.accountId        = transaction.accountId
+        entity.targetAccountId  = transaction.targetAccountId
+        entity.accountName      = transaction.accountName
+        entity.targetAccountName = transaction.targetAccountName
+        entity.recurringSeriesId = transaction.recurringSeriesId
+        entity.createdAt        = Date(timeIntervalSince1970: transaction.createdAt)
+    }
+
+    // MARK: - Bulk Persist Methods
+
+    /// Ids per `id IN` fetch. Keeps each SQL statement's bound-variable list short.
+    private static let idChunkSize = 500
+
+    private nonisolated static func chunked(_ ids: [String]) -> [[String]] {
+        stride(from: 0, to: ids.count, by: idChunkSize).map {
+            Array(ids[$0..<min($0 + idChunkSize, ids.count)])
+        }
+    }
+
+    /// One background context, chunked `id IN` fetches, `context.delete` per row (NOT
+    /// NSBatchDeleteRequest: the rows have inverse relationships, CLAUDE.md red flag 3),
+    /// ONE save. The per-row `deleteTransactionImmediately` ran a blocking fetch + save on
+    /// a fresh context per row: each save merged into the view context (an FRC rebuild per
+    /// row) and re-faulted the account's whole transaction set to nullify the inverse,
+    /// which is how deleting a 5k-transaction account hung for 25–50 s.
+    func deleteTransactions(ids: [String]) async {
+        guard !ids.isEmpty else { return }
+        let context = stack.newBackgroundContext()
+        await context.perform {
+            do {
+                for chunk in Self.chunked(ids) {
+                    let request = NSFetchRequest<TransactionEntity>(entityName: "TransactionEntity")
+                    request.predicate = NSPredicate(format: "id IN %@", chunk)
+                    request.returnsObjectsAsFaults = false
+                    for entity in try context.fetch(request) {
+                        context.delete(entity)
+                    }
+                }
+                if context.hasChanges {
+                    try context.save()
+                }
+            } catch {
+                Self.logger.error("⚠️ [TransactionRepository] deleteTransactions(\(ids.count, privacy: .public)) failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    /// One background context, chunked `id IN` fetches, the same writes as
+    /// `updateTransactionFields` per row, ONE save. Series relationships come from one
+    /// prefetch instead of a fetch per row.
+    func updateTransactionsFields(_ transactions: [Transaction]) async {
+        guard !transactions.isEmpty else { return }
+        // Last write wins, as with sequential per-row updates of the same id.
+        var byId: [String: Transaction] = [:]
+        for transaction in transactions { byId[transaction.id] = transaction }
+        let seriesIds = Array(Set(transactions.compactMap { $0.recurringSeriesId }.filter { !$0.isEmpty }))
+        let context = stack.newBackgroundContext()
+        await context.perform {
+            do {
+                var seriesById: [String: RecurringSeriesEntity] = [:]
+                if !seriesIds.isEmpty {
+                    let seriesRequest = NSFetchRequest<RecurringSeriesEntity>(entityName: "RecurringSeriesEntity")
+                    seriesRequest.predicate = NSPredicate(format: "id IN %@", seriesIds)
+                    for series in try context.fetch(seriesRequest) {
+                        if let id = series.id { seriesById[id] = series }
+                    }
+                }
+                for chunk in Self.chunked(Array(byId.keys)) {
+                    let request = NSFetchRequest<TransactionEntity>(entityName: "TransactionEntity")
+                    request.predicate = NSPredicate(format: "id IN %@", chunk)
+                    request.returnsObjectsAsFaults = false
+                    for entity in try context.fetch(request) {
+                        guard let id = entity.id, let transaction = byId[id] else { continue }
+                        Self.writeFields(of: transaction, to: entity)
+                        if let seriesId = transaction.recurringSeriesId, !seriesId.isEmpty {
+                            entity.recurringSeries = seriesById[seriesId]
+                        } else {
+                            entity.recurringSeries = nil
+                        }
+                    }
+                }
+                if context.hasChanges {
+                    try context.save()
+                }
+            } catch {
+                Self.logger.error("⚠️ [TransactionRepository] updateTransactionsFields(\(transactions.count, privacy: .public)) failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

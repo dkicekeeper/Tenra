@@ -32,6 +32,7 @@ Touch points that must keep indexes in sync:
 | `.updated(old, new)` | `updateState` | `indexUpdate` + `categoryIndexUpdate` + `subcategoryIndexUpdate` |
 | `.deleted(tx)` | `updateState` | `indexRemove` + `categoryIndexRemove` + `subcategoryIndexRemove` |
 | `.bulkAdded(txs)` | `updateState` | per-tx `indexAdd` + `categoryIndexAdd` + `subcategoryIndexAdd` |
+| `.bulkUpdated(changes)` / `.bulkDeleted(txs)` | `updateState` → `updateStateForBulkUpdate/Delete` | buckets filtered once (`removeIds`), aggregate deltas per row in row order, ONE persist (`categoryIndexUpdateBulk` / `categoryIndexRemoveBulk`) |
 | `addCategory(_:)` | `TransactionStore+CategoryCRUD` | seed `categoryById`/`categoryIdByName`, bump `categoriesMutationVersion` |
 | `updateCategory(_:)` | `TransactionStore+CategoryCRUD` | replace in `categoryById`; on rename → `renameCategoryIndexKeys`; bump |
 | `deleteCategory(_:)` | `TransactionStore+CategoryCRUD` | drop from `categoryById`/`categoryIdByName` + `dropAggregates`; bump |

@@ -76,6 +76,7 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
 
 ### Bulk store mutations
 
+- ⚠️ **Never loop per-row `update`/`apply(.updated)`/`apply(.deleted)` over many transactions** — use `updateBatch(_:)` / `deleteTransactionsInBulk(_:)` (one event, one save, one balance recalc). See [domains/transactions.md](domains/transactions.md) §Bulk edits and deletes.
 - ⚠️ **Never rebuild aggregates per transaction on the main actor** — `rebuildRealizedAggregates()` runs the cold-load builders off main. See [domains/categories.md](domains/categories.md) §Full rebuilds run off the main actor.
 
 ### Background work

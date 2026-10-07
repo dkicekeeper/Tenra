@@ -73,6 +73,58 @@ extension TransactionStore {
         if newEligible { categoryIndexAdd(new) }
     }
 
+    // MARK: - Bulk Maintenance (`.bulkDeleted` / `.bulkUpdated`)
+
+    /// `categoryIndexRemove` for many rows: each bucket filtered once instead of a
+    /// `firstIndex(of:)` per row, the deltas applied in row order, ONE debounced persist.
+    internal func categoryIndexRemoveBulk(_ txs: [Transaction], ids: Set<String>) {
+        var names = Set<String>()
+        for tx in txs where isAggregatable(tx) {
+            names.insert(tx.category)
+            applyAggregateDelta(tx: tx, sign: -1, schedulePersist: false)
+        }
+        guard !names.isEmpty else { return }
+        Self.removeIds(ids, fromBuckets: names, of: &transactionIdsByCategoryName)
+        scheduleAggregatePersist()
+    }
+
+    /// `categoryIndexUpdate` for many rows. Same decision per row and the deltas in the
+    /// same order (so the totals are identical to the bit); the buckets are filtered once
+    /// and the moved ids appended in row order, which leaves them as the per-row
+    /// remove-then-append did.
+    internal func categoryIndexUpdateBulk(_ changes: [TransactionChange]) {
+        var removals: [String: Set<String>] = [:]
+        var additions: [Transaction] = []
+        for change in changes {
+            let old = change.old
+            let new = change.new
+            let oldEligible = isAggregatable(old)
+            let newEligible = isAggregatable(new)
+            let bucketAffecting = (old.category != new.category)
+                || (old.amount != new.amount)
+                || (old.currency != new.currency)
+                || (old.date != new.date)
+                || (old.type != new.type)
+            if oldEligible && newEligible && !bucketAffecting { continue }
+            if oldEligible {
+                removals[old.category, default: []].insert(old.id)
+                applyAggregateDelta(tx: old, sign: -1, schedulePersist: false)
+            }
+            if newEligible {
+                additions.append(new)
+                applyAggregateDelta(tx: new, sign: 1, schedulePersist: false)
+            }
+        }
+        guard !removals.isEmpty || !additions.isEmpty else { return }
+        for (name, ids) in removals {
+            Self.removeIds(ids, fromBuckets: [name], of: &transactionIdsByCategoryName)
+        }
+        for tx in additions {
+            transactionIdsByCategoryName[tx.category, default: []].append(tx.id)
+        }
+        scheduleAggregatePersist()
+    }
+
     // MARK: - Bulk / Rebuild
 
     /// Rebuild all category indexes from scratch, synchronously. Used where the result

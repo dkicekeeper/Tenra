@@ -1209,6 +1209,32 @@
 "settings.privacyPolicy" = "Политика конфиденциальности";
 "settings.termsOfUse" = "Условия использования";
 "settings.version" = "Версия";
+"settings.diagnostics" = "Диагностика";
+"diagnostics.launchCheck.header" = "Проверка при запуске";
+"diagnostics.launchCheck.footer" = "Последняя проверка: %@";
+"diagnostics.checking" = "Проверка…";
+"diagnostics.runAgain" = "Проверить снова";
+"diagnostics.check.database" = "База данных";
+"diagnostics.check.settings" = "Настройки";
+"diagnostics.check.purchases" = "Покупки";
+"diagnostics.status.passed" = "В порядке";
+"diagnostics.status.failed" = "Проблема";
+"diagnostics.status.skipped" = "Не проверено";
+"diagnostics.detail.database" = "Базу данных не удаётся открыть или прочитать.";
+"diagnostics.detail.settings" = "Сохранённые настройки не читаются, поэтому используются настройки по умолчанию.";
+"diagnostics.detail.notConfigured" = "В этой сборке покупки не настроены.";
+"diagnostics.detail.nothingToSell" = "App Store не вернул ни одного товара.";
+"diagnostics.detail.offline" = "Нет подключения к интернету, поэтому проверка не выполнена.";
+"diagnostics.detail.purchasesFailed" = "Не удалось загрузить варианты покупки.";
+"diagnostics.reports.header" = "Отчёты о сбоях и производительности";
+"diagnostics.reports.empty" = "Отчётов пока нет.";
+"diagnostics.reports.footer" = "iOS присылает эти отчёты примерно раз в день. Они остаются на устройстве, пока вы ими не поделитесь.";
+"diagnostics.report.crashes" = "Сбои: %lld";
+"diagnostics.report.hangs" = "Зависания: %lld";
+"diagnostics.report.diskWrites" = "Записи на диск: %lld";
+"diagnostics.report.cpuExceptions" = "Нагрузка на CPU: %lld";
+"diagnostics.report.slowLaunches" = "Медленные запуски: %lld";
+"diagnostics.share" = "Поделиться диагностикой";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Открыть Настройки";

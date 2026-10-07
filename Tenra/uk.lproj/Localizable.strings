@@ -1209,6 +1209,32 @@
 "settings.privacyPolicy" = "Політика конфіденційності";
 "settings.termsOfUse" = "Умови використання";
 "settings.version" = "Версія";
+"settings.diagnostics" = "Діагностика";
+"diagnostics.launchCheck.header" = "Перевірка під час запуску";
+"diagnostics.launchCheck.footer" = "Остання перевірка: %@";
+"diagnostics.checking" = "Перевірка…";
+"diagnostics.runAgain" = "Перевірити знову";
+"diagnostics.check.database" = "База даних";
+"diagnostics.check.settings" = "Налаштування";
+"diagnostics.check.purchases" = "Покупки";
+"diagnostics.status.passed" = "Гаразд";
+"diagnostics.status.failed" = "Проблема";
+"diagnostics.status.skipped" = "Не перевірено";
+"diagnostics.detail.database" = "Базу даних не вдається відкрити або прочитати.";
+"diagnostics.detail.settings" = "Збережені налаштування не читаються, тому використовуються стандартні.";
+"diagnostics.detail.notConfigured" = "У цій збірці покупки не налаштовано.";
+"diagnostics.detail.nothingToSell" = "App Store не повернув жодного товару.";
+"diagnostics.detail.offline" = "Немає підключення до інтернету, тому перевірку не виконано.";
+"diagnostics.detail.purchasesFailed" = "Не вдалося завантажити варіанти покупки.";
+"diagnostics.reports.header" = "Звіти про збої та продуктивність";
+"diagnostics.reports.empty" = "Звітів поки немає.";
+"diagnostics.reports.footer" = "iOS надсилає ці звіти приблизно раз на день. Вони залишаються на пристрої, доки ви ними не поділитеся.";
+"diagnostics.report.crashes" = "Збої: %lld";
+"diagnostics.report.hangs" = "Зависання: %lld";
+"diagnostics.report.diskWrites" = "Записи на диск: %lld";
+"diagnostics.report.cpuExceptions" = "Навантаження на CPU: %lld";
+"diagnostics.report.slowLaunches" = "Повільні запуски: %lld";
+"diagnostics.share" = "Поділитися діагностикою";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Відкрити налаштування";

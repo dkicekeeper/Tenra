@@ -1209,6 +1209,32 @@
 "settings.privacyPolicy" = "プライバシーポリシー";
 "settings.termsOfUse" = "利用規約";
 "settings.version" = "バージョン";
+"settings.diagnostics" = "診断";
+"diagnostics.launchCheck.header" = "起動時チェック";
+"diagnostics.launchCheck.footer" = "最終チェック: %@";
+"diagnostics.checking" = "チェック中…";
+"diagnostics.runAgain" = "もう一度チェック";
+"diagnostics.check.database" = "データベース";
+"diagnostics.check.settings" = "設定";
+"diagnostics.check.purchases" = "購入";
+"diagnostics.status.passed" = "正常";
+"diagnostics.status.failed" = "問題あり";
+"diagnostics.status.skipped" = "未チェック";
+"diagnostics.detail.database" = "データベースを開けないか、読み込めません。";
+"diagnostics.detail.settings" = "保存された設定を読み込めないため、デフォルト設定を使用しています。";
+"diagnostics.detail.notConfigured" = "このビルドでは購入が設定されていません。";
+"diagnostics.detail.nothingToSell" = "App Storeから販売可能な商品が返されませんでした。";
+"diagnostics.detail.offline" = "インターネットに接続されていないため、チェックしていません。";
+"diagnostics.detail.purchasesFailed" = "購入オプションを読み込めませんでした。";
+"diagnostics.reports.header" = "クラッシュとパフォーマンスのレポート";
+"diagnostics.reports.empty" = "レポートはまだありません。";
+"diagnostics.reports.footer" = "iOSはこれらのレポートを1日に1回程度届けます。共有しない限り、このデバイスに保存されたままです。";
+"diagnostics.report.crashes" = "クラッシュ: %lld";
+"diagnostics.report.hangs" = "応答なし: %lld";
+"diagnostics.report.diskWrites" = "ディスク書き込み: %lld";
+"diagnostics.report.cpuExceptions" = "CPU高負荷: %lld";
+"diagnostics.report.slowLaunches" = "起動の遅延: %lld";
+"diagnostics.share" = "診断情報を共有";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "設定を開く";

@@ -1209,6 +1209,32 @@
 "settings.privacyPolicy" = "Informativa sulla privacy";
 "settings.termsOfUse" = "Condizioni d'uso";
 "settings.version" = "Versione";
+"settings.diagnostics" = "Diagnostica";
+"diagnostics.launchCheck.header" = "Controllo all'avvio";
+"diagnostics.launchCheck.footer" = "Ultimo controllo: %@";
+"diagnostics.checking" = "Controllo in corso…";
+"diagnostics.runAgain" = "Controlla di nuovo";
+"diagnostics.check.database" = "Database";
+"diagnostics.check.settings" = "Impostazioni";
+"diagnostics.check.purchases" = "Acquisti";
+"diagnostics.status.passed" = "OK";
+"diagnostics.status.failed" = "Problema";
+"diagnostics.status.skipped" = "Non controllato";
+"diagnostics.detail.database" = "Impossibile aprire o leggere il database.";
+"diagnostics.detail.settings" = "Impossibile leggere le impostazioni salvate, quindi sono in uso quelle predefinite.";
+"diagnostics.detail.notConfigured" = "Gli acquisti non sono configurati in questa build.";
+"diagnostics.detail.nothingToSell" = "L'App Store non ha restituito alcun prodotto.";
+"diagnostics.detail.offline" = "Nessuna connessione a Internet, quindi il controllo non è stato eseguito.";
+"diagnostics.detail.purchasesFailed" = "Impossibile caricare le opzioni di acquisto.";
+"diagnostics.reports.header" = "Report di arresti e prestazioni";
+"diagnostics.reports.empty" = "Ancora nessun report.";
+"diagnostics.reports.footer" = "iOS invia questi report circa una volta al giorno. Restano su questo dispositivo finché non li condividi.";
+"diagnostics.report.crashes" = "Arresti: %lld";
+"diagnostics.report.hangs" = "Blocchi: %lld";
+"diagnostics.report.diskWrites" = "Scritture su disco: %lld";
+"diagnostics.report.cpuExceptions" = "Picchi di CPU: %lld";
+"diagnostics.report.slowLaunches" = "Avvii lenti: %lld";
+"diagnostics.share" = "Condividi diagnostica";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Apri Impostazioni";

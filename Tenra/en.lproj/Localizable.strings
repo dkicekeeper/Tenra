@@ -1209,6 +1209,32 @@
 "settings.privacyPolicy" = "Privacy Policy";
 "settings.termsOfUse" = "Terms of Use";
 "settings.version" = "Version";
+"settings.diagnostics" = "Diagnostics";
+"diagnostics.launchCheck.header" = "Launch Check";
+"diagnostics.launchCheck.footer" = "Last checked %@";
+"diagnostics.checking" = "Checking…";
+"diagnostics.runAgain" = "Check Again";
+"diagnostics.check.database" = "Database";
+"diagnostics.check.settings" = "Settings";
+"diagnostics.check.purchases" = "Purchases";
+"diagnostics.status.passed" = "OK";
+"diagnostics.status.failed" = "Problem";
+"diagnostics.status.skipped" = "Not checked";
+"diagnostics.detail.database" = "The database can't be opened or read.";
+"diagnostics.detail.settings" = "Saved settings can't be read, so the defaults are in use.";
+"diagnostics.detail.notConfigured" = "Purchases aren't set up in this build.";
+"diagnostics.detail.nothingToSell" = "The App Store returned nothing to sell.";
+"diagnostics.detail.offline" = "No internet connection, so this wasn't checked.";
+"diagnostics.detail.purchasesFailed" = "Purchase options couldn't be loaded.";
+"diagnostics.reports.header" = "Crash and Performance Reports";
+"diagnostics.reports.empty" = "No reports yet.";
+"diagnostics.reports.footer" = "iOS delivers these reports about once a day. They stay on this device unless you share them.";
+"diagnostics.report.crashes" = "Crashes: %lld";
+"diagnostics.report.hangs" = "Hangs: %lld";
+"diagnostics.report.diskWrites" = "Disk writes: %lld";
+"diagnostics.report.cpuExceptions" = "CPU spikes: %lld";
+"diagnostics.report.slowLaunches" = "Slow launches: %lld";
+"diagnostics.share" = "Share Diagnostics";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Open Settings";

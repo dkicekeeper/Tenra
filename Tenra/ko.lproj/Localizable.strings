@@ -1209,6 +1209,32 @@
 "settings.privacyPolicy" = "개인정보 처리방침";
 "settings.termsOfUse" = "이용약관";
 "settings.version" = "버전";
+"settings.diagnostics" = "진단";
+"diagnostics.launchCheck.header" = "실행 시 점검";
+"diagnostics.launchCheck.footer" = "마지막 점검: %@";
+"diagnostics.checking" = "점검 중…";
+"diagnostics.runAgain" = "다시 점검";
+"diagnostics.check.database" = "데이터베이스";
+"diagnostics.check.settings" = "설정";
+"diagnostics.check.purchases" = "구매";
+"diagnostics.status.passed" = "정상";
+"diagnostics.status.failed" = "문제 있음";
+"diagnostics.status.skipped" = "점검 안 함";
+"diagnostics.detail.database" = "데이터베이스를 열거나 읽을 수 없어요.";
+"diagnostics.detail.settings" = "저장된 설정을 읽을 수 없어 기본값을 사용하고 있어요.";
+"diagnostics.detail.notConfigured" = "이 빌드에는 구매가 설정되어 있지 않아요.";
+"diagnostics.detail.nothingToSell" = "App Store에서 판매할 상품을 받지 못했어요.";
+"diagnostics.detail.offline" = "인터넷에 연결되어 있지 않아 점검하지 못했어요.";
+"diagnostics.detail.purchasesFailed" = "구매 옵션을 불러오지 못했어요.";
+"diagnostics.reports.header" = "충돌 및 성능 보고서";
+"diagnostics.reports.empty" = "아직 보고서가 없어요.";
+"diagnostics.reports.footer" = "iOS는 이 보고서를 하루에 한 번 정도 전달해요. 공유하지 않는 한 이 기기에만 보관돼요.";
+"diagnostics.report.crashes" = "충돌: %lld";
+"diagnostics.report.hangs" = "응답 없음: %lld";
+"diagnostics.report.diskWrites" = "디스크 쓰기: %lld";
+"diagnostics.report.cpuExceptions" = "CPU 과부하: %lld";
+"diagnostics.report.slowLaunches" = "느린 실행: %lld";
+"diagnostics.share" = "진단 정보 공유";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "설정 열기";

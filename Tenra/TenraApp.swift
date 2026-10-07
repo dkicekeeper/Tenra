@@ -13,6 +13,7 @@
 //       flash, no opacity transition for the always-visible sections.
 //    3. If the store failed to open (or the full load later fails), the window shows
 //       StoreUnavailableView instead and nothing is built over the store.
+//    4. After the first frame, DiagnosticsCenter runs the launch health check.
 //
 
 import SwiftUI
@@ -132,6 +133,7 @@ struct TenraApp: App {
         }.value
         if let failure {
             storeFailure = failure
+            DiagnosticsCenter.shared.scheduleLaunchHealthCheck()
             return
         }
         #if DEBUG
@@ -157,6 +159,8 @@ struct TenraApp: App {
         IntentEnvironment.shared.register(c)
         await c.initializeFastPath() // returns at once when the intent already ran it
         coordinator = c
+        // After the first frame; runs its probes off the main actor.
+        DiagnosticsCenter.shared.scheduleLaunchHealthCheck()
     }
 
     /// The error screen's retry: loads the store again (never touching the file) and, once it

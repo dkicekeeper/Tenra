@@ -1209,6 +1209,32 @@
 "settings.privacyPolicy" = "Gizlilik Politikası";
 "settings.termsOfUse" = "Kullanım Koşulları";
 "settings.version" = "Sürüm";
+"settings.diagnostics" = "Tanılama";
+"diagnostics.launchCheck.header" = "Açılış Kontrolü";
+"diagnostics.launchCheck.footer" = "Son kontrol: %@";
+"diagnostics.checking" = "Kontrol ediliyor…";
+"diagnostics.runAgain" = "Tekrar Kontrol Et";
+"diagnostics.check.database" = "Veritabanı";
+"diagnostics.check.settings" = "Ayarlar";
+"diagnostics.check.purchases" = "Satın Alımlar";
+"diagnostics.status.passed" = "Sorun yok";
+"diagnostics.status.failed" = "Sorun var";
+"diagnostics.status.skipped" = "Kontrol edilmedi";
+"diagnostics.detail.database" = "Veritabanı açılamıyor veya okunamıyor.";
+"diagnostics.detail.settings" = "Kayıtlı ayarlar okunamıyor, bu yüzden varsayılanlar kullanılıyor.";
+"diagnostics.detail.notConfigured" = "Bu derlemede satın alma ayarlanmamış.";
+"diagnostics.detail.nothingToSell" = "App Store satılacak ürün döndürmedi.";
+"diagnostics.detail.offline" = "İnternet bağlantısı yok, bu yüzden kontrol edilmedi.";
+"diagnostics.detail.purchasesFailed" = "Satın alma seçenekleri yüklenemedi.";
+"diagnostics.reports.header" = "Çökme ve Performans Raporları";
+"diagnostics.reports.empty" = "Henüz rapor yok.";
+"diagnostics.reports.footer" = "iOS bu raporları yaklaşık günde bir kez gönderir. Sen paylaşmadıkça bu cihazda kalırlar.";
+"diagnostics.report.crashes" = "Çökmeler: %lld";
+"diagnostics.report.hangs" = "Donmalar: %lld";
+"diagnostics.report.diskWrites" = "Disk yazmaları: %lld";
+"diagnostics.report.cpuExceptions" = "CPU zirveleri: %lld";
+"diagnostics.report.slowLaunches" = "Yavaş açılışlar: %lld";
+"diagnostics.share" = "Tanılamayı Paylaş";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Ayarları Aç";

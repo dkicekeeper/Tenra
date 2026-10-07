@@ -327,6 +327,14 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.plain)
             }
+            // Launch health check + MetricKit crash/hang reports, shareable. In release builds
+            // too: that's where silent failures (like a paywall with nothing to sell) happen.
+            NavigationSettingsRow(
+                icon: "stethoscope",
+                title: String(localized: "settings.diagnostics")
+            ) {
+                DiagnosticsView()
+            }
         }
     }
 

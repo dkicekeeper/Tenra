@@ -20,6 +20,8 @@ class CategoriesViewModel {
         transactionStore?.categories ?? []
     }
 
+    /// Mirrors of the store's subcategory tables, filled by `syncCategoriesFromStore()`
+    /// (empty until the store's full load, like the store itself).
     var subcategories: [Subcategory] = []
     var categorySubcategoryLinks: [CategorySubcategoryLink] = []
     var transactionSubcategoryLinks: [TransactionSubcategoryLink] = []
@@ -68,9 +70,12 @@ class CategoriesViewModel {
         // AppCoordinator after the store is attached).
         self.budgetService = CategoryBudgetService(store: nil)
 
-        self.subcategories = repository.loadSubcategories()
-        self.categorySubcategoryLinks = repository.loadCategorySubcategoryLinks()
-        self.transactionSubcategoryLinks = repository.loadTransactionSubcategoryLinks()
+        // No subcategory reads here. The three tables come from TransactionStore, which
+        // loads them off the main actor in `loadData`; `setupTransactionStoreObserver` /
+        // `syncCategoriesFromStore` copy them here. Reading them here ran three blocking
+        // CoreData fetches inside `AppCoordinator.init`, before the first frame, and
+        // `setupTransactionStoreObserver()` overwrote the result with the still-empty
+        // store a few lines later. `reloadFromStorage()` still reads the repository.
 
         // Set delegates after all properties are initialized
         if let service = self.crudService as? CategoryCRUDService {

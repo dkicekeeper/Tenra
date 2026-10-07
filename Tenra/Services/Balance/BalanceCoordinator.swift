@@ -35,6 +35,10 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
     @ObservationIgnored private let engine: BalanceCalculationEngine
     @ObservationIgnored private let repository: DataRepositoryProtocol
 
+    /// Every balance write goes through this one serial writer, newest value per account
+    /// last. See `BalancePersistQueue` for why per-change detached saves were not enough.
+    @ObservationIgnored private let balanceWriter: BalancePersistQueue
+
     // MARK: - State
 
     @ObservationIgnored private var optimisticUpdates: [UUID: OptimisticUpdate] = [:]
@@ -48,6 +52,9 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
         self.repository = repository
         self.store = BalanceStore()
         self.engine = BalanceCalculationEngine(cacheManager: cacheManager)
+        self.balanceWriter = BalancePersistQueue { [repository] balances in
+            await repository.updateAccountBalancesSync(balances)
+        }
     }
 
     /// The outstanding debt for a loan account — its balance derives from this single
@@ -416,20 +423,22 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
     // MARK: - Persistence
 
     /// Persist balance to Core Data after balance calculation.
-    /// Goes through the `DataRepositoryProtocol` facade — the awaited
-    /// `updateAccountBalancesSync` is now part of the protocol, so no downcast
-    /// to `CoreDataRepository` is needed (M-10). On non-CoreData repositories
-    /// (UserDefaults preview/fallback) this is a no-op by design.
+    /// Goes through the `DataRepositoryProtocol` facade (`updateAccountBalancesSync`,
+    /// M-10); on non-CoreData repositories (UserDefaults preview/fallback) the write is a
+    /// no-op by design. Queued, not fired as its own task: see `balanceWriter`.
     private func persistBalance(_ balance: Double, for accountId: String) {
-        let repo = repository
-        Task.detached(priority: .userInitiated) {
-            await repo.updateAccountBalancesSync([accountId: balance])
-        }
+        balanceWriter.submit([accountId: balance])
     }
 
     /// Persist multiple balances to Core Data after batch recalculation.
     private func persistBalances(_ balances: [String: Double]) {
-        repository.updateAccountBalances(balances)
+        balanceWriter.submit(balances)
+    }
+
+    /// Returns once every balance computed so far is written (or handed to the repository
+    /// that no-ops it). For tests and for callers that must not race the writes.
+    func waitForPersistedBalances() async {
+        await balanceWriter.waitUntilIdle()
     }
 }
 

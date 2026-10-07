@@ -4,7 +4,8 @@
 //
 //  Tests for CloudBackupService backup/restore lifecycle.
 //  Covers: derived model-version constant, createBackup stamping, round-trip
-//  restore, legacy "v7"-stamped backup compatibility, and garbage-file rejection.
+//  restore, legacy "v7"-stamped backup compatibility, garbage-file rejection,
+//  self-contained snapshots, and failed backups never listed.
 //
 
 import Testing
@@ -30,7 +31,12 @@ struct CloudBackupServiceTests {
             .appendingPathComponent("TenraTest-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         let storeURL = tempDir.appendingPathComponent("Tenra.sqlite")
+        return (try makeContainer(at: storeURL), storeURL)
+    }
 
+    /// Opens (or creates) the store at `storeURL` with the production store options that
+    /// matter here: lightweight migration on.
+    private func makeContainer(at storeURL: URL) throws -> NSPersistentContainer {
         let container = NSPersistentContainer(name: "Tenra")
         let description = NSPersistentStoreDescription(url: storeURL)
         description.shouldAddStoreAsynchronously = false
@@ -47,7 +53,7 @@ struct CloudBackupServiceTests {
         container.viewContext.automaticallyMergesChangesFromParent = true
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
-        return (container, storeURL)
+        return container
     }
 
     /// Builds a CoreDataStack (test seam) + CloudBackupService wired to a temp backups dir.
@@ -89,6 +95,19 @@ struct CloudBackupServiceTests {
             count = (try? container.viewContext.count(for: req)) ?? -1
         }
         return count
+    }
+
+    /// The backup folder whose metadata.json carries `id`.
+    private func backupDirectory(id: String, in backupsRoot: URL) throws -> URL {
+        let dirs = try FileManager.default.contentsOfDirectory(
+            at: backupsRoot, includingPropertiesForKeys: nil, options: .skipsHiddenFiles
+        )
+        let match = dirs.first { dir in
+            guard let data = try? Data(contentsOf: dir.appendingPathComponent("metadata.json")),
+                  let metadata = try? JSONDecoder().decode(BackupMetadata.self, from: data) else { return false }
+            return metadata.id == id
+        }
+        return try #require(match, "no backup folder for \(id)")
     }
 
     // MARK: - Test 1: currentModelVersion is derived, not stale
@@ -247,6 +266,59 @@ struct CloudBackupServiceTests {
             didThrow = true
         }
         #expect(didThrow, "Restoring a garbage store file should throw, but it succeeded")
+    }
+
+    // MARK: - Consistent snapshot
+
+    @Test("A backup is one self-contained Tenra.sqlite holding every saved row")
+    func backupIsSelfContainedSnapshot() async throws {
+        let (service, stack, backupsRoot) = try makeService()
+        let container = stack.persistentContainer
+        // Saved rows stay in the -wal until SQLite checkpoints it; the old copy of
+        // Tenra.sqlite alone missed them.
+        seedTransactions(count: 25, in: container)
+        let scratchBefore = try scratchFolders()
+
+        let metadata = try await service.createBackup(
+            transactionCount: 25, accountCount: 0, categoryCount: 0
+        )
+
+        let backupDir = try backupDirectory(id: metadata.id, in: backupsRoot)
+        let files = try FileManager.default.contentsOfDirectory(atPath: backupDir.path).sorted()
+        #expect(files == ["Tenra.sqlite", "metadata.json"], "no -wal or -shm next to the snapshot")
+        let backupStore = backupDir.appendingPathComponent("Tenra.sqlite")
+        #expect(metadata.fileSize == PersistentStoreFiles.fileSize(of: backupStore))
+
+        // Open the file on its own, as a restore on another device would.
+        let isolatedDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TenraIsolated-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: isolatedDir, withIntermediateDirectories: true)
+        let isolated = isolatedDir.appendingPathComponent("Tenra.sqlite")
+        try FileManager.default.copyItem(at: backupStore, to: isolated)
+        let reader = try makeContainer(at: isolated)
+        #expect(transactionCount(in: reader) == 25)
+        #expect(try scratchFolders() == scratchBefore, "the snapshot's scratch folder is removed")
+    }
+
+    /// The snapshot's scratch folders in the temporary directory.
+    private func scratchFolders() throws -> Set<String> {
+        Set(try FileManager.default.contentsOfDirectory(atPath: FileManager.default.temporaryDirectory.path)
+            .filter { $0.hasPrefix("TenraBackup-") })
+    }
+
+    @Test("A backup that can't be written throws and leaves nothing listed")
+    func failedBackupThrowsAndIsNotListed() async throws {
+        let (service, stack, backupsRoot) = try makeService()
+        seedTransactions(count: 2, in: stack.persistentContainer)
+        // A file where the backups folder should be: the backup folder can't be created.
+        let blocked = backupsRoot.appendingPathComponent("blocked")
+        try Data("x".utf8).write(to: blocked)
+        service.backupsRootOverride = blocked
+
+        await #expect(throws: CoreDataStack.CloudBackupError.self) {
+            _ = try await service.createBackup(transactionCount: 2, accountCount: 0, categoryCount: 0)
+        }
+        #expect(service.listBackups().isEmpty)
     }
 }
 

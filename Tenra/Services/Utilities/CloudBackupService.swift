@@ -7,7 +7,11 @@
 //  ubiquity container, controlled by the `isICloudEnabled` preference. This is
 //  plain file storage in iCloud Drive — NOT CloudKit database sync (which was
 //  removed 2026-04-22 after HistoryExpired events caused data loss).
-//  Uses WAL checkpoint before copying for consistency.
+//
+//  A backup is a consistent snapshot of the store taken through SQLite
+//  (CoreDataStack.snapshotStore) as one self-contained `Tenra.sqlite`, checked, and only
+//  then copied into its folder; `metadata.json` is written last, so a backup that failed
+//  half-way is never listed.
 //  Uses CoreDataStack.swapStore() for safe restore.
 //
 //  The container's Documents folder is NOT public (Info.plist
@@ -35,6 +39,9 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
 
     private let coreDataStack: CoreDataStack
     private let maxBackups = 5
+
+    /// The store file inside each backup folder.
+    private static let storeFileName = "Tenra.sqlite"
 
     /// Test seam: when set, backups read/write under this directory instead of
     /// Documents/iCloud. Internal so only the module + @testable tests see it.
@@ -184,9 +191,13 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
 
     // MARK: - Create Backup
 
-    /// Creates a backup of the current SQLite store in the active backups directory
-    /// (local Documents, or the iCloud Drive container when iCloud is enabled).
-    /// Performs WAL checkpoint before copying for consistency.
+    /// Creates a backup of the current store in the active backups directory (local
+    /// Documents, or the iCloud Drive container when iCloud is enabled), then drops the
+    /// oldest backups over the limit.
+    ///
+    /// Throws unless the backup is a complete store that passed its checks. Before 2026-10
+    /// it copied `Tenra.sqlite` and then the -wal/-shm with `try?`, so a backup could miss
+    /// the newest saves, or pair files from two moments, and still report success.
     func createBackup(
         transactionCount: Int,
         accountCount: Int,
@@ -196,13 +207,7 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             throw CoreDataStack.CloudBackupError.noActiveStore
         }
 
-        guard let storeURL = coreDataStack.persistentStoreURL else {
-            throw CoreDataStack.CloudBackupError.noActiveStore
-        }
-
-        // Flush pending changes to SQLite and checkpoint WAL.
-        // Saving the viewContext first ensures all in-memory changes are written.
-        // Then we copy .sqlite + .sqlite-wal + .sqlite-shm as a consistent set.
+        // Write what the view context still holds, so the snapshot has it.
         let viewContext = coreDataStack.viewContext
         try viewContext.performAndWait {
             if viewContext.hasChanges {
@@ -210,53 +215,58 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             }
         }
 
-        // Create backup directory with timestamp
+        // 1. Snapshot into a local scratch folder, never straight into iCloud Drive.
+        let fm = FileManager.default
+        let scratch = fm.temporaryDirectory
+            .appendingPathComponent("TenraBackup-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: scratch) }
+        let snapshotURL = scratch.appendingPathComponent(Self.storeFileName)
+        do {
+            try fm.createDirectory(at: scratch, withIntermediateDirectories: true)
+            try coreDataStack.snapshotStore(to: snapshotURL)
+        } catch {
+            Self.logger.error("Backup snapshot failed: \(error.localizedDescription, privacy: .public)")
+            throw CoreDataStack.CloudBackupError.copyFailed(error)
+        }
+
+        // 2. Copy it into a new backup folder. metadata.json goes last, so a backup that
+        //    failed half-way is never listed, and the folder is removed on a failure.
         let timestamp = ISO8601DateFormatter().string(from: Date())
             .replacingOccurrences(of: ":", with: "-")
-        let backupDir = backupsDir.appendingPathComponent(timestamp, isDirectory: true)
-        try FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
-
-        // Copy SQLite file
-        let backupStoreURL = backupDir.appendingPathComponent("Tenra.sqlite")
-        try FileManager.default.copyItem(at: storeURL, to: backupStoreURL)
-
-        // Also copy WAL and SHM if they exist (belt and suspenders)
-        let walURL = URL(fileURLWithPath: storeURL.path + "-wal")
-        let shmURL = URL(fileURLWithPath: storeURL.path + "-shm")
-        let backupWalURL = backupDir.appendingPathComponent("Tenra.sqlite-wal")
-        let backupShmURL = backupDir.appendingPathComponent("Tenra.sqlite-shm")
-        if FileManager.default.fileExists(atPath: walURL.path) {
-            try? FileManager.default.copyItem(at: walURL, to: backupWalURL)
+        var backupDir = backupsDir.appendingPathComponent(timestamp, isDirectory: true)
+        if fm.fileExists(atPath: backupDir.path) {
+            backupDir = backupsDir.appendingPathComponent(
+                "\(timestamp)-\(UUID().uuidString.prefix(8))", isDirectory: true
+            )
         }
-        if FileManager.default.fileExists(atPath: shmURL.path) {
-            try? FileManager.default.copyItem(at: shmURL, to: backupShmURL)
+        var createdBackupDir = false
+        let metadata: BackupMetadata
+        do {
+            try fm.createDirectory(at: backupDir, withIntermediateDirectories: false)
+            createdBackupDir = true
+            let backupStoreURL = try PersistentStoreFiles.copyStore(at: snapshotURL, into: backupDir)
+            metadata = BackupMetadata(
+                id: UUID().uuidString,
+                date: Date(),
+                transactionCount: transactionCount,
+                accountCount: accountCount,
+                categoryCount: categoryCount,
+                modelVersion: Self.currentModelVersion,
+                fileSize: PersistentStoreFiles.contentSize(ofStore: backupStoreURL),
+                appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+            )
+            try JSONEncoder().encode(metadata)
+                .write(to: backupDir.appendingPathComponent("metadata.json"), options: .atomic)
+        } catch {
+            if createdBackupDir { try? fm.removeItem(at: backupDir) }
+            Self.logger.error("Backup copy failed: \(error.localizedDescription, privacy: .public)")
+            throw CoreDataStack.CloudBackupError.copyFailed(error)
         }
-
-        // Calculate file size
-        let attributes = try FileManager.default.attributesOfItem(atPath: backupStoreURL.path)
-        let fileSize = attributes[.size] as? Int64 ?? 0
-
-        // Create and save metadata
-        let metadata = BackupMetadata(
-            id: UUID().uuidString,
-            date: Date(),
-            transactionCount: transactionCount,
-            accountCount: accountCount,
-            categoryCount: categoryCount,
-            modelVersion: Self.currentModelVersion,
-            fileSize: fileSize,
-            appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
-        )
-
-        let metadataURL = backupDir.appendingPathComponent("metadata.json")
-        let metadataData = try JSONEncoder().encode(metadata)
-        try metadataData.write(to: metadataURL)
 
         // Enforce max backups limit
         try enforceMaxBackups()
 
-        CloudBackupService.logger.info("Backup created: \(timestamp), size: \(fileSize) bytes")
-
+        Self.logger.info("Backup created: \(backupDir.lastPathComponent, privacy: .public), \(metadata.fileSize) bytes")
         return metadata
     }
 

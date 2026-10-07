@@ -23,6 +23,19 @@ Central dependency injection point. Located at [Tenra/ViewModels/AppCoordinator.
 - **`TransactionStore.loadAccountsOnly()` is misnamed** — it also loads categories. Both are needed for the home screen's first paint.
 - **`SettingsViewModel.loadSettingsOnly()`** is the fastPath variant (UserDefaults read only). `loadInitialData()` additionally decodes the full-resolution wallpaper UIImage on MainActor and is heavy — only `SettingsView.task` should call it.
 
+### Launch gate: a store that fails to open is never built on
+
+- `TenraApp.bootstrap()` awaits `CoreDataStack.openStoreIfNeeded()` (off main) **before** building `AppCoordinator`. A failure (`StoreLoadFailure`: migration / disk full / other, plus the `domain code` reference) shows the blocking [StoreUnavailableView](../Tenra/Views/Diagnostics/StoreUnavailableView.swift): what happened, that the data is still on the device, Retry (`CoreDataStack.retryOpeningStore()`, reuses the loaded model, never touches the file) and Contact Support (`SupportContact`, error code in the e-mail).
+- No coordinator in that state means no repository runs, so nothing falls back to the legacy `UserDefaultsRepository` copy and nothing saves over, backs up or replaces the store. The other entry points check too: `IntentEnvironment.services()` throws `IntentStoreUnavailableError` (Siri shows "open the app"), `BackgroundInsightsRefresher.refresh()` skips its pass.
+- A failed full load (`TransactionStore.loadData()` throwing) sets `AppCoordinator.startupFailure`: same screen, `initialize()` stops before maturation/migrations, ContentView skips the automatic backup, intents refuse. Retry clears it and ContentView's `.task` runs `initialize()` again.
+- ⚠️ Read `isCoreDataAvailable` / `openStoreIfNeeded()`, never `_loadFailure` directly: before the first load the field is nil, which would read as "open".
+
+### Diagnostics (no backend)
+
+- [DiagnosticsCenter](../Tenra/Services/Diagnostics/DiagnosticsCenter.swift) registers a MetricKit subscriber in `didFinishLaunching`; diagnostic payloads (crashes, hangs, disk writes, CPU, slow launches) are kept as MetricKit JSON in Application Support/Diagnostics (latest 20, excluded from backup).
+- Launch health check, 2 s after the first frame: store opened + a COUNT reads, saved `AppSettings` decode (SettingsStorageService otherwise swaps in defaults silently), current RevenueCat offering has packages. Failures log as `os.Logger` errors (subsystem `Tenra`, category `Diagnostics`).
+- Settings → About → Diagnostics lists both and shares them (a summary `.txt` + the payload JSON) with `ShareLink`.
+
 ## TransactionStore
 
 **THE** single source of truth for transactions, accounts, and categories.

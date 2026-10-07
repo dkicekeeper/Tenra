@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "エラー";
 "error.importFailed" = "インポートに失敗しました";
-"error.coredata.migrationFailed" = "データの移行に失敗しました。アプリを再起動するか、サポートにお問い合わせください。";
-"error.coredata.initializationFailed" = "ローカルストレージの初期化に失敗しました。アプリは制限された状態で動作します。";
+"storeUnavailable.title" = "データを開けません";
+"storeUnavailable.message.migration" = "このバージョンのアプリ用にデータを変換できませんでした。";
+"storeUnavailable.message.diskFull" = "このデバイスの空き容量がありません。空き容量を確保してから、もう一度お試しください。";
+"storeUnavailable.message.other" = "データを開くときに問題が発生しました。";
+"storeUnavailable.dataSafe" = "データはこのデバイスに残っています。何も変更・削除されていません。";
+"storeUnavailable.contactSupport" = "サポートに問い合わせる";
+"storeUnavailable.errorCode" = "エラーコード: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ 残高 %@";
@@ -1206,6 +1211,32 @@
 "settings.privacyPolicy" = "プライバシーポリシー";
 "settings.termsOfUse" = "利用規約";
 "settings.version" = "バージョン";
+"settings.diagnostics" = "診断";
+"diagnostics.launchCheck.header" = "起動時チェック";
+"diagnostics.launchCheck.footer" = "最終チェック: %@";
+"diagnostics.checking" = "チェック中…";
+"diagnostics.runAgain" = "もう一度チェック";
+"diagnostics.check.database" = "データベース";
+"diagnostics.check.settings" = "設定";
+"diagnostics.check.purchases" = "購入";
+"diagnostics.status.passed" = "正常";
+"diagnostics.status.failed" = "問題あり";
+"diagnostics.status.skipped" = "未チェック";
+"diagnostics.detail.database" = "データベースを開けないか、読み込めません。";
+"diagnostics.detail.settings" = "保存された設定を読み込めないため、デフォルト設定を使用しています。";
+"diagnostics.detail.notConfigured" = "このビルドでは購入が設定されていません。";
+"diagnostics.detail.nothingToSell" = "App Storeから販売可能な商品が返されませんでした。";
+"diagnostics.detail.offline" = "インターネットに接続されていないため、チェックしていません。";
+"diagnostics.detail.purchasesFailed" = "購入オプションを読み込めませんでした。";
+"diagnostics.reports.header" = "クラッシュとパフォーマンスのレポート";
+"diagnostics.reports.empty" = "レポートはまだありません。";
+"diagnostics.reports.footer" = "iOSはこれらのレポートを1日に1回程度届けます。共有しない限り、このデバイスに保存されたままです。";
+"diagnostics.report.crashes" = "クラッシュ: %lld";
+"diagnostics.report.hangs" = "応答なし: %lld";
+"diagnostics.report.diskWrites" = "ディスク書き込み: %lld";
+"diagnostics.report.cpuExceptions" = "CPU高負荷: %lld";
+"diagnostics.report.slowLaunches" = "起動の遅延: %lld";
+"diagnostics.share" = "診断情報を共有";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "設定を開く";
@@ -1596,6 +1627,11 @@
 "premium.locked.voice.message" = "音声で取引を追加。金額とカテゴリを話すだけで、残りはTenraが入力します。";
 "premium.locked.import.title" = "明細の取り込みはProの機能です";
 "premium.locked.import.message" = "取引を1件ずつ入力する代わりに、銀行のPDF明細やCSVファイルを自動で取り込めます。";
+"paywall.unavailable.title" = "現在、購入できません";
+"paywall.unavailable.message" = "現在Tenra Proを購入できません。しばらくしてからもう一度お試しください。";
+"paywall.unavailable.offline" = "インターネット接続を確認して、もう一度お試しください。";
+"paywall.restore.none.title" = "復元する購入がありません";
+"paywall.restore.none.message" = "このApple AccountではTenra Proの購入が見つかりませんでした。";
 "settings.supportID" = "サポートID";
 "settings.supportID.copied" = "コピーしました";
 
@@ -1623,6 +1659,7 @@
 "intent.log.parameter.phrase" = "フレーズ";
 "intent.log.parameter.phrase.prompt" = "いくら、何に使いましたか？";
 "intent.log.notUnderstood" = "金額を聞き取れませんでした。";
+"intent.error.storeUnavailable" = "現在、Tenraはデータを開けません。詳しくはアプリを開いてください。";
 "intent.log.openingApp" = "Tenra を開きます。続きを入力してください。";
 "intent.log.confirm" = "この取引を追加しますか？";
 "intent.log.saved" = "追加しました: %1$@、%2$@。";

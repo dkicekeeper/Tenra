@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "Fehler";
 "error.importFailed" = "Import fehlgeschlagen";
-"error.coredata.migrationFailed" = "Datenmigration fehlgeschlagen. Bitte starten Sie die App neu oder kontaktieren Sie den Support.";
-"error.coredata.initializationFailed" = "Lokaler Speicher konnte nicht initialisiert werden. Die App läuft im eingeschränkten Modus.";
+"storeUnavailable.title" = "Ihre Daten können nicht geöffnet werden";
+"storeUnavailable.message.migration" = "Tenra konnte Ihre Daten nicht für diese App-Version umwandeln.";
+"storeUnavailable.message.diskFull" = "Auf diesem Gerät ist kein Speicherplatz mehr frei. Geben Sie Speicher frei und versuchen Sie es erneut.";
+"storeUnavailable.message.other" = "Beim Öffnen Ihrer Daten ist ein Fehler aufgetreten.";
+"storeUnavailable.dataSafe" = "Ihre Daten sind weiterhin auf diesem Gerät. Es wurde nichts geändert oder gelöscht.";
+"storeUnavailable.contactSupport" = "Support kontaktieren";
+"storeUnavailable.errorCode" = "Fehlercode: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@, Kontostand %@";
@@ -1206,6 +1211,32 @@
 "settings.privacyPolicy" = "Datenschutzerklärung";
 "settings.termsOfUse" = "Nutzungsbedingungen";
 "settings.version" = "Version";
+"settings.diagnostics" = "Diagnose";
+"diagnostics.launchCheck.header" = "Startprüfung";
+"diagnostics.launchCheck.footer" = "Zuletzt geprüft: %@";
+"diagnostics.checking" = "Wird geprüft…";
+"diagnostics.runAgain" = "Erneut prüfen";
+"diagnostics.check.database" = "Datenbank";
+"diagnostics.check.settings" = "Einstellungen";
+"diagnostics.check.purchases" = "Käufe";
+"diagnostics.status.passed" = "OK";
+"diagnostics.status.failed" = "Problem";
+"diagnostics.status.skipped" = "Nicht geprüft";
+"diagnostics.detail.database" = "Die Datenbank kann nicht geöffnet oder gelesen werden.";
+"diagnostics.detail.settings" = "Die gespeicherten Einstellungen sind nicht lesbar, daher gelten die Standardwerte.";
+"diagnostics.detail.notConfigured" = "Käufe sind in diesem Build nicht eingerichtet.";
+"diagnostics.detail.nothingToSell" = "Der App Store hat keine Produkte geliefert.";
+"diagnostics.detail.offline" = "Keine Internetverbindung, daher nicht geprüft.";
+"diagnostics.detail.purchasesFailed" = "Die Kaufoptionen konnten nicht geladen werden.";
+"diagnostics.reports.header" = "Absturz- und Leistungsberichte";
+"diagnostics.reports.empty" = "Noch keine Berichte.";
+"diagnostics.reports.footer" = "iOS liefert diese Berichte etwa einmal täglich. Sie bleiben auf diesem Gerät, bis Sie sie teilen.";
+"diagnostics.report.crashes" = "Abstürze: %lld";
+"diagnostics.report.hangs" = "Hänger: %lld";
+"diagnostics.report.diskWrites" = "Schreibvorgänge: %lld";
+"diagnostics.report.cpuExceptions" = "CPU-Spitzen: %lld";
+"diagnostics.report.slowLaunches" = "Langsame Starts: %lld";
+"diagnostics.share" = "Diagnose teilen";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Einstellungen öffnen";
@@ -1596,6 +1627,11 @@
 "premium.locked.voice.message" = "Fügen Sie Transaktionen per Sprache hinzu – sagen Sie einfach Betrag und Kategorie, Tenra ergänzt den Rest.";
 "premium.locked.import.title" = "Kontoauszug-Import ist eine Pro-Funktion";
 "premium.locked.import.message" = "Importieren Sie PDF-Kontoauszüge und CSV-Dateien automatisch, statt jede Transaktion einzeln einzugeben.";
+"paywall.unavailable.title" = "Käufe sind vorübergehend nicht verfügbar";
+"paywall.unavailable.message" = "Tenra Pro kann gerade nicht gekauft werden. Bitte versuchen Sie es später erneut.";
+"paywall.unavailable.offline" = "Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.";
+"paywall.restore.none.title" = "Nichts wiederherzustellen";
+"paywall.restore.none.message" = "Für diesen Apple Account wurden keine Käufe von Tenra Pro gefunden.";
 "settings.supportID" = "Support-ID";
 "settings.supportID.copied" = "Kopiert";
 
@@ -1623,6 +1659,7 @@
 "intent.log.parameter.phrase" = "Eingabe";
 "intent.log.parameter.phrase.prompt" = "Wie viel haben Sie wofür ausgegeben?";
 "intent.log.notUnderstood" = "Darin war kein Betrag zu erkennen.";
+"intent.error.storeUnavailable" = "Tenra kann Ihre Daten gerade nicht öffnen. Öffnen Sie die App, um mehr zu erfahren.";
 "intent.log.openingApp" = "Tenra wird geöffnet, damit Sie das abschließen können.";
 "intent.log.confirm" = "Diese Buchung hinzufügen?";
 "intent.log.saved" = "Hinzugefügt: %1$@, %2$@.";

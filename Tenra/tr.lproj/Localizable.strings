@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "Hata";
 "error.importFailed" = "İçe aktarma başarısız";
-"error.coredata.migrationFailed" = "Veri taşıma başarısız oldu. Lütfen uygulamayı yeniden başlat ya da destekle iletişime geç.";
-"error.coredata.initializationFailed" = "Yerel depolama başlatılamadı. Uygulama sınırlı modda çalışacak.";
+"storeUnavailable.title" = "Verilerin açılamıyor";
+"storeUnavailable.message.migration" = "Tenra verilerini uygulamanın bu sürümüne dönüştüremedi.";
+"storeUnavailable.message.diskFull" = "Bu cihazda boş alan kalmadı. Biraz yer aç ve tekrar dene.";
+"storeUnavailable.message.other" = "Verilerin açılırken bir sorun oluştu.";
+"storeUnavailable.dataSafe" = "Verilerin hâlâ bu cihazda. Hiçbir şey değiştirilmedi veya silinmedi.";
+"storeUnavailable.contactSupport" = "Destekle İletişime Geç";
+"storeUnavailable.errorCode" = "Hata kodu: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ bakiyesi %@";
@@ -1206,6 +1211,32 @@
 "settings.privacyPolicy" = "Gizlilik Politikası";
 "settings.termsOfUse" = "Kullanım Koşulları";
 "settings.version" = "Sürüm";
+"settings.diagnostics" = "Tanılama";
+"diagnostics.launchCheck.header" = "Açılış Kontrolü";
+"diagnostics.launchCheck.footer" = "Son kontrol: %@";
+"diagnostics.checking" = "Kontrol ediliyor…";
+"diagnostics.runAgain" = "Tekrar Kontrol Et";
+"diagnostics.check.database" = "Veritabanı";
+"diagnostics.check.settings" = "Ayarlar";
+"diagnostics.check.purchases" = "Satın Alımlar";
+"diagnostics.status.passed" = "Sorun yok";
+"diagnostics.status.failed" = "Sorun var";
+"diagnostics.status.skipped" = "Kontrol edilmedi";
+"diagnostics.detail.database" = "Veritabanı açılamıyor veya okunamıyor.";
+"diagnostics.detail.settings" = "Kayıtlı ayarlar okunamıyor, bu yüzden varsayılanlar kullanılıyor.";
+"diagnostics.detail.notConfigured" = "Bu derlemede satın alma ayarlanmamış.";
+"diagnostics.detail.nothingToSell" = "App Store satılacak ürün döndürmedi.";
+"diagnostics.detail.offline" = "İnternet bağlantısı yok, bu yüzden kontrol edilmedi.";
+"diagnostics.detail.purchasesFailed" = "Satın alma seçenekleri yüklenemedi.";
+"diagnostics.reports.header" = "Çökme ve Performans Raporları";
+"diagnostics.reports.empty" = "Henüz rapor yok.";
+"diagnostics.reports.footer" = "iOS bu raporları yaklaşık günde bir kez gönderir. Sen paylaşmadıkça bu cihazda kalırlar.";
+"diagnostics.report.crashes" = "Çökmeler: %lld";
+"diagnostics.report.hangs" = "Donmalar: %lld";
+"diagnostics.report.diskWrites" = "Disk yazmaları: %lld";
+"diagnostics.report.cpuExceptions" = "CPU zirveleri: %lld";
+"diagnostics.report.slowLaunches" = "Yavaş açılışlar: %lld";
+"diagnostics.share" = "Tanılamayı Paylaş";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Ayarları Aç";
@@ -1596,6 +1627,11 @@
 "premium.locked.voice.message" = "İşlemleri sesle ekle. Tutarı ve kategoriyi söylemen yeterli, gerisini Tenra tamamlar.";
 "premium.locked.import.title" = "Ekstre içe aktarma bir Pro özelliğidir";
 "premium.locked.import.message" = "PDF banka ekstrelerini ve CSV dosyalarını her işlemi tek tek yazmak yerine otomatik olarak içe aktar.";
+"paywall.unavailable.title" = "Satın alma geçici olarak kullanılamıyor";
+"paywall.unavailable.message" = "Tenra Pro şu anda satın alınamıyor. Lütfen daha sonra tekrar dene.";
+"paywall.unavailable.offline" = "İnternet bağlantını kontrol et ve tekrar dene.";
+"paywall.restore.none.title" = "Geri yüklenecek bir şey yok";
+"paywall.restore.none.message" = "Bu Apple Hesabı için Tenra Pro satın alımı bulunamadı.";
 "settings.supportID" = "Destek Kimliği";
 "settings.supportID.copied" = "Kopyalandı";
 
@@ -1623,6 +1659,7 @@
 "intent.log.parameter.phrase" = "İfade";
 "intent.log.parameter.phrase.prompt" = "Ne kadar ve ne için harcadınız?";
 "intent.log.notUnderstood" = "Bunda bir tutar bulamadım.";
+"intent.error.storeUnavailable" = "Tenra şu anda verilerini açamıyor. Ne olduğunu görmek için uygulamayı aç.";
 "intent.log.openingApp" = "Tamamlayabilmeniz için Tenra açılıyor.";
 "intent.log.confirm" = "Bu işlem eklensin mi?";
 "intent.log.saved" = "Eklendi: %1$@, %2$@.";

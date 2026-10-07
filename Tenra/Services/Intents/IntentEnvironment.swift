@@ -18,6 +18,10 @@
 //  TransactionStore.add updates balances incrementally against the persisted
 //  account.balance rather than recomputing from the transactions array.
 //
+//  A database that fails to open is never built on: the bootstrap checks the store first and
+//  the intent fails with a message pointing to the app (which shows what happened), instead of
+//  a coordinator whose repositories would read the legacy UserDefaults copy.
+//
 
 import Foundation
 
@@ -27,7 +31,8 @@ final class IntentEnvironment {
     static let shared = IntentEnvironment()
 
     private var coordinator: AppCoordinator?
-    private var bootstrap: Task<AppCoordinator, Never>?
+    /// Resolves to nil when the store could not be opened.
+    private var bootstrap: Task<AppCoordinator?, Never>?
 
     init() {}
 
@@ -37,8 +42,13 @@ final class IntentEnvironment {
         self.coordinator = coordinator
     }
 
-    func services() async -> IntentServices {
-        IntentServices(coordinator: await resolveCoordinator())
+    /// Throws `IntentStoreUnavailableError` when the database could not be opened, or the app's
+    /// full load failed (the app is showing its error screen; nothing may write meanwhile).
+    func services() async throws -> IntentServices {
+        guard let coordinator = await resolveCoordinator(), coordinator.startupFailure == nil else {
+            throw IntentStoreUnavailableError()
+        }
+        return IntentServices(coordinator: coordinator)
     }
 
     /// The coordinator this process already has, or nil: one an intent built before the
@@ -53,20 +63,37 @@ final class IntentEnvironment {
         return nil
     }
 
-    private func resolveCoordinator() async -> AppCoordinator {
+    private func resolveCoordinator() async -> AppCoordinator? {
         if let coordinator { return coordinator }
         if let bootstrap { return await bootstrap.value }
 
-        let task = Task { @MainActor () -> AppCoordinator in
+        // The store check runs inside the task, so concurrent callers share one bootstrap
+        // (an await before `bootstrap = task` would let two of them build a coordinator each).
+        let task = Task { @MainActor () -> AppCoordinator? in
+            let failure = await Task.detached(priority: .userInitiated) {
+                CoreDataStack.shared.openStoreIfNeeded()
+            }.value
+            guard failure == nil else { return nil }
             let created = AppCoordinator()
             await created.initializeFastPath()
             return created
         }
         bootstrap = task
-        let created = await task.value
+        guard let created = await task.value else {
+            // Let a later run check again: the store may open once the device is unlocked.
+            bootstrap = nil
+            return nil
+        }
         if coordinator == nil { coordinator = created }
         return created
     }
+}
+
+/// An intent ran while the database could not be opened. Siri and Shortcuts show the message.
+/// `nonisolated`: with MainActor default isolation the conformance would be main-actor-isolated,
+/// and the system reads the message off the main actor.
+nonisolated struct IntentStoreUnavailableError: Error, CustomLocalizedStringResourceConvertible {
+    var localizedStringResource: LocalizedStringResource { "intent.error.storeUnavailable" }
 }
 
 @MainActor

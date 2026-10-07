@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "Error";
 "error.importFailed" = "Import failed";
-"error.coredata.migrationFailed" = "Data migration failed. Please restart the app or contact support.";
-"error.coredata.initializationFailed" = "Failed to initialize local storage. The app will work in limited mode.";
+"storeUnavailable.title" = "Your data can't be opened";
+"storeUnavailable.message.migration" = "Tenra couldn't convert your data for this version of the app.";
+"storeUnavailable.message.diskFull" = "This device is out of storage space. Free up some space, then try again.";
+"storeUnavailable.message.other" = "Something went wrong while opening your data.";
+"storeUnavailable.dataSafe" = "Your data is still on this device. Nothing has been changed or deleted.";
+"storeUnavailable.contactSupport" = "Contact Support";
+"storeUnavailable.errorCode" = "Error code: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ balance %@";
@@ -1206,6 +1211,32 @@
 "settings.privacyPolicy" = "Privacy Policy";
 "settings.termsOfUse" = "Terms of Use";
 "settings.version" = "Version";
+"settings.diagnostics" = "Diagnostics";
+"diagnostics.launchCheck.header" = "Launch Check";
+"diagnostics.launchCheck.footer" = "Last checked %@";
+"diagnostics.checking" = "Checking…";
+"diagnostics.runAgain" = "Check Again";
+"diagnostics.check.database" = "Database";
+"diagnostics.check.settings" = "Settings";
+"diagnostics.check.purchases" = "Purchases";
+"diagnostics.status.passed" = "OK";
+"diagnostics.status.failed" = "Problem";
+"diagnostics.status.skipped" = "Not checked";
+"diagnostics.detail.database" = "The database can't be opened or read.";
+"diagnostics.detail.settings" = "Saved settings can't be read, so the defaults are in use.";
+"diagnostics.detail.notConfigured" = "Purchases aren't set up in this build.";
+"diagnostics.detail.nothingToSell" = "The App Store returned nothing to sell.";
+"diagnostics.detail.offline" = "No internet connection, so this wasn't checked.";
+"diagnostics.detail.purchasesFailed" = "Purchase options couldn't be loaded.";
+"diagnostics.reports.header" = "Crash and Performance Reports";
+"diagnostics.reports.empty" = "No reports yet.";
+"diagnostics.reports.footer" = "iOS delivers these reports about once a day. They stay on this device unless you share them.";
+"diagnostics.report.crashes" = "Crashes: %lld";
+"diagnostics.report.hangs" = "Hangs: %lld";
+"diagnostics.report.diskWrites" = "Disk writes: %lld";
+"diagnostics.report.cpuExceptions" = "CPU spikes: %lld";
+"diagnostics.report.slowLaunches" = "Slow launches: %lld";
+"diagnostics.share" = "Share Diagnostics";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Open Settings";
@@ -1596,6 +1627,11 @@
 "premium.locked.voice.message" = "Add transactions by voice: just say the amount and category, Tenra fills in the rest.";
 "premium.locked.import.title" = "Statement import is a Pro feature";
 "premium.locked.import.message" = "Import PDF bank statements and CSV files automatically instead of typing each transaction.";
+"paywall.unavailable.title" = "Purchases are temporarily unavailable";
+"paywall.unavailable.message" = "Tenra Pro can't be bought right now. Please try again later.";
+"paywall.unavailable.offline" = "Check your internet connection and try again.";
+"paywall.restore.none.title" = "Nothing to restore";
+"paywall.restore.none.message" = "No Tenra Pro purchases were found for this Apple Account.";
 "settings.supportID" = "Support ID";
 "settings.supportID.copied" = "Copied";
 
@@ -1623,6 +1659,7 @@
 "intent.log.parameter.phrase" = "Phrase";
 "intent.log.parameter.phrase.prompt" = "What did you spend, and on what?";
 "intent.log.notUnderstood" = "I could not find an amount in that.";
+"intent.error.storeUnavailable" = "Tenra can't open your data right now. Open the app to see what happened.";
 "intent.log.openingApp" = "Opening Tenra so you can finish this one.";
 "intent.log.confirm" = "Add this transaction?";
 "intent.log.saved" = "Added %1$@, %2$@.";

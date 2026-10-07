@@ -47,7 +47,7 @@ struct WalletPaymentProbeIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult {
         let ranInBackground = UIApplication.shared.applicationState != .active
-        let services = await IntentEnvironment.shared.services()
+        let services = try await IntentEnvironment.shared.services()
         let history = services.store.transactions
 
         var suggested: String?

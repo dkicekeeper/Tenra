@@ -48,7 +48,7 @@ struct AddExpenseIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
 
-        let services = await IntentEnvironment.shared.services()
+        let services = try await IntentEnvironment.shared.services()
         let memory = MerchantCategoryMemory.shared
 
         // Category: the one passed in, else the one the user chose for this

@@ -129,6 +129,9 @@ struct ContentView: View {
                 // full initialize() — which loads all 19k transactions and warms FRC —
                 // still needs to run here.
                 await coordinator.initialize()
+                // A failed load swaps in the blocking error screen (TenraApp): don't back up
+                // or prompt over it.
+                guard coordinator.startupFailure == nil else { return }
                 // Quiet (provisional) permission so the default-ON weekly digest and
                 // insight signals are actually delivered. Shows no system prompt.
                 await NotificationPermissionManager.shared.requestProvisionalIfUndetermined()

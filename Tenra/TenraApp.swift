@@ -11,6 +11,9 @@
 //       awaits initializeFastPath() before publishing it. This means the first
 //       MainTabView render already has accounts + categories — no empty-Home
 //       flash, no opacity transition for the always-visible sections.
+//    3. If the store failed to open (or the full load later fails), the window shows
+//       StoreUnavailableView instead and nothing is built over the store.
+//    4. After the first frame, DiagnosticsCenter runs the launch health check.
 //
 
 import SwiftUI
@@ -22,6 +25,9 @@ struct TenraApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var timeFilterManager = TimeFilterManager()
     @State private var coordinator: AppCoordinator? = nil
+    /// Set when the database could not be opened: the window shows only the error screen,
+    /// and no coordinator exists to read, save over, back up or replace the store.
+    @State private var storeFailure: StoreLoadFailure? = nil
 
     init() {
         // Shared design system: logo and FX hooks for DesignKit components.
@@ -39,9 +45,16 @@ struct TenraApp: App {
                 // into MainTabView lands on a stable colour.
                 AppColors.bgBase.ignoresSafeArea()
 
-                if let coordinator {
+                if let storeFailure {
+                    StoreUnavailableView(failure: storeFailure, onRetry: retryOpeningStore)
+                        .transition(.opacity)
+                } else if let coordinator {
                     Group {
-                        if coordinator.needsOnboarding {
+                        if let failure = coordinator.startupFailure {
+                            StoreUnavailableView(failure: failure) {
+                                coordinator.retryAfterStartupFailure()
+                            }
+                        } else if coordinator.needsOnboarding {
                             OnboardingFlowView(coordinator: coordinator)
                                 .environment(coordinator)
                         } else {
@@ -56,35 +69,9 @@ struct TenraApp: App {
                 }
             }
             .animation(.easeOut(duration: AppAnimation.standard), value: coordinator == nil)
+            .animation(.easeOut(duration: AppAnimation.standard), value: storeFailure == nil)
             .task {
-                // Wait for CoreData pre-warm to finish (already started in AppDelegate).
-                // If preWarm() finishes before this task runs, this await returns instantly.
-                await Task.detached(priority: .userInitiated) {
-                    _ = CoreDataStack.shared.persistentContainer
-                }.value
-                #if DEBUG
-                // Screenshot capture mode: wipe + seed the demo dataset BEFORE the
-                // coordinator exists so the normal startup path loads it as user data.
-                await ScreenshotDemoSeeder.seed()
-                #endif
-                // Construct the coordinator and run the fast path BEFORE publishing it,
-                // so the first MainTabView/OnboardingFlowView render already has accounts
-                // + categories loaded. This removes the brief empty-Home flash and the
-                // subsequent opacity transition that used to fire ~50 ms later.
-                //
-                // reconcileOnboardingAfterFastPath() runs inside initializeFastPath(), so
-                // `needsOnboarding` is also settled before the conditional below evaluates.
-                //
-                // An App Intent can run in this same process, before or after the UI:
-                // - before: the Wallet automation / Siri launched the process in the
-                //   background and built a coordinator (fast path only). Adopt it, so the
-                //   UI and later intents share one TransactionStore; ContentView's
-                //   initialize() then runs the full load on it.
-                // - after: register before the await, so the intent reuses this one.
-                let c = await IntentEnvironment.shared.existingCoordinator() ?? AppCoordinator()
-                IntentEnvironment.shared.register(c)
-                await c.initializeFastPath() // returns at once when the intent already ran it
-                coordinator = c
+                await bootstrap()
             }
             .onChange(of: scenePhase) { _, phase in
                 AppLockService.shared.handleScenePhase(phase)
@@ -129,5 +116,64 @@ struct TenraApp: App {
                 }
             }
         }
+    }
+
+    // MARK: - Launch
+
+    /// Opens the store, then builds and publishes the coordinator. Also the path a successful
+    /// retry from the error screen takes.
+    private func bootstrap() async {
+        // Wait for CoreData pre-warm to finish (already started in AppDelegate).
+        // If preWarm() finishes before this task runs, this await returns instantly.
+        // A store that failed to open stops the launch here: no coordinator means no
+        // repository falls back to the legacy UserDefaults copy and nothing can save over,
+        // back up or replace the store while the user reads the error screen.
+        let failure = await Task.detached(priority: .userInitiated) {
+            CoreDataStack.shared.openStoreIfNeeded()
+        }.value
+        if let failure {
+            storeFailure = failure
+            DiagnosticsCenter.shared.scheduleLaunchHealthCheck()
+            return
+        }
+        #if DEBUG
+        // Screenshot capture mode: wipe + seed the demo dataset BEFORE the
+        // coordinator exists so the normal startup path loads it as user data.
+        await ScreenshotDemoSeeder.seed()
+        #endif
+        // Construct the coordinator and run the fast path BEFORE publishing it,
+        // so the first MainTabView/OnboardingFlowView render already has accounts
+        // + categories loaded. This removes the brief empty-Home flash and the
+        // subsequent opacity transition that used to fire ~50 ms later.
+        //
+        // reconcileOnboardingAfterFastPath() runs inside initializeFastPath(), so
+        // `needsOnboarding` is also settled before the conditional below evaluates.
+        //
+        // An App Intent can run in this same process, before or after the UI:
+        // - before: the Wallet automation / Siri launched the process in the
+        //   background and built a coordinator (fast path only). Adopt it, so the
+        //   UI and later intents share one TransactionStore; ContentView's
+        //   initialize() then runs the full load on it.
+        // - after: register before the await, so the intent reuses this one.
+        let c = await IntentEnvironment.shared.existingCoordinator() ?? AppCoordinator()
+        IntentEnvironment.shared.register(c)
+        await c.initializeFastPath() // returns at once when the intent already ran it
+        coordinator = c
+        // After the first frame; runs its probes off the main actor.
+        DiagnosticsCenter.shared.scheduleLaunchHealthCheck()
+    }
+
+    /// The error screen's retry: loads the store again (never touching the file) and, once it
+    /// opens, continues the normal launch.
+    private func retryOpeningStore() async {
+        let failure = await Task.detached(priority: .userInitiated) {
+            CoreDataStack.shared.retryOpeningStore()
+        }.value
+        if let failure {
+            storeFailure = failure
+            return
+        }
+        storeFailure = nil
+        await bootstrap()
     }
 }

@@ -9,16 +9,18 @@
 //
 //  isPro = isFounder (grandfathered existing user)  ||  active `pro` entitlement.
 //
-//  Grandfathering (see docs/MONETIZATION_STRATEGY.md §7): users who already
-//  completed onboarding BEFORE the first launch of the Pro build are marked
-//  "Founding Users" and keep Pro for free, permanently. This converts goodwill
-//  into reviews/referrals and avoids yanking features from the live base.
+//  Grandfathering (see docs/MONETIZATION_STRATEGY.md §7, FoundingUserPolicy): users who had
+//  Tenra before Tenra Pro existed are "Founding Users" and keep Pro for free, permanently.
+//  Proof is either this device (onboarding already done when the first Pro build ran) or the
+//  App Store (StoreKit's AppTransaction: first download before the first Pro build went on
+//  sale), so the status survives a reinstall and a new phone. Never revoked.
 //
 
 import Foundation
 import Observation
 import os
 import RevenueCat
+import StoreKit
 
 /// Snapshot of the active `pro` entitlement for status display (Settings → Tenra Pro).
 /// Plain Foundation types only — consumers never touch RevenueCat.
@@ -64,10 +66,10 @@ final class PremiumManager {
     /// for the Settings status block. `nil` while not a subscriber.
     private(set) var proStatus: ProStatus?
 
-    /// True for grandfathered existing users. Read from UserDefaults (decided once
-    /// at first Pro-build launch); exposed so the paywall can show a "Founding User"
-    /// state instead of pricing.
-    var isFounder: Bool { defaults.bool(forKey: Key.isFounder) }
+    /// True for grandfathered existing users (FoundingUserPolicy). Stored in UserDefaults and
+    /// observable, so gates re-render when the App Store check confirms a founder after launch.
+    /// Only ever set to true.
+    private(set) var isFounder: Bool
 
     /// THE gate every feature checks.
     var isPro: Bool { isFounder || isSubscriber }
@@ -75,6 +77,10 @@ final class PremiumManager {
     /// True once RevenueCat has been configured this session. While false the app
     /// treats everyone as free (safe default before the API key / package is set up).
     private(set) var isConfigured = false
+
+    /// Whether the paywall has something to sell, from the last `checkOfferings()`; nil until
+    /// the first check (the launch health check runs one after the first frame).
+    private(set) var offeringsAvailability: OfferingsAvailability?
 
     /// RevenueCat anonymous app user ID. Shown in Settings → About as "Support ID"
     /// so users can share it for purchase-issue support and promotional entitlement
@@ -96,6 +102,9 @@ final class PremiumManager {
         static let softPaywallCount     = "tenra.premium.softPaywallCount.v1"
         static let softPaywallLastShown = "tenra.premium.softPaywallLastShown.v1"
         static let lastKnownSubscriber  = "tenra.premium.lastKnownSubscriber.v1"
+        /// A production App Store record was read: the first-download date never changes,
+        /// so the founder check against it is final.
+        static let appStoreFounderChecked = "tenra.premium.appStoreFounderChecked.v1"
     }
 
     // MARK: - Soft paywall (aha-moment trigger)
@@ -133,6 +142,7 @@ final class PremiumManager {
         // locked Voice/Import tabs flash (and treated cold intent runs as free) until then.
         // The live CustomerInfo stream corrects it either way within moments.
         isSubscriber = UserDefaults.standard.bool(forKey: Key.lastKnownSubscriber)
+        isFounder = UserDefaults.standard.bool(forKey: Key.isFounder)
     }
 
     // MARK: - Configuration
@@ -143,6 +153,7 @@ final class PremiumManager {
     /// not yet completed), which is exactly the discriminator we want.
     func configure() {
         evaluateGrandfatheringOnce()
+        confirmFounderWithAppStoreIfNeeded()
 
         guard !PremiumConfig.revenueCatAPIKey.isEmpty else {
             log.notice("RevenueCat API key not set — Premium runs in free-only mode. isFounder=\(self.isFounder, privacy: .public)")
@@ -198,7 +209,44 @@ final class PremiumManager {
         log.info("pro entitlement active=\(active, privacy: .public)")
     }
 
+    // MARK: - Offerings
+
+    /// Asks RevenueCat whether the current offering has packages (its cache answers when warm)
+    /// and stores the answer in `offeringsAvailability`. The paywall shows RevenueCatUI only
+    /// when this says `.available`; otherwise RevenueCatUI would show its raw error alert,
+    /// whose OK closes the sheet.
+    @discardableResult
+    func checkOfferings() async -> OfferingsAvailability {
+        guard isConfigured else {
+            offeringsAvailability = .notConfigured
+            return .notConfigured
+        }
+        let availability: OfferingsAvailability
+        do {
+            let offerings = try await Purchases.shared.offerings()
+            availability = .loaded(currentPackageCount: offerings.current?.availablePackages.count)
+        } catch {
+            availability = .failure(revenueCatCode: (error as? RevenueCat.ErrorCode)?.rawValue)
+            log.error("Offerings failed to load: \(error.localizedDescription, privacy: .public)")
+        }
+        if !availability.canSell {
+            log.error("Paywall can't sell: \(String(describing: availability), privacy: .public)")
+        }
+        offeringsAvailability = availability
+        return availability
+    }
+
     // MARK: - Purchases / restore (used by custom flows; RevenueCatUI handles its own)
+
+    /// Applies the CustomerInfo a RevenueCatUI purchase or restore callback hands over, and says
+    /// whether the `pro` entitlement is now active. A restore "completes" even when it found
+    /// nothing, so the paywall closes only on true. The paywall passes the value through
+    /// without reading it, so it never needs RevenueCat.
+    @discardableResult
+    func applyPaywallResult(_ info: CustomerInfo) -> Bool {
+        apply(info)
+        return info.entitlements[PremiumConfig.entitlementID]?.isActive == true
+    }
 
     /// Restore previous purchases (App Store "Restore" requirement). RevenueCatUI's
     /// PaywallView exposes its own restore button; this is for any custom entry point.
@@ -210,18 +258,68 @@ final class PremiumManager {
 
     // MARK: - Grandfathering
 
-    /// Decide founder status exactly once, the first time the Pro build runs.
+    /// The device rule, decided once: the first time a Pro build runs, a user who already
+    /// finished onboarding is a founder. A brand-new install has not completed onboarding at
+    /// this point, so it stays a normal free user (until the App Store check below says otherwise).
     private func evaluateGrandfatheringOnce() {
-        guard !defaults.bool(forKey: Key.grandfatherEvaluated) else { return }
+        // Re-read: ScreenshotDemoMode writes the flag directly before configure().
+        isFounder = defaults.bool(forKey: Key.isFounder)
+        let evaluatedBefore = defaults.bool(forKey: Key.grandfatherEvaluated)
         defaults.set(true, forKey: Key.grandfatherEvaluated)
 
-        // Existing user = already finished onboarding before this build first ran.
-        // A brand-new install has not completed onboarding at this point, so it is
-        // correctly treated as a normal free user.
-        if OnboardingState.isCompleted {
-            defaults.set(true, forKey: Key.isFounder)
-            log.info("grandfathered existing user as Founding User")
+        let inputs = FoundingUserPolicy.Inputs(
+            storedFlag: isFounder,
+            evaluatedBefore: evaluatedBefore,
+            onboardingCompleted: OnboardingState.isCompleted,
+            originalDownload: nil
+        )
+        if let reason = FoundingUserPolicy.reason(for: inputs), reason != .alreadyFounder {
+            markFounder(reason)
         }
+    }
+
+    /// The App Store rule, for a reinstall or a new phone where the device flag is gone: the
+    /// signed app transaction's first-download date, compared with the first Pro build's
+    /// release. Runs off the launch path; an unavailable record is retried next launch.
+    private func confirmFounderWithAppStoreIfNeeded() {
+        guard !isFounder, !defaults.bool(forKey: Key.appStoreFounderChecked) else { return }
+        Task(priority: .utility) { [weak self] in
+            let download = await Self.originalDownload()
+            self?.applyOriginalDownload(download)
+        }
+    }
+
+    private func applyOriginalDownload(_ download: FoundingUserPolicy.OriginalDownload?) {
+        guard let download else { return }
+        if FoundingUserPolicy.downloadedBeforePro(download) {
+            markFounder(.downloadedBeforePro)
+        }
+        // TestFlight / sandbox records carry a placeholder date and never count: keep asking,
+        // in case this install is later replaced by the App Store build (same container).
+        if download.isProduction {
+            defaults.set(true, forKey: Key.appStoreFounderChecked)
+        }
+    }
+
+    /// Reads StoreKit's app transaction (cached on device; StoreKit refreshes it as needed).
+    /// nil when it is unavailable or fails verification.
+    private nonisolated static func originalDownload() async -> FoundingUserPolicy.OriginalDownload? {
+        do {
+            guard case .verified(let transaction) = try await AppTransaction.shared else { return nil }
+            return FoundingUserPolicy.OriginalDownload(
+                purchaseDate: transaction.originalPurchaseDate,
+                isProduction: transaction.environment == .production
+            )
+        } catch {
+            return nil
+        }
+    }
+
+    /// Sets the founder flag. Release builds never clear it (only `_debugClearFounder` does).
+    private func markFounder(_ reason: FoundingUserPolicy.Reason) {
+        defaults.set(true, forKey: Key.isFounder)
+        isFounder = true
+        log.info("Founding User (\(reason.rawValue, privacy: .public))")
     }
 
 #if DEBUG
@@ -229,6 +327,8 @@ final class PremiumManager {
     func _debugClearFounder() {
         defaults.removeObject(forKey: Key.isFounder)
         defaults.removeObject(forKey: Key.grandfatherEvaluated)
+        defaults.removeObject(forKey: Key.appStoreFounderChecked)
+        isFounder = false
     }
 #endif
 }

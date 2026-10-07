@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "Erro";
 "error.importFailed" = "Falha na importação";
-"error.coredata.migrationFailed" = "Falha na migração dos dados. Reinicie o app ou entre em contato com o suporte.";
-"error.coredata.initializationFailed" = "Não foi possível inicializar o armazenamento local. O app vai funcionar em modo limitado.";
+"storeUnavailable.title" = "Não foi possível abrir seus dados";
+"storeUnavailable.message.migration" = "O Tenra não conseguiu converter seus dados para esta versão do app.";
+"storeUnavailable.message.diskFull" = "Este dispositivo está sem espaço de armazenamento. Libere espaço e tente novamente.";
+"storeUnavailable.message.other" = "Algo deu errado ao abrir seus dados.";
+"storeUnavailable.dataSafe" = "Seus dados continuam neste dispositivo. Nada foi alterado nem apagado.";
+"storeUnavailable.contactSupport" = "Falar com o suporte";
+"storeUnavailable.errorCode" = "Código de erro: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@, saldo %@";
@@ -1206,6 +1211,32 @@
 "settings.privacyPolicy" = "Política de Privacidade";
 "settings.termsOfUse" = "Termos de Uso";
 "settings.version" = "Versão";
+"settings.diagnostics" = "Diagnóstico";
+"diagnostics.launchCheck.header" = "Verificação ao abrir";
+"diagnostics.launchCheck.footer" = "Última verificação: %@";
+"diagnostics.checking" = "Verificando…";
+"diagnostics.runAgain" = "Verificar de novo";
+"diagnostics.check.database" = "Banco de dados";
+"diagnostics.check.settings" = "Ajustes";
+"diagnostics.check.purchases" = "Compras";
+"diagnostics.status.passed" = "OK";
+"diagnostics.status.failed" = "Problema";
+"diagnostics.status.skipped" = "Não verificado";
+"diagnostics.detail.database" = "Não é possível abrir ou ler o banco de dados.";
+"diagnostics.detail.settings" = "Os ajustes salvos não podem ser lidos, então os padrões estão em uso.";
+"diagnostics.detail.notConfigured" = "As compras não estão configuradas nesta versão.";
+"diagnostics.detail.nothingToSell" = "A App Store não retornou nenhum produto.";
+"diagnostics.detail.offline" = "Sem conexão com a internet, então não foi verificado.";
+"diagnostics.detail.purchasesFailed" = "Não foi possível carregar as opções de compra.";
+"diagnostics.reports.header" = "Relatórios de falhas e desempenho";
+"diagnostics.reports.empty" = "Nenhum relatório ainda.";
+"diagnostics.reports.footer" = "O iOS entrega esses relatórios cerca de uma vez por dia. Eles ficam neste dispositivo, a menos que você os compartilhe.";
+"diagnostics.report.crashes" = "Falhas: %lld";
+"diagnostics.report.hangs" = "Travamentos: %lld";
+"diagnostics.report.diskWrites" = "Gravações em disco: %lld";
+"diagnostics.report.cpuExceptions" = "Picos de CPU: %lld";
+"diagnostics.report.slowLaunches" = "Aberturas lentas: %lld";
+"diagnostics.share" = "Compartilhar diagnóstico";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Abrir Ajustes";
@@ -1596,6 +1627,11 @@
 "premium.locked.voice.message" = "Adicione transações por voz: diga só o valor e a categoria, e o Tenra preenche o resto.";
 "premium.locked.import.title" = "A importação de extratos é um recurso Pro";
 "premium.locked.import.message" = "Importe extratos bancários em PDF e arquivos CSV automaticamente, em vez de digitar cada transação.";
+"paywall.unavailable.title" = "Compras temporariamente indisponíveis";
+"paywall.unavailable.message" = "Não é possível comprar o Tenra Pro agora. Tente novamente mais tarde.";
+"paywall.unavailable.offline" = "Verifique sua conexão com a internet e tente novamente.";
+"paywall.restore.none.title" = "Nada para restaurar";
+"paywall.restore.none.message" = "Nenhuma compra do Tenra Pro foi encontrada para esta Conta Apple.";
 "settings.supportID" = "ID de suporte";
 "settings.supportID.copied" = "Copiado";
 
@@ -1623,6 +1659,7 @@
 "intent.log.parameter.phrase" = "Frase";
 "intent.log.parameter.phrase.prompt" = "Quanto você gastou e com o quê?";
 "intent.log.notUnderstood" = "Não encontrei um valor nisso.";
+"intent.error.storeUnavailable" = "O Tenra não consegue abrir seus dados agora. Abra o app para ver o que aconteceu.";
 "intent.log.openingApp" = "Abrindo o Tenra para você concluir.";
 "intent.log.confirm" = "Adicionar esta transação?";
 "intent.log.saved" = "Adicionado: %1$@, %2$@.";

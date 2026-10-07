@@ -134,8 +134,13 @@
 // MARK: - Errors
 "error.generic.title" = "Ошибка";
 "error.importFailed" = "Ошибка импорта";
-"error.coredata.migrationFailed" = "Миграция данных не удалась. Пожалуйста, перезапустите приложение или обратитесь в поддержку.";
-"error.coredata.initializationFailed" = "Не удалось инициализировать локальное хранилище. Приложение будет работать в ограниченном режиме.";
+"storeUnavailable.title" = "Не удаётся открыть ваши данные";
+"storeUnavailable.message.migration" = "Не удалось перенести ваши данные в формат этой версии приложения.";
+"storeUnavailable.message.diskFull" = "На устройстве закончилось место. Освободите место и попробуйте снова.";
+"storeUnavailable.message.other" = "При открытии данных что-то пошло не так.";
+"storeUnavailable.dataSafe" = "Ваши данные по-прежнему на этом устройстве. Ничего не изменено и не удалено.";
+"storeUnavailable.contactSupport" = "Написать в поддержку";
+"storeUnavailable.errorCode" = "Код ошибки: %@";
 
 // MARK: - Accessibility
 "accessibility.accountCard.label" = "%@ баланс %@";
@@ -1206,6 +1211,32 @@
 "settings.privacyPolicy" = "Политика конфиденциальности";
 "settings.termsOfUse" = "Условия использования";
 "settings.version" = "Версия";
+"settings.diagnostics" = "Диагностика";
+"diagnostics.launchCheck.header" = "Проверка при запуске";
+"diagnostics.launchCheck.footer" = "Последняя проверка: %@";
+"diagnostics.checking" = "Проверка…";
+"diagnostics.runAgain" = "Проверить снова";
+"diagnostics.check.database" = "База данных";
+"diagnostics.check.settings" = "Настройки";
+"diagnostics.check.purchases" = "Покупки";
+"diagnostics.status.passed" = "В порядке";
+"diagnostics.status.failed" = "Проблема";
+"diagnostics.status.skipped" = "Не проверено";
+"diagnostics.detail.database" = "Базу данных не удаётся открыть или прочитать.";
+"diagnostics.detail.settings" = "Сохранённые настройки не читаются, поэтому используются настройки по умолчанию.";
+"diagnostics.detail.notConfigured" = "В этой сборке покупки не настроены.";
+"diagnostics.detail.nothingToSell" = "App Store не вернул ни одного товара.";
+"diagnostics.detail.offline" = "Нет подключения к интернету, поэтому проверка не выполнена.";
+"diagnostics.detail.purchasesFailed" = "Не удалось загрузить варианты покупки.";
+"diagnostics.reports.header" = "Отчёты о сбоях и производительности";
+"diagnostics.reports.empty" = "Отчётов пока нет.";
+"diagnostics.reports.footer" = "iOS присылает эти отчёты примерно раз в день. Они остаются на устройстве, пока вы ими не поделитесь.";
+"diagnostics.report.crashes" = "Сбои: %lld";
+"diagnostics.report.hangs" = "Зависания: %lld";
+"diagnostics.report.diskWrites" = "Записи на диск: %lld";
+"diagnostics.report.cpuExceptions" = "Нагрузка на CPU: %lld";
+"diagnostics.report.slowLaunches" = "Медленные запуски: %lld";
+"diagnostics.share" = "Поделиться диагностикой";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Открыть Настройки";
@@ -1596,6 +1627,11 @@
 "premium.locked.voice.message" = "Добавляйте операции голосом: просто назовите сумму и категорию, Tenra заполнит остальное.";
 "premium.locked.import.title" = "Импорт выписок: функция Pro";
 "premium.locked.import.message" = "Импортируйте PDF-выписки банков и CSV-файлы автоматически, не вводя каждую операцию вручную.";
+"paywall.unavailable.title" = "Покупки временно недоступны";
+"paywall.unavailable.message" = "Сейчас Tenra Pro нельзя купить. Попробуйте позже.";
+"paywall.unavailable.offline" = "Проверьте подключение к интернету и попробуйте снова.";
+"paywall.restore.none.title" = "Нечего восстанавливать";
+"paywall.restore.none.message" = "Покупки Tenra Pro для этого аккаунта Apple не найдены.";
 "settings.supportID" = "ID для поддержки";
 "settings.supportID.copied" = "Скопировано";
 
@@ -1623,6 +1659,7 @@
 "intent.log.parameter.phrase" = "Фраза";
 "intent.log.parameter.phrase.prompt" = "Сколько и на что вы потратили?";
 "intent.log.notUnderstood" = "Не удалось разобрать сумму.";
+"intent.error.storeUnavailable" = "Tenra сейчас не может открыть ваши данные. Откройте приложение, чтобы узнать подробности.";
 "intent.log.openingApp" = "Открываю Tenra, чтобы вы могли закончить.";
 "intent.log.confirm" = "Добавить эту операцию?";
 "intent.log.saved" = "Добавлено: %1$@, %2$@.";

@@ -55,7 +55,7 @@ struct LogTransactionIntent: AppIntent {
         // system log on a release build.
         Self.log.debug("perform() entered")
 
-        let services = await IntentEnvironment.shared.services()
+        let services = try await IntentEnvironment.shared.services()
         let parser = services.makeParser()
 
         let operations = parser.parseMulti(phrase)

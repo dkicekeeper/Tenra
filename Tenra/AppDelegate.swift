@@ -26,6 +26,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         // is set in PremiumConfig, so launch is unaffected before monetization is live.
         PremiumManager.shared.configure()
 
+        // MetricKit: keep the crash / hang / disk-write diagnostics iOS delivers, for
+        // Settings → Diagnostics. One cheap call; the payloads arrive later, off the main thread.
+        DiagnosticsCenter.shared.startCollectingPayloads()
+
         // Set notification delegate
         UNUserNotificationCenter.current().delegate = self
 

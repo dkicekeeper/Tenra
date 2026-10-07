@@ -163,6 +163,17 @@ final class BackgroundInsightsRefresher {
     /// Headless recompute: repository load → InsightsService → signal pushes +
     /// weekly digest. Returns false only when work was cut short (cancellation).
     func refresh() async -> Bool {
+        // A store that failed to open is not read: its repositories would fall back to the
+        // legacy UserDefaults copy and push reminders and insights computed from stale data.
+        // A successful no-op, so the task isn't retried aggressively; the app shows the error.
+        let storeFailure = await Task.detached(priority: .utility) {
+            CoreDataStack.shared.openStoreIfNeeded()
+        }.value
+        if let storeFailure {
+            Self.logger.error("BG refresh: store unavailable (\(storeFailure.reference, privacy: .public)), skipping pass")
+            return true
+        }
+
         // Subscription reminders are scheduled one charge ahead and used to roll
         // forward only when the app became active, so someone who did not open Tenra
         // for a billing cycle got one reminder and then silence. Roll them forward

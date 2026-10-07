@@ -55,7 +55,7 @@ struct CheckSpendingIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
 
-        let services = await IntentEnvironment.shared.services()
+        let services = try await IntentEnvironment.shared.services()
         let baseCurrency = services.settings.settings.baseCurrency
 
         let total = try SpendingQueryService.total(

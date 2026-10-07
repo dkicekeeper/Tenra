@@ -42,4 +42,18 @@ enum PremiumConfig {
     /// Maximum number of accounts a free (non-Pro) user can create.
     /// The daily logging loop stays free; scale + depth is Pro. See strategy doc §3.
     static let freeAccountLimit = 3
+
+    // MARK: - Founding Users
+
+    /// The first moment a new download got a Pro build. An Apple Account whose first download
+    /// of Tenra (`AppTransaction.originalPurchaseDate`, production App Store only) is earlier
+    /// is a Founding User on any device, after any reinstall (see FoundingUserPolicy).
+    ///
+    /// Version 1.0.1, the first with Tenra Pro, went on sale on about 2026-07-09
+    /// (docs/PROMOTION_PLAN.md, release table; build 4 was uploaded 2026-07-03). The exact
+    /// release time is not recorded in the repo, so the cutoff is the END of that day in
+    /// Kazakhstan, 2026-07-10 00:00 UTC+5: the uncertain day counts in the user's favour.
+    /// Build numbers can't be used instead: they restart at 1 with every marketing version.
+    /// ⚠️ Confirm against App Store Connect (version 1.0.1's release date) and adjust.
+    nonisolated static let foundingUserDownloadCutoff = Date(timeIntervalSince1970: 1_783_623_600)
 }

@@ -155,9 +155,12 @@ struct RealizedAggregatesRebuildTests {
         #expect(dayChanged)
         #expect(subject.store.categoriesMutationVersion == versionBefore + 1)
         #expect(Self.realized(subject) == Self.realized(reference))
+        // `Double(...)`, not a bare `1000 + 9000 + 300`: against a `Double?` the #expect
+        // expansion types that sum as Int and compares the two through AnyHashable, which
+        // is never equal (the failure read "10300.0 == 10300").
         #expect(subject.store.categoryAggregatesByKey[
             CategoryAggregate.makeId(category: "Food", year: 0, month: 0, day: 0)
-        ]?.totalAmount == 1000 + 9000 + 300)
+        ]?.totalAmount == Double(1000 + 9000 + 300))
         #expect(subject.store.aggregatesAreFXStale == false)
     }
 

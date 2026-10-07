@@ -1257,6 +1257,9 @@
 "error.backup.copyFailed" = "Failed to copy backup";
 "error.backup.incompatibleVersion" = "Backup version is incompatible";
 "error.backup.iCloudUnavailable" = "iCloud is unavailable. Sign in to iCloud in Settings and try again.";
+"error.backup.damaged" = "This backup can't be opened. It may be damaged or incomplete. Your data was not changed.";
+"error.backup.restoreFailed" = "Couldn't restore the backup. Your data was not changed.";
+"error.backup.notDownloaded" = "This backup hasn't finished downloading from iCloud. Check your connection and try again.";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "Add Loan";
@@ -1714,7 +1717,8 @@
 
 /* Automatic weekly backups */
 "settings.cloud.autoBackup.toggle" = "Automatic weekly backup";
-"settings.cloud.autoBackup.footer" = "Tenra makes a backup once a week when you open the app and keeps the 5 most recent ones.";
+"settings.cloud.autoBackup.footer" = "Tenra makes a backup once a week when you open the app and keeps the 4 most recent ones. Automatic backups never replace the ones you create yourself.";
+"settings.cloud.autoBackup.failed" = "The last automatic backup failed: %@";
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "Cash withdrawal: log what you spend in cash separately";

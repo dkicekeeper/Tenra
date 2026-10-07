@@ -1257,6 +1257,9 @@
 "error.backup.copyFailed" = "Yedek kopyalanamadı";
 "error.backup.incompatibleVersion" = "Yedek sürümü uyumsuz";
 "error.backup.iCloudUnavailable" = "iCloud kullanılamıyor. Ayarlar'dan iCloud'a giriş yap ve tekrar dene.";
+"error.backup.damaged" = "Bu yedek açılamıyor. Hasarlı veya eksik olabilir. Verilerin değişmedi.";
+"error.backup.restoreFailed" = "Yedek geri yüklenemedi. Verilerin değişmedi.";
+"error.backup.notDownloaded" = "Bu yedek henüz iCloud'dan indirilmedi. Bağlantını kontrol et ve tekrar dene.";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "Kredi Ekle";
@@ -1714,7 +1717,8 @@
 
 /* Automatic weekly backups */
 "settings.cloud.autoBackup.toggle" = "Haftalık otomatik yedek";
-"settings.cloud.autoBackup.footer" = "Tenra, uygulamayı açtığınızda haftada bir yedek alır ve en son 5 yedeği saklar.";
+"settings.cloud.autoBackup.footer" = "Tenra, uygulamayı açtığında haftada bir yedek alır ve en son 4 yedeği saklar. Otomatik yedekler, kendi oluşturduğun yedeklerin yerini asla almaz.";
+"settings.cloud.autoBackup.failed" = "Son otomatik yedek alınamadı: %@";
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "Nakit çekim: nakit harcamalarınızı ayrıca kaydedin";

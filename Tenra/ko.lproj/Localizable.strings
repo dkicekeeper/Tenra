@@ -1257,6 +1257,9 @@
 "error.backup.copyFailed" = "백업 복사에 실패했어요";
 "error.backup.incompatibleVersion" = "백업 버전이 호환되지 않아요";
 "error.backup.iCloudUnavailable" = "iCloud를 사용할 수 없어요. 설정에서 iCloud에 로그인한 뒤 다시 시도하세요.";
+"error.backup.damaged" = "이 백업을 열 수 없어요. 손상되었거나 불완전할 수 있어요. 데이터는 변경되지 않았어요.";
+"error.backup.restoreFailed" = "백업을 복원하지 못했어요. 데이터는 변경되지 않았어요.";
+"error.backup.notDownloaded" = "이 백업이 아직 iCloud에서 다운로드되지 않았어요. 연결을 확인한 뒤 다시 시도하세요.";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "대출 추가";
@@ -1714,7 +1717,8 @@
 
 /* Automatic weekly backups */
 "settings.cloud.autoBackup.toggle" = "매주 자동 백업";
-"settings.cloud.autoBackup.footer" = "Tenra는 앱을 열 때 일주일에 한 번 백업을 만들고 최근 5개를 보관합니다.";
+"settings.cloud.autoBackup.footer" = "Tenra는 앱을 열 때 일주일에 한 번 백업을 만들고 최근 4개를 보관합니다. 자동 백업이 직접 만든 백업을 대체하지는 않습니다.";
+"settings.cloud.autoBackup.failed" = "마지막 자동 백업에 실패했어요: %@";
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "현금 인출: 현금 지출은 따로 기록하세요";

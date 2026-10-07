@@ -341,6 +341,14 @@ final class CoreDataStack: @unchecked Sendable {
         case copyFailed(Error)
         case incompatibleVersion(String)
         case iCloudUnavailable
+        /// The backup's store is empty, not a Core Data store, or fails SQLite's page check.
+        /// Nothing live was touched.
+        case damagedBackup
+        /// The backup passed its checks but could not be put in place. The previous store
+        /// is back and open.
+        case restoreFailed
+        /// An iCloud backup's files are not on this device yet.
+        case notDownloaded
 
         var errorDescription: String? {
             switch self {
@@ -348,70 +356,113 @@ final class CoreDataStack: @unchecked Sendable {
             case .copyFailed(let error): return String(localized: "error.backup.copyFailed") + ": \(error.localizedDescription)"
             case .incompatibleVersion(let version): return String(localized: "error.backup.incompatibleVersion") + " (\(version))"
             case .iCloudUnavailable: return String(localized: "error.backup.iCloudUnavailable")
+            case .damagedBackup: return String(localized: "error.backup.damaged")
+            case .restoreFailed: return String(localized: "error.backup.restoreFailed")
+            case .notDownloaded: return String(localized: "error.backup.notDownloaded")
             }
         }
     }
 
-    /// Replaces the current persistent store with a backup file. Used for restoring
-    /// from cloud backups. Posts storeDidResetNotification on the main thread on success.
+    /// Replaces the current persistent store with a backup's. Used to restore backups.
     ///
-    /// **Threading**: This method blocks for the duration of file I/O + PSC.add (can be
-    /// hundreds of ms or more). It MUST be called from a background thread (e.g. via
-    /// `Task.detached`). Calling it from the main thread will freeze the UI and trigger
-    /// the watchdog. The viewContext mutations are dispatched onto the main queue
-    /// internally via `performAndWait`.
+    /// The live store is not touched until a copy of the backup has passed every check
+    /// (`storeMetadata`, the model gate, `validateStoreCopy` in CoreDataStack+Backup.swift),
+    /// so a damaged or truncated backup leaves the user's data as it was. The current store
+    /// files are then moved aside, not deleted, and stay there until the restored store has
+    /// opened; if putting it in place or opening it fails, they go back and are reopened
+    /// (`PersistentStoreFiles.swapStoreFiles`). Before 2026-10 this deleted the live files
+    /// first and copied the backup over them unchecked: a bad backup meant total data loss.
+    ///
+    /// Posts `storeDidResetNotification` on the main thread whenever the view context was
+    /// reset, success or not: FRC holders must re-fetch either way.
+    ///
+    /// **Threading**: blocks for file I/O, SQLite's page check and opening the copy
+    /// (hundreds of ms or more). Call it from a background thread (e.g. `Task.detached`).
+    /// The view context is reset through `performAndWait` while the container lock is not
+    /// held, so a main thread waiting for the lock can't deadlock with it.
     nonisolated func swapStore(from backupURL: URL) throws {
-        containerLock.lock()
-        defer { containerLock.unlock() }
-
-        guard let container = _persistentContainer,
-              let store = container.persistentStoreCoordinator.persistentStores.first,
+        let container = persistentContainer
+        let coordinator = container.persistentStoreCoordinator
+        guard let store = coordinator.persistentStores.first,
               let storeURL = store.url else { throw CloudBackupError.noActiveStore }
+        let options = store.options
+        let model = container.managedObjectModel
 
-        let options = store.options as? [String: Any]
-        let viewContext = container.viewContext
-
-        // Drop all registered objects on viewContext BEFORE removing the store —
-        // any zombie fault accessed after the store is gone would crash with
-        // "persistent store is not reachable from this coordinator".
-        viewContext.performAndWait { viewContext.reset() }
-
-        try container.persistentStoreCoordinator.remove(store)
-
+        // Scratch space beside the store: same volume, so the swap below is a few renames.
         let fm = FileManager.default
-        if fm.fileExists(atPath: storeURL.path) { try fm.removeItem(at: storeURL) }
-        let walURL = URL(fileURLWithPath: storeURL.path + "-wal")
-        let shmURL = URL(fileURLWithPath: storeURL.path + "-shm")
-        try? fm.removeItem(at: walURL)
-        try? fm.removeItem(at: shmURL)
-
-        do {
-            try fm.copyItem(at: backupURL, to: storeURL)
-            // Also copy WAL and SHM from the backup directory if present
-            let backupWalURL = URL(fileURLWithPath: backupURL.path + "-wal")
-            let backupShmURL = URL(fileURLWithPath: backupURL.path + "-shm")
-            if fm.fileExists(atPath: backupWalURL.path) {
-                try? fm.copyItem(at: backupWalURL, to: walURL)
-            }
-            if fm.fileExists(atPath: backupShmURL.path) {
-                try? fm.copyItem(at: backupShmURL, to: shmURL)
-            }
-        } catch {
-            // Recovery: re-add the store at the original URL (now empty) to avoid a crash
-            _ = try? container.persistentStoreCoordinator.addPersistentStore(type: .sqlite, at: storeURL, options: options)
-            throw CloudBackupError.copyFailed(error)
+        let workDirectory = storeURL.deletingLastPathComponent()
+            .appendingPathComponent("RestoreWork-\(UUID().uuidString)", isDirectory: true)
+        var keepsWorkDirectory = false
+        defer {
+            if !keepsWorkDirectory { try? fm.removeItem(at: workDirectory) }
         }
 
-        _ = try container.persistentStoreCoordinator.addPersistentStore(type: .sqlite, at: storeURL, options: options)
+        // 1. Stage a copy of the backup and check it; checking migrates an older backup in
+        //    place, so it never runs on the backup itself. A failure here changes nothing.
+        let stagedURL: URL
+        do {
+            stagedURL = try PersistentStoreFiles.copyStore(
+                at: backupURL,
+                into: workDirectory.appendingPathComponent("staged", isDirectory: true)
+            )
+        } catch {
+            throw CloudBackupError.copyFailed(error)
+        }
+        let backupMetadata: [String: Any]
+        do {
+            backupMetadata = try Self.storeMetadata(ofCopyAt: stagedURL)
+        } catch {
+            Self.backupLogger.error("Backup is not a readable store: \(error.localizedDescription, privacy: .public)")
+            throw CloudBackupError.damagedBackup
+        }
+        guard Self.canOpenStore(withMetadata: backupMetadata, model: model) else {
+            throw CloudBackupError.incompatibleVersion("")
+        }
+        do {
+            let counts = try Self.validateStoreCopy(at: stagedURL, model: model, options: Self.copyOptions(from: options))
+            Self.backupLogger.info("Backup checked: \(counts["TransactionEntity"] ?? 0) transactions")
+        } catch {
+            Self.backupLogger.error("Backup failed its checks: \(error.localizedDescription, privacy: .public)")
+            throw CloudBackupError.damagedBackup
+        }
 
-        // Reset again so the viewContext picks up the new store's row cache.
+        // 2. Swap. Drop every registered object first: a fault reached after the store is
+        //    gone crashes with "persistent store is not reachable from this coordinator".
+        let viewContext = container.viewContext
         viewContext.performAndWait { viewContext.reset() }
+        var swapError: Error?
+        containerLock.lock()
+        do {
+            try coordinator.remove(store)
+            try PersistentStoreFiles.swapStoreFiles(
+                live: storeURL,
+                staged: stagedURL,
+                asideDirectory: workDirectory.appendingPathComponent("previous", isDirectory: true)
+            ) { url in
+                _ = try coordinator.addPersistentStore(type: .sqlite, at: url, options: options)
+            }
+        } catch {
+            swapError = error
+        }
+        containerLock.unlock()
 
-        // Notify FRC holders on the main thread (asynchronously) so SwiftUI gets a
-        // render frame between the swap completing and the FRC re-fetching.
+        // Reset again so the view context reads the store now in place, and notify FRC
+        // holders asynchronously so SwiftUI gets a frame between the swap and the re-fetch.
+        viewContext.performAndWait { viewContext.reset() }
         DispatchQueue.main.async {
             NotificationCenter.default.post(name: Self.storeDidResetNotification, object: self)
         }
+
+        guard let swapError else { return }
+        if let failure = swapError as? PersistentStoreFiles.SwapError,
+           case .rollbackFailed(_, _, let preservedAt) = failure {
+            // The previous store may now exist only in the work directory: keep it.
+            keepsWorkDirectory = true
+            Self.backupLogger.critical("Restore failed and the previous store could not be reopened; its files are in \(preservedAt.path, privacy: .public): \(swapError.localizedDescription, privacy: .public)")
+            throw CloudBackupError.copyFailed(swapError)
+        }
+        Self.backupLogger.error("Restore failed, previous store reopened: \(swapError.localizedDescription, privacy: .public)")
+        throw CloudBackupError.restoreFailed
     }
 
     // MARK: - Performance Monitoring

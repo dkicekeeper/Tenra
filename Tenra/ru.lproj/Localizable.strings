@@ -1257,6 +1257,9 @@
 "error.backup.copyFailed" = "Не удалось скопировать резервную копию";
 "error.backup.incompatibleVersion" = "Версия резервной копии несовместима";
 "error.backup.iCloudUnavailable" = "iCloud недоступен. Войдите в iCloud в Настройках и попробуйте снова.";
+"error.backup.damaged" = "Не удалось открыть резервную копию: возможно, она повреждена или неполная. Ваши данные не изменились.";
+"error.backup.restoreFailed" = "Не удалось восстановить резервную копию. Ваши данные не изменились.";
+"error.backup.notDownloaded" = "Резервная копия ещё не загрузилась из iCloud. Проверьте подключение и попробуйте снова.";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "Добавить кредит";
@@ -1714,7 +1717,8 @@
 
 /* Automatic weekly backups */
 "settings.cloud.autoBackup.toggle" = "Автоматическая копия раз в неделю";
-"settings.cloud.autoBackup.footer" = "Tenra раз в неделю при открытии приложения делает резервную копию и хранит 5 последних.";
+"settings.cloud.autoBackup.footer" = "Tenra раз в неделю при открытии приложения делает резервную копию и хранит 4 последние. Автоматические копии никогда не заменяют те, что вы создали сами.";
+"settings.cloud.autoBackup.failed" = "Не удалось создать последнюю автоматическую копию: %@";
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "Снятие наличных: траты наличными учитывайте отдельно";

@@ -1715,7 +1715,7 @@
 
 /* Automatic weekly backups */
 "settings.cloud.autoBackup.toggle" = "Automatic weekly backup";
-"settings.cloud.autoBackup.footer" = "Tenra makes a backup once a week when you open the app and keeps the 5 most recent ones.";
+"settings.cloud.autoBackup.footer" = "Tenra makes a backup once a week when you open the app and keeps the 4 most recent ones. Automatic backups never replace the ones you create yourself.";
 
 /* Statement import: cash withdrawal hint */
 "transactionPreview.cashWithdrawal" = "Cash withdrawal: log what you spend in cash separately";

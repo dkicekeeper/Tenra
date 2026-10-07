@@ -13,7 +13,8 @@
 //  then copied into its folder; `metadata.json` is written last, so a backup that failed
 //  half-way is never listed. Restore checks a copy of the backup before the live store is
 //  touched and keeps the live files until the restored store has opened
-//  (CoreDataStack.swapStore).
+//  (CoreDataStack.swapStore). Manual and automatic backups have separate limits, so the
+//  weekly automatic backup never deletes one the user made.
 //
 //  The container's Documents folder is NOT public (Info.plist
 //  `NSUbiquitousContainerIsDocumentScopePublic = false`, since 2026-09-25): a
@@ -39,7 +40,13 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     private static let iCloudPreferenceKey = "backups.useICloud"
 
     private let coreDataStack: CoreDataStack
-    private let maxBackups = 5
+
+    /// Most recent manual backups kept. Backups made before the kind was recorded
+    /// (2026-10) count as manual, so automatic ones never evict them.
+    nonisolated static let maxManualBackups = 5
+    /// Most recent automatic backups kept, about a month of weekly ones. Keep in step with
+    /// `settings.cloud.autoBackup.footer`.
+    nonisolated static let maxAutomaticBackups = 4
 
     /// The store file inside each backup folder.
     private static let storeFileName = "Tenra.sqlite"
@@ -193,8 +200,8 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     // MARK: - Create Backup
 
     /// Creates a backup of the current store in the active backups directory (local
-    /// Documents, or the iCloud Drive container when iCloud is enabled), then drops the
-    /// oldest backups over the limit.
+    /// Documents, or the iCloud Drive container when iCloud is enabled), then applies the
+    /// retention of its kind (`backupsToEvict`).
     ///
     /// Throws unless the backup is a complete store that passed its checks. Before 2026-10
     /// it copied `Tenra.sqlite` and then the -wal/-shm with `try?`, so a backup could miss
@@ -202,7 +209,8 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     func createBackup(
         transactionCount: Int,
         accountCount: Int,
-        categoryCount: Int
+        categoryCount: Int,
+        isAutomatic: Bool = false
     ) async throws -> BackupMetadata {
         guard let backupsDir = backupsDirectoryURL() else {
             throw CoreDataStack.CloudBackupError.noActiveStore
@@ -254,7 +262,8 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
                 categoryCount: categoryCount,
                 modelVersion: Self.currentModelVersion,
                 fileSize: PersistentStoreFiles.contentSize(ofStore: backupStoreURL),
-                appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+                appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown",
+                isAutomatic: isAutomatic
             )
             try JSONEncoder().encode(metadata)
                 .write(to: backupDir.appendingPathComponent("metadata.json"), options: .atomic)
@@ -264,10 +273,10 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             throw CoreDataStack.CloudBackupError.copyFailed(error)
         }
 
-        // Enforce max backups limit
-        try enforceMaxBackups()
+        // 3. Retention. A failed eviction leaves one backup too many, not a broken one.
+        evictOldBackups(after: metadata)
 
-        Self.logger.info("Backup created: \(backupDir.lastPathComponent, privacy: .public), \(metadata.fileSize) bytes")
+        Self.logger.info("Backup created: \(backupDir.lastPathComponent, privacy: .public), \(metadata.fileSize) bytes, automatic: \(isAutomatic)")
         return metadata
     }
 
@@ -446,14 +455,34 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
         return backups.reduce(0) { $0 + $1.fileSize }
     }
 
-    // MARK: - Private
+    // MARK: - Retention
 
-    private func enforceMaxBackups() throws {
-        var backups = listBackups()
-        while backups.count > maxBackups {
-            if let oldest = backups.last {
-                try deleteBackup(oldest)
-                backups.removeLast()
+    /// The backups to delete once `created` exists. Each kind has its own limit and only
+    /// evicts its own kind: an automatic backup removes older automatic ones, a manual
+    /// backup older manual ones. A backup with no recorded kind (made before 2026-10) counts
+    /// as manual. `created` itself is never returned.
+    ///
+    /// One shared limit of 5 used to let the weekly automatic backup push the user's own
+    /// backups out within five weeks.
+    nonisolated static func backupsToEvict(
+        from backups: [BackupMetadata],
+        after created: BackupMetadata
+    ) -> [BackupMetadata] {
+        let isAutomatic = created.isAutomatic == true
+        let limit = isAutomatic ? maxAutomaticBackups : maxManualBackups
+        let sameKind = backups
+            .filter { ($0.isAutomatic == true) == isAutomatic && $0.id != created.id }
+            .sorted { $0.date > $1.date }
+        // `created` takes one of the slots.
+        return Array(sameKind.dropFirst(max(limit - 1, 0)))
+    }
+
+    private func evictOldBackups(after created: BackupMetadata) {
+        for backup in Self.backupsToEvict(from: listBackups(), after: created) {
+            do {
+                try deleteBackup(backup)
+            } catch {
+                Self.logger.error("Old backup \(backup.id, privacy: .public) not deleted: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

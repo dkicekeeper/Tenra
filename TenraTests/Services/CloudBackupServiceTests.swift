@@ -6,7 +6,8 @@
 //  Covers: derived model-version constant, createBackup stamping, round-trip
 //  restore, legacy "v7"-stamped backup compatibility, garbage-file rejection,
 //  self-contained snapshots, failed backups never listed, damaged backups refused
-//  with the live store untouched, and pre-2026-10 raw-copy backups.
+//  with the live store untouched, pre-2026-10 raw-copy backups, and the separate
+//  retention of automatic backups.
 //
 
 import Testing
@@ -445,6 +446,33 @@ struct CloudBackupServiceTests {
         try await service.restoreBackup(legacy)
 
         #expect(transactionCount(in: container) == 4)
+    }
+
+    // MARK: - Retention
+
+    @Test("Automatic backups evict only automatic ones: manual and pre-2026-10 backups stay")
+    func automaticBackupsKeepManualOnes() async throws {
+        let (service, stack, backupsRoot) = try makeService()
+        seedTransactions(count: 1, in: stack.persistentContainer)
+        // Backups from before the kind was recorded: no "isAutomatic" in metadata.json.
+        let legacy = try (1...2).map { day in
+            try writeBackupFolder(
+                named: "2026-09-0\(day)T00-00-00Z", in: backupsRoot, store: Data("x".utf8),
+                date: Date(timeIntervalSinceNow: -Double(30 - day) * 86_400)
+            )
+        }
+        let manual = try await service.createBackup(transactionCount: 1, accountCount: 0, categoryCount: 0)
+
+        for _ in 0..<(CloudBackupService.maxAutomaticBackups + 2) {
+            _ = try await service.createBackup(
+                transactionCount: 1, accountCount: 0, categoryCount: 0, isAutomatic: true
+            )
+        }
+
+        let listed = service.listBackups()
+        #expect(listed.filter { $0.isAutomatic == true }.count == CloudBackupService.maxAutomaticBackups)
+        #expect(Set(listed.map(\.id)).isSuperset(of: legacy.map(\.id) + [manual.id]))
+        #expect(manual.isAutomatic == false)
     }
 }
 

@@ -102,15 +102,24 @@ final class CloudSyncViewModel {
             let metadata = try await service.createBackup(
                 transactionCount: transactionCount,
                 accountCount: accountCount,
-                categoryCount: categoryCount
+                categoryCount: categoryCount,
+                isAutomatic: true
             )
-            backups.insert(metadata, at: 0)
-            listGeneration += 1
-            storageUsed = Self.storageUsed(by: backups)
+            insertCreatedBackup(metadata)
             Self.logger.info("Automatic backup created: \(metadata.id, privacy: .public)")
         } catch {
             Self.logger.error("Automatic backup failed: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    /// Puts a new backup at the top of the list and drops the ones the service evicted for
+    /// it (the same `backupsToEvict` rule, applied to the list in hand).
+    private func insertCreatedBackup(_ metadata: BackupMetadata) {
+        let evicted = Set(CloudBackupService.backupsToEvict(from: backups, after: metadata).map(\.id))
+        backups.removeAll { evicted.contains($0.id) }
+        backups.insert(metadata, at: 0)
+        listGeneration += 1
+        storageUsed = Self.storageUsed(by: backups)
     }
 
     // MARK: - Backups
@@ -170,9 +179,7 @@ final class CloudSyncViewModel {
                 accountCount: accountCount,
                 categoryCount: categoryCount
             )
-            backups.insert(metadata, at: 0)
-            listGeneration += 1
-            storageUsed = Self.storageUsed(by: backups)
+            insertCreatedBackup(metadata)
             await showSuccess(String(localized: "settings.cloud.backupCreated"))
         } catch {
             await showError(error.localizedDescription)

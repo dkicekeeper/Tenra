@@ -1255,6 +1255,9 @@
 "error.backup.copyFailed" = "Не вдалося скопіювати резервну копію";
 "error.backup.incompatibleVersion" = "Версія резервної копії несумісна";
 "error.backup.iCloudUnavailable" = "iCloud недоступний. Увійдіть в iCloud у Налаштуваннях і спробуйте ще раз.";
+"error.backup.damaged" = "Не вдалося відкрити резервну копію: можливо, вона пошкоджена або неповна. Ваші дані не змінилися.";
+"error.backup.restoreFailed" = "Не вдалося відновити резервну копію. Ваші дані не змінилися.";
+"error.backup.notDownloaded" = "Резервна копія ще не завантажилася з iCloud. Перевірте з'єднання і спробуйте ще раз.";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "Додати кредит";

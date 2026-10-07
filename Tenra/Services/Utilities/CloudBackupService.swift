@@ -11,8 +11,9 @@
 //  A backup is a consistent snapshot of the store taken through SQLite
 //  (CoreDataStack.snapshotStore) as one self-contained `Tenra.sqlite`, checked, and only
 //  then copied into its folder; `metadata.json` is written last, so a backup that failed
-//  half-way is never listed.
-//  Uses CoreDataStack.swapStore() for safe restore.
+//  half-way is never listed. Restore checks a copy of the backup before the live store is
+//  touched and keeps the live files until the restored store has opened
+//  (CoreDataStack.swapStore).
 //
 //  The container's Documents folder is NOT public (Info.plist
 //  `NSUbiquitousContainerIsDocumentScopePublic = false`, since 2026-09-25): a
@@ -299,23 +300,30 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
         return backups.sorted { $0.date > $1.date }
     }
 
-    /// Ensures a (possibly ubiquitous) file is downloaded before reading it.
-    /// No-op for local files. Blocks up to `timeout` seconds — call off the main thread.
-    private func ensureDownloaded(_ url: URL, timeout: TimeInterval = 30) {
-        let fm = FileManager.default
-        let status = try? url.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
-            .ubiquitousItemDownloadingStatus
-        // Local files (status == nil) or already-current files need no wait.
-        guard let status, status != .current else { return }
+    /// Downloads a (possibly) ubiquitous file and waits up to `timeout` seconds for it.
+    /// Returns false only for an iCloud item that is still not on this device afterwards;
+    /// a local file, or one that doesn't exist at all, returns true. Blocks: call it off
+    /// the main thread.
+    private func ensureDownloaded(_ url: URL, timeout: TimeInterval = 30) -> Bool {
+        // Local files (status == nil) and current ones need no wait.
+        guard let status = downloadingStatus(of: url), status != .current else { return true }
 
-        try? fm.startDownloadingUbiquitousItem(at: url)
+        try? FileManager.default.startDownloadingUbiquitousItem(at: url)
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
-            let current = try? url.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
-                .ubiquitousItemDownloadingStatus
-            if current == .current { return }
+            if downloadingStatus(of: url) == .current { return true }
             Thread.sleep(forTimeInterval: 0.3)
         }
+        return FileManager.default.fileExists(atPath: url.path)
+    }
+
+    /// The iCloud download status of `url`, read fresh every time (a URL caches its
+    /// resource values), or nil for a local file or one that doesn't exist.
+    private func downloadingStatus(of url: URL) -> URLUbiquitousItemDownloadingStatus? {
+        var fresh = url
+        fresh.removeAllCachedResourceValues()
+        return try? fresh.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
+            .ubiquitousItemDownloadingStatus
     }
 
     // MARK: - Restore Backup
@@ -334,18 +342,18 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
         return current.components(separatedBy: " ").last ?? current
     }()
 
-    /// Restores a backup by swapping the persistent store.
-    /// Rejects backups with incompatible model versions.
+    /// Restores a backup by swapping the persistent store (`CoreDataStack.swapStore`), which
+    /// checks a copy of the backup first and keeps the live store until the restored one
+    /// has opened. Rejects backups the current model can't open, and damaged ones.
     ///
     /// **Threading**: `swapStore` is dispatched on a detached background task — it
-    /// performs file I/O and PSC.add which together can run for hundreds of ms,
-    /// and must never block the main thread (watchdog + missed UI frames).
+    /// performs file I/O, SQLite's page check and PSC.add, which together can run for
+    /// hundreds of ms, and must never block the main thread (watchdog + missed UI frames).
     /// - Parameter metadata: The backup to restore
     func restoreBackup(_ metadata: BackupMetadata) async throws {
         // NOTE: The JSON metadata.modelVersion field is unreliable historical data —
-        // all backups were stamped v7 regardless of actual schema. The gate has been
-        // moved to a real CoreData store-metadata check inside the Task.detached block
-        // below, where the backup SQLite file is inspected directly.
+        // all backups were stamped v7 regardless of actual schema. The gate is a real
+        // CoreData store-metadata check in swapStore, on a copy of the backup's store.
 
         guard let backupsDir = backupsDirectoryURL() else {
             throw CoreDataStack.CloudBackupError.noActiveStore
@@ -367,7 +375,7 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             if let data = try? Data(contentsOf: metadataURL),
                let m = try? JSONDecoder().decode(BackupMetadata.self, from: data),
                m.id == metadata.id {
-                backupStoreURL = dirURL.appendingPathComponent("Tenra.sqlite")
+                backupStoreURL = dirURL.appendingPathComponent(Self.storeFileName)
                 break
             }
         }
@@ -376,32 +384,30 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             throw CoreDataStack.CloudBackupError.noActiveStore
         }
 
-        // Swap the store off the main thread — file I/O + PSC.addPersistentStore can be slow.
-        // For iCloud backups the store files may still be cloud placeholders, so download
-        // the full sqlite/wal/shm set (also off the main thread) before swapping.
+        // Swap the store off the main thread: file I/O, the checks and
+        // PSC.addPersistentStore can be slow. For iCloud backups the store files may still be
+        // cloud placeholders, so download them first (also off the main thread). A -wal
+        // exists only in backups made before 2026-10; restoring without it would silently
+        // drop the saves it holds, so a -wal iCloud has must be here too. The -shm is never
+        // used.
         let stack = coreDataStack
+        let shownVersion = metadata.modelVersion
         try await Task.detached(priority: .userInitiated) { [self] in
-            ensureDownloaded(sourceURL)
-            ensureDownloaded(URL(fileURLWithPath: sourceURL.path + "-wal"))
-            ensureDownloaded(URL(fileURLWithPath: sourceURL.path + "-shm"))
+            guard ensureDownloaded(sourceURL),
+                  ensureDownloaded(PersistentStoreFiles.walURL(ofStore: sourceURL)) else {
+                throw CoreDataStack.CloudBackupError.notDownloaded
+            }
             guard FileManager.default.fileExists(atPath: sourceURL.path) else {
-                throw CoreDataStack.CloudBackupError.noActiveStore
+                throw CoreDataStack.CloudBackupError.damagedBackup
             }
-            // Compatibility gate: read the backup store's own CoreData metadata.
-            // - Directly compatible with the current model → restore as-is.
-            // - Openable by an older bundled model version → swapStore re-adds the store
-            //   with automatic lightweight migration options, so restore is safe.
-            // - Neither (e.g. backup made by a NEWER app version) → reject.
-            let storeMetadata = try NSPersistentStoreCoordinator.metadataForPersistentStore(
-                ofType: NSSQLiteStoreType, at: sourceURL, options: nil
-            )
-            let currentModel = stack.persistentContainer.managedObjectModel
-            if !currentModel.isConfiguration(withName: nil, compatibleWithStoreMetadata: storeMetadata) {
-                guard NSManagedObjectModel.mergedModel(from: [.main], forStoreMetadata: storeMetadata) != nil else {
-                    throw CoreDataStack.CloudBackupError.incompatibleVersion(metadata.modelVersion)
-                }
+            // swapStore applies the compatibility gate on its copy: a backup the current
+            // model opens directly or after a lightweight migration from a bundled older
+            // version restores; one made by a NEWER app version is rejected.
+            do {
+                try stack.swapStore(from: sourceURL)
+            } catch CoreDataStack.CloudBackupError.incompatibleVersion(_) {
+                throw CoreDataStack.CloudBackupError.incompatibleVersion(shownVersion)
             }
-            try stack.swapStore(from: sourceURL)
         }.value
 
         CloudBackupService.logger.info("Backup restored: \(metadata.id)")

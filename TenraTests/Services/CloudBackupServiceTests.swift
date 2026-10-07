@@ -5,7 +5,8 @@
 //  Tests for CloudBackupService backup/restore lifecycle.
 //  Covers: derived model-version constant, createBackup stamping, round-trip
 //  restore, legacy "v7"-stamped backup compatibility, garbage-file rejection,
-//  self-contained snapshots, and failed backups never listed.
+//  self-contained snapshots, failed backups never listed, damaged backups refused
+//  with the live store untouched, and pre-2026-10 raw-copy backups.
 //
 
 import Testing
@@ -97,6 +98,10 @@ struct CloudBackupServiceTests {
         return count
     }
 
+    private func liveStoreURL(of stack: CoreDataStack) throws -> URL {
+        try #require(stack.persistentContainer.persistentStoreCoordinator.persistentStores.first?.url)
+    }
+
     /// The backup folder whose metadata.json carries `id`.
     private func backupDirectory(id: String, in backupsRoot: URL) throws -> URL {
         let dirs = try FileManager.default.contentsOfDirectory(
@@ -108,6 +113,56 @@ struct CloudBackupServiceTests {
             return metadata.id == id
         }
         return try #require(match, "no backup folder for \(id)")
+    }
+
+    /// Writes a backup folder by hand, as an older app version (or a broken copy) left it.
+    @discardableResult
+    private func writeBackupFolder(
+        named name: String,
+        in backupsRoot: URL,
+        store: Data?,
+        date: Date = Date()
+    ) throws -> BackupMetadata {
+        let dir = backupsRoot.appendingPathComponent(name, isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        if let store {
+            try store.write(to: dir.appendingPathComponent("Tenra.sqlite"))
+        }
+        let metadata = BackupMetadata(
+            id: UUID().uuidString, date: date, transactionCount: 0, accountCount: 0,
+            categoryCount: 0, modelVersion: "v7", fileSize: Int64(store?.count ?? 0),
+            appVersion: "1.3"
+        )
+        try JSONEncoder().encode(metadata).write(to: dir.appendingPathComponent("metadata.json"))
+        return metadata
+    }
+
+    /// Restore must fail with `expected`, and leave the live store as it was.
+    private func expectRestoreRefused(
+        _ metadata: BackupMetadata,
+        by service: CloudBackupService,
+        stack: CoreDataStack,
+        liveCount: Int,
+        expected: (CoreDataStack.CloudBackupError) -> Bool
+    ) async throws {
+        do {
+            try await service.restoreBackup(metadata)
+            Issue.record("restore should have been refused")
+        } catch let error as CoreDataStack.CloudBackupError {
+            #expect(expected(error), "unexpected error: \(error)")
+        }
+        let container = stack.persistentContainer
+        #expect(transactionCount(in: container) == liveCount, "live data must be untouched")
+        // The live store is still attached and writable.
+        seedTransactions(count: 1, in: container)
+        #expect(transactionCount(in: container) == liveCount + 1)
+        #expect(try restoreWorkDirectories(beside: liveStoreURL(of: stack)).isEmpty)
+    }
+
+    /// Leftovers of a restore next to the store; there must be none once it returns.
+    private func restoreWorkDirectories(beside storeURL: URL) throws -> [String] {
+        try FileManager.default.contentsOfDirectory(atPath: storeURL.deletingLastPathComponent().path)
+            .filter { $0.hasPrefix("RestoreWork-") }
     }
 
     // MARK: - Test 1: currentModelVersion is derived, not stale
@@ -185,6 +240,8 @@ struct CloudBackupServiceTests {
         let countAfterRestore = transactionCount(in: container)
         #expect(countAfterRestore == 3,
                 "After restore the store should have 3 transactions, got \(countAfterRestore)")
+        // The previous store kept aside during the swap, and the staged copy, are gone.
+        #expect(try restoreWorkDirectories(beside: liveStoreURL(of: stack)).isEmpty)
     }
 
     // MARK: - Test 4: Legacy "v7"-stamped backup still restores
@@ -233,7 +290,8 @@ struct CloudBackupServiceTests {
 
     @Test("Garbage Tenra.sqlite with valid metadata.json is rejected")
     func garbageStoreFileIsRejected() async throws {
-        let (service, _, backupsRoot) = try makeService()
+        let (service, stack, backupsRoot) = try makeService()
+        seedTransactions(count: 2, in: stack.persistentContainer)
 
         // Create a fake backup directory by hand.
         let fakeDir = backupsRoot.appendingPathComponent("2026-01-01T00-00-00Z", isDirectory: true)
@@ -258,14 +316,11 @@ struct CloudBackupServiceTests {
         let metadataURL = fakeDir.appendingPathComponent("metadata.json")
         try JSONEncoder().encode(fakeMetadata).write(to: metadataURL)
 
-        // Restore must throw (either .incompatibleVersion or the metadata-read error).
-        var didThrow = false
-        do {
-            try await service.restoreBackup(fakeMetadata)
-        } catch {
-            didThrow = true
+        // Restore must throw before touching the live store (it used to delete it first).
+        try await expectRestoreRefused(fakeMetadata, by: service, stack: stack, liveCount: 2) {
+            if case .damagedBackup = $0 { return true }
+            return false
         }
-        #expect(didThrow, "Restoring a garbage store file should throw, but it succeeded")
     }
 
     // MARK: - Consistent snapshot
@@ -319,6 +374,77 @@ struct CloudBackupServiceTests {
             _ = try await service.createBackup(transactionCount: 2, accountCount: 0, categoryCount: 0)
         }
         #expect(service.listBackups().isEmpty)
+    }
+
+    // MARK: - Restore safety
+
+    @Test("A truncated backup is refused before the live store is touched")
+    func truncatedBackupKeepsLiveData() async throws {
+        let (service, stack, backupsRoot) = try makeService()
+        let container = stack.persistentContainer
+        seedTransactions(count: 3, in: container)
+        let metadata = try await service.createBackup(
+            transactionCount: 3, accountCount: 0, categoryCount: 0
+        )
+        seedTransactions(count: 2, in: container)
+
+        let backupStore = try backupDirectory(id: metadata.id, in: backupsRoot)
+            .appendingPathComponent("Tenra.sqlite")
+        let handle = try FileHandle(forWritingTo: backupStore)
+        try handle.truncate(atOffset: UInt64(PersistentStoreFiles.fileSize(of: backupStore) / 2))
+        try handle.close()
+
+        try await expectRestoreRefused(metadata, by: service, stack: stack, liveCount: 5) {
+            if case .damagedBackup = $0 { return true }
+            return false
+        }
+    }
+
+    @Test("An empty backup file is refused, not opened as a new empty store")
+    func emptyBackupFileIsRefused() async throws {
+        let (service, stack, backupsRoot) = try makeService()
+        seedTransactions(count: 2, in: stack.persistentContainer)
+        let metadata = try writeBackupFolder(named: "2026-01-02T00-00-00Z", in: backupsRoot, store: Data())
+
+        try await expectRestoreRefused(metadata, by: service, stack: stack, liveCount: 2) {
+            if case .damagedBackup = $0 { return true }
+            return false
+        }
+    }
+
+    @Test("A backup folder without its store file is refused")
+    func missingBackupStoreIsRefused() async throws {
+        let (service, stack, backupsRoot) = try makeService()
+        seedTransactions(count: 2, in: stack.persistentContainer)
+        let metadata = try writeBackupFolder(named: "2026-01-03T00-00-00Z", in: backupsRoot, store: nil)
+
+        try await expectRestoreRefused(metadata, by: service, stack: stack, liveCount: 2) {
+            if case .damagedBackup = $0 { return true }
+            return false
+        }
+    }
+
+    @Test("A backup in the pre-2026-10 format (.sqlite, -wal, -shm copied raw) restores every row")
+    func legacyRawCopyBackupRestores() async throws {
+        let (service, stack, backupsRoot) = try makeService()
+        let container = stack.persistentContainer
+        seedTransactions(count: 4, in: container)
+        let storeURL = try liveStoreURL(of: stack)
+
+        // What createBackup used to do: copy the three files while the store is open.
+        let legacy = try writeBackupFolder(named: "2026-09-01T10-00-00Z", in: backupsRoot, store: nil)
+        let legacyDir = try backupDirectory(id: legacy.id, in: backupsRoot)
+        let legacyStore = legacyDir.appendingPathComponent("Tenra.sqlite")
+        for (source, target) in zip(PersistentStoreFiles.allFileURLs(ofStore: storeURL),
+                                    PersistentStoreFiles.allFileURLs(ofStore: legacyStore))
+        where FileManager.default.fileExists(atPath: source.path) {
+            try FileManager.default.copyItem(at: source, to: target)
+        }
+
+        seedTransactions(count: 3, in: container)
+        try await service.restoreBackup(legacy)
+
+        #expect(transactionCount(in: container) == 4)
     }
 }
 

@@ -1255,6 +1255,9 @@
 "error.backup.copyFailed" = "Échec de la copie de la sauvegarde";
 "error.backup.incompatibleVersion" = "La version de la sauvegarde est incompatible";
 "error.backup.iCloudUnavailable" = "iCloud est indisponible. Connectez-vous à iCloud dans Réglages et réessayez.";
+"error.backup.damaged" = "Impossible d'ouvrir cette sauvegarde. Elle est peut-être endommagée ou incomplète. Vos données n'ont pas été modifiées.";
+"error.backup.restoreFailed" = "Impossible de restaurer la sauvegarde. Vos données n'ont pas été modifiées.";
+"error.backup.notDownloaded" = "Cette sauvegarde n'est pas encore téléchargée depuis iCloud. Vérifiez votre connexion et réessayez.";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "Ajouter un crédit";

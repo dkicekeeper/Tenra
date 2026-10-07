@@ -1255,6 +1255,9 @@
 "error.backup.copyFailed" = "バックアップのコピーに失敗しました";
 "error.backup.incompatibleVersion" = "バックアップのバージョンに互換性がありません";
 "error.backup.iCloudUnavailable" = "iCloudを利用できません。設定でiCloudにサインインしてから、もう一度お試しください。";
+"error.backup.damaged" = "このバックアップを開けません。破損しているか、不完全な可能性があります。データは変更されていません。";
+"error.backup.restoreFailed" = "バックアップを復元できませんでした。データは変更されていません。";
+"error.backup.notDownloaded" = "このバックアップはまだiCloudからダウンロードされていません。接続を確認して、もう一度お試しください。";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "ローンを追加";

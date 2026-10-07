@@ -1255,6 +1255,9 @@
 "error.backup.copyFailed" = "Failed to copy backup";
 "error.backup.incompatibleVersion" = "Backup version is incompatible";
 "error.backup.iCloudUnavailable" = "iCloud is unavailable. Sign in to iCloud in Settings and try again.";
+"error.backup.damaged" = "This backup can't be opened. It may be damaged or incomplete. Your data was not changed.";
+"error.backup.restoreFailed" = "Couldn't restore the backup. Your data was not changed.";
+"error.backup.notDownloaded" = "This backup hasn't finished downloading from iCloud. Check your connection and try again.";
 
 // MARK: - Loans (Form)
 "loan.addLoan" = "Add Loan";

@@ -18,7 +18,7 @@ All consumer paths (Views, ViewModels, services that run on `@MainActor`) must h
 | Subcategories for transaction id | `TransactionStore.subcategoryIdsByTransactionId[txId]` | O(M), M ≤ ~5 |
 | Subcategory usage count / last-used | `TransactionStore.subcategoryUsageCountById` / `subcategoryLastUsedById` | O(1) |
 
-`InsightsService` is the **only** consumer allowed to do O(N_tx) scans of the snapshot array — it runs `nonisolated` on a background actor and can't read MainActor-isolated indexes. It uses `CategoryBudgetService.budgetProgress(for:transactions:baseCurrency:)` (static legacy API) for that path.
+`InsightsService` is the **only** consumer allowed to do O(N_tx) scans of the snapshot array — it runs `nonisolated` on a background actor and can't read MainActor-isolated indexes. It uses `CategoryBudgetService.budgetProgress(for:transactions:baseCurrency:rates:)` (static legacy API) for that path, once per refresh (the budget insights are shared across granularities, see [insights.md](insights.md)).
 
 ## Index maintenance contract
 

@@ -44,7 +44,7 @@ Two reasons, the second more important than the first:
 
 Single conversions should keep calling `convertSync` — there are hundreds and they gain nothing.
 
-Current bulk call sites: `SummaryCalculator.compute` / `computeTopExpenseWeights`, `TransactionStore+LoadSnapshot`'s cold aggregate rebuilds.
+Current bulk call sites: `SummaryCalculator.compute` / `computeTopExpenseWeights`, `TransactionStore+LoadSnapshot`'s cold aggregate rebuilds, the Home category grid (`TransactionCategoryPickerCoordinator.computeCategoryExpenses`), Insights budgets (`generateBudgetInsights` → `CategoryBudgetService.calculateSpentLegacy(rates:)`).
 
 ## KZT-Pivot Storage
 

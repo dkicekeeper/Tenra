@@ -13,9 +13,12 @@ extension InsightsService {
 
     // MARK: - Budget Insights
 
+    /// Each budget's spent figure covers the budget's OWN period (this week, the month
+    /// from its reset day, this year), never the insight granularity's window, so the
+    /// result is the same for every granularity: `generateAllInsights` computes it once
+    /// per refresh and shares it (`budgetInsightIDs`). Pass ALL transactions.
     nonisolated func generateBudgetInsights(
         transactions: [Transaction],
-        timeFilter: TimeFilter,
         baseCurrency: String,
         categories: [CustomCategory]
     ) -> [Insight] {
@@ -30,18 +33,21 @@ extension InsightsService {
 
         let calendar = Calendar.current
         let now = Date()
+        // One rate table for every category's walk (CLAUDE.md red flag 15).
+        let rates = RateSnapshot()
         var budgetItems: [BudgetInsightItem] = []
         var overBudgetCount = 0
 
         for category in categoriesWithBudget {
             // Insights runs nonisolated on a background actor; it cannot read the
             // MainActor-isolated aggregate indexes, so it uses the legacy array-scan
-            // path against the snapshot we were handed. This intentionally does
-            // O(N_tx) work — Insights is async/background and not on a hot path.
+            // path against the snapshot we were handed: O(N_tx) per budgeted category,
+            // once per refresh.
             guard let progress = CategoryBudgetService.budgetProgress(
                 for: category,
                 transactions: transactions,
-                baseCurrency: baseCurrency
+                baseCurrency: baseCurrency,
+                rates: rates
             ) else {
                 Self.logger.debug("   💼 \(category.name, privacy: .public): budgetProgress returned nil — SKIPPED")
                 continue

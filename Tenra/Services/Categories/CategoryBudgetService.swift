@@ -161,41 +161,58 @@ extension CategoryBudgetService {
     // instance methods which are O(≤31), not O(N_tx).
 
     /// O(N_tx) scan of a transactions snapshot.
+    /// `rates`: one frozen table for a walk over several categories (Insights takes one
+    /// per refresh); nil converts through the live cache, as before.
     nonisolated static func budgetProgress(
         for category: CustomCategory,
         transactions: [Transaction],
-        baseCurrency: String?
+        baseCurrency: String?,
+        rates: RateSnapshot? = nil
     ) -> BudgetProgress? {
         guard let budgetAmount = category.budgetAmount,
               budgetAmount > 0,
               category.type == .expense else { return nil }
-        let spent = calculateSpentLegacy(for: category, transactions: transactions, baseCurrency: baseCurrency)
+        let spent = calculateSpentLegacy(
+            for: category,
+            transactions: transactions,
+            baseCurrency: baseCurrency,
+            rates: rates
+        )
         return BudgetProgress(budgetAmount: budgetAmount, spent: spent)
     }
 
     /// O(N_tx) scan of a transactions snapshot, converting amounts to base currency
-    /// via `CategoryBudgetCurrency.toBase`. Kept verbatim from pre-refactor logic
-    /// so Insights output is byte-for-byte identical.
+    /// via `CategoryBudgetCurrency.toBase`.
+    ///
+    /// Dates go through `FastDateParser`, which returns the same `Date` as
+    /// `DateFormatters.dateFormatter` for every input (pinned by `FastDateParserTests`);
+    /// the formatter cost ~13 µs per expense of the category. The sum runs in array order
+    /// from 0, like the `filter` + `reduce` it replaced, so totals are bit-identical
+    /// (`InsightsBudgetOnceTests`).
     nonisolated static func calculateSpentLegacy(
         for category: CustomCategory,
         transactions: [Transaction],
-        baseCurrency: String?
+        baseCurrency: String?,
+        rates: RateSnapshot? = nil
     ) -> Double {
         let periodStart = legacyBudgetPeriodStart(for: category)
         let periodEnd = Date()
-        let dateFormatter = DateFormatters.dateFormatter
 
-        return transactions
-            .filter { tx in
-                guard tx.category == category.name,
-                      tx.type == .expense,
-                      let d = dateFormatter.date(from: tx.date) else { return false }
-                return d >= periodStart && d <= periodEnd
+        var spent = 0.0
+        for tx in transactions where tx.category == category.name && tx.type == .expense {
+            guard let d = FastDateParser.date(from: tx.date),
+                  d >= periodStart && d <= periodEnd else { continue }
+            guard let base = baseCurrency else {
+                spent += tx.amount
+                continue
             }
-            .reduce(0) { sum, tx in
-                guard let base = baseCurrency else { return sum + tx.amount }
-                return sum + CategoryBudgetCurrency.toBase(amount: tx.amount, from: tx.currency, base: base).amount
+            if let rates {
+                spent += CategoryBudgetCurrency.toBase(amount: tx.amount, from: tx.currency, base: base, rates: rates).amount
+            } else {
+                spent += CategoryBudgetCurrency.toBase(amount: tx.amount, from: tx.currency, base: base).amount
             }
+        }
+        return spent
     }
 
     nonisolated static func legacyBudgetPeriodStart(for category: CustomCategory) -> Date {

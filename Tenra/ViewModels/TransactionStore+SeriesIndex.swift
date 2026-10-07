@@ -78,6 +78,46 @@ extension TransactionStore {
         }
     }
 
+    // MARK: - Bulk Maintenance (`.bulkDeleted` / `.bulkUpdated`)
+
+    /// `seriesIndexRemove` for many rows: each touched series bucket filtered once.
+    internal func seriesIndexRemoveBulk(_ txs: [Transaction], ids: Set<String>) {
+        var seriesIds = Set<String>()
+        for tx in txs {
+            if let sid = tx.recurringSeriesId, !sid.isEmpty { seriesIds.insert(sid) }
+        }
+        guard !seriesIds.isEmpty else { return }
+        Self.removeIds(ids, fromBuckets: seriesIds, of: &transactionIdsBySeriesId)
+    }
+
+    /// `seriesIndexUpdate` for many rows (linking or unlinking a series' payments moves
+    /// every row between buckets): buckets filtered once, moved ids appended in row order,
+    /// which leaves them as the per-row remove-then-append did.
+    internal func seriesIndexUpdateBulk(_ changes: [TransactionChange]) {
+        var removals: [String: Set<String>] = [:]
+        var additions: [(seriesId: String, id: String)] = []
+        for change in changes {
+            let old = change.old
+            let new = change.new
+            if old.date != new.date,
+               parsedDateByDateString[new.date] == nil,
+               let parsed = FastDateParser.date(from: new.date) {
+                parsedDateByDateString[new.date] = parsed
+            }
+            let oldSid = old.recurringSeriesId ?? ""
+            let newSid = new.recurringSeriesId ?? ""
+            if oldSid == newSid { continue }
+            if !oldSid.isEmpty { removals[oldSid, default: []].insert(old.id) }
+            if !newSid.isEmpty { additions.append((newSid, new.id)) }
+        }
+        for (seriesId, ids) in removals {
+            Self.removeIds(ids, fromBuckets: [seriesId], of: &transactionIdsBySeriesId)
+        }
+        for addition in additions {
+            transactionIdsBySeriesId[addition.seriesId, default: []].append(addition.id)
+        }
+    }
+
     // MARK: - Cold Rebuild
 
     /// Rebuild `transactionIdsBySeriesId` and `parsedDateByDateString` from the canonical

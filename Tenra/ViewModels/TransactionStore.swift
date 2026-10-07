@@ -131,11 +131,13 @@ final class TransactionStore {
     /// Called from `AppCoordinator` after currency prewarm completes.
     ///
     /// If any aggregate bucket was filled while the FX-rate cache was cold
-    /// (`aggregatesAreFXStale == true`), rebuild the category indexes once now
-    /// that rates are available. Rebuild stays O(N_tx) but only runs on the
-    /// first successful prewarm of each session.
+    /// (`aggregatesAreFXStale == true`), rebuild the category and account aggregates
+    /// now that rates are available. The rebuild runs off the main actor
+    /// (`rebuildRealizedAggregates()`) and lands a moment later with its own
+    /// `categoriesMutationVersion` bump; it used to run here, on the main actor, and froze
+    /// the UI for 0.6–0.9 s on every rate update while some rate was still missing.
     ///
-    /// - Returns: `true` if cold-cache aggregates were rebuilt with fresh rates.
+    /// - Returns: `true` if a rebuild of cold-cache aggregates was started.
     ///   The caller must then also recalculate balances — cached balances for
     ///   cross-currency accounts were likewise computed at the cold rate and the
     ///   balance cache does not heal itself (cache audit #1).
@@ -143,11 +145,13 @@ final class TransactionStore {
     func bumpCurrencyRatesVersion() -> Bool {
         currencyRatesVersion &+= 1
         guard aggregatesAreFXStale else { return false }
-        rebuildCategoryIndexes()
-        // Account aggregates also depend on FX conversion (cross-currency
-        // sources / targets). Rebuild together so they self-heal in one pass.
-        rebuildAccountAggregates()
-        categoriesMutationVersion &+= 1
+        // The rebuild sets the flag again from its own conversions. Clearing it now keeps
+        // a burst of rate updates from each requesting a rebuild: one that is running
+        // already reruns when it sees `currencyRatesVersion` moved under it.
+        aggregatesAreFXStale = false
+        Task { [weak self] in
+            await self?.rebuildRealizedAggregates()
+        }
         return true
     }
 
@@ -345,6 +349,20 @@ final class TransactionStore {
     // Reentrancy guard: prevents concurrent extendAllActiveSeriesHorizons() calls
     // (loadData + applicationDidBecomeActive can race on startup)
     @ObservationIgnored internal var isExtendingHorizons = false
+
+    /// The running off-main rebuild of the realized aggregates, if any. Requests made
+    /// while it runs join it (TransactionStore+RealizedAggregates).
+    @ObservationIgnored internal var realizedAggregatesRebuildTask: Task<Void, Never>?
+
+    /// Bumps on every wholesale write of `categoryAggregatesByKey` /
+    /// `accountAggregatesByAccountId` (rebuilds, seeds, rename re-keying, category drops).
+    /// Part of `RealizedAggregatesStamp`: an off-main rebuild that ran across such a
+    /// write is recomputed instead of overwriting it.
+    @ObservationIgnored internal var aggregateMapsGeneration: Int = 0
+
+    /// The running `recalculateLedgerIfDayChanged` pass, if any. Callers arriving while
+    /// it runs wait for it and then re-check the day key, so one day is folded in once.
+    @ObservationIgnored private var ledgerRecalcTask: Task<Bool, Never>?
 
     // Coordinator for syncing changes to ViewModels (with @Observable we need manual sync)
     @ObservationIgnored weak var coordinator: AppCoordinator?
@@ -721,6 +739,27 @@ final class TransactionStore {
     ///   depend on "today" even when no tx matured (cache audit #7).
     @discardableResult
     func recalculateLedgerIfDayChanged(now: Date = Date(), defaults: UserDefaults = .standard) async -> Bool {
+        // Single-flight. The recompute below suspends (the aggregates rebuild off the main
+        // actor), and the triggers that fire together on foreground — scene `.active`,
+        // `applicationDidBecomeActive`, `AppCoordinator.initialize` — would otherwise all
+        // pass the day-key check before the first one stamps it. A caller arriving during a
+        // pass waits for it, then checks again (and normally finds today already stamped).
+        while let running = ledgerRecalcTask {
+            _ = await running.value
+        }
+        let pass = Task { [weak self] () -> Bool in
+            guard let self else { return false }
+            let dayChanged = await self.recalculateLedgerIfDayChangedNow(now: now, defaults: defaults)
+            // Cleared before the result is observable, so a waiter never re-awaits this pass.
+            self.ledgerRecalcTask = nil
+            return dayChanged
+        }
+        ledgerRecalcTask = pass
+        return await pass.value
+    }
+
+    /// One pass of `recalculateLedgerIfDayChanged`; never runs concurrently with another.
+    private func recalculateLedgerIfDayChangedNow(now: Date, defaults: UserDefaults) async -> Bool {
         guard !accounts.isEmpty else { return false }
 
         // Don't stamp the once-per-day gate before the full transaction set is loaded. The
@@ -751,9 +790,15 @@ final class TransactionStore {
         }
 
         // Realized aggregates exclude future tx — a matured tx must now be counted.
-        rebuildAccountAggregates()
-        rebuildCategoryIndexes()
-        categoriesMutationVersion &+= 1
+        // Rebuilt off the main actor: one pass in a detached task over a Sendable copy,
+        // only the assignment (and one persist) here, bumping categoriesMutationVersion.
+        // On the main actor this was a 0.6–0.9 s freeze on a 19k set just after Home
+        // appeared or on foreground.
+        //
+        // Not per-transaction deltas for the matured rows: which rows the incremental state
+        // already counts is not tracked (one added after midnight before this check is
+        // counted already), so a delta could count a row twice. A full rebuild is exact.
+        await rebuildRealizedAggregates()
         // Balances recomputed from initialBalance + realized tx (also repairs drift).
         await balanceCoordinator.recalculateAll(accounts: accounts, transactions: transactions)
 
@@ -976,6 +1021,45 @@ final class TransactionStore {
 
     }
 
+    /// Updates several existing transactions as ONE `.bulkUpdated` event: one state pass,
+    /// one balance recalculation for the touched accounts, one CoreData save. Per row
+    /// (`update(_:)` in a loop) each cost an O(N) array scan, a blocking fetch + save and
+    /// a history-list rebuild: 1–2 s for 200 rows.
+    ///
+    /// Each row gets the checks `update(_:)` runs (it exists, `validate`, no silent drop of
+    /// a live series link); a row that fails them is left out instead of failing the
+    /// batch — what a loop of `try? update(_:)` did. A repeated id keeps its last version.
+    /// - Returns: the rows saved.
+    @discardableResult
+    func updateBatch(_ rows: [Transaction]) async -> [Transaction] {
+        var latest: [String: Transaction] = [:]
+        var order: [String] = []
+        for row in rows {
+            if latest.updateValue(row, forKey: row.id) == nil {
+                order.append(row.id)
+            }
+        }
+        var changes: [TransactionChange] = []
+        changes.reserveCapacity(order.count)
+        for id in order {
+            guard let new = latest[id], let old = transactionById[id] else { continue }
+            guard (try? validate(new)) != nil else { continue }
+            if let oldSeriesId = old.recurringSeriesId,
+               new.recurringSeriesId == nil,
+               recurringStore.seriesById[oldSeriesId] != nil {
+                continue
+            }
+            changes.append(TransactionChange(old: old, new: new))
+        }
+        guard !changes.isEmpty else { return [] }
+        do {
+            try await apply(.bulkUpdated(changes))
+        } catch {
+            return []
+        }
+        return changes.map(\.new)
+    }
+
     /// Rewrites a renamed category on every transaction and recurring series that
     /// still carries the old name. Call AFTER `renameCategoryIndexKeys`, which has
     /// already moved the name-keyed indexes and aggregates; this makes the stored
@@ -1121,6 +1205,10 @@ final class TransactionStore {
             persistIncremental(event)
         }
 
+        // 4b. Bulk edits/deletes write every row in ONE background save, awaited so the
+        //     rows are on disk when the caller resumes, as with the per-row paths.
+        await persistBulkChange(event)
+
         // 5. Debounced sync — coalesces rapid mutations (e.g., batch adds)
         // @Observable automatically notifies SwiftUI for TransactionStore property changes.
         // Debounced sync handles cache invalidation and insights recompute.
@@ -1188,6 +1276,12 @@ final class TransactionStore {
                 seriesIndexAdd(tx)
                 accountAggregatesAdd(tx)
             }
+
+        case .bulkUpdated(let changes):
+            updateStateForBulkUpdate(changes)
+
+        case .bulkDeleted(let txs):
+            updateStateForBulkDelete(txs)
 
         // MARK: - Recurring Series Events (delegated to RecurringStore)
 
@@ -1311,8 +1405,66 @@ final class TransactionStore {
                 )
             }
 
+        case .bulkUpdated, .bulkDeleted:
+            // One recalculation of the touched accounts instead of a per-row incremental
+            // update — each of those published the balances and started a CoreData save.
+            guard bulkChangeCanMoveBalances(event) else { return }
+            await recalculateBalancesAfterBulkChange(affectedAccounts)
+
         default:
             break
+        }
+    }
+
+    /// Whether a bulk event can move a balance at all. Where the per-row path applied a
+    /// zero delta, the bulk path leaves balances alone too: a future-dated row contributes
+    /// nothing (`LedgerPolicyRule.isRealized`, the first gate of
+    /// `BalanceCalculationEngine.contribution`), and neither does an edit that keeps every
+    /// field `contribution` reads — "apply to similar", (un)linking or detaching a series.
+    private func bulkChangeCanMoveBalances(_ event: TransactionEvent) -> Bool {
+        switch event {
+        case .bulkDeleted(let txs):
+            return txs.contains { LedgerPolicyRule.isRealized(FastDateParser.date(from: $0.date)) }
+        case .bulkUpdated(let changes):
+            return changes.contains { !Self.balanceFieldsMatch($0.old, $0.new) }
+        default:
+            return true
+        }
+    }
+
+    /// The fields `BalanceCalculationEngine.contribution` reads (plus `targetCurrency`).
+    /// Extend this when `contribution` starts reading another one.
+    private static func balanceFieldsMatch(_ lhs: Transaction, _ rhs: Transaction) -> Bool {
+        lhs.type == rhs.type
+            && lhs.accountId == rhs.accountId
+            && lhs.targetAccountId == rhs.targetAccountId
+            && lhs.amount == rhs.amount
+            && lhs.currency == rhs.currency
+            && lhs.convertedAmount == rhs.convertedAmount
+            && lhs.targetAmount == rhs.targetAmount
+            && lhs.targetCurrency == rhs.targetCurrency
+            && lhs.date == rhs.date
+            && lhs.createdAt == rhs.createdAt
+    }
+
+    /// Exact balances for `accountIds` after a bulk edit/delete, from the same rule as
+    /// every recalculation (`initialBalance` + Σ realized contributions). Only the rows
+    /// that touch these accounts are passed, in array order — the summation order of
+    /// `recalculateAll` — so each balance is the same to the bit as a full recalculation.
+    /// `recalculateAccounts` walks that list once per account; when that would cost more
+    /// than one pass over everything, `recalculateAll` runs instead.
+    private func recalculateBalancesAfterBulkChange(_ accountIds: Set<String>) async {
+        let ids = accountIds.filter { accountById[$0] != nil }
+        guard !ids.isEmpty else { return }
+        let relevant = transactions.filter { tx in
+            if let id = tx.accountId, ids.contains(id) { return true }
+            if let id = tx.targetAccountId, ids.contains(id) { return true }
+            return false
+        }
+        if ids.count * relevant.count > transactions.count {
+            await balanceCoordinator.recalculateAll(accounts: accounts, transactions: transactions)
+        } else {
+            await balanceCoordinator.recalculateAccounts(ids, accounts: accounts, transactions: relevant)
         }
     }
 
@@ -1339,10 +1491,30 @@ final class TransactionStore {
         case .bulkAdded(let txs):
             repository.batchInsertTransactions(txs)
 
+        case .bulkUpdated, .bulkDeleted:
+            // One awaited background save: persistBulkChange, step 4b of apply().
+            break
+
         case .seriesCreated, .seriesUpdated, .seriesStopped, .seriesDeleted:
             // Recurring series are small datasets; use the existing full-save path
             recurringStore.saveSeries()
             recurringStore.saveOccurrences()
+        }
+    }
+
+    /// Bulk events: all rows in one background save (`id IN` fetch, one `save()`, one
+    /// merge into the view context — the history list rebuilds once, not once per row).
+    /// A delete is written even during an import, like the per-row delete in
+    /// `invalidateCache(for:)`; an edit waits for `finishImport`, like `.updated`.
+    private func persistBulkChange(_ event: TransactionEvent) async {
+        switch event {
+        case .bulkDeleted(let txs):
+            await repository.deleteTransactions(ids: txs.map(\.id))
+        case .bulkUpdated(let changes):
+            guard !isImporting else { return }
+            await repository.updateTransactionsFields(changes.map(\.new))
+        default:
+            return
         }
     }
 
@@ -1376,7 +1548,7 @@ final class TransactionStore {
                 cache.remove(UnifiedTransactionCache.Key.dailyExpenses(date: new.date))
             }
 
-        case .bulkAdded:
+        case .bulkAdded, .bulkUpdated, .bulkDeleted:
             // Bulk operations affect too many keys — full invalidation
             cache.invalidateAll()
 
@@ -1468,6 +1640,75 @@ final class TransactionStore {
         // index; buckets now hold ids and resolve through `transactionById`, which
         // `updateState` has already refreshed, so the new field values are picked up for
         // free. Forgetting a field here is no longer possible.
+    }
+
+    // MARK: - Bulk State Maintenance
+
+    /// `.bulkDeleted`: what `.deleted` does per row, with every array and bucket filtered
+    /// once for the whole set. Per row it was a `firstIndex` scan of `transactions` (O(N))
+    /// plus one of each bucket — quadratic for an account's or a category's transactions.
+    private func updateStateForBulkDelete(_ txs: [Transaction]) {
+        guard !txs.isEmpty else { return }
+        assert(
+            !txs.contains(where: { self.isPaymentToLiveLoan($0) }),
+            "a payment to a live loan must go through .deleted to roll its loan back — use deleteTransactionsInBulk"
+        )
+        let ids = Set(txs.map(\.id))
+        transactions.removeAll { ids.contains($0.id) }
+        transactionsCount = transactions.count
+        transactionIdSet.subtract(ids)
+        for id in ids { transactionById.removeValue(forKey: id) }
+
+        var accountIds = Set<String>()
+        for tx in txs {
+            if let id = tx.accountId { accountIds.insert(id) }
+            if let id = tx.targetAccountId { accountIds.insert(id) }
+        }
+        Self.removeIds(ids, fromBuckets: accountIds, of: &transactionIdsByAccount)
+        categoryIndexRemoveBulk(txs, ids: ids)
+        for tx in txs { subcategoryIndexRemove(tx) }
+        seriesIndexRemoveBulk(txs, ids: ids)
+        accountAggregatesRemoveBulk(txs)
+    }
+
+    /// `.bulkUpdated`: what `.updated` does per row, with one pass over `transactions`
+    /// instead of a `firstIndex` scan per row, and the moved ids taken out of each bucket
+    /// once. Account aggregates go through the per-row `accountAggregatesUpdate`: the bulk
+    /// callers change no field it reacts to, so it patches (and persists) nothing.
+    private func updateStateForBulkUpdate(_ changes: [TransactionChange]) {
+        guard !changes.isEmpty else { return }
+        var replacements: [String: Transaction] = [:]
+        replacements.reserveCapacity(changes.count)
+        for change in changes { replacements[change.new.id] = change.new }
+        Self.replaceRows(of: &transactions, with: replacements)
+        for change in changes { transactionById[change.new.id] = change.new }
+
+        let moved = changes.filter {
+            $0.old.accountId != $0.new.accountId || $0.old.targetAccountId != $0.new.targetAccountId
+        }
+        if !moved.isEmpty {
+            var accountIds = Set<String>()
+            for change in moved {
+                if let id = change.old.accountId { accountIds.insert(id) }
+                if let id = change.old.targetAccountId { accountIds.insert(id) }
+            }
+            Self.removeIds(Set(moved.map(\.old.id)), fromBuckets: accountIds, of: &transactionIdsByAccount)
+            for change in moved { indexAdd(change.new) }
+        }
+        categoryIndexUpdateBulk(changes)
+        for change in changes { subcategoryIndexUpdate(old: change.old, new: change.new) }
+        seriesIndexUpdateBulk(changes)
+        for change in changes { accountAggregatesUpdate(old: change.old, new: change.new) }
+    }
+
+    /// Replaces each row whose id has a replacement — one in-place pass, one observation
+    /// notification (the whole array goes through a single `inout` access).
+    private static func replaceRows(of rows: inout [Transaction], with replacements: [String: Transaction]) {
+        for index in rows.indices {
+            if let replacement = replacements[rows[index].id] {
+                rows[index] = replacement
+            }
+        }
     }
 }
 

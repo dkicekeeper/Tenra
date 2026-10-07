@@ -26,10 +26,14 @@ Per event:
 | `.updated(old, new)` | `seriesIndexUpdate`, `accountAggregatesUpdate` |
 | `.deleted(tx)` | `seriesIndexRemove`, `accountAggregatesRemove` |
 | `.bulkAdded(txs)` | per-tx `seriesIndexAdd` + `accountAggregatesAdd` |
+| `.bulkUpdated(changes)` | `seriesIndexUpdateBulk` + per-row `accountAggregatesUpdate` |
+| `.bulkDeleted(txs)` | `seriesIndexRemoveBulk` + `accountAggregatesRemoveBulk` (one persist) |
 
 On cold start (`loadData()`):
 - `rebuildSeriesAndDateIndexes()` — one O(N_tx) walk over the loaded array.
 - `rebuildAccountAggregates()` — one O(N_tx) walk.
+
+After load, every full rebuild of `accountAggregatesByAccountId` goes through `computeAccountAggregates` (TransactionStore+LoadSnapshot): off the main actor on a day rollover / FX heal (`rebuildRealizedAggregates()`), synchronously in `rebuildAccountAggregates()`.
 
 On `updateBaseCurrency(_:)`: category aggregates rebuild (totals are in base currency); account aggregates are **not** affected because each account's aggregate is stored in the account's own currency.
 

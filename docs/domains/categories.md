@@ -32,13 +32,19 @@ Touch points that must keep indexes in sync:
 | `.updated(old, new)` | `updateState` | `indexUpdate` + `categoryIndexUpdate` + `subcategoryIndexUpdate` |
 | `.deleted(tx)` | `updateState` | `indexRemove` + `categoryIndexRemove` + `subcategoryIndexRemove` |
 | `.bulkAdded(txs)` | `updateState` | per-tx `indexAdd` + `categoryIndexAdd` + `subcategoryIndexAdd` |
+| `.bulkUpdated(changes)` / `.bulkDeleted(txs)` | `updateState` → `updateStateForBulkUpdate/Delete` | buckets filtered once (`removeIds`), aggregate deltas per row in row order, ONE persist (`categoryIndexUpdateBulk` / `categoryIndexRemoveBulk`) |
 | `addCategory(_:)` | `TransactionStore+CategoryCRUD` | seed `categoryById`/`categoryIdByName`, bump `categoriesMutationVersion` |
 | `updateCategory(_:)` | `TransactionStore+CategoryCRUD` | replace in `categoryById`; on rename → `renameCategoryIndexKeys`; bump |
 | `deleteCategory(_:)` | `TransactionStore+CategoryCRUD` | drop from `categoryById`/`categoryIdByName` + `dropAggregates`; bump |
 | `addSubcategory(_:)` / `updateSubcategories(_:)` / link updates | `TransactionStore+CategoryCRUD` | rebuild affected subcategory maps; bump `subcategoriesMutationVersion` |
-| `loadData()` | `TransactionStore` | `rebuildCategoryLookups` + `rebuildAllSubcategoryIndexes` + `rebuildCategoryIndexes` |
-| `updateBaseCurrency(_:)` | `TransactionStore` | `rebuildCategoryIndexes` (totals are unit-bound) |
-| `bumpCurrencyRatesVersion()` | `TransactionStore` | if `aggregatesAreFXStale` → `rebuildCategoryIndexes` |
+| `loadData()` | `TransactionStore` | `buildLoadSnapshot` off main (lookups, subcategory indexes, cold-start aggregates) |
+| `updateBaseCurrency(_:)` | `TransactionStore` | `rebuildCategoryIndexes` — synchronous: the old totals are in the wrong unit |
+| `bumpCurrencyRatesVersion()` | `TransactionStore` | if `aggregatesAreFXStale` → `rebuildRealizedAggregates()` off main |
+| day rollover with a matured tx | `recalculateLedgerIfDayChanged` | `rebuildRealizedAggregates()` off main, then `recalculateAll` |
+
+### Full rebuilds run off the main actor
+
+⚠️ **Never rebuild the aggregates with a per-transaction loop on the main actor.** The day-rollover and FX rebuilds parsed 19k dates with a DateFormatter, called `startOfDay` per transaction and created one debounced-persist Task per transaction: a 0.6–0.9 s freeze just after Home appeared or on foreground, again on every rate update while `aggregatesAreFXStale` stayed set. `rebuildRealizedAggregates()` ([TransactionStore+RealizedAggregates](../../Tenra/ViewModels/TransactionStore+RealizedAggregates.swift)) runs the cold-load builders (`computeCategoryAggregates` / `computeAccountAggregates` in TransactionStore+LoadSnapshot) in a detached task over a Sendable copy and only assigns on the main actor (one `categoriesMutationVersion` bump, one persist per map). It is single-flight, and assigns only if `RealizedAggregatesStamp` (transactions, accounts, categories, rates, base currency, today, other wholesale writes) is unchanged when it lands; otherwise it reruns. The synchronous `rebuildCategoryIndexes()` / `rebuildAccountAggregates()` use the same builders. Matured rows are not applied as per-row deltas: which rows the incremental state already counts is not tracked (one added after midnight before the check is counted already). Pinned by `RealizedAggregatesRebuildTests`.
 
 ### Rename caveats
 
@@ -122,6 +128,11 @@ also implemented in `LoanPaymentView`, `LoanEarlyRepaymentView`,
 [AccountActionViewModel](../../Tenra/ViewModels/AccountActionViewModel.swift) (the "Пополнение"
 top-up flow) and the statement import (`ImportCommitter`, one batch for all rows; the subcategory is
 suggested from history per merchant and category, see [import.md](import.md)).
+
+⚠️ **Link many transactions in ONE call: `batchLinkSubcategoriesToTransaction`.** Every link-table write
+(`updateTransactionSubcategoryLinks`) rebuilds `subcategoryIdsByTransactionId` and the usage stats over all
+transactions; calling `linkSubcategoriesToTransaction` per occurrence of a back-dated series paid that once per
+occurrence (seconds). The add / edit / subscription flows batch it.
 
 ⚠️ Resolve the category id by **name + type**, not through `categoryIdByName` — that index is
 keyed by lowercased name alone, so an income and an expense category sharing a name collide and

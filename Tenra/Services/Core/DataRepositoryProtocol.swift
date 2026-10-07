@@ -44,6 +44,16 @@ protocol DataRepositoryProtocol: Sendable {
     /// Used by category rename so stored names follow the renamed category.
     nonisolated func renameTransactionsCategory(ids: [String], to newName: String)
 
+    /// Delete several transactions in ONE background save (`TransactionEvent.bulkDeleted`).
+    /// Awaited, so the rows are gone from disk on return. No-op outside CoreData, like
+    /// `deleteTransactionImmediately`.
+    nonisolated func deleteTransactions(ids: [String]) async
+
+    /// Write the fields of several existing transactions in ONE background save
+    /// (`TransactionEvent.bulkUpdated`). Awaited. No-op outside CoreData, like
+    /// `updateTransactionFields`.
+    nonisolated func updateTransactionsFields(_ transactions: [Transaction]) async
+
     // MARK: - Accounts
     nonisolated func loadAccounts() -> [Account]
     nonisolated func saveAccounts(_ accounts: [Account])

@@ -38,6 +38,11 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
     var persistedCategoryAggregates: [CategoryAggregate] = []
     var persistedAccountAggregates: [String: AccountAggregates] = [:]
 
+    private var _bulkDeletes: [[String]] = []
+    private var _bulkUpdates: [[String]] = []
+    private var _rowDeletes: [String] = []
+    private var _rowUpdates: [String] = []
+
     /// Every `updateInitialBalancesSync` argument, in call order.
     var persistedInitialBalances: [[String: Double]] {
         lock.withLock { _persistedInitialBalances }
@@ -58,7 +63,26 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
         lock.withLock { _savedAccountSnapshots }
     }
 
+    /// Ids of every `deleteTransactions(ids:)` call, in call order.
+    var bulkDeletes: [[String]] { lock.withLock { _bulkDeletes } }
+    /// Ids of every `updateTransactionsFields` call, in call order.
+    var bulkUpdates: [[String]] { lock.withLock { _bulkUpdates } }
+    /// Every per-row `deleteTransactionImmediately` id.
+    var rowDeletes: [String] { lock.withLock { _rowDeletes } }
+    /// Every per-row `updateTransactionFields` id.
+    var rowUpdates: [String] { lock.withLock { _rowUpdates } }
+
     // MARK: - Recorded
+
+    func deleteTransactions(ids: [String]) async {
+        lock.withLock { _bulkDeletes.append(ids) }
+        await inner.deleteTransactions(ids: ids)
+    }
+
+    func updateTransactionsFields(_ transactions: [Transaction]) async {
+        lock.withLock { _bulkUpdates.append(transactions.map(\.id)) }
+        await inner.updateTransactionsFields(transactions)
+    }
 
     func renameTransactionsCategory(ids: [String], to newName: String) {
         lock.withLock { _categoryRenames.append((ids, newName)) }
@@ -78,9 +102,15 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
         return rows
     }
     func saveTransactions(_ transactions: [Transaction]) { inner.saveTransactions(transactions) }
-    func deleteTransactionImmediately(id: String) { inner.deleteTransactionImmediately(id: id) }
+    func deleteTransactionImmediately(id: String) {
+        lock.withLock { _rowDeletes.append(id) }
+        inner.deleteTransactionImmediately(id: id)
+    }
     func insertTransaction(_ transaction: Transaction) { inner.insertTransaction(transaction) }
-    func updateTransactionFields(_ transaction: Transaction) { inner.updateTransactionFields(transaction) }
+    func updateTransactionFields(_ transaction: Transaction) {
+        lock.withLock { _rowUpdates.append(transaction.id) }
+        inner.updateTransactionFields(transaction)
+    }
     func batchInsertTransactions(_ transactions: [Transaction]) { inner.batchInsertTransactions(transactions) }
 
     // MARK: - Accounts

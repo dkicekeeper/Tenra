@@ -149,6 +149,10 @@ extension TransactionStore {
             loadJournal.transactions.noteDeleted(tx.id)
         case .bulkAdded(let txs):
             for tx in txs { loadJournal.transactions.noteChanged(tx.id) }
+        case .bulkUpdated(let changes):
+            for change in changes { loadJournal.transactions.noteChanged(change.new.id) }
+        case .bulkDeleted(let txs):
+            for tx in txs { loadJournal.transactions.noteDeleted(tx.id) }
         case .seriesCreated, .seriesUpdated, .seriesStopped, .seriesDeleted:
             // RecurringStore records its own rows.
             return

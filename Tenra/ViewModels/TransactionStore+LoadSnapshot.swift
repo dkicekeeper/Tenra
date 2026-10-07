@@ -17,9 +17,10 @@
 //  Now those sweeps run in a single `Task.detached` over Sendable inputs;
 //  MainActor only performs hash-map assignments at the end.
 //
-//  Out of scope (still rebuilt on MainActor — Phase 2.2/2.3):
-//  • `categoryAggregatesByKey` (depends on `baseCurrency`, FX cache, `LedgerPolicyRule`)
-//  • `accountAggregatesByAccountId` (depends on `accountById` for currency lookup, FX)
+//  The two aggregate builders (`computeCategoryAggregates`, `computeAccountAggregates`)
+//  are also the ONLY rebuild path after load: the day-rollover / FX rebuild runs them in
+//  a detached task and `rebuildCategoryIndexes()` / `rebuildAccountAggregates()` run them
+//  synchronously (TransactionStore+RealizedAggregates.swift).
 //
 
 import Foundation
@@ -253,16 +254,18 @@ extension TransactionStore {
     /// Returns the resulting map and a flag indicating that at least one conversion
     /// used the stale-rate fallback — caller carries this through to
     /// `aggregatesAreFXStale` so `bumpCurrencyRatesVersion` reconciles on next FX update.
-    private nonisolated static func computeCategoryAggregates(
+    ///
+    /// `parsedDates` must hold every parseable `tx.date` (a missing one skips the tx);
+    /// `rates` is one frozen rate table for the whole walk — see RateSnapshot.
+    nonisolated static func computeCategoryAggregates(
         transactions: [Transaction],
         parsedDates: [String: Date],
-        baseCurrency: String
+        baseCurrency: String,
+        rates: RateSnapshot = RateSnapshot()
     ) -> (aggregates: [String: CategoryAggregate], fxStale: Bool) {
         var aggregates: [String: CategoryAggregate] = [:]
         aggregates.reserveCapacity(512)
         var fxStale = false
-        // One frozen rate table for the whole cold rebuild — see RateSnapshot.
-        let rates = RateSnapshot()
 
         for tx in transactions where isAggregatableForLoad(tx) {
             guard let date = parsedDates[tx.date] else { continue }
@@ -339,16 +342,15 @@ extension TransactionStore {
     /// Amounts stay in the OWNING account's currency (not base) — see ⚠️ #6 in CLAUDE.md.
     /// Cross-currency legs read a frozen `RateSnapshot` so the whole rebuild sees one
     /// rate generation (a prewarm landing mid-walk must not split the totals).
-    private nonisolated static func computeAccountAggregates(
+    nonisolated static func computeAccountAggregates(
         transactions: [Transaction],
         parsedDates: [String: Date],
-        accountsCurrencyById: [String: String]
+        accountsCurrencyById: [String: String],
+        rates: RateSnapshot = RateSnapshot()
     ) -> (aggregates: [String: AccountAggregates], fxStale: Bool) {
         var aggregates: [String: AccountAggregates] = [:]
         aggregates.reserveCapacity(accountsCurrencyById.count)
         var fxStale = false
-        // One frozen rate table for the whole cold rebuild — see RateSnapshot.
-        let rates = RateSnapshot()
 
         for tx in transactions {
             // Realized actuals only — same gate as the production path.
@@ -449,7 +451,7 @@ extension TransactionStore {
     /// Duplicated here so the snapshot builder stays `nonisolated static` —
     /// the production rule is a private instance method on MainActor.
     /// If the production rule changes, update this mirror too.
-    private nonisolated static func isAggregatableForLoad(_ tx: Transaction) -> Bool {
+    nonisolated static func isAggregatableForLoad(_ tx: Transaction) -> Bool {
         guard !tx.category.isEmpty else { return false }
         switch tx.type {
         case .expense, .income,

@@ -1649,6 +1649,7 @@
 "settings.pro.founder.subtitle" = "Sie sind ein Gründungsnutzer: Alle Pro-Funktionen sind für Sie für immer kostenlos. Danke!";
 "settings.pro.manage" = "Abo verwalten";
 "settings.pro.restore" = "Käufe wiederherstellen";
+"settings.pro.redeemCode" = "Code einlösen";
 "settings.pro.restore.restored" = "Wiederhergestellt";
 "settings.pro.restore.none" = "Keine Käufe gefunden";
 "settings.pro.restore.failed" = "Fehlgeschlagen";

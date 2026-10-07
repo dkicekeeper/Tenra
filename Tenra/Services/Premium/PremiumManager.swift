@@ -256,6 +256,20 @@ final class PremiumManager {
         apply(info)
     }
 
+    /// After the App Store's offer-code sheet closes (Settings → Tenra Pro → "Redeem code",
+    /// StoreKit's `offerCodeRedemption`). A redeemed code is a StoreKit transaction that
+    /// RevenueCat's own listener picks up too; syncing now makes Pro unlock without waiting
+    /// for it. A sheet closed without a code syncs nothing new.
+    func syncAfterOfferCodeRedemption() async {
+        guard isConfigured else { return }
+        do {
+            let info = try await Purchases.shared.syncPurchases()
+            apply(info)
+        } catch {
+            log.error("Sync after offer code redemption failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
     // MARK: - Grandfathering
 
     /// The device rule, decided once: the first time a Pro build runs, a user who already

@@ -7,8 +7,11 @@
 //  Founding-User state for grandfathered users. Self-contained — reads
 //  PremiumManager from the environment and owns its paywall presentation,
 //  so SettingsView just drops `SettingsProSection()` into its List.
+//  Free users can also redeem an App Store offer code here (StoreKit's own
+//  sheet; PremiumManager syncs the result with RevenueCat).
 //
 
+import StoreKit
 import SwiftUI
 
 struct SettingsProSection: View {
@@ -16,6 +19,7 @@ struct SettingsProSection: View {
     @Environment(PremiumManager.self) private var premium
 
     @State private var showingPaywall = false
+    @State private var showingCodeRedemption = false
     @State private var isRestoring = false
     @State private var restoreOutcome: RestoreOutcome?
 
@@ -37,6 +41,7 @@ struct SettingsProSection: View {
             } else {
                 purchaseCTARow
                 restorePurchasesRow
+                redeemCodeRow
             }
         }
     }
@@ -89,6 +94,28 @@ struct SettingsProSection: View {
             }
         }
         .actionRow { restorePurchases() }
+    }
+
+    /// Opens the App Store's offer-code sheet (codes made in App Store Connect →
+    /// the subscription → Offer Codes). A redeemed code unlocks Pro like a purchase.
+    private var redeemCodeRow: some View {
+        UniversalRow(
+            config: .settings,
+            leadingIcon: .sfSymbol("giftcard", color: AppColors.accent, size: AppIconSize.md)
+        ) {
+            Text(String(localized: "settings.pro.redeemCode"))
+                .font(AppTypography.body)
+                .foregroundStyle(AppColors.textPrimary)
+        }
+        .actionRow {
+            HapticManager.light()
+            showingCodeRedemption = true
+        }
+        // On this row, like the paywall: one presenter per binding.
+        .offerCodeRedemption(isPresented: $showingCodeRedemption) { result in
+            guard case .success = result else { return }
+            Task { await premium.syncAfterOfferCodeRedemption() }
+        }
     }
 
     // MARK: - Subscriber: status + manage

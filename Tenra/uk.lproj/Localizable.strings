@@ -1649,6 +1649,7 @@
 "settings.pro.founder.subtitle" = "Ви один із перших користувачів: усі функції Pro для вас безплатні назавжди. Дякуємо!";
 "settings.pro.manage" = "Керувати підпискою";
 "settings.pro.restore" = "Відновити покупки";
+"settings.pro.redeemCode" = "Ввести промокод";
 "settings.pro.restore.restored" = "Відновлено";
 "settings.pro.restore.none" = "Покупок не знайдено";
 "settings.pro.restore.failed" = "Не вдалося відновити";

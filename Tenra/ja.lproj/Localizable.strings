@@ -1649,6 +1649,7 @@
 "settings.pro.founder.subtitle" = "あなたは創設ユーザーです。すべてのPro機能を永久に無料でご利用いただけます。ありがとうございます!";
 "settings.pro.manage" = "サブスクリプションを管理";
 "settings.pro.restore" = "購入を復元";
+"settings.pro.redeemCode" = "コードを使用";
 "settings.pro.restore.restored" = "復元しました";
 "settings.pro.restore.none" = "購入が見つかりません";
 "settings.pro.restore.failed" = "復元できませんでした";

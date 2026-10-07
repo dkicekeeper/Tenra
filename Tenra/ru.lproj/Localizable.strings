@@ -1649,6 +1649,7 @@
 "settings.pro.founder.subtitle" = "Вы один из первых пользователей: все функции Pro для вас бесплатны навсегда. Спасибо!";
 "settings.pro.manage" = "Управлять подпиской";
 "settings.pro.restore" = "Восстановить покупки";
+"settings.pro.redeemCode" = "Ввести промокод";
 "settings.pro.restore.restored" = "Восстановлено";
 "settings.pro.restore.none" = "Покупки не найдены";
 "settings.pro.restore.failed" = "Не удалось восстановить";

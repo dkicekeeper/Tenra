@@ -1649,6 +1649,7 @@
 "settings.pro.founder.subtitle" = "Kurucu kullanıcısınız. Tüm Pro özellikleri sizin için sonsuza dek ücretsiz. Teşekkürler!";
 "settings.pro.manage" = "Aboneliği yönet";
 "settings.pro.restore" = "Satın alımları geri yükle";
+"settings.pro.redeemCode" = "Kod kullan";
 "settings.pro.restore.restored" = "Geri yüklendi";
 "settings.pro.restore.none" = "Satın alım bulunamadı";
 "settings.pro.restore.failed" = "Geri yüklenemedi";

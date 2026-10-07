@@ -1649,6 +1649,7 @@
 "settings.pro.founder.subtitle" = "Você é um usuário fundador: todos os recursos Pro são gratuitos para você, para sempre. Obrigado!";
 "settings.pro.manage" = "Gerenciar assinatura";
 "settings.pro.restore" = "Restaurar compras";
+"settings.pro.redeemCode" = "Resgatar código";
 "settings.pro.restore.restored" = "Restaurado";
 "settings.pro.restore.none" = "Nenhuma compra encontrada";
 "settings.pro.restore.failed" = "Falha ao restaurar";

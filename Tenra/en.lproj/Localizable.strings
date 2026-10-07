@@ -1649,6 +1649,7 @@
 "settings.pro.founder.subtitle" = "You are a Founding User. Every Pro feature is free for you, forever. Thank you!";
 "settings.pro.manage" = "Manage Subscription";
 "settings.pro.restore" = "Restore Purchases";
+"settings.pro.redeemCode" = "Redeem code";
 "settings.pro.restore.restored" = "Restored";
 "settings.pro.restore.none" = "No purchases found";
 "settings.pro.restore.failed" = "Couldn't restore";

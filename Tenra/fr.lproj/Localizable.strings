@@ -1649,6 +1649,7 @@
 "settings.pro.founder.subtitle" = "Vous êtes un utilisateur fondateur : toutes les fonctions Pro sont gratuites pour vous, à vie. Merci !";
 "settings.pro.manage" = "Gérer l'abonnement";
 "settings.pro.restore" = "Restaurer les achats";
+"settings.pro.redeemCode" = "Utiliser un code";
 "settings.pro.restore.restored" = "Restauré";
 "settings.pro.restore.none" = "Aucun achat trouvé";
 "settings.pro.restore.failed" = "Échec de la restauration";

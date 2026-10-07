@@ -226,6 +226,44 @@ struct BulkTransactionMutationTests {
         #expect(Self.state(bulk) == Self.state(perRow))
     }
 
+    @Test func deletingALoanWithItsPaymentsSkipsTheRollback() async throws {
+        let perRow = await Self.makeHarness(withLoan: true)
+        let bulk = await Self.makeHarness(withLoan: true)
+        try await Self.seed(perRow, withLoanPayment: true)
+        try await Self.seed(bulk, withLoanPayment: true)
+        let loanBefore = try #require(bulk.store.accountById[Self.loan]?.loanInfo)
+
+        for tx in perRow.store.transactions where tx.accountId == Self.loan || tx.targetAccountId == Self.loan {
+            try await perRow.store.apply(.deleted(tx))
+        }
+        await bulk.store.deleteTransactions(forAccountId: Self.loan)
+
+        // The loan goes with its payments, so they join the bulk instead of rolling the
+        // loan back one save at a time; its own state is left as it was.
+        #expect(bulk.repository.rowDeletes.isEmpty)
+        #expect(bulk.repository.bulkDeletes == [["p1"]])
+        #expect(bulk.store.accountById[Self.loan]?.loanInfo == loanBefore)
+        // Everything the paying account sees matches the per-row path.
+        #expect(bulk.store.transactions == perRow.store.transactions)
+        #expect(bulk.balance.balances[Self.main] == perRow.balance.balances[Self.main])
+        #expect(bulk.store.accountAggregatesByAccountId[Self.main] == perRow.store.accountAggregatesByAccountId[Self.main])
+    }
+
+    @Test func deletingSeveralAccountsWritesOnce() async throws {
+        let harness = await Self.makeHarness(withLoan: true)
+        try await Self.seed(harness, withLoanPayment: true)
+        let loanBefore = try #require(harness.store.accountById[Self.loan]?.loanInfo)
+
+        await harness.store.deleteTransactions(forAccountIds: [Self.main, Self.loan])
+
+        // Every row of both accounts in one save, the payment from one to the other
+        // included: the loan is deleted with them, so it is not rolled back.
+        #expect(harness.repository.rowDeletes.isEmpty)
+        #expect(harness.repository.bulkDeletes.count == 1)
+        #expect(harness.store.transactions.map(\.id) == ["e3"])
+        #expect(harness.store.accountById[Self.loan]?.loanInfo == loanBefore)
+    }
+
     @Test func deletingOnlyFutureRowsLeavesBalancesAsTheyWere() async throws {
         let harness = await Self.makeHarness()
         try await Self.seed(harness)

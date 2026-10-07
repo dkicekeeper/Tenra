@@ -41,11 +41,20 @@ extension TransactionStore {
     /// payments the per-row path left in place — the payments of one loan are few. Rows of
     /// other kinds don't affect a rollback, so deleting them together afterwards changes
     /// nothing it reads.
-    internal func deleteTransactionsInBulk(_ rows: [Transaction]) async throws {
+    ///
+    /// - Parameter deletingAccountIds: accounts deleted together with these rows. Payments
+    ///   to one of them join the bulk: a loan that is about to go needs no rollback, and
+    ///   rolling it back payment by payment (a save per row) made deleting a loan with its
+    ///   payments slow.
+    internal func deleteTransactionsInBulk(
+        _ rows: [Transaction],
+        deletingAccountIds: Set<String> = []
+    ) async throws {
         var bulk: [Transaction] = []
         bulk.reserveCapacity(rows.count)
         for row in rows {
-            if isPaymentToLiveLoan(row) {
+            if isPaymentToLiveLoan(row),
+               !deletingAccountIds.contains(row.targetAccountId ?? "") {
                 try await apply(.deleted(row))
             } else {
                 bulk.append(row)

@@ -162,10 +162,8 @@ class AccountsViewModel {
 
     func deleteAccounts(_ ids: Set<String>, deleteTransactions: Bool) async {
         if deleteTransactions {
-            let accountsToDelete = accounts.filter { ids.contains($0.id) }
-            for account in accountsToDelete {
-                await transactionStore?.deleteTransactions(forAccountId: account.id)
-            }
+            // One bulk delete for every selected account's rows.
+            await transactionStore?.deleteTransactions(forAccountIds: ids)
         }
 
         // Single batch delete + single whole-table save instead of one per account

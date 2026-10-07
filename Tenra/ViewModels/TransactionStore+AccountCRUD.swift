@@ -128,12 +128,21 @@ extension TransactionStore {
     /// Deletes all transactions associated with an account (where accountId or targetAccountId matches).
     /// Call this before deleteAccount when you want to remove an account with all its transactions.
     /// One bulk event (`deleteTransactionsInBulk`): aggregates, cache, balances and
-    /// persistence are updated once for all rows, not once per row.
+    /// persistence are updated once for all rows, not once per row. Every caller deletes
+    /// the account with its rows, so payments to it (a loan) are not rolled back.
     func deleteTransactions(forAccountId accountId: String) async {
-        let toDelete = transactions.filter {
-            $0.accountId == accountId || $0.targetAccountId == accountId
+        await deleteTransactions(forAccountIds: [accountId])
+    }
+
+    /// `deleteTransactions(forAccountId:)` for several accounts deleted together: one bulk
+    /// event for all their rows, and no rollback of a loan among them.
+    func deleteTransactions(forAccountIds accountIds: Set<String>) async {
+        let toDelete = transactions.filter { tx in
+            if let id = tx.accountId, accountIds.contains(id) { return true }
+            if let id = tx.targetAccountId, accountIds.contains(id) { return true }
+            return false
         }
-        try? await deleteTransactionsInBulk(toDelete)
+        try? await deleteTransactionsInBulk(toDelete, deletingAccountIds: accountIds)
     }
 
     /// Deletes all transactions matching the given category name and type.

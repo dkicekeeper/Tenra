@@ -53,6 +53,7 @@ extension TransactionStore {
     /// Warm-start path: skip the O(N_tx) rebuild walk in `loadData`.
     internal func seedAccountAggregates(from snapshot: [String: AccountAggregates]) {
         accountAggregatesByAccountId = snapshot
+        aggregateMapsGeneration &+= 1
     }
 
     /// Schedule a debounced persist of the current aggregate snapshot to CoreData.
@@ -91,16 +92,31 @@ extension TransactionStore {
 
     // MARK: - Cold Rebuild
 
-    /// One-shot O(N_tx) rebuild from the canonical `transactions` array.
-    /// Called on cold start and on `updateBaseCurrency` (although account aggregates
-    /// are in *account* currency so they're robust to base-currency changes — but
-    /// other indexes mirror this signature for consistency).
+    /// One-shot O(N_tx) rebuild from the canonical `transactions` array, synchronously.
+    /// The day-rollover and FX rebuilds run the same builder off the main actor instead
+    /// (`rebuildRealizedAggregates()`). Runs the cold-load builder
+    /// (`computeAccountAggregates`, same rule as `applyAccountAggregateDelta`) with one rate
+    /// snapshot and schedules ONE persist (the delta loop it replaces persisted nothing).
     internal func rebuildAccountAggregates() {
-        accountAggregatesByAccountId.removeAll(keepingCapacity: true)
-        accountAggregatesByAccountId.reserveCapacity(accounts.count)
-        for tx in transactions {
-            applyAccountAggregateDelta(tx: tx, sign: 1)
-        }
+        let (aggregates, fxStale) = Self.computeAccountAggregates(
+            transactions: transactions,
+            parsedDates: Self.completedParsedDates(transactions, seed: parsedDateByDateString),
+            accountsCurrencyById: accountCurrencyById(),
+            rates: RateSnapshot()
+        )
+        accountAggregatesByAccountId = aggregates
+        // Own flag, never cleared here (cache audit #12): the category rebuild owns the reset.
+        if fxStale { aggregatesAreFXStale = true }
+        aggregateMapsGeneration &+= 1
+        scheduleAccountAggregatePersist()
+    }
+
+    /// Account id → currency, from `accountById` (what `applyAccountAggregateDelta` reads).
+    internal func accountCurrencyById() -> [String: String] {
+        var currencyById: [String: String] = [:]
+        currencyById.reserveCapacity(accountById.count)
+        for (id, account) in accountById { currencyById[id] = account.currency }
+        return currencyById
     }
 
     // MARK: - Private

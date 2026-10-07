@@ -74,6 +74,10 @@ Known traps, performance hot-paths, and surprising behaviors. Domain-specific go
 - **Use [`RateSnapshot`](../Tenra/Services/Currency/RateSnapshot.swift), not `CurrencyConverter.convertSync`, inside any walk over the transaction set.** `convertSync` takes two `NSLock` acquisitions per call (38k per 19k-pass), and — more importantly — reads live state: a prewarm response landing mid-loop converts the first half of the set at old rates and the second half at new ones, producing a total that corresponds to no point in time. `aggregatesAreFXStale` catches a cold cache, not this. Single conversions should keep using `convertSync`.
 - `CategoryBudgetCurrency.toBase(amount:from:base:rates:)` is the snapshot-taking overload; it preserves the `usedStaleFallback` contract exactly.
 
+### Bulk store mutations
+
+- ⚠️ **Never rebuild aggregates per transaction on the main actor** — `rebuildRealizedAggregates()` runs the cold-load builders off main. See [domains/categories.md](domains/categories.md) §Full rebuilds run off the main actor.
+
 ### Background work
 
 - **Heavy nonisolated scans off MainActor**: `Task.detached(priority: .userInitiated) { let result = Matcher.scan(...); await MainActor.run { self.baseline = result; self.applyFilters() } }` for O(N_transactions) filters on view open. SwiftUI `View` structs are auto-Sendable — capture is safe.

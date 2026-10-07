@@ -75,28 +75,29 @@ extension TransactionStore {
 
     // MARK: - Bulk / Rebuild
 
-    /// Rebuild all category indexes from scratch. Called during cold-start
-    /// (`loadData()`) when CoreData has no `CategoryAggregateEntity` rows yet,
-    /// from `reconcileCategoryAggregatesForFX()` when FX rates finally arrive,
-    /// and from `updateBaseCurrency(_:)` (totals carry units, must be re-derived).
+    /// Rebuild all category indexes from scratch, synchronously. Used where the result
+    /// must be in place on return: `updateBaseCurrency(_:)` (the old totals are in the
+    /// wrong unit) and tests. The day-rollover and FX rebuilds run the same builder off
+    /// the main actor instead — `rebuildRealizedAggregates()`.
     ///
-    /// `applyAggregateDelta` calls inside the loop each schedule a debounced
-    /// persist; they coalesce to a single CoreData write thanks to the 500ms
-    /// debounce — so the total cost is one save regardless of N_tx.
+    /// Runs the cold-load builder (`computeCategoryAggregates`): FastDateParser instead of
+    /// a DateFormatter parse per transaction, one rate snapshot, and ONE debounced persist
+    /// instead of a persist Task per transaction. Same buckets as the per-row
+    /// `applyAggregateDelta` path (pinned by RealizedAggregatesRebuildTests).
     internal func rebuildCategoryIndexes() {
         ensureTransactionByIdInSync()
-        transactionIdsByCategoryName.removeAll(keepingCapacity: true)
-        categoryAggregatesByKey.removeAll(keepingCapacity: true)
-        aggregatesAreFXStale = false
-
-        // Pre-size for typical workloads (≤30 categories, ≤19k tx).
-        transactionIdsByCategoryName.reserveCapacity(64)
-        categoryAggregatesByKey.reserveCapacity(categories.count * 8)
-
-        for tx in transactions where isAggregatable(tx) {
-            transactionIdsByCategoryName[tx.category, default: []].append(tx.id)
-            applyAggregateDelta(tx: tx, sign: 1)
-        }
+        let parsedDates = Self.completedParsedDates(transactions, seed: parsedDateByDateString)
+        let (aggregates, fxStale) = Self.computeCategoryAggregates(
+            transactions: transactions,
+            parsedDates: parsedDates,
+            baseCurrency: baseCurrency,
+            rates: RateSnapshot()
+        )
+        transactionIdsByCategoryName = Self.categoryNameBuckets(transactions)
+        categoryAggregatesByKey = aggregates
+        aggregatesAreFXStale = fxStale
+        aggregateMapsGeneration &+= 1
+        scheduleAggregatePersist()
 
         categoryIndexLogger.info(
             "rebuilt categoryAggregatesByKey: \(self.categoryAggregatesByKey.count, privacy: .public) buckets, fxStale=\(self.aggregatesAreFXStale, privacy: .public)"
@@ -134,6 +135,7 @@ extension TransactionStore {
         for agg in snapshot { byKey[agg.id] = agg }
         categoryAggregatesByKey = byKey
         aggregatesAreFXStale = false
+        aggregateMapsGeneration &+= 1
     }
 
     /// Debounced persistence of `categoryAggregatesByKey` to CoreData.
@@ -224,7 +226,10 @@ extension TransactionStore {
             categoryAggregatesByKey[renamed.id] = renamed
             anyMoved = true
         }
-        if anyMoved { scheduleAggregatePersist() }
+        if anyMoved {
+            aggregateMapsGeneration &+= 1
+            scheduleAggregatePersist()
+        }
     }
 
     /// Drop every aggregate row belonging to a deleted category. Transactions
@@ -237,6 +242,7 @@ extension TransactionStore {
         for key in keys {
             categoryAggregatesByKey.removeValue(forKey: key)
         }
+        aggregateMapsGeneration &+= 1
         scheduleAggregatePersist()
     }
 
@@ -246,9 +252,12 @@ extension TransactionStore {
     /// All amounts are normalised to `baseCurrency` before storage. If the rate
     /// cache is cold, we mark the index stale and reconcile on the next bump.
     /// Schedules a debounced persist so the cold-start fast path on the next
-    /// launch can skip the O(N_tx) rebuild.
-    private func applyAggregateDelta(tx: Transaction, sign: Int) {
-        guard let date = DateFormatters.dateFormatter.date(from: tx.date) else { return }
+    /// launch can skip the O(N_tx) rebuild — unless `schedulePersist` is false: the bulk
+    /// paths patch many rows and schedule once (a persist Task per row is what made the
+    /// old full rebuild queue ~19k Tasks on the main actor).
+    private func applyAggregateDelta(tx: Transaction, sign: Int, schedulePersist: Bool = true) {
+        // FastDateParser ≡ DateFormatters.dateFormatter (FastDateParserTests), ~50× cheaper.
+        guard let date = parsedDateByDateString[tx.date] ?? FastDateParser.date(from: tx.date) else { return }
         // Realized actuals only: exclude future-dated tx so budget "spent" and category
         // totals match the balance/account-aggregate policy. The day-change repair
         // (rebuildCategoryIndexes) folds a transaction in once its date arrives.
@@ -271,7 +280,7 @@ extension TransactionStore {
         patchBucket(category: tx.category, y: y, m: 0, d: 0, signedAmount: signedAmount, signedExpense: signedExpense, sign: sign, lastDate: date)
         patchBucket(category: tx.category, y: 0, m: 0, d: 0, signedAmount: signedAmount, signedExpense: signedExpense, sign: sign, lastDate: date)
 
-        scheduleAggregatePersist()
+        if schedulePersist { scheduleAggregatePersist() }
     }
 
     private func patchBucket(

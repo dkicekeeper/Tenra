@@ -31,6 +31,8 @@ On cold start (`loadData()`):
 - `rebuildSeriesAndDateIndexes()` — one O(N_tx) walk over the loaded array.
 - `rebuildAccountAggregates()` — one O(N_tx) walk.
 
+After load, every full rebuild of `accountAggregatesByAccountId` goes through `computeAccountAggregates` (TransactionStore+LoadSnapshot): off the main actor on a day rollover / FX heal (`rebuildRealizedAggregates()`), synchronously in `rebuildAccountAggregates()`.
+
 On `updateBaseCurrency(_:)`: category aggregates rebuild (totals are in base currency); account aggregates are **not** affected because each account's aggregate is stored in the account's own currency.
 
 On `bumpCurrencyRatesVersion()`: if any apply-time delta was applied while the FX cache was cold, both category and account aggregate maps rebuild from scratch.

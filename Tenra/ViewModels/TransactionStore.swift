@@ -131,11 +131,13 @@ final class TransactionStore {
     /// Called from `AppCoordinator` after currency prewarm completes.
     ///
     /// If any aggregate bucket was filled while the FX-rate cache was cold
-    /// (`aggregatesAreFXStale == true`), rebuild the category indexes once now
-    /// that rates are available. Rebuild stays O(N_tx) but only runs on the
-    /// first successful prewarm of each session.
+    /// (`aggregatesAreFXStale == true`), rebuild the category and account aggregates
+    /// now that rates are available. The rebuild runs off the main actor
+    /// (`rebuildRealizedAggregates()`) and lands a moment later with its own
+    /// `categoriesMutationVersion` bump; it used to run here, on the main actor, and froze
+    /// the UI for 0.6–0.9 s on every rate update while some rate was still missing.
     ///
-    /// - Returns: `true` if cold-cache aggregates were rebuilt with fresh rates.
+    /// - Returns: `true` if a rebuild of cold-cache aggregates was started.
     ///   The caller must then also recalculate balances — cached balances for
     ///   cross-currency accounts were likewise computed at the cold rate and the
     ///   balance cache does not heal itself (cache audit #1).
@@ -143,11 +145,13 @@ final class TransactionStore {
     func bumpCurrencyRatesVersion() -> Bool {
         currencyRatesVersion &+= 1
         guard aggregatesAreFXStale else { return false }
-        rebuildCategoryIndexes()
-        // Account aggregates also depend on FX conversion (cross-currency
-        // sources / targets). Rebuild together so they self-heal in one pass.
-        rebuildAccountAggregates()
-        categoriesMutationVersion &+= 1
+        // The rebuild sets the flag again from its own conversions. Clearing it now keeps
+        // a burst of rate updates from each requesting a rebuild: one that is running
+        // already reruns when it sees `currencyRatesVersion` moved under it.
+        aggregatesAreFXStale = false
+        Task { [weak self] in
+            await self?.rebuildRealizedAggregates()
+        }
         return true
     }
 
@@ -324,6 +328,20 @@ final class TransactionStore {
     // Reentrancy guard: prevents concurrent extendAllActiveSeriesHorizons() calls
     // (loadData + applicationDidBecomeActive can race on startup)
     @ObservationIgnored internal var isExtendingHorizons = false
+
+    /// The running off-main rebuild of the realized aggregates, if any. Requests made
+    /// while it runs join it (TransactionStore+RealizedAggregates).
+    @ObservationIgnored internal var realizedAggregatesRebuildTask: Task<Void, Never>?
+
+    /// Bumps on every wholesale write of `categoryAggregatesByKey` /
+    /// `accountAggregatesByAccountId` (rebuilds, seeds, rename re-keying, category drops).
+    /// Part of `RealizedAggregatesStamp`: an off-main rebuild that ran across such a
+    /// write is recomputed instead of overwriting it.
+    @ObservationIgnored internal var aggregateMapsGeneration: Int = 0
+
+    /// The running `recalculateLedgerIfDayChanged` pass, if any. Callers arriving while
+    /// it runs wait for it and then re-check the day key, so one day is folded in once.
+    @ObservationIgnored private var ledgerRecalcTask: Task<Bool, Never>?
 
     // Coordinator for syncing changes to ViewModels (with @Observable we need manual sync)
     @ObservationIgnored weak var coordinator: AppCoordinator?
@@ -601,6 +619,27 @@ final class TransactionStore {
     ///   depend on "today" even when no tx matured (cache audit #7).
     @discardableResult
     func recalculateLedgerIfDayChanged(now: Date = Date(), defaults: UserDefaults = .standard) async -> Bool {
+        // Single-flight. The recompute below suspends (the aggregates rebuild off the main
+        // actor), and the triggers that fire together on foreground — scene `.active`,
+        // `applicationDidBecomeActive`, `AppCoordinator.initialize` — would otherwise all
+        // pass the day-key check before the first one stamps it. A caller arriving during a
+        // pass waits for it, then checks again (and normally finds today already stamped).
+        while let running = ledgerRecalcTask {
+            _ = await running.value
+        }
+        let pass = Task { [weak self] () -> Bool in
+            guard let self else { return false }
+            let dayChanged = await self.recalculateLedgerIfDayChangedNow(now: now, defaults: defaults)
+            // Cleared before the result is observable, so a waiter never re-awaits this pass.
+            self.ledgerRecalcTask = nil
+            return dayChanged
+        }
+        ledgerRecalcTask = pass
+        return await pass.value
+    }
+
+    /// One pass of `recalculateLedgerIfDayChanged`; never runs concurrently with another.
+    private func recalculateLedgerIfDayChangedNow(now: Date, defaults: UserDefaults) async -> Bool {
         guard !accounts.isEmpty else { return false }
 
         // Don't stamp the once-per-day gate before the full transaction set is loaded. The
@@ -631,9 +670,15 @@ final class TransactionStore {
         }
 
         // Realized aggregates exclude future tx — a matured tx must now be counted.
-        rebuildAccountAggregates()
-        rebuildCategoryIndexes()
-        categoriesMutationVersion &+= 1
+        // Rebuilt off the main actor: one pass in a detached task over a Sendable copy,
+        // only the assignment (and one persist) here, bumping categoriesMutationVersion.
+        // On the main actor this was a 0.6–0.9 s freeze on a 19k set just after Home
+        // appeared or on foreground.
+        //
+        // Not per-transaction deltas for the matured rows: which rows the incremental state
+        // already counts is not tracked (one added after midnight before this check is
+        // counted already), so a delta could count a row twice. A full rebuild is exact.
+        await rebuildRealizedAggregates()
         // Balances recomputed from initialBalance + realized tx (also repairs drift).
         await balanceCoordinator.recalculateAll(accounts: accounts, transactions: transactions)
 

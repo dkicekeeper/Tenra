@@ -88,19 +88,29 @@ For full circles use `.infinity` inline (rare — only avatars/icon backgrounds 
 
 ### Icon Sizes (`AppIconSize`)
 
+Two scales, named like `AppSpacing` (DesignKit 1.13.0). **Glyphs** stand on their own:
+
 | Token | Value | Use For |
 |-------|-------|---------|
+| `xs` | 12 | A glyph at caption size |
 | `sm` | 16 | Inline icons in text |
 | `md` | 20 | Toolbar, list default |
 | `lg` | 24 | Emphasized list icons, `UniversalRow` leading icons |
 | `xl` | 32 | Bank logos in rows |
-| `avatar` | 40 | Subscription icons in rows |
-| `xxl` | 44 | Category circles (QuickAdd) |
-| `xxxl` | 48 | Hero icons (empty states) |
-| `categoryIcon` | 52 | Category row icons |
-| `mega` | 64 | Category coins, large display icons |
-| `budgetRing` | 72 | Budget ring (coin + 8pt stroke space) |
-| `ultra` | 80 | Hero icons, large action buttons (voice input) |
+
+**Tiles** (`AppIconSize.Tile`) carry their own backing (circle, rounded square, coin, avatar):
+
+| Token | Value | Use For |
+|-------|-------|---------|
+| `Tile.xs` | 40 | Subscription icons in rows, avatars |
+| `Tile.sm` | 44 | Category circles (QuickAdd), content-row icons |
+| `Tile.md` | 48 | Hero icons (empty states) |
+| `Tile.lg` | 52 | Category row icons |
+| `Tile.xl` | 64 | Category coins, large display icons |
+| `Tile.xxl` | 72 | Budget ring (coin + 8pt stroke space) |
+| `Tile.xxxl` | 80 | Hero icons, large action buttons (voice input) |
+
+The 1.x names (`avatar`, `xxl`, `xxxl`, `categoryIcon`, `mega`, `budgetRing`, `ultra`) are deprecated aliases of the same values; Xcode's fix-it renames them.
 
 ### Container Sizes
 
@@ -317,7 +327,7 @@ Every row in `Views/Components/Rows/` follows these token rules. New rows MUST c
 
 | Slot | Token | Notes |
 |------|-------|-------|
-| **Leading icon — content rows** | `AppIconSize.xxl` (44) | AccountRow, CategoryRow, CategoryBreakdownRow, InsightEntityRow, BudgetProgressRow |
+| **Leading icon — content rows** | `AppIconSize.Tile.sm` (44) | AccountRow, CategoryRow, CategoryBreakdownRow, InsightEntityRow, BudgetProgressRow |
 | **Leading icon — form rows** | `AppIconSize.lg` (24) | InfoRow, MenuPickerRow, DatePickerRow |
 | **Leading icon — settings rows** | `AppIconSize.md` (20) | ActionSettingsRow, NavigationSettingsRow |
 | **HStack spacing (icon ↔ content)** | `AppSpacing.md` (12) | All rows |
@@ -702,7 +712,7 @@ DateSectionHeaderView(dateKey: "2026-03-10", amount: 45000.0, currency: "KZT")
 Circular progress arc for budget consumption.
 
 ```swift
-ProgressRing(progress: 0.75, size: AppIconSize.categoryIcon, isOverBudget: false)
+ProgressRing(progress: 0.75, size: AppIconSize.Tile.lg, isOverBudget: false)
 ```
 
 ---

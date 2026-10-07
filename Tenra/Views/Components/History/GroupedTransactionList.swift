@@ -233,7 +233,7 @@ struct GroupedTransactionList<Overlay: View>: View {
 
                             if index < section.transactions.count - 1 {
                                 Divider()
-                                    .padding(.leading, AppIconSize.xxl + AppSpacing.md)
+                                    .padding(.leading, AppIconSize.Tile.sm + AppSpacing.md)
                             }
                         }
                     }

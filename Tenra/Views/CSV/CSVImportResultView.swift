@@ -72,7 +72,7 @@ struct CSVImportResultView: View {
 
     private var resultIcon: some View {
         Image(systemName: statistics.successRate > 0.8 ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-            .font(.system(size: AppIconSize.mega))
+            .font(.system(size: AppIconSize.Tile.xl))
             .foregroundStyle(statistics.successRate > 0.8 ? AppColors.success : AppColors.warning)
     }
 

@@ -21,7 +21,7 @@ struct PremiumLockedView: View {
             Spacer()
 
             Image(systemName: icon)
-                .font(.system(size: AppIconSize.mega, weight: .light))
+                .font(.system(size: AppIconSize.Tile.xl, weight: .light))
                 .foregroundStyle(AppColors.accent)
 
             VStack(spacing: AppSpacing.sm) {

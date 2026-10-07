@@ -133,7 +133,12 @@ gets. Before the full load (a process launched only for an App Intent stops afte
 `initializeFastPath()`) the in-memory link list is empty, so linking one transaction there would
 wipe every other transaction's subcategories. `TransactionDraftService.commit` checks the flag and
 inserts rows one at a time through [IntentSubcategoryStore](../../Tenra/Services/Intents/IntentSubcategoryStore.swift)
-instead; intent-side subcategory reads go to CoreData through the same helper.
+instead; intent-side subcategory reads go to CoreData through the same helper. When the app's own
+full load is in flight in the same process, the commit waits for it (`waitForLoadInFlight`) and links
+through memory: the load might not have fetched a row written around it, and the next whole-table save
+would delete it. Inside the app the store itself holds whole-table saves until the load lands (see
+[architecture.md](../architecture.md) §The load window), so linking in the first seconds no longer
+wipes the table, but the in-memory list only becomes complete when the load lands.
 
 Selection is per category: clear `selectedSubcategoryIds` whenever the picked category (or the
 form's mode) changes. `CategoryCardSelectorView`/`CategorySelectorView` write the binding

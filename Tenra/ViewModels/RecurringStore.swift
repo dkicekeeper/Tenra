@@ -44,6 +44,19 @@ final class RecurringStore {
     @ObservationIgnored let recurringCache: LRUCache<String, [Transaction]>
     @ObservationIgnored private let repository: DataRepositoryProtocol
 
+    // MARK: - Load window (see TransactionStore+LoadMerge.swift)
+
+    /// Whether a load may still replace memory. Set by the owning TransactionStore; while
+    /// true, changed series and occurrences are recorded so the load keeps them.
+    @ObservationIgnored var isProvisional: () -> Bool = { false }
+    /// Whether memory holds every series and occurrence. Set by the owning
+    /// TransactionStore; the saves below replace whole tables, so until then they are held.
+    @ObservationIgnored var holdsCompleteTables: () -> Bool = { true }
+    @ObservationIgnored private(set) var seriesChanges = LoadChanges()
+    @ObservationIgnored private(set) var occurrenceChanges = LoadChanges()
+    @ObservationIgnored private var hasHeldSeriesSave = false
+    @ObservationIgnored private var hasHeldOccurrencesSave = false
+
     // MARK: - Init
 
     init(repository: DataRepositoryProtocol, cacheCapacity: Int = 100) {
@@ -81,6 +94,7 @@ final class RecurringStore {
     func handleSeriesCreated(_ series: RecurringSeries) {
         recurringSeries.append(series)
         seriesById[series.id] = series
+        noteSeriesChanged(series.id)
     }
 
     func handleSeriesUpdated(old: RecurringSeries, new: RecurringSeries) {
@@ -88,6 +102,7 @@ final class RecurringStore {
             recurringSeries[index] = new
         }
         seriesById[new.id] = new
+        noteSeriesChanged(new.id)
         // Note: Transaction regeneration is handled in TransactionStore+Recurring.updateSeries()
     }
 
@@ -102,6 +117,7 @@ final class RecurringStore {
             }
             recurringSeries[index] = updatedSeries
             seriesById[seriesId] = updatedSeries
+            noteSeriesChanged(seriesId)
         }
         // Transaction cleanup is performed in TransactionStore+Recurring.stopSeries()
         // BEFORE apply(.seriesStopped) is called — via individual apply(.deleted) events.
@@ -125,6 +141,9 @@ final class RecurringStore {
             return date > cutoff
         }.map { $0.id })
         recurringOccurrences.removeAll { removedIds.contains($0.id) }
+        if isProvisional() {
+            for id in removedIds { occurrenceChanges.noteDeleted(id) }
+        }
         if kept.isEmpty {
             occurrencesBySeriesId.removeValue(forKey: seriesId)
         } else {
@@ -135,13 +154,17 @@ final class RecurringStore {
     /// Remove all occurrences for a series (used by deleteSeries).
     /// O(M) lookup + O(N_occ) array filter (rare operation).
     func removeAllOccurrences(for seriesId: String) {
-        guard occurrencesBySeriesId.removeValue(forKey: seriesId) != nil else { return }
+        guard let removed = occurrencesBySeriesId.removeValue(forKey: seriesId) else { return }
         recurringOccurrences.removeAll { $0.seriesId == seriesId }
+        if isProvisional() {
+            for occurrence in removed { occurrenceChanges.noteDeleted(occurrence.id) }
+        }
     }
 
     func handleSeriesDeleted(seriesId: String) {
         recurringSeries.removeAll { $0.id == seriesId }
         seriesById.removeValue(forKey: seriesId)
+        if isProvisional() { seriesChanges.noteDeleted(seriesId) }
         // Note: Transaction cleanup is handled in TransactionStore+Recurring.deleteSeries() before calling apply()
     }
 
@@ -150,6 +173,47 @@ final class RecurringStore {
         for occ in occurrences {
             occurrencesBySeriesId[occ.seriesId, default: []].append(occ)
         }
+        if isProvisional() {
+            for occ in occurrences { occurrenceChanges.noteChanged(occ.id) }
+        }
+    }
+
+    private func noteSeriesChanged(_ id: String) {
+        if isProvisional() { seriesChanges.noteChanged(id) }
+    }
+
+    /// The fetched series and occurrences with the ones changed in memory folded in
+    /// (`LoadChanges.merge`). Called by `TransactionStore.loadData` before `load`.
+    func mergingRecordedChanges(
+        series loadedSeries: [RecurringSeries],
+        occurrences loadedOccurrences: [RecurringOccurrence]
+    ) -> (series: [RecurringSeries], occurrences: [RecurringOccurrence]) {
+        let series = seriesChanges.merge(
+            into: loadedSeries,
+            changedRows: seriesChanges.changedIds.compactMap { seriesById[$0] },
+            id: \.id
+        )
+        var changedOccurrences: [RecurringOccurrence] = []
+        if !occurrenceChanges.changedIds.isEmpty {
+            let wanted = Set(occurrenceChanges.changedIds)
+            var byId: [String: RecurringOccurrence] = [:]
+            for occurrence in recurringOccurrences where wanted.contains(occurrence.id) {
+                byId[occurrence.id] = occurrence
+            }
+            changedOccurrences = occurrenceChanges.changedIds.compactMap { byId[$0] }
+        }
+        let occurrences = occurrenceChanges.merge(
+            into: loadedOccurrences,
+            changedRows: changedOccurrences,
+            id: \.id
+        )
+        return (series, occurrences)
+    }
+
+    /// Forgets the recorded changes once a load has merged them.
+    func clearRecordedChanges() {
+        seriesChanges = LoadChanges()
+        occurrenceChanges = LoadChanges()
     }
 
     // MARK: - Persistence (debounced)
@@ -167,7 +231,7 @@ final class RecurringStore {
         occurrencesPersistTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(300))
             guard let self, !Task.isCancelled else { return }
-            self.repository.saveRecurringOccurrences(self.recurringOccurrences)
+            self.writeOccurrences()
         }
     }
 
@@ -176,8 +240,8 @@ final class RecurringStore {
     func flushPersist() {
         occurrencesPersistTask?.cancel()
         seriesPersistTask?.cancel()
-        repository.saveRecurringOccurrences(recurringOccurrences)
-        repository.saveRecurringSeries(recurringSeries)
+        writeOccurrences()
+        writeSeries()
     }
 
     func saveSeries() {
@@ -185,8 +249,32 @@ final class RecurringStore {
         seriesPersistTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(300))
             guard let self, !Task.isCancelled else { return }
-            self.repository.saveRecurringSeries(self.recurringSeries)
+            self.writeSeries()
         }
+    }
+
+    /// Runs the saves held while memory did not hold every series and occurrence.
+    func runHeldSaves() {
+        if hasHeldOccurrencesSave { writeOccurrences() }
+        if hasHeldSeriesSave { writeSeries() }
+    }
+
+    private func writeOccurrences() {
+        guard holdsCompleteTables() else {
+            hasHeldOccurrencesSave = true
+            return
+        }
+        hasHeldOccurrencesSave = false
+        repository.saveRecurringOccurrences(recurringOccurrences)
+    }
+
+    private func writeSeries() {
+        guard holdsCompleteTables() else {
+            hasHeldSeriesSave = true
+            return
+        }
+        hasHeldSeriesSave = false
+        repository.saveRecurringSeries(recurringSeries)
     }
 
     func invalidateCacheFor(seriesId: String) {

@@ -98,6 +98,18 @@ protocol BalanceCoordinatorProtocol: AnyObject {
         transactions: [Transaction]
     ) async
 
+    /// Recalculate balances for specific accounts from the store's per-account index
+    /// (`TransactionStore.transactionsByAccount`): reads only those accounts' transactions.
+    /// - Parameters:
+    ///   - accountIds: Set of account IDs to recalculate
+    ///   - accounts: All accounts
+    ///   - transactionsByAccount: Account id → its transactions (both legs of a transfer)
+    func recalculateAccounts(
+        _ accountIds: Set<String>,
+        accounts: [Account],
+        transactionsByAccount: TransactionIndex
+    ) async
+
     // MARK: - Optimistic Updates
 
     /// Apply optimistic update (instant UI feedback)

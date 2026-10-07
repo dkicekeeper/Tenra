@@ -299,6 +299,21 @@ final class TransactionStore {
     // once-per-day ledger maturation against running while `transactions` is still empty.
     @ObservationIgnored var hasCompletedInitialLoad: Bool = false
 
+    // MARK: Load window (see TransactionStore+LoadMerge.swift)
+
+    /// True once the fast path (or a full load) put every account and category in memory.
+    @ObservationIgnored var hasLoadedAccountsAndCategories: Bool = false
+    /// True while `loadData` runs: it will replace memory with what it fetched.
+    @ObservationIgnored var isLoadInFlight: Bool = false
+    /// Rows changed while a load could still overwrite memory; the load merges them.
+    @ObservationIgnored var loadJournal = LoadJournal()
+    /// Whole-table saves held because memory did not hold the whole table yet.
+    @ObservationIgnored var heldWholeTableSaves: Set<WholeTable> = []
+    /// Callers of `waitForLoadInFlight()`, resumed when the load lands.
+    @ObservationIgnored var loadWaiters: [CheckedContinuation<Void, Never>] = []
+    /// True while a load assigns what it fetched: that is not a change to record.
+    @ObservationIgnored var isAssigningLoadedRows: Bool = false
+
     // Debounce task for coalescing rapid mutations into single sync
     private var syncDebounceTask: Task<Void, Never>?
 
@@ -347,6 +362,10 @@ final class TransactionStore {
         self.balanceCoordinator = balanceCoordinator
         self.recurringStore = recurringStore
         self.cache = UnifiedTransactionCache(capacity: cacheCapacity)
+
+        // Series and occurrences follow the same load-window rules as the store's tables.
+        recurringStore.isProvisional = { [weak self] in self?.isLoadProvisional ?? false }
+        recurringStore.holdsCompleteTables = { [weak self] in self?.holdsCompleteTable(.recurring) ?? false }
 
         // Setup notification observer for app lifecycle
         setupNotificationObservers()
@@ -411,7 +430,17 @@ final class TransactionStore {
     /// MainActor is NOT blocked -- it awaits the background result.
     /// All transactions are loaded into memory (no window limit).
     /// 19k transactions x ~400 bytes = 7.6 MB -- a single source of truth.
+    ///
+    /// Changes made in memory while the load runs (or, for the first load, since launch)
+    /// are folded into what it fetched instead of being overwritten, and whole-table saves
+    /// held until now run once it lands. See TransactionStore+LoadMerge.swift.
     func loadData() async throws {
+        // One load at a time: a second one (a restore while the launch load runs) waits.
+        while isLoadInFlight {
+            await waitForLoadInFlight()
+        }
+        isLoadInFlight = true
+
         // Capture repository before leaving @MainActor — it's a constant (@ObservationIgnored let).
         let repo = self.repository
 
@@ -438,63 +467,125 @@ final class TransactionStore {
         let (loadedTxs, loadedAccs, loadedCats, loadedSubs, loadedCatLinks, loadedTxLinks, loadedSeries, loadedOcc, loadedAggregates, loadedAccountAggregates) =
             await (txs, accs, cats, subs, catLinks, txLinks, series, occurrences, aggregates, accountAggregates)
 
-        // Prune any order keys for accounts that no longer exist (M-13): the order
-        // map (UserDefaults) and accounts (CoreData) can drift, e.g. an account
-        // deleted while importing skips removeOrder. Reconcile against the
-        // authoritative loaded set before applying.
-        AccountOrderManager.shared.reconcile(withAccountIds: Set(loadedAccs.map { $0.id }))
-        CategoryOrderManager.shared.reconcile(withCategoryIds: Set(loadedCats.map { $0.id }))
-        let orderedAccounts = AccountOrderManager.shared.applyOrders(to: loadedAccs)
-        let orderedCategories = CategoryOrderManager.shared.applyOrders(to: loadedCats)
-
-        // Capture MainActor-bound state once, before detaching.
-        let currentBaseCurrency = self.baseCurrency
-        var accountsCurrencyById: [String: String] = [:]
-        accountsCurrencyById.reserveCapacity(orderedAccounts.count)
-        for acc in orderedAccounts { accountsCurrencyById[acc.id] = acc.currency }
-        let needsColdStartCategoryAggregates = loadedAggregates.isEmpty
-        // Also rebuilt once when they were saved under an older valuation rule.
-        let needsColdStartAccountAggregates = loadedAccountAggregates.isEmpty
-            || !Self.persistedAccountAggregatesFollowCurrentRule
-
-        // Build every pure value-indexed structure off the main actor in one pass.
-        // Previously this lived as 5+ separate sweeps over `loadedTxs` on MainActor
-        // (Set, Dictionary, rebuildAccountIndex, rebuildAllSubcategoryIndexes,
-        // rebuildSeriesAndDateIndexes, transactionsByCategoryName loop) and ran in
-        // parallel with the home screen's reveal animation — see TransactionStore+LoadSnapshot.swift.
+        // Fold memory's changes into the fetched rows, then build every pure value-indexed
+        // structure from the result off the main actor in one pass. Previously this lived
+        // as 5+ separate sweeps over `loadedTxs` on MainActor (Set, Dictionary,
+        // rebuildAccountIndex, rebuildAllSubcategoryIndexes, rebuildSeriesAndDateIndexes,
+        // transactionsByCategoryName loop) and ran in parallel with the home screen's reveal
+        // animation — see TransactionStore+LoadSnapshot.swift.
         //
-        // When CoreData has no warm-start aggregates (first launch / schema migration),
-        // the cold rebuild of `categoryAggregatesByKey` + `accountAggregatesByAccountId`
-        // is also done inside the detached task. Those rebuilds depend on
-        // `baseCurrency` + per-account currency + FX cache — all captured above
-        // as Sendable values; `CurrencyConverter.convertSync` is actor-safe.
-        let snapshot = await Task.detached(priority: .userInitiated) {
-            Self.buildLoadSnapshot(
-                transactions: loadedTxs,
-                categories: orderedCategories,
+        // The build is an await, so the user can change something meanwhile: when the
+        // journal moved, merge and build again. The third attempt builds synchronously, so
+        // nothing can overtake it (a fallback for a burst of changes, not the common path).
+        var rows: MergedLoadRows
+        var orderedAccounts: [Account]
+        var orderedCategories: [CustomCategory]
+        var mergedTransactions: [Transaction]
+        var snapshot: LoadedIndexSnapshot
+        var needsColdStartCategoryAggregates: Bool
+        var needsColdStartAccountAggregates: Bool
+        var attempt = 0
+        var settled = false
+        repeat {
+            let journalVersion = loadJournal.version
+            rows = mergeProvisionalChanges(
+                accounts: loadedAccs,
+                categories: loadedCats,
                 subcategories: loadedSubs,
                 categorySubcategoryLinks: loadedCatLinks,
-                transactionSubcategoryLinks: loadedTxLinks,
-                baseCurrency: currentBaseCurrency,
-                accountsCurrencyById: accountsCurrencyById,
-                needsColdStartCategoryAggregates: needsColdStartCategoryAggregates,
-                needsColdStartAccountAggregates: needsColdStartAccountAggregates
+                transactionSubcategoryLinks: loadedTxLinks
             )
-        }.value
+
+            // Prune any order keys for accounts that no longer exist (M-13): the order
+            // map (UserDefaults) and accounts (CoreData) can drift, e.g. an account
+            // deleted while importing skips removeOrder. Reconcile against the
+            // authoritative merged set before applying.
+            AccountOrderManager.shared.reconcile(withAccountIds: Set(rows.accounts.map { $0.id }))
+            CategoryOrderManager.shared.reconcile(withCategoryIds: Set(rows.categories.map { $0.id }))
+            orderedAccounts = AccountOrderManager.shared.applyOrders(to: rows.accounts)
+            orderedCategories = CategoryOrderManager.shared.applyOrders(to: rows.categories)
+
+            // Capture MainActor-bound state once, before detaching.
+            let currentBaseCurrency = self.baseCurrency
+            var accountsCurrencyById: [String: String] = [:]
+            accountsCurrencyById.reserveCapacity(orderedAccounts.count)
+            for acc in orderedAccounts { accountsCurrencyById[acc.id] = acc.currency }
+            // Persisted aggregates do not include transactions changed in memory since
+            // launch: rebuild them from the merged transactions instead.
+            let transactionsChanged = !rows.transactionChanges.isEmpty
+            needsColdStartCategoryAggregates = loadedAggregates.isEmpty || transactionsChanged
+            // Also rebuilt once when they were saved under an older valuation rule.
+            needsColdStartAccountAggregates = loadedAccountAggregates.isEmpty || transactionsChanged
+                || !Self.persistedAccountAggregatesFollowCurrentRule
+
+            // When CoreData has no warm-start aggregates (first launch / schema migration),
+            // the cold rebuild of `categoryAggregatesByKey` + `accountAggregatesByAccountId`
+            // is also done inside the detached task. Those rebuilds depend on
+            // `baseCurrency` + per-account currency + FX cache — all captured above
+            // as Sendable values; `CurrencyConverter.convertSync` is actor-safe.
+            let transactionChanges = rows.transactionChanges
+            let changedTransactions = rows.changedTransactions
+            let subcategoriesForBuild = rows.subcategories
+            let categoryLinksForBuild = rows.categorySubcategoryLinks
+            let transactionLinksForBuild = rows.transactionSubcategoryLinks
+            let categoriesForBuild = orderedCategories
+            let coldCategories = needsColdStartCategoryAggregates
+            let coldAccounts = needsColdStartAccountAggregates
+            let currencies = accountsCurrencyById
+            let built: (transactions: [Transaction], snapshot: LoadedIndexSnapshot)
+            if attempt < 2 {
+                built = await Task.detached(priority: .userInitiated) {
+                    Self.mergeAndBuildLoadSnapshot(
+                        loadedTransactions: loadedTxs,
+                        transactionChanges: transactionChanges,
+                        changedTransactions: changedTransactions,
+                        categories: categoriesForBuild,
+                        subcategories: subcategoriesForBuild,
+                        categorySubcategoryLinks: categoryLinksForBuild,
+                        transactionSubcategoryLinks: transactionLinksForBuild,
+                        baseCurrency: currentBaseCurrency,
+                        accountsCurrencyById: currencies,
+                        needsColdStartCategoryAggregates: coldCategories,
+                        needsColdStartAccountAggregates: coldAccounts
+                    )
+                }.value
+            } else {
+                built = Self.mergeAndBuildLoadSnapshot(
+                    loadedTransactions: loadedTxs,
+                    transactionChanges: transactionChanges,
+                    changedTransactions: changedTransactions,
+                    categories: categoriesForBuild,
+                    subcategories: subcategoriesForBuild,
+                    categorySubcategoryLinks: categoryLinksForBuild,
+                    transactionSubcategoryLinks: transactionLinksForBuild,
+                    baseCurrency: currentBaseCurrency,
+                    accountsCurrencyById: currencies,
+                    needsColdStartCategoryAggregates: coldCategories,
+                    needsColdStartAccountAggregates: coldAccounts
+                )
+            }
+            mergedTransactions = built.transactions
+            snapshot = built.snapshot
+            attempt += 1
+            settled = loadJournal.version == journalVersion
+        } while !settled
 
         // Back on @MainActor — only assignments now, no per-tx loops.
+        isAssigningLoadedRows = true
         accounts = orderedAccounts
         rebuildAccountById()  // O(N_accounts), tiny
-        transactions = loadedTxs
-        transactionsCount = loadedTxs.count
+        isAssigningLoadedRows = false
+        transactions = mergedTransactions
+        transactionsCount = mergedTransactions.count
         transactionIdSet = snapshot.transactionIdSet
         transactionById = snapshot.transactionById
         transactionIdsByAccount = snapshot.transactionIdsByAccount
         categories = orderedCategories
-        subcategories = loadedSubs
-        categorySubcategoryLinks = loadedCatLinks
-        transactionSubcategoryLinks = loadedTxLinks
-        recurringStore.load(series: loadedSeries, occurrences: loadedOcc)
+        subcategories = rows.subcategories
+        categorySubcategoryLinks = rows.categorySubcategoryLinks
+        transactionSubcategoryLinks = rows.transactionSubcategoryLinks
+        let recurring = recurringStore.mergingRecordedChanges(series: loadedSeries, occurrences: loadedOcc)
+        recurringStore.load(series: recurring.series, occurrences: recurring.occurrences)
 
         // Lookup tables — moved off MainActor, just assign.
         categoryById = snapshot.categoryById
@@ -512,7 +603,7 @@ final class TransactionStore {
         // use the cold rebuild performed inside the detached snapshot builder.
         // Either path is now MainActor-cheap — only hash-map assignment + persist
         // scheduling, no per-tx loops.
-        if !loadedAggregates.isEmpty {
+        if !needsColdStartCategoryAggregates {
             // `transactionsByCategoryName` is already populated from the snapshot,
             // so the inner loop in `seedCategoryAggregates` is redundant — seed the
             // aggregate map directly to avoid a second O(N_tx) walk on MainActor.
@@ -538,9 +629,12 @@ final class TransactionStore {
 
         categoriesMutationVersion &+= 1
         subcategoriesMutationVersion &+= 1
+        // Caches keyed on the mutation counter were filled from partial (pre-load) data.
+        mutationVersion &+= 1
 
-        // The full transaction set is now in memory — the ledger maturation gate can safely run.
-        hasCompletedInitialLoad = true
+        // The full transaction set is now in memory — the ledger maturation gate can safely
+        // run; recorded changes are merged and held whole-table saves run.
+        finishLoad()
 
         // baseCurrency is synced from settings by AppCoordinator (fast path / initialize)
         // before this point; the day-change repair rebuilds aggregates if it changed.
@@ -562,11 +656,29 @@ final class TransactionStore {
             let cats = try bgContext.fetch(CustomCategoryEntity.fetchRequest()).map { $0.toCustomCategory() }
             return (accs, cats)
         }
-        accounts = AccountOrderManager.shared.applyOrders(to: accs)
+        // Keep anything changed in memory meanwhile, like the full load does.
+        let journal = loadJournal
+        let mergedAccounts = journal.accounts.merge(
+            into: accs,
+            changedRows: journal.accounts.changedIds.compactMap { accountById[$0] },
+            id: \.id
+        )
+        let mergedCategories = journal.categories.merge(
+            into: cats,
+            changedRows: journal.categories.changedIds.compactMap { categoryById[$0] },
+            id: \.id
+        )
+        isAssigningLoadedRows = true
+        accounts = AccountOrderManager.shared.applyOrders(to: mergedAccounts)
         rebuildAccountById()
-        categories = CategoryOrderManager.shared.applyOrders(to: cats)
+        isAssigningLoadedRows = false
+        categories = CategoryOrderManager.shared.applyOrders(to: mergedCategories)
         rebuildCategoryLookups()
         categoriesMutationVersion &+= 1
+
+        // Memory now holds every account and category: their whole-table saves may run.
+        hasLoadedAccountsAndCategories = true
+        runHeldWholeTableSaves()
     }
 
     /// Update base currency (for currency conversions)
@@ -750,6 +862,14 @@ final class TransactionStore {
 
     /// Finish import mode and persist all changes
     func finishImport() async throws {
+        // The saves below replace whole tables. Never write them from partial memory: wait
+        // out a load in flight, and refuse if the store was never fully loaded.
+        await waitForLoadInFlight()
+        guard hasCompletedInitialLoad else {
+            logger.error("finishImport refused: the store has not finished loading")
+            throw TransactionStoreError.persistenceFailed(CocoaError(.fileWriteUnknown))
+        }
+
         let txCount = transactions.count
         logger.debug("finishImport START — tx:\(txCount) acc:\(self.accounts.count) cat:\(self.categories.count)")
 
@@ -897,6 +1017,7 @@ final class TransactionStore {
         }
 
         guard !renamedIds.isEmpty else { return }
+        noteProvisionalChange(\.transactions, changed: renamedIds)
         repository.renameTransactionsCategory(ids: renamedIds, to: newName)
         cache.invalidateAll()
         mutationVersion &+= 1
@@ -1014,6 +1135,9 @@ final class TransactionStore {
 
     /// Update state based on event
     private func updateState(_ event: TransactionEvent) {
+        // A load in flight would overwrite this change with what it fetched: record it.
+        noteProvisionalChange(event)
+
         switch event {
         case .added(let tx):
             transactions.append(tx)
@@ -1270,9 +1394,17 @@ final class TransactionStore {
     /// so a full rebuild is cheap and easier to reason about than incremental sync.
     /// Also bumps `accountsMutationVersion` so downstream caches (AccountsViewModel
     /// regular/deposit/loan filters) can detect invalidation cheaply.
+    ///
+    /// It is also where account changes made while a load may overwrite memory are
+    /// recorded (TransactionStore+LoadMerge.swift): every path that mutates `accounts`
+    /// ends here, including ones outside the account CRUD (loan payment rollback).
     internal func rebuildAccountById() {
+        let previous = accountById
         accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
         accountsMutationVersion &+= 1
+        if !isAssigningLoadedRows {
+            noteProvisionalChanges(\.accounts, from: previous, to: accountById)
+        }
     }
 
     // MARK: - Per-Account Index Maintenance

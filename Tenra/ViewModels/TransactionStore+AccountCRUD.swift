@@ -60,6 +60,32 @@ extension TransactionStore {
 
     }
 
+    /// Updates several accounts with one whole-table save. Use it for a pass over many
+    /// accounts (the deposits reconciliation at launch): `updateAccount` per account starts
+    /// a save of the whole table each time. Accounts that are unknown or unchanged are
+    /// skipped; when nothing changed, nothing is saved.
+    func updateAccounts(_ updatedAccounts: [Account]) {
+        var changed: [Account] = []
+        for account in updatedAccounts {
+            guard let index = accounts.firstIndex(where: { $0.id == account.id }),
+                  accounts[index] != account else { continue }
+            accounts[index] = account
+            changed.append(account)
+        }
+        guard !changed.isEmpty else { return }
+        rebuildAccountById()
+
+        // Don't persist during import mode - will be done in finishImport()
+        if !isImporting {
+            persistAccountsToRepository()
+            for account in changed {
+                if let order = account.order {
+                    AccountOrderManager.shared.setOrder(order, for: account.id)
+                }
+            }
+        }
+    }
+
     /// Delete an account
     func deleteAccount(_ accountId: String) {
         accounts.removeAll { $0.id == accountId }
@@ -145,8 +171,10 @@ extension TransactionStore {
 
     // MARK: - Account Persistence
 
-    /// Persist accounts to repository
+    /// Persist accounts to repository. The save replaces the whole table, so it waits
+    /// until memory holds every account (see TransactionStore+LoadMerge.swift).
     internal func persistAccountsToRepository() {
+        guard mayWriteWholeTable(.accounts) else { return }
         repository.saveAccounts(accounts)
     }
 }

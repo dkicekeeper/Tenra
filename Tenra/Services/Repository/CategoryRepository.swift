@@ -82,6 +82,9 @@ nonisolated final class CategoryRepository: CategoryRepositoryProtocol, @uncheck
     }
 
     func saveCategories(_ categories: [CustomCategory]) {
+        // Taken now, in call order: the coordinator writes the newest snapshot of the
+        // table last and skips older ones still waiting (see CoreDataSaveCoordinator).
+        let ticket = saveCoordinator.nextTicket()
 
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
@@ -89,15 +92,14 @@ nonisolated final class CategoryRepository: CategoryRepositoryProtocol, @uncheck
             PerformanceProfiler.start("CategoryRepository.saveCategories")
 
             do {
-                try await self.saveCoordinator.performSave(operation: "saveCategories") { context in
+                try await self.saveCoordinator.performSave(operation: "saveCategories", ticket: ticket) { context in
                     try self.saveCategoriesInternal(categories, context: context)
                 }
-
-                PerformanceProfiler.end("CategoryRepository.saveCategories")
-
             } catch {
-                PerformanceProfiler.end("CategoryRepository.saveCategories")
+                Self.logger.error("saveCategories failed: \(error.localizedDescription, privacy: .public)")
             }
+
+            PerformanceProfiler.end("CategoryRepository.saveCategories")
         }
     }
 
@@ -196,23 +198,18 @@ nonisolated final class CategoryRepository: CategoryRepositoryProtocol, @uncheck
     }
 
     func saveSubcategories(_ subcategories: [Subcategory]) {
+        // Whole-table save: ordered and coalesced by ticket, like saveCategories.
+        let ticket = saveCoordinator.nextTicket()
 
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
 
-            let context = self.stack.newBackgroundContext()
-
-            await context.perform {
-                do {
+            do {
+                try await self.saveCoordinator.performSave(operation: "saveSubcategories", ticket: ticket) { context in
                     try self.saveSubcategoriesInternal(subcategories, context: context)
-
-                    // Save if there are changes
-                    if context.hasChanges {
-                        try context.save()
-                    }
-                } catch {
-                    Self.logger.error("saveSubcategories failed: \(error.localizedDescription, privacy: .public)")
                 }
+            } catch {
+                Self.logger.error("saveSubcategories failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -264,23 +261,18 @@ nonisolated final class CategoryRepository: CategoryRepositoryProtocol, @uncheck
     }
 
     func saveCategorySubcategoryLinks(_ links: [CategorySubcategoryLink]) {
+        // Whole-table save: ordered and coalesced by ticket, like saveCategories.
+        let ticket = saveCoordinator.nextTicket()
 
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
 
-            let context = self.stack.newBackgroundContext()
-
-            await context.perform {
-                do {
+            do {
+                try await self.saveCoordinator.performSave(operation: "saveCategorySubcategoryLinks", ticket: ticket) { context in
                     try self.saveCategorySubcategoryLinksInternal(links, context: context)
-
-                    // Save if there are changes
-                    if context.hasChanges {
-                        try context.save()
-                    }
-                } catch {
-                    Self.logger.error("saveCategorySubcategoryLinks failed: \(error.localizedDescription, privacy: .public)")
                 }
+            } catch {
+                Self.logger.error("saveCategorySubcategoryLinks failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -334,23 +326,18 @@ nonisolated final class CategoryRepository: CategoryRepositoryProtocol, @uncheck
     }
 
     func saveTransactionSubcategoryLinks(_ links: [TransactionSubcategoryLink]) {
+        // Whole-table save: ordered and coalesced by ticket, like saveCategories.
+        let ticket = saveCoordinator.nextTicket()
 
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
 
-            let context = self.stack.newBackgroundContext()
-
-            await context.perform {
-                do {
+            do {
+                try await self.saveCoordinator.performSave(operation: "saveTransactionSubcategoryLinks", ticket: ticket) { context in
                     try self.saveTransactionSubcategoryLinksInternal(links, context: context)
-
-                    // Save if there are changes
-                    if context.hasChanges {
-                        try context.save()
-                    }
-                } catch {
-                    Self.logger.error("saveTransactionSubcategoryLinks failed: \(error.localizedDescription, privacy: .public)")
                 }
+            } catch {
+                Self.logger.error("saveTransactionSubcategoryLinks failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -416,15 +403,18 @@ nonisolated final class CategoryRepository: CategoryRepositoryProtocol, @uncheck
     }
 
     func saveAggregates(_ aggregates: [CategoryAggregate]) {
+        // Whole-table save: ordered and coalesced by ticket, like saveCategories.
+        let ticket = saveCoordinator.nextTicket()
+
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
 
             do {
-                try await self.saveCoordinator.performSave(operation: "saveAggregates") { context in
+                try await self.saveCoordinator.performSave(operation: "saveAggregates", ticket: ticket) { context in
                     try self.saveAggregatesInternal(aggregates, context: context)
                 }
             } catch {
-                // Логировать ошибку
+                Self.logger.error("saveAggregates failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

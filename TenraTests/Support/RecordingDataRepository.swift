@@ -20,6 +20,23 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
     private let lock = NSLock()
     private var _persistedInitialBalances: [[String: Double]] = []
     private var _categoryRenames: [(ids: [String], newName: String)] = []
+    private var _balanceWrites: [[String: Double]] = []
+    private var balanceWriteCalls = 0
+    private var _savedAccountSnapshots: [[Account]] = []
+
+    /// Optional delay before an `updateAccountBalancesSync` call finishes, by call index
+    /// (0-based). Lets a test make concurrent writes finish out of order, as slow CoreData
+    /// saves can. Set it before the first write.
+    var balanceWriteDelay: (@Sendable (Int) -> Duration)?
+
+    /// When set, `loadTransactions` waits on it before returning: a test can act while
+    /// `TransactionStore.loadData` is in flight. Set it before the load starts.
+    var loadTransactionsGate: LoadGate?
+
+    /// What `loadAggregates` / `loadAccountAggregates` return (the inner repository keeps
+    /// none): a warm-start table persisted before launch. Set before the load starts.
+    var persistedCategoryAggregates: [CategoryAggregate] = []
+    var persistedAccountAggregates: [String: AccountAggregates] = [:]
 
     /// Every `updateInitialBalancesSync` argument, in call order.
     var persistedInitialBalances: [[String: Double]] {
@@ -29,6 +46,16 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
     /// Every `renameTransactionsCategory` call, in call order.
     var categoryRenames: [(ids: [String], newName: String)] {
         lock.withLock { _categoryRenames }
+    }
+
+    /// Every `updateAccountBalancesSync` argument, in the order the writes FINISHED.
+    var balanceWrites: [[String: Double]] {
+        lock.withLock { _balanceWrites }
+    }
+
+    /// Every `saveAccounts` argument, in call order.
+    var savedAccountSnapshots: [[Account]] {
+        lock.withLock { _savedAccountSnapshots }
     }
 
     // MARK: - Recorded
@@ -45,7 +72,11 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
 
     // MARK: - Transactions
 
-    func loadTransactions(dateRange: DateInterval?) -> [Transaction] { inner.loadTransactions(dateRange: dateRange) }
+    func loadTransactions(dateRange: DateInterval?) -> [Transaction] {
+        let rows = inner.loadTransactions(dateRange: dateRange)
+        loadTransactionsGate?.wait()
+        return rows
+    }
     func saveTransactions(_ transactions: [Transaction]) { inner.saveTransactions(transactions) }
     func deleteTransactionImmediately(id: String) { inner.deleteTransactionImmediately(id: id) }
     func insertTransaction(_ transaction: Transaction) { inner.insertTransaction(transaction) }
@@ -55,10 +86,23 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
     // MARK: - Accounts
 
     func loadAccounts() -> [Account] { inner.loadAccounts() }
-    func saveAccounts(_ accounts: [Account]) { inner.saveAccounts(accounts) }
+    func saveAccounts(_ accounts: [Account]) {
+        lock.withLock { _savedAccountSnapshots.append(accounts) }
+        inner.saveAccounts(accounts)
+    }
     func updateAccountBalance(accountId: String, balance: Double) { inner.updateAccountBalance(accountId: accountId, balance: balance) }
     func updateAccountBalances(_ balances: [String: Double]) { inner.updateAccountBalances(balances) }
-    func updateAccountBalancesSync(_ balances: [String: Double]) async { await inner.updateAccountBalancesSync(balances) }
+    func updateAccountBalancesSync(_ balances: [String: Double]) async {
+        let index: Int = lock.withLock {
+            defer { balanceWriteCalls += 1 }
+            return balanceWriteCalls
+        }
+        if let delay = balanceWriteDelay?(index) {
+            try? await Task.sleep(for: delay)
+        }
+        lock.withLock { _balanceWrites.append(balances) }
+        await inner.updateAccountBalancesSync(balances)
+    }
 
     // MARK: - Categories
 
@@ -67,7 +111,7 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
 
     // MARK: - Aggregates
 
-    func loadAccountAggregates() -> [String: AccountAggregates] { inner.loadAccountAggregates() }
+    func loadAccountAggregates() -> [String: AccountAggregates] { persistedAccountAggregates }
     func saveAccountAggregates(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) {
         inner.saveAccountAggregates(aggregates, currencyByAccountId: currencyByAccountId)
     }
@@ -75,7 +119,7 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
         await inner.saveAccountAggregatesSync(aggregates, currencyByAccountId: currencyByAccountId)
     }
     func loadAggregates(year: Int16?, month: Int16?, limit: Int?) -> [CategoryAggregate] {
-        inner.loadAggregates(year: year, month: month, limit: limit)
+        persistedCategoryAggregates
     }
     func saveAggregates(_ aggregates: [CategoryAggregate]) { inner.saveAggregates(aggregates) }
 
@@ -94,4 +138,36 @@ final class RecordingDataRepository: DataRepositoryProtocol, @unchecked Sendable
     func loadTransactionSubcategoryLinks() -> [TransactionSubcategoryLink] { inner.loadTransactionSubcategoryLinks() }
     func saveTransactionSubcategoryLinks(_ links: [TransactionSubcategoryLink]) { inner.saveTransactionSubcategoryLinks(links) }
     func clearAllData() { inner.clearAllData() }
+}
+
+/// Holds background calls until the test opens it; once open, it stays open.
+final class LoadGate: @unchecked Sendable {
+    private let condition = NSCondition()
+    private var isOpen = false
+    private var waiting = false
+
+    /// Blocks the calling (background) thread until `open()`, or 10 s at most.
+    func wait() {
+        condition.lock()
+        defer { condition.unlock() }
+        waiting = true
+        let deadline = Date().addingTimeInterval(10)
+        while !isOpen {
+            if !condition.wait(until: deadline) { break }
+        }
+    }
+
+    /// True once a caller has been held.
+    var isWaiting: Bool {
+        condition.lock()
+        defer { condition.unlock() }
+        return waiting
+    }
+
+    func open() {
+        condition.lock()
+        isOpen = true
+        condition.broadcast()
+        condition.unlock()
+    }
 }

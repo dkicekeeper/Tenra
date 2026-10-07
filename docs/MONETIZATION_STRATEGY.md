@@ -149,6 +149,7 @@ Always include a visible close button (Apple requirement + trust).
   - Implement via a one-time `UserDefaults`/CoreData flag set on first launch of the Pro build for users with `installDate < launchDate`, OR a non-consumable "founder" entitlement.
 - Announce it as a gift ("спасибо, что были с нами с самого начала"). Converts goodwill → reviews & referrals, and avoids the #1 freemium-introduction mistake: angering existing users by yanking features they already use.
 - New features added *after* launch can still be Pro-only for grandfathered users — be explicit about the boundary.
+- **As implemented (2026-10)**: `FoundingUserPolicy` accepts either proof. (1) This device: onboarding was completed before the first Pro build first ran (the original UserDefaults rule). (2) The App Store: StoreKit's signed `AppTransaction.originalPurchaseDate` (production only) is before `PremiumConfig.foundingUserDownloadCutoff`, the end of 2026-07-09 UTC+5, the approximate on-sale day of 1.0.1, the first Pro build. (2) is what makes the status survive a reinstall or a new phone with the same Apple Account. A founder flag is never revoked. The cutoff should be confirmed against App Store Connect (1.0.1's release date). iCloud key-value sync was not used: the app has no `ubiquity-kvstore-identifier` entitlement.
 
 ---
 

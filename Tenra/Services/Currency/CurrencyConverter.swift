@@ -50,8 +50,17 @@ nonisolated final class CurrencyConverter: @unchecked Sendable {
     /// Default provider chain. jsDelivr first (broadest coverage), NBK as
     /// last-resort fallback. Never call providers directly from outside —
     /// always through this chain so retries and fallbacks fire.
+    ///
+    /// Empty in a unit-test host (XCTest loaded into the app process, never in the app a
+    /// UI test drives): a real fetch, started by the host app or a test, landed in the
+    /// process-wide rate cache in the middle of other suites' tests and replaced the
+    /// rates they had seeded (rate-exact tests failed on CI). Tests that need a fetch
+    /// install their own chain.
     nonisolated(unsafe) static var providerChain: CurrencyRateProviderChain = {
-        CurrencyRateProviderChain(providers: [
+        if NSClassFromString("XCTestCase") != nil {
+            return CurrencyRateProviderChain(providers: [])
+        }
+        return CurrencyRateProviderChain(providers: [
             JsDelivrCurrencyProvider(apiBase: "USD"),
             NationalBankKZProvider()
         ])

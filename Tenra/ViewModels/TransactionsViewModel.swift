@@ -260,32 +260,6 @@ class TransactionsViewModel {
         }
     }
 
-    // MARK: - Account Operations
-
-    func transfer(from sourceId: String, to targetId: String, amount: Double, date: String, description: String) {
-        guard let transactionStore = transactionStore else {
-            return
-        }
-
-        guard let sourceIndex = accounts.firstIndex(where: { $0.id == sourceId }) else { return }
-        let currency = accounts[sourceIndex].currency
-
-        Task {
-            do {
-                try await transactionStore.transfer(
-                    from: sourceId,
-                    to: targetId,
-                    amount: amount,
-                    currency: currency,
-                    date: date,
-                    description: description
-                )
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
-    }
-
     // MARK: - Balance Management
 
     func recalculateAccountBalances() {

@@ -90,7 +90,9 @@ final class IntentEnvironment {
 }
 
 /// An intent ran while the database could not be opened. Siri and Shortcuts show the message.
-struct IntentStoreUnavailableError: Error, CustomLocalizedStringResourceConvertible {
+/// `nonisolated`: with MainActor default isolation the conformance would be main-actor-isolated,
+/// and the system reads the message off the main actor.
+nonisolated struct IntentStoreUnavailableError: Error, CustomLocalizedStringResourceConvertible {
     var localizedStringResource: LocalizedStringResource { "intent.error.storeUnavailable" }
 }
 

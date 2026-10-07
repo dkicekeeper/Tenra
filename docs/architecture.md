@@ -112,6 +112,15 @@ Without `byIdIndex`, every `id == %@` predicate (insertTransaction / updateTrans
 
 Old aggregate entities (`MonthlyAggregateEntity`, `CategoryAggregateEntity`) remain in `.xcdatamodeld` but are not read/written.
 
+## Backups and restore
+
+[CloudBackupService](../Tenra/Services/Utilities/CloudBackupService.swift) drives them; the store-level work is in [CoreDataStack+Backup.swift](../Tenra/CoreData/CoreDataStack+Backup.swift), `CoreDataStack.swapStore` and [PersistentStoreFiles](../Tenra/CoreData/PersistentStoreFiles.swift) (file steps, no Core Data, tested on plain SQLite).
+
+- ⚠️ **Never copy the live store with FileManager.** The newest saves can live only in `Tenra.sqlite-wal`, and a save between copying `.sqlite` and its `-wal` pairs files from two moments. Backups before 2026-10 did exactly that (with `try?` on the `-wal`/`-shm`).
+- **Backup**: `snapshotStore` copies the live store through `replacePersistentStore` (SQLite's own copy: one consistent state, WAL included, while the app keeps writing) into a scratch folder as one rollback-journal `Tenra.sqlite`. The copy must be a Core Data store of the current model, pass `PRAGMA quick_check`, and open and count every entity; only then is it copied into `Backups/<timestamp>/`, size-checked, and `metadata.json` written last, so a backup that failed half-way is never listed. Any failure throws `CloudBackupError` to the Backups screen's error banner; a failed automatic backup is shown there once, the next time the screen opens.
+- **Restore**: the backup's `.sqlite` (plus the `-wal` of a pre-2026-10 backup; never the `-shm`) is copied into `RestoreWork-<uuid>/staged` beside the store and must be a non-empty Core Data store that the current model opens directly or by lightweight migration, pass `quick_check`, and open and count every entity (which migrates an older backup in the copy). Only then is the live store removed from the coordinator, its files moved to `RestoreWork-<uuid>/previous`, the staged ones moved in and the store re-added. Any failure moves the previous files back and reopens them (`restoreFailed`: the data is unchanged). The work folder is deleted, except when that rollback fails too: then it may hold the only copy of the previous store (logged as critical with its path).
+- **Retention**: `BackupMetadata.isAutomatic`; the 5 newest manual and the 4 newest automatic backups are kept, and each kind only evicts its own. Backups without the field (made before 2026-10) count as manual, so the weekly automatic backup never deletes one the user made. `settings.cloud.autoBackup.footer` states the 4. Tests: `CloudBackupServiceTests`, `PersistentStoreFilesTests`, `BackupRetentionTests`.
+
 ## State Reactivity
 
 - ContentView reactivity via `.task(id: SummaryTrigger)` — no manual `onChange` chains

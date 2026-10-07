@@ -50,6 +50,17 @@ protocol EntityMappingServiceProtocol {
         categoryId: String
     ) async -> [SubcategoryResolutionResult]
 
+    /// Conversion fields of `csvRow` on its resolved accounts (CSVConversionColumns): the
+    /// amount in an account's currency when the row is in another one. Loads the exchange
+    /// rates once per import when the cache lacks one.
+    /// - Returns: nil when a balance needs a rate that no source has; the row is skipped
+    ///   rather than moving the balance by the raw foreign amount.
+    func conversionFields(
+        for csvRow: CSVRow,
+        accountId: String?,
+        targetAccountId: String?
+    ) async -> TransactionConversion?
+
     /// Converts a validated CSV row + resolved entity IDs into a Transaction value.
     /// Previously `TransactionConverterService.convertRow()` — merged into this protocol (Phase 37).
     func convertRow(
@@ -59,6 +70,7 @@ protocol EntityMappingServiceProtocol {
         categoryName: String,
         categoryId: String,
         subcategoryIds: [String],
+        conversion: TransactionConversion,
         rowIndex: Int
     ) -> Transaction
 }

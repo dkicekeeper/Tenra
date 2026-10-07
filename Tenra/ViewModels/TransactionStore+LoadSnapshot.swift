@@ -371,7 +371,15 @@ extension TransactionStore {
         return (aggregates, fxStale)
     }
 
+    /// Same rule as `TransactionStore.convertedSourceAmount`: the recorded conversion first.
     private nonisolated static func coldConvertSource(tx: Transaction, to: String, rates: RateSnapshot, fxStale: inout Bool) -> Double {
+        if let recorded = TransactionConversion.recordedAmount(of: tx, inAccountCurrency: to) {
+            return recorded
+        }
+        return coldConvertAtRate(tx: tx, to: to, rates: rates, fxStale: &fxStale)
+    }
+
+    private nonisolated static func coldConvertAtRate(tx: Transaction, to: String, rates: RateSnapshot, fxStale: inout Bool) -> Double {
         if tx.currency == to { return tx.amount }
         if let fx = rates.convert(tx.amount, from: tx.currency, to: to) {
             return fx
@@ -391,7 +399,7 @@ extension TransactionStore {
             fxStale = true
             return targetAmount
         }
-        return coldConvertSource(tx: tx, to: to, rates: rates, fxStale: &fxStale)
+        return coldConvertAtRate(tx: tx, to: to, rates: rates, fxStale: &fxStale)
     }
 
     private nonisolated static func patchColdAccountBucket(

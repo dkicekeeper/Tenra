@@ -573,6 +573,7 @@
 "csvImport.error.invalidType" = "Некоректний тип операції в рядку %d: %@";
 "csvImport.error.emptyValue" = "Порожнє значення в рядку %d, стовпець '%@'";
 "csvImport.error.duplicateTransaction" = "Дубльована операція в рядку %d";
+"csvImport.error.conversionFailed" = "Немає курсу валют у рядку %d: %@";
 "csvImport.error.fileAccessDenied" = "Немає доступу до файлу";
 "csvImport.error.invalidEncoding" = "Некоректне кодування файлу (потрібне UTF-8)";
 "csvImport.error.emptyFile" = "Файл порожній";
@@ -619,6 +620,7 @@
 "csvImport.mapping.targetAccount" = "Рахунок призначення";
 "csvImport.mapping.targetCurrency" = "Валюта призначення";
 "csvImport.mapping.targetAmount" = "Сума призначення";
+"csvImport.mapping.convertedAmount" = "Сума у валюті рахунку";
 "csvImport.mapping.subcategories" = "Підкатегорії";
 "csvImport.mapping.note" = "Примітка";
 "csvImport.mapping.dateFormat" = "Формат дати";

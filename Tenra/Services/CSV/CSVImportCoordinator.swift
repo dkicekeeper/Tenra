@@ -76,6 +76,61 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
         var subcategoryLinksBatch: [String: [String]] = [:]
         transactionsBatch.reserveCapacity(500)
 
+        /// Adds the pending batch to the store, with its subcategory links.
+        func flushBatch() async {
+            guard !transactionsBatch.isEmpty else { return }
+            if let transactionStore = transactionsViewModel.transactionStore {
+                do {
+                    try await transactionStore.addBatch(transactionsBatch)
+                } catch {
+                    // Batch-level validation failed for at least one transaction.
+                    // Fallback: try adding transactions individually to salvage valid ones.
+                    let batchCount = transactionsBatch.count
+                    logger.warning("⚠️ [CSVImport] addBatch FAILED for \(batchCount) rows: \(error.localizedDescription). Falling back to individual adds.")
+
+                    var batchSalvaged = 0
+                    var batchSkippedInFallback = 0
+                    for tx in transactionsBatch {
+                        do {
+                            _ = try await transactionStore.add(tx)
+                            batchSalvaged += 1
+                        } catch {
+                            batchSkippedInFallback += 1
+                            debugBatchSkips += 1
+                            if debugFirstSkipDetails.count < 20 {
+                                debugFirstSkipDetails.append((-1, "batchValidation: \(error.localizedDescription) date=\(tx.date) type=\(tx.type) cat='\(tx.category)' acctId=\(tx.accountId ?? "nil") targetAcctId=\(tx.targetAccountId ?? "nil")"))
+                            }
+                        }
+                    }
+
+                    // Adjust stats: only count actually-skipped rows, not the whole batch
+                    stats.skippedCount += batchSkippedInFallback
+                    stats.importedCount -= batchSkippedInFallback
+
+                    logger.debug("📊 [CSVImport] batch fallback: salvaged \(batchSalvaged), skipped \(batchSkippedInFallback)")
+                }
+
+                // Batch link subcategories
+                if !subcategoryLinksBatch.isEmpty {
+                    var updatedLinks = transactionStore.transactionSubcategoryLinks
+                    let transactionIds = Set(subcategoryLinksBatch.keys)
+                    updatedLinks.removeAll { transactionIds.contains($0.transactionId) }
+
+                    for (transactionId, subcategoryIds) in subcategoryLinksBatch {
+                        for subcategoryId in subcategoryIds {
+                            let link = TransactionSubcategoryLink(transactionId: transactionId, subcategoryId: subcategoryId)
+                            updatedLinks.append(link)
+                        }
+                    }
+
+                    transactionStore.updateTransactionSubcategoryLinks(updatedLinks)
+                }
+            }
+
+            transactionsBatch.removeAll(keepingCapacity: true)
+            subcategoryLinksBatch.removeAll(keepingCapacity: true)
+        }
+
         for (rowIndex, row) in csvFile.rows.enumerated() {
 
             // Check cancellation
@@ -151,6 +206,31 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
                 }
             }
 
+            // Amounts in the accounts' currencies (CSVConversionColumns), before the row
+            // creates a category: a row in another currency than its account used to move
+            // the balance by the raw foreign amount. Without a rate it is skipped.
+            guard let conversion = await mapper.conversionFields(
+                for: csvRow,
+                accountId: accountId,
+                targetAccountId: targetAccountId
+            ) else {
+                let accountCurrencies = [accountId, targetAccountId].compactMap { id in
+                    id.flatMap { transactionsViewModel.transactionStore?.accountById[$0]?.currency }
+                }
+                let needed = accountCurrencies.first { $0 != csvRow.currency } ?? ""
+                stats.addError(CSVValidationError(
+                    rowIndex: rowIndex,
+                    column: "currency",
+                    code: .conversionFailed,
+                    context: ["value": "\(csvRow.currency) → \(needed)"]
+                ))
+                stats.incrementSkipped()
+                if debugFirstSkipDetails.count < 20 {
+                    debugFirstSkipDetails.append((rowIndex, "conversion: \(csvRow.currency) → \(needed)"))
+                }
+                continue
+            }
+
             // Resolve category
             let categoryName = resolveCategoryName(for: csvRow)
 
@@ -199,6 +279,7 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
                 categoryName: finalCategoryName,
                 categoryId: categoryId,
                 subcategoryIds: subcategoryIds,
+                conversion: conversion,
                 rowIndex: rowIndex
             )
 
@@ -222,58 +303,17 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
 
             stats.incrementImported()
 
-            // Process batch if full or last row
-            if transactionsBatch.count >= 500 || rowIndex == csvFile.rowCount - 1 {
-                if let transactionStore = transactionsViewModel.transactionStore {
-                    do {
-                        try await transactionStore.addBatch(transactionsBatch)
-                    } catch {
-                        // Batch-level validation failed for at least one transaction.
-                        // Fallback: try adding transactions individually to salvage valid ones.
-                        logger.warning("⚠️ [CSVImport] addBatch FAILED for \(transactionsBatch.count) rows: \(error.localizedDescription). Falling back to individual adds.")
-
-                        var batchSalvaged = 0
-                        var batchSkippedInFallback = 0
-                        for tx in transactionsBatch {
-                            do {
-                                _ = try await transactionStore.add(tx)
-                                batchSalvaged += 1
-                            } catch {
-                                batchSkippedInFallback += 1
-                                debugBatchSkips += 1
-                                if debugFirstSkipDetails.count < 20 {
-                                    debugFirstSkipDetails.append((-1, "batchValidation: \(error.localizedDescription) date=\(tx.date) type=\(tx.type) cat='\(tx.category)' acctId=\(tx.accountId ?? "nil") targetAcctId=\(tx.targetAccountId ?? "nil")"))
-                                }
-                            }
-                        }
-
-                        // Adjust stats: only count actually-skipped rows, not the whole batch
-                        stats.skippedCount += batchSkippedInFallback
-                        stats.importedCount -= batchSkippedInFallback
-
-                        logger.debug("📊 [CSVImport] batch fallback: salvaged \(batchSalvaged), skipped \(batchSkippedInFallback)")
-                    }
-
-                    // Batch link subcategories
-                    if !subcategoryLinksBatch.isEmpty {
-                        var updatedLinks = transactionStore.transactionSubcategoryLinks
-                        let transactionIds = Set(subcategoryLinksBatch.keys)
-                        updatedLinks.removeAll { transactionIds.contains($0.transactionId) }
-
-                        for (transactionId, subcategoryIds) in subcategoryLinksBatch {
-                            for subcategoryId in subcategoryIds {
-                                let link = TransactionSubcategoryLink(transactionId: transactionId, subcategoryId: subcategoryId)
-                                updatedLinks.append(link)
-                            }
-                        }
-
-                        transactionStore.updateTransactionSubcategoryLinks(updatedLinks)
-                    }
-                }
-
-                transactionsBatch.removeAll(keepingCapacity: true)
-                subcategoryLinksBatch.removeAll(keepingCapacity: true)
+            // Process batch if full (the rest after the loop)
+            if transactionsBatch.count >= 500 {
+                await flushBatch()
             }
+        }
+
+        // The last rows. Flushed only on the last row before, so a last row that was
+        // skipped (invalid, duplicate, no exchange rate) dropped up to 499 imported rows.
+        // A cancelled import still stops where it was.
+        if !progress.isCancelled {
+            await flushBatch()
         }
 
         // Whether the imported transactions were durably written to CoreData.

@@ -453,7 +453,9 @@ final class TransactionStore {
         accountsCurrencyById.reserveCapacity(orderedAccounts.count)
         for acc in orderedAccounts { accountsCurrencyById[acc.id] = acc.currency }
         let needsColdStartCategoryAggregates = loadedAggregates.isEmpty
+        // Also rebuilt once when they were saved under an older valuation rule.
         let needsColdStartAccountAggregates = loadedAccountAggregates.isEmpty
+            || !Self.persistedAccountAggregatesFollowCurrentRule
 
         // Build every pure value-indexed structure off the main actor in one pass.
         // Previously this lived as 5+ separate sweeps over `loadedTxs` on MainActor
@@ -523,7 +525,7 @@ final class TransactionStore {
 
         // Account aggregates: warm-start from CoreData when a snapshot exists,
         // else use the cold rebuild from the detached task.
-        if !loadedAccountAggregates.isEmpty {
+        if !needsColdStartAccountAggregates {
             seedAccountAggregates(from: loadedAccountAggregates)
         } else if let coldStart = snapshot.coldStartAccountAggregates {
             accountAggregatesByAccountId = coldStart

@@ -29,6 +29,9 @@ struct ImportRowDecision: Sendable {
     /// A saved expense/income on `transferAccountId` that is the other side of
     /// this transfer; it is converted instead of adding the row.
     let mergeWith: Transaction?
+    /// Currency of the account `transferAccountId` names. The merge keeps the saved
+    /// side's conversion into it; nil reads the saved side as being in its own currency.
+    var transferAccountCurrency: String? = nil
 }
 
 enum ImportOperation: Sendable, Equatable {
@@ -51,6 +54,15 @@ nonisolated enum ImportCommitPlanner {
             let outgoing = row.type == .expense
 
             if let existing = decision.mergeWith, existing.accountId == other {
+                // The saved side's leg stays what its account was already moved by: in the
+                // account's currency, the conversion it was saved with when it is in another
+                // currency (a 50 000 ₸ income on a dollar card counted as its dollar value).
+                // Dropped, the card's balance jumped by 50 000 in dollars.
+                let otherCurrency = decision.transferAccountCurrency ?? existing.currency
+                let otherAmount = TransactionConversion.balanceAmount(
+                    of: existing, inAccountCurrency: otherCurrency
+                )
+                let otherIsConverted = existing.currency != otherCurrency
                 let converted = transfer(
                     id: existing.id,
                     date: existing.date,
@@ -59,8 +71,9 @@ nonisolated enum ImportCommitPlanner {
                     target: outgoing ? other : decision.accountId,
                     sourceAmount: outgoing ? row.amount : existing.amount,
                     sourceCurrency: outgoing ? row.currency : existing.currency,
-                    targetAmount: outgoing ? existing.amount : row.amount,
-                    targetCurrency: outgoing ? existing.currency : row.currency,
+                    sourceConvertedAmount: !outgoing && otherIsConverted ? otherAmount : nil,
+                    targetAmount: outgoing ? otherAmount : row.amount,
+                    targetCurrency: outgoing ? otherCurrency : row.currency,
                     createdAt: existing.createdAt
                 )
                 return .convert(old: existing, new: converted, statementAccountId: decision.accountId)
@@ -101,10 +114,13 @@ nonisolated enum ImportCommitPlanner {
         )
     }
 
+    /// - Parameter sourceConvertedAmount: what leaves the source account in its currency,
+    ///   when `sourceCurrency` is another one (`TransactionConversion.transfer`).
     private static func transfer(
         id: String, date: String, description: String,
         source: String, target: String,
         sourceAmount: Double, sourceCurrency: String,
+        sourceConvertedAmount: Double? = nil,
         targetAmount: Double, targetCurrency: String,
         createdAt: TimeInterval
     ) -> Transaction {
@@ -114,6 +130,7 @@ nonisolated enum ImportCommitPlanner {
             description: description,
             amount: sourceAmount,
             currency: sourceCurrency,
+            convertedAmount: sourceConvertedAmount,
             type: .internalTransfer,
             category: TransactionType.transferCategoryName,
             accountId: source,

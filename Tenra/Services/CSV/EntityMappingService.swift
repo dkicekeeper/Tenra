@@ -17,6 +17,9 @@ class EntityMappingService: EntityMappingServiceProtocol {
 
     private let cache: ImportCacheManager
     private let transactionStore: TransactionStore
+    /// Exchange rates are loaded from the network at most once per import: one fetch
+    /// brings the whole table, and an offline import must not wait on every row.
+    private var didLoadRates = false
 
     // MARK: - Initialization
 
@@ -206,6 +209,41 @@ class EntityMappingService: EntityMappingServiceProtocol {
         return .created(id: newSubcategory.id)
     }
 
+    // MARK: - Currency Conversion
+
+    func conversionFields(
+        for csvRow: CSVRow,
+        accountId: String?,
+        targetAccountId: String?
+    ) async -> TransactionConversion? {
+        let accountCurrency = accountId.flatMap { transactionStore.accountById[$0]?.currency }
+        let targetAccountCurrency = csvRow.type == .internalTransfer
+            ? targetAccountId.flatMap { transactionStore.accountById[$0]?.currency }
+            : nil
+
+        func fields() -> TransactionConversion? {
+            CSVConversionColumns.importedFields(
+                type: csvRow.type,
+                amount: csvRow.amount,
+                currency: csvRow.currency,
+                accountCurrency: accountCurrency,
+                targetAccountCurrency: targetAccountCurrency,
+                convertedAmount: csvRow.convertedAmount,
+                targetCurrency: csvRow.targetCurrency,
+                targetAmount: csvRow.targetAmount,
+                convert: TransactionConversion.cachedRate
+            )
+        }
+
+        if let cached = fields() { return cached }
+        guard !didLoadRates else { return nil }
+        didLoadRates = true
+        await TransactionConversion.loadRates(
+            Set([csvRow.currency, accountCurrency, targetAccountCurrency].compactMap { $0 })
+        )
+        return fields()
+    }
+
     // MARK: - Transaction Conversion
 
     /// Converts a validated CSVRow + resolved entity IDs into a Transaction value.
@@ -220,6 +258,7 @@ class EntityMappingService: EntityMappingServiceProtocol {
         categoryName: String,
         categoryId: String,
         subcategoryIds: [String],
+        conversion: TransactionConversion,
         rowIndex: Int
     ) -> Transaction {
 
@@ -243,20 +282,15 @@ class EntityMappingService: EntityMappingServiceProtocol {
 
         let subcategoryName = csvRow.subcategoryNames.first
 
-        // For non-transfers: targetCurrency/targetAmount columns carry convertedAmount
-        // For transfers: they carry the actual target account currency/amount
-        let isTransfer = csvRow.type == .internalTransfer
-        let convertedAmount: Double? = !isTransfer ? csvRow.targetAmount : nil
-        let targetCurrency: String? = isTransfer ? csvRow.targetCurrency : nil
-        let targetAmount: Double? = isTransfer ? csvRow.targetAmount : nil
-
+        // Conversion fields from `conversionFields(for:...)` (CSVConversionColumns): the
+        // target columns are a transfer's target leg, or another type's equivalent.
         return Transaction(
             id: transactionId,
             date: dateString,
             description: csvRow.note ?? "",
             amount: csvRow.amount,
             currency: csvRow.currency,
-            convertedAmount: convertedAmount,
+            convertedAmount: conversion.convertedAmount,
             type: csvRow.type,
             category: categoryName,
             subcategory: subcategoryName,
@@ -264,8 +298,8 @@ class EntityMappingService: EntityMappingServiceProtocol {
             targetAccountId: targetAccountId,
             accountName: nil,         // resolved by CSVImportCoordinator after batch add
             targetAccountName: nil,   // resolved by CSVImportCoordinator after batch add
-            targetCurrency: targetCurrency,
-            targetAmount: targetAmount,
+            targetCurrency: conversion.targetCurrency,
+            targetAmount: conversion.targetAmount,
             recurringSeriesId: nil,
             recurringOccurrenceId: nil,
             createdAt: createdAt

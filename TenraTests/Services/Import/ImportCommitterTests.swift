@@ -64,6 +64,74 @@ struct ImportCommitterTests {
         #expect(abs(balance(graph, "kaspi") - 150_000) < 0.5)
     }
 
+    /// A dollar card next to the two tenge accounts, with 1 000 $ on it.
+    private func addDollarCard(_ graph: TransactionFlowTestGraph) async {
+        let created = DateFormatters.dateFormatter.date(from: "2026-01-01")!
+        graph.store.accounts.append(
+            Account(id: "usd", name: "Dollars", currency: "USD", createdDate: created, initialBalance: 1_000)
+        )
+        graph.store.rebuildAccountById()
+        await graph.balance.registerAccounts(graph.store.accounts)
+        await graph.balance.setInitialBalance(1_000, for: "usd")
+        await graph.balance.recalculateAll(accounts: graph.store.accounts, transactions: graph.store.transactions)
+    }
+
+    @Test func mergeKeepsTheSavedSidesConversionAsTarget() async throws {
+        let graph = await makeGraph()
+        await addDollarCard(graph)
+        // Saved on the dollar card in tenge: the card got its dollar value.
+        let saved = try await graph.store.add(Transaction(
+            id: "u1", date: "2026-09-19", description: "Пополнение · С карты другого банка", amount: 50_000,
+            currency: "KZT", convertedAmount: 100, type: .income, category: "", accountId: "usd"
+        ))
+        #expect(abs(balance(graph, "usd") - 1_100) < 0.01)
+
+        let kaspiRow = Transaction(
+            id: "r1", date: "2026-09-19", description: "Перевод на карту", amount: 50_000,
+            currency: "KZT", type: .expense, category: "", accountId: nil
+        )
+        let operations = ImportCommitPlanner.operations(for: [
+            ImportRowDecision(row: kaspiRow, accountId: "kaspi", category: "", subcategoryIds: [],
+                              transferAccountId: "usd", mergeWith: saved, transferAccountCurrency: "USD")
+        ])
+        await ImportCommitter.commit(operations, store: graph.store, categories: graph.categories, balance: graph.balance)
+
+        let transfer = try #require(graph.store.transactionById["u1"])
+        #expect(transfer.type == .internalTransfer)
+        #expect(transfer.accountId == "kaspi" && transfer.targetAccountId == "usd")
+        #expect(transfer.targetAmount == 100)
+        #expect(transfer.targetCurrency == "USD")
+        #expect(abs(balance(graph, "usd") - 1_100) < 0.01, "was 51 000: the tenge amount credited as dollars")
+        #expect(abs(balance(graph, "kaspi") - 50_000) < 0.5)
+    }
+
+    @Test func mergeKeepsTheSavedSidesConversionAsSource() async throws {
+        let graph = await makeGraph()
+        await addDollarCard(graph)
+        // Saved on the dollar card in tenge: 100 $ left it.
+        let saved = try await graph.store.add(Transaction(
+            id: "u2", date: "2026-09-19", description: "Перевод с карты на карту", amount: 50_000,
+            currency: "KZT", convertedAmount: 100, type: .expense, category: "", accountId: "usd"
+        ))
+        #expect(abs(balance(graph, "usd") - 900) < 0.01)
+
+        let kaspiRow = Transaction(
+            id: "r2", date: "2026-09-19", description: "Пополнение · С карты другого банка", amount: 50_000,
+            currency: "KZT", type: .income, category: "", accountId: nil
+        )
+        let operations = ImportCommitPlanner.operations(for: [
+            ImportRowDecision(row: kaspiRow, accountId: "kaspi", category: "", subcategoryIds: [],
+                              transferAccountId: "usd", mergeWith: saved, transferAccountCurrency: "USD")
+        ])
+        await ImportCommitter.commit(operations, store: graph.store, categories: graph.categories, balance: graph.balance)
+
+        let transfer = try #require(graph.store.transactionById["u2"])
+        #expect(transfer.accountId == "usd" && transfer.targetAccountId == "kaspi")
+        #expect(transfer.convertedAmount == 100, "the source leg in the card's currency")
+        #expect(abs(balance(graph, "usd") - 900) < 0.01, "was −49 000: the tenge amount debited as dollars")
+        #expect(abs(balance(graph, "kaspi") - 150_000) < 0.5)
+    }
+
     @Test func markedTransferMovesBothBalances() async throws {
         let graph = await makeGraph()
         let row = Transaction(

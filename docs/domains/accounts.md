@@ -37,7 +37,9 @@ On `bumpCurrencyRatesVersion()`: if any apply-time delta was applied while the F
 
 ## Currency semantics
 
-`accountAggregatesByAccountId` stores `totalIncome` / `totalExpense` in **the owning account's currency**, NOT the base currency. Cross-currency transactions (different currency from the account) are converted at apply-time via `CurrencyConverter.convertSync(amount:from:to:)`. If the FX cache is cold the patch falls back to `tx.convertedAmount ?? tx.amount` — same fallback as the pre-refactor calculator — and a `bumpCurrencyRatesVersion` rebuild will heal it.
+`accountAggregatesByAccountId` stores `totalIncome` / `totalExpense` in **the owning account's currency**, NOT the base currency. A cross-currency source leg counts the conversion recorded with the transaction (`TransactionConversion.recordedAmount`, see [currency.md](currency.md) "Reading the fields"), the amount the balance moved by; only without one is it converted at apply-time via `CurrencyConverter.convertSync(amount:from:to:)` (today's rate). A transfer's target leg counts `targetAmount` when it is in the target's currency. If the FX cache is cold the patch falls back to `tx.convertedAmount ?? tx.amount` and a `bumpCurrencyRatesVersion` rebuild will heal it.
+
+`accountAggregatesUpdate` re-patches when `amount`, `currency`, `convertedAmount`, `targetAmount`, `targetCurrency`, `type`, `date` (realized or not) or an account changes. Totals persisted under an older valuation rule are rebuilt once by the next full load (`TransactionStore.accountAggregatesRuleVersion`).
 
 ## AccountAggregatesCalculator API
 

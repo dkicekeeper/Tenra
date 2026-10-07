@@ -111,12 +111,16 @@ struct TransactionCardView: View {
                         color: amountColor
                     )
 
-                    if let targetCurrency = transaction.targetCurrency,
-                       let targetAmount = transaction.targetAmount,
-                       targetCurrency != transaction.currency {
+                    // The equivalent: the stored one, or for a row that stores only
+                    // `convertedAmount` (voice, Siri, imports, older edits) that value in
+                    // the account's currency (TransactionConversion.displayedEquivalent).
+                    if let equivalent = TransactionConversion.displayedEquivalent(
+                        of: transaction,
+                        accountCurrency: sourceAccount?.currency
+                    ) {
                         FormattedAmountView(
-                            amount: targetAmount,
-                            currency: targetCurrency,
+                            amount: equivalent.amount,
+                            currency: equivalent.currency,
                             prefix: "",
                             color: amountColor.opacity(0.7)
                         )
@@ -208,6 +212,18 @@ private enum TransactionCardPreviewFactory {
     TransactionCardView(
         transaction: tx, currency: "KZT", styleData: f.style(for: tx),
         sourceAccount: f.halyk
+    )
+    .padding()
+}
+
+#Preview("Expense — convertedAmount only (voice)") {
+    let f = TransactionCardPreviewFactory.self
+    let tx = Transaction(id: "p-exp-voice", date: f.today(), description: "Coffee",
+                         amount: 12, currency: "USD", convertedAmount: 5_760, type: .expense,
+                         category: "Food", accountId: f.kaspi.id)
+    TransactionCardView(
+        transaction: tx, currency: "KZT", styleData: f.style(for: tx),
+        sourceAccount: f.kaspi
     )
     .padding()
 }

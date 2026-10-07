@@ -44,6 +44,11 @@ struct CSVRow {
     /// Target amount for multi-currency transfers
     let targetAmount: Double?
 
+    /// `convertedAmount` column: what a transfer took out of its source account, in that
+    /// account's currency (CSVConversionColumns). `var` with a default so call sites that
+    /// predate the column still build.
+    var convertedAmount: Double? = nil
+
     // MARK: - Category Fields
 
     /// Raw category value from CSV (before type-based rules)

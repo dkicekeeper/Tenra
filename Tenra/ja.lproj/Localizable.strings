@@ -573,6 +573,7 @@
 "csvImport.error.invalidType" = "%d行目の取引タイプが無効です：%@";
 "csvImport.error.emptyValue" = "%d行目、列「%@」の値が空です";
 "csvImport.error.duplicateTransaction" = "%d行目の取引が重複しています";
+"csvImport.error.conversionFailed" = "%d行目の為替レートがありません：%@";
 "csvImport.error.fileAccessDenied" = "ファイルにアクセスできません";
 "csvImport.error.invalidEncoding" = "ファイルのエンコードが不正です（UTF-8が必要です）";
 "csvImport.error.emptyFile" = "ファイルが空です";
@@ -619,6 +620,7 @@
 "csvImport.mapping.targetAccount" = "対象口座";
 "csvImport.mapping.targetCurrency" = "対象通貨";
 "csvImport.mapping.targetAmount" = "対象金額";
+"csvImport.mapping.convertedAmount" = "口座通貨での金額";
 "csvImport.mapping.subcategories" = "サブカテゴリ";
 "csvImport.mapping.note" = "メモ";
 "csvImport.mapping.dateFormat" = "日付形式";

@@ -34,8 +34,12 @@ extension TransactionStore {
 
     internal func accountAggregatesUpdate(old: Transaction, new: Transaction) {
         // Bucket-affecting fields → remove+add. Everything else is a no-op.
+        // `convertedAmount` values a cross-currency source leg (recordedAmount); `date`
+        // decides whether the transaction is realized yet.
         let bucketAffecting = old.amount != new.amount
             || old.currency != new.currency
+            || old.convertedAmount != new.convertedAmount
+            || old.date != new.date
             || old.targetAmount != new.targetAmount
             || old.targetCurrency != new.targetCurrency
             || old.type != new.type
@@ -75,10 +79,32 @@ extension TransactionStore {
     /// loop, so awaiting it does not affect the import hot path.
     internal func flushAccountAggregatePersist() async {
         let snapshot = accountAggregatesToPersist()
+        let isWholeMap = hasCompletedInitialLoad
         var currencyById: [String: String] = [:]
         currencyById.reserveCapacity(accounts.count)
         for acc in accounts { currencyById[acc.id] = acc.currency }
         await repository.saveAccountAggregatesSync(snapshot, currencyByAccountId: currencyById)
+        // The table now holds totals of the current rule. Before the full load it was
+        // emptied instead, and the next load rebuilds it anyway.
+        if isWholeMap {
+            UserDefaults.standard.set(Self.accountAggregatesRuleVersion, forKey: Self.accountAggregatesRuleVersionKey)
+        }
+    }
+
+    // MARK: - Valuation rule version
+
+    /// Version of the rule that values a leg in its account's currency. Totals persisted
+    /// under an older rule are rebuilt once by the next full load (`loadData`), instead of
+    /// mixing with deltas of the new one (a removal would subtract another value than was
+    /// added, and the totals would not show the new rule until some other rebuild).
+    /// - 2 (2026-10): a cross-currency leg counts the conversion recorded with the
+    ///   transaction (`TransactionConversion.recordedAmount`) before today's rate.
+    static let accountAggregatesRuleVersion = 2
+    static let accountAggregatesRuleVersionKey = "accountAggregates.ruleVersion"
+
+    /// Whether the account totals in CoreData were computed under the current rule.
+    static var persistedAccountAggregatesFollowCurrentRule: Bool {
+        UserDefaults.standard.integer(forKey: accountAggregatesRuleVersionKey) >= accountAggregatesRuleVersion
     }
 
     /// What a flush writes; see `categoryAggregatesToPersist`. Before the full load the map
@@ -207,7 +233,16 @@ extension TransactionStore {
 
     // MARK: - Currency conversion (account currency)
 
+    /// The source leg in its account's currency: the conversion recorded with the
+    /// transaction, the amount its balance moved by (`TransactionConversion.recordedAmount`).
+    /// Today's rate only when it holds none; it used to be today's rate always, so a 100 $
+    /// expense saved at 450 ₸ moved the balance by 45 000 ₸ and the total by 52 000 ₸.
     private func convertedSourceAmount(tx: Transaction, to: String) -> Double {
+        TransactionConversion.recordedAmount(of: tx, inAccountCurrency: to)
+            ?? convertedAtCachedRate(tx: tx, to: to)
+    }
+
+    private func convertedAtCachedRate(tx: Transaction, to: String) -> Double {
         if tx.currency == to { return tx.amount }
         if let fx = CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: to) {
             return fx
@@ -230,6 +265,7 @@ extension TransactionStore {
             aggregatesAreFXStale = true
             return targetAmount
         }
-        return convertedSourceAmount(tx: tx, to: to)
+        // Not the source leg's recorded conversion: that one is in the source's currency.
+        return convertedAtCachedRate(tx: tx, to: to)
     }
 }

@@ -573,6 +573,7 @@
 "csvImport.error.invalidType" = "Type d'opération non valide à la ligne %d: %@";
 "csvImport.error.emptyValue" = "Valeur vide à la ligne %d, colonne \"%@\"";
 "csvImport.error.duplicateTransaction" = "Opération en double à la ligne %d";
+"csvImport.error.conversionFailed" = "Aucun taux de change à la ligne %d: %@";
 "csvImport.error.fileAccessDenied" = "Impossible d'accéder au fichier";
 "csvImport.error.invalidEncoding" = "Encodage de fichier non valide (UTF-8 requis)";
 "csvImport.error.emptyFile" = "Le fichier est vide";
@@ -619,6 +620,7 @@
 "csvImport.mapping.targetAccount" = "Compte de destination";
 "csvImport.mapping.targetCurrency" = "Devise de destination";
 "csvImport.mapping.targetAmount" = "Montant de destination";
+"csvImport.mapping.convertedAmount" = "Montant dans la devise du compte";
 "csvImport.mapping.subcategories" = "Sous-catégories";
 "csvImport.mapping.note" = "Note";
 "csvImport.mapping.dateFormat" = "Format de date";

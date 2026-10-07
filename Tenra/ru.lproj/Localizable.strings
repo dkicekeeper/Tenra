@@ -573,6 +573,7 @@
 "csvImport.error.invalidType" = "Неверный тип операции в строке %d: %@";
 "csvImport.error.emptyValue" = "Пустое значение в строке %d, колонка '%@'";
 "csvImport.error.duplicateTransaction" = "Дубликат операции в строке %d";
+"csvImport.error.conversionFailed" = "Нет курса валют в строке %d: %@";
 "csvImport.error.fileAccessDenied" = "Нет доступа к файлу";
 "csvImport.error.invalidEncoding" = "Неверная кодировка файла (требуется UTF-8)";
 "csvImport.error.emptyFile" = "Файл пуст";
@@ -619,6 +620,7 @@
 "csvImport.mapping.targetAccount" = "Счёт получателя";
 "csvImport.mapping.targetCurrency" = "Валюта получателя";
 "csvImport.mapping.targetAmount" = "Сумма получателя";
+"csvImport.mapping.convertedAmount" = "Сумма в валюте счёта";
 "csvImport.mapping.subcategories" = "Подкатегории";
 "csvImport.mapping.note" = "Заметка";
 "csvImport.mapping.dateFormat" = "Формат даты";

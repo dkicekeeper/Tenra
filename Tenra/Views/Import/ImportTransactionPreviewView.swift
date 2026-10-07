@@ -710,7 +710,8 @@ struct ImportTransactionPreviewView: View {
                 category: savableCategory(for: transaction),
                 subcategoryIds: transferAccount == nil ? savableSubcategoryIds(for: transaction) : [],
                 transferAccountId: transferAccount,
-                mergeWith: mergeTarget(for: transaction)
+                mergeWith: mergeTarget(for: transaction),
+                transferAccountCurrency: transferAccount.flatMap { transactionStore.accountById[$0]?.currency }
             )
         }
         let operations = ImportCommitPlanner.operations(for: decisions)

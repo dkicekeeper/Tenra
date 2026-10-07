@@ -573,6 +573,7 @@
 "csvImport.error.invalidType" = "%d. satırda geçersiz işlem türü: %@";
 "csvImport.error.emptyValue" = "%d. satırda, '%@' sütununda boş değer";
 "csvImport.error.duplicateTransaction" = "%d. satırda yinelenen işlem";
+"csvImport.error.conversionFailed" = "%d. satırda döviz kuru yok: %@";
 "csvImport.error.fileAccessDenied" = "Dosyaya erişilemiyor";
 "csvImport.error.invalidEncoding" = "Geçersiz dosya kodlaması (UTF-8 gerekli)";
 "csvImport.error.emptyFile" = "Dosya boş";
@@ -619,6 +620,7 @@
 "csvImport.mapping.targetAccount" = "Hedef Hesap";
 "csvImport.mapping.targetCurrency" = "Hedef Para Birimi";
 "csvImport.mapping.targetAmount" = "Hedef Tutar";
+"csvImport.mapping.convertedAmount" = "Hesap Para Biriminde Tutar";
 "csvImport.mapping.subcategories" = "Alt kategoriler";
 "csvImport.mapping.note" = "Not";
 "csvImport.mapping.dateFormat" = "Tarih Biçimi";

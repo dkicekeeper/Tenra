@@ -573,6 +573,7 @@
 "csvImport.error.invalidType" = "Invalid transaction type in row %d: %@";
 "csvImport.error.emptyValue" = "Empty value in row %d, column '%@'";
 "csvImport.error.duplicateTransaction" = "Duplicate transaction in row %d";
+"csvImport.error.conversionFailed" = "No exchange rate in row %d: %@";
 "csvImport.error.fileAccessDenied" = "Cannot access the file";
 "csvImport.error.invalidEncoding" = "Invalid file encoding (UTF-8 required)";
 "csvImport.error.emptyFile" = "The file is empty";
@@ -619,6 +620,7 @@
 "csvImport.mapping.targetAccount" = "Target Account";
 "csvImport.mapping.targetCurrency" = "Target Currency";
 "csvImport.mapping.targetAmount" = "Target Amount";
+"csvImport.mapping.convertedAmount" = "Amount in Account Currency";
 "csvImport.mapping.subcategories" = "Subcategories";
 "csvImport.mapping.note" = "Note";
 "csvImport.mapping.dateFormat" = "Date Format";

@@ -95,6 +95,11 @@ struct CSVColumnMappingView: View {
             )
 
             columnPicker(
+                title: String(localized: "csvImport.mapping.convertedAmount"),
+                binding: bindingFor(\.convertedAmountColumn)
+            )
+
+            columnPicker(
                 title: String(localized: "csvImport.mapping.subcategories"),
                 binding: bindingFor(\.subcategoriesColumn)
             )

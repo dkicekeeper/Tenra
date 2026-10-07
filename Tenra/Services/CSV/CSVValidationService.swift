@@ -108,6 +108,7 @@ nonisolated class CSVValidationService: CSVValidationServiceProtocol {
         let rawTargetAccountValue = extractTargetAccount(from: row, mapping: mapping)
         let targetCurrency = extractTargetCurrency(from: row, mapping: mapping)
         let targetAmount = extractTargetAmount(from: row, mapping: mapping)
+        let convertedAmount = extractAmount(from: row, column: mapping.convertedAmountColumn)
         let subcategoryNames = extractSubcategories(from: row, mapping: mapping)
         let note = extractNote(from: row, mapping: mapping)
 
@@ -122,6 +123,7 @@ nonisolated class CSVValidationService: CSVValidationServiceProtocol {
             rawTargetAccountValue: rawTargetAccountValue,
             targetCurrency: targetCurrency,
             targetAmount: targetAmount,
+            convertedAmount: convertedAmount,
             rawCategoryValue: rawCategoryValue,
             subcategoryNames: subcategoryNames,
             note: note
@@ -236,13 +238,18 @@ nonisolated class CSVValidationService: CSVValidationServiceProtocol {
     }
 
     private func extractTargetAmount(from row: [String], mapping: CSVColumnMapping) -> Double? {
-        guard let columnName = mapping.targetAmountColumn,
-              let targetAmountIdx = headers.firstIndex(of: columnName),
-              let targetAmountString = row[safe: targetAmountIdx]?.trimmingCharacters(in: .whitespaces),
-              !targetAmountString.isEmpty else {
+        extractAmount(from: row, column: mapping.targetAmountColumn)
+    }
+
+    /// An optional amount column, nil when unmapped, empty or not a number.
+    private func extractAmount(from row: [String], column columnName: String?) -> Double? {
+        guard let columnName,
+              let index = headers.firstIndex(of: columnName),
+              let value = row[safe: index]?.trimmingCharacters(in: .whitespaces),
+              !value.isEmpty else {
             return nil
         }
-        return parseAmount(targetAmountString)
+        return parseAmount(value)
     }
 
     private func extractSubcategories(from row: [String], mapping: CSVColumnMapping) -> [String] {

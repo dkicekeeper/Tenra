@@ -69,6 +69,14 @@ struct CSVValidationError: LocalizedError {
                 format: String(localized: "csvImport.error.duplicateTransaction"),
                 rowIndex + 2
             )
+
+        case .conversionFailed:
+            let value = context["value"] ?? ""
+            return String(
+                format: String(localized: "csvImport.error.conversionFailed"),
+                rowIndex + 2,
+                value
+            )
         }
     }
 }
@@ -94,4 +102,9 @@ enum CSVValidationErrorCode: String {
 
     /// Transaction already exists (duplicate fingerprint)
     case duplicateTransaction
+
+    /// The row is in another currency than its account and no exchange rate is available
+    /// (context "value": the pair, e.g. "USD → KZT"). Skipped rather than moving the balance
+    /// by the raw foreign amount.
+    case conversionFailed
 }

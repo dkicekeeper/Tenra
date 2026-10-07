@@ -17,6 +17,7 @@ struct CSVColumnMapping {
     var targetAccountColumn: String? // Счет получателя
     var targetCurrencyColumn: String? // Валюта счета получателя
     var targetAmountColumn: String? // Сумма на счете получателя
+    var convertedAmountColumn: String? // Сумма перевода в валюте счёта-источника (CSVConversionColumns)
     var categoryColumn: String?
     var subcategoriesColumn: String?
     var subcategoriesSeparator: String = ","

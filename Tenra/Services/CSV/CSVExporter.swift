@@ -21,10 +21,11 @@ nonisolated class CSVExporter {
         subcategoryLinks: [TransactionSubcategoryLink] = [],
         subcategories: [Subcategory] = []
     ) -> String {
-        var csv = "date,type,amount,currency,account,category,subcategories,note,targetAccount,targetCurrency,targetAmount\n"
+        var csv = "date,type,amount,currency,account,category,subcategories,note,targetAccount,targetCurrency,targetAmount,\(CSVConversionColumns.convertedAmountHeader)\n"
 
         // Pre-build lookup dictionaries for O(1) resolution
         let accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0.name) })
+        let accountCurrencyById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0.currency) })
         let subcategoryById = Dictionary(uniqueKeysWithValues: subcategories.map { ($0.id, $0.name) })
 
         // Group subcategory links by transactionId for O(1) lookup
@@ -71,25 +72,34 @@ nonisolated class CSVExporter {
                 subcategoriesValue = escapeCSVField(transaction.subcategory ?? "")
             }
 
-            // targetCurrency / targetAmount columns:
-            // - For transfers: actual target account currency & amount
-            // - For non-transfers: reuse for convertedAmount (distinguishable by type on import)
+            // Conversion columns (CSVConversionColumns, docs/domains/csv.md):
+            // - transfer: targetCurrency / targetAmount = what the target account received,
+            //   convertedAmount = what left the source account, in its currency;
+            // - any other type: targetCurrency / targetAmount = the equivalent the row shows,
+            //   labelled with its currency (the account's when the transaction is in another).
+            //   Labelled with the transaction's currency before 2026-10, which import still reads.
             let targetCurrency: String
             let targetAmount: String
+            var convertedAmount = ""
 
             if transaction.type == .internalTransfer {
                 targetCurrency = escapeCSVField(transaction.targetCurrency ?? "")
                 targetAmount = transaction.targetAmount.map { String(format: "%.2f", $0) } ?? ""
-            } else if let converted = transaction.convertedAmount, converted != 0 {
-                // Non-transfer with convertedAmount — store in targetCurrency/targetAmount columns
-                targetCurrency = escapeCSVField(transaction.currency)
-                targetAmount = String(format: "%.2f", converted)
+                if let converted = transaction.convertedAmount, converted != 0 {
+                    convertedAmount = String(format: "%.2f", converted)
+                }
+            } else if let equivalent = CSVConversionColumns.exportedEquivalent(
+                of: transaction,
+                accountCurrency: transaction.accountId.flatMap { accountCurrencyById[$0] }
+            ) {
+                targetCurrency = escapeCSVField(equivalent.currency)
+                targetAmount = String(format: "%.2f", equivalent.amount)
             } else {
                 targetCurrency = ""
                 targetAmount = ""
             }
 
-            csv += "\(date),\(type),\(amount),\(currency),\(accountName),\(category),\(subcategoriesValue),\(note),\(targetAccountName),\(targetCurrency),\(targetAmount)\n"
+            csv += "\(date),\(type),\(amount),\(currency),\(accountName),\(category),\(subcategoriesValue),\(note),\(targetAccountName),\(targetCurrency),\(targetAmount),\(convertedAmount)\n"
         }
 
         return csv

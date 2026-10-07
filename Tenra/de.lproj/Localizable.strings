@@ -573,6 +573,7 @@
 "csvImport.error.invalidType" = "Ungültiger Transaktionstyp in Zeile %d: %@";
 "csvImport.error.emptyValue" = "Leerer Wert in Zeile %d, Spalte '%@'";
 "csvImport.error.duplicateTransaction" = "Doppelte Transaktion in Zeile %d";
+"csvImport.error.conversionFailed" = "Kein Wechselkurs in Zeile %d: %@";
 "csvImport.error.fileAccessDenied" = "Kein Zugriff auf die Datei";
 "csvImport.error.invalidEncoding" = "Ungültige Dateikodierung (UTF-8 erforderlich)";
 "csvImport.error.emptyFile" = "Die Datei ist leer";
@@ -619,6 +620,7 @@
 "csvImport.mapping.targetAccount" = "Zielkonto";
 "csvImport.mapping.targetCurrency" = "Zielwährung";
 "csvImport.mapping.targetAmount" = "Zielbetrag";
+"csvImport.mapping.convertedAmount" = "Betrag in Kontowährung";
 "csvImport.mapping.subcategories" = "Unterkategorien";
 "csvImport.mapping.note" = "Notiz";
 "csvImport.mapping.dateFormat" = "Datumsformat";

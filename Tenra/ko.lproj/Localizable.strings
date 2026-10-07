@@ -573,6 +573,7 @@
 "csvImport.error.invalidType" = "%d번째 행의 거래 유형이 올바르지 않아요: %@";
 "csvImport.error.emptyValue" = "%d번째 행 '%@' 열의 값이 비어 있어요";
 "csvImport.error.duplicateTransaction" = "%d번째 행에 중복 거래가 있어요";
+"csvImport.error.conversionFailed" = "%d번째 행의 환율이 없어요: %@";
 "csvImport.error.fileAccessDenied" = "파일에 접근할 수 없어요";
 "csvImport.error.invalidEncoding" = "파일 인코딩이 올바르지 않아요(UTF-8 필요)";
 "csvImport.error.emptyFile" = "파일이 비어 있어요";
@@ -619,6 +620,7 @@
 "csvImport.mapping.targetAccount" = "대상 계좌";
 "csvImport.mapping.targetCurrency" = "대상 통화";
 "csvImport.mapping.targetAmount" = "대상 금액";
+"csvImport.mapping.convertedAmount" = "계좌 통화 금액";
 "csvImport.mapping.subcategories" = "하위 카테고리";
 "csvImport.mapping.note" = "메모";
 "csvImport.mapping.dateFormat" = "날짜 형식";

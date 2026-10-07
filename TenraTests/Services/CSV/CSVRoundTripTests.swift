@@ -4,18 +4,22 @@
 //
 //  CSV export → import round-trip tests that pin the column contract.
 //
-//  Column contract (11 columns):
+//  Column contract (12 columns; 11 before 2026-10, still imported):
 //  index: 0=date, 1=type, 2=amount, 3=currency, 4=account, 5=category,
-//         6=subcategories, 7=note, 8=targetAccount, 9=targetCurrency, 10=targetAmount
+//         6=subcategories, 7=note, 8=targetAccount, 9=targetCurrency, 10=targetAmount,
+//         11=convertedAmount
 //
 //  Per-type rules:
-//  - expense: [4]=accountName, [5]=category; [8..10] empty unless convertedAmount exists
+//  - expense: [4]=accountName, [5]=category; [9..10] = the equivalent the row shows,
+//    labelled with its currency (the account's for a transaction in another), else empty
 //  - income (SWAP): [4]=category (not account!), [5]="", [8]=accountName
 //    import: effectiveAccountValue reads [8] (rawTargetAccountValue)
 //            effectiveCategoryValue reads [4] (rawAccountValue)
 //  - internalTransfer: [4]=sourceAccountName, [5]="", [8]=targetAccountName,
-//                      [9]=targetCurrency, [10]=targetAmount (actual amounts, NOT convertedAmount)
+//                      [9]=targetCurrency, [10]=targetAmount (what the target received),
+//                      [11]=convertedAmount (what left the source, in its currency)
 //  - other types (depositTopUp, etc.): same pattern as expense
+//  Conversion columns in depth: CSVConversionColumnsTests, CSVConversionRoundTripTests.
 //
 //  Income swap is the most critical case — it is the ONLY reason effectiveAccountValue
 //  and effectiveCategoryValue exist on CSVRow.
@@ -140,7 +144,7 @@ import Foundation
 
     // MARK: - Test 1: Row count and header
 
-    @Test("row count and header column order match the 11-column contract")
+    @Test("row count and header column order match the 12-column contract")
     func rowCountAndHeader() async throws {
         let file = try await roundTrip()
         #expect(file.rows.count == transactions.count,
@@ -148,10 +152,10 @@ import Foundation
         let expectedHeaders = [
             "date", "type", "amount", "currency",
             "account", "category", "subcategories", "note",
-            "targetAccount", "targetCurrency", "targetAmount"
+            "targetAccount", "targetCurrency", "targetAmount", "convertedAmount"
         ]
         #expect(file.headers == expectedHeaders,
-                "header row must match the documented 11-column order exactly")
+                "header row must match the documented 12-column order exactly")
     }
 
     // MARK: - Test 2: Expense fidelity
@@ -276,7 +280,30 @@ import Foundation
         let file = try await CSVParsingService().parseContent(csv)
         #expect(file.rows.count == 0,
                 "no data rows expected for empty export")
-        #expect(file.headers.count == 11,
-                "header row must still have all 11 columns even for empty export")
+        #expect(file.headers.count == 12,
+                "header row must still have all 12 columns even for empty export")
+    }
+
+    // MARK: - Test 8: Conversion columns
+
+    @Test("conversion columns: the account's currency labels the value; a transfer's source leg is column 11")
+    func conversionColumns() async throws {
+        let rows = [
+            Transaction(id: "c1", date: "2026-06-01", description: "Voice", amount: 10, currency: "USD",
+                        convertedAmount: 4_500, type: .expense, category: "Food", accountId: kaspiId),
+            Transaction(id: "c2", date: "2026-06-02", description: "Typed in dollars", amount: 10,
+                        currency: "USD", convertedAmount: 4_600, type: .internalTransfer,
+                        category: "Transfer", accountId: kaspiId, targetAccountId: wiseId,
+                        targetCurrency: "USD", targetAmount: 10)
+        ]
+        let csv = CSVExporter.exportTransactions(rows, accounts: accounts)
+        let file = try await CSVParsingService().parseContent(csv)
+
+        #expect(file.rows[0][9] == "KZT", "the account's currency, not the transaction's (USD)")
+        #expect(file.rows[0][10] == "4500.00")
+        #expect(file.rows[0][11] == "")
+        #expect(file.rows[1][9] == "USD")
+        #expect(file.rows[1][10] == "10.00")
+        #expect(file.rows[1][11] == "4600.00", "a transfer's source leg (was dropped)")
     }
 }

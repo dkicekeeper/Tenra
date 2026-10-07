@@ -206,6 +206,31 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
                 }
             }
 
+            // Amounts in the accounts' currencies (CSVConversionColumns), before the row
+            // creates a category: a row in another currency than its account used to move
+            // the balance by the raw foreign amount. Without a rate it is skipped.
+            guard let conversion = await mapper.conversionFields(
+                for: csvRow,
+                accountId: accountId,
+                targetAccountId: targetAccountId
+            ) else {
+                let accountCurrencies = [accountId, targetAccountId].compactMap { id in
+                    id.flatMap { transactionsViewModel.transactionStore?.accountById[$0]?.currency }
+                }
+                let needed = accountCurrencies.first { $0 != csvRow.currency } ?? ""
+                stats.addError(CSVValidationError(
+                    rowIndex: rowIndex,
+                    column: "currency",
+                    code: .conversionFailed,
+                    context: ["value": "\(csvRow.currency) → \(needed)"]
+                ))
+                stats.incrementSkipped()
+                if debugFirstSkipDetails.count < 20 {
+                    debugFirstSkipDetails.append((rowIndex, "conversion: \(csvRow.currency) → \(needed)"))
+                }
+                continue
+            }
+
             // Resolve category
             let categoryName = resolveCategoryName(for: csvRow)
 
@@ -254,6 +279,7 @@ class CSVImportCoordinator: CSVImportCoordinatorProtocol {
                 categoryName: finalCategoryName,
                 categoryId: categoryId,
                 subcategoryIds: subcategoryIds,
+                conversion: conversion,
                 rowIndex: rowIndex
             )
 

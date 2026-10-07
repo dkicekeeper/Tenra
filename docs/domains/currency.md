@@ -81,6 +81,7 @@ Aggregator views with `.task(id:)` include it in their trigger so per-currency t
 - `ContentView.SummaryTrigger`
 - `AccountDetailView.refreshTrigger`
 - `CategoryDetailView.RefreshKey`
+- `GroupedTransactionList.SectionsKey` (day totals; reads `CurrencyRatesNotifier.shared.version`, plus each account's currency)
 
 ⚠️ **Adding a new aggregator that reads `convertSync`** — fold `currencyRatesVersion` into its `.task(id:)` key.
 
@@ -126,12 +127,28 @@ Every path that creates or rewrites a transaction's `convertedAmount` / `targetC
 - Loan payments are in the loan's currency; `LoansViewModel.convertingSourceLeg` sets `convertedAmount` for a paying card in another currency, and the payment forms convert the amount typed in another currency (`LoanPaymentService.amountInLoanCurrency`).
 - Transfers created from an account (`AccountActionViewModel`) store the source leg as `convertedAmount` too (`TransactionStore.transfer(convertedAmount:)`).
 - Pinned by `TransactionConversionTests`, `TransactionCurrencyEditTests`, `RecurringOccurrenceCurrencyTests`, `LoanPaymentCurrencyTests`, `LinkPaymentsSelectedTotalTests`, `TransactionDraftResolverTests.providedNilConversionBlocks`.
+- Imports write them too: CSV through [`CSVConversionColumns`](../../Tenra/Services/CSV/CSVConversionColumns.swift) (see [csv.md](csv.md)); a statement import that merges a row into a saved expense/income keeps that transaction's conversion on its leg (`ImportCommitPlanner`, `ImportRowDecision.transferAccountCurrency`): the saved side's account stays moved by what the engine already counted (`TransactionConversion.balanceAmount`). It used to take the saved amount in its own currency, so a 50 000 ₸ income on a dollar card became +50 000 $.
+
+### Reading the fields: `TransactionConversion`
+
+Older paths (voice, Siri / App Intents, deposit top-ups, statement and CSV imports, edits saved before the edit screen kept the equivalent) store only `convertedAmount`; the engine reads `targetAmount`, then `convertedAmount`, whatever their label. Three read rules, all in `TransactionConversion`:
+
+| Rule | Used by | What it returns |
+|------|---------|-----------------|
+| `displayedEquivalent(of:accountCurrency:)` | the row's "≈" line (`TransactionCardView`), CSV export | `targetAmount` in `targetCurrency` when it is another currency than the transaction's; else, with no `targetAmount`, `convertedAmount` in the account's currency (owner's decision, 2026-10). Nil for transfers (`TransferAmountView` shows both legs). |
+| `recordedAmount(of:inAccountCurrency:)` | account-detail totals (`accountAggregatesByAccountId`, cold rebuild included), day totals of an account's history (`GroupedTransactionList`) | what the transaction moved its account by, as recorded: the amount in that currency, else `targetAmount` labelled with it, else `convertedAmount` unless `targetCurrency` names a third currency (an account whose currency changed after the save). A transfer's source leg is its `convertedAmount`. Nil means "convert at today's rate". |
+| `balanceAmount(of:inAccountCurrency:)` | the statement-import merge | exactly `BalanceCalculationEngine.getTransactionAmount`: for code that must leave a balance where the engine put it and can't call the MainActor engine. |
+
+- ⚠️ **Account-detail totals count the recorded conversion, not today's rate.** They used to re-price every cross-currency leg at today's rate, so "Total expense" disagreed with the balance (a 100 $ expense saved at 450 ₸: −45 000 ₸ on the balance, 50 000 ₸ in the total). Today's rate is only the fallback for a transaction without one in the account's currency. `accountAggregatesUpdate` re-patches on `convertedAmount` and `date` changes too.
+- Totals saved under the old rule are rebuilt once by the next full load: `TransactionStore.accountAggregatesRuleVersion` (UserDefaults `accountAggregates.ruleVersion`, set by a flush after the full load). Bump it whenever the valuation of a leg changes.
+- Pinned by `TransactionConversionReadingTests`, `AccountAggregatesRecordedConversionTests`, `ImportCommitterTests.mergeKeepsTheSavedSidesConversion*`.
 
 ### When `convertedAmount` IS the right field
 
 - **Balance updates** (`BalanceCalculationEngine.getSourceAmount` / `getTargetAmount`) — operates per-account, in account currency. `convertedAmount` is exactly the source-account-denominated value needed.
 - **Deposit principal walk** (`DepositInterestService.principalDelta`) — runs in deposit currency; for inflow side `convertedAmount` is already in target currency (the deposit itself).
-- **Single transaction display** (`TransactionCardComponents`) — shows the tx in its account's currency.
+- **Single transaction display** (`TransactionCardView`, `TransactionConversion.displayedEquivalent`) — the "≈" line shows the tx in its account's currency.
+- **Account-detail totals** (`TransactionConversion.recordedAmount`) — in the account's own currency, the recorded value is what the balance moved by.
 
 ### Pre-warm reactivity
 

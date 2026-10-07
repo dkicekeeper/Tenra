@@ -180,6 +180,42 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
         await processRecalculateAccounts(accountIds, accounts: accounts, transactions: transactions)
     }
 
+    /// Recalculates only `accountIds`, reading each account's own transactions from the
+    /// store's per-account index (`TransactionStore.transactionsByAccount`): the cost is the
+    /// size of those accounts' buckets, not a scan of every transaction. Prefer this
+    /// overload whenever a `TransactionStore` is at hand.
+    func recalculateAccounts(
+        _ accountIds: Set<String>,
+        accounts: [Account],
+        transactionsByAccount: TransactionIndex
+    ) async {
+        var newBalances: [String: Double] = [:]
+        let accountById = Dictionary(accounts.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+
+        for accountId in accountIds {
+            guard let account = accountById[accountId],
+                  let accountBalance = store.getAccount(accountId) else { continue }
+            guard let initial = recalculationBase(of: account, balance: accountBalance, into: &newBalances) else {
+                continue
+            }
+
+            // Same sum as `processRecalculateAll`: the bucket holds every transaction with
+            // this account on either leg, and `contribution` is 0 for the rest.
+            var sum = initial
+            var countedSelfTransfers = Set<String>()
+            for tx in transactionsByAccount[accountId] ?? [] {
+                // A transfer from an account to itself sits in its bucket twice (one entry
+                // per leg); the full recalculation counts it once.
+                if tx.accountId == tx.targetAccountId,
+                   !countedSelfTransfers.insert(tx.id).inserted { continue }
+                sum += engine.contribution(of: tx, to: accountBalance, policy: .currentBalance)
+            }
+            newBalances[accountId] = sum
+        }
+
+        applyRecalculatedBalances(newBalances)
+    }
+
     // MARK: - Optimistic Updates
 
     func optimisticUpdate(
@@ -368,42 +404,66 @@ final class BalanceCoordinator: BalanceCoordinatorProtocol {
         self.balances = newBalances
     }
 
-    /// Process recalculation for specific accounts
+    /// Process recalculation for specific accounts from a plain transaction array: one pass
+    /// over it, like `processRecalculateAll`, instead of one pass per account. Callers that
+    /// have the store use the `transactionsByAccount:` overload, which reads only the
+    /// accounts' own buckets.
     private func processRecalculateAccounts(
         _ accountIds: Set<String>,
         accounts: [Account],
         transactions: [Transaction]
     ) async {
         var newBalances: [String: Double] = [:]
-
-        // Build accounts dict ONCE before the loop — replaces O(K×N) `accounts.first(where:)`
-        // scan per accountId with O(N + K) total. Critical when currency change or bulk
-        // import triggers recalc on dozens of accounts at once.
-        let accountById = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0) })
+        var summed: [String: AccountBalance] = [:]
+        let accountById = Dictionary(accounts.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
 
         for accountId in accountIds {
-            guard let account = accountById[accountId] else {
+            guard let account = accountById[accountId],
+                  let accountBalance = store.getAccount(accountId),
+                  let initial = recalculationBase(of: account, balance: accountBalance, into: &newBalances) else {
                 continue
             }
-
-            guard let accountBalance = store.getAccount(account.id) else {
-                continue
-            }
-
-            // Loan accounts: balance is the outstanding debt, not a tx-derived sum.
-            if let debt = Self.loanDebt(of: account) {
-                newBalances[account.id] = debt
-                continue
-            }
-
-            let calculatedBalance = engine.calculateBalance(
-                account: accountBalance,
-                transactions: transactions
-            )
-
-            newBalances[account.id] = calculatedBalance
+            newBalances[accountId] = initial
+            summed[accountId] = accountBalance
         }
 
+        if !summed.isEmpty {
+            for tx in transactions {
+                if let sourceId = tx.accountId, let accountBalance = summed[sourceId] {
+                    newBalances[sourceId]! += engine.contribution(of: tx, to: accountBalance, policy: .currentBalance)
+                }
+                if let targetId = tx.targetAccountId, targetId != tx.accountId,
+                   let accountBalance = summed[targetId] {
+                    newBalances[targetId]! += engine.contribution(of: tx, to: accountBalance, policy: .currentBalance)
+                }
+            }
+        }
+
+        applyRecalculatedBalances(newBalances)
+    }
+
+    /// The starting point of a recalculation, mirroring `processRecalculateAll`: `nil` when
+    /// the account's balance is not a transaction sum, in which case its final value is
+    /// already in `balances` (a loan's outstanding debt, or the current balance of an
+    /// account without an initial balance).
+    private func recalculationBase(
+        of account: Account,
+        balance accountBalance: AccountBalance,
+        into balances: inout [String: Double]
+    ) -> Double? {
+        if let debt = Self.loanDebt(of: account) {
+            balances[account.id] = debt
+            return nil
+        }
+        guard let initialBalance = accountBalance.initialBalance else {
+            balances[account.id] = accountBalance.currentBalance
+            return nil
+        }
+        return initialBalance
+    }
+
+    /// Stores, persists and publishes the result of a targeted recalculation.
+    private func applyRecalculatedBalances(_ newBalances: [String: Double]) {
         store.updateBalances(newBalances, source: .recalculation)
 
         // Persist to Core Data — mirror processRecalculateAll. Without this a targeted recalc

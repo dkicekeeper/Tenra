@@ -78,6 +78,10 @@ enum ImportBalanceCompensation {
         }
 
         guard !changed.isEmpty else { return }
-        await coordinator.recalculateAccounts(changed, accounts: store.accounts, transactions: store.transactions)
+        await coordinator.recalculateAccounts(
+            changed,
+            accounts: store.accounts,
+            transactionsByAccount: store.transactionsByAccount
+        )
     }
 }

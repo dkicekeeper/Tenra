@@ -124,7 +124,7 @@ class AccountsViewModel {
                 await coordinator.recalculateAccounts(
                     [account.id],
                     accounts: store.accounts,
-                    transactions: store.transactions
+                    transactionsByAccount: store.transactionsByAccount
                 )
             }
         } else if currencyChanged, let coordinator = balanceCoordinator, let store = transactionStore {
@@ -139,7 +139,7 @@ class AccountsViewModel {
                 await coordinator.recalculateAccounts(
                     [account.id],
                     accounts: store.accounts,
-                    transactions: store.transactions
+                    transactionsByAccount: store.transactionsByAccount
                 )
             }
         } else {

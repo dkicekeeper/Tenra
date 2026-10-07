@@ -342,6 +342,12 @@ final class TransactionStore {
     /// often follows it, instead of one per deleted row racing it.
     @ObservationIgnored internal var loanRollbackPersistTask: Task<Void, Never>?
 
+    /// Accounts deleted together with the rows of the `.bulkDeleted` being applied
+    /// (`deleteTransactionsInBulk(_:deletingAccountIds:)`): payments to such a loan may go
+    /// in the bulk, the loan goes right after. Read only by `updateStateForBulkDelete`'s
+    /// assert; set just before the event, with no suspension point in between.
+    @ObservationIgnored internal var accountsDeletedWithBulkRows: Set<String> = []
+
     // Lifecycle observer token for cleanup in deinit
     @ObservationIgnored private var lifecycleObserver: NSObjectProtocol?
     @ObservationIgnored private var resignActiveObserver: NSObjectProtocol?
@@ -1650,7 +1656,10 @@ final class TransactionStore {
     private func updateStateForBulkDelete(_ txs: [Transaction]) {
         guard !txs.isEmpty else { return }
         assert(
-            !txs.contains(where: { self.isPaymentToLiveLoan($0) }),
+            !txs.contains(where: {
+                self.isPaymentToLiveLoan($0)
+                    && !self.accountsDeletedWithBulkRows.contains($0.targetAccountId ?? "")
+            }),
             "a payment to a live loan must go through .deleted to roll its loan back — use deleteTransactionsInBulk"
         )
         let ids = Set(txs.map(\.id))

@@ -61,6 +61,8 @@ extension TransactionStore {
             }
         }
         guard !bulk.isEmpty else { return }
+        accountsDeletedWithBulkRows = deletingAccountIds
+        defer { accountsDeletedWithBulkRows = [] }
         try await apply(.bulkDeleted(bulk))
     }
 

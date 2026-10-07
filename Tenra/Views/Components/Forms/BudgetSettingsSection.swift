@@ -148,7 +148,7 @@ struct BudgetSettingsSection: View {
                 IconView(
                     source: .sfSymbol("fork.knife"),
                     style: .circle(
-                        size: AppIconSize.ultra,
+                        size: AppIconSize.Tile.xxxl,
                         tint: .monochrome(.pink),
                         backgroundColor: AppColors.bgCard
                     )

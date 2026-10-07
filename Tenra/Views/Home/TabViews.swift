@@ -132,9 +132,9 @@ struct OCRTab: View {
             VStack(spacing: AppSpacing.xxl) {
                 Spacer()
 
-                // Fix #11: AppIconSize.mega (64pt) instead of magic literal
+                // Fix #11: AppIconSize.Tile.xl (64pt) instead of magic literal
                 Image(systemName: "doc.viewfinder")
-                    .font(.system(size: AppIconSize.mega, weight: .light))
+                    .font(.system(size: AppIconSize.Tile.xl, weight: .light))
                     .foregroundStyle(AppColors.accent)
 
                 VStack(spacing: AppSpacing.sm) {

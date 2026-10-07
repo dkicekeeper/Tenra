@@ -25,7 +25,7 @@ struct TransactionIconView: View {
                 IconView(
                     source: iconSource,
                     style: .circle(
-                        size: AppIconSize.xxl,
+                        size: AppIconSize.Tile.sm,
                         tint: .original,
                         backgroundColor: styleData.lightBackgroundColor
                     )
@@ -34,7 +34,7 @@ struct TransactionIconView: View {
                 IconView(
                     source: .sfSymbol(styleData.iconName),
                     style: .circle(
-                        size: AppIconSize.xxl,
+                        size: AppIconSize.Tile.sm,
                         tint: .monochrome(transaction.type == .internalTransfer ? AppColors.transfer : styleData.primaryColor),
                         backgroundColor: transaction.type == .internalTransfer ? AppColors.pale(AppColors.transfer) : styleData.lightBackgroundColor
                     )

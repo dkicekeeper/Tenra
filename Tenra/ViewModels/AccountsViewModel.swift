@@ -168,7 +168,7 @@ class AccountsViewModel {
             }
         }
 
-        // Single batch delete + single persist (avoids savingInProgress race)
+        // Single batch delete + single whole-table save instead of one per account
         transactionStore?.deleteAccounts(ids)
 
         // Remove all from BalanceCoordinator

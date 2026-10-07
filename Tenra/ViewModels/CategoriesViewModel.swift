@@ -139,7 +139,7 @@ class CategoriesViewModel {
             }
         }
 
-        // Single batch delete + single persist (avoids savingInProgress race)
+        // Single batch delete + single whole-table save instead of one per category
         transactionStore?.deleteCategories(ids)
     }
 

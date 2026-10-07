@@ -108,6 +108,9 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
     // MARK: - Save Operations
 
     func saveAccounts(_ accounts: [Account]) {
+        // Taken now, in call order: the coordinator writes the newest snapshot of the
+        // table last and skips older ones still waiting (see CoreDataSaveCoordinator).
+        let ticket = saveCoordinator.nextTicket()
 
         Task.detached(priority: .userInitiated) { [weak self] in
             guard let self = self else { return }
@@ -115,15 +118,14 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
             PerformanceProfiler.start("AccountRepository.saveAccounts")
 
             do {
-                try await self.saveCoordinator.performSave(operation: "saveAccounts") { context in
+                try await self.saveCoordinator.performSave(operation: "saveAccounts", ticket: ticket) { context in
                     try self.saveAccountsInternal(accounts, context: context)
                 }
-
-                PerformanceProfiler.end("AccountRepository.saveAccounts")
-
             } catch {
-                PerformanceProfiler.end("AccountRepository.saveAccounts")
+                Self.logger.error("saveAccounts failed: \(error.localizedDescription, privacy: .public)")
             }
+
+            PerformanceProfiler.end("AccountRepository.saveAccounts")
         }
     }
 
@@ -174,8 +176,9 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
     func updateAccountBalancesSync(_ balances: [String: Double]) async {
         guard !balances.isEmpty else { return }
 
-        // Use a unique operation name per call so concurrent saves for different account sets
-        // don't get rejected by CoreDataSaveCoordinator's duplicate-operation guard.
+        // A unique operation name per call: these writes don't replace each other (different
+        // account sets), so they must not be coalesced. Ordering of successive balances is the
+        // caller's job (BalanceCoordinator writes through one serial queue).
         let operationId = "updateAccountBalancesSync_\(UUID().uuidString)"
 
         do {
@@ -321,9 +324,8 @@ nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked
     }
 
     /// Awaited (non-fire-and-forget) account-aggregate persist. Uses a unique
-    /// operation name per call so it never collides with an in-flight debounced
-    /// `saveAccountAggregates` (the duplicate-operation guard would otherwise
-    /// reject it and silently skip the write). See M-14.
+    /// operation name per call, so it runs at once instead of queueing behind an
+    /// in-flight debounced `saveAccountAggregates`. See M-14.
     func saveAccountAggregatesSync(_ aggregates: [String: AccountAggregates], currencyByAccountId: [String: String]) async {
         let operationId = "saveAccountAggregatesSync_\(UUID().uuidString)"
         do {

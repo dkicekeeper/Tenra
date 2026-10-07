@@ -69,16 +69,17 @@ nonisolated final class RecurringRepository: RecurringRepositoryProtocol, @unche
     }
 
     func saveRecurringSeries(_ series: [RecurringSeries]) {
+        // Whole-table save: taken now, in call order, so the coordinator writes the newest
+        // snapshot last and skips older ones still waiting (see CoreDataSaveCoordinator).
+        let ticket = saveCoordinator.nextTicket()
 
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
 
             PerformanceProfiler.start("RecurringRepository.saveRecurringSeries")
 
-            let context = self.stack.newBackgroundContext()
-
-            await context.perform {
-                do {
+            do {
+                try await self.saveCoordinator.performSave(operation: "saveRecurringSeries", ticket: ticket) { context in
                     // Fetch all existing recurring series
                     let fetchRequest = NSFetchRequest<RecurringSeriesEntity>(entityName: "RecurringSeriesEntity")
                     let existingEntities = try context.fetch(fetchRequest)
@@ -135,18 +136,12 @@ nonisolated final class RecurringRepository: RecurringRepositoryProtocol, @unche
                             context.delete(entity)
                         }
                     }
-
-                    // Save if there are changes
-                    if context.hasChanges {
-                        try context.save()
-                    }
-
-                    PerformanceProfiler.end("RecurringRepository.saveRecurringSeries")
-                } catch {
-                    Self.logger.error("saveRecurringSeries failed: \(error.localizedDescription, privacy: .public)")
-                    PerformanceProfiler.end("RecurringRepository.saveRecurringSeries")
                 }
+            } catch {
+                Self.logger.error("saveRecurringSeries failed: \(error.localizedDescription, privacy: .public)")
             }
+
+            PerformanceProfiler.end("RecurringRepository.saveRecurringSeries")
         }
     }
 
@@ -179,16 +174,16 @@ nonisolated final class RecurringRepository: RecurringRepositoryProtocol, @unche
     }
 
     func saveRecurringOccurrences(_ occurrences: [RecurringOccurrence]) {
+        // Whole-table save: ordered and coalesced by ticket, like saveRecurringSeries.
+        let ticket = saveCoordinator.nextTicket()
 
         Task.detached(priority: .utility) { [weak self] in
             guard let self = self else { return }
 
             PerformanceProfiler.start("RecurringRepository.saveRecurringOccurrences")
 
-            let context = self.stack.newBackgroundContext()
-
-            await context.perform {
-                do {
+            do {
+                try await self.saveCoordinator.performSave(operation: "saveRecurringOccurrences", ticket: ticket) { context in
                     // Fetch all existing occurrences
                     let fetchRequest = NSFetchRequest<RecurringOccurrenceEntity>(entityName: "RecurringOccurrenceEntity")
                     let existingEntities = try context.fetch(fetchRequest)
@@ -243,14 +238,9 @@ nonisolated final class RecurringRepository: RecurringRepositoryProtocol, @unche
                             context.delete(entity)
                         }
                     }
-
-                    // Save if there are changes
-                    if context.hasChanges {
-                        try context.save()
-                    }
-                } catch {
-                    Self.logger.error("saveRecurringOccurrences failed: \(error.localizedDescription, privacy: .public)")
                 }
+            } catch {
+                Self.logger.error("saveRecurringOccurrences failed: \(error.localizedDescription, privacy: .public)")
             }
 
             PerformanceProfiler.end("RecurringRepository.saveRecurringOccurrences")

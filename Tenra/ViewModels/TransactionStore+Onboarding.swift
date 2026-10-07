@@ -7,9 +7,10 @@
 //
 //  Why not addAccount + addCategory in a loop: every per-item add persists with
 //  its own detached, wholesale save (the whole table, deleting rows not in the
-//  snapshot). Fired as a burst of ~20, they collide in CoreDataSaveCoordinator,
-//  which drops a save while another of the same name runs (`savingInProgress`),
-//  so only the first snapshot (one category) reached CoreData. And on a fresh
+//  snapshot). Fired as a burst of ~20, they collided in CoreDataSaveCoordinator,
+//  which used to drop a save while another of the same name ran (it now queues
+//  and coalesces them), so only the first snapshot (one category) reached
+//  CoreData; a burst also costs ~20 table writes for one result. And on a fresh
 //  install the first full load (`initialize()` → `loadData()`) starts the moment
 //  onboarding completes and Home appears; it replaces the in-memory accounts and
 //  categories with what CoreData holds, which was still nothing. Result: an

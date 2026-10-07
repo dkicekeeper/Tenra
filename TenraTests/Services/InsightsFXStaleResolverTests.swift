@@ -85,10 +85,12 @@ struct InsightsFXStaleResolverTests {
 
         // `CurrencyRateStore.shared` is a global singleton; a parallel currency suite can
         // call clearAll() between our rate-set and our read (CLAUDE.md documents this
-        // shared-state hazard). Re-establish the rate until the conversion sees it, so the
-        // test is deterministic without serializing across suites.
+        // shared-state hazard), and the test host app's own rate fetch can land there with
+        // real rates (it failed CI once with today's USD rate in place of 442.5).
+        // Re-establish the rate until the conversion sees exactly it, so the test is
+        // deterministic without serializing across suites.
         var result = InsightsService.resolveAmountToBase(tx, baseCurrency: base)
-        for _ in 0..<100 where result.usedStaleFallback {
+        for _ in 0..<100 where result.usedStaleFallback || abs(result.amount - 100 * 442.5) >= 0.001 {
             store.updateCurrentRates(ExchangeRates(
                 pivot: "KZT",
                 rates: ["USD": 442.5],

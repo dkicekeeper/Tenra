@@ -2,7 +2,7 @@
 //  CategoryRow.swift
 //  Tenra
 //
-//  Category row of the categories list. Adapter over DesignKit's `ProgressRingRow`: the
+//  Category row of the categories list. Adapter over DesignKit's `AmountRow` (a `.limit` row): the
 //  category, its budget, the tap, the swipe-to-delete, the over-budget haptic and the
 //  VoiceOver label stay here.
 //
@@ -49,13 +49,15 @@ struct CategoryRow: View, Equatable {
 
     var body: some View {
         Button(action: onEdit) {
-            ProgressRingRow(
-                iconSource: category.iconSource,
-                color: category.color,
-                title: category.name,
-                progress: budgetProgress.map { LimitProgress($0) },
+            AmountRow(
+                category.name,
+                leading: .tinted(category.iconSource, category.color),
+                value: .limit(
+                    budgetProgress.map { LimitProgress($0) },
+                    placeholder: category.type == .expense ? String(localized: "category.noBudgetSet") : nil
+                ),
                 currency: currency,
-                placeholder: category.type == .expense ? String(localized: "category.noBudgetSet") : nil,
+                style: .list,
                 transitionSourceID: transitionSourceID,
                 transitionNamespace: transitionNamespace
             )

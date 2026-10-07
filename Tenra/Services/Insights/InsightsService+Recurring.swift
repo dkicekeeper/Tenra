@@ -114,7 +114,7 @@ extension InsightsService {
                     DonutSlice(
                         id: item.id,
                         amount: item.monthlyEquivalent,
-                        color: CategoryColors.hexColor(for: item.name),
+                        color: CategoryColors.color(for: item.name),
                         label: item.name,
                         percentage: item.monthlyEquivalent / totalMonthly * 100
                     )

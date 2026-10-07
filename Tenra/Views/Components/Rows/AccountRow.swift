@@ -2,7 +2,7 @@
 //  AccountRow.swift
 //  Tenra
 //
-//  Account row of the accounts and deposits lists. Adapter over DesignKit's `BalanceRow`:
+//  Account row of the accounts and deposits lists. Adapter over DesignKit's `AmountRow` (list style):
 //  the account, the deposit interest copy, the tap, the swipe-to-delete and the VoiceOver
 //  label stay here.
 //
@@ -44,7 +44,7 @@ struct AccountRow: View {
 
     /// Deposit interest line: the next posting date with the interest accrued so far, or
     /// either of them alone.
-    private var interestDetail: BalanceRow.Detail? {
+    private var interestDetail: AmountRow.Detail? {
         if let interest = interestToday, interest > 0, let posting = nextPostingDate {
             let dateString = DateFormatters.displayDateFormatter.string(from: posting)
             return .init(
@@ -65,13 +65,14 @@ struct AccountRow: View {
 
     var body: some View {
         Button(action: onEdit) {
-            BalanceRow(
-                iconSource: account.iconSource,
-                title: account.name,
-                amount: balance,
+            AmountRow(
+                account.name,
+                leading: .icon(account.iconSource),
+                value: .amount(balance, color: AppColors.Text.secondary),
                 currency: account.currency,
+                style: .list,
                 detail: interestDetail,
-                trailingSystemImage: account.isDeposit ? "lock.square.stack.fill" : nil,
+                accessory: account.isDeposit ? .systemImage("lock.square.stack.fill") : .none,
                 transitionSourceID: transitionSourceID,
                 transitionNamespace: transitionNamespace
             )

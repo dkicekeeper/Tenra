@@ -230,9 +230,9 @@ struct AccountsManagementView: View {
             } else {
                 // balanceCoordinator not yet initialized — skeleton rows in place of the list
                 VStack(spacing: 0) {
-                    // The skeleton of the rows to come (AccountRow is DesignKit's BalanceRow).
+                    // The skeleton of the rows to come (AccountRow is DesignKit's AmountRow in the list style).
                     ForEach(0..<4, id: \.self) { _ in
-                        BalanceRowSkeleton()
+                        AmountRowSkeleton(style: .list)
                             .padding(.vertical, AppSpacing.sm)
                     }
                 }

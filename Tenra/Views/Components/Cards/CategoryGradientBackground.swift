@@ -17,14 +17,14 @@ import SwiftUI
 struct CategoryGradientBackground: View {
     /// Top expense categories with normalised weights (0.0–1.0, largest = 1.0).
     let weights: [CategoryColorWeight]
-    /// Passed through to `CategoryColors.hexColor` for custom-category tints.
+    /// Passed through to `CategoryColors.color` for custom-category tints.
     let customCategories: [CustomCategory]
 
     var body: some View {
         GradientOrbsBackground(
             weights.map { item in
                 GradientOrbsBackground.Orb(
-                    color: CategoryColors.hexColor(
+                    color: CategoryColors.color(
                         for: item.category,
                         opacity: 1.0,
                         customCategories: customCategories

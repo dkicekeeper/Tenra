@@ -45,6 +45,13 @@ struct GroupedTransactionList<Overlay: View>: View {
         var id: String { date }
     }
 
+    /// Everything the sections and their day totals are built from.
+    private struct SectionsKey: Equatable {
+        let transactions: [Transaction]
+        let accountCurrencies: [String: String]
+        let ratesVersion: Int
+    }
+
     init(
         transactions: [Transaction],
         displayCurrency: String? = nil,
@@ -83,6 +90,7 @@ struct GroupedTransactionList<Overlay: View>: View {
         let grouped = Dictionary(grouping: slice) { $0.date }
         let amountFor = summaryAmountFor
         let headerCurrency = summaryCurrencyOverride ?? displayCurrency
+        let accounts = accountsById
         cachedSections = grouped
             .sorted { $0.key > $1.key }
             .map { key, txs in
@@ -95,7 +103,11 @@ struct GroupedTransactionList<Overlay: View>: View {
                     // is denominated in the *account*'s currency, not the header's,
                     // so summing it directly produces wrong totals across multi-currency
                     // accounts (e.g. $20 + $100 displayed as "120 KZT").
-                    return acc + Self.amountInHeaderCurrency(tx: tx, headerCurrency: headerCurrency)
+                    return acc + Self.amountInHeaderCurrency(
+                        tx: tx,
+                        headerCurrency: headerCurrency,
+                        accountCurrency: tx.accountId.flatMap { accounts[$0]?.currency }
+                    )
                 }
                 return DaySection(
                     date: key,
@@ -109,12 +121,24 @@ struct GroupedTransactionList<Overlay: View>: View {
     /// Converts a transaction's amount into the header's display currency using the
     /// in-memory rate cache. Falls back to raw amount only when no header currency
     /// is provided or rates are unavailable.
-    private static func amountInHeaderCurrency(tx: Transaction, headerCurrency: String?) -> Double {
+    ///
+    /// In its account's own currency (an account's detail screen) a transaction counts
+    /// the conversion recorded with it, the amount the balance moved by and the "≈" line
+    /// of its row, not today's rate (`TransactionConversion.recordedAmount`).
+    private static func amountInHeaderCurrency(
+        tx: Transaction,
+        headerCurrency: String?,
+        accountCurrency: String?
+    ) -> Double {
         guard let headerCurrency else {
             return tx.convertedAmount ?? tx.amount
         }
         if tx.currency == headerCurrency {
             return tx.amount
+        }
+        if accountCurrency == headerCurrency,
+           let recorded = TransactionConversion.recordedAmount(of: tx, inAccountCurrency: headerCurrency) {
+            return recorded
         }
         if let converted = CurrencyConverter.convertSync(
             amount: tx.amount,
@@ -256,8 +280,13 @@ struct GroupedTransactionList<Overlay: View>: View {
             // showing the old rows and day totals until they were reopened. Comparing is
             // cheap when nothing changed: Array == short-circuits on the shared buffer, so
             // a back-navigation with the same array doesn't re-fire. SwiftUI cancels the
-            // previous task automatically.
-            .task(id: transactions) {
+            // previous task automatically. The day totals also read each account's currency
+            // (the recorded conversion counts in it) and the rate cache (the fallback).
+            .task(id: SectionsKey(
+                transactions: transactions,
+                accountCurrencies: accountsById.mapValues(\.currency),
+                ratesVersion: CurrencyRatesNotifier.shared.version
+            )) {
                 // When sections already exist, this is a mutation (not the first load or a
                 // back-nav): animate the ForEach diff so removed rows collapse smoothly
                 // instead of the list teleporting up one frame. The initial populate

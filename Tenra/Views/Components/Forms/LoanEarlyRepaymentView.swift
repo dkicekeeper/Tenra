@@ -188,13 +188,14 @@ struct LoanEarlyRepaymentView: View {
                 .screenPadding()
 
             VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                Picker(String(localized: "loan.strategy", defaultValue: "Strategy"), selection: $repaymentType) {
-                    Text(String(localized: "loan.reduceTerm", defaultValue: "Reduce Term"))
-                        .tag(EarlyRepaymentType.reduceTerm)
-                    Text(String(localized: "loan.reducePayment", defaultValue: "Reduce Payment"))
-                        .tag(EarlyRepaymentType.reducePayment)
-                }
-                .pickerStyle(.segmented)
+                SegmentedPicker(
+                    title: String(localized: "loan.strategy", defaultValue: "Strategy"),
+                    selection: $repaymentType,
+                    options: [
+                        (label: String(localized: "loan.reduceTerm", defaultValue: "Reduce Term"), value: EarlyRepaymentType.reduceTerm),
+                        (label: String(localized: "loan.reducePayment", defaultValue: "Reduce Payment"), value: EarlyRepaymentType.reducePayment),
+                    ]
+                )
 
                 Text(strategyHint)
                     .font(AppTypography.caption)

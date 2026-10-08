@@ -369,13 +369,21 @@ struct LinkPaymentsView: View {
                 .frame(maxHeight: .infinity, alignment: .top)
                 .skeletonLoadingLabel()
             } else if cachedFilteredCandidates.isEmpty {
-                if searchText.isEmpty {
-                    ContentUnavailableView {
-                        Label(String(localized: "subscription.linkPayments.empty", defaultValue: "No matching transactions"), systemImage: "doc.text.magnifyingglass")
+                Group {
+                    if searchText.isEmpty {
+                        EmptyState(
+                            icon: "doc.text.magnifyingglass",
+                            title: String(localized: "subscription.linkPayments.empty", defaultValue: "No matching transactions")
+                        )
+                    } else {
+                        EmptyState(
+                            icon: "magnifyingglass",
+                            title: String(localized: "emptyState.searchNoResults"),
+                            description: String(localized: "emptyState.tryDifferentSearch")
+                        )
                     }
-                } else {
-                    ContentUnavailableView.search(text: searchText)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }

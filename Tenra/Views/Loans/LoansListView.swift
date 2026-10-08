@@ -92,12 +92,11 @@ struct LoansListView: View {
 
                         // Filter
                         if hasMultipleTypes {
-                            Picker(String(localized: "loan.filter", defaultValue: "Filter"), selection: $selectedFilter) {
-                                ForEach(LoanFilter.allCases, id: \.self) { filter in
-                                    Text(filter.label).tag(filter)
-                                }
-                            }
-                            .pickerStyle(.segmented)
+                            SegmentedPicker(
+                                title: String(localized: "loan.filter", defaultValue: "Filter"),
+                                selection: $selectedFilter,
+                                options: LoanFilter.allCases.map { (label: $0.label, value: $0) }
+                            )
                             .screenPadding()
                         }
 

@@ -16,7 +16,7 @@
 import SwiftUI
 
 /// Centralized display helpers for transaction UI rendering.
-/// Shared between TransactionCard, TransferAmountView, and any other transaction display components.
+/// Shared between TransactionCard, TransactionCardView (the transfer legs) and any other transaction display components.
 enum TransactionDisplayHelper {
 
     // MARK: - Loan Payment Color

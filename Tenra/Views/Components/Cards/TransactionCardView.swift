@@ -5,6 +5,8 @@
 //  Pure-UI transaction row. No @Environment, no @State, no sheets, no swipe actions.
 //  All business logic (recurring-badge resolution, subscription icon lookup, subcategory
 //  links, delete/stop/resume, edit sheet) lives in `TransactionCard` which wraps this view.
+//  Adapter over DesignKit's `TransactionRow` (2.9.0): maps the transaction, its accounts and
+//  its category style to what the row shows; the layout is DesignKit's.
 //
 //  Use this component directly when you need the visual only — read-only lists, selection
 //  UIs (LinkPaymentsView), voice-input previews, design-system previews.
@@ -59,80 +61,91 @@ struct TransactionCardView: View {
         [sourceAccount, targetAccount].compactMap { $0 }
     }
 
-    /// Used only by the accessibility label below — TransactionInfoView/Transfer/RegularAccountInfo
-    /// now receive `sourceAccount`/`targetAccount` directly (pre-resolved, O(1)).
-    private var isFutureDate: Bool {
-        TransactionDisplayHelper.isFutureDate(transaction.date)
-    }
-
-    private var amountColor: Color {
-        TransactionDisplayHelper.amountColor(for: transaction.type)
-    }
-
-    private var amountPrefix: String {
-        TransactionDisplayHelper.amountPrefix(for: transaction.type)
-    }
+    private var isTransfer: Bool { transaction.type == .internalTransfer }
 
     var body: some View {
-        HStack(spacing: AppSpacing.md) {
-            TransactionIconView(
-                transaction: transaction,
-                styleData: styleData,
-                subscriptionIconSource: subscriptionIconSource,
-                showRecurringBadge: showRecurringBadge
+        TransactionRow(
+            subject,
+            note: transaction.description,
+            icon: subscriptionIconSource ?? .sfSymbol(styleData.iconName),
+            iconTint: subscriptionIconSource != nil
+                ? .original
+                : .monochrome(isTransfer ? AppColors.transfer : styleData.primaryColor),
+            iconBackground: subscriptionIconSource == nil && isTransfer
+                ? AppColors.pale(AppColors.transfer)
+                : styleData.lightBackgroundColor,
+            badgeSystemImage: showRecurringBadge ? "arrow.clockwise" : nil,
+            amounts: amounts,
+            isPending: TransactionDisplayHelper.isFutureDate(transaction.date),
+            accessibilityLabel: TransactionDisplayHelper.accessibilityText(for: transaction, accounts: resolvedAccounts),
+            transitionSourceID: transitionSourceID,
+            transitionNamespace: transitionNamespace
+        )
+    }
+
+    /// The category with its subcategories and account; a transfer names its two accounts.
+    private var subject: TransactionRow.Subject {
+        if isTransfer {
+            return .transfer(
+                from: rowAccount(sourceAccount, snapshot: transaction.accountName),
+                to: rowAccount(targetAccount, snapshot: transaction.targetAccountName)
             )
-            .matchedTransitionSourceIfPresent(
-                id: transitionSourceID,
-                namespace: transitionNamespace
-            )
-
-            TransactionInfoView(
-                transaction: transaction,
-                sourceAccount: sourceAccount,
-                targetAccount: targetAccount,
-                linkedSubcategories: linkedSubcategories
-            )
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: AppSpacing.xs) {
-                if transaction.type == .internalTransfer {
-                    TransferAmountView(
-                        transaction: transaction,
-                        sourceAccount: sourceAccount,
-                        targetAccount: targetAccount,
-                        depositAccountId: nil
-                    )
-                } else {
-                    FormattedAmountText(
-                        amount: transaction.amount,
-                        currency: transaction.currency,
-                        prefix: amountPrefix,
-                        color: amountColor
-                    )
-
-                    // The equivalent: the stored one, or for a row that stores only
-                    // `convertedAmount` (voice, Siri, imports, older edits) that value in
-                    // the account's currency (TransactionConversion.displayedEquivalent).
-                    if let equivalent = TransactionConversion.displayedEquivalent(
-                        of: transaction,
-                        accountCurrency: sourceAccount?.currency
-                    ) {
-                        FormattedAmountText(
-                            amount: equivalent.amount,
-                            currency: equivalent.currency,
-                            prefix: "",
-                            color: amountColor.opacity(0.7)
-                        )
-                    }
-                }
-            }
         }
-        .padding(.vertical, AppSpacing.sm)
-        .futureTransactionStyle(isFuture: isFutureDate)
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(TransactionDisplayHelper.accessibilityText(for: transaction, accounts: resolvedAccounts))
+        return .entry(
+            // Technical category values ("Loan Payment") surface as localized names.
+            title: CategoryDisplay.displayName(for: transaction.category, type: transaction.type),
+            details: linkedSubcategories.isEmpty ? nil : linkedSubcategories.map(\.name).joined(separator: ", "),
+            account: rowAccount(sourceAccount, snapshot: transaction.accountName)
+        )
+    }
+
+    /// A live account with its logo, else the snapshotted name of a deleted one.
+    private func rowAccount(_ account: Account?, snapshot: String?) -> TransactionRow.Account? {
+        if let account {
+            return TransactionRow.Account(name: account.name, icon: account.iconSource)
+        }
+        return snapshot.map { TransactionRow.Account.deleted($0) }
+    }
+
+    /// The amount and its equivalent; a transfer's outgoing and incoming legs.
+    private var amounts: [TransactionRow.Amount] {
+        if isTransfer {
+            return transferAmounts
+        }
+        let color = TransactionDisplayHelper.amountColor(for: transaction.type)
+        var lines = [TransactionRow.Amount(
+            transaction.amount,
+            currency: transaction.currency,
+            prefix: TransactionDisplayHelper.amountPrefix(for: transaction.type),
+            color: color
+        )]
+        // The equivalent: the stored one, or for a row that stores only `convertedAmount`
+        // (voice, Siri, imports, older edits) that value in the account's currency
+        // (TransactionConversion.displayedEquivalent). DesignKit draws it at 70%.
+        if let equivalent = TransactionConversion.displayedEquivalent(of: transaction, accountCurrency: sourceAccount?.currency) {
+            lines.append(TransactionRow.Amount(equivalent.amount, currency: equivalent.currency, color: color))
+        }
+        return lines
+    }
+
+    private var transferAmounts: [TransactionRow.Amount] {
+        guard let source = sourceAccount else {
+            return [TransactionRow.Amount(
+                transaction.amount,
+                currency: transaction.currency,
+                color: TransactionDisplayHelper.amountColor(for: transaction.type)
+            )]
+        }
+        let sourceCurrency = transaction.currency.isEmpty ? source.currency : transaction.currency
+        let outgoing = TransactionRow.Amount(transaction.amount, currency: sourceCurrency, prefix: "-", color: .primary)
+        guard let target = targetAccount else { return [outgoing] }
+        let incoming = TransactionRow.Amount(
+            transaction.targetAmount ?? transaction.convertedAmount ?? transaction.amount,
+            currency: transaction.targetCurrency ?? target.currency,
+            prefix: "+",
+            color: AppColors.income
+        )
+        return [outgoing, incoming]
     }
 }
 

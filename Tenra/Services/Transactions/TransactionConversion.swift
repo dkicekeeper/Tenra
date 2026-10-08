@@ -149,7 +149,7 @@ nonisolated struct TransactionConversion: Equatable, Sendable {
     /// transaction's. A row that stores only `convertedAmount` (voice, Siri and App
     /// Intents, deposit top-ups, statement and CSV imports, edits saved before the edit
     /// screen kept the equivalent) shows that value in its account's currency: what the
-    /// balance moved by. Transfers show both legs instead (`TransferAmountView`).
+    /// balance moved by. Transfers show both legs instead (`TransactionCardView`).
     ///
     /// - Parameter accountCurrency: currency of the transaction's account, nil when the
     ///   account is unknown (deleted): `convertedAmount` carries no currency of its own.

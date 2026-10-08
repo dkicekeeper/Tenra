@@ -111,13 +111,11 @@ struct CloudBackupsView: View {
         .navigationTitle(String(localized: "settings.cloud.backups"))
         .navigationBarTitleDisplayMode(.large)
         .disabled(cloudSyncViewModel.isRestoringBackup)
-        .overlay {
-            if cloudSyncViewModel.isRestoringBackup {
-                RestoreProgressOverlay()
-                    .transition(.opacity)
-                    .zIndex(2)
-            }
-        }
+        .progressOverlay(
+            isPresented: cloudSyncViewModel.isRestoringBackup,
+            title: String(localized: "settings.cloud.restoring"),
+            message: String(localized: "settings.cloud.restoringSubtitle")
+        )
         .animation(AppAnimation.gentleSpring, value: cloudSyncViewModel.isRestoringBackup)
         .overlay {
             // Toast messages
@@ -172,30 +170,3 @@ struct CloudBackupsView: View {
     }
 }
 
-private struct RestoreProgressOverlay: View {
-    var body: some View {
-        ZStack {
-            Color.black.opacity(0.45)
-                .ignoresSafeArea()
-
-            VStack(spacing: AppSpacing.md) {
-                ProgressView()
-                    .controlSize(.large)
-                    .tint(AppColors.accent)
-
-                Text(String(localized: "settings.cloud.restoring"))
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
-
-                Text(String(localized: "settings.cloud.restoringSubtitle"))
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(AppSpacing.xl)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: AppRadius.lg, style: .continuous))
-            .padding(AppSpacing.xl)
-        }
-        .accessibilityElement(children: .combine)
-    }
-}

@@ -67,17 +67,35 @@ Audio-based VAD is unreliable with background noise. Use **text-based timeout**:
 - Reset timer on every `transcribedText` change
 - Auto-stop after N seconds of no new text
 
-### Amplitude smoothing
+### The voice level (DesignKit 2.4.0+)
 
-Asymmetric — fast attack (`0.6` weight), slow decay (`0.08`).
+`VoiceRecordingEngine.level(of:)` turns each microphone buffer into its RMS in decibels and maps
+−50…−10 dB onto 0…1; the tap reports it through `makeAndStart(onLevel:)`, and
+`VoiceInputService.audioLevel` takes it on the main actor (back to 0 on stop). Nothing is
+recorded or kept. Smoothing is DesignKit's (`VoiceLevelDriver`: fast attack, slow release), so
+pass the raw level and do not smooth it here.
 
-Text-driven spikes via `onChange(of: transcribedText)` blended with `0.4/0.6`.
+## The recording screen (DesignKit effects)
 
-## SiriGlow Animation
+`VoiceInputView` while recording (each in its own small view, so the ~47 level updates a second
+redraw only it):
 
-`MeshGradient` (iOS 18+) with `TimelineView(.animation)`.
+- **Edge light:** `VoiceLevelGlow` → DesignKit's `EdgeGlow(level:)`, one Metal colour effect
+  along the screen edges (the old `SiriGlow` `MeshGradient` is gone; `SiriGlow` / `SiriWave` are
+  deprecated typealiases until DesignKit 3.0).
+- **Stop button:** `VoiceStopOrb` → `VoiceWave(level:style: .orb)` with a stop glyph; only the
+  orb at rest (80 pt) takes the tap. `handleStopTap` plays `HapticManager.play(.tap)`.
+- **Before any text:** `ListeningPrompt` ("Speak...") carries `.thinkingShimmer` in the orb's
+  colours (a still gradient under Reduce Motion).
+- **First recording ever:** a one-time `.spotlight` round the orb ("Tap the orb when you're
+  done…", `voice.tour.orb`), a second after recording starts; lifted by any tap or by stopping.
+  Seen-flags live in `FeatureTourState` (UserDefaults), not shown in screenshot mode.
+- **The words:** `AnimatedTranscriptionText` → DesignKit's `StreamingText` (2.9.0), recognised
+  entities tinted by confidence.
+- **Preview cards:** they cascade in 80 ms apart (`.cascadeIn(index:)`, 2.9.0); a card deleted
+  from its context menu dissolves (`.dissolve`, 2.7.0).
 
-⚠️ **Read `amplitudeRef.value` directly each frame — no `@State` intermediary** (causes stale values).
+Screenshot mode (`isScreenshotDemo`) passes no level: the glow and the orb breathe on their own.
 
 ## Live Preview Card Border Beam
 

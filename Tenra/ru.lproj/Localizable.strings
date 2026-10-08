@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "Всё хранится локально на устройстве. iCloud-бэкап опциональный. Никаких аккаунтов и регистраций.";
 
 "onboarding.cta.next" = "Далее";
+"pager.previous" = "Назад";
+"pager.next" = "Вперёд";
 "onboarding.cta.start" = "Начать";
 "onboarding.cta.done" = "Готово";
 "onboarding.cta.doneWithCount" = "Готово • выбрано %d";

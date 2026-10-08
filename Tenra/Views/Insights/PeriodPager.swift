@@ -47,10 +47,6 @@ struct PeriodPagerChartBand<Chart: View>: View {
     private let showsArrows: Bool
     private let chart: () -> Chart
 
-    /// Curve of an arrow-driven page change; the TabView animates its own swipes.
-    /// (Computed, not `static let` — this type is generic, which bars stored statics.)
-    private var pageAnimation: Animation { .easeInOut(duration: AppAnimation.standard) }
-
     /// - Parameter showsArrows: `false` when there is nothing to step through
     ///   (`.allTime`, one bucket).
     init(
@@ -67,40 +63,15 @@ struct PeriodPagerChartBand<Chart: View>: View {
         self.chart = chart
     }
 
+    /// DesignKit's `PagerArrows` (2.9.0) round the chart; the empty page keeps the orb's height.
     var body: some View {
-        ZStack {
+        PagerArrows(index: $index, count: count, showsArrows: showsArrows) {
             if !isEmpty {
                 chart()
             } else {
                 Color.clear.frame(height: 280)
             }
-
-            if showsArrows {
-                HStack {
-                    arrowButton(step: -1, systemImage: "chevron.left")
-                    Spacer()
-                    arrowButton(step: 1, systemImage: "chevron.right")
-                }
-                .screenPadding()
-            }
         }
-    }
-
-    private func arrowButton(step delta: Int, systemImage: String) -> some View {
-        let enabled = PeriodPaging.stepped(index, by: delta, count: count) != nil
-        return Button { step(delta) } label: {
-            Image(systemName: systemImage)
-                .font(AppTypography.bodyEmphasis)
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(enabled ? AppColors.accent : AppColors.textTertiary)
-        .disabled(!enabled)
-        .accessibilityIdentifier(delta < 0 ? "insightDetail.previousPeriod" : "insightDetail.nextPeriod")
-    }
-
-    private func step(_ delta: Int) {
-        guard let next = PeriodPaging.stepped(index, by: delta, count: count) else { return }
-        withAnimation(pageAnimation) { index = next }
     }
 }
 

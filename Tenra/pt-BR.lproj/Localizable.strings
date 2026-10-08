@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "Tudo fica armazenado no seu dispositivo. O backup no iCloud é opcional. Sem contas, sem cadastro.";
 
 "onboarding.cta.next" = "Avançar";
+"pager.previous" = "Anterior";
+"pager.next" = "Próximo";
 "onboarding.cta.start" = "Começar";
 "onboarding.cta.done" = "OK";
 "onboarding.cta.doneWithCount" = "OK • %d selecionadas";

@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "すべて端末内に保存されます。iCloudバックアップは任意です。アカウント登録もサインアップも不要です。";
 
 "onboarding.cta.next" = "次へ";
+"pager.previous" = "前へ";
+"pager.next" = "次へ";
 "onboarding.cta.start" = "はじめる";
 "onboarding.cta.done" = "完了";
 "onboarding.cta.doneWithCount" = "完了 • %d件選択中";

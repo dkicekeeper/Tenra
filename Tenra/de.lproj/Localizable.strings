@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "Alles wird auf dem Gerät gespeichert. iCloud-Backup ist optional. Kein Benutzerkonto, keine Registrierung.";
 
 "onboarding.cta.next" = "Weiter";
+"pager.previous" = "Zurück";
+"pager.next" = "Weiter";
 "onboarding.cta.start" = "Jetzt starten";
 "onboarding.cta.done" = "Fertig";
 "onboarding.cta.doneWithCount" = "Fertig • %d ausgewählt";

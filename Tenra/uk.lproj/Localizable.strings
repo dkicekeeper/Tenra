@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "Усе зберігається на пристрої. Резервна копія в iCloud за бажанням. Без облікових записів, без реєстрації.";
 
 "onboarding.cta.next" = "Далі";
+"pager.previous" = "Назад";
+"pager.next" = "Вперед";
 "onboarding.cta.start" = "Почати";
 "onboarding.cta.done" = "Готово";
 "onboarding.cta.doneWithCount" = "Готово • обрано %d";

@@ -22,6 +22,8 @@ struct SettingsProSection: View {
     @State private var showingCodeRedemption = false
     @State private var isRestoring = false
     @State private var restoreOutcome: RestoreOutcome?
+    /// Bumped each time the purchase row appears: DesignKit's shine sweeps across it once.
+    @State private var ctaShine = 0
 
     private enum RestoreOutcome {
         case restored
@@ -70,6 +72,8 @@ struct SettingsProSection: View {
             HapticManager.light()
             showingPaywall = true
         }
+        .shine(trigger: ctaShine, in: Rectangle())
+        .onAppear { ctaShine += 1 }
         // On this row, not on the Section: in a List a modifier on a Section is
         // copied onto each of its rows, and two presenters on one binding (the
         // free state has two rows) opened the paywall and dropped it at once.
@@ -144,6 +148,8 @@ struct SettingsProSection: View {
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.success)
             }
+            // A holographic foil on the Pro badge: its colours follow the finger (DesignKit).
+            .holographic()
         }
     }
 
@@ -188,6 +194,7 @@ struct SettingsProSection: View {
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.success)
             }
+            .holographic()
         }
     }
 

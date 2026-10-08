@@ -68,8 +68,8 @@ struct TenraApp: App {
                     .transition(.opacity)
                 }
             }
-            .animation(.easeOut(duration: AppAnimation.standard), value: coordinator == nil)
-            .animation(.easeOut(duration: AppAnimation.standard), value: storeFailure == nil)
+            .animation(AppAnimation.smooth, value: coordinator == nil)
+            .animation(AppAnimation.smooth, value: storeFailure == nil)
             .task {
                 await bootstrap()
             }

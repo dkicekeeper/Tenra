@@ -124,14 +124,14 @@ struct CloudBackupsView: View {
                     MessageBanner.success(successMessage)
                         .padding(.horizontal, AppSpacing.md)
                         .padding(.top, AppSpacing.sm)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .transition(.popIn)
                         .zIndex(1)
                 }
                 if let errorMessage = cloudSyncViewModel.errorMessage {
                     MessageBanner.error(errorMessage)
                         .padding(.horizontal, AppSpacing.md)
                         .padding(.top, AppSpacing.sm)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .transition(.popIn)
                         .zIndex(1)
                 }
                 Spacer()

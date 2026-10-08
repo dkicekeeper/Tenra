@@ -91,6 +91,9 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
             VStack(spacing: AppSpacing.lg) {
                 hero
                     .screenPadding()
+                    // DesignKit: the hero stretches when pulled down and drifts away slower,
+                    // fading, as the screen scrolls.
+                    .scrollHero()
 
                 if primaryAction != nil || secondaryAction != nil {
                     actionsBar.screenPadding()
@@ -147,7 +150,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                     }
                 }
                 .opacity(isNavTitleVisible ? 1 : 0)
-                .animation(.easeInOut(duration: AppAnimation.standard), value: isNavTitleVisible)
+                .animation(AppAnimation.smooth, value: isNavTitleVisible)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

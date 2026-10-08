@@ -583,11 +583,11 @@ struct ImportTransactionPreviewView: View {
             categories[type] = customCategories.filter { $0.type == type }.sortedByOrder().map(\.name)
         }
 
-        withAnimation { isAskingIntelligence = true }
+        withAnimation(AppAnimation.smooth) { isAskingIntelligence = true }
         try? await IntelligentCategorySuggester.suggest(items: items, categories: categories) { assigned in
             applyIntelligence(assigned)
         }
-        withAnimation { isAskingIntelligence = false }
+        withAnimation(AppAnimation.smooth) { isAskingIntelligence = false }
     }
 
     /// Fills rows still without a category; a choice the user made meanwhile wins.

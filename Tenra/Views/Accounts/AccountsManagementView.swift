@@ -158,7 +158,7 @@ struct AccountsManagementView: View {
         HStack(spacing: AppSpacing.md) {
             if mode.isSelecting {
                 SelectionIndicator(isSelected: isSelected)
-                    .transition(.scale.combined(with: .opacity))
+                    .transition(.popIn)
             }
 
             accountRowContent(account, coordinator: coordinator)
@@ -221,11 +221,14 @@ struct AccountsManagementView: View {
                             difference.apply(to: &reordered)
                             applyReorder(orderedIds: reordered.map(\.id))
                         }
+                        .transition(.skeletonReveal)
                 } else {
                     accountsList(coordinator: coordinator)
+                        .transition(.skeletonReveal)
                 }
                 #else
                 accountsList(coordinator: coordinator)
+                    .transition(.skeletonReveal)
                 #endif
             } else {
                 // balanceCoordinator not yet initialized — skeleton rows in place of the list
@@ -240,8 +243,11 @@ struct AccountsManagementView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(String(localized: "progress.loadingAccounts"))
+                .transition(.opacity)
             }
         }
+        // The list comes into focus where its skeleton was (DesignKit's skeleton reveal).
+        .animation(AppAnimation.smooth, value: accountsViewModel.balanceCoordinator == nil)
         .navigationTitle(String(localized: "settings.accounts"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {

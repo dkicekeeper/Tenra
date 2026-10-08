@@ -1398,6 +1398,7 @@
 "voice.noTextRecognizedYet" = "Текст ще не розпізнано";
 "voice.stopRecording" = "Зупинити запис";
 "voice.tapToFinish" = "Торкніться, щоб завершити";
+"voice.tour.orb" = "Торкніться кулі, коли закінчите. Вона слухає, поки ви говорите.";
 
 // MARK: - Voice Input Errors
 "voiceError.speechNotAvailable" = "Розпізнавання мовлення недоступне на цьому пристрої";

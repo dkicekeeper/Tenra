@@ -24,7 +24,9 @@ struct AccountCard: View {
                 iconSource: account.iconSource,
                 title: account.name,
                 amount: balance,
-                currency: account.currency
+                currency: account.currency,
+                // The balance rolls up on launch and flashes the direction of a change.
+                isLive: true
             )
             .glassEffectID("account-card-\(account.id)", in: namespace)
         }

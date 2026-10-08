@@ -44,6 +44,8 @@ struct VoiceInputView: View {
     @State private var capturedText: String = ""
     /// Saved successfully flag
     @State private var savedSuccessfully = false
+    /// The one-time hint on screen (DesignKit's spotlight), if any.
+    @State private var tourHint: FeatureTourState.Hint?
 
     private var currentText: String {
         let final = voiceService.getFinalText()
@@ -101,6 +103,19 @@ struct VoiceInputView: View {
             }
         }
         .animation(AppAnimation.gentleSpring, value: voiceService.isRecording)
+        // Once: the first recording points at the orb, the new stop button.
+        .spotlight(
+            $tourHint,
+            message: { _ in String(localized: "voice.tour.orb") },
+            cornerRadius: VoiceStopOrb.spotlightRadius
+        )
+        .onChange(of: voiceService.isRecording) { _, isRecording in
+            if isRecording {
+                showStopOrbHintIfNeeded()
+            } else {
+                tourHint = nil
+            }
+        }
         .navigationTitle(String(localized: "voice.title"))
         .navigationBarTitleDisplayMode(.inline)
         // ── Confirmation sheet (edit-only mode: returns updated ParsedOperation) ──
@@ -221,7 +236,11 @@ struct VoiceInputView: View {
                                 }
                             }
                     }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    // A deleted card breaks into dust (DesignKit's dissolve).
+                    .transition(AsymmetricTransition(
+                        insertion: MoveTransition(edge: .bottom).combined(with: OpacityTransition()),
+                        removal: DissolveTransition()
+                    ))
                 }
             }
             .screenPadding()
@@ -325,11 +344,11 @@ struct VoiceInputView: View {
                         alignment: .leading
                     )
                 } else if voiceService.isRecording {
-                    PulsingText(text: String(localized: "voice.speak"))
+                    ListeningPrompt()
                 }
                 #else
                 if voiceService.isRecording {
-                    PulsingText(text: String(localized: "voice.speak"))
+                    ListeningPrompt()
                 }
                 #endif
             } else {
@@ -398,6 +417,19 @@ struct VoiceInputView: View {
         HapticManager.play(.tap)
         voiceService.stopRecording()
         silenceTimer?.cancel()
+    }
+
+    /// The first recording shows, once, that the orb is the stop button. A tap anywhere
+    /// lifts the hint; stopping the recording lifts it too.
+    private func showStopOrbHintIfNeeded() {
+        guard !isScreenshotDemo, !FeatureTourState.hasSeen(.voiceStopOrb) else { return }
+        Task {
+            // Let the orb settle in first.
+            try? await Task.sleep(for: .seconds(1))
+            guard voiceService.isRecording else { return }
+            FeatureTourState.markSeen(.voiceStopOrb)
+            tourHint = .voiceStopOrb
+        }
     }
 
     /// One operation ready to save, before its currency conversion (`converted`).
@@ -640,55 +672,18 @@ private struct StaggeredCard<Content: View>: View {
     }
 }
 
-// MARK: - Pulsating Placeholder
+// MARK: - Listening Prompt
 
-private struct PulsingText: View {
-    let text: String
-    @State private var isPulsing = false
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
+/// "Speak..." while nothing is recognized yet: DesignKit's thinking shimmer runs through it, in
+/// the voice orb's colours (a still gradient under Reduce Motion).
+private struct ListeningPrompt: View {
     var body: some View {
-        Text(text)
+        Text(String(localized: "voice.speak"))
             .font(AppTypography.h1)
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.leading)
+            .thinkingShimmer()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .opacity(isPulsing && !reduceMotion ? 0.3 : 0.8)
-            .animation(
-                reduceMotion
-                    ? nil
-                    : .easeInOut(duration: 1.2).repeatForever(autoreverses: true), // design-lint:ignore the microphone's slow breathing pulse, one of a kind
-                value: isPulsing
-            )
-            .onAppear { isPulsing = true }
-    }
-}
-
-// MARK: - Recording Indicator
-
-struct RecordingIndicatorView: View {
-    @State private var isAnimating = false
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        HStack(spacing: AppSpacing.sm) {
-            Circle()
-                .fill(AppColors.destructive)
-                .frame(width: 12, height: 12)
-                .opacity(isAnimating && !reduceMotion ? 0.3 : 1.0)
-                .animation(
-                    reduceMotion
-                        ? nil
-                        : AppAnimation.gentleSpring.repeatForever(autoreverses: true),
-                    value: isAnimating
-                )
-            Text(String(localized: "voice.recording"))
-                .font(AppTypography.bodyEmphasis)
-                .foregroundStyle(AppColors.destructive)
-        }
-        .onAppear { isAnimating = true }
     }
 }
 
@@ -738,6 +733,10 @@ private struct VoiceStopOrb: View {
     private static let size: CGFloat = 144
     /// The tappable circle: the canvas inset to about the orb at rest.
     private static let tapInset: CGFloat = 32
+    /// The orb at rest, the circle the tap and the hint's cut-out go round.
+    private static let restingDiameter: CGFloat = size - 2 * tapInset
+    /// The hint's cut-out: a circle round the resting orb and the spotlight's padding.
+    static let spotlightRadius: CGFloat = restingDiameter / 2 + AppSpacing.sm
 
     var body: some View {
         Button(action: action) {
@@ -753,5 +752,10 @@ private struct VoiceStopOrb: View {
         }
         .buttonStyle(.bounce)
         .accessibilityLabel(String(localized: "voice.stopRecording"))
+        .background {
+            Color.clear
+                .frame(width: Self.restingDiameter, height: Self.restingDiameter)
+                .spotlightAnchor(FeatureTourState.Hint.voiceStopOrb)
+        }
     }
 }

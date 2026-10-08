@@ -29,6 +29,8 @@ struct LoanDetailView: View {
     @State private var cachedTransactions: [Transaction] = []
     @State private var paymentError: String? = nil
     @State private var payoffMessage: String? = nil
+    /// Counts payoffs seen on this screen: each one bursts confetti (DesignKit's celebration).
+    @State private var payoffCelebrations = 0
     /// "Today" for this month's payment status; refreshed on a significant time change
     /// (midnight, or back in the foreground after midnight passed), like `LoansListView`.
     @State private var today = Date()
@@ -199,11 +201,14 @@ struct LoanDetailView: View {
         }
         .animation(AppAnimation.gentleSpring, value: paymentError)
         .animation(AppAnimation.gentleSpring, value: payoffMessage)
+        // The haptic is the payoff handler's own (below).
+        .celebration(trigger: payoffCelebrations, playsHaptic: false)
         // Fires only on the false → true edge, so re-opening an already-closed loan
         // stays quiet — the banner marks the moment the debt was cleared, not the state.
         .onChange(of: liveAccount?.isPaidOffLoan) { wasPaidOff, isPaidOff in
             guard wasPaidOff == false, isPaidOff == true else { return }
             HapticManager.success()
+            payoffCelebrations += 1
             payoffMessage = String(
                 localized: "loan.payoffCelebration",
                 defaultValue: "Loan paid off. Nice work."

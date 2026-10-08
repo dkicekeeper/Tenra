@@ -1398,6 +1398,7 @@
 "voice.noTextRecognizedYet" = "Henüz metin tanınmadı";
 "voice.stopRecording" = "Kaydı durdur";
 "voice.tapToFinish" = "Bitirmek için dokun";
+"voice.tour.orb" = "Bitirdiğinde küreye dokun. Sen konuşurken dinler.";
 
 // MARK: - Voice Input Errors
 "voiceError.speechNotAvailable" = "Konuşma tanıma bu cihazda kullanılamıyor";

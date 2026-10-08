@@ -1398,6 +1398,7 @@
 "voice.noTextRecognizedYet" = "まだ音声を認識していません";
 "voice.stopRecording" = "録音を停止";
 "voice.tapToFinish" = "タップして完了";
+"voice.tour.orb" = "話し終えたら球をタップしてください。話している間、聞き取っています。";
 
 // MARK: - Voice Input Errors
 "voiceError.speechNotAvailable" = "このデバイスでは音声認識を利用できません";

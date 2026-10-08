@@ -78,45 +78,11 @@ struct HomeBackgroundPicker: View {
 
     // MARK: - Mode Card
 
+    /// DesignKit's `OptionCard` (2.9.0): the artwork, the title, the accent outline and check.
     private func modeCard(_ mode: HomeBackgroundMode) -> some View {
-        let isSelected = currentMode == mode
-
-        return HStack(spacing: AppSpacing.md) {
-            // Card artwork thumbnail
-            ZStack(alignment: .topTrailing) {
-                modeArtwork(mode)
-                    .frame(width: 80, height: 120)
-                    .clipShape(.rect(cornerRadius: AppRadius.lg))
-
-                // Checkmark badge — top-trailing
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: AppIconSize.sm, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .background(Circle().fill(AppColors.accent).padding(-2))
-                        .padding(AppSpacing.xs)
-                }
-            }
-
-            // Label to the right
-            Text(mode.localizedTitle)
-                .font(AppTypography.body)
-                .foregroundStyle(isSelected ? AppColors.accent : AppColors.textPrimary)
-
-            Spacer()
+        OptionCard(title: mode.localizedTitle, isSelected: currentMode == mode) {
+            modeArtwork(mode)
         }
-        .padding(AppSpacing.md)
-        .background {
-            RoundedRectangle(cornerRadius: AppRadius.xl)
-                .fill(Color(.secondarySystemGroupedBackground))
-        }
-        .overlay(
-            RoundedRectangle(cornerRadius: AppRadius.xl)
-                .stroke(isSelected ? AppColors.accent : Color.clear, lineWidth: 3)
-        )
-        .animation(AppAnimation.contentSpring, value: isSelected)
-        .accessibilityLabel(mode.localizedTitle)
-        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : [.isButton])
     }
 
     // MARK: - Gradient Preview Fallback

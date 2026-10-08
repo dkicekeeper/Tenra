@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "모든 데이터는 기기에 저장돼요. iCloud 백업은 선택이에요. 계정도, 가입도 필요 없어요.";
 
 "onboarding.cta.next" = "다음";
+"pager.previous" = "이전";
+"pager.next" = "다음";
 "onboarding.cta.start" = "시작하기";
 "onboarding.cta.done" = "완료";
 "onboarding.cta.doneWithCount" = "완료 • %d개 선택됨";

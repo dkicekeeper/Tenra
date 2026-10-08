@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "Tout est stocké sur votre appareil. La sauvegarde iCloud est facultative. Pas de compte, pas d'inscription.";
 
 "onboarding.cta.next" = "Suivant";
+"pager.previous" = "Précédent";
+"pager.next" = "Suivant";
 "onboarding.cta.start" = "Commencer";
 "onboarding.cta.done" = "Terminé";
 "onboarding.cta.doneWithCount" = "Terminé • %d sélectionnées";

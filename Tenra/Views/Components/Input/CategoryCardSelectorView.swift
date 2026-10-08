@@ -20,13 +20,6 @@ struct CategoryCardSelectorView: View {
     let emptyStateAction: (() -> Void)?
     let emptyStateActionTitle: String?
 
-    // Mirrors AccountSelectorView's carousel geometry so the cards line up identically.
-    private let cardSpacing: CGFloat = AppSpacing.md
-    private let neighborPeek: CGFloat = AppSpacing.lg
-    private var contentMargin: CGFloat { cardSpacing + neighborPeek }
-
-    @State private var scrollPosition: String?
-
     init(
         categories: [String],
         type: TransactionType,
@@ -68,60 +61,22 @@ struct CategoryCardSelectorView: View {
         }
     }
 
+    /// DesignKit's `SnapCardPicker` (2.9.0), as the account selector: the same snapping and
+    /// geometry, so the cards line up identically.
     private var carousel: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: cardSpacing) {
-                ForEach(categories, id: \.self) { category in
-                    CategoryCardButton(
-                        category: category,
-                        type: type,
-                        customCategories: customCategories,
-                        isSelected: selectedCategory == category,
-                        onTap: {
-                            guard selectedCategory != category else { return }
-                            selectedCategory = category
-                            onSelectionChange?(category)
-                        }
-                    )
-                    .containerRelativeFrame(.horizontal)
-                    .id(category)
-                }
-            }
-            .padding(.vertical, AppSpacing.xs)
-            .scrollTargetLayout()
-        }
-        .scrollTargetBehavior(.viewAligned)
-        .scrollPosition(id: $scrollPosition, anchor: .center)
-        .contentMargins(.horizontal, contentMargin, for: .scrollContent)
-        .scrollClipDisabled()
-        .onAppear {
-            syncScrollToSelected(animated: false)
-        }
-        .onChange(of: selectedCategory) { _, _ in
-            syncScrollToSelected(animated: true)
-        }
-        .onScrollPhaseChange { _, newPhase in
-            guard newPhase == .idle,
-                  let landed = scrollPosition,
-                  landed != selectedCategory
-            else { return }
-            selectedCategory = landed
-            onSelectionChange?(landed)
-        }
-    }
-
-    private func syncScrollToSelected(animated: Bool) {
-        let target = selectedCategory
-        if animated {
-            guard scrollPosition != target else { return }
-            withAnimation(AppAnimation.carouselScroll) {
-                scrollPosition = target
-            }
-        } else {
-            DispatchQueue.main.async {
-                guard scrollPosition != target else { return }
-                scrollPosition = target
-            }
+        SnapCardPicker(
+            categories,
+            id: \.self,
+            selection: $selectedCategory,
+            onSelectionChange: { onSelectionChange?($0) }
+        ) { category, isSelected, select in
+            CategoryCardButton(
+                category: category,
+                type: type,
+                customCategories: customCategories,
+                isSelected: isSelected,
+                onTap: select
+            )
         }
     }
 }

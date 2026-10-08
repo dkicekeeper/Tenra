@@ -200,7 +200,7 @@ New file needed?
 | Swift Charts (insight charts = DesignKit trend charts + `PeriodChartAdapters.swift`, scrollable, sparklines) | [docs/domains/charts.md](docs/domains/charts.md) |
 | CSV import/export round-trip rules | [docs/domains/csv.md](docs/domains/csv.md) |
 | `Services/Import/**`, statement/receipt recognition, Vision documents, Apple Intelligence parsing | [domains/import.md](docs/domains/import.md) |
-| VoiceInput, speech recognition, SiriGlow | [docs/domains/voice.md](docs/domains/voice.md) |
+| VoiceInput, speech recognition, the voice level, EdgeGlow and the orb | [docs/domains/voice.md](docs/domains/voice.md) |
 | FX rates, currency conversion, prewarm, providers, base-currency aggregation (`convertSync` vs `convertedAmount`) | [docs/domains/currency.md](docs/domains/currency.md) |
 | Logo providers, ServiceLogoRegistry, jsDelivr | [docs/domains/logos.md](docs/domains/logos.md) |
 | Performance hot-paths, SwiftUI Layout gotchas, `#Preview` crashes, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |

@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "Tutto è salvato sul dispositivo. Il backup su iCloud è facoltativo. Nessun account, nessuna registrazione.";
 
 "onboarding.cta.next" = "Avanti";
+"pager.previous" = "Precedente";
+"pager.next" = "Successivo";
 "onboarding.cta.start" = "Inizia";
 "onboarding.cta.done" = "Fine";
 "onboarding.cta.doneWithCount" = "Fine • %d selezionate";

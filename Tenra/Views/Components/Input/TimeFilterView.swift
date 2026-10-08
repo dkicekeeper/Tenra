@@ -95,7 +95,8 @@ struct TimeFilterView: View {
                 }
             }
             .sheet(isPresented: $showingCustomPicker) {
-                CustomPeriodPickerSheet(dateRange: $customDateRange) { range in
+                // DesignKit's DateRangePickerSheet (2.9.0): two calendars, the start never past the end.
+                DateRangePickerSheet(range: customDateRange) { range in
                     filterManager.setCustomRange(from: range.lowerBound, through: range.upperBound)
                     showingCustomPicker = false
                     dismiss()
@@ -114,87 +115,6 @@ struct TimeFilterView: View {
 
     private var customRangeDescription: String {
         "\(Self.rangeFormatter.string(from: customDateRange.lowerBound)) – \(Self.rangeFormatter.string(from: customDateRange.upperBound))"
-    }
-}
-
-// MARK: - Custom Period Picker Sheet
-
-private struct CustomPeriodPickerSheet: View {
-    @Binding var dateRange: ClosedRange<Date>
-    let onApply: (ClosedRange<Date>) -> Void
-
-    @Environment(\.dismiss) var dismiss
-    @State private var localRange: ClosedRange<Date>
-
-    init(dateRange: Binding<ClosedRange<Date>>, onApply: @escaping (ClosedRange<Date>) -> Void) {
-        self._dateRange = dateRange
-        self.onApply = onApply
-        _localRange = State(initialValue: dateRange.wrappedValue)
-    }
-
-    private var startBinding: Binding<Date> {
-        Binding(
-            get: { localRange.lowerBound },
-            set: { newStart in
-                let end = max(newStart, localRange.upperBound)
-                localRange = newStart...end
-            }
-        )
-    }
-
-    private var endBinding: Binding<Date> {
-        Binding(
-            get: { localRange.upperBound },
-            set: { newEnd in
-                let start = min(localRange.lowerBound, newEnd)
-                localRange = start...newEnd
-            }
-        )
-    }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: AppSpacing.xl) {
-                    DatePicker(
-                        String(localized: "timeFilter.from", defaultValue: "С"),
-                        selection: startBinding,
-                        in: ...localRange.upperBound,
-                        displayedComponents: .date
-                    )
-                    .datePickerStyle(.graphical)
-                    .padding(.horizontal, AppSpacing.md)
-
-                    Divider()
-
-                    DatePicker(
-                        String(localized: "timeFilter.to", defaultValue: "По"),
-                        selection: endBinding,
-                        in: localRange.lowerBound...,
-                        displayedComponents: .date
-                    )
-                    .datePickerStyle(.graphical)
-                    .padding(.horizontal, AppSpacing.md)
-                }
-                .padding(.vertical, AppSpacing.md)
-            }
-            .navigationTitle(String(localized: "timeFilter.customPeriod", defaultValue: "Пользовательский период"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "common.cancel")) {
-                        dismiss()
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "button.apply", defaultValue: "Применить")) {
-                        onApply(localRange)
-                    }
-                }
-            }
-        }
-        .presentationDetents([.large])
-        .presentationDragIndicator(.visible)
     }
 }
 

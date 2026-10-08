@@ -451,6 +451,7 @@ FinanceCard(
 
 - **`RedactableAmount`** — hero amount that shows a redacted placeholder while an async (FX) total computes, then cross-fades. Use for cards whose total needs conversion (accounts, deposits, subscriptions).
 - Don't reintroduce the inline `HStack(.top, md) → VStack(.leading, lg) → title → if isEmpty …` shell in a new finance card — wrap `FinanceCard`.
+- **`PackedCircleIcons`** (the trailing circles): glossy marbles since DesignKit 2.9.0. A white symbol on a marble of its colour, a logo as the marble's skin, a shadow of its colour; they burst out of the middle and sway gently (still under Reduce Motion). `style: .flat` is the old pale-disc look.
 
 #### `RecommendationBox`
 Tinted "lightbulb + advice" callout (icon + text on `color.opacity(0.10)`, `AppRadius.md`). Shared by `InsightFormulaCard` and `HealthComponentCard`. Use for any card-bottom recommendation line.
@@ -766,12 +767,12 @@ Text(phase.title)
     .id(index)
     .transition(.blurSlideHero)
 
-// Per-word (see AnimatedTranscriptionText — stable word IDs ensure only NEW words animate)
+// Per-word: DesignKit's StreamingText (2.9.0) — stable word IDs ensure only NEW words animate
 Text(token.text)
     .transition(.blurSlideWord)
 ```
 
-Used in: `OnboardingWelcomeStep`, `AnimatedTranscriptionText`.
+Used in: `OnboardingWelcomeStep`; `.blurSlideWord` inside DesignKit's `StreamingText` (2.9.0), which `AnimatedTranscriptionText` adapts (the recognised entities become highlights).
 
 #### `AccentGlow` (ambient edge glow)
 Blurred gradient circle rising from a screen edge (`Views/Components/Feedback/AccentGlow.swift`). Static — no animation loop, no hit-testing, hidden from VoiceOver. Tunables in `GlowMetrics` (blur 120, 85% off-screen, hero intensity 0.45).
@@ -1270,17 +1271,32 @@ Movement-based decorative animations respect Reduce Motion. Two mechanisms:
 
 ### Ambient motion (continuous redraw)
 
-A `TimelineView`-driven animation that never ends — the voice glow's 30 fps mesh, the border
-beam's display-rate sweep — is *ambient*: decorative, information-free, and paying a render
-cost every frame it is on screen. Those views go through
-[`AmbientMotionGate`](../Tenra/Utils/AmbientMotionGate.swift), which suspends them under
-Reduce Motion **and**, on iOS 27, while `systemPrefersReducedResourceUsage` is true (the system
-asking apps to back off under thermal or power pressure).
+A `TimelineView`-driven animation that never ends — the voice edge light (`EdgeGlow`, 30 fps),
+the border beam's display-rate sweep — is *ambient*: decorative, information-free, and paying a
+render cost every frame it is on screen. Those views go through DesignKit's
+`AmbientMotionGate`, which suspends them under Reduce Motion **and**, on iOS 27, while
+`systemPrefersReducedResourceUsage` is true (the system asking apps to back off under thermal or
+power pressure).
 
-The gate hands its content a `Bool`; render a **static frame** when it is false (`SiriGlow`
-freezes the mesh at `t = 0`) rather than removing the view, so nothing shifts in layout. Put new
+The gate hands its content a `Bool`; render a **static frame** when it is false (`EdgeGlow`
+draws its light at rest) rather than removing the view, so nothing shifts in layout. Put new
 `TimelineView` decoration behind this gate instead of reading `accessibilityReduceMotion`
 directly — the iOS 27 signal then comes for free.
+
+### DesignKit effects in Tenra (2.4.0–2.9.0)
+
+Where each lives, so a new screen reuses the pattern instead of inventing one (DesignKit
+docs/motion.md has the effects themselves):
+
+| Where | Effect | Rule |
+|---|---|---|
+| Home background | `AuroraBackground(_ spots:)` by spending (`CategoryGradientBackground`) | **Still**: a moving background under Liquid Glass redraws every glass card each frame |
+| Accounts carousel | `BalanceCard(isLive: true)` | rolls up once per card identity; flashes the direction of a change |
+| Financial health hero | `ScoreGaugeCard(decodesScore: true)` | not on the feed's `HealthScoreCardView`: a lazy feed would replay it on scroll |
+| Voice screen | `EdgeGlow`, `VoiceWave(.orb)` stop button, `.thinkingShimmer`, `StreamingText`, `.cascadeIn`, one-time `.spotlight` | see docs/domains/voice.md |
+| Loan detail | `.celebration` on the false → true edge of `isPaidOffLoan` (with the existing banner and haptic) | only the moment, never the state |
+| Detail histories (`GroupedTransactionList`), voice cards | `.dissolve` removal, opacity insertion | for a delete of something the person owned, not every disappearance |
+| One-time hints | `.spotlight` + `FeatureTourState` | a hint points at content the person can see, not at system chrome (tab bar, toolbar) |
 
 ---
 

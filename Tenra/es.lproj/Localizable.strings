@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "Todo se guarda en tu dispositivo. La copia de seguridad en iCloud es opcional. Sin cuentas ni registro.";
 
 "onboarding.cta.next" = "Siguiente";
+"pager.previous" = "Anterior";
+"pager.next" = "Siguiente";
 "onboarding.cta.start" = "Comenzar";
 "onboarding.cta.done" = "Listo";
 "onboarding.cta.doneWithCount" = "Listo • %d seleccionadas";

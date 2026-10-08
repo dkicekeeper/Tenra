@@ -1516,6 +1516,8 @@
 "onboarding.welcome.page3.subtitle" = "Her şey cihazında saklanır. iCloud yedeği isteğe bağlıdır. Hesap yok, kayıt yok.";
 
 "onboarding.cta.next" = "İleri";
+"pager.previous" = "Önceki";
+"pager.next" = "Sonraki";
 "onboarding.cta.start" = "Başla";
 "onboarding.cta.done" = "Bitti";
 "onboarding.cta.doneWithCount" = "Bitti • %d seçildi";

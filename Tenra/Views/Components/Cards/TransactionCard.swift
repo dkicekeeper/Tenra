@@ -98,7 +98,7 @@ struct TransactionCard: View, Equatable {
         //   2. loan-account logo for loan-payment / early-repayment rows so the
         //      bank/loan brand surfaces in History instead of the generic
         //      "Loan Payment" category symbol (loan account == `targetAccount`).
-        // Falls back to the category icon resolved inside `TransactionIconView`.
+        // Falls back to the category icon resolved inside `TransactionCardView`.
         let loanIconSource: IconSource? = {
             switch transaction.type {
             case .loanPayment, .loanEarlyRepayment:

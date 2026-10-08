@@ -221,21 +221,21 @@ struct VoiceInputView: View {
         if !livePreviews.isEmpty {
             VStack(spacing: AppSpacing.sm) {
                 ForEach(Array(livePreviews.enumerated()), id: \.element.id) { index, preview in
-                    StaggeredCard(index: index) {
-                        previewCard(for: preview, at: index)
-                            .contextMenu {
-                                if livePreviews.count > 1 {
-                                    Button(role: .destructive) {
-                                        withAnimation(AppAnimation.gentleSpring) {
-                                            guard livePreviews.indices.contains(index) else { return }
-                                            livePreviews.remove(at: index)
-                                        }
-                                    } label: {
-                                        Label(String(localized: "button.delete"), systemImage: "trash")
+                    previewCard(for: preview, at: index)
+                        .contextMenu {
+                            if livePreviews.count > 1 {
+                                Button(role: .destructive) {
+                                    withAnimation(AppAnimation.gentleSpring) {
+                                        guard livePreviews.indices.contains(index) else { return }
+                                        livePreviews.remove(at: index)
                                     }
+                                } label: {
+                                    Label(String(localized: "button.delete"), systemImage: "trash")
                                 }
                             }
-                    }
+                        }
+                        // Several operations cascade in, 80 ms apart (DesignKit's cascadeIn).
+                        .cascadeIn(index: index)
                     // A deleted card breaks into dust (DesignKit's dissolve).
                     .transition(AsymmetricTransition(
                         insertion: MoveTransition(edge: .bottom).combined(with: OpacityTransition()),
@@ -276,7 +276,7 @@ struct VoiceInputView: View {
             editingTarget = EditingTarget(index: index, operation: parsed)
         } label: {
             HStack(spacing: AppSpacing.md) {
-                // Icon — same as TransactionIconView
+                // Icon — same as the history row (TransactionCardView)
                 Icon(
                     source: .sfSymbol(styleData.iconName),
                     style: .circle(
@@ -286,7 +286,7 @@ struct VoiceInputView: View {
                     )
                 )
 
-                // Info — mirrors TransactionInfoView in history: category →
+                // Info — mirrors the history row: category →
                 // subcategories → account. Voice-input transcript text is
                 // intentionally omitted; the user already sees it at the top.
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
@@ -639,36 +639,6 @@ extension VoiceInputView {
         let index: Int
         let operation: ParsedOperation
         var id: UUID { operation.id }
-    }
-}
-
-// MARK: - Staggered Card Wrapper
-
-/// Wraps a preview card and delays its first appearance by `index × 80 ms`
-/// so multi-card batches cascade in instead of all popping in at once.
-/// Removal is left to the parent's `.transition(...)` so deletions still
-/// animate immediately.
-private struct StaggeredCard<Content: View>: View {
-    let index: Int
-    @ViewBuilder var content: () -> Content
-
-    @State private var visible = false
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        content()
-            .opacity(visible ? 1 : 0)
-            // Reduce Motion: keep the fade (and the stagger cadence, which isn't
-            // movement), drop the upward slide.
-            .offset(y: visible || reduceMotion ? 0 : 12)
-            .task {
-                try? await Task.sleep(for: .milliseconds(index * 80))
-                guard !Task.isCancelled else { return }
-                withAnimation(reduceMotion ? .easeInOut(duration: AppAnimation.standard) : AppAnimation.gentleSpring) {
-                    visible = true
-                }
-            }
     }
 }
 

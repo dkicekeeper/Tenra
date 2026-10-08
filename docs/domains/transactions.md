@@ -90,11 +90,11 @@ To unlink in bulk, use `apply(.updated(old: tx, new: updatedTx))` directly. See 
 
 ## Per-Type Icon Override in `TransactionCard`
 
-`TransactionCard.subscriptionIconSource` (despite the name) is the **generic icon override channel** consumed by `TransactionIconView`. Precedence inside `TransactionCard.body`:
+`TransactionCard.subscriptionIconSource` (despite the name) is the **generic icon override channel** consumed by `TransactionCardView` (the icon of DesignKit's `TransactionRow`, 2.9.0). Precedence inside `TransactionCard.body`:
 
 1. Linked subscription series logo (Netflix, Spotify, …) when `series.kind == .subscription`.
 2. `.loanPayment` / `.loanEarlyRepayment` → `targetAccount.iconSource` (the loan account == `targetAccountId`; source = funding bank).
-3. Fallback → category SF Symbol resolved by `TransactionIconView` from `styleData.iconName`.
+3. Fallback → category SF Symbol resolved by `TransactionCardView` from `styleData.iconName`.
 
 When adding a new typed override (e.g. transfer-source brand), extend the `switch transaction.type` in `TransactionCard.body` rather than threading a new parameter through `TransactionCardView`. Renaming the parameter to `overrideIconSource` is out of scope for incremental changes — 12+ call sites reference the current name.
 

@@ -226,7 +226,7 @@ struct LoanPaymentView: View {
                         categoryId: selectedCategoryId,
                         selectedSubcategoryIds: $selectedSubcategoryIds,
                         onSearchTap: {
-                            withAnimation { showingSubcategorySearch = true }
+                            withAnimation(AppAnimation.snappy) { showingSubcategorySearch = true }
                         }
                     )
                 } else {

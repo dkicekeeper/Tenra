@@ -82,7 +82,7 @@ struct SubcategoriesManagementView: View {
         return HStack(spacing: AppSpacing.md) {
             if mode.isSelecting {
                 SelectionIndicator(isSelected: isSelected)
-                    .transition(.scale.combined(with: .opacity))
+                    .transition(.popIn)
             }
 
             SubcategoryManagementRow(

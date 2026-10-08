@@ -86,7 +86,7 @@ struct SettingsView: View {
                     MessageBanner.success(successMessage)
                         .padding(.horizontal, AppSpacing.md)
                         .padding(.top, AppSpacing.sm)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .transition(.popIn)
                         .zIndex(1)
                 }
 
@@ -94,7 +94,7 @@ struct SettingsView: View {
                     MessageBanner.error(errorMessage)
                         .padding(.horizontal, AppSpacing.md)
                         .padding(.top, AppSpacing.sm)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .transition(.popIn)
                         .zIndex(1)
                 }
 

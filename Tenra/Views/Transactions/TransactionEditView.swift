@@ -153,7 +153,7 @@ struct TransactionEditView: View {
                                 categoryId: coordinator.categoryId,
                                 selectedSubcategoryIds: $bindableCoordinator.formData.selectedSubcategoryIds,
                                 onSearchTap: {
-                                    withAnimation { coordinator.formData.showingSubcategorySearch = true }
+                                    withAnimation(AppAnimation.snappy) { coordinator.formData.showingSubcategorySearch = true }
                                 },
                                 onReorderTap: {
                                     coordinator.formData.showingSubcategoryReorder = true

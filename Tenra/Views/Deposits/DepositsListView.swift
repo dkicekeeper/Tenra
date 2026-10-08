@@ -87,6 +87,7 @@ struct DepositsListView: View {
                         }
                     }
                 }
+                .transition(.skeletonReveal)
             } else {
                 VStack(spacing: 0) {
                     // The skeleton of the rows to come (AccountRow is DesignKit's AmountRow in the list style).
@@ -99,8 +100,11 @@ struct DepositsListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(String(localized: "progress.loadingData"))
+                .transition(.opacity)
             }
         }
+        // The list comes into focus where its skeleton was (DesignKit's skeleton reveal).
+        .animation(AppAnimation.smooth, value: accountsViewModel.balanceCoordinator == nil)
         .navigationTitle(String(localized: "deposit.listTitle", defaultValue: "Deposits"))
         .navigationBarTitleDisplayMode(.large)
         .task {

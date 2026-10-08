@@ -1283,7 +1283,7 @@ draws its light at rest) rather than removing the view, so nothing shifts in lay
 `TimelineView` decoration behind this gate instead of reading `accessibilityReduceMotion`
 directly — the iOS 27 signal then comes for free.
 
-### DesignKit effects in Tenra (2.4.0–2.9.0)
+### DesignKit effects in Tenra (2.4.0–3.0.0)
 
 Where each lives, so a new screen reuses the pattern instead of inventing one (DesignKit
 docs/motion.md has the effects themselves):
@@ -1297,6 +1297,11 @@ docs/motion.md has the effects themselves):
 | Loan detail | `.celebration` on the false → true edge of `isPaidOffLoan` (with the existing banner and haptic) | only the moment, never the state |
 | Detail histories (`GroupedTransactionList`), voice cards | `.dissolve` removal, opacity insertion | for a delete of something the person owned, not every disappearance |
 | One-time hints | `.spotlight` + `FeatureTourState` | a hint points at content the person can see, not at system chrome (tab bar, toolbar) |
+| Entity detail heroes (`EntityDetailScaffold`) | `.scrollHero()` on the hero | the hero stretches when pulled down and drifts away slower, fading; every detail screen gets it from the scaffold |
+| Settings, Tenra Pro | `.shine` once each time the purchase row appears; `.holographic()` on the Active / Founder badge | foil only on the badge, so the row's taps stay the row's |
+| Toasts (`MessageBanner` over a screen), selection checkmarks in edit mode | `.transition(.popIn)` | in place of `.move(edge:)` / `.scale` + opacity; edge-attached bars keep `.move(edge: .bottom)` |
+| A list replacing its skeleton (accounts, deposits, link payments) | content `.transition(.skeletonReveal)`, skeleton `.transition(.opacity)`, `.animation(AppAnimation.smooth, value: <is loading>)` on the container | the Insights feed keeps its own `ContentRevealModifier` |
+| Any animation | `AppAnimation.snappy` (an answer to a touch), `.smooth` (content that changes) | no bare `withAnimation {}` or `.easeInOut(duration:)` |
 
 ---
 

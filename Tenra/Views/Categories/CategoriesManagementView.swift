@@ -180,7 +180,7 @@ struct CategoriesManagementView: View {
         HStack(spacing: AppSpacing.md) {
             if mode.isSelecting {
                 SelectionIndicator(isSelected: isSelected)
-                    .transition(.scale.combined(with: .opacity))
+                    .transition(.popIn)
             }
 
             categoryRowContent(category)

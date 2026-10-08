@@ -246,7 +246,7 @@ struct HistoryTransactionsList: View {
         // the right scroll target — but we also honour today/yesterday priority.
         guard let target = findScrollTarget(in: sections) else { return }
 
-        withAnimation {
+        withAnimation(AppAnimation.smooth) {
             proxy.scrollTo(target, anchor: .top)
         }
     }

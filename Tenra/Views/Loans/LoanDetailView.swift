@@ -189,13 +189,13 @@ struct LoanDetailView: View {
                 MessageBanner.error(msg)
                     .padding(.horizontal, AppSpacing.md)
                     .padding(.top, AppSpacing.sm)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.popIn)
                     .zIndex(1)
             } else if let msg = payoffMessage {
                 MessageBanner.success(msg)
                     .padding(.horizontal, AppSpacing.md)
                     .padding(.top, AppSpacing.sm)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.popIn)
                     .zIndex(1)
             }
         }

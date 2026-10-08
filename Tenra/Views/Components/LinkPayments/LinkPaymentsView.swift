@@ -368,6 +368,7 @@ struct LinkPaymentsView: View {
                 .screenPadding()
                 .frame(maxHeight: .infinity, alignment: .top)
                 .skeletonLoadingLabel()
+                .transition(.opacity)
             } else if cachedFilteredCandidates.isEmpty {
                 Group {
                     if searchText.isEmpty {
@@ -386,6 +387,8 @@ struct LinkPaymentsView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        // The candidates come in where their skeleton was.
+        .animation(AppAnimation.smooth, value: isBaselineLoading)
     }
 
     // MARK: - Action Bar

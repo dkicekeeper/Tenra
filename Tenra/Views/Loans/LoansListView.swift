@@ -165,7 +165,7 @@ struct LoansListView: View {
                 MessageBanner.error(msg)
                     .padding(.horizontal, AppSpacing.md)
                     .padding(.top, AppSpacing.sm)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.popIn)
                     .zIndex(1)
             }
         }

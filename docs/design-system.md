@@ -451,6 +451,7 @@ FinanceCard(
 
 - **`RedactableAmount`** — hero amount that shows a redacted placeholder while an async (FX) total computes, then cross-fades. Use for cards whose total needs conversion (accounts, deposits, subscriptions).
 - Don't reintroduce the inline `HStack(.top, md) → VStack(.leading, lg) → title → if isEmpty …` shell in a new finance card — wrap `FinanceCard`.
+- **`PackedCircleIcons`** (the trailing circles): glossy marbles since DesignKit 2.9.0. A white symbol on a marble of its colour, a logo as the marble's skin, a shadow of its colour; they burst out of the middle and sway gently (still under Reduce Motion). `style: .flat` is the old pale-disc look.
 
 #### `RecommendationBox`
 Tinted "lightbulb + advice" callout (icon + text on `color.opacity(0.10)`, `AppRadius.md`). Shared by `InsightFormulaCard` and `HealthComponentCard`. Use for any card-bottom recommendation line.

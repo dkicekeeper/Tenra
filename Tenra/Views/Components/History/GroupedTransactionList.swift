@@ -256,6 +256,12 @@ struct GroupedTransactionList<Overlay: View>: View {
                                     .equatable()
                                     rowOverlay(transaction)
                                 }
+                                // A deleted transaction breaks into dust (DesignKit's dissolve);
+                                // one that appears fades in, as before.
+                                .transition(AsymmetricTransition(
+                                    insertion: OpacityTransition(),
+                                    removal: DissolveTransition()
+                                ))
                             }
 
                             if index < section.transactions.count - 1 {

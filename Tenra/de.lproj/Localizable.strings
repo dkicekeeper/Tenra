@@ -1398,6 +1398,7 @@
 "voice.noTextRecognizedYet" = "Noch kein Text erkannt";
 "voice.stopRecording" = "Aufnahme beenden";
 "voice.tapToFinish" = "Zum Beenden tippen";
+"voice.tour.orb" = "Tippen Sie auf die Kugel, wenn Sie fertig sind. Sie hört zu, während Sie sprechen.";
 
 // MARK: - Voice Input Errors
 "voiceError.speechNotAvailable" = "Spracherkennung ist auf diesem Gerät nicht verfügbar";

@@ -8,7 +8,8 @@
 //  the full progress ring became a HeroHalfGauge — the score has a fixed
 //  0–100 scale with meaningful zone boundaries, which is gauge semantics.
 //  Adapter over DesignKit's `ScoreGaugeCard`: maps the score, its grade colour
-//  and the grade-band copy.
+//  and the grade-band copy. The score decodes itself on appearance (`decodesScore`);
+//  the feed's `HealthScoreCardView` stays still, as a lazy feed would replay it.
 //
 
 import SwiftUI
@@ -37,7 +38,9 @@ struct HealthScoreHeroCard: View {
             color: score.gradeColor,
             subtitle: String(localized: isAvailable
                              ? String.LocalizationValue(gradeBandSubtitleKey)
-                             : "insights.health.unavailable.title")
+                             : "insights.health.unavailable.title"),
+            // The score decodes itself as the screen opens.
+            decodesScore: true
         )
     }
 }

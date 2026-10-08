@@ -1398,6 +1398,7 @@
 "voice.noTextRecognizedYet" = "아직 인식된 내용이 없어요";
 "voice.stopRecording" = "녹음 중지";
 "voice.tapToFinish" = "탭하여 완료";
+"voice.tour.orb" = "말을 마치면 구슬을 탭하세요. 말하는 동안 듣고 있어요.";
 
 // MARK: - Voice Input Errors
 "voiceError.speechNotAvailable" = "이 기기에서는 음성 인식을 사용할 수 없어요";

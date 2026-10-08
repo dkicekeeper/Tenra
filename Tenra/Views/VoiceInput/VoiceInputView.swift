@@ -347,23 +347,18 @@ struct VoiceInputView: View {
     @ViewBuilder
     private var buttonSection: some View {
         if voiceService.isRecording || isScreenshotDemo {
-            // Recording: stop button
+            // Recording: the voice orb is the stop button. Its frame leaves room for the glow,
+            // which may spill over the neighbours, so it takes back that room vertically.
             HStack {
                 Spacer()
-                Button(action: handleStopTap) {
-                    ZStack {
-                        Circle()
-                            .fill(AppColors.destructive)
-                            .frame(width: 80, height: 80)
-                            .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
-                        Image(systemName: "stop.fill")
-                            .font(.system(size: AppIconSize.xl))
-                            .foregroundStyle(AppColors.staticWhite)
-                    }
-                }
-                .accessibilityLabel(String(localized: "voice.stopRecording"))
+                VoiceStopOrb(
+                    voiceService: voiceService,
+                    followsVoice: !isScreenshotDemo,
+                    action: handleStopTap
+                )
                 Spacer()
             }
+            .padding(.vertical, -AppSpacing.xl)
             .padding(.bottom, AppSpacing.xl)
         } else if !voiceService.transcribedText.isEmpty, !livePreviews.isEmpty {
             // Stopped with parsed previews: confirm saves them all in one batch.
@@ -400,6 +395,7 @@ struct VoiceInputView: View {
     // MARK: - Actions
 
     private func handleStopTap() {
+        HapticManager.play(.tap)
         voiceService.stopRecording()
         silenceTimer?.cancel()
     }
@@ -723,5 +719,39 @@ private struct VoiceLevelGlow: View {
 
     var body: some View {
         EdgeGlow(level: followsVoice ? voiceService.audioLevel : nil)
+    }
+}
+
+// MARK: - Stop orb
+
+/// The stop button while recording: DesignKit's voice orb, swelling with the voice, with a
+/// small stop glyph in the middle. At rest the orb is about the size of the old 80 pt button;
+/// only that circle takes the tap. Its own small view, so the level (about 47 updates a second)
+/// redraws the orb only.
+private struct VoiceStopOrb: View {
+    let voiceService: VoiceInputService
+    /// Off for screenshots, where nothing is recorded: the orb then breathes on its own.
+    let followsVoice: Bool
+    let action: () -> Void
+
+    /// The orb's canvas: room for it to swell and for its glow.
+    private static let size: CGFloat = 144
+    /// The tappable circle: the canvas inset to about the orb at rest.
+    private static let tapInset: CGFloat = 32
+
+    var body: some View {
+        Button(action: action) {
+            VoiceWave(level: followsVoice ? voiceService.audioLevel : nil, style: .orb)
+                .frame(width: Self.size, height: Self.size)
+                .overlay {
+                    Image(systemName: "stop.fill")
+                        .font(.system(size: AppIconSize.lg))
+                        .foregroundStyle(AppColors.staticWhite)
+                        .shadow(color: .black.opacity(0.25), radius: 4)
+                }
+                .contentShape(Circle().inset(by: Self.tapInset))
+        }
+        .buttonStyle(.bounce)
+        .accessibilityLabel(String(localized: "voice.stopRecording"))
     }
 }

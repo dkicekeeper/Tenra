@@ -84,6 +84,8 @@ All amounts are stored in `baseCurrency`. Conversion happens once at `applyAggre
 
 ⚠️ **Persistence is whole-table and is the next launch's warm start.** `saveAggregates` / `saveAccountAggregatesSync` delete every row not in the snapshot, and `loadData` seeds from a non-empty table instead of rebuilding. Before the full load (`hasCompletedInitialLoad == false`: a process launched only for an App Intent, the first seconds of launch) the in-memory maps hold only the deltas applied since launch, so `categoryAggregatesToPersist()` / `accountAggregatesToPersist()` return empty: the table is cleared and the next full load rebuilds from the transactions. Persisting the partial map made every Wallet-automation payment wipe category totals, budget "spent" and account totals down to that one payment.
 
+The warm start also checks the saved category table before using it (`TransactionStore.persistedCategoryAggregatesMatch`, inside `buildLoadSnapshot`, off main): each category's all-time bucket must count exactly the realized aggregatable transactions. A mismatch rebuilds the totals as on a first launch and persists them. This heals a table saved partial by a build before the fix above (every budget on the Categories screen read 0) and a table saved before a future-dated transaction came due. Pinned by `PersistedCategoryAggregatesCheckTests`.
+
 ## Style cache contract
 
 `CategoryStyleCache.shared` is keyed by `"<name>_<type.rawValue>"`.

@@ -570,6 +570,7 @@ final class TransactionStore {
                         baseCurrency: currentBaseCurrency,
                         accountsCurrencyById: currencies,
                         needsColdStartCategoryAggregates: coldCategories,
+                        persistedCategoryAggregates: loadedAggregates,
                         needsColdStartAccountAggregates: coldAccounts
                     )
                 }.value
@@ -585,6 +586,7 @@ final class TransactionStore {
                     baseCurrency: currentBaseCurrency,
                     accountsCurrencyById: currencies,
                     needsColdStartCategoryAggregates: coldCategories,
+                    persistedCategoryAggregates: loadedAggregates,
                     needsColdStartAccountAggregates: coldAccounts
                 )
             }
@@ -627,15 +629,21 @@ final class TransactionStore {
         // use the cold rebuild performed inside the detached snapshot builder.
         // Either path is now MainActor-cheap — only hash-map assignment + persist
         // scheduling, no per-tx loops.
-        if !needsColdStartCategoryAggregates {
+        // The builder rebuilds the category totals on a first launch, after in-memory
+        // changes, and when the saved table no longer matches the transactions
+        // (`persistedCategoryAggregatesMatch`); otherwise the saved table is used as is.
+        if let coldStart = snapshot.coldStartCategoryAggregates {
+            if !needsColdStartCategoryAggregates {
+                logger.info("saved category totals did not match the transactions, rebuilt them")
+            }
+            categoryAggregatesByKey = coldStart
+            aggregatesAreFXStale = snapshot.coldStartCategoryAggregatesAreFXStale
+            scheduleAggregatePersist()  // write the rebuilt table
+        } else {
             // `transactionsByCategoryName` is already populated from the snapshot,
             // so the inner loop in `seedCategoryAggregates` is redundant — seed the
             // aggregate map directly to avoid a second O(N_tx) walk on MainActor.
             seedCategoryAggregateBuckets(from: loadedAggregates)
-        } else if let coldStart = snapshot.coldStartCategoryAggregates {
-            categoryAggregatesByKey = coldStart
-            aggregatesAreFXStale = snapshot.coldStartCategoryAggregatesAreFXStale
-            scheduleAggregatePersist()  // first launch — write the rebuilt snapshot
         }
 
         // Account aggregates: warm-start from CoreData when a snapshot exists,

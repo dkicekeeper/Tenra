@@ -309,6 +309,7 @@ extension TransactionStore {
         baseCurrency: String,
         accountsCurrencyById: [String: String],
         needsColdStartCategoryAggregates: Bool,
+        persistedCategoryAggregates: [CategoryAggregate] = [],
         needsColdStartAccountAggregates: Bool
     ) -> (transactions: [Transaction], snapshot: LoadedIndexSnapshot) {
         let transactions = transactionChanges.merge(
@@ -325,6 +326,7 @@ extension TransactionStore {
             baseCurrency: baseCurrency,
             accountsCurrencyById: accountsCurrencyById,
             needsColdStartCategoryAggregates: needsColdStartCategoryAggregates,
+            persistedCategoryAggregates: persistedCategoryAggregates,
             needsColdStartAccountAggregates: needsColdStartAccountAggregates
         )
         return (transactions, snapshot)

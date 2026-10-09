@@ -9,7 +9,7 @@
 //
 //  isPro = isFounder (grandfathered existing user)  ||  active `pro` entitlement.
 //
-//  Grandfathering (see docs/MONETIZATION_STRATEGY.md §7, FoundingUserPolicy): users who had
+//  Grandfathering (see docs/monetization-strategy.md §7, FoundingUserPolicy): users who had
 //  Tenra before Tenra Pro existed are "Founding Users" and keep Pro for free, permanently.
 //  Proof is either this device (onboarding already done when the first Pro build ran) or the
 //  App Store (StoreKit's AppTransaction: first download before the first Pro build went on

@@ -6,7 +6,7 @@
 //  Kept separate from PremiumManager so non-RevenueCat code (feature gates,
 //  paywall triggers, tests) can reference IDs without importing the SDK.
 //
-//  See docs/MONETIZATION_STRATEGY.md for the model + pricing rationale.
+//  See docs/monetization-strategy.md for the model + pricing rationale.
 //
 
 import Foundation
@@ -50,7 +50,7 @@ enum PremiumConfig {
     /// is a Founding User on any device, after any reinstall (see FoundingUserPolicy).
     ///
     /// Version 1.0.1, the first with Tenra Pro, went on sale on about 2026-07-09
-    /// (docs/PROMOTION_PLAN.md, release table; build 4 was uploaded 2026-07-03). The exact
+    /// (docs/promotion-plan.md, release table; build 4 was uploaded 2026-07-03). The exact
     /// release time is not recorded in the repo, so the cutoff is the END of that day in
     /// Kazakhstan, 2026-07-10 00:00 UTC+5: the uncertain day counts in the user's favour.
     /// Build numbers can't be used instead: they restart at 1 with every marketing version.

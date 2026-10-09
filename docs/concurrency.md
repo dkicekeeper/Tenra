@@ -249,5 +249,5 @@ To make a property reactive: remove `@ObservationIgnored`, change to `private(se
 ## Reference
 
 For the original audit (2026-03-12) see archive:
-- `docs/archive/CORE_DATA_AUDIT_2026_03_12.md` (23 fixes across 4 severity levels)
-- `docs/archive/SWIFT_CONCURRENCY_AUDIT_2026_03_12.md` (527→0 warnings)
+- `docs/archive/core-data-audit-2026-03-12.md` (23 fixes across 4 severity levels)
+- `docs/archive/swift-concurrency-audit-2026-03-12.md` (527→0 warnings)

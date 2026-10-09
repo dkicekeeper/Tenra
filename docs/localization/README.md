@@ -6,7 +6,7 @@
 >
 > **Прогресс (обновлено 2026-07-10):** реализованы 9 локалей — en, ru, de, es, fr, tr, pt-BR, it, uk
 > (полный конвейер L1 UI + L2 голос + L3-lite CSV), плюс ja, ko (L1 UI + безопасные даты/валюты).
-> Голос/выписки для ja/ko отложены — см. [PHASE5_VOICE_SPIKE.md](PHASE5_VOICE_SPIKE.md).
+> Голос/выписки для ja/ko отложены — см. [phase5-voice-spike.md](phase5-voice-spike.md).
 > Все каталоги — AI-черновики под нейтив-вычитку.
 > **Метаданные ASC залиты 2026-07-14** в черновик версии **1.0.2** (Prepare for Submission) для
 > 11 витрин: de-DE, es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko — name/subtitle
@@ -97,7 +97,7 @@ Pro: безлимит счетов, голос, импорт PDF/CSV, депоз
   ja/ko = вежливый нейтральный (です/ます, 해요-стиль). Бренд «Tenra Pro» не переводится.
 
 ### L2. Голосовой ввод (VoiceInputParser + Segmenter)
-Прецедент: `plans/006-voice-english-date-and-type-keywords.md` (EN-ключевики). На язык нужно:
+Прецедент: `docs/archive/plans/006-voice-english-date-and-type-keywords.md` (EN-ключевики). На язык нужно:
 - `expenseKeywords` / `incomeKeywords` — глаголы трат/дохода («потратил/купил/заплатил», «получил/зарплата»).
 - `parseDate` — слова «сегодня/вчера/позавчера» + локальные форматы дат.
 - Ключевики категорий (маппинг «такси/бензин/еда» → категории) — см. `CategoryIcon.swift` и словарь парсера.

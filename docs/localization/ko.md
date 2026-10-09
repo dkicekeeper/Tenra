@@ -459,4 +459,4 @@ L5 — верификация:
 ---
 
 **Связанные документы:** [README.md](README.md) (мастер-план), [ja.md](ja.md) (CJK-прецедент),
-docs/domains/voice.md, docs/domains/csv.md, docs/MONETIZATION_STRATEGY.md
+docs/domains/voice.md, docs/domains/csv.md, docs/monetization-strategy.md

@@ -170,4 +170,4 @@ selection never fires — clear unconditionally.
 - [docs/architecture.md](../architecture.md) — TransactionStore index pattern (rooted at `transactionsByAccount`).
 - [docs/concurrency.md](../concurrency.md) — `@Observable` and `@MainActor` rules; why indexes are `internal(set)` not `private(set)`.
 - [docs/domains/currency.md](currency.md) — FX cache and `CurrencyConverter.convertSync` semantics.
-- [docs/INSIGHTS_METRICS_REFERENCE.md](../INSIGHTS_METRICS_REFERENCE.md) — Insights budget metrics (uses the legacy array-scan path).
+- [docs/insights-metrics-reference.md](../insights-metrics-reference.md) — Insights budget metrics (uses the legacy array-scan path).

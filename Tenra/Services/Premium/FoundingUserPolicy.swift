@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Who is a Founding User: someone who had Tenra before Tenra Pro existed, and so keeps every
-//  Pro feature for free, forever (docs/MONETIZATION_STRATEGY.md §7).
+//  Pro feature for free, forever (docs/monetization-strategy.md §7).
 //
 //  Two independent proofs, either one is enough:
 //  - this device: onboarding was already completed the first time a Pro build ran (the

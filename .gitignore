@@ -11,3 +11,6 @@ build/
 
 # Python bytecode (appstore/asc.py)
 __pycache__/
+
+# macOS Finder metadata
+.DS_Store

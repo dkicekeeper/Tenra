@@ -56,7 +56,7 @@ struct ExperimentsListView: View {
                 }
             }
 
-            // Wallet automation spike (plans/004-spike-wallet-automation.md):
+            // Wallet automation spike (docs/plans/004-spike-wallet-automation.md):
             // raw payloads the Shortcuts "Wallet" automation passed to the probe.
             Section("Wallet probe (local only)") {
                 if walletProbeEntries.isEmpty {

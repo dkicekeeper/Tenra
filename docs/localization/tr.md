@@ -236,7 +236,7 @@ prim aldım / iade aldım» = получил (доход). Разруливат�
 проверять фразу на доходные маркеры-существительные (`maaş, para+ald, prim, iade, burs,
 harçlık, bahşiş`) — при совпадении классифицировать как income; иначе `ald-` = expense.
 Порядок проверки в парсере: income-маркеры → expense-глаголы (прецедент EN-парсера:
-`plans/006-voice-english-date-and-type-keywords.md`).
+`docs/archive/plans/006-voice-english-date-and-type-keywords.md`).
 
 **Даты (parseDate):**
 - `bugün` (сегодня), `dün` (вчера), `evvelsi gün` / `önceki gün` / `dünden önceki gün` (позавчера)

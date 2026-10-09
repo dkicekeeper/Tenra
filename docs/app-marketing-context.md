@@ -35,7 +35,7 @@
 - **Subtitle (US):** Money Manager & Subscriptions
 - **Title (RU/KZ):** Tenra: Бюджет, Учёт Расходов
 - **Subtitle (RU/KZ):** Финансы, подписки и контроль
-- **Keywords:** ru updated in 1.2 (data-driven, 99/100: `трата,деньги,кошелёк,счёт,долг,кредит,депозит,валюта,планировщик,копилка,доход,трекер,семейный,siri`); other locales still on the locked 1.0 set (see docs/archive/RELEASE_1.1_PLAN.md) — parity pass pending per PROMOTION_PLAN §5.
+- **Keywords:** ru updated in 1.2 (data-driven, 99/100: `трата,деньги,кошелёк,счёт,долг,кредит,депозит,валюта,планировщик,копилка,доход,трекер,семейный,siri`); other locales still on the locked 1.0 set (see docs/archive/release-1.1-plan.md) — parity pass pending per promotion-plan.md §5.
 - **ASC metadata locales:** 13 (de-DE, en-US, es-ES, es-MX, fr-CA, fr-FR, it, ja, ko, pt-BR, ru, tr, uk), all with description+keywords+promo text
 - **In-app locales:** 11 (en, ru, de, es, fr, tr, pt-BR, it, uk, ja, ko)
 - **Rating:** 0 written reviews and 0 ratings worldwide, all time (re-verified 2026-08-27). CRITICAL GAP.
@@ -51,7 +51,7 @@
 
 ## Goals
 1. **MRR growth** — from $0 to first $200-500 MRR by end of Q4 2026, via conversion fixes + ASA pilot (deadline moved from Q3 on 2026-08-27: still zero purchases, ASA not launched).
-0. **Constraint (2026-08-27):** founder does NO manual promotion — no asking friends for ratings, no social media, no personal outreach. All growth must come from in-app automation, Claude-driven ASO, paid ASA, and the weekly autopilot session (PROMOTION_PLAN §0).
+0. **Constraint (2026-08-27):** founder does NO manual promotion — no asking friends for ratings, no social media, no personal outreach. All growth must come from in-app automation, Claude-driven ASO, paid ASA, and the weekly autopilot session (promotion-plan.md §0).
 2. **Social proof** — 25+ ratings, avg ≥ 4.5 in KZ + US by mid-August 2026.
 3. **Measurement** — full funnel numbers (impressions → page views → installs → trials → paid) visible weekly.
 
@@ -68,8 +68,8 @@
 - **Storefront risk:** Russia IAP unreliable post-2022; do not spend ad budget there.
 
 ## Key References
-- Monetization strategy: docs/MONETIZATION_STRATEGY.md
-- Old 1.1 release plan (iPad + rating prompt + ASO iteration): docs/archive/RELEASE_1.1_PLAN.md
-- **Active promotion plan: docs/PROMOTION_PLAN.md**
+- Monetization strategy: docs/monetization-strategy.md
+- Old 1.1 release plan (iPad + rating prompt + ASO iteration): docs/archive/release-1.1-plan.md
+- **Active promotion plan: docs/promotion-plan.md**
 - Screenshot pipeline: -ScreenshotDemo scheme + capture_screenshots.sh + Figma "Screenshots L10n"
 - Legal: dkicekeeper.github.io/Tenra/{terms-of-use,privacy-policy,support}.html

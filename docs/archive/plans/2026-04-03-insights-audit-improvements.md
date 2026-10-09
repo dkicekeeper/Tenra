@@ -581,10 +581,10 @@ git commit -m "fix(insights): increase categoryTrend minimum streak from 2 to 3 
 
 ---
 
-## Task 13: Update INSIGHTS_METRICS_REFERENCE.md
+## Task 13: Update insights-metrics-reference.md
 
 **Files:**
-- Modify: `docs/INSIGHTS_METRICS_REFERENCE.md`
+- Modify: `docs/insights-metrics-reference.md`
 
 **Step 1: Update the reference doc**
 
@@ -602,8 +602,8 @@ Update to reflect all changes:
 **Step 2: Commit**
 
 ```bash
-git add docs/INSIGHTS_METRICS_REFERENCE.md
-git commit -m "docs: update INSIGHTS_METRICS_REFERENCE.md with audit changes"
+git add docs/insights-metrics-reference.md
+git commit -m "docs: update insights-metrics-reference.md with audit changes"
 ```
 
 ---

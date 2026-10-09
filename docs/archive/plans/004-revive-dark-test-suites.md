@@ -4,7 +4,7 @@
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
 > report — do not improvise. When done, update the status row for this plan
-> in `plans/README.md` — unless a reviewer dispatched you and told you they
+> in `docs/plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
 > **Drift check (run first)**:
@@ -24,7 +24,7 @@
 
 ## Why this matters
 
-Four test suites are wrapped in `#if false` — they compile to nothing while looking like coverage. Two of them guard features that matter right now: **VoiceInputParser** (1,116 lines of EN+RU phrase parsing; voice input is named in `docs/RELEASE_1.1_PLAN.md` as the app's top ASO differentiator) and **OnboardingViewModel** (the first-run flow every new App Store user hits). The other two are dead weight: they test classes deleted in earlier refactors. This plan rewrites the two valuable suites against the current APIs and deletes the two obsolete files so the test target stops carrying zombie code.
+Four test suites are wrapped in `#if false` — they compile to nothing while looking like coverage. Two of them guard features that matter right now: **VoiceInputParser** (1,116 lines of EN+RU phrase parsing; voice input is named in `docs/release-1.1-plan.md` as the app's top ASO differentiator) and **OnboardingViewModel** (the first-run flow every new App Store user hits). The other two are dead weight: they test classes deleted in earlier refactors. This plan rewrites the two valuable suites against the current APIs and deletes the two obsolete files so the test target stops carrying zombie code.
 
 ## Current state
 
@@ -108,7 +108,7 @@ Repo conventions and documented traps that apply here:
 - `TenraTests/Onboarding/OnboardingViewModelTests.swift` (rewrite in place)
 - `TenraTests/Balance/BalanceCalculationTests.swift` (delete)
 - `TenraTests/ViewModels/TransactionStoreTests.swift` (delete)
-- `plans/README.md` (status row)
+- `docs/plans/README.md` (status row)
 
 **Out of scope** (do NOT touch):
 - ALL production code — especially `Tenra/Services/Voice/VoiceInputParser.swift` and `Tenra/ViewModels/OnboardingViewModel.swift`. If a test exposes a real parsing bug, report it (STOP condition), don't patch the parser to match the test or vice versa without evidence of intended behavior.
@@ -178,7 +178,7 @@ Steps 2–3 are the test plan: ~11 new tests across two revived suites, modeled 
 - [ ] Onboarding suite: ≥ 5 tests run and pass
 - [ ] Full `-only-testing:TenraTests` → `** TEST SUCCEEDED **`
 - [ ] Zero production files modified (`git diff --name-only 4392be3..HEAD -- Tenra/` → empty for this plan's commits)
-- [ ] `plans/README.md` status row updated
+- [ ] `docs/plans/README.md` status row updated
 
 ## STOP conditions
 

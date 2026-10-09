@@ -4,7 +4,7 @@
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
 > report — do not improvise. When done, update the status row for this plan
-> in `plans/README.md` — unless a reviewer dispatched you and told you they
+> in `docs/plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
 > **Drift check (run first)**:
@@ -95,7 +95,7 @@ Note (repo-documented quirks): suite-level filtering only — `-only-testing:Ten
 - `Tenra/Services/Utilities/CloudBackupService.swift`
 - `CLAUDE.md` (the three "v8" → "v12" mentions, lines 69/167/336, plus one line in the schema-bump checklist)
 - `TenraTests/Services/CloudBackupServiceTests.swift` (create)
-- `plans/README.md` (status row)
+- `docs/plans/README.md` (status row)
 
 **Out of scope** (do NOT touch, even though they look related):
 - `Tenra/CoreData/CoreDataStack.swift` — `swapStore` works and is referenced by recovery paths; the gate change lives entirely in `CloudBackupService`. (Adding a *new* case to `CloudBackupError` would touch this file — don't; reuse `.incompatibleVersion`.)
@@ -220,7 +220,7 @@ Covered by Step 4 (5 new tests; file `TenraTests/Services/CloudBackupServiceTest
 - [ ] Full `-only-testing:TenraTests` run → `** TEST SUCCEEDED **`
 - [ ] `grep -cn "v8" CLAUDE.md` → 0 schema mentions
 - [ ] No files outside the in-scope list modified (`git status`)
-- [ ] `plans/README.md` status row updated
+- [ ] `docs/plans/README.md` status row updated
 
 ## STOP conditions
 

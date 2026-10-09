@@ -1,6 +1,6 @@
 # Insights Domain
 
-Operational guide for `InsightsService`. For per-metric formulas/granularity see [INSIGHTS_METRICS_REFERENCE.md](../INSIGHTS_METRICS_REFERENCE.md).
+Operational guide for `InsightsService`. For per-metric formulas/granularity see [insights-metrics-reference.md](../insights-metrics-reference.md).
 
 ## Architecture
 
@@ -157,7 +157,7 @@ critical > warning > neutral > positive
 
 ## Recent Metric Changes (2026-07 product audit)
 
-Full rationale + benchmarks (archived): [archive/INSIGHTS_PRODUCT_AUDIT_2026_07_13.md](../archive/INSIGHTS_PRODUCT_AUDIT_2026_07_13.md).
+Full rationale + benchmarks (archived): [archive/insights-product-audit-2026-07-13.md](../archive/insights-product-audit-2026-07-13.md).
 
 ### Deleted / merged (audit 2026-07)
 - `incomeVsExpenseRatio` — deleted (unintuitive `1.2x` multiplier; duplicated `savingsRate` + `netCashFlow`)

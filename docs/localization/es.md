@@ -213,7 +213,7 @@ depósito, transferencia, deuda, saldo, comisión, tarjeta — одинаков�
 
 ### 5.1 Голосовой ввод (воркстрим L2: VoiceInputParser + Segmenter)
 
-Прецедент — `plans/006-voice-english-date-and-type-keywords.md`. Все списки ниже —
+Прецедент — `docs/archive/plans/006-voice-english-date-and-type-keywords.md`. Все списки ниже —
 объединённые ES+MX (парсеру нужны оба варианта одновременно).
 
 **`expenseKeywords` — глаголы/маркеры трат (~13):**

@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  DEBUG-only action for the Wallet automation spike
-//  (plans/004-spike-wallet-automation.md). Wire it to Shortcuts → Automation →
+//  (docs/plans/004-spike-wallet-automation.md). Wire it to Shortcuts → Automation →
 //  Wallet ("Transaction" before iOS 26) with Run Immediately, and map the
 //  automation's Merchant / Amount / Card / Name fields to its parameters.
 //

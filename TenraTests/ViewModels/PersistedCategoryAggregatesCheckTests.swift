@@ -52,7 +52,8 @@ struct PersistedCategoryAggregatesCheckTests {
         ).aggregates.values)
     }
 
-    private static func matches(_ table: [CategoryAggregate], _ transactions: [Transaction] = transactions) -> Bool {
+    /// Whether `table` passes the check against `transactions`.
+    private static func matches(_ table: [CategoryAggregate]) -> Bool {
         TransactionStore.persistedCategoryAggregatesMatch(
             table, transactions: transactions, parsedDates: parsedDates(transactions)
         )

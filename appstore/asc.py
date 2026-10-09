@@ -34,7 +34,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 try:
@@ -160,6 +160,16 @@ def table(title: str, header: list[str], rows: list[list]) -> None:
 
 # Commands -----------------------------------------------------------------------------------------
 
+def utc(stamp: str | None) -> str:
+    """App Store Connect's timestamps carry Apple's own offset (US Pacific): shown in UTC."""
+    if not stamp:
+        return ""
+    try:
+        return datetime.fromisoformat(stamp.replace("Z", "+00:00")).astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    except ValueError:
+        return stamp[:16].replace("T", " ")
+
+
 def builds(app: str, limit: int = 15) -> list[dict]:
     response = get("/v1/builds", {
         "filter[app]": app, "sort": "-uploadedDate", "limit": limit,
@@ -177,7 +187,7 @@ def builds(app: str, limit: int = 15) -> list[dict]:
             "number": attrs["version"],
             "version": included.get(("preReleaseVersions", version["id"]), {}).get("version", "?") if version else "?",
             "processing": "EXPIRED" if attrs.get("expired") else attrs.get("processingState", "?"),
-            "uploaded": (attrs.get("uploadedDate") or "")[:16].replace("T", " "),
+            "uploaded": utc(attrs.get("uploadedDate")),
             "internal": beta_attrs.get("internalBuildState", "?"),
             "external": beta_attrs.get("externalBuildState", "?"),
         })

@@ -8,3 +8,6 @@
 
 # Derived build output (e.g. scripts/capture_screenshots.sh result bundles): regenerated on every run.
 build/
+
+# Python bytecode (appstore/asc.py)
+__pycache__/

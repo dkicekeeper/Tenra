@@ -74,7 +74,7 @@ Claude запускает TestFlight через GitHub API (или ты: Actions
 ```bash
 python3 appstore/asc.py status                  # версии, последние сборки, встроенные покупки
 python3 appstore/asc.py builds [--limit 15]
-python3 appstore/asc.py wait-build --build 12 --wait 40
+python3 appstore/asc.py wait-build --build 12 --version 1.5 --wait 40
 python3 appstore/asc.py reviews [--limit 20]    # отзывы с текстом (оценки без текста API не отдаёт)
 python3 appstore/asc.py availability            # в скольких странах доступно, статус DSA в ЕС
 python3 appstore/asc.py crashes [--build 12]    # отчёты о сбоях из TestFlight, без данных тестировщика

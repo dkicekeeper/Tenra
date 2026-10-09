@@ -3,8 +3,8 @@
 
     python3 appstore/asc.py status                  versions, latest builds, in-app products
     python3 appstore/asc.py builds [--limit 15]     builds with processing and TestFlight state
-    python3 appstore/asc.py wait-build --build N [--wait 40]
-                                                    wait until build N is processed (after an upload)
+    python3 appstore/asc.py wait-build --build N [--version 1.5] [--wait 40]
+                                                    wait until build N of that version is processed
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -216,10 +216,13 @@ def status(app: str) -> None:
     table("In-app products", ["Product", "Type", "State"], products)
 
 
-def wait_build(app: str, number: str, minutes: int) -> None:
+def wait_build(app: str, number: str, version: str | None, minutes: int) -> None:
+    # Build numbers restart with each version (1.4 (1), 1.5 (1)), so a number alone can match an
+    # old build that is long processed.
     deadline = time.time() + minutes * 60
     while True:
-        build = next((b for b in builds(app, 20) if b["number"] == number), None)
+        build = next((b for b in builds(app, 20)
+                      if b["number"] == number and (version is None or b["version"] == version)), None)
         if build and build["processing"] != "PROCESSING":
             break
         if time.time() > deadline:
@@ -381,7 +384,7 @@ def main(argv: list[str]) -> None:
         number = option("--build")
         if not number:
             sys.exit("wait-build needs --build N")
-        wait_build(app, number, int(option("--wait", 40)))
+        wait_build(app, number, option("--version"), int(option("--wait", 40)))
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

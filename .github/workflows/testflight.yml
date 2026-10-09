@@ -44,6 +44,7 @@ jobs:
     timeout-minutes: 60
     outputs:
       build: ${{ steps.version.outputs.build }}
+      version: ${{ steps.version.outputs.version }}
     env:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
@@ -83,6 +84,7 @@ jobs:
           XCODE=$(xcodebuild -version | head -1)
           echo "BUILD_NUMBER=$BUILD" >> "$GITHUB_ENV"
           echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           {
             echo "### Tenra $VERSION ($BUILD)"
             echo "- Commit: \`${GITHUB_SHA::7}\` on \`$GITHUB_REF_NAME\`"
@@ -164,7 +166,8 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
           BUILD: ${{ needs.upload.outputs.build }}
+          VERSION: ${{ needs.upload.outputs.version }}
         run: |
           python3 -m venv "$RUNNER_TEMP/ascenv"
           "$RUNNER_TEMP/ascenv/bin/pip" install --quiet pyjwt cryptography
-          "$RUNNER_TEMP/ascenv/bin/python" appstore/asc.py wait-build --build "$BUILD" --wait 40
+          "$RUNNER_TEMP/ascenv/bin/python" appstore/asc.py wait-build --build "$BUILD" --version "$VERSION" --wait 40

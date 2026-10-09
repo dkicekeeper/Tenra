@@ -1,0 +1,55 @@
+name: App Store Connect
+
+# Reads Tenra's state in App Store Connect with appstore/asc.py: versions, builds and in-app
+# products, customer reviews, storefront availability (EU trader status), TestFlight crash reports.
+# Run: Actions → App Store Connect → Run workflow, or Claude through the GitHub API. The result is
+# in the run's summary. Same API key as TestFlight: the ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8
+# repository secrets (docs/asc.md).
+#
+# The repository is public, so its Actions logs are too: sales and proceeds are not offered here
+# (asc.py refuses them in Actions); Claude reads them from a cloud session instead.
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "What to show"
+        type: choice
+        options: [status, builds, reviews, availability, crashes]
+        default: status
+      build:
+        description: "Build number (crashes only; empty = all recent)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asc-${{ inputs.command }}
+  cancel-in-progress: false
+
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: App Store Connect
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          COMMAND: ${{ inputs.command }}
+          BUILD: ${{ inputs.build }}
+        run: |
+          if [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$ASC_KEY_P8" ]; then
+            echo "::error::Add the ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8 repository secrets (docs/asc.md)."
+            exit 1
+          fi
+          python3 -m venv "$RUNNER_TEMP/ascenv"
+          "$RUNNER_TEMP/ascenv/bin/pip" install --quiet pyjwt cryptography
+          args=("$COMMAND")
+          if [ -n "$BUILD" ]; then args+=(--build "$BUILD"); fi
+          "$RUNNER_TEMP/ascenv/bin/python" appstore/asc.py "${args[@]}"

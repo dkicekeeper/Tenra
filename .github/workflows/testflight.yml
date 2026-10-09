@@ -3,6 +3,8 @@ name: TestFlight
 # Archives the app and uploads it to App Store Connect, from where it lands in TestFlight.
 # On demand only: Actions → TestFlight → Run workflow (pick the branch), or Claude triggers it
 # through the GitHub API. Nothing runs on push, because every run spends a build number.
+# A second job waits until App Store Connect has processed the build and puts the builds table
+# in the run's summary (appstore/asc.py wait-build), so the run says whether TestFlight got it.
 #
 # Signing is Xcode's automatic signing driven by an App Store Connect API key, so no
 # certificate or provisioning profile lives in the repository:
@@ -40,6 +42,8 @@ jobs:
   upload:
     runs-on: macos-26
     timeout-minutes: 60
+    outputs:
+      build: ${{ steps.version.outputs.build }}
     env:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
@@ -64,6 +68,7 @@ jobs:
           echo "KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
 
       - name: Version and build number
+        id: version
         env:
           INPUT_BUILD: ${{ inputs.build_number }}
           RUN_NUMBER: ${{ github.run_number }}
@@ -77,6 +82,7 @@ jobs:
           VERSION=$(sed -nE 's/.*MARKETING_VERSION = ([0-9.]+);.*/\1/p' Tenra.xcodeproj/project.pbxproj | head -1)
           XCODE=$(xcodebuild -version | head -1)
           echo "BUILD_NUMBER=$BUILD" >> "$GITHUB_ENV"
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
           {
             echo "### Tenra $VERSION ($BUILD)"
             echo "- Commit: \`${GITHUB_SHA::7}\` on \`$GITHUB_REF_NAME\`"
@@ -142,3 +148,23 @@ jobs:
             [ -f "$f" ] && { echo "===== $f"; tail -120 "$f"; }
           done
           exit 0
+
+  # On a Linux runner: waiting on Apple's processing (10-30 min) shouldn't hold the macOS one.
+  processing:
+    name: Wait for App Store Connect processing
+    needs: upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for the build
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          BUILD: ${{ needs.upload.outputs.build }}
+        run: |
+          python3 -m venv "$RUNNER_TEMP/ascenv"
+          "$RUNNER_TEMP/ascenv/bin/pip" install --quiet pyjwt cryptography
+          "$RUNNER_TEMP/ascenv/bin/python" appstore/asc.py wait-build --build "$BUILD" --wait 40

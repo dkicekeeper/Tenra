@@ -219,4 +219,4 @@ Tenra 1.5의 새로운 기능:
 - [x] Version 1.5 created in ASC, release after approval, What's New for the 13 locales above, build 6 selected: Actions → App Store Connect → `prepare-version` (version 1.5, build 6), `docs/asc.md`.
 - [ ] Screenshots: keep the 1.4 set unless the UI changed visibly enough to mislead (amount digits and hero backgrounds changed slightly).
 - [ ] Review notes: Pro testable with a sandbox account; the Wallet automation is optional.
-- [ ] Submit for review (founder).
+- [x] Submitted for review by the founder, 2026-10-12.

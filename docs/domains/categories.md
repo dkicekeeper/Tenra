@@ -44,7 +44,7 @@ Touch points that must keep indexes in sync:
 
 ### Full rebuilds run off the main actor
 
-⚠️ **Never rebuild the aggregates with a per-transaction loop on the main actor.** The day-rollover and FX rebuilds parsed 19k dates with a DateFormatter, called `startOfDay` per transaction and created one debounced-persist Task per transaction: a 0.6–0.9 s freeze just after Home appeared or on foreground, again on every rate update while `aggregatesAreFXStale` stayed set. `rebuildRealizedAggregates()` ([TransactionStore+RealizedAggregates](../../Tenra/ViewModels/TransactionStore+RealizedAggregates.swift)) runs the cold-load builders (`computeCategoryAggregates` / `computeAccountAggregates` in TransactionStore+LoadSnapshot) in a detached task over a Sendable copy and only assigns on the main actor (one `categoriesMutationVersion` bump, one persist per map). It is single-flight, and assigns only if `RealizedAggregatesStamp` (transactions, accounts, categories, rates, base currency, today, other wholesale writes) is unchanged when it lands; otherwise it reruns. The synchronous `rebuildCategoryIndexes()` / `rebuildAccountAggregates()` use the same builders. Matured rows are not applied as per-row deltas: which rows the incremental state already counts is not tracked (one added after midnight before the check is counted already). Pinned by `RealizedAggregatesRebuildTests`.
+⚠️ **Never rebuild the aggregates with a per-transaction loop on the main actor**: a date parse, a `startOfDay` and a persist per transaction over 19k rows freezes the UI. `rebuildRealizedAggregates()` ([TransactionStore+RealizedAggregates](../../Tenra/ViewModels/TransactionStore+RealizedAggregates.swift)) runs the cold-load builders (`computeCategoryAggregates` / `computeAccountAggregates` in TransactionStore+LoadSnapshot) in a detached task over a Sendable copy and only assigns on the main actor (one `categoriesMutationVersion` bump, one persist per map). It is single-flight, and assigns only if `RealizedAggregatesStamp` (transactions, accounts, categories, rates, base currency, today, other wholesale writes) is unchanged when it lands; otherwise it reruns. The synchronous `rebuildCategoryIndexes()` / `rebuildAccountAggregates()` use the same builders. Matured rows are not applied as per-row deltas: which rows the incremental state already counts is not tracked (one added after midnight before the check is counted already). Pinned by `RealizedAggregatesRebuildTests`.
 
 ### Rename caveats
 
@@ -57,10 +57,9 @@ This is centralised in `renameCategoryIndexKeys(from:to:)` and called from `upda
 
 Right after it, `updateCategory` calls `TransactionStore.renameCategoryInTransactions(from:to:type:)`, which rewrites the
 stored name on every transaction of that category type (`categoryPickerSourceType`) and on recurring series, and persists
-it in one background save (`renameTransactionsCategory(ids:to:)`). Categories are referenced by NAME everywhere; before this,
-a rename left old transactions with the old name, so editing one failed `validate` with `categoryNotFound` and the category
-emptied after relaunch. Transactions orphaned by renames made before 2026-09-24 still carry old names and show up in the
-History filter under "deleted categories". Pinned by `CategoryRenameTests`.
+it in one background save (`renameTransactionsCategory(ids:to:)`). Categories are referenced by NAME everywhere: a
+transaction whose stored name matches no category fails `validate` with `categoryNotFound` when edited, and appears in the
+category filter (`CategoryFilterView`) under "Deleted" (`categoryFilter.deletedCategories`). Pinned by `CategoryRenameTests`.
 
 ## Aggregate buckets
 
@@ -82,37 +81,37 @@ All amounts are stored in `baseCurrency`. Conversion happens once at `applyAggre
 
 ⚠️ Per CLAUDE.md ⚠️ #6, `Transaction.convertedAmount` is in account currency — DO NOT use it as a base-currency proxy.
 
-⚠️ **Persistence is whole-table and is the next launch's warm start.** `saveAggregates` / `saveAccountAggregatesSync` delete every row not in the snapshot, and `loadData` seeds from a non-empty table instead of rebuilding. Before the full load (`hasCompletedInitialLoad == false`: a process launched only for an App Intent, the first seconds of launch) the in-memory maps hold only the deltas applied since launch, so `categoryAggregatesToPersist()` / `accountAggregatesToPersist()` return empty: the table is cleared and the next full load rebuilds from the transactions. Persisting the partial map made every Wallet-automation payment wipe category totals, budget "spent" and account totals down to that one payment.
+⚠️ **Persistence is whole-table and is the next launch's warm start.** `saveAggregates` / `saveAccountAggregatesSync` delete every row not in the snapshot, and `loadData` seeds from a non-empty table instead of rebuilding. Before the full load (`hasCompletedInitialLoad == false`: a process launched only for an App Intent, the first seconds of launch) the in-memory maps hold only the deltas applied since launch, so `categoryAggregatesToPersist()` / `accountAggregatesToPersist()` return empty: the table is cleared and the next full load rebuilds from the transactions. Persisting the partial map would cut category totals, budget "spent" and account totals down to those few deltas.
 
-The warm start also checks the saved category table before using it (`TransactionStore.persistedCategoryAggregatesMatch`, inside `buildLoadSnapshot`, off main): each category's all-time bucket must count exactly the realized aggregatable transactions. A mismatch rebuilds the totals as on a first launch and persists them. This heals a table saved partial by a build before the fix above (every budget on the Categories screen read 0) and a table saved before a future-dated transaction came due. Pinned by `PersistedCategoryAggregatesCheckTests`.
+The warm start also checks the saved category table before using it (`TransactionStore.persistedCategoryAggregatesMatch`, inside `buildLoadSnapshot`, off main): each category's all-time bucket must count exactly the realized aggregatable transactions. A mismatch (e.g. a table saved before a future-dated transaction came due) rebuilds the totals as on a first launch and persists them. Pinned by `PersistedCategoryAggregatesCheckTests`.
 
 ## Style cache contract
 
 `CategoryStyleCache.shared` is keyed by `"<name>_<type.rawValue>"`.
 
-- Pre-refactor: every `getStyleData` call rebuilt a `Set<String>` snapshot of all categories — O(N_cat) allocs per row render.
-- Now: cache hit is O(1); miss is one O(N_cat) lookup against the passed `customCategories` array.
-- Invalidation is **explicit and surgical**: `TransactionStore.updateCategory` calls `CategoryStyleCache.shared.invalidate(name:type:)` only when icon / colour / name / type actually changed. Pure budget edits no longer touch the cache.
+- A hit is O(1); a miss is one O(N_cat) lookup against the passed `customCategories` array.
+- Invalidation is **explicit and surgical**: `TransactionStore.updateCategory` calls `CategoryStyleCache.shared.invalidate(name:type:)` only when icon / colour / name / type actually changed (both keys on a rename). Budget edits don't touch the cache.
 - `invalidateCache()` (nuclear option) is reserved for wholesale category-array replacements (CSV import, `syncCategories`).
 
 ## View-layer subscriptions
 
-Views should subscribe to scalar mutation counters, not to the underlying observable arrays:
+Views key snapshot rebuilds on scalar mutation counters, not on the underlying arrays:
 
-| Subscribe to | Source | Why |
+| Key on | Source | Note |
 |---|---|---|
-| Category list changes | `transactionStore.categoriesMutationVersion` | scalar; doesn't re-eval on tx mutations |
-| Subcategory data changes | `transactionStore.subcategoriesMutationVersion` | scalar; doesn't re-eval on category mutations |
-| Aggregate freshness | `transactionStore.mutationVersion` + `currencyRatesVersion` | scalar; doesn't subscribe to 19k tx array |
+| Category list changes | `transactionStore.categoriesMutationVersion` | observable scalar; doesn't move on tx mutations |
+| Subcategory data changes | `transactionStore.subcategoriesMutationVersion` | observable scalar; doesn't move on category mutations |
+| Transaction changes | `transactionStore.mutationVersion` | ⚠️ `@ObservationIgnored`: reading it registers nothing. The body must also read an observable that moves on every transaction mutation, `transactionStore.transactions` (`_ = transactionStore.transactions.count`, as `SubscriptionDetailView` does) |
+| FX refresh | `transactionStore.currencyRatesVersion` | observable scalar |
 | Snapshot rebuilds | `.task(id: <CompositeKey>)` | rebuild on key change, off the body |
 
 Pattern is established in:
-- [CategoriesManagementView.swift](../../Tenra/Views/Categories/CategoriesManagementView.swift): `budgetProgressMap` + `filteredCategories` as `@State`, rebuilt via `.task(id: listKey)`.
-- [CategoryDetailView.swift](../../Tenra/Views/Categories/CategoryDetailView.swift): `refreshTrigger` is composed of scalar versions, never reads `transactionStore.transactions`.
+- [CategoriesManagementView.swift](../../Tenra/Views/Categories/CategoriesManagementView.swift): `budgetProgressMap` + `filteredCategories` as `@State`, rebuilt via `.task(id: listKey)` (categories, `mutationVersion`, rates, base currency, selected type).
+- [CategoryDetailView.swift](../../Tenra/Views/Categories/CategoryDetailView.swift): `refreshTrigger` keys on `mutationVersion`, `categoriesMutationVersion`, `currencyRatesVersion`, the time filter and the budget. It does not read `transactions`, so a transaction edit re-keys it only when something else re-evaluates its body.
 
 ## Reorder
 
-`TransactionStore.reorderCategories(orderedIds:)` performs ONE batch persist for a drag operation. Earlier the management view called `updateCategory(_:)` per moved category — each did a full `saveCategoriesSync(...)`, i.e. O(N²) CoreData writes per drag. Always go through the batch entry point.
+`TransactionStore.reorderCategories(orderedIds:)` performs ONE batch persist for a drag operation. Calling `updateCategory(_:)` per moved category would run a full `saveCategoriesSync(...)` each, O(N²) CoreData writes per drag. Always go through the batch entry point.
 
 ## Subcategory tagging surfaces
 
@@ -126,15 +125,17 @@ no central hook. The contract is: `transactionStore.add(...)` first (it assigns 
 pass `id: ""`), then `linkSubcategoryToCategory` per id (so the tag joins that category's
 carousel next time), then `linkSubcategoriesToTransaction`. Reference implementation:
 [TransactionAddCoordinator.linkSubcategories](../../Tenra/Views/Transactions/TransactionAddCoordinator.swift);
-also implemented in `LoanPaymentView`, `LoanEarlyRepaymentView`,
-[AccountActionViewModel](../../Tenra/ViewModels/AccountActionViewModel.swift) (the "Пополнение"
-top-up flow) and the statement import (`ImportCommitter`, one batch for all rows; the subcategory is
-suggested from history per merchant and category, see [import.md](import.md)).
+also implemented in [AccountActionViewModel](../../Tenra/ViewModels/AccountActionViewModel.swift) (the "Пополнение"
+top-up flow) and the statement import (`ImportCommitter` in `ImportCommitPlanner.swift`, one batch for all rows; the
+subcategory is suggested from history per merchant and category, see [import.md](import.md)). Loan payments and early
+repayments are linked in `LoanDetailView`'s `onPayment` / `onRepayment` closures (the forms `LoanPaymentView` /
+`LoanEarlyRepaymentView` only return the selected ids); they call `linkSubcategoriesToTransaction` but not
+`linkSubcategoryToCategory`.
 
 ⚠️ **Link many transactions in ONE call: `batchLinkSubcategoriesToTransaction`.** Every link-table write
 (`updateTransactionSubcategoryLinks`) rebuilds `subcategoryIdsByTransactionId` and the usage stats over all
-transactions; calling `linkSubcategoriesToTransaction` per occurrence of a back-dated series paid that once per
-occurrence (seconds). The add / edit / subscription flows batch it.
+transactions, so linking per occurrence of a back-dated series pays that once per occurrence. The add / edit /
+subscription flows batch it.
 
 ⚠️ Resolve the category id by **name + type**, not through `categoryIdByName` — that index is
 keyed by lowercased name alone, so an income and an expense category sharing a name collide and
@@ -149,9 +150,9 @@ inserts rows one at a time through [IntentSubcategoryStore](../../Tenra/Services
 instead; intent-side subcategory reads go to CoreData through the same helper. When the app's own
 full load is in flight in the same process, the commit waits for it (`waitForLoadInFlight`) and links
 through memory: the load might not have fetched a row written around it, and the next whole-table save
-would delete it. Inside the app the store itself holds whole-table saves until the load lands (see
-[architecture.md](../architecture.md) §The load window), so linking in the first seconds no longer
-wipes the table, but the in-memory list only becomes complete when the load lands.
+would delete it. Inside the app the store holds whole-table saves until the load lands (see
+[architecture.md §The load window](../architecture.md#the-load-window)), so linking during the load doesn't
+wipe the table, but the in-memory list is complete only once the load lands.
 
 Selection is per category: clear `selectedSubcategoryIds` whenever the picked category (or the
 form's mode) changes. `CategoryCardSelectorView`/`CategorySelectorView` write the binding
@@ -167,7 +168,7 @@ selection never fires — clear unconditionally.
 
 ## See also
 
-- [docs/architecture.md](../architecture.md) — TransactionStore index pattern (rooted at `transactionsByAccount`).
-- [docs/concurrency.md](../concurrency.md) — `@Observable` and `@MainActor` rules; why indexes are `internal(set)` not `private(set)`.
+- [docs/architecture.md](../architecture.md) — TransactionStore lookup indexes.
+- [docs/concurrency.md §Cross-File Extension Access Control](../concurrency.md#cross-file-extension-access-control) — why the category indexes are plain `var`, not `private(set)`.
 - [docs/domains/currency.md](currency.md) — FX cache and `CurrencyConverter.convertSync` semantics.
-- [docs/insights-metrics-reference.md](../insights-metrics-reference.md) — Insights budget metrics (uses the legacy array-scan path).
+- [docs/domains/insights.md §Metric catalogue](insights.md#metric-catalogue) — Insights budget metrics (uses the legacy array-scan path).

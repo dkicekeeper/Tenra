@@ -27,6 +27,13 @@ with the commit of every fix, are in
   `recalculateBalances(for:)` with the touched accounts would do.
 
 Found by the docs audit of 2026-10-12, not verified on device yet:
+- **Loan payments don't link a picked subcategory to the category:** `LoanDetailView`'s
+  `onPayment` / `onRepayment` call `linkSubcategoriesToTransaction` but not
+  `linkSubcategoryToCategory`, so the tag never joins that category's carousel (add, top-up and
+  import do link it).
+- **`CategoryDetailView` may stay stale after a transaction edit:** its refresh trigger reads no
+  observable that moves on an edit. Add `_ = transactionStore.transactions.count`, as
+  `SubscriptionDetailView` does.
 - **Historical FX keys and the calendar.** `CurrencyConverter.dateKey` builds a `DateFormatter`
   without `en_US_POSIX` and the Gregorian calendar: on a device with a Buddhist or Japanese
   calendar region the historical-rate key gets another year.

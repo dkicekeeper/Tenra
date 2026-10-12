@@ -4,11 +4,11 @@ Deep dive on core architectural components. For high-level overview see CLAUDE.m
 
 ## MVVM + Coordinator Pattern
 
-- **Models**: CoreData entities representing domain objects
-- **ViewModels**: `@Observable` classes marked `@MainActor` for UI state
+- **Models**: domain value types (`Tenra/Models/`) persisted through CoreData entities (`Tenra/CoreData/Entities/`)
+- **ViewModels**: `@Observable` classes (MainActor through the default isolation) for UI state
 - **Views**: SwiftUI views that observe ViewModels
 - **Coordinators**: Manage dependencies and initialization (`AppCoordinator`)
-- **Stores**: Single source of truth for specific domains (`TransactionStore`)
+- **Stores**: Single source of truth for specific domains (`TransactionStore`, `RecurringStore`)
 
 ## AppCoordinator
 
@@ -16,12 +16,21 @@ Central dependency injection point. Located at [Tenra/ViewModels/AppCoordinator.
 
 - Manages all ViewModels, Repository, Stores, and feature Coordinators
 - **Two-phase startup**:
-  - `initializeFastPath()` — loads accounts + categories (<50ms) → UI visible instantly
+  - `initializeFastPath()` — loads accounts + categories → UI visible instantly
   - `initialize()` — full 19k-transaction load runs in background
-- ⚠️ **The load window.** Until the full load lands, and while any later `loadData` runs (restore, reset), memory is provisional: the load would replace it with rows fetched before the user's change. Every change in that window is recorded (`loadJournal`, ids only; series and occurrences in `RecurringStore`) and `loadData` folds it into what it fetched: edited rows keep their in-memory version, deleted rows stay deleted, new rows are appended. Changed transactions also force the aggregate rebuild, since the persisted aggregate table predates them. Whole-table saves (accounts, categories, subcategories, both link tables, series, occurrences) wait while memory does not hold the whole table (`holdsCompleteTable`): accounts and categories are complete after the fast path, the rest only after `loadData`; a held save runs when the load lands. Loads run one at a time. A new whole-table save path must go through `mayWriteWholeTable`, and a new mutation path must record its change (`noteProvisionalChange`; account changes are recorded by `rebuildAccountById`, which every account mutation already calls). See [TransactionStore+LoadMerge.swift](../Tenra/ViewModels/TransactionStore+LoadMerge.swift); pinned by `LoadWindowMergeTests`.
-- Observable flags `isFastPathDone` / `isFullyInitialized` drive per-section content reveal (staggered fade-in via `ContentRevealModifier`)
+- Observable flags `isFastPathDone` / `isFullyInitialized` drive per-section content reveal (staggered fade-in via DesignKit's `.contentReveal(isReady:)`)
 - **`TransactionStore.loadAccountsOnly()` is misnamed** — it also loads categories. Both are needed for the home screen's first paint.
-- **`SettingsViewModel.loadSettingsOnly()`** is the fastPath variant (UserDefaults read only). `loadInitialData()` additionally decodes the full-resolution wallpaper UIImage on MainActor and is heavy — only `SettingsView.task` should call it.
+- **`SettingsViewModel.loadSettingsOnly()`** is the fastPath variant (UserDefaults read only). `loadInitialData()` also loads the current wallpaper and the wallpaper history (file reads and decoding run off the main actor in `WallpaperFileIO`); only `SettingsView.task` calls it.
+
+### The load window
+
+Until the full load lands, and while any later `loadData` runs (restore, reset), memory is provisional: the load would replace it with rows fetched before the user's change. Every change in that window is recorded (`loadJournal`, ids only; series and occurrences in `RecurringStore`) and `loadData` folds it into what it fetched: edited rows keep their in-memory version, deleted rows stay deleted, new rows are appended. Changed transactions also force the aggregate rebuild, since the persisted aggregate table predates them.
+
+- ⚠️ **Never save a table from memory that does not hold all of it.** Whole-table saves (accounts, categories, subcategories, both link tables, series, occurrences) wait while memory does not hold the whole table (`holdsCompleteTable`): accounts and categories are complete after the fast path, the rest only after `loadData`; a held save runs when the load lands. A new whole-table save path must go through `mayWriteWholeTable`.
+- A new mutation path must record its change (`noteProvisionalChange`; account changes are recorded by `rebuildAccountById`, which every account mutation already calls).
+- Loads run one at a time.
+
+See [TransactionStore+LoadMerge.swift](../Tenra/ViewModels/TransactionStore+LoadMerge.swift); pinned by `LoadWindowMergeTests`.
 
 ### Launch gate: a store that fails to open is never built on
 
@@ -40,55 +49,28 @@ Central dependency injection point. Located at [Tenra/ViewModels/AppCoordinator.
 
 **THE** single source of truth for transactions, accounts, and categories.
 
-- Loads **all** transactions in memory (`dateRange: nil`). ~7.6 MB for 19k tx — no windowing.
+- Loads **all** transactions in memory (`loadTransactions(dateRange: nil)`), no windowing.
 - ViewModels use computed properties reading directly from TransactionStore
-- Debounced sync with 16ms coalesce window; granular cache invalidation per event type
-- Event-driven architecture with `TransactionStoreEvent`
-- Handles subscriptions and recurring transactions
-- `apply()` pipeline: `updateState` → `updateBalances` → `invalidateCache` → `persistIncremental`
-- ⚠️ **`allTransactions` setter is a no-op** — to delete, use `TransactionStore.deleteTransactions(for...)` which routes through `apply(.deleted)`
+- Every mutation is a `TransactionEvent` ([Models/TransactionEvent.swift](../Tenra/Models/TransactionEvent.swift)) run through `apply(_:)`; the pipeline, bulk events and deletion rules are in [domains/transactions.md](domains/transactions.md).
+- Recurring series and occurrences live in `RecurringStore`; the store forwards them (`recurringSeries`, `seriesById`, `recurringOccurrences`).
 
 ### O(1) lookup indexes
 
 Maintained alongside the canonical arrays — read-only, never mutate from outside:
 
-- **`transactionById: [String: Transaction]`** — synced inside `updateState()` for every event (added/updated/deleted/bulkAdded). Use this instead of `transactions.first(where: { $0.id == ... })` on the 19k-element array.
+- **`transactionById: [String: Transaction]`** — synced inside `updateState()` for every transaction event. Use this instead of `transactions.first(where: { $0.id == ... })` on the 19k-element array.
 - **`accountById: [String: Account]`** — rebuilt by `rebuildAccountById()` whenever `accounts` mutates (load/add/update/delete/reorder in `TransactionStore+AccountCRUD.swift`). Adding new account-mutation paths MUST call `rebuildAccountById()`.
 - **`seriesById: [String: RecurringSeries]`** (forwarded from `RecurringStore`) — synced inside RecurringStore's `handleSeries*` helpers.
-- **`accountsMutationVersion: Int`** — bumped by `rebuildAccountById()`. Downstream caches (e.g. `AccountsViewModel.regularAccounts/depositAccounts/loanAccounts`) compare this against their last-seen value to detect invalidation cheaply.
+- **`accountsMutationVersion: Int`** — bumped by `rebuildAccountById()`. `@ObservationIgnored`: downstream caches (e.g. `AccountsViewModel.regularAccounts/depositAccounts/loanAccounts`) compare it against their last-seen value; reading it in a view body registers nothing.
 - **`parsedDateByDateString: [String: Date]`** — cached `FastDateParser.date(from:)`, keyed by the date **string** (~1.8k entries for 19k tx, since many transactions share a day), not by `tx.id`. Never evicted on delete: siblings on the same date still need the entry.
-
-### Grouping indexes (id-based)
-
-The three grouping indexes are **computed [`TransactionIndex`](../Tenra/Models/TransactionIndex.swift) views, not stored dictionaries**. Storage holds ids only; values resolve through `transactionById` on subscript.
-
-| Read as | Backed by |
-|---|---|
-| `transactionsByAccount` | `transactionIdsByAccount: [String: [String]]` (both legs — transfers appear under `accountId` and `targetAccountId`) |
-| `transactionsByCategoryName` | `transactionIdsByCategoryName: [String: [String]]` (aggregatable types only) |
-| `transactionsBySeriesId` | `transactionIdsBySeriesId: [String: [String]]` |
-
-Why: `Transaction` has a 256-byte stride, so storing values in all three duplicated the 19k set ~3 extra times (~15 MB) on top of `transactions` + `transactionById`.
-
-Read shape is unchanged (`index[key] ?? []` still yields `[Transaction]`), with two rules:
-
-- **Bind a bucket to a `let` before using it twice** — every subscript re-resolves, O(bucket).
-- ⚠️ **A cold rebuild driven off the `transactions` array must call `ensureTransactionByIdInSync()` first**, else buckets resolve to nothing. `rebuildCategoryIndexes`, `rebuildSeriesAndDateIndexes` and `seedCategoryAggregates` already do; it is O(1) when in sync.
-
-Editing a transaction needs **no** bucket rewrite: `updateState` refreshes `transactionById` before the index-maintenance helpers run, so the new field values resolve automatically. Pinned by `TransactionIndexTests`.
-
-### Deletion semantics
-
-- `updateState .deleted` uses **index-based removal**: `firstIndex(where:) + remove(at:)` instead of `removeAll{ $0.id == tx.id }`. The latter never short-circuits and was the silent quadratic source for batch deletes.
-
-For TransactionStore CRUD/threading patterns and FRC details see [domains/transactions.md](domains/transactions.md).
+- **Grouping indexes** (`transactionsByAccount`, `transactionsByCategoryName`, `transactionsBySeriesId`) are computed `TransactionIndex` views over id buckets: rules in [gotchas.md §Grouping indexes store ids, not values](gotchas.md#grouping-indexes-store-ids-not-values).
 
 ## BalanceCoordinator
 
 Single entry point for balance operations. Located in `Services/Balance/`.
 
 - Manages balance calculation and caching
-- Includes: Store, Engine
+- Owns `BalanceStore`, `BalanceCalculationEngine` and the `BalancePersistQueue` writer
 - ⚠️ **`self.balances` sync rule**: All public methods that modify store balance MUST also (1) update `self.balances` dict (the `@Observable` published property) and (2) call `persistBalance()`. Private methods (`processAddTransaction`, etc.) do this correctly.
 
 When adding new public balance mutation methods, follow the same pattern:
@@ -117,41 +99,42 @@ For Repository threading rules (`@unchecked Sendable`, `context.perform`) see [c
 
 ### Background saves: `CoreDataSaveCoordinator`
 
-Saves with the same operation name run one at a time; none is dropped (it used to throw `savingInProgress` at the second one, and every caller swallowed it).
+Saves with the same operation name run one at a time; none is dropped.
 
 - **Whole-table saves are ticketed.** Take `saveCoordinator.nextTicket()` synchronously where the data is captured, then pass it to `performSave(operation:ticket:)` from the detached task. Saves run in ticket order; one still waiting when a newer one arrives is skipped (its caller waits for the newer one), and a ticket older than one already started is skipped. Tickets fix the order in which the data was produced, not the order detached tasks reach the actor.
-- **Unticketed saves** run in arrival order, all of them. Use them for writes that don't replace each other (balance batches, `updateInitialBalancesSync`).
-- The `*Sync` saves (`saveAccountsSync`, onboarding, import) bypass the coordinator.
+- **Unticketed saves** run in arrival order, all of them. Use them for writes that don't replace each other; `updateAccountBalancesSync`, `updateInitialBalancesSync` and `saveAccountAggregatesSync` use a unique operation name per call, so they don't queue behind each other.
+- The throwing `*Sync` saves (`saveAccountsSync`, `saveCategoriesSync`, `saveSubcategoriesSync`, the two link-table `*Sync`, `saveTransactionsSync`) bypass the coordinator: each writes on its own background context inside `performAndWait`.
 
 ## CoreData Schema
 
-**Current version**: v8 (lightweight migration).
+**Current version**: v12 (lightweight migration only; the bump checklist is the `/coredata-schema-bump` skill).
 
 | Version | Changes |
 |---------|---------|
-| v6 | `depositInfoData` / `isLoan` / `loanInfoData` on AccountEntity; `recurringSeriesId: String` on TransactionEntity |
-| v7 | Reorganised aggregate entities |
-| v8 (perf-only) | Added `byIdIndex` to TransactionEntity / AccountEntity / RecurringSeriesEntity; `byAccountIdIndex` / `byRecurringSeriesIdIndex` to TransactionEntity; `bySeriesIdIndex` / `byTransactionIdIndex` to RecurringOccurrenceEntity |
+| v6 | `AccountEntity.isLoan` / `loanInfoData` |
+| v7 | Uniqueness constraints dropped; required attributes get default values |
+| v8 | Fetch indexes: `byIdIndex` on TransactionEntity / AccountEntity / RecurringSeriesEntity; `byAccountIdIndex` / `byRecurringSeriesIdIndex` on TransactionEntity; `bySeriesIdIndex` / `byTransactionIdIndex` on RecurringOccurrenceEntity |
+| v9 | `AccountAggregateEntity` (per-account totals, `byAccountIdIndex`) |
+| v10 | `CategoryAggregateEntity.expenseAmount` / `expenseAmountSet` |
+| v11 | `CategorySubcategoryLinkEntity.sortOrder` |
+| v12 | `AccountEntity.includeInBalance` (accounts excluded from the Finances total and insights aggregates) |
 
-Without `byIdIndex`, every `id == %@` predicate (insertTransaction / updateTransactionFields / deleteTransactionImmediately) was a full table scan over 19k rows.
-
-Old aggregate entities (`MonthlyAggregateEntity`, `CategoryAggregateEntity`) remain in `.xcdatamodeld` but are not read/written.
+`CategoryAggregateEntity` and `AccountAggregateEntity` hold the persisted aggregate tables that the next launch warm-starts from (see [domains/categories.md](domains/categories.md)). `MonthlyAggregateEntity` remains in the model but nothing reads or writes it.
 
 ## Backups and restore
 
 [CloudBackupService](../Tenra/Services/Utilities/CloudBackupService.swift) drives them; the store-level work is in [CoreDataStack+Backup.swift](../Tenra/CoreData/CoreDataStack+Backup.swift), `CoreDataStack.swapStore` and [PersistentStoreFiles](../Tenra/CoreData/PersistentStoreFiles.swift) (file steps, no Core Data, tested on plain SQLite).
 
-- ⚠️ **Never copy the live store with FileManager.** The newest saves can live only in `Tenra.sqlite-wal`, and a save between copying `.sqlite` and its `-wal` pairs files from two moments. Backups before 2026-10 did exactly that (with `try?` on the `-wal`/`-shm`).
+- ⚠️ **Never copy the live store with FileManager.** The newest saves can live only in `Tenra.sqlite-wal`, and a save between copying `.sqlite` and its `-wal` pairs files from two moments.
 - **Backup**: `snapshotStore` copies the live store through `replacePersistentStore` (SQLite's own copy: one consistent state, WAL included, while the app keeps writing) into a scratch folder as one rollback-journal `Tenra.sqlite`. The copy must be a Core Data store of the current model, pass `PRAGMA quick_check`, and open and count every entity; only then is it copied into `Backups/<timestamp>/`, size-checked, and `metadata.json` written last, so a backup that failed half-way is never listed. Any failure throws `CloudBackupError` to the Backups screen's error banner; a failed automatic backup is shown there once, the next time the screen opens.
-- **Restore**: the backup's `.sqlite` (plus the `-wal` of a pre-2026-10 backup; never the `-shm`) is copied into `RestoreWork-<uuid>/staged` beside the store and must be a non-empty Core Data store that the current model opens directly or by lightweight migration, pass `quick_check`, and open and count every entity (which migrates an older backup in the copy). Only then is the live store removed from the coordinator, its files moved to `RestoreWork-<uuid>/previous`, the staged ones moved in and the store re-added. Any failure moves the previous files back and reopens them (`restoreFailed`: the data is unchanged). The work folder is deleted, except when that rollback fails too: then it may hold the only copy of the previous store (logged as critical with its path).
-- **Retention**: `BackupMetadata.isAutomatic`; the 5 newest manual and the 4 newest automatic backups are kept, and each kind only evicts its own. Backups without the field (made before 2026-10) count as manual, so the weekly automatic backup never deletes one the user made. `settings.cloud.autoBackup.footer` states the 4. An automatic backup's row carries an "Auto" `Badge` (`settings.cloud.autoBackup.badge`, owner's decision 2026-10). Tests: `CloudBackupServiceTests`, `PersistentStoreFilesTests`, `BackupRetentionTests`.
+- **Restore**: the backup's `.sqlite` (plus its `-wal` when non-empty; never the `-shm`) is copied into `RestoreWork-<uuid>/staged` beside the store and must be a non-empty Core Data store that the current model opens directly or by lightweight migration, pass `quick_check`, and open and count every entity (which migrates an older backup in the copy). Only then is the live store removed from the coordinator, its files moved to `RestoreWork-<uuid>/previous`, the staged ones moved in and the store re-added. Any failure moves the previous files back and reopens them (`restoreFailed`: the data is unchanged). The work folder is deleted, except when that rollback fails too: then it may hold the only copy of the previous store (logged as critical with its path).
+- **Retention**: `BackupMetadata.isAutomatic`; the 5 newest manual and the 4 newest automatic backups are kept (`maxManualBackups` / `maxAutomaticBackups`), and each kind only evicts its own. Backups without the field count as manual, so the weekly automatic backup never deletes one the user made. `settings.cloud.autoBackup.footer` states the 4. An automatic backup's row carries an "Auto" `Badge` (`settings.cloud.autoBackup.badge`). Tests: `CloudBackupServiceTests`, `PersistentStoreFilesTests`, `BackupRetentionTests`.
 
 ## State Reactivity
 
 - ContentView reactivity via `.task(id: SummaryTrigger)` — no manual `onChange` chains
-- Per-element staggered fade-in during initialization (`ContentRevealModifier` — preserves view identity, no layout recalc spike)
-- `IconSource` has 2 cases: `.sfSymbol(String)` and `.brandService(String)`. `displayIdentifier` produces `"sf:\(name)"` / `"brand:\(name)"` format; `from(displayIdentifier:)` decodes it
-- ⚠️ **BankLogo enum deleted** — all logos go through provider chain via `.brandService(domain)`. See [domains/logos.md](domains/logos.md).
+- Per-element staggered fade-in during initialization (DesignKit's `ContentRevealModifier` — preserves view identity, no layout recalc spike)
+- `IconSource` (DesignKit, `DesignSupport/IconSource.swift`) has 2 cases: `.sfSymbol(String)` and `.brandService(String)`. `displayIdentifier` produces `"sf:\(name)"` / `"brand:\(name)"` format; `from(displayIdentifier:)` decodes it. All logos go through the provider chain via `.brandService(domain)`; see [domains/logos.md](domains/logos.md).
 
 ## Important Files
 
@@ -177,4 +160,4 @@ Old aggregate entities (`MonthlyAggregateEntity`, `CategoryAggregateEntity`) rem
 - `Services/Insights/` — see [domains/insights.md](domains/insights.md)
 - `Services/Currency/` — see [domains/currency.md](domains/currency.md)
 - `Services/Import/` — PDF and statement text parsing
-- `Services/Cache/` — caching coordinators
+- `Services/Cache/` — transaction caches (`TransactionCacheManager`, `UnifiedTransactionCache`, `LRUCache`, `DateSectionExpensesCache`)

@@ -11,13 +11,12 @@ Critical patterns for thread safety in this codebase. Project ships with `SWIFT_
 - `Task { @MainActor in }` IS needed inside nonisolated closures, audio callbacks
 - **Modifier order**: access modifier ALWAYS first — `private nonisolated func`, `private nonisolated(unsafe) var`. NEVER `nonisolated private` or `nonisolated(unsafe) private`
 - **`@NSManaged` order**: `@NSManaged public nonisolated var` — attribute first, access level second, `nonisolated` third
-- **`nonisolated(unsafe)`** only for mutable `static var` / stored properties with no actor protection — always add a comment explaining the accepted race
+- **`nonisolated(unsafe)`** only for mutable `static var` / stored properties with no actor protection, or non-`Sendable` state — always add a comment explaining the accepted race
 
 ### ⚠️ A plain `final class` service runs its blocking work on the main thread
 
 This is the most common consequence of the default isolation, and it hides well: the code
-reads like a background service, compiles clean, and stalls the UI. One session of 2026-09-15
-found four instances, three of them user-visible.
+reads like a background service, compiles clean, and stalls the UI.
 
 Blocking work means **file I/O, image encode/decode, CoreAudio, CoreData on `viewContext`** —
 anything that waits on something outside the CPU. Marking the type `nonisolated` is *not*
@@ -47,9 +46,8 @@ now has suspension points, so state can change mid-flight. `VoiceInputService.st
 the pattern: the start claims a token, a stop bumps it, and the start tears down what it
 built if the token changed. Check for this whenever you add an `await` to a setup path.
 
-Cheaper than moving work: don't do it. `SettingsValidationService` proved a wallpaper was a
-valid image by reading and decoding the whole photo; a `CGImageSource` header probe answers
-the same question without either.
+Cheaper than moving work: don't do it. `SettingsValidationService` checks that a wallpaper is
+a valid image with a `CGImageSource` header probe instead of reading and decoding the photo.
 
 ## Sendable Types in iOS 26 SDK
 
@@ -59,6 +57,14 @@ These are `Sendable` in iOS 26 — use plain `nonisolated static let`, NOT `noni
 - `Logger`
 - `Calendar`
 - `NumberFormatter`
+
+The same holds for constants of any `Sendable` type, e.g. `AppSettings.defaultCurrency`:
+
+```swift
+class AppSettings: Codable {
+    nonisolated static let defaultCurrency = "KZT"
+}
+```
 
 ## DataSnapshot Pattern (capturing MainActor data into Sendable struct)
 
@@ -81,6 +87,9 @@ Even with all-value-type fields, structs don't auto-conform to `Sendable` if the
 
 Symptom of forgetting: `Task.detached` returning a `[String: YourType]` fails to compile with "captured value of non-sendable type ... in a `@Sendable` closure".
 
+- Closures that cross actors are `@Sendable`.
+- Reference types with internal synchronization are `@unchecked Sendable` (e.g. `BalancePersistQueue`, the repositories below).
+
 ### Render-frame yield after Observable mutations
 
 When a SwiftUI reveal/transition is keyed off an Observable flag (e.g. `isFullyInitialized`), insert `try? await Task.sleep(for: .milliseconds(16))` **immediately after** the mutation if the next MainActor work is heavy. Without the yield, the new render and the heavy work both land in the same render cycle, stuttering the transition. 16 ms ≈ one 60fps frame. Precedent: [`AppCoordinator.initialize`](../Tenra/ViewModels/AppCoordinator.swift) after `isFullyInitialized = true`.
@@ -89,9 +98,9 @@ When a SwiftUI reveal/transition is keyed off an Observable flag (e.g. `isFullyI
 
 `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` means plain `enum`/`class`/`struct static func` declarations are implicitly MainActor. Pure helpers called from `Task.detached` need explicit `nonisolated`. Precedent: `LedgerPolicyRule.isRealized` is `nonisolated static`. Symptom of forgetting: Swift 6 warning "call to main actor-isolated static method in a synchronous nonisolated context".
 
-## CoreData Entity Mutations
+## CoreData Threading
 
-All CoreData entity property mutations MUST be wrapped in `context.perform { }`:
+All CoreData entity property mutations happen inside `context.perform { }` / `context.performAndWait { }`:
 
 ```swift
 // ❌ WRONG — Causes Swift 6 concurrency violations
@@ -109,47 +118,36 @@ func updateAccount(_ entity: AccountEntity, balance: Double) {
 
 ### Repository pattern with CoreData
 
-Repository classes use `nonisolated final class … @unchecked Sendable` — safe because all mutations go through `context.performAndWait`.
+Repository classes are `nonisolated final class … @unchecked Sendable` — safe because every mutation runs inside `perform` / `performAndWait` on a background context. Private `*Internal(…, context:)` helpers assume the caller is already inside that block.
 
 `CoreDataStack.newBackgroundContext()` must be `nonisolated` — repositories call it from nonisolated context.
 
 Model struct `init` and computed properties accessed from nonisolated services need `nonisolated`.
 
 ```swift
-// ✅ Pattern applied in AccountRepository, CategoryRepository, etc.
-func saveAccountsInternal(...) throws {
-    context.perform {
-        existing.name = account.name
-        existing.balance = account.balance
-        // ... all mutations inside perform block
+// ✅ AccountRepository (same shape in CategoryRepository, TransactionRepository, …)
+nonisolated final class AccountRepository: AccountRepositoryProtocol, @unchecked Sendable {
+    func saveAccountsSync(_ accounts: [Account]) throws {
+        let context = stack.newBackgroundContext()
+        try context.performAndWait {
+            try saveAccountsInternal(accounts, context: context)  // all mutations happen in here
+            if context.hasChanges { try context.save() }
+        }
     }
 }
 
 // ✅ CoreDataStack
 final class CoreDataStack: @unchecked Sendable {
-    nonisolated(unsafe) static let shared = CoreDataStack()
+    nonisolated static let shared = CoreDataStack()
+    nonisolated func newBackgroundContext() -> NSManagedObjectContext { … }
 }
 ```
 
-## Sendable Conformance
-
-- Mark actor request types as `Sendable`
-- Use `@Sendable` for completion closures
-- Use `@unchecked Sendable` for singletons with internal synchronization
-
-```swift
-// ✅ Example: BalanceUpdateRequest
-struct BalanceUpdateRequest: Sendable {
-    let completion: (@Sendable () -> Void)?
-    enum BalanceUpdateSource: Sendable { ... }
-}
-```
+CoreData pitfalls (FRC, predicates, batch deletes, `viewContext.perform`) are in [domains/transactions.md §CoreData gotchas](domains/transactions.md#coredata-gotchas); save ordering (tickets, `BalancePersistQueue`) and whole-table saves during a load are in [architecture.md §Background saves](architecture.md#background-saves-coredatasavecoordinator) and [§The load window](architecture.md#the-load-window).
 
 ## Main Actor Isolation Patterns
 
 - Use `.main` queue for `NotificationCenter` observers in ViewModels
-- Mark static constants with `nonisolated(unsafe)` when needed
-- Wrap captured state access in `Task { @MainActor in ... }` (when inside a nonisolated context)
 
 ```swift
 // ✅ NotificationCenter observers
@@ -157,37 +155,13 @@ NotificationCenter.default.addObserver(
     forName: .someNotification,
     queue: .main  // ← Ensures MainActor context
 ) { ... }
-
-// ✅ Static constants
-@MainActor class AppSettings {
-    nonisolated(unsafe) static let defaultCurrency = "KZT"
-}
 ```
-
-## CoreData Gotchas
-
-- **OR-per-month predicate crash**: Never build `NSCompoundPredicate(orPredicateWithSubpredicates:)` with one subpredicate per calendar month — exceeds SQLite expression tree depth limit (1000). Use a constant 7-condition range predicate instead.
-- **`NSDecimalNumber.compare()` gotcha**: `number.compare(.zero)` doesn't compile — always write `number.compare(NSDecimalNumber.zero)`
-- **`performFetch()` + `rebuildSections()` are synchronous on MainActor** — sections fully updated before the next line.
-- **`resetAllData()` invalidates FRC**: Destroys/recreates the persistent store. FRC holders must observe `storeDidResetNotification` and call `setup()` to recreate. See `TransactionPaginationController.handleStoreReset()`.
-- **FRC delegate must rebuild synchronously**: Use `MainActor.assumeIsolated { rebuildSections() }` — NOT `Task { @MainActor in }` which creates async hop allowing stale section access.
-- **Entity resolution case-sensitivity**: `resolveCategoryByName` must use case-insensitive comparison. When cache HITs on a case-variant, return the **stored** entity name (not the input name).
-- **NEVER use `NSBatchDeleteRequest` then `context.save()` on the SAME context** when deleted objects have inverse relationships. Use `context.delete()` instead.
-- **A whole-table save takes a ticket where its data is captured.** `Task.detached` jobs can reach `CoreDataSaveCoordinator` in any order, so a later snapshot could be written before an earlier one. Call `saveCoordinator.nextTicket()` synchronously, before detaching, and pass it to `performSave(operation:ticket:)`: the coordinator writes the newest snapshot last and skips superseded ones. Writes that don't replace each other go unticketed (run in arrival order) or under a unique operation name. Values that must land newest-last per key (account balances) go through one serial writer instead: [`BalancePersistQueue`](../Tenra/Services/Balance/BalancePersistQueue.swift). See [architecture.md](architecture.md) §Background saves.
-- **Never save a table from memory that does not hold all of it.** Before `TransactionStore.loadData` lands (and while a reload runs) the subcategory, link, series and occurrence arrays are partial. The store's whole-table saves check `mayWriteWholeTable` and are held until the load lands; a new save path must too. See [architecture.md](architecture.md) §The load window.
-- **`viewContext.perform { }` runs on MainActor** — viewContext is MainActor-bound, so its perform queue blocks UI. Use `newBackgroundContext()` for heavy ops (purgeHistory, batch deletes, large fetches that don't need UI synchronicity).
-
-## DateFormatter Threading
-
-On iOS 26+ target `DateFormatter` is `Sendable` — use `nonisolated static let`. On older targets:
-- `@MainActor private static let`
-- Format strings on MainActor before `Task.detached`
-- Pass `String`, not the formatter
 
 ## Cross-File Extension Access Control
 
 - `private` is file-scoped — extensions in OTHER files can't access it
 - Shared helpers → `internal` (no modifier); same file only → `private`
+- `TransactionStore` indexes maintained from extension files (category, subcategory, series, account-aggregate maps) are therefore plain `var`, not `private(set)`; the ones written only in `TransactionStore.swift` (`transactionById`, `accountById`, `transactionIdsByAccount`) are `private(set)`.
 - **Extension file imports are not inherited**: Each file needs its own `import os`, `import CoreData`, etc.
 
 ## Compiler Warnings to Watch
@@ -240,14 +214,8 @@ Never use `@StateObject`, `@ObservedObject`, `@EnvironmentObject` — those are 
 
 ### Reading `@Observable` Collections
 
-⚠️ Reading `.count` / `.isEmpty` / `dict[key]` on an `@Observable` collection subscribes the body to the whole collection. For hot paths over 19k transactions, maintain a separate Observable scalar mirror (e.g. `TransactionStore.transactionsCount`) and read that instead.
+⚠️ Reading `.count` / `.isEmpty` / `dict[key]` on an `@Observable` collection subscribes the body to the whole collection. For hot paths over 19k transactions, maintain a separate Observable scalar mirror (e.g. `TransactionStore.transactionsCount`, which moves on add/delete only) and read that instead. Reading an `@ObservationIgnored` property (e.g. `TransactionStore.mutationVersion`) registers nothing.
 
 ### Making `@Observable` Property Reactive
 
 To make a property reactive: remove `@ObservationIgnored`, change to `private(set) var`; in the observing View add `.onChange(of: vm.property) { ... }`.
-
-## Reference
-
-For the original audit (2026-03-12) see archive:
-- `docs/archive/core-data-audit-2026-03-12.md` (23 fixes across 4 severity levels)
-- `docs/archive/swift-concurrency-audit-2026-03-12.md` (527→0 warnings)

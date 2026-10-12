@@ -1,5 +1,5 @@
 {
-  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice, fx=08-multicurrency.",
+  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice, fx=08-multicurrency. Custom product page frames (ru, en-US, fr-FR only): subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans; the pages and their frame order are in appstore/product-pages.json.",
   "defaultOrder": ["home", "finances", "insights", "score", "topcat", "history", "voice", "fx"],
   "locales": {
     "de-DE": {
@@ -47,7 +47,11 @@
         "topcat":   { "title": "Découvrez vos plus grosses dépenses", "subtitle": "Catégories de dépenses avec répartition claire par mois" },
         "history":  { "title": "Chaque opération sous contrôle", "subtitle": "Dépenses, revenus et intérêts des dépôts, dans un seul fil" },
         "voice":    { "title": "Ajoutez vos dépenses à la voix", "subtitle": "Dites le montant et la catégorie, c'est enregistré" },
-        "fx":       { "title": "EUR, USD, CHF : un seul vrai total", "subtitle": "De vrais taux de change, un total fiable dans votre devise" }
+        "fx":       { "title": "EUR, USD, CHF : un seul vrai total", "subtitle": "De vrais taux de change, un total fiable dans votre devise" },
+        "subscriptions": { "title": "Tous vos abonnements dans un calendrier", "subtitle": "Ce qui sera prélevé et quand, avec les logos des services" },
+        "subscription": { "title": "Un rappel avant chaque prélèvement", "subtitle": "Une alerte à l'avance et tous les paiements passés" },
+        "deposit":  { "title": "Les intérêts de vos dépôts, calculés pour vous", "subtitle": "Capitalisation et gains pour chaque jour" },
+        "loans":    { "title": "Vos crédits sous contrôle", "subtitle": "Mensualité du mois payée ou non, et reste à payer" }
       }
     },
     "fr-CA": {
@@ -144,7 +148,11 @@
         "topcat":   { "title": "Spot your biggest expenses", "subtitle": "A clear breakdown of spending by category, month over month" },
         "history":  { "title": "Every transaction, under control", "subtitle": "Expenses, income, and deposit interest in one feed" },
         "voice":    { "title": "Add expenses by voice", "subtitle": "Say the amount and category, and it's logged" },
-        "fx":       { "title": "USD, EUR, KZT: one true total", "subtitle": "Accounts in any currency, always at the current rate" }
+        "fx":       { "title": "USD, EUR, KZT: one true total", "subtitle": "Accounts in any currency, always at the current rate" },
+        "subscriptions": { "title": "Every subscription on a calendar", "subtitle": "What gets charged and when, with service logos" },
+        "subscription": { "title": "A reminder before each charge", "subtitle": "A heads-up in advance and every past payment" },
+        "deposit":  { "title": "Deposit interest, worked out for you", "subtitle": "Capitalization and earnings for every day" },
+        "loans":    { "title": "Loans under control", "subtitle": "See if this month's payment is made and what's left" }
       }
     },
     "ru": {
@@ -156,7 +164,11 @@
         "topcat":   { "title": "Узнайте свои главные траты", "subtitle": "Категории расходов с наглядной разбивкой по месяцам" },
         "history":  { "title": "Каждая операция под контролем", "subtitle": "Траты, доходы и проценты по депозитам в одной ленте" },
         "voice":    { "title": "Добавляйте траты голосом", "subtitle": "Скажите сумму и категорию, и операция записана" },
-        "fx":       { "title": "KZT, USD, EUR: один честный итог", "subtitle": "Счета в разных валютах, курс всегда актуальный" }
+        "fx":       { "title": "KZT, USD, EUR: один честный итог", "subtitle": "Счета в разных валютах, курс всегда актуальный" },
+        "subscriptions": { "title": "Все подписки в календаре", "subtitle": "Когда и сколько спишут, с логотипами сервисов" },
+        "subscription": { "title": "Напомним до списания", "subtitle": "Уведомление заранее и все прошлые платежи" },
+        "deposit":  { "title": "Проценты по депозиту считаются сами", "subtitle": "Капитализация и доход за каждый день" },
+        "loans":    { "title": "Кредиты под контролем", "subtitle": "Видно, внесён ли платёж за месяц и сколько осталось" }
       }
     }
   }

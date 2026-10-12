@@ -1,0 +1,101 @@
+{
+  "comment": "Custom product pages and the product page optimization test, pushed by `asc.py push-custom-pages` and `asc.py push-experiment` (docs/asc.md). Frames name files in screenshots/final/<locale>/ (captions: scripts/screenshot_captions.json). Keywords must be words from the locale's App Store keyword field (`asc.py keywords --locale ru`); each keyword belongs to one page. Promotional text: 170 characters at most, no em dashes.",
+  "frames": {
+    "home": "01-home",
+    "finances": "02-finances",
+    "insights": "03-insights",
+    "score": "04-health-score",
+    "topcat": "05-top-category",
+    "history": "06-history",
+    "voice": "07-voice",
+    "fx": "08-multicurrency",
+    "subscriptions": "09-subscriptions",
+    "subscription": "10-subscription-detail",
+    "deposit": "11-deposit",
+    "loans": "12-loans"
+  },
+  "customPages": [
+    {
+      "name": "Subscriptions",
+      "frames": ["subscriptions", "subscription", "finances", "home", "insights", "history"],
+      "locales": {
+        "ru": {
+          "promotionalText": "Календарь подписок с логотипами сервисов и напоминанием до списания. Видно, сколько уходит в месяц. Без привязки банка, данные на вашем устройстве.",
+          "keywords": []
+        },
+        "en-US": {
+          "promotionalText": "A calendar of your subscriptions with service logos and a reminder before each charge. See what you spend every month. No bank login, data stays on your device.",
+          "keywords": ["bill"]
+        },
+        "fr-FR": {
+          "promotionalText": "Le calendrier de vos abonnements, avec logos et rappel avant chaque prélèvement. Voyez ce qui part chaque mois. Sans banque, données sur votre appareil.",
+          "keywords": ["facture", "charges"]
+        }
+      }
+    },
+    {
+      "name": "Voice",
+      "frames": ["voice", "history", "home", "insights", "finances"],
+      "locales": {
+        "ru": {
+          "promotionalText": "Скажите «потратил 5000 на продукты», и операция записана с категорией и счётом. Без привязки банка, данные только на вашем устройстве.",
+          "keywords": []
+        },
+        "en-US": {
+          "promotionalText": "Say \"spent 20 dollars on groceries\" and it's logged with the right category and account. No bank login, your data stays on your device.",
+          "keywords": []
+        },
+        "fr-FR": {
+          "promotionalText": "Dites « 20 euros de courses » et c'est enregistré, avec la bonne catégorie et le bon compte. Sans connexion bancaire, vos données restent sur l'appareil.",
+          "keywords": []
+        }
+      }
+    },
+    {
+      "name": "Multicurrency",
+      "frames": ["fx", "finances", "history", "home", "insights"],
+      "locales": {
+        "ru": {
+          "promotionalText": "Счета в тенге, долларах, евро и рублях в одном итоге по текущему курсу. Переводы между валютами с курсом на дату операции. Без привязки банка.",
+          "keywords": ["валюта"]
+        },
+        "en-US": {
+          "promotionalText": "Accounts in dollars, euros and any other currency, added up at the current rate. Transfers between currencies keep the rate of their day. No bank login.",
+          "keywords": ["currency"]
+        },
+        "fr-FR": {
+          "promotionalText": "Comptes en euros, dollars ou toute autre devise, réunis dans un total au taux du jour. Les virements entre devises gardent le taux de leur date. Sans banque.",
+          "keywords": ["devise"]
+        }
+      }
+    },
+    {
+      "name": "Deposits and loans",
+      "frames": ["deposit", "loans", "finances", "history", "home"],
+      "locales": {
+        "ru": {
+          "promotionalText": "Проценты по депозитам с капитализацией считаются сами. По кредитам видно, внесён ли платёж за месяц и сколько осталось. Без привязки банка.",
+          "keywords": ["депозит", "кредит", "долг"]
+        },
+        "en-US": {
+          "promotionalText": "Deposit interest with capitalization is worked out for you. For loans, see whether this month's payment is made and what's left to pay. No bank login.",
+          "keywords": ["deposit", "loan", "debt"]
+        },
+        "fr-FR": {
+          "promotionalText": "Les intérêts de vos dépôts, capitalisation comprise, sont calculés pour vous. Pour vos crédits, voyez si la mensualité est payée et ce qu'il reste. Sans banque.",
+          "keywords": ["prêt", "dette", "livret"]
+        }
+      }
+    }
+  ],
+  "experiment": {
+    "name": "Voice, currencies and finances first",
+    "trafficProportion": 50,
+    "treatments": [
+      {
+        "name": "Voice first",
+        "frames": ["voice", "fx", "finances", "home", "insights", "score", "topcat", "history"]
+      }
+    ]
+  }
+}

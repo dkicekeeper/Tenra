@@ -59,6 +59,9 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
   `IntelligenceAvailability.supportsVision` is true on real devices: either an optional image in
   `DocumentSnapshot` or a vision interpreter in front of `ReceiptInterpreter` that falls back to
   the text path.
+- **Crash reports from users without an SDK:** after a launch that follows a crash MetricKit
+  reported, offer once to mail the report to support (user-initiated, optional). Revisit when
+  Apple Search Ads brings traffic; check Apple's optional-disclosure rule before shipping.
 
 ## Decisions (stand until the owner changes them)
 
@@ -76,3 +79,6 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
   ([promotion-plan.md](promotion-plan.md)).
 - **Minimum iOS stays 26** (2026-08-26): older iOS would add 15-18% installs at the cost of a
   second UI path.
+- **No behavioural analytics SDK** (2026-10-12): crashes and usage come from App Analytics,
+  Xcode Organizer, TestFlight and on-device Diagnostics; App Privacy stays "Data Not Collected".
+  Screen-level analytics (TelemetryDeck or Aptabase) only once traffic makes it meaningful.

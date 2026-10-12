@@ -2,7 +2,7 @@
 //  BackupRowView.swift
 //  Tenra
 //
-//  Single backup row with metadata and swipe actions.
+//  Single backup row with metadata and swipe actions (DesignKit's ItemRow, .large).
 //
 
 import SwiftUI
@@ -13,27 +13,14 @@ struct BackupRowView: View {
     let onDelete: () -> Void
 
     var body: some View {
-        HStack(spacing: AppSpacing.sm) {
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                HStack(spacing: AppSpacing.sm) {
-                    Text(metadata.formattedDate)
-                        .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textPrimary)
-
-                    // Made by the weekly automatic backup: these have their own limit
-                    // and never replace the ones the user made.
-                    if metadata.isAutomatic == true {
-                        Badge(String(localized: "settings.cloud.autoBackup.badge"))
-                    }
-                }
-
-                Text(metadataLine)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
-
-            Spacer(minLength: 0)
-
+        // Made by the weekly automatic backup ("Auto" badge): these have their own limit
+        // and never replace the ones the user made.
+        ItemRow(
+            metadata.formattedDate,
+            badge: metadata.isAutomatic == true ? String(localized: "settings.cloud.autoBackup.badge") : nil,
+            meta: [MetaLine([.text(metadataLine)])],
+            style: .large
+        ) {
             // Affordance hinting the row is tappable to restore.
             Image(systemName: "arrow.counterclockwise")
                 .font(AppTypography.bodySmall)

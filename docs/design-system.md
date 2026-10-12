@@ -170,6 +170,9 @@ ScrollView
   `LoanCard` in `NavigationLink`s, `EmptyState` when there are none.
 - **Deposits** (`DepositsListView`): `List` of `AccountRow`; `AmountRowSkeleton(style: .list)`
   rows while loading, replaced through `.transition(.skeletonReveal)` (§7).
+- **Subcategories** (`SubcategoriesManagementView`): `List` of `SubcategoryManagementRow`, a
+  plain `Button` over `ItemRow(style: .large, titleFont: AppTypography.h4)` with the usage in a
+  `MetaLine` ("Used 14 times · Oct 9, 2026").
 
 ### History
 
@@ -185,6 +188,13 @@ freeze (CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `F
 `List` of `Section(header: SectionHeader(title, style: .compact))` with
 `UniversalRow(config: .settings)` rows: `.navigationRow {}`, `.actionRow(role:) {}` or a trailing
 `Toggle`. The list insets the rows, so `.settings` has no horizontal padding of its own.
+
+- **Backups** (`BackupRowView`): `ItemRow(style: .large)` with the date, the "Auto" badge, a
+  `MetaLine` of counts and size, and the restore arrow as its accessory; tap restores, swipe
+  deletes.
+- **Quick-access currencies** (`QuickAccessCurrencyPickerView`): DesignKit's `CurrencyRow`, the
+  row `CurrencyList` draws; an account's currency with `isLocked: true` (grey check), the others
+  in a plain `Button` with `.contentShape(Rectangle())`.
 
 ### Tabs
 

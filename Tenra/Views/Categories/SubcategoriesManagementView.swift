@@ -317,23 +317,7 @@ struct SubcategoryManagementRow: View {
             HapticManager.selection()
             onEdit()
         } label: {
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                Text(subcategory.name)
-                    .font(AppTypography.h4)
-                HStack(spacing: AppSpacing.sm) {
-                    if usageCount > 0 {
-                        Text(String(format: String(localized: "subcategory.usageCount"), usageCount))
-                        if let lastUsed = lastUsedDate {
-                            Text("·")
-                            Text(Self.dateFormatter.string(from: lastUsed))
-                        }
-                    } else {
-                        Text(String(localized: "subcategory.notUsed"))
-                    }
-                }
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textSecondary)
-            }
+            ItemRow(subcategory.name, meta: [MetaLine(usage)], style: .large, titleFont: AppTypography.h4)
         }
         .buttonStyle(.plain)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -341,6 +325,16 @@ struct SubcategoryManagementRow: View {
                 Label(String(localized: "button.delete"), systemImage: "trash")
             }
         }
+    }
+
+    /// "Used 14 times · Oct 9, 2026", or "Not used".
+    private var usage: [MetaItem] {
+        guard usageCount > 0 else { return [.text(String(localized: "subcategory.notUsed"))] }
+        var items: [MetaItem] = [.text(String(format: String(localized: "subcategory.usageCount"), usageCount))]
+        if let lastUsed = lastUsedDate {
+            items.append(.text(Self.dateFormatter.string(from: lastUsed)))
+        }
+        return items
     }
 }
 

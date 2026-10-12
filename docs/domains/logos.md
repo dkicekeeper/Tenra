@@ -64,7 +64,7 @@ lookups and string normalization.
 
 ## DominantColorExtractor
 
-`Services/Utilities/DominantColorExtractor.swift` — derives a brand-accent colour from a logo (`accentColor(forBrand:)`) for the entity-detail hero glow (`.heroAccentGlow`, see design-system.md). Histogram over a 24×24 downsample (off-MainActor), filters transparent/near-white/near-black/gray pixels, normalizes the winner via HSB. Returns `nil` for logos with no saturated pixels — callers keep their fallback tint. Results cached in-memory per resolved domain (logos are immutable per domain; `cacheVersion` bump is the escape hatch). Lettermark fallbacks yield their deterministic djb2 background colour — stable, but not a real brand colour.
+DesignKit's `DominantColorExtractor` (`DesignSupport`, fed by `DesignKitLogoLoader.loader` → `LogoService`, wired in `DesignKitBridge`) — derives a brand-accent colour from a logo (`accentColor(forBrand:)`) for the entity-detail hero glow (`.heroAccentGlow`, DesignKit's `docs/motion.md`) and the insight detail heroes. Histogram over a 24×24 downsample (off-MainActor), filters transparent/near-white/near-black/gray pixels, normalizes the winner via HSB. Returns `nil` for logos with no saturated pixels — callers keep their fallback tint. Results cached in-memory per resolved domain (logos are immutable per domain; `cacheVersion` bump is the escape hatch). Lettermark fallbacks yield their deterministic djb2 background colour — stable, but not a real brand colour.
 
 ## ServiceLogoRegistry
 

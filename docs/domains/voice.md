@@ -103,7 +103,7 @@ Screenshot mode (`isScreenshotDemo`) passes no level: the glow and the orb breat
 
 - The modifier is `TimelineView`-driven, so `isActive == false` removes the overlay entirely (no orphan animation while the confirmation sheet is open).
 - Match the modifier's `cornerRadius` to the card's — `cardStyle()` defaults to `AppRadius.xl`, which is also `borderBeam`'s default.
-- See [design-system.md](../design-system.md) for the modifier reference and [gotchas.md](../gotchas.md) for the AngularGradient rotation pitfall.
+- The modifier is DesignKit's (`docs/motion.md` there); see [gotchas.md](../gotchas.md) for the AngularGradient rotation pitfall.
 
 ## Account & category resolution (shared with App Intents)
 

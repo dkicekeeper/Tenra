@@ -13,6 +13,7 @@
 //  and exports the attachments from the .xcresult bundles.
 //
 //  Environment (set with TEST_RUNNER_ prefix on xcodebuild):
+//    SCREENSHOT_FRAMES         — "cpp" captures only 09-12 (custom product pages); default all
 //    SCREENSHOT_LANGUAGE       — AppleLanguages value for the app ("de", "es-MX", …)
 //    SCREENSHOT_LOCALE         — AppleLocale value ("de_DE", "es_MX", …)
 //    SCREENSHOT_DEMO_CURRENCY  — seeded dataset currency ("EUR", "MXN", …)
@@ -61,6 +62,17 @@ final class ScreenshotCaptureTests: XCTestCase {
         XCTAssertTrue(historyLink.waitForExistence(timeout: 90), "Home did not load")
         // Let full init finish: balances recalc, deposit interest posting, reveal animations.
         sleep(6)
+
+        if env["SCREENSHOT_FRAMES"] == "cpp" {
+            // Only the custom product page frames: the default ones are already composed.
+            tabBarButton(at: 2).tap()
+            let accountsCard = app.descendants(matching: .any)["finances.accountsCard"].firstMatch
+            XCTAssertTrue(accountsCard.waitForExistence(timeout: 60), "Finances did not load")
+            sleep(2)
+            captureCustomPageFrames()
+            return
+        }
+
         snap("01-home")
 
         // ── 6. History (from Home) ───────────────────────────────────────────
@@ -72,7 +84,8 @@ final class ScreenshotCaptureTests: XCTestCase {
         // ── 3. Analytics / Insights ──────────────────────────────────────────
         tabBarButton(at: 1).tap()
         let healthBadge = app.descendants(matching: .any)["insights.healthScore"].firstMatch
-        XCTAssertTrue(healthBadge.waitForExistence(timeout: 60), "Insights did not load")
+        // A slow CI simulator needs minutes for the first Insights pass over the demo data.
+        XCTAssertTrue(healthBadge.waitForExistence(timeout: 180), "Insights did not load")
         sleep(2)
         snap("03-insights")
 
@@ -115,6 +128,24 @@ final class ScreenshotCaptureTests: XCTestCase {
         snap("08-multicurrency")
         goBack()
 
+        captureCustomPageFrames()
+
+        // ── 7. Voice input (expand the [+] pseudo-tab, then Voice) ───────────
+        tabBarButton(at: 3).tap()   // [+] → switches tab bar to expanded mode
+        sleep(1)
+        tabBarButton(at: 0).tap()   // Voice tab in expanded mode
+        sleep(2)
+        // Trigger the interruption monitor if a mic/speech alert appeared.
+        app.tap()
+        sleep(2)
+        snap("07-voice")
+    }
+
+    // MARK: - Custom product page frames
+
+    /// 09-12, for the custom product pages: subscriptions, a deposit, loans. Starts and ends on
+    /// the Finances tab.
+    private func captureCustomPageFrames() {
         // ── 9-10. Subscriptions: calendar and cards, then one subscription ──
         let subscriptionsCard = app.descendants(matching: .any)["finances.subscriptionsCard"].firstMatch
         XCTAssertTrue(subscriptionsCard.waitForExistence(timeout: 10), "Subscriptions card not found")
@@ -156,16 +187,6 @@ final class ScreenshotCaptureTests: XCTestCase {
             snap("12-loans")
             goBack()
         }
-
-        // ── 7. Voice input (expand the [+] pseudo-tab, then Voice) ───────────
-        tabBarButton(at: 3).tap()   // [+] → switches tab bar to expanded mode
-        sleep(1)
-        tabBarButton(at: 0).tap()   // Voice tab in expanded mode
-        sleep(2)
-        // Trigger the interruption monitor if a mic/speech alert appeared.
-        app.tap()
-        sleep(2)
-        snap("07-voice")
     }
 
     // MARK: - Helpers

@@ -4,8 +4,10 @@
 //
 //  Automated App Store screenshot capture. Launches the app in ScreenshotDemo
 //  mode (seeded dataset, Pro unlocked, offline FX) with the language/locale
-//  passed via TEST_RUNNER_* environment variables, walks the 8 marketing
-//  screens and stores full-resolution screenshots as keepAlways attachments.
+//  passed via TEST_RUNNER_* environment variables, walks the marketing screens
+//  (01-08 on the default product page, 09-12 for the custom product pages:
+//  subscriptions, a deposit, loans) and stores full-resolution screenshots as
+//  keepAlways attachments.
 //
 //  Run via scripts/capture_screenshots.sh — it loops all storefront locales
 //  and exports the attachments from the .xcresult bundles.
@@ -112,6 +114,48 @@ final class ScreenshotCaptureTests: XCTestCase {
         sleep(2)
         snap("08-multicurrency")
         goBack()
+
+        // ── 9-10. Subscriptions: calendar and cards, then one subscription ──
+        let subscriptionsCard = app.descendants(matching: .any)["finances.subscriptionsCard"].firstMatch
+        XCTAssertTrue(subscriptionsCard.waitForExistence(timeout: 10), "Subscriptions card not found")
+        subscriptionsCard.tap()
+        sleep(3)   // logos load and the calendar settles
+        snap("09-subscriptions")
+        let firstSubscription = app.descendants(matching: .any)["subscriptions.card"].firstMatch
+        if firstSubscription.waitForExistence(timeout: 10) {
+            firstSubscription.tap()
+            sleep(3)
+            snap("10-subscription-detail")
+            goBack()
+        }
+        goBack()
+
+        // ── 11. A deposit ────────────────────────────────────────────────────
+        let depositsCard = app.descendants(matching: .any)["finances.depositsCard"].firstMatch
+        XCTAssertTrue(depositsCard.waitForExistence(timeout: 10), "Deposits card not found")
+        depositsCard.tap()
+        let firstDeposit = app.cells.firstMatch
+        if firstDeposit.waitForExistence(timeout: 10) {
+            firstDeposit.tap()
+            sleep(3)
+            snap("11-deposit")
+            goBack()
+        }
+        goBack()
+
+        // ── 12. Loans (this month's payment status) ──────────────────────────
+        let loansCard = app.descendants(matching: .any)["finances.loansCard"].firstMatch
+        var loanScrolls = 0
+        while !(loansCard.exists && loansCard.isHittable) && loanScrolls < 4 {
+            app.swipeUp()
+            loanScrolls += 1
+        }
+        if loansCard.exists {
+            loansCard.tap()
+            sleep(3)
+            snap("12-loans")
+            goBack()
+        }
 
         // ── 7. Voice input (expand the [+] pseudo-tab, then Voice) ───────────
         tabBarButton(at: 3).tap()   // [+] → switches tab bar to expanded mode

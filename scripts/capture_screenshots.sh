@@ -124,9 +124,9 @@ if os.path.exists(manifest_path):
                     if not os.path.exists(src):
                         continue
                     base = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.splitext(human)[0])
-                    # Only our named marketing captures ("01-home"…"08-multicurrency") —
+                    # Only our named marketing captures ("01-home"…"12-loans") —
                     # skip auto-attachments (failure recordings, synthesized events).
-                    m = re.match(r"^(0[1-8]-[a-z-]+)", base)
+                    m = re.match(r"^([01][0-9]-[a-z-]+)", base)
                     if not m:
                         continue
                     shutil.copy(src, os.path.join(dest, m.group(1) + ".png"))

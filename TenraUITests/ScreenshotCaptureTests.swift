@@ -65,9 +65,14 @@ final class ScreenshotCaptureTests: XCTestCase {
 
         if env["SCREENSHOT_FRAMES"] == "cpp" {
             // Only the custom product page frames: the default ones are already composed.
-            tabBarButton(at: 2).tap()
+            // The first locale of a CI run starts cold: a tab tap can land before the tab bar
+            // responds, so tap again until Finances shows.
             let accountsCard = app.descendants(matching: .any)["finances.accountsCard"].firstMatch
-            XCTAssertTrue(accountsCard.waitForExistence(timeout: 60), "Finances did not load")
+            for _ in 0..<3 where !accountsCard.exists {
+                tabBarButton(at: 2).tap()
+                _ = accountsCard.waitForExistence(timeout: 40)
+            }
+            XCTAssertTrue(accountsCard.exists, "Finances did not load")
             sleep(2)
             snap("02-finances")   // the custom pages reuse it
             captureCustomPageFrames()

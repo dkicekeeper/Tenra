@@ -1,5 +1,5 @@
 {
-  "comment": "App Store screenshot captions per locale. Source of truth: docs/localization/<lang>.md §4 (en-US and ru: the captions of their earlier hand-made store set + README.md voice/fx titles) (order per README.md §Подписи скриншотов; tr puts the multicurrency frame first per tr.md §4). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice, fx=08-multicurrency.",
+  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice, fx=08-multicurrency.",
   "defaultOrder": ["home", "finances", "insights", "score", "topcat", "history", "voice", "fx"],
   "locales": {
     "de-DE": {

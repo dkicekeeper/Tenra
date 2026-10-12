@@ -188,13 +188,13 @@ New file needed?
 | `Views/Components/**`, a new screen or sheet, DesignKit in Tenra (bridge, adapters, screen patterns), amount formatting, dates and category styling, animations and effects | [docs/design-system.md](docs/design-system.md); tokens and components themselves: DesignKit's `docs/design-system.md` |
 | `Services/Insights/**` (operational guide) | [docs/domains/insights.md](docs/domains/insights.md) |
 | `Services/Notifications/**` (insight signals, weekly digest, subscription reminders) | [docs/domains/insights.md](docs/domains/insights.md) §Signal notifications |
-| Per-metric formulas, granularity, severity behavior | [docs/insights-metrics-reference.md](docs/insights-metrics-reference.md) |
-| Localization, adding/editing UI strings, `*.lproj`, `.stringsdict`, ASO metadata | [docs/localization/README.md](docs/localization/README.md) |
-| Release prep, ASC versions/metadata, ASO, downloads/MRR analytics, ratings, ads | [docs/promotion-plan.md](docs/promotion-plan.md) — living doc, UPDATE it in the same session (snapshot, checklists, §7 metrics) |
+| Per-metric formulas, granularity, severity behavior | [docs/domains/insights.md](docs/domains/insights.md) §Metric catalogue |
+| Localization, adding/editing UI strings, `*.lproj`, `.stringsdict`, adding a language | [docs/localization.md](docs/localization.md) |
+| The product, Tenra Pro prices, release prep, ASC versions/metadata, ASO, downloads/MRR analytics, ratings, ads | [docs/promotion-plan.md](docs/promotion-plan.md) — living doc, UPDATE it in the same session (releases §1, metrics §6, open tasks §7) |
 | TestFlight builds from the cloud, reading App Store Connect (`appstore/asc.py`, `testflight.yml`, `asc.yml`) | [docs/asc.md](docs/asc.md) |
 | TransactionStore CRUD, FRC, addBatch, NSBatchDeleteRequest | [docs/domains/transactions.md](docs/domains/transactions.md) |
 | Categories, subcategories, budgets, category/subcategory indexes, style cache, reorder | [docs/domains/categories.md](docs/domains/categories.md) |
-| Accounts indexes (accountAggregatesByAccountId, transactionsBySeriesId, parsedDateById), AccountDetailView, ranking | [docs/domains/accounts.md](docs/domains/accounts.md) |
+| Accounts indexes (accountAggregatesByAccountId, transactionsBySeriesId, parsedDateByDateString), AccountDetailView, ranking | [docs/domains/accounts.md](docs/domains/accounts.md) |
 | Deposits, DepositInfo, interest accrual, capitalization | [docs/domains/deposits.md](docs/domains/deposits.md) |
 | Loans, LoanInfo, LoanPaymentService, manual payments, linking | [docs/domains/loans.md](docs/domains/loans.md) |
 | Recurring transactions, RecurringStore, series + occurrences | [docs/domains/recurring.md](docs/domains/recurring.md) |
@@ -207,7 +207,7 @@ New file needed?
 | Performance hot-paths, SwiftUI Layout gotchas, `#Preview` crashes, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |
 | `Tenra/Intents/**`, `Services/Intents/**`, Siri, App Shortcuts, the Wallet automation | [docs/domains/intents.md](docs/domains/intents.md) |
 | Adding a CoreData entity/attribute, bumping `Tenra.xcdatamodeld` | `/coredata-schema-bump` skill |
-| Audit plans, findings, their status | [docs/plans/README.md](docs/plans/README.md) — update the row/line when an item lands, is reverted, or is decided |
+| Open items, ideas, decisions that stand | [docs/backlog.md](docs/backlog.md) — delete a line when it lands, edit it when a decision changes |
 
 **Rule**: before editing files in a domain, Read the matching doc.
 
@@ -227,7 +227,7 @@ These cause silent data corruption or crashes — internalize even without readi
 10. ⚠️ **Editing a linked transaction must NEVER mutate its parent `RecurringSeries`.** `RecurringSeries.amount/currency/category/description/frequency/isActive` are canonical — series edits go through [SubscriptionEditView](Tenra/Views/Subscriptions/SubscriptionEditView.swift) (with its propagation prompt). `TransactionEditCoordinator.handleRecurringSeries` only creates a series when converting a one-off tx into a recurring one; it must NOT write to an existing series. Past symptom: editing today's subscription tx silently rewrote the subscription's hero amount and resumed paused series.
 11. ⚠️ **All income/expense/transfer summary totals derive from one rule: `TransactionType.summaryContribution(isFuture:)`** ([Models/SummaryContribution.swift](Tenra/Models/SummaryContribution.swift)). `SummaryCalculator`, `TransactionQueryService` and `InsightsService.moneyBucket` all route through it. NEVER add an ad-hoc `switch tx.type` for a summary card — that's how three summary paths silently diverged (deposit interest counted as income on home, dropped on history). Pinned by `SummaryContributionTests`.
 12. ⚠️ **Every memoization key / SwiftUI refresh trigger / cache-invalidation must include EVERY dimension the cached value depends on.** This is the single recurring stale-data defect: a key that omits a dimension which can change without changing the others returns a stale hit until app restart (fresh process = empty cache). Standard dimensions for any money/category/account cache: `transactionStore.mutationVersion` (NOT `transactionsCount` — misses in-place edits), `baseCurrency`, `currencyRatesVersion` (FX refresh), `categoriesMutationVersion`, `accountsMutationVersion` (or observe the `accounts` array), the active `TimeFilter`, category icon/colour/budget, and **today's date** for realized-vs-forecast or period-relative values. When wiring a cache into one trigger (e.g. aggregates into the FX observer), wire EVERY cache that shares that dimension. Prefer the existing O(1) `TransactionStore` indexes over a new snapshot cache. Evidence for this rule — 19 concrete instances + per-finding fixes — is archived at [docs/archive/cache-audit-2026-06-03.md](docs/archive/cache-audit-2026-06-03.md); the rule above is self-contained.
-13. ⚠️ **App is localized into 11 locales** (en, ru, de, es, fr, tr, pt-BR, it, uk, ja, ko — `Tenra/*.lproj/Localizable.strings`, 1347 keys each). Adding/editing a UI string means updating EVERY locale, else the 9 non-English locales render the raw key. Verify parity: `diff <(grep -oE '^"[^"]+"' Tenra/en.lproj/Localizable.strings) <(grep -oE '^"[^"]+"' Tenra/<L>.lproj/Localizable.strings)`. New locale = register in BOTH `knownRegions` (project.pbxproj) AND `CFBundleLocalizations` (Info.plist). Plurals live in `.stringsdict` (ru/uk: one/few/many/other; ja/ko: other only; rest: one/other). Adding keys via shell: do NOT use `perl -CSD` (re-encodes the script's UTF-8 bytes → mojibake in non-ASCII locales); use `python3` with `io.open(encoding="utf-8")`, then grep-verify one non-ASCII locale (ru/ja). See [docs/localization/README.md](docs/localization/README.md).
+13. ⚠️ **App is localized into 11 locales** (en, ru, de, es, fr, tr, pt-BR, it, uk, ja, ko — `Tenra/*.lproj/Localizable.strings`). Adding/editing a UI string means updating EVERY locale, else the 9 non-English locales render the raw key. Verify parity: `diff <(grep -oE '^"[^"]+"' Tenra/en.lproj/Localizable.strings) <(grep -oE '^"[^"]+"' Tenra/<L>.lproj/Localizable.strings)`. New locale = register in BOTH `knownRegions` (project.pbxproj) AND `CFBundleLocalizations` (Info.plist). Plurals live in `.stringsdict` (ru/uk: one/few/many/other; ja/ko: other only; rest: one/other). Adding keys via shell: do NOT use `perl -CSD` (re-encodes the script's UTF-8 bytes → mojibake in non-ASCII locales); use `python3` with `io.open(encoding="utf-8")`, then grep-verify one non-ASCII locale (ru/ja). See [docs/localization.md](docs/localization.md).
 14. ⚠️ **Format-specifier order in `Localizable.strings`.** When a translation reorders `%@`/`%lld`/`%d` vs the English key, it MUST use positional specifiers (`%1$@ … %3$lld … %2$@`) — reordering plain specifiers binds args by appearance order and mismatches type (`%lld` lands on a String → garbage/crash). NEVER mix positional and plain in one string. Also: a bare `%` in a string rendered via `String(localized:)` (no `String(format:)`) must stay single — do NOT double it to `%%` (only format-strings with args need `%%`). Audit specifier parity before build; caused real bugs in de/ko/ja this session.
 15. ⚠️ **NEVER call `DateFormatter.date(from:)` in a loop over transactions — use [`FastDateParser`](Tenra/Utils/FastDateParser.swift).** Measured ~13.4 µs/call = 254 ms per 19k pass vs 4.8 ms (~53×); it was the single dominant CPU cost in the app. Applies to the canonical `"yyyy-MM-dd"` storage format only — user-facing localized dates stay on `DateFormatters`. Equivalence (including DateFormatter's *non-uniform* strictness: month 13 → nil, but 30 Feb → 2 Mar) is pinned by `FastDateParserTests`. Any `DateFormatter` parsing a stored key MUST set `locale = en_US_POSIX`, else non-Gregorian device regions misparse. In bulk conversion loops use `RateSnapshot` rather than `CurrencyConverter.convertSync`. See [docs/gotchas.md](docs/gotchas.md) §Date parsing.
 16. ⚠️ **`VoiceInputParser.categoryMap` is a flat `[String: ...]` literal — a duplicate key CRASHES at runtime (compiles fine).** When adding per-language category keywords, a key already used by another language (e.g. `benzin` DE+TR, `médico` ES+IT, `бензин` RU+UK) traps on first access. Grep the block for dup keys before building; omit collisions (a shared concept with an identically-spelled target already resolves). Same applies to `CSVColumnMapping.typeMappings`.
@@ -243,7 +243,7 @@ These cause silent data corruption or crashes — internalize even without readi
 
 ### Working with Transactions
 - Use `TransactionStore` for all transaction operations
-- Subscribe to `TransactionStoreEvent` for reactive updates
+- Mutations go through `TransactionEvent` (`Models/TransactionEvent.swift`) and `TransactionStore.apply`
 - Read [domains/transactions.md](docs/domains/transactions.md) before mutating CRUD/FRC/batch paths
 
 ### Working with Balance
@@ -286,7 +286,7 @@ On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `
 - **Gated**: 4th account (AccountsManagementView, incl. convert-to-deposit path), voice, PDF/CSV import (OCR tab + SettingsView), deposits, loans. **Deliberately free — do NOT gate**: Insights (aha-moment that sells Pro; soft paywall with 3-show/14-day cap lives in AnalyticsTab), CSV **export** (user data must always be exportable).
 - **Grandfathering** ([FoundingUserPolicy](Tenra/Services/Premium/FoundingUserPolicy.swift)): Founding User = onboarded before the first Pro-build launch on this device (decided once in `configure()`), OR the App Store's signed `AppTransaction.originalPurchaseDate` (production only; TestFlight/sandbox dates are placeholders) is before `PremiumConfig.foundingUserDownloadCutoff`, so the status survives a reinstall or a new phone. `isFounder` is stored + observable and NEVER revoked (only `markFounder` writes it, only `true`). Build numbers can't identify pre-Pro downloads: they restart at 1 per marketing version. Product IDs / entitlement `pro` / offering `default` / free limits live in [PremiumConfig](Tenra/Services/Premium/PremiumConfig.swift) — must match ASC + RevenueCat dashboard exactly.
 - **Local testing**: Edit Scheme → Options → StoreKit Configuration → `Tenra/Tenra.storekit` (sandbox purchases, no ASC needed). Paywall content/design is configured in the RevenueCat dashboard (incl. required Terms/Privacy footer links — App Review 3.1.2(c)), not in code.
-- Strategy/pricing rationale: [docs/monetization-strategy.md](docs/monetization-strategy.md).
+- The model, the prices and what Pro sells: [docs/promotion-plan.md](docs/promotion-plan.md) §2.
 
 ## CoreData Schema Bumps
 
@@ -341,7 +341,7 @@ When working with this project:
 7. **Performance first**: consider performance implications; consult [gotchas.md](docs/gotchas.md) for known hot-paths
 8. **Test changes**: verify builds and runs after modifications
 9. **Document refactoring**: update affected docs in `docs/` when architecture changes
-10. **Growth work updates the plan**: any release prep, ASO/metadata change, or ASC/RevenueCat analytics pull must also refresh [docs/promotion-plan.md](docs/promotion-plan.md) (data snapshot, checklists, §7 weekly metrics table) — it is the single source of truth for growth state
+10. **Growth work updates the plan**: any release prep, ASO/metadata change, or ASC/RevenueCat analytics pull must also refresh [docs/promotion-plan.md](docs/promotion-plan.md) (releases §1, the weekly metrics table §6, open tasks §7) — it is the single source of truth for growth state
 
 ### Preferred Tools
 - Use SwiftUI Expert skill for SwiftUI-specific tasks
@@ -380,12 +380,14 @@ When unsure about architecture decisions:
 
 ## Documentation
 
-- **All current documentation lives in `docs/`; anything no longer current moves to `docs/archive/`** in the same commit that makes it stale (a plan that landed → `docs/archive/plans/`, a finished audit → `docs/archive/`, a superseded spec → `docs/archive/specs/` after its lasting rules go into the domain doc). Current = describes the app as it is now, or work in flight (`docs/plans/`). No docs elsewhere, apart from the tool-mandated `CLAUDE.md`, `AGENTS.md` and `.claude/skills/*/SKILL.md`. Skills that default to other folders (superpowers → `docs/superpowers/`, GSD → `.planning/`) write to `docs/plans/` instead.
+- **All current documentation lives in `docs/`; anything no longer current moves to `docs/archive/`** in the same commit that makes it stale (a plan that landed → `docs/archive/plans/`, release notes once the version ships, a finished audit → `docs/archive/`, a superseded spec → `docs/archive/specs/` after its lasting rules go into the domain doc). Current = describes the app as it is now, or work in flight. No docs elsewhere, apart from the tool-mandated `CLAUDE.md`, `AGENTS.md` and `.claude/skills/*/SKILL.md`.
+- **Flat:** only `docs/domains/` (one file per domain) and `docs/public/` (the Pages site) are folders. Work in flight is a file in `docs/`: a plan `plan-<topic>.md`, the What's New of the version being prepared `release-notes.md`; open items, ideas and decisions go in `docs/backlog.md`. Skills that default to other folders (superpowers → `docs/superpowers/`, GSD → `.planning/`) write there instead.
+- **No history in current docs:** "before X it did Y", bug stories and finished checklists go in the commit message or the archive.
 - **Names: lowercase, words joined by hyphens** (`promotion-plan.md`, `performance-audit-2026-07.md`), ISO dates, for folders and for `docs/archive/` too. Exceptions: `README.md` and locale codes (`pt-BR.md`).
 - **Index and layout: [docs/README.md](docs/README.md).** A new doc gets a row there; a new domain also gets a row in the "When to Read Which Doc" table above.
 
 ---
 
-**Last Updated**: 2026-10-09
+**Last Updated**: 2026-10-12
 **iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`: CI runs the GitHub runner's newest Xcode, still 26.x, where iOS 27 symbols don't exist)
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

@@ -802,7 +802,7 @@ class VoiceInputParser {
         "recibí", "recibido", "cobré", "cobrado",
         "ingreso", "ingresos", "sueldo", "salario", "nómina", "gané",
         // FR — "versé" intentionally absent: ambiguous between paying out
-        // and being paid (see docs/localization/fr-FR.md).
+        // and being paid (see docs/archive/localization-2026-07/fr-FR.md).
         "reçu", "salaire", "touché", "gagné", "revenu", "revenus",
         // TR
         "maaş", "gelir", "kazandım",

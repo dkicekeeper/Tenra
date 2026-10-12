@@ -507,7 +507,7 @@ struct DeterministicRandom {
 /// Account names and transaction descriptions per UI language. These are user
 /// data in production (never localized via Localizable.strings), so the demo
 /// carries its own small table. Brand names stay global; per-market brands
-/// follow docs/localization/<lang>.md. No RU-market brands for uk (see uk.md §1).
+/// follow docs/archive/localization-2026-07/<lang>.md. No RU-market brands for uk (see uk.md §1).
 struct ScreenshotDemoLexicon {
     let card: String
     let cash: String

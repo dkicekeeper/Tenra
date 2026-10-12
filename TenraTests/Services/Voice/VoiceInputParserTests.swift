@@ -301,7 +301,7 @@ struct VoiceInputParserTests {
 
     /// "maaş aldım 40000" — bare "aldım" is deliberately NOT an expense
     /// keyword (it also means "received"); "maaş" wins as income. Pins the
-    /// aldım-ambiguity decision from docs/localization/tr.md.
+    /// aldım-ambiguity decision from docs/archive/localization-2026-07/tr.md.
     @Test("TR: 'maaş aldım 40000' → income (aldım ambiguity)")
     func trMaasAldimIsIncome() {
         let (parser, cat, acc, tx) = Self.makeParser()

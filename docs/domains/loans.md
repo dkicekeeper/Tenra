@@ -4,7 +4,7 @@ Payment tracking, manual payments, linking, and amortization.
 
 ## Persistence
 
-`LoanInfo` persisted via `loanInfoData: Data?` (JSON-encoded Binary) on `AccountEntity` (CoreData v6) — mirrors [DepositInfo pattern](deposits.md).
+`LoanInfo` (`Models/Transaction.swift`) is stored as JSON in `AccountEntity.loanInfoData`, like `DepositInfo` ([deposits.md](deposits.md)): a new field goes into the JSON with a decode default, no schema change.
 
 ## LoanPaymentService
 
@@ -25,18 +25,16 @@ Payment tracking, manual payments, linking, and amortization.
 
 Loan payments are **never** generated automatically. The user records every payment manually via `makeManualPayment` (or links an existing expense via `LoanLinkPaymentsView`).
 
-Rationale: real-world loan payments rarely match the calculated annuity exactly (users round up, pay early, vary amounts). Auto-generated phantom payments diverged from real bank withdrawals and confused state. Deposits still auto-reconcile interest accrual — only loans are user-driven.
+Rationale: real-world loan payments rarely match the calculated annuity exactly (users round up, pay early, vary amounts), so generated payments would diverge from the real bank withdrawals. Deposits do auto-post interest ([deposits.md](deposits.md)); loans are user-driven.
 
 ## Amortization schedule replay
 
 `generateAmortizationSchedule` replays the loan from `originalPrincipal`, applying early repayments in
-date order with the monthly payment that was in force in each month. `applyEarlyRepayment` records
-`EarlyRepayment.paymentBefore`; repayments recorded before 2026-09-24 have it nil and the replay
-recomputes it exactly as `applyEarlyRepayment` did. Before this, every month was replayed with the
-CURRENT payment, so after a "reduce payment" repayment all earlier rows were wrong and
-`LoansViewModel.markPaymentsPaid` (which copies `remainingBalance` / interest from the rows) wrote a
-wrong `remainingPrincipal`. `nextPaymentDate` clamps the payment day inside each month separately
-(day 31 → Feb 28 → Mar 31) and returns today when the payment is due today.
+date order with the monthly payment in force in each month: `applyEarlyRepayment` records it as
+`EarlyRepayment.paymentBefore`, and an entry without it gets it recomputed the way `applyEarlyRepayment`
+computes it. `LoansViewModel.markPaymentsPaid` copies `remainingBalance` and interest from these rows, so
+the replay must match what was really paid. `nextPaymentDate` clamps the payment day inside each month
+separately (day 31 → Feb 28 → Mar 31) and returns today when the payment is due today.
 Pinned by `LoanScheduleReplayTests`.
 
 ## Paid-off Lifecycle
@@ -55,39 +53,38 @@ Closed loans surface in `LoansListView` under a collapsed "Closed" `DisclosureGr
 
 `LoanMonthStatusService` (pure, `Services/Loans/`) gives each active loan `LoanMonthStatus`: `.paid(nextDueDate:)` or `.unpaid(dueDate:isOverdue:)`, shown by `LoanMonthStatusBadge` under the type badge in `LoanCard` and in the `LoanDetailView` hero. Pinned by `LoanMonthStatusTests`.
 
-- **Paid** = this month's payments add up to the month's amount due (owner's rule, 2026-10-07: by the sum of the operations, not by one operation). The sum covers every `.loanPayment` **and** `.loanEarlyRepayment` with `targetAccountId == loan.id` dated from the 1st through today (future-dated rows are not realized), each in the loan's currency via `LoanPaymentService.recordedPayment`: a payment in another currency converts through the conversion it was saved with (`TransactionConversion.storedRate`: the row's equivalent, or the paying account's leg when that account is in the loan's currency), else at `RateSnapshot`, else unconverted (red flag 6: never `convertedAmount ?? amount` as is). Paid when `amountDue - sum <= LoanInfo.paidOffThreshold`.
+- **Paid** = this month's payments add up to the month's amount due (the sum of the operations, not one operation). The sum covers every `.loanPayment` **and** `.loanEarlyRepayment` with `targetAccountId == loan.id` dated from the 1st through today (future-dated rows are not realized), each in the loan's currency via `LoanPaymentService.recordedPayment`: a payment in another currency converts through the conversion it was saved with (`TransactionConversion.storedRate`: the row's equivalent, or the paying account's leg when that account is in the loan's currency), else at `RateSnapshot`, else unconverted (red flag 6: never `convertedAmount ?? amount` as is). Paid when `amountDue - sum <= LoanInfo.paidOffThreshold`.
 - **Amount due** = `amountDue(info, remainingPrincipal:)`: the monthly payment capped at what was owed when the month began plus its interest. "Owed when the month began" is `remainingPrincipal` with this month's payments undone (`LoanPaymentService.remainingBefore`), so paying the last 12 000 in two halves still asks for 12 000 instead of re-capping at what is left after the first half.
 - **Partial payments** leave the month `.unpaid(…, leftToPay:)`, `leftToPay` = amount due minus this month's payments, in the loan's currency. The badge still says "Not paid".
-- **"Mark as paid"** in the schedule (payments made outside the app, no transaction) makes the month paid through `LoanInfo.markedPaidThrough` (the date of the last row marked paid, written only by `LoansViewModel.markPaymentsPaid`, nil after a reset to nothing paid) on or after the 1st. Marked through a later row, the months up to it are paid too. `lastPaymentDate` plays **no** part any more: payments write it as well, so a partial or deleted payment left the month "Paid". ⚠️ Marks made before 2026-10-07 have no `markedPaidThrough` (it can't be told apart from a payment's `lastPaymentDate`): such a month shows "Not paid" until the row is marked again (Mark as unpaid, then Mark as paid). Stored in the `loanInfoData` JSON, no CoreData schema change.
+- **"Mark as paid"** in the schedule (payments made outside the app, no transaction) makes the month paid through `LoanInfo.markedPaidThrough` (the date of the last row marked paid, written only by `LoansViewModel.markPaymentsPaid`, nil after a reset to nothing paid) on or after the 1st. Marked through a later row, the months up to it are paid too. `lastPaymentDate` plays **no** part: payments write it as well. ⚠️ A row marked paid while `markedPaidThrough` did not exist has it nil and shows "Not paid" until it is marked again (Mark as unpaid, then Mark as paid).
 - **No status (nil)**: paid off, not started (payment `i` falls `startDate + i` months, so payment #1 is the month after the start month), or past the last scheduled month (`termMonths`). These loans are not counted.
-- **Due date**: `paymentDay` clamped to the month's length. `nextDueDate` (this month's while unpaid, even when overdue; next month's once paid) replaces `nextPaymentDate` in the card footer and hero subtitle, so a paid loan no longer shows this month's date as "next payment".
+- **Due date**: `paymentDay` clamped to the month's length. `nextDueDate` (this month's while unpaid, even when overdue; next month's once paid) replaces `nextPaymentDate` in the card footer and hero subtitle.
 - **Summary**: "Unpaid this month" in `LoansListView` = `unpaidTotal`, the `leftToPay` of every `.unpaid` loan (what is still due after this month's partial payments, never below zero), converted to the base currency through `RateSnapshot` (missing rate: unconverted amount, the canonical cold-cache fallback). Hidden when no active loan has a status.
 - **Freshness**: computed in `body`, not cached. The views read `transactions` (re-render on any add/edit/delete; `mutationVersion` is `@ObservationIgnored`), `currencyRatesVersion` (statuses and summary: payments in another currency) and `baseCurrency`, and keep `today` in `@State` refreshed by `UIApplication.significantTimeChangeNotification` (midnight, or on return to the foreground after it), so a new month never shows last month's statuses.
 
 ## Deleting a Payment — rollback
 
-A loan's state lives in `LoanInfo` (remaining principal, interest paid, payments made, last payment date, early repayments), written when a payment is recorded. Deleting the payment now takes its own effect off the loan: `TransactionStore.apply(.deleted)` calls `rollBackLoanPayment` (`TransactionStore+LoanPayments.swift`), so every delete path is covered: a single delete (row swipe / context menu, history, the loan screen), an account deleted with its transactions (`deleteTransactions(forAccountId:)`, also on the paying card: its loans roll back; the loan's own payments don't when the loan itself is deleted, they go in one bulk delete), series delete / stop / pause (a linked expense keeps its `recurringSeriesId`). Before, the debt stayed reduced (red flag 8: the loan's balance IS `remainingPrincipal`, so the balance was wrong too) and the month kept showing "Paid".
+A loan's state lives in `LoanInfo` (remaining principal, interest paid, payments made, last payment date, early repayments), written when a payment is recorded. Deleting the payment takes its effect off the loan: `TransactionStore.apply(.deleted)` calls `rollBackLoanPayment` (`TransactionStore+LoanPayments.swift`), and the loan's balance is its `remainingPrincipal`, so it follows. Every delete path goes through it: a single delete (row swipe / context menu, history, the loan screen), an account deleted with its transactions (`deleteTransactions(forAccountId:)`; deleting the paying card rolls its loans back), series delete / stop / pause.
+
+⚠️ `.bulkDeleted` never carries a payment to a loan that still exists: `deleteTransactionsInBulk` (`TransactionStore+BulkMutations.swift`) sends those one by one through `.deleted`, in order, and bulk-deletes the rest. Payments to a loan deleted in the same call join the bulk (no rollback for a loan that goes).
 
 `LoanPaymentService.reversingPayment` (pure, pinned by `LoanPaymentRollbackTests`):
 
 | Deleted | Undone |
 |---|---|
 | `.loanPayment` | principal part back on the debt, interest part off `totalInterestPaid`, `paymentsMade - 1`; `lastPaymentDate` (only when it was this payment's date) = the latest remaining regular payment or `markedPaidThrough`, else nil |
-| `.loanEarlyRepayment` | amount back on the debt, its `EarlyRepayment` entry removed (same date and amount), the term (`EarlyRepayment.termBefore`, recorded since 2026-10-07) or the monthly payment (`paymentBefore`) restored, `endDate` recomputed |
+| `.loanEarlyRepayment` | amount back on the debt, its `EarlyRepayment` entry removed (same date and amount), the term (`EarlyRepayment.termBefore`) or the monthly payment (`paymentBefore`) restored, `endDate` recomputed |
 
 - **Split of a regular payment**: the inverse of `createManualPayment`: owed before = (owed after + amount) / (1 + monthly rate), interest = its rate, rounded like the forward split. The payments dated after the deleted one are undone first (`remainingBefore`) to find what was owed when it was made. Exact for the latest payment; the later payments keep the split they were recorded with (no replay), so deleting an old annuity payment differs slightly from a "never happened" replay.
 - **Never above `originalPrincipal`** (a "Mark as unpaid" reset to nothing paid already gave everything back), floors at 0 for the counters.
-- An early repayment without `termBefore` / `paymentBefore` (older entries), or with a later one of the same kind on top of it, is re-planned from the restored principal (`monthsToRepay` / `calculateMonthlyPayment`); the next entry of the same kind inherits the removed one's `paymentBefore` / `termBefore`, so the schedule replay stays right.
+- An early repayment without `termBefore` / `paymentBefore`, or with a later one of the same kind on top of it, is re-planned from the restored principal (`monthsToRepay` / `calculateMonthlyPayment`); the next entry of the same kind inherits the removed one's `paymentBefore` / `termBefore`, so the schedule replay stays right.
 - "Mark as paid" is untouched (`markedPaidThrough`): the marked month stays paid.
-- The loan's balance follows (`BalanceCoordinator.updateForAccount` + `setInitialBalance`, as `updateLoan` does). The accounts are saved by one debounced (300 ms) `persistAccountsToRepository()` per burst (`loanRollbackPersistTask`): a whole-table save per deleted row could still be running when the account delete that follows a bulk delete saves, and `CoreDataSaveCoordinator` drops a second `saveAccounts` in progress (the account came back on relaunch).
-- ⚠️ A future bulk-delete event must call `rollBackLoanPayment` for each transaction too.
+- The loan's balance follows (`BalanceCoordinator.updateForAccount` + `setInitialBalance`, as `updateLoan` does). The accounts are saved by one debounced (300 ms) `persistAccountsToRepository()` per burst (`loanRollbackPersistTask`): `CoreDataSaveCoordinator` drops a `saveAccounts` while another is in progress, so a save per deleted row could swallow the save of an account delete that follows.
 - ⚠️ Editing a payment's amount or date still doesn't touch `LoanInfo` (only the month status follows, it reads the transactions); deleting an edited payment reverses its current amount.
 
 ## Deleting a Loan — two intents
 
-⚠️ **`deleteTransactions(forAccountId:)` matches BOTH `accountId` and `targetAccountId`**, so the old single-button delete wiped every bank-side expense that funded the loan. Loan payments are real expenses on real accounts; losing them is data loss, not cleanup.
-
-`LoanDetailView` now presents a `confirmationDialog` with two paths:
+⚠️ **`deleteTransactions(forAccountId:)` matches BOTH `accountId` and `targetAccountId`**, so it also deletes the bank-side payments that funded the loan. Loan payments are real expenses on real accounts, so `LoanDetailView` asks (`confirmationDialog`) with two paths:
 
 | Action | Behavior |
 |---|---|
@@ -108,7 +105,7 @@ This mirrors `.expense` semantics: the user-facing "from" is the bank where mone
 - `LoansViewModel.linkTransactions` rewrites converted expenses with `accountId = original bank, targetAccountId = loan`
 - `BalanceCalculationEngine` decrements both `accountId` (bank) and `targetAccountId` (loan principal)
 
-**Migration:** existing pre-flip rows are rewritten once at app startup via `AppCoordinator.flipLoanPaymentOrientationIfNeeded()`, gated by `tenra.migration.loanOrientationFlip.v1` flag. The migration is idempotent — rows whose `accountId` no longer points at a loan are skipped.
+**Migration:** `AppCoordinator.flipLoanPaymentOrientationIfNeeded()` rewrites rows stored the other way round once at startup, gated by the `tenra.migration.loanOrientationFlip.v1` flag; rows whose `accountId` doesn't point at a loan are skipped.
 
 ## Loan Account is Technical — never in user pickers
 
@@ -138,7 +135,7 @@ The `TransactionEditView` allows users to override the category with any `.expen
 
 `CategoryStyleCache.systemTypeStyle(category:type:)` provides a baked-in style for system types when the user is on the technical default; the regular custom-category path takes over once a real category is chosen.
 
-**Colour:** loan payments and early repayments have their own type colour, `TransactionDisplayHelper.loanPaymentColor` (`AppColors.warning`, orange: a debt obligation, not an error, and no other type uses it). It tints the row's `creditcard.fill` fallback and the plate behind the loan's own icon (`systemTypeStyle`), and the "Loan payment" slice and icon in Insights (`InsightsService.syntheticCategoryStyle`). Until 2026-10 it was `AppColors.expense` (black / white). The amount stays `.primary`, like every outflow (`TransactionDisplayHelper.amountColor`).
+**Colour:** loan payments and early repayments have their own type colour, `TransactionDisplayHelper.loanPaymentColor` (`AppColors.warning`, orange: a debt obligation, not an error, and no other type uses it). It tints the row's `creditcard.fill` fallback and the plate behind the loan's own icon (`systemTypeStyle`), and the "Loan payment" slice and icon in Insights (`InsightsService.syntheticCategoryStyle`). The amount stays `.primary`, like every outflow (`TransactionDisplayHelper.amountColor`).
 
 ## Every Financial Mutation Creates a Transaction
 
@@ -147,7 +144,7 @@ The `TransactionEditView` allows users to override the category with any `.expen
 | `makeManualPayment` | `.loanPayment` |
 | `makeEarlyRepayment` | `.loanEarlyRepayment` |
 
-Both return `Transaction?` for the caller to persist.
+Both return `Transaction?` for the caller to persist, nil for a future date: a payment lowers `remainingPrincipal` at once, so it can't be dated ahead of the money leaving the bank.
 
 ## Manual Payment Form (`LoanPaymentView`)
 
@@ -156,16 +153,18 @@ Both return `Transaction?` for the caller to persist.
 - **Source picker** lists only `regularAccounts`.
 - **Pay All** (`LoanPayAllView`) supports per-loan amount overrides via inline `TextField`s; defaults follow the same "last actual" logic via `LoansListView.lastPaidAmounts(for:)`.
 
-## LoanTransactionMatcher
-
-Conforms to the same matcher signature as `SubscriptionTransactionMatcher` — accepts `AmountMatchMode` (`.all` / `.tolerance` / `.exact`). Defined alongside `SubscriptionTransactionMatcher` in `Services/Recurring/SubscriptionTransactionMatcher.swift`.
-
-New matchers should follow the same signature to plug into `LinkPaymentsView`.
-
 ## Link-Payments UI
 
-UI wrapper: `LoanLinkPaymentsView` — uses shared `LinkPaymentsView` (`Views/Components/LinkPayments/LinkPaymentsView.swift`).
+Existing transactions are linked to a loan, a subscription or a deposit through one shared view, `LinkPaymentsView` (`Views/Components/LinkPayments/LinkPaymentsView.swift`): filters, sheets, search, caches, background scan, haptics. Wrappers: `LoanLinkPaymentsView` (`Options.loan`), `SubscriptionLinkPaymentsView` (`Options.subscription`), `DepositLinkInterestView` (`Options.deposit`).
 
-Provides full linking UX (filters, sheets, search, caches, background scan, haptic).
+⚠️ **Don't duplicate the state machine**: wrap `LinkPaymentsView` with a `findCandidates` and a `performLink` `@Sendable` closure.
 
-⚠️ **Don't duplicate the state machine** — wrap `LinkPaymentsView` with `findCandidates` + `performLink` `@Sendable` closures.
+Matchers behind `findCandidates`, all `nonisolated enum`s with `findCandidates(…, mode: AmountMatchMode)`:
+
+| Matcher | File | Default mode |
+|---|---|---|
+| `SubscriptionTransactionMatcher` | `Services/Recurring/SubscriptionTransactionMatcher.swift` (also defines `AmountMatchMode`: `.all` / `.tolerance` ±30 % / `.exact`) | `.tolerance` |
+| `LoanTransactionMatcher` | `Services/Loans/LoanTransactionMatcher.swift` | `.tolerance` |
+| `DepositInterestMatcher` | `Services/Deposits/DepositInterestMatcher.swift` | `.all` |
+
+A new matcher follows the same signature.

@@ -1,455 +1,239 @@
-# Tenra — App Intents & Siri
+# App Intents & Siri
 
-> Created: 2026-07-31 as the design spec; implemented since, and the domain reference for
-> `Tenra/Intents/**` and `Services/Intents/**`. §10 lists the milestones not built yet.
-> Goal of the release: **retention**. Remove the friction of logging a transaction.
+Domain reference for `Tenra/Intents/**` (thin App Intents adapters) and `Services/Intents/**`
+(the logic they call). The intents live in the main app target and run in the app's own
+process: no extension, no App Group. Future work (quick-add templates, widgets, Control
+Center, savings goals) is tracked in [backlog.md](../backlog.md).
 
----
-
-## 1. Why
-
-Tenra is a manual-first tracker. The dominant failure mode for manual trackers is that the
-user skips two or three days, the data stops matching reality, and the app is abandoned.
-No analytics exist (App Privacy = Data Not Collected, ~40 lifetime installs), so this is a
-first-principles bet on the highest-prior cause rather than a data-driven one.
-
-Two facts make App Intents the cheapest high-value move available:
-
-1. **`VoiceInputParser` already exists** — 1386 lines, multilingual keyword maps across the
-   11 in-app locales, `parse()` / `parseMulti()` / `parseEntitiesLive()`. The expensive part
-   of "log a transaction from a spoken phrase" is written and currently has exactly one
-   surface (the in-app Voice tab, which is Pro-gated).
-2. **App Intents declared in the main app target run in the app's own process.** No app
-   extension, no App Group, no entitlement change, no provisioning work.
-
-### Verified technical preconditions
-
-| Question | Finding |
-|---|---|
-| Can a headless process write a transaction without corrupting balances? | **Yes.** `TransactionStore.add` → `apply(.added)` → `BalanceCoordinator.updateForTransaction(.add)` is **incremental** (`TransactionStore.swift:1068-1107`). The base is the persisted `account.balance`, kept accurate by `persistIncremental` on every mutation (`BalanceCoordinator.swift:63-95`). No full recalc over the transactions array is involved, so an empty in-memory array is harmless. |
-| Is there a cheap bootstrap? | **Yes.** `AppCoordinator.initializeFastPath()` (`AppCoordinator.swift:265-302`) loads accounts + settings + `registerAccounts`, documented at <50 ms, and deliberately does **not** load transactions. |
-| Where does the store live? | Default app container, **no App Group** (`CoreDataStack.swift`). Irrelevant for intents; would matter for a widget (out of scope here). |
-| Is the ParsedOperation → Transaction logic reusable? | **Not yet.** It is embedded in a SwiftUI view: `VoiceInputConfirmationView.saveTransaction` (`VoiceInputConfirmationView.swift:416-530`). It must be extracted. |
+How a parsed operation becomes a transaction draft (category, account, currency) is shared
+with the in-app voice flow and documented once, in
+[voice.md §Account & category resolution](voice.md#account--category-resolution-shared-with-app-intents).
 
 ---
 
-## 2. Scope
+## 1. Intents
 
-Three intents, plus discoverability, plus the refactor that makes them possible.
+### 1.1 `LogTransactionIntent`
 
-### 2.1 `LogTransactionIntent` — primary
+One free-form phrase, parsed by `VoiceInputParser.parseMulti`; the first operation goes
+through `TransactionDraftService`.
 
-One free-form phrase. The whole phrase is passed to `VoiceInputParser.parse`.
+App Shortcut phrases may only interpolate `AppEntity` and `AppEnum` parameters: a `String`
+parameter is rejected at build time by `appintentsmetadataprocessor` ("Invalid parameter
+type. AppEntity and AppEnum are the only allowed types for phrase."). So via Siri it takes
+two turns: the user says "Log a transaction in Tenra", Siri asks for the phrase (the
+parameter's `requestValueDialog`), and the user speaks it. In the Shortcuts app the
+free-text parameter is filled in one step. A one-shot Siri phrase would need categories and
+amounts modelled as `AppEnum` / `AppEntity` parameters, a fixed grammar instead of free
+phrasing.
 
-> **Corrected during implementation (2026-07-31).** The original design assumed the phrase
-> could be embedded in the spoken App Shortcut sentence
-> (`"Добавь \(\.$phrase) в \(.applicationName)"`), making it a single utterance. **That is
-> not expressible.** App Shortcut phrases may only interpolate `AppEntity` and `AppEnum`
-> parameters; a `String` parameter is rejected at build time by
-> `appintentsmetadataprocessor`: *"Invalid parameter type. AppEntity and AppEnum are the only
-> allowed types for phrase."*
+### 1.2 `AddExpenseIntent`
 
-The shipped flow is therefore two turns via Siri: the user says «Запиши операцию в Tenra»,
-Siri asks what it was (the parameter's `requestValueDialog`), and the user speaks the
-phrase. In the **Shortcuts app** the free-text parameter is still filled in one step,
-because typed `String` parameters are allowed there.
+Typed parameters for the Shortcuts app (automations, Action Button, Shortcuts widget):
+amount, category (`CategoryAppEntity`), subcategory (`SubcategoryAppEntity`), account
+(`AccountAppEntity`) and note. Categories and accounts are pickable lists, not free text.
+The currency is the account's, the date is now. With no category but a merchant in the note,
+the category comes from the merchant memory (§6).
 
-This is a real reduction against the original premise. It remains materially faster than
-opening the app, unlocking it, navigating and typing, and the friction it removes is still
-the point of the release. If a true one-shot is wanted later, the only route is modelling
-categories and amounts as `AppEnum`/`AppEntity` parameters, which trades free-form phrasing
-for a fixed grammar.
+### 1.3 `CheckSpendingIntent`
 
-### 2.2 `AddExpenseIntent` — parameterized
+Read-only: spending today / this week / this month (`SpendingPeriod`), as a spoken dialog
+plus a snippet. `authenticationPolicy = .requiresAuthentication`: totals need an unlocked
+iPhone, while logging stays allowed from the lock screen (pinned by
+`IntentAuthenticationPolicyTests`).
 
-Typed parameters (amount, currency, category, account, date, note) for the Shortcuts app:
-automations, Action Button, Shortcuts widget, Control Center. Uses `AppEntity` parameters so
-categories and accounts are pickable lists, not free text.
-
-### 2.3 `CheckSpendingIntent` — read-only
-
-"How much did I spend today / this week / this month." Returns a spoken dialog plus a
-snippet. Gives the user a reason to consult Tenra without opening it.
-
-**Critical constraint:** it must NOT read `TransactionStore` — in a cold intent process the
-in-memory array is empty and loading 19k transactions is exactly what the fast path avoids.
-It performs a narrow `NSFetchRequest` bounded by a date predicate.
-
-### 2.4 Out of scope (explicitly deferred)
-
-- WidgetKit / Lock Screen widgets / Control Center controls — next milestone, needs an App
-  Group or a snapshot pipeline.
-- Apple Watch, Live Activities.
-- Savings goals.
-- Editing or deleting transactions via intents. Creation only.
+It must NOT read `TransactionStore`: in a cold intent process the in-memory array is empty,
+and loading all transactions is what the fast path avoids. `SpendingQueryService` runs a
+narrow fetch instead (§3.4).
 
 ---
 
-## 3. UX model
+## 2. UX rules
 
-### 3.1 Confirmation
+### 2.1 Confirmation
 
-A financial write must never happen silently on a misheard phrase. The rule is:
+A financial write must never happen silently on a misheard phrase:
 
 > **Confirmation is required whenever any field was inferred rather than explicitly supplied.**
 
 - `LogTransactionIntent` always confirms — every field comes from parsing a phrase. The
-  snippet (`requestConfirmation(result:)`) renders amount, currency, category, account and
-  date, and marks any field the resolver had to guess.
-- `AddExpenseIntent` confirms only if a field was defaulted. When the user supplied every
-  parameter (the normal case in a Shortcuts automation or an Action Button binding) it
-  commits directly, because forcing a prompt would make automations unusable.
+  snippet renders amount, currency, category, account and date, and marks any field the
+  resolver had to guess (`TransactionDraft.warnings`).
+- `AddExpenseIntent` confirms only when `draft.warnings` is not empty. When the user supplied
+  every parameter (an automation or an Action Button binding) it commits directly, because a
+  prompt would make automations unusable.
 
-This rule simplifies the fallback logic: a guessed value is acceptable as long as it is
-visible and marked.
+### 2.2 Blocking issues → open the app
 
-### 3.2 Resolution rules
-
-**Account selection**, in order:
-1. Account explicitly named in the phrase.
-2. `VoiceLearningStore` learned account for that category (already fed by
-   `VoiceInputConfirmationView` via `recordSave`).
-3. First `accountsViewModel.regularAccounts` entry.
-
-Loan and deposit accounts are excluded, matching the existing guard in `saveTransaction`
-(`!acc.isLoan, !acc.isDeposit`).
-
-**Category:** if unresolved, fall back to the localized `category.other` for the resolved
-transaction type. This is safe precisely because the snippet displays it.
-
-**Currency:** conversion is attempted **from cache only** (`CurrencyConverter.convertSync` /
-`RateSnapshot`). No network call inside an intent. A cache miss is a blocking issue.
-
-### 3.3 Blocking issues → open the app
-
-Only three conditions abort the background path and open the app with the parsed operation
-prefilled into the existing confirmation screen (foreground escalation — see §8):
+`makeDraft` returns a `DraftIssue` only when it cannot produce a draft at all; everything it
+can guess becomes a warning instead.
 
 | `DraftIssue` | Condition |
 |---|---|
 | `missingAmount` | Parser found no amount, or it is ≤ 0. |
-| `noEligibleAccount` | No regular accounts exist (fresh install / onboarding incomplete) → open onboarding instead. |
-| `noFallbackCategory` | Category unresolved **and** no `category.other` exists for that transaction type. Mirrors the existing `categoryNotFound` early return in `VoiceInputConfirmationView.swift:461-462`. |
+| `noEligibleAccount` | No account other than loans and deposits exists. |
 | `needsFXConversion` | Phrase currency ≠ account currency and no cached rate. |
 
-**Conversion policy.** `makeDraft` is synchronous and pure, so it can only consult the FX
-cache. The two callers differ in what they do about a miss, which is expressed as a
-parameter rather than two code paths:
+On an issue the intent hands the parsed operation to `IntentHandoff.shared` and escalates
+to the foreground; `MainTabView` picks up `pendingOperation` and opens the voice
+confirmation screen prefilled. Opening the app is a normal branch, not a failure. Intents
+never make a network call: they pass `ConversionPolicy.cachedOnly` and treat
+`needsFXConversion` as blocking.
 
-- Intents pass `.cachedOnly` and treat `needsFXConversion` as blocking.
-- `VoiceInputConfirmationView` passes `.cachedOnly`, and on `needsFXConversion` performs the
-  existing `await CurrencyConverter.convert(...)` (network allowed, the user is present) and
-  calls `makeDraft` again with `.provided(converted)`. This preserves today's behavior.
+### 2.3 Pro gate
 
-Opening the app is a normal branch, not a failure: it is still faster than manual entry.
+Logging a single operation via Siri is free for everyone; the in-app Voice tab stays
+Pro-gated. Only the first operation of a phrase is saved. When `parseMulti` returns more
+than one and the user is not Pro, the dialog says what was saved and how many operations were
+left out, and that logging several at once is part of Tenra Pro
+(`intent.log.savedWithProHint`).
 
-### 3.4 Pro gate
+### 2.4 Discoverability
 
-Decided: **single-operation logging via Siri is free for everyone.** The release goal is
-habit formation, and a habit is what later sells Pro. The existing Pro gate on the in-app
-Voice tab stays as is.
-
-`parseMulti` returning more than one operation for a non-Pro user: commit the **first**
-operation and state plainly in the dialog what happened, e.g. "Added 3000 ₸, Coffee. The
-phrase contained 2 more operations; logging several at once is part of Tenra Pro."
-Nothing is silently dropped, and it is an earned paywall moment.
-
-### 3.5 Discoverability
-
-A feature nobody finds has zero retention effect. Therefore in scope:
-
-- A **"Siri & Shortcuts"** section in Settings listing example phrases in the interface
-  language, with a `ShortcutsLink` to the Shortcuts app.
-- Intent donation after the first successful in-app voice entry.
-- `AppShortcutsProvider` surfaces the shortcuts in Spotlight and the Siri suggestions
-  automatically.
+- Settings → **Siri & Shortcuts** (`SettingsSiriSection`): localized example phrases, the
+  Wallet merchants list (§6) and a `ShortcutsLink` to the Shortcuts app.
+- `VoiceInputConfirmationView` donates `LogTransactionIntent` after a successful in-app voice
+  save (`LogTransactionIntent.donate(phrase:)`).
+- `TenraShortcuts` (`AppShortcutsProvider`) surfaces the shortcuts in Spotlight and Siri
+  suggestions. The system caches the provider: edited phrases apply only after a reinstall.
 
 ---
 
-## 4. Architecture
+## 3. Architecture
 
-### 4.1 New files
+### 3.1 Files
 
-```
-Tenra/Intents/                          # new top-level folder (platform surface, not a service)
-├── LogTransactionIntent.swift
-├── AddExpenseIntent.swift
-├── CheckSpendingIntent.swift
-├── TenraShortcuts.swift                # AppShortcutsProvider
-├── Entities/
-│   ├── AccountAppEntity.swift          # + EntityQuery
-│   └── CategoryAppEntity.swift         # + EntityQuery
-└── Snippets/
-    ├── TransactionConfirmationSnippet.swift
-    └── SpendingSummarySnippet.swift
+- `Tenra/Intents/`: the three intents, `TenraShortcuts`, `Entities/` (account, category,
+  subcategory `AppEntity`s with their queries), `Snippets/` (`TransactionConfirmationSnippet`,
+  `TransactionConfirmationSnippetIntent`, `SpendingSummarySnippet`), and the DEBUG-only
+  `WalletPaymentProbeIntent`.
+- `Services/Intents/`: `IntentEnvironment`, `TransactionDraft` + `TransactionDraftService`,
+  `IntentAccountSuggester`, `IntentSubcategoryStore`, `SpendingQueryService`, `IntentHandoff`,
+  `IntentUsageCounters`, and the DEBUG `WalletPaymentProbeLog`.
 
-Tenra/Services/Intents/
-├── IntentEnvironment.swift
-├── TransactionDraftService.swift
-└── SpendingQueryService.swift
-```
+### 3.2 `IntentEnvironment`
 
-`Tenra/Intents/` is a new branch in the CLAUDE.md file-organization tree and must be added
-there (App Intents are an entry point/adapter, not domain logic; the domain logic they call
-lives under `Services/Intents/`).
+Single entry point for live services from an intent, whatever the process state:
 
-### 4.2 `IntentEnvironment`
+- If the app already built an `AppCoordinator`, return it. `TenraApp` registers it right after
+  construction (`IntentEnvironment.shared.register`).
+- Otherwise (the system launched the process only for the intent) lazily build one and
+  `await initializeFastPath()`: accounts, settings and categories, no transactions.
 
-Single entry point for obtaining live services from an intent, whatever the process state.
+The registration is what prevents a second coordinator and a second `TransactionStore` in the
+same process (two stores would diverge in memory). `services()` returns `IntentServices`:
+`store`, `accounts`, `categories`, `settings`, `transactions`, plus `makeParser()`, wired as the
+Voice tab wires its parser. Pro status is read from `PremiumManager.shared`.
 
-- If the app already built an `AppCoordinator`, return it. `TenraApp` registers it
-  immediately after construction (`TenraApp.swift:68`).
-- Otherwise (process launched by the system solely to run the intent) lazily construct one
-  and `await initializeFastPath()`.
+A headless write is safe: `TransactionStore.add` updates balances incrementally through
+`BalanceCoordinator`, from the persisted account balance, so an empty in-memory transaction
+array does no harm.
 
-The registration hook is what prevents a second `TransactionStore` / second coordinator in
-the same process. `CoreDataStack.shared` already guards the container with an `NSLock`, but
-two stores would still diverge in memory.
+### 3.3 `TransactionDraftService`
 
-Exposes: `transactionStore`, `accountsViewModel`, `categoriesViewModel`, `settingsViewModel`,
-`premium`.
+One write path for the intents and `VoiceInputConfirmationView`, split so resolution is pure
+and testable:
 
-### 4.3 `TransactionDraftService`
+```swift
+static func makeDraft(from: ParsedOperation, accounts: [Account], categories: [CustomCategory],
+                      learned: VoiceLearningStore, conversion: ConversionPolicy = .cachedOnly,
+                      note: String = "", suggestAccount: ((String) -> String?)? = nil)
+    -> Result<TransactionDraft, DraftIssue>
 
-The extraction of `VoiceInputConfirmationView.saveTransaction`. Two responsibilities, split
-so the first is pure and testable:
-
-```
-func makeDraft(from: ParsedOperation,
-               accounts: [Account],
-               categories: [CustomCategory],
-               learned: VoiceLearningStore) -> Result<TransactionDraft, DraftIssue>
-
-func commit(_ draft: TransactionDraft) async throws -> Transaction
+static func commit(_ draft: TransactionDraft, store: TransactionStore,
+                   categoriesViewModel: CategoriesViewModel, hooks: CommitHooks? = nil)
+    async throws -> Transaction
 ```
 
-`TransactionDraft` carries `warnings: [DraftWarning]` (`categorySubstituted`,
-`accountInferred`) alongside the resolved fields. A "date was assumed" warning was
-considered and dropped: `ParsedOperation.date` defaults to `Date()` and carries no flag
-distinguishing a parsed date from the default, so the warning could not be produced
-honestly. `DraftIssue` is only
-for the blocking conditions in §3.3; anything the resolver could guess becomes a warning
-instead. Both consumers read the same warnings: the intent snippet marks the guessed field,
-and `VoiceInputConfirmationView` renders them through its existing
-`categoryWarning` / `accountWarning` labels, preserving today's on-screen behavior without
-duplicating the logic.
+`TransactionDraft.warnings: [DraftWarning]` holds `categorySubstituted(original:)` and
+`accountInferred`. The intent snippet marks the guessed field; `VoiceInputConfirmationView`
+shows the same warnings through its `categoryWarning` / `accountWarning` labels. There is no
+"date was assumed" warning: `ParsedOperation.date` defaults to `Date()` with no flag telling a
+parsed date from the default.
 
-`commit` performs `store.add`, links subcategories via
-`categoriesViewModel.linkSubcategoriesToTransaction`, feeds `VoiceLearningStore.recordSave`,
-and calls `RatingPromptService.shared.recordTransactionAdded()`.
+`commit` performs `store.add`, links subcategories, and runs `CommitHooks.production`:
+`VoiceLearningStore.recordSave` (skipped for `accountInferred`, see voice.md) and
+`RatingPromptService.recordTransactionAdded()`, which only counts and never presents the
+prompt from a background process. ⚠️ **Before the store's full load, subcategory links go
+through `IntentSubcategoryStore`**, one insert at a time against CoreData: the in-memory link
+list is still empty then, and saving it through `CategoriesViewModel` would delete every
+other transaction's links. When the app's own load is in flight, `commit` waits for it and
+links through memory.
 
-That last call matters: the counter currently lives in
-`TransactionsViewModel.addTransaction` (`TransactionsViewModel.swift:186`), which intents
-bypass. Without it, Siri-logged transactions never count toward rating eligibility. The
-counter only records — the native prompt is never presented from a background process.
+Pinned by `TransactionDraftResolverTests`, `TransactionDraftCommitTests`,
+`IntentSubcategoryStoreTests`, `IntentAccountSuggesterTests`.
 
-**`VoiceInputConfirmationView` is refactored onto this same service.** One code path instead
-of two, and roughly a hundred lines leave the view. This is the targeted cleanup that makes
-the feature possible rather than unrelated refactoring.
+### 3.4 `SpendingQueryService`
 
-### 4.4 `SpendingQueryService`
+A bounded `NSFetchRequest` over `TransactionEntity`: `date` between the period start and now,
+`type` in the types that `summaryContribution(isFuture: false)` counts as expense (expenses
+and loan payments, so Siri agrees with the home summary). Independent of `TransactionStore`
+load state by design.
 
-Bounded `NSFetchRequest` over `TransactionEntity` with a date predicate for the requested
-period. Independent of `TransactionStore` load state by design.
+Each row is converted to the base currency with `CurrencyConverter.convertSync` (red flag
+#6), with `convertedAmount` (or `amount`) only as a cold-cache fallback; summing
+`convertedAmount` across currencies is forbidden. `SpendingQueryServiceTests` pins the period
+bounds, the empty period, the multi-currency total and the fetched types.
 
-Money math must follow red flag #6: totals are produced by converting each transaction with
-`CurrencyConverter.convertSync(amount:from:to:)` against the base currency (with
-`convertedAmount ?? amount` as a cold-cache fallback only). Summing `convertedAmount` across
-currencies is the documented bug shape and is forbidden here.
+### 3.5 Concurrency
 
-Date parsing over the fetched rows uses `FastDateParser`, never `DateFormatter` in a loop
-(red flag #15).
+The project default isolation is `MainActor`, so intents and services are MainActor;
+`TransactionStore` is MainActor anyway. No `nonisolated` work here.
 
-### 4.5 Concurrency
+### 3.6 SDK facts (iOS 26 / 27)
 
-Project default is `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, so intents are MainActor by
-default; `TransactionStore` is MainActor anyway. No `nonisolated` work is introduced.
-
----
-
-## 5. Localization
-
-- **App Shortcut phrases** live in a dedicated `AppShortcuts.strings` per locale — a system
-  requirement, they cannot go in `Localizable.strings`.
-- **Intent titles, parameter prompts, dialogs, snippet copy** use `LocalizedStringResource`
-  and resolve from `Localizable.strings`.
-- All **11 in-app locales** (en, ru, de, es, fr, tr, pt-BR, it, uk, ja, ko). Missing keys
-  render as raw keys (red flag #13).
-- Positional format specifiers wherever a translation reorders arguments (red flag #14).
-- Phrase authoring is not translation: each locale needs phrasings people would actually
-  say, and every phrase must contain `\(.applicationName)`.
-- No em dashes in any of this copy.
-- Parity verified by the documented `diff <(grep -oE '^"[^"]+"' ...)` check, extended to
-  `AppShortcuts.strings`.
-
----
-
-## 6. Measurement without analytics
-
-App Privacy stays "Data Not Collected". Measurement is local only:
-
-- UserDefaults counters: transactions added via intents vs. added manually, and the count of
-  intent runs that fell back to opening the app (that ratio is the health metric for the
-  parser).
-- Surfaced in the existing `Views/Experiments/ExperimentsListView.swift`. Nothing leaves the
-  device, the ASC privacy label is unchanged.
-
----
-
-## 7. Testing — TDD
-
-**Everything under `Services/Intents/` is built test-first.** Not "tests are written for it",
-but strict RED → GREEN → REFACTOR: write one failing test, run it, confirm it fails **for
-the expected reason** (a wrong-reason failure means the test is broken, not the code), then
-write the minimum implementation to pass, then clean up with the test green.
-
-The design is deliberately shaped to make this possible: all decision logic lives in plain
-services with value-typed inputs and outputs, and the intents are thin adapters over them.
-
-### 7.1 Order of work
-
-Each step lands as its own commit, red test first.
-
-**Step 1 — characterization tests before touching shipped code.**
-Before `VoiceInputConfirmationView.saveTransaction` is extracted, pin its *current* behavior
-in tests: which account gets chosen, when `category.other` is substituted, how loan/deposit
-accounts are rejected, how currency conversion is triggered. These tests are written against
-the behavior as it exists today and must pass **before** the refactor begins. They are what
-makes the extraction provably behavior-preserving instead of hopefully behavior-preserving.
-
-**Step 2 — `TransactionDraftService.makeDraft`,** one test per row:
-
-| RED test | Expected |
-|---|---|
-| Phrase with amount + known category + named account | `.success`, no warnings |
-| No amount parsed | `.failure(.missingAmount)` |
-| No regular accounts exist | `.failure(.noEligibleAccount)` |
-| Only loan and deposit accounts exist | `.failure(.noEligibleAccount)` |
-| Unknown category, `category.other` exists | `.success` + `.categorySubstituted`, category is `category.other` of the right type |
-| Unknown category, no `category.other` for that type | `.failure(.noFallbackCategory)` |
-| No account named, learned account exists for the category | `.success` + `.accountInferred`, learned account chosen |
-| No account named, nothing learned | `.success` + `.accountInferred`, first regular account |
-| Phrase currency ≠ account currency, rate cached | `.success`, converted amount set |
-| Phrase currency ≠ account currency, cache cold | `.failure(.needsFXConversion)` |
-| Amount parsed as zero or negative | `.failure(.missingAmount)` |
-
-**Step 3 — `TransactionDraftService.commit`:** transaction reaches the store; subcategories
-linked; `VoiceLearningStore.recordSave` called; `RatingPromptService.recordTransactionAdded`
-called. Each asserted separately.
-
-**Step 4 — refactor `VoiceInputConfirmationView` onto the service.** The Step 1
-characterization tests must still be green, unchanged. If a characterization test needs
-editing to pass, that is a behavior change and needs an explicit decision, not a test edit.
-
-**Step 5 — `SpendingQueryService`:** period boundary tests (first and last second of the
-period included/excluded), empty period returns zero rather than nil, and the multi-currency
-case — two transactions in different currencies must total correctly in base currency. That
-last test is written specifically to fail if someone sums `convertedAmount` (red flag #6).
-
-**Step 6 — `IntentEnvironment`:** bootstrap on an in-memory container; returns the
-registered live coordinator instead of constructing a second one.
-
-**Step 7 — intents themselves.** Thin adapters, written last, once every branch they can
-take is already covered by green service tests.
-
-### 7.2 What cannot be TDD'd, and how it is verified instead
-
-Being explicit so these do not silently become untested:
-
-| Not unit-testable | Verification |
-|---|---|
-| `perform()` inside the AppIntents runtime | Kept trivial by design: parse → service → snippet. Verified on device. |
-| Siri phrase matching, Spotlight, Action Button | Physical device only (`Dkicekeeper 17`). The Simulator is unreliable for Siri. |
-| SwiftUI snippet views | Manual check plus their `#Preview` blocks. A green build does not render previews (CLAUDE.md), so previews are opened by hand. |
-| Localization parity | Script gate, run before every build in this workstream. |
-
-### 7.3 Project-specific test constraints
-
-- Suites constructing MainActor-isolated types must be annotated `@MainActor`.
-- Any test building a `TransactionStore` must retain it — `AccountsViewModel.transactionStore`
-  is `weak` and `accounts` empties when the store deallocates.
-- Filter at suite level (`-only-testing:TenraTests/SuiteTypeName`); method-level filtering
-  silently runs zero tests while still printing `TEST SUCCEEDED`.
-- Parse results with `grep -aE "Test case .* (passed|failed)|\*\* TEST (SUCCEEDED|FAILED)"`.
-- A full-suite run can print `TEST FAILED` with zero failing cases (parallel-clone flake);
-  re-run once before investigating.
-
-### 7.4 Manual device checklist
-
-Siri invocation; Shortcuts app; Spotlight; Action Button; cold launch with the app
-force-quit; the in-foreground case (Home must refresh after an intent-added transaction, per
-the `mutationVersion` refresh contract); and balance correctness after a background write
-followed by a full relaunch.
-
----
-
-## 8. Risks
-
-Two further API facts established against the iOS 26.5 SDK interface during implementation,
-both of which contradict the obvious reading of the documentation:
-
-- **`openAppWhenRun` cannot be set from inside `perform()`.** The static is read before the
-  intent runs, so it cannot express a per-invocation decision. The correct primitive is
-  `continueInForeground(_ dialog:alwaysConfirm:)`, an `AppIntent` extension method
-  (iOS 26+), which is what the blocking branches call.
-  **Update 2026-09-15 (SDK 27):** `openAppWhenRun` is deprecated and gone from the code.
-  The three intents now declare `supportedModes` instead — `[.background, .foreground(.dynamic)]`
-  for `LogTransactionIntent` / `AddExpenseIntent` (that `.dynamic` is what authorizes the
-  `continueInForeground` escalation) and `.background` for `CheckSpendingIntent`. Both
-  escalating branches first check `systemContext.currentMode.canContinueInForeground` and
-  throw `needsToContinueInForegroundError(_:)` when the surface cannot foreground
-  (voice-only Siri on HomePod or AirPods), where `continueInForeground` would otherwise throw.
-- **Update 2026-09-15 (SDK 27): the confirmation snippet is now a `SnippetIntent`.**
-  `requestConfirmation(result:confirmationActionName:showPrompt:)` is deprecated; the
-  replacement takes a `SnippetIntent` the system can re-run to redraw, so the card's inputs
-  travel as `@Parameter`s rather than a captured `TransactionDraft`
-  ([TransactionConfirmationSnippetIntent](../../Tenra/Intents/Snippets/TransactionConfirmationSnippetIntent.swift),
-  `isDiscoverable = false` so it stays out of the Shortcuts app). Its `perform()` only renders:
-  the system may run it repeatedly for one confirmation, so any write there would repeat too.
-  `TransactionConfirmationSnippet` keeps a `init(draft:accountName:)` convenience for the
-  non-intent call path.
+- **Foreground escalation.** `openAppWhenRun` is deprecated and unused (its static was read
+  before the intent ran, so it could never express a per-invocation decision). The intents
+  declare `supportedModes`: `[.background, .foreground(.dynamic)]` for `LogTransactionIntent`
+  and `AddExpenseIntent` (`.dynamic` is what allows `continueInForeground(_:)`), `.background`
+  for `CheckSpendingIntent`. The escalating branches first check
+  `systemContext.currentMode.canContinueInForeground` and throw
+  `needsToContinueInForegroundError(_:)` on surfaces that cannot foreground (voice-only Siri on
+  HomePod or AirPods), where `continueInForeground` would throw.
+- **The confirmation snippet is a `SnippetIntent`.**
+  `requestConfirmation(dialog:snippetIntent:)` takes
+  [TransactionConfirmationSnippetIntent](../../Tenra/Intents/Snippets/TransactionConfirmationSnippetIntent.swift)
+  (`isDiscoverable = false`, so it stays out of the Shortcuts app), whose inputs travel as
+  `@Parameter`s. The system may run its `perform()` repeatedly to redraw, so it only renders;
+  any write there would repeat. `TransactionConfirmationSnippet` keeps an
+  `init(draft:accountName:)` convenience for the non-intent call path.
 - **The `.result(dialog:view:)` snippet factories are not in `AppIntents`.** They live in the
-  `_AppIntents_SwiftUI` cross-import overlay, which only activates when both `AppIntents`
-  and `SwiftUI` are imported. `import SwiftUI` in the intent files is load-bearing, not
-  decorative.
-
-| Risk | Mitigation |
-|---|---|
-| Localization of phrases is the largest and most defect-prone chunk. | Treat as its own plan phase with a parity script gate before build. |
-| `#Preview` blocks in snippet views break invisibly on a green build (CLAUDE.md). | Every snippet view's previews updated alongside; noted as a manual check. |
-| `AppShortcutsProvider` is cached by the system; phrase edits do not apply immediately. | Reinstall during debugging; documented in the plan. |
-| Intent execution budget. | Fast path is <50 ms and no network call is made; large margin. |
-| Duplicate submissions (user repeats the phrase to Siri). | Verify `TransactionIDGenerator.generateID(for:)` behavior for identical field sets during implementation; the confirmation snippet is the primary guard. Open item, not a designed feature. |
-| Refactoring `VoiceInputConfirmationView` touches a shipped path. | Covered by `TransactionDraftResolverTests` and `TransactionDraftCommitTests`; the view keeps its current behavior by rendering `TransactionDraft.warnings` through its existing warning labels rather than duplicating resolution logic. |
+  `_AppIntents_SwiftUI` cross-import overlay, active only when both `AppIntents` and `SwiftUI`
+  are imported: `import SwiftUI` in the intent files is load-bearing.
 
 ---
 
-## 9. Definition of done
+## 4. Localization
 
-- Three intents ship, discoverable from Siri, Spotlight and the Shortcuts app.
-- A phrase with amount + category logs a transaction **without opening the app**, after one
-  confirmation, with the account balance correct on next launch.
-- `VoiceInputConfirmationView` and the intents share one write path.
-- All 11 locales have phrases and strings; parity script clean.
-- Settings has a "Siri & Shortcuts" section with localized example phrases.
-- Every service in `Services/Intents/` was built test-first, and the Step 1 characterization
-  tests are green **unedited** after the `VoiceInputConfirmationView` refactor.
-- Manual device checklist passes.
-- CLAUDE.md file-organization tree updated with `Tenra/Intents/` and `Services/Intents/`.
+- **App Shortcut phrases** live in `AppShortcuts.strings` per locale (a system requirement;
+  they cannot go in `Localizable.strings`). Every phrase must contain `${applicationName}`.
+  Phrase authoring is not translation: each locale needs phrasings people would actually say.
+- **Intent titles, parameter prompts, dialogs, snippet copy** use `LocalizedStringResource`
+  from `Localizable.strings`.
+- All 11 in-app locales, positional specifiers where a translation reorders arguments, no em
+  dashes (CLAUDE.md red flags #13, #14). Check parity of `AppShortcuts.strings` the same way as
+  `Localizable.strings`.
 
 ---
 
-## 10. Next milestones (context, not scope)
+## 5. Local measurement and verification
 
-1. Quick-add templates for frequent expenses (in-app, cheap, and the natural content source
-   for a widget and a Control Center control).
-2. WidgetKit: home + Lock Screen. Requires an App Group or a snapshot pipeline.
-3. Control Center control / Action Button wired to the quick-add intent.
-4. Savings goals (CoreData v13) — the "reason to come back" layer on top of the habit.
+App Privacy stays "Data Not Collected". `IntentUsageCounters` (UserDefaults) counts
+transactions added via intents (`intentAdd`), added manually (`manualAdd`, from
+`TransactionsViewModel`) and intent runs handed to the app (`intentFallbackToApp`, recorded by
+`IntentHandoff`); the last ratio is the parser's health metric. Shown in
+`Views/Experiments/ExperimentsListView.swift`; nothing leaves the device.
+
+Not unit-testable, so checked on the physical device (the Simulator is unreliable for Siri):
+Siri invocation, the Shortcuts app, Spotlight, the Action Button, a cold launch with the app
+force-quit, the in-foreground case (Home must refresh after an intent-added transaction, per
+the `mutationVersion` refresh contract), balance correctness after a background write
+followed by a full relaunch, and the snippet views (their `#Preview` blocks do not render in
+a green build).
 
 ---
 
-## 11. Wallet automation and merchant memory (shipped in 1.4, Settings list in 1.5)
+## 6. Wallet automation and merchant memory
 
 The Shortcuts "Wallet" automation (When I tap my card → "Add an expense") runs
 `AddExpenseIntent` on every Apple Pay payment. Setup that makes it silent after the first
@@ -458,8 +242,7 @@ payment at a merchant:
 - **Note ← Shortcut Input → Merchant.** The merchant is the memory's key; without it nothing is
   remembered and the payment falls back to "Other" with a confirmation.
 - **Category and Subcategory left empty**, not "Ask Each Time": that prompt comes from Shortcuts
-  before `perform()` runs, so the app cannot skip it (the owner's "asks every time" report on
-  2026-10-10 was exactly this).
+  before `perform()` runs, so the app cannot skip it.
 - **Account fixed** to the card's account, else the inferred account adds a confirmation.
   "Open When Run" off, "Show When Run" on (the first-time question needs it).
 

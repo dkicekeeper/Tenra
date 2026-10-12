@@ -4,18 +4,12 @@ Series + occurrence model for subscriptions and recurring payments.
 
 ## Single-Next-Occurrence Model
 
-- `generateUpToNextFuture()` — backfills all past occurrences + creates exactly **1 future occurrence**
-- `extendAllActiveSeriesHorizons()` — called on `loadData` and foreground resume; collects EVERY series' backfill first, then persists via ONE `apply(.bulkAdded)` (a per-series apply ran one CoreData save + full FRC section rebuild per series — S main-thread hitches at cold start after N days away)
+- `generateUpToNextFuture()`: backfills all past occurrences and creates exactly **1 future occurrence**
+- `extendAllActiveSeriesHorizons()`: runs after `loadData` and on return to the foreground (reentrancy-guarded). It loads the FX rates a series in another currency than its account needs; a series still without a rate waits for the next pass ([currency.md](currency.md)). It then collects EVERY due series' backfill and persists it with ONE `apply(.bulkAdded)`: a CoreData save and history rebuild per series would stall the main thread at startup.
 
 ## Occurrence dates are anchored to the start
 
-`RecurringDateMath` computes occurrence k as `start + k × period`, used by both the generator
-(`generateTransactions`, `generateUpToNextFuture`) and `SubscriptionNotificationScheduler`.
-Stepping from the previous occurrence (the pre-2026-09-24 generator) clamped Jan 31 to Feb 28
-and stayed on the 28th forever, while reminders targeted the 31st. Resuming after the latest
-stored occurrence goes to the NEXT period (`periodIndex + 1`, day ignored), so series whose
-stored occurrences already drifted never get a second occurrence in the same month.
-Pinned by `RecurringDateMathTests` and the month-end cases in `RecurringTransactionGeneratorTests`.
+`RecurringDateMath` computes occurrence k as `start + k × period`, used by both the generator (`generateTransactions`, `generateUpToNextFuture`) and `SubscriptionNotificationScheduler`, so a series started on Jan 31 lands on Feb 28, then Mar 31, and reminders target the same days. Resuming after the latest stored occurrence goes to the NEXT period (`periodIndex + 1`, day ignored), so a series whose stored occurrences drifted never gets a second occurrence in the same month. Pinned by `RecurringDateMathTests` and the month-end cases in `RecurringTransactionGeneratorTests`.
 
 ## Active vs Status
 
@@ -30,25 +24,26 @@ Both are updated by `stopSeries` / `resumeSeries`.
 
 ## Adding a `RecurringFrequency` Case
 
-⚠️ **Touches 6+ files** — grep `case .monthly:` to audit all switch sites:
+⚠️ The switches over `series.frequency` (the compiler flags each, they are exhaustive):
 
-1. `Models/RecurringTransaction.swift`
-2. `Services/Recurring/RecurringValidationService.swift`
-3. `Services/Recurring/RecurringTransactionGenerator.swift` (2 switches)
-4. `Services/Notifications/SubscriptionNotificationScheduler.swift`
+1. `Models/RecurringTransaction.swift` (on the enum itself)
+2. `Services/Recurring/RecurringValidationService.swift` (`case .daily, .weekly, .monthly, …`)
+3. `Services/Recurring/RecurringTransactionGenerator.swift` (max iterations)
+4. `Services/Recurring/RecurringDateMath.swift` (occurrence dates for the generator and the reminders)
 5. `Services/Insights/InsightsService.swift` (2 switches)
-6. `Services/Insights/InsightsService+Recurring.swift`
-7. `Services/Recurring/RecurringDateMath.swift` (occurrence dates for the generator and reminders)
+6. `Services/Insights/InsightsService+Recurring.swift` (2 switches)
+
+Other `case .monthly` hits (`CategoryBudgetService`, `InsightsService+Budget`, …) switch over a budget period, not a frequency.
 
 ## Generator Linking — Subcategories
 
-⚠️ **Fire-and-forget `createRecurringSeries()` is wrong** — generated txs are NOT in the store when `save()` returns.
+⚠️ **Fire-and-forget `createRecurringSeries()` is wrong**: generated transactions are NOT in the store when it returns.
 
 Always `await transactionStore.createSeries(series)` directly when you need to act on generated transactions (e.g. link subcategories).
 
 ### Subcategory linking pattern
 
-`Transaction.subcategory: String?` is legacy. Real subcats live via:
+`Transaction.subcategory: String?` is legacy. Real subcategories live in links:
 
 ```swift
 categoriesViewModel.linkSubcategoriesToTransaction(
@@ -57,41 +52,31 @@ categoriesViewModel.linkSubcategoriesToTransaction(
 )
 ```
 
-Generated recurring txs need explicit linking after creation.
+Generated recurring transactions need explicit linking after creation.
 
 ## Making an Existing Transaction Recurring
 
-⚠️ **Never `createSeries(_:)` and then link an existing transaction to the new series.** The generator emits occurrence 0 on `startDate`, which is that transaction's own date, so the date ends up with two transactions (the edit screen's "one-off → Monthly" bug). Use `createSeries(_:firstOccurrence:)`: it links the transaction, records it as the occurrence on `series.startDate`, and the generator resumes from the next period (generates nothing more when that date is already in the future). The transaction keeps its id, so its subcategory links survive. `TransactionEditCoordinator.handleRecurringSeries` uses it and aborts the save with the error if the series cannot be created (it used to `try?` and leave a dangling link). Pinned by `RecurringFirstOccurrenceTests` and `TransactionEditCoordinatorTests`.
+⚠️ **Never `createSeries(_:)` and then link an existing transaction to the new series.** The generator emits occurrence 0 on `startDate`, which is that transaction's own date, so the date would end up with two transactions. Use `createSeries(_:firstOccurrence:)`: it links the transaction, records it as the occurrence on `series.startDate`, and the generator resumes from the next period (generates nothing more when that date is already in the future). The transaction keeps its id, so its subcategory links survive. `TransactionEditCoordinator.handleRecurringSeries` uses it and aborts the save with the error if the series cannot be created. Pinned by `RecurringFirstOccurrenceTests` and `TransactionEditCoordinatorTests`.
 
 The add screen saves no separate one-off when a frequency is picked: the generated occurrence on the chosen date is the user's transaction (plus the next occurrence ahead, per the single-next-occurrence model). Pinned by `TransactionAddCoordinatorTests`.
 
 Occurrence records, not transaction ids, are what stop regeneration across launches: `TransactionIDGenerator` hashes with Swift's per-process `Hasher` seed, so the generator's `existingTransactionIds` check only matches ids made in the same process.
 
-## Deprecated APIs
-
-⚠️ **`getPlannedTransactions(horizon:)` deprecated** — filter `transactionStore.transactions` directly.
+`TransactionStore.getPlannedTransactions(for:horizon:)` has no callers: to list a series' transactions, filter `transactionStore.transactions` (or use `transactionsBySeriesId`).
 
 ## TransactionStore Interaction
 
-⚠️ **`TransactionStore.update()` blocks removing a LIVE `recurringSeriesId`** — throws `cannotRemoveRecurring`. Scope of the guard:
-- it fires only when the old series still exists in `recurringStore.seriesById`. A **dangling** link (series deleted/lost while its transactions survived) is allowed to be cleared — refusing it made such a transaction permanently uneditable (the "cannot remove recurring series" error when editing an auto-posted deposit-interest accrual, whose edit screen hides the recurring control and therefore always saves `nil`).
+⚠️ **`TransactionStore.update()` blocks removing a LIVE `recurringSeriesId`**: throws `cannotRemoveRecurring`. Scope of the guard:
+- it fires only when the old series still exists in `recurringStore.seriesById`. A **dangling** link (series deleted while its transactions survived) can be cleared; otherwise such a transaction could never be saved again (e.g. an auto-posted deposit-interest accrual, whose edit screen hides the recurring control and always saves `nil`).
 - pass `update(tx, allowSeriesDetach: true)` for a deliberate unlink of a single transaction (the edit screen's explicit "Never"). Never pass it just to silence the error.
 - ⚠️ A caller that rebuilds a `Transaction` MUST carry `recurringSeriesId` over. `TransactionEditCoordinator` only nils it when `transaction.type.allowsRecurring` **and** the user picked "Never"; for types whose recurring control is hidden it copies the existing link through. Pinned by `TransactionSeriesDetachTests`.
 
-To unlink in bulk, use `apply(.updated(old: tx, new: updatedTx))` directly. See `unlinkAllTransactions(fromSeriesId:)` in `TransactionStore+Recurring.swift`.
+To unlink in bulk, apply one `.bulkUpdated` event, as `unlinkAllTransactions(fromSeriesId:)` in `TransactionStore+Recurring.swift` does (it bypasses `update()`'s guard).
 
-## SubscriptionTransactionMatcher
+## Link-Payments UI and Matchers
 
-Accepts `AmountMatchMode` (`.all` / `.tolerance` / `.exact`) — defined in `Services/Recurring/SubscriptionTransactionMatcher.swift`.
-
-Both `SubscriptionTransactionMatcher` and `LoanTransactionMatcher` conform; new matchers should follow the same signature to plug into `LinkPaymentsView`.
+`SubscriptionLinkPaymentsView` wraps the shared `LinkPaymentsView` with `SubscriptionTransactionMatcher`; the view, the matchers and `AmountMatchMode` are documented in [loans.md](loans.md) §Link-Payments UI.
 
 ## Categories ViewModel Threading in Views
 
-`SubscriptionDetailView` and `SubscriptionsListView` require `CategoriesViewModel` passed as parameter from `ContentView`.
-
-## Link-Payments UI Reuse
-
-UI wrapper: `SubscriptionLinkPaymentsView` — uses shared `LinkPaymentsView` (`Views/Components/LinkPayments/LinkPaymentsView.swift`).
-
-⚠️ **Don't duplicate the state machine** — wrap `LinkPaymentsView` with `findCandidates` + `performLink` `@Sendable` closures. See also [loans.md](loans.md).
+`SubscriptionDetailView` and `SubscriptionsListView` take `CategoriesViewModel` as a parameter (`SubscriptionsListView` gets it from `FinancesView`).

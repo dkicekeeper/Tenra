@@ -13,7 +13,7 @@ with the commit of every fix, are in
 
 - **Wallet probe code (DEBUG only).** The spike it served (does logging Apple Pay through the
   Shortcuts "Wallet" automation work?) was overtaken by the shipped automation (1.4, merchant
-  memory; [domains/intents.md](domains/intents.md) §11). `WalletPaymentProbeIntent`,
+  memory; [domains/intents.md](domains/intents.md) §6). `WalletPaymentProbeIntent`,
   `WalletPaymentProbeLog` and their Experiments section still compile into DEBUG builds:
   remove them, or keep them for measuring trigger coverage. Owner's call.
 - **Legacy converted deposits (DP1).** A read-only DEBUG diagnostic lists deposits converted
@@ -22,6 +22,32 @@ with the commit of every fix, are in
 - **Performance left on the main actor:** `recalculateAll` for balances (one inverted O(N)
   pass); History's CoreData refetch after each debounced (300 ms) search change (the fetched
   results controller is bound to the view context).
+- **All-accounts rescans on small edits:** `DepositDetailView`'s edit `onSave` and both
+  `LoanDetailView` delete paths call `recalculateAccountBalances()` where
+  `recalculateBalances(for:)` with the touched accounts would do.
+
+Found by the docs audit of 2026-10-12, not verified on device yet:
+- **Historical FX keys and the calendar.** `CurrencyConverter.dateKey` builds a `DateFormatter`
+  without `en_US_POSIX` and the Gregorian calendar: on a device with a Buddhist or Japanese
+  calendar region the historical-rate key gets another year.
+- **Voice confirmation retry:** after a network FX conversion `VoiceInputConfirmationView`
+  rebuilds the draft without `suggestAccount`, so the retry can pick another account.
+- **`projected_balance` for `.year`:** averages the last 3 period points' expenses and
+  multiplies by the period factor, so a year projects a 3-year average × 12
+  (`InsightsService+CashFlow`).
+- **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the
+  confirmation snippet is the only guard. Decide whether intents deduplicate.
+- **Health score budget adherence** uses the calendar month, not each budget's own period;
+  **`largeTransaction`** counts `.expense` only, so loan payments never qualify. Design calls.
+- **`SilenceDetector`** is created in `VoiceInputService` but never fed audio.
+- **Dead code and stale comments:** `TransactionStore.getPlannedTransactions(for:horizon:)` and
+  `RecurringTransactionCoordinatorProtocol` have no callers or conformers;
+  `AccountEntity.isDeposit` is written but never read (drop at the next schema bump); comments
+  still name removed things (`principalBalance` in `DepositsViewModel` and `DepositDetailView`,
+  aggregate services in `TransactionCacheManager`, the "no Other category" case in
+  `LogTransactionIntent`).
+- **DesignKit's docs/charts.md** repeats stale lines (`seriesKey`, the `.dual` banner, "~9
+  switches", `ChartAxisLabelMapCache`): a DesignKit PR.
 
 ## Ideas, not planned yet
 
@@ -36,6 +62,10 @@ with the commit of every fix, are in
 - **Statement import:** a one-tap "align the balance to the statement" after the closing-balance
   check (today it only shows the difference).
 - **Subscriptions as expected payments**, merged with the real charges when they arrive.
+- **Receipt photo straight to the on-device model (iOS 27)** once
+  `IntelligenceAvailability.supportsVision` is true on real devices: either an optional image in
+  `DocumentSnapshot` or a vision interpreter in front of `ReceiptInterpreter` that falls back to
+  the text path.
 
 ## Decisions (stand until the owner changes them)
 

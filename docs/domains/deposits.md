@@ -1,157 +1,152 @@
 # Deposits Domain
 
-Interest accrual, capitalization, and account ↔ deposit conversion.
+Interest accrual, capitalization, and account → deposit conversion.
 
-## Account vs Deposit Distinction
+## Model
 
-`Account.isDeposit` is a **computed property** (`depositInfo != nil`), not a stored flag.
+- `Account.isDeposit` and `AccountBalance.isDeposit` are computed (`depositInfo != nil`).
+  `AccountEntity.isDeposit` is written from it and never read.
+- `DepositInfo` (`Models/Transaction.swift`) is stored as JSON in `AccountEntity.depositInfoData`. A new
+  field goes into the JSON with a decode default, no schema change.
+- Fields: `initialPrincipal` (what the deposit starts from, = `Account.initialBalance`), `startDate`,
+  `conversionTimestamp` (converted deposits only), `capitalizationEnabled`, `interestRateAnnual` and
+  `interestRateHistory`, `interestPostingDay`, `dayCount`, and the interest state
+  `interestAccruedForCurrentPeriod`, `lastInterestCalculationDate`, `lastInterestPostingMonth`.
+- **There is no stored principal.** `principalBalance` and `interestAccruedNotCapitalized` are
+  decode-only keys: a payload that has only `principalBalance` decodes it as `initialPrincipal`.
 
-`DepositInfo` is persisted via `depositInfoData: Data?` (JSON-encoded Binary) on `AccountEntity` (CoreData v6).
+## Balance
 
-## Interest Formula
+A deposit's balance is `initialBalance + Σ BalanceCalculationEngine.contribution`, like every account.
+For the current balance, `contribution` first drops what `initialPrincipal` already contains:
 
-Simple daily interest, compound monthly at posting:
+- converted deposit (`conversionTimestamp` set): every transaction with `createdAt <= conversionTimestamp`;
+- fresh deposit: every transaction dated on or before `startDate`.
 
-```
-dailyInterest = principalBalance × (rate/100) × depositInfo.dayCount.dailyFraction(on: day)
-```
+The rest counts as on any account: income, top-ups and `.depositInterestAccrual` add, expenses and
+withdrawals subtract, transfers move by their leg. Posted interest always adds to the balance, with or
+without capitalization.
 
-### Day-count convention (`DepositDayCount`, since 2026-09-25)
+## Interest walk (`DepositInterestService`)
 
-Each deposit stores how its bank counts days (`DepositInfo.dayCount`, inside `depositInfoData` JSON, no
-schema change). Research: Kazakh banks mostly use **30/360** (Kaspi and Alatau City Bank: 30 days a
-month, 360 a year; the National Bank's own deposits: actual days / 360); Russian banks use actual days /
-365 or 366.
+`reconcileDepositInterest(account:allTransactions:onTransactionCreated:)` recomputes the open period from
+its start on every call, so a transaction backdated into it is always counted:
+
+- **Period start** (`currentPeriodStart`): the posting date of `lastInterestPostingMonth` (clamped to the
+  month's length), never before `startDate`, and for a converted deposit never before the conversion day.
+- **Events**: transactions on the deposit whose `type.affectsDepositPrincipal` (everything but loan
+  payments) and that come after the anchor (`eventIsAfterAnchor`: `createdAt > conversionTimestamp` for a
+  converted deposit, else `date > startDate`).
+- **Running principal**: `initialPrincipal` plus the `principalDelta` of each event before the walk
+  starts; it exists only inside the walk.
+- **Days**: from the day after the period start through today inclusive (`<= today`), so opening the
+  app on the posting day posts the period that just ended. Each day earns
+  `runningPrincipal × rate / 100 × dayCount.dailyFraction(on: day)`, with the rate from
+  `interestRateHistory`.
+- **Value date T+1**: a day earns on the balance at its start, so an event dated D counts from D+1
+  (`events[i].date < currentDate`, strictly). Pinned by `accrual_topUpEarnsFromNextDay`.
+- **Posting**: on the posting day the accrued total is posted **before** that day accrues (the posting day
+  opens the next period). Pinned by `reconcile_postsOnTodayWhenTodayIsPostingDay`. Posting creates a
+  `.depositInterestAccrual` transaction, hands it to `onTransactionCreated` (the caller saves it) and sets
+  `lastInterestPostingMonth`; it is skipped, with only the month marker moving, when the deposit already
+  has an interest accrual dated in that month or later. With `capitalizationEnabled` the posted amount
+  joins the running principal, so later days compound.
+- **End**: writes `interestAccruedForCurrentPeriod` and `lastInterestCalculationDate = today`.
+
+`calculateInterestToToday(depositInfo:accountId:allTransactions:)` runs the same walk read-only, for
+display.
+
+The interest state is written by the reconciler, set first by `DepositEditView` for a new or converted
+deposit (below), and reset by `DepositsViewModel.recalculateInterest`.
+
+### `principalDelta` vs `contribution`
+
+`DepositInterestService.principalDelta` moves the walk's running principal; `contribution` moves the
+balance. They stay separate: `.depositInterestAccrual` grows the principal only when
+`capitalizationEnabled`, but always adds to the balance. Income, top-ups, expenses and withdrawals use
+`convertedAmount ?? amount`; a transfer into the deposit credits `targetAmount` (the deposit's currency),
+and a transfer out uses `-amount` (the deposit is the source, so `amount` is in its currency). Pinned by
+`DepositPrincipalDeltaCharacterizationTests` and `DepositCrossCurrencyTransferTests`.
+
+### Day-count convention (`DepositDayCount`)
+
+Each deposit stores how its bank counts days (`DepositInfo.dayCount`). Kazakh banks mostly use 30/360
+(Kaspi, Alatau City Bank; the National Bank's own deposits use actual/360), Russian banks actual/365 or 366.
 
 | Case | Daily fraction | Note |
 |------|----------------|------|
-| `.thirty360` | weight / 360 | the 31st weighs 0, the last day of February weighs 3 (2 in a leap year), others 1: every full month earns exactly rate / 12; a period from the 15th earns 16 days |
-| `.actual365` | 1 / 365 | Tenra's arithmetic before the setting; `.legacy` |
+| `.thirty360` | weight / 360 | the 31st weighs 0, the last day of February 3 (2 in a leap year), others 1: every full month earns rate / 12; a period from the 15th earns 16 days |
+| `.actual365` | 1 / 365 | `.legacy` |
 | `.actualActual` | 1 / 365 or 1 / 366 | days of that calendar year |
 | `.actual360` | 1 / 360 | |
 
-New and converted deposits default to `.thirty360` (`DepositEditView` picker, `defaultForNewDeposits`).
-Payloads saved before the setting decode as `.actual365`, and `DepositInfo.init` defaults to it too, so
-existing deposits and tests keep their numbers. Changing the method affects only the current period and
-later: the walk recomputes from the period start, posted interest transactions are untouched. Pinned by
-`DepositDayCountTests`.
+New and converted deposits default to `.thirty360` (`defaultForNewDeposits`: the `DepositEditView`
+picker, `AccountsViewModel.addDeposit`). A payload without the field decodes as `.legacy`, and
+`DepositInfo.init` defaults to it. Changing the method affects the open period onward: the walk
+recomputes from the period start, posted interest transactions stay. Pinned by `DepositDayCountTests`.
 
-### Value date T+1 (start-of-day balance)
+## Where reconciliation runs
 
-Each day's interest is computed on the balance at the **start** of the day (= the
-previous day's close), so money earns only from the day **after** it arrives — matching
-KZ bank convention (incl. Freedom). In the walk this is `events[i].date < currentDate`
-(strictly), NOT `<=`. A top-up dated the 26th first earns on the 27th. Pinned by
-`accrual_topUpEarnsFromNextDay`. (A bank may still differ on when it *value-dates* a
-specific top-up — the app uses a uniform T+1, so a freshly-added amount the bank hasn't
-credited yet will read higher in-app until it matures.)
+- App launch: `AppCoordinator.reconcileDepositsOnLaunch`, after the FX prewarm wait and before the ledger
+  recalculation; the posted interest goes in one `addBatch`.
+- `DepositsListView`: on `.task` and after adding a deposit (all deposits).
+- `DepositDetailView`: `.task(id: refreshTrigger)` (that deposit).
+- After an account → deposit conversion: the convert sheet's `onSave` in `AccountsManagementView` and
+  `AccountDetailView`.
 
-### Posting day is exclusive of its own interest
+Rules:
 
-Interest posted on the posting day (e.g. the 1st) covers the period that just **ended**,
-through the day before. The walk posts the accrued total **before** accruing the posting
-day itself — the posting day's interest opens the next period. (Accruing-then-posting
-added one extra day to every posting.) Pinned by `reconcile_postsOnTodayWhenTodayIsPostingDay`.
+- ⚠️ Never spawn a `Task {}` inside the synchronous `onTransactionCreated` callback: collect the
+  transactions and persist them after the reconcile returns.
+- One accounts save per pass: `reconcileAllDeposits` applies every reconciled deposit with one
+  `TransactionStore.updateAccounts`; `recalculateInterest` saves once. Pinned by `DepositReconcileSaveTests`.
 
-## DepositInterestService.reconcileDepositInterest
+## Recalculating interest
 
-- Triggered on view appear (`.task {}`), app launch, and `AccountsManagementView`
-- Walks `walkStart … today` **inclusive** (`<= today`) so the posting fires on the
-  posting day itself (opening the app on the 1st must post May's interest, not skip it)
-- Creates `.depositInterestAccrual` transaction on posting day
+`DepositsViewModel.recalculateInterest(for:transactionStore:)` deletes the auto-posted interest
+(`.depositInterestAccrual` whose id starts with `di_`), resets `lastInterestCalculationDate` to
+`startDate`, `lastInterestPostingMonth` to the month before `startDate` and
+`interestAccruedForCurrentPeriod` to 0, reruns the reconciler and adds the reposted interest in one batch.
+User-linked interest keeps its own ids and stays.
 
-### Capitalization behavior
+Auto-posted interest ids are `di_` + a deterministic hash of deposit id, month, amount and currency
+(`generateDepositInterestTransactionID`), stable across launches.
 
-| Setting | Effect |
-|---------|--------|
-| Capitalization enabled | `principalBalance += postedAmount` |
-| Capitalization disabled | `interestAccruedNotCapitalized += postedAmount` |
+## Creating and converting
 
-### `calculateInterestToToday()`
+- `DepositEditView` handles new, edit and convert (`isConverting`).
+- ⚠️ A new or converted deposit gets `lastInterestCalculationDate` / `lastInterestPostingMonth` from
+  `DepositEditView.computeInitialDates(postingDay:)`: the latest posting date on or before today, so the
+  first period starts there. An edit keeps the stored values.
+- ⚠️ Add a deposit built by the edit screen with `AccountsViewModel.addDepositAccount(_:)`, which keeps
+  those dates. `addDeposit(name:balance:…)` builds `DepositInfo` from fields with the init's default
+  dates.
 
-Read-only calculation for UI display (no side effects).
+### Converting an account with history
 
-## Account → Deposit Conversion
+`AccountsViewModel.updateDeposit` detects a conversion (the stored account has no `depositInfo` yet). It
+keeps the account's id and history, stamps `depositInfo.conversionTimestamp` (now) and persists the
+snapshot balance with `BalanceCoordinator.persistInitialBalance` (CoreData and memory;
+`AccountRepository.saveAccountsInternal` never overwrites `initialBalance`). Every transaction that
+existed at conversion then stays out of the balance (`contribution`'s `createdAt` gate) and out of the
+interest walk (`eventIsAfterAnchor`). `createdAt` is a timestamp, so same-day events before and after the
+conversion separate. `DepositEditView` carries `conversionTimestamp` over on edits.
 
-`DepositEditView` handles 3 modes (new, edit, convert) via `isConverting` computed property.
+Pinned by `BalanceLedgerInvariantTests` (`convertedDepositRecalcDoesNotDoubleCountHistory`,
+`convertedDepositRecalcCorrectAfterRelaunchModeLost`, `convertedDepositSameDayEventsSeparatedByCreatedAt`,
+`inSessionConversionAppliesCutoff`) and `DepositInterestServiceTests`
+(`convertedDeposit_excludesPreConversionEvents_noNegativeInterest`,
+`convertedDeposit_postConversionTopUpStillAccrues`).
 
-### ⚠️ Initial date computation
+⚠️ A converted deposit without `conversionTimestamp` falls back to the `startDate` cutoff, so inherited
+income and expenses dated after `startDate` count twice; such deposits stay corrupted until a one-shot
+recovery, which does not exist yet. The DEBUG-only `LegacyDepositDiagnostics` (Settings → Experiments)
+lists the suspicious ones and changes nothing.
 
-New/converted deposits MUST use `DepositEditView.computeInitialDates(postingDay:)` to set `lastInterestCalculationDate` to the most recent posting date — otherwise interest shows 0 (default is today → `calculateInterestToToday()` loop never executes).
+## Linking existing transactions as interest
 
-### ⚠️ Don't decompose Account for `addDeposit`
-
-Use `AccountsViewModel.addDepositAccount(_ account:)` to preserve computed `DepositInfo` dates. Decomposing into fields loses `lastInterestCalculationDate` / `lastInterestPostingMonth`.
-
-### ⚠️ Converting an account WITH history → `DepositInfo.conversionTimestamp`
-
-`AccountsViewModel.updateDeposit` detects a conversion (the existing account still has `depositInfo == nil`). The converted account keeps its full transaction history (same `id`), but its current balance is snapshotted into `initialPrincipal`. Every tx that already existed at conversion is therefore baked into that snapshot and must NOT be re-summed by `recalculateAll`.
-
-**The cutoff keys on `conversionTimestamp`, not `startDate`.** On conversion `updateDeposit` stamps `depositInfo.conversionTimestamp = Date().timeIntervalSince1970` (persisted inside `depositInfoData` JSON — survives relaunch) AND calls `BalanceCoordinator.persistInitialBalance(snapshot)`. [`BalanceCalculationEngine.contribution`](../../Tenra/Services/Balance/BalanceCalculationEngine.swift) then excludes any tx with `createdAt <= conversionTimestamp` from the `.currentBalance` sum, so `recalculateAll` reproduces `initialBalance + Σ(post-conversion)`. Because `createdAt` is a precise timestamp (not a calendar day), same-day pre- vs post-conversion events are separable — the gap that previously forced the `.preserveImported` workaround. `DepositEditView` preserves the marker across deposit edits. Pinned by `BalanceLedgerInvariantTests.convertedDepositRecalcCorrectAfterRelaunchModeLost` + `…SameDayEventsSeparatedByCreatedAt` + `…DoesNotDoubleCountHistory` + `…inSessionConversionAppliesCutoff`.
-
-> ⚠️ **Two non-obvious requirements that make the cutoff actually work across relaunch:**
-> 1. **`initialBalance` must be PERSISTED to CoreData, not just the in-memory store.** `AccountRepository.saveAccountsInternal` deliberately refuses to overwrite `AccountEntity.initialBalance` ("set once at creation"). The conversion is the ONE sanctioned exception: `BalanceCoordinator.persistInitialBalance` → `repository.updateInitialBalancesSync([id: snapshot])` writes it. Using the in-memory `setInitialBalance` alone caused a regression where the relaunch recalc read the creation-time `initialBalance` (often 0) and the deposit balance dropped to ~0 on day 2.
-> 2. **`AccountBalance.isDeposit` is COMPUTED (`depositInfo != nil`), never a stored flag.** A stored flag went stale after in-session conversion (`updateDepositInfo` sets `depositInfo` but a stored `isDeposit` stayed `false`), so a same-session `recalculateAll` (day rollover past midnight / currency change) bypassed the `isDeposit`-gated cutoff and double-counted. Keep it derived.
-
-> **Why the change & the `BalanceMode` removal:** the prior fix marked the account `.preserveImported`, a per-account mode living ONLY in the in-memory `BalanceStore.calculationModes` dict, which is never persisted. On the next-day cold launch `recalculateLedgerIfDayChanged` runs `recalculateAll` with an empty mode dict → the converted deposit reverted to the default `.fromInitialBalance`, and the past-dated `startDate` cutoff let inherited history dated after it double-count → the "huge negative balance days later" bug (e.g. a deposit dropping to −3.4M overnight). Since the conversion was the ONLY production user of `.preserveImported`, the entire `BalanceMode` machinery (`markAsImported` / `markAsManual` / `isImported` / `calculationModes` / the engine's mode switch) was removed — every account now computes `initialBalance + Σ contribution`, with the gates inside `contribution` doing all the exclusion.
-
-> ✅ **Resolved:** the **interest** walk (`DepositInterestService`) now honors `conversionTimestamp` the same way the balance path does. For a converted deposit, walk events are gated by `createdAt > conversionTimestamp` (via `eventIsAfterAnchor`) instead of `date > startDate`, and `currentPeriodStart` is clamped to never start before the conversion day. This stops inherited pre-conversion income/expense (which carry `date > startDate`) from being re-applied on top of the snapshot `initialPrincipal` — the bug that drove the running principal negative → **negative accrued interest** (field report: deposit showed −12 817 ₸). Fresh (non-converted) deposits still use the `startDate` cutoff. Pinned by `convertedDeposit_excludesPreConversionEvents_noNegativeInterest` + `convertedDeposit_postConversionTopUpStillAccrues`. The fix is read-path only: existing converted deposits self-heal on the next reconcile (view appear / relaunch), no migration needed — the bad value was the unposted `interestAccruedForCurrentPeriod`, never a posted tx (`postInterest` only fires when `amount > 0`).
-
-> ⚠️ **Deposits converted BEFORE this fix have `conversionTimestamp == nil`** and fall back to the old `startDate` date-cutoff — they stay corrupted until a one-shot recovery backfills the marker and restores `balance` from `initialPrincipal`. (Recovery is a separate step, not part of the conversion fix.)
-
-## Deposit Balance Model
-
-```
-balance = initialPrincipal + sum(events with date > startDate)
-```
-
-Where `events` =
-- `.depositTopUp` (+)
-- `.depositWithdrawal` (−)
-- `.depositInterestAccrual` (+ iff `capitalizationEnabled`)
-
-⚠️ **`principalBalance` is a cached result** of `DepositInterestService.reconcileDepositInterest` — never mutate it outside that service.
-
-The link-interest flow reclassifies tx type only; it must NOT touch `principalBalance` / `interestAccruedNotCapitalized`.
-
-## startDate Semantics
-
-`startDate` on `DepositInfo` marks when the deposit "exists for calculation".
-
-Events dated on/before `startDate` are assumed baked into `initialPrincipal` and filtered out of the reconcile walk — prevents double-counting when converting a regular account with past income into a deposit.
-
-## Auto-Posted Interest Tx ID Prefix `di_`
-
-Deterministic djb2 hash of `(depositId, month, amount, currency)`. Survives process restarts → use for idempotency and bulk cleanup.
-
-`DepositsViewModel.recalculateInterest` deletes only `.depositInterestAccrual` with `di_` prefix so user-linked interest stays.
-
-## Linking Existing Transactions as Interest
-
-`DepositsViewModel.linkTransactionsAsInterest(depositId:transactions:transactionStore:)`:
-- Converts `.income` on the deposit's account into `.depositInterestAccrual`
-- Pure reclassification — no balance/deposit-info mutation
-- UI wrapper: `DepositLinkInterestView` (uses shared `LinkPaymentsView` with `Options.deposit`)
-
-## Reconciliation Callback Pattern
-
-⚠️ **Never spawn `Task {}` inside synchronous `onTransactionCreated` callbacks** — collect into array, batch-persist after reconciliation completes. Same rule applies to loans (see [loans.md](loans.md)).
-
-⚠️ **One accounts save per pass.** `reconcileAllDeposits` collects the reconciled deposits and applies them with `TransactionStore.updateAccounts` (one whole-table save, unchanged accounts skipped); `recalculateInterest` reconciles the reset account and saves once. `updateAccount` per deposit started one save of the whole table each. Pinned by `DepositReconcileSaveTests`.
-
-## Where Reconciliation Runs
-
-`AccountsManagementView` is the centralized reconciliation point for both deposits AND loans on `.task {}` appear.
-
-## ⚠️ principalDelta vs BalanceCalculationEngine.contribution (M-1 — intentionally NOT unified)
-
-`DepositInterestService.principalDelta` defines how a tx moves the deposit's **running principal** (interest-accrual input). It is a SEPARATE definition from `BalanceCalculationEngine.contribution` (which moves the account **balance** = principal + interest). These model different quantities and must NOT be merged. Behavior is pinned by `DepositPrincipalDeltaCharacterizationTests` (+ `DepositCrossCurrencyTransferTests`).
-
-**The essential, by-design divergence — keep it:**
-- **`.depositInterestAccrual` capitalization gate.** `principalDelta` grows the running principal ONLY when `capitalizationEnabled` (interest compounds); `contribution` always adds the accrual to the balance. Merging would make non-capitalizing deposits compound incorrectly.
-
-**Resolved (M-1):**
-- The cross-currency `.internalTransfer` **inflow** leg now credits `targetAmount` (in the deposit's currency), matching `contribution`'s `getTargetAmount` — previously it used the source-side `convertedAmount`, adding a wrong-currency amount to the principal for cross-currency top-ups.
-- The `.internalTransfer` **outflow** leg uses `-amount`, which is correct because the deposit is the source so `amount` is already in the deposit's currency (not an asymmetry to "fix").
-
-Do NOT collapse `principalDelta` into `contribution` — the capitalization gate above is the reason they exist separately.
+`DepositsViewModel.linkTransactionsAsInterest(depositId:transactions:transactionStore:)` rewrites each
+picked transaction as a `.depositInterestAccrual` on the deposit (type, the "Interest" category,
+`accountId` / `accountName`) through `TransactionStore.update`, and leaves `DepositInfo` alone. UI:
+`DepositLinkInterestView` over the shared `LinkPaymentsView` with `Options.deposit`
+([loans.md](loans.md) §Link-Payments UI).

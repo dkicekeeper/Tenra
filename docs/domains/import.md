@@ -12,8 +12,7 @@ three-stage pipeline. Read this before touching anything in
 | Extraction | `PDFTextLayerExtractor`, `VisionDocumentExtractor` | Both produce `DocumentSnapshot`. Text-layer PDFs skip OCR entirely. |
 | Interpretation | `ColumnRoleResolver`, `IntelligentColumnRoleResolver`, `StatementInterpreter`, `ReceiptInterpreter` | Consume only `DocumentSnapshot`. |
 
-`DocumentImportService` is the single orchestrator. `PDFService` is now only a
-page rasteriser.
+`DocumentImportService` is the single orchestrator. `PDFService` only rasterises pages.
 
 ## Rules
 
@@ -23,13 +22,14 @@ page rasteriser.
    when `IntelligenceAvailability.status` is not `.available`. Roughly half the
    install base has no Apple Intelligence.
 3. **Apple Intelligence infers layout, not values, for statements.** It receives
-   the header plus two sample rows and returns column indices. All amounts are
+   the header plus sample rows and returns column indices. All amounts are
    then parsed deterministically. Do not switch to per-row LLM extraction: a
    200-row statement exceeds the context window, and a model re-typing amounts
    can corrupt them.
 4. **Receipts are the opposite case.** The payload is small and layouts vary
    wildly, so `ReceiptInterpreter` asks the model for the values directly, with
-   `heuristicDraft` as the guaranteed floor.
+   `heuristicDraft` as the guaranteed floor. It logs `IntelligenceAvailability.supportsVision`
+   on every intelligent run (Console.app, subsystem `Tenra`, category `ReceiptInterpreter`).
 5. **Never drop a row silently.** Anything the interpreter cannot use goes into
    `ParsedStatement.skipped` with a localized reason and is shown in
    `ImportDiagnosticsView`.
@@ -37,40 +37,16 @@ page rasteriser.
    `DateTokenParser`, and `MoneyTokenParser` carry every format assumption, and
    each is pinned by tests. Supporting a new bank means adding a test case
    there, not a branch elsewhere.
-7. **`useLanguageCorrection` stays off.** Statement and receipt content is
-   mostly numbers, merchant names, and reference codes; language correction
+7. **`useLanguageCorrection` stays off** (`VisionDocumentExtractor`). Statement and receipt
+   content is mostly numbers, merchant names, and reference codes; language correction
    silently rewrites them.
-
-## Open question: receipt photo straight to the model (iOS 27)
-
-iOS 27 lets the on-device model take image input (`Attachment(cgImage)` inside a
-`Prompt`, gated on `LanguageModelCapabilities.Capability.vision`). Receipts are the one
-place where that could beat OCR text, since a receipt's layout carries meaning the flat
-text loses.
-
-Adopting it collides with rule 1: interpretation would need pixels, which today stop at
-the extraction stage. Two designs, neither chosen yet:
-
-1. Extend the seam — an optional `CGImage` on `DocumentSnapshot` (CoreGraphics, not
-   Vision/PDFKit/UIKit, so the import ban holds). Costs the struct its synthesized
-   `Equatable`, which the hand-built test snapshots rely on.
-2. Keep the seam — a separate vision interpreter above `ReceiptInterpreter`, which falls
-   through to the text path.
-
-`IntelligenceAvailability.supportsVision` is in place as a **probe** and
-`ReceiptInterpreter` logs it on every intelligent run (Console.app, subsystem `Tenra`,
-category `ReceiptInterpreter`). Decide the design only after that log shows the
-capability actually exists on real devices; rule 2 still applies either way, so the
-text and heuristic paths stay.
 
 ## Header-anchored tables (`StatementTableAssembler`)
 
-Real statements rarely start a page with the table header, and their cells wrap. Checked
-against a Kaspi Gold and a Freedom Card statement (2026-09-24): the gap-split rows lost every
-Kaspi merchant name (the header sat under the account summary, so columns were guessed from
-content and "Операция" won the description), turned the summary block ("Доступно на ...") into
-fake income rows, and scattered Freedom's vertically centered cells ("Сумма в / обработке",
-10-line transfer details half above the date line) across columns.
+Real statements rarely start a page with the table header (it can sit under an account
+summary), and their cells wrap or are vertically centered across several lines. Splitting
+lines by gaps alone loses merchant names, turns summary lines into fake rows and scatters
+wrapped cells across columns.
 
 When `ColumnRoleResolver.transactionHeaderDateIndex` finds a header line (date keyword + amount
 keyword, no digits) anywhere in the document, `PDFTextLayerExtractor` hands its lines to the
@@ -78,22 +54,21 @@ pure `StatementTableAssembler` instead:
 
 - **Records**: a date line is a line whose first word under the date header is a bare date.
   Wrapped lines between two date lines split at the widest vertical gap (record padding); when
-  no gap stands out (Kaspi's steady pitch) they continue the record above. Lines above the first
+  no gap stands out (a steady line pitch) they continue the record above. Lines above the first
   and below the last date line join only as a chain of close steps (1.25× the widest wrap step
   seen), and a line with a word straddling a column river stops the chain (footnotes, page
   headers). A centered record broken by the page end is carried to the next page's first record.
 - **Columns**: the boundary between two header cells is the middle of the least-covered x run
   between their centers, measured on date lines and the lines between them. Header text position
-  itself is not trusted (Freedom centers "Детали" 70pt right of its text).
+  itself is not trusted (a bank may center a header far from its column's text).
 - **Numbers**: date and amount columns take words from the date line only (or a line level with
   it), so a stray wrapped line never changes an amount. `isNumericCell` allows at most 3 letters;
   plain `looksLikeMoney` would call reference-number details numeric and drop their wraps.
 - Lines above the first header never become rows, and a header-less continuation page reuses the
-  last layout. No header anywhere: the gap-split tables stay as before.
+  last layout. No header anywhere: the gap-split tables are used.
 
-Both real statements reconcile with the totals the banks print (per operation type, to the
-tiyn). The PDFs themselves are personal and not in the repo; `StatementTableAssemblerTests`
-holds anonymized geometry of both layouts.
+`StatementTableAssemblerTests` holds anonymized geometry of two real layouts (Kaspi Gold,
+Freedom Card); the statements themselves are personal and never in the repo.
 
 ## Operation column (Покупка / Перевод / Пополнение / Снятие)
 
@@ -101,37 +76,35 @@ When a statement has a separate transaction-type column (Kaspi: "Операци�
 `ColumnRoleResolver` assigns it `ColumnRoles.operation` and `StatementInterpreter` keeps the raw text
 in `ParsedTransaction.operation`. `StatementOperationKind.classify` maps it (multilingual keywords) to
 purchase / transfer / top-up / cash withdrawal / other. Money-movement rows carry the statement's own
-label in the description ("Перевод · Асан Б."); purchases stay bare merchant names. Cash withdrawals
+label in the description ("Перевод · <name>"); purchases stay bare merchant names. Cash withdrawals
 start unchecked on the review screen: the cash is spent later and logged separately, so importing the
 withdrawal as an expense would count it twice. Own-account moves (`.ownAccountTransfer`: Kaspi
 "Перевод на свой счет" / "Поступление со своего счета", or a transfer/top-up whose details name a
 deposit, like Freedom's "Перевод вклада по Договору") start unchecked for the same reason, with their
 own hint. `classify(operation:details:)` reads the details only for transfers, top-ups and "other",
 never for purchases (a merchant name is not a marker). Ordinary transfers and top-ups stay checked (a
-transfer to a person is real spending). Before 2026-09-24 the column was dropped entirely. Pinned by
-`StatementOperationTests`.
+transfer to a person is real spending). Pinned by `StatementOperationTests`.
 
-Descriptions: a details cell that is a whole payment order ("Плательщик: ... Назначение: ФИО: Асан
-Б.. Мобильный: ...") shrinks to the counterparty's name, and IBAN account numbers are stripped as
+Descriptions: a details cell that is a whole payment order ("Плательщик: ... Назначение: ФИО: ...
+Мобильный: ...") shrinks to the counterparty's name, and IBAN account numbers are stripped as
 noise.
 
 ## Statement account, transfers and learning (review screen)
 
 - **Statement account.** `StatementBankDetector` finds the bank by the web domain its pages print
-  ("www.kaspi.kz", "bankffin.kz" → registry `ffin.kz`; bank NAMES are not searched, a Freedom
-  statement is full of "KASPI MAGAZIN" purchases) and matches it to an account by logo, then by name.
-  The review screen shows it as "Счёт выписки"; every row in that currency goes there. Before, each
-  row defaulted to the first account in its currency, so two tenge accounts meant re-picking the
-  account on every row. Duplicate and transfer detection run in the view (`.task(id:)` on the
-  statement account), because they depend on it.
+  ("www.kaspi.kz", "bankffin.kz" → registry `ffin.kz`; bank NAMES are not searched, since a
+  statement is full of purchases at shops named after other banks) and matches it to an account
+  by logo, then by name. The review screen shows it as "Счёт выписки"; every row in that currency
+  goes there. Duplicate and transfer detection run in the view (`.task(id:)` on the statement
+  account), because they depend on it.
 - **Other side of a transfer.** `ImportTransferMatcher`: a row whose operation can be a transfer
   (not a purchase or cash withdrawal) and a saved plain expense/income on another regular account
-  with the opposite direction, same amount and currency, within 2 days, are one transfer. Saving
-  converts the saved transaction into the transfer (same id and date) and does not add the row.
-  A saved transfer that already covers the row makes it start unchecked. Saved rows that are
-  themselves a move from a deposit ("Перевод вклада по Договору") are never a counterpart: on real
-  Kaspi + Freedom statements the chain deposit → card → other bank → a person repeats one amount on
-  one day and paired the wrong rows. Real pair check (2026-09): 10 pairs, all correct.
+  with the opposite direction, same amount and currency, within 2 days (`dayWindow`), are one
+  transfer. Saving converts the saved transaction into the transfer (same id and date) and does not
+  add the row. A saved transfer that already covers the row makes it start unchecked. Saved rows
+  that are themselves a move from a deposit ("Перевод вклада по Договору") are never a
+  counterpart: a chain deposit → card → other bank → a person repeats one amount on one day and
+  would pair the wrong rows.
 - **Learned transfers.** `ImportTransferHistory` reads the user's saved transfers: an outgoing row on
   account A with a description that was saved as a transfer A → B is suggested as that transfer again.
   Plain spending/income with the same description votes against it, so it never overrides a merchant.
@@ -141,28 +114,25 @@ noise.
   (type, merchant, category) from existing links. Saving links it to the row and to the category.
 - **Saving.** `ImportCommitPlanner` (pure) turns row decisions into add / add-as-transfer / convert
   operations; `ImportCommitter` runs them, batch-writes subcategory links and calls
-  `ImportBalanceCompensation.apply(saved:convertedLegs:)`, which now also covers a transfer's target
-  account and, for a conversion, only the statement account's new leg.
-
+  `ImportBalanceCompensation.apply(saved:convertedLegs:)`, which covers a transfer's target
+  account too and, for a conversion, only the statement account's new leg.
 - **Guards against wrong matches.** A saved row with a real category is a transfer counterpart only
   when its description reads like a money movement (a salary under "Зарплата" never becomes half of
   a transfer). Loan payments recorded through the loans screen (`accountId` = the paying account)
   cover the statement's plain expense row (`ImportDuplicateDetector.Reason.loanPayment`, ±3 days,
-  exact amount). Every hint names the saved entry it matched ("Похоже, уже добавлено: «Кофе»,
-  10 сентября"; the category when the entry has no description), so a coincidence can be told
+  exact amount). Every hint names the saved entry it matched ("Похоже, уже добавлено: «<description>»,
+  <date>"; the category when the entry has no description), so a coincidence can be told
   from a real duplicate on the spot.
-
 - **Balance check.** `StatementBalanceParser` reads the closing balance the statement prints: a
-  labelled line ("Доступно на 24.09.26: + 12 345,67 ₸", latest date wins, Kaspi prints the opening
-  one too) or an account-table row ("KZ… KZT 27,000.50 ₸", dated by the period end; the row's ISO
-  code beats the symbol, "¥" is also CNY). Only amounts with cents count. The review header shows
+  labelled line ("Доступно на <date>: + <amount> ₸", latest date wins, since some banks print the
+  opening one too) or an account-table row ("KZ… KZT <amount> ₸", dated by the period end; the row's
+  ISO code beats the symbol, "¥" is also CNY). Only amounts with cents count. The review header shows
   it next to the statement account's balance at that date after import: the current balance rolled
   back past later transactions, plus the checked rows up to that date
   (`ImportReconciliation.importEffect`, pre-creation rows excluded like the compensation does).
-  "Сходится" or "В Tenra меньше/больше на X" live as rows are checked, so misses that row matching
-  cannot catch (amount off by a few tenge, two days late, entered on another account, rows on the
-  account's creation day entered after the balance) show before saving. On the real statements the
-  Kaspi opening balance plus every parsed row equals its printed closing balance to the tiyn.
+  "Сходится" or "В Tenra меньше/больше на X" update live as rows are checked, so misses that row
+  matching cannot catch (amount off by a few tenge, two days late, entered on another account, rows
+  on the account's creation day entered after the balance) show before saving.
 
 Pinned by `ImportLearningTests`, `ImportCommitterTests`, `ImportBalanceCompensationTests`,
 `ImportDuplicateDetectorTests`, `StatementBalanceParserTests`.
@@ -206,6 +176,12 @@ loop would drop them.
    supported device language; for a Russian-language iPhone it is usually off and the tier is
    simply skipped. Pinned (deterministic half) by `IntelligentCategorySuggesterTests`.
 
+## Receipts
+
+`ReceiptConfirmationView` requires the user to pick the destination account before the
+recognized transaction can be added: a receipt carries no account information of its own.
+Statements are reviewed as transaction cards in `ImportTransactionPreviewView`.
+
 ## Balance on import
 
 An account's balance is `initialBalance + Σ realized transactions` with no creation-date cutoff, and
@@ -215,22 +191,16 @@ accounts are usually created with the user's REAL current balance. `ImportBalanc
 already in the entered balance), persisted through `BalanceCoordinator.persistInitialBalance`. Rows on or
 after the creation day are new money movement and still move the balance. Accounts with
 `shouldCalculateFromTransactions` are never compensated. The CSV path into existing accounts does not use
-it yet. Pinned by `ImportBalanceCompensationTests`.
+it. Pinned by `ImportBalanceCompensationTests`.
 
 ## Tests
 
-`TenraTests/Services/Import/` covers `DateTokenParser`, `MoneyTokenParser`,
-`ColumnRoleResolver`, `StatementInterpreter`, and `ReceiptInterpreter`'s
-deterministic path. The Vision and Apple Intelligence paths are not unit
-testable (device and model dependent); they are covered by the fact that both
+Deterministic parts are pinned in `TenraTests/Services/Import/` (one suite per type: the token
+parsers, `DateOrderDetector`, `ColumnRoleResolver`, the validation of `IntelligentColumnRoleResolver`'s answers,
+`PDFTextLayerExtractor`, `StatementTableAssembler`, `StatementInterpreter`,
+`StatementOperationKind`, `StatementBalanceParser`, `ReceiptInterpreter`'s deterministic path,
+`ParsedTransactionMapper`, `DocumentImportService`, duplicates, learning and the committer), plus
+`TenraTests/Services/ImportBalanceCompensationTests.swift`,
+`IntelligentCategorySuggesterTests.swift` and `Categories/CategorySuggestion*Tests.swift`. The
+Vision and Apple Intelligence paths are not unit testable (device and model dependent); they
 degrade into the tested deterministic paths.
-
-## Recent additions
-
-- Receipts require an account selection before import (Task 14): the user
-  picks the destination account in `ReceiptConfirmationView` before the
-  recognized transaction can be added, since a receipt carries no account
-  information of its own.
-- Recognized statement transactions are reviewed as transaction cards through
-  `ImportTransactionPreviewView` (Task 15), replacing the old raw-text review
-  step with the same card UI used elsewhere in the app.

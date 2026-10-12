@@ -326,7 +326,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "Yeni Alt Kategori";
 "subcategory.namePlaceholder" = "Alt kategori adı";
-"subcategory.usageCount" = "%d kez kullanıldı";
 "subcategory.notUsed" = "Henüz kullanılmadı";
 "subcategory.reorder" = "Alt Kategoriler";
 "subcategory.sort.title" = "Sırala";
@@ -467,7 +466,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "Aktif abonelik yok";
-"subscriptions.activeCount" = "%lld aktif";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "Sonraki ödeme: %@";
@@ -764,7 +762,6 @@
 "filter.allAccounts" = "Tüm Hesaplar";
 "filter.allCategories" = "Tüm Kategoriler";
 "filter.allSubcategories" = "Tüm Alt Kategoriler";
-"filter.categoriesCount" = "%d kategori";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1048,10 +1045,8 @@
 "finances.title" = "Finans";
 "finances.accounts.title" = "Hesaplar";
 "finances.accounts.totalLabel" = "Toplam bakiye";
-"finances.accounts.count" = "%lld hesap";
 "finances.accounts.empty" = "Hesap yok";
 "finances.deposits.title" = "Mevduatlar";
-"finances.deposits.count" = "%lld mevduat";
 "finances.deposits.empty" = "Mevduat yok";
 "deposit.listTitle" = "Mevduatlar";
 "deposit.emptyTitle" = "Mevduat Yok";
@@ -1060,11 +1055,8 @@
 "account.includeInBalance" = "Bakiyeye dahil et";
 "account.includeInBalanceHint" = "Bu hesabı toplam bakiyene ve analizlere dahil et.";
 "finances.categories.title" = "Kategoriler";
-"finances.categories.count" = "%lld kategori";
 "finances.categories.empty" = "Kategori yok";
 "finances.subcategories.title" = "Alt kategoriler";
-"finances.subcategories.count" = "%lld alt kategori";
-"finances.subcategories.linkedTo" = "%lld kategoride";
 "finances.subcategories.empty" = "Alt kategori yok";
 
 // MARK: - Loans
@@ -1078,7 +1070,6 @@
 "loan.totalDebt" = "Toplam Borç";
 "loan.monthlyTotal" = "Aylık";
 "loan.unpaidThisMonth" = "Bu ay ödenmemiş";
-"loan.activeCount" = "%d aktif kredi";
 "loan.typeAnnuityShort" = "Kredi";
 "loan.typeInstallmentShort" = "Taksit";
 "loan.of" = "/";
@@ -1356,7 +1347,6 @@
 "subscription.unlinkAll.confirm" = "Bağlantıları Kaldır";
 "subscription.unlinkAll.message" = "%d işlemden abonelik bağlantısı kaldırılsın mı? İşlemlerin kendisi olduğu gibi kalır.";
 "subscription.linkPayments.subcategories" = "Alt kategoriler";
-"subscription.linkPayments.subcategoriesCount" = "%d alt kategori";
 "subscription.filterAll" = "Tümü";
 
 // MARK: - Accounts (Types & Actions)

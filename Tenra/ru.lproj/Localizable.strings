@@ -326,7 +326,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "Новая подкатегория";
 "subcategory.namePlaceholder" = "Название подкатегории";
-"subcategory.usageCount" = "Использовано %d раз";
 "subcategory.notUsed" = "Ещё не использовалась";
 "subcategory.reorder" = "Подкатегории";
 "subcategory.sort.title" = "Сортировка";
@@ -467,7 +466,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "Нет активных подписок";
-"subscriptions.activeCount" = "Активных %lld";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "Следующее: %@";
@@ -764,7 +762,6 @@
 "filter.allAccounts" = "Все счета";
 "filter.allCategories" = "Все категории";
 "filter.allSubcategories" = "Все подкатегории";
-"filter.categoriesCount" = "%d категорий";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1048,10 +1045,8 @@
 "finances.title" = "Финансы";
 "finances.accounts.title" = "Счета";
 "finances.accounts.totalLabel" = "Общий баланс";
-"finances.accounts.count" = "%lld счетов";
 "finances.accounts.empty" = "Нет счетов";
 "finances.deposits.title" = "Депозиты";
-"finances.deposits.count" = "%lld депозитов";
 "finances.deposits.empty" = "Нет депозитов";
 "deposit.listTitle" = "Депозиты";
 "deposit.emptyTitle" = "Нет депозитов";
@@ -1060,11 +1055,8 @@
 "account.includeInBalance" = "Учитывать в балансе";
 "account.includeInBalanceHint" = "Учитывать этот счёт в общем балансе и аналитике.";
 "finances.categories.title" = "Категории";
-"finances.categories.count" = "%lld категорий";
 "finances.categories.empty" = "Нет категорий";
 "finances.subcategories.title" = "Подкатегории";
-"finances.subcategories.count" = "%lld подкатегорий";
-"finances.subcategories.linkedTo" = "В %lld категориях";
 "finances.subcategories.empty" = "Нет подкатегорий";
 
 // MARK: - Loans
@@ -1078,7 +1070,6 @@
 "loan.totalDebt" = "Общий долг";
 "loan.monthlyTotal" = "Ежемесячно";
 "loan.unpaidThisMonth" = "Не оплачено в этом месяце";
-"loan.activeCount" = "%d активных кредитов";
 "loan.typeAnnuityShort" = "Кредит";
 "loan.typeInstallmentShort" = "Рассрочка";
 "loan.of" = "из";
@@ -1356,7 +1347,6 @@
 "subscription.unlinkAll.confirm" = "Отвязать";
 "subscription.unlinkAll.message" = "Убрать связь с подпиской у %d операций? Сами операции останутся.";
 "subscription.linkPayments.subcategories" = "Подкатегории";
-"subscription.linkPayments.subcategoriesCount" = "%d подкатегорий";
 "subscription.filterAll" = "Все";
 
 // MARK: - Accounts (Types & Actions)

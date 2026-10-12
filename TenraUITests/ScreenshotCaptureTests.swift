@@ -13,7 +13,7 @@
 //  and exports the attachments from the .xcresult bundles.
 //
 //  Environment (set with TEST_RUNNER_ prefix on xcodebuild):
-//    SCREENSHOT_FRAMES         — "cpp" captures only 09-12 (custom product pages); default all
+//    SCREENSHOT_FRAMES         — "cpp" captures 02 and 09-12 (custom product pages); default all
 //    SCREENSHOT_LANGUAGE       — AppleLanguages value for the app ("de", "es-MX", …)
 //    SCREENSHOT_LOCALE         — AppleLocale value ("de_DE", "es_MX", …)
 //    SCREENSHOT_DEMO_CURRENCY  — seeded dataset currency ("EUR", "MXN", …)
@@ -69,6 +69,7 @@ final class ScreenshotCaptureTests: XCTestCase {
             let accountsCard = app.descendants(matching: .any)["finances.accountsCard"].firstMatch
             XCTAssertTrue(accountsCard.waitForExistence(timeout: 60), "Finances did not load")
             sleep(2)
+            snap("02-finances")   // the custom pages reuse it
             captureCustomPageFrames()
             return
         }

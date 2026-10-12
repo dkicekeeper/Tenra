@@ -326,7 +326,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "新しいサブカテゴリ";
 "subcategory.namePlaceholder" = "サブカテゴリ名";
-"subcategory.usageCount" = "%d回使用";
 "subcategory.notUsed" = "まだ使用していません";
 "subcategory.reorder" = "サブカテゴリ";
 "subcategory.sort.title" = "並べ替え";
@@ -467,7 +466,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "有効なサブスクがありません";
-"subscriptions.activeCount" = "%lld件が有効";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "次回請求：%@";
@@ -764,7 +762,6 @@
 "filter.allAccounts" = "すべての口座";
 "filter.allCategories" = "すべてのカテゴリ";
 "filter.allSubcategories" = "すべてのサブカテゴリ";
-"filter.categoriesCount" = "%d件のカテゴリ";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1048,10 +1045,8 @@
 "finances.title" = "ファイナンス";
 "finances.accounts.title" = "口座";
 "finances.accounts.totalLabel" = "残高の合計";
-"finances.accounts.count" = "%lld件の口座";
 "finances.accounts.empty" = "口座がありません";
 "finances.deposits.title" = "預金";
-"finances.deposits.count" = "%lld件の預金";
 "finances.deposits.empty" = "預金がありません";
 "deposit.listTitle" = "預金";
 "deposit.emptyTitle" = "預金がありません";
@@ -1060,11 +1055,8 @@
 "account.includeInBalance" = "残高に含める";
 "account.includeInBalanceHint" = "この口座を残高の合計と分析に含めます。";
 "finances.categories.title" = "カテゴリ";
-"finances.categories.count" = "%lld件のカテゴリ";
 "finances.categories.empty" = "カテゴリがありません";
 "finances.subcategories.title" = "サブカテゴリ";
-"finances.subcategories.count" = "%lld件のサブカテゴリ";
-"finances.subcategories.linkedTo" = "%lld件のカテゴリにわたって";
 "finances.subcategories.empty" = "サブカテゴリがありません";
 
 // MARK: - Loans
@@ -1078,7 +1070,6 @@
 "loan.totalDebt" = "負債の合計";
 "loan.monthlyTotal" = "毎月";
 "loan.unpaidThisMonth" = "今月の未払い";
-"loan.activeCount" = "%d件の有効なローン";
 "loan.typeAnnuityShort" = "ローン";
 "loan.typeInstallmentShort" = "分割払い";
 "loan.of" = "／";
@@ -1356,7 +1347,6 @@
 "subscription.unlinkAll.confirm" = "すべて解除";
 "subscription.unlinkAll.message" = "%d件の取引からサブスクの紐づけを解除しますか？取引自体はそのまま残ります。";
 "subscription.linkPayments.subcategories" = "サブカテゴリ";
-"subscription.linkPayments.subcategoriesCount" = "%d件のサブカテゴリ";
 "subscription.filterAll" = "すべて";
 
 // MARK: - Accounts (Types & Actions)

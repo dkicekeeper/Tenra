@@ -62,5 +62,205 @@
 			<string>%d операції</string>
 		</dict>
 	</dict>
+	<key>finances.accounts.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld рахунок</string>
+			<key>few</key>
+			<string>%lld рахунки</string>
+			<key>many</key>
+			<string>%lld рахунків</string>
+			<key>other</key>
+			<string>%lld рахунків</string>
+		</dict>
+	</dict>
+	<key>finances.deposits.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld депозит</string>
+			<key>few</key>
+			<string>%lld депозити</string>
+			<key>many</key>
+			<string>%lld депозитів</string>
+			<key>other</key>
+			<string>%lld депозитів</string>
+		</dict>
+	</dict>
+	<key>finances.categories.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld категорія</string>
+			<key>few</key>
+			<string>%lld категорії</string>
+			<key>many</key>
+			<string>%lld категорій</string>
+			<key>other</key>
+			<string>%lld категорій</string>
+		</dict>
+	</dict>
+	<key>finances.subcategories.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld підкатегорія</string>
+			<key>few</key>
+			<string>%lld підкатегорії</string>
+			<key>many</key>
+			<string>%lld підкатегорій</string>
+			<key>other</key>
+			<string>%lld підкатегорій</string>
+		</dict>
+	</dict>
+	<key>loan.activeCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d активний кредит</string>
+			<key>few</key>
+			<string>%d активні кредити</string>
+			<key>many</key>
+			<string>%d активних кредитів</string>
+			<key>other</key>
+			<string>%d активних кредитів</string>
+		</dict>
+	</dict>
+	<key>filter.categoriesCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d категорія</string>
+			<key>few</key>
+			<string>%d категорії</string>
+			<key>many</key>
+			<string>%d категорій</string>
+			<key>other</key>
+			<string>%d категорій</string>
+		</dict>
+	</dict>
+	<key>subscription.linkPayments.subcategoriesCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d підкатегорія</string>
+			<key>few</key>
+			<string>%d підкатегорії</string>
+			<key>many</key>
+			<string>%d підкатегорій</string>
+			<key>other</key>
+			<string>%d підкатегорій</string>
+		</dict>
+	</dict>
+	<key>subcategory.usageCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Використано %d раз</string>
+			<key>few</key>
+			<string>Використано %d рази</string>
+			<key>many</key>
+			<string>Використано %d разів</string>
+			<key>other</key>
+			<string>Використано %d разів</string>
+		</dict>
+	</dict>
+	<key>subscriptions.activeCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld активна</string>
+			<key>few</key>
+			<string>%lld активні</string>
+			<key>many</key>
+			<string>%lld активних</string>
+			<key>other</key>
+			<string>%lld активних</string>
+		</dict>
+	</dict>
+	<key>finances.subcategories.linkedTo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>У %lld категорії</string>
+			<key>few</key>
+			<string>У %lld категоріях</string>
+			<key>many</key>
+			<string>У %lld категоріях</string>
+			<key>other</key>
+			<string>У %lld категоріях</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

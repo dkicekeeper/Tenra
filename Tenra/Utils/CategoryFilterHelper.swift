@@ -17,7 +17,7 @@ struct CategoryFilterHelper {
         if selectedCategories.count == 1 {
             return selectedCategories.first ?? String(localized: "filter.allCategories")
         }
-        return String(format: String(localized: "filter.categoriesCount"), selectedCategories.count)
+        return String(format: NSLocalizedString("filter.categoriesCount", comment: "Count with plural forms in Localizable.stringsdict"), selectedCategories.count)
     }
 
     /// Generate icon view for single selected category

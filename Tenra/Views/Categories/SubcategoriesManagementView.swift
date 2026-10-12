@@ -322,7 +322,7 @@ struct SubcategoryManagementRow: View {
                     .font(AppTypography.h4)
                 HStack(spacing: AppSpacing.sm) {
                     if usageCount > 0 {
-                        Text(String(format: String(localized: "subcategory.usageCount"), usageCount))
+                        Text(String(format: NSLocalizedString("subcategory.usageCount", comment: "Count with plural forms in Localizable.stringsdict"), usageCount))
                         if let lastUsed = lastUsedDate {
                             Text("·")
                             Text(Self.dateFormatter.string(from: lastUsed))

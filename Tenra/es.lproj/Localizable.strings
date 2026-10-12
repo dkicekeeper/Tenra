@@ -326,7 +326,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "Nueva subcategoría";
 "subcategory.namePlaceholder" = "Nombre de la subcategoría";
-"subcategory.usageCount" = "Usada %d veces";
 "subcategory.notUsed" = "Aún sin usar";
 "subcategory.reorder" = "Subcategorías";
 "subcategory.sort.title" = "Ordenar";
@@ -467,7 +466,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "No hay suscripciones activas";
-"subscriptions.activeCount" = "%lld activas";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "Próximo cobro: %@";
@@ -764,7 +762,6 @@
 "filter.allAccounts" = "Todas las cuentas";
 "filter.allCategories" = "Todas las categorías";
 "filter.allSubcategories" = "Todas las subcategorías";
-"filter.categoriesCount" = "%d categorías";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1048,10 +1045,8 @@
 "finances.title" = "Finanzas";
 "finances.accounts.title" = "Cuentas";
 "finances.accounts.totalLabel" = "Saldo total";
-"finances.accounts.count" = "%lld cuentas";
 "finances.accounts.empty" = "Sin cuentas";
 "finances.deposits.title" = "Depósitos";
-"finances.deposits.count" = "%lld depósitos";
 "finances.deposits.empty" = "Sin depósitos";
 "deposit.listTitle" = "Depósitos";
 "deposit.emptyTitle" = "Sin depósitos";
@@ -1060,11 +1055,8 @@
 "account.includeInBalance" = "Incluir en el saldo";
 "account.includeInBalanceHint" = "Incluye esta cuenta en tu saldo total y en el análisis.";
 "finances.categories.title" = "Categorías";
-"finances.categories.count" = "%lld categorías";
 "finances.categories.empty" = "Sin categorías";
 "finances.subcategories.title" = "Subcategorías";
-"finances.subcategories.count" = "%lld subcategorías";
-"finances.subcategories.linkedTo" = "En %lld categorías";
 "finances.subcategories.empty" = "Sin subcategorías";
 
 // MARK: - Loans
@@ -1078,7 +1070,6 @@
 "loan.totalDebt" = "Deuda total";
 "loan.monthlyTotal" = "Mensual";
 "loan.unpaidThisMonth" = "Pendiente este mes";
-"loan.activeCount" = "%d préstamos activos";
 "loan.typeAnnuityShort" = "Crédito";
 "loan.typeInstallmentShort" = "A plazos";
 "loan.of" = "de";
@@ -1356,7 +1347,6 @@
 "subscription.unlinkAll.confirm" = "Desvincular todo";
 "subscription.unlinkAll.message" = "¿Quitar el vínculo con la suscripción de %d transacciones? Las transacciones en sí se conservan.";
 "subscription.linkPayments.subcategories" = "Subcategorías";
-"subscription.linkPayments.subcategoriesCount" = "%d subcategorías";
 "subscription.filterAll" = "Todas";
 
 // MARK: - Accounts (Types & Actions)

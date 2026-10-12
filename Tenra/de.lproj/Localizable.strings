@@ -326,7 +326,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "Neue Unterkategorie";
 "subcategory.namePlaceholder" = "Name der Unterkategorie";
-"subcategory.usageCount" = "%d-mal verwendet";
 "subcategory.notUsed" = "Noch nicht verwendet";
 "subcategory.reorder" = "Unterkategorien";
 "subcategory.sort.title" = "Sortieren";
@@ -467,7 +466,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "Keine aktiven Abos";
-"subscriptions.activeCount" = "%lld aktiv";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "Nächste Abbuchung: %@";
@@ -764,7 +762,6 @@
 "filter.allAccounts" = "Alle Konten";
 "filter.allCategories" = "Alle Kategorien";
 "filter.allSubcategories" = "Alle Unterkategorien";
-"filter.categoriesCount" = "%d Kategorien";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1048,10 +1045,8 @@
 "finances.title" = "Finanzen";
 "finances.accounts.title" = "Konten";
 "finances.accounts.totalLabel" = "Gesamter Kontostand";
-"finances.accounts.count" = "%lld Konten";
 "finances.accounts.empty" = "Keine Konten";
 "finances.deposits.title" = "Sparkonten";
-"finances.deposits.count" = "%lld Sparkonten";
 "finances.deposits.empty" = "Keine Sparkonten";
 "deposit.listTitle" = "Sparkonten";
 "deposit.emptyTitle" = "Keine Sparkonten";
@@ -1060,11 +1055,8 @@
 "account.includeInBalance" = "In Kontostand einbeziehen";
 "account.includeInBalanceHint" = "Dieses Konto im Gesamtkontostand und in der Analyse berücksichtigen.";
 "finances.categories.title" = "Kategorien";
-"finances.categories.count" = "%lld Kategorien";
 "finances.categories.empty" = "Keine Kategorien";
 "finances.subcategories.title" = "Unterkategorien";
-"finances.subcategories.count" = "%lld Unterkategorien";
-"finances.subcategories.linkedTo" = "In %lld Kategorien";
 "finances.subcategories.empty" = "Keine Unterkategorien";
 
 // MARK: - Loans
@@ -1078,7 +1070,6 @@
 "loan.totalDebt" = "Gesamtschulden";
 "loan.monthlyTotal" = "Monatlich";
 "loan.unpaidThisMonth" = "Diesen Monat offen";
-"loan.activeCount" = "%d aktive Kredite";
 "loan.typeAnnuityShort" = "Kredit";
 "loan.typeInstallmentShort" = "Ratenkauf";
 "loan.of" = "von";
@@ -1356,7 +1347,6 @@
 "subscription.unlinkAll.confirm" = "Alle trennen";
 "subscription.unlinkAll.message" = "Abo-Verknüpfung von %d Transaktionen entfernen? Die Transaktionen selbst bleiben erhalten.";
 "subscription.linkPayments.subcategories" = "Unterkategorien";
-"subscription.linkPayments.subcategoriesCount" = "%d Unterkategorien";
 "subscription.filterAll" = "Alle";
 
 // MARK: - Accounts (Types & Actions)

@@ -39,7 +39,7 @@ struct DepositsCardView: View {
             title: String(localized: "finances.deposits.title", defaultValue: "Deposits"),
             isEmpty: deposits.isEmpty,
             emptyTitle: String(localized: "finances.deposits.empty", defaultValue: "No deposits"),
-            subtitle: String(format: String(localized: "finances.deposits.count", defaultValue: "%lld deposits"), deposits.count)
+            subtitle: String(format: NSLocalizedString("finances.deposits.count", comment: "Count with plural forms in Localizable.stringsdict"), deposits.count)
         ) {
             RedactableAmount(amount: totalAmount, currency: baseCurrency, isLoading: isLoadingTotal)
         } trailing: {

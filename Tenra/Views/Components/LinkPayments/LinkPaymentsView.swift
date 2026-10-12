@@ -299,7 +299,7 @@ struct LinkPaymentsView: View {
         if names.count == 1 {
             return names.first ?? String(localized: "filter.allSubcategories", defaultValue: "All subcategories")
         }
-        return String(format: String(localized: "subscription.linkPayments.subcategoriesCount", defaultValue: "%d subcategories"), names.count)
+        return String(format: NSLocalizedString("subscription.linkPayments.subcategoriesCount", comment: "Count with plural forms in Localizable.stringsdict"), names.count)
     }
 
     private var accountFilterTitle: String {

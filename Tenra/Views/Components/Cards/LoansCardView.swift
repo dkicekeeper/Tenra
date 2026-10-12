@@ -29,7 +29,7 @@ struct LoansCardView: View {
             // has loans to open, so the card stays, showing zero debt and zero active.
             isEmpty: loansViewModel.loans.isEmpty,
             emptyTitle: String(localized: "loan.emptyTitle", defaultValue: "No Loans"),
-            subtitle: String(format: String(localized: "loan.activeCount", defaultValue: "%d active loans"), loans.count)
+            subtitle: String(format: NSLocalizedString("loan.activeCount", comment: "Count with plural forms in Localizable.stringsdict"), loans.count)
         ) {
             FormattedAmountText(
                 amount: totalDebt,

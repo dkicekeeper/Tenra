@@ -62,5 +62,205 @@
 			<string>%d операции</string>
 		</dict>
 	</dict>
+	<key>finances.accounts.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld счёт</string>
+			<key>few</key>
+			<string>%lld счёта</string>
+			<key>many</key>
+			<string>%lld счетов</string>
+			<key>other</key>
+			<string>%lld счетов</string>
+		</dict>
+	</dict>
+	<key>finances.deposits.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld депозит</string>
+			<key>few</key>
+			<string>%lld депозита</string>
+			<key>many</key>
+			<string>%lld депозитов</string>
+			<key>other</key>
+			<string>%lld депозитов</string>
+		</dict>
+	</dict>
+	<key>finances.categories.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld категория</string>
+			<key>few</key>
+			<string>%lld категории</string>
+			<key>many</key>
+			<string>%lld категорий</string>
+			<key>other</key>
+			<string>%lld категорий</string>
+		</dict>
+	</dict>
+	<key>finances.subcategories.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld подкатегория</string>
+			<key>few</key>
+			<string>%lld подкатегории</string>
+			<key>many</key>
+			<string>%lld подкатегорий</string>
+			<key>other</key>
+			<string>%lld подкатегорий</string>
+		</dict>
+	</dict>
+	<key>loan.activeCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d активный кредит</string>
+			<key>few</key>
+			<string>%d активных кредита</string>
+			<key>many</key>
+			<string>%d активных кредитов</string>
+			<key>other</key>
+			<string>%d активных кредитов</string>
+		</dict>
+	</dict>
+	<key>filter.categoriesCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d категория</string>
+			<key>few</key>
+			<string>%d категории</string>
+			<key>many</key>
+			<string>%d категорий</string>
+			<key>other</key>
+			<string>%d категорий</string>
+		</dict>
+	</dict>
+	<key>subscription.linkPayments.subcategoriesCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d подкатегория</string>
+			<key>few</key>
+			<string>%d подкатегории</string>
+			<key>many</key>
+			<string>%d подкатегорий</string>
+			<key>other</key>
+			<string>%d подкатегорий</string>
+		</dict>
+	</dict>
+	<key>subcategory.usageCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Использовано %d раз</string>
+			<key>few</key>
+			<string>Использовано %d раза</string>
+			<key>many</key>
+			<string>Использовано %d раз</string>
+			<key>other</key>
+			<string>Использовано %d раз</string>
+		</dict>
+	</dict>
+	<key>subscriptions.activeCount</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld активная</string>
+			<key>few</key>
+			<string>%lld активные</string>
+			<key>many</key>
+			<string>%lld активных</string>
+			<key>other</key>
+			<string>%lld активных</string>
+		</dict>
+	</dict>
+	<key>finances.subcategories.linkedTo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>В %lld категории</string>
+			<key>few</key>
+			<string>В %lld категориях</string>
+			<key>many</key>
+			<string>В %lld категориях</string>
+			<key>other</key>
+			<string>В %lld категориях</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

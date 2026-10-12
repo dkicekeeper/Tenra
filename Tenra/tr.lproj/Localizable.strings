@@ -1702,6 +1702,14 @@
 "settings.siri.example1" = "Hey Siri, Tenra uygulamasına işlem kaydet";
 "settings.siri.example2" = "Hey Siri, Tenra uygulamasında ne kadar harcadım";
 "settings.siri.example3" = "Hey Siri, Tenra uygulamasına gider ekle";
+"settings.merchants.title" = "Wallet işyerleri";
+"settings.merchants.footer" = "Bu işyerlerinde Wallet otomasyonuyla yapılan ödemeler bu kategori ve alt kategoriyle kaydedilir. Değiştirmek için bir işyerine dokun, unutmak için sola kaydır.";
+"settings.merchants.emptyTitle" = "Henüz işyeri yok";
+"settings.merchants.emptyMessage" = "Wallet otomasyonu bir harcama eklediğinde Tenra her işyeri için kategoriyi bir kez sorar ve burada hatırlar. Otomasyonda işyerini \"Not\" alanına aktar ve \"Kategori\" alanını boş bırak.";
+"settings.merchants.forget" = "Unut";
+"settings.merchants.forgetMerchant" = "İşyerini unut";
+"settings.merchants.categoryDeleted" = "Kategori silindi, Tenra yeniden soracak";
+"settings.merchants.editFooter" = "Buradaki sonraki ödemeler bu kategoriyle kaydedilir. İşyerini unutursan Tenra bir sonraki ödemesinde yeniden sorar.";
 
 
 /* MARK: - Document import */

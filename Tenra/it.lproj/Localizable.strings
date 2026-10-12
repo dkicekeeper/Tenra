@@ -1702,6 +1702,14 @@
 "settings.siri.example1" = "Ehi Siri, registra un'operazione in Tenra";
 "settings.siri.example2" = "Ehi Siri, quanto ho speso in Tenra";
 "settings.siri.example3" = "Ehi Siri, aggiungi una spesa in Tenra";
+"settings.merchants.title" = "Esercenti Wallet";
+"settings.merchants.footer" = "I pagamenti presso questi esercenti con l'automazione Wallet ricevono questa categoria e sottocategoria. Tocca un esercente per cambiarle o scorri a sinistra per dimenticarlo.";
+"settings.merchants.emptyTitle" = "Ancora nessun esercente";
+"settings.merchants.emptyMessage" = "Quando l'automazione Wallet aggiunge una spesa, Tenra chiede la categoria una volta per esercente e la ricorda qui. Nell'automazione, passa l'esercente a «Nota» e lascia vuota «Categoria».";
+"settings.merchants.forget" = "Dimentica";
+"settings.merchants.forgetMerchant" = "Dimentica esercente";
+"settings.merchants.categoryDeleted" = "Categoria eliminata, Tenra chiederà di nuovo";
+"settings.merchants.editFooter" = "I prossimi pagamenti qui verranno registrati con questa categoria. Se dimentichi l'esercente, Tenra chiederà di nuovo al suo prossimo pagamento.";
 
 
 /* MARK: - Document import */

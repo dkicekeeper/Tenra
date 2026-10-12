@@ -146,4 +146,79 @@ struct MerchantCategoryMemoryTests {
         reloaded.reset()
         #expect(MerchantCategoryMemory(defaults: defaults).category(forMerchant: "Corner Bakery", in: categories) == nil)
     }
+
+    // MARK: - The Settings list
+
+    @Test("The list shows a merchant as Wallet last wrote it, once per merchant")
+    func listShowsLatestSpelling() {
+        let memory = MerchantCategoryMemory(defaults: makeDefaults())
+        memory.remember(categoryId: groceries.id, forMerchant: " GREENMART CASH&CARRY 123 ")
+        #expect(memory.merchants.map(\.displayName) == ["GREENMART CASH&CARRY 123"])
+
+        memory.remember(categoryId: groceries.id, forMerchant: "Greenmart Cash&Carry 456")
+        #expect(memory.merchants.map(\.displayName) == ["Greenmart Cash&Carry 456"])
+        #expect(memory.merchants.first?.id == "greenmart cash carry")
+    }
+
+    @Test("The list is sorted by name")
+    func listSortedByName() {
+        let memory = MerchantCategoryMemory(defaults: makeDefaults())
+        memory.remember(categoryId: cafe.id, forMerchant: "Zebra Coffee")
+        memory.remember(categoryId: groceries.id, forMerchant: "apple market")
+        memory.remember(categoryId: groceries.id, forMerchant: "Greenmart")
+
+        #expect(memory.merchants.map(\.displayName) == ["apple market", "Greenmart", "Zebra Coffee"])
+    }
+
+    @Test("Reassigning sets the category and subcategories, and survives a reload")
+    func reassign() throws {
+        let defaults = makeDefaults()
+        let memory = MerchantCategoryMemory(defaults: defaults)
+        memory.remember(categoryId: groceries.id, subcategoryIds: ["sub-veg"], forMerchant: "Corner Bakery 5")
+        let id = try #require(memory.merchants.first?.id)
+
+        memory.reassign(merchantId: id, categoryId: cafe.id, subcategoryIds: ["sub-pastry", "sub-coffee"])
+
+        let reloaded = MerchantCategoryMemory(defaults: defaults)
+        #expect(reloaded.category(forMerchant: "CORNER BAKERY", in: categories)?.id == cafe.id)
+        #expect(reloaded.subcategoryIds(forMerchant: "Corner Bakery") == ["sub-coffee", "sub-pastry"])
+        #expect(reloaded.merchants.map(\.displayName) == ["Corner Bakery 5"])
+    }
+
+    @Test("Reassigning to no subcategory is a decision; an unknown merchant is left alone")
+    func reassignNoSubcategory() {
+        let memory = MerchantCategoryMemory(defaults: makeDefaults())
+        memory.remember(categoryId: groceries.id, subcategoryIds: ["sub-veg"], forMerchant: "Greenmart")
+        memory.reassign(merchantId: "greenmart", categoryId: groceries.id, subcategoryIds: [])
+        #expect(memory.subcategoryIds(forMerchant: "Greenmart") == [])
+
+        memory.reassign(merchantId: "corner bakery", categoryId: cafe.id, subcategoryIds: [])
+        #expect(memory.category(forMerchant: "Corner Bakery", in: categories) == nil)
+        #expect(memory.merchants.count == 1)
+    }
+
+    @Test("A forgotten merchant is asked about again, after a reload too")
+    func forget() {
+        let defaults = makeDefaults()
+        let memory = MerchantCategoryMemory(defaults: defaults)
+        memory.remember(categoryId: groceries.id, forMerchant: "Greenmart")
+        memory.remember(categoryId: cafe.id, forMerchant: "Corner Bakery")
+
+        memory.forget(merchantId: "greenmart")
+
+        #expect(memory.category(forMerchant: "Greenmart", in: categories) == nil)
+        #expect(MerchantCategoryMemory(defaults: defaults).merchants.map(\.id) == ["corner bakery"])
+    }
+
+    @Test("Entries saved before the list existed still load, named after their key")
+    func legacyEntriesLoad() {
+        let defaults = makeDefaults()
+        let legacy = #"{"greenmart cash carry":{"categoryId":"cat-groceries","subcategoryIds":["sub-veg"]}}"#
+        defaults.set(Data(legacy.utf8), forKey: "intent.merchantCategory.v1")
+
+        let memory = MerchantCategoryMemory(defaults: defaults)
+        #expect(memory.category(forMerchant: "GREENMART CASH&CARRY 9", in: categories)?.id == groceries.id)
+        #expect(memory.subcategoryIds(forMerchant: "Greenmart Cash Carry") == ["sub-veg"])
+        #expect(memory.merchants.map(\.displayName) == ["Greenmart Cash Carry"])
+    }
 }

@@ -1702,6 +1702,14 @@
 "settings.siri.example1" = "E aí Siri, registrar uma transação no Tenra";
 "settings.siri.example2" = "E aí Siri, quanto eu gastei no Tenra";
 "settings.siri.example3" = "E aí Siri, adicionar uma despesa no Tenra";
+"settings.merchants.title" = "Estabelecimentos do Wallet";
+"settings.merchants.footer" = "Os pagamentos nesses estabelecimentos pela automação do Wallet recebem esta categoria e subcategoria. Toque em um estabelecimento para mudá-las ou deslize para a esquerda para esquecê-lo.";
+"settings.merchants.emptyTitle" = "Nenhum estabelecimento ainda";
+"settings.merchants.emptyMessage" = "Quando a automação do Wallet adiciona um gasto, o Tenra pergunta a categoria uma vez por estabelecimento e a guarda aqui. Na automação, passe o estabelecimento para “Observação” e deixe “Categoria” vazia.";
+"settings.merchants.forget" = "Esquecer";
+"settings.merchants.forgetMerchant" = "Esquecer estabelecimento";
+"settings.merchants.categoryDeleted" = "Categoria excluída, o Tenra vai perguntar de novo";
+"settings.merchants.editFooter" = "Os próximos pagamentos aqui serão registrados com esta categoria. Se você esquecer o estabelecimento, o Tenra pergunta de novo no próximo pagamento.";
 
 
 /* MARK: - Document import */

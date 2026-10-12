@@ -1702,6 +1702,14 @@
 "settings.siri.example1" = "Привіт, Siri, запиши операцію в Tenra";
 "settings.siri.example2" = "Привіт, Siri, скільки я витратив у Tenra";
 "settings.siri.example3" = "Привіт, Siri, додай витрату в Tenra";
+"settings.merchants.title" = "Продавці Wallet";
+"settings.merchants.footer" = "Оплати в цих продавців через автоматизацію Wallet записуються з цією категорією та підкатегорією. Натисніть на продавця, щоб змінити їх, або змахніть ліворуч, щоб забути.";
+"settings.merchants.emptyTitle" = "Поки немає продавців";
+"settings.merchants.emptyMessage" = "Коли автоматизація Wallet додає витрату, Tenra один раз питає категорію для продавця і запам'ятовує її тут. В автоматизації передайте продавця в поле «Нотатка» і залиште «Категорію» порожньою.";
+"settings.merchants.forget" = "Забути";
+"settings.merchants.forgetMerchant" = "Забути продавця";
+"settings.merchants.categoryDeleted" = "Категорію видалено, Tenra запитає знову";
+"settings.merchants.editFooter" = "Наступні оплати тут запишуться з цією категорією. Якщо забути продавця, Tenra запитає категорію під час наступної оплати.";
 
 
 /* MARK: - Document import */

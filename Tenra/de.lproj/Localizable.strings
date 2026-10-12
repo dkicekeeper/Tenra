@@ -1702,6 +1702,14 @@
 "settings.siri.example1" = "Hey Siri, Buchung in Tenra erfassen";
 "settings.siri.example2" = "Hey Siri, wie viel habe ich in Tenra ausgegeben";
 "settings.siri.example3" = "Hey Siri, Ausgabe in Tenra hinzufügen";
+"settings.merchants.title" = "Wallet-Händler";
+"settings.merchants.footer" = "Zahlungen bei diesen Händlern über die Wallet-Automation erhalten diese Kategorie und Unterkategorie. Tippen Sie auf einen Händler, um sie zu ändern, oder wischen Sie nach links, um ihn zu vergessen.";
+"settings.merchants.emptyTitle" = "Noch keine Händler";
+"settings.merchants.emptyMessage" = "Wenn die Wallet-Automation eine Ausgabe hinzufügt, fragt Tenra einmal pro Händler nach der Kategorie und merkt sie sich hier. Geben Sie in der Automation den Händler an „Notiz“ weiter und lassen Sie „Kategorie“ leer.";
+"settings.merchants.forget" = "Vergessen";
+"settings.merchants.forgetMerchant" = "Händler vergessen";
+"settings.merchants.categoryDeleted" = "Kategorie gelöscht, Tenra fragt erneut";
+"settings.merchants.editFooter" = "Die nächsten Zahlungen hier werden mit dieser Kategorie erfasst. Vergessen Sie den Händler, fragt Tenra bei seiner nächsten Zahlung erneut.";
 
 
 /* MARK: - Document import */

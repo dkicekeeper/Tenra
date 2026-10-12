@@ -4,18 +4,27 @@
 //
 //  Teaches the Siri phrases. Without this, App Shortcuts are discoverable only
 //  by accident, and an undiscovered feature has no effect on retention.
+//  Also the way to the merchants the Wallet automation remembered.
 //
 
 import SwiftUI
 import AppIntents
 
 struct SettingsSiriSection: View {
+    let categoriesViewModel: CategoriesViewModel
 
     var body: some View {
         Section {
             ForEach(Self.examplePhrases, id: \.self) { phrase in
                 Label(phrase, systemImage: "quote.bubble")
                     .font(AppTypography.bodySmall)
+            }
+
+            NavigationSettingsRow(
+                icon: "wallet.pass",
+                title: String(localized: "settings.merchants.title")
+            ) {
+                MerchantCategoriesView(categoriesViewModel: categoriesViewModel)
             }
 
             ShortcutsLink()

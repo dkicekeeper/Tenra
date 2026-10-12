@@ -1702,6 +1702,14 @@
 "settings.siri.example1" = "Hey Siri, log a transaction in Tenra";
 "settings.siri.example2" = "Hey Siri, how much did I spend in Tenra";
 "settings.siri.example3" = "Hey Siri, add an expense in Tenra";
+"settings.merchants.title" = "Wallet merchants";
+"settings.merchants.footer" = "Payments at these merchants through the Wallet automation get this category and subcategory. Tap a merchant to change them, or swipe left to forget it.";
+"settings.merchants.emptyTitle" = "No merchants yet";
+"settings.merchants.emptyMessage" = "When the Wallet automation adds an expense, Tenra asks for the category once per merchant and remembers it here. In the automation, pass the merchant to Note and leave Category empty.";
+"settings.merchants.forget" = "Forget";
+"settings.merchants.forgetMerchant" = "Forget merchant";
+"settings.merchants.categoryDeleted" = "Category deleted, Tenra will ask again";
+"settings.merchants.editFooter" = "The next payments here are recorded with this category. Forget the merchant and Tenra asks again on its next payment.";
 
 
 /* MARK: - Document import */

@@ -446,3 +446,37 @@ both of which contradict the obvious reading of the documentation:
 2. WidgetKit: home + Lock Screen. Requires an App Group or a snapshot pipeline.
 3. Control Center control / Action Button wired to the quick-add intent.
 4. Savings goals (CoreData v13) — the "reason to come back" layer on top of the habit.
+
+---
+
+## 11. Wallet automation and merchant memory (shipped in 1.4, Settings list in 1.5)
+
+The Shortcuts "Wallet" automation (When I tap my card → "Add an expense") runs
+`AddExpenseIntent` on every Apple Pay payment. Setup that makes it silent after the first
+payment at a merchant:
+
+- **Note ← Shortcut Input → Merchant.** The merchant is the memory's key; without it nothing is
+  remembered and the payment falls back to "Other" with a confirmation.
+- **Category and Subcategory left empty**, not "Ask Each Time": that prompt comes from Shortcuts
+  before `perform()` runs, so the app cannot skip it (the owner's "asks every time" report on
+  2026-10-10 was exactly this).
+- **Account fixed** to the card's account, else the inferred account adds a confirmation.
+  "Open When Run" off, "Show When Run" on (the first-time question needs it).
+
+`MerchantCategoryMemory` (`Services/Categories/`, `@Observable`, one `UserDefaults` blob under
+`intent.merchantCategory.v1`): normalized merchant (`CategorySuggestionService.normalizedMerchant`,
+letters only, so store numbers don't split a merchant) → category id, subcategory ids (nil = never
+decided, empty = "no subcategory"), and the merchant as Wallet last wrote it, for display.
+
+- An unknown merchant is asked once: `$category.requestValue`, then `$subcategory.requestDisambiguation`
+  when the category has subcategories. The answer is remembered after the save.
+- A remembered merchant resolves exactly: category and subcategories, no prompt. A deleted
+  category reads as unknown, so the merchant is asked again.
+- Changing the category or subcategory of such a transaction in the app corrects an already
+  remembered merchant (`TransactionEditCoordinator` → `correct`).
+- **Settings → Siri & Shortcuts → Wallet merchants** (`MerchantCategoriesView`) lists the
+  remembered merchants with their category and subcategories. Tap to reassign
+  (`MerchantCategoryEditView`, the transaction form's category and subcategory pickers →
+  `reassign`), swipe or "Forget merchant" to forget (`forget`: the next payment asks again).
+- Pinned by `MerchantCategoryMemoryTests` (normalization, subcategory decisions, the list,
+  reassign, forget, entries saved before display names existed).

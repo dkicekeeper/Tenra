@@ -1702,6 +1702,14 @@
 "settings.siri.example1" = "ヘイ Siri、Tenra に取引を記録";
 "settings.siri.example2" = "ヘイ Siri、Tenra でいくら使った";
 "settings.siri.example3" = "ヘイ Siri、Tenra に支出を追加";
+"settings.merchants.title" = "Wallet の店舗";
+"settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。変更するには店舗をタップ、忘れるには左にスワイプします。";
+"settings.merchants.emptyTitle" = "まだ店舗はありません";
+"settings.merchants.emptyMessage" = "Wallet のオートメーションが支出を追加すると、Tenra は店舗ごとに一度だけカテゴリを尋ね、ここに覚えておきます。オートメーションでは店舗を「メモ」に渡し、「カテゴリ」は空のままにしてください。";
+"settings.merchants.forget" = "忘れる";
+"settings.merchants.forgetMerchant" = "店舗を忘れる";
+"settings.merchants.categoryDeleted" = "カテゴリが削除されました。Tenra が再度尋ねます";
+"settings.merchants.editFooter" = "この店舗での次回以降の支払いは、このカテゴリで記録されます。店舗を忘れると、次回の支払いで Tenra が再度尋ねます。";
 
 
 /* MARK: - Document import */

@@ -1702,6 +1702,14 @@
 "settings.siri.example1" = "시리야, Tenra에 거래 기록";
 "settings.siri.example2" = "시리야, Tenra에서 얼마 썼어";
 "settings.siri.example3" = "시리야, Tenra에 지출 추가";
+"settings.merchants.title" = "Wallet 가맹점";
+"settings.merchants.footer" = "Wallet 자동화로 이 가맹점에서 결제하면 이 카테고리와 하위 카테고리로 기록돼요. 바꾸려면 가맹점을 탭하고, 잊으려면 왼쪽으로 쓸어 넘기세요.";
+"settings.merchants.emptyTitle" = "아직 가맹점이 없어요";
+"settings.merchants.emptyMessage" = "Wallet 자동화가 지출을 추가하면 Tenra가 가맹점마다 한 번만 카테고리를 묻고 여기에 기억해요. 자동화에서 가맹점을 '메모'로 넘기고 '카테고리'는 비워 두세요.";
+"settings.merchants.forget" = "잊기";
+"settings.merchants.forgetMerchant" = "가맹점 잊기";
+"settings.merchants.categoryDeleted" = "카테고리가 삭제되어 Tenra가 다시 물어봐요";
+"settings.merchants.editFooter" = "이 가맹점의 다음 결제는 이 카테고리로 기록돼요. 가맹점을 잊으면 다음 결제 때 Tenra가 다시 물어봐요.";
 
 
 /* MARK: - Document import */

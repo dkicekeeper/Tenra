@@ -34,6 +34,8 @@ The maintainer runs a real Wallet automation on `AddExpenseIntent` (not the prob
 - Subcategory links from a cold intent process go straight to CoreData (`IntentSubcategoryStore`),
   see docs/domains/categories.md §Subcategory tagging surfaces.
 - A remembered category resolves exactly, so with a fixed Account the payment saves without any prompt.
+- Settings → Siri & Shortcuts → Wallet merchants lists the remembered merchants; the user reassigns
+  a category and subcategory or forgets a merchant there (2026-10-12, docs/domains/intents.md §11).
 
 ## Setup used
 

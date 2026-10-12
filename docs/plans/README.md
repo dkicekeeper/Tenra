@@ -110,6 +110,10 @@ Landed on branch `claude/batch-2026-10-06`.
 - DONE Deleting a loan with its payments (or several accounts at once) is one bulk delete: payments to an account deleted with them no longer roll the loan back one save at a time.
 - OPEN Performance, left: `recalculateAll` for balances stays one O(N) pass on the main actor (a single inverted pass, no longer per account); History's CoreData refetch after each debounced (300 ms) search change runs on the main thread (the fetched results controller is bound to the view context).
 
+## Findings 2026-10-10
+
+- DONE "The Wallet automation asks for the category every time": the automation had Category set to "Ask Each Time" and no merchant in Note (setup in docs/domains/intents.md §11). The owner asked for a way to see and fix what is remembered: Settings → Siri & Shortcuts → Wallet merchants lists the remembered merchants, reassigns a category and subcategory, forgets a merchant.
+
 ## Findings considered and rejected
 
 - **Family / shared budget**: the ru keyword `семейный` promises it, but there is no sync at all (CloudKit sync was removed 2026-04-22 after data loss, `Tenra/CoreData/CoreDataStack.swift:110`). Sharing needs sync first: very large and it reopens the data-loss risk. Recommendation instead: drop `семейный` from the keyword field in the next ASO pass.

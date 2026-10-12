@@ -216,7 +216,7 @@ Tenra 1.5의 새로운 기능:
 - [ ] CI green on the release commit; `main` fast-forwarded.
 - [ ] Build **1.5 (6)** from the Mac with Xcode 27 (founder's choice, 2026-10-12, as 1.4 was): `CURRENT_PROJECT_VERSION` is 6, above the cloud builds 1.5 (1)-(5).
 - [ ] Device check of the build (the 1.5 items above, the Categories screen budgets, a detail screen after an edit, History search suggestions).
-- [ ] Version 1.5 created in ASC, release after approval; What's New pasted for the 13 locales above.
+- [ ] Version 1.5 created in ASC, release after approval, What's New for the 13 locales above, build 6 selected: Actions → App Store Connect → `prepare-version` (version 1.5, build 6), `docs/asc.md`.
 - [ ] Screenshots: keep the 1.4 set unless the UI changed visibly enough to mislead (amount digits and hero backgrounds changed slightly).
 - [ ] Review notes: Pro testable with a sandbox account; the Wallet automation is optional.
 - [ ] Submit for review (founder).

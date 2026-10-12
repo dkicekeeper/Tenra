@@ -8,6 +8,7 @@
 | Сборка → App Store Connect → TestFlight | GitHub Actions, `.github/workflows/testflight.yml` | Actions → TestFlight → Run workflow, или Claude через GitHub API |
 | Ждать обработки сборки, таблица сборок | второй job того же workflow | сам после загрузки |
 | Версии, сборки, встроенные покупки, отзывы, доступность в странах (статус DSA в ЕС), сбои из TestFlight | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → Run workflow (выбрать команду) |
+| Создать версию в App Store, вставить What's New из [release-notes.md](release-notes.md) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
 
 Репозиторий Tenra публичный, поэтому логи Actions видны всем. Продажи и выручку `asc.py` в Actions
@@ -75,6 +76,9 @@ Claude запускает TestFlight через GitHub API (или ты: Actions
 python3 appstore/asc.py status                  # версии, последние сборки, встроенные покупки
 python3 appstore/asc.py builds [--limit 15]
 python3 appstore/asc.py wait-build --build 12 --version 1.5 --wait 40
+python3 appstore/asc.py prepare-version --version 1.5 --build 6 [--wait 30]
+                                                # создать версию (выпуск после одобрения), What's New
+                                                # из docs/release-notes.md, выбрать сборку; без отправки
 python3 appstore/asc.py reviews [--limit 20]    # отзывы с текстом (оценки без текста API не отдаёт)
 python3 appstore/asc.py availability            # в скольких странах доступно, статус DSA в ЕС
 python3 appstore/asc.py crashes [--build 12]    # отчёты о сбоях из TestFlight, без данных тестировщика

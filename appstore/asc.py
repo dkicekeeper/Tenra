@@ -5,6 +5,9 @@
     python3 appstore/asc.py builds [--limit 15]     builds with processing and TestFlight state
     python3 appstore/asc.py wait-build --build N [--version 1.5] [--wait 40]
                                                     wait until build N of that version is processed
+    python3 appstore/asc.py prepare-version --version 1.5 [--build N] [--wait 30]
+                                                    create the version, What's New from
+                                                    docs/release-notes.md, select build N (no submit)
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -101,9 +104,14 @@ class ApiError(Exception):
         self.code = code
 
 
-def request(path: str, accept: str = "application/json") -> bytes:
+def request(path: str, accept: str = "application/json", method: str = "GET", body: dict | None = None) -> bytes:
     url = path if path.startswith("http") else API + path
-    req = urllib.request.Request(url, headers={"Authorization": "Bearer " + token(), "Accept": accept})
+    headers = {"Authorization": "Bearer " + token(), "Accept": accept}
+    data = None
+    if body is not None:
+        headers["Content-Type"] = "application/json"
+        data = json.dumps(body).encode()
+    req = urllib.request.Request(url, data=data, method=method, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=60) as response:
             return response.read()
@@ -121,6 +129,12 @@ def get(path: str, params: dict | None = None) -> dict:
     if params:
         path += ("&" if "?" in path else "?") + urllib.parse.urlencode(params)
     raw = request(path)
+    return json.loads(raw) if raw else {}
+
+
+def send(method: str, path: str, body: dict) -> dict:
+    """POST or PATCH a JSON:API document; a 204 comes back as {}."""
+    raw = request(path, method=method, body=body)
     return json.loads(raw) if raw else {}
 
 
@@ -246,6 +260,85 @@ def wait_build(app: str, number: str, version: str | None, minutes: int) -> None
         print(f"Build {number} is still processing; App Store Connect will email when it is done.")
     elif build["processing"] != "VALID":
         sys.exit(f"Build {number}: {build['processing']} (App Store Connect emails the reason).")
+
+
+NOTES = Path(__file__).resolve().parent.parent / "docs" / "release-notes.md"
+EDITABLE = {"PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED", "INVALID_BINARY"}
+
+
+def release_notes(version: str, path: Path = NOTES) -> dict[str, str]:
+    """What's New per ASC locale from docs/release-notes.md: each `## <locale>` heading followed by
+    a fenced block. The file's title must name the version, so stale notes are never sent."""
+    text = path.read_text(encoding="utf-8")
+    title = text.splitlines()[0] if text else ""
+    if f"Tenra {version}:" not in title:
+        sys.exit(f"{path.name} is not the notes of {version} (title: {title!r}).")
+    notes = {m.group(1): m.group(2).strip()
+             for m in re.finditer(r"^## ([a-z]{2}(?:-[A-Z]{2})?)\n\n```\n(.*?)\n```", text, re.S | re.M)}
+    if not notes:
+        sys.exit(f"No `## <locale>` blocks in {path.name}.")
+    for locale, note in notes.items():
+        if len(note) > 4000:
+            sys.exit(f"What's New for {locale} is {len(note)} characters; App Store Connect allows 4000.")
+    return notes
+
+
+def prepare_version(app: str, version: str, number: str | None, minutes: int) -> None:
+    """Create the App Store version (released after approval) if it is missing, set What's New for
+    every locale in docs/release-notes.md and select build `number` once it is processed. It never
+    submits for review."""
+    notes = release_notes(version)
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
+                       {"filter[versionString]": version, "filter[platform]": "IOS"})
+    if found:
+        record = found[0]
+        print(f"Version {version} already exists.")
+    else:
+        record = send("POST", "/v1/appStoreVersions", {"data": {
+            "type": "appStoreVersions",
+            "attributes": {"platform": "IOS", "versionString": version, "releaseType": "AFTER_APPROVAL"},
+            "relationships": {"app": {"data": {"type": "apps", "id": app}}},
+        }})["data"]
+        print(f"Version {version} created (released after approval).")
+    version_id = record["id"]
+    state = record["attributes"].get("appVersionState") or record["attributes"].get("appStoreState")
+    if state not in EDITABLE:
+        sys.exit(f"Version {version} is {state}: its metadata can't be edited now.")
+
+    existing, _ = get_all(f"/v1/appStoreVersions/{version_id}/appStoreVersionLocalizations", {"limit": 50})
+    by_locale = {item["attributes"]["locale"]: item["id"] for item in existing}
+    rows = []
+    for locale, note in notes.items():
+        if locale in by_locale:
+            send("PATCH", f"/v1/appStoreVersionLocalizations/{by_locale[locale]}", {"data": {
+                "type": "appStoreVersionLocalizations", "id": by_locale[locale], "attributes": {"whatsNew": note},
+            }})
+            rows.append([locale, "updated", len(note)])
+        else:
+            send("POST", "/v1/appStoreVersionLocalizations", {"data": {
+                "type": "appStoreVersionLocalizations",
+                "attributes": {"locale": locale, "whatsNew": note},
+                "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": version_id}}},
+            }})
+            rows.append([locale, "created (no description yet)", len(note)])
+    rows += [[locale, "not in release-notes.md, left as is", ""] for locale in sorted(set(by_locale) - set(notes))]
+    table(f"What's New, {version}", ["Locale", "Result", "Characters"], rows)
+
+    if not number:
+        return
+    deadline = time.time() + minutes * 60
+    while True:
+        build = next((b for b in builds(app, 20) if b["number"] == number and b["version"] == version), None)
+        if (build and build["processing"] != "PROCESSING") or time.time() > deadline:
+            break
+        print(f"Build {number}: {build['processing'] if build else 'not visible yet'}, waiting…", flush=True)
+        time.sleep(60)
+    if not build or build["processing"] != "VALID":
+        sys.exit(f"Build {number} of {version}: {build['processing'] if build else 'not in App Store Connect yet'}; "
+                 "run prepare-version again once it is processed.")
+    send("PATCH", f"/v1/appStoreVersions/{version_id}/relationships/build",
+         {"data": {"type": "builds", "id": build["id"]}})
+    print(f"Build {number} selected for version {version}. Submitting for review stays with the founder.")
 
 
 def reviews(app: str, limit: int) -> None:
@@ -395,6 +488,11 @@ def main(argv: list[str]) -> None:
         if not number:
             sys.exit("wait-build needs --build N")
         wait_build(app, number, option("--version"), int(option("--wait", 40)))
+    elif command == "prepare-version":
+        version = option("--version")
+        if not version:
+            sys.exit("prepare-version needs --version X.Y")
+        prepare_version(app, version, option("--build"), int(option("--wait", 0)))
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

@@ -47,11 +47,8 @@ nonisolated final class UserDefaultsRepository: DataRepositoryProtocol, @uncheck
             return decoded
         }
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        
         return decoded.filter { transaction in
-            guard let transactionDate = dateFormatter.date(from: transaction.date) else {
+            guard let transactionDate = DateFormatters.dateFormatter.date(from: transaction.date) else {
                 return false
             }
             // Half-open [start, end), same as TransactionRepository and TimeFilter.contains.

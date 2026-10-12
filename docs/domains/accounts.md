@@ -58,7 +58,8 @@ static func compute(accountId: String, store: TransactionStore) -> AccountAggreg
 
 ```swift
 private var refreshTrigger: RefreshKey {
-    RefreshKey(
+    _ = transactionStore.transactions.count
+    return RefreshKey(
         mutationVersion: transactionStore.mutationVersion,
         accountsVersion: transactionStore.accountsMutationVersion,
         ratesVersion: transactionStore.currencyRatesVersion,
@@ -67,7 +68,7 @@ private var refreshTrigger: RefreshKey {
 }
 ```
 
-⚠️ `mutationVersion` and `accountsMutationVersion` are `@ObservationIgnored`: reading them registers no subscription, so the key only changes when the body re-evaluates for another reason. In this view that is `currencyRatesVersion` (observable) and the live balance (`balanceCoordinator.balances`, observable). A view that must refresh on every transaction edit also reads `transactionStore.transactions` in the body (`_ = transactionStore.transactions.count`, the precedent is `SubscriptionDetailView`).
+⚠️ `mutationVersion` and `accountsMutationVersion` are `@ObservationIgnored`: reading them registers no subscription. The observable `transactions` read (its count, nothing is copied) is what re-evaluates the body on every transaction edit, including one that leaves the balance as it was. `CategoryDetailView` and `SubscriptionDetailView` do the same.
 
 `accountsById` is a `@State` snapshot refreshed via `.task(id: transactionStore.accountsMutationVersion)`. Gate empty-state UI on the source of truth (`store.accounts.contains(...)`), never on the snapshot, which is empty on first render. Same pattern as `CategoriesManagementView.hasCategoriesForCurrentType`.
 

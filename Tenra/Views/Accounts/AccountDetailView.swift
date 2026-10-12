@@ -45,11 +45,13 @@ struct AccountDetailView: View {
         accountsViewModel.balanceCoordinator?.balances[account.id] ?? liveAccount.balance
     }
 
-    /// Combined equatable trigger — composed of scalar mutation versions so the
-    /// body doesn't subscribe to the entire 19k-tx array. Mirrors the
-    /// `CategoryDetailView` refresh trigger.
+    /// Combined equatable trigger of scalar counters. `mutationVersion` and
+    /// `accountsMutationVersion` are `@ObservationIgnored`, so the observable `transactions` is
+    /// read too (its count, nothing is copied): otherwise an edit that leaves the balance as it
+    /// was (a note, a category) never re-evaluates the body. Same as `CategoryDetailView`.
     private var refreshTrigger: RefreshKey {
-        RefreshKey(
+        _ = transactionStore.transactions.count
+        return RefreshKey(
             mutationVersion: transactionStore.mutationVersion,
             accountsVersion: transactionStore.accountsMutationVersion,
             ratesVersion: transactionStore.currencyRatesVersion,

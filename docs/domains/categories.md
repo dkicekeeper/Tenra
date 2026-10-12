@@ -107,7 +107,7 @@ Views key snapshot rebuilds on scalar mutation counters, not on the underlying a
 
 Pattern is established in:
 - [CategoriesManagementView.swift](../../Tenra/Views/Categories/CategoriesManagementView.swift): `budgetProgressMap` + `filteredCategories` as `@State`, rebuilt via `.task(id: listKey)` (categories, `mutationVersion`, rates, base currency, selected type).
-- [CategoryDetailView.swift](../../Tenra/Views/Categories/CategoryDetailView.swift): `refreshTrigger` keys on `mutationVersion`, `categoriesMutationVersion`, `currencyRatesVersion`, the time filter and the budget. It does not read `transactions`, so a transaction edit re-keys it only when something else re-evaluates its body.
+- [CategoryDetailView.swift](../../Tenra/Views/Categories/CategoryDetailView.swift): `refreshTrigger` keys on `mutationVersion`, `categoriesMutationVersion`, `currencyRatesVersion`, the time filter and the budget, and reads `transactionStore.transactions.count` so that every transaction edit re-evaluates the body (`mutationVersion` alone is `@ObservationIgnored`).
 
 ## Reorder
 
@@ -128,9 +128,9 @@ carousel next time), then `linkSubcategoriesToTransaction`. Reference implementa
 also implemented in [AccountActionViewModel](../../Tenra/ViewModels/AccountActionViewModel.swift) (the "Пополнение"
 top-up flow) and the statement import (`ImportCommitter` in `ImportCommitPlanner.swift`, one batch for all rows; the
 subcategory is suggested from history per merchant and category, see [import.md](import.md)). Loan payments and early
-repayments are linked in `LoanDetailView`'s `onPayment` / `onRepayment` closures (the forms `LoanPaymentView` /
-`LoanEarlyRepaymentView` only return the selected ids); they call `linkSubcategoriesToTransaction` but not
-`linkSubcategoryToCategory`.
+repayments are linked by `LoanDetailView.linkSubcategories(_:to:)` after `onPayment` / `onRepayment` add the
+transaction (the forms `LoanPaymentView` / `LoanEarlyRepaymentView` only return the selected ids); it resolves the
+expense category by name and type, as the top-up flow does.
 
 ⚠️ **Link many transactions in ONE call: `batchLinkSubcategoriesToTransaction`.** Every link-table write
 (`updateTransactionSubcategoryLinks`) rebuilds `subcategoryIdsByTransactionId` and the usage stats over all

@@ -23,6 +23,7 @@ Services/Currency/Providers/* (CurrencyRateProviderChain)
 - `getAllRates()`: full snapshot
 - `prewarm()`: launch fetch
 - `currentRatesAreFresh`: cache non-empty and under 24 h old
+- `dateKey(for:)`: a historical rate's key, "yyyy-MM-dd" in UTC through `DateFormatters.rateDateFormatter` (POSIX, Gregorian). Every rate date (keys, provider URLs, responses, the National Bank's `fdate`) goes through a POSIX Gregorian formatter: a region with another calendar would write another year.
 
 ## `RateSnapshot` for bulk loops
 

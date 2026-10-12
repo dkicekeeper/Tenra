@@ -158,9 +158,8 @@ final class ScreenshotCaptureTests: XCTestCase {
             firstSubscription.tap()
             sleep(3)
             snap("10-subscription-detail")
-            goBack()
         }
-        goBack()
+        backToFinances()
 
         // ── 11. A deposit ────────────────────────────────────────────────────
         let depositsCard = app.descendants(matching: .any)["finances.depositsCard"].firstMatch
@@ -171,9 +170,8 @@ final class ScreenshotCaptureTests: XCTestCase {
             firstDeposit.tap()
             sleep(3)
             snap("11-deposit")
-            goBack()
         }
-        goBack()
+        backToFinances()
 
         // ── 12. Loans (this month's payment status) ──────────────────────────
         let loansCard = app.descendants(matching: .any)["finances.loansCard"].firstMatch
@@ -191,6 +189,16 @@ final class ScreenshotCaptureTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
+    /// Steps back until the Finances root shows again: a zoom-transition detail can swallow one
+    /// back gesture, which left the next card out of reach on a slow simulator.
+    private func backToFinances() {
+        let accountsCard = app.descendants(matching: .any)["finances.accountsCard"].firstMatch
+        for _ in 0..<4 {
+            if accountsCard.waitForExistence(timeout: 2) && accountsCard.isHittable { return }
+            goBack()
+        }
+    }
 
     private func tabBarButton(at index: Int) -> XCUIElement {
         let tabBar = app.tabBars.firstMatch

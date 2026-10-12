@@ -13,6 +13,10 @@ on:
         description: "ASC locales, space-separated (as in capture_screenshots.sh)"
         required: false
         default: "ru en-US fr-FR"
+      frames:
+        description: "all (01-12) or cpp (only 09-12, the custom product page frames)"
+        required: false
+        default: cpp
 
 permissions:
   contents: read
@@ -57,16 +61,20 @@ jobs:
           SIM_NAME: iPhone 17 Pro
           SIM_OS: ${{ steps.sim.outputs.os }}
           LOCALES: ${{ inputs.locales }}
+          FRAMES: ${{ inputs.frames }}
         run: |
           mkdir -p build/raw-out
+          status=0
           for locale in $LOCALES; do
-            ONLY="$locale" ./scripts/capture_screenshots.sh
-            cp -R "screenshots/raw/$locale" build/raw-out/
+            ONLY="$locale" ./scripts/capture_screenshots.sh || status=1
+            cp -R "screenshots/raw/$locale" build/raw-out/ || true
           done
           find build/raw-out -name '*.png' | sort
+          exit $status
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: raw-screenshots
           path: build/raw-out
-          if-no-files-found: error
+          if-no-files-found: warn

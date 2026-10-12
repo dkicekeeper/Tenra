@@ -330,7 +330,7 @@ struct SubcategoryManagementRow: View {
     /// "Used 14 times · Oct 9, 2026", or "Not used".
     private var usage: [MetaItem] {
         guard usageCount > 0 else { return [.text(String(localized: "subcategory.notUsed"))] }
-        var items: [MetaItem] = [.text(String(format: String(localized: "subcategory.usageCount"), usageCount))]
+        var items: [MetaItem] = [.text(String(format: NSLocalizedString("subcategory.usageCount", comment: "Count with plural forms in Localizable.stringsdict"), usageCount))]
         if let lastUsed = lastUsedDate {
             items.append(.text(Self.dateFormatter.string(from: lastUsed)))
         }

@@ -250,11 +250,13 @@ struct LoanPaymentRollbackTests {
 
     private var today: String { FastDateParser.string(from: Date()) }
 
-    /// Waits, at most 2 s, for `condition`. `updateLoan` moves the loan's balance in a Task.
+    /// Waits for `condition`, up to 500 sleeps of 10 ms (counted, not timed: the CI host can
+    /// freeze a simulator for minutes). `updateLoan` moves the loan's balance in a Task.
     private func waitUntil(_ condition: () -> Bool) async {
-        let deadline = ContinuousClock.now + .seconds(2)
-        while !condition(), ContinuousClock.now < deadline {
+        var polls = 0
+        while !condition(), polls < 500 {
             try? await Task.sleep(for: .milliseconds(10))
+            polls += 1
         }
     }
 

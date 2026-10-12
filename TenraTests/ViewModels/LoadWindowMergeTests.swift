@@ -80,9 +80,10 @@ struct LoadWindowMergeTests {
         return Graph(repo: repo, balance: balance, store: store)
     }
 
+    /// Up to 1000 sleeps of 10 ms, counted rather than timed: the CI host can freeze a simulator
+    /// for minutes, which expired a wall-clock deadline before the awaited work ran.
     private func waitUntil(_ condition: () -> Bool) async -> Bool {
-        let deadline = ContinuousClock.now + .seconds(5)
-        while ContinuousClock.now < deadline {
+        for _ in 0..<1000 {
             if condition() { return true }
             try? await Task.sleep(for: .milliseconds(10))
         }

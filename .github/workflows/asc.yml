@@ -2,8 +2,11 @@ name: App Store Connect
 
 # Reads Tenra's state in App Store Connect with appstore/asc.py: versions, builds and in-app
 # products, customer reviews, storefront availability (EU trader status), TestFlight crash reports.
-# prepare-version is the one write: it creates the App Store version, sets What's New from
-# docs/release-notes.md and selects the build once it is processed. It never submits for review.
+# Writes: prepare-version creates the App Store version, sets What's New from
+# docs/release-notes.md and selects the build once it is processed (never submits);
+# push-custom-pages and push-experiment create the custom product pages and the product page
+# test from appstore/product-pages.json (args: --submit sends them for review, --start starts
+# an approved test).
 # Run: Actions → App Store Connect → Run workflow, or Claude through the GitHub API. The result is
 # in the run's summary. Same API key as TestFlight: the ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8
 # repository secrets (docs/asc.md).
@@ -17,7 +20,7 @@ on:
       command:
         description: "What to show"
         type: choice
-        options: [status, builds, reviews, availability, crashes, prepare-version]
+        options: [status, builds, reviews, availability, crashes, prepare-version, keywords, custom-pages, push-custom-pages, push-experiment]
         default: status
       build:
         description: "Build number (crashes: empty = all recent; prepare-version: the build to select)"
@@ -25,6 +28,10 @@ on:
         default: ""
       version:
         description: "Version, e.g. 1.5 (prepare-version only)"
+        required: false
+        default: ""
+      args:
+        description: "Extra arguments, e.g. --locale ru (keywords) or --submit (push-*)"
         required: false
         default: ""
 
@@ -50,6 +57,7 @@ jobs:
           COMMAND: ${{ inputs.command }}
           BUILD: ${{ inputs.build }}
           VERSION: ${{ inputs.version }}
+          ARGS: ${{ inputs.args }}
         run: |
           if [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$ASC_KEY_P8" ]; then
             echo "::error::Add the ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8 repository secrets (docs/asc.md)."
@@ -61,4 +69,6 @@ jobs:
           if [ -n "$BUILD" ]; then args+=(--build "$BUILD"); fi
           if [ -n "$VERSION" ]; then args+=(--version "$VERSION"); fi
           if [ "$COMMAND" = "prepare-version" ]; then args+=(--wait 30); fi
+          read -ra extra <<< "$ARGS"
+          args+=("${extra[@]}")
           "$RUNNER_TEMP/ascenv/bin/python" appstore/asc.py "${args[@]}"

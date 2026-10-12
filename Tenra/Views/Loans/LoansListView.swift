@@ -317,7 +317,7 @@ struct LoansListView: View {
                 }
             }
 
-            Text(String(format: String(localized: "loan.activeCount", defaultValue: "%d active loans"), active.count))
+            Text(String(format: NSLocalizedString("loan.activeCount", comment: "Count with plural forms in Localizable.stringsdict"), active.count))
                 .font(AppTypography.bodySmall)
                 .foregroundStyle(AppColors.textSecondary)
         }

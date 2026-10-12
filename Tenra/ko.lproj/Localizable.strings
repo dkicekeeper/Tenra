@@ -326,7 +326,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "새 하위 카테고리";
 "subcategory.namePlaceholder" = "하위 카테고리 이름";
-"subcategory.usageCount" = "%d회 사용됨";
 "subcategory.notUsed" = "아직 사용 안 함";
 "subcategory.reorder" = "하위 카테고리";
 "subcategory.sort.title" = "정렬";
@@ -467,7 +466,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "활성 구독이 없어요";
-"subscriptions.activeCount" = "%lld개 활성";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "다음 결제: %@";
@@ -764,7 +762,6 @@
 "filter.allAccounts" = "모든 계좌";
 "filter.allCategories" = "모든 카테고리";
 "filter.allSubcategories" = "모든 하위 카테고리";
-"filter.categoriesCount" = "%d개 카테고리";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1048,10 +1045,8 @@
 "finances.title" = "자산";
 "finances.accounts.title" = "계좌";
 "finances.accounts.totalLabel" = "총 잔액";
-"finances.accounts.count" = "계좌 %lld개";
 "finances.accounts.empty" = "계좌 없음";
 "finances.deposits.title" = "예금";
-"finances.deposits.count" = "예금 %lld개";
 "finances.deposits.empty" = "예금 없음";
 "deposit.listTitle" = "예금";
 "deposit.emptyTitle" = "예금 없음";
@@ -1060,11 +1055,8 @@
 "account.includeInBalance" = "잔액에 포함";
 "account.includeInBalanceHint" = "이 계좌를 총 잔액과 분석에 포함해요.";
 "finances.categories.title" = "카테고리";
-"finances.categories.count" = "카테고리 %lld개";
 "finances.categories.empty" = "카테고리 없음";
 "finances.subcategories.title" = "하위 카테고리";
-"finances.subcategories.count" = "하위 카테고리 %lld개";
-"finances.subcategories.linkedTo" = "카테고리 %lld개에 걸쳐";
 "finances.subcategories.empty" = "하위 카테고리 없음";
 
 // MARK: - Loans
@@ -1078,7 +1070,6 @@
 "loan.totalDebt" = "총 부채";
 "loan.monthlyTotal" = "월별";
 "loan.unpaidThisMonth" = "이번 달 미상환";
-"loan.activeCount" = "활성 대출 %d개";
 "loan.typeAnnuityShort" = "신용대출";
 "loan.typeInstallmentShort" = "할부";
 "loan.of" = "/";
@@ -1356,7 +1347,6 @@
 "subscription.unlinkAll.confirm" = "모두 연결 해제";
 "subscription.unlinkAll.message" = "거래 %d건에서 구독 연결을 제거할까요? 거래 자체는 그대로 유지돼요.";
 "subscription.linkPayments.subcategories" = "하위 카테고리";
-"subscription.linkPayments.subcategoriesCount" = "하위 카테고리 %d개";
 "subscription.filterAll" = "전체";
 
 // MARK: - Accounts (Types & Actions)

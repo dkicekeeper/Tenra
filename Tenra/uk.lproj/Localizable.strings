@@ -326,7 +326,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "Нова підкатегорія";
 "subcategory.namePlaceholder" = "Назва підкатегорії";
-"subcategory.usageCount" = "Використано %d разів";
 "subcategory.notUsed" = "Ще не використовується";
 "subcategory.reorder" = "Підкатегорії";
 "subcategory.sort.title" = "Сортування";
@@ -467,7 +466,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "Немає активних підписок";
-"subscriptions.activeCount" = "%lld активних";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "Наступне списання: %@";
@@ -764,7 +762,6 @@
 "filter.allAccounts" = "Усі рахунки";
 "filter.allCategories" = "Усі категорії";
 "filter.allSubcategories" = "Усі підкатегорії";
-"filter.categoriesCount" = "%d категорій";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1048,10 +1045,8 @@
 "finances.title" = "Фінанси";
 "finances.accounts.title" = "Рахунки";
 "finances.accounts.totalLabel" = "Загальний баланс";
-"finances.accounts.count" = "%lld рахунків";
 "finances.accounts.empty" = "Немає рахунків";
 "finances.deposits.title" = "Депозити";
-"finances.deposits.count" = "%lld депозитів";
 "finances.deposits.empty" = "Немає депозитів";
 "deposit.listTitle" = "Депозити";
 "deposit.emptyTitle" = "Немає депозитів";
@@ -1060,11 +1055,8 @@
 "account.includeInBalance" = "Враховувати в балансі";
 "account.includeInBalanceHint" = "Враховувати цей рахунок у загальному балансі та аналітиці.";
 "finances.categories.title" = "Категорії";
-"finances.categories.count" = "%lld категорій";
 "finances.categories.empty" = "Немає категорій";
 "finances.subcategories.title" = "Підкатегорії";
-"finances.subcategories.count" = "%lld підкатегорій";
-"finances.subcategories.linkedTo" = "У %lld категоріях";
 "finances.subcategories.empty" = "Немає підкатегорій";
 
 // MARK: - Loans
@@ -1078,7 +1070,6 @@
 "loan.totalDebt" = "Загальний борг";
 "loan.monthlyTotal" = "За місяць";
 "loan.unpaidThisMonth" = "Не оплачено цього місяця";
-"loan.activeCount" = "%d активних кредитів";
 "loan.typeAnnuityShort" = "Кредит";
 "loan.typeInstallmentShort" = "Розстрочка";
 "loan.of" = "із";
@@ -1356,7 +1347,6 @@
 "subscription.unlinkAll.confirm" = "Відв'язати всі";
 "subscription.unlinkAll.message" = "Прибрати прив'язку до підписки з %d операцій? Самі операції залишаться без змін.";
 "subscription.linkPayments.subcategories" = "Підкатегорії";
-"subscription.linkPayments.subcategoriesCount" = "%d підкатегорій";
 "subscription.filterAll" = "Усі";
 
 // MARK: - Accounts (Types & Actions)

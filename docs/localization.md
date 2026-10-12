@@ -37,7 +37,11 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
   ru and uk *вы*, es, it, pt-BR and tr informal, ja and ko polite (です/ます, 해요). "Tenra Pro" is
   never translated.
 - **Plurals** go in `.stringsdict`: ru and uk one/few/many/other; ja and ko other only; the rest
-  one/other (fr and pt-BR use "one" for 0 and 1.x too, check the wording).
+  one/other (fr and pt-BR use "one" for 0 and 1.x too, check the wording). Any string with a
+  count next to a noun ("%lld accounts") is a plural, in every locale (tr: one = other), and the
+  key lives only in `.stringsdict`. Format it with
+  `String(format: NSLocalizedString("key", comment: ...), n)`, as the Finances cards do;
+  `PluralCountStringsTests` pins the forms.
 
 ## Permission prompts
 

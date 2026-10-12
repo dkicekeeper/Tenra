@@ -50,7 +50,7 @@ struct SubcategoryReorderView: View {
                                     .font(AppTypography.body)
                                 HStack(spacing: AppSpacing.sm) {
                                     if usageCount > 0 {
-                                        Text(String(format: String(localized: "subcategory.usageCount"), usageCount))
+                                        Text(String(format: NSLocalizedString("subcategory.usageCount", comment: "Count with plural forms in Localizable.stringsdict"), usageCount))
                                         if let lastUsed {
                                             Text("·")
                                             Text(Self.dateFormatter.string(from: lastUsed))

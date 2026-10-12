@@ -120,6 +120,7 @@ struct SubscriptionsListView: View {
                     .matchedTransitionSource(id: subscription.id, in: subscriptionNamespace)
                 }
                 .buttonStyle(PlainButtonStyle())
+                .accessibilityIdentifier("subscriptions.card")
                 .chartAppear(delay: Double(index) * 0.05)
             }
         }

@@ -166,6 +166,7 @@ struct FinancesView: View {
             )
         }
         .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.depositsCard")
         .screenPadding()
     }
 
@@ -177,6 +178,7 @@ struct FinancesView: View {
             )
         }
         .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.subscriptionsCard")
         .screenPadding()
     }
 
@@ -188,6 +190,7 @@ struct FinancesView: View {
             )
         }
         .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.loansCard")
         .screenPadding()
     }
 

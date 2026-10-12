@@ -49,7 +49,7 @@ docs/
 |------|---------|
 | [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v12, backups |
 | [concurrency.md](concurrency.md) | Swift 6 concurrency, CoreData threading, `@Observable` rules, DataSnapshot |
-| [design-system.md](design-system.md) | DesignKit in Tenra: tokens, components, padding contract, amount formatting |
+| [design-system.md](design-system.md) | Tenra on DesignKit: the bridge and hooks, what stays in Tenra, screen patterns, amount formatting, dates and category styling, effects in use (tokens and components: DesignKit's own docs) |
 | [gotchas.md](gotchas.md) | SwiftUI layout, performance hot paths, previews, ignorable console warnings |
 | [insights-metrics-reference.md](insights-metrics-reference.md) | Per-metric reference for InsightsService (formulas, granularity, data sources) |
 

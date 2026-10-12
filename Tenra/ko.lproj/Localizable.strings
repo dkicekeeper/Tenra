@@ -176,6 +176,13 @@
 // MARK: - Search
 "search.placeholder" = "금액, 카테고리, 설명으로 검색";
 "search.subcategories" = "하위 카테고리 검색";
+"search.recent" = "최근 검색";
+"search.recent.clear" = "지우기";
+"search.recent.remove" = "제거";
+"search.suggestions" = "추천";
+"search.fill" = "검색창에서 편집";
+"search.suggestion.category" = "카테고리";
+"search.suggestion.subcategory" = "하위 카테고리";
 
 // MARK: - Modals
 "modal.newAccount" = "새 계좌";

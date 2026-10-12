@@ -176,6 +176,13 @@
 // MARK: - Search
 "search.placeholder" = "Tutar, kategori ya da açıklamaya göre ara";
 "search.subcategories" = "Alt kategori ara";
+"search.recent" = "Son aramalar";
+"search.recent.clear" = "Temizle";
+"search.recent.remove" = "Kaldır";
+"search.suggestions" = "Öneriler";
+"search.fill" = "Arama alanında düzenle";
+"search.suggestion.category" = "Kategori";
+"search.suggestion.subcategory" = "Alt kategori";
 
 // MARK: - Modals
 "modal.newAccount" = "Yeni Hesap";

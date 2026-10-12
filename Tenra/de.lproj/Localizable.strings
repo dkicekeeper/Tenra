@@ -176,6 +176,13 @@
 // MARK: - Search
 "search.placeholder" = "Nach Betrag, Kategorie oder Beschreibung suchen";
 "search.subcategories" = "Unterkategorien suchen";
+"search.recent" = "Zuletzt gesucht";
+"search.recent.clear" = "Löschen";
+"search.recent.remove" = "Entfernen";
+"search.suggestions" = "Vorschläge";
+"search.fill" = "Im Suchfeld bearbeiten";
+"search.suggestion.category" = "Kategorie";
+"search.suggestion.subcategory" = "Unterkategorie";
 
 // MARK: - Modals
 "modal.newAccount" = "Neues Konto";

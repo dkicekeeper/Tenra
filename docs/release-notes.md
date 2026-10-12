@@ -200,7 +200,7 @@ Tenra 1.5의 새로운 기능:
 ## Submission checklist (1.5)
 
 - [ ] CI green on the release commit; `main` fast-forwarded.
-- [ ] Build: the cloud TestFlight build (Xcode 26.x, no iOS 27-only UI) or a build from the Mac with Xcode 27, as 1.4 was. The cloud build numbers run on (1.5 (5) is the last on 2026-10-12): a Mac upload needs a higher build number.
+- [ ] Build **1.5 (6)** from the Mac with Xcode 27 (founder's choice, 2026-10-12, as 1.4 was): `CURRENT_PROJECT_VERSION` is 6, above the cloud builds 1.5 (1)-(5).
 - [ ] Device check of the build (the 1.5 items above, the Categories screen budgets, a detail screen after an edit).
 - [ ] Version 1.5 created in ASC, release after approval; What's New pasted for the 13 locales above.
 - [ ] Screenshots: keep the 1.4 set unless the UI changed visibly enough to mislead (amount digits and hero backgrounds changed slightly).

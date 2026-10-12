@@ -153,4 +153,4 @@ self-reinforcing loop: the guess gets confirmed, two confirmations cross
 `ConversionPolicy.cachedOnly` reads the FX cache (`CurrencyConverter.convertSync`); a miss is
 `needsFXConversion`. Intents treat that as blocking. `VoiceInputConfirmationView` (the user is
 present) then runs `await CurrencyConverter.convert(...)` and calls `makeDraft` again with
-`.provided(converted)`; `.provided(nil)` (the network failed too) stays `needsFXConversion`.
+`.provided(converted)` and the same `suggestAccount`, so the retry picks the account the first pass would; `.provided(nil)` (the network failed too) stays `needsFXConversion`.

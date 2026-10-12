@@ -460,12 +460,15 @@ struct VoiceInputConfirmationView: View {
         // запроса — в отличие от интента, где это блокирующая ситуация.
         if case .failure(.needsFXConversion(let amount, let from, let to)) = result {
             let converted = await CurrencyConverter.convert(amount: amount, from: from, to: to)
+            // Тот же подбор счёта, что и в первом проходе, иначе повтор
+            // после конвертации мог подставить другой счёт.
             result = TransactionDraftService.makeDraft(
                 from: operation,
                 accounts: accountsViewModel.accounts,
                 categories: categoriesViewModel.customCategories,
                 learned: .shared,
-                conversion: .provided(converted)
+                conversion: .provided(converted),
+                suggestAccount: suggestAccountId
             )
         }
 

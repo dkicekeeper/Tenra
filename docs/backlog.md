@@ -27,11 +27,6 @@ with the commit of every fix, are in
   `recalculateBalances(for:)` with the touched accounts would do.
 
 Found by the docs audit of 2026-10-12, not verified on device yet:
-- **Voice confirmation retry:** after a network FX conversion `VoiceInputConfirmationView`
-  rebuilds the draft without `suggestAccount`, so the retry can pick another account.
-- **`projected_balance` for `.year`:** averages the last 3 period points' expenses and
-  multiplies by the period factor, so a year projects a 3-year average × 12
-  (`InsightsService+CashFlow`).
 - **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the
   confirmation snippet is the only guard. Decide whether intents deduplicate.
 - **Health score budget adherence** uses the calendar month, not each budget's own period;

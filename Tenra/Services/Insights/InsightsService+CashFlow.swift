@@ -231,8 +231,10 @@ extension InsightsService {
         let currentBalance = snapshot.accounts.filter { !$0.isLoan && $0.includeInBalance }.reduce(0.0) { $0 + snapshot.balanceFor($1.id) }
         let recurringNet = monthlyRecurringNet(baseCurrency: baseCurrency, recurringSeries: snapshot.recurringSeries, categories: snapshot.categories)
 
-        // Average monthly expenses from the last 3 period data points for a realistic projection.
-        let avgMonthlyExpenses: Double = {
+        // Average expenses of the last 3 buckets. A bucket is one period of this granularity
+        // (a week, a quarter, a year), so the average is already per period: only the monthly
+        // recurring net is scaled by the period factor below.
+        let avgPeriodExpenses: Double = {
             let recentPoints = Array(periodPoints.suffix(3))
             guard !recentPoints.isEmpty else { return 0 }
             return recentPoints.reduce(0.0) { $0 + $1.expenses } / Double(recentPoints.count)
@@ -255,7 +257,7 @@ extension InsightsService {
             projectedPeriodUnit       = String(localized: "insights.perMonth")
         }
         let periodRecurringNet    = recurringNet * projectedPeriodMultiplier
-        let periodAvgExpenses     = avgMonthlyExpenses * projectedPeriodMultiplier
+        let periodAvgExpenses     = avgPeriodExpenses
         let projectedNetChange    = periodRecurringNet - periodAvgExpenses
         let projectedBalance      = currentBalance + projectedNetChange
         let projectedMetricFormatted = projectedNetChange >= 0

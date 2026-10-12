@@ -77,6 +77,8 @@ struct LinkPaymentsView: View {
     @State private var baseline: [Transaction] = []
     @State private var selectedIds: Set<String> = []
     @State private var searchText = ""
+    /// DesignKit's recent queries under the search field (3.5.0).
+    @AppStorage("linkPayments.recentSearches") private var recentSearches = RecentSearches()
 
     // Cached derived data — rebuilt via `rebuildDerivedCaches()` on input changes only.
     @State private var cachedFilteredCandidates: [Transaction] = []
@@ -137,6 +139,7 @@ struct LinkPaymentsView: View {
                 placement: .navigationBarDrawer(displayMode: .always),
                 prompt: Text(String(localized: "subscription.linkPayments.searchPlaceholder", defaultValue: "Search"))
             )
+            .dsSearchSuggestions(text: $searchText, recent: $recentSearches)
             .task {
                 amountMode = options.defaultAmountMode
                 reloadBaseline()

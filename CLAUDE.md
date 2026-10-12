@@ -349,7 +349,7 @@ When working with this project:
 - Use Glob for finding files by pattern
 
 ### Don't
-- **Don't build custom search UI — system search only** (`.searchable`, bottom-bar `DefaultToolbarItem(kind: .search)`, `.searchToolbarBehavior(.minimize)`). If a system variant misbehaves, pick another SYSTEM variant or restructure the screen (see gotchas.md §searchable drawer for the History precedent). User rule.
+- **Don't build custom search UI — system search only** (`.searchable`, bottom-bar `DefaultToolbarItem(kind: .search)`, `.searchToolbarBehavior(.minimize)`); recent queries and suggestions go in the system's suggestion list through DesignKit's `.dsSearchSuggestions` (docs/design-system.md §4 Search). If a system variant misbehaves, pick another SYSTEM variant or restructure the screen (see gotchas.md §searchable drawer for the History precedent). User rule.
 - **Don't use em dashes (—) in any user-facing text**: UI strings (`Localizable.strings`), ASC metadata (description/promo/What's New), release notes, screenshot captions, push/notification copy. Reads as AI-generated. Rephrase with a comma, colon, period, or split the sentence. (Legitimate uses stay: minus signs for amounts, list bullets in code/docs.)
 - Don't create unnecessary abstractions
 - Don't ignore existing architectural patterns

@@ -176,6 +176,13 @@
 // MARK: - Search
 "search.placeholder" = "Поиск по сумме, категории или описанию";
 "search.subcategories" = "Поиск подкатегорий";
+"search.recent" = "Недавние";
+"search.recent.clear" = "Очистить";
+"search.recent.remove" = "Удалить";
+"search.suggestions" = "Подсказки";
+"search.fill" = "Изменить в поле поиска";
+"search.suggestion.category" = "Категория";
+"search.suggestion.subcategory" = "Подкатегория";
 
 // MARK: - Modals
 "modal.newAccount" = "Новый счёт";

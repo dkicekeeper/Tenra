@@ -176,6 +176,13 @@
 // MARK: - Search
 "search.placeholder" = "Пошук за сумою, категорією чи описом";
 "search.subcategories" = "Пошук підкатегорій";
+"search.recent" = "Нещодавні";
+"search.recent.clear" = "Очистити";
+"search.recent.remove" = "Прибрати";
+"search.suggestions" = "Підказки";
+"search.fill" = "Змінити в полі пошуку";
+"search.suggestion.category" = "Категорія";
+"search.suggestion.subcategory" = "Підкатегорія";
 
 // MARK: - Modals
 "modal.newAccount" = "Новий рахунок";

@@ -242,6 +242,12 @@ struct HistoryView: View {
             prompt: searchPrompt
         )
         .searchToolbarBehavior(.minimize)
+        // DesignKit's recent queries and suggestions in the system's suggestion list.
+        .modifier(HistorySearchSuggestions(
+            text: $filterCoordinator.searchText,
+            categories: categoriesViewModel.customCategories,
+            subcategories: categoriesViewModel.subcategories
+        ))
         .onAppear {
             handleOnAppear()
         }

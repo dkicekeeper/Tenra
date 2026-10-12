@@ -6,7 +6,7 @@ This file covers what is Tenra's own: how the app wires DesignKit, which views s
 why, how its screens are built, and its rules for amounts, dates, categories and motion. For a
 token, a modifier or a component, read DesignKit's docs (§1).
 
-*Checked against the code on 2026-10-12, DesignKit 3.4.0.*
+*Checked against the code on 2026-10-12, DesignKit 3.5.0.*
 
 ## Contents
 
@@ -202,6 +202,22 @@ freeze (CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `F
   `SectionHeader(style: .large)` over their charts.
 - **Filter sheets** (`AccountFilterView`, `CategoryFilterView`, `TimeFilterView`):
   `SectionHeader(title)` (default style) over selectable rows.
+
+### Search
+
+System search only (CLAUDE.md): `.searchable` places the field (History: the bottom bar,
+`.searchToolbarBehavior(.minimize)`), and DesignKit's `.dsSearchSuggestions` (3.5.0) puts the
+recent queries and suggestions in the system's own suggestion list. Each screen keeps its
+`RecentSearches` with `@AppStorage` under its own key:
+
+| Screen | Recent queries key | Suggestions |
+|---|---|---|
+| History (`HistorySearchSuggestions`) | `history.recentSearches` | the user's categories and subcategories (the search matches them by name; accounts are left out, the text search does not match them) |
+| `LinkPaymentsView` | `linkPayments.recentSearches` | none |
+| `SubcategorySearchView` | `subcategorySearch.recentSearches` | none |
+
+The suggestions cover the screen while the field is focused and something matches; a tap fills
+the field and hides them until the text changes, so the live list shows again.
 
 ### Empty, loading, error
 

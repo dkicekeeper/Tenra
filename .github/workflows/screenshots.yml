@@ -1,0 +1,72 @@
+name: Screenshots
+
+# Raw App Store screenshots on a GitHub macOS runner, so no Mac is needed: runs
+# scripts/capture_screenshots.sh (TenraUITests/ScreenshotCaptureTests with the ScreenshotDemo
+# dataset) for the chosen storefront locales and uploads screenshots/raw/<locale>/ as the
+# "raw-screenshots" artifact (only the captured locales). The frames are then composed in Figma ("Screenshots L10n").
+# Run: Actions → Screenshots → Run workflow, or Claude through the GitHub API.
+
+on:
+  workflow_dispatch:
+    inputs:
+      locales:
+        description: "ASC locales, space-separated (as in capture_screenshots.sh)"
+        required: false
+        default: "ru en-US fr-FR"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screenshots
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: macos-26
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Simulator
+        id: sim
+        run: |
+          xcodebuild -version
+          # The newest runtime that has an iPhone 17 Pro (the store shots' device).
+          SIM_OS=$(xcrun simctl list devices available -j | python3 -c '
+          import json, re, sys
+          found = []
+          for runtime, devices in json.load(sys.stdin)["devices"].items():
+              m = re.search(r"iOS-(\d+)-(\d+)", runtime)
+              if m and any(d["name"] == "iPhone 17 Pro" for d in devices):
+                  found.append((int(m.group(1)), int(m.group(2))))
+          if found:
+              major, minor = max(found)
+              print(f"{major}.{minor}")
+          ')
+          if [ -z "$SIM_OS" ]; then echo "::error::No iPhone 17 Pro simulator on this runner"; exit 1; fi
+          echo "os=$SIM_OS" >> "$GITHUB_OUTPUT"
+          echo "iPhone 17 Pro, iOS $SIM_OS"
+
+      - name: Capture
+        env:
+          SIM_NAME: iPhone 17 Pro
+          SIM_OS: ${{ steps.sim.outputs.os }}
+          LOCALES: ${{ inputs.locales }}
+        run: |
+          mkdir -p build/raw-out
+          for locale in $LOCALES; do
+            ONLY="$locale" ./scripts/capture_screenshots.sh
+            cp -R "screenshots/raw/$locale" build/raw-out/
+          done
+          find build/raw-out -name '*.png' | sort
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: raw-screenshots
+          path: build/raw-out
+          if-no-files-found: error

@@ -121,11 +121,13 @@ struct RealizedAggregatesRebuildTests {
         )
     }
 
-    /// Waits (time-bounded) until `condition` holds.
+    /// Waits until `condition` holds, up to 1000 sleeps of 10 ms: counted rather than timed,
+    /// because the CI host can freeze a simulator for minutes.
     private static func waitUntil(_ condition: () -> Bool) async throws {
-        let deadline = ContinuousClock.now + .seconds(5)
-        while !condition() && ContinuousClock.now < deadline {
+        var polls = 0
+        while !condition() && polls < 1000 {
             try await Task.sleep(for: .milliseconds(10))
+            polls += 1
         }
     }
 

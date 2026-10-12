@@ -180,19 +180,14 @@ struct HistoryTransactionsList: View {
                     .id(section.id)
                 }
 
-                // "Умная подгрузка" — when the spinner scrolls into view, expand the
-                // visible window by `sectionLoadIncrement` more sections.
-                if hasMore {
-                    ProgressView()
-                        .padding(AppSpacing.md)
-                        .frame(maxWidth: .infinity)
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .onAppear {
-                            listLogger.debug("⬇️ [HistoryList] loadMore — \(visibleSectionLimit) → \(visibleSectionLimit + sectionLoadIncrement) of \(sections.count)")
-                            visibleSectionLimit += sectionLoadIncrement
-                        }
+                // "Умная подгрузка" — when the end of the list scrolls into view, expand the
+                // visible window by `sectionLoadIncrement` more sections. The sections are in
+                // memory, so DesignKit's footer is only the trigger: it never shows `.loading`.
+                LoadMoreFooter(state: hasMore ? .more : .end) {
+                    listLogger.debug("⬇️ [HistoryList] loadMore — \(visibleSectionLimit) → \(visibleSectionLimit + sectionLoadIncrement) of \(sections.count)")
+                    visibleSectionLimit += sectionLoadIncrement
                 }
+                .listRowBackground(Color.clear)
             }
             .listStyle(.plain)
             // Populate the label cache synchronously before the first body pass

@@ -140,7 +140,6 @@ struct AssistantViewModelTests {
         #expect(AssistantFailure(AgentConversationError.refused) == .refused)
     }
 
-<<<<<<< HEAD
     @Test func aNewChatForgetsTheThread() async {
         let transport = ScriptedTransport([
             [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
@@ -170,7 +169,8 @@ struct AssistantViewModelTests {
         )
         model.reset()
         #expect(book.drafts.isEmpty)
-=======
+    }
+
     @Test func savedDraftsAreReportedOnce() async {
         let transport = ScriptedTransport([
             [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
@@ -196,7 +196,6 @@ struct AssistantViewModelTests {
         let texts = transport.calls.map { call in call.last?.content.compactMap { $0["text"]?.stringValue } ?? [] }
         #expect(texts[1] == ["<draft_status>\ndraft_1: saved\n</draft_status>", "Ещё такси"])
         #expect(texts[2] == ["Сколько на кафе?"])
->>>>>>> claude/plan-ai-assistant
     }
 
     @Test func aFreeAnswerSpendsTheAllowance() async {

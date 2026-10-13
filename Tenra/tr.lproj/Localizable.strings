@@ -1863,3 +1863,23 @@
 "assistant.error.unavailable" = "Asistan şu an kullanılamıyor. Daha sonra tekrar dene.";
 "assistant.error.refused" = "Bu konuda yardımcı olamam. Bana paranla ilgili sor.";
 "assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Asistan";
+"assistant.greeting.title" = "Bana paranı sor";
+"assistant.greeting.message" = "Bu telefondaki hesaplarına, harcamalarına, bütçelerine ve aboneliklerine bakıp kartlarla cevap veririm.";
+"assistant.composer.placeholder" = "Paranla ilgili sor…";
+"assistant.newChat" = "Yeni sohbet";
+"assistant.preset.month" = "Bu ayki harcamalarım";
+"assistant.preset.compare" = "Geçen ayla karşılaştır";
+"assistant.preset.budgets" = "Bütçelerim ne durumda?";
+"assistant.preset.subscriptions" = "Aboneliklerim ne kadar tutuyor?";
+"premium.locked.assistant.title" = "Tenra Pro ile asistan";
+"premium.locked.assistant.message" = "Harcamalarını, bütçelerini ve aboneliklerini sor, cevabı kartlarla al.";
+"common.retry" = "Tekrar dene";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "Asistan bulutta çalışır";
+"assistant.consent.message" = "Cevap vermek için Anthropic’in modeli Claude’a danışır. Telefondan yalnızca sorun ve cevap için baktıkları çıkar: toplamlar, kategoriler, hesap adları ve gereken işlemler. Veritabanın, fişlerin ve ekstrelerin burada kalır. Tenra sunucusu hiçbir şey saklamaz, verilerin model eğitiminde kullanılmaz.";
+"assistant.consent.allow" = "Aç";
+"assistant.consent.notNow" = "Şimdi değil";

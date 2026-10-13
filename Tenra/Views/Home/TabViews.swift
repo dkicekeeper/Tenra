@@ -110,6 +110,31 @@ struct VoiceTab: View {
     }
 }
 
+// MARK: - AssistantTab
+
+/// The AI assistant (beta, docs/plan-ai-assistant.md). Pro only until the free limit lands.
+/// The thread lives in `AppCoordinator`, so it survives the tab bar switching modes.
+struct AssistantTab: View {
+    @Environment(AppCoordinator.self) private var coordinator
+    @Environment(PremiumManager.self) private var premium
+
+    var body: some View {
+        NavigationStack {
+            if !premium.isPro {
+                PremiumLockedView(
+                    icon: "sparkles",
+                    title: String(localized: "premium.locked.assistant.title"),
+                    message: String(localized: "premium.locked.assistant.message")
+                )
+                .navigationTitle(String(localized: "tab.assistant"))
+                .navigationBarTitleDisplayMode(.inline)
+            } else if let assistant = coordinator.assistant() {
+                AssistantView(model: assistant)
+            }
+        }
+    }
+}
+
 // MARK: - OCRTab
 
 /// Full-screen OCR / PDF import tab.

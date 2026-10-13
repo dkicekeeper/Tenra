@@ -1863,3 +1863,23 @@
 "assistant.error.unavailable" = "Асистент зараз недоступний. Спробуйте пізніше.";
 "assistant.error.refused" = "З цим я не допоможу. Запитайте про ваші гроші.";
 "assistant.error.generic" = "Щось пішло не так. Спробуйте ще раз.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Асистент";
+"assistant.greeting.title" = "Запитайте мене про гроші";
+"assistant.greeting.message" = "Я дивлюся ваші рахунки, витрати, бюджети й підписки на цьому телефоні та відповідаю картками.";
+"assistant.composer.placeholder" = "Запитайте про гроші…";
+"assistant.newChat" = "Новий чат";
+"assistant.preset.month" = "Мої витрати цього місяця";
+"assistant.preset.compare" = "Порівняй з минулим місяцем";
+"assistant.preset.budgets" = "Як справи з бюджетами?";
+"assistant.preset.subscriptions" = "Скільки коштують мої підписки?";
+"premium.locked.assistant.title" = "Асистент у Tenra Pro";
+"premium.locked.assistant.message" = "Запитуйте про витрати, бюджети й підписки та отримуйте відповідь картками.";
+"common.retry" = "Повторити";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "Асистент працює через хмару";
+"assistant.consent.message" = "Щоб відповісти, він звертається до моделі Claude від Anthropic. З телефона йдуть лише ваше запитання й те, що потрібно для відповіді: суми, категорії, назви рахунків і потрібні операції. База, чеки й виписки залишаються тут. Сервер Tenra нічого не зберігає, дані не використовуються для навчання моделей.";
+"assistant.consent.allow" = "Увімкнути";
+"assistant.consent.notNow" = "Не зараз";

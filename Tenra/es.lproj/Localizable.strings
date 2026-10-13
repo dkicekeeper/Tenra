@@ -1863,3 +1863,23 @@
 "assistant.error.unavailable" = "El asistente no está disponible ahora. Inténtalo más tarde.";
 "assistant.error.refused" = "Con eso no puedo ayudarte. Pregúntame sobre tu dinero.";
 "assistant.error.generic" = "Algo salió mal. Inténtalo de nuevo.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Asistente";
+"assistant.greeting.title" = "Pregúntame sobre tu dinero";
+"assistant.greeting.message" = "Miro tus cuentas, gastos, presupuestos y suscripciones en este teléfono y respondo con tarjetas.";
+"assistant.composer.placeholder" = "Pregunta sobre tu dinero…";
+"assistant.newChat" = "Nuevo chat";
+"assistant.preset.month" = "Mis gastos de este mes";
+"assistant.preset.compare" = "Compara con el mes pasado";
+"assistant.preset.budgets" = "¿Cómo van mis presupuestos?";
+"assistant.preset.subscriptions" = "¿Cuánto me cuestan las suscripciones?";
+"premium.locked.assistant.title" = "Asistente con Tenra Pro";
+"premium.locked.assistant.message" = "Pregunta por tus gastos, presupuestos y suscripciones y recibe la respuesta en tarjetas.";
+"common.retry" = "Reintentar";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "El asistente funciona en la nube";
+"assistant.consent.message" = "Para responder, consulta a Claude, un modelo de Anthropic. Del teléfono solo salen tu pregunta y lo que busca para responder: totales, categorías, nombres de cuentas y los movimientos necesarios. Tu base de datos, recibos y extractos se quedan aquí. El servidor de Tenra no guarda nada y tus datos no se usan para entrenar modelos.";
+"assistant.consent.allow" = "Activar";
+"assistant.consent.notNow" = "Ahora no";

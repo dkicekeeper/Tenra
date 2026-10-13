@@ -64,6 +64,13 @@ final class AgentConversation {
         self.maxSteps = maxSteps
     }
 
+    /// Starts a new thread: the server keeps nothing, so forgetting the history is all it takes.
+    func reset() {
+        messages = []
+        results = [:]
+        owedResults = []
+    }
+
     /// Sends one user message and runs the loop to the reply.
     /// - Parameter context: the `<app_context>` block; pass it on the first message of the
     ///   thread and whenever the date or the user's accounts and categories change.

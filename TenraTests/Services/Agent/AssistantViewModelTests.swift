@@ -121,6 +121,25 @@ struct AssistantViewModelTests {
         #expect(AssistantFailure(AgentConversationError.refused) == .refused)
     }
 
+    @Test func aNewChatForgetsTheThread() async {
+        let transport = ScriptedTransport([
+            [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "none")])],
+        ])
+        let model = makeModel(transport)
+
+        await model.send("Первый")
+        model.reset()
+        #expect(model.entries.isEmpty)
+        await model.send("Второй")
+
+        // A fresh thread: one user message, with the context again and no owed result.
+        let fresh = transport.calls[1]
+        #expect(fresh.count == 1)
+        #expect(fresh[0].content.compactMap { $0["text"]?.stringValue } == ["<app_context>a</app_context>", "Второй"])
+        #expect(fresh[0].content.count == 2)
+    }
+
     @Test func stepsAreNamedAfterTheTools() {
         #expect(AssistantStep(tool: "get_spending_summary") == .spending)
         #expect(AssistantStep(tool: "render_reply") == .composing)

@@ -78,6 +78,28 @@ class AppCoordinator {
     /// coordinator exists. MainActor-isolated via the enclosing class isolation.
     static var pendingDeepLinkSeriesIdOnLaunch: String?
 
+    // MARK: - Assistant
+
+    @ObservationIgnored private var assistantModel: AssistantViewModel?
+
+    /// The AI assistant's thread, made on first use; nil while its server is not configured
+    /// (Info.plist `TenraAssistantURL`, docs/plan-ai-assistant.md §5.1).
+    func assistant() -> AssistantViewModel? {
+        if let assistantModel { return assistantModel }
+        guard let url = AgentConfig.serverURL else { return nil }
+        let client = AgentServerClient(baseURL: url) {
+            await MainActor.run { PremiumManager.shared.appUserID }
+        }
+        let toolkit = FinanceToolkit(store: transactionStore, insights: insightsViewModel)
+        let store = transactionStore
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: client, toolkit: toolkit),
+            context: { AgentContextBuilder.text(for: AgentContextSnapshot(store: store)) }
+        )
+        assistantModel = model
+        return model
+    }
+
     func setPendingSubscription(seriesId: String) {
         pendingSubscriptionSeriesId = seriesId
     }

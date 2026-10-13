@@ -1863,3 +1863,23 @@
 "assistant.error.unavailable" = "지금은 어시스턴트를 사용할 수 없습니다. 나중에 다시 시도하세요.";
 "assistant.error.refused" = "그 부분은 도와드릴 수 없습니다. 돈에 관해 물어보세요.";
 "assistant.error.generic" = "문제가 발생했습니다. 다시 시도하세요.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "어시스턴트";
+"assistant.greeting.title" = "돈에 대해 물어보세요";
+"assistant.greeting.message" = "이 휴대폰의 계좌, 지출, 예산, 구독을 보고 카드로 답해 드립니다.";
+"assistant.composer.placeholder" = "돈에 대해 물어보세요…";
+"assistant.newChat" = "새 대화";
+"assistant.preset.month" = "이번 달 지출";
+"assistant.preset.compare" = "지난달과 비교해 줘";
+"assistant.preset.budgets" = "예산은 어때?";
+"assistant.preset.subscriptions" = "구독료는 얼마야?";
+"premium.locked.assistant.title" = "Tenra Pro 어시스턴트";
+"premium.locked.assistant.message" = "지출, 예산, 구독에 대해 물어보면 카드로 답을 받아요.";
+"common.retry" = "다시 시도";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "어시스턴트는 클라우드에서 작동합니다";
+"assistant.consent.message" = "답변을 위해 Anthropic의 모델 Claude에 물어봅니다. 휴대폰 밖으로 나가는 것은 질문과 답변에 필요한 정보(합계, 카테고리, 계좌 이름, 필요한 거래)뿐입니다. 데이터베이스, 영수증, 명세서는 이곳에 남습니다. Tenra 서버는 아무것도 저장하지 않으며, 데이터는 모델 학습에 사용되지 않습니다.";
+"assistant.consent.allow" = "켜기";
+"assistant.consent.notNow" = "나중에";

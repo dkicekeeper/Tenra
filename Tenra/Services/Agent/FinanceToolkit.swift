@@ -8,9 +8,9 @@
 //
 //  Read tools: spending summary, period comparison, search, accounts, budgets, recurring
 //  payments, insights. Heavy walks over the transactions run off the main actor on a snapshot.
-//  `draft_transactions` resolves operations into a draft (AgentDraftBook) that the person
-//  saves on the confirm card. Planning (`forecast_balance`) and the budget and recurring drafts
-//  land in later phases and answer "not available".
+//  `draft_transactions` and `draft_budget` file drafts (AgentDraftBook) that the person saves
+//  on the confirm card. Planning (`forecast_balance`) and `draft_recurring` land later and
+//  answer "not available".
 //
 
 import Foundation
@@ -48,7 +48,7 @@ final class FinanceToolkit: AgentToolExecuting {
         self.calendar = calendar
     }
 
-    static let laterPhaseTools: Set<String> = ["forecast_balance", "draft_budget", "draft_recurring"]
+    static let laterPhaseTools: Set<String> = ["forecast_balance", "draft_recurring"]
 
     func execute(name: String, input: JSONValue) async -> AgentToolOutput {
         do {
@@ -61,6 +61,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "list_recurring": return .success(try recurring(input))
             case "get_insights": return .success(insightsResult())
             case "draft_transactions": return try await draftTransactions(input)
+            case "draft_budget": return try draftBudget(input)
             case _ where Self.laterPhaseTools.contains(name):
                 return .failure(Self.notYet(name))
             default:
@@ -411,6 +412,48 @@ final class FinanceToolkit: AgentToolExecuting {
         return .success(["draft_id": .string(id), "items": .array(items), "skipped": .array(skipped), "saved": false])
     }
 
+    private struct DraftBudgetInput: Decodable {
+        let category: String
+        let amount: Double
+        let period: String
+    }
+
+    /// `draft_budget`: a new or changed budget of an expense category, by id or name, in the
+    /// base currency (budgets are kept in it). The previous limit goes back with the draft, for
+    /// the model and for Undo.
+    private func draftBudget(_ input: JSONValue) throws -> AgentToolOutput {
+        guard let drafts else { return .failure(Self.notYet("draft_budget")) }
+        let args = try input.decoded(as: DraftBudgetInput.self)
+        let expenses = store.categories.filter { $0.type == .expense }
+        let name = args.category.lowercased()
+        guard let category = expenses.first(where: { $0.id == args.category }) ?? expenses.first(where: { $0.name.lowercased() == name }) else {
+            throw FinanceToolError(message: "Unknown expense category \(args.category). Use a category id from <app_context>.")
+        }
+        guard args.amount.isFinite, args.amount > 0 else { throw FinanceToolError(message: "amount must be positive.") }
+        guard let period = CustomCategory.BudgetPeriod(rawValue: args.period) else {
+            throw FinanceToolError(message: "period must be weekly, monthly or yearly.")
+        }
+        let budget = AgentBudgetDraft(
+            categoryId: category.id,
+            amount: args.amount,
+            period: period,
+            previousAmount: category.budgetAmount,
+            previousPeriod: category.budgetPeriod
+        )
+        let id = drafts.add([.budget(budget)])
+        return .success([
+            "draft_id": .string(id),
+            "category_id": .string(category.id),
+            "category": .string(category.name),
+            "amount": .number(FinanceToolkitCompute.round2(args.amount)),
+            "currency": .string(store.baseCurrency),
+            "period": .string(period.rawValue),
+            "previous_limit": category.budgetAmount.map { JSONValue.number(FinanceToolkitCompute.round2($0)) } ?? .null,
+            "previous_period": category.budgetAmount == nil ? .null : .string(category.budgetPeriod.rawValue),
+            "saved": false,
+        ])
+    }
+
     private func draftOperation(_ item: DraftItemInput) async -> Result<AgentDraftOperation, FinanceToolError> {
         guard item.amount.isFinite, item.amount > 0 else { return .failure(FinanceToolError(message: "amount must be positive")) }
         let date = item.date.flatMap { FastDateParser.date(from: $0) } ?? now()
@@ -534,6 +577,13 @@ final class FinanceToolkit: AgentToolExecuting {
                 "date": .string(FastDateParser.string(from: transfer.date)),
                 "note": transfer.note.isEmpty ? .null : .string(transfer.note),
                 "guessed": [],
+            ]
+        case .budget(let budget):
+            return [
+                "type": "budget",
+                "category_id": .string(budget.categoryId),
+                "amount": .number(FinanceToolkitCompute.round2(budget.amount)),
+                "period": .string(budget.period.rawValue),
             ]
         }
     }

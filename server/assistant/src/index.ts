@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { AttestError, checkAssertion, isValidKeyId, issueChallenge, registerKey } from "./appattest";
 import { buildParams, donePayload, errorPayload } from "./claude";
 import { readConfig, type Env } from "./config";
 import { resolveTier, UpstreamError } from "./entitlement";
@@ -14,6 +15,10 @@ import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } fr
 //   done  {content, ...}    the assistant turn to append verbatim, plus usage and quota
 //   error {code, retryable}
 //
+// Without Pro, a turn must come from the real app: it carries an App Attest assertion over
+// its body (x-tenra-key, x-tenra-assertion), and the free quota is counted per attested key.
+// GET /v1/attest/challenge and POST /v1/attest register that key once per install.
+//
 // Nothing about the conversation is logged: only status codes and error codes.
 
 const json = (body: unknown, status = 200) =>
@@ -25,8 +30,8 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/v1/health") return json({ ok: true, protocol: PROTOCOL_VERSION, prompt: PROMPT_VERSION });
-    if (url.pathname !== "/v1/turn") return fail(404, "not_found");
-    if (request.method !== "POST") return fail(405, "method");
+    const routes = ["/v1/turn", "/v1/attest", "/v1/attest/challenge"];
+    if (!routes.includes(url.pathname)) return fail(404, "not_found");
 
     const config = readConfig(env);
     if (!config.enabled) return fail(503, "disabled");
@@ -34,12 +39,20 @@ export default {
     const country = request.headers.get("cf-ipcountry")?.toUpperCase();
     if (country && config.blockedCountries.has(country)) return fail(451, "region_unavailable");
 
+    if (url.pathname === "/v1/attest/challenge") {
+      if (request.method !== "GET") return fail(405, "method");
+      return json({ challenge: await issueChallenge(env.QUOTA) });
+    }
+    if (request.method !== "POST") return fail(405, "method");
+    if (url.pathname === "/v1/attest") return attest(request, env, config.appId);
+
     const userId = request.headers.get("x-tenra-user");
     if (!isValidUserId(userId)) return fail(401, "user");
 
+    const bytes = new Uint8Array(await request.arrayBuffer());
     let turn;
     try {
-      turn = parseTurnRequest(await request.text());
+      turn = parseTurnRequest(new TextDecoder().decode(bytes));
     } catch (error) {
       if (error instanceof ValidationError) return fail(400, "invalid", { reason: error.code });
       throw error;
@@ -56,7 +69,22 @@ export default {
       throw error;
     }
 
-    const quota = await consumeCall(env.QUOTA, userId, tier, config);
+    // Without Pro: the body must be signed by a key attested on a real device.
+    let quotaId = userId;
+    if (tier === "free") {
+      const keyId = request.headers.get("x-tenra-key");
+      const assertion = request.headers.get("x-tenra-assertion");
+      if (!isValidKeyId(keyId) || !assertion || assertion.length > 4096) return fail(401, "attest", { reason: "missing" });
+      try {
+        await checkAssertion(env.QUOTA, keyId, assertion, bytes, config.appId);
+      } catch (error) {
+        if (error instanceof AttestError) return fail(401, "attest", { reason: error.reason });
+        throw error;
+      }
+      quotaId = `key:${keyId}`;
+    }
+
+    const quota = await consumeCall(env.QUOTA, quotaId, tier, config);
     if (!quota.allowed) return fail(429, quota.reason === "global" ? "busy" : "quota", { tier, used: quota.used, limit: quota.limit });
 
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, maxRetries: 1 });
@@ -94,3 +122,28 @@ export default {
     });
   },
 } satisfies ExportedHandler<Env>;
+
+async function attest(request: Request, env: Env, appId: string): Promise<Response> {
+  let input: { keyId?: unknown; attestation?: unknown; challenge?: unknown };
+  try {
+    const text = await request.text();
+    if (text.length > 64 * 1024) return fail(400, "invalid", { reason: "size" });
+    input = JSON.parse(text);
+  } catch {
+    return fail(400, "invalid", { reason: "json" });
+  }
+  const { keyId, attestation, challenge } = input;
+  if (typeof keyId !== "string" || !isValidKeyId(keyId) || typeof attestation !== "string" || typeof challenge !== "string") {
+    return fail(400, "invalid", { reason: "fields" });
+  }
+  try {
+    const stored = await registerKey(env.QUOTA, { keyId, attestation, challenge }, { appId });
+    return json({ ok: true, environment: stored.environment });
+  } catch (error) {
+    if (error instanceof AttestError) {
+      console.log(`attest ${error.reason}`);
+      return fail(400, "attestation", { reason: error.reason });
+    }
+    throw error;
+  }
+}

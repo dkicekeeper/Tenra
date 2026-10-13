@@ -257,8 +257,19 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
 - Первое сообщение треда несёт блок `<app_context>`: сегодняшняя дата, локаль, базовая валюта,
   счета и категории с id (формат: `eval/fixture.ts`, `appContext`). Новый блок, когда меняется
   дата или справочники.
-- Ошибки до стрима: 400 `invalid`, 401 `user`, 429 `quota` или `busy`, 451
-  `region_unavailable`, 502 `entitlement_unavailable`, 503 `disabled`.
+- Ошибки до стрима: 400 `invalid`, 401 `user`, 401 `attest` (с `reason`), 429 `quota` или
+  `busy`, 451 `region_unavailable`, 502 `entitlement_unavailable`, 503 `disabled`.
+- **App Attest** (`src/appattest.ts`): без Pro ход принимается только из настоящего приложения на
+  настоящем устройстве. Раз на установку: `GET /v1/attest/challenge` → `{challenge}` (одноразовый,
+  5 минут), приложение делает ключ `DCAppAttestService` и аттестацию с `clientDataHash =
+  SHA256(challenge)`, `POST /v1/attest {keyId, attestation, challenge}`. Сервер проверяет цепочку до
+  корня Apple App Attestation (`src/apple-root.ts`), nonce в листовом сертификате, keyId, app id
+  (`APP_ID` = `SY2L2VMQP7.dakacom.Tenra`), нулевой счётчик, окружение (production и development) и
+  credential id, и хранит открытый ключ в KV. Каждый ход без Pro несёт `x-tenra-key` и
+  `x-tenra-assertion` (подпись тела запроса); счётчик подписи растёт, повтор запроса отклоняется.
+  Бесплатная квота считается на ключ: `FREE_MONTHLY_CALLS` = 150 вызовов в месяц, сверх лимита
+  приложения (30 ответов за первую неделю, потом 10 в месяц). Тесты на синтетической цепочке:
+  `test/fixtures/make-appattest.mjs`.
 - Модель, effort и лимиты: переменные в `wrangler.toml`; ключи: секреты Worker.
 
 ---

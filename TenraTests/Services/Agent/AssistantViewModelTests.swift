@@ -4,7 +4,8 @@
 //
 //  The assistant screen's state over a scripted server: the thread of questions and replies,
 //  the step named after the running tool, a failed question kept for Retry, and the
-//  <app_context> block sent only when it changed.
+//  <app_context> block sent only when it changed, and the free allowance checked before a
+//  question goes out.
 //
 
 import Foundation
@@ -14,9 +15,27 @@ import Testing
 @MainActor
 struct AssistantViewModelTests {
 
-    private func makeModel(_ transport: AgentTransport, context: @escaping () -> String = { "<app_context>a</app_context>" }) -> AssistantViewModel {
-        AssistantViewModel(conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()), context: context)
+    private func makeModel(
+        _ transport: AgentTransport,
+        context: @escaping () -> String = { "<app_context>a</app_context>" },
+        access: AssistantViewModel.Access = .unlimited
+    ) -> AssistantViewModel {
+        AssistantViewModel(conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()), context: context, access: access)
     }
+
+    /// The free allowance kept in memory instead of the Keychain.
+    @MainActor
+    private final class UsageBox {
+        var usage: AssistantUsage
+        var isPro = false
+        init(_ usage: AssistantUsage = AssistantUsage()) { self.usage = usage }
+
+        func access(now: Date) -> AssistantViewModel.Access {
+            AssistantViewModel.Access(isPro: { self.isPro }, loadUsage: { self.usage }, saveUsage: { self.usage = $0 }, now: { now })
+        }
+    }
+
+    private static let now = Date(timeIntervalSince1970: 1_800_000_000)
 
     @Test func aQuestionAndItsReplyJoinTheThread() async {
         let transport = ScriptedTransport([
@@ -138,6 +157,65 @@ struct AssistantViewModelTests {
         #expect(fresh.count == 1)
         #expect(fresh[0].content.compactMap { $0["text"]?.stringValue } == ["<app_context>a</app_context>", "Второй"])
         #expect(fresh[0].content.count == 2)
+    }
+
+    @Test func aFreeAnswerSpendsTheAllowance() async {
+        let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "none")])]])
+        let box = UsageBox()
+        let model = makeModel(transport, access: box.access(now: Self.now))
+        #expect(model.allowance?.remaining == PremiumConfig.Assistant.trialActions)
+
+        await model.send("Сколько на кафе?")
+
+        #expect(model.phase == .idle)
+        #expect(box.usage.trialUsed == 1)
+        #expect(box.usage.firstUse == Self.now)
+        #expect(model.allowance?.remaining == PremiumConfig.Assistant.trialActions - 1)
+    }
+
+    @Test func aFailedAnswerCostsNothing() async {
+        let box = UsageBox()
+        let model = makeModel(FailingTransport(AgentServerError.busy), access: box.access(now: Self.now))
+        await model.send("…")
+        #expect(model.phase == .failed(.busy))
+        #expect(box.usage == AssistantUsage())
+    }
+
+    @Test func overTheAllowanceTheQuestionWaitsForPro() async {
+        let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "none")])]])
+        let box = UsageBox(AssistantUsage(firstUse: Self.now.addingTimeInterval(-3600), trialUsed: PremiumConfig.Assistant.trialActions))
+        let model = makeModel(transport, access: box.access(now: Self.now))
+        #expect(model.allowance?.isExhausted == true)
+
+        await model.send("Сколько на кафе?")
+        #expect(transport.calls.isEmpty)
+        #expect(model.phase == .failed(.freeLimit))
+        #expect(model.failedEntry == model.entries.first?.id)
+        #expect(AssistantFailure.freeLimit.canRetry == false)
+
+        // Pro bought: the paywall's unlock retries the question that waited.
+        box.isPro = true
+        model.refreshAllowance()
+        #expect(model.allowance == nil)
+        await model.retry()
+        #expect(transport.calls.count == 1)
+        #expect(model.phase == .idle)
+        #expect(model.entries.count == 2)
+        #expect(box.usage.trialUsed == PremiumConfig.Assistant.trialActions)
+    }
+
+    @Test func proSpendsNoAllowance() async {
+        let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "none")])]])
+        let box = UsageBox()
+        box.isPro = true
+        let model = makeModel(transport, access: box.access(now: Self.now))
+        await model.send("Сколько на кафе?")
+        #expect(model.allowance == nil)
+        #expect(box.usage == AssistantUsage())
+    }
+
+    @Test func aDeviceWithoutAttestationIsOfferedPro() {
+        #expect(AssistantFailure(AgentServerError.attestation(reason: "unsupported")) == .proRequired)
     }
 
     @Test func stepsAreNamedAfterTheTools() {

@@ -112,15 +112,17 @@ struct VoiceTab: View {
 
 // MARK: - AssistantTab
 
-/// The AI assistant (beta, docs/plan-ai-assistant.md). Pro only until the free limit lands.
-/// The thread lives in `AppCoordinator`, so it survives the tab bar switching modes.
+/// The AI assistant (beta, docs/plan-ai-assistant.md). Without Pro it answers within the free
+/// allowance, on devices that pass App Attest (the server counts free answers per attested
+/// key); elsewhere, the Simulator included, it is Pro only. The thread lives in
+/// `AppCoordinator`, so it survives the tab bar switching modes.
 struct AssistantTab: View {
     @Environment(AppCoordinator.self) private var coordinator
     @Environment(PremiumManager.self) private var premium
 
     var body: some View {
         NavigationStack {
-            if !premium.isPro {
+            if !premium.isPro && !AgentAttestation.isSupported {
                 PremiumLockedView(
                     icon: "sparkles",
                     title: String(localized: "premium.locked.assistant.title"),

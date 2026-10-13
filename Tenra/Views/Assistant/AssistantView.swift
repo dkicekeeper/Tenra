@@ -13,6 +13,10 @@
 //  Nothing leaves the phone before the person agrees: the first question opens the consent
 //  sheet (App Review 5.1.2(i)), and goes once they turn the cloud mode on.
 //
+//  Without Pro, a line over the composer counts the free answers once 3 or fewer are left
+//  (docs/plan-ai-assistant.md §6), and opens the paywall. A question over the allowance waits
+//  in the thread with the Pro button and goes once Pro is on.
+//
 
 import SwiftUI
 
@@ -41,7 +45,7 @@ struct AssistantView: View {
                         .transition(.opacity)
                 }
                 if case .failed(let failure) = model.phase,
-                   failure == .proRequired || failure == .limitReached, !premium.isPro {
+                   failure == .proRequired || failure == .limitReached || failure == .freeLimit, !premium.isPro {
                     DSButton(String(localized: "settings.pro.cta.title"), systemImage: "sparkles") {
                         showingPaywall = true
                     }
@@ -59,17 +63,24 @@ struct AssistantView: View {
         .defaultScrollAnchor(.bottom, for: .sizeChanges)
         .scrollDismissesKeyboard(.interactively)
         .safeAreaBar(edge: .bottom) {
-            MessageComposer(
-                text: $draft,
-                placeholder: String(localized: "assistant.composer.placeholder"),
-                isSending: model.isWorking,
-                limit: AssistantMetrics.questionLimit,
-                focus: $composerFocused
-            ) {
-                send(draft)
+            VStack(spacing: AppSpacing.xs) {
+                if let allowance = model.allowance, allowance.remaining <= AssistantMetrics.allowanceHint, !premium.isPro {
+                    allowanceLine(allowance)
+                        .transition(.opacity)
+                }
+                MessageComposer(
+                    text: $draft,
+                    placeholder: String(localized: "assistant.composer.placeholder"),
+                    isSending: model.isWorking,
+                    limit: AssistantMetrics.questionLimit,
+                    focus: $composerFocused
+                ) {
+                    send(draft)
+                }
             }
             .screenPadding()
             .padding(.bottom, AppSpacing.sm)
+            .animation(AppAnimation.smooth, value: model.allowance)
         }
         .navigationTitle(String(localized: "tab.assistant"))
         .navigationBarTitleDisplayMode(.inline)
@@ -90,8 +101,11 @@ struct AssistantView: View {
             }
         }
         .paywallSheet(isPresented: $showingPaywall) {
+            model.refreshAllowance()
             Task { await model.retry() }
         }
+        .onAppear { model.refreshAllowance() }
+        .onChange(of: premium.isPro) { model.refreshAllowance() }
         .sheet(isPresented: $showingConsent) {
             PromptSheet(
                 systemImage: "lock.shield",
@@ -145,6 +159,27 @@ struct AssistantView: View {
         case .reply(let reply, let results):
             AssistantReplyView(reply: reply, results: results)
         }
+    }
+
+    /// "2 free answers left", or when the next ones come; a tap opens the paywall.
+    private func allowanceLine(_ allowance: AssistantAllowance.Status) -> some View {
+        Button {
+            showingPaywall = true
+        } label: {
+            Label(Self.allowanceText(allowance), systemImage: "sparkles")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColors.Text.secondary)
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(String(localized: "settings.pro.cta.title"))
+    }
+
+    static func allowanceText(_ allowance: AssistantAllowance.Status) -> String {
+        if allowance.remaining > 0 {
+            return String(format: NSLocalizedString("assistant.allowance.remaining", comment: "Free answers left"), allowance.remaining)
+        }
+        guard let renewsAt = allowance.renewsAt else { return String(localized: "assistant.error.freeLimit") }
+        return String(format: String(localized: "assistant.allowance.renews"), renewsAt.formatted(.dateTime.day().month(.wide)))
     }
 
     private func workingRow(_ step: AssistantStep) -> some View {
@@ -207,6 +242,8 @@ enum AssistantMetrics {
     static let headerMascot: CGFloat = AppIconSize.xl
     /// The longest question: plenty for a person, short enough to keep the turn cheap.
     static let questionLimit = 1000
+    /// The free answers left from which the composer shows the count.
+    static let allowanceHint = 3
     /// The person agreed to the cloud mode (the consent sheet's "Turn on").
     static let consentKey = "assistant.cloudConsent.v1"
 }

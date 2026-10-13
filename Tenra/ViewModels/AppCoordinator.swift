@@ -83,18 +83,26 @@ class AppCoordinator {
     @ObservationIgnored private var assistantModel: AssistantViewModel?
 
     /// The AI assistant's thread, made on first use; nil while its server is not configured
-    /// (Info.plist `TenraAssistantURL`, docs/plan-ai-assistant.md §5.1).
+    /// (Info.plist `TenraAssistantURL`, docs/plan-ai-assistant.md §5.1). Without Pro it spends
+    /// the free allowance, and the server needs App Attest (§3.7).
     func assistant() -> AssistantViewModel? {
         if let assistantModel { return assistantModel }
         guard let url = AgentConfig.serverURL else { return nil }
-        let client = AgentServerClient(baseURL: url) {
+        let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
+        let client = AgentServerClient(baseURL: url, attestation: attestation) {
             await MainActor.run { PremiumManager.shared.appUserID }
         }
         let toolkit = FinanceToolkit(store: transactionStore, insights: insightsViewModel)
         let store = transactionStore
+        let usage = AssistantUsageStore()
         let model = AssistantViewModel(
             conversation: AgentConversation(transport: client, toolkit: toolkit),
-            context: { AgentContextBuilder.text(for: AgentContextSnapshot(store: store)) }
+            context: { AgentContextBuilder.text(for: AgentContextSnapshot(store: store)) },
+            access: AssistantViewModel.Access(
+                isPro: { PremiumManager.shared.isPro },
+                loadUsage: { usage.load() },
+                saveUsage: { usage.save($0) }
+            )
         )
         assistantModel = model
         return model

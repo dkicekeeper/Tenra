@@ -210,5 +210,21 @@
 			<string>En %lld categorías</string>
 		</dict>
 	</dict>
+	<key>assistant.allowance.remaining</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@answers@</string>
+		<key>answers</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Te queda %d respuesta gratuita</string>
+			<key>other</key>
+			<string>Te quedan %d respuestas gratuitas</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

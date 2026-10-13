@@ -184,5 +184,19 @@
 			<string>카테고리 %lld개에 걸쳐</string>
 		</dict>
 	</dict>
+	<key>assistant.allowance.remaining</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@answers@</string>
+		<key>answers</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>무료 답변 %d회 남음</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

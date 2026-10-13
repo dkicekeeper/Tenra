@@ -262,5 +262,25 @@
 			<string>У %lld категоріях</string>
 		</dict>
 	</dict>
+	<key>assistant.allowance.remaining</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@answers@</string>
+		<key>answers</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Залишилася %d безкоштовна відповідь</string>
+			<key>few</key>
+			<string>Залишилося %d безкоштовні відповіді</string>
+			<key>many</key>
+			<string>Залишилося %d безкоштовних відповідей</string>
+			<key>other</key>
+			<string>Залишилося %d безкоштовних відповідей</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

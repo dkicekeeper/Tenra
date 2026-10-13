@@ -7,8 +7,8 @@
 //  allowance. The rule is pure; `AssistantUsageStore` keeps the count in the Keychain, so a
 //  reinstall does not reset it.
 //
-//  Not wired yet: free users reach the cloud brain only once the server checks App Attest
-//  (docs/plan-ai-assistant.md §5, phase 1).
+//  The assistant screen checks it before each question (AssistantViewModel.Access); the server
+//  keeps its own, larger quota per App Attest key (docs/plan-ai-assistant.md §3.7).
 //
 
 import Foundation

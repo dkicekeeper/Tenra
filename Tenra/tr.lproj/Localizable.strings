@@ -1862,6 +1862,8 @@
 "assistant.error.region" = "Asistan henüz bölgende kullanılamıyor.";
 "assistant.error.unavailable" = "Asistan şu an kullanılamıyor. Daha sonra tekrar dene.";
 "assistant.error.refused" = "Bu konuda yardımcı olamam. Bana paranla ilgili sor.";
+"assistant.error.freeLimit" = "Ücretsiz yanıtlar şimdilik bitti. Tenra Pro ile sormaya devam edebilirsin.";
+"assistant.allowance.renews" = "Yeni ücretsiz yanıtlar %@ tarihinde";
 "assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
 
 /* AI assistant: the chat screen */

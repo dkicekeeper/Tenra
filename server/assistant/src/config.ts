@@ -10,6 +10,7 @@ export interface Env {
   FREE_MONTHLY_CALLS?: string;
   GLOBAL_DAILY_CALLS?: string;
   BLOCKED_COUNTRIES?: string;
+  APP_ID?: string;
 }
 
 export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
@@ -25,6 +26,8 @@ export interface Config {
   freeMonthlyCalls: number;
   globalDailyCalls: number;
   blockedCountries: Set<string>;
+  /** TEAMID.bundle-id, the app App Attest assertions must come from. */
+  appId: string;
 }
 
 function int(value: string | undefined, fallback: number): number {
@@ -48,5 +51,6 @@ export function readConfig(env: Partial<Env>): Config {
         .map((c) => c.trim().toUpperCase())
         .filter(Boolean),
     ),
+    appId: env.APP_ID || "SY2L2VMQP7.dakacom.Tenra",
   };
 }

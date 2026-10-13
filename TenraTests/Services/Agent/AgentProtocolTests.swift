@@ -94,6 +94,8 @@ struct AgentProtocolTests {
         #expect(AgentServerError.from(status: 451, body: Data()) == .regionUnavailable)
         #expect(AgentServerError.from(status: 400, body: Data(#"{"error":"invalid","reason":"protocol"}"#.utf8)) == .invalidRequest(reason: "protocol"))
         #expect(AgentServerError.from(status: 503, body: Data()) == .disabled)
+        #expect(AgentServerError.from(status: 401, body: Data(#"{"error":"attest","reason":"missing"}"#.utf8)) == .attestation(reason: "missing"))
+        #expect(AgentServerError.from(status: 401, body: Data(#"{"error":"user"}"#.utf8)) == .unauthorized)
     }
 
     @Test func turnRequestCarriesTheProtocolVersion() throws {

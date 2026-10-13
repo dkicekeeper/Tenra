@@ -1862,6 +1862,8 @@
 "assistant.error.region" = "The assistant isn’t available in your region yet.";
 "assistant.error.unavailable" = "The assistant is unavailable right now. Try again later.";
 "assistant.error.refused" = "I can’t help with that. Ask me about your money.";
+"assistant.error.freeLimit" = "Free answers are used up for now. With Tenra Pro you can keep asking.";
+"assistant.allowance.renews" = "New free answers from %@";
 "assistant.error.generic" = "Something went wrong. Try again.";
 
 /* AI assistant: the chat screen */

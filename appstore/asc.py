@@ -385,10 +385,25 @@ def screenshot_set(owner: str, owner_id: str) -> str:
     }})["data"]["id"]
 
 
+def settled_screenshots(set_id: str) -> list[dict]:
+    """The set's screenshots once its contents stop changing. A new treatment or page
+    localization gets a copy of the default page's screenshots a few seconds after it is
+    created: listing too early saw an empty set, and the copy then overfilled it."""
+    previous = None
+    for _ in range(10):
+        shots, _ = get_all(f"/v1/appScreenshotSets/{set_id}/appScreenshots", {"limit": 50})
+        ids = [shot["id"] for shot in shots]
+        if ids == previous:
+            return shots
+        previous = ids
+        time.sleep(3)
+    return shots
+
+
 def put_screenshots(set_id: str, files: list[Path]) -> str:
     """Make the set hold exactly `files`, in order. Skips the upload when it already does."""
     wanted = [hashlib.md5(path.read_bytes()).hexdigest() for path in files]
-    existing, _ = get_all(f"/v1/appScreenshotSets/{set_id}/appScreenshots", {"limit": 50})
+    existing = settled_screenshots(set_id)
     if [shot["attributes"].get("sourceFileChecksum") for shot in existing] == wanted:
         return "unchanged"
     for shot in existing:
@@ -396,11 +411,21 @@ def put_screenshots(set_id: str, files: list[Path]) -> str:
     ids = []
     for path, checksum in zip(files, wanted):
         data = path.read_bytes()
-        shot = send("POST", "/v1/appScreenshots", {"data": {
+        body = {"data": {
             "type": "appScreenshots",
             "attributes": {"fileName": path.name, "fileSize": len(data)},
             "relationships": {"appScreenshotSet": {"data": {"type": "appScreenshotSets", "id": set_id}}},
-        }})["data"]
+        }}
+        try:
+            shot = send("POST", "/v1/appScreenshots", body)["data"]
+        except ApiError as error:
+            if error.code != 409:
+                raise
+            # The default page's copy arrived after all: keep only this run's uploads.
+            for other in settled_screenshots(set_id):
+                if other["id"] not in ids:
+                    request(f"/v1/appScreenshots/{other['id']}", method="DELETE")
+            shot = send("POST", "/v1/appScreenshots", body)["data"]
         for operation in shot["attributes"]["uploadOperations"]:
             # Presigned upload URLs: no App Store Connect token.
             chunk = data[operation["offset"]:operation["offset"] + operation["length"]]

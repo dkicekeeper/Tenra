@@ -155,9 +155,13 @@ struct FinanceToolkitTests {
     }
 
     @Test func laterPhaseAndUnknownToolsAnswerWithoutCrashing() async {
-        let (draft, store) = await Self.run("draft_transactions", ["items": []])
+        let (draft, store) = await Self.run("draft_budget", ["category": "cat_cafe", "amount": 100_000, "period": "monthly"])
         _ = store
         #expect(draft.error?.contains("not available") == true)
+        // Without a draft book (not wired) drafting answers the same way.
+        let (unwired, kept) = await Self.run("draft_transactions", ["items": []])
+        _ = kept
+        #expect(unwired.error?.contains("not available") == true)
 
         let (unknown, other) = await Self.run("delete_everything", [:])
         _ = other

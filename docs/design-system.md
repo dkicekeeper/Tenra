@@ -38,9 +38,12 @@ controls for its parameters, in light and dark.
 
 **Version.** Tenra pins an exact DesignKit version (`Tenra.xcodeproj` → Package Dependencies).
 The **DesignKit update** workflow (`.github/workflows/designkit.yml`) checks for a new release
-daily, builds, runs TenraTests and commits the bump to `main`. A visual change is called out in
-DesignKit's release notes, and the changed snapshot PNGs in its PR show exactly what changed:
-check it on device.
+daily, builds, runs TenraTests and commits the bump to `main`. What each version added and
+changed, and how to move to it, is DesignKit's
+[CHANGELOG.md](https://github.com/dkicekeeper/DesignKit/blob/main/CHANGELOG.md) (the same text
+is its release notes and the Gallery's Updates screen). A visual change is listed under
+**Changed**, and the changed snapshot PNGs in its PR show exactly what changed: check it on
+device.
 
 **A shared component or token changes by DesignKit PR**, never by a copy in Tenra. DesignKit's CI
 builds Tenra and Dalada against the change. Develop with Xcode's local package override: drag a
@@ -379,7 +382,7 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
 |---|---|---|
 | Home background | `AuroraBackground` by spending (`CategoryGradientBackground`) | **still**: a moving background under Liquid Glass redraws every glass card each frame |
 | Accounts carousel | `BalanceCard(isLive: true)` | rolls up once per card identity; flashes the direction of a change |
-| Financial health hero | `ScoreGaugeCard(decodesScore: true)` | not on the feed's `HealthScoreCardView`: a lazy feed would replay it on scroll |
+| Financial health hero | `ScoreGaugeCard(decodesScore: true, style: .hero, showsMaximum: true)` (DesignKit 4.2.0: edge to edge, a gauge wider than the screen, on a gradient of the grade colour; the weighting card rises over its end) | not on the feed's `HealthScoreCardView`: a lazy feed would replay it on scroll |
 | Entity detail | `.scrollHero()` on the hero (from `EntityDetailScaffold`), `.heroAccentGlow` on the screen | every detail screen; the glow's colour comes from the hero icon |
 | Voice screen | `EdgeGlow`, `VoiceWave(style: .orb)` stop button, `.thinkingShimmer`, `StreamingText`, `.cascadeIn`, `.borderBeam` on the live card, a one-time `.spotlight` | [domains/voice.md](domains/voice.md) |
 | Loan detail | `.celebration` on the false → true edge of `isPaidOffLoan`, with the banner and the haptic | the moment only, never the state |

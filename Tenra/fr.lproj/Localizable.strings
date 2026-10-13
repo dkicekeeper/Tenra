@@ -1562,6 +1562,8 @@
 "insights.savingsRate.band.belowTarget" = "Sous l'objectif de 20 %";
 "insights.savingsRate.band.low" = "Moins de 10 %";
 "insights.savingsRate.band.deficit" = "Dépenses supérieures aux revenus";
+"insights.largeTransaction.timesUsual" = "%@ fois la dépense habituelle";
+"insights.budgetHeadroom.leftOf" = "Reste sur %@";
 
 "insights.health.unavailable.title" = "Pas assez de données";
 "insights.health.unavailable.message" = "Ajoutez des opérations de revenus et de dépenses. Nous évaluerons votre santé financière dès que les données seront suffisantes.";

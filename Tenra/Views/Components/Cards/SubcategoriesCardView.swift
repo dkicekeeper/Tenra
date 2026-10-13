@@ -55,7 +55,9 @@ struct SubcategoriesCardView: View {
                             amount: 1,
                             tint: category.color
                         )
-                    }
+                    },
+                    // App icons in a pocket (DesignKit 4.4.0), centred in the card (4.5.0).
+                    style: .shelf
                 )
             }
         }

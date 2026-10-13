@@ -45,7 +45,9 @@ struct SubscriptionsCardView: View {
                         iconSource: sub.iconSource,
                         amount: convertedAmounts[sub.id] ?? (sub.amount as NSDecimalNumber).doubleValue
                     )
-                }
+                },
+                // App icons in a pocket (DesignKit 4.4.0), centred in the card (4.5.0).
+                style: .shelf
             )
         }
         // Fix #3: replaced two separate `onChange + unstructured Task {}` blocks with a single

@@ -384,6 +384,7 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
 | Accounts carousel | `BalanceCard(isLive: true)` | rolls up once per card identity; flashes the direction of a change |
 | Financial health hero | `ScoreGaugeCard(decodesScore: true, style: .hero, showsMaximum: true)` (DesignKit 4.2.0: edge to edge, a gauge wider than the screen, on a gradient of the grade colour; the weighting card rises over its end), with a trend in points against the score at the end of last month (4.3.0, `FinancialHealthScore.previousScore`) | not on the feed's `HealthScoreCardView`: a lazy feed would replay it on scroll |
 | Savings rate detail | `SavingsRateHeroCard` over `ScoreGaugeCard(value:unit: "%", style: .hero)` (4.3.0): the rate on 0–40% with the 10% and 20% marks, its band, the saved amount; in place of the header and the hero gauge, the formula card rises over its end; `entranceDelay` waits for the zoom into the detail | the insight's feed card keeps its mini gauge |
+| Insight details | DesignKit 4.5.0: the header (`HeroSection` with its trend) and the hero visual on `.heroBackground(insight.severity.color)`, in white, edge to edge and up under the bar (`.heroScrollEdge()` on the scroll view); the chart and detail cards rise over the gradient's end. Large expense: `LargeTransactionHeroCard` over `ScoreGaugeCard(amount:…norm:)`, the expense against the usual one ("13,9× the usual"). Budget headroom: `BudgetHeadroomHeroCard`, what is left of the budgets ("left of 380 000 ₸") | the colour is the insight's tone; the paged category breakdown keeps its own layout |
 | Entity detail | `.scrollHero()` on the hero (from `EntityDetailScaffold`), `.heroAccentGlow` on the screen | every detail screen; the glow's colour comes from the hero icon |
 | Voice screen | `EdgeGlow`, `VoiceWave(style: .orb)` stop button, `.thinkingShimmer`, `StreamingText`, `.cascadeIn`, `.borderBeam` on the live card, a one-time `.spotlight` | [domains/voice.md](domains/voice.md) |
 | Loan detail | `.celebration` on the false → true edge of `isPaidOffLoan`, with the banner and the haptic | the moment only, never the state |
@@ -392,7 +393,7 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
 | Settings, Tenra Pro | `.shine` once each time the purchase row appears; `.holographic()` on the Active / Founder badge | foil only on the badge, so the row's taps stay the row's |
 | Toasts (`MessageBanner` over a screen), selection checkmarks in edit mode | `.transition(.popIn)` | edge-attached bars keep `.move(edge: .bottom)` |
 | A list replacing its skeleton (accounts, deposits, link payments) | content `.transition(.skeletonReveal)`, skeleton `.transition(.opacity)`, `.animation(AppAnimation.smooth, value: <is loading>)` on the container | the Insights feed keeps its `ContentRevealModifier` |
-| Finances cards | `PackedCircleIcons`, `.glossy` marbles | the default style; no `.fan` or `.orbit` |
+| Finances cards | `PackedCircleIcons(style: .shelf)` (DesignKit 4.4.0): app icons in a row in a pocket, a light running across them; `FinanceCard` centres them in the card (4.5.0) | no `.orbit` |
 
 ---
 

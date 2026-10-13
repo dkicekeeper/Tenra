@@ -42,6 +42,8 @@ struct FinancialHealthDetailView: View {
             }
             .padding(.bottom, AppSpacing.md)
         }
+        // The hero's colour reaches the top of the screen under the bar (DesignKit 4.5.0).
+        .heroScrollEdge()
         .navigationTitle(String(localized: "insights.healthScore"))
         .navigationBarTitleDisplayMode(.inline)
     }

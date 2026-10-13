@@ -61,7 +61,9 @@ struct LoansCardView: View {
                     iconSource: loan.iconSource,
                     amount: loan.loanInfo.map { ($0.remainingPrincipal as NSDecimalNumber).doubleValue } ?? 0
                 )
-            }
+            },
+            // App icons in a pocket (DesignKit 4.4.0), centred in the card (4.5.0).
+            style: .shelf
         )
     }
 }

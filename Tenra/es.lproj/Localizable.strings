@@ -1873,6 +1873,10 @@
 "assistant.draft.accountGuessed" = "Tenra eligió la cuenta. Revísala antes de guardar.";
 "assistant.draft.categoryGuessed" = "Tenra eligió la categoría. Revísala antes de guardar.";
 "assistant.draft.budgetWas" = "Antes";
+"assistant.forecast.perDay" = "Al día hasta el %@";
+"assistant.forecast.free" = "Disponible: %@";
+"assistant.forecast.balance" = "Saldo por día";
+"assistant.forecast.obligations" = "Pagos hasta el %@";
 "assistant.error.generic" = "Algo salió mal. Inténtalo de nuevo.";
 
 /* AI assistant: the chat screen */

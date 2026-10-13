@@ -1873,6 +1873,10 @@
 "assistant.draft.accountGuessed" = "Hesabı Tenra seçti. Kaydetmeden önce kontrol et.";
 "assistant.draft.categoryGuessed" = "Kategoriyi Tenra seçti. Kaydetmeden önce kontrol et.";
 "assistant.draft.budgetWas" = "Önceki";
+"assistant.forecast.perDay" = "%@ tarihine kadar günlük";
+"assistant.forecast.free" = "Kullanılabilir: %@";
+"assistant.forecast.balance" = "Günlük bakiye";
+"assistant.forecast.obligations" = "%@ tarihine kadar ödemeler";
 "assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
 
 /* AI assistant: the chat screen */

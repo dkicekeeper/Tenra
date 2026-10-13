@@ -63,8 +63,11 @@ private struct AssistantBlockView: View {
             if let drafts, let draft = drafts.drafts[draftId] {
                 AssistantDraftCard(book: drafts, draft: draft)
             }
-        case .forecast, .unsupported:
-            // Planning arrives in a later phase (plan §5).
+        case .forecast(let source):
+            if let forecast = AgentReplyData.forecast(source: source, results: results) {
+                AssistantForecastCard(forecast: forecast)
+            }
+        case .unsupported:
             EmptyView()
         }
     }
@@ -268,6 +271,49 @@ private struct AssistantInsightCard: View {
         if let insight = coordinator.insightsViewModel.insights.first(where: { $0.id == insightId }) {
             InsightsCardView(insight: insight)
         }
+    }
+}
+
+// MARK: - Forecast
+
+/// "How much a day until payday": the allowance with what is free behind it, the balance day
+/// by day under it, and what goes out before the date.
+private struct AssistantForecastCard: View {
+    let forecast: AgentReplyData.Forecast
+
+    private static let obligationLimit = 8
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
+            MetricCard(
+                title: String(format: String(localized: "assistant.forecast.perDay"), untilText),
+                subtitle: String(
+                    format: String(localized: "assistant.forecast.free"),
+                    Formatting.formatCurrencySmart(forecast.freeAmount, currency: forecast.currency)
+                ),
+                value: .amount(forecast.dailyAllowance, currency: forecast.currency),
+                chartPlacement: .bottom
+            ) {
+                Sparkline(values: forecast.balance.groups.map(\.value), markExtremes: true)
+                    .accessibilityLabel(String(localized: "assistant.forecast.balance"))
+            }
+            if !forecast.obligations.isEmpty {
+                AssistantCard(title: String(format: String(localized: "assistant.forecast.obligations"), untilText)) {
+                    ForEach(Array(forecast.obligations.prefix(Self.obligationLimit).enumerated()), id: \.offset) { _, obligation in
+                        InfoRow(label: label(obligation), amount: obligation.amount, currency: forecast.currency)
+                    }
+                }
+            }
+        }
+    }
+
+    private var untilText: String {
+        FastDateParser.date(from: forecast.until)?.formatted(.dateTime.day().month(.wide)) ?? forecast.until
+    }
+
+    private func label(_ obligation: AgentReplyData.Forecast.Obligation) -> String {
+        let day = FastDateParser.date(from: obligation.date)?.formatted(.dateTime.day().month(.abbreviated)) ?? obligation.date
+        return "\(obligation.label) · \(day)"
     }
 }
 

@@ -1873,6 +1873,10 @@
 "assistant.draft.accountGuessed" = "口座は Tenra が選びました。保存する前に確認してください。";
 "assistant.draft.categoryGuessed" = "カテゴリは Tenra が選びました。保存する前に確認してください。";
 "assistant.draft.budgetWas" = "変更前";
+"assistant.forecast.perDay" = "%@まで1日あたり";
+"assistant.forecast.free" = "自由に使える額: %@";
+"assistant.forecast.balance" = "日ごとの残高";
+"assistant.forecast.obligations" = "%@までの支払い";
 "assistant.error.generic" = "問題が発生しました。もう一度お試しください。";
 
 /* AI assistant: the chat screen */

@@ -1873,6 +1873,10 @@
 "assistant.draft.accountGuessed" = "Tenra a choisi le compte. Vérifiez-le avant d’enregistrer.";
 "assistant.draft.categoryGuessed" = "Tenra a choisi la catégorie. Vérifiez-la avant d’enregistrer.";
 "assistant.draft.budgetWas" = "Avant";
+"assistant.forecast.perDay" = "Par jour jusqu’au %@";
+"assistant.forecast.free" = "Disponible : %@";
+"assistant.forecast.balance" = "Solde par jour";
+"assistant.forecast.obligations" = "Prélèvements jusqu’au %@";
 "assistant.error.generic" = "Un problème est survenu. Réessayez.";
 
 /* AI assistant: the chat screen */

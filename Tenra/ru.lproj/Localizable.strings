@@ -1873,6 +1873,10 @@
 "assistant.draft.accountGuessed" = "Счёт выбран автоматически. Проверьте перед сохранением.";
 "assistant.draft.categoryGuessed" = "Категория выбрана автоматически. Проверьте перед сохранением.";
 "assistant.draft.budgetWas" = "Было";
+"assistant.forecast.perDay" = "В день до %@";
+"assistant.forecast.free" = "Свободно: %@";
+"assistant.forecast.balance" = "Остаток по дням";
+"assistant.forecast.obligations" = "Спишется до %@";
 "assistant.error.generic" = "Что-то пошло не так. Попробуйте ещё раз.";
 
 /* AI assistant: the chat screen */

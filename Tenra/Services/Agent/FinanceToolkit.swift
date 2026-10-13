@@ -8,9 +8,9 @@
 //
 //  Read tools: spending summary, period comparison, search, accounts, budgets, recurring
 //  payments, insights. Heavy walks over the transactions run off the main actor on a snapshot.
+//  `forecast_balance` projects the everyday accounts to a date and gives the daily allowance.
 //  `draft_transactions` and `draft_budget` file drafts (AgentDraftBook) that the person saves
-//  on the confirm card. Planning (`forecast_balance`) and `draft_recurring` land later and
-//  answer "not available".
+//  on the confirm card. `draft_recurring` lands later and answers "not available".
 //
 
 import Foundation
@@ -48,7 +48,7 @@ final class FinanceToolkit: AgentToolExecuting {
         self.calendar = calendar
     }
 
-    static let laterPhaseTools: Set<String> = ["forecast_balance", "draft_recurring"]
+    static let laterPhaseTools: Set<String> = ["draft_recurring"]
 
     func execute(name: String, input: JSONValue) async -> AgentToolOutput {
         do {
@@ -60,6 +60,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "get_budgets": return .success(budgets())
             case "list_recurring": return .success(try recurring(input))
             case "get_insights": return .success(insightsResult())
+            case "forecast_balance": return .success(try await forecastBalance(input))
             case "draft_transactions": return try await draftTransactions(input)
             case "draft_budget": return try draftBudget(input)
             case _ where Self.laterPhaseTools.contains(name):
@@ -359,6 +360,198 @@ final class FinanceToolkit: AgentToolExecuting {
         result["available"] = .bool(available)
         if !available { result["note"] = "Insights are still being computed. Answer from the other tools." }
         return .object(result)
+    }
+
+    // MARK: - Forecast
+
+    private struct ForecastInput: Decodable {
+        struct Change: Decodable {
+            let label: String
+            let amount: Double
+            let date: String
+        }
+
+        let until: String
+        let cushion: Double?
+        let accountIds: [String]?
+        let extraChanges: [Change]?
+
+        enum CodingKeys: String, CodingKey {
+            case until, cushion
+            case accountIds = "account_ids"
+            case extraChanges = "extra_changes"
+        }
+    }
+
+    private struct Outflow {
+        let date: String
+        let label: String
+        let amount: Double
+    }
+
+    /// The longest projection: a year and a little.
+    static let forecastMaxDays = 400
+
+    /// `forecast_balance`: the everyday accounts (regular ones counted in the balance, or
+    /// `account_ids`) from today's realized balance to `until`, less what is known to go out
+    /// before then: every occurrence of an active expense subscription or recurring payment,
+    /// loan payments (this month's rest while unpaid, then the monthly payment on the payment
+    /// day) and planned expenses not tied to a series (a series' own future occurrence is
+    /// counted once, from the series). What is left after the cushion and the what-if changes,
+    /// spread over the days, is the daily allowance. Amounts are in the base currency; one
+    /// without a known rate is left out and its currency listed in `missing_rates`. The result
+    /// has the eval simulator's shape.
+    private func forecastBalance(_ input: JSONValue) async throws -> JSONValue {
+        let args = try input.decoded(as: ForecastInput.self)
+        let calendar = FastDateParser.calendar
+        let moment = now()
+        let todayKey = FastDateParser.string(from: moment)
+        guard let today = FastDateParser.date(from: todayKey), let until = FastDateParser.date(from: args.until) else {
+            throw FinanceToolError(message: "Dates must be YYYY-MM-DD.")
+        }
+        guard let days = calendar.dateComponents([.day], from: today, to: until).day, days > 0 else {
+            throw FinanceToolError(message: "until must be after today.")
+        }
+        guard days <= Self.forecastMaxDays else { throw FinanceToolError(message: "until must be within a year.") }
+
+        let base = store.baseCurrency
+        let rates = RateSnapshot()
+        var missingRates: Set<String> = []
+        func inBase(_ amount: Double, _ currency: String) -> Double? {
+            if currency == base { return amount }
+            guard let converted = rates.convert(amount, from: currency, to: base) else {
+                missingRates.insert(currency)
+                return nil
+            }
+            return converted
+        }
+
+        // Accounts and today's balance.
+        let accountsById = Dictionary(store.accounts.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let accounts: [Account]
+        if let ids = args.accountIds, !ids.isEmpty {
+            accounts = try ids.map { id in
+                guard let account = accountsById[id] else { throw FinanceToolError(message: "Unknown account \(id).") }
+                return account
+            }
+        } else {
+            accounts = store.accounts.filter { !$0.isLoan && !$0.isDeposit && $0.includeInBalance }
+        }
+        let accountIds = Set(accounts.map(\.id))
+        let balances = store.balanceCoordinator.balances
+        let start = accounts.reduce(0.0) { total, account in
+            total + (inBase(balances[account.id] ?? account.balance, account.currency) ?? 0)
+        }
+
+        var outflows: [Outflow] = []
+        let untilKey = args.until
+
+        // Subscriptions and recurring payments: every occurrence after today, before `until`.
+        let typeByName = Dictionary(store.categories.map { ($0.name, $0.type) }, uniquingKeysWith: { first, _ in first })
+        for series in store.recurringSeries where series.isActive && series.targetAccountId == nil && typeByName[series.category] != .income {
+            if let account = series.accountId, !accountIds.contains(account) { continue }
+            guard let first = FastDateParser.date(from: series.startDate),
+                  let amount = inBase(NSDecimalNumber(decimal: series.amount).doubleValue, series.currency) else { continue }
+            let label = series.description.isEmpty ? series.category : series.description
+            var next: Date? = first > today
+                ? first
+                : RecurringDateMath.firstOccurrence(after: today, start: first, frequency: series.frequency, calendar: calendar)
+            var count = 0
+            while let date = next, date < until, count <= Self.forecastMaxDays {
+                outflows.append(Outflow(date: FastDateParser.string(from: date), label: label, amount: amount))
+                next = RecurringDateMath.firstOccurrence(after: date, start: first, frequency: series.frequency, calendar: calendar)
+                count += 1
+            }
+        }
+
+        // Loans: this month's rest while unpaid (overdue included), then a payment a month.
+        for loan in store.accounts where loan.isLoan {
+            guard let info = loan.loanInfo,
+                  let status = LoanMonthStatusService.status(
+                    loan: loan,
+                    loanTransactions: store.transactionsByAccount[loan.id] ?? [],
+                    today: moment,
+                    rates: rates,
+                    accountsById: accountsById
+                  ) else { continue }
+            let monthly = NSDecimalNumber(decimal: info.monthlyPayment).doubleValue
+            var due = status.nextDueDate
+            var amount: Double
+            if case .unpaid(_, _, let left) = status { amount = left } else { amount = monthly }
+            var remaining = max(1, LoanPaymentService.remainingPayments(loanInfo: info))
+            while due < until, remaining > 0 {
+                if amount > 0, let converted = inBase(amount, loan.currency) {
+                    outflows.append(Outflow(date: FastDateParser.string(from: max(due, today)), label: loan.name, amount: converted))
+                }
+                guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: due),
+                      let nextDue = Self.paymentDay(info.paymentDay, inMonthOf: nextMonth, calendar: calendar) else { break }
+                due = nextDue
+                amount = monthly
+                remaining -= 1
+            }
+        }
+
+        // Planned expenses not tied to a series, off the main actor.
+        let snapshot = makeSnapshot()
+        let planned = await Task.detached(priority: .userInitiated) {
+            snapshot.transactions.compactMap { transaction -> (String, String, Double, String)? in
+                guard transaction.type == .expense, transaction.recurringSeriesId == nil,
+                      transaction.date > todayKey, transaction.date < untilKey,
+                      let account = transaction.accountId, accountIds.contains(account) else { return nil }
+                let label = transaction.description.isEmpty ? transaction.category : transaction.description
+                return (transaction.date, label, transaction.amount, transaction.currency)
+            }
+        }.value
+        for (date, label, amount, currency) in planned {
+            if let converted = inBase(amount, currency) { outflows.append(Outflow(date: date, label: label, amount: converted)) }
+        }
+        outflows.sort { $0.date == $1.date ? $0.label < $1.label : $0.date < $1.date }
+
+        // What if.
+        let extras = (args.extraChanges ?? []).filter { $0.date > todayKey && $0.date < untilKey }
+        let cushion = max(0, args.cushion ?? 0)
+        let outflowTotal = outflows.reduce(0) { $0 + $1.amount }
+        let extraTotal = extras.reduce(0) { $0 + $1.amount }
+        let free = start - outflowTotal - cushion + extraTotal
+        let allowance = free > 0 ? (free / Double(days) * 100).rounded(.down) / 100 : 0
+
+        var series: [JSONValue] = []
+        var balance = start
+        for offset in 0...days {
+            guard let day = calendar.date(byAdding: .day, value: offset, to: today) else { break }
+            let key = FastDateParser.string(from: day)
+            if offset > 0 { balance -= allowance }
+            balance -= outflows.filter { $0.date == key }.reduce(0) { $0 + $1.amount }
+            balance += extras.filter { $0.date == key }.reduce(0) { $0 + $1.amount }
+            series.append(["date": .string(key), "balance": .number(FinanceToolkitCompute.round2(balance))])
+        }
+
+        let round = FinanceToolkitCompute.round2
+        return [
+            "currency": .string(base),
+            "today": .string(todayKey),
+            "until": .string(untilKey),
+            "days": .number(Double(days)),
+            "start_balance": .number(round(start)),
+            "obligations": .array(outflows.map { outflow -> JSONValue in
+                ["date": .string(outflow.date), "label": .string(outflow.label), "amount": .number(round(outflow.amount))]
+            }),
+            "obligations_total": .number(round(outflowTotal)),
+            "cushion": .number(round(cushion)),
+            "extra_changes_total": .number(round(extraTotal)),
+            "free_amount": .number(round(free)),
+            "daily_allowance": .number(allowance),
+            "series": .array(series),
+            "missing_rates": .array(missingRates.sorted().map(JSONValue.string)),
+        ]
+    }
+
+    /// The loan's payment day in the month of `reference`, clamped to the month's length.
+    private static func paymentDay(_ day: Int, inMonthOf reference: Date, calendar: Calendar) -> Date? {
+        var components = calendar.dateComponents([.year, .month], from: reference)
+        let length = calendar.range(of: .day, in: .month, for: reference)?.count ?? 30
+        components.day = min(day, length)
+        return calendar.date(from: components)
     }
 
     // MARK: - Drafts

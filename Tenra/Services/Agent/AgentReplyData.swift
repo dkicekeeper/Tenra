@@ -112,6 +112,52 @@ nonisolated enum AgentReplyData {
         key.count == 7 && FastDateParser.date(from: key + "-01") != nil
     }
 
+    // MARK: - Forecast
+
+    struct Forecast: Equatable {
+        struct Obligation: Equatable {
+            let date: String
+            let label: String
+            let amount: Double
+        }
+
+        let currency: String
+        let until: String
+        let dailyAllowance: Double
+        let freeAmount: Double
+        /// The daily balance, as a timeline chart.
+        let balance: Chart
+        let obligations: [Obligation]
+    }
+
+    /// A `forecast_balance` result for the forecast block.
+    static func forecast(source: String, results: [String: JSONValue]) -> Forecast? {
+        guard let result = results[source],
+              let currency = result["currency"]?.stringValue,
+              let until = result["until"]?.stringValue,
+              let allowance = result["daily_allowance"]?.numberValue,
+              let free = result["free_amount"]?.numberValue,
+              let rows = result["series"]?.arrayValue else { return nil }
+        let points: [ChartGroup] = rows.compactMap { row in
+            guard let date = row["date"]?.stringValue, let balance = row["balance"]?.numberValue else { return nil }
+            return ChartGroup(id: date, label: date, value: balance, previous: nil)
+        }
+        guard !points.isEmpty else { return nil }
+        let obligations: [Forecast.Obligation] = result["obligations"]?.arrayValue?.compactMap { row in
+            guard let date = row["date"]?.stringValue, let label = row["label"]?.stringValue,
+                  let amount = row["amount"]?.numberValue else { return nil }
+            return Forecast.Obligation(date: date, label: label, amount: amount)
+        } ?? []
+        return Forecast(
+            currency: currency,
+            until: until,
+            dailyAllowance: allowance,
+            freeAmount: free,
+            balance: Chart(groups: points, currency: currency, isTimeline: true),
+            obligations: obligations
+        )
+    }
+
     // MARK: - Lists
 
     /// The transaction ids of a `search_transactions` result, in its order.

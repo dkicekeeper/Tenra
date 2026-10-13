@@ -1872,6 +1872,7 @@
 "assistant.draft.failed" = "Kaydedilemedi. Tekrar dene.";
 "assistant.draft.accountGuessed" = "Hesabı Tenra seçti. Kaydetmeden önce kontrol et.";
 "assistant.draft.categoryGuessed" = "Kategoriyi Tenra seçti. Kaydetmeden önce kontrol et.";
+"assistant.draft.budgetWas" = "Önceki";
 "assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
 
 /* AI assistant: the chat screen */

@@ -160,7 +160,7 @@ struct AssistantViewModelTests {
     }
 
     @Test func aNewChatClearsItsDrafts() {
-        let book = AgentDraftBook(writer: AgentDraftBook.Writer(save: { _ in throw FinanceToolError(message: "unused") }, delete: { _ in }))
+        let book = AgentDraftBook(writer: AgentDraftBook.Writer(save: { _ in throw FinanceToolError(message: "unused") }, undo: { _ in }))
         _ = book.add([])
         let model = AssistantViewModel(
             conversation: AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit()),

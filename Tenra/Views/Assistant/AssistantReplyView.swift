@@ -273,8 +273,9 @@ private struct AssistantInsightCard: View {
 
 // MARK: - Confirm
 
-/// A draft to save (plan §1, "do"): its operations as they will look in the history, what
-/// Tenra guessed, Save; once saved, Undo. Nothing is written before Save.
+/// A draft to save (plan §1, "do"): its operations as they will look in the history (a budget
+/// as its new limit next to the old one), what Tenra guessed, Save; once saved, Undo. Nothing
+/// is written before Save.
 private struct AssistantDraftCard: View {
     @Environment(AppCoordinator.self) private var coordinator
 
@@ -286,18 +287,21 @@ private struct AssistantDraftCard: View {
         let state = book.states[draft.id] ?? .pending
         AssistantCard(title: nil) {
             ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
-                let preview = Self.preview(operation, id: "\(draft.id)-\(index)")
-                TransactionCardView(
-                    transaction: preview,
-                    currency: preview.currency,
-                    styleData: CategoryStyleHelper.cached(
-                        category: preview.category,
-                        type: preview.type,
-                        customCategories: store.categories
-                    ),
-                    sourceAccount: preview.accountId.flatMap { store.accountById[$0] },
-                    targetAccount: preview.targetAccountId.flatMap { store.accountById[$0] }
-                )
+                if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
+                    TransactionCardView(
+                        transaction: preview,
+                        currency: preview.currency,
+                        styleData: CategoryStyleHelper.cached(
+                            category: preview.category,
+                            type: preview.type,
+                            customCategories: store.categories
+                        ),
+                        sourceAccount: preview.accountId.flatMap { store.accountById[$0] },
+                        targetAccount: preview.targetAccountId.flatMap { store.accountById[$0] }
+                    )
+                } else if case .budget(let budget) = operation {
+                    budgetRows(budget, store: store)
+                }
             }
             if state == .pending {
                 ForEach(guesses, id: \.self) { guess in
@@ -342,6 +346,33 @@ private struct AssistantDraftCard: View {
         }
     }
 
+    /// The new limit, and the one it replaces.
+    @ViewBuilder
+    private func budgetRows(_ budget: AgentBudgetDraft, store: TransactionStore) -> some View {
+        let name = store.categories.first { $0.id == budget.categoryId }?.name ?? ""
+        InfoRow(
+            icon: "gauge.with.dots.needle.50percent",
+            label: "\(name) · \(Self.periodName(budget.period))",
+            amount: budget.amount,
+            currency: store.baseCurrency
+        )
+        if let previous = budget.previousAmount {
+            InfoRow(
+                label: "\(String(localized: "assistant.draft.budgetWas")) · \(Self.periodName(budget.previousPeriod))",
+                amount: previous,
+                currency: store.baseCurrency
+            )
+        }
+    }
+
+    private static func periodName(_ period: CustomCategory.BudgetPeriod) -> String {
+        switch period {
+        case .weekly: String(localized: "budget.weekly")
+        case .monthly: String(localized: "budget.monthly")
+        case .yearly: String(localized: "yearly")
+        }
+    }
+
     /// What Tenra filled in itself, for the person to check before saving.
     private var guesses: [String] {
         let warnings = draft.operations.flatMap { operation -> [DraftWarning] in
@@ -358,9 +389,11 @@ private struct AssistantDraftCard: View {
         return lines
     }
 
-    /// The operation as the transaction it will become, for the row.
-    private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction {
+    /// The operation as the transaction it will become, for the row; nil for a budget.
+    private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
+        case .budget:
+            return nil
         case .single(let draft):
             return Transaction(
                 id: id,

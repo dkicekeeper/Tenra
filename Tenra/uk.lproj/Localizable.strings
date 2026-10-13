@@ -1872,6 +1872,7 @@
 "assistant.draft.failed" = "Не вдалося зберегти. Спробуйте ще раз.";
 "assistant.draft.accountGuessed" = "Рахунок вибрано автоматично. Перевірте перед збереженням.";
 "assistant.draft.categoryGuessed" = "Категорію вибрано автоматично. Перевірте перед збереженням.";
+"assistant.draft.budgetWas" = "Було";
 "assistant.error.generic" = "Щось пішло не так. Спробуйте ще раз.";
 
 /* AI assistant: the chat screen */

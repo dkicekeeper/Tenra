@@ -1872,6 +1872,7 @@
 "assistant.draft.failed" = "Couldn’t save. Try again.";
 "assistant.draft.accountGuessed" = "Tenra picked the account. Check it before saving.";
 "assistant.draft.categoryGuessed" = "Tenra picked the category. Check it before saving.";
+"assistant.draft.budgetWas" = "Before";
 "assistant.error.generic" = "Something went wrong. Try again.";
 
 /* AI assistant: the chat screen */

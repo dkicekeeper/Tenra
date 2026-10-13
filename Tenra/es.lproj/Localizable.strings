@@ -1872,6 +1872,7 @@
 "assistant.draft.failed" = "No se pudo guardar. Inténtalo de nuevo.";
 "assistant.draft.accountGuessed" = "Tenra eligió la cuenta. Revísala antes de guardar.";
 "assistant.draft.categoryGuessed" = "Tenra eligió la categoría. Revísala antes de guardar.";
+"assistant.draft.budgetWas" = "Antes";
 "assistant.error.generic" = "Algo salió mal. Inténtalo de nuevo.";
 
 /* AI assistant: the chat screen */

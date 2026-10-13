@@ -1872,6 +1872,7 @@
 "assistant.draft.failed" = "Speichern fehlgeschlagen. Versuch es noch einmal.";
 "assistant.draft.accountGuessed" = "Tenra hat das Konto gewählt. Prüf es vor dem Speichern.";
 "assistant.draft.categoryGuessed" = "Tenra hat die Kategorie gewählt. Prüf sie vor dem Speichern.";
+"assistant.draft.budgetWas" = "Vorher";
 "assistant.error.generic" = "Etwas ist schiefgelaufen. Versuche es erneut.";
 
 /* AI assistant: the chat screen */

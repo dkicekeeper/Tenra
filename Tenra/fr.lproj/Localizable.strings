@@ -1872,6 +1872,7 @@
 "assistant.draft.failed" = "Échec de l’enregistrement. Réessayez.";
 "assistant.draft.accountGuessed" = "Tenra a choisi le compte. Vérifiez-le avant d’enregistrer.";
 "assistant.draft.categoryGuessed" = "Tenra a choisi la catégorie. Vérifiez-la avant d’enregistrer.";
+"assistant.draft.budgetWas" = "Avant";
 "assistant.error.generic" = "Un problème est survenu. Réessayez.";
 
 /* AI assistant: the chat screen */

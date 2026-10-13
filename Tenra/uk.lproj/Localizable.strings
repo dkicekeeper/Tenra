@@ -1557,6 +1557,11 @@
 "insights.health.subtitle.good" = "Надійні фінанси з простором для оптимізації.";
 "insights.health.subtitle.fair" = "Пристойна основа, але кілька моментів потребують уваги.";
 "insights.health.subtitle.needsAttention" = "Кілька аспектів ваших фінансів потребують уваги.";
+"insights.health.trend.sinceLastMonth" = "до минулого місяця";
+"insights.savingsRate.band.onTarget" = "Ціль досягнуто";
+"insights.savingsRate.band.belowTarget" = "Нижче цілі у 20%";
+"insights.savingsRate.band.low" = "Менше 10%";
+"insights.savingsRate.band.deficit" = "Витрати більші за доходи";
 
 "insights.health.unavailable.title" = "Недостатньо даних";
 "insights.health.unavailable.message" = "Додайте операції доходів і витрат, і ми оцінимо ваше фінансове здоров'я, щойно буде достатньо даних.";

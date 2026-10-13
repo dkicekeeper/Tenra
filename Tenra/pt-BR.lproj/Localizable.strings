@@ -1557,6 +1557,11 @@
 "insights.health.subtitle.good" = "Finanças sólidas, com espaço para otimizar.";
 "insights.health.subtitle.fair" = "Uma base razoável, mas algumas áreas precisam de atenção.";
 "insights.health.subtitle.needsAttention" = "Vários aspectos das suas finanças precisam de trabalho.";
+"insights.health.trend.sinceLastMonth" = "desde o mês passado";
+"insights.savingsRate.band.onTarget" = "Meta atingida";
+"insights.savingsRate.band.belowTarget" = "Abaixo da meta de 20%";
+"insights.savingsRate.band.low" = "Menos de 10%";
+"insights.savingsRate.band.deficit" = "Gastos maiores que a renda";
 
 "insights.health.unavailable.title" = "Dados insuficientes";
 "insights.health.unavailable.message" = "Adicione transações de receita e despesa: avaliaremos sua saúde financeira assim que houver dados suficientes.";

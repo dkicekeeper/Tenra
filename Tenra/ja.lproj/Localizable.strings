@@ -1557,6 +1557,11 @@
 "insights.health.subtitle.good" = "健全な家計です。さらに改善する余地があります。";
 "insights.health.subtitle.fair" = "まずまずですが、いくつか注意したい点があります。";
 "insights.health.subtitle.needsAttention" = "家計にはいくつか改善が必要な点があります。";
+"insights.health.trend.sinceLastMonth" = "先月から";
+"insights.savingsRate.band.onTarget" = "目標達成";
+"insights.savingsRate.band.belowTarget" = "目標の20%未満";
+"insights.savingsRate.band.low" = "10%未満";
+"insights.savingsRate.band.deficit" = "支出が収入を上回っています";
 
 "insights.health.unavailable.title" = "データが足りません";
 "insights.health.unavailable.message" = "収入と支出の取引を追加してください。十分なデータがそろうと、家計の健康状態を評価します。";

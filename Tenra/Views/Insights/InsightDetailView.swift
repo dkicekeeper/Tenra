@@ -56,19 +56,34 @@ struct InsightDetailView<CategoryDestination: View>: View {
                         // detail lists. Every detail shows the header — formula
                         // details render InsightFormulaCard with showsHero: false
                         // so the metric isn't duplicated.
-                        headerSection
+                        if showsSavingsRateHero {
+                            // Edge to edge at the top (DesignKit 4.3.0): the rate on its
+                            // gauge, its band and the saved amount, in place of the header
+                            // and the hero gauge. Its gradient reaches under the navigation bar.
+                            SavingsRateHeroCard(
+                                rate: insight.metric.value,
+                                color: insight.severity.color,
+                                subtitle: insight.subtitle,
+                                entranceDelay: Self.heroEntranceDelay
+                            )
+                        } else {
+                            headerSection
 
-                        // Hero visual (2026-07 visual refresh) — full-size sibling
-                        // of the feed card's cardVisual, above the data sections.
-                        heroChartSection
+                            // Hero visual (2026-07 visual refresh) — full-size sibling
+                            // of the feed card's cardVisual, above the data sections.
+                            heroChartSection
+                        }
 
                         // Full-size chart
                         chartSection
+                            // Rises over the fading end of the savings-rate hero's gradient.
+                            .padding(.top, showsSavingsRateHero ? -AppSpacing.xxl : 0)
 
                         // Detail breakdown
                         detailSection
                     }
-                    .padding(.vertical, AppSpacing.md)
+                    .padding(.top, showsSavingsRateHero ? 0 : AppSpacing.md)
+                    .padding(.bottom, AppSpacing.md)
                 }
             }
         }
@@ -77,6 +92,11 @@ struct InsightDetailView<CategoryDestination: View>: View {
         .onAppear {
             logger.debug("📋 [InsightDetail] OPEN — type=\(String(describing: insight.type), privacy: .public), category=\(String(describing: insight.category), privacy: .public), metric=\(insight.metric.formattedValue, privacy: .public), drillDown=\(_onCategoryTap != nil)")
         }
+    }
+
+    /// The savings rate leads with its own hero (`SavingsRateHeroCard`) instead of the header.
+    private var showsSavingsRateHero: Bool {
+        insight.type == .savingsRate
     }
 
     /// Which single metric a period-trend breakdown list should surface, derived from

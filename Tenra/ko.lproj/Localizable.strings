@@ -1557,6 +1557,11 @@
 "insights.health.subtitle.good" = "안정적이에요. 조금 더 최적화할 여지가 있어요.";
 "insights.health.subtitle.fair" = "기본기는 괜찮지만 몇 가지 신경 쓸 부분이 있어요.";
 "insights.health.subtitle.needsAttention" = "금융의 여러 부분을 손볼 필요가 있어요.";
+"insights.health.trend.sinceLastMonth" = "지난달 대비";
+"insights.savingsRate.band.onTarget" = "목표 달성";
+"insights.savingsRate.band.belowTarget" = "목표 20% 미만";
+"insights.savingsRate.band.low" = "10% 미만";
+"insights.savingsRate.band.deficit" = "지출이 수입보다 많아요";
 
 "insights.health.unavailable.title" = "데이터가 충분하지 않아요";
 "insights.health.unavailable.message" = "수입과 지출 거래를 추가해 주세요. 데이터가 충분해지면 금융 건강을 평가해 드려요.";

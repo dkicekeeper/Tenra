@@ -1557,6 +1557,11 @@
 "insights.health.subtitle.good" = "Хорошее состояние, есть куда оптимизировать.";
 "insights.health.subtitle.fair" = "Неплохо, но есть аспекты, требующие внимания.";
 "insights.health.subtitle.needsAttention" = "Несколько направлений требуют работы.";
+"insights.health.trend.sinceLastMonth" = "к прошлому месяцу";
+"insights.savingsRate.band.onTarget" = "Цель достигнута";
+"insights.savingsRate.band.belowTarget" = "Ниже цели в 20%";
+"insights.savingsRate.band.low" = "Меньше 10%";
+"insights.savingsRate.band.deficit" = "Расходы больше доходов";
 
 "insights.health.unavailable.title" = "Недостаточно данных";
 "insights.health.unavailable.message" = "Добавьте операции дохода и расхода. После этого мы сможем оценить ваше финансовое здоровье.";

@@ -514,7 +514,7 @@ final class InsightsViewModel {
             )
             var monthIncome = 0.0; var monthExpenses = 0.0
             for p in monthPointsForScore { monthIncome += p.income; monthExpenses += p.expenses }
-            let computedHealthScore = service.computeHealthScore(
+            var healthScoreDraft = service.computeHealthScore(
                 totalIncome: monthIncome,
                 totalExpenses: monthExpenses,
                 latestNetFlow: monthPointsForScore.last?.netFlow ?? 0,
@@ -527,6 +527,20 @@ final class InsightsViewModel {
                 accounts: accountsSnapshot,
                 preAggregated: preAggregated
             )
+            // The trend on the health hero: the score at the end of last month.
+            if healthScoreDraft.totalIncomeWindow > 0 {
+                healthScoreDraft.previousScore = service.computePreviousHealthScore(
+                    monthPoints: monthPointsForScore,
+                    baseCurrency: currency,
+                    balanceFor: { balanceSnapshot[$0] ?? 0 },
+                    allTransactions: allTransactions,
+                    categories: categoriesSnapshot,
+                    recurringSeries: recurringSnapshot,
+                    accounts: accountsSnapshot,
+                    preAggregated: preAggregated
+                )
+            }
+            let computedHealthScore = healthScoreDraft
 
             // Show the current granularity immediately — user sees real data, not zeros
             let phase1Insights = newInsights

@@ -478,6 +478,10 @@ struct FinancialHealthScore {
     let baseCurrency:            String
     let isBudgetComponentActive: Bool    // mirrors budgetsTotal > 0
     let monthsInWindow:          Int     // # of monthly aggregates the score is built from
+
+    /// The score at the end of last month (`computePreviousHealthScore`), for the trend on the
+    /// health hero; nil when there is no earlier month to compare with.
+    var previousScore:           Int?    = nil
 }
 
 extension FinancialHealthScore {

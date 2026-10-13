@@ -1844,3 +1844,22 @@
 "calendar.showMonth" = "Ayı göster";
 "calendar.showWeek" = "Haftayı göster";
 "skeleton.loading" = "Yükleniyor";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "Düşünüyorum…";
+"assistant.step.spending" = "Harcamaları topluyorum…";
+"assistant.step.comparing" = "Dönemleri karşılaştırıyorum…";
+"assistant.step.searching" = "İşlemlere bakıyorum…";
+"assistant.step.accounts" = "Hesaplara bakıyorum…";
+"assistant.step.budgets" = "Bütçeleri kontrol ediyorum…";
+"assistant.step.recurring" = "Aboneliklere bakıyorum…";
+"assistant.step.insights" = "Analizlerine bakıyorum…";
+"assistant.step.composing" = "Cevabı hazırlıyorum…";
+"assistant.error.offline" = "Bağlantı yok. İnterneti kontrol edip tekrar dene.";
+"assistant.error.busy" = "Asistan şu an meşgul. Birazdan tekrar dene.";
+"assistant.error.limit" = "Bu ayın sorularını kullandın. Sınır gelecek ay yenilenir.";
+"assistant.error.pro" = "Asistan Tenra Pro’ya dahildir.";
+"assistant.error.region" = "Asistan henüz bölgende kullanılamıyor.";
+"assistant.error.unavailable" = "Asistan şu an kullanılamıyor. Daha sonra tekrar dene.";
+"assistant.error.refused" = "Bu konuda yardımcı olamam. Bana paranla ilgili sor.";
+"assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";

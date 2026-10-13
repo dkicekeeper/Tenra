@@ -1,0 +1,210 @@
+//
+//  AssistantViewModel.swift
+//  Tenra
+//
+//  The assistant screen's state (docs/plan-ai-assistant.md §3.7): the visible thread of
+//  questions and replies, what the assistant is doing right now (the step names the tool it
+//  runs), and a failed question that can be retried. The conversation itself (history, tools,
+//  the server loop) is `AgentConversation`; this type only turns it into screen state.
+//
+//  The <app_context> block goes with the first question and again whenever it changes (a new
+//  day, an account or a category added), as the server's prompt expects.
+//
+
+import Foundation
+import Observation
+
+@Observable
+final class AssistantViewModel {
+    struct Entry: Identifiable, Equatable {
+        enum Content: Equatable {
+            case question(String)
+            case reply(AgentReply, results: [String: JSONValue])
+        }
+
+        let id: UUID
+        let content: Content
+    }
+
+    enum Phase: Equatable {
+        case idle
+        case working(AssistantStep)
+        /// The last question was not answered; it stays in the thread with Retry.
+        case failed(AssistantFailure)
+    }
+
+    private(set) var entries: [Entry] = []
+    private(set) var phase: Phase = .idle
+    /// The mood of the latest reply, for the mascot.
+    private(set) var replyMood: AgentMood = .idle
+
+    @ObservationIgnored private let conversation: AgentConversation
+    @ObservationIgnored private let context: () -> String
+    @ObservationIgnored private var sentContext: String?
+    @ObservationIgnored private var failedEntryId: UUID?
+
+    init(conversation: AgentConversation, context: @escaping () -> String) {
+        self.conversation = conversation
+        self.context = context
+    }
+
+    var isWorking: Bool {
+        if case .working = phase { return true }
+        return false
+    }
+
+    /// The question that failed, to mark it in the thread.
+    var failedEntry: UUID? {
+        if case .failed = phase { return failedEntryId }
+        return nil
+    }
+
+    /// The suggestions of the latest reply, while nothing else is going on.
+    var suggestions: [String] {
+        guard phase == .idle, case .reply(let reply, _)? = entries.last?.content else { return [] }
+        return reply.suggestions
+    }
+
+    func send(_ raw: String) async {
+        let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, !isWorking else { return }
+        // A question that failed was never part of the history: moving on drops it.
+        if let failedEntryId, case .failed = phase {
+            entries.removeAll { $0.id == failedEntryId }
+        }
+        let entry = Entry(id: UUID(), content: .question(text))
+        entries.append(entry)
+        await ask(text, entry: entry.id)
+    }
+
+    func retry() async {
+        guard case .failed = phase, let failedEntryId,
+              let entry = entries.first(where: { $0.id == failedEntryId }),
+              case .question(let text) = entry.content else { return }
+        await ask(text, entry: failedEntryId)
+    }
+
+    private func ask(_ text: String, entry: UUID) async {
+        failedEntryId = entry
+        phase = .working(.understanding)
+        let current = context()
+        let contextToSend = current == sentContext ? nil : current
+        do {
+            let outcome = try await conversation.send(text, context: contextToSend) { [weak self] progress in
+                guard let self, case .toolStarted(let name) = progress else { return }
+                self.phase = .working(AssistantStep(tool: name))
+            }
+            sentContext = current
+            entries.append(Entry(id: UUID(), content: .reply(outcome.reply, results: outcome.results)))
+            replyMood = outcome.reply.mood
+            failedEntryId = nil
+            phase = .idle
+        } catch {
+            phase = .failed(AssistantFailure(error))
+        }
+    }
+}
+
+/// What the assistant is doing, named after the tool it runs.
+enum AssistantStep: Equatable {
+    case understanding
+    case spending
+    case comparing
+    case searching
+    case accounts
+    case budgets
+    case recurring
+    case insights
+    case composing
+
+    init(tool: String) {
+        switch tool {
+        case "get_spending_summary": self = .spending
+        case "compare_periods": self = .comparing
+        case "search_transactions": self = .searching
+        case "get_accounts": self = .accounts
+        case "get_budgets": self = .budgets
+        case "list_recurring": self = .recurring
+        case "get_insights": self = .insights
+        case AgentProtocol.renderReplyTool: self = .composing
+        default: self = .understanding
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .understanding: String(localized: "assistant.step.understanding")
+        case .spending: String(localized: "assistant.step.spending")
+        case .comparing: String(localized: "assistant.step.comparing")
+        case .searching: String(localized: "assistant.step.searching")
+        case .accounts: String(localized: "assistant.step.accounts")
+        case .budgets: String(localized: "assistant.step.budgets")
+        case .recurring: String(localized: "assistant.step.recurring")
+        case .insights: String(localized: "assistant.step.insights")
+        case .composing: String(localized: "assistant.step.composing")
+        }
+    }
+}
+
+/// Why a question was not answered, in words for the person.
+enum AssistantFailure: Equatable {
+    case offline
+    case busy
+    case limitReached
+    case proRequired
+    case regionUnavailable
+    case unavailable
+    case refused
+    case generic
+
+    init(_ error: Error) {
+        switch error {
+        case let error as AgentServerError:
+            switch error {
+            case .quotaExceeded: self = .limitReached
+            case .busy: self = .busy
+            case .unauthorized: self = .proRequired
+            case .regionUnavailable: self = .regionUnavailable
+            case .disabled, .notConfigured, .entitlementUnavailable: self = .unavailable
+            case .invalidRequest, .http: self = .generic
+            }
+        case let error as AgentConversationError:
+            switch error {
+            case .refused: self = .refused
+            case .stream(_, let retryable): self = retryable ? .busy : .generic
+            case .truncated, .noReply, .invalidReply, .tooManySteps: self = .generic
+            }
+        case let error as URLError:
+            switch error.code {
+            case .notConnectedToInternet, .networkConnectionLost, .timedOut, .cannotConnectToHost,
+                 .cannotFindHost, .dataNotAllowed, .internationalRoamingOff:
+                self = .offline
+            default:
+                self = .generic
+            }
+        default:
+            self = .generic
+        }
+    }
+
+    /// Whether asking again can help.
+    var canRetry: Bool {
+        switch self {
+        case .offline, .busy, .generic: true
+        case .limitReached, .proRequired, .regionUnavailable, .unavailable, .refused: false
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .offline: String(localized: "assistant.error.offline")
+        case .busy: String(localized: "assistant.error.busy")
+        case .limitReached: String(localized: "assistant.error.limit")
+        case .proRequired: String(localized: "assistant.error.pro")
+        case .regionUnavailable: String(localized: "assistant.error.region")
+        case .unavailable: String(localized: "assistant.error.unavailable")
+        case .refused: String(localized: "assistant.error.refused")
+        case .generic: String(localized: "assistant.error.generic")
+        }
+    }
+}

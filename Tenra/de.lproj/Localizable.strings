@@ -1844,3 +1844,22 @@
 "calendar.showMonth" = "Monat anzeigen";
 "calendar.showWeek" = "Woche anzeigen";
 "skeleton.loading" = "Wird geladen";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "Denke nach…";
+"assistant.step.spending" = "Rechne Ausgaben zusammen…";
+"assistant.step.comparing" = "Vergleiche Zeiträume…";
+"assistant.step.searching" = "Durchsuche Buchungen…";
+"assistant.step.accounts" = "Prüfe Konten…";
+"assistant.step.budgets" = "Prüfe Budgets…";
+"assistant.step.recurring" = "Sehe mir Abos an…";
+"assistant.step.insights" = "Lese deine Analysen…";
+"assistant.step.composing" = "Stelle die Antwort zusammen…";
+"assistant.error.offline" = "Keine Verbindung. Prüfe das Internet und versuche es erneut.";
+"assistant.error.busy" = "Der Assistent ist gerade ausgelastet. Versuche es gleich noch einmal.";
+"assistant.error.limit" = "Deine Fragen für diesen Monat sind aufgebraucht. Das Limit erneuert sich im nächsten Monat.";
+"assistant.error.pro" = "Der Assistent gehört zu Tenra Pro.";
+"assistant.error.region" = "Der Assistent ist in deiner Region noch nicht verfügbar.";
+"assistant.error.unavailable" = "Der Assistent ist gerade nicht verfügbar. Versuche es später erneut.";
+"assistant.error.refused" = "Dabei kann ich nicht helfen. Frag mich etwas zu deinem Geld.";
+"assistant.error.generic" = "Etwas ist schiefgelaufen. Versuche es erneut.";

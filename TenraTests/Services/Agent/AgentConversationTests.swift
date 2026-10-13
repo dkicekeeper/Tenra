@@ -11,81 +11,13 @@ import Foundation
 import Testing
 @testable import Tenra
 
-/// Plays back one scripted response per call and records what was sent.
-private nonisolated final class ScriptedTransport: AgentTransport, @unchecked Sendable {
-    private let lock = NSLock()
-    private var scripts: [[AgentStreamEvent]]
-    private var sent: [[AgentWireMessage]] = []
-
-    init(_ scripts: [[AgentStreamEvent]]) {
-        self.scripts = scripts
-    }
-
-    var calls: [[AgentWireMessage]] {
-        lock.lock()
-        defer { lock.unlock() }
-        return sent
-    }
-
-    func turn(_ messages: [AgentWireMessage]) -> AsyncThrowingStream<AgentStreamEvent, Error> {
-        lock.lock()
-        sent.append(messages)
-        let events = scripts.isEmpty ? [] : scripts.removeFirst()
-        lock.unlock()
-        return AsyncThrowingStream { continuation in
-            for event in events { continuation.yield(event) }
-            continuation.finish()
-        }
-    }
-}
-
-private final class FakeToolkit: AgentToolExecuting {
-    private(set) var executed: [String] = []
-
-    func execute(name: String, input: JSONValue) async -> AgentToolOutput {
-        executed.append(name)
-        if name == "get_accounts" { return .success(["currency": "KZT", "total_base": 2_334_450]) }
-        return .failure("Unknown tool \(name).")
-    }
-}
-
-private func done(_ content: [JSONValue], refused: Bool = false, truncated: Bool = false) -> AgentStreamEvent {
-    .done(AgentTurnDone(
-        content: content,
-        stopReason: refused ? "refusal" : "tool_use",
-        model: "claude-haiku-5-5",
-        refused: refused,
-        truncated: truncated,
-        usage: AgentUsage(inputTokens: 1, outputTokens: 1, cacheReadInputTokens: 0, cacheCreationInputTokens: 0),
-        tier: "pro",
-        quota: nil
-    ))
-}
-
-private func toolUse(_ id: String, _ name: String, _ input: JSONValue = [:]) -> JSONValue {
-    ["type": "tool_use", "id": .string(id), "name": .string(name), "input": input]
-}
-
-private func render(_ id: String, source: String) -> JSONValue {
-    toolUse(id, "render_reply", [
-        "blocks": [
-            ["type": "text", "text": "Всего на счетах"],
-            ["type": "metric", "label": "Все счета", "source": .string(source), "path": "total_base", "trend_path": nil],
-        ],
-        "mood": "happy",
-        "suggestions": [],
-    ])
-}
-
-private let thinking: JSONValue = ["type": "thinking", "thinking": "", "signature": "sig"]
-
 @MainActor
 struct AgentConversationTests {
 
     @Test func runsToolsOnThePhoneAndEndsWithTheReply() async throws {
         let transport = ScriptedTransport([
-            [.tool(name: "get_accounts"), done([thinking, toolUse("toolu_1", "get_accounts")])],
-            [.tool(name: "render_reply"), done([render("toolu_2", source: "toolu_1")])],
+            [.tool(name: "get_accounts"), AgentScript.done([AgentScript.thinking, AgentScript.toolUse("toolu_1", "get_accounts")])],
+            [.tool(name: "render_reply"), AgentScript.done([AgentScript.render("toolu_2", source: "toolu_1")])],
         ])
         let toolkit = FakeToolkit()
         let conversation = AgentConversation(transport: transport, toolkit: toolkit)
@@ -106,7 +38,7 @@ struct AgentConversationTests {
         #expect(calls[0][0].content.count == 2)
         // Second call: the assistant turn verbatim (thinking kept), then the tool result.
         #expect(calls[1][1].role == .assistant)
-        #expect(calls[1][1].content.first == thinking)
+        #expect(calls[1][1].content.first == AgentScript.thinking)
         #expect(calls[1][2].content.first?["type"] == "tool_result")
         #expect(calls[1][2].content.first?["tool_use_id"] == "toolu_1")
         #expect(conversation.messages.count == 4)
@@ -114,8 +46,8 @@ struct AgentConversationTests {
 
     @Test func theNextMessageOpensWithTheOwedRenderResult() async throws {
         let transport = ScriptedTransport([
-            [done([render("toolu_r", source: "none")])],
-            [done([render("toolu_s", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_r", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_s", source: "none")])],
         ])
         let conversation = AgentConversation(transport: transport, toolkit: FakeToolkit())
 
@@ -130,7 +62,7 @@ struct AgentConversationTests {
     }
 
     @Test func aRefusalDropsTheTurn() async {
-        let conversation = AgentConversation(transport: ScriptedTransport([[done([], refused: true)]]), toolkit: FakeToolkit())
+        let conversation = AgentConversation(transport: ScriptedTransport([[AgentScript.done([], refused: true)]]), toolkit: FakeToolkit())
         await #expect(throws: AgentConversationError.refused) {
             _ = try await conversation.send("…")
         }
@@ -139,7 +71,7 @@ struct AgentConversationTests {
 
     @Test func aTruncatedToolCallIsNeverRun() async {
         let toolkit = FakeToolkit()
-        let conversation = AgentConversation(transport: ScriptedTransport([[done([toolUse("toolu_1", "get_accounts")], truncated: true)]]), toolkit: toolkit)
+        let conversation = AgentConversation(transport: ScriptedTransport([[AgentScript.done([AgentScript.toolUse("toolu_1", "get_accounts")], truncated: true)]]), toolkit: toolkit)
         await #expect(throws: AgentConversationError.truncated) {
             _ = try await conversation.send("…")
         }
@@ -149,8 +81,8 @@ struct AgentConversationTests {
 
     @Test func toolFailuresGoBackAsErrors() async throws {
         let transport = ScriptedTransport([
-            [done([toolUse("toolu_1", "delete_everything")])],
-            [done([render("toolu_2", source: "toolu_1")])],
+            [AgentScript.done([AgentScript.toolUse("toolu_1", "delete_everything")])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "toolu_1")])],
         ])
         let conversation = AgentConversation(transport: transport, toolkit: FakeToolkit())
 
@@ -170,7 +102,7 @@ struct AgentConversationTests {
     }
 
     @Test func aTurnWithoutRenderReplyIsAnError() async {
-        let conversation = AgentConversation(transport: ScriptedTransport([[done([["type": "text", "text": "plain"]])]]), toolkit: FakeToolkit())
+        let conversation = AgentConversation(transport: ScriptedTransport([[AgentScript.done([["type": "text", "text": "plain"]])]]), toolkit: FakeToolkit())
         await #expect(throws: AgentConversationError.noReply) {
             _ = try await conversation.send("…")
         }

@@ -1844,3 +1844,22 @@
 "calendar.showMonth" = "月を表示";
 "calendar.showWeek" = "週を表示";
 "skeleton.loading" = "読み込み中";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "考え中…";
+"assistant.step.spending" = "支出を集計中…";
+"assistant.step.comparing" = "期間を比較中…";
+"assistant.step.searching" = "取引を検索中…";
+"assistant.step.accounts" = "口座を確認中…";
+"assistant.step.budgets" = "予算を確認中…";
+"assistant.step.recurring" = "サブスクを確認中…";
+"assistant.step.insights" = "分析を確認中…";
+"assistant.step.composing" = "回答をまとめています…";
+"assistant.error.offline" = "接続できません。インターネットを確認して、もう一度お試しください。";
+"assistant.error.busy" = "アシスタントは混み合っています。少し待ってからもう一度お試しください。";
+"assistant.error.limit" = "今月の質問回数を使い切りました。上限は来月リセットされます。";
+"assistant.error.pro" = "アシスタントは Tenra Pro の機能です。";
+"assistant.error.region" = "お住まいの地域ではまだアシスタントを利用できません。";
+"assistant.error.unavailable" = "アシスタントは現在利用できません。後でもう一度お試しください。";
+"assistant.error.refused" = "その内容にはお答えできません。お金のことを聞いてください。";
+"assistant.error.generic" = "問題が発生しました。もう一度お試しください。";

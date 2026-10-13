@@ -1844,3 +1844,22 @@
 "calendar.showMonth" = "Показати місяць";
 "calendar.showWeek" = "Показати тиждень";
 "skeleton.loading" = "Завантаження";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "Думаю…";
+"assistant.step.spending" = "Рахую витрати…";
+"assistant.step.comparing" = "Порівнюю періоди…";
+"assistant.step.searching" = "Шукаю операції…";
+"assistant.step.accounts" = "Дивлюся рахунки…";
+"assistant.step.budgets" = "Перевіряю бюджети…";
+"assistant.step.recurring" = "Дивлюся підписки…";
+"assistant.step.insights" = "Дивлюся аналітику…";
+"assistant.step.composing" = "Збираю відповідь…";
+"assistant.error.offline" = "Немає з’єднання. Перевірте інтернет і спробуйте ще раз.";
+"assistant.error.busy" = "Асистент зараз зайнятий. Спробуйте за хвилину.";
+"assistant.error.limit" = "Запитання на цей місяць закінчилися. Ліміт оновиться наступного місяця.";
+"assistant.error.pro" = "Асистент входить у Tenra Pro.";
+"assistant.error.region" = "Асистент поки недоступний у вашому регіоні.";
+"assistant.error.unavailable" = "Асистент зараз недоступний. Спробуйте пізніше.";
+"assistant.error.refused" = "З цим я не допоможу. Запитайте про ваші гроші.";
+"assistant.error.generic" = "Щось пішло не так. Спробуйте ще раз.";

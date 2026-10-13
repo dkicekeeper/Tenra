@@ -1862,4 +1862,5 @@
 "assistant.error.region" = "O assistente ainda não está disponível na sua região.";
 "assistant.error.unavailable" = "O assistente está indisponível agora. Tente mais tarde.";
 "assistant.error.refused" = "Com isso eu não posso ajudar. Pergunte sobre o seu dinheiro.";
+"assistant.error.freeLimit" = "As respostas grátis acabaram por enquanto. Com o Tenra Pro você pode continuar perguntando.";
 "assistant.error.generic" = "Algo deu errado. Tente de novo.";

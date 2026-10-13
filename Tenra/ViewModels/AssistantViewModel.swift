@@ -10,12 +10,26 @@
 //  The <app_context> block goes with the first question and again whenever it changes (a new
 //  day, an account or a category added), as the server's prompt expects.
 //
+//  Without Pro, every answer spends the free allowance (AssistantAllowance: 30 in the first
+//  week, then 10 a month). A question over the allowance is not sent: it stays in the thread
+//  with the Pro offer, and goes once Pro is on (`retry()` after the paywall).
+//
 
 import Foundation
 import Observation
 
 @Observable
 final class AssistantViewModel {
+    /// Who may ask how much: Pro, or the free allowance kept on the device.
+    struct Access {
+        var isPro: () -> Bool
+        var loadUsage: () -> AssistantUsage
+        var saveUsage: (AssistantUsage) -> Void
+        var now: () -> Date = Date.init
+
+        static let unlimited = Access(isPro: { true }, loadUsage: { AssistantUsage() }, saveUsage: { _ in })
+    }
+
     struct Entry: Identifiable, Equatable {
         enum Content: Equatable {
             case question(String)
@@ -37,15 +51,25 @@ final class AssistantViewModel {
     private(set) var phase: Phase = .idle
     /// The mood of the latest reply, for the mascot.
     private(set) var replyMood: AgentMood = .idle
+    /// The free allowance; nil with Pro.
+    private(set) var allowance: AssistantAllowance.Status?
 
     @ObservationIgnored private let conversation: AgentConversation
     @ObservationIgnored private let context: () -> String
     @ObservationIgnored private var sentContext: String?
     @ObservationIgnored private var failedEntryId: UUID?
+    @ObservationIgnored private let access: Access
 
-    init(conversation: AgentConversation, context: @escaping () -> String) {
+    init(conversation: AgentConversation, context: @escaping () -> String, access: Access = .unlimited) {
         self.conversation = conversation
         self.context = context
+        self.access = access
+        refreshAllowance()
+    }
+
+    /// Re-reads Pro and the allowance (after a purchase, on appearing).
+    func refreshAllowance() {
+        allowance = access.isPro() ? nil : AssistantAllowance.status(access.loadUsage(), now: access.now())
     }
 
     var isWorking: Bool {
@@ -86,6 +110,11 @@ final class AssistantViewModel {
 
     private func ask(_ text: String, entry: UUID) async {
         failedEntryId = entry
+        refreshAllowance()
+        if let allowance, allowance.isExhausted {
+            phase = .failed(.freeLimit)
+            return
+        }
         phase = .working(.understanding)
         let current = context()
         let contextToSend = current == sentContext ? nil : current
@@ -95,6 +124,10 @@ final class AssistantViewModel {
                 self.phase = .working(AssistantStep(tool: name))
             }
             sentContext = current
+            if !access.isPro() {
+                access.saveUsage(AssistantAllowance.recording(access.loadUsage(), now: access.now()))
+                refreshAllowance()
+            }
             entries.append(Entry(id: UUID(), content: .reply(outcome.reply, results: outcome.results)))
             replyMood = outcome.reply.mood
             failedEntryId = nil
@@ -155,6 +188,8 @@ enum AssistantFailure: Equatable {
     case regionUnavailable
     case unavailable
     case refused
+    /// The free answers are used up for now.
+    case freeLimit
     case generic
 
     init(_ error: Error) {
@@ -166,6 +201,8 @@ enum AssistantFailure: Equatable {
             case .unauthorized: self = .proRequired
             case .regionUnavailable: self = .regionUnavailable
             case .disabled, .notConfigured, .entitlementUnavailable: self = .unavailable
+            // A device that cannot prove it runs the app gets the cloud only with Pro.
+            case .attestation: self = .proRequired
             case .invalidRequest, .http: self = .generic
             }
         case let error as AgentConversationError:
@@ -191,7 +228,7 @@ enum AssistantFailure: Equatable {
     var canRetry: Bool {
         switch self {
         case .offline, .busy, .generic: true
-        case .limitReached, .proRequired, .regionUnavailable, .unavailable, .refused: false
+        case .limitReached, .proRequired, .regionUnavailable, .unavailable, .refused, .freeLimit: false
         }
     }
 
@@ -204,6 +241,7 @@ enum AssistantFailure: Equatable {
         case .regionUnavailable: String(localized: "assistant.error.region")
         case .unavailable: String(localized: "assistant.error.unavailable")
         case .refused: String(localized: "assistant.error.refused")
+        case .freeLimit: String(localized: "assistant.error.freeLimit")
         case .generic: String(localized: "assistant.error.generic")
         }
     }

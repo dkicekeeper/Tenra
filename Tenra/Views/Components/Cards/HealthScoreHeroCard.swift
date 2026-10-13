@@ -10,6 +10,9 @@
 //  Adapter over DesignKit's `ScoreGaugeCard`: maps the score, its grade colour
 //  and the grade-band copy. The score decodes itself on appearance (`decodesScore`);
 //  the feed's `HealthScoreCardView` stays still, as a lazy feed would replay it.
+//  DesignKit 4.2.0: the `.hero` style, the top of the screen edge to edge (no
+//  `.screenPadding()`): a gauge wider than the screen with a knob, "84/100", on a
+//  gradient of the grade colour that reaches under the navigation bar.
 //
 
 import SwiftUI
@@ -40,7 +43,9 @@ struct HealthScoreHeroCard: View {
                              ? String.LocalizationValue(gradeBandSubtitleKey)
                              : "insights.health.unavailable.title"),
             // The score decodes itself as the screen opens.
-            decodesScore: true
+            decodesScore: true,
+            style: .hero,
+            showsMaximum: true
         )
     }
 }
@@ -49,14 +54,10 @@ struct HealthScoreHeroCard: View {
 
 #Preview("Good score") {
     HealthScoreHeroCard(score: FinancialHealthScore.mockGood(), isAvailable: true)
-        .screenPadding()
-        .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Needs attention") {
     HealthScoreHeroCard(score: FinancialHealthScore.mockNeedsAttention(), isAvailable: true)
-        .screenPadding()
-        .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Unavailable") {

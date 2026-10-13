@@ -65,8 +65,8 @@ struct AgentDraftTests {
     }
 
     private static func item(
-        _ type: String = "expense",
         _ amount: Double,
+        type: String = "expense",
         category: String? = nil,
         account: String? = nil,
         to: String? = nil,
@@ -101,7 +101,7 @@ struct AgentDraftTests {
         #expect(value.value(atPath: "items.0.account") == "Kaspi Gold")
         #expect(value.value(atPath: "items.0.date") == "2026-10-27")
         #expect(value.value(atPath: "items.0.note") == "Кофе")
-        #expect(value["items"]?.value(atPath: "0.guessed") == [])
+        #expect(value["items"]?.value(atPath: "0.guessed") == .array([]))
 
         let draft = try #require(book.drafts["draft_1"])
         guard case .single(let operation)? = draft.operations.first else {
@@ -119,7 +119,7 @@ struct AgentDraftTests {
         _ = store
         let output = await toolkit.execute(name: "draft_transactions", input: ["items": [
             Self.item(2_300, category: "такси"),
-            Self.item("income", 650_000, category: "Зарплата", account: "halyk"),
+            Self.item(650_000, type: "income", category: "Зарплата", account: "halyk"),
         ]])
         let value = try #require(output.value, "\(output.error ?? "")")
         #expect(value.value(atPath: "items.0.category") == "Такси")
@@ -134,8 +134,8 @@ struct AgentDraftTests {
         let (toolkit, book, store) = Self.make()
         _ = store
         let output = await toolkit.execute(name: "draft_transactions", input: ["items": [
-            Self.item("transfer", 20_000, account: "acc_kaspi", to: "acc_halyk"),
-            Self.item("transfer", 5_000, account: "acc_kaspi", to: "acc_kaspi"),
+            Self.item(20_000, type: "transfer", account: "acc_kaspi", to: "acc_halyk"),
+            Self.item(5_000, type: "transfer", account: "acc_kaspi", to: "acc_kaspi"),
         ]])
         let value = try #require(output.value, "\(output.error ?? "")")
         #expect(value.value(atPath: "items.0.to_account") == "Halyk")
@@ -155,7 +155,7 @@ struct AgentDraftTests {
         _ = store
         let output = await toolkit.execute(name: "draft_transactions", input: ["items": [
             Self.item(0, category: "cat_cafe"),
-            Self.item("refund", 100),
+            Self.item(100, type: "refund"),
         ]])
         #expect(output.error?.contains("amount must be positive") == true)
         #expect(output.error?.contains("type must be expense, income or transfer") == true)

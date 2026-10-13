@@ -53,7 +53,8 @@ extension InsightsService {
         guard allIncome > 0 else { return nil }
         let rate = ((allIncome - allExpenses) / allIncome) * 100
         let savedAmount = allIncome - allExpenses
-        let severity: InsightSeverity = rate > 20 ? .positive : (rate >= 10 ? .warning : .critical)
+        // 20% counts as on target, as the recommendation and the detail's band read it.
+        let severity: InsightSeverity = rate >= 20 ? .positive : (rate >= 10 ? .warning : .critical)
         let periodSuffix: String = bucketLabel.isEmpty ? "" : " — " + bucketLabel
 
         let recommendation: String

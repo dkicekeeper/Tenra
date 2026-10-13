@@ -1557,6 +1557,11 @@
 "insights.health.subtitle.good" = "Finanzas sólidas con margen para optimizar.";
 "insights.health.subtitle.fair" = "Base decente, pero algunas áreas necesitan atención.";
 "insights.health.subtitle.needsAttention" = "Varios aspectos de tus finanzas necesitan trabajo.";
+"insights.health.trend.sinceLastMonth" = "desde el mes pasado";
+"insights.savingsRate.band.onTarget" = "Objetivo alcanzado";
+"insights.savingsRate.band.belowTarget" = "Por debajo del objetivo del 20 %";
+"insights.savingsRate.band.low" = "Menos del 10 %";
+"insights.savingsRate.band.deficit" = "Gastas más de lo que ingresas";
 
 "insights.health.unavailable.title" = "Datos insuficientes";
 "insights.health.unavailable.message" = "Añade transacciones de ingresos y gastos. Evaluaremos tu salud financiera cuando haya datos suficientes.";

@@ -1557,6 +1557,11 @@
 "insights.health.subtitle.good" = "Sağlam finanslar, iyileştirme alanı var.";
 "insights.health.subtitle.fair" = "Fena değil, ama birkaç alan ilgi bekliyor.";
 "insights.health.subtitle.needsAttention" = "Finanslarının birkaç yönü üzerinde çalışman gerekiyor.";
+"insights.health.trend.sinceLastMonth" = "geçen aya göre";
+"insights.savingsRate.band.onTarget" = "Hedefe ulaşıldı";
+"insights.savingsRate.band.belowTarget" = "%20 hedefinin altında";
+"insights.savingsRate.band.low" = "%10'un altında";
+"insights.savingsRate.band.deficit" = "Harcamalar gelirden fazla";
 
 "insights.health.unavailable.title" = "Yeterli veri yok";
 "insights.health.unavailable.message" = "Gelir ve gider işlemleri ekle. Yeterli veri oluştuğunda finansal sağlığını değerlendireceğiz.";

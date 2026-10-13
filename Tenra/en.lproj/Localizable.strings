@@ -1557,6 +1557,11 @@
 "insights.health.subtitle.good" = "Solid finances with room to optimise.";
 "insights.health.subtitle.fair" = "Decent footing, but a few areas need attention.";
 "insights.health.subtitle.needsAttention" = "Several aspects of your finances need work.";
+"insights.health.trend.sinceLastMonth" = "since last month";
+"insights.savingsRate.band.onTarget" = "Target reached";
+"insights.savingsRate.band.belowTarget" = "Below the 20% target";
+"insights.savingsRate.band.low" = "Under 10%";
+"insights.savingsRate.band.deficit" = "Spending more than you earn";
 
 "insights.health.unavailable.title" = "Not enough data";
 "insights.health.unavailable.message" = "Add income and expense transactions. We'll evaluate your financial health once enough data is available.";

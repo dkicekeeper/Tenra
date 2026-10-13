@@ -1557,6 +1557,11 @@
 "insights.health.subtitle.good" = "Solide Finanzen mit Optimierungspotenzial.";
 "insights.health.subtitle.fair" = "Ordentliche Basis, aber einige Bereiche brauchen Aufmerksamkeit.";
 "insights.health.subtitle.needsAttention" = "Mehrere Aspekte Ihrer Finanzen sollten verbessert werden.";
+"insights.health.trend.sinceLastMonth" = "seit letztem Monat";
+"insights.savingsRate.band.onTarget" = "Ziel erreicht";
+"insights.savingsRate.band.belowTarget" = "Unter dem Ziel von 20 %";
+"insights.savingsRate.band.low" = "Unter 10 %";
+"insights.savingsRate.band.deficit" = "Ausgaben über den Einnahmen";
 
 "insights.health.unavailable.title" = "Nicht genügend Daten";
 "insights.health.unavailable.message" = "Fügen Sie Einnahmen und Ausgaben hinzu – sobald genügend Daten vorliegen, bewerten wir Ihre finanzielle Gesundheit.";

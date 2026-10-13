@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dkicekeeper/DesignKit",
       "state" : {
-        "revision" : "372f2d1dcb23ce33a13c3ad37a66878d6f36b6b2",
-        "version" : "4.2.0"
+        "revision" : "13f4307be923a651b768003f832bb8bdcf8c97fe",
+        "version" : "4.3.0"
       }
     },
     {

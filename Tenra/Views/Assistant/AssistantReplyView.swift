@@ -8,7 +8,8 @@
 //  `TransactionCardView`, a budget a `BudgetProgressRow`, a subscription a `SubscriptionCard`
 //  and an insight an `InsightsCardView`, exactly as everywhere else in the app. A block whose
 //  reference does not resolve is left out. An `open` block is a way into the app's own screen
-//  (AssistantDestinationView).
+//  (AssistantDestinationView); a `confirm` block is the draft card, where the person saves what
+//  the assistant prepared (AgentDraftBook).
 //
 
 import SwiftUI
@@ -16,11 +17,12 @@ import SwiftUI
 struct AssistantReplyView: View {
     let reply: AgentReply
     let results: [String: JSONValue]
+    var drafts: AgentDraftBook?
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
             ForEach(Array(reply.blocks.enumerated()), id: \.offset) { index, block in
-                AssistantBlockView(block: block, results: results)
+                AssistantBlockView(block: block, results: results, drafts: drafts)
                     .cascadeIn(index: index)
             }
         }
@@ -31,6 +33,7 @@ struct AssistantReplyView: View {
 private struct AssistantBlockView: View {
     let block: AgentBlock
     let results: [String: JSONValue]
+    let drafts: AgentDraftBook?
 
     var body: some View {
         switch block {
@@ -56,8 +59,12 @@ private struct AssistantBlockView: View {
             if let route = AssistantRoute(destination: destination, targetId: targetId) {
                 AssistantOpenLink(route: route, label: label)
             }
-        case .forecast, .confirm, .unsupported:
-            // Planning and drafts arrive in later phases (plan §5).
+        case .confirm(let draftId):
+            if let drafts, let draft = drafts.drafts[draftId] {
+                AssistantDraftCard(book: drafts, draft: draft)
+            }
+        case .forecast, .unsupported:
+            // Planning arrives in a later phase (plan §5).
             EmptyView()
         }
     }
@@ -260,6 +267,127 @@ private struct AssistantInsightCard: View {
     var body: some View {
         if let insight = coordinator.insightsViewModel.insights.first(where: { $0.id == insightId }) {
             InsightsCardView(insight: insight)
+        }
+    }
+}
+
+// MARK: - Confirm
+
+/// A draft to save (plan §1, "do"): its operations as they will look in the history, what
+/// Tenra guessed, Save; once saved, Undo. Nothing is written before Save.
+private struct AssistantDraftCard: View {
+    @Environment(AppCoordinator.self) private var coordinator
+
+    let book: AgentDraftBook
+    let draft: AgentDraft
+
+    var body: some View {
+        let store = coordinator.transactionStore
+        let state = book.states[draft.id] ?? .pending
+        AssistantCard(title: nil) {
+            ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
+                let preview = Self.preview(operation, id: "\(draft.id)-\(index)")
+                TransactionCardView(
+                    transaction: preview,
+                    currency: preview.currency,
+                    styleData: CategoryStyleHelper.cached(
+                        category: preview.category,
+                        type: preview.type,
+                        customCategories: store.categories
+                    ),
+                    sourceAccount: preview.accountId.flatMap { store.accountById[$0] },
+                    targetAccount: preview.targetAccountId.flatMap { store.accountById[$0] }
+                )
+            }
+            if state == .pending {
+                ForEach(guesses, id: \.self) { guess in
+                    InlineStatusText(message: guess, type: .warning)
+                }
+            }
+            footer(state)
+        }
+        .animation(AppAnimation.smooth, value: state)
+    }
+
+    @ViewBuilder
+    private func footer(_ state: AgentDraftState) -> some View {
+        switch state {
+        case .pending, .saving:
+            DSButton(
+                String(localized: "assistant.draft.save"),
+                systemImage: "checkmark",
+                fullWidth: true,
+                isLoading: state == .saving
+            ) {
+                Task {
+                    await book.save(draft.id)
+                    if case .saved? = book.states[draft.id] { HapticManager.success() } else { HapticManager.error() }
+                }
+            }
+        case .saved:
+            HStack {
+                InlineStatusText(message: String(localized: "assistant.draft.saved"), type: .success)
+                Spacer()
+                DSButton(String(localized: "assistant.draft.undo"), appearance: .flat, size: .small) {
+                    Task { await book.undo(draft.id) }
+                }
+            }
+        case .undone:
+            InlineStatusText(message: String(localized: "assistant.draft.undone"), type: .info)
+        case .failed:
+            InlineStatusText(message: String(localized: "assistant.draft.failed"), type: .error)
+            DSButton(String(localized: "assistant.draft.save"), systemImage: "arrow.clockwise", fullWidth: true) {
+                Task { await book.save(draft.id) }
+            }
+        }
+    }
+
+    /// What Tenra filled in itself, for the person to check before saving.
+    private var guesses: [String] {
+        let warnings = draft.operations.flatMap { operation -> [DraftWarning] in
+            if case .single(let single) = operation { return single.warnings }
+            return []
+        }
+        var lines: [String] = []
+        if warnings.contains(.accountInferred) {
+            lines.append(String(localized: "assistant.draft.accountGuessed"))
+        }
+        if warnings.contains(where: { if case .categorySubstituted = $0 { true } else { false } }) {
+            lines.append(String(localized: "assistant.draft.categoryGuessed"))
+        }
+        return lines
+    }
+
+    /// The operation as the transaction it will become, for the row.
+    private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction {
+        switch operation {
+        case .single(let draft):
+            return Transaction(
+                id: id,
+                date: FastDateParser.string(from: draft.date),
+                description: draft.note,
+                amount: draft.amount,
+                currency: draft.currency,
+                convertedAmount: draft.convertedAmount,
+                type: draft.type,
+                category: draft.categoryName,
+                accountId: draft.accountId
+            )
+        case .transfer(let transfer):
+            return Transaction(
+                id: id,
+                date: FastDateParser.string(from: transfer.date),
+                description: transfer.note,
+                amount: transfer.amount,
+                currency: transfer.currency,
+                convertedAmount: transfer.conversion.convertedAmount,
+                type: .internalTransfer,
+                category: TransactionType.transferCategoryName,
+                accountId: transfer.fromAccountId,
+                targetAccountId: transfer.toAccountId,
+                targetCurrency: transfer.conversion.targetCurrency,
+                targetAmount: transfer.conversion.targetAmount
+            )
         }
     }
 }

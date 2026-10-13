@@ -1865,6 +1865,13 @@
 "assistant.error.freeLimit" = "Безкоштовні відповіді поки закінчилися. З Tenra Pro можна питати далі.";
 "assistant.allowance.renews" = "Нові безкоштовні відповіді з %@";
 "assistant.open.missing" = "Цього вже немає в Tenra";
+"assistant.draft.save" = "Зберегти";
+"assistant.draft.saved" = "Збережено";
+"assistant.draft.undo" = "Скасувати";
+"assistant.draft.undone" = "Скасовано. Нічого не збережено.";
+"assistant.draft.failed" = "Не вдалося зберегти. Спробуйте ще раз.";
+"assistant.draft.accountGuessed" = "Рахунок вибрано автоматично. Перевірте перед збереженням.";
+"assistant.draft.categoryGuessed" = "Категорію вибрано автоматично. Перевірте перед збереженням.";
 "assistant.error.generic" = "Щось пішло не так. Спробуйте ще раз.";
 
 /* AI assistant: the chat screen */

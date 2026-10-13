@@ -113,6 +113,7 @@ final class AssistantViewModel {
         replyMood = .idle
         sentContext = nil
         failedEntryId = nil
+        drafts?.clear()
     }
 
     func retry() async {

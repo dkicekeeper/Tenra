@@ -1865,6 +1865,13 @@
 "assistant.error.freeLimit" = "Бесплатные ответы пока закончились. С Tenra Pro можно спрашивать дальше.";
 "assistant.allowance.renews" = "Новые бесплатные ответы с %@";
 "assistant.open.missing" = "Этого уже нет в Tenra";
+"assistant.draft.save" = "Сохранить";
+"assistant.draft.saved" = "Сохранено";
+"assistant.draft.undo" = "Отменить";
+"assistant.draft.undone" = "Отменено. Ничего не сохранено.";
+"assistant.draft.failed" = "Не удалось сохранить. Попробуйте ещё раз.";
+"assistant.draft.accountGuessed" = "Счёт выбран автоматически. Проверьте перед сохранением.";
+"assistant.draft.categoryGuessed" = "Категория выбрана автоматически. Проверьте перед сохранением.";
 "assistant.error.generic" = "Что-то пошло не так. Попробуйте ещё раз.";
 
 /* AI assistant: the chat screen */

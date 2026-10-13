@@ -1865,6 +1865,13 @@
 "assistant.error.freeLimit" = "Ücretsiz yanıtlar şimdilik bitti. Tenra Pro ile sormaya devam edebilirsin.";
 "assistant.allowance.renews" = "Yeni ücretsiz yanıtlar %@ tarihinde";
 "assistant.open.missing" = "Bu artık Tenra’da yok";
+"assistant.draft.save" = "Kaydet";
+"assistant.draft.saved" = "Kaydedildi";
+"assistant.draft.undo" = "Geri al";
+"assistant.draft.undone" = "Geri alındı. Hiçbir şey kaydedilmedi.";
+"assistant.draft.failed" = "Kaydedilemedi. Tekrar dene.";
+"assistant.draft.accountGuessed" = "Hesabı Tenra seçti. Kaydetmeden önce kontrol et.";
+"assistant.draft.categoryGuessed" = "Kategoriyi Tenra seçti. Kaydetmeden önce kontrol et.";
 "assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
 
 /* AI assistant: the chat screen */

@@ -1865,6 +1865,13 @@
 "assistant.error.freeLimit" = "無料の回答は今のところ上限に達しました。Tenra Pro なら引き続き質問できます。";
 "assistant.allowance.renews" = "%@から新しい無料回答";
 "assistant.open.missing" = "これは Tenra にもうありません";
+"assistant.draft.save" = "保存";
+"assistant.draft.saved" = "保存しました";
+"assistant.draft.undo" = "取り消す";
+"assistant.draft.undone" = "取り消しました。何も保存されていません。";
+"assistant.draft.failed" = "保存できませんでした。もう一度お試しください。";
+"assistant.draft.accountGuessed" = "口座は Tenra が選びました。保存する前に確認してください。";
+"assistant.draft.categoryGuessed" = "カテゴリは Tenra が選びました。保存する前に確認してください。";
 "assistant.error.generic" = "問題が発生しました。もう一度お試しください。";
 
 /* AI assistant: the chat screen */

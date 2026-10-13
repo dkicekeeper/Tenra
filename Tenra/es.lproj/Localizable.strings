@@ -1865,6 +1865,13 @@
 "assistant.error.freeLimit" = "Por ahora se acabaron las respuestas gratuitas. Con Tenra Pro puedes seguir preguntando.";
 "assistant.allowance.renews" = "Nuevas respuestas gratuitas desde el %@";
 "assistant.open.missing" = "Esto ya no está en Tenra";
+"assistant.draft.save" = "Guardar";
+"assistant.draft.saved" = "Guardado";
+"assistant.draft.undo" = "Deshacer";
+"assistant.draft.undone" = "Deshecho. No se guardó nada.";
+"assistant.draft.failed" = "No se pudo guardar. Inténtalo de nuevo.";
+"assistant.draft.accountGuessed" = "Tenra eligió la cuenta. Revísala antes de guardar.";
+"assistant.draft.categoryGuessed" = "Tenra eligió la categoría. Revísala antes de guardar.";
 "assistant.error.generic" = "Algo salió mal. Inténtalo de nuevo.";
 
 /* AI assistant: the chat screen */

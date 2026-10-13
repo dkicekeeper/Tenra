@@ -159,6 +159,18 @@ struct AssistantViewModelTests {
         #expect(fresh[0].content.count == 2)
     }
 
+    @Test func aNewChatClearsItsDrafts() {
+        let book = AgentDraftBook(writer: AgentDraftBook.Writer(save: { _ in throw FinanceToolError(message: "unused") }, delete: { _ in }))
+        _ = book.add([])
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit()),
+            context: { "" },
+            drafts: book
+        )
+        model.reset()
+        #expect(book.drafts.isEmpty)
+    }
+
     @Test func aFreeAnswerSpendsTheAllowance() async {
         let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "none")])]])
         let box = UsageBox()

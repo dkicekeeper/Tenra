@@ -160,7 +160,7 @@ struct AssistantView: View {
                 onRetry: failure?.canRetry == true ? { Task { await model.retry() } } : nil
             )
         case .reply(let reply, let results):
-            AssistantReplyView(reply: reply, results: results)
+            AssistantReplyView(reply: reply, results: results, drafts: model.drafts)
         }
     }
 

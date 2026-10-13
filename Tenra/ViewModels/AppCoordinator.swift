@@ -92,8 +92,15 @@ class AppCoordinator {
         let client = AgentServerClient(baseURL: url, attestation: attestation) {
             await MainActor.run { PremiumManager.shared.appUserID }
         }
-        let toolkit = FinanceToolkit(store: transactionStore, insights: insightsViewModel)
         let store = transactionStore
+        let accounts = accountsViewModel
+        let drafts = AgentDraftBook(writer: .app(store: store, categoriesViewModel: categoriesViewModel))
+        let toolkit = FinanceToolkit(
+            store: store,
+            insights: insightsViewModel,
+            drafts: drafts,
+            suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
+        )
         let usage = AssistantUsageStore()
         let model = AssistantViewModel(
             conversation: AgentConversation(transport: client, toolkit: toolkit),
@@ -102,7 +109,8 @@ class AppCoordinator {
                 isPro: { PremiumManager.shared.isPro },
                 loadUsage: { usage.load() },
                 saveUsage: { usage.save($0) }
-            )
+            ),
+            drafts: drafts
         )
         assistantModel = model
         return model

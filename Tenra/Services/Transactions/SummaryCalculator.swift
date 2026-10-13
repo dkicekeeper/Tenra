@@ -35,14 +35,16 @@ enum SummaryCalculator {
     ///   - transactions: Full transaction array captured on MainActor before dispatch.
     ///   - filter: The active TimeFilter (value type — safe to capture across threads).
     ///   - baseCurrency: The app base currency string captured on MainActor.
+    ///   - now: The moment that splits realized from future-dated transactions.
     /// - Returns: A fully computed Summary value.
     nonisolated static func compute(
         transactions: [Transaction],
         filterStart: Date,
         filterEnd: Date,
-        baseCurrency: String
+        baseCurrency: String,
+        now: Date = Date()
     ) -> Summary {
-        let today = Calendar.current.startOfDay(for: Date())
+        let today = Calendar.current.startOfDay(for: now)
         // One frozen rate table for the whole walk: avoids ~38k NSLock acquisitions and
         // guarantees every transaction is converted at the same rates even if a prewarm
         // response lands mid-loop. See RateSnapshot.

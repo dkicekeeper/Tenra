@@ -40,7 +40,9 @@ struct AgentDraftTests {
     }
 
     /// Returns the store too: tests must retain it (AccountsViewModel keeps it weakly).
-    private static func make(writer: FakeWriter = FakeWriter()) -> (FinanceToolkit, AgentDraftBook, TransactionStore) {
+    /// `writer` is optional because a default argument is built outside the main actor.
+    private static func make(writer: FakeWriter? = nil) -> (FinanceToolkit, AgentDraftBook, TransactionStore) {
+        let writer = writer ?? FakeWriter()
         let defaults = UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
         let repo = UserDefaultsRepository(userDefaults: defaults)
         let store = TransactionStore(

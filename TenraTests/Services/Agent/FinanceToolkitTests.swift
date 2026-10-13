@@ -155,7 +155,7 @@ struct FinanceToolkitTests {
     }
 
     @Test func laterPhaseAndUnknownToolsAnswerWithoutCrashing() async {
-        let (draft, store) = await Self.run("draft_budget", ["category": "cat_cafe", "amount": 100_000, "period": "monthly"])
+        let (draft, store) = await Self.run("forecast_balance", ["until": "2026-11-10"])
         _ = store
         #expect(draft.error?.contains("not available") == true)
         // Without a draft book (not wired) drafting answers the same way.

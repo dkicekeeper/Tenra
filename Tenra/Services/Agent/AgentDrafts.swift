@@ -7,7 +7,9 @@
 //  categories and files them here under a draft id; nothing is saved until the person taps
 //  Save on the confirm card. Saving goes through the app's own write paths
 //  (`TransactionDraftService.commit` for income and expenses, `TransactionStore.add` with the
-//  transfer fields of `TransactionConversion` for transfers), and Undo deletes what was saved.
+//  transfer fields of `TransactionConversion` for transfers, `CategoriesViewModel.setBudget`
+//  for budgets), and Undo takes back what was saved: deletes the transactions, puts the
+//  previous budget back.
 //
 //  Drafts live as long as the thread does, in memory; a new chat clears them.
 //
@@ -20,6 +22,7 @@ enum AgentDraftOperation: Equatable {
     /// Income or expense, resolved by `TransactionDraftService.makeDraft`.
     case single(TransactionDraft)
     case transfer(AgentTransferDraft)
+    case budget(AgentBudgetDraft)
 }
 
 struct AgentTransferDraft: Equatable {
@@ -33,6 +36,28 @@ struct AgentTransferDraft: Equatable {
     var note: String
 }
 
+/// A new or changed budget of an expense category (amounts in the base currency, as budgets
+/// are kept).
+struct AgentBudgetDraft: Equatable {
+    var categoryId: String
+    var amount: Double
+    var period: CustomCategory.BudgetPeriod
+    /// The budget before, for the card and for Undo; nil when the category had none.
+    var previousAmount: Double?
+    var previousPeriod: CustomCategory.BudgetPeriod
+}
+
+/// What saving an operation wrote, for Undo.
+enum AgentSavedRecord: Equatable {
+    case transaction(Transaction)
+    case budget(AgentBudgetDraft)
+}
+
+enum AgentDraftError: Error {
+    /// The category was deleted between the draft and Save.
+    case categoryGone
+}
+
 struct AgentDraft: Equatable, Identifiable {
     let id: String
     var operations: [AgentDraftOperation]
@@ -42,7 +67,7 @@ enum AgentDraftState: Equatable {
     case pending
     case saving
     /// What was written, for Undo.
-    case saved([Transaction])
+    case saved([AgentSavedRecord])
     case undone
     case failed
 }
@@ -51,8 +76,8 @@ enum AgentDraftState: Equatable {
 final class AgentDraftBook {
     /// The app's write paths, swapped for fakes in tests.
     struct Writer {
-        var save: @MainActor (AgentDraftOperation) async throws -> Transaction
-        var delete: @MainActor (Transaction) async throws -> Void
+        var save: @MainActor (AgentDraftOperation) async throws -> AgentSavedRecord
+        var undo: @MainActor (AgentSavedRecord) async throws -> Void
     }
 
     private(set) var drafts: [String: AgentDraft] = [:]
@@ -78,27 +103,27 @@ final class AgentDraftBook {
     func save(_ id: String) async {
         guard let draft = drafts[id], states[id] == .pending || states[id] == .failed else { return }
         states[id] = .saving
-        var saved: [Transaction] = []
+        var saved: [AgentSavedRecord] = []
         do {
             for operation in draft.operations {
                 saved.append(try await writer.save(operation))
             }
             states[id] = .saved(saved)
         } catch {
-            for transaction in saved.reversed() {
-                try? await writer.delete(transaction)
+            for record in saved.reversed() {
+                try? await writer.undo(record)
             }
             states[id] = .failed
         }
     }
 
-    /// Deletes what the draft saved.
+    /// Takes back what the draft saved.
     func undo(_ id: String) async {
         guard case .saved(let saved) = states[id] else { return }
         states[id] = .saving
         do {
-            for transaction in saved.reversed() {
-                try await writer.delete(transaction)
+            for record in saved.reversed() {
+                try await writer.undo(record)
             }
             states[id] = .undone
         } catch {
@@ -116,16 +141,21 @@ final class AgentDraftBook {
 
 extension AgentDraftBook.Writer {
     /// Writes as the rest of the app does: the voice and Siri path for income and expenses,
-    /// the store's transfer for transfers. Undo deletes the transaction as it is now (it may
-    /// have been edited since).
+    /// the store's transfer for transfers, the categories' budget call for budgets. Undo
+    /// deletes a transaction as it is now (it may have been edited since) and puts the
+    /// previous budget back.
     static func app(store: TransactionStore, categoriesViewModel: CategoriesViewModel) -> Self {
         Self(
             save: { operation in
                 switch operation {
                 case .single(let draft):
-                    return try await TransactionDraftService.commit(draft, store: store, categoriesViewModel: categoriesViewModel)
+                    return .transaction(try await TransactionDraftService.commit(draft, store: store, categoriesViewModel: categoriesViewModel))
+                case .budget(let budget):
+                    guard let category = store.categoryById[budget.categoryId] else { throw AgentDraftError.categoryGone }
+                    categoriesViewModel.setBudget(for: budget.categoryId, amount: budget.amount, period: budget.period, resetDay: category.budgetResetDay)
+                    return .budget(budget)
                 case .transfer(let transfer):
-                    return try await store.add(Transaction(
+                    return .transaction(try await store.add(Transaction(
                         id: "",
                         date: DateFormatters.dateFormatter.string(from: transfer.date),
                         description: transfer.note,
@@ -138,12 +168,22 @@ extension AgentDraftBook.Writer {
                         targetAccountId: transfer.toAccountId,
                         targetCurrency: transfer.conversion.targetCurrency ?? transfer.currency,
                         targetAmount: transfer.conversion.targetAmount ?? transfer.amount
-                    ))
+                    )))
                 }
             },
-            delete: { transaction in
-                guard let current = store.transactionById[transaction.id] else { return }
-                try await store.delete(current)
+            undo: { record in
+                switch record {
+                case .transaction(let transaction):
+                    guard let current = store.transactionById[transaction.id] else { return }
+                    try await store.delete(current)
+                case .budget(let budget):
+                    guard let category = store.categoryById[budget.categoryId] else { return }
+                    if let previous = budget.previousAmount {
+                        categoriesViewModel.setBudget(for: budget.categoryId, amount: previous, period: budget.previousPeriod, resetDay: category.budgetResetDay)
+                    } else {
+                        categoriesViewModel.removeBudget(for: budget.categoryId)
+                    }
+                }
             }
         )
     }

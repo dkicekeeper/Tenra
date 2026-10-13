@@ -4,9 +4,9 @@
 //
 //  The assistant's drafts: `draft_transactions` resolves the model's operations the way the
 //  voice and Siri paths do (ids or names, a guessed account marked as guessed, transfers
-//  between two regular accounts, what cannot be drafted skipped with a reason), and the draft
-//  book saves a draft whole or not at all and undoes it. All amounts are KZT, so no FX state is
-//  involved.
+//  between two regular accounts, what cannot be drafted skipped with a reason), `draft_budget`
+//  keeps the previous limit, and the draft book saves a draft whole or not at all and undoes
+//  it. All amounts are KZT, so no FX state is involved.
 //
 
 import Foundation
@@ -30,9 +30,11 @@ struct AgentDraftTests {
                 save: { operation in
                     if self.failOn == self.saved.count { throw FinanceToolError(message: "disk full") }
                     self.saved.append(operation)
-                    return Transaction(id: "tx\(self.saved.count)", date: "2026-10-28", description: "", amount: 1, currency: "KZT", type: .expense, category: "")
+                    return .transaction(Transaction(id: "tx\(self.saved.count)", date: "2026-10-28", description: "", amount: 1, currency: "KZT", type: .expense, category: ""))
                 },
-                delete: { transaction in self.deleted.append(transaction.id) }
+                undo: { record in
+                    if case .transaction(let transaction) = record { self.deleted.append(transaction.id) }
+                }
             )
         }
     }
@@ -47,7 +49,7 @@ struct AgentDraftTests {
             recurringStore: RecurringStore(repository: repo)
         )
         store.categories = [
-            CustomCategory(id: "cat_cafe", name: "Кафе", colorHex: "#FF9500", type: .expense),
+            CustomCategory(id: "cat_cafe", name: "Кафе", colorHex: "#FF9500", type: .expense, budgetAmount: 80_000),
             CustomCategory(id: "cat_taxi", name: "Такси", colorHex: "#FFCC00", type: .expense),
             CustomCategory(id: "cat_salary", name: "Зарплата", colorHex: "#5856D6", type: .income),
         ]
@@ -158,6 +160,24 @@ struct AgentDraftTests {
         #expect(book.drafts.isEmpty)
     }
 
+    @Test func aBudgetDraftKeepsThePreviousLimit() async throws {
+        let (toolkit, book, store) = Self.make()
+        _ = store
+        let output = await toolkit.execute(name: "draft_budget", input: ["category": "кафе", "amount": 100_000, "period": "monthly"])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["category_id"] == "cat_cafe")
+        #expect(value["previous_limit"] == .number(80_000))
+        #expect(value["period"] == "monthly")
+        #expect(book.drafts["draft_1"]?.operations == [.budget(AgentBudgetDraft(
+            categoryId: "cat_cafe", amount: 100_000, period: .monthly, previousAmount: 80_000, previousPeriod: .monthly
+        ))])
+
+        let income = await toolkit.execute(name: "draft_budget", input: ["category": "cat_salary", "amount": 1, "period": "monthly"])
+        #expect(income.error?.contains("Unknown expense category") == true)
+        let badPeriod = await toolkit.execute(name: "draft_budget", input: ["category": "cat_taxi", "amount": 1, "period": "daily"])
+        #expect(badPeriod.error == "period must be weekly, monthly or yearly.")
+    }
+
     // MARK: - The book
 
     @Test func savingWritesEveryOperationAndUndoDeletesThem() async {
@@ -171,11 +191,11 @@ struct AgentDraftTests {
 
         await book.save("draft_1")
         #expect(fake.saved.count == 2)
-        guard case .saved(let transactions)? = book.states["draft_1"] else {
+        guard case .saved(let records)? = book.states["draft_1"] else {
             Issue.record("expected saved")
             return
         }
-        #expect(transactions.map(\.id) == ["tx1", "tx2"])
+        #expect(records.count == 2)
 
         // Saving twice writes nothing more.
         await book.save("draft_1")

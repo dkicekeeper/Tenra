@@ -43,6 +43,15 @@ enum PremiumConfig {
     /// The daily logging loop stays free; scale + depth is Pro. See strategy doc §3.
     static let freeAccountLimit = 3
 
+    /// The AI assistant's free allowance (docs/promotion-plan.md §2, plan-ai-assistant.md §6):
+    /// enough to get hooked in the first week, then a taste every month. An action is one
+    /// question the assistant answers. Counted on the device (`AssistantUsageStore`).
+    enum Assistant {
+        nonisolated static let trialActions = 30
+        nonisolated static let trialDays = 7
+        nonisolated static let monthlyActions = 10
+    }
+
     // MARK: - Founding Users
 
     /// The first moment a new download got a Pro build. An Apple Account whose first download

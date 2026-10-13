@@ -46,6 +46,23 @@ struct AgentReplyDataTests {
         "toolu_budgets": ["currency": "KZT", "budgets": [["category_id": "cat_cafe"], ["category_id": "cat_food"]]],
     ]
 
+    @Test func aForecastReadsItsAllowanceSeriesAndObligations() throws {
+        let results: [String: JSONValue] = ["toolu_fc": [
+            "currency": "KZT",
+            "until": "2026-11-10",
+            "daily_allowance": 16_538.46,
+            "free_amount": 215_000,
+            "obligations": [["date": "2026-11-05", "label": "Netflix", "amount": 5_000]],
+            "series": [["date": "2026-10-28", "balance": 300_000], ["date": "2026-10-29", "balance": 283_461.54]],
+        ]]
+        let forecast = try #require(AgentReplyData.forecast(source: "toolu_fc", results: results))
+        #expect(forecast.dailyAllowance == 16_538.46)
+        #expect(forecast.balance.isTimeline)
+        #expect(forecast.balance.groups.map(\.value) == [300_000, 283_461.54])
+        #expect(forecast.obligations == [AgentReplyData.Forecast.Obligation(date: "2026-11-05", label: "Netflix", amount: 5_000)])
+        #expect(AgentReplyData.forecast(source: "toolu_missing", results: results) == nil)
+    }
+
     @Test func amountsKeepTheirCurrency() throws {
         let metric = try #require(AgentReplyData.metric(label: "Расходы", source: "toolu_sum", path: "total", trendPath: nil, results: results))
         #expect(metric.value == .amount(12_000, currency: "KZT"))

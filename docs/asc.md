@@ -8,7 +8,7 @@
 | Сборка → App Store Connect → TestFlight | GitHub Actions, `.github/workflows/testflight.yml` | Actions → TestFlight → Run workflow, или Claude через GitHub API |
 | Ждать обработки сборки, таблица сборок | второй job того же workflow | сам после загрузки |
 | Версии, сборки, встроенные покупки, отзывы, доступность в странах (статус DSA в ЕС), сбои из TestFlight | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → Run workflow (выбрать команду) |
-| Создать версию в App Store, вставить What's New из [release-notes.md](release-notes.md) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
+| Создать версию в App Store, вставить What's New из `docs/release-notes.md` (заметки версии, которая готовится) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
 | Специальные страницы продукта и тест страницы (скриншоты, промо-текст, ключевые слова) из `appstore/product-pages.json` | GitHub Actions, `.github/workflows/asc.yml` | `push-custom-pages`, `push-experiment` (поле `args`: `--submit`, `--start`) |
 | Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all` или `cpp` |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |

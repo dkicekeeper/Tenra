@@ -72,7 +72,7 @@ struct AgentForecastTests {
         #expect(value["series"]?.arrayValue?.count == 14)
         // Spending the allowance every day leaves the cushion.
         #expect(value.value(atPath: "series.13.balance") == .number(10_000.02))
-        #expect(value["missing_rates"] == [])
+        #expect(value["missing_rates"] == .array([]))
     }
 
     @Test func theDateMustBeAheadAndTheAccountsKnown() async {

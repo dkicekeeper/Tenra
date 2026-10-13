@@ -1864,6 +1864,7 @@
 "assistant.error.refused" = "その内容にはお答えできません。お金のことを聞いてください。";
 "assistant.error.freeLimit" = "無料の回答は今のところ上限に達しました。Tenra Pro なら引き続き質問できます。";
 "assistant.allowance.renews" = "%@から新しい無料回答";
+"assistant.open.missing" = "これは Tenra にもうありません";
 "assistant.error.generic" = "問題が発生しました。もう一度お試しください。";
 
 /* AI assistant: the chat screen */

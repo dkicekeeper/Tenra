@@ -84,6 +84,9 @@ struct AssistantView: View {
         }
         .navigationTitle(String(localized: "tab.assistant"))
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(for: AssistantRoute.self) { route in
+            AssistantDestinationView(route: route)
+        }
         .toolbar {
             if !model.entries.isEmpty {
                 ToolbarItem(placement: .principal) {

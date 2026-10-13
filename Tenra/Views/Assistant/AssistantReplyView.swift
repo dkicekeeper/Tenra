@@ -7,7 +7,8 @@
 //  (AgentReplyData); lists resolve back to the app's models by id, so a transaction is a
 //  `TransactionCardView`, a budget a `BudgetProgressRow`, a subscription a `SubscriptionCard`
 //  and an insight an `InsightsCardView`, exactly as everywhere else in the app. A block whose
-//  reference does not resolve is left out.
+//  reference does not resolve is left out. An `open` block is a way into the app's own screen
+//  (AssistantDestinationView).
 //
 
 import SwiftUI
@@ -51,8 +52,12 @@ private struct AssistantBlockView: View {
             AssistantRecurringList(ids: AgentReplyData.recurringIds(source: source, results: results))
         case .insight(_, let insightId):
             AssistantInsightCard(insightId: insightId)
-        case .forecast, .confirm, .open, .unsupported:
-            // Planning, drafts and navigation arrive in later phases (plan §5).
+        case .open(let destination, let targetId, let label):
+            if let route = AssistantRoute(destination: destination, targetId: targetId) {
+                AssistantOpenLink(route: route, label: label)
+            }
+        case .forecast, .confirm, .unsupported:
+            // Planning and drafts arrive in later phases (plan §5).
             EmptyView()
         }
     }
@@ -256,6 +261,24 @@ private struct AssistantInsightCard: View {
         if let insight = coordinator.insightsViewModel.insights.first(where: { $0.id == insightId }) {
             InsightsCardView(insight: insight)
         }
+    }
+}
+
+// MARK: - Open
+
+/// A row into one of the app's screens, pushed on the assistant's stack.
+private struct AssistantOpenLink: View {
+    let route: AssistantRoute
+    let label: String
+
+    var body: some View {
+        NavigationLink(value: route) {
+            ActionRowLabel(label, systemImage: route.systemImage)
+                .padding(.horizontal, AppSpacing.lg)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .cardStyle()
+        }
+        .buttonStyle(.plain)
     }
 }
 

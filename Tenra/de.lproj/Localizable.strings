@@ -1864,6 +1864,7 @@
 "assistant.error.refused" = "Dabei kann ich nicht helfen. Frag mich etwas zu deinem Geld.";
 "assistant.error.freeLimit" = "Die kostenlosen Antworten sind vorerst aufgebraucht. Mit Tenra Pro kannst du weiterfragen.";
 "assistant.allowance.renews" = "Neue kostenlose Antworten ab %@";
+"assistant.open.missing" = "Das gibt es in Tenra nicht mehr";
 "assistant.error.generic" = "Etwas ist schiefgelaufen. Versuche es erneut.";
 
 /* AI assistant: the chat screen */

@@ -1864,6 +1864,7 @@
 "assistant.error.refused" = "З цим я не допоможу. Запитайте про ваші гроші.";
 "assistant.error.freeLimit" = "Безкоштовні відповіді поки закінчилися. З Tenra Pro можна питати далі.";
 "assistant.allowance.renews" = "Нові безкоштовні відповіді з %@";
+"assistant.open.missing" = "Цього вже немає в Tenra";
 "assistant.error.generic" = "Щось пішло не так. Спробуйте ще раз.";
 
 /* AI assistant: the chat screen */

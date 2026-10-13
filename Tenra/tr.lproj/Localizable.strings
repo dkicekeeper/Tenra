@@ -1864,6 +1864,7 @@
 "assistant.error.refused" = "Bu konuda yardımcı olamam. Bana paranla ilgili sor.";
 "assistant.error.freeLimit" = "Ücretsiz yanıtlar şimdilik bitti. Tenra Pro ile sormaya devam edebilirsin.";
 "assistant.allowance.renews" = "Yeni ücretsiz yanıtlar %@ tarihinde";
+"assistant.open.missing" = "Bu artık Tenra’da yok";
 "assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
 
 /* AI assistant: the chat screen */

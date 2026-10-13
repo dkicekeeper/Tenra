@@ -66,6 +66,7 @@ this file is the full index.
 | [promotion-plan.md](promotion-plan.md) | The product, Tenra Pro and the growth plan: facts, releases, decisions, channels, weekly metrics. Living doc |
 | [asc.md](asc.md) | App Store Connect and TestFlight from a cloud session (`appstore/asc.py`, workflows) |
 | [backlog.md](backlog.md) | Open items, ideas not planned yet, decisions that stand |
+| [plan-ai-assistant.md](plan-ai-assistant.md) | Plan in flight: Tenra as an AI finance assistant (hybrid Apple + Claude brain, generative UI blocks, orb mascot, phases, cloud economics) |
 | [public/](public/) | The support site: privacy policy, terms of use, support (GitHub Pages) |
 
 ## Archive

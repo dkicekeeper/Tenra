@@ -140,6 +140,7 @@ struct AssistantViewModelTests {
         #expect(AssistantFailure(AgentConversationError.refused) == .refused)
     }
 
+<<<<<<< HEAD
     @Test func aNewChatForgetsTheThread() async {
         let transport = ScriptedTransport([
             [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
@@ -169,6 +170,33 @@ struct AssistantViewModelTests {
         )
         model.reset()
         #expect(book.drafts.isEmpty)
+=======
+    @Test func savedDraftsAreReportedOnce() async {
+        let transport = ScriptedTransport([
+            [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_3", source: "none")])],
+        ])
+        let book = AgentDraftBook(writer: AgentDraftBook.Writer(
+            save: { _ in .transaction(Transaction(id: "tx1", date: "2026-10-28", description: "", amount: 1, currency: "KZT", type: .expense, category: "")) },
+            undo: { _ in }
+        ))
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            drafts: book
+        )
+
+        await model.send("Кофе 1500")
+        let id = book.add([])
+        await book.save(id)
+        await model.send("Ещё такси")
+        await model.send("Сколько на кафе?")
+
+        let texts = transport.calls.map { call in call.last?.content.compactMap { $0["text"]?.stringValue } ?? [] }
+        #expect(texts[1] == ["<draft_status>\ndraft_1: saved\n</draft_status>", "Ещё такси"])
+        #expect(texts[2] == ["Сколько на кафе?"])
+>>>>>>> claude/plan-ai-assistant
     }
 
     @Test func aFreeAnswerSpendsTheAllowance() async {

@@ -10,6 +10,9 @@
 //  The <app_context> block goes with the first question and again whenever it changes (a new
 //  day, an account or a category added), as the server's prompt expects.
 //
+//  What the person did on the confirm cards since the last reply (a draft saved or undone)
+//  goes with the next question as a <draft_status> block, so the model knows what is done.
+//
 //  Without Pro, every answer spends the free allowance (AssistantAllowance: 30 in the first
 //  week, then 10 a month). A question over the allowance is not sent: it stays in the thread
 //  with the Pro offer, and goes once Pro is on (`retry()` after the paywall).
@@ -60,6 +63,8 @@ final class AssistantViewModel {
     @ObservationIgnored private let context: () -> String
     @ObservationIgnored private var sentContext: String?
     @ObservationIgnored private var failedEntryId: UUID?
+    /// The draft states the model was last told about.
+    @ObservationIgnored private var reportedDrafts: [String: String] = [:]
     @ObservationIgnored private let access: Access
 
     init(conversation: AgentConversation, context: @escaping () -> String, access: Access = .unlimited, drafts: AgentDraftBook? = nil) {
@@ -114,6 +119,7 @@ final class AssistantViewModel {
         sentContext = nil
         failedEntryId = nil
         drafts?.clear()
+        reportedDrafts = [:]
     }
 
     func retry() async {
@@ -121,6 +127,24 @@ final class AssistantViewModel {
               let entry = entries.first(where: { $0.id == failedEntryId }),
               case .question(let text) = entry.content else { return }
         await ask(text, entry: failedEntryId)
+    }
+
+    /// The drafts saved or undone since the model last heard, as a `<draft_status>` block, with
+    /// the states to remember once the turn goes through; nil when nothing changed.
+    private func draftStatus() -> (text: String, states: [String: String])? {
+        guard let drafts else { return nil }
+        var states: [String: String] = [:]
+        for (id, state) in drafts.states {
+            switch state {
+            case .saved: states[id] = "saved"
+            case .undone: states[id] = "undone"
+            case .pending, .saving, .failed: break
+            }
+        }
+        let changed = states.filter { reportedDrafts[$0.key] != $0.value }.sorted { $0.key < $1.key }
+        guard !changed.isEmpty else { return nil }
+        let lines = changed.map { "\($0.key): \($0.value)" }.joined(separator: "\n")
+        return ("<draft_status>\n\(lines)\n</draft_status>", states)
     }
 
     private func ask(_ text: String, entry: UUID) async {
@@ -133,12 +157,15 @@ final class AssistantViewModel {
         phase = .working(.understanding)
         let current = context()
         let contextToSend = current == sentContext ? nil : current
+        let status = draftStatus()
+        let preface = [contextToSend, status?.text].compactMap { $0 }.joined(separator: "\n")
         do {
-            let outcome = try await conversation.send(text, context: contextToSend) { [weak self] progress in
+            let outcome = try await conversation.send(text, context: preface.isEmpty ? nil : preface) { [weak self] progress in
                 guard let self, case .toolStarted(let name) = progress else { return }
                 self.phase = .working(AssistantStep(tool: name))
             }
             sentContext = current
+            if let status { reportedDrafts = status.states }
             if !access.isPro() {
                 access.saveUsage(AssistantAllowance.recording(access.loadUsage(), now: access.now()))
                 refreshAllowance()

@@ -1562,6 +1562,8 @@
 "insights.savingsRate.band.belowTarget" = "%20 hedefinin altında";
 "insights.savingsRate.band.low" = "%10'un altında";
 "insights.savingsRate.band.deficit" = "Harcamalar gelirden fazla";
+"insights.largeTransaction.timesUsual" = "Olağanın %@ katı";
+"insights.budgetHeadroom.leftOf" = "%@ bütçeden kalan";
 
 "insights.health.unavailable.title" = "Yeterli veri yok";
 "insights.health.unavailable.message" = "Gelir ve gider işlemleri ekle. Yeterli veri oluştuğunda finansal sağlığını değerlendireceğiz.";

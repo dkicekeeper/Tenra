@@ -1562,6 +1562,8 @@
 "insights.savingsRate.band.belowTarget" = "Ниже цели в 20%";
 "insights.savingsRate.band.low" = "Меньше 10%";
 "insights.savingsRate.band.deficit" = "Расходы больше доходов";
+"insights.largeTransaction.timesUsual" = "В %@ раза больше обычной";
+"insights.budgetHeadroom.leftOf" = "Осталось из %@";
 
 "insights.health.unavailable.title" = "Недостаточно данных";
 "insights.health.unavailable.message" = "Добавьте операции дохода и расхода. После этого мы сможем оценить ваше финансовое здоровье.";

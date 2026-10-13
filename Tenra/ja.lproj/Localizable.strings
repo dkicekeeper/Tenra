@@ -1562,6 +1562,8 @@
 "insights.savingsRate.band.belowTarget" = "目標の20%未満";
 "insights.savingsRate.band.low" = "10%未満";
 "insights.savingsRate.band.deficit" = "支出が収入を上回っています";
+"insights.largeTransaction.timesUsual" = "通常の%@倍";
+"insights.budgetHeadroom.leftOf" = "%@のうち残り";
 
 "insights.health.unavailable.title" = "データが足りません";
 "insights.health.unavailable.message" = "収入と支出の取引を追加してください。十分なデータがそろうと、家計の健康状態を評価します。";

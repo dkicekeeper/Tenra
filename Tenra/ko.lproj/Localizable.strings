@@ -1562,6 +1562,8 @@
 "insights.savingsRate.band.belowTarget" = "목표 20% 미만";
 "insights.savingsRate.band.low" = "10% 미만";
 "insights.savingsRate.band.deficit" = "지출이 수입보다 많아요";
+"insights.largeTransaction.timesUsual" = "평소의 %@배";
+"insights.budgetHeadroom.leftOf" = "%@ 중 남은 금액";
 
 "insights.health.unavailable.title" = "데이터가 충분하지 않아요";
 "insights.health.unavailable.message" = "수입과 지출 거래를 추가해 주세요. 데이터가 충분해지면 금융 건강을 평가해 드려요.";

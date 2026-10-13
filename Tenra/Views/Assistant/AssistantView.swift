@@ -231,6 +231,7 @@ struct AssistantView: View {
     private static var presets: [String] {
         [
             String(localized: "assistant.preset.month"),
+            String(localized: "assistant.preset.allowance"),
             String(localized: "assistant.preset.compare"),
             String(localized: "assistant.preset.budgets"),
             String(localized: "assistant.preset.subscriptions"),

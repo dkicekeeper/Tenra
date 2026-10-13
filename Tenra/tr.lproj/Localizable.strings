@@ -1889,6 +1889,7 @@
 "assistant.preset.compare" = "Geçen ayla karşılaştır";
 "assistant.preset.budgets" = "Bütçelerim ne durumda?";
 "assistant.preset.subscriptions" = "Aboneliklerim ne kadar tutuyor?";
+"assistant.preset.allowance" = "Maaşa kadar günde ne kadar harcayabilirim?";
 "premium.locked.assistant.title" = "Tenra Pro ile asistan";
 "premium.locked.assistant.message" = "Harcamalarını, bütçelerini ve aboneliklerini sor, cevabı kartlarla al.";
 "common.retry" = "Tekrar dene";

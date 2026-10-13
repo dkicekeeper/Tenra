@@ -1889,6 +1889,7 @@
 "assistant.preset.compare" = "先月と比べて";
 "assistant.preset.budgets" = "予算の状況は？";
 "assistant.preset.subscriptions" = "サブスクの合計はいくら？";
+"assistant.preset.allowance" = "給料日まで1日いくら使える？";
 "premium.locked.assistant.title" = "Tenra Pro のアシスタント";
 "premium.locked.assistant.message" = "支出、予算、サブスクについて質問すると、カードで答えが届きます。";
 "common.retry" = "再試行";

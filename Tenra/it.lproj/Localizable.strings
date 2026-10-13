@@ -1889,6 +1889,7 @@
 "assistant.preset.compare" = "Confronta con il mese scorso";
 "assistant.preset.budgets" = "Come vanno i miei budget?";
 "assistant.preset.subscriptions" = "Quanto costano i miei abbonamenti?";
+"assistant.preset.allowance" = "Quanto posso spendere al giorno fino allo stipendio?";
 "premium.locked.assistant.title" = "Assistente con Tenra Pro";
 "premium.locked.assistant.message" = "Chiedi di spese, budget e abbonamenti e ricevi la risposta in schede.";
 "common.retry" = "Riprova";

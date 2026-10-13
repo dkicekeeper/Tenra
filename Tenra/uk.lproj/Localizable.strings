@@ -1889,6 +1889,7 @@
 "assistant.preset.compare" = "Порівняй з минулим місяцем";
 "assistant.preset.budgets" = "Як справи з бюджетами?";
 "assistant.preset.subscriptions" = "Скільки коштують мої підписки?";
+"assistant.preset.allowance" = "Скільки можна витрачати на день до зарплати?";
 "premium.locked.assistant.title" = "Асистент у Tenra Pro";
 "premium.locked.assistant.message" = "Запитуйте про витрати, бюджети й підписки та отримуйте відповідь картками.";
 "common.retry" = "Повторити";

@@ -1889,6 +1889,7 @@
 "assistant.preset.compare" = "Vergleiche mit dem Vormonat";
 "assistant.preset.budgets" = "Wie stehen meine Budgets?";
 "assistant.preset.subscriptions" = "Was kosten meine Abos?";
+"assistant.preset.allowance" = "Wie viel kann ich bis zum Zahltag pro Tag ausgeben?";
 "premium.locked.assistant.title" = "Assistent mit Tenra Pro";
 "premium.locked.assistant.message" = "Frag nach Ausgaben, Budgets und Abos und erhalte die Antwort als Karten.";
 "common.retry" = "Erneut versuchen";

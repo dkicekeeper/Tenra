@@ -219,4 +219,12 @@ export const CASES: EvalCase[] = [
     prompt: "How much can I spend per day until payday?",
     checks: [{ kind: "metricFrom", tool: "forecast_balance", pathEnds: "daily_allowance", args: untilPayday, label: "daily allowance until payday" }],
   },
+  {
+    id: "ru-open-category",
+    locale: "ru",
+    prompt: "Покажи, что у меня с кафе, хочу открыть эту категорию",
+    checks: [
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "category" && b.target_id === "cat_cafe", label: "opens the cafe category" },
+    ],
+  },
 ];

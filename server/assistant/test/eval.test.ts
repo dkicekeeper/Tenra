@@ -65,6 +65,18 @@ describe("grader", () => {
     expect(english.find((c) => c.name === "language")?.pass).toBe(false);
   });
 
+  it("checks open blocks against the app's ids", () => {
+    const open = (block: Record<string, unknown>): RunRecord => ({ calls: [], reply: { blocks: [{ type: "open", label: "Открыть", ...block }], mood: "idle", suggestions: [] } });
+    const refs = (r: RunRecord) => universalChecks(r, "ru").find((c) => c.name === "refs_resolve")?.pass;
+    expect(refs(open({ destination: "category", target_id: "cat_cafe" }))).toBe(true);
+    expect(refs(open({ destination: "history", target_id: null }))).toBe(true);
+    expect(refs(open({ destination: "category", target_id: "cat_made_up" }))).toBe(false);
+    expect(refs(open({ destination: "account", target_id: null }))).toBe(false);
+    const openCase = CASES.find((c) => c.id === "ru-open-category")!;
+    expect(caseCheck(open({ destination: "category", target_id: "cat_cafe" }), openCase.checks[0]!).pass).toBe(true);
+    expect(caseCheck(open({ destination: "analytics", target_id: null }), openCase.checks[0]!).pass).toBe(false);
+  });
+
   it("catches a claim that a draft was saved", () => {
     resetDrafts();
     const input = { items: [{ type: "expense", amount: 1500, currency: null, category: "кофе", account: "acc_kaspi", to_account: null, date: null, note: "Кофе" }] };

@@ -1,0 +1,34 @@
+name = "tenra-assistant"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# No request bodies or responses are logged. Workers observability keeps only
+# the metadata Cloudflare records itself (status, duration, colo).
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[vars]
+# Off switch: "false" makes every turn answer 503 `disabled` without calling Anthropic.
+ASSISTANT_ENABLED = "true"
+# Production model is chosen by the Phase 0 eval (docs/plan-ai-assistant.md §6).
+ASSISTANT_MODEL = "claude-opus-5-5"
+ASSISTANT_EFFORT = "low"
+ASSISTANT_MAX_TOKENS = "16000"
+# Model calls per user per calendar month (UTC). One user message is about 2-3 calls.
+PRO_MONTHLY_CALLS = "900"
+# 0 until App Attest is in place: a client-chosen id makes a free quota free for everyone.
+FREE_MONTHLY_CALLS = "0"
+# Circuit breaker on total spend: model calls per day across all users.
+GLOBAL_DAILY_CALLS = "5000"
+# Countries not served by the Anthropic API (anthropic.com/supported-countries).
+BLOCKED_COUNTRIES = "RU,BY"
+
+# Create once: `npx wrangler kv namespace create QUOTA`, then paste the id here.
+[[kv_namespaces]]
+binding = "QUOTA"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+# Secrets (never in this file): `npx wrangler secret put ANTHROPIC_API_KEY`
+# and `npx wrangler secret put REVENUECAT_SECRET_KEY`.

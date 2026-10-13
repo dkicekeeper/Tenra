@@ -207,6 +207,7 @@ New file needed?
 | `Tenra/Intents/**`, `Services/Intents/**`, Siri, App Shortcuts, the Wallet automation | [docs/domains/intents.md](docs/domains/intents.md) |
 | Adding a CoreData entity/attribute, bumping `Tenra.xcdatamodeld` | `/coredata-schema-bump` skill |
 | Open items, ideas, decisions that stand | [docs/backlog.md](docs/backlog.md) — delete a line when it lands, edit it when a decision changes |
+| The AI assistant: `server/assistant/**` (Cloudflare Worker, prompt, tools, eval), the app ↔ server protocol, the mascot, generative UI blocks | [docs/plan-ai-assistant.md](docs/plan-ai-assistant.md) (plan in flight; §3.7 protocol, §5.1 setup) |
 
 **Rule**: before editing files in a domain, Read the matching doc.
 

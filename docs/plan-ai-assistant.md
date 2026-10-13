@@ -369,17 +369,24 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
    `GET /v1/health` на выданном адресе `*.workers.dev`.
 
 **Фаза 1. «Спросить» (3-4 недели) → TestFlight как Tenra AI (beta)**
-- [ ] `FinanceToolkit` (чтение), `AgentBrain` (AppleOnDevice + Claude), прокси с квотами.
-- [ ] Бесплатный лимит: счётчик действий (`PremiumConfig`, Keychain), карточка Pro в чате с
-      продолжением шага после оформления; App Attest на сервере для облачной бесплатной квоты.
-- [ ] `ParticleCreature` в DesignKit по доске «Рой 2.0».
-- [ ] Каталог блоков v1: text, metric, chart, transactions, budgets, insight, suggestions.
-- [ ] Экран ассистента: пресеты, лента, композер.
+- [x] `FinanceToolkit` (чтение), прокси с квотами, App Attest на сервере и в приложении.
+- [ ] `AgentBrain` AppleOnDevice: русского и украинского в Apple Intelligence нет, поэтому
+      после облака; ApplePCC в фазе 3.
+- [x] Бесплатный лимит: счётчик ответов (`PremiumConfig`, Keychain), кнопка Pro в чате с
+      продолжением вопроса после оформления, строка «осталось N» над полем ввода.
+- [ ] `ParticleCreature` в DesignKit по доске «Рой 2.0»: DesignKit PR #60 (4.6.0) зелёный, ждёт
+      merge; после него Tenra переходит на 4.6.0 и ветка `claude/assistant-screen` вливается.
+- [x] Каталог блоков v1: text, metric, chart, transactions, budgets, insight, suggestions, а
+      также open, confirm и forecast (ветка `claude/assistant-screen`).
+- [x] Экран ассистента: пресеты, лента, композер, согласие на облако (та же ветка).
 - [ ] Предусловие: `VoiceInputService` сейчас жёстко на `ru-RU`, для ассистента распознавание
       должно следовать языку приложения.
 
 **Фаза 2. «Сделать» и вход через «+» (3-4 недели)**
-- [ ] Draft-инструменты, `ConfirmationCard`, отмена, FastPath через парсер.
+- [x] `draft_transactions`, `draft_budget`, карточка подтверждения, отмена после сохранения.
+- [ ] `draft_recurring`: сначала вынести создание подписки из `SubscriptionEditView` в сервис
+      (подкатегория по имени, напоминания, проверка курса), иначе у подписки будет два пути записи.
+- [ ] Правка полей черновика на карточке; FastPath через парсер.
 - [ ] «+» становится маскотом, ассистент открывается поверх вкладок; режим «Голос | Импорт» уходит.
 - [ ] Голос в чате: экран прослушивания, живая расшифровка, черновики.
 - [ ] Вложения: чек (камера, галерея), выписка (PDF, CSV), карточка итога, переход на экран проверки.
@@ -393,7 +400,8 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
 - [ ] ApplePCC в роутере (iOS 27).
 
 **Фаза 4. «Спланировать» (3-4 недели)**
-- [ ] `daily_allowance`, `simulate_cashflow`, блок forecast.
+- [x] `forecast_balance` (дневной лимит до даты, сценарии «а если») и блок forecast; пресет
+      «Сколько можно тратить в день до зарплаты?».
 - [ ] CoreData v13: цели (копилка), долги, треды и факты ассистента.
 - [ ] Siri iOS 27: intent schemas и View Annotations («Спроси Tenra, сколько осталось на еду»).
 

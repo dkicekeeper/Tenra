@@ -8,7 +8,9 @@
 //
 //  Read tools: spending summary, period comparison, search, accounts, budgets, recurring
 //  payments, insights. Heavy walks over the transactions run off the main actor on a snapshot.
-//  Planning (`forecast_balance`) and drafts land in later phases and answer "not available".
+//  `draft_transactions` resolves operations into a draft (AgentDraftBook) that the person
+//  saves on the confirm card. Planning (`forecast_balance`) and the budget and recurring drafts
+//  land in later phases and answer "not available".
 //
 
 import Foundation
@@ -16,17 +18,37 @@ import Foundation
 final class FinanceToolkit: AgentToolExecuting {
     private let store: TransactionStore
     private weak var insights: InsightsViewModel?
+    private let drafts: AgentDraftBook?
+    private let learned: VoiceLearningStore
+    private let suggestAccount: ((String) -> String?)?
     private let now: () -> Date
     private let calendar: Calendar
 
-    init(store: TransactionStore, insights: InsightsViewModel? = nil, now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
+    /// - Parameters:
+    ///   - drafts: where `draft_transactions` files its drafts; without it drafting answers
+    ///     "not available".
+    ///   - learned: the accounts the person confirmed per category in the voice flow.
+    ///   - suggestAccount: the account the history suggests for a category (by name), as the
+    ///     add-expense screen ranks them.
+    init(
+        store: TransactionStore,
+        insights: InsightsViewModel? = nil,
+        drafts: AgentDraftBook? = nil,
+        learned: VoiceLearningStore? = nil,
+        suggestAccount: ((String) -> String?)? = nil,
+        now: @escaping () -> Date = Date.init,
+        calendar: Calendar = .current
+    ) {
         self.store = store
         self.insights = insights
+        self.drafts = drafts
+        self.learned = learned ?? .shared
+        self.suggestAccount = suggestAccount
         self.now = now
         self.calendar = calendar
     }
 
-    static let laterPhaseTools: Set<String> = ["forecast_balance", "draft_transactions", "draft_budget", "draft_recurring"]
+    static let laterPhaseTools: Set<String> = ["forecast_balance", "draft_budget", "draft_recurring"]
 
     func execute(name: String, input: JSONValue) async -> AgentToolOutput {
         do {
@@ -38,8 +60,9 @@ final class FinanceToolkit: AgentToolExecuting {
             case "get_budgets": return .success(budgets())
             case "list_recurring": return .success(try recurring(input))
             case "get_insights": return .success(insightsResult())
+            case "draft_transactions": return try await draftTransactions(input)
             case _ where Self.laterPhaseTools.contains(name):
-                return .failure("\(name) is not available in this version of Tenra yet. Tell the user it is coming soon.")
+                return .failure(Self.notYet(name))
             default:
                 return .failure("Unknown tool \(name).")
             }
@@ -48,6 +71,10 @@ final class FinanceToolkit: AgentToolExecuting {
         } catch {
             return .failure("Invalid input for \(name): \(error.localizedDescription)")
         }
+    }
+
+    private static func notYet(_ name: String) -> String {
+        "\(name) is not available in this version of Tenra yet. Tell the user it is coming soon."
     }
 
     // MARK: - Snapshot
@@ -331,5 +358,183 @@ final class FinanceToolkit: AgentToolExecuting {
         result["available"] = .bool(available)
         if !available { result["note"] = "Insights are still being computed. Answer from the other tools." }
         return .object(result)
+    }
+
+    // MARK: - Drafts
+
+    private struct DraftItemInput: Decodable {
+        let type: String
+        let amount: Double
+        let currency: String?
+        let category: String?
+        let account: String?
+        let toAccount: String?
+        let date: String?
+        let note: String?
+
+        enum CodingKeys: String, CodingKey {
+            case type, amount, currency, category, account, date, note
+            case toAccount = "to_account"
+        }
+    }
+
+    private struct DraftTransactionsInput: Decodable {
+        let items: [DraftItemInput]
+    }
+
+    /// `draft_transactions`: resolves each operation the way the voice and Siri paths do
+    /// (`TransactionDraftService.makeDraft`) and files the ones that resolved as one draft.
+    /// An operation that cannot be drafted (no amount, no account, no exchange rate) comes
+    /// back under `skipped` with the reason. The result has the shape the eval simulates
+    /// (server/assistant/eval/simulator.ts), plus `guessed` for what the phone filled in.
+    private func draftTransactions(_ input: JSONValue) async throws -> AgentToolOutput {
+        guard let drafts else { return .failure(Self.notYet("draft_transactions")) }
+        let args = try input.decoded(as: DraftTransactionsInput.self)
+        guard !args.items.isEmpty else { throw FinanceToolError(message: "items must not be empty.") }
+        var operations: [AgentDraftOperation] = []
+        var items: [JSONValue] = []
+        var skipped: [JSONValue] = []
+        for (index, item) in args.items.enumerated() {
+            switch await draftOperation(item) {
+            case .success(let operation):
+                operations.append(operation)
+                items.append(describe(operation))
+            case .failure(let error):
+                skipped.append(["index": .number(Double(index)), "reason": .string(error.message)])
+            }
+        }
+        guard !operations.isEmpty else {
+            let reasons = skipped.compactMap { $0["reason"]?.stringValue }.joined(separator: "; ")
+            return .failure("Nothing could be drafted: \(reasons). Ask the user for what is missing.")
+        }
+        let id = drafts.add(operations)
+        return .success(["draft_id": .string(id), "items": .array(items), "skipped": .array(skipped), "saved": false])
+    }
+
+    private func draftOperation(_ item: DraftItemInput) async -> Result<AgentDraftOperation, FinanceToolError> {
+        guard item.amount.isFinite, item.amount > 0 else { return .failure(FinanceToolError(message: "amount must be positive")) }
+        let date = item.date.flatMap { FastDateParser.date(from: $0) } ?? now()
+        let note = item.note ?? ""
+        let currency = item.currency.map { $0.uppercased() }
+        switch item.type {
+        case "expense", "income":
+            let operation = ParsedOperation(
+                type: item.type == "income" ? .income : .expense,
+                amount: Decimal(string: String(item.amount)) ?? Decimal(item.amount),
+                currencyCode: currency,
+                date: date,
+                accountId: item.account.flatMap { resolveAccount($0, in: store.accounts) }?.id,
+                categoryName: item.category.map { name in store.categories.first { $0.id == name }?.name ?? name },
+                note: note
+            )
+            var result = makeDraft(operation, conversion: .cachedOnly)
+            // The person is in the app: a missing cached rate is worth a network request.
+            if case .failure(.needsFXConversion(let amount, let from, let to)) = result {
+                let converted = await CurrencyConverter.convert(amount: amount, from: from, to: to)
+                result = makeDraft(operation, conversion: .provided(converted))
+            }
+            switch result {
+            case .success(let draft):
+                return .success(.single(draft))
+            case .failure(.missingAmount):
+                return .failure(FinanceToolError(message: "amount must be positive"))
+            case .failure(.noEligibleAccount):
+                return .failure(FinanceToolError(message: "the user has no regular account to record it on"))
+            case .failure(.needsFXConversion(_, let from, let to)):
+                return .failure(FinanceToolError(message: "no exchange rate from \(from) to \(to)"))
+            }
+        case "transfer":
+            let eligible = store.accounts.filter { !$0.isLoan && !$0.isDeposit }
+            guard let from = item.account.flatMap({ resolveAccount($0, in: eligible) }),
+                  let to = item.toAccount.flatMap({ resolveAccount($0, in: eligible) }),
+                  from.id != to.id else {
+                return .failure(FinanceToolError(message: "a transfer needs two different regular accounts in account and to_account"))
+            }
+            let currency = currency ?? from.currency
+            func fields() -> TransactionConversion? {
+                TransactionConversion.transfer(
+                    amount: item.amount,
+                    currency: currency,
+                    sourceCurrency: from.currency,
+                    targetCurrency: to.currency,
+                    convert: TransactionConversion.cachedRate
+                )
+            }
+            var conversion = fields()
+            if conversion == nil {
+                await TransactionConversion.loadRates([currency, from.currency, to.currency])
+                conversion = fields()
+            }
+            guard let conversion else {
+                return .failure(FinanceToolError(message: "no exchange rate for \(currency)"))
+            }
+            return .success(.transfer(AgentTransferDraft(
+                fromAccountId: from.id,
+                toAccountId: to.id,
+                amount: item.amount,
+                currency: currency,
+                conversion: conversion,
+                date: date,
+                note: note
+            )))
+        default:
+            return .failure(FinanceToolError(message: "type must be expense, income or transfer"))
+        }
+    }
+
+    private func makeDraft(_ operation: ParsedOperation, conversion: ConversionPolicy) -> Result<TransactionDraft, DraftIssue> {
+        TransactionDraftService.makeDraft(
+            from: operation,
+            accounts: store.accounts,
+            categories: store.categories,
+            learned: learned,
+            conversion: conversion,
+            suggestAccount: suggestAccount
+        )
+    }
+
+    /// An account by id, else by name ignoring case: the model has the ids, a person may
+    /// name the account.
+    private func resolveAccount(_ reference: String, in accounts: [Account]) -> Account? {
+        if let byId = accounts.first(where: { $0.id == reference }) { return byId }
+        let name = reference.lowercased()
+        return accounts.first { $0.name.lowercased() == name }
+    }
+
+    /// What the draft will write, for the model to describe and point the confirm block at.
+    private func describe(_ operation: AgentDraftOperation) -> JSONValue {
+        func accountName(_ id: String) -> String? { store.accounts.first { $0.id == id }?.name }
+        switch operation {
+        case .single(let draft):
+            var guessed: [JSONValue] = []
+            if draft.warnings.contains(.accountInferred) { guessed.append("account") }
+            if draft.warnings.contains(where: { if case .categorySubstituted = $0 { true } else { false } }) { guessed.append("category") }
+            let categoryId = store.categories.first { $0.name == draft.categoryName && $0.type == draft.type }?.id
+            return [
+                "type": .string(draft.type == .income ? "income" : "expense"),
+                "amount": .number(FinanceToolkitCompute.round2(draft.amount)),
+                "currency": .string(draft.currency),
+                "category_id": categoryId.map(JSONValue.string) ?? .null,
+                "category": draft.categoryName.isEmpty ? .null : .string(draft.categoryName),
+                "account_id": .string(draft.accountId),
+                "account": accountName(draft.accountId).map(JSONValue.string) ?? .null,
+                "date": .string(FastDateParser.string(from: draft.date)),
+                "note": draft.note.isEmpty ? .null : .string(draft.note),
+                "guessed": .array(guessed),
+            ]
+        case .transfer(let transfer):
+            return [
+                "type": "transfer",
+                "amount": .number(FinanceToolkitCompute.round2(transfer.amount)),
+                "currency": .string(transfer.currency),
+                "account_id": .string(transfer.fromAccountId),
+                "account": accountName(transfer.fromAccountId).map(JSONValue.string) ?? .null,
+                "to_account_id": .string(transfer.toAccountId),
+                "to_account": accountName(transfer.toAccountId).map(JSONValue.string) ?? .null,
+                "date": .string(FastDateParser.string(from: transfer.date)),
+                "note": transfer.note.isEmpty ? .null : .string(transfer.note),
+                "guessed": [],
+            ]
+        }
     }
 }

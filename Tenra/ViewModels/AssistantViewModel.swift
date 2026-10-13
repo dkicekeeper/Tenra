@@ -53,6 +53,8 @@ final class AssistantViewModel {
     private(set) var replyMood: AgentMood = .idle
     /// The free allowance; nil with Pro.
     private(set) var allowance: AssistantAllowance.Status?
+    /// The drafts the replies' confirm cards save; nil where drafting is not wired.
+    @ObservationIgnored let drafts: AgentDraftBook?
 
     @ObservationIgnored private let conversation: AgentConversation
     @ObservationIgnored private let context: () -> String
@@ -60,10 +62,11 @@ final class AssistantViewModel {
     @ObservationIgnored private var failedEntryId: UUID?
     @ObservationIgnored private let access: Access
 
-    init(conversation: AgentConversation, context: @escaping () -> String, access: Access = .unlimited) {
+    init(conversation: AgentConversation, context: @escaping () -> String, access: Access = .unlimited, drafts: AgentDraftBook? = nil) {
         self.conversation = conversation
         self.context = context
         self.access = access
+        self.drafts = drafts
         refreshAllowance()
     }
 

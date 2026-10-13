@@ -1562,6 +1562,8 @@
 "insights.savingsRate.band.belowTarget" = "Abaixo da meta de 20%";
 "insights.savingsRate.band.low" = "Menos de 10%";
 "insights.savingsRate.band.deficit" = "Gastos maiores que a renda";
+"insights.largeTransaction.timesUsual" = "%@ vezes o habitual";
+"insights.budgetHeadroom.leftOf" = "Restam de %@";
 
 "insights.health.unavailable.title" = "Dados insuficientes";
 "insights.health.unavailable.message" = "Adicione transações de receita e despesa: avaliaremos sua saúde financeira assim que houver dados suficientes.";

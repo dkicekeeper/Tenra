@@ -61,7 +61,9 @@ struct DepositsCardView: View {
                     iconSource: deposit.iconSource,
                     amount: max(balancesById[deposit.id] ?? 0, 0)
                 )
-            }
+            },
+            // App icons in a pocket (DesignKit 4.4.0), centred in the card (4.5.0).
+            style: .shelf
         )
     }
 

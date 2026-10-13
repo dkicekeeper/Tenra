@@ -1562,6 +1562,8 @@
 "insights.savingsRate.band.belowTarget" = "Below the 20% target";
 "insights.savingsRate.band.low" = "Under 10%";
 "insights.savingsRate.band.deficit" = "Spending more than you earn";
+"insights.largeTransaction.timesUsual" = "%@× the usual";
+"insights.budgetHeadroom.leftOf" = "Left of %@";
 
 "insights.health.unavailable.title" = "Not enough data";
 "insights.health.unavailable.message" = "Add income and expense transactions. We'll evaluate your financial health once enough data is available.";

@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Asking Ten from where the question comes up (docs/plan-ai-assistant.md §3.8, context entry
-//  points): an account, a category, an insight, the history. The screen names its topic
+//  points): an account, a category, an insight, the history, a goal, a debt. The screen names its topic
 //  (`AppCoordinator.ask(about:)`), the assistant opens over the tabs with ready-made questions
 //  about it in place of its general ones; nothing is sent before the person picks one or types.
 //  The entries show only where the assistant works (`AssistantAvailability`).
@@ -24,6 +24,8 @@ enum AssistantTopic: Equatable, Sendable {
     case category(name: String, isIncome: Bool)
     case insight(title: String)
     case history
+    case goal(name: String)
+    case debt(person: String, owedToMe: Bool)
 
     /// Ready-made questions about it, in the app's language.
     var questions: [String] {
@@ -54,6 +56,14 @@ enum AssistantTopic: Equatable, Sendable {
                 String(localized: "assistant.topic.history.unusual"),
                 String(localized: "assistant.preset.compare"),
             ]
+        case .goal(let name):
+            return [
+                String(format: String(localized: "assistant.topic.goal.onTrack"), name),
+                String(format: String(localized: "assistant.topic.goal.faster"), name),
+            ]
+        case .debt(let person, let owedToMe):
+            let status = String(format: String(localized: "assistant.topic.debt.status"), person)
+            return owedToMe ? [status] : [status, String(format: String(localized: "assistant.topic.debt.plan"), person)]
         }
     }
 }

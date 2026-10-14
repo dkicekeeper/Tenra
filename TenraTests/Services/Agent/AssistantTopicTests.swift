@@ -18,6 +18,9 @@ struct AssistantTopicTests {
         .category(name: "Кафе", isIncome: false),
         .category(name: "Зарплата", isIncome: true),
         .insight(title: "Траты на кафе выросли"),
+        .goal(name: "Машина"),
+        .debt(person: "Асхат", owedToMe: true),
+        .debt(person: "Мама", owedToMe: false),
     ])
     func aTopicAsksAboutWhatItNames(_ topic: AssistantTopic) {
         let name: String
@@ -26,6 +29,8 @@ struct AssistantTopicTests {
         case .category(let value, _): name = value
         case .insight(let value): name = value
         case .history: name = ""
+        case .goal(let value): name = value
+        case .debt(let value, _): name = value
         }
         #expect(!topic.questions.isEmpty)
         #expect(topic.questions.allSatisfy { $0.contains(name) })

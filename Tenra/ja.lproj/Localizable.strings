@@ -2040,3 +2040,15 @@
 "debt.notFoundDescription" = "削除された可能性があります。";
 "moneyEntry.notePlaceholder" = "メモ";
 "moneyEntry.invalidAmount" = "金額を入力してください";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "目標と貸し借りを確認しています…";
+"assistant.notice.debt.owedToMe" = "明日が%@の返済期限です";
+"assistant.notice.debt.iOwe" = "明日、%@を返す期限です";
+"assistant.notice.ask.debt" = "%@との貸し借りを確認して";
+"assistant.notice.goal.behind" = "%2$@までに達成するには毎月%1$@を貯めましょう";
+"assistant.notice.ask.goal" = "「%@」の遅れを取り戻すには？";
+"assistant.topic.goal.onTrack" = "「%@」は順調ですか？";
+"assistant.topic.goal.faster" = "「%@」をもっと早く貯めるには？";
+"assistant.topic.debt.status" = "%@との貸し借りはあといくら残っていますか？";
+"assistant.topic.debt.plan" = "%@に期限内に返すには？";

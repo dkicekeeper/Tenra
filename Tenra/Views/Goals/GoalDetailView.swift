@@ -88,6 +88,7 @@ struct GoalDetailView: View {
                 }
             },
             toolbarMenu: {
+                AskAssistantMenuItem(topic: .goal(name: goal.name))
                 Button {
                     HapticManager.selection()
                     showingEdit = true

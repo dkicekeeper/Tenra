@@ -7,7 +7,9 @@ import {
   BASE_CURRENCY,
   BUDGETS,
   CATEGORIES,
+  DEBTS,
   FACTS,
+  GOALS,
   LOAN_TERMS,
   RECURRING,
   TODAY,
@@ -275,8 +277,11 @@ function resolveAccount(value: string | null | undefined): string {
 }
 
 let draftSeq = 0;
-export function resetDrafts() {
+// The case's language: goal and person names come back in it.
+let caseLocale: "ru" | "en" = "ru";
+export function resetDrafts(locale: "ru" | "en" = "ru") {
   draftSeq = 0;
+  caseLocale = locale;
 }
 
 function draftTransactions(input: Input) {
@@ -467,6 +472,189 @@ function draftFact(input: Input) {
   return { draft_id: `draft_${++draftSeq}`, action: previous ? "change" : "remember", text, replaces, previous_text: previous?.text ?? null, saved: false };
 }
 
+// Goals and debts, as FinanceToolkit+Plans.swift does: GoalProgress's months (the current one
+// counted, at least 1), a goal with an account follows its balance, new debts need Pro (the
+// eval's user has it).
+function monthsLeft(deadline: string): number | null {
+  if (deadline < TODAY) return null;
+  const parts = (date: string) => date.split("-").map(Number) as [number, number, number];
+  const [ty, tm, td] = parts(TODAY);
+  const [dy, dm, dd] = parts(deadline);
+  let months = (dy - ty) * 12 + (dm - tm);
+  let days = dd - td;
+  if (days < 0) {
+    months -= 1;
+    days = 1;
+  }
+  return Math.max(1, months + (days > 0 ? 1 : 0));
+}
+
+const goalSaved = (g: (typeof GOALS)[number]) => (g.accountId ? Math.max(0, balanceOf(g.accountId)) : g.contributed);
+
+function goalStatus(g: (typeof GOALS)[number], extra = 0) {
+  const saved = goalSaved(g) + extra;
+  const reached = saved >= g.target;
+  const left = reached ? 0 : g.target - saved;
+  const months = g.deadline && !reached ? monthsLeft(g.deadline) : null;
+  return { saved, left, reached, months, monthly: months ? round(left / months) : null, overdue: !!g.deadline && !reached && months === null };
+}
+
+function getGoals() {
+  const goals = GOALS.map((g) => {
+    const s = goalStatus(g);
+    return {
+      id: g.id,
+      name: g.name[caseLocale],
+      currency: g.currency,
+      target: g.target,
+      saved: round(s.saved),
+      left: round(s.left),
+      percent: Math.round(Math.min(1, s.saved / g.target) * 100),
+      reached: s.reached,
+      deadline: g.deadline,
+      months_left: s.months,
+      monthly: s.monthly,
+      overdue: s.overdue,
+      account_id: g.accountId,
+      account: g.accountId ? accountName(g.accountId) : null,
+    };
+  });
+  return { goals, total_saved: round(GOALS.reduce((n, g) => n + toBase(goalSaved(g), g.currency), 0)), currency: BASE_CURRENCY };
+}
+
+function getDebts() {
+  const debts = DEBTS.map((d) => ({
+    id: d.id,
+    direction: d.direction,
+    person: d.person[caseLocale],
+    currency: d.currency,
+    amount: d.amount,
+    repaid: d.repaid,
+    remaining: d.amount - d.repaid,
+    date: d.date,
+    due_date: d.dueDate,
+    overdue: !!d.dueDate && d.dueDate < TODAY,
+    settled: false,
+    settled_on: null,
+    note: null,
+  }));
+  const total = (direction: string) => DEBTS.filter((d) => d.direction === direction).reduce((n, d) => n + toBase(d.amount - d.repaid, d.currency), 0);
+  return { debts, owed_to_me: total("owed_to_me"), i_owe: total("i_owe"), currency: BASE_CURRENCY };
+}
+
+function positive(input: Input, key: string): number {
+  const value = input[key];
+  if (typeof value !== "number" || !(value > 0)) throw new ToolInputError(`${key} must be positive.`);
+  return value;
+}
+
+function pastOrToday(input: Input, key: string): string {
+  const date = dateArg(input, key) ?? TODAY;
+  if (date > TODAY) throw new ToolInputError(`${key} cannot be in the future.`);
+  return date;
+}
+
+function draftGoal(input: Input) {
+  const name = (str(input, "name", true) ?? "").trim();
+  if (!name) throw new ToolInputError("name is required.");
+  const target = positive(input, "target");
+  const deadline = dateArg(input, "deadline") ?? null;
+  if (deadline && deadline < TODAY) throw new ToolInputError("deadline cannot be in the past.");
+  const accountRef = str(input, "account");
+  const account = accountRef ? ACCOUNTS.find((a) => (a.id === accountRef || a.name.toLowerCase() === accountRef.toLowerCase()) && a.kind !== "loan") : undefined;
+  if (accountRef && !account) throw new ToolInputError(`Unknown account ${accountRef}. Use an account id from <app_context> (not a loan).`);
+  const already = typeof input.already_saved === "number" ? input.already_saved : 0;
+  if (already < 0) throw new ToolInputError("already_saved cannot be negative.");
+  if (account && already > 0) throw new ToolInputError("already_saved is for a goal without an account: a goal with an account follows its balance.");
+  const currency = str(input, "currency")?.toUpperCase() || account?.currency || BASE_CURRENCY;
+  const saved = account ? Math.max(0, balanceOf(account.id)) : already;
+  const left = Math.max(0, target - saved);
+  const months = deadline && saved < target ? monthsLeft(deadline) : null;
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    name,
+    target,
+    currency,
+    deadline,
+    account_id: account?.id ?? null,
+    account: account?.name ?? null,
+    saved_amount: round(saved),
+    left: round(left),
+    months_left: months,
+    monthly: months ? round(left / months) : null,
+    saved: false,
+  };
+}
+
+function draftGoalContribution(input: Input) {
+  const ref = str(input, "goal", true) ?? "";
+  const goal = GOALS.find((g) => g.id === ref || g.name.ru.toLowerCase() === ref.toLowerCase() || g.name.en.toLowerCase() === ref.toLowerCase());
+  if (!goal) throw new ToolInputError(`Unknown goal ${ref}. Use a goal id from <app_context>.`);
+  if (goal.accountId) {
+    throw new ToolInputError(`The goal ${goal.name[caseLocale]} follows the balance of the account ${accountName(goal.accountId)}. Money towards it is a transfer to that account: use draft_transactions with type transfer.`);
+  }
+  const amount = positive(input, "amount");
+  const date = pastOrToday(input, "date");
+  const after = goalStatus(goal, amount);
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    goal_id: goal.id,
+    goal: goal.name[caseLocale],
+    amount,
+    currency: goal.currency,
+    date,
+    saved_amount_after: round(after.saved),
+    left_after: round(after.left),
+    reaches_target: after.reached,
+    saved: false,
+  };
+}
+
+function draftDebt(input: Input) {
+  const direction = str(input, "direction", true);
+  if (direction !== "owed_to_me" && direction !== "i_owe") throw new ToolInputError("direction must be owed_to_me or i_owe.");
+  const person = (str(input, "person", true) ?? "").trim();
+  if (!person) throw new ToolInputError("person is required.");
+  const amount = positive(input, "amount");
+  const date = pastOrToday(input, "date");
+  const due = dateArg(input, "due_date") ?? null;
+  if (due && due < date) throw new ToolInputError("due_date cannot be before date.");
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    direction,
+    person,
+    amount,
+    currency: str(input, "currency")?.toUpperCase() || BASE_CURRENCY,
+    date,
+    due_date: due,
+    note: str(input, "note") ?? null,
+    saved: false,
+  };
+}
+
+function draftDebtRepayment(input: Input) {
+  const ref = (str(input, "debt", true) ?? "").trim();
+  const debt =
+    DEBTS.find((d) => d.id === ref) ??
+    DEBTS.find((d) => d.person.ru.toLowerCase() === ref.toLowerCase() || d.person.en.toLowerCase() === ref.toLowerCase());
+  if (!debt) throw new ToolInputError(`No open debt ${ref}. Use a debt id from <app_context>.`);
+  const remaining = debt.amount - debt.repaid;
+  const amount = input.amount === null || input.amount === undefined ? remaining : positive(input, "amount");
+  if (amount > remaining + 0.005) throw new ToolInputError(`That is more than what is left on this debt (${remaining} ${debt.currency}).`);
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    debt_id: debt.id,
+    person: debt.person[caseLocale],
+    direction: debt.direction,
+    amount,
+    currency: debt.currency,
+    date: pastOrToday(input, "date"),
+    remaining_after: round(remaining - amount),
+    settles: remaining - amount < 0.005,
+    saved: false,
+  };
+}
+
 const HANDLERS: Record<string, (input: Input) => unknown> = {
   get_spending_summary: spendingSummary,
   compare_periods: comparePeriods,
@@ -482,6 +670,12 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_budget: draftBudget,
   draft_recurring: draftRecurring,
   draft_fact: draftFact,
+  get_goals: getGoals,
+  get_debts: getDebts,
+  draft_goal: draftGoal,
+  draft_goal_contribution: draftGoalContribution,
+  draft_debt: draftDebt,
+  draft_debt_repayment: draftDebtRepayment,
 };
 
 export function executeTool(name: string, input: Input): unknown {
@@ -491,4 +685,4 @@ export function executeTool(name: string, input: Input): unknown {
 }
 
 // Direct access for ground truths in cases.
-export const simulate = { spendingSummary, comparePeriods, getAccounts, getBudgets, listRecurring, forecastBalance, simulateLoan, projectSavings };
+export const simulate = { spendingSummary, comparePeriods, getAccounts, getBudgets, listRecurring, forecastBalance, simulateLoan, projectSavings, getGoals, getDebts };

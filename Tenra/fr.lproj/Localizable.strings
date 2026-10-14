@@ -2040,3 +2040,15 @@
 "debt.notFoundDescription" = "Elle a peut-être été supprimée.";
 "moneyEntry.notePlaceholder" = "Note";
 "moneyEntry.invalidAmount" = "Saisissez un montant";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "Je regarde les objectifs et les dettes…";
+"assistant.notice.debt.owedToMe" = "%@ doit vous être rendu demain";
+"assistant.notice.debt.iOwe" = "Demain, vous devez rembourser %@";
+"assistant.notice.ask.debt" = "Analyse la dette avec %@";
+"assistant.notice.goal.behind" = "Mettez de côté %1$@ par mois pour y arriver d’ici le %2$@";
+"assistant.notice.ask.goal" = "Comment rattraper mon retard sur « %@ » ?";
+"assistant.topic.goal.onTrack" = "Suis-je dans les temps pour « %@ » ?";
+"assistant.topic.goal.faster" = "Comment épargner plus vite pour « %@ » ?";
+"assistant.topic.debt.status" = "Combien reste-t-il sur la dette avec %@ ?";
+"assistant.topic.debt.plan" = "Comment rembourser %@ à temps ?";

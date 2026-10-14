@@ -2040,3 +2040,15 @@
 "debt.notFoundDescription" = "삭제되었을 수 있어요.";
 "moneyEntry.notePlaceholder" = "메모";
 "moneyEntry.invalidAmount" = "금액을 입력하세요";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "목표와 빌린 돈을 확인하는 중…";
+"assistant.notice.debt.owedToMe" = "내일 %@ 돌려받는 날이에요";
+"assistant.notice.debt.iOwe" = "내일 %@ 갚는 날이에요";
+"assistant.notice.ask.debt" = "%@ 관련 기록을 정리해 줘";
+"assistant.notice.goal.behind" = "%2$@까지 달성하려면 매달 %1$@씩 모아야 해요";
+"assistant.notice.ask.goal" = "“%@” 목표를 어떻게 따라잡을까?";
+"assistant.topic.goal.onTrack" = "“%@” 목표는 잘 가고 있어?";
+"assistant.topic.goal.faster" = "“%@”를 더 빨리 모으려면?";
+"assistant.topic.debt.status" = "%@ 관련해서 얼마나 남았어?";
+"assistant.topic.debt.plan" = "%@에게 기한 안에 갚으려면?";

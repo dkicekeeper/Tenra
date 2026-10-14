@@ -13,26 +13,35 @@
 //  `project_savings` grows regular saving at an assumed return (SavingsProjection).
 //  `draft_transactions`, `draft_budget` and `draft_recurring` file drafts (AgentDraftBook)
 //  that the person saves on the confirm card; `draft_fact` files a fact to remember, change or
-//  forget (AgentMemory) the same way.
+//  forget (AgentMemory) the same way. Savings goals and personal debts have their own read and
+//  draft tools (FinanceToolkit+Plans.swift).
 //
 
 import Foundation
 
 final class FinanceToolkit: AgentToolExecuting {
-    private let store: TransactionStore
+    // Internal (not private) where FinanceToolkit+Plans.swift reads them.
+    let store: TransactionStore
     private weak var insights: InsightsViewModel?
-    private let drafts: AgentDraftBook?
+    let drafts: AgentDraftBook?
     private let memory: AgentMemory?
+    let goals: GoalStore?
+    let debts: DebtStore?
+    /// Debts are Tenra Pro: `draft_debt` asks before filing one.
+    let isPro: () -> Bool
     private let learned: VoiceLearningStore
     private let suggestAccount: ((String) -> String?)?
-    private let now: () -> Date
-    private let calendar: Calendar
+    let now: () -> Date
+    let calendar: Calendar
 
     /// - Parameters:
     ///   - drafts: where `draft_transactions` files its drafts; without it drafting answers
     ///     "not available".
     ///   - memory: the facts `draft_fact` checks a new one against; without it remembering
     ///     answers "not available".
+    ///   - goals, debts: the savings goals and personal debts; without them their tools answer
+    ///     "not available".
+    ///   - isPro: whether the person has Tenra Pro (new debts need it).
     ///   - learned: the accounts the person confirmed per category in the voice flow.
     ///   - suggestAccount: the account the history suggests for a category (by name), as the
     ///     add-expense screen ranks them.
@@ -41,6 +50,9 @@ final class FinanceToolkit: AgentToolExecuting {
         insights: InsightsViewModel? = nil,
         drafts: AgentDraftBook? = nil,
         memory: AgentMemory? = nil,
+        goals: GoalStore? = nil,
+        debts: DebtStore? = nil,
+        isPro: @escaping () -> Bool = { true },
         learned: VoiceLearningStore? = nil,
         suggestAccount: ((String) -> String?)? = nil,
         now: @escaping () -> Date = Date.init,
@@ -50,6 +62,9 @@ final class FinanceToolkit: AgentToolExecuting {
         self.insights = insights
         self.drafts = drafts
         self.memory = memory
+        self.goals = goals
+        self.debts = debts
+        self.isPro = isPro
         self.learned = learned ?? .shared
         self.suggestAccount = suggestAccount
         self.now = now
@@ -76,6 +91,12 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_budget": return try draftBudget(input)
             case "draft_recurring": return try draftRecurring(input)
             case "draft_fact": return try await draftFact(input)
+            case "get_goals": return try await goalsResult()
+            case "get_debts": return try await debtsResult()
+            case "draft_goal": return try await draftGoal(input)
+            case "draft_goal_contribution": return try await draftGoalContribution(input)
+            case "draft_debt": return try await draftDebt(input)
+            case "draft_debt_repayment": return try await draftDebtRepayment(input)
             case _ where Self.laterPhaseTools.contains(name):
                 return .failure(Self.notYet(name))
             default:
@@ -88,7 +109,7 @@ final class FinanceToolkit: AgentToolExecuting {
         }
     }
 
-    private static func notYet(_ name: String) -> String {
+    static func notYet(_ name: String) -> String {
         "\(name) is not available in this version of Tenra yet. Tell the user it is coming soon."
     }
 
@@ -1098,7 +1119,7 @@ final class FinanceToolkit: AgentToolExecuting {
 
     /// An account by id, else by name ignoring case: the model has the ids, a person may
     /// name the account.
-    private func resolveAccount(_ reference: String, in accounts: [Account]) -> Account? {
+    func resolveAccount(_ reference: String, in accounts: [Account]) -> Account? {
         if let byId = accounts.first(where: { $0.id == reference }) { return byId }
         let name = reference.lowercased()
         return accounts.first { $0.name.lowercased() == name }
@@ -1165,6 +1186,8 @@ final class FinanceToolkit: AgentToolExecuting {
                 "text": fact.text.map(JSONValue.string) ?? .null,
                 "replaces": fact.replaces.map { JSONValue.string($0.id) } ?? .null,
             ]
+        case .goal, .goalContribution, .debt, .debtRepayment:
+            return describePlan(operation)
         }
     }
 }

@@ -2040,3 +2040,15 @@
 "debt.notFoundDescription" = "It may have been deleted.";
 "moneyEntry.notePlaceholder" = "Note";
 "moneyEntry.invalidAmount" = "Enter an amount";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "Checking goals and debts…";
+"assistant.notice.debt.owedToMe" = "%@ is due back tomorrow";
+"assistant.notice.debt.iOwe" = "Tomorrow you are due to pay back %@";
+"assistant.notice.ask.debt" = "Go through the debt with %@";
+"assistant.notice.goal.behind" = "Put aside %1$@ a month to make it by %2$@";
+"assistant.notice.ask.goal" = "How do I catch up on “%@”?";
+"assistant.topic.goal.onTrack" = "Am I on track for “%@”?";
+"assistant.topic.goal.faster" = "How can I save for “%@” faster?";
+"assistant.topic.debt.status" = "How much is left on the debt with %@?";
+"assistant.topic.debt.plan" = "How do I pay %@ back on time?";

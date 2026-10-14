@@ -190,6 +190,10 @@ const block = (type: string, properties: Record<string, unknown>) =>
   strictObject({ type: { type: "string", const: type }, ...properties });
 
 export const RENDER_REPLY = "render_reply";
+// What the app answers a render_reply sent next to other tool calls (AgentProtocol in
+// Tenra/Services/Agent/AgentWire.swift); the eval sends the same.
+export const RENDER_REPLY_TOO_EARLY =
+  "render_reply was called together with other tools, before their results existed, so nothing was shown. Call render_reply again, alone, pointing at the results above.";
 
 // Not strict: the API compiles strict schemas into one grammar and refuses this block union
 // ("compiled grammar is too large"), failing every request. The app decodes each block on

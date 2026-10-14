@@ -3,8 +3,9 @@
 //  TenraTests
 //
 //  The assistant loop with a scripted server and a fake toolkit: tools run on the phone,
-//  history stays append-only, results owed for `render_reply` open the next message, and a
-//  refused, truncated or failed turn leaves no trace.
+//  history stays append-only, results owed for `render_reply` open the next message, a reply
+//  sent next to other tools goes back as an error, and a refused, truncated or failed turn
+//  leaves no trace.
 //
 
 import Foundation
@@ -77,6 +78,25 @@ struct AgentConversationTests {
         }
         #expect(toolkit.executed.isEmpty)
         #expect(conversation.messages.isEmpty)
+    }
+
+    @Test func aReplyNextToOtherToolsIsSentBack() async throws {
+        let transport = ScriptedTransport([
+            [AgentScript.done([AgentScript.toolUse("toolu_1", "get_accounts"), AgentScript.render("toolu_2", source: "toolu_guess")])],
+            [AgentScript.done([AgentScript.render("toolu_3", source: "toolu_1")])],
+        ])
+        let toolkit = FakeToolkit()
+        let conversation = AgentConversation(transport: transport, toolkit: toolkit)
+
+        let outcome = try await conversation.send("Сколько у меня денег?")
+
+        #expect(toolkit.executed == ["get_accounts"])
+        #expect(transport.calls.count == 2)
+        let results = transport.calls[1][2].content
+        #expect(results.first?["tool_use_id"] == "toolu_1")
+        #expect(results.last?["tool_use_id"] == "toolu_2")
+        #expect(results.last?["is_error"] == .bool(true))
+        #expect(outcome.reply.blocks.last?.source == "toolu_1")
     }
 
     @Test func toolFailuresGoBackAsErrors() async throws {

@@ -113,8 +113,14 @@ final class AgentConversation {
 
             var resultBlocks: [JSONValue] = []
             var reply: AgentReply?
+            // render_reply must come alone: next to other calls it can only guess their ids.
+            let replyTooEarly = uses.count > 1
             for use in uses {
                 if use.name == AgentProtocol.renderReplyTool {
+                    if replyTooEarly {
+                        resultBlocks.append(AgentToolResult(toolUseId: use.id, content: AgentProtocol.renderReplyTooEarly, isError: true).block)
+                        continue
+                    }
                     guard let decoded = try? use.input.decoded(as: AgentReply.self) else { throw AgentConversationError.invalidReply }
                     reply = decoded
                     resultBlocks.append(AgentToolResult(toolUseId: use.id, content: "shown", isError: false).block)

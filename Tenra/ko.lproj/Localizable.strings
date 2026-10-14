@@ -1967,3 +1967,22 @@
 "assistant.memory.full" = "텐은 최대 %lld개까지 기억해요. 새로 추가하려면 하나를 잊어 주세요.";
 "assistant.memory.duplicate" = "텐이 이미 기억하고 있어요.";
 "assistant.memory.gone" = "이 정보는 더 이상 기억에 없어요.";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "좋은 아침이에요!";
+"assistant.chatter.afternoon" = "안녕하세요!";
+"assistant.chatter.evening" = "좋은 저녁이에요!";
+"assistant.chatter.night" = "쉿… 늦었어요";
+"assistant.chatter.askMe" = "무엇이든 물어보세요";
+"assistant.chatter.hmm" = "음…";
+"assistant.chatter.counting" = "계산 중…";
+"assistant.chatter.looking" = "잠깐 볼게요…";
+"assistant.chatter.yay" = "야호!";
+"assistant.chatter.offline" = "연결이 없어요…";
+"assistant.chatter.unclear" = "잘 모르겠어요. 다시 한 번?";
+"assistant.chatter.tickles" = "간지러워요!";
+"assistant.chatter.here" = "여기 있어요!";
+"assistant.chatter.help" = "무엇을 도와드릴까요?";
+"assistant.chatter.hehe" = "헤헤";
+"assistant.chatter.dizzy" = "어지러워요!";
+"settings.assistant.chatter" = "텐의 수다";

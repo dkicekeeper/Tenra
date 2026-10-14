@@ -3,14 +3,16 @@
 //  Tenra
 //
 //  Settings → Assistant, where the assistant works (AssistantAvailability): cloud answers (the
-//  consent the chat asks for before the first question; turned off, it asks again) and "What
-//  Ten knows about me", the facts it remembers (AssistantMemoryView).
+//  consent the chat asks for before the first question; turned off, it asks again), "Ten chats"
+//  (its lines in bubbles, AssistantChatter; turned off, it still gestures) and "What Ten knows
+//  about me", the facts it remembers (AssistantMemoryView).
 //
 
 import SwiftUI
 
 struct SettingsAssistantSection: View {
     @AppStorage(AssistantMetrics.consentKey) private var hasConsent = false
+    @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
     @State private var memory = AgentMemory.shared
 
     var body: some View {
@@ -20,6 +22,11 @@ struct SettingsAssistantSection: View {
                     icon: "cloud",
                     title: String(localized: "settings.assistant.cloud"),
                     isOn: $hasConsent
+                )
+                ToggleSettingsRow(
+                    icon: "text.bubble",
+                    title: String(localized: "settings.assistant.chatter"),
+                    isOn: $chatterOn
                 )
                 NavigationSettingsRow(
                     icon: "brain",

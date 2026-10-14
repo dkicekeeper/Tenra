@@ -48,6 +48,16 @@ struct AssistantView: View {
     @State private var awaitingConsent: Start?
     @AppStorage(AssistantMetrics.consentKey) private var hasConsent = false
     @FocusState private var composerFocused: Bool
+    // Ten's lines and gestures on the home (AssistantChatter).
+    @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
+    @AppStorage(AssistantChatter.greetedDayKey) private var greetedDay = ""
+    @State private var speech: CreatureSpeech?
+    @State private var gesture: CreatureGesture = .wave
+    @State private var gestureCount = 0
+    @State private var taps: [Date] = []
+    @State private var tapCount = 0
+    @State private var tapLineTurn = 0
+    @State private var lastTapLine = Date.distantPast
 
     /// What starts a new chat and needs the cloud.
     enum Start: Equatable {
@@ -148,8 +158,18 @@ struct AssistantView: View {
 
     private var greeting: some View {
         VStack(spacing: AppSpacing.lg) {
-            ParticleCreature(mood: AssistantMetrics.mood(for: model), isInteractive: true)
+            ParticleCreature(mood: AssistantMetrics.mood(for: model), isInteractive: true,
+                             speech: chatterOn ? speech : nil)
+                .creatureGesture(gesture, trigger: gestureCount)
                 .frame(width: AssistantMetrics.heroMascot, height: AssistantMetrics.heroMascot)
+                // Room over Ten for its bubble.
+                .padding(.top, AssistantMetrics.speechRoom)
+                .simultaneousGesture(TapGesture().onEnded { tappedTen() })
+                // A moment after the screen settles, and once the chats are known.
+                .task {
+                    try? await Task.sleep(for: AssistantMetrics.greetingDelay)
+                    greet()
+                }
             VStack(spacing: AppSpacing.sm) {
                 Text(String(localized: "assistant.greeting.title"))
                     .font(AppTypography.h3)
@@ -171,6 +191,47 @@ struct AssistantView: View {
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Ten's lines
+
+    private func play(_ next: CreatureGesture) {
+        gesture = next
+        gestureCount += 1
+    }
+
+    /// Once a day: the greeting for the hour and a wave, or, while there are no chats, a hint
+    /// pointing at the ready-made questions under Ten.
+    private func greet() {
+        let today = AssistantChatter.dayKey(.now)
+        guard greetedDay != today else { return }
+        greetedDay = today
+        if chats.isEmpty {
+            speech = AssistantChatter.askMe
+            play(.point(.down))
+        } else {
+            let (line, wave) = AssistantChatter.greeting(at: .now)
+            speech = line
+            if let wave { play(wave) }
+        }
+    }
+
+    /// A line about every other tap, two seconds apart at least; three quick taps make Ten dizzy.
+    private func tappedTen() {
+        let now = Date.now
+        taps = taps.filter { now.timeIntervalSince($0) < AssistantChatter.dizzyWindow } + [now]
+        if taps.count >= 3 {
+            taps = []
+            tapLineTurn += 1
+            speech = AssistantChatter.dizzy(tapLineTurn)
+            lastTapLine = now
+            return
+        }
+        tapCount += 1
+        guard tapCount.isMultiple(of: 2), now.timeIntervalSince(lastTapLine) >= AssistantChatter.tapLineGap else { return }
+        lastTapLine = now
+        speech = AssistantChatter.tapLine(tapLineTurn)
+        tapLineTurn += 1
     }
 
     /// The chat open last, then the other latest chats.
@@ -284,6 +345,13 @@ struct AssistantView: View {
 enum AssistantMetrics {
     /// The greeting's mascot.
     static let heroMascot: CGFloat = 220
+    /// The room over the greeting's mascot for its speech bubble (DesignKit 4.10): one line in
+    /// an oval with its tail rises about this far over Ten's square.
+    static let speechRoom: CGFloat = 48
+    /// How long the home waits before Ten greets.
+    static let greetingDelay: Duration = .seconds(0.8)
+    /// A bubble beside Ten in a chat: from the middle of the navigation bar to the screen's edge.
+    static let chatBubbleWidth: CGFloat = 150
     /// The mascot on a message Ten wrote (AssistantNoticeCard).
     static let headerMascot: CGFloat = AppIconSize.xl
     /// Ten in a chat, in the middle of the navigation bar (the owner's size).

@@ -1967,3 +1967,22 @@
 "assistant.memory.full" = "Тэн помнит до %lld фактов. Забудьте один, чтобы добавить новый.";
 "assistant.memory.duplicate" = "Тэн уже это помнит.";
 "assistant.memory.gone" = "Этого факта больше нет в памяти.";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Доброе утро!";
+"assistant.chatter.afternoon" = "Добрый день!";
+"assistant.chatter.evening" = "Добрый вечер!";
+"assistant.chatter.night" = "Тсс… уже поздно";
+"assistant.chatter.askMe" = "Спросите меня о чём-нибудь";
+"assistant.chatter.hmm" = "Хм…";
+"assistant.chatter.counting" = "Считаю…";
+"assistant.chatter.looking" = "Сейчас посмотрю…";
+"assistant.chatter.yay" = "Ура!";
+"assistant.chatter.offline" = "Нет связи…";
+"assistant.chatter.unclear" = "Не совсем ясно. Ещё раз?";
+"assistant.chatter.tickles" = "Щекотно!";
+"assistant.chatter.here" = "Я тут!";
+"assistant.chatter.help" = "Чем помочь?";
+"assistant.chatter.hehe" = "Хи-хи";
+"assistant.chatter.dizzy" = "Ой, всё кружится!";
+"settings.assistant.chatter" = "Тэн болтает";

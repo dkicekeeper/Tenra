@@ -44,18 +44,28 @@ struct AssistantChatView: View {
     @State private var scrollPosition = ScrollPosition(idType: UUID.self)
     /// The thread's visible height, which the latest turn fills at least.
     @State private var viewportHeight: CGFloat = 0
+    // Ten's thoughts and reactions (AssistantChatter).
+    @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
+    @State private var speech: CreatureSpeech?
+    @State private var gesture: CreatureGesture = .nod
+    @State private var gestureCount = 0
+    @State private var thoughtTurn = 0
 
     var body: some View {
         ZStack(alignment: .top) {
             thread
             // Ten in the middle of the navigation bar, hanging over the top of the thread: over
             // the content that scrolls under it, never under it, and taking no room of its own.
-            ParticleCreature(mood: mascotMood)
+            // Its bubble goes beside it, on the free side of the bar (VoiceOver reads it; Ten
+            // itself is hidden from VoiceOver by ParticleCreature).
+            ParticleCreature(mood: mascotMood, speech: chatterOn ? speech : nil)
+                .creatureGesture(gesture, trigger: gestureCount)
                 .frame(width: AssistantMetrics.chatMascot, height: AssistantMetrics.chatMascot)
                 .offset(y: -AssistantMetrics.chatMascotLift)
                 .allowsHitTesting(false)
-                .accessibilityHidden(true)
         }
+        .task(id: model.isWorking) { await thinkWhileWorking() }
+        .onChange(of: model.phase) { old, new in react(from: old, to: new) }
         .navigationBarTitleDisplayMode(.inline)
         // The chat has the screen: the tab bar steps aside while it is open (the stable owner
         // restores it, as for TransactionAddModal).
@@ -258,5 +268,46 @@ struct AssistantChatView: View {
 
     private var mascotMood: ParticleCreature.Mood {
         AssistantMetrics.mood(for: model)
+    }
+
+    // MARK: - Ten's thoughts and reactions
+
+    private func play(_ next: CreatureGesture) {
+        gesture = next
+        gestureCount += 1
+    }
+
+    /// A thought once Ten has worked a moment; gone when the work ends.
+    private func thinkWhileWorking() async {
+        guard model.isWorking else {
+            if speech?.style == .think { speech = nil }
+            return
+        }
+        try? await Task.sleep(for: AssistantChatter.thoughtDelay)
+        guard !Task.isCancelled, model.isWorking else { return }
+        speech = AssistantChatter.thought(thoughtTurn)
+        thoughtTurn += 1
+    }
+
+    /// When the work ends: a nod for a reply, a cheer for a celebrated one, a word for a
+    /// question that was not answered.
+    private func react(from old: AssistantViewModel.Phase, to new: AssistantViewModel.Phase) {
+        guard case .working = old else { return }
+        switch new {
+        case .idle:
+            if model.replyMood == .celebrate {
+                speech = AssistantChatter.cheer
+                play(.hop)
+            } else {
+                if speech?.style == .think { speech = nil }
+                play(.nod)
+            }
+        case .failed(let failure):
+            let (line, reaction) = AssistantChatter.reaction(to: failure)
+            speech = line
+            play(reaction)
+        case .working:
+            break
+        }
     }
 }

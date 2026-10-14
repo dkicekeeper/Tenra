@@ -1967,3 +1967,22 @@
 "assistant.memory.full" = "Ten retient jusqu’à %lld informations. Oubliez-en une pour en ajouter une autre.";
 "assistant.memory.duplicate" = "Ten s’en souvient déjà.";
 "assistant.memory.gone" = "Cette information n’est plus en mémoire.";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Bonjour !";
+"assistant.chatter.afternoon" = "Bon après-midi !";
+"assistant.chatter.evening" = "Bonsoir !";
+"assistant.chatter.night" = "Chut… il est tard";
+"assistant.chatter.askMe" = "Posez-moi une question";
+"assistant.chatter.hmm" = "Hmm…";
+"assistant.chatter.counting" = "Je calcule…";
+"assistant.chatter.looking" = "Je regarde…";
+"assistant.chatter.yay" = "Youpi !";
+"assistant.chatter.offline" = "Pas de connexion…";
+"assistant.chatter.unclear" = "Pas très clair. Encore une fois ?";
+"assistant.chatter.tickles" = "Ça chatouille !";
+"assistant.chatter.here" = "Je suis là !";
+"assistant.chatter.help" = "Comment puis-je aider ?";
+"assistant.chatter.hehe" = "Hi hi";
+"assistant.chatter.dizzy" = "Oh, la tête me tourne !";
+"settings.assistant.chatter" = "Ten bavarde";

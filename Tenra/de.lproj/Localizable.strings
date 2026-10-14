@@ -1967,3 +1967,22 @@
 "assistant.memory.full" = "Ten merkt sich bis zu %lld Fakten. Vergiss einen, um einen neuen hinzuzufügen.";
 "assistant.memory.duplicate" = "Das merkt sich Ten schon.";
 "assistant.memory.gone" = "Diesen Fakt gibt es nicht mehr.";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Guten Morgen!";
+"assistant.chatter.afternoon" = "Guten Tag!";
+"assistant.chatter.evening" = "Guten Abend!";
+"assistant.chatter.night" = "Pst… es ist spät";
+"assistant.chatter.askMe" = "Frag mich einfach";
+"assistant.chatter.hmm" = "Hmm…";
+"assistant.chatter.counting" = "Ich rechne…";
+"assistant.chatter.looking" = "Moment, ich schau mal…";
+"assistant.chatter.yay" = "Juhu!";
+"assistant.chatter.offline" = "Keine Verbindung…";
+"assistant.chatter.unclear" = "Nicht ganz klar. Nochmal?";
+"assistant.chatter.tickles" = "Das kitzelt!";
+"assistant.chatter.here" = "Ich bin da!";
+"assistant.chatter.help" = "Wie kann ich helfen?";
+"assistant.chatter.hehe" = "Hihi";
+"assistant.chatter.dizzy" = "Uii, mir ist schwindelig!";
+"settings.assistant.chatter" = "Ten plaudert";

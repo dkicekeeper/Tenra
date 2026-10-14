@@ -1939,6 +1939,32 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "The assistant works in the cloud";
-"assistant.consent.message" = "To answer, it asks Claude, a model by Anthropic. Only your question and what it looks up for the answer leave the phone: totals, categories, account names and the transactions it needs. Your database, receipts and statements stay here. Tenra’s server keeps nothing, and your data is not used to train models.";
+"assistant.consent.message" = "To answer, it asks Claude, a model by Anthropic. Only your question and what it looks up for the answer leave the phone: totals, categories, account names, the facts it remembers about you and the transactions it needs. Your database, receipts and statements stay here. Tenra’s server keeps nothing, and your data is not used to train models.";
 "assistant.consent.allow" = "Turn on";
 "assistant.consent.notNow" = "Not now";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Ten will remember this";
+"assistant.fact.forget" = "Ten will forget this";
+"assistant.fact.was" = "Was: %@";
+"settings.assistant.header" = "Assistant";
+"settings.assistant.cloud" = "Answers from the cloud";
+"settings.assistant.footer" = "Ten answers with Claude, a model by Anthropic. Turned off, Ten asks again before your next question leaves the phone.";
+"assistant.memory.title" = "What Ten knows about me";
+"assistant.memory.emptyTitle" = "Ten knows nothing about you yet";
+"assistant.memory.emptyMessage" = "Tell Ten about your money in the chat, for example when your salary comes or what you are saving for. Ten offers to remember it, and you decide.";
+"assistant.memory.footer" = "Ten sees these facts in every chat. They are kept on this iPhone and leave it only with your questions.";
+"assistant.memory.add" = "Add a fact";
+"assistant.memory.new" = "New fact";
+"assistant.memory.edit" = "Edit fact";
+"assistant.memory.placeholder" = "For example: salary comes on the 10th";
+"assistant.memory.editorFooter" = "One short sentence about your money: when your salary comes, what you are saving for, which card is the main one. No card numbers or passwords.";
+"assistant.memory.editHint" = "Opens the fact to edit";
+"assistant.memory.forget" = "Forget";
+"assistant.memory.forgetAll" = "Forget everything";
+"assistant.memory.forgetAllTitle" = "Forget all facts?";
+"assistant.memory.forgetAllMessage" = "Ten will know nothing about you again. Your transactions and chats stay.";
+"assistant.memory.tooLong" = "Keep it to one short sentence.";
+"assistant.memory.full" = "Ten remembers up to %lld facts. Forget one to add another.";
+"assistant.memory.duplicate" = "Ten remembers this already.";
+"assistant.memory.gone" = "This fact is no longer remembered.";

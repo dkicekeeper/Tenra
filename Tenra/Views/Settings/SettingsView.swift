@@ -66,6 +66,7 @@ struct SettingsView: View {
             List {
                 SettingsProSection()
                 generalSection
+                SettingsAssistantSection()
                 SettingsPrivacySection()
                 notificationsSection
                 SettingsSiriSection(categoriesViewModel: categoriesViewModel)

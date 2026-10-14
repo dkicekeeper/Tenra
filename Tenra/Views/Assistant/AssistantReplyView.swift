@@ -354,7 +354,7 @@ private struct AssistantForecastCard: View {
 
 /// A draft to save (plan §1, "do"): its operations as they will look in the history (a budget
 /// as its new limit next to the old one, a subscription as its name, frequency and first
-/// charge), what Tenra guessed, Save; once saved, Undo. Nothing is written before Save. Until
+/// charge, a fact to remember as its text), what Tenra guessed, Save; once saved, Undo. Nothing is written before Save. Until
 /// then a tap on an income or an expense opens it in the voice confirmation form
 /// (AgentDraftEditor).
 private struct AssistantDraftCard: View {
@@ -410,6 +410,8 @@ private struct AssistantDraftCard: View {
                     budgetRows(budget, store: store)
                 } else if case .recurring(let recurring) = operation {
                     recurringRow(recurring.series)
+                } else if case .fact(let fact) = operation {
+                    factRow(fact)
                 }
             }
             if state == .pending {
@@ -528,6 +530,24 @@ private struct AssistantDraftCard: View {
         )
     }
 
+    /// A fact to remember: its text, and what it replaces or that it goes.
+    private func factRow(_ fact: AgentFactDraft) -> some View {
+        let note: String
+        if fact.text == nil {
+            note = String(localized: "assistant.fact.forget")
+        } else if let before = fact.replaces {
+            note = String(format: String(localized: "assistant.fact.was"), before.text)
+        } else {
+            note = String(localized: "assistant.fact.remember")
+        }
+        return ItemRow(
+            fact.text ?? fact.replaces?.text ?? "",
+            meta: [MetaLine([.text(note)])],
+            leading: .symbol(fact.text == nil ? "eraser" : "brain")
+        )
+        .accessibilityElement(children: .combine)
+    }
+
     private static func periodName(_ period: CustomCategory.BudgetPeriod) -> String {
         switch period {
         case .weekly: String(localized: "budget.weekly")
@@ -556,11 +576,11 @@ private struct AssistantDraftCard: View {
         return lines
     }
 
-    /// The operation as the transaction it will become, for the row; nil for a budget or a
-    /// recurring payment, which have rows of their own.
+    /// The operation as the transaction it will become, for the row; nil for a budget, a
+    /// recurring payment or a fact, which have rows of their own.
     private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
-        case .budget, .recurring:
+        case .budget, .recurring, .fact:
             return nil
         case .single(let draft):
             return Transaction(

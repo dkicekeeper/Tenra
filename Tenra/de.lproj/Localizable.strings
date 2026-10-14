@@ -1939,6 +1939,32 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Der Assistent arbeitet in der Cloud";
-"assistant.consent.message" = "Für eine Antwort fragt er Claude, ein Modell von Anthropic. Nur deine Frage und was er für die Antwort nachschlägt verlassen das iPhone: Summen, Kategorien, Kontonamen und die nötigen Buchungen. Deine Datenbank, Belege und Kontoauszüge bleiben hier. Der Server von Tenra speichert nichts, und deine Daten werden nicht zum Training von Modellen genutzt.";
+"assistant.consent.message" = "Für eine Antwort fragt er Claude, ein Modell von Anthropic. Nur deine Frage und was er für die Antwort nachschlägt verlassen das iPhone: Summen, Kategorien, Kontonamen, die Fakten, die er sich über dich merkt, und die nötigen Buchungen. Deine Datenbank, Belege und Kontoauszüge bleiben hier. Der Server von Tenra speichert nichts, und deine Daten werden nicht zum Training von Modellen genutzt.";
 "assistant.consent.allow" = "Einschalten";
 "assistant.consent.notNow" = "Nicht jetzt";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Ten merkt sich das";
+"assistant.fact.forget" = "Ten vergisst das";
+"assistant.fact.was" = "Vorher: %@";
+"settings.assistant.header" = "Assistent";
+"settings.assistant.cloud" = "Antworten aus der Cloud";
+"settings.assistant.footer" = "Ten antwortet mit Claude, einem Modell von Anthropic. Ausgeschaltet fragt Ten erneut, bevor deine nächste Frage das iPhone verlässt.";
+"assistant.memory.title" = "Was Ten über mich weiß";
+"assistant.memory.emptyTitle" = "Ten weiß noch nichts über dich";
+"assistant.memory.emptyMessage" = "Erzähl Ten im Chat von deinem Geld, zum Beispiel wann dein Gehalt kommt oder worauf du sparst. Ten bietet an, es sich zu merken, und du entscheidest.";
+"assistant.memory.footer" = "Ten sieht diese Fakten in jedem Chat. Sie bleiben auf diesem iPhone und verlassen es nur mit deinen Fragen.";
+"assistant.memory.add" = "Fakt hinzufügen";
+"assistant.memory.new" = "Neuer Fakt";
+"assistant.memory.edit" = "Fakt bearbeiten";
+"assistant.memory.placeholder" = "Zum Beispiel: Gehalt kommt am 10.";
+"assistant.memory.editorFooter" = "Ein kurzer Satz über dein Geld: wann dein Gehalt kommt, worauf du sparst, welche Karte die wichtigste ist. Keine Kartennummern oder Passwörter.";
+"assistant.memory.editHint" = "Öffnet den Fakt zum Bearbeiten";
+"assistant.memory.forget" = "Vergessen";
+"assistant.memory.forgetAll" = "Alles vergessen";
+"assistant.memory.forgetAllTitle" = "Alle Fakten vergessen?";
+"assistant.memory.forgetAllMessage" = "Ten weiß dann wieder nichts über dich. Deine Buchungen und Chats bleiben.";
+"assistant.memory.tooLong" = "Bleib bei einem kurzen Satz.";
+"assistant.memory.full" = "Ten merkt sich bis zu %lld Fakten. Vergiss einen, um einen neuen hinzuzufügen.";
+"assistant.memory.duplicate" = "Das merkt sich Ten schon.";
+"assistant.memory.gone" = "Diesen Fakt gibt es nicht mehr.";

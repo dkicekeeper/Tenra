@@ -153,10 +153,23 @@ function generate(): Transaction[] {
 
 export const TRANSACTIONS: Transaction[] = generate();
 
+// What the assistant remembers about this user (AgentMemory), in the language they wrote it.
+export const FACTS: Record<"ru" | "en", { id: string; text: string }[]> = {
+  ru: [
+    { id: "f1", text: "Зарплата приходит 10-го числа" },
+    { id: "f2", text: "Копит на машину" },
+  ],
+  en: [
+    { id: "f1", text: "Salary comes on the 10th" },
+    { id: "f2", text: "Saving for a car" },
+  ],
+};
+
 export function appContext(locale: "ru" | "en"): string {
   const accounts = ACCOUNTS.map((a) => `${a.id} "${a.name}" (${a.currency}, ${a.kind})`).join("; ");
   const expense = CATEGORIES.filter((c) => c.type === "expense").map((c) => `${c.id} "${c.name}"`).join("; ");
   const income = CATEGORIES.filter((c) => c.type === "income").map((c) => `${c.id} "${c.name}"`).join("; ");
+  const facts = FACTS[locale].map((f) => `${f.id} "${f.text}"`).join("; ");
   return [
     "<app_context>",
     `today: ${TODAY} (Wednesday)`,
@@ -165,6 +178,7 @@ export function appContext(locale: "ru" | "en"): string {
     `accounts: ${accounts}`,
     `expense categories: ${expense}`,
     `income categories: ${income}`,
+    `facts you remember about the user: ${facts}`,
     "</app_context>",
   ].join("\n");
 }

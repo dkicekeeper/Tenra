@@ -102,11 +102,13 @@ class AppCoordinator {
         }
         let store = transactionStore
         let accounts = accountsViewModel
-        let drafts = AgentDraftBook(writer: .app(store: store, categoriesViewModel: categoriesViewModel))
+        let memory = AgentMemory.shared
+        let drafts = AgentDraftBook(writer: .app(store: store, categoriesViewModel: categoriesViewModel, memory: memory))
         let toolkit = FinanceToolkit(
             store: store,
             insights: insightsViewModel,
             drafts: drafts,
+            memory: memory,
             suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
         )
         // FastPath: the voice parser reads a plain record, the toolkit drafts it.
@@ -125,7 +127,10 @@ class AppCoordinator {
         let threads = repository is CoreDataRepository ? AgentThreadStore() : nil
         let model = AssistantViewModel(
             conversation: AgentConversation(transport: client, toolkit: toolkit),
-            context: { AgentContextBuilder.text(for: AgentContextSnapshot(store: store)) },
+            context: {
+                await memory.load()
+                return AgentContextBuilder.text(for: AgentContextSnapshot(store: store, facts: memory.facts))
+            },
             access: AssistantViewModel.Access(
                 isPro: { PremiumManager.shared.isPro },
                 loadUsage: { usage.load() },

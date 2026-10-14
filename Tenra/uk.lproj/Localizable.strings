@@ -1939,6 +1939,32 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Асистент працює через хмару";
-"assistant.consent.message" = "Щоб відповісти, він звертається до моделі Claude від Anthropic. З телефона йдуть лише ваше запитання й те, що потрібно для відповіді: суми, категорії, назви рахунків і потрібні операції. База, чеки й виписки залишаються тут. Сервер Tenra нічого не зберігає, дані не використовуються для навчання моделей.";
+"assistant.consent.message" = "Щоб відповісти, він звертається до моделі Claude від Anthropic. З телефона йдуть лише ваше запитання й те, що потрібно для відповіді: суми, категорії, назви рахунків, факти, які він про вас пам'ятає, і потрібні операції. База, чеки й виписки залишаються тут. Сервер Tenra нічого не зберігає, дані не використовуються для навчання моделей.";
 "assistant.consent.allow" = "Увімкнути";
 "assistant.consent.notNow" = "Не зараз";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Тен запам'ятає це";
+"assistant.fact.forget" = "Тен забуде це";
+"assistant.fact.was" = "Було: %@";
+"settings.assistant.header" = "Асистент";
+"settings.assistant.cloud" = "Відповіді з хмари";
+"settings.assistant.footer" = "Тен відповідає за допомогою Claude, моделі від Anthropic. Якщо вимкнути, Тен знову спитає, перш ніж наступне запитання піде з телефона.";
+"assistant.memory.title" = "Що Тен знає про мене";
+"assistant.memory.emptyTitle" = "Тен поки нічого про вас не знає";
+"assistant.memory.emptyMessage" = "Розкажіть Тену про свої гроші в чаті, наприклад коли приходить зарплата або на що ви збираєте. Тен запропонує це запам'ятати, а вирішувати вам.";
+"assistant.memory.footer" = "Тен бачить ці факти в кожному чаті. Вони зберігаються на цьому iPhone і йдуть із нього лише разом із вашими запитаннями.";
+"assistant.memory.add" = "Додати факт";
+"assistant.memory.new" = "Новий факт";
+"assistant.memory.edit" = "Змінити факт";
+"assistant.memory.placeholder" = "Наприклад: зарплата приходить 10-го";
+"assistant.memory.editorFooter" = "Одне коротке речення про ваші гроші: коли приходить зарплата, на що збираєте, яка картка основна. Без номерів карток і паролів.";
+"assistant.memory.editHint" = "Відкриває факт для зміни";
+"assistant.memory.forget" = "Забути";
+"assistant.memory.forgetAll" = "Забути все";
+"assistant.memory.forgetAllTitle" = "Забути всі факти?";
+"assistant.memory.forgetAllMessage" = "Тен знову нічого не знатиме про вас. Операції й чати залишаться.";
+"assistant.memory.tooLong" = "Вкладіться в одне коротке речення.";
+"assistant.memory.full" = "Тен пам'ятає до %lld фактів. Забудьте один, щоб додати новий.";
+"assistant.memory.duplicate" = "Тен уже це пам'ятає.";
+"assistant.memory.gone" = "Цього факту більше немає в пам'яті.";

@@ -1939,6 +1939,32 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "El asistente funciona en la nube";
-"assistant.consent.message" = "Para responder, consulta a Claude, un modelo de Anthropic. Del teléfono solo salen tu pregunta y lo que busca para responder: totales, categorías, nombres de cuentas y los movimientos necesarios. Tu base de datos, recibos y extractos se quedan aquí. El servidor de Tenra no guarda nada y tus datos no se usan para entrenar modelos.";
+"assistant.consent.message" = "Para responder, consulta a Claude, un modelo de Anthropic. Del teléfono solo salen tu pregunta y lo que busca para responder: totales, categorías, nombres de cuentas, los datos que recuerda de ti y los movimientos necesarios. Tu base de datos, recibos y extractos se quedan aquí. El servidor de Tenra no guarda nada y tus datos no se usan para entrenar modelos.";
 "assistant.consent.allow" = "Activar";
 "assistant.consent.notNow" = "Ahora no";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Ten recordará esto";
+"assistant.fact.forget" = "Ten olvidará esto";
+"assistant.fact.was" = "Antes: %@";
+"settings.assistant.header" = "Asistente";
+"settings.assistant.cloud" = "Respuestas desde la nube";
+"settings.assistant.footer" = "Ten responde con Claude, un modelo de Anthropic. Si lo desactivas, Ten volverá a preguntar antes de que tu próxima pregunta salga del teléfono.";
+"assistant.memory.title" = "Lo que Ten sabe de mí";
+"assistant.memory.emptyTitle" = "Ten aún no sabe nada de ti";
+"assistant.memory.emptyMessage" = "Cuéntale a Ten sobre tu dinero en el chat, por ejemplo cuándo llega tu sueldo o para qué ahorras. Ten te ofrecerá recordarlo y tú decides.";
+"assistant.memory.footer" = "Ten ve estos datos en cada chat. Se guardan en este iPhone y solo salen de él con tus preguntas.";
+"assistant.memory.add" = "Añadir un dato";
+"assistant.memory.new" = "Nuevo dato";
+"assistant.memory.edit" = "Editar dato";
+"assistant.memory.placeholder" = "Por ejemplo: el sueldo llega el día 10";
+"assistant.memory.editorFooter" = "Una frase corta sobre tu dinero: cuándo llega tu sueldo, para qué ahorras, cuál es tu tarjeta principal. Sin números de tarjeta ni contraseñas.";
+"assistant.memory.editHint" = "Abre el dato para editarlo";
+"assistant.memory.forget" = "Olvidar";
+"assistant.memory.forgetAll" = "Olvidarlo todo";
+"assistant.memory.forgetAllTitle" = "¿Olvidar todos los datos?";
+"assistant.memory.forgetAllMessage" = "Ten volverá a no saber nada de ti. Tus movimientos y chats se quedan.";
+"assistant.memory.tooLong" = "Que sea una sola frase corta.";
+"assistant.memory.full" = "Ten recuerda hasta %lld datos. Olvida uno para añadir otro.";
+"assistant.memory.duplicate" = "Ten ya recuerda esto.";
+"assistant.memory.gone" = "Este dato ya no está en la memoria.";

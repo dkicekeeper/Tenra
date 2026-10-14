@@ -8,9 +8,10 @@
 //  Save on the confirm card. Saving goes through the app's own write paths
 //  (`TransactionDraftService.commit` for income and expenses, `TransactionStore.add` with the
 //  transfer fields of `TransactionConversion` for transfers, `CategoriesViewModel.setBudget`
-//  for budgets, `SubscriptionCreationService.create` for subscriptions and regular payments),
-//  and Undo takes back what was saved: deletes the transactions or the series with what it
-//  generated, puts the previous budget back.
+//  for budgets, `SubscriptionCreationService.create` for subscriptions and regular payments,
+//  `AgentMemory.apply` for a fact to remember), and Undo takes back what was saved: deletes
+//  the transactions or the series with what it generated, puts the previous budget or fact
+//  back.
 //
 //  Before Save the person can change an income or an expense on the card (the voice
 //  confirmation form, AgentDraftEditor); the next question tells the model what the draft
@@ -30,6 +31,8 @@ enum AgentDraftOperation: Equatable {
     case transfer(AgentTransferDraft)
     case budget(AgentBudgetDraft)
     case recurring(AgentRecurringDraft)
+    /// A fact to remember, change or forget (AgentMemory).
+    case fact(AgentFactDraft)
 }
 
 /// A subscription or a regular payment, as the series it will become (it starts on its next
@@ -68,6 +71,7 @@ enum AgentSavedRecord: Equatable {
     case budget(AgentBudgetDraft)
     /// A series id.
     case series(String)
+    case fact(AgentFactChange)
 }
 
 enum AgentDraftError: Error {
@@ -186,10 +190,10 @@ final class AgentDraftBook {
 
 extension AgentDraftBook.Writer {
     /// Writes as the rest of the app does: the voice and Siri path for income and expenses,
-    /// the store's transfer for transfers, the categories' budget call for budgets. Undo
-    /// deletes a transaction as it is now (it may have been edited since) and puts the
-    /// previous budget back.
-    static func app(store: TransactionStore, categoriesViewModel: CategoriesViewModel) -> Self {
+    /// the store's transfer for transfers, the categories' budget call for budgets, the
+    /// assistant's memory for facts. Undo deletes a transaction as it is now (it may have been
+    /// edited since) and puts the previous budget or fact back.
+    static func app(store: TransactionStore, categoriesViewModel: CategoriesViewModel, memory: AgentMemory = .shared) -> Self {
         Self(
             save: { operation in
                 switch operation {
@@ -202,6 +206,8 @@ extension AgentDraftBook.Writer {
                 case .recurring(let recurring):
                     try await SubscriptionCreationService.create(recurring.series, store: store, categoriesViewModel: categoriesViewModel)
                     return .series(recurring.series.id)
+                case .fact(let fact):
+                    return .fact(try await memory.apply(fact))
                 case .transfer(let transfer):
                     return .transaction(try await store.add(Transaction(
                         id: "",
@@ -227,6 +233,8 @@ extension AgentDraftBook.Writer {
                 case .series(let id):
                     guard store.recurringSeries.contains(where: { $0.id == id }) else { return }
                     try await store.deleteSeries(id: id, deleteTransactions: true)
+                case .fact(let change):
+                    await memory.revert(change)
                 case .budget(let budget):
                     guard let category = store.categoryById[budget.categoryId] else { return }
                     if let previous = budget.previousAmount {

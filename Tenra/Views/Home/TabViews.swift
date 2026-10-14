@@ -112,12 +112,12 @@ struct VoiceTab: View {
 
 // MARK: - AssistantTab
 
-/// The AI assistant (beta, docs/plan-ai-assistant.md), opened over the current tab by the
-/// action tab: Pro, or the free allowance without it. The server answers only an app it can
+/// The AI assistant (beta, docs/plan-ai-assistant.md), the action tab's page where it can run:
+/// Pro, or the free allowance without it. The server answers only an app it can
 /// verify with App Attest, Pro or not, so a device without it (the Simulator included) gets no
 /// assistant. The thread lives in `AppCoordinator`, so it survives the screen closing.
 struct AssistantTab: View {
-    /// Closes the screen it is presented in.
+    /// Closes the screen it is presented in; a tab has none.
     var onClose: (() -> Void)?
 
     @Environment(AppCoordinator.self) private var coordinator

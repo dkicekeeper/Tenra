@@ -8,8 +8,10 @@
 //  suggestions for what to ask next. The composer floats over the content at the bottom.
 //
 //  The mascot shows what is going on: thinking while it works, the reply's mood after, confused
-//  or sad when a question could not be answered. In a thread it stands under the navigation bar
-//  (120 pt); the reply's text streams in as the model writes it (AssistantStreamingReply).
+//  or sad when a question could not be answered. In a thread it stands over the thread, under
+//  the navigation bar, in a band of its own that the content never scrolls into (120 pt, 64 pt
+//  while the person types), so Ten stays in sight; the reply's text streams in as the model
+//  writes it (AssistantStreamingReply).
 //
 //  Sending a question scrolls it to the top of the screen, and its turn is at least a screen
 //  tall, so a long reply is read from its start. A tap on the thread puts the keyboard away. The
@@ -17,6 +19,8 @@
 //
 //  Opened from a screen's "Ask Ten" (AssistantEntryPoints), it offers questions about that
 //  account, category, insight or the history in place of its general ones, until one goes.
+//  Opened from "Go through it" on a message Ten wrote (on Home, AssistantNoticesSection), it
+//  asks that message's question.
 //
 //  Nothing leaves the phone before the person agrees: the first question opens the consent
 //  sheet (App Review 5.1.2(i)), and goes once they turn the cloud mode on.
@@ -60,6 +64,123 @@ struct AssistantView: View {
     @State private var viewportHeight: CGFloat = 0
 
     var body: some View {
+        VStack(spacing: 0) {
+            if !model.entries.isEmpty {
+                threadMascot
+                    // Over the thread where they meet: a particle that drifts out of the band
+                    // is drawn over the content, never under it.
+                    .zIndex(1)
+                    .transition(.opacity)
+            }
+            thread
+        }
+        .animation(AppAnimation.contentSpring, value: model.entries.isEmpty)
+        .assistantAttachmentSources(
+            source: $attachmentSource,
+            reading: $readingAttachment,
+            onRead: { attachment, summary in
+                HapticManager.success()
+                model.attach(attachment, summary: summary)
+            },
+            onFailure: { message in
+                HapticManager.error()
+                attachmentError = message
+            }
+        )
+        .navigationTitle(model.entries.isEmpty ? String(localized: "tab.assistant") : "")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(for: AssistantRoute.self) { route in
+            AssistantDestinationView(route: route)
+        }
+        .toolbar {
+            if let onClose {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(String(localized: "button.close"), systemImage: "xmark") {
+                        onClose()
+                    }
+                }
+            }
+            if !model.recentThreads.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    historyMenu
+                }
+            }
+            if !model.entries.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        model.reset()
+                    } label: {
+                        Label(String(localized: "assistant.newChat"), systemImage: "square.and.pencil")
+                    }
+                    .disabled(model.isWorking)
+                }
+            }
+        }
+        .paywallSheet(isPresented: $showingPaywall) {
+            model.refreshAllowance()
+            Task { await model.retry() }
+        }
+        .sheet(isPresented: $showingVoice) {
+            AssistantVoiceSheet { send($0, spoken: true) }
+        }
+        .onAppear {
+            model.refreshAllowance()
+        }
+        .onChange(of: coordinator.assistantTopic, initial: true) { _, topic in
+            guard topic != nil, let topic = coordinator.consumeAssistantTopic() else { return }
+            topicQuestions = topic.questions
+        }
+        // "Go through it" on Home.
+        .onChange(of: coordinator.pendingNotice, initial: true) { _, notice in
+            guard notice != nil, let notice = coordinator.consumePendingNotice() else { return }
+            goThrough(notice)
+        }
+        .task { await model.restore() }
+        .onChange(of: premium.isPro) { model.refreshAllowance() }
+        .sheet(isPresented: $showingConsent) {
+            PromptSheet(
+                systemImage: "lock.shield",
+                title: String(localized: "assistant.consent.title"),
+                message: String(localized: "assistant.consent.message"),
+                primaryTitle: String(localized: "assistant.consent.allow"),
+                secondaryTitle: String(localized: "assistant.consent.notNow"),
+                detent: .large,
+                onPrimary: {
+                    hasConsent = true
+                    if let question = questionAwaitingConsent {
+                        questionAwaitingConsent = nil
+                        send(question)
+                    }
+                    if let notice = noticeAwaitingConsent {
+                        noticeAwaitingConsent = nil
+                        goThrough(notice)
+                    }
+                },
+                onSecondary: {
+                    questionAwaitingConsent = nil
+                    noticeAwaitingConsent = nil
+                }
+            )
+        }
+    }
+
+    /// Ten over the thread, in a band of its own: the content scrolls under the band's edge and
+    /// never over Ten. Smaller while the person types, to leave the thread room over the
+    /// keyboard.
+    private var threadMascot: some View {
+        let size = composerFocused ? AssistantMetrics.typingMascot : AssistantMetrics.threadMascot
+        return ParticleCreature(mood: mascotMood)
+            .frame(width: size, height: size)
+            .frame(maxWidth: .infinity)
+            // At full size its empty top edge tucks under the navigation bar.
+            .padding(.top, composerFocused ? 0 : -AppSpacing.xl)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .animation(AppAnimation.contentSpring, value: composerFocused)
+    }
+
+    /// The questions and replies, with the composer floating at the bottom.
+    private var thread: some View {
         ScrollView {
             // A plain stack: a lazy one guessed the heights of replies it had not drawn, and
             // a long reply scrolled the thread into empty space.
@@ -79,9 +200,6 @@ struct AssistantView: View {
                             .id(entry.id)
                     }
                     turnFooter
-                    if !model.entries.isEmpty, !model.isWorking {
-                        notices
-                    }
                 }
                 .frame(minHeight: currentTurn.isEmpty ? 0 : viewportHeight, alignment: .top)
             }
@@ -137,101 +255,6 @@ struct AssistantView: View {
             .padding(.bottom, AppSpacing.sm)
             .animation(AppAnimation.smooth, value: model.allowance)
             .animation(AppAnimation.smooth, value: attachmentError)
-        }
-        .assistantAttachmentSources(
-            source: $attachmentSource,
-            reading: $readingAttachment,
-            onRead: { attachment, summary in
-                HapticManager.success()
-                model.attach(attachment, summary: summary)
-            },
-            onFailure: { message in
-                HapticManager.error()
-                attachmentError = message
-            }
-        )
-        // In a thread the mascot stands under the bar in place of the title.
-        .safeAreaBar(edge: .top) {
-            if !model.entries.isEmpty {
-                ParticleCreature(mood: mascotMood)
-                    .frame(width: AssistantMetrics.threadMascot, height: AssistantMetrics.threadMascot)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, -AppSpacing.xl)
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
-                    .transition(.opacity)
-            }
-        }
-        .navigationTitle(model.entries.isEmpty ? String(localized: "tab.assistant") : "")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(for: AssistantRoute.self) { route in
-            AssistantDestinationView(route: route)
-        }
-        .toolbar {
-            if let onClose {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(String(localized: "button.close"), systemImage: "xmark") {
-                        onClose()
-                    }
-                }
-            }
-            if !model.recentThreads.isEmpty {
-                ToolbarItem(placement: .topBarTrailing) {
-                    historyMenu
-                }
-            }
-            if !model.entries.isEmpty {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        model.reset()
-                    } label: {
-                        Label(String(localized: "assistant.newChat"), systemImage: "square.and.pencil")
-                    }
-                    .disabled(model.isWorking)
-                }
-            }
-        }
-        .paywallSheet(isPresented: $showingPaywall) {
-            model.refreshAllowance()
-            Task { await model.retry() }
-        }
-        .sheet(isPresented: $showingVoice) {
-            AssistantVoiceSheet { send($0, spoken: true) }
-        }
-        .onAppear {
-            model.refreshAllowance()
-            coordinator.refreshAssistantInbox()
-        }
-        .onChange(of: coordinator.assistantTopic, initial: true) { _, topic in
-            guard topic != nil, let topic = coordinator.consumeAssistantTopic() else { return }
-            topicQuestions = topic.questions
-        }
-        .task { await model.restore() }
-        .onChange(of: premium.isPro) { model.refreshAllowance() }
-        .sheet(isPresented: $showingConsent) {
-            PromptSheet(
-                systemImage: "lock.shield",
-                title: String(localized: "assistant.consent.title"),
-                message: String(localized: "assistant.consent.message"),
-                primaryTitle: String(localized: "assistant.consent.allow"),
-                secondaryTitle: String(localized: "assistant.consent.notNow"),
-                detent: .large,
-                onPrimary: {
-                    hasConsent = true
-                    if let question = questionAwaitingConsent {
-                        questionAwaitingConsent = nil
-                        send(question)
-                    }
-                    if let notice = noticeAwaitingConsent {
-                        noticeAwaitingConsent = nil
-                        goThrough(notice)
-                    }
-                },
-                onSecondary: {
-                    questionAwaitingConsent = nil
-                    noticeAwaitingConsent = nil
-                }
-            )
         }
     }
 
@@ -310,7 +333,6 @@ struct AssistantView: View {
                     .foregroundStyle(AppColors.Text.tertiary)
             }
             .multilineTextAlignment(.center)
-            notices
             SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) { send($0) }
             if !model.recentThreads.isEmpty {
                 recentChats
@@ -319,28 +341,8 @@ struct AssistantView: View {
         .frame(maxWidth: .infinity)
     }
 
-    /// What Ten wrote first and the person has not read (AssistantInbox).
-    @ViewBuilder
-    private var notices: some View {
-        let unread = inbox.unread
-        if !unread.isEmpty {
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                SectionHeader(String(localized: "assistant.notice.title"))
-                ForEach(unread) { notice in
-                    AssistantNoticeCard(
-                        notice: notice,
-                        onAsk: { goThrough(notice) },
-                        onHide: { inbox.markRead(notice.id) }
-                    )
-                    .transition(.opacity)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .animation(AppAnimation.smooth, value: unread.map(\.id))
-        }
-    }
-
-    /// "Go through it": the message's question, after the cloud consent when it is not given.
+    /// "Go through it" (from Home): the message's question, after the cloud consent when it is
+    /// not given. The message is read once its question goes.
     private func goThrough(_ notice: AssistantNotice) {
         guard !model.isWorking else { return }
         guard hasConsent else {
@@ -436,18 +438,14 @@ struct AssistantView: View {
         return String(format: String(localized: "assistant.allowance.renews"), renewsAt.formatted(.dateTime.day().month(.wide)))
     }
 
+    /// The step the assistant is on; Ten over the thread thinks meanwhile.
     private func workingRow(_ title: String) -> some View {
-        HStack(spacing: AppSpacing.sm) {
-            ParticleCreature(mood: .thinking, style: .compact)
-                .frame(width: AssistantMetrics.headerMascot, height: AssistantMetrics.headerMascot)
-            Text(title)
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.Text.secondary)
-                .thinkingShimmer(isActive: true)
-                .contentTransition(.opacity)
-                .animation(AppAnimation.smooth, value: title)
-        }
-        .accessibilityElement(children: .combine)
+        Text(title)
+            .font(AppTypography.bodySmall)
+            .foregroundStyle(AppColors.Text.secondary)
+            .thinkingShimmer(isActive: true)
+            .contentTransition(.opacity)
+            .animation(AppAnimation.smooth, value: title)
     }
 
     // MARK: - Behaviour
@@ -475,8 +473,6 @@ struct AssistantView: View {
         case .failed(let failure):
             return failure == .offline ? .sad : .confused
         case .idle:
-            // A message Ten wrote first sets the mood until it is read.
-            if let notice = inbox.mood { return notice.creatureMood }
             switch model.replyMood {
             case .happy: return .happy
             case .concerned: return .worried
@@ -502,10 +498,12 @@ struct AssistantView: View {
 enum AssistantMetrics {
     /// The greeting's mascot.
     static let heroMascot: CGFloat = 220
-    /// The mascot next to the working step.
+    /// The mascot on a message Ten wrote (AssistantNoticeCard).
     static let headerMascot: CGFloat = AppIconSize.xl
     /// The mascot over a thread, under the navigation bar (the owner's size).
     static let threadMascot: CGFloat = 120
+    /// The mascot over a thread while the person types: the thread keeps room over the keyboard.
+    static let typingMascot: CGFloat = 64
     /// The longest question: plenty for a person, short enough to keep the turn cheap.
     static let questionLimit = 1000
     /// The free answers left from which the composer shows the count.

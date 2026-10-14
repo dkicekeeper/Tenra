@@ -5,10 +5,10 @@
 //  Ten writes first (docs/plan-ai-assistant.md, phase 3): what the app already notices becomes a
 //  message from the assistant. A critical or warning insight (the same kinds that may push,
 //  InsightSignalKind), last week's summary once a week, and a subscription charged tomorrow.
-//  Messages wait in this inbox until the person reads them in the chat ("Ten writes" cards with
-//  "Go through it", AssistantView) or closes them; the "+" mascot carries their count and the
-//  mood of the newest. Going through one is a question like any other, so it spends a free
-//  answer (plan §6: messages are free to read, the analysis is not).
+//  Messages wait in this inbox until the person goes through them or closes them on Home ("Ten
+//  writes", AssistantNoticesSection; never in the chat). Going through one is a question like
+//  any other, so it spends a free answer (plan §6: messages are free to read, the analysis is
+//  not).
 //
 //  Each message has a key that never posts twice (an insight's id or signal key, the week, the
 //  series and its charge day). New insight messages are capped per day, so a bad week reads as
@@ -176,9 +176,6 @@ final class AssistantInbox {
     }
 
     var unread: [AssistantNotice] { notices.filter { !$0.isRead } }
-
-    /// The newest unread message's mood, for the mascot.
-    var mood: AssistantNotice.Mood? { unread.first?.mood }
 
     /// Posts what was never posted. Insight messages stop at `signalsPerDay` a day.
     func post(_ candidates: [AssistantNotice], now: Date = Date(), calendar: Calendar = .current) {

@@ -45,8 +45,8 @@ describe("grader", () => {
   const record = (text: string, path = "total"): RunRecord => {
     const input = { from: "2026-10-01", to: "2026-10-28", type: "expense", group_by: "none", category_ids: ["cat_cafe"] };
     return {
-      calls: [{ id: "toolu_a", name: "get_spending_summary", input, result: executeTool("get_spending_summary", input) }],
-      reply: { blocks: [{ type: "text", text }, { type: "metric", label: "Кафе, октябрь", source: "toolu_a", path, trend_path: null }], mood: "idle", suggestions: [] },
+      calls: [{ id: "toolu_a", ref: "r1", name: "get_spending_summary", input, result: executeTool("get_spending_summary", input) }],
+      reply: { blocks: [{ type: "text", text }, { type: "metric", label: "Кафе, октябрь", source: "r1", path, trend_path: null }], mood: "idle", suggestions: [] },
     };
   };
 
@@ -61,6 +61,10 @@ describe("grader", () => {
     expect(money.find((c) => c.name === "no_money_in_text")?.pass).toBe(false);
     const broken = universalChecks(record("Кафе выросли.", "totals.sum"), "ru");
     expect(broken.find((c) => c.name === "refs_resolve")?.pass).toBe(false);
+    // The model never sees tool_use ids: a block pointing at one resolves nothing.
+    const byToolUseId = record("Кафе выросли.");
+    byToolUseId.reply!.blocks[1]!.source = "toolu_a";
+    expect(universalChecks(byToolUseId, "ru").find((c) => c.name === "refs_resolve")?.pass).toBe(false);
     const english = universalChecks(record("Cafes went up in October."), "ru");
     expect(english.find((c) => c.name === "language")?.pass).toBe(false);
   });

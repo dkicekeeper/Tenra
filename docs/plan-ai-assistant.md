@@ -172,7 +172,7 @@ struct AgentReply {
 
 enum AgentBlock {
     case text(String)                         // короткий рассказ, стримится
-    case metric(label: String, ref: ValueRef) // ValueRef = toolResultId + путь к полю
+    case metric(label: String, ref: ValueRef) // ValueRef = result_id + путь к полю
     case chart(kind: ChartKind, ref: SeriesRef)
     case transactions(ref: QueryRef)
     case budgets(categoryIds: [String])
@@ -272,6 +272,9 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
   `render_reply` в одном сообщении с другими вызовами приложение возвращает ошибкой
   (`AgentProtocol.renderReplyTooEarly`, тот же текст в eval): id этих вызовов ещё не существуют,
   и карточки показали бы пустоту. Цикл идёт дальше, модель отвечает отдельным вызовом.
+- Модель не видит `tool_use` id, поэтому блоки ссылаются не на них. Телефон кладёт в каждый
+  успешный результат поле `result_id` (`r1`, `r2`… в пределах треда), `source` блока равен
+  ему. Первый eval со ссылками на `tool_use` id: все три модели выдумывали `toolu_01`.
 - Первое сообщение треда несёт блок `<app_context>`: сегодняшняя дата, локаль, базовая валюта,
   счета и категории с id (формат: `eval/fixture.ts`, `appContext`). Новый блок, когда меняется
   дата или справочники.

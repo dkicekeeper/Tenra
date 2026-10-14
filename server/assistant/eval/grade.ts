@@ -5,6 +5,8 @@ import { ACCOUNTS, CATEGORIES } from "./fixture";
 
 export interface ToolCall {
   id: string;
+  /** The result_id the phone gives a successful result; reply blocks point at it. */
+  ref?: string;
   name: string;
   input: Record<string, unknown>;
   result?: unknown;
@@ -57,7 +59,7 @@ export function resolvePath(value: unknown, path: string): unknown {
 const dataCalls = (record: RunRecord) => record.calls.filter((c) => c.name !== "render_reply");
 
 function resolveBlock(record: RunRecord, block: Block): { call?: ToolCall; value?: unknown } {
-  const call = dataCalls(record).find((c) => c.id === block.source);
+  const call = dataCalls(record).find((c) => c.ref !== undefined && c.ref === block.source);
   if (!call) return {};
   return { call, value: typeof block.path === "string" ? resolvePath(call.result, block.path) : call.result };
 }

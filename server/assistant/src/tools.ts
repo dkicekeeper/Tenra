@@ -183,7 +183,7 @@ const draftTools: Tool[] = [
   },
 ];
 
-const source = { type: "string", description: "tool_use id of the call whose result holds the data" };
+const source = { type: "string", description: "result_id of the tool result that holds the data, e.g. r1" };
 const path = { type: "string", description: "Dotted path inside that result, e.g. total or groups" };
 
 const block = (type: string, properties: Record<string, unknown>) =>

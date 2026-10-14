@@ -95,8 +95,11 @@ async function runCase(client: Anthropic, model: string, effort: Effort, testCas
           continue;
         }
         try {
-          const result = executeTool(use.name, input);
-          record.calls.push({ id: use.id, name: use.name, input, result });
+          // As the app does: the model never sees tool_use ids, so each result names itself.
+          const ref = `r${record.calls.filter((c) => c.ref).length + 1}`;
+          const raw = executeTool(use.name, input);
+          const result = raw && typeof raw === "object" && !Array.isArray(raw) ? { result_id: ref, ...raw } : { result_id: ref, value: raw };
+          record.calls.push({ id: use.id, ref, name: use.name, input, result });
           results.push({ type: "tool_result", tool_use_id: use.id, content: JSON.stringify(result) });
         } catch (error) {
           const detail = error instanceof ToolInputError ? error.message : String(error);

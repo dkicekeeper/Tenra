@@ -17,6 +17,8 @@ nonisolated enum AgentProtocol {
     /// The error `render_reply` gets when it comes next to other tool calls: their ids do not
     /// exist yet, so its cards could only point at guesses. Mirrored in the server's eval.
     static let renderReplyTooEarly = "render_reply was called together with other tools, before their results existed, so nothing was shown. Call render_reply again, alone, pointing at the results above."
+    /// The field that names a tool result; a reply block's `source` is its value.
+    static let resultIdKey = "result_id"
 }
 
 nonisolated struct AgentWireMessage: Sendable, Equatable, Codable {

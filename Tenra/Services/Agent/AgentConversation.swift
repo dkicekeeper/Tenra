@@ -25,7 +25,7 @@ nonisolated struct AgentToolOutput: Sendable, Equatable {
 
 nonisolated struct AgentTurnOutcome: Sendable, Equatable {
     let reply: AgentReply
-    /// Every tool result of the thread by tool_use id; reply blocks read their figures from it.
+    /// Every tool result of the thread by `result_id`; reply blocks read their figures from it.
     let results: [String: JSONValue]
     let model: String
 }
@@ -49,6 +49,7 @@ final class AgentConversation {
     }
 
     private(set) var messages: [AgentWireMessage] = []
+    /// Every tool result of the thread by its `result_id`.
     private(set) var results: [String: JSONValue] = [:]
     /// Results owed for the last assistant message (its `render_reply` and any tool called
     /// alongside it). They open the next user message.
@@ -128,8 +129,9 @@ final class AgentConversation {
                 }
                 let output = await toolkit.execute(name: use.name, input: use.input)
                 if let value = output.value {
-                    results[use.id] = value
-                    resultBlocks.append(AgentToolResult(toolUseId: use.id, content: value.jsonString(), isError: false).block)
+                    let named = Self.named(value, id: "r\(results.count + 1)")
+                    results[named.id] = named.value
+                    resultBlocks.append(AgentToolResult(toolUseId: use.id, content: named.value.jsonString(), isError: false).block)
                 } else {
                     resultBlocks.append(AgentToolResult(toolUseId: use.id, content: output.error ?? "Tool failed", isError: true).block)
                 }
@@ -142,5 +144,15 @@ final class AgentConversation {
             messages.append(AgentWireMessage(role: .user, content: resultBlocks))
         }
         throw AgentConversationError.tooManySteps
+    }
+
+    /// The model never sees tool_use ids, so each result carries a short id of its own
+    /// (`result_id`: r1, r2, … within the thread) and reply blocks point at that.
+    private static func named(_ value: JSONValue, id: String) -> (id: String, value: JSONValue) {
+        guard case .object(var fields) = value else {
+            return (id, .object([AgentProtocol.resultIdKey: .string(id), "value": value]))
+        }
+        fields[AgentProtocol.resultIdKey] = .string(id)
+        return (id, .object(fields))
     }
 }

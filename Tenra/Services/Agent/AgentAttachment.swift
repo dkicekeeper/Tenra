@@ -65,8 +65,9 @@ struct AgentAttachmentSummary: Equatable {
     static func statement(_ review: StatementReview, accountName: String?) -> Self {
         let rows = review.transactions.filter { $0.type == .expense || $0.type == .income }
         let currencies = Dictionary(grouping: rows, by: \.currency)
-        let main = currencies.max { lhs, rhs in
-            lhs.value.count == rhs.value.count ? lhs.key > rhs.key : lhs.value.count < rhs.value.count
+        let main: String? = currencies.max { (lhs: (key: String, value: [Transaction]), rhs: (key: String, value: [Transaction])) -> Bool in
+            if lhs.value.count == rhs.value.count { return lhs.key > rhs.key }
+            return lhs.value.count < rhs.value.count
         }?.key
         let inMain = rows.filter { $0.currency == main }
         func total(_ type: TransactionType) -> Total? {
@@ -79,7 +80,13 @@ struct AgentAttachmentSummary: Equatable {
             guard let category = review.suggestedCategories[row.id] else { continue }
             byCategory[category, default: 0] += row.amount
         }
-        let dates = rows.map(\.date).sorted()
+        let dates: [String] = rows.map(\.date).sorted()
+        let totals: [CategoryTotal] = byCategory.map { CategoryTotal(category: $0.key, amount: $0.value) }
+        let ranked: [CategoryTotal] = totals.sorted { (lhs: CategoryTotal, rhs: CategoryTotal) -> Bool in
+            if lhs.amount == rhs.amount { return lhs.category < rhs.category }
+            return lhs.amount > rhs.amount
+        }
+        let uncategorized: Int = rows.filter { review.suggestedCategories[$0.id] == nil }.count
         return Self(
             kind: .statement,
             title: accountName,
@@ -89,13 +96,9 @@ struct AgentAttachmentSummary: Equatable {
             lastDate: dates.last,
             expenses: total(.expense),
             income: total(.income),
-            uncategorized: rows.filter { review.suggestedCategories[$0.id] == nil }.count,
+            uncategorized: uncategorized,
             moves: review.uncheckedMoves.count,
-            byCategory: byCategory
-                .map { CategoryTotal(category: $0.key, amount: $0.value) }
-                .sorted { $0.amount == $1.amount ? $0.category < $1.category : $0.amount > $1.amount }
-                .prefix(8)
-                .map { $0 }
+            byCategory: Array(ranked.prefix(8))
         )
     }
 
@@ -105,21 +108,23 @@ struct AgentAttachmentSummary: Equatable {
         func round(_ value: Double) -> JSONValue { .number(FinanceToolkitCompute.round2(value)) }
         func money(_ total: Total?) -> JSONValue {
             guard let total else { return .null }
-            return ["amount": round(total.amount), "currency": .string(total.currency)]
+            return .object(["amount": round(total.amount), "currency": .string(total.currency)])
         }
-        let summary: JSONValue = [
-            "kind": .string(kind == .receipt ? "receipt" : "statement"),
-            "rows": .number(Double(count)),
-            "unreadable_rows": .number(Double(skipped)),
-            "from": firstDate.map(JSONValue.string) ?? .null,
-            "to": lastDate.map(JSONValue.string) ?? .null,
-            "expenses": money(expenses),
-            "income": money(income),
-            "uncategorized_rows": .number(Double(uncategorized)),
-            "cash_and_own_transfers": .number(Double(moves)),
-            "expenses_by_category": .array(byCategory.map { ["category": .string($0.category), "amount": round($0.amount)] }),
-            "saved": false,
-        ]
-        return "<attachment_result>\n\(summary.jsonString())\n</attachment_result>"
+        let categories: [JSONValue] = byCategory.map { (item: CategoryTotal) -> JSONValue in
+            .object(["category": .string(item.category), "amount": round(item.amount)])
+        }
+        var fields: [String: JSONValue] = [:]
+        fields["kind"] = .string(kind == .receipt ? "receipt" : "statement")
+        fields["rows"] = .number(Double(count))
+        fields["unreadable_rows"] = .number(Double(skipped))
+        fields["from"] = firstDate.map(JSONValue.string) ?? .null
+        fields["to"] = lastDate.map(JSONValue.string) ?? .null
+        fields["expenses"] = money(expenses)
+        fields["income"] = money(income)
+        fields["uncategorized_rows"] = .number(Double(uncategorized))
+        fields["cash_and_own_transfers"] = .number(Double(moves))
+        fields["expenses_by_category"] = .array(categories)
+        fields["saved"] = .bool(false)
+        return "<attachment_result>\n\(JSONValue.object(fields).jsonString())\n</attachment_result>"
     }
 }

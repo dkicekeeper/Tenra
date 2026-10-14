@@ -399,7 +399,9 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
    `ANTHROPIC_API_KEY`. В Limits задать месячный лимит трат workspace (для беты хватит $30).
 3. **RevenueCat.** Project settings → API keys → secret key → секрет `REVENUECAT_SECRET_KEY`.
    Customers → свой app user id → Grant entitlement `pro` бессрочно: статус Founding User
-   хранится на телефоне, сервер видит только RevenueCat. У друга с lifetime entitlement уже есть.
+   хранится на телефоне, сервер видит только RevenueCat. Если покупателя не видно в панели:
+   Actions → RevenueCat → `grant` с этим id (итог показывает, видел ли RevenueCat его раньше).
+   У друга с lifetime entitlement уже есть.
 4. **Apple.** Запросить entitlement Private Cloud Compute (форма на
    developer.apple.com/private-cloud-compute, точный путь проверить там). На Mac проверить API:
    `grep -n "protocol LanguageModel\|class PrivateCloudComputeLanguageModel\|supportedLanguages\|supportsLocale\|quotaUsage" "$(xcrun --sdk iphoneos --show-sdk-path)/System/Library/Frameworks/FoundationModels.framework/Modules/FoundationModels.swiftmodule/arm64e-apple-ios.swiftinterface"`.

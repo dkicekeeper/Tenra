@@ -3,8 +3,9 @@
 //  TenraTests
 //
 //  The assistant loop with a scripted server and a fake toolkit: tools run on the phone,
-//  history stays append-only, results owed for `render_reply` open the next message, and a
-//  refused, truncated or failed turn leaves no trace.
+//  history stays append-only, results owed for `render_reply` open the next message, a reply
+//  sent next to other tools goes back as an error, and a refused, truncated or failed turn
+//  leaves no trace.
 //
 
 import Foundation
@@ -17,7 +18,7 @@ struct AgentConversationTests {
     @Test func runsToolsOnThePhoneAndEndsWithTheReply() async throws {
         let transport = ScriptedTransport([
             [.tool(name: "get_accounts"), AgentScript.done([AgentScript.thinking, AgentScript.toolUse("toolu_1", "get_accounts")])],
-            [.tool(name: "render_reply"), AgentScript.done([AgentScript.render("toolu_2", source: "toolu_1")])],
+            [.tool(name: "render_reply"), AgentScript.done([AgentScript.render("toolu_2", source: "r1")])],
         ])
         let toolkit = FakeToolkit()
         let conversation = AgentConversation(transport: transport, toolkit: toolkit)
@@ -28,7 +29,7 @@ struct AgentConversationTests {
         #expect(toolkit.executed == ["get_accounts"])
         #expect(progress == [.toolStarted("get_accounts"), .toolStarted("render_reply")])
         #expect(outcome.reply.mood == .happy)
-        #expect(outcome.results["toolu_1"]?.value(atPath: "total_base") == .number(2_334_450))
+        #expect(outcome.results["r1"]?.value(atPath: "total_base") == .number(2_334_450))
         #expect(outcome.model == "claude-haiku-5-5")
 
         let calls = transport.calls
@@ -41,6 +42,9 @@ struct AgentConversationTests {
         #expect(calls[1][1].content.first == AgentScript.thinking)
         #expect(calls[1][2].content.first?["type"] == "tool_result")
         #expect(calls[1][2].content.first?["tool_use_id"] == "toolu_1")
+        // The model never sees tool_use ids: the result names itself.
+        let sent = try #require(calls[1][2].content.first?["content"]?.stringValue)
+        #expect(sent.contains(#""result_id":"r1""#))
         #expect(conversation.messages.count == 4)
     }
 
@@ -79,16 +83,35 @@ struct AgentConversationTests {
         #expect(conversation.messages.isEmpty)
     }
 
+    @Test func aReplyNextToOtherToolsIsSentBack() async throws {
+        let transport = ScriptedTransport([
+            [AgentScript.done([AgentScript.toolUse("toolu_1", "get_accounts"), AgentScript.render("toolu_2", source: "toolu_guess")])],
+            [AgentScript.done([AgentScript.render("toolu_3", source: "r1")])],
+        ])
+        let toolkit = FakeToolkit()
+        let conversation = AgentConversation(transport: transport, toolkit: toolkit)
+
+        let outcome = try await conversation.send("Сколько у меня денег?")
+
+        #expect(toolkit.executed == ["get_accounts"])
+        #expect(transport.calls.count == 2)
+        let results = transport.calls[1][2].content
+        #expect(results.first?["tool_use_id"] == "toolu_1")
+        #expect(results.last?["tool_use_id"] == "toolu_2")
+        #expect(results.last?["is_error"] == .bool(true))
+        #expect(outcome.reply.blocks.last?.source == "r1")
+    }
+
     @Test func toolFailuresGoBackAsErrors() async throws {
         let transport = ScriptedTransport([
             [AgentScript.done([AgentScript.toolUse("toolu_1", "delete_everything")])],
-            [AgentScript.done([AgentScript.render("toolu_2", source: "toolu_1")])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "r1")])],
         ])
         let conversation = AgentConversation(transport: transport, toolkit: FakeToolkit())
 
         let outcome = try await conversation.send("…")
 
-        #expect(outcome.results["toolu_1"] == nil)
+        #expect(outcome.results.isEmpty)
         let result = try #require(transport.calls[1][2].content.first)
         #expect(result["is_error"] == .bool(true))
     }

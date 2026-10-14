@@ -27,6 +27,9 @@ on:
       effort:
         description: "eval: comma-separated effort levels"
         default: "low"
+      cases:
+        description: "eval: comma-separated case ids, or all"
+        default: "all"
 
 defaults:
   run:
@@ -91,7 +94,8 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MODELS: ${{ inputs.models }}
           EFFORT: ${{ inputs.effort }}
-        run: npm run eval -- --models "$MODELS" --effort "$EFFORT" --yes
+          CASES: ${{ inputs.cases }}
+        run: npm run eval -- --models "$MODELS" --effort "$EFFORT" --cases "$CASES" --yes
       - name: Summary
         if: always()
         run: cat eval/out/*/summary.md >> "$GITHUB_STEP_SUMMARY" || true

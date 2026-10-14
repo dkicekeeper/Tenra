@@ -39,7 +39,7 @@ export function readConfig(env: Partial<Env>): Config {
   const effort = (env.ASSISTANT_EFFORT ?? "low") as Effort;
   return {
     enabled: env.ASSISTANT_ENABLED !== "false",
-    model: env.ASSISTANT_MODEL || "claude-opus-5-5",
+    model: env.ASSISTANT_MODEL || "claude-haiku-5-5",
     effort: EFFORTS.includes(effort) ? effort : "low",
     maxTokens: int(env.ASSISTANT_MAX_TOKENS, 16000),
     proMonthlyCalls: int(env.PRO_MONTHLY_CALLS, 900),

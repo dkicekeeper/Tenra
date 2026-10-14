@@ -4,9 +4,11 @@
 //
 //  The assistant's reply, decoded from the input of its `render_reply` tool call. The model
 //  picks which cards to show; every figure in a card comes from a tool result by reference
-//  (`source` = the tool_use id, `path` = a dotted path inside that result), never from text
+//  (`source` = the result's `result_id`, `path` = a dotted path inside it), never from text
 //  (docs/plan-ai-assistant.md §3.3). Block types the app doesn't know yet decode as
-//  `.unsupported`, so the server can add one without breaking older builds.
+//  `.unsupported`, so the server can add one without breaking older builds. `render_reply`
+//  is not a strict tool (the API refuses the grammar of its block union), so a block the
+//  model got wrong decodes as `.unsupported` too, and the rest of the reply still shows.
 //
 
 import Foundation
@@ -120,8 +122,24 @@ nonisolated struct AgentReply: Sendable, Equatable, Decodable {
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        blocks = try c.decode([AgentBlock].self, forKey: .blocks)
+        blocks = try c.decode([LenientBlock].self, forKey: .blocks).map(\.block)
         mood = try c.decodeIfPresent(AgentMood.self, forKey: .mood) ?? .idle
-        suggestions = try c.decodeIfPresent([String].self, forKey: .suggestions) ?? []
+        suggestions = (try? c.decodeIfPresent([String].self, forKey: .suggestions)) ?? []
+    }
+
+    /// A block with a missing or mistyped field shows nothing instead of failing the reply.
+    private nonisolated struct LenientBlock: Decodable {
+        let block: AgentBlock
+
+        private enum CodingKeys: String, CodingKey { case type }
+
+        init(from decoder: Decoder) throws {
+            if let block = try? AgentBlock(from: decoder) {
+                self.block = block
+            } else {
+                let type = try? decoder.container(keyedBy: CodingKeys.self).decode(String.self, forKey: .type)
+                self.block = .unsupported(type: type ?? "")
+            }
+        }
     }
 }

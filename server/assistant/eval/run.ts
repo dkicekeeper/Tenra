@@ -10,7 +10,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { buildParams, normalizeForEcho } from "../src/claude";
 import { readConfig, type Effort } from "../src/config";
-import { RENDER_REPLY } from "../src/tools";
+import { RENDER_REPLY, RENDER_REPLY_TOO_EARLY } from "../src/tools";
 import { CASES, type EvalCase } from "./cases";
 import { appContext } from "./fixture";
 import { caseCheck, universalChecks, type CheckResult, type Reply, type RunRecord } from "./grade";
@@ -77,8 +77,16 @@ async function runCase(client: Anthropic, model: string, effort: Effort, testCas
       }
       const results: Anthropic.Beta.BetaToolResultBlockParam[] = [];
       let rendered = false;
+      // As the app does (AgentConversation.swift): render_reply next to other calls can only
+      // guess their ids, so it goes back as an error and the loop goes on.
+      const replyTooEarly = uses.length > 1;
       for (const use of uses) {
         const input = (use.input ?? {}) as Record<string, unknown>;
+        if (use.name === RENDER_REPLY && replyTooEarly) {
+          record.calls.push({ id: use.id, name: use.name, input, error: RENDER_REPLY_TOO_EARLY });
+          results.push({ type: "tool_result", tool_use_id: use.id, content: RENDER_REPLY_TOO_EARLY, is_error: true });
+          continue;
+        }
         if (use.name === RENDER_REPLY) {
           rendered = true;
           record.reply = input as unknown as Reply;
@@ -87,8 +95,11 @@ async function runCase(client: Anthropic, model: string, effort: Effort, testCas
           continue;
         }
         try {
-          const result = executeTool(use.name, input);
-          record.calls.push({ id: use.id, name: use.name, input, result });
+          // As the app does: the model never sees tool_use ids, so each result names itself.
+          const ref = `r${record.calls.filter((c) => c.ref).length + 1}`;
+          const raw = executeTool(use.name, input);
+          const result = raw && typeof raw === "object" && !Array.isArray(raw) ? { result_id: ref, ...raw } : { result_id: ref, value: raw };
+          record.calls.push({ id: use.id, ref, name: use.name, input, result });
           results.push({ type: "tool_result", tool_use_id: use.id, content: JSON.stringify(result) });
         } catch (error) {
           const detail = error instanceof ToolInputError ? error.message : String(error);

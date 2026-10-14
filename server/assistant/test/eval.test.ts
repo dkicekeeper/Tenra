@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CASES } from "../eval/cases";
 import { TODAY, TRANSACTIONS } from "../eval/fixture";
-import { caseCheck, universalChecks, type RunRecord } from "../eval/grade";
+import { blockProblems, caseCheck, universalChecks, type RunRecord } from "../eval/grade";
 import { executeTool, resetDrafts, simulate } from "../eval/simulator";
 
 // The harness itself, without the API: the fixture is sane, and the grader passes a correct
@@ -45,8 +45,8 @@ describe("grader", () => {
   const record = (text: string, path = "total"): RunRecord => {
     const input = { from: "2026-10-01", to: "2026-10-28", type: "expense", group_by: "none", category_ids: ["cat_cafe"] };
     return {
-      calls: [{ id: "toolu_a", name: "get_spending_summary", input, result: executeTool("get_spending_summary", input) }],
-      reply: { blocks: [{ type: "text", text }, { type: "metric", label: "Кафе, октябрь", source: "toolu_a", path, trend_path: null }], mood: "idle", suggestions: [] },
+      calls: [{ id: "toolu_a", ref: "r1", name: "get_spending_summary", input, result: executeTool("get_spending_summary", input) }],
+      reply: { blocks: [{ type: "text", text }, { type: "metric", label: "Кафе, октябрь", source: "r1", path, trend_path: null }], mood: "idle", suggestions: [] },
     };
   };
 
@@ -61,6 +61,10 @@ describe("grader", () => {
     expect(money.find((c) => c.name === "no_money_in_text")?.pass).toBe(false);
     const broken = universalChecks(record("Кафе выросли.", "totals.sum"), "ru");
     expect(broken.find((c) => c.name === "refs_resolve")?.pass).toBe(false);
+    // The model never sees tool_use ids: a block pointing at one resolves nothing.
+    const byToolUseId = record("Кафе выросли.");
+    byToolUseId.reply!.blocks[1]!.source = "toolu_a";
+    expect(universalChecks(byToolUseId, "ru").find((c) => c.name === "refs_resolve")?.pass).toBe(false);
     const english = universalChecks(record("Cafes went up in October."), "ru");
     expect(english.find((c) => c.name === "language")?.pass).toBe(false);
   });
@@ -75,6 +79,16 @@ describe("grader", () => {
     const openCase = CASES.find((c) => c.id === "ru-open-category")!;
     expect(caseCheck(open({ destination: "category", target_id: "cat_cafe" }), openCase.checks[0]!).pass).toBe(true);
     expect(caseCheck(open({ destination: "analytics", target_id: null }), openCase.checks[0]!).pass).toBe(false);
+  });
+
+  it("holds blocks to what the app decodes", () => {
+    expect(blockProblems({ type: "metric", label: "Кафе", source: "toolu_a", path: "total", trend_path: null })).toEqual([]);
+    expect(blockProblems({ type: "transactions", source: "toolu_a" })).toEqual([]);
+    expect(blockProblems({ type: "metric", label: "Кафе", source: "toolu_a" })).toEqual(["metric.path = missing"]);
+    expect(blockProblems({ type: "chart", kind: "pie", title: "Кафе", source: "toolu_a", path: "groups" })).toEqual(['chart.kind = "pie"']);
+    expect(blockProblems({ type: "hologram" })).toEqual(["unknown type hologram"]);
+    const r: RunRecord = { calls: [], reply: { blocks: [{ type: "text" }], mood: "idle", suggestions: [] } };
+    expect(universalChecks(r, "ru").find((c) => c.name === "blocks_decode")?.pass).toBe(false);
   });
 
   it("catches a claim that a draft was saved", () => {

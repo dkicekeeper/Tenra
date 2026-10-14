@@ -40,7 +40,7 @@ struct AssistantViewModelTests {
     @Test func aQuestionAndItsReplyJoinTheThread() async {
         let transport = ScriptedTransport([
             [.tool(name: "get_accounts"), AgentScript.done([AgentScript.toolUse("toolu_1", "get_accounts")])],
-            [AgentScript.done([AgentScript.render("toolu_2", source: "toolu_1", mood: "celebrate", suggestions: ["Ещё"])])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "r1", mood: "celebrate", suggestions: ["Ещё"])])],
         ])
         let model = makeModel(transport)
 
@@ -54,7 +54,7 @@ struct AssistantViewModelTests {
             return
         }
         #expect(reply.mood == .celebrate)
-        #expect(results["toolu_1"]?["total_base"] == .number(2_334_450))
+        #expect(results["r1"]?["total_base"] == .number(2_334_450))
         #expect(model.replyMood == .celebrate)
         #expect(model.suggestions == ["Ещё"])
     }

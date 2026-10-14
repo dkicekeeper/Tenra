@@ -225,6 +225,7 @@ fr-ключей в 1.3). **08.10: первая покупка**, lifetime за 2
   показов там почти нет.
 - [ ] **Специальные страницы и тест страницы** (§5 D): четыре страницы одобрены 13.10 и работают; тест страницы «голос, валюты, финансы» идёт с 13.10 (50% посетителей, до 90 дней, итоги в App Analytics → Product Page Optimization). Через 4 недели сравнить конверсию страниц в App Analytics → Acquisition, тест смотреть там же (до 90 дней). Ссылки (для ASA и соцсетей): [подписки](https://apps.apple.com/app/id6761530361?ppid=578d9f4a-4767-4b26-aca0-b7c719c91de3), [голос](https://apps.apple.com/app/id6761530361?ppid=0150c8f6-1f96-4944-bd88-09de3aed233c), [валюты](https://apps.apple.com/app/id6761530361?ppid=9e44b559-0571-4259-b514-f870a0404eb2), [депозиты и кредиты](https://apps.apple.com/app/id6761530361?ppid=23fa027e-1341-4344-8d3e-e5567b713dda).
 - [ ] **RevenueCat API-ключ** для субботней сессии: тогда пробные периоды и MRR попадают в §6 сами.
-- [ ] **ИИ-ассистент, подготовка** (основатель): секреты Cloudflare, Anthropic и RevenueCat в
-  GitHub, KV, entitlement Private Cloud Compute ([plan-ai-assistant.md](plan-ai-assistant.md) §5.1).
+- [ ] **ИИ-ассистент, подготовка** (основатель): секреты и KV готовы, сервер развёрнут (14.10, модель
+  Haiku 5.5); осталось entitlement Private Cloud Compute и `pro` себе в RevenueCat
+  ([plan-ai-assistant.md](plan-ai-assistant.md) §5.1).
 - [ ] Ответы на отзывы, паритет ключей, `семейный` (§5 A и C).

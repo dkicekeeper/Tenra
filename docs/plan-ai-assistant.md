@@ -376,8 +376,7 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
       инструментов, 24 вопроса RU/EN, проверки (верный инструмент, цифры только по ссылкам на
       результаты, нет сумм в тексте, черновик вместо «сохранил», язык, prompt injection в заметке).
 - [x] Страны Anthropic API: Казахстан да, Россия и Беларусь нет.
-- [ ] Шаги владельца из §5.1, затем прогон стенда (Actions → Assistant server → eval, до ~$5) и
-      выбор модели и effort по таблице.
+- [x] Шаги владельца из §5.1, прогон стенда, выбор модели: Haiku 5.5, effort low (§6).
 - [ ] На Mac проверить по swiftinterface iOS 27 SDK: `LanguageModel`, `PrivateCloudComputeLanguageModel`
       (инициализация, квоты, `supportedLanguages`: есть ли русский), `Tool`, Dynamic Profiles (§5.1).
 - [ ] Запросить entitlement Private Cloud Compute для аккаунта.
@@ -410,7 +409,11 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
 Сделано (2026-10-14): KV `tenra-assistant-quota` в `wrangler.toml`, секреты в GitHub, сервер
 развёрнут на `https://tenra-assistant.dakacom.workers.dev` (`/v1/health` отвечает, RevenueCat и KV
 работают), адрес в `Info.plist` (`TenraAssistantURL`), так что вкладка ассистента появляется в режиме
-«+». Модель выбирается по прогону стенда.
+«+». Стенд против настоящего API нашёл три ошибки протокола (strict-грамматика `render_reply`,
+ответ вместе с другими вызовами, ссылки на невидимые модели `tool_use` id, §3.3 и §3.7), после
+исправлений 25/25; в проде Haiku 5.5, промпт `2026-10-14.2`. TestFlight 1.6 (10) от 14.10 несёт
+эти исправления и адрес сервера. Осталось у владельца: entitlement
+Private Cloud Compute (п. 4) и `pro` себе в RevenueCat (п. 3).
 
 **Фаза 1. «Спросить» (3-4 недели) → TestFlight как Tenra AI (beta)**
 - [x] `FinanceToolkit` (чтение), прокси с квотами, App Attest на сервере и в приложении.

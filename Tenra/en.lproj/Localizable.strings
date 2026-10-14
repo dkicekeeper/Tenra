@@ -1904,7 +1904,7 @@
 "assistant.topic.history.changes" = "What changed in my spending this month?";
 "assistant.topic.history.unusual" = "Find unusual spending";
 "assistant.recent" = "Recent chats";
-"assistant.history" = "History";
+"assistant.recent.delete" = "Delete chat";
 "assistant.notice.title" = "Ten writes";
 "assistant.notice.goThrough" = "Go through it";
 "assistant.notice.hide" = "Hide";
@@ -1927,7 +1927,6 @@
 "composer.send" = "Send";
 "composer.voice" = "Dictate";
 "assistant.composer.placeholder" = "Ask about your money…";
-"assistant.newChat" = "New chat";
 "assistant.preset.month" = "My spending this month";
 "assistant.preset.compare" = "Compare with last month";
 "assistant.preset.budgets" = "How are my budgets?";

@@ -148,7 +148,8 @@ class AppCoordinator {
                     load: { await threads.latest() },
                     save: { await threads.save($0) },
                     recent: { await threads.recent(limit: $0) },
-                    thread: { await threads.thread(id: $0) }
+                    thread: { await threads.thread(id: $0) },
+                    delete: { await threads.delete(id: $0) }
                 )
             }
         )

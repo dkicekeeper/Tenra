@@ -78,7 +78,7 @@ private struct AssistantBlockView: View {
 // MARK: - Text
 
 /// A text block: its Markdown as headings, paragraphs, lists and notes (AgentReplyMarkdown,
-/// DesignKit's ArticleBody).
+/// DesignKit's ArticleBody). A long press copies it.
 struct AssistantText: View {
     let text: String
 
@@ -88,6 +88,7 @@ struct AssistantText: View {
 
     var body: some View {
         ArticleBody(AgentReplyMarkdown.blocks(text), spacing: AppSpacing.sm)
+            .textSelection(.enabled)
     }
 }
 

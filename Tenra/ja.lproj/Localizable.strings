@@ -1904,7 +1904,7 @@
 "assistant.topic.history.changes" = "今月の支出で何が変わった？";
 "assistant.topic.history.unusual" = "いつもと違う支出を見つけて";
 "assistant.recent" = "最近の会話";
-"assistant.history" = "履歴";
+"assistant.recent.delete" = "チャットを削除";
 "assistant.notice.title" = "テンからのお知らせ";
 "assistant.notice.goThrough" = "詳しく見る";
 "assistant.notice.hide" = "非表示";
@@ -1927,7 +1927,6 @@
 "composer.send" = "送信";
 "composer.voice" = "音声入力";
 "assistant.composer.placeholder" = "お金について質問…";
-"assistant.newChat" = "新しいチャット";
 "assistant.preset.month" = "今月の支出";
 "assistant.preset.compare" = "先月と比べて";
 "assistant.preset.budgets" = "予算の状況は？";

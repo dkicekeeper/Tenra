@@ -1904,7 +1904,7 @@
 "assistant.topic.history.changes" = "O que mudou nos meus gastos este mês?";
 "assistant.topic.history.unusual" = "Encontre gastos fora do comum";
 "assistant.recent" = "Conversas recentes";
-"assistant.history" = "Histórico";
+"assistant.recent.delete" = "Excluir chat";
 "assistant.notice.title" = "Ten escreve";
 "assistant.notice.goThrough" = "Analisar";
 "assistant.notice.hide" = "Ocultar";
@@ -1927,7 +1927,6 @@
 "composer.send" = "Enviar";
 "composer.voice" = "Ditar";
 "assistant.composer.placeholder" = "Pergunte sobre seu dinheiro…";
-"assistant.newChat" = "Nova conversa";
 "assistant.preset.month" = "Meus gastos deste mês";
 "assistant.preset.compare" = "Compare com o mês passado";
 "assistant.preset.budgets" = "Como estão meus orçamentos?";

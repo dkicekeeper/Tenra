@@ -1904,7 +1904,7 @@
 "assistant.topic.history.changes" = "Bu ay harcamalarımda ne değişti?";
 "assistant.topic.history.unusual" = "Olağan dışı harcamaları bul";
 "assistant.recent" = "Son sohbetler";
-"assistant.history" = "Geçmiş";
+"assistant.recent.delete" = "Sohbeti sil";
 "assistant.notice.title" = "Ten yazıyor";
 "assistant.notice.goThrough" = "İncele";
 "assistant.notice.hide" = "Gizle";
@@ -1927,7 +1927,6 @@
 "composer.send" = "Gönder";
 "composer.voice" = "Dikte et";
 "assistant.composer.placeholder" = "Paranla ilgili sor…";
-"assistant.newChat" = "Yeni sohbet";
 "assistant.preset.month" = "Bu ayki harcamalarım";
 "assistant.preset.compare" = "Geçen ayla karşılaştır";
 "assistant.preset.budgets" = "Bütçelerim ne durumda?";

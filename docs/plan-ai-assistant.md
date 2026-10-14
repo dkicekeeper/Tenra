@@ -148,9 +148,9 @@ Higgsfield вырос не на пустом окне чата, а на **пре
 
 Прокси: Cloudflare Worker в `server/assistant/` (протокол в §3.7). Прячет ключ Anthropic,
 проверяет Pro через RevenueCat, держит квоты в KV, **не логирует содержимое**, имеет выключатель
-`ASSISTANT_ENABLED`, чтобы остановить облако без релиза. Без Pro облако отвечает только
-приложению, прошедшему App Attest (§3.7): бесплатная квота считается на аттестованный ключ, а не
-на идентификатор, который выбирает клиент. Россия и Беларусь не входят в
+`ASSISTANT_ENABLED`, чтобы остановить облако без релиза. Облако отвечает только приложению,
+прошедшему App Attest (§3.7), с Pro и без: бесплатная квота считается на аттестованный ключ, а не
+на идентификатор, который выбирает клиент, а чужой Pro-идентификатор без подписи не работает. Россия и Беларусь не входят в
 [страны Anthropic API](https://www.anthropic.com/supported-countries), Казахстан входит: сервер
 отвечает 451 по стране запроса, приложение прячет облачный режим в витринах RU и BY.
 
@@ -280,22 +280,22 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
   дата или справочники.
 - Ошибки до стрима: 400 `invalid`, 401 `user`, 401 `attest` (с `reason`), 429 `quota` или
   `busy`, 451 `region_unavailable`, 502 `entitlement_unavailable`, 503 `disabled`.
-- **App Attest** (`src/appattest.ts`): без Pro ход принимается только из настоящего приложения на
-  настоящем устройстве. Раз на установку: `GET /v1/attest/challenge` → `{challenge}` (одноразовый,
+- **App Attest** (`src/appattest.ts`): ход принимается только из настоящего приложения на
+  настоящем устройстве, с Pro и без (идентификатор пользователя только заявка: без подписи чужой
+  Pro-идентификатор тратил бы чужую квоту). Раз на установку: `GET /v1/attest/challenge` → `{challenge}` (одноразовый,
   5 минут), приложение делает ключ `DCAppAttestService` и аттестацию с `clientDataHash =
   SHA256(challenge)`, `POST /v1/attest {keyId, attestation, challenge}`. Сервер проверяет цепочку до
   корня Apple App Attestation (`src/apple-root.ts`), nonce в листовом сертификате, keyId, app id
   (`APP_ID` = `SY2L2VMQP7.dakacom.Tenra`), нулевой счётчик, окружение (production и development) и
-  credential id, и хранит открытый ключ в KV. Каждый ход без Pro несёт `x-tenra-key` и
+  credential id, и хранит открытый ключ в KV. Каждый ход несёт `x-tenra-key` и
   `x-tenra-assertion` (подпись тела запроса); счётчик подписи растёт, повтор запроса отклоняется.
   Бесплатная квота считается на ключ: `FREE_MONTHLY_CALLS` = 150 вызовов в месяц, сверх лимита
   приложения (30 ответов за первую неделю, потом 10 в месяц). Тесты на синтетической цепочке:
   `test/fixtures/make-appattest.mjs`.
 - В приложении: `AgentAttestation` (`Services/Agent`) регистрирует ключ при первом ходе (key id в
   UserDefaults: ключ App Attest не переживает переустановку), `AgentServerClient` подписывает
-  каждое тело; ответ `unknown_key` даёт новый ключ и один повтор. Без подписи ход уходит как
-  есть: с Pro сервер её не требует. Simulator и устройства без App Attest получают облако только
-  с Pro. Лимит приложения проверяет `AssistantViewModel.Access` до отправки: вопрос сверх лимита
+  каждое тело; ответ `unknown_key` даёт новый ключ и один повтор. На Simulator и устройствах без
+  App Attest вкладка ассистента показывает «недоступен на этом устройстве». Лимит приложения проверяет `AssistantViewModel.Access` до отправки: вопрос сверх лимита
   не уходит, остаётся в ленте с карточкой Pro и отправляется после оформления (`retry()`).
 - Модель, effort и лимиты: переменные в `wrangler.toml`; ключи: секреты Worker.
 
@@ -314,7 +314,7 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
 «Повторить», `<app_context>` только при изменении), `Views/Assistant/` (лента, блоки как
 карточки приложения: `TransactionCardView`, `BudgetProgressRow`, `SubscriptionCard`,
 `InsightsCardView`, `MetricCard`, разбивка `CategoryBreakdownRow`), вкладка в режиме «+»
-(`AssistantTab`, только Pro, пока нет App Attest). Бесплатный лимит: `AssistantAllowance` и
+(`AssistantTab`, только там, где есть App Attest). Бесплатный лимит: `AssistantAllowance` и
 `AssistantUsageStore` (Keychain), ещё не подключены.
 
 ---
@@ -507,7 +507,7 @@ Pro для всех, с одной месячной квотой (`PRO_MONTHLY_C
 - **Учёт:** действия на телефоне (голос, вложения) считает приложение, счётчик в Keychain
   переживает переустановку. Облачные ответы считает и сервер (`FREE_MONTHLY_CALLS` на ключ App
   Attest, §3.7), так что сменой идентификатора квоту не обойти. Устройству без App Attest облако
-  только с Pro; бесплатно ему отвечает Apple там, где язык поддержан.
+  недоступно; отвечать ему может только Apple там, где язык поддержан.
 - **Pro:** без лимита в рамках fair-use (`PRO_MONTHLY_CALLS`), включая Founding Users и lifetime.
   Остальной Pro (4-й счёт, депозиты, кредиты) не меняется.
 

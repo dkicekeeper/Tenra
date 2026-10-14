@@ -11,12 +11,6 @@ with the commit of every fix, are in
 
 ## Open
 
-- **Assistant: Pro turns skip App Attest.** The server trusts the RevenueCat app user id in
-  the request for Pro customers and checks App Attest only on the free tier
-  (`server/assistant/src/index.ts`), so anyone who learns a Pro customer's id can spend their
-  monthly quota (900 calls, about $1 on Haiku 5.5). Fix: require the assertion on every turn,
-  or bind the id to the attested key at registration. Ids stay out of public logs meanwhile
-  (`revenuecat.yml` masks them).
 - **Wallet probe code (DEBUG only).** The spike it served (does logging Apple Pay through the
   Shortcuts "Wallet" automation work?) was overtaken by the shipped automation (1.4, merchant
   memory; [domains/intents.md](domains/intents.md) §6). `WalletPaymentProbeIntent`,

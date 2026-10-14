@@ -1861,6 +1861,7 @@
 "assistant.error.pro" = "アシスタントは Tenra Pro の機能です。";
 "assistant.error.region" = "お住まいの地域ではまだアシスタントを利用できません。";
 "assistant.error.unavailable" = "アシスタントは現在利用できません。後でもう一度お試しください。";
+"assistant.error.device" = "このデバイスではアシスタントを利用できません。";
 "assistant.error.refused" = "その内容にはお答えできません。お金のことを聞いてください。";
 "assistant.error.freeLimit" = "無料の回答は今のところ上限に達しました。Tenra Pro なら引き続き質問できます。";
 "assistant.allowance.renews" = "%@から新しい無料回答";
@@ -1890,8 +1891,6 @@
 "assistant.preset.budgets" = "予算の状況は？";
 "assistant.preset.subscriptions" = "サブスクの合計はいくら？";
 "assistant.preset.allowance" = "給料日まで1日いくら使える？";
-"premium.locked.assistant.title" = "Tenra Pro のアシスタント";
-"premium.locked.assistant.message" = "支出、予算、サブスクについて質問すると、カードで答えが届きます。";
 "common.retry" = "再試行";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

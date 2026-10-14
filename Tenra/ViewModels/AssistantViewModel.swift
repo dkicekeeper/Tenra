@@ -243,8 +243,8 @@ enum AssistantFailure: Equatable {
             case .unauthorized: self = .proRequired
             case .regionUnavailable: self = .regionUnavailable
             case .disabled, .notConfigured, .entitlementUnavailable: self = .unavailable
-            // A device that cannot prove it runs the app gets the cloud only with Pro.
-            case .attestation: self = .proRequired
+            // The server could not verify this app instance; Pro does not change that.
+            case .attestation: self = .unavailable
             case .invalidRequest, .http: self = .generic
             }
         case let error as AgentConversationError:

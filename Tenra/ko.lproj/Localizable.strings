@@ -1861,6 +1861,7 @@
 "assistant.error.pro" = "어시스턴트는 Tenra Pro에 포함되어 있습니다.";
 "assistant.error.region" = "아직 해당 지역에서는 어시스턴트를 사용할 수 없습니다.";
 "assistant.error.unavailable" = "지금은 어시스턴트를 사용할 수 없습니다. 나중에 다시 시도하세요.";
+"assistant.error.device" = "이 기기에서는 어시스턴트를 사용할 수 없습니다.";
 "assistant.error.refused" = "그 부분은 도와드릴 수 없습니다. 돈에 관해 물어보세요.";
 "assistant.error.freeLimit" = "무료 답변을 지금은 모두 사용했습니다. Tenra Pro에서는 계속 질문할 수 있습니다.";
 "assistant.allowance.renews" = "%@부터 새 무료 답변";
@@ -1890,8 +1891,6 @@
 "assistant.preset.budgets" = "예산은 어때?";
 "assistant.preset.subscriptions" = "구독료는 얼마야?";
 "assistant.preset.allowance" = "월급날까지 하루에 얼마 쓸 수 있을까?";
-"premium.locked.assistant.title" = "Tenra Pro 어시스턴트";
-"premium.locked.assistant.message" = "지출, 예산, 구독에 대해 물어보면 카드로 답을 받아요.";
 "common.retry" = "다시 시도";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

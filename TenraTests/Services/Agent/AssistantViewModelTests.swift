@@ -253,8 +253,9 @@ struct AssistantViewModelTests {
         #expect(box.usage == AssistantUsage())
     }
 
-    @Test func aDeviceWithoutAttestationIsOfferedPro() {
-        #expect(AssistantFailure(AgentServerError.attestation(reason: "unsupported")) == .proRequired)
+    @Test func aFailedAttestationIsNotSoldAsPro() {
+        // The server checks App Attest for Pro too, so Pro would not help.
+        #expect(AssistantFailure(AgentServerError.attestation(reason: "unsupported")) == .unavailable)
     }
 
     @Test func stepsAreNamedAfterTheTools() {

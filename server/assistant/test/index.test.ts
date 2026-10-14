@@ -86,4 +86,25 @@ describe("App Attest", () => {
     expect(await signed.json()).toMatchObject({ error: "quota", tier: "free", limit: 0 });
     expect(JSON.parse(kv.store.get(`attest-key:${fixture.keyId}`)!).counter).toBe(1);
   });
+
+  it("asks a Pro customer for an assertion too, then counts the customer", async () => {
+    const kv = new MemoryKV();
+    await kv.put("tier:p", "pro");
+    await kv.put(`attest-key:${fixture.keyId}`, await storedKey());
+    const config = { APP_ID: fixture.appId, PRO_MONTHLY_CALLS: "0" };
+    const payload = body([userTurn("hi")]);
+
+    // A Pro id alone is only a claim.
+    const missing = await worker.fetch(post({ "x-tenra-user": "p" }, payload), env(config, kv), ctx);
+    expect(missing.status).toBe(401);
+    expect(await missing.json()).toEqual({ error: "attest", reason: "missing" });
+
+    const signed = await worker.fetch(
+      post({ "x-tenra-user": "p", "x-tenra-key": fixture.keyId, "x-tenra-assertion": await assertion(new TextEncoder().encode(payload), 1) }, payload),
+      env(config, kv),
+      ctx,
+    );
+    expect(signed.status).toBe(429);
+    expect(await signed.json()).toMatchObject({ error: "quota", tier: "pro", limit: 0 });
+  });
 });

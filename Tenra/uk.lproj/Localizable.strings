@@ -1861,6 +1861,7 @@
 "assistant.error.pro" = "Асистент входить у Tenra Pro.";
 "assistant.error.region" = "Асистент поки недоступний у вашому регіоні.";
 "assistant.error.unavailable" = "Асистент зараз недоступний. Спробуйте пізніше.";
+"assistant.error.device" = "Асистент недоступний на цьому пристрої.";
 "assistant.error.refused" = "З цим я не допоможу. Запитайте про ваші гроші.";
 "assistant.error.freeLimit" = "Безкоштовні відповіді поки закінчилися. З Tenra Pro можна питати далі.";
 "assistant.allowance.renews" = "Нові безкоштовні відповіді з %@";
@@ -1890,8 +1891,6 @@
 "assistant.preset.budgets" = "Як справи з бюджетами?";
 "assistant.preset.subscriptions" = "Скільки коштують мої підписки?";
 "assistant.preset.allowance" = "Скільки можна витрачати на день до зарплати?";
-"premium.locked.assistant.title" = "Асистент у Tenra Pro";
-"premium.locked.assistant.message" = "Запитуйте про витрати, бюджети й підписки та отримуйте відповідь картками.";
 "common.retry" = "Повторити";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

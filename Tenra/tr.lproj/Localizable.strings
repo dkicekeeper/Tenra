@@ -1861,6 +1861,7 @@
 "assistant.error.pro" = "Asistan Tenra Pro’ya dahildir.";
 "assistant.error.region" = "Asistan henüz bölgende kullanılamıyor.";
 "assistant.error.unavailable" = "Asistan şu an kullanılamıyor. Daha sonra tekrar dene.";
+"assistant.error.device" = "Asistan bu cihazda kullanılamıyor.";
 "assistant.error.refused" = "Bu konuda yardımcı olamam. Bana paranla ilgili sor.";
 "assistant.error.freeLimit" = "Ücretsiz yanıtlar şimdilik bitti. Tenra Pro ile sormaya devam edebilirsin.";
 "assistant.allowance.renews" = "Yeni ücretsiz yanıtlar %@ tarihinde";
@@ -1890,8 +1891,6 @@
 "assistant.preset.budgets" = "Bütçelerim ne durumda?";
 "assistant.preset.subscriptions" = "Aboneliklerim ne kadar tutuyor?";
 "assistant.preset.allowance" = "Maaşa kadar günde ne kadar harcayabilirim?";
-"premium.locked.assistant.title" = "Tenra Pro ile asistan";
-"premium.locked.assistant.message" = "Harcamalarını, bütçelerini ve aboneliklerini sor, cevabı kartlarla al.";
 "common.retry" = "Tekrar dene";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

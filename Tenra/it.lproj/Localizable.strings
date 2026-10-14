@@ -1861,6 +1861,7 @@
 "assistant.error.pro" = "L’assistente fa parte di Tenra Pro.";
 "assistant.error.region" = "L’assistente non è ancora disponibile nella tua zona.";
 "assistant.error.unavailable" = "L’assistente non è disponibile ora. Riprova più tardi.";
+"assistant.error.device" = "L’assistente non è disponibile su questo dispositivo.";
 "assistant.error.refused" = "Con questo non posso aiutarti. Chiedimi dei tuoi soldi.";
 "assistant.error.freeLimit" = "Le risposte gratuite sono finite per ora. Con Tenra Pro puoi continuare a chiedere.";
 "assistant.allowance.renews" = "Nuove risposte gratuite dal %@";
@@ -1890,8 +1891,6 @@
 "assistant.preset.budgets" = "Come vanno i miei budget?";
 "assistant.preset.subscriptions" = "Quanto costano i miei abbonamenti?";
 "assistant.preset.allowance" = "Quanto posso spendere al giorno fino allo stipendio?";
-"premium.locked.assistant.title" = "Assistente con Tenra Pro";
-"premium.locked.assistant.message" = "Chiedi di spese, budget e abbonamenti e ricevi la risposta in schede.";
 "common.retry" = "Riprova";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

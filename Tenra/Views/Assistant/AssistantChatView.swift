@@ -7,8 +7,10 @@
 //  app's own cards, the step the assistant is on while it works, its suggestions for what to
 //  ask next, and the field. The navigation bar holds only the way back to the home and Ten in
 //  the middle, 120 pt (the owner's size): it rises into the bar and hangs over the top of the
-//  thread, with no backing of its own, drawn over the content that scrolls under it. The tab
-//  bar steps aside (TabBarVisibility), so the chat has the screen.
+//  thread, with no backing of its own. The thread scrolls under it and fades out softly as it
+//  goes (a mask: gone under Ten's upper half, back by its lower edge), so the text never runs
+//  through the particles. The tab bar steps aside (TabBarVisibility), so the chat has the
+//  screen.
 //
 //  Ten shows what is going on: thinking while it runs tools, answering while it writes, the
 //  reply's mood after, confused or sad when a question could not be answered. The reply's text
@@ -44,6 +46,8 @@ struct AssistantChatView: View {
     @State private var scrollPosition = ScrollPosition(idType: UUID.self)
     /// The thread's visible height, which the latest turn fills at least.
     @State private var viewportHeight: CGFloat = 0
+    /// Ten's lower edge in the window, where the thread is back in full.
+    @State private var mascotBottom: CGFloat = 0
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -52,7 +56,8 @@ struct AssistantChatView: View {
             // the content that scrolls under it, never under it, and taking no room of its own.
             ParticleCreature(mood: mascotMood)
                 .frame(width: AssistantMetrics.chatMascot, height: AssistantMetrics.chatMascot)
-                .offset(y: -AssistantMetrics.chatMascotLift)
+                .padding(.top, -AssistantMetrics.chatMascotLift)
+                .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: { mascotBottom = $0 }
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
         }
@@ -128,6 +133,9 @@ struct AssistantChatView: View {
         .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
         // The part of Ten below the navigation bar: the thread starts under it.
         .safeAreaPadding(.top, AssistantMetrics.chatMascot - AssistantMetrics.chatMascotLift)
+        // Scrolled up, the thread fades out under Ten instead of running through it. The field
+        // stays outside the mask: its glass sees the page as it is.
+        .mask { threadFade }
         .safeAreaBar(edge: .bottom) {
             AssistantComposerBar(
                 model: model,
@@ -160,6 +168,23 @@ struct AssistantChatView: View {
     }
 
     // MARK: - Thread
+
+    /// The thread's mask: clear under the navigation bar and Ten's upper half, fading in over
+    /// its lower half, whole from its lower edge down. Placed in the window's coordinates, so it
+    /// lines up with Ten wherever the scroll view's own frame starts.
+    private var threadFade: some View {
+        GeometryReader { proxy in
+            let hidden = max(0, mascotBottom - AssistantMetrics.chatMascotFade - proxy.frame(in: .global).minY)
+            VStack(spacing: 0) {
+                Color.clear
+                    .frame(height: hidden)
+                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                    .frame(height: AssistantMetrics.chatMascotFade)
+                Rectangle()
+            }
+        }
+        .ignoresSafeArea()
+    }
 
     /// Where the latest turn starts: the last question or attachment.
     private var currentTurnStart: Int {

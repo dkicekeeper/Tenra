@@ -2052,3 +2052,22 @@
 "assistant.topic.goal.faster" = "Як швидше накопичити на «%@»?";
 "assistant.topic.debt.status" = "Скільки залишилось за боргом: %@?";
 "assistant.topic.debt.plan" = "Як повернути борг вчасно: %@?";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Доброго ранку!";
+"assistant.chatter.afternoon" = "Добрий день!";
+"assistant.chatter.evening" = "Добрий вечір!";
+"assistant.chatter.night" = "Тсс… уже пізно";
+"assistant.chatter.askMe" = "Запитайте мене про що завгодно";
+"assistant.chatter.hmm" = "Хм…";
+"assistant.chatter.counting" = "Рахую…";
+"assistant.chatter.looking" = "Зараз подивлюся…";
+"assistant.chatter.yay" = "Ура!";
+"assistant.chatter.offline" = "Немає зв’язку…";
+"assistant.chatter.unclear" = "Не зовсім зрозуміло. Ще раз?";
+"assistant.chatter.tickles" = "Лоскотно!";
+"assistant.chatter.here" = "Я тут!";
+"assistant.chatter.help" = "Чим допомогти?";
+"assistant.chatter.hehe" = "Хі-хі";
+"assistant.chatter.dizzy" = "Ой, усе крутиться!";
+"settings.assistant.chatter" = "Тен базікає";

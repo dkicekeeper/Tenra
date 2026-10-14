@@ -2052,3 +2052,22 @@
 "assistant.topic.goal.faster" = "Comment épargner plus vite pour « %@ » ?";
 "assistant.topic.debt.status" = "Combien reste-t-il sur la dette avec %@ ?";
 "assistant.topic.debt.plan" = "Comment rembourser %@ à temps ?";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Bonjour !";
+"assistant.chatter.afternoon" = "Bon après-midi !";
+"assistant.chatter.evening" = "Bonsoir !";
+"assistant.chatter.night" = "Chut… il est tard";
+"assistant.chatter.askMe" = "Posez-moi une question";
+"assistant.chatter.hmm" = "Hmm…";
+"assistant.chatter.counting" = "Je calcule…";
+"assistant.chatter.looking" = "Je regarde…";
+"assistant.chatter.yay" = "Youpi !";
+"assistant.chatter.offline" = "Pas de connexion…";
+"assistant.chatter.unclear" = "Pas très clair. Encore une fois ?";
+"assistant.chatter.tickles" = "Ça chatouille !";
+"assistant.chatter.here" = "Je suis là !";
+"assistant.chatter.help" = "Comment puis-je aider ?";
+"assistant.chatter.hehe" = "Hi hi";
+"assistant.chatter.dizzy" = "Oh, la tête me tourne !";
+"settings.assistant.chatter" = "Ten bavarde";

@@ -2052,3 +2052,22 @@
 "assistant.topic.goal.faster" = "「%@」をもっと早く貯めるには？";
 "assistant.topic.debt.status" = "%@との貸し借りはあといくら残っていますか？";
 "assistant.topic.debt.plan" = "%@に期限内に返すには？";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "おはようございます！";
+"assistant.chatter.afternoon" = "こんにちは！";
+"assistant.chatter.evening" = "こんばんは！";
+"assistant.chatter.night" = "しーっ…もう遅いですよ";
+"assistant.chatter.askMe" = "なんでも聞いてください";
+"assistant.chatter.hmm" = "うーん…";
+"assistant.chatter.counting" = "計算中…";
+"assistant.chatter.looking" = "ちょっと見てみますね…";
+"assistant.chatter.yay" = "やった！";
+"assistant.chatter.offline" = "接続できません…";
+"assistant.chatter.unclear" = "よくわかりませんでした。もう一度？";
+"assistant.chatter.tickles" = "くすぐったい！";
+"assistant.chatter.here" = "ここにいますよ！";
+"assistant.chatter.help" = "何かお手伝いしましょうか？";
+"assistant.chatter.hehe" = "えへへ";
+"assistant.chatter.dizzy" = "わあ、目が回る！";
+"settings.assistant.chatter" = "テンのおしゃべり";

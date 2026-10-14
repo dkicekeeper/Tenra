@@ -2052,3 +2052,22 @@
 "assistant.topic.goal.faster" = "“%@” için nasıl daha hızlı biriktiririm?";
 "assistant.topic.debt.status" = "%@ ile olan borçta ne kadar kaldı?";
 "assistant.topic.debt.plan" = "%@ borcunu zamanında nasıl öderim?";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Günaydın!";
+"assistant.chatter.afternoon" = "İyi günler!";
+"assistant.chatter.evening" = "İyi akşamlar!";
+"assistant.chatter.night" = "Şşş… geç oldu";
+"assistant.chatter.askMe" = "Bana istediğini sor";
+"assistant.chatter.hmm" = "Hmm…";
+"assistant.chatter.counting" = "Hesaplıyorum…";
+"assistant.chatter.looking" = "Bir bakayım…";
+"assistant.chatter.yay" = "Yaşasın!";
+"assistant.chatter.offline" = "Bağlantı yok…";
+"assistant.chatter.unclear" = "Pek anlaşılmadı. Tekrar?";
+"assistant.chatter.tickles" = "Gıdıklanıyorum!";
+"assistant.chatter.here" = "Buradayım!";
+"assistant.chatter.help" = "Nasıl yardımcı olabilirim?";
+"assistant.chatter.hehe" = "Hi hi";
+"assistant.chatter.dizzy" = "Ay, başım dönüyor!";
+"settings.assistant.chatter" = "Ten konuşkan";

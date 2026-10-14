@@ -2052,3 +2052,22 @@
 "assistant.topic.goal.faster" = "“%@”를 더 빨리 모으려면?";
 "assistant.topic.debt.status" = "%@ 관련해서 얼마나 남았어?";
 "assistant.topic.debt.plan" = "%@에게 기한 안에 갚으려면?";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "좋은 아침이에요!";
+"assistant.chatter.afternoon" = "안녕하세요!";
+"assistant.chatter.evening" = "좋은 저녁이에요!";
+"assistant.chatter.night" = "쉿… 늦었어요";
+"assistant.chatter.askMe" = "무엇이든 물어보세요";
+"assistant.chatter.hmm" = "음…";
+"assistant.chatter.counting" = "계산 중…";
+"assistant.chatter.looking" = "잠깐 볼게요…";
+"assistant.chatter.yay" = "야호!";
+"assistant.chatter.offline" = "연결이 없어요…";
+"assistant.chatter.unclear" = "잘 모르겠어요. 다시 한 번?";
+"assistant.chatter.tickles" = "간지러워요!";
+"assistant.chatter.here" = "여기 있어요!";
+"assistant.chatter.help" = "무엇을 도와드릴까요?";
+"assistant.chatter.hehe" = "헤헤";
+"assistant.chatter.dizzy" = "어지러워요!";
+"settings.assistant.chatter" = "텐의 수다";

@@ -2052,3 +2052,22 @@
 "assistant.topic.goal.faster" = "Como guardo mais rápido para “%@”?";
 "assistant.topic.debt.status" = "Quanto falta da dívida com %@?";
 "assistant.topic.debt.plan" = "Como devolvo para %@ no prazo?";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Bom dia!";
+"assistant.chatter.afternoon" = "Boa tarde!";
+"assistant.chatter.evening" = "Boa noite!";
+"assistant.chatter.night" = "Psiu… já é tarde";
+"assistant.chatter.askMe" = "Pergunte o que quiser";
+"assistant.chatter.hmm" = "Hmm…";
+"assistant.chatter.counting" = "Calculando…";
+"assistant.chatter.looking" = "Deixa eu ver…";
+"assistant.chatter.yay" = "Eba!";
+"assistant.chatter.offline" = "Sem conexão…";
+"assistant.chatter.unclear" = "Não ficou claro. De novo?";
+"assistant.chatter.tickles" = "Que cócegas!";
+"assistant.chatter.here" = "Estou aqui!";
+"assistant.chatter.help" = "Como posso ajudar?";
+"assistant.chatter.hehe" = "Hihi";
+"assistant.chatter.dizzy" = "Opa, que tontura!";
+"settings.assistant.chatter" = "Ten conversa";

@@ -235,6 +235,8 @@ struct AssistantView: View {
             String(localized: "assistant.preset.compare"),
             String(localized: "assistant.preset.budgets"),
             String(localized: "assistant.preset.subscriptions"),
+            String(localized: "assistant.preset.save"),
+            String(localized: "assistant.preset.invest"),
         ]
     }
 }

@@ -39,7 +39,10 @@ export type Check =
   | { kind: "metricFrom"; tool: string; pathEnds: string; args?: (input: Input) => boolean; label: string }
   | { kind: "block"; type: string }
   | { kind: "blockWith"; type: string; match: (block: Block) => boolean; label: string }
-  | { kind: "toolArgs"; tool: string; match: (input: Input) => boolean; label: string };
+  | { kind: "toolArgs"; tool: string; match: (input: Input) => boolean; label: string }
+  | { kind: "cardFrom"; tool: string; label: string }
+  | { kind: "textAtLeast"; chars: number }
+  | { kind: "noPick" };
 
 export interface CheckResult {
   name: string;
@@ -70,6 +73,12 @@ const MONEY_IN_TEXT = /\d[\d\s  .,]*\s?(₸|тг(?!\p{L})|тенге|\$|€|�
 const BIG_NUMBER = /\d[\d\s  ]{3,}\d|\d{4,}/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
 const SAVED_CLAIM = /(?<!\p{L})(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|сохранено|записано)(?!\p{L})|\b(i('ve| have) (saved|recorded|added|logged)|saved|recorded)\b/iu;
+
+// A reply that turns a money question away. A one-line "picking specific products needs a
+// licensed adviser" followed by help is fine and does not match.
+const REFUSAL = /не в моей (роли|компетенции)|не могу (помочь|давать|дать)|не даю (советов|рекомендаций)|вне моей компетенции|not (in|within) my (role|scope)|outside (of )?my (role|scope)|I can(no|')t (help|give|provide)|I'?m not able to (help|give)/iu;
+// Telling the person to buy a specific product (the line in the prompt's "Where the line is").
+const PICK = /рекоменду\p{L}*\s+(вам\s+)?(купить|покупать|вложить)|(?<!не\s)стоит\s+купить|(?<!\p{L})(купите|покупайте)(?!\p{L})|I(?:'d| would)? recommend (buying|investing in)|you should buy/iu;
 
 function textOf(record: RunRecord): string {
   return (record.reply?.blocks ?? []).filter((b) => b.type === "text").map((b) => String(b.text ?? "")).join(" ");
@@ -154,6 +163,9 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en"): CheckRe
 
   const claim = text.match(SAVED_CLAIM)?.[0];
   results.push({ name: "no_saved_claim", pass: !claim, detail: claim });
+
+  const refusal = text.match(REFUSAL)?.[0];
+  results.push({ name: "no_refusal", pass: !refusal, detail: refusal });
   return results;
 }
 
@@ -194,6 +206,18 @@ export function caseCheck(record: RunRecord, check: Check): CheckResult {
       const candidates = blocks.filter((b) => b.type === check.type);
       const pass = candidates.some((b) => check.match(b));
       return { name: check.label, pass, detail: pass ? undefined : JSON.stringify(candidates).slice(0, 300) || "none" };
+    }
+    case "cardFrom": {
+      const pass = blocks.some((b) => typeof b.source === "string" && resolveBlock(record, b).call?.name === check.tool);
+      return { name: check.label, pass, detail: pass ? undefined : blocks.map((b) => `${b.type}:${String(b.source ?? "")}`).join(",") };
+    }
+    case "textAtLeast": {
+      const length = textOf(record).length;
+      return { name: `text at least ${check.chars} chars`, pass: length >= check.chars, detail: `${length}` };
+    }
+    case "noPick": {
+      const pick = textOf(record).match(PICK)?.[0];
+      return { name: "no specific product pick", pass: !pick, detail: pick };
     }
     case "toolArgs": {
       const matching = calls.filter((c) => c.name === check.tool);

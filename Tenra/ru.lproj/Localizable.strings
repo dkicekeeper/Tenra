@@ -1854,6 +1854,7 @@
 "assistant.step.budgets" = "Проверяю бюджеты…";
 "assistant.step.recurring" = "Смотрю подписки…";
 "assistant.step.insights" = "Смотрю аналитику…";
+"assistant.step.calculating" = "Считаю…";
 "assistant.step.composing" = "Собираю ответ…";
 "assistant.error.offline" = "Нет соединения. Проверьте интернет и попробуйте ещё раз.";
 "assistant.error.busy" = "Ассистент сейчас занят. Попробуйте через минуту.";
@@ -1891,6 +1892,8 @@
 "assistant.preset.budgets" = "Как дела с бюджетами?";
 "assistant.preset.subscriptions" = "Сколько стоят мои подписки?";
 "assistant.preset.allowance" = "Сколько можно тратить в день до зарплаты?";
+"assistant.preset.save" = "Где я могу сэкономить?";
+"assistant.preset.invest" = "С чего начать инвестировать?";
 "common.retry" = "Повторить";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

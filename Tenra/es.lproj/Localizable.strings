@@ -1854,6 +1854,7 @@
 "assistant.step.budgets" = "Revisando presupuestos…";
 "assistant.step.recurring" = "Revisando suscripciones…";
 "assistant.step.insights" = "Leyendo tus análisis…";
+"assistant.step.calculating" = "Calculando…";
 "assistant.step.composing" = "Preparando la respuesta…";
 "assistant.error.offline" = "Sin conexión. Revisa internet e inténtalo de nuevo.";
 "assistant.error.busy" = "El asistente está ocupado ahora. Inténtalo en un momento.";
@@ -1891,6 +1892,8 @@
 "assistant.preset.budgets" = "¿Cómo van mis presupuestos?";
 "assistant.preset.subscriptions" = "¿Cuánto me cuestan las suscripciones?";
 "assistant.preset.allowance" = "¿Cuánto puedo gastar al día hasta el cobro?";
+"assistant.preset.save" = "¿Dónde puedo ahorrar?";
+"assistant.preset.invest" = "¿Cómo empiezo a invertir?";
 "common.retry" = "Reintentar";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

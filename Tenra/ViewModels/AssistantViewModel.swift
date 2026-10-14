@@ -190,6 +190,8 @@ enum AssistantStep: Equatable {
     case budgets
     case recurring
     case insights
+    /// Forecasts and what-ifs: the balance, a loan, savings.
+    case calculating
     case composing
 
     init(tool: String) {
@@ -201,6 +203,7 @@ enum AssistantStep: Equatable {
         case "get_budgets": self = .budgets
         case "list_recurring": self = .recurring
         case "get_insights": self = .insights
+        case "forecast_balance", "simulate_loan", "project_savings": self = .calculating
         case AgentProtocol.renderReplyTool: self = .composing
         default: self = .understanding
         }
@@ -216,6 +219,7 @@ enum AssistantStep: Equatable {
         case .budgets: String(localized: "assistant.step.budgets")
         case .recurring: String(localized: "assistant.step.recurring")
         case .insights: String(localized: "assistant.step.insights")
+        case .calculating: String(localized: "assistant.step.calculating")
         case .composing: String(localized: "assistant.step.composing")
         }
     }

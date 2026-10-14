@@ -261,6 +261,7 @@ struct AssistantViewModelTests {
     @Test func stepsAreNamedAfterTheTools() {
         #expect(AssistantStep(tool: "get_spending_summary") == .spending)
         #expect(AssistantStep(tool: "render_reply") == .composing)
+        #expect(AssistantStep(tool: "simulate_loan") == .calculating)
         #expect(AssistantStep(tool: "something_new") == .understanding)
     }
 }

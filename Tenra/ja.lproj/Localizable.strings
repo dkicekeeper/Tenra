@@ -1854,6 +1854,7 @@
 "assistant.step.budgets" = "予算を確認中…";
 "assistant.step.recurring" = "サブスクを確認中…";
 "assistant.step.insights" = "分析を確認中…";
+"assistant.step.calculating" = "計算中…";
 "assistant.step.composing" = "回答をまとめています…";
 "assistant.error.offline" = "接続できません。インターネットを確認して、もう一度お試しください。";
 "assistant.error.busy" = "アシスタントは混み合っています。少し待ってからもう一度お試しください。";
@@ -1891,6 +1892,8 @@
 "assistant.preset.budgets" = "予算の状況は？";
 "assistant.preset.subscriptions" = "サブスクの合計はいくら？";
 "assistant.preset.allowance" = "給料日まで1日いくら使える？";
+"assistant.preset.save" = "どこで節約できる？";
+"assistant.preset.invest" = "投資は何から始めればいい？";
 "common.retry" = "再試行";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

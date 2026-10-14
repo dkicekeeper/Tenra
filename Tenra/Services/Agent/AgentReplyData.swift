@@ -51,12 +51,13 @@ nonisolated enum AgentReplyData {
 
     enum PathKind: Equatable { case amount, percent, count }
 
-    /// What a figure is, from its key: `change_percent` and `share` are percentages, `count`
-    /// and `days_left` are plain numbers, everything else is money.
+    /// What a figure is, from its key: `change_percent`, `rate_percent` and `share` are
+    /// percentages, `count`, `days_left`, `months_left` and `years` are plain numbers,
+    /// everything else is money.
     static func kind(ofPath path: String) -> PathKind {
         let key = path.split(separator: ".").last.map(String.init) ?? path
         if key.contains("percent") || key == "share" { return .percent }
-        if key.contains("count") || key.hasPrefix("days") { return .count }
+        if key.contains("count") || key.hasPrefix("days") || key.contains("months") || key == "years" { return .count }
         return .amount
     }
 

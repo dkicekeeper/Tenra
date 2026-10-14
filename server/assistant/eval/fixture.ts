@@ -59,6 +59,10 @@ export const ACCOUNTS: Account[] = [
   { id: "acc_loan", name: "Кредит Halyk", currency: "KZT", kind: "loan", initial: -1_200_000 },
 ];
 
+// The loan's terms as the app keeps them (LoanInfo): rate and monthly payment. What is left to
+// repay is the loan account's balance.
+export const LOAN_TERMS = { accountId: "acc_loan", ratePercent: 22, monthlyPayment: 85_000 } as const;
+
 export const CATEGORIES: Category[] = [
   { id: "cat_housing", name: "Жильё", type: "expense" },
   { id: "cat_groceries", name: "Продукты", type: "expense" },

@@ -1854,6 +1854,7 @@
 "assistant.step.budgets" = "Bütçeleri kontrol ediyorum…";
 "assistant.step.recurring" = "Aboneliklere bakıyorum…";
 "assistant.step.insights" = "Analizlerine bakıyorum…";
+"assistant.step.calculating" = "Hesaplıyorum…";
 "assistant.step.composing" = "Cevabı hazırlıyorum…";
 "assistant.error.offline" = "Bağlantı yok. İnterneti kontrol edip tekrar dene.";
 "assistant.error.busy" = "Asistan şu an meşgul. Birazdan tekrar dene.";
@@ -1891,6 +1892,8 @@
 "assistant.preset.budgets" = "Bütçelerim ne durumda?";
 "assistant.preset.subscriptions" = "Aboneliklerim ne kadar tutuyor?";
 "assistant.preset.allowance" = "Maaşa kadar günde ne kadar harcayabilirim?";
+"assistant.preset.save" = "Nerede tasarruf edebilirim?";
+"assistant.preset.invest" = "Yatırıma nasıl başlarım?";
 "common.retry" = "Tekrar dene";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

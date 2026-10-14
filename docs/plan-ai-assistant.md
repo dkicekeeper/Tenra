@@ -110,7 +110,7 @@ Higgsfield вырос не на пустом окне чата, а на **пре
 |---|---|---|
 | Чтение | `get_spending(period, category?, account?)`, `compare_periods`, `category_breakdown`, `search_transactions(filters)`, `get_balances`, `budget_status`, `list_subscriptions` (+ следующее списание), `get_insights` (+ health score), `get_forecast` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService` (24 типа), `SpendingQueryService` |
 | Черновики | `draft_transaction`, `draft_transfer`, `draft_budget`, `draft_subscription`, `draft_recategorize` | `TransactionDraftService.makeDraft` → `commit`, `CategoriesViewModel.setBudget`, `createSeries` + `linkSubcategoriesToTransaction` (красный флаг 5) |
-| План | `daily_allowance(until)`, `simulate_cashflow(changes)`, `goal_progress` | Forecasting-инсайт, `RecurringStore`, `LoanInfo`; цели после CoreData v13 |
+| План | `forecast_balance` (дневной лимит до даты, сценарии), `simulate_loan` (рефинансирование, досрочное погашение, доплата каждый месяц), `project_savings` (рост накоплений при заданной доходности), `goal_progress` | Forecasting-инсайт, `RecurringStore`, `LoanInfo` + `LoanWhatIf`, `SavingsProjection`; цели после CoreData v13 |
 
 Правила инструментов:
 - **Запись только через черновик.** Инструмент возвращает `draftId`; сохраняет пользователь
@@ -350,8 +350,17 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
 ## 4. Безопасность и качество
 
 - Никакой записи без подтверждения; отмена после сохранения.
-- Не инвестиционный советник: не рекомендует конкретные бумаги и кредиты; дисклеймер на вопросах
-  про инвестиции.
+- **Полноценный финансовый помощник, с одной границей.** Ассистент разбирает траты, ищет, где
+  сэкономить, считает кредит (рефинансирование, досрочное погашение) и рост накоплений, объясняет
+  вклады, облигации, акции, фонды и ETF, крипту, риск, комиссии и горизонт, опираясь на цифры
+  человека. Граница из правил Anthropic (High-risk Use Case Requirements, 2026): персональная
+  рекомендация купить, продать, держать или распределить деньги между **конкретными**
+  инвестиционными продуктами и советы по личным налогам требуют проверки лицензированным
+  специалистом до показа. Поэтому конкретных бумаг, фондов и монет ассистент не советует: одной
+  фразой отсылает к лицензированному советнику и помогает дальше (что сравнивать, сколько можно
+  вкладывать, прогноз). Общее обучение и расчёты по формуле под правило не подпадают. Отказ без
+  помощи на денежный вопрос запрещён промптом и ловится eval (`no_refusal`), рекомендация
+  конкретного продукта тоже (`noPick`). Что ассистент работает на ИИ, сказано на экране согласия.
 - **Согласие на облако**: отдельный экран при первом облачном запросе (что уходит, куда, что не
   хранится), переключатель в настройках, бейдж «облако» на ответах облачного мозга.
 - **Минимизация**: в облако уходят результаты инструментов, а не база; опция маскировать имена
@@ -451,6 +460,8 @@ Private Cloud Compute (п. 4) и `pro` себе в RevenueCat (п. 3).
 **Фаза 4. «Спланировать» (3-4 недели)**
 - [x] `forecast_balance` (дневной лимит до даты, сценарии «а если») и блок forecast; пресет
       «Сколько можно тратить в день до зарплаты?».
+- [x] `simulate_loan` (рефинансирование, досрочное погашение, доплата) и `project_savings`
+      (рост накоплений), промпт полноценного помощника (2026-10-14.3), кейсы eval про советы.
 - [ ] CoreData v13: цели (копилка), долги, треды и факты ассистента.
 - [ ] Siri iOS 27: intent schemas и View Annotations («Спроси Tenra, сколько осталось на еду»).
 

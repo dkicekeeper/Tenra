@@ -71,4 +71,15 @@ struct AgentThreadStoreTests {
         }
         #expect(stored == AgentThreadStore.keep)
     }
+
+    @Test func aThreadKeptBeforeFastPathHasNoLocalExchanges() throws {
+        let old = Data(#"{"messages":[],"results":{},"owedResults":[]}"#.utf8)
+        let body = try JSONDecoder().decode(AgentThreadSnapshot.Body.self, from: old)
+        #expect(body.local.isEmpty)
+
+        var kept = body
+        kept.local = [AgentThreadSnapshot.LocalExchange(position: 2, question: "кофе 1500", draftId: "draft_3")]
+        let again = try JSONDecoder().decode(AgentThreadSnapshot.Body.self, from: JSONEncoder().encode(kept))
+        #expect(again == kept)
+    }
 }

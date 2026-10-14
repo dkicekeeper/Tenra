@@ -220,6 +220,11 @@ struct MainTabView: View {
             }
             .environment(coordinator.transactionStore)
         }
+        // A file opened in Tenra from another app goes to the assistant, which attaches it.
+        .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in
+            guard url != nil, assistantTakesActionTab else { return }
+            showingAssistant = true
+        }
         // The assistant over whichever tab is open; the tab stays where it was.
         .sheet(isPresented: $showingAssistant) {
             AssistantTab(onClose: { showingAssistant = false })

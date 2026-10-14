@@ -17,9 +17,11 @@
 //  (docs/plan-ai-assistant.md §6), and opens the paywall. A question over the allowance waits
 //  in the thread with the Pro button and goes once Pro is on.
 //
-//  The composer carries what used to sit behind "+" (§3.8): the paperclip opens the import of a
-//  receipt or a statement (the app's own screen, with its Pro gate), the microphone (while the
-//  field is empty) the voice sheet, whose words go as a question (AssistantVoiceSheet).
+//  The composer carries what used to sit behind "+" (§3.8): the paperclip's menu attaches a
+//  receipt (scanner or photos) or a statement (PDF, or CSV into its own import flow), read on
+//  the phone into a summary card (AssistantAttachmentSources, AssistantAttachmentCard); the
+//  microphone (while the field is empty) opens the voice sheet, whose words go as a message
+//  (AssistantVoiceSheet).
 //
 
 import SwiftUI
@@ -32,7 +34,9 @@ struct AssistantView: View {
     @Environment(PremiumManager.self) private var premium
     @State private var draft = ""
     @State private var showingVoice = false
-    @State private var showingImport = false
+    @State private var attachmentSource: AssistantAttachmentSource?
+    @State private var readingAttachment = false
+    @State private var attachmentError: String?
     @State private var showingPaywall = false
     @State private var showingConsent = false
     @State private var questionAwaitingConsent: String?
@@ -49,7 +53,10 @@ struct AssistantView: View {
                     entryView(entry)
                 }
                 if case .working(let step) = model.phase {
-                    workingRow(step)
+                    workingRow(step.title)
+                        .transition(.opacity)
+                } else if readingAttachment {
+                    workingRow(String(localized: "assistant.attachment.reading"))
                         .transition(.opacity)
                 }
                 if case .failed(let failure) = model.phase,
@@ -67,6 +74,7 @@ struct AssistantView: View {
             .padding(.vertical, AppSpacing.lg)
             .animation(AppAnimation.smooth, value: model.entries.count)
             .animation(AppAnimation.smooth, value: model.isWorking)
+            .animation(AppAnimation.smooth, value: readingAttachment)
         }
         .defaultScrollAnchor(.bottom, for: .sizeChanges)
         .scrollDismissesKeyboard(.interactively)
@@ -76,6 +84,10 @@ struct AssistantView: View {
                     allowanceLine(allowance)
                         .transition(.opacity)
                 }
+                if let attachmentError {
+                    InlineStatusText(message: attachmentError, type: .error)
+                        .transition(.opacity)
+                }
                 MessageComposer(
                     text: $draft,
                     placeholder: String(localized: "assistant.composer.placeholder"),
@@ -83,14 +95,12 @@ struct AssistantView: View {
                     limit: AssistantMetrics.questionLimit,
                     focus: $composerFocused,
                     leading: {
-                        Button {
+                        AssistantAttachmentMenu { source in
                             HapticManager.light()
-                            showingImport = true
-                        } label: {
-                            MessageComposerAccessory(systemImage: "paperclip")
+                            attachmentError = nil
+                            attachmentSource = source
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(String(localized: "assistant.attach"))
+                        .disabled(readingAttachment)
                     },
                     onVoice: { showingVoice = true }
                 ) {
@@ -100,7 +110,20 @@ struct AssistantView: View {
             .screenPadding()
             .padding(.bottom, AppSpacing.sm)
             .animation(AppAnimation.smooth, value: model.allowance)
+            .animation(AppAnimation.smooth, value: attachmentError)
         }
+        .assistantAttachmentSources(
+            source: $attachmentSource,
+            reading: $readingAttachment,
+            onRead: { attachment, summary in
+                HapticManager.success()
+                model.attach(attachment, summary: summary)
+            },
+            onFailure: { message in
+                HapticManager.error()
+                attachmentError = message
+            }
+        )
         .navigationTitle(String(localized: "tab.assistant"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: AssistantRoute.self) { route in
@@ -135,9 +158,6 @@ struct AssistantView: View {
         }
         .sheet(isPresented: $showingVoice) {
             AssistantVoiceSheet { send($0, spoken: true) }
-        }
-        .sheet(isPresented: $showingImport) {
-            OCRTab()
         }
         .onAppear { model.refreshAllowance() }
         .task { await model.restore() }
@@ -198,6 +218,8 @@ struct AssistantView: View {
             )
         case .reply(let reply, let results):
             AssistantReplyView(reply: reply, results: results, drafts: model.drafts)
+        case .attachment(let summary):
+            AssistantAttachmentCard(model: model, entryId: entry.id, summary: summary)
         }
     }
 
@@ -222,16 +244,16 @@ struct AssistantView: View {
         return String(format: String(localized: "assistant.allowance.renews"), renewsAt.formatted(.dateTime.day().month(.wide)))
     }
 
-    private func workingRow(_ step: AssistantStep) -> some View {
+    private func workingRow(_ title: String) -> some View {
         HStack(spacing: AppSpacing.sm) {
             ParticleCreature(mood: .thinking, style: .compact)
                 .frame(width: AssistantMetrics.headerMascot, height: AssistantMetrics.headerMascot)
-            Text(step.title)
+            Text(title)
                 .font(AppTypography.bodySmall)
                 .foregroundStyle(AppColors.Text.secondary)
                 .thinkingShimmer(isActive: true)
                 .contentTransition(.opacity)
-                .animation(AppAnimation.smooth, value: step)
+                .animation(AppAnimation.smooth, value: title)
         }
         .accessibilityElement(children: .combine)
     }

@@ -1881,6 +1881,16 @@
 "assistant.draft.editTip" = "Değiştirmek için işleme dokun.";
 "assistant.voice.send" = "Ten’e sor";
 "assistant.voice.again" = "Yeniden söyle";
+"assistant.attach.scan" = "Fiş tara";
+"assistant.attach.photo" = "Fotoğraflardan fiş";
+"assistant.attach.file" = "Hesap özeti (PDF veya CSV)";
+"assistant.attachment.receipt" = "Fiş";
+"assistant.attachment.statement" = "Hesap özeti";
+"assistant.attachment.review" = "Kontrol et ve kaydet";
+"assistant.attachment.uncategorized" = "Kategorisiz: %lld";
+"assistant.attachment.skipped" = "Okunamayan satır: %lld";
+"assistant.attachment.reading" = "Belge okunuyor…";
+"assistant.attachment.analyze" = "Bu hesap özetini incele";
 "assistant.forecast.perDay" = "%@ tarihine kadar günlük";
 "assistant.forecast.free" = "Kullanılabilir: %@";
 "assistant.forecast.balance" = "Günlük bakiye";

@@ -71,6 +71,10 @@ class AppCoordinator {
     /// after navigation via `consumePendingSubscription()`.
     private(set) var pendingSubscriptionSeriesId: String?
 
+    /// A PDF or CSV opened in Tenra from another app ("Open in Tenra"): the assistant opens
+    /// and attaches it (AssistantAttachmentSources). Cleared once taken.
+    private(set) var pendingAttachment: URL?
+
     /// Cold-launch stash: when iOS launches the app from a notification tap, the
     /// `userNotificationCenter(_:didReceive:)` handler runs BEFORE `AppCoordinator`
     /// is constructed (the coordinator waits for CoreData prewarm). AppDelegate
@@ -140,6 +144,17 @@ class AppCoordinator {
 
     func consumePendingSubscription() {
         pendingSubscriptionSeriesId = nil
+    }
+
+    /// A file handed over by another app; anything but a PDF or a CSV is ignored.
+    func openAttachment(_ url: URL) {
+        guard url.isFileURL, ["pdf", "csv"].contains(url.pathExtension.lowercased()) else { return }
+        pendingAttachment = url
+    }
+
+    func consumePendingAttachment() -> URL? {
+        defer { pendingAttachment = nil }
+        return pendingAttachment
     }
 
     // MARK: - Onboarding gate

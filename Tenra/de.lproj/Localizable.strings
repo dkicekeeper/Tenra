@@ -1881,6 +1881,16 @@
 "assistant.draft.editTip" = "Tipp auf die Buchung, um sie zu ändern.";
 "assistant.voice.send" = "Ten fragen";
 "assistant.voice.again" = "Noch mal sagen";
+"assistant.attach.scan" = "Beleg scannen";
+"assistant.attach.photo" = "Beleg aus Fotos";
+"assistant.attach.file" = "Kontoauszug (PDF oder CSV)";
+"assistant.attachment.receipt" = "Beleg";
+"assistant.attachment.statement" = "Kontoauszug";
+"assistant.attachment.review" = "Prüfen und speichern";
+"assistant.attachment.uncategorized" = "Ohne Kategorie: %lld";
+"assistant.attachment.skipped" = "Nicht gelesene Zeilen: %lld";
+"assistant.attachment.reading" = "Dokument wird gelesen…";
+"assistant.attachment.analyze" = "Geh diesen Kontoauszug durch";
 "assistant.forecast.perDay" = "Pro Tag bis %@";
 "assistant.forecast.free" = "Frei verfügbar: %@";
 "assistant.forecast.balance" = "Kontostand pro Tag";

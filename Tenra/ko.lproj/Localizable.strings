@@ -1881,6 +1881,16 @@
 "assistant.draft.editTip" = "바꾸려면 거래를 탭하세요.";
 "assistant.voice.send" = "텐에게 묻기";
 "assistant.voice.again" = "다시 말하기";
+"assistant.attach.scan" = "영수증 스캔";
+"assistant.attach.photo" = "사진에서 영수증";
+"assistant.attach.file" = "명세서(PDF 또는 CSV)";
+"assistant.attachment.receipt" = "영수증";
+"assistant.attachment.statement" = "명세서";
+"assistant.attachment.review" = "확인하고 저장";
+"assistant.attachment.uncategorized" = "카테고리 없음: %lld";
+"assistant.attachment.skipped" = "읽지 못한 행: %lld";
+"assistant.attachment.reading" = "문서를 읽는 중…";
+"assistant.attachment.analyze" = "이 명세서 살펴봐 줘";
 "assistant.forecast.perDay" = "%@까지 하루 사용 가능 금액";
 "assistant.forecast.free" = "사용 가능: %@";
 "assistant.forecast.balance" = "일별 잔액";

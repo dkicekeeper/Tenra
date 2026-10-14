@@ -105,13 +105,17 @@ final class AgentConversation {
     }
 
     /// Sends one user message and runs the loop to the reply.
-    /// - Parameter context: the `<app_context>` block; pass it on the first message of the
-    ///   thread and whenever the date or the user's accounts and categories change.
-    func send(_ text: String, context: String? = nil, onProgress: ((Progress) -> Void)? = nil) async throws -> AgentTurnOutcome {
+    /// - Parameters:
+    ///   - context: the `<app_context>` block; pass it on the first message of the thread and
+    ///     whenever the date or the user's accounts and categories change.
+    ///   - notes: more blocks before the question, each its own text block (an attachment's
+    ///     summary), so no block outgrows the server's limit.
+    func send(_ text: String, context: String? = nil, notes: [String] = [], onProgress: ((Progress) -> Void)? = nil) async throws -> AgentTurnOutcome {
         let checkpoint = messages.count
         let owed = owedResults
         var content = owedResults
         if let context { content.append(.object(["type": .string("text"), "text": .string(context)])) }
+        for note in notes { content.append(.object(["type": .string("text"), "text": .string(note)])) }
         content.append(.object(["type": .string("text"), "text": .string(text)]))
         owedResults = []
         messages.append(AgentWireMessage(role: .user, content: content))

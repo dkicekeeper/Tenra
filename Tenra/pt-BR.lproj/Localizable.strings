@@ -1881,6 +1881,16 @@
 "assistant.draft.editTip" = "Toque na operação para mudar.";
 "assistant.voice.send" = "Perguntar ao Ten";
 "assistant.voice.again" = "Falar de novo";
+"assistant.attach.scan" = "Escanear recibo";
+"assistant.attach.photo" = "Recibo das fotos";
+"assistant.attach.file" = "Extrato (PDF ou CSV)";
+"assistant.attachment.receipt" = "Recibo";
+"assistant.attachment.statement" = "Extrato";
+"assistant.attachment.review" = "Revisar e salvar";
+"assistant.attachment.uncategorized" = "Sem categoria: %lld";
+"assistant.attachment.skipped" = "Linhas não lidas: %lld";
+"assistant.attachment.reading" = "Lendo o documento…";
+"assistant.attachment.analyze" = "Analise este extrato";
 "assistant.forecast.perDay" = "Por dia até %@";
 "assistant.forecast.free" = "Disponível: %@";
 "assistant.forecast.balance" = "Saldo por dia";

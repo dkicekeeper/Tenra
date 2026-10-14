@@ -1881,6 +1881,16 @@
 "assistant.draft.editTip" = "Touchez l’opération pour la modifier.";
 "assistant.voice.send" = "Demander à Ten";
 "assistant.voice.again" = "Redire";
+"assistant.attach.scan" = "Scanner un ticket";
+"assistant.attach.photo" = "Ticket depuis les photos";
+"assistant.attach.file" = "Relevé (PDF ou CSV)";
+"assistant.attachment.receipt" = "Ticket";
+"assistant.attachment.statement" = "Relevé";
+"assistant.attachment.review" = "Vérifier et enregistrer";
+"assistant.attachment.uncategorized" = "Sans catégorie : %lld";
+"assistant.attachment.skipped" = "Lignes non lues : %lld";
+"assistant.attachment.reading" = "Lecture du document…";
+"assistant.attachment.analyze" = "Analyse ce relevé";
 "assistant.forecast.perDay" = "Par jour jusqu’au %@";
 "assistant.forecast.free" = "Disponible : %@";
 "assistant.forecast.balance" = "Solde par jour";

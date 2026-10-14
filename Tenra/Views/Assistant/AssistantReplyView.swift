@@ -581,7 +581,7 @@ private struct AssistantOpenLink: View {
 // MARK: - Container
 
 /// Rows in a card under an optional header, as the insight detail lists lay them out.
-private struct AssistantCard<Rows: View>: View {
+struct AssistantCard<Rows: View>: View {
     let title: String?
     @ViewBuilder let rows: () -> Rows
 

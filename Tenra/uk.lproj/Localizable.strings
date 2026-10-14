@@ -1881,6 +1881,16 @@
 "assistant.draft.editTip" = "Натисніть на операцію, щоб змінити.";
 "assistant.voice.send" = "Запитати Тена";
 "assistant.voice.again" = "Сказати знову";
+"assistant.attach.scan" = "Сканувати чек";
+"assistant.attach.photo" = "Чек із фото";
+"assistant.attach.file" = "Виписка (PDF або CSV)";
+"assistant.attachment.receipt" = "Чек";
+"assistant.attachment.statement" = "Виписка";
+"assistant.attachment.review" = "Перевірити й зберегти";
+"assistant.attachment.uncategorized" = "Без категорії: %lld";
+"assistant.attachment.skipped" = "Не прочитано рядків: %lld";
+"assistant.attachment.reading" = "Читаю документ…";
+"assistant.attachment.analyze" = "Розбери цю виписку";
 "assistant.forecast.perDay" = "На день до %@";
 "assistant.forecast.free" = "Вільно: %@";
 "assistant.forecast.balance" = "Залишок по днях";

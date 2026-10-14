@@ -13,6 +13,14 @@ three-stage pipeline. Read this before touching anything in
 | Interpretation | `ColumnRoleResolver`, `IntelligentColumnRoleResolver`, `StatementInterpreter`, `ReceiptInterpreter` | Consume only `DocumentSnapshot`. |
 
 `DocumentImportService` is the single orchestrator. `PDFService` only rasterises pages.
+`StatementReviewPreparer` turns its outcome into what the review screen needs (suggested
+categories, subcategory and transfer history, the statement's account, the rows that start
+unchecked), for both entry points: the import tab (`PDFImportCoordinator`) and the assistant's
+attachments (`AssistantAttachmentSources`: scanner or photos for a receipt, a PDF statement, a
+CSV into its own flow, and files opened in Tenra from another app through
+`CFBundleDocumentTypes`; the copy read there is deleted once read). The assistant shows a summary
+card and opens the same review screens; the model sees only the summary
+([plan-ai-assistant.md](../plan-ai-assistant.md) §3.8).
 
 ## Rules
 

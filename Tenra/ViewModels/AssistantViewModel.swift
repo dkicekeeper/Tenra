@@ -28,6 +28,12 @@
 //  about such a draft with the next question, in <draft_status>; the thread keeps where it
 //  sits (`AgentThreadSnapshot.LocalExchange`).
 //
+//  An attachment (a receipt or a statement read on the phone, AgentAttachment) joins the thread
+//  as its summary card. The model sees the summary with the next question, as an
+//  <attachment_result> block. Opening its review spends one free answer, once (plan §6:
+//  reading is free, the limit is checked where the work is taken). Attachments are not kept
+//  across launches.
+//
 
 import Foundation
 import Observation
@@ -60,6 +66,7 @@ final class AssistantViewModel {
         enum Content: Equatable {
             case question(String)
             case reply(AgentReply, results: [String: JSONValue])
+            case attachment(AgentAttachmentSummary)
         }
 
         let id: UUID
@@ -102,6 +109,12 @@ final class AssistantViewModel {
     @ObservationIgnored private var local: [AgentThreadSnapshot.LocalExchange] = []
     /// A message is being drafted on the phone: another waits.
     @ObservationIgnored private var draftingLocally = false
+    /// What each attachment's review screen needs, by its entry.
+    @ObservationIgnored private var attachments: [UUID: AgentAttachment] = [:]
+    /// The attachments whose review has been paid for.
+    @ObservationIgnored private var reviewedAttachments: Set<UUID> = []
+    /// Attachment summaries the model has not seen: they go with the next question.
+    @ObservationIgnored private var unsentAttachments: [String] = []
     @ObservationIgnored private var threadId = UUID().uuidString
     @ObservationIgnored private var threadCreatedAt: Date
     /// The kept thread is brought back once, and never over a thread already going.
@@ -216,10 +229,44 @@ final class AssistantViewModel {
         return nil
     }
 
-    /// The suggestions of the latest reply, while nothing else is going on.
+    /// The suggestions of the latest reply, while nothing else is going on; after a statement,
+    /// to go through it.
     var suggestions: [String] {
-        guard phase == .idle, case .reply(let reply, _)? = entries.last?.content else { return [] }
-        return reply.suggestions
+        guard phase == .idle else { return [] }
+        switch entries.last?.content {
+        case .reply(let reply, _)?: return reply.suggestions
+        case .attachment(let summary)? where summary.kind == .statement:
+            return [String(localized: "assistant.attachment.analyze")]
+        default: return []
+        }
+    }
+
+    // MARK: - Attachments
+
+    /// A receipt or a statement read on the phone joins the thread as its summary card.
+    func attach(_ attachment: AgentAttachment, summary: AgentAttachmentSummary) {
+        let entry = Entry(id: UUID(), content: .attachment(summary))
+        attachments[entry.id] = attachment
+        unsentAttachments.append(summary.modelText)
+        dropFailedQuestion()
+        entries.append(entry)
+    }
+
+    /// What the attachment's review screen needs.
+    func attachment(for entry: UUID) -> AgentAttachment? {
+        attachments[entry]
+    }
+
+    /// Takes the work of an attachment: Pro, or one free answer the first time. False when
+    /// none is left; the caller offers Pro.
+    func payForReview(of entry: UUID) -> Bool {
+        if access.isPro() || reviewedAttachments.contains(entry) { return true }
+        refreshAllowance()
+        guard allowance?.isExhausted != true else { return false }
+        access.saveUsage(AssistantAllowance.recording(access.loadUsage(), now: access.now()))
+        refreshAllowance()
+        reviewedAttachments.insert(entry)
+        return true
     }
 
     /// Sends a question, or drafts it on the phone when it is a plain record (FastPath).
@@ -292,6 +339,9 @@ final class AssistantViewModel {
         drafts?.clear()
         reportedDrafts = [:]
         local = []
+        attachments = [:]
+        reviewedAttachments = []
+        unsentAttachments = []
     }
 
     func retry() async {
@@ -358,14 +408,16 @@ final class AssistantViewModel {
         let current = context()
         let contextToSend = current == sentContext ? nil : current
         let status = draftStatus()
+        let attached = unsentAttachments
         let preface = [contextToSend, status?.text].compactMap { $0 }.joined(separator: "\n")
         do {
-            let outcome = try await conversation.send(text, context: preface.isEmpty ? nil : preface) { [weak self] progress in
+            let outcome = try await conversation.send(text, context: preface.isEmpty ? nil : preface, notes: attached) { [weak self] progress in
                 guard let self, case .toolStarted(let name) = progress else { return }
                 self.phase = .working(AssistantStep(tool: name))
             }
             sentContext = current
             if let status { reportedDrafts = status.states }
+            unsentAttachments.removeFirst(min(attached.count, unsentAttachments.count))
             if !access.isPro() {
                 access.saveUsage(AssistantAllowance.recording(access.loadUsage(), now: access.now()))
                 refreshAllowance()

@@ -1881,6 +1881,16 @@
 "assistant.draft.editTip" = "変更するには取引をタップしてください。";
 "assistant.voice.send" = "テンに聞く";
 "assistant.voice.again" = "もう一度話す";
+"assistant.attach.scan" = "レシートをスキャン";
+"assistant.attach.photo" = "写真からレシート";
+"assistant.attach.file" = "明細書（PDF または CSV）";
+"assistant.attachment.receipt" = "レシート";
+"assistant.attachment.statement" = "明細書";
+"assistant.attachment.review" = "確認して保存";
+"assistant.attachment.uncategorized" = "カテゴリなし：%lld";
+"assistant.attachment.skipped" = "読み取れなかった行：%lld";
+"assistant.attachment.reading" = "書類を読み取っています…";
+"assistant.attachment.analyze" = "この明細書を見て";
 "assistant.forecast.perDay" = "%@まで1日あたり";
 "assistant.forecast.free" = "自由に使える額: %@";
 "assistant.forecast.balance" = "日ごとの残高";

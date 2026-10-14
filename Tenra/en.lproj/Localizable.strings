@@ -1881,6 +1881,16 @@
 "assistant.draft.editTip" = "Tap the operation to change it.";
 "assistant.voice.send" = "Ask Ten";
 "assistant.voice.again" = "Say it again";
+"assistant.attach.scan" = "Scan a receipt";
+"assistant.attach.photo" = "Receipt from photos";
+"assistant.attach.file" = "Statement (PDF or CSV)";
+"assistant.attachment.receipt" = "Receipt";
+"assistant.attachment.statement" = "Statement";
+"assistant.attachment.review" = "Review and save";
+"assistant.attachment.uncategorized" = "No category: %lld";
+"assistant.attachment.skipped" = "Rows not read: %lld";
+"assistant.attachment.reading" = "Reading the document…";
+"assistant.attachment.analyze" = "Go through this statement";
 "assistant.forecast.perDay" = "Per day until %@";
 "assistant.forecast.free" = "Free to spend: %@";
 "assistant.forecast.balance" = "Balance by day";

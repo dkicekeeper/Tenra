@@ -1881,6 +1881,16 @@
 "assistant.draft.editTip" = "Нажмите на операцию, чтобы изменить.";
 "assistant.voice.send" = "Спросить Тэна";
 "assistant.voice.again" = "Сказать заново";
+"assistant.attach.scan" = "Сканировать чек";
+"assistant.attach.photo" = "Чек из фото";
+"assistant.attach.file" = "Выписка (PDF или CSV)";
+"assistant.attachment.receipt" = "Чек";
+"assistant.attachment.statement" = "Выписка";
+"assistant.attachment.review" = "Проверить и сохранить";
+"assistant.attachment.uncategorized" = "Без категории: %lld";
+"assistant.attachment.skipped" = "Не прочитано строк: %lld";
+"assistant.attachment.reading" = "Читаю документ…";
+"assistant.attachment.analyze" = "Разбери эту выписку";
 "assistant.forecast.perDay" = "В день до %@";
 "assistant.forecast.free" = "Свободно: %@";
 "assistant.forecast.balance" = "Остаток по дням";

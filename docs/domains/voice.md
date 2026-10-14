@@ -113,6 +113,16 @@ redraw only it):
 - **Preview cards:** they cascade in 80 ms apart (`.cascadeIn(index:)`); a card deleted from
   its context menu leaves with DesignKit's `DissolveTransition`.
 
+## Speaking to the assistant
+
+The assistant's microphone opens [`AssistantVoiceSheet`](../../Tenra/Views/Assistant/AssistantVoiceSheet.swift):
+the same `VoiceLevelGlow`, `ListeningPrompt`, `VoiceStopOrb` and `AnimatedTranscriptionText`,
+its own `VoiceInputService`, the 5-second silence stop. Stopped, it shows what it heard; "Ask
+Ten" sends it as a message, "Say it again" records anew. There is no local preview: a plain
+record ("кофе 1500 и такси 2300") is drafted on the phone by the assistant's FastPath
+(`AgentFastPath`, the same `parseMulti`), anything else goes to the model
+([plan-ai-assistant.md](../plan-ai-assistant.md) §3.8).
+
 Screenshot mode (`isScreenshotDemo`) passes no level: the glow and the orb breathe on their own.
 
 ## Live preview card border

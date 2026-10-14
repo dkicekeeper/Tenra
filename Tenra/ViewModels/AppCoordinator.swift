@@ -101,6 +101,17 @@ class AppCoordinator {
             drafts: drafts,
             suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
         )
+        // FastPath: the voice parser reads a plain record, the toolkit drafts it.
+        let parser = VoiceInputParser(
+            categoriesViewModel: categoriesViewModel,
+            accountsViewModel: accountsViewModel,
+            transactionsViewModel: transactionsViewModel
+        )
+        let fastPath = AssistantViewModel.FastPath { text in
+            let operations = parser.parseMulti(text)
+            guard AgentFastPath.isRecord(text, operations: operations, clauses: VoiceInputSegmenter.segment(text).count) else { return nil }
+            return await toolkit.fastPathOperations(for: operations, message: text)
+        }
         let usage = AssistantUsageStore()
         // Threads are kept in the CoreData store; previews on UserDefaults keep them in memory.
         let threads = repository is CoreDataRepository ? AgentThreadStore() : nil
@@ -114,6 +125,7 @@ class AppCoordinator {
             ),
             drafts: drafts,
             describeDraft: { toolkit.describe($0) },
+            fastPath: fastPath,
             persistence: threads.map { threads in
                 AssistantViewModel.Persistence(load: { await threads.latest() }, save: { await threads.save($0) })
             }

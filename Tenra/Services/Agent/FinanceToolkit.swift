@@ -1000,6 +1000,30 @@ final class FinanceToolkit: AgentToolExecuting {
         }
     }
 
+    /// FastPath (AgentFastPath): the parser's operations resolved as `draft_transactions`
+    /// resolves them; nil when one cannot be drafted, so the message goes to the model. The
+    /// parser always picks an account: one the message does not name is marked as guessed.
+    func fastPathOperations(for operations: [ParsedOperation], message: String) async -> [AgentDraftOperation]? {
+        let lowered = message.lowercased()
+        var drafted: [AgentDraftOperation] = []
+        for operation in operations {
+            var result = makeDraft(operation, conversion: .cachedOnly)
+            if case .failure(.needsFXConversion(let amount, let from, let to)) = result {
+                let converted = await CurrencyConverter.convert(amount: amount, from: from, to: to)
+                result = makeDraft(operation, conversion: .provided(converted))
+            }
+            guard case .success(var draft) = result else { return nil }
+            let named = store.accounts.first(where: { $0.id == draft.accountId }).map { account in
+                account.name.lowercased().split { !$0.isLetter && !$0.isNumber }.contains { $0.count >= 3 && lowered.contains($0) }
+            } ?? false
+            if !named, !draft.warnings.contains(.accountInferred) {
+                draft.warnings.append(.accountInferred)
+            }
+            drafted.append(.single(draft))
+        }
+        return drafted
+    }
+
     private func makeDraft(_ operation: ParsedOperation, conversion: ConversionPolicy) -> Result<TransactionDraft, DraftIssue> {
         TransactionDraftService.makeDraft(
             from: operation,

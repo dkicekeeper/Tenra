@@ -360,7 +360,149 @@ struct AssistantViewModelTests {
 
     @Test func draftsNumberOnFromAKeptThread() {
         let results: [String: JSONValue] = ["r1": ["draft_id": "draft_2"], "r2": ["draft_id": "draft_7"], "r3": ["total": 1]]
-        #expect(AssistantViewModel.lastDraftNumber(in: results) == 7)
+        #expect(AssistantViewModel.lastDraftNumber(in: AgentThreadSnapshot.Body(messages: [], results: results, owedResults: [])) == 7)
+        // A draft the phone made counts too.
+        let local = [AgentThreadSnapshot.LocalExchange(position: 0, question: "кофе 1500", draftId: "draft_9")]
+        #expect(AssistantViewModel.lastDraftNumber(in: AgentThreadSnapshot.Body(messages: [], results: results, owedResults: [], local: local)) == 9)
+    }
+
+    // MARK: - FastPath
+
+    private static func coffee(_ amount: Double = 1500) -> AgentDraftOperation {
+        .single(TransactionDraft(type: .expense, amount: amount, currency: "KZT", convertedAmount: nil, categoryName: "Кафе", subcategoryIds: [], accountId: "acc_kaspi", date: now, note: "кофе", warnings: []))
+    }
+
+    private static func book() -> AgentDraftBook {
+        AgentDraftBook(writer: AgentDraftBook.Writer(
+            save: { _ in .transaction(Transaction(id: "tx1", date: "2026-10-28", description: "", amount: 1, currency: "KZT", type: .expense, category: "")) },
+            undo: { _ in }
+        ))
+    }
+
+    /// Drafts "кофе …" on the phone, sends anything else to the model.
+    private static let coffeeFastPath = AssistantViewModel.FastPath { text in
+        text.hasPrefix("кофе") ? [coffee()] : nil
+    }
+
+    @Test func aPlainRecordIsDraftedOnThePhoneWithoutTheCloud() async {
+        let transport = ScriptedTransport([])
+        let book = Self.book()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            drafts: book,
+            fastPath: Self.coffeeFastPath
+        )
+
+        #expect(await model.send("кофе 1500", cloudAllowed: false))
+
+        #expect(transport.calls.isEmpty)
+        #expect(model.phase == .idle)
+        #expect(model.entries.map(\.content) == [.question("кофе 1500"), .reply(AssistantViewModel.localReply("draft_1"), results: [:])])
+        #expect(book.drafts["draft_1"]?.operations == [Self.coffee()])
+        #expect(book.madeOnPhone == ["draft_1": "кофе 1500"])
+
+        // A question needs the cloud: without consent nothing happens.
+        #expect(await model.send("Сколько на кафе?", cloudAllowed: false) == false)
+        #expect(model.entries.count == 2)
+    }
+
+    @Test func aSpokenRecordSpendsAFreeAnswerATypedOneDoesNot() async {
+        let usage = UsageBox()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit()),
+            context: { "" },
+            access: usage.access(now: Self.now),
+            drafts: Self.book(),
+            fastPath: Self.coffeeFastPath
+        )
+
+        await model.send("кофе 1500")
+        #expect(usage.usage.trialUsed == 0)
+        await model.send("кофе 900", spoken: true)
+        #expect(usage.usage.trialUsed == 1)
+        #expect(model.allowance?.remaining == PremiumConfig.Assistant.trialActions - 1)
+    }
+
+    @Test func aSpokenRecordWithNoFreeAnswersLeftOffersPro() async {
+        let usage = UsageBox(AssistantUsage(firstUse: Self.now, trialUsed: PremiumConfig.Assistant.trialActions))
+        let book = Self.book()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit()),
+            context: { "" },
+            access: usage.access(now: Self.now),
+            drafts: book,
+            fastPath: Self.coffeeFastPath
+        )
+
+        await model.send("кофе 900", spoken: true)
+
+        #expect(book.drafts.isEmpty)
+        #expect(model.phase == .failed(.freeLimit))
+    }
+
+    @Test func theModelHearsAboutTheDraftMadeOnThePhone() async {
+        let transport = ScriptedTransport([
+            [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "none")])],
+        ])
+        let book = Self.book()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            drafts: book,
+            describeDraft: { operation in
+                guard case .single(let draft) = operation else { return .null }
+                return ["amount": .number(draft.amount)]
+            },
+            fastPath: Self.coffeeFastPath
+        )
+
+        await model.send("кофе 1500")
+        await model.send("Сколько осталось на кафе?")
+        await book.save("draft_1")
+        await model.send("А на такси?")
+
+        let texts = transport.calls.map { call in call.last?.content.compactMap { $0["text"]?.stringValue } ?? [] }
+        #expect(texts[0] == [
+            "<app_context>a</app_context>\n<draft_status>\ndraft_1: made on the phone from the user's message \"кофе 1500\", not by you; not saved yet, items now: [{\"amount\":1500}]\n</draft_status>",
+            "Сколько осталось на кафе?",
+        ])
+        #expect(texts[1] == [
+            "<draft_status>\ndraft_1: made on the phone from the user's message \"кофе 1500\", not by you; saved, items now: [{\"amount\":1500}]\n</draft_status>",
+            "А на такси?",
+        ])
+    }
+
+    @Test func aThreadKeepsWhereThePhoneAnswered() async throws {
+        let box = ThreadBox()
+        let first = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([
+                [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+            ]), toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            drafts: Self.book(),
+            fastPath: Self.coffeeFastPath,
+            persistence: box.persistence
+        )
+        await first.send("Сколько у меня денег?")
+        await first.send("кофе 1500")
+        let kept = try #require(box.saved)
+        #expect(kept.body.local == [AgentThreadSnapshot.LocalExchange(position: 2, question: "кофе 1500", draftId: "draft_1")])
+
+        let book = Self.book()
+        let second = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            drafts: book,
+            fastPath: Self.coffeeFastPath,
+            persistence: box.persistence
+        )
+        await second.restore()
+        #expect(second.entries.compactMap(\.question) == ["Сколько у меня денег?", "кофе 1500"])
+        #expect(second.entries.count == 4)
+        // The phone's draft number is taken: the next draft is draft_2.
+        #expect(book.add([]) == "draft_2")
     }
 
     @Test func aFailedAttestationIsNotSoldAsPro() {

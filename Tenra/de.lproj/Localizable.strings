@@ -1879,6 +1879,8 @@
 "assistant.draft.budgetWas" = "Vorher";
 "assistant.draft.editHint" = "Öffnet die Buchung zum Bearbeiten";
 "assistant.draft.editTip" = "Tipp auf die Buchung, um sie zu ändern.";
+"assistant.voice.send" = "Ten fragen";
+"assistant.voice.again" = "Noch mal sagen";
 "assistant.forecast.perDay" = "Pro Tag bis %@";
 "assistant.forecast.free" = "Frei verfügbar: %@";
 "assistant.forecast.balance" = "Kontostand pro Tag";

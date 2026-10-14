@@ -382,6 +382,26 @@ struct AgentDraftTests {
         withExtendedLifetime(store) {}
     }
 
+    @Test func fastPathDraftsAsDraftTransactionsDoesAndMarksAnUnnamedAccountAsGuessed() async throws {
+        let (toolkit, _, store) = Self.make()
+        let coffee = ParsedOperation(type: .expense, amount: Decimal(1500), currencyCode: "KZT", date: Self.now, accountId: "acc_kaspi", categoryName: "Кафе", note: "кофе 1500")
+
+        let unnamed = try #require(await toolkit.fastPathOperations(for: [coffee], message: "кофе 1500"))
+        guard case .single(let guessed)? = unnamed.first else { Issue.record("expected an expense"); return }
+        #expect(guessed.accountId == "acc_kaspi")
+        #expect(guessed.categoryName == "Кафе")
+        #expect(guessed.warnings == [.accountInferred])
+
+        let named = try #require(await toolkit.fastPathOperations(for: [coffee], message: "кофе 1500 с Kaspi"))
+        guard case .single(let chosen)? = named.first else { Issue.record("expected an expense"); return }
+        #expect(chosen.warnings.isEmpty)
+
+        // One operation that cannot be drafted sends the whole message to the model.
+        let broken = ParsedOperation(type: .expense, amount: nil, categoryName: "Кафе")
+        #expect(await toolkit.fastPathOperations(for: [coffee, broken], message: "кофе 1500 и ещё") == nil)
+        withExtendedLifetime(store) {}
+    }
+
     @Test func aNewChatClearsTheDrafts() {
         let book = AgentDraftBook(writer: FakeWriter().writer)
         #expect(book.add([]) == "draft_1")

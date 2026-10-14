@@ -22,6 +22,12 @@
 //  back by `restore()` when the screen opens, its questions and replies replayed from the
 //  conversation itself. A new chat starts another thread.
 //
+//  FastPath (AgentFastPath, plan §3.8): a message the phone's parser understands as income or
+//  expenses becomes a draft on the phone, without the cloud and without the consent the cloud
+//  needs. Typed, it is free; spoken, it spends one free answer, as voice does. The model hears
+//  about such a draft with the next question, in <draft_status>; the thread keeps where it
+//  sits (`AgentThreadSnapshot.LocalExchange`).
+//
 
 import Foundation
 import Observation
@@ -36,6 +42,12 @@ final class AssistantViewModel {
         var now: () -> Date = Date.init
 
         static let unlimited = Access(isPro: { true }, loadUsage: { AssistantUsage() }, saveUsage: { _ in })
+    }
+
+    /// Drafts a message on the phone when it is a plain record (AgentFastPath); nil sends it to
+    /// the model.
+    struct FastPath {
+        var draft: (String) async -> [AgentDraftOperation]?
     }
 
     /// Where the thread is kept between launches (AgentThreadStore).
@@ -85,6 +97,11 @@ final class AssistantViewModel {
     @ObservationIgnored private var reportedDrafts: [String: String] = [:]
     @ObservationIgnored private let access: Access
     @ObservationIgnored private let persistence: Persistence?
+    @ObservationIgnored private let fastPath: FastPath?
+    /// The messages answered on the phone, with where they sit in the thread.
+    @ObservationIgnored private var local: [AgentThreadSnapshot.LocalExchange] = []
+    /// A message is being drafted on the phone: another waits.
+    @ObservationIgnored private var draftingLocally = false
     @ObservationIgnored private var threadId = UUID().uuidString
     @ObservationIgnored private var threadCreatedAt: Date
     /// The kept thread is brought back once, and never over a thread already going.
@@ -96,6 +113,7 @@ final class AssistantViewModel {
         access: Access = .unlimited,
         drafts: AgentDraftBook? = nil,
         describeDraft: ((AgentDraftOperation) -> JSONValue)? = nil,
+        fastPath: FastPath? = nil,
         persistence: Persistence? = nil
     ) {
         self.conversation = conversation
@@ -103,6 +121,7 @@ final class AssistantViewModel {
         self.access = access
         self.drafts = drafts
         self.describeDraft = describeDraft
+        self.fastPath = fastPath
         self.persistence = persistence
         self.threadCreatedAt = access.now()
         refreshAllowance()
@@ -116,21 +135,32 @@ final class AssistantViewModel {
         // A question may have gone while the thread was loading.
         guard entries.isEmpty, !isWorking else { return }
         conversation.restore(snapshot.body)
+        local = snapshot.body.local
         entries = Self.entries(replaying: snapshot.body)
         if case .reply(let reply, _)? = entries.last?.content { replyMood = reply.mood }
         threadId = snapshot.id
         threadCreatedAt = snapshot.createdAt
         // The context is in the kept history, but it may be stale: the next question sends it.
         sentContext = nil
-        drafts?.continueNumbering(after: Self.lastDraftNumber(in: snapshot.body.results))
+        drafts?.continueNumbering(after: Self.lastDraftNumber(in: snapshot.body))
     }
 
     /// The visible thread of a kept conversation: each question (the last text of a user
     /// message, after the context blocks) and each reply (a `render_reply` sent alone; one sent
-    /// next to other tools was turned back, AgentConversation).
+    /// next to other tools was turned back, AgentConversation). The messages the phone answered
+    /// sit where they were.
     static func entries(replaying body: AgentThreadSnapshot.Body) -> [Entry] {
         var entries: [Entry] = []
-        for message in body.messages {
+        var local = body.local[...]
+        func appendLocal(upTo position: Int) {
+            while let exchange = local.first, exchange.position <= position {
+                entries.append(Entry(id: UUID(), content: .question(exchange.question)))
+                entries.append(Entry(id: UUID(), content: .reply(Self.localReply(exchange.draftId), results: [:])))
+                local = local.dropFirst()
+            }
+        }
+        for (index, message) in body.messages.enumerated() {
+            appendLocal(upTo: index)
             switch message.role {
             case .user:
                 if let text = message.content.last(where: { $0["type"] == "text" })?["text"]?.stringValue {
@@ -143,13 +173,18 @@ final class AssistantViewModel {
                 entries.append(Entry(id: UUID(), content: .reply(reply, results: body.results)))
             }
         }
+        appendLocal(upTo: .max)
         return entries
     }
 
-    /// The highest `draft_N` among the results.
-    static func lastDraftNumber(in results: [String: JSONValue]) -> Int {
-        results.values
-            .compactMap { $0["draft_id"]?.stringValue }
+    /// The reply to a message the phone answered: its draft's confirm card.
+    static func localReply(_ draftId: String) -> AgentReply {
+        AgentReply(blocks: [.confirm(draftId: draftId)], mood: .happy, suggestions: [])
+    }
+
+    /// The highest `draft_N` of the thread, among the results and the drafts made on the phone.
+    static func lastDraftNumber(in body: AgentThreadSnapshot.Body) -> Int {
+        (body.results.values.compactMap { $0["draft_id"]?.stringValue } + body.local.map(\.draftId))
             .compactMap { $0.hasPrefix("draft_") ? Int($0.dropFirst("draft_".count)) : nil }
             .max() ?? 0
     }
@@ -161,7 +196,7 @@ final class AssistantViewModel {
             createdAt: threadCreatedAt,
             updatedAt: access.now(),
             title: entries.lazy.compactMap(\.question).first,
-            body: conversation.body
+            body: { var body = conversation.body; body.local = local; return body }()
         ))
     }
 
@@ -187,16 +222,59 @@ final class AssistantViewModel {
         return reply.suggestions
     }
 
-    func send(_ raw: String) async {
+    /// Sends a question, or drafts it on the phone when it is a plain record (FastPath).
+    /// - Parameters:
+    ///   - spoken: it came from the voice sheet: a FastPath draft spends a free answer.
+    ///   - cloudAllowed: the person agreed to the cloud mode. Without it only FastPath goes.
+    /// - Returns: false when nothing happened: the message needs the cloud, which is not allowed.
+    @discardableResult
+    func send(_ raw: String, spoken: Bool = false, cloudAllowed: Bool = true) async -> Bool {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, !isWorking else { return }
-        // A question that failed was never part of the history: moving on drops it.
-        if let failedEntryId, case .failed = phase {
-            entries.removeAll { $0.id == failedEntryId }
+        guard !text.isEmpty, !isWorking, !draftingLocally else { return false }
+        if let operations = await draftOnPhone(text, spoken: spoken), let drafts {
+            dropFailedQuestion()
+            let id = drafts.add(operations, madeOnPhoneFrom: text)
+            local.append(AgentThreadSnapshot.LocalExchange(position: conversation.messages.count, question: text, draftId: id))
+            entries.append(Entry(id: UUID(), content: .question(text)))
+            entries.append(Entry(id: UUID(), content: .reply(Self.localReply(id), results: [:])))
+            replyMood = .happy
+            phase = .idle
+            await persist()
+            return true
         }
+        guard cloudAllowed else { return false }
+        dropFailedQuestion()
         let entry = Entry(id: UUID(), content: .question(text))
         entries.append(entry)
         await ask(text, entry: entry.id)
+        return true
+    }
+
+    /// A question that failed was never part of the history: moving on drops it.
+    private func dropFailedQuestion() {
+        guard let failedEntryId, case .failed = phase else { return }
+        entries.removeAll { $0.id == failedEntryId }
+        self.failedEntryId = nil
+        phase = .idle
+    }
+
+    /// The message as a draft made on the phone, or nil for the model. A spoken one spends a
+    /// free answer, and with none left goes the usual way (which then offers Pro).
+    private func draftOnPhone(_ text: String, spoken: Bool) async -> [AgentDraftOperation]? {
+        guard let fastPath, drafts != nil else { return nil }
+        let charged = spoken && !access.isPro()
+        if charged {
+            refreshAllowance()
+            if allowance?.isExhausted == true { return nil }
+        }
+        draftingLocally = true
+        defer { draftingLocally = false }
+        guard let operations = await fastPath.draft(text), !operations.isEmpty else { return nil }
+        if charged {
+            access.saveUsage(AssistantAllowance.recording(access.loadUsage(), now: access.now()))
+            refreshAllowance()
+        }
+        return operations
     }
 
     /// A new thread; the next question carries the context again. The old one stays kept.
@@ -213,6 +291,7 @@ final class AssistantViewModel {
         failedEntryId = nil
         drafts?.clear()
         reportedDrafts = [:]
+        local = []
     }
 
     func retry() async {
@@ -222,25 +301,31 @@ final class AssistantViewModel {
         await ask(text, entry: failedEntryId)
     }
 
-    /// The drafts saved, undone or edited since the model last heard, as a `<draft_status>`
-    /// block, with the states to remember once the turn goes through; nil when nothing changed.
-    /// An edited draft carries its items as they are now, so another edit is news again.
+    /// The drafts saved, undone or edited since the model last heard, and the ones the phone
+    /// made without it, as a `<draft_status>` block, with the states to remember once the turn
+    /// goes through; nil when nothing changed. An edited draft or one made on the phone carries
+    /// its items as they are now, so another edit is news again.
     private func draftStatus() -> (text: String, states: [String: String])? {
         guard let drafts else { return nil }
         var states: [String: String] = [:]
         for (id, state) in drafts.states {
+            let edited = drafts.edited.contains(id)
+            let message = drafts.madeOnPhone[id]
             var status: String?
             switch state {
             case .saved: status = "saved"
             case .undone: status = "undone"
             case .pending, .saving, .failed: break
             }
-            if drafts.edited.contains(id) {
-                var edit = status.map { "\($0), edited by the user before saving" } ?? "edited by the user on the card, not saved yet"
-                if let describeDraft, let operations = drafts.drafts[id]?.operations {
-                    edit += ", items now: " + JSONValue.array(operations.map(describeDraft)).jsonString()
-                }
-                status = edit
+            if edited {
+                status = status.map { "\($0), edited by the user before saving" } ?? "edited by the user on the card, not saved yet"
+            }
+            if let message {
+                status = "made on the phone from the user's message \"\(message)\", not by you; " + (status ?? "not saved yet")
+            }
+            if edited || message != nil, var line = status, let describeDraft, let operations = drafts.drafts[id]?.operations {
+                line += ", items now: " + JSONValue.array(operations.map(describeDraft)).jsonString()
+                status = line
             }
             if let status { states[id] = status }
         }
@@ -258,7 +343,18 @@ final class AssistantViewModel {
             return
         }
         phase = .working(.understanding)
-        if conversation.trimIfNeeded() { sentContext = nil }
+        let kept = conversation.messages.count
+        if conversation.trimIfNeeded() {
+            sentContext = nil
+            // The messages answered on the phone move up with the thread; older ones go.
+            let removed = kept - conversation.messages.count
+            local = local.compactMap { exchange in
+                guard exchange.position >= removed else { return nil }
+                var moved = exchange
+                moved.position -= removed
+                return moved
+            }
+        }
         let current = context()
         let contextToSend = current == sentContext ? nil : current
         let status = draftStatus()

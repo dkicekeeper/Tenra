@@ -101,6 +101,9 @@ final class AgentDraftBook {
     private(set) var states: [String: AgentDraftState] = [:]
     /// The drafts the person changed on the card.
     private(set) var edited: Set<String> = []
+    /// The drafts the phone made from a message without the model (AgentFastPath), with that
+    /// message, for the model to hear about.
+    private(set) var madeOnPhone: [String: String] = [:]
 
     @ObservationIgnored private let writer: Writer
     @ObservationIgnored private var sequence = 0
@@ -110,11 +113,13 @@ final class AgentDraftBook {
     }
 
     /// Files a draft and returns its id (`draft_1`, `draft_2`, … within the thread).
-    func add(_ operations: [AgentDraftOperation]) -> String {
+    /// - Parameter message: the person's message, for a draft the phone made without the model.
+    func add(_ operations: [AgentDraftOperation], madeOnPhoneFrom message: String? = nil) -> String {
         sequence += 1
         let id = "draft_\(sequence)"
         drafts[id] = AgentDraft(id: id, operations: operations)
         states[id] = .pending
+        if let message { madeOnPhone[id] = message }
         return id
     }
 
@@ -174,6 +179,7 @@ final class AgentDraftBook {
         drafts = [:]
         states = [:]
         edited = []
+        madeOnPhone = [:]
         sequence = 0
     }
 }

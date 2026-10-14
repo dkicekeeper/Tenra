@@ -1879,6 +1879,8 @@
 "assistant.draft.budgetWas" = "Önceki";
 "assistant.draft.editHint" = "İşlemi değiştirmek için açar";
 "assistant.draft.editTip" = "Değiştirmek için işleme dokun.";
+"assistant.voice.send" = "Ten’e sor";
+"assistant.voice.again" = "Yeniden söyle";
 "assistant.forecast.perDay" = "%@ tarihine kadar günlük";
 "assistant.forecast.free" = "Kullanılabilir: %@";
 "assistant.forecast.balance" = "Günlük bakiye";

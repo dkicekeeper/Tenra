@@ -1879,6 +1879,8 @@
 "assistant.draft.budgetWas" = "이전";
 "assistant.draft.editHint" = "거래를 열어 변경합니다";
 "assistant.draft.editTip" = "바꾸려면 거래를 탭하세요.";
+"assistant.voice.send" = "텐에게 묻기";
+"assistant.voice.again" = "다시 말하기";
 "assistant.forecast.perDay" = "%@까지 하루 사용 가능 금액";
 "assistant.forecast.free" = "사용 가능: %@";
 "assistant.forecast.balance" = "일별 잔액";

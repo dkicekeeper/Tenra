@@ -1879,6 +1879,8 @@
 "assistant.draft.budgetWas" = "変更前";
 "assistant.draft.editHint" = "取引を開いて変更します";
 "assistant.draft.editTip" = "変更するには取引をタップしてください。";
+"assistant.voice.send" = "テンに聞く";
+"assistant.voice.again" = "もう一度話す";
 "assistant.forecast.perDay" = "%@まで1日あたり";
 "assistant.forecast.free" = "自由に使える額: %@";
 "assistant.forecast.balance" = "日ごとの残高";

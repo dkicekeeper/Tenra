@@ -1879,6 +1879,8 @@
 "assistant.draft.budgetWas" = "Antes";
 "assistant.draft.editHint" = "Abre a operação para editar";
 "assistant.draft.editTip" = "Toque na operação para mudar.";
+"assistant.voice.send" = "Perguntar ao Ten";
+"assistant.voice.again" = "Falar de novo";
 "assistant.forecast.perDay" = "Por dia até %@";
 "assistant.forecast.free" = "Disponível: %@";
 "assistant.forecast.balance" = "Saldo por dia";

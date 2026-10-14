@@ -18,8 +18,8 @@
 //  in the thread with the Pro button and goes once Pro is on.
 //
 //  The composer carries what used to sit behind "+" (§3.8): the paperclip opens the import of a
-//  receipt or a statement, the microphone (while the field is empty) voice input, both the
-//  app's own screens with their own Pro gates.
+//  receipt or a statement (the app's own screen, with its Pro gate), the microphone (while the
+//  field is empty) the voice sheet, whose words go as a question (AssistantVoiceSheet).
 //
 
 import SwiftUI
@@ -134,7 +134,7 @@ struct AssistantView: View {
             Task { await model.retry() }
         }
         .sheet(isPresented: $showingVoice) {
-            VoiceTab()
+            AssistantVoiceSheet { send($0, spoken: true) }
         }
         .sheet(isPresented: $showingImport) {
             OCRTab()
@@ -238,15 +238,19 @@ struct AssistantView: View {
 
     // MARK: - Behaviour
 
-    private func send(_ text: String) {
+    /// Sends the message. A plain record is drafted on the phone and needs no consent (FastPath);
+    /// anything else waits for the cloud mode to be turned on.
+    private func send(_ text: String, spoken: Bool = false) {
         guard !model.isWorking, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        guard hasConsent else {
-            questionAwaitingConsent = text
-            showingConsent = true
-            return
+        if hasConsent { draft = "" }
+        Task {
+            if await model.send(text, spoken: spoken, cloudAllowed: hasConsent) {
+                draft = ""
+            } else if !hasConsent {
+                questionAwaitingConsent = text
+                showingConsent = true
+            }
         }
-        draft = ""
-        Task { await model.send(text) }
     }
 
     private var mascotMood: ParticleCreature.Mood {

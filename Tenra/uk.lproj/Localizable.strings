@@ -1879,6 +1879,8 @@
 "assistant.draft.budgetWas" = "Було";
 "assistant.draft.editHint" = "Відкриває операцію для редагування";
 "assistant.draft.editTip" = "Натисніть на операцію, щоб змінити.";
+"assistant.voice.send" = "Запитати Тена";
+"assistant.voice.again" = "Сказати знову";
 "assistant.forecast.perDay" = "На день до %@";
 "assistant.forecast.free" = "Вільно: %@";
 "assistant.forecast.balance" = "Залишок по днях";

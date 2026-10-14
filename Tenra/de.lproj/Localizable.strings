@@ -1887,6 +1887,10 @@
 "tab.assistant" = "Assistent";
 "assistant.greeting.title" = "Hallo, ich bin Ten";
 "assistant.greeting.message" = "Ich helfe dir mit deinem Geld: Ausgaben, Sparen, Kredite und Investieren. Ich sehe mir deine Daten auf diesem iPhone an und antworte mit Karten.";
+"assistant.attach" = "Beleg oder Kontoauszug anhängen";
+"assistant.greeting.tools" = "Büroklammer: ein Beleg oder Kontoauszug. Mikrofon: sag es einfach.";
+"composer.send" = "Senden";
+"composer.voice" = "Diktieren";
 "assistant.composer.placeholder" = "Frag zu deinem Geld…";
 "assistant.newChat" = "Neuer Chat";
 "assistant.preset.month" = "Meine Ausgaben diesen Monat";

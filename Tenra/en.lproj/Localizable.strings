@@ -1887,6 +1887,10 @@
 "tab.assistant" = "Assistant";
 "assistant.greeting.title" = "Hi, I’m Ten";
 "assistant.greeting.message" = "I help with your money: spending, saving, loans and investing. I look at your data on this phone and answer with cards.";
+"assistant.attach" = "Attach a receipt or a statement";
+"assistant.greeting.tools" = "Paperclip: a receipt or a statement. Microphone: say it out loud.";
+"composer.send" = "Send";
+"composer.voice" = "Dictate";
 "assistant.composer.placeholder" = "Ask about your money…";
 "assistant.newChat" = "New chat";
 "assistant.preset.month" = "My spending this month";

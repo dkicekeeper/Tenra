@@ -39,7 +39,7 @@ function pinned by `VoiceRecognitionLanguageTests`.
 
 `VoiceInputService` is `@MainActor`, but `AVAudioSession.setCategory` / `setActive` are blocking
 CoreAudio calls (tens of milliseconds, more on a cold audio stack); on the main actor they
-stall running animations, e.g. the "+" tab expanding while `VoiceInputView.onAppear`
+stall running animations, e.g. the voice sheet sliding up while `VoiceInputView.onAppear`
 auto-starts recording. iOS 27 logs it:
 `AVAudioSession_iOS.mm:978 This method can lead to UI unresponsiveness if called on the main thread`.
 

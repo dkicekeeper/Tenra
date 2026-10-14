@@ -1887,6 +1887,10 @@
 "tab.assistant" = "Assistant";
 "assistant.greeting.title" = "Bonjour, je suis Ten";
 "assistant.greeting.message" = "Je vous aide avec votre argent : dépenses, épargne, crédits et investissement. Je regarde vos données sur ce téléphone et je réponds avec des cartes.";
+"assistant.attach" = "Joindre un ticket ou un relevé";
+"assistant.greeting.tools" = "Trombone : un ticket ou un relevé. Micro : dites-le à voix haute.";
+"composer.send" = "Envoyer";
+"composer.voice" = "Dicter";
 "assistant.composer.placeholder" = "Une question sur votre argent…";
 "assistant.newChat" = "Nouvelle discussion";
 "assistant.preset.month" = "Mes dépenses ce mois-ci";

@@ -17,14 +17,22 @@
 //  (docs/plan-ai-assistant.md §6), and opens the paywall. A question over the allowance waits
 //  in the thread with the Pro button and goes once Pro is on.
 //
+//  The composer carries what used to sit behind "+" (§3.8): the paperclip opens the import of a
+//  receipt or a statement, the microphone (while the field is empty) voice input, both the
+//  app's own screens with their own Pro gates.
+//
 
 import SwiftUI
 
 struct AssistantView: View {
     let model: AssistantViewModel
+    /// Closes the screen the assistant is presented in; nil shows no close button.
+    var onClose: (() -> Void)?
 
     @Environment(PremiumManager.self) private var premium
     @State private var draft = ""
+    @State private var showingVoice = false
+    @State private var showingImport = false
     @State private var showingPaywall = false
     @State private var showingConsent = false
     @State private var questionAwaitingConsent: String?
@@ -73,7 +81,18 @@ struct AssistantView: View {
                     placeholder: String(localized: "assistant.composer.placeholder"),
                     isSending: model.isWorking,
                     limit: AssistantMetrics.questionLimit,
-                    focus: $composerFocused
+                    focus: $composerFocused,
+                    leading: {
+                        Button {
+                            HapticManager.light()
+                            showingImport = true
+                        } label: {
+                            MessageComposerAccessory(systemImage: "paperclip")
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(String(localized: "assistant.attach"))
+                    },
+                    onVoice: { showingVoice = true }
                 ) {
                     send(draft)
                 }
@@ -88,6 +107,13 @@ struct AssistantView: View {
             AssistantDestinationView(route: route)
         }
         .toolbar {
+            if let onClose {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(String(localized: "button.close"), systemImage: "xmark") {
+                        onClose()
+                    }
+                }
+            }
             if !model.entries.isEmpty {
                 ToolbarItem(placement: .principal) {
                     ParticleCreature(mood: mascotMood, style: .compact)
@@ -106,6 +132,12 @@ struct AssistantView: View {
         .paywallSheet(isPresented: $showingPaywall) {
             model.refreshAllowance()
             Task { await model.retry() }
+        }
+        .sheet(isPresented: $showingVoice) {
+            VoiceTab()
+        }
+        .sheet(isPresented: $showingImport) {
+            OCRTab()
         }
         .onAppear { model.refreshAllowance() }
         .task { await model.restore() }
@@ -143,6 +175,10 @@ struct AssistantView: View {
                 Text(String(localized: "assistant.greeting.message"))
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.Text.secondary)
+                // Voice and import moved here from "+": say where they are.
+                Text(String(localized: "assistant.greeting.tools"))
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.Text.tertiary)
             }
             .multilineTextAlignment(.center)
             SuggestionChips(Self.presets, systemImage: "sparkles", layout: .wrap) { send($0) }

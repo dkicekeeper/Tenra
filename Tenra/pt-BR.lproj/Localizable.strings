@@ -1887,6 +1887,10 @@
 "tab.assistant" = "Assistente";
 "assistant.greeting.title" = "Oi, eu sou Ten";
 "assistant.greeting.message" = "Ajudo com o seu dinheiro: gastos, economia, empréstimos e investimentos. Vejo seus dados neste celular e respondo com cartões.";
+"assistant.attach" = "Anexar um recibo ou um extrato";
+"assistant.greeting.tools" = "Clipe: um recibo ou um extrato. Microfone: fale em voz alta.";
+"composer.send" = "Enviar";
+"composer.voice" = "Ditar";
 "assistant.composer.placeholder" = "Pergunte sobre seu dinheiro…";
 "assistant.newChat" = "Nova conversa";
 "assistant.preset.month" = "Meus gastos deste mês";

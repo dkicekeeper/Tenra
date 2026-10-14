@@ -1887,6 +1887,10 @@
 "tab.assistant" = "Asistan";
 "assistant.greeting.title" = "Merhaba, ben Ten";
 "assistant.greeting.message" = "Paranla ilgili yardım ederim: harcamalar, birikim, krediler ve yatırım. Bu telefondaki verilerine bakıp kartlarla cevap veririm.";
+"assistant.attach" = "Fiş veya hesap özeti ekle";
+"assistant.greeting.tools" = "Ataç: fiş veya hesap özeti. Mikrofon: sesli söyle.";
+"composer.send" = "Gönder";
+"composer.voice" = "Dikte et";
 "assistant.composer.placeholder" = "Paranla ilgili sor…";
 "assistant.newChat" = "Yeni sohbet";
 "assistant.preset.month" = "Bu ayki harcamalarım";

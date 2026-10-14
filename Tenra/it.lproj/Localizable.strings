@@ -1887,6 +1887,10 @@
 "tab.assistant" = "Assistente";
 "assistant.greeting.title" = "Ciao, sono Ten";
 "assistant.greeting.message" = "Ti aiuto con i tuoi soldi: spese, risparmio, prestiti e investimenti. Guardo i tuoi dati su questo telefono e rispondo con delle schede.";
+"assistant.attach" = "Allega uno scontrino o un estratto conto";
+"assistant.greeting.tools" = "Graffetta: uno scontrino o un estratto conto. Microfono: dillo a voce.";
+"composer.send" = "Invia";
+"composer.voice" = "Detta";
 "assistant.composer.placeholder" = "Chiedi dei tuoi soldi…";
 "assistant.newChat" = "Nuova chat";
 "assistant.preset.month" = "Le mie spese di questo mese";

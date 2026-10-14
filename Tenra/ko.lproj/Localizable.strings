@@ -1887,6 +1887,10 @@
 "tab.assistant" = "어시스턴트";
 "assistant.greeting.title" = "안녕하세요, 텐이에요";
 "assistant.greeting.message" = "돈 관리를 도와드려요. 지출, 절약, 대출, 투자까지요. 이 휴대폰의 데이터를 보고 카드로 답해 드립니다.";
+"assistant.attach" = "영수증이나 명세서 첨부";
+"assistant.greeting.tools" = "클립: 영수증이나 명세서. 마이크: 말로 하기.";
+"composer.send" = "보내기";
+"composer.voice" = "받아쓰기";
 "assistant.composer.placeholder" = "돈에 대해 물어보세요…";
 "assistant.newChat" = "새 대화";
 "assistant.preset.month" = "이번 달 지출";

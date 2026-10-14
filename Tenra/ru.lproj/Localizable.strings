@@ -1887,6 +1887,10 @@
 "tab.assistant" = "Ассистент";
 "assistant.greeting.title" = "Привет, я Тэн";
 "assistant.greeting.message" = "Помогаю с деньгами: траты, экономия, кредиты и инвестиции. Смотрю ваши данные на этом телефоне и отвечаю карточками.";
+"assistant.attach" = "Прикрепить чек или выписку";
+"assistant.greeting.tools" = "Скрепка: чек или выписка. Микрофон: скажите вслух.";
+"composer.send" = "Отправить";
+"composer.voice" = "Надиктовать";
 "assistant.composer.placeholder" = "Спросите о деньгах…";
 "assistant.newChat" = "Новый чат";
 "assistant.preset.month" = "Мои траты в этом месяце";

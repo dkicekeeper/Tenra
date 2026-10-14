@@ -286,8 +286,11 @@ enum AssistantMetrics {
     static let heroMascot: CGFloat = 220
     /// The mascot on a message Ten wrote (AssistantNoticeCard).
     static let headerMascot: CGFloat = AppIconSize.xl
-    /// Ten in a chat's navigation bar.
-    static let toolbarMascot: CGFloat = AppIconSize.xxl
+    /// Ten in a chat, in the middle of the navigation bar (the owner's size).
+    static let chatMascot: CGFloat = 120
+    /// How far Ten rises into the navigation bar (its inline height); the rest hangs over the
+    /// top of the thread.
+    static let chatMascotLift: CGFloat = 44
     /// The longest question: plenty for a person, short enough to keep the turn cheap.
     static let questionLimit = 1000
     /// The free answers left from which the composer shows the count.

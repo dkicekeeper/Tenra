@@ -6,7 +6,9 @@
 //  (docs/plan-ai-assistant.md §3.3, §3.6): the person's questions in bubbles, the replies as the
 //  app's own cards, the step the assistant is on while it works, its suggestions for what to
 //  ask next, and the field. The navigation bar holds only the way back to the home and Ten in
-//  the middle; the tab bar steps aside (TabBarVisibility), so the chat has the screen.
+//  the middle, 120 pt (the owner's size): it rises into the bar and hangs over the top of the
+//  thread, with no backing of its own, drawn over the content that scrolls under it. The tab
+//  bar steps aside (TabBarVisibility), so the chat has the screen.
 //
 //  Ten shows what is going on: thinking while it runs tools, answering while it writes, the
 //  reply's mood after, confused or sad when a question could not be answered. The reply's text
@@ -44,6 +46,48 @@ struct AssistantChatView: View {
     @State private var viewportHeight: CGFloat = 0
 
     var body: some View {
+        ZStack(alignment: .top) {
+            thread
+            // Ten in the middle of the navigation bar, hanging over the top of the thread: over
+            // the content that scrolls under it, never under it, and taking no room of its own.
+            ParticleCreature(mood: mascotMood)
+                .frame(width: AssistantMetrics.chatMascot, height: AssistantMetrics.chatMascot)
+                .offset(y: -AssistantMetrics.chatMascotLift)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        // The chat has the screen: the tab bar steps aside while it is open (the stable owner
+        // restores it, as for TransactionAddModal).
+        .toolbar(.hidden, for: .tabBar)
+        .onAppear {
+            tabBarVisibility?.isHidden = true
+            model.refreshAllowance()
+        }
+        .onDisappear { tabBarVisibility?.isHidden = false }
+        .onChange(of: premium.isPro) { model.refreshAllowance() }
+        .paywallSheet(isPresented: $showingPaywall) {
+            model.refreshAllowance()
+            Task { await model.retry() }
+        }
+        .sheet(isPresented: $showingVoice) {
+            AssistantVoiceSheet { send($0, spoken: true) }
+        }
+        .assistantConsent(
+            isPresented: $showingConsent,
+            onAllow: {
+                if let question = questionAwaitingConsent {
+                    questionAwaitingConsent = nil
+                    send(question)
+                }
+            },
+            onDecline: { questionAwaitingConsent = nil }
+        )
+    }
+
+    /// The questions and replies, with the field floating at the bottom. At rest the thread
+    /// starts under Ten; scrolled, it passes beneath.
+    private var thread: some View {
         ScrollView {
             // A plain stack: a lazy one guessed the heights of replies it had not drawn, and
             // a long reply scrolled the thread into empty space.
@@ -82,6 +126,8 @@ struct AssistantChatView: View {
         .scrollDismissesKeyboard(.interactively)
         // A tap anywhere on the thread puts the keyboard away (buttons still work).
         .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
+        // The part of Ten below the navigation bar: the thread starts under it.
+        .safeAreaPadding(.top, AssistantMetrics.chatMascot - AssistantMetrics.chatMascotLift)
         .safeAreaBar(edge: .bottom) {
             AssistantComposerBar(
                 model: model,
@@ -110,40 +156,6 @@ struct AssistantChatView: View {
                 HapticManager.error()
                 attachmentError = message
             }
-        )
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                ParticleCreature(mood: mascotMood, style: .compact)
-                    .frame(width: AssistantMetrics.toolbarMascot, height: AssistantMetrics.toolbarMascot)
-                    .accessibilityHidden(true)
-            }
-        }
-        // The chat has the screen: the tab bar steps aside while it is open (the stable owner
-        // restores it, as for TransactionAddModal).
-        .toolbar(.hidden, for: .tabBar)
-        .onAppear {
-            tabBarVisibility?.isHidden = true
-            model.refreshAllowance()
-        }
-        .onDisappear { tabBarVisibility?.isHidden = false }
-        .onChange(of: premium.isPro) { model.refreshAllowance() }
-        .paywallSheet(isPresented: $showingPaywall) {
-            model.refreshAllowance()
-            Task { await model.retry() }
-        }
-        .sheet(isPresented: $showingVoice) {
-            AssistantVoiceSheet { send($0, spoken: true) }
-        }
-        .assistantConsent(
-            isPresented: $showingConsent,
-            onAllow: {
-                if let question = questionAwaitingConsent {
-                    questionAwaitingConsent = nil
-                    send(question)
-                }
-            },
-            onDecline: { questionAwaitingConsent = nil }
         )
     }
 
@@ -217,7 +229,7 @@ struct AssistantChatView: View {
         }
     }
 
-    /// The step the assistant is on; Ten in the navigation bar thinks meanwhile.
+    /// The step the assistant is on; Ten over the thread thinks meanwhile.
     private func workingRow(_ title: String) -> some View {
         Text(title)
             .font(AppTypography.bodySmall)

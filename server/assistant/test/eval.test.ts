@@ -117,6 +117,11 @@ describe("grader", () => {
     const results = universalChecks(r, "ru");
     expect(results.find((c) => c.name === "refs_resolve")?.pass).toBe(true);
     expect(results.find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
+    // "Interest saved" is finance, not a claim about the draft.
+    const say = (text: string): RunRecord => ({ calls: [], reply: { blocks: [{ type: "text", text }], mood: "idle", suggestions: [] } });
+    expect(universalChecks(say("The interest saved is shown below."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(true);
+    expect(universalChecks(say("I've saved your lunch."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
+    expect(universalChecks(say("Your lunch was saved."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
   });
 });
 

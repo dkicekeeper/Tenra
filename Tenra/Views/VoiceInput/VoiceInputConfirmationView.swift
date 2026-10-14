@@ -20,6 +20,9 @@ struct VoiceInputConfirmationView: View {
     /// When set, checkmark returns updated ParsedOperation instead of saving.
     /// nil = save mode (legacy), non-nil = edit-only mode (voice preview).
     var onUpdate: ((ParsedOperation) -> Void)?
+    /// Shows the date buttons (the add form's bar) for the date to be changed; the voice
+    /// screen keeps the date it heard.
+    var editsDate = false
     
     @State private var selectedType: TransactionType
     @State private var selectedDate: Date
@@ -49,6 +52,7 @@ struct VoiceInputConfirmationView: View {
         categoriesViewModel: CategoriesViewModel,
         parsedOperation: ParsedOperation,
         originalText: String,
+        editsDate: Bool = false,
         onUpdate: ((ParsedOperation) -> Void)? = nil
     ) {
         self.transactionsViewModel = transactionsViewModel
@@ -57,6 +61,7 @@ struct VoiceInputConfirmationView: View {
         self.parsedOperation = parsedOperation
         self.originalText = originalText
         self.onUpdate = onUpdate
+        self.editsDate = editsDate
         
         _selectedType = State(initialValue: parsedOperation.type)
         _selectedDate = State(initialValue: parsedOperation.date)
@@ -196,6 +201,7 @@ struct VoiceInputConfirmationView: View {
                     )
                 }
             }
+            .dateButtonsSafeAreaIf(editsDate, selectedDate: $selectedDate)
             .navigationTitle(String(localized: "voiceConfirmation.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -407,10 +413,12 @@ struct VoiceInputConfirmationView: View {
             date: selectedDate,
             accountId: selectedAccountId,
             categoryName: selectedCategoryName,
-            subcategoryNames: Array(selectedSubcategoryNames),
+            // The picker edits ids; the names it started from may be stale.
+            subcategoryNames: categoriesViewModel.subcategories
+                .filter { selectedSubcategoryIds.contains($0.id) }
+                .map(\.name),
             note: noteText
         )
-        // Preserve subcategory IDs for linking later
         onUpdate?(updated)
         dismiss()
     }
@@ -545,6 +553,17 @@ struct VoiceInputConfirmationView: View {
             // Курса нет ни в кэше, ни в сети (resolveAndCommit уже повторил попытку
             // с .provided): без конвертации счёт изменился бы на сумму в чужой валюте.
             amountWarning = String(localized: "currency.error.conversionFailed")
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func dateButtonsSafeAreaIf(_ condition: Bool, selectedDate: Binding<Date>) -> some View {
+        if condition {
+            dateButtonsSafeArea(selectedDate: selectedDate) { selectedDate.wrappedValue = $0 }
+        } else {
+            self
         }
     }
 }

@@ -46,6 +46,8 @@ final class AgentConversation {
     enum Progress: Equatable {
         /// A tool call started on the server side (drives the "thinking" steps).
         case toolStarted(String)
+        /// The reply's text blocks so far, while `render_reply` streams (AgentPartialReply).
+        case replyText([String])
     }
 
     private(set) var messages: [AgentWireMessage] = []
@@ -105,13 +107,17 @@ final class AgentConversation {
     }
 
     /// Sends one user message and runs the loop to the reply.
-    /// - Parameter context: the `<app_context>` block; pass it on the first message of the
-    ///   thread and whenever the date or the user's accounts and categories change.
-    func send(_ text: String, context: String? = nil, onProgress: ((Progress) -> Void)? = nil) async throws -> AgentTurnOutcome {
+    /// - Parameters:
+    ///   - context: the `<app_context>` block; pass it on the first message of the thread and
+    ///     whenever the date or the user's accounts and categories change.
+    ///   - notes: more blocks before the question, each its own text block (an attachment's
+    ///     summary), so no block outgrows the server's limit.
+    func send(_ text: String, context: String? = nil, notes: [String] = [], onProgress: ((Progress) -> Void)? = nil) async throws -> AgentTurnOutcome {
         let checkpoint = messages.count
         let owed = owedResults
         var content = owedResults
         if let context { content.append(.object(["type": .string("text"), "text": .string(context)])) }
+        for note in notes { content.append(.object(["type": .string("text"), "text": .string(note)])) }
         content.append(.object(["type": .string("text"), "text": .string(text)]))
         owedResults = []
         messages.append(AgentWireMessage(role: .user, content: content))
@@ -128,10 +134,19 @@ final class AgentConversation {
     private func run(onProgress: ((Progress) -> Void)?) async throws -> AgentTurnOutcome {
         for _ in 0..<maxSteps {
             var finished: AgentTurnDone?
+            // render_reply's input as it streams, in this call only.
+            var replyJSON = ""
+            var replyTexts: [String] = []
             for try await event in transport.turn(messages) {
                 switch event {
                 case .tool(let name): onProgress?(.toolStarted(name))
                 case .text: break
+                case .reply(let piece):
+                    replyJSON += piece
+                    if let texts = AgentPartialReply.texts(fromPartialJSON: replyJSON), texts != replyTexts {
+                        replyTexts = texts
+                        onProgress?(.replyText(texts))
+                    }
                 case .done(let turn): finished = turn
                 case .error(let code, let retryable): throw AgentConversationError.stream(code: code, retryable: retryable)
                 }

@@ -16,6 +16,11 @@ Present via `.sheet()`, **NEVER via `.navigationDestination()`** (nested `Naviga
 `VoiceInputConfirmationView` `onUpdate` mode:
 - Pass `onUpdate: ((ParsedOperation) -> Void)?` for edit-only behavior (returns updated `ParsedOperation` without saving)
 - `nil` = save mode
+- The returned `subcategoryNames` come from the subcategory picker's ids (the names the screen
+  opened with are only its starting point)
+- `editsDate: true` adds the add form's date buttons (`dateButtonsSafeArea`); the voice flow
+  keeps the date it heard. The assistant's confirm card uses both to edit a draft
+  (`AgentDraftEditor`, [plan-ai-assistant.md](../plan-ai-assistant.md) §3.1)
 
 ## Live preview cards are not `TransactionCard`
 
@@ -39,7 +44,7 @@ function pinned by `VoiceRecognitionLanguageTests`.
 
 `VoiceInputService` is `@MainActor`, but `AVAudioSession.setCategory` / `setActive` are blocking
 CoreAudio calls (tens of milliseconds, more on a cold audio stack); on the main actor they
-stall running animations, e.g. the "+" tab expanding while `VoiceInputView.onAppear`
+stall running animations, e.g. the voice sheet sliding up while `VoiceInputView.onAppear`
 auto-starts recording. iOS 27 logs it:
 `AVAudioSession_iOS.mm:978 This method can lead to UI unresponsiveness if called on the main thread`.
 
@@ -107,6 +112,16 @@ redraw only it):
   entities tinted by confidence.
 - **Preview cards:** they cascade in 80 ms apart (`.cascadeIn(index:)`); a card deleted from
   its context menu leaves with DesignKit's `DissolveTransition`.
+
+## Speaking to the assistant
+
+The assistant's microphone opens [`AssistantVoiceSheet`](../../Tenra/Views/Assistant/AssistantVoiceSheet.swift):
+the same `VoiceLevelGlow`, `ListeningPrompt`, `VoiceStopOrb` and `AnimatedTranscriptionText`,
+its own `VoiceInputService`, the 5-second silence stop. Stopped, it shows what it heard; "Ask
+Ten" sends it as a message, "Say it again" records anew. There is no local preview: a plain
+record ("кофе 1500 и такси 2300") is drafted on the phone by the assistant's FastPath
+(`AgentFastPath`, the same `parseMulti`), anything else goes to the model
+([plan-ai-assistant.md](../plan-ai-assistant.md) §3.8).
 
 Screenshot mode (`isScreenshotDemo`) passes no level: the glow and the orb breathe on their own.
 

@@ -12,6 +12,10 @@
 //  and Undo takes back what was saved: deletes the transactions or the series with what it
 //  generated, puts the previous budget back.
 //
+//  Before Save the person can change an income or an expense on the card (the voice
+//  confirmation form, AgentDraftEditor); the next question tells the model what the draft
+//  holds now (`<draft_status>`, AssistantViewModel).
+//
 //  Drafts live in memory while the app runs; a new chat clears them. A thread kept across
 //  launches (AgentThreadStore) comes back without its drafts: their cards show nothing.
 //
@@ -95,6 +99,11 @@ final class AgentDraftBook {
 
     private(set) var drafts: [String: AgentDraft] = [:]
     private(set) var states: [String: AgentDraftState] = [:]
+    /// The drafts the person changed on the card.
+    private(set) var edited: Set<String> = []
+    /// The drafts the phone made from a message without the model (AgentFastPath), with that
+    /// message, for the model to hear about.
+    private(set) var madeOnPhone: [String: String] = [:]
 
     @ObservationIgnored private let writer: Writer
     @ObservationIgnored private var sequence = 0
@@ -104,11 +113,13 @@ final class AgentDraftBook {
     }
 
     /// Files a draft and returns its id (`draft_1`, `draft_2`, … within the thread).
-    func add(_ operations: [AgentDraftOperation]) -> String {
+    /// - Parameter message: the person's message, for a draft the phone made without the model.
+    func add(_ operations: [AgentDraftOperation], madeOnPhoneFrom message: String? = nil) -> String {
         sequence += 1
         let id = "draft_\(sequence)"
         drafts[id] = AgentDraft(id: id, operations: operations)
         states[id] = .pending
+        if let message { madeOnPhone[id] = message }
         return id
     }
 
@@ -128,6 +139,19 @@ final class AgentDraftBook {
             }
             states[id] = .failed
         }
+    }
+
+    /// The person changed one operation on the card. Only a draft not saved yet changes; one
+    /// that failed to save is ready to try again.
+    @discardableResult
+    func replace(_ id: String, at index: Int, with operation: AgentDraftOperation) -> Bool {
+        guard var draft = drafts[id], draft.operations.indices.contains(index),
+              states[id] == .pending || states[id] == .failed else { return false }
+        draft.operations[index] = operation
+        drafts[id] = draft
+        states[id] = .pending
+        edited.insert(id)
+        return true
     }
 
     /// Takes back what the draft saved.
@@ -154,6 +178,8 @@ final class AgentDraftBook {
     func clear() {
         drafts = [:]
         states = [:]
+        edited = []
+        madeOnPhone = [:]
         sequence = 0
     }
 }

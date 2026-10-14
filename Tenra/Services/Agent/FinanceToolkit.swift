@@ -1000,6 +1000,41 @@ final class FinanceToolkit: AgentToolExecuting {
         }
     }
 
+    /// FastPath (AgentFastPath): the parser's operations resolved as `draft_transactions`
+    /// resolves them; nil when one cannot be drafted, so the message goes to the model. The
+    /// parser always picks an account: one the message does not name is marked as guessed.
+    func fastPathOperations(for operations: [ParsedOperation], message: String) async -> [AgentDraftOperation]? {
+        let lowered = message.lowercased()
+        var drafted: [AgentDraftOperation] = []
+        for operation in operations {
+            var result = makeDraft(operation, conversion: .cachedOnly)
+            if case .failure(.needsFXConversion(let amount, let from, let to)) = result {
+                let converted = await CurrencyConverter.convert(amount: amount, from: from, to: to)
+                result = makeDraft(operation, conversion: .provided(converted))
+            }
+            guard case .success(var draft) = result else { return nil }
+            let account = store.accounts.first(where: { $0.id == draft.accountId })
+            if !Self.message(lowered, names: account),
+               !draft.warnings.contains(.accountInferred) {
+                draft.warnings.append(.accountInferred)
+            }
+            drafted.append(.single(draft))
+        }
+        return drafted
+    }
+
+    /// Whether the message names the account: a word of its name, three letters or more.
+    private static func message(_ lowered: String, names account: Account?) -> Bool {
+        guard let account else { return false }
+        let words: [Substring] = account.name.lowercased().split { (character: Character) -> Bool in
+            !character.isLetter && !character.isNumber
+        }
+        for word in words where word.count >= 3 && lowered.contains(word) {
+            return true
+        }
+        return false
+    }
+
     private func makeDraft(_ operation: ParsedOperation, conversion: ConversionPolicy) -> Result<TransactionDraft, DraftIssue> {
         TransactionDraftService.makeDraft(
             from: operation,
@@ -1019,8 +1054,9 @@ final class FinanceToolkit: AgentToolExecuting {
         return accounts.first { $0.name.lowercased() == name }
     }
 
-    /// What the draft will write, for the model to describe and point the confirm block at.
-    private func describe(_ operation: AgentDraftOperation) -> JSONValue {
+    /// What the draft will write, for the model to describe and point the confirm block at, and
+    /// what an edited draft holds now (`<draft_status>`, AssistantViewModel).
+    func describe(_ operation: AgentDraftOperation) -> JSONValue {
         func accountName(_ id: String) -> String? { store.accounts.first { $0.id == id }?.name }
         switch operation {
         case .single(let draft):

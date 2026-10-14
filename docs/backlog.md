@@ -11,6 +11,11 @@ with the commit of every fix, are in
 
 ## Open
 
+- **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
+  in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).
+  Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come
+  back to an unsaved attachment.
+
 - **Wallet probe code (DEBUG only).** The spike it served (does logging Apple Pay through the
   Shortcuts "Wallet" automation work?) was overtaken by the shipped automation (1.4, merchant
   memory; [domains/intents.md](domains/intents.md) §6). `WalletPaymentProbeIntent`,

@@ -197,6 +197,9 @@ struct HistoryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                AskAssistantToolbarButton(topic: .history)
+            }
             ToolbarItemGroup(placement: .bottomBar) {
                 Button {
                     showingTimeFilter = true

@@ -16,11 +16,39 @@ import os
 /// A thread as kept.
 nonisolated struct AgentThreadSnapshot: Equatable, Sendable {
     /// The conversation exactly as sent and received, the tool results its cards read, and the
-    /// results owed to the next message (AgentConversation).
+    /// results owed to the next message (AgentConversation); and the messages the phone
+    /// answered by itself, which the model never received (AgentFastPath).
     struct Body: Codable, Equatable, Sendable {
         var messages: [AgentWireMessage]
         var results: [String: JSONValue]
         var owedResults: [JSONValue]
+        var local: [LocalExchange]
+
+        init(messages: [AgentWireMessage], results: [String: JSONValue], owedResults: [JSONValue], local: [LocalExchange] = []) {
+            self.messages = messages
+            self.results = results
+            self.owedResults = owedResults
+            self.local = local
+        }
+
+        private enum CodingKeys: String, CodingKey { case messages, results, owedResults, local }
+
+        /// A thread kept before the phone answered by itself has no `local`.
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            messages = try c.decode([AgentWireMessage].self, forKey: .messages)
+            results = try c.decode([String: JSONValue].self, forKey: .results)
+            owedResults = try c.decode([JSONValue].self, forKey: .owedResults)
+            local = try c.decodeIfPresent([LocalExchange].self, forKey: .local) ?? []
+        }
+    }
+
+    /// A message the phone answered with a draft by itself: where it sits in the thread (the
+    /// number of `messages` before it), the message, and the draft it made.
+    struct LocalExchange: Codable, Equatable, Sendable {
+        var position: Int
+        var question: String
+        var draftId: String
     }
 
     var id: String
@@ -29,6 +57,13 @@ nonisolated struct AgentThreadSnapshot: Equatable, Sendable {
     /// The first question.
     var title: String?
     var body: Body
+}
+
+/// A kept thread in the history list: its first question and when it was last written.
+nonisolated struct AgentThreadSummary: Equatable, Identifiable, Sendable {
+    var id: String
+    var title: String
+    var updatedAt: Date
 }
 
 nonisolated final class AgentThreadStore: @unchecked Sendable {
@@ -49,18 +84,48 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
             let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
             request.sortDescriptors = [NSSortDescriptor(key: "updatedAt", ascending: false)]
             request.fetchLimit = 1
-            guard let entity = try? context.fetch(request).first,
-                  let id = entity.id,
-                  let payload = entity.payload,
-                  let body = try? JSONDecoder().decode(AgentThreadSnapshot.Body.self, from: payload) else { return nil }
-            return AgentThreadSnapshot(
-                id: id,
-                createdAt: entity.createdAt ?? .distantPast,
-                updatedAt: entity.updatedAt ?? .distantPast,
-                title: entity.title,
-                body: body
-            )
+            return (try? context.fetch(request).first).flatMap(Self.snapshot)
         }
+    }
+
+    /// One kept thread, to open it again from the history.
+    func thread(id: String) async -> AgentThreadSnapshot? {
+        let context = stack.newBackgroundContext()
+        return await context.perform {
+            let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
+            request.predicate = NSPredicate(format: "id == %@", id)
+            request.fetchLimit = 1
+            return (try? context.fetch(request).first).flatMap(Self.snapshot)
+        }
+    }
+
+    /// The latest threads with a question, newest first, without their conversations.
+    func recent(limit: Int) async -> [AgentThreadSummary] {
+        let context = stack.newBackgroundContext()
+        return await context.perform {
+            let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
+            request.sortDescriptors = [NSSortDescriptor(key: "updatedAt", ascending: false)]
+            request.predicate = NSPredicate(format: "title != nil AND title != ''")
+            request.fetchLimit = limit
+            let entities = (try? context.fetch(request)) ?? []
+            return entities.compactMap { entity in
+                guard let id = entity.id, let title = entity.title else { return nil }
+                return AgentThreadSummary(id: id, title: title, updatedAt: entity.updatedAt ?? .distantPast)
+            }
+        }
+    }
+
+    private static func snapshot(_ entity: AgentThreadEntity) -> AgentThreadSnapshot? {
+        guard let id = entity.id,
+              let payload = entity.payload,
+              let body = try? JSONDecoder().decode(AgentThreadSnapshot.Body.self, from: payload) else { return nil }
+        return AgentThreadSnapshot(
+            id: id,
+            createdAt: entity.createdAt ?? .distantPast,
+            updatedAt: entity.updatedAt ?? .distantPast,
+            title: entity.title,
+            body: body
+        )
     }
 
     /// Writes the thread over its earlier copy, and lets the threads beyond `keep` go.

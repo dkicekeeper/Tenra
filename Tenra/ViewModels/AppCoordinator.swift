@@ -71,6 +71,14 @@ class AppCoordinator {
     /// after navigation via `consumePendingSubscription()`.
     private(set) var pendingSubscriptionSeriesId: String?
 
+    /// A PDF or CSV opened in Tenra from another app ("Open in Tenra"): the assistant opens
+    /// and attaches it (AssistantAttachmentSources). Cleared once taken.
+    private(set) var pendingAttachment: URL?
+
+    /// What a screen asked Ten about ("Ask Ten" on an account, a category, an insight, the
+    /// history): the assistant opens with questions about it. Cleared once taken.
+    private(set) var assistantTopic: AssistantTopic?
+
     /// Cold-launch stash: when iOS launches the app from a notification tap, the
     /// `userNotificationCenter(_:didReceive:)` handler runs BEFORE `AppCoordinator`
     /// is constructed (the coordinator waits for CoreData prewarm). AppDelegate
@@ -101,6 +109,17 @@ class AppCoordinator {
             drafts: drafts,
             suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
         )
+        // FastPath: the voice parser reads a plain record, the toolkit drafts it.
+        let parser = VoiceInputParser(
+            categoriesViewModel: categoriesViewModel,
+            accountsViewModel: accountsViewModel,
+            transactionsViewModel: transactionsViewModel
+        )
+        let fastPath = AssistantViewModel.FastPath { text in
+            let operations = parser.parseMulti(text)
+            guard AgentFastPath.isRecord(text, operations: operations, clauses: VoiceInputSegmenter.segment(text).count) else { return nil }
+            return await toolkit.fastPathOperations(for: operations, message: text)
+        }
         let usage = AssistantUsageStore()
         // Threads are kept in the CoreData store; previews on UserDefaults keep them in memory.
         let threads = repository is CoreDataRepository ? AgentThreadStore() : nil
@@ -113,8 +132,15 @@ class AppCoordinator {
                 saveUsage: { usage.save($0) }
             ),
             drafts: drafts,
+            describeDraft: { toolkit.describe($0) },
+            fastPath: fastPath,
             persistence: threads.map { threads in
-                AssistantViewModel.Persistence(load: { await threads.latest() }, save: { await threads.save($0) })
+                AssistantViewModel.Persistence(
+                    load: { await threads.latest() },
+                    save: { await threads.save($0) },
+                    recent: { await threads.recent(limit: $0) },
+                    thread: { await threads.thread(id: $0) }
+                )
             }
         )
         assistantModel = model
@@ -127,6 +153,41 @@ class AppCoordinator {
 
     func consumePendingSubscription() {
         pendingSubscriptionSeriesId = nil
+    }
+
+    /// A file handed over by another app; anything but a PDF or a CSV is ignored.
+    func openAttachment(_ url: URL) {
+        guard url.isFileURL, ["pdf", "csv"].contains(url.pathExtension.lowercased()) else { return }
+        pendingAttachment = url
+    }
+
+    func consumePendingAttachment() -> URL? {
+        defer { pendingAttachment = nil }
+        return pendingAttachment
+    }
+
+    /// Ten writes first about the subscriptions charged tomorrow (AssistantInbox); insights and
+    /// the weekly summary post from the insights recompute.
+    func refreshAssistantInbox(now: Date = Date()) {
+        guard AssistantAvailability.isAvailable else { return }
+        let scheduler = SubscriptionNotificationScheduler.shared
+        AssistantInbox.shared.post(
+            AssistantNotices.charges(
+                subscriptions: transactionStore.activeSubscriptions,
+                nextCharge: { scheduler.calculateNextChargeDate(for: $0, today: now) },
+                now: now
+            ),
+            now: now
+        )
+    }
+
+    func ask(about topic: AssistantTopic) {
+        assistantTopic = topic
+    }
+
+    func consumeAssistantTopic() -> AssistantTopic? {
+        defer { assistantTopic = nil }
+        return assistantTopic
     }
 
     // MARK: - Onboarding gate

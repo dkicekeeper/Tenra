@@ -261,6 +261,8 @@ struct AccountDetailView: View {
 
     @ViewBuilder
     private var toolbarMenu: some View {
+        AskAssistantMenuItem(topic: .account(name: liveAccount.name))
+
         Button {
             showingEdit = true
         } label: {

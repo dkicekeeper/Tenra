@@ -2,15 +2,14 @@
 //  MainTabView.swift
 //  Tenra
 //
-//  Root tab bar using the iOS 26 Tab API.
+//  Root tab bar using the iOS 26 Tab API: Home | Analytics | Finances and an action tab.
 //
-//  Mechanic (Apple Music style):
-//  • Normal mode  → Home | Analytics | Settings | [+]
-//  • Expanded mode → Voice | Import | [×], plus Assistant (beta) once its server is configured
-//    (Info.plist `TenraAssistantURL`, docs/plan-ai-assistant.md §5)
+//  Where the assistant can run (its server set in Info.plist `TenraAssistantURL`, App Attest on
+//  the device; docs/plan-ai-assistant.md §3.8), the action tab is its mascot (Ten) and opens
+//  the assistant over the current tab; voice and import are reached from its field.
 //
-//  Tapping [+] animates the bar into "expanded" mode and switches
-//  to Voice tab. Tapping [×] restores the original three tabs.
+//  Elsewhere (Apple Music style): [+] animates the bar into "expanded" mode, Voice | Import |
+//  [×], and [×] restores the original three tabs.
 //
 
 import SwiftUI
@@ -24,7 +23,6 @@ enum AppTab: String, Hashable {
     case finances
     case voice
     case ocr
-    case assistant
     /// The action pseudo-tab — never "selected" in a navigation sense.
     case plusAction
 }
@@ -59,6 +57,17 @@ struct MainTabView: View {
     /// teardown. See `TabBarVisibility` for the full rationale.
     @State private var tabBarVisibility = TabBarVisibility()
 
+    /// The assistant over the current tab, opened by the action tab.
+    @State private var showingAssistant = false
+    @Environment(\.scenePhase) private var scenePhase
+
+    /// The assistant takes the action tab where it can answer: its server is set and the device
+    /// passes App Attest, which the server asks of every turn. Elsewhere the tab keeps the
+    /// Voice | Import mode, so neither is ever out of reach.
+    private var assistantTakesActionTab: Bool {
+        AssistantAvailability.isAvailable
+    }
+
     /// Home screen UI state that must survive ContentView recreation.
     /// ContentView is destroyed when tab-bar mode toggles (conditional Tab declarations).
     /// Storing state here keeps it alive and passes it down via @Environment.
@@ -73,8 +82,14 @@ struct MainTabView: View {
         Tab(value: AppTab.plusAction, role: role) {
             Color.clear.ignoresSafeArea()
         } label: {
-            PlusTabLabel(isExpanded: tabBarMode == .expanded)
+            if assistantTakesActionTab {
+                CreatureTabLabel(title: String(localized: "tab.assistant"))
+            } else {
+                PlusTabLabel(isExpanded: tabBarMode == .expanded)
+            }
         }
+        // What Ten wrote first and the person has not read (AssistantInbox).
+        .badge(assistantTakesActionTab ? AssistantInbox.shared.unread.count : 0)
     }
 
     // MARK: Body
@@ -125,16 +140,6 @@ struct MainTabView: View {
                     value: AppTab.ocr
                 ) {
                     OCRTab()
-                }
-
-                if AgentConfig.serverURL != nil {
-                    Tab(
-                        String(localized: "tab.assistant"),
-                        systemImage: "sparkles",
-                        value: AppTab.assistant
-                    ) {
-                        AssistantTab()
-                    }
                 }
             }
 
@@ -218,6 +223,24 @@ struct MainTabView: View {
             }
             .environment(coordinator.transactionStore)
         }
+        // Ten writes first about tomorrow's charges whenever the app comes to the front.
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            if phase == .active { coordinator.refreshAssistantInbox() }
+        }
+        // A file opened in Tenra from another app goes to the assistant, which attaches it.
+        .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in
+            guard url != nil, assistantTakesActionTab else { return }
+            showingAssistant = true
+        }
+        // "Ask Ten" on an account, a category, an insight or the history.
+        .onChange(of: coordinator.assistantTopic) { _, topic in
+            guard topic != nil, assistantTakesActionTab else { return }
+            showingAssistant = true
+        }
+        // The assistant over whichever tab is open; the tab stays where it was.
+        .sheet(isPresented: $showingAssistant) {
+            AssistantTab(onClose: { showingAssistant = false })
+        }
         // The eye button on Home: every amount below (tabs, pushed screens, sheets) draws
         // "•••• ₸" while it is on. Outermost, so the sheets above get it too.
         .amountsHidden(coordinator.transactionsViewModel.appSettings.hidesAmounts)
@@ -234,8 +257,14 @@ struct MainTabView: View {
             return
         }
 
-        // User tapped + or ×
+        // User tapped the action tab: the assistant, or + / ×
         HapticManager.light()
+
+        if assistantTakesActionTab {
+            selectedTab = previousTab
+            showingAssistant = true
+            return
+        }
 
         withAnimation(AppAnimation.contentSpring) {
             if tabBarMode == .normal {

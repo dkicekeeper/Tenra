@@ -9,7 +9,9 @@
 //  and an insight an `InsightsCardView`, exactly as everywhere else in the app. A block whose
 //  reference does not resolve is left out. An `open` block is a way into the app's own screen
 //  (AssistantDestinationView); a `confirm` block is the draft card, where the person saves what
-//  the assistant prepared (AgentDraftBook).
+//  the assistant prepared (AgentDraftBook). Text blocks are Markdown, drawn as formatted text
+//  on the page (AssistantText); while the reply streams, its text shows as it is written
+//  (AssistantStreamingReply).
 //
 
 import SwiftUI
@@ -38,7 +40,7 @@ private struct AssistantBlockView: View {
     var body: some View {
         switch block {
         case .text(let text):
-            MessageBubble(text, role: .incoming)
+            AssistantText(text)
         case .metric(let label, let source, let path, let trendPath):
             if let metric = AgentReplyData.metric(label: label, source: source, path: path, trendPath: trendPath, results: results) {
                 AssistantMetricCard(metric: metric)
@@ -70,6 +72,37 @@ private struct AssistantBlockView: View {
         case .unsupported:
             EmptyView()
         }
+    }
+}
+
+// MARK: - Text
+
+/// A text block: its Markdown as headings, paragraphs, lists and notes (AgentReplyMarkdown,
+/// DesignKit's ArticleBody).
+struct AssistantText: View {
+    let text: String
+
+    init(_ text: String) {
+        self.text = text
+    }
+
+    var body: some View {
+        ArticleBody(AgentReplyMarkdown.blocks(text), spacing: AppSpacing.sm)
+    }
+}
+
+/// The reply's text while the model writes it; the finished reply takes its place, cards and all.
+struct AssistantStreamingReply: View {
+    let texts: [String]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
+            ForEach(Array(texts.enumerated()), id: \.offset) { _, text in
+                AssistantText(text)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -321,12 +354,25 @@ private struct AssistantForecastCard: View {
 
 /// A draft to save (plan §1, "do"): its operations as they will look in the history (a budget
 /// as its new limit next to the old one, a subscription as its name, frequency and first
-/// charge), what Tenra guessed, Save; once saved, Undo. Nothing is written before Save.
+/// charge), what Tenra guessed, Save; once saved, Undo. Nothing is written before Save. Until
+/// then a tap on an income or an expense opens it in the voice confirmation form
+/// (AgentDraftEditor).
 private struct AssistantDraftCard: View {
     @Environment(AppCoordinator.self) private var coordinator
 
     let book: AgentDraftBook
     let draft: AgentDraft
+
+    /// An operation open in the form.
+    private struct Editing: Identifiable {
+        let index: Int
+        let operation: ParsedOperation
+        var id: Int { index }
+    }
+
+    @State private var editing: Editing?
+    /// Why the last edit did not apply.
+    @State private var editError: String?
 
     var body: some View {
         let store = coordinator.transactionStore
@@ -334,7 +380,7 @@ private struct AssistantDraftCard: View {
         AssistantCard(title: nil) {
             ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
                 if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
-                    TransactionCardView(
+                    let row = TransactionCardView(
                         transaction: preview,
                         currency: preview.currency,
                         styleData: CategoryStyleHelper.cached(
@@ -345,6 +391,21 @@ private struct AssistantDraftCard: View {
                         sourceAccount: preview.accountId.flatMap { store.accountById[$0] },
                         targetAccount: preview.targetAccountId.flatMap { store.accountById[$0] }
                     )
+                    if case .single(let single) = operation, state == .pending || state == .failed {
+                        Button {
+                            editError = nil
+                            editing = Editing(
+                                index: index,
+                                operation: AgentDraftEditor.operation(from: single, subcategories: coordinator.categoriesViewModel.subcategories)
+                            )
+                        } label: {
+                            row
+                        }
+                        .buttonStyle(.bounce)
+                        .accessibilityHint(String(localized: "assistant.draft.editHint"))
+                    } else {
+                        row
+                    }
                 } else if case .budget(let budget) = operation {
                     budgetRows(budget, store: store)
                 } else if case .recurring(let recurring) = operation {
@@ -355,10 +416,53 @@ private struct AssistantDraftCard: View {
                 ForEach(guesses, id: \.self) { guess in
                     InlineStatusText(message: guess, type: .warning)
                 }
+                // A guess is what an edit fixes: say where.
+                if !guesses.isEmpty, draft.operations.contains(where: { if case .single = $0 { true } else { false } }) {
+                    InlineStatusText(message: String(localized: "assistant.draft.editTip"), type: .info)
+                }
+                if let editError {
+                    InlineStatusText(message: editError, type: .error)
+                }
             }
             footer(state)
         }
         .animation(AppAnimation.smooth, value: state)
+        .sheet(item: $editing) { target in
+            VoiceInputConfirmationView(
+                transactionsViewModel: coordinator.transactionsViewModel,
+                accountsViewModel: coordinator.accountsViewModel,
+                categoriesViewModel: coordinator.categoriesViewModel,
+                parsedOperation: target.operation,
+                originalText: target.operation.note,
+                editsDate: true,
+                onUpdate: { updated in
+                    Task { await apply(updated, at: target.index) }
+                }
+            )
+            .environment(coordinator.transactionStore)
+        }
+    }
+
+    /// The form's operation, resolved again, in place of the one the assistant drafted.
+    private func apply(_ operation: ParsedOperation, at index: Int) async {
+        let store = coordinator.transactionStore
+        let result = await AgentDraftEditor.draft(
+            from: operation,
+            accounts: store.accounts,
+            categories: store.categories,
+            subcategories: coordinator.categoriesViewModel.subcategories,
+            learned: .shared,
+            convert: { await CurrencyConverter.convert(amount: $0, from: $1, to: $2) }
+        )
+        switch result {
+        case .success(let edited):
+            if book.replace(draft.id, at: index, with: .single(edited)) {
+                editError = nil
+            }
+        case .failure(let issue):
+            editError = AgentDraftEditor.message(for: issue)
+            HapticManager.error()
+        }
     }
 
     @ViewBuilder
@@ -510,7 +614,7 @@ private struct AssistantOpenLink: View {
 // MARK: - Container
 
 /// Rows in a card under an optional header, as the insight detail lists lay them out.
-private struct AssistantCard<Rows: View>: View {
+struct AssistantCard<Rows: View>: View {
     let title: String?
     @ViewBuilder let rows: () -> Rows
 

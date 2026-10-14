@@ -48,7 +48,15 @@ interface Outcome {
 async function runCase(client: Anthropic, model: string, effort: Effort, testCase: EvalCase): Promise<{ outcome: Outcome; transcript: MessageParam[] }> {
   const config = readConfig({ ASSISTANT_MODEL: model, ASSISTANT_EFFORT: effort });
   const messages: MessageParam[] = [
-    { role: "user", content: [{ type: "text", text: appContext(testCase.locale) }, { type: "text", text: testCase.prompt }] },
+    {
+      role: "user",
+      content: [
+        { type: "text", text: appContext(testCase.locale) },
+        // Blocks the app sends before the question: a draft made on the phone, an attachment.
+        ...(testCase.notes ?? []).map((text) => ({ type: "text" as const, text })),
+        { type: "text", text: testCase.prompt },
+      ],
+    },
   ];
   const record: RunRecord = { calls: [] };
   const usage = emptyUsage();

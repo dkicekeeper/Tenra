@@ -1,0 +1,125 @@
+//
+//  AssistantAttachmentCard.swift
+//  Tenra
+//
+//  A receipt or a statement attached in the chat (docs/plan-ai-assistant.md §3.8): what the
+//  phone read, without the model (a receipt's shop, total and date; a statement's rows, period,
+//  expenses and income, the rows that need a category or could not be read), and "Review",
+//  which opens the app's own review screen (ReceiptConfirmationView, ImportTransactionPreviewView)
+//  where it is saved. The first review of an attachment spends one free answer; with none left
+//  it offers Pro and opens once Pro is on.
+//
+
+import SwiftUI
+
+struct AssistantAttachmentCard: View {
+    @Environment(AppCoordinator.self) private var coordinator
+
+    let model: AssistantViewModel
+    let entryId: UUID
+    let summary: AgentAttachmentSummary
+
+    @State private var reviewing = false
+    @State private var showingPaywall = false
+
+    var body: some View {
+        AssistantCard(title: title) {
+            switch summary.kind {
+            case .receipt:
+                if let total = summary.expenses {
+                    InfoRow(
+                        icon: "receipt",
+                        label: [summary.title, Self.day(summary.firstDate)].compactMap { $0 }.joined(separator: " · "),
+                        amount: total.amount,
+                        currency: total.currency
+                    )
+                }
+            case .statement:
+                Text(statementLine)
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(AppColors.Text.secondary)
+                if let expenses = summary.expenses {
+                    InfoRow(label: String(localized: "insights.expenses"), amount: expenses.amount, currency: expenses.currency)
+                }
+                if let income = summary.income {
+                    InfoRow(label: String(localized: "insights.income"), amount: income.amount, currency: income.currency)
+                }
+                if summary.uncategorized > 0 {
+                    InlineStatusText(message: String(format: String(localized: "assistant.attachment.uncategorized"), summary.uncategorized), type: .info)
+                }
+                if summary.skipped > 0 {
+                    InlineStatusText(message: String(format: String(localized: "assistant.attachment.skipped"), summary.skipped), type: .warning)
+                }
+            }
+            DSButton(String(localized: "assistant.attachment.review"), systemImage: "checklist", fullWidth: true) {
+                if model.payForReview(of: entryId) {
+                    reviewing = true
+                } else {
+                    showingPaywall = true
+                }
+            }
+        }
+        .paywallSheet(isPresented: $showingPaywall) {
+            model.refreshAllowance()
+            reviewing = true
+        }
+        .sheet(isPresented: $reviewing) {
+            review
+                .environment(coordinator.transactionStore)
+        }
+    }
+
+    @ViewBuilder
+    private var review: some View {
+        switch model.attachment(for: entryId) {
+        case .receipt(let draft)?:
+            ReceiptConfirmationView(
+                draft: draft,
+                baseCurrency: coordinator.transactionStore.baseCurrency,
+                transactionsViewModel: coordinator.transactionsViewModel,
+                accountsViewModel: coordinator.accountsViewModel,
+                categoriesViewModel: coordinator.categoriesViewModel
+            )
+        case .statement(let statement)?:
+            ImportTransactionPreviewView(
+                transactionsViewModel: coordinator.transactionsViewModel,
+                accountsViewModel: coordinator.accountsViewModel,
+                transactions: statement.transactions,
+                customCategories: coordinator.categoriesViewModel.customCategories,
+                categoriesViewModel: coordinator.categoriesViewModel,
+                suggestedCategories: statement.suggestedCategories,
+                subcategoryHistory: statement.subcategoryHistory,
+                transferHistory: statement.transferHistory,
+                uncheckedMoves: statement.uncheckedMoves,
+                transferEligibleIds: statement.transferEligibleIds,
+                defaultStatementAccountId: statement.statementAccountId,
+                closingBalances: statement.outcome.closingBalances
+            )
+        case nil:
+            EmptyView()
+        }
+    }
+
+    private var title: String {
+        switch summary.kind {
+        case .receipt:
+            return String(localized: "assistant.attachment.receipt")
+        case .statement:
+            let name = String(localized: "assistant.attachment.statement")
+            return summary.title.map { "\(name) · \($0)" } ?? name
+        }
+    }
+
+    /// "78 operations · 1 Oct – 31 Oct".
+    private var statementLine: String {
+        let count = String(format: NSLocalizedString("history.count", comment: "Transaction count"), summary.count)
+        let first = Self.day(summary.firstDate)
+        let last = Self.day(summary.lastDate)
+        guard let first, let last else { return count }
+        return first == last ? "\(count) · \(first)" : "\(count) · \(first) – \(last)"
+    }
+
+    private static func day(_ date: String?) -> String? {
+        date.flatMap { FastDateParser.date(from: $0) }?.formatted(.dateTime.day().month(.abbreviated))
+    }
+}

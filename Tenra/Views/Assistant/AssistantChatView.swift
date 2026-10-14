@@ -7,10 +7,11 @@
 //  app's own cards, the step the assistant is on while it works, and the field with Ten's
 //  suggestions for what to ask next in one row over it, where the thumb is. The navigation bar
 //  holds only the way back to the home and Ten in the middle, 120 pt (the owner's size): it
-//  rises into the bar and hangs over the top of the thread, with no backing of its own. The
-//  thread scrolls under it and fades out softly as it goes (a mask: gone under Ten's upper
-//  half, back by its lower edge), so the text never runs through the particles. The tab bar
-//  steps aside (TabBarVisibility), so the chat has the screen.
+//  rises into the bar and hangs over the top of the thread in a bar of its own (safeAreaBar),
+//  which reaches a little below it. The thread scrolls under both and the system's soft scroll
+//  edge effect blurs and dims it there, as under any iOS bar, so Ten always sits on that
+//  translucent backing and the text never runs through the particles. The tab bar steps aside
+//  (TabBarVisibility), so the chat has the screen.
 //
 //  Ten shows what is going on: thinking while it runs tools, answering while it writes, the
 //  reply's mood after, confused or sad when a question could not be answered. The reply's text
@@ -46,48 +47,36 @@ struct AssistantChatView: View {
     @State private var scrollPosition = ScrollPosition(idType: UUID.self)
     /// The thread's visible height, which the latest turn fills at least.
     @State private var viewportHeight: CGFloat = 0
-    /// Ten's lower edge in the window, where the thread is back in full.
-    @State private var mascotBottom: CGFloat = 0
 
     var body: some View {
-        ZStack(alignment: .top) {
-            thread
-            // Ten in the middle of the navigation bar, hanging over the top of the thread: over
-            // the content that scrolls under it, never under it, and taking no room of its own.
-            ParticleCreature(mood: mascotMood)
-                .frame(width: AssistantMetrics.chatMascot, height: AssistantMetrics.chatMascot)
-                .padding(.top, -AssistantMetrics.chatMascotLift)
-                .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: { mascotBottom = $0 }
-                .allowsHitTesting(false)
-                .accessibilityHidden(true)
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        // The chat has the screen: the tab bar steps aside while it is open (the stable owner
-        // restores it, as for TransactionAddModal).
-        .toolbar(.hidden, for: .tabBar)
-        .onAppear {
-            tabBarVisibility?.isHidden = true
-            model.refreshAllowance()
-        }
-        .onDisappear { tabBarVisibility?.isHidden = false }
-        .onChange(of: premium.isPro) { model.refreshAllowance() }
-        .paywallSheet(isPresented: $showingPaywall) {
-            model.refreshAllowance()
-            Task { await model.retry() }
-        }
-        .sheet(isPresented: $showingVoice) {
-            AssistantVoiceSheet { send($0, spoken: true) }
-        }
-        .assistantConsent(
-            isPresented: $showingConsent,
-            onAllow: {
-                if let question = questionAwaitingConsent {
-                    questionAwaitingConsent = nil
-                    send(question)
-                }
-            },
-            onDecline: { questionAwaitingConsent = nil }
-        )
+        thread
+            .navigationBarTitleDisplayMode(.inline)
+            // The chat has the screen: the tab bar steps aside while it is open (the stable owner
+            // restores it, as for TransactionAddModal).
+            .toolbar(.hidden, for: .tabBar)
+            .onAppear {
+                tabBarVisibility?.isHidden = true
+                model.refreshAllowance()
+            }
+            .onDisappear { tabBarVisibility?.isHidden = false }
+            .onChange(of: premium.isPro) { model.refreshAllowance() }
+            .paywallSheet(isPresented: $showingPaywall) {
+                model.refreshAllowance()
+                Task { await model.retry() }
+            }
+            .sheet(isPresented: $showingVoice) {
+                AssistantVoiceSheet { send($0, spoken: true) }
+            }
+            .assistantConsent(
+                isPresented: $showingConsent,
+                onAllow: {
+                    if let question = questionAwaitingConsent {
+                        questionAwaitingConsent = nil
+                        send(question)
+                    }
+                },
+                onDecline: { questionAwaitingConsent = nil }
+            )
     }
 
     /// The questions and replies, with the field floating at the bottom. At rest the thread
@@ -113,7 +102,8 @@ struct AssistantChatView: View {
                 .frame(minHeight: currentTurn.isEmpty ? 0 : viewportHeight, alignment: .top)
             }
             .screenPadding()
-            .padding(.vertical, AppSpacing.lg)
+            // No top padding: Ten's bar already ends a little below it.
+            .padding(.bottom, AppSpacing.lg)
             .animation(AppAnimation.smooth, value: model.entries.count)
             .animation(AppAnimation.smooth, value: model.isWorking)
             .animation(AppAnimation.smooth, value: readingAttachment)
@@ -131,11 +121,10 @@ struct AssistantChatView: View {
         .scrollDismissesKeyboard(.interactively)
         // A tap anywhere on the thread puts the keyboard away (buttons still work).
         .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
-        // The part of Ten below the navigation bar: the thread starts under it.
-        .safeAreaPadding(.top, AssistantMetrics.chatMascot - AssistantMetrics.chatMascotLift)
-        // Scrolled up, the thread fades out under Ten instead of running through it. The field
-        // stays outside the mask: its glass sees the page as it is.
-        .mask { threadFade }
+        // Under the navigation bar and Ten the thread blurs and dims progressively, the iOS
+        // bar backing, not a solid plate.
+        .scrollEdgeEffectStyle(.soft, for: .top)
+        .safeAreaBar(edge: .top) { mascotBar }
         .safeAreaBar(edge: .bottom) {
             AssistantComposerBar(
                 model: model,
@@ -171,21 +160,18 @@ struct AssistantChatView: View {
 
     // MARK: - Thread
 
-    /// The thread's mask: clear under the navigation bar and Ten's upper half, fading in over
-    /// its lower half, whole from its lower edge down. Placed in the window's coordinates, so it
-    /// lines up with Ten wherever the scroll view's own frame starts.
-    private var threadFade: some View {
-        GeometryReader { proxy in
-            let hidden = max(0, mascotBottom - AssistantMetrics.chatMascotFade - proxy.frame(in: .global).minY)
-            VStack(spacing: 0) {
-                Color.clear
-                    .frame(height: hidden)
-                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
-                    .frame(height: AssistantMetrics.chatMascotFade)
-                Rectangle()
-            }
-        }
-        .ignoresSafeArea()
+    /// Ten in the middle of the navigation bar, hanging over the top of the thread as a bar of
+    /// its own: its part below the navigation bar plus a tail is the bar's height, so the
+    /// scroll edge effect covers all of Ten and fades out under the tail. Touches go through
+    /// to the thread.
+    private var mascotBar: some View {
+        ParticleCreature(mood: mascotMood)
+            .frame(width: AssistantMetrics.chatMascot, height: AssistantMetrics.chatMascot)
+            .padding(.top, -AssistantMetrics.chatMascotLift)
+            .padding(.bottom, AssistantMetrics.chatMascotTail)
+            .frame(maxWidth: .infinity)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 
     /// Where the latest turn starts: the last question or attachment.

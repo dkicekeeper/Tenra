@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Anpassen...";
 "settings.wallpaper" = "Hintergrund der Übersicht";
 "settings.background" = "Hintergrund";
+"settings.voiceLanguage" = "Sprache für Spracheingabe";
+"settings.voiceLanguage.app" = "Wie in der App";
 "settings.background.none" = "Kein Hintergrund";
 "settings.background.gradient" = "Ausgabenfarben";
 "settings.background.photo" = "Foto";
@@ -1883,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistent";
-"assistant.greeting.title" = "Frag mich zu deinem Geld";
-"assistant.greeting.message" = "Ich sehe mir Konten, Ausgaben, Budgets und Abos auf diesem iPhone an und antworte mit Karten.";
+"assistant.greeting.title" = "Hallo, ich bin Ten";
+"assistant.greeting.message" = "Ich helfe dir mit deinem Geld: Ausgaben, Sparen, Kredite und Investieren. Ich sehe mir deine Daten auf diesem iPhone an und antworte mit Karten.";
 "assistant.composer.placeholder" = "Frag zu deinem Geld…";
 "assistant.newChat" = "Neuer Chat";
 "assistant.preset.month" = "Meine Ausgaben diesen Monat";

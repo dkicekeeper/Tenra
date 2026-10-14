@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Настроить...";
 "settings.wallpaper" = "Обои на главной";
 "settings.background" = "Фон";
+"settings.voiceLanguage" = "Язык голоса";
+"settings.voiceLanguage.app" = "Как в приложении";
 "settings.background.none" = "Без фона";
 "settings.background.gradient" = "Цвета расходов";
 "settings.background.photo" = "Фото";
@@ -1883,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Ассистент";
-"assistant.greeting.title" = "Спросите меня о деньгах";
-"assistant.greeting.message" = "Я смотрю ваши счета, траты, бюджеты и подписки на этом телефоне и отвечаю карточками.";
+"assistant.greeting.title" = "Привет, я Тэн";
+"assistant.greeting.message" = "Помогаю с деньгами: траты, экономия, кредиты и инвестиции. Смотрю ваши данные на этом телефоне и отвечаю карточками.";
 "assistant.composer.placeholder" = "Спросите о деньгах…";
 "assistant.newChat" = "Новый чат";
 "assistant.preset.month" = "Мои траты в этом месяце";

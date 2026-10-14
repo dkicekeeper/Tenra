@@ -95,6 +95,8 @@
 "currency.customizeAction" = "カスタマイズ…";
 "settings.wallpaper" = "ホームの壁紙";
 "settings.background" = "背景";
+"settings.voiceLanguage" = "音声の言語";
+"settings.voiceLanguage.app" = "アプリと同じ";
 "settings.background.none" = "背景なし";
 "settings.background.gradient" = "支出カラー";
 "settings.background.photo" = "写真";
@@ -1883,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "アシスタント";
-"assistant.greeting.title" = "お金のことを聞いてください";
-"assistant.greeting.message" = "この iPhone の口座、支出、予算、サブスクを見て、カードでお答えします。";
+"assistant.greeting.title" = "こんにちは、テンです";
+"assistant.greeting.message" = "お金のことをお手伝いします。支出、節約、ローン、投資まで。この iPhone のデータを見て、カードでお答えします。";
 "assistant.composer.placeholder" = "お金について質問…";
 "assistant.newChat" = "新しいチャット";
 "assistant.preset.month" = "今月の支出";

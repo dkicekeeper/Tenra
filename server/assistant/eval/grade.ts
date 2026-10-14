@@ -118,7 +118,8 @@ export function blockProblems(block: unknown): string[] {
     .map(([key]) => `${node.type}.${key} = ${JSON.stringify(node[key]) ?? "missing"}`);
 }
 
-export function universalChecks(record: RunRecord, locale: "ru" | "en"): CheckResult[] {
+/** `prompt`: the user's message; an amount repeated from it is not a made-up figure. */
+export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt = ""): CheckResult[] {
   const results: CheckResult[] = [];
   const blocks: unknown = record.reply?.blocks;
   results.push({ name: "rendered", pass: Array.isArray(blocks) && blocks.length > 0, detail: record.error });
@@ -153,7 +154,10 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en"): CheckRe
   results.push({ name: "refs_resolve", pass: broken.length === 0, detail: broken.join("; ") || undefined });
 
   const text = textOf(record);
-  const money = text.match(MONEY_IN_TEXT)?.[0] ?? text.match(BIG_NUMBER)?.[0];
+  const digits = (value: string) => value.replace(/\D/g, "");
+  const typed = new Set((prompt.match(/\d[\d\s\u00a0\u202f.,]*\d|\d/g) ?? []).map(digits));
+  const found = [...text.matchAll(new RegExp(MONEY_IN_TEXT.source, "giu")), ...text.matchAll(new RegExp(BIG_NUMBER.source, "g"))].map((m) => m[0]);
+  const money = found.find((m) => !typed.has(digits(m)));
   results.push({ name: "no_money_in_text", pass: !money, detail: money });
 
   const letters = text.replace(/[^\p{L}]/gu, "");

@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Özelleştir...";
 "settings.wallpaper" = "Ana Sayfa Duvar Kağıdı";
 "settings.background" = "Arka Plan";
+"settings.voiceLanguage" = "Ses Dili";
+"settings.voiceLanguage.app" = "Uygulamadaki gibi";
 "settings.background.none" = "Arka Plan Yok";
 "settings.background.gradient" = "Gider Renkleri";
 "settings.background.photo" = "Fotoğraf";
@@ -1883,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Asistan";
-"assistant.greeting.title" = "Bana paranı sor";
-"assistant.greeting.message" = "Bu telefondaki hesaplarına, harcamalarına, bütçelerine ve aboneliklerine bakıp kartlarla cevap veririm.";
+"assistant.greeting.title" = "Merhaba, ben Ten";
+"assistant.greeting.message" = "Paranla ilgili yardım ederim: harcamalar, birikim, krediler ve yatırım. Bu telefondaki verilerine bakıp kartlarla cevap veririm.";
 "assistant.composer.placeholder" = "Paranla ilgili sor…";
 "assistant.newChat" = "Yeni sohbet";
 "assistant.preset.month" = "Bu ayki harcamalarım";

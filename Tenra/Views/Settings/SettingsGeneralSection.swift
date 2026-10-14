@@ -10,7 +10,8 @@
 import SwiftUI
 
 /// Props-based General section for Settings.
-/// Groups currency picker + navigation link to the background settings page.
+/// Groups currency picker + navigation link to the background settings page + the voice
+/// language (its own setting, VoiceRecognitionLanguage).
 struct SettingsGeneralSection<BackgroundDest: View>: View {
 
     // MARK: - Props
@@ -18,6 +19,9 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
     let selectedCurrency: String
     let onCurrencyChange: (String) -> Void
     let backgroundDestination: BackgroundDest
+
+    /// Empty: as in the app.
+    @AppStorage(VoiceRecognitionLanguage.defaultsKey) private var voiceLanguage = ""
 
     // MARK: - Initializer
 
@@ -70,7 +74,19 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
             ) {
                 backgroundDestination
             }
+
+            NavigationPickerRow(
+                icon: "waveform",
+                title: String(localized: "settings.voiceLanguage"),
+                selection: $voiceLanguage,
+                options: voiceLanguageOptions
+            )
         }
+    }
+
+    private var voiceLanguageOptions: [(label: String, value: String)] {
+        [(String(localized: "settings.voiceLanguage.app"), "")]
+            + VoiceRecognitionLanguage.choices().map { (VoiceRecognitionLanguage.displayName($0), $0) }
     }
 
 }

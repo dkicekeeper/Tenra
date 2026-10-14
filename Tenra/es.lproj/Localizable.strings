@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Personalizar...";
 "settings.wallpaper" = "Fondo de pantalla de inicio";
 "settings.background" = "Fondo";
+"settings.voiceLanguage" = "Idioma de voz";
+"settings.voiceLanguage.app" = "Como en la app";
 "settings.background.none" = "Sin fondo";
 "settings.background.gradient" = "Colores de gastos";
 "settings.background.photo" = "Foto";
@@ -1883,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Asistente";
-"assistant.greeting.title" = "Pregúntame sobre tu dinero";
-"assistant.greeting.message" = "Miro tus cuentas, gastos, presupuestos y suscripciones en este teléfono y respondo con tarjetas.";
+"assistant.greeting.title" = "Hola, soy Ten";
+"assistant.greeting.message" = "Te ayudo con tu dinero: gastos, ahorro, préstamos e inversión. Miro tus datos en este teléfono y respondo con tarjetas.";
 "assistant.composer.placeholder" = "Pregunta sobre tu dinero…";
 "assistant.newChat" = "Nuevo chat";
 "assistant.preset.month" = "Mis gastos de este mes";

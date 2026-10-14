@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Customize...";
 "settings.wallpaper" = "Home Wallpaper";
 "settings.background" = "Background";
+"settings.voiceLanguage" = "Voice language";
+"settings.voiceLanguage.app" = "As in the app";
 "settings.background.none" = "No Background";
 "settings.background.gradient" = "Expense Colors";
 "settings.background.photo" = "Photo";
@@ -1883,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistant";
-"assistant.greeting.title" = "Ask me about your money";
-"assistant.greeting.message" = "I look at your accounts, spending, budgets and subscriptions on this phone and answer with cards.";
+"assistant.greeting.title" = "Hi, I’m Ten";
+"assistant.greeting.message" = "I help with your money: spending, saving, loans and investing. I look at your data on this phone and answer with cards.";
 "assistant.composer.placeholder" = "Ask about your money…";
 "assistant.newChat" = "New chat";
 "assistant.preset.month" = "My spending this month";

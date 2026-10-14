@@ -24,6 +24,17 @@ its own gesture intercepts the outer one. `VoiceInputView.previewCard(for:at:)` 
 around the same layout (`Icon`, `FormattedAmountText`); for other read-only rows use
 `TransactionCardView`, which has no gestures or environment dependencies.
 
+## Recognition language
+
+`VoiceInputService` recognizes the language from [`VoiceRecognitionLanguage`](../../Tenra/Services/Voice/VoiceRecognitionLanguage.swift):
+the choice in Settings → General → Voice language (`voice.recognitionLanguage` in UserDefaults,
+empty = as in the app), else the app's language (`Bundle.main.preferredLocalizations`) with its
+own region, the device's region or its usual one, whichever `SFSpeechRecognizer` supports, else
+`ru-RU` (what it always used before). The choice is for people who read one language and speak
+another. Settings lists the candidates the recognizer supports, Kazakh included. The service
+remakes its recognizer at the next recording when the language changed. The rule is a pure
+function pinned by `VoiceRecognitionLanguageTests`.
+
 ## Audio session must stay off the main actor
 
 `VoiceInputService` is `@MainActor`, but `AVAudioSession.setCategory` / `setActive` are blocking

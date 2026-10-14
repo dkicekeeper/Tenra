@@ -58,7 +58,10 @@ describe("grader", () => {
   });
 
   it("fails money in text, broken paths and the wrong language", () => {
-    const money = universalChecks(record(`Вы потратили ${cafeTotal} ₸ на кафе.`), "ru");
+    // An amount the user typed may come back; a figure of the model's own may not.
+    const echoed = universalChecks(record("Если отложить 50 000 первого числа, лимит станет ниже."), "ru", "Если отложу 50 000 первого ноября?");
+    expect(echoed.find((c) => c.name === "no_money_in_text")?.pass).toBe(true);
+    const money = universalChecks(record(`Вы потратили ${cafeTotal} ₸ на кафе.`), "ru", "Сколько я потратил на кафе?");
     expect(money.find((c) => c.name === "no_money_in_text")?.pass).toBe(false);
     const broken = universalChecks(record("Кафе выросли.", "totals.sum"), "ru");
     expect(broken.find((c) => c.name === "refs_resolve")?.pass).toBe(false);

@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Налаштувати...";
 "settings.wallpaper" = "Шпалери головної";
 "settings.background" = "Тло";
+"settings.voiceLanguage" = "Мова голосу";
+"settings.voiceLanguage.app" = "Як у застосунку";
 "settings.background.none" = "Без тла";
 "settings.background.gradient" = "Кольори витрат";
 "settings.background.photo" = "Фото";
@@ -1883,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Асистент";
-"assistant.greeting.title" = "Запитайте мене про гроші";
-"assistant.greeting.message" = "Я дивлюся ваші рахунки, витрати, бюджети й підписки на цьому телефоні та відповідаю картками.";
+"assistant.greeting.title" = "Привіт, я Тен";
+"assistant.greeting.message" = "Допомагаю з грошима: витрати, заощадження, кредити й інвестиції. Дивлюся ваші дані на цьому телефоні та відповідаю картками.";
 "assistant.composer.placeholder" = "Запитайте про гроші…";
 "assistant.newChat" = "Новий чат";
 "assistant.preset.month" = "Мої витрати цього місяця";

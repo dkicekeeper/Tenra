@@ -166,6 +166,9 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en"): CheckRe
 
   const refusal = text.match(REFUSAL)?.[0];
   results.push({ name: "no_refusal", pass: !refusal, detail: refusal });
+
+  // The app's rule for user-facing text (CLAUDE.md): no em dashes.
+  results.push({ name: "no_em_dash", pass: !text.includes("\u2014") });
   return results;
 }
 

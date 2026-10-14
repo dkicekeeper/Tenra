@@ -97,6 +97,7 @@ describe("grader", () => {
     const refused = (text: string) => universalChecks(reply(text), "ru").find((c) => c.name === "no_refusal")?.pass === false;
     expect(refused("Это не в моей роли, спросите о тратах.")).toBe(true);
     expect(refused("Конкретные акции подскажет лицензированный советник, а я покажу, сколько вы можете откладывать.")).toBe(false);
+    expect(universalChecks(reply("Это задача \u2014 для советника."), "ru").find((c) => c.name === "no_em_dash")?.pass).toBe(false);
     const picked = (text: string) => caseCheck(reply(text), { kind: "noPick" }).pass === false;
     expect(picked("Рекомендую купить акции Apple.")).toBe(true);
     expect(picked("Не стоит купить всё одним активом: сначала подушка.")).toBe(false);

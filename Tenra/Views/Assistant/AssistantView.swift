@@ -291,6 +291,8 @@ enum AssistantMetrics {
     /// How far Ten rises into the navigation bar (its inline height); the rest hangs over the
     /// top of the thread.
     static let chatMascotLift: CGFloat = 44
+    /// Over how much of Ten's lower part the thread fades back in as it scrolls under it.
+    static let chatMascotFade: CGFloat = chatMascot / 2
     /// The longest question: plenty for a person, short enough to keep the turn cheap.
     static let questionLimit = 1000
     /// The free answers left from which the composer shows the count.

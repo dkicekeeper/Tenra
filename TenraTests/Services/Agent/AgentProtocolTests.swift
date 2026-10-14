@@ -83,6 +83,25 @@ struct AgentProtocolTests {
         #expect(reply.suggestions == ["Сравни с сентябрём"])
     }
 
+    @Test func aMalformedBlockShowsNothingAndTheRestStays() throws {
+        let raw = """
+        {"blocks":[
+          {"type":"metric","label":"Расходы","source":"toolu_1"},
+          {"type":"chart","kind":"pie","title":"По категориям","source":"toolu_1","path":"groups"},
+          {"source":"toolu_1"},
+          {"type":"text","text":"Октябрь спокойнее"}
+        ],"mood":"happy","suggestions":"Сравни с сентябрём"}
+        """
+        let reply = try JSONDecoder().decode(AgentReply.self, from: Data(raw.utf8))
+        #expect(reply.blocks == [
+            .unsupported(type: "metric"),
+            .unsupported(type: "chart"),
+            .unsupported(type: ""),
+            .text("Октябрь спокойнее"),
+        ])
+        #expect(reply.suggestions.isEmpty)
+    }
+
     @Test func unknownMoodFallsBackToIdle() throws {
         let reply = try JSONDecoder().decode(AgentReply.self, from: Data(#"{"blocks":[],"mood":"ecstatic","suggestions":[]}"#.utf8))
         #expect(reply.mood == .idle)

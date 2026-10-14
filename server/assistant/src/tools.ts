@@ -191,11 +191,14 @@ const block = (type: string, properties: Record<string, unknown>) =>
 
 export const RENDER_REPLY = "render_reply";
 
+// Not strict: the API compiles strict schemas into one grammar and refuses this block union
+// ("compiled grammar is too large"), failing every request. The app decodes each block on
+// its own and shows nothing for one it cannot read (AgentReply.swift); the eval's
+// blocks_decode check holds the models to the schema.
 const renderReply: Tool = {
   name: RENDER_REPLY,
   description:
     "Shows your reply. Call exactly once, last, every turn. Blocks render top to bottom as native app cards; figures come from tool results by reference, never from text.",
-  strict: true,
   input_schema: strictObject({
     blocks: {
       type: "array",

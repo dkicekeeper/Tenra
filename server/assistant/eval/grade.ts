@@ -73,9 +73,46 @@ function textOf(record: RunRecord): string {
   return (record.reply?.blocks ?? []).filter((b) => b.type === "text").map((b) => String(b.text ?? "")).join(" ");
 }
 
+// What the app's decoder needs from each block (Tenra/Services/Agent/AgentReply.swift): a
+// block that misses one shows nothing on the phone. render_reply is not a strict tool, so
+// this is the check that the models keep to its schema.
+const STRING = (v: unknown) => typeof v === "string";
+const OPTIONAL_STRING = (v: unknown) => v === undefined || v === null || typeof v === "string";
+const OPTIONAL_STRINGS = (v: unknown) => v === undefined || v === null || (Array.isArray(v) && v.every(STRING));
+const oneOf = (values: string[]) => (v: unknown) => typeof v === "string" && values.includes(v);
+const BLOCK_FIELDS: Record<string, Record<string, (v: unknown) => boolean>> = {
+  text: { text: STRING },
+  metric: { label: STRING, source: STRING, path: STRING, trend_path: OPTIONAL_STRING },
+  chart: { kind: oneOf(["bar", "line", "donut"]), title: STRING, source: STRING, path: STRING },
+  transactions: { title: OPTIONAL_STRING, source: STRING },
+  budgets: { source: STRING, category_ids: OPTIONAL_STRINGS },
+  recurring: { source: STRING },
+  forecast: { source: STRING },
+  insight: { source: STRING, insight_id: STRING },
+  confirm: { draft_id: STRING },
+  open: {
+    destination: oneOf(["category", "account", "analytics", "history", "budgets", "subscriptions"]),
+    target_id: OPTIONAL_STRING,
+    label: STRING,
+  },
+};
+
+export function blockProblems(block: unknown): string[] {
+  if (!block || typeof block !== "object" || Array.isArray(block)) return ["not an object"];
+  const node = block as Record<string, unknown>;
+  const fields = typeof node.type === "string" ? BLOCK_FIELDS[node.type] : undefined;
+  if (!fields) return [`unknown type ${String(node.type)}`];
+  return Object.entries(fields)
+    .filter(([key, valid]) => !valid(node[key]))
+    .map(([key]) => `${node.type}.${key} = ${JSON.stringify(node[key]) ?? "missing"}`);
+}
+
 export function universalChecks(record: RunRecord, locale: "ru" | "en"): CheckResult[] {
   const results: CheckResult[] = [];
-  results.push({ name: "rendered", pass: !!record.reply && record.reply.blocks.length > 0, detail: record.error });
+  const blocks: unknown = record.reply?.blocks;
+  results.push({ name: "rendered", pass: Array.isArray(blocks) && blocks.length > 0, detail: record.error });
+  const malformed = (Array.isArray(blocks) ? blocks : []).flatMap(blockProblems);
+  results.push({ name: "blocks_decode", pass: malformed.length === 0, detail: malformed.join("; ") || undefined });
 
   const broken: string[] = [];
   for (const block of record.reply?.blocks ?? []) {

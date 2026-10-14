@@ -184,5 +184,19 @@
 			<string>%lld件のカテゴリにわたって</string>
 		</dict>
 	</dict>
+	<key>assistant.allowance.remaining</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@answers@</string>
+		<key>answers</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>無料の回答は残り%d回</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

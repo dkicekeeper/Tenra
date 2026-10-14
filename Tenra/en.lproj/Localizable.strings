@@ -1863,4 +1863,39 @@
 "assistant.error.unavailable" = "The assistant is unavailable right now. Try again later.";
 "assistant.error.refused" = "I can’t help with that. Ask me about your money.";
 "assistant.error.freeLimit" = "Free answers are used up for now. With Tenra Pro you can keep asking.";
+"assistant.allowance.renews" = "New free answers from %@";
+"assistant.open.missing" = "This is no longer in Tenra";
+"assistant.draft.save" = "Save";
+"assistant.draft.saved" = "Saved";
+"assistant.draft.undo" = "Undo";
+"assistant.draft.undone" = "Undone. Nothing was saved.";
+"assistant.draft.failed" = "Couldn’t save. Try again.";
+"assistant.draft.accountGuessed" = "Tenra picked the account. Check it before saving.";
+"assistant.draft.categoryGuessed" = "Tenra picked the category. Check it before saving.";
+"assistant.draft.budgetWas" = "Before";
+"assistant.forecast.perDay" = "Per day until %@";
+"assistant.forecast.free" = "Free to spend: %@";
+"assistant.forecast.balance" = "Balance by day";
+"assistant.forecast.obligations" = "Going out until %@";
 "assistant.error.generic" = "Something went wrong. Try again.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Assistant";
+"assistant.greeting.title" = "Ask me about your money";
+"assistant.greeting.message" = "I look at your accounts, spending, budgets and subscriptions on this phone and answer with cards.";
+"assistant.composer.placeholder" = "Ask about your money…";
+"assistant.newChat" = "New chat";
+"assistant.preset.month" = "My spending this month";
+"assistant.preset.compare" = "Compare with last month";
+"assistant.preset.budgets" = "How are my budgets?";
+"assistant.preset.subscriptions" = "What do my subscriptions cost?";
+"assistant.preset.allowance" = "How much can I spend a day until payday?";
+"premium.locked.assistant.title" = "Assistant with Tenra Pro";
+"premium.locked.assistant.message" = "Ask about your spending, budgets and subscriptions and get the answer as cards.";
+"common.retry" = "Retry";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "The assistant works in the cloud";
+"assistant.consent.message" = "To answer, it asks Claude, a model by Anthropic. Only your question and what it looks up for the answer leave the phone: totals, categories, account names and the transactions it needs. Your database, receipts and statements stay here. Tenra’s server keeps nothing, and your data is not used to train models.";
+"assistant.consent.allow" = "Turn on";
+"assistant.consent.notNow" = "Not now";

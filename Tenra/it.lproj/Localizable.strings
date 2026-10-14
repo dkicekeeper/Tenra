@@ -1863,4 +1863,39 @@
 "assistant.error.unavailable" = "L’assistente non è disponibile ora. Riprova più tardi.";
 "assistant.error.refused" = "Con questo non posso aiutarti. Chiedimi dei tuoi soldi.";
 "assistant.error.freeLimit" = "Le risposte gratuite sono finite per ora. Con Tenra Pro puoi continuare a chiedere.";
+"assistant.allowance.renews" = "Nuove risposte gratuite dal %@";
+"assistant.open.missing" = "Questo non è più in Tenra";
+"assistant.draft.save" = "Salva";
+"assistant.draft.saved" = "Salvato";
+"assistant.draft.undo" = "Annulla";
+"assistant.draft.undone" = "Annullato. Non è stato salvato nulla.";
+"assistant.draft.failed" = "Impossibile salvare. Riprova.";
+"assistant.draft.accountGuessed" = "Tenra ha scelto il conto. Controllalo prima di salvare.";
+"assistant.draft.categoryGuessed" = "Tenra ha scelto la categoria. Controllala prima di salvare.";
+"assistant.draft.budgetWas" = "Prima";
+"assistant.forecast.perDay" = "Al giorno fino al %@";
+"assistant.forecast.free" = "Disponibile: %@";
+"assistant.forecast.balance" = "Saldo giorno per giorno";
+"assistant.forecast.obligations" = "Uscite fino al %@";
 "assistant.error.generic" = "Qualcosa è andato storto. Riprova.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Assistente";
+"assistant.greeting.title" = "Chiedimi dei tuoi soldi";
+"assistant.greeting.message" = "Guardo conti, spese, budget e abbonamenti su questo telefono e rispondo con delle schede.";
+"assistant.composer.placeholder" = "Chiedi dei tuoi soldi…";
+"assistant.newChat" = "Nuova chat";
+"assistant.preset.month" = "Le mie spese di questo mese";
+"assistant.preset.compare" = "Confronta con il mese scorso";
+"assistant.preset.budgets" = "Come vanno i miei budget?";
+"assistant.preset.subscriptions" = "Quanto costano i miei abbonamenti?";
+"assistant.preset.allowance" = "Quanto posso spendere al giorno fino allo stipendio?";
+"premium.locked.assistant.title" = "Assistente con Tenra Pro";
+"premium.locked.assistant.message" = "Chiedi di spese, budget e abbonamenti e ricevi la risposta in schede.";
+"common.retry" = "Riprova";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "L’assistente lavora nel cloud";
+"assistant.consent.message" = "Per rispondere, consulta Claude, un modello di Anthropic. Dal telefono escono solo la tua domanda e ciò che cerca per rispondere: totali, categorie, nomi dei conti e le operazioni necessarie. Il tuo archivio, gli scontrini e gli estratti conto restano qui. Il server di Tenra non conserva nulla e i tuoi dati non servono ad addestrare modelli.";
+"assistant.consent.allow" = "Attiva";
+"assistant.consent.notNow" = "Non ora";

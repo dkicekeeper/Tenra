@@ -1863,4 +1863,39 @@
 "assistant.error.unavailable" = "L’assistant est indisponible pour le moment. Réessayez plus tard.";
 "assistant.error.refused" = "Je ne peux pas vous aider avec ça. Posez-moi une question sur votre argent.";
 "assistant.error.freeLimit" = "Les réponses gratuites sont épuisées pour l’instant. Avec Tenra Pro, vous pouvez continuer à poser vos questions.";
+"assistant.allowance.renews" = "Nouvelles réponses gratuites à partir du %@";
+"assistant.open.missing" = "Cet élément n’est plus dans Tenra";
+"assistant.draft.save" = "Enregistrer";
+"assistant.draft.saved" = "Enregistré";
+"assistant.draft.undo" = "Annuler";
+"assistant.draft.undone" = "Annulé. Rien n’a été enregistré.";
+"assistant.draft.failed" = "Échec de l’enregistrement. Réessayez.";
+"assistant.draft.accountGuessed" = "Tenra a choisi le compte. Vérifiez-le avant d’enregistrer.";
+"assistant.draft.categoryGuessed" = "Tenra a choisi la catégorie. Vérifiez-la avant d’enregistrer.";
+"assistant.draft.budgetWas" = "Avant";
+"assistant.forecast.perDay" = "Par jour jusqu’au %@";
+"assistant.forecast.free" = "Disponible : %@";
+"assistant.forecast.balance" = "Solde par jour";
+"assistant.forecast.obligations" = "Prélèvements jusqu’au %@";
 "assistant.error.generic" = "Un problème est survenu. Réessayez.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Assistant";
+"assistant.greeting.title" = "Posez-moi vos questions d’argent";
+"assistant.greeting.message" = "Je regarde vos comptes, dépenses, budgets et abonnements sur ce téléphone et je réponds avec des cartes.";
+"assistant.composer.placeholder" = "Une question sur votre argent…";
+"assistant.newChat" = "Nouvelle discussion";
+"assistant.preset.month" = "Mes dépenses ce mois-ci";
+"assistant.preset.compare" = "Compare avec le mois dernier";
+"assistant.preset.budgets" = "Où en sont mes budgets ?";
+"assistant.preset.subscriptions" = "Combien coûtent mes abonnements ?";
+"assistant.preset.allowance" = "Combien puis-je dépenser par jour jusqu’à la paie ?";
+"premium.locked.assistant.title" = "L’assistant avec Tenra Pro";
+"premium.locked.assistant.message" = "Posez vos questions sur vos dépenses, budgets et abonnements et recevez la réponse en cartes.";
+"common.retry" = "Réessayer";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "L’assistant fonctionne dans le cloud";
+"assistant.consent.message" = "Pour répondre, il interroge Claude, un modèle d’Anthropic. Seuls votre question et ce qu’il consulte pour répondre quittent le téléphone : totaux, catégories, noms de comptes et les opérations nécessaires. Votre base, vos reçus et relevés restent ici. Le serveur de Tenra ne garde rien et vos données ne servent pas à entraîner des modèles.";
+"assistant.consent.allow" = "Activer";
+"assistant.consent.notNow" = "Pas maintenant";

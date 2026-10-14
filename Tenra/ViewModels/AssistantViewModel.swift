@@ -109,6 +109,19 @@ final class AssistantViewModel {
         await ask(text, entry: entry.id)
     }
 
+    /// A new thread; the next question carries the context again.
+    func reset() {
+        guard !isWorking else { return }
+        conversation.reset()
+        entries = []
+        phase = .idle
+        replyMood = .idle
+        sentContext = nil
+        failedEntryId = nil
+        drafts?.clear()
+        reportedDrafts = [:]
+    }
+
     func retry() async {
         guard case .failed = phase, let failedEntryId,
               let entry = entries.first(where: { $0.id == failedEntryId }),

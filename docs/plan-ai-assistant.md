@@ -123,6 +123,12 @@ Higgsfield вырос не на пустом окне чата, а на **пре
 - Текст из выписок и заметок (имена продавцов, комментарии) в результатах инструментов помечен
   как данные: это вход для prompt-injection, а запись и так требует подтверждения.
 
+Сделано: `draft_transactions` (расходы, доходы и переводы между обычными счетами) разбирается на
+телефоне путём голоса и Siri (`TransactionDraftService.makeDraft`), черновик лежит в
+`AgentDraftBook`, карточка `confirm` показывает операции так, как они встанут в историю, отмечает
+угаданный счёт или категорию и сохраняет всё или ничего; после сохранения «Отменить» удаляет
+записанное. Дальше: правка полей на карточке, `draft_budget`, `draft_recurring`, FastPath.
+
 ### 3.2 Мозг: роутер моделей
 
 Протокол `AgentBrain`: `respond(context, tools) -> AsyncThrowingStream<AgentEvent>` (токены
@@ -186,6 +192,11 @@ enum AgentBlock {
 «всё в DesignKit»: `ChatBubble`, `ChatComposer`, `SuggestionChips`, `ConfirmationCard`,
 `ParticleCreature` (§3.6). Анимации готовы в DesignKit: `StreamingText` для текста, `.thinkingShimmer` для
 ожидания, `.cascadeIn` для появления блоков, `EdgeGlow` для голоса.
+
+Блок `open` ведёт на экраны приложения в стеке ассистента (`AssistantDestinationView`):
+категория и счёт по id из `<app_context>` (счёт открывается по виду: депозит, кредит, обычный),
+история (с фильтром по категории, если id дан), аналитика, бюджеты (список категорий с их
+прогрессом), подписки. Id, которого нет, показывает пустое состояние, а не чужой экран.
 
 ### 3.4 Диалоги и память
 
@@ -277,6 +288,24 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
   с Pro. Лимит приложения проверяет `AssistantViewModel.Access` до отправки: вопрос сверх лимита
   не уходит, остаётся в ленте с карточкой Pro и отправляется после оформления (`retry()`).
 - Модель, effort и лимиты: переменные в `wrangler.toml`; ключи: секреты Worker.
+
+**Сторона приложения** (`Tenra/Services/Agent/`):
+
+| Файл | Что делает |
+|---|---|
+| `JSONValue`, `AgentWire` | блоки контента без потерь, SSE-парсер (событие закрывается и на следующей строке `event:`: `URLSession.lines` теряет пустые строки) |
+| `AgentServerClient` | `POST /v1/turn`, адрес из Info.plist `TenraAssistantURL`; без него ассистент выключен и вкладки нет |
+| `AgentConversation` | цикл: стрим, инструменты на телефоне, `tool_result`, до `render_reply`; откат хода при ошибке; `reset()` = новый тред |
+| `FinanceToolkit` (+ `Compute`) | инструменты чтения; итоги через `SummaryCalculator`, обход транзакций вне MainActor |
+| `AgentContextBuilder`, `AgentContextSnapshot+Store` | блок `<app_context>`; язык = язык приложения |
+| `AgentReply`, `AgentReplyData` | блоки ответа; цифры читаются из результатов инструментов по `source` и `path` (валюта суммы, проценты, счётчики), список превращается обратно в модели приложения по id |
+
+Экран: `ViewModels/AssistantViewModel` (тред, шаг по имени инструмента, вопрос с ошибкой и
+«Повторить», `<app_context>` только при изменении), `Views/Assistant/` (лента, блоки как
+карточки приложения: `TransactionCardView`, `BudgetProgressRow`, `SubscriptionCard`,
+`InsightsCardView`, `MetricCard`, разбивка `CategoryBreakdownRow`), вкладка в режиме «+»
+(`AssistantTab`, только Pro, пока нет App Attest). Бесплатный лимит: `AssistantAllowance` и
+`AssistantUsageStore` (Keychain), ещё не подключены.
 
 ---
 

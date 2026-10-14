@@ -108,6 +108,7 @@ struct AssistantView: View {
             Task { await model.retry() }
         }
         .onAppear { model.refreshAllowance() }
+        .task { await model.restore() }
         .onChange(of: premium.isPro) { model.refreshAllowance() }
         .sheet(isPresented: $showingConsent) {
             PromptSheet(

@@ -11,7 +11,8 @@
 //  for budgets), and Undo takes back what was saved: deletes the transactions, puts the
 //  previous budget back.
 //
-//  Drafts live as long as the thread does, in memory; a new chat clears them.
+//  Drafts live in memory while the app runs; a new chat clears them. A thread kept across
+//  launches (AgentThreadStore) comes back without its drafts: their cards show nothing.
 //
 
 import Foundation
@@ -129,6 +130,12 @@ final class AgentDraftBook {
         } catch {
             states[id] = .saved(saved)
         }
+    }
+
+    /// A kept thread came back: new drafts number on from its last one, so a draft id in its
+    /// history never names a new draft.
+    func continueNumbering(after last: Int) {
+        sequence = max(sequence, last)
     }
 
     /// A new chat: the drafts go with the thread.

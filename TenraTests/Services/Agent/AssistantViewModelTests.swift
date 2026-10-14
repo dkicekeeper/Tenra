@@ -4,8 +4,8 @@
 //
 //  The assistant screen's state over a scripted server: the thread of questions and replies,
 //  the step named after the running tool, a failed question kept for Retry, and the
-//  <app_context> block sent only when it changed, and the free allowance checked before a
-//  question goes out.
+//  <app_context> block sent only when it changed, the free allowance checked before a
+//  question goes out, and the thread kept across launches.
 //
 
 import Foundation
@@ -251,6 +251,78 @@ struct AssistantViewModelTests {
         await model.send("Сколько на кафе?")
         #expect(model.allowance == nil)
         #expect(box.usage == AssistantUsage())
+    }
+
+    /// The kept thread in memory instead of CoreData.
+    @MainActor
+    private final class ThreadBox {
+        var saved: AgentThreadSnapshot?
+        var persistence: AssistantViewModel.Persistence {
+            AssistantViewModel.Persistence(load: { self.saved }, save: { self.saved = $0 })
+        }
+    }
+
+    @Test func aThreadComesBackAfterARelaunch() async throws {
+        let box = ThreadBox()
+        let first = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([
+                [AgentScript.done([AgentScript.toolUse("toolu_1", "get_accounts")])],
+                [AgentScript.done([AgentScript.render("toolu_2", source: "r1", mood: "celebrate")])],
+            ]), toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            persistence: box.persistence
+        )
+        await first.send("Сколько у меня денег?")
+        let kept = try #require(box.saved)
+        #expect(kept.title == "Сколько у меня денег?")
+
+        // A new launch: the thread comes back, and the next question continues it.
+        let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_3", source: "r1")])]])
+        let second = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            persistence: box.persistence
+        )
+        await second.restore()
+        #expect(second.entries.count == 2)
+        #expect(second.entries.first?.content == .question("Сколько у меня денег?"))
+        guard case .reply(let reply, let results)? = second.entries.last?.content else {
+            Issue.record("expected a reply")
+            return
+        }
+        #expect(reply.mood == .celebrate)
+        #expect(results["r1"]?["total_base"] == .number(2_334_450))
+        #expect(second.replyMood == .celebrate)
+
+        await second.send("А на депозите?")
+        let sent = try #require(transport.calls.first)
+        #expect(sent.count == kept.body.messages.count + 1)
+        // The context goes again: the kept one may be stale.
+        #expect(sent.last?.content.contains { $0["text"] == "<app_context>a</app_context>" } == true)
+        #expect(box.saved?.id == kept.id)
+    }
+
+    @Test func aNewChatIsAnotherThread() async throws {
+        let box = ThreadBox()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([
+                [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+                [AgentScript.done([AgentScript.render("toolu_2", source: "none")])],
+            ]), toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            persistence: box.persistence
+        )
+        await model.send("Привет")
+        let firstId = try #require(box.saved?.id)
+        model.reset()
+        await model.send("Ещё")
+        #expect(box.saved?.id != firstId)
+        #expect(box.saved?.title == "Ещё")
+    }
+
+    @Test func draftsNumberOnFromAKeptThread() {
+        let results: [String: JSONValue] = ["r1": ["draft_id": "draft_2"], "r2": ["draft_id": "draft_7"], "r3": ["total": 1]]
+        #expect(AssistantViewModel.lastDraftNumber(in: results) == 7)
     }
 
     @Test func aFailedAttestationIsNotSoldAsPro() {

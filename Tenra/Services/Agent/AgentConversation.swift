@@ -72,6 +72,38 @@ final class AgentConversation {
         owedResults = []
     }
 
+    /// The thread as AgentThreadStore keeps it.
+    var body: AgentThreadSnapshot.Body {
+        AgentThreadSnapshot.Body(messages: messages, results: results, owedResults: owedResults)
+    }
+
+    /// Picks up a kept thread where it stopped.
+    func restore(_ body: AgentThreadSnapshot.Body) {
+        messages = body.messages
+        results = body.results
+        owedResults = body.owedResults
+    }
+
+    /// The server takes at most 80 messages and one turn adds up to `1 + 2 × maxSteps`, so the
+    /// history keeps at most this many before a question.
+    static let maxKeptMessages = 60
+
+    /// Over `maxKeptMessages`, the oldest questions go, whole: the history then starts at a
+    /// question, without the results owed to the reply before it. Returns whether anything
+    /// went; the <app_context> went with the first message then, so it has to go again.
+    @discardableResult
+    func trimIfNeeded() -> Bool {
+        guard messages.count > Self.maxKeptMessages else { return false }
+        let earliest = messages.count - Self.maxKeptMessages
+        guard let start = messages.indices.dropFirst(earliest).first(where: { index in
+            messages[index].role == .user && messages[index].content.contains { $0["type"] == "text" }
+        }) else { return false }
+        var kept = Array(messages[start...])
+        kept[0] = AgentWireMessage(role: .user, content: kept[0].content.filter { $0["type"] != "tool_result" })
+        messages = kept
+        return true
+    }
+
     /// Sends one user message and runs the loop to the reply.
     /// - Parameter context: the `<app_context>` block; pass it on the first message of the
     ///   thread and whenever the date or the user's accounts and categories change.

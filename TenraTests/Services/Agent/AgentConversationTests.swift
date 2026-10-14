@@ -102,6 +102,29 @@ struct AgentConversationTests {
         #expect(outcome.reply.blocks.last?.source == "r1")
     }
 
+    @Test func aLongHistoryLosesItsOldestQuestionsWhole() {
+        let conversation = AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit())
+        // 40 questions: user (owed result + question), assistant (render_reply).
+        var messages: [AgentWireMessage] = []
+        for index in 0..<40 {
+            var content: [JSONValue] = []
+            if index > 0 { content.append(AgentToolResult(toolUseId: "toolu_\(index - 1)", content: "shown", isError: false).block) }
+            content.append(["type": "text", "text": .string("q\(index)")])
+            messages.append(AgentWireMessage(role: .user, content: content))
+            messages.append(AgentWireMessage(role: .assistant, content: [AgentScript.render("toolu_\(index)", source: "none")]))
+        }
+        conversation.restore(AgentThreadSnapshot.Body(messages: messages, results: [:], owedResults: []))
+
+        #expect(conversation.trimIfNeeded())
+        #expect(conversation.messages.count == AgentConversation.maxKeptMessages)
+        let first = conversation.messages[0]
+        #expect(first.role == .user)
+        #expect(first.content.count == 1)
+        #expect(first.content.first?["text"] == "q10")
+        // Short enough now.
+        #expect(!conversation.trimIfNeeded())
+    }
+
     @Test func toolFailuresGoBackAsErrors() async throws {
         let transport = ScriptedTransport([
             [AgentScript.done([AgentScript.toolUse("toolu_1", "delete_everything")])],

@@ -20,7 +20,8 @@
 //
 //  The thread is kept across launches (AgentThreadStore): written after every reply, brought
 //  back by `restore()` when the screen opens, its questions and replies replayed from the
-//  conversation itself. A new chat starts another thread.
+//  conversation itself. A new chat starts another thread; a kept one can be opened again or
+//  deleted from the assistant's home.
 //
 //  FastPath (AgentFastPath, plan §3.8): a message the phone's parser understands as income or
 //  expenses becomes a draft on the phone, without the cloud and without the consent the cloud
@@ -64,9 +65,11 @@ final class AssistantViewModel {
         var recent: (Int) async -> [AgentThreadSummary] = { _ in [] }
         /// One kept thread by id.
         var thread: (String) async -> AgentThreadSnapshot? = { _ in nil }
+        /// Deletes a kept thread.
+        var delete: (String) async -> Void = { _ in }
     }
 
-    /// The kept threads the history shows, the open one aside.
+    /// The kept threads the home lists, the open one aside.
     static let recentLimit = 5
 
     struct Entry: Identifiable, Equatable {
@@ -129,8 +132,11 @@ final class AssistantViewModel {
     /// Blocks the model has not seen (attachment summaries, the message being gone through):
     /// they go with the next question.
     @ObservationIgnored private var unsentNotes: [String] = []
-    @ObservationIgnored private var threadId = UUID().uuidString
+    /// The open thread's id.
+    @ObservationIgnored private(set) var threadId = UUID().uuidString
     @ObservationIgnored private var threadCreatedAt: Date
+    /// When the open thread was last written.
+    @ObservationIgnored private var threadUpdatedAt: Date
     /// The kept thread is brought back once, and never over a thread already going.
     @ObservationIgnored private var restoreDone = false
 
@@ -151,6 +157,7 @@ final class AssistantViewModel {
         self.fastPath = fastPath
         self.persistence = persistence
         self.threadCreatedAt = access.now()
+        self.threadUpdatedAt = access.now()
         refreshAllowance()
     }
 
@@ -166,13 +173,41 @@ final class AssistantViewModel {
     }
 
     /// Opens a kept thread from the history in place of the open one, which stays kept.
-    func open(threadId id: String) async {
-        guard !isWorking, !draftingLocally, id != threadId, let persistence,
-              let snapshot = await persistence.thread(id), !isWorking else { return }
+    /// True when that thread is the open one now (it may have been already).
+    @discardableResult
+    func open(threadId id: String) async -> Bool {
+        if id == threadId { return true }
+        guard !isWorking, !draftingLocally, let persistence,
+              let snapshot = await persistence.thread(id), !isWorking else { return false }
         restoreDone = true
         clearThreadState()
         apply(snapshot)
         await refreshRecent()
+        return true
+    }
+
+    /// Deletes a kept thread; the open one is left for a new, empty one.
+    func deleteThread(_ id: String) async {
+        guard let persistence else { return }
+        if id == threadId {
+            guard !isWorking, !draftingLocally else { return }
+            reset()
+        }
+        await persistence.delete(id)
+        await refreshRecent()
+    }
+
+    /// The open thread as the home lists it, once something is in it: its first question,
+    /// else what was attached.
+    var currentThread: AgentThreadSummary? {
+        guard !entries.isEmpty else { return nil }
+        let title = entries.lazy.compactMap(\.question).first ?? entries.lazy.compactMap { entry -> String? in
+            guard case .attachment(let summary) = entry.content else { return nil }
+            return summary.title ?? (summary.kind == .receipt
+                ? String(localized: "assistant.attachment.receipt")
+                : String(localized: "assistant.attachment.statement"))
+        }.first ?? ""
+        return AgentThreadSummary(id: threadId, title: title, updatedAt: threadUpdatedAt)
     }
 
     /// Re-reads the history.
@@ -192,6 +227,7 @@ final class AssistantViewModel {
         if case .reply(let reply, _)? = entries.last?.content { replyMood = reply.mood } else { replyMood = .idle }
         threadId = snapshot.id
         threadCreatedAt = snapshot.createdAt
+        threadUpdatedAt = snapshot.updatedAt
         // The context is in the kept history, but it may be stale: the next question sends it.
         sentContext = nil
         drafts?.continueNumbering(after: Self.lastDraftNumber(in: snapshot.body))
@@ -257,10 +293,11 @@ final class AssistantViewModel {
 
     private func persist() async {
         guard let persistence else { return }
+        threadUpdatedAt = access.now()
         await persistence.save(AgentThreadSnapshot(
             id: threadId,
             createdAt: threadCreatedAt,
-            updatedAt: access.now(),
+            updatedAt: threadUpdatedAt,
             title: entries.lazy.compactMap(\.question).first,
             body: { var body = conversation.body; body.local = local; return body }()
         ))
@@ -398,6 +435,7 @@ final class AssistantViewModel {
         restoreDone = true
         threadId = UUID().uuidString
         threadCreatedAt = access.now()
+        threadUpdatedAt = access.now()
         conversation.reset()
         entries = []
         replyMood = .idle

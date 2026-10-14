@@ -402,6 +402,66 @@ struct AssistantViewModelTests {
         #expect(model.entries.count == 2)
     }
 
+    /// Kept threads in memory, several of them.
+    @MainActor
+    private final class ThreadShelf {
+        var threads: [String: AgentThreadSnapshot] = [:]
+        var persistence: AssistantViewModel.Persistence {
+            AssistantViewModel.Persistence(
+                load: { self.threads.values.max { $0.updatedAt < $1.updatedAt } },
+                save: { self.threads[$0.id] = $0 },
+                recent: { limit in
+                    Array(self.threads.values
+                        .filter { $0.title != nil }
+                        .sorted { $0.updatedAt > $1.updatedAt }
+                        .prefix(limit)
+                        .map { AgentThreadSummary(id: $0.id, title: $0.title ?? "", updatedAt: $0.updatedAt) })
+                },
+                thread: { self.threads[$0] },
+                delete: { self.threads[$0] = nil }
+            )
+        }
+    }
+
+    @Test func theOpenChatIsListedOnTheHomeAndCanBeDeleted() async throws {
+        let shelf = ThreadShelf()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([
+                [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+                [AgentScript.done([AgentScript.render("toolu_2", source: "none")])],
+            ]), toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            persistence: shelf.persistence
+        )
+        // Nothing asked yet: nothing to list.
+        #expect(model.currentThread == nil)
+
+        await model.send("Сколько на кафе?")
+        let first = try #require(model.currentThread)
+        #expect(first.id == model.threadId)
+        #expect(first.title == "Сколько на кафе?")
+        // Opening the open chat is a no-op that succeeds; a missing one fails.
+        #expect(await model.open(threadId: first.id))
+        #expect(!(await model.open(threadId: "gone")))
+
+        model.reset()
+        await model.send("Ещё")
+        await model.refreshRecent()
+        #expect(model.recentThreads.map(\.id) == [first.id])
+
+        // Deleting another chat leaves the open one; deleting the open one starts an empty one.
+        await model.deleteThread(first.id)
+        #expect(shelf.threads[first.id] == nil)
+        #expect(model.recentThreads.isEmpty)
+        #expect(model.currentThread?.title == "Ещё")
+        let second = model.threadId
+        await model.deleteThread(second)
+        #expect(shelf.threads.isEmpty)
+        #expect(model.entries.isEmpty)
+        #expect(model.currentThread == nil)
+        #expect(model.threadId != second)
+    }
+
     @Test func draftsNumberOnFromAKeptThread() {
         let results: [String: JSONValue] = ["r1": ["draft_id": "draft_2"], "r2": ["draft_id": "draft_7"], "r3": ["total": 1]]
         #expect(AssistantViewModel.lastDraftNumber(in: AgentThreadSnapshot.Body(messages: [], results: results, owedResults: [])) == 7)

@@ -1905,6 +1905,13 @@
 "assistant.topic.history.unusual" = "Olağan dışı harcamaları bul";
 "assistant.recent" = "Son sohbetler";
 "assistant.history" = "Geçmiş";
+"assistant.notice.title" = "Ten yazıyor";
+"assistant.notice.goThrough" = "İncele";
+"assistant.notice.hide" = "Gizle";
+"assistant.notice.ask" = "Bunu incele: %@";
+"assistant.notice.ask.digest" = "Geçen haftamı incele";
+"assistant.notice.ask.charge" = "%@ tutmaya değer mi?";
+"assistant.notice.charge" = "Yarın %@ çekilecek";
 "assistant.forecast.perDay" = "%@ tarihine kadar günlük";
 "assistant.forecast.free" = "Kullanılabilir: %@";
 "assistant.forecast.balance" = "Günlük bakiye";

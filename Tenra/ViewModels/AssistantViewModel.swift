@@ -125,8 +125,9 @@ final class AssistantViewModel {
     @ObservationIgnored private var attachments: [UUID: AgentAttachment] = [:]
     /// The attachments whose review has been paid for.
     @ObservationIgnored private var reviewedAttachments: Set<UUID> = []
-    /// Attachment summaries the model has not seen: they go with the next question.
-    @ObservationIgnored private var unsentAttachments: [String] = []
+    /// Blocks the model has not seen (attachment summaries, the message being gone through):
+    /// they go with the next question.
+    @ObservationIgnored private var unsentNotes: [String] = []
     @ObservationIgnored private var threadId = UUID().uuidString
     @ObservationIgnored private var threadCreatedAt: Date
     /// The kept thread is brought back once, and never over a thread already going.
@@ -206,7 +207,7 @@ final class AssistantViewModel {
         local = []
         attachments = [:]
         reviewedAttachments = []
-        unsentAttachments = []
+        unsentNotes = []
     }
 
     /// The visible thread of a kept conversation: each question (the last text of a user
@@ -292,13 +293,27 @@ final class AssistantViewModel {
         }
     }
 
+    // MARK: - Ten writes first
+
+    /// "Go through it" on a message Ten wrote first: its question, with the message for the
+    /// model (a `<notice>` block). The message counts as read. False when nothing went (the
+    /// cloud is not allowed yet).
+    @discardableResult
+    func ask(about notice: AssistantNotice, cloudAllowed: Bool = true) async -> Bool {
+        guard cloudAllowed, !isWorking, !draftingLocally else { return false }
+        unsentNotes.append(notice.modelText)
+        let sent = await send(notice.question, cloudAllowed: cloudAllowed, phoneMayAnswer: false)
+        if !sent { unsentNotes.removeAll { $0 == notice.modelText } }
+        return sent
+    }
+
     // MARK: - Attachments
 
     /// A receipt or a statement read on the phone joins the thread as its summary card.
     func attach(_ attachment: AgentAttachment, summary: AgentAttachmentSummary) {
         let entry = Entry(id: UUID(), content: .attachment(summary))
         attachments[entry.id] = attachment
-        unsentAttachments.append(summary.modelText)
+        unsentNotes.append(summary.modelText)
         dropFailedQuestion()
         entries.append(entry)
     }
@@ -324,12 +339,13 @@ final class AssistantViewModel {
     /// - Parameters:
     ///   - spoken: it came from the voice sheet: a FastPath draft spends a free answer.
     ///   - cloudAllowed: the person agreed to the cloud mode. Without it only FastPath goes.
+    ///   - phoneMayAnswer: FastPath may take it; off for a question the app wrote itself.
     /// - Returns: false when nothing happened: the message needs the cloud, which is not allowed.
     @discardableResult
-    func send(_ raw: String, spoken: Bool = false, cloudAllowed: Bool = true) async -> Bool {
+    func send(_ raw: String, spoken: Bool = false, cloudAllowed: Bool = true, phoneMayAnswer: Bool = true) async -> Bool {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !isWorking, !draftingLocally else { return false }
-        if let operations = await draftOnPhone(text, spoken: spoken), let drafts {
+        if phoneMayAnswer, let operations = await draftOnPhone(text, spoken: spoken), let drafts {
             dropFailedQuestion()
             let id = drafts.add(operations, madeOnPhoneFrom: text)
             local.append(AgentThreadSnapshot.LocalExchange(position: conversation.messages.count, question: text, draftId: id))
@@ -454,7 +470,7 @@ final class AssistantViewModel {
         let current = context()
         let contextToSend = current == sentContext ? nil : current
         let status = draftStatus()
-        let attached = unsentAttachments
+        let attached = unsentNotes
         let preface = [contextToSend, status?.text].compactMap { $0 }.joined(separator: "\n")
         do {
             let outcome = try await conversation.send(text, context: preface.isEmpty ? nil : preface, notes: attached) { [weak self] progress in
@@ -471,7 +487,7 @@ final class AssistantViewModel {
             streamingReply = []
             sentContext = current
             if let status { reportedDrafts = status.states }
-            unsentAttachments.removeFirst(min(attached.count, unsentAttachments.count))
+            unsentNotes.removeFirst(min(attached.count, unsentNotes.count))
             if !access.isPro() {
                 access.saveUsage(AssistantAllowance.recording(access.loadUsage(), now: access.now()))
                 refreshAllowance()

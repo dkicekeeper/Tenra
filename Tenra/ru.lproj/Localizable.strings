@@ -1905,6 +1905,13 @@
 "assistant.topic.history.unusual" = "Найди необычные траты";
 "assistant.recent" = "Недавние диалоги";
 "assistant.history" = "История";
+"assistant.notice.title" = "Тэн пишет";
+"assistant.notice.goThrough" = "Разобрать";
+"assistant.notice.hide" = "Скрыть";
+"assistant.notice.ask" = "Разбери: %@";
+"assistant.notice.ask.digest" = "Разбери мою прошлую неделю";
+"assistant.notice.ask.charge" = "Стоит ли оставлять %@?";
+"assistant.notice.charge" = "Завтра спишется %@";
 "assistant.forecast.perDay" = "В день до %@";
 "assistant.forecast.free" = "Свободно: %@";
 "assistant.forecast.balance" = "Остаток по дням";

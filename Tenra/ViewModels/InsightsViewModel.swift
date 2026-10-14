@@ -635,6 +635,17 @@ final class InsightsViewModel {
                     let digestCurrency = self.baseCurrency
                     Task { await WeeklyDigestScheduler.shared.reschedule(weekPoints: weekPoints, baseCurrency: digestCurrency) }
                 }
+                // Ten writes first: the same signals and last week's summary as messages in
+                // the assistant (AssistantInbox), whether or not pushes are allowed.
+                if AssistantAvailability.isAvailable {
+                    let now = Date()
+                    var notices = AssistantNotices.signals(from: finalInsights[.month] ?? [], now: now)
+                    if let weekPoints = finalPoints[.week],
+                       let digest = AssistantNotices.digest(weekPoints: weekPoints, baseCurrency: self.baseCurrency, now: now) {
+                        notices.append(digest)
+                    }
+                    AssistantInbox.shared.post(notices, now: now)
+                }
             }
         }
     }

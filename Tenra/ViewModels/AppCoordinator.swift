@@ -166,6 +166,21 @@ class AppCoordinator {
         return pendingAttachment
     }
 
+    /// Ten writes first about the subscriptions charged tomorrow (AssistantInbox); insights and
+    /// the weekly summary post from the insights recompute.
+    func refreshAssistantInbox(now: Date = Date()) {
+        guard AssistantAvailability.isAvailable else { return }
+        let scheduler = SubscriptionNotificationScheduler.shared
+        AssistantInbox.shared.post(
+            AssistantNotices.charges(
+                subscriptions: transactionStore.activeSubscriptions,
+                nextCharge: { scheduler.calculateNextChargeDate(for: $0, today: now) },
+                now: now
+            ),
+            now: now
+        )
+    }
+
     func ask(about topic: AssistantTopic) {
         assistantTopic = topic
     }

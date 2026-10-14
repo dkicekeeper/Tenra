@@ -1905,6 +1905,13 @@
 "assistant.topic.history.unusual" = "Finde ungewöhnliche Ausgaben";
 "assistant.recent" = "Letzte Chats";
 "assistant.history" = "Verlauf";
+"assistant.notice.title" = "Ten schreibt";
+"assistant.notice.goThrough" = "Durchgehen";
+"assistant.notice.hide" = "Ausblenden";
+"assistant.notice.ask" = "Geh das durch: %@";
+"assistant.notice.ask.digest" = "Geh meine letzte Woche durch";
+"assistant.notice.ask.charge" = "Lohnt sich %@ noch?";
+"assistant.notice.charge" = "Morgen wird %@ abgebucht";
 "assistant.forecast.perDay" = "Pro Tag bis %@";
 "assistant.forecast.free" = "Frei verfügbar: %@";
 "assistant.forecast.balance" = "Kontostand pro Tag";

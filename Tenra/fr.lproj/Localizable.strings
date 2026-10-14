@@ -1905,6 +1905,13 @@
 "assistant.topic.history.unusual" = "Trouve les dépenses inhabituelles";
 "assistant.recent" = "Discussions récentes";
 "assistant.history" = "Historique";
+"assistant.notice.title" = "Ten écrit";
+"assistant.notice.goThrough" = "Analyser";
+"assistant.notice.hide" = "Masquer";
+"assistant.notice.ask" = "Analyse ceci : %@";
+"assistant.notice.ask.digest" = "Analyse ma semaine dernière";
+"assistant.notice.ask.charge" = "%@ vaut-il la peine d’être gardé ?";
+"assistant.notice.charge" = "%@ sera prélevé demain";
 "assistant.forecast.perDay" = "Par jour jusqu’au %@";
 "assistant.forecast.free" = "Disponible : %@";
 "assistant.forecast.balance" = "Solde par jour";

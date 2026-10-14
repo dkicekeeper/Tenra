@@ -1905,6 +1905,13 @@
 "assistant.topic.history.unusual" = "Знайди незвичні витрати";
 "assistant.recent" = "Нещодавні діалоги";
 "assistant.history" = "Історія";
+"assistant.notice.title" = "Тен пише";
+"assistant.notice.goThrough" = "Розібрати";
+"assistant.notice.hide" = "Сховати";
+"assistant.notice.ask" = "Розбери: %@";
+"assistant.notice.ask.digest" = "Розбери мій минулий тиждень";
+"assistant.notice.ask.charge" = "Чи варто залишати %@?";
+"assistant.notice.charge" = "Завтра спишеться %@";
 "assistant.forecast.perDay" = "На день до %@";
 "assistant.forecast.free" = "Вільно: %@";
 "assistant.forecast.balance" = "Залишок по днях";

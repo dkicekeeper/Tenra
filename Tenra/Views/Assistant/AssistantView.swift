@@ -51,6 +51,8 @@ struct AssistantView: View {
     @State private var showingPaywall = false
     @State private var showingConsent = false
     @State private var questionAwaitingConsent: String?
+    @State private var noticeAwaitingConsent: AssistantNotice?
+    private let inbox = AssistantInbox.shared
     @AppStorage(AssistantMetrics.consentKey) private var hasConsent = false
     @FocusState private var composerFocused: Bool
     @State private var scrollPosition = ScrollPosition(idType: UUID.self)
@@ -77,6 +79,9 @@ struct AssistantView: View {
                             .id(entry.id)
                     }
                     turnFooter
+                    if !model.entries.isEmpty, !model.isWorking {
+                        notices
+                    }
                 }
                 .frame(minHeight: currentTurn.isEmpty ? 0 : viewportHeight, alignment: .top)
             }
@@ -193,7 +198,10 @@ struct AssistantView: View {
         .sheet(isPresented: $showingVoice) {
             AssistantVoiceSheet { send($0, spoken: true) }
         }
-        .onAppear { model.refreshAllowance() }
+        .onAppear {
+            model.refreshAllowance()
+            coordinator.refreshAssistantInbox()
+        }
         .onChange(of: coordinator.assistantTopic, initial: true) { _, topic in
             guard topic != nil, let topic = coordinator.consumeAssistantTopic() else { return }
             topicQuestions = topic.questions
@@ -214,8 +222,15 @@ struct AssistantView: View {
                         questionAwaitingConsent = nil
                         send(question)
                     }
+                    if let notice = noticeAwaitingConsent {
+                        noticeAwaitingConsent = nil
+                        goThrough(notice)
+                    }
                 },
-                onSecondary: { questionAwaitingConsent = nil }
+                onSecondary: {
+                    questionAwaitingConsent = nil
+                    noticeAwaitingConsent = nil
+                }
             )
         }
     }
@@ -295,12 +310,47 @@ struct AssistantView: View {
                     .foregroundStyle(AppColors.Text.tertiary)
             }
             .multilineTextAlignment(.center)
+            notices
             SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) { send($0) }
             if !model.recentThreads.isEmpty {
                 recentChats
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    /// What Ten wrote first and the person has not read (AssistantInbox).
+    @ViewBuilder
+    private var notices: some View {
+        let unread = inbox.unread
+        if !unread.isEmpty {
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                SectionHeader(String(localized: "assistant.notice.title"))
+                ForEach(unread) { notice in
+                    AssistantNoticeCard(
+                        notice: notice,
+                        onAsk: { goThrough(notice) },
+                        onHide: { inbox.markRead(notice.id) }
+                    )
+                    .transition(.opacity)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .animation(AppAnimation.smooth, value: unread.map(\.id))
+        }
+    }
+
+    /// "Go through it": the message's question, after the cloud consent when it is not given.
+    private func goThrough(_ notice: AssistantNotice) {
+        guard !model.isWorking else { return }
+        guard hasConsent else {
+            noticeAwaitingConsent = notice
+            showingConsent = true
+            return
+        }
+        inbox.markRead(notice.id)
+        topicQuestions = []
+        Task { await model.ask(about: notice) }
     }
 
     /// The latest chats under the greeting; a tap opens one.
@@ -425,6 +475,8 @@ struct AssistantView: View {
         case .failed(let failure):
             return failure == .offline ? .sad : .confused
         case .idle:
+            // A message Ten wrote first sets the mood until it is read.
+            if let notice = inbox.mood { return notice.creatureMood }
             switch model.replyMood {
             case .happy: return .happy
             case .concerned: return .worried

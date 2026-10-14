@@ -1905,6 +1905,13 @@
 "assistant.topic.history.unusual" = "Encontre gastos fora do comum";
 "assistant.recent" = "Conversas recentes";
 "assistant.history" = "Histórico";
+"assistant.notice.title" = "Ten escreve";
+"assistant.notice.goThrough" = "Analisar";
+"assistant.notice.hide" = "Ocultar";
+"assistant.notice.ask" = "Analise isto: %@";
+"assistant.notice.ask.digest" = "Analise minha semana passada";
+"assistant.notice.ask.charge" = "Vale a pena manter %@?";
+"assistant.notice.charge" = "Amanhã será cobrado %@";
 "assistant.forecast.perDay" = "Por dia até %@";
 "assistant.forecast.free" = "Disponível: %@";
 "assistant.forecast.balance" = "Saldo por dia";

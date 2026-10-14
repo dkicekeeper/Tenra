@@ -1905,6 +1905,13 @@
 "assistant.topic.history.unusual" = "평소와 다른 지출을 찾아 줘";
 "assistant.recent" = "최근 대화";
 "assistant.history" = "기록";
+"assistant.notice.title" = "텐의 메시지";
+"assistant.notice.goThrough" = "살펴보기";
+"assistant.notice.hide" = "숨기기";
+"assistant.notice.ask" = "이것을 살펴봐 줘: %@";
+"assistant.notice.ask.digest" = "지난주를 살펴봐 줘";
+"assistant.notice.ask.charge" = "%@ 계속 유지할 만할까?";
+"assistant.notice.charge" = "내일 %@ 결제돼요";
 "assistant.forecast.perDay" = "%@까지 하루 사용 가능 금액";
 "assistant.forecast.free" = "사용 가능: %@";
 "assistant.forecast.balance" = "일별 잔액";

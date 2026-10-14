@@ -59,6 +59,7 @@ struct MainTabView: View {
 
     /// The assistant over the current tab, opened by the action tab.
     @State private var showingAssistant = false
+    @Environment(\.scenePhase) private var scenePhase
 
     /// The assistant takes the action tab where it can answer: its server is set and the device
     /// passes App Attest, which the server asks of every turn. Elsewhere the tab keeps the
@@ -87,6 +88,8 @@ struct MainTabView: View {
                 PlusTabLabel(isExpanded: tabBarMode == .expanded)
             }
         }
+        // What Ten wrote first and the person has not read (AssistantInbox).
+        .badge(assistantTakesActionTab ? AssistantInbox.shared.unread.count : 0)
     }
 
     // MARK: Body
@@ -219,6 +222,10 @@ struct MainTabView: View {
                 )
             }
             .environment(coordinator.transactionStore)
+        }
+        // Ten writes first about tomorrow's charges whenever the app comes to the front.
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            if phase == .active { coordinator.refreshAssistantInbox() }
         }
         // A file opened in Tenra from another app goes to the assistant, which attaches it.
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in

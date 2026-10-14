@@ -1905,6 +1905,13 @@
 "assistant.topic.history.unusual" = "いつもと違う支出を見つけて";
 "assistant.recent" = "最近の会話";
 "assistant.history" = "履歴";
+"assistant.notice.title" = "テンからのお知らせ";
+"assistant.notice.goThrough" = "詳しく見る";
+"assistant.notice.hide" = "非表示";
+"assistant.notice.ask" = "これを詳しく：%@";
+"assistant.notice.ask.digest" = "先週を振り返って";
+"assistant.notice.ask.charge" = "%@は続ける価値がある？";
+"assistant.notice.charge" = "明日 %@ が引き落とされます";
 "assistant.forecast.perDay" = "%@まで1日あたり";
 "assistant.forecast.free" = "自由に使える額: %@";
 "assistant.forecast.balance" = "日ごとの残高";

@@ -43,19 +43,29 @@ struct AssistantAttachmentMenu: View {
 
 extension View {
     /// Presents the picked source and reads the attachment. `reading` is on while it reads.
+    /// - Parameter takesHandedOverFiles: this page also reads a file opened in Tenra from another
+    ///   app (the assistant's home; a chat leaves it to the home).
     func assistantAttachmentSources(
         source: Binding<AssistantAttachmentSource?>,
         reading: Binding<Bool>,
+        takesHandedOverFiles: Bool,
         onRead: @escaping (AgentAttachment, AgentAttachmentSummary) -> Void,
         onFailure: @escaping (String) -> Void
     ) -> some View {
-        modifier(AssistantAttachmentSources(source: source, reading: reading, onRead: onRead, onFailure: onFailure))
+        modifier(AssistantAttachmentSources(
+            source: source,
+            reading: reading,
+            takesHandedOverFiles: takesHandedOverFiles,
+            onRead: onRead,
+            onFailure: onFailure
+        ))
     }
 }
 
 private struct AssistantAttachmentSources: ViewModifier {
     @Binding var source: AssistantAttachmentSource?
     @Binding var reading: Bool
+    let takesHandedOverFiles: Bool
     let onRead: (AgentAttachment, AgentAttachmentSummary) -> Void
     let onFailure: (String) -> Void
 
@@ -97,7 +107,7 @@ private struct AssistantAttachmentSources: ViewModifier {
             }
         }
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in
-            guard url != nil, let url = coordinator.consumePendingAttachment() else { return }
+            guard takesHandedOverFiles, url != nil, let url = coordinator.consumePendingAttachment() else { return }
             openFile(url)
         }
     }

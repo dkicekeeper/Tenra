@@ -1904,7 +1904,7 @@
 "assistant.topic.history.changes" = "Что изменилось в тратах в этом месяце?";
 "assistant.topic.history.unusual" = "Найди необычные траты";
 "assistant.recent" = "Недавние диалоги";
-"assistant.history" = "История";
+"assistant.recent.delete" = "Удалить чат";
 "assistant.notice.title" = "Тэн пишет";
 "assistant.notice.goThrough" = "Разобрать";
 "assistant.notice.hide" = "Скрыть";
@@ -1927,7 +1927,6 @@
 "composer.send" = "Отправить";
 "composer.voice" = "Надиктовать";
 "assistant.composer.placeholder" = "Спросите о деньгах…";
-"assistant.newChat" = "Новый чат";
 "assistant.preset.month" = "Мои траты в этом месяце";
 "assistant.preset.compare" = "Сравни с прошлым месяцем";
 "assistant.preset.budgets" = "Как дела с бюджетами?";

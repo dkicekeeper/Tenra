@@ -1904,7 +1904,7 @@
 "assistant.topic.history.changes" = "이번 달 지출에서 뭐가 달라졌어?";
 "assistant.topic.history.unusual" = "평소와 다른 지출을 찾아 줘";
 "assistant.recent" = "최근 대화";
-"assistant.history" = "기록";
+"assistant.recent.delete" = "채팅 삭제";
 "assistant.notice.title" = "텐의 메시지";
 "assistant.notice.goThrough" = "살펴보기";
 "assistant.notice.hide" = "숨기기";
@@ -1927,7 +1927,6 @@
 "composer.send" = "보내기";
 "composer.voice" = "받아쓰기";
 "assistant.composer.placeholder" = "돈에 대해 물어보세요…";
-"assistant.newChat" = "새 대화";
 "assistant.preset.month" = "이번 달 지출";
 "assistant.preset.compare" = "지난달과 비교해 줘";
 "assistant.preset.budgets" = "예산은 어때?";

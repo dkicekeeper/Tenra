@@ -5,8 +5,8 @@
 //  The assistant's threads on the phone (docs/plan-ai-assistant.md §3.4): CoreData v13,
 //  `AgentThreadEntity`, the conversation as JSON. The server keeps nothing, so this is the only
 //  copy. The latest thread comes back when the assistant opens, a new chat starts another, and
-//  only the latest `keep` threads stay. Backups carry them with the rest of the store, and
-//  "delete all data" removes them with it.
+//  only the latest `keep` threads stay; the person can delete one from the assistant's home.
+//  Backups carry them with the rest of the store, and "delete all data" removes them with it.
 //
 
 import CoreData
@@ -126,6 +126,23 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
             title: entity.title,
             body: body
         )
+    }
+
+    /// Deletes one kept thread (the person removed it from the assistant's home).
+    func delete(id: String) async {
+        let context = stack.newBackgroundContext()
+        await context.perform {
+            do {
+                let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
+                request.predicate = NSPredicate(format: "id == %@", id)
+                for entity in try context.fetch(request) {
+                    context.delete(entity)
+                }
+                if context.hasChanges { try context.save() }
+            } catch {
+                Self.logger.error("delete failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
     }
 
     /// Writes the thread over its earlier copy, and lets the threads beyond `keep` go.

@@ -1904,7 +1904,7 @@
 "assistant.topic.history.changes" = "Що змінилося у витратах цього місяця?";
 "assistant.topic.history.unusual" = "Знайди незвичні витрати";
 "assistant.recent" = "Нещодавні діалоги";
-"assistant.history" = "Історія";
+"assistant.recent.delete" = "Видалити чат";
 "assistant.notice.title" = "Тен пише";
 "assistant.notice.goThrough" = "Розібрати";
 "assistant.notice.hide" = "Сховати";
@@ -1927,7 +1927,6 @@
 "composer.send" = "Надіслати";
 "composer.voice" = "Надиктувати";
 "assistant.composer.placeholder" = "Запитайте про гроші…";
-"assistant.newChat" = "Новий чат";
 "assistant.preset.month" = "Мої витрати цього місяця";
 "assistant.preset.compare" = "Порівняй з минулим місяцем";
 "assistant.preset.budgets" = "Як справи з бюджетами?";

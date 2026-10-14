@@ -302,8 +302,41 @@ function draftBudget(input: Input) {
   return { draft_id: `draft_${++draftSeq}`, category_id: category, category: categoryName(category), amount: input.amount, period: input.period, previous_limit: BUDGETS.find((b) => b.categoryId === category)?.limit ?? null, saved: false };
 }
 
+// As FinanceToolkit.draftRecurring does: a category is required (a subscription takes an
+// expense one), next_date is today or later and within a year.
 function draftRecurring(input: Input) {
-  return { draft_id: `draft_${++draftSeq}`, ...input, account: accountName(resolveAccount(input.account as string | null)), saved: false };
+  const kind = str(input, "kind", true);
+  if (kind !== "subscription" && kind !== "regular") throw new ToolInputError("kind must be subscription or regular.");
+  const name = (str(input, "name", true) ?? "").trim();
+  if (!name) throw new ToolInputError("name is required.");
+  const amount = optionalNumber(input, "amount");
+  if (amount === undefined || amount <= 0) throw new ToolInputError("amount must be positive.");
+  const frequency = str(input, "frequency", true)!;
+  if (!["daily", "weekly", "monthly", "quarterly", "yearly"].includes(frequency)) throw new ToolInputError("frequency must be daily, weekly, monthly, quarterly or yearly.");
+  const next = dateArg(input, "next_date", true)!;
+  if (next < TODAY) throw new ToolInputError("next_date cannot be in the past.");
+  if (daysBetween(TODAY, next) > 366) throw new ToolInputError("next_date must be within a year.");
+  const reference = str(input, "category");
+  if (!reference) throw new ToolInputError("Give a category id or name from <app_context>.");
+  const candidates = CATEGORIES.filter((c) => kind === "regular" || c.type === "expense");
+  const category = candidates.find((c) => c.id === reference) ?? candidates.find((c) => c.name.toLowerCase() === reference.toLowerCase());
+  if (!category) throw new ToolInputError(`Unknown category ${reference}. Use a category id from <app_context>.`);
+  const accountId = resolveAccount(input.account as string | null);
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    kind,
+    name,
+    amount: round(amount),
+    currency: str(input, "currency")?.toUpperCase() || (ACCOUNTS.find((a) => a.id === accountId)?.currency ?? BASE_CURRENCY),
+    frequency,
+    next_date: next,
+    category_id: category.id,
+    category: category.name,
+    account_id: accountId,
+    account: accountName(accountId),
+    guessed: input.account ? [] : ["account"],
+    saved: false,
+  };
 }
 
 function optionalNumber(input: Input, key: string): number | undefined {

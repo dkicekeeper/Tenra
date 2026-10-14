@@ -54,6 +54,17 @@ categoriesViewModel.linkSubcategoriesToTransaction(
 
 Generated recurring transactions need explicit linking after creation.
 
+## Creating a subscription: one path
+
+[`SubscriptionCreationService`](../../Tenra/Services/Recurring/SubscriptionCreationService.swift) creates a
+subscription the way `SubscriptionEditView` always did, and the screen's create path and the
+assistant's `draft_recurring` both go through it: the rate check for a series in another currency
+than its account (`hasAccountRate`, no rate = no save), the series (`createSeries`, awaited), and
+for a subscription the subcategory named after it, linked to its category and to every generated
+transaction in one batch. A generic recurring payment gets the rate check and the series. The
+screen's edit path reuses `resolveOrCreateSubcategory` and `linkSubcategory`. Pinned by
+`SubscriptionCreationServiceTests`.
+
 ## Making an Existing Transaction Recurring
 
 ⚠️ **Never `createSeries(_:)` and then link an existing transaction to the new series.** The generator emits occurrence 0 on `startDate`, which is that transaction's own date, so the date would end up with two transactions. Use `createSeries(_:firstOccurrence:)`: it links the transaction, records it as the occurrence on `series.startDate`, and the generator resumes from the next period (generates nothing more when that date is already in the future). The transaction keeps its id, so its subcategory links survive. `TransactionEditCoordinator.handleRecurringSeries` uses it and aborts the save with the error if the series cannot be created. Pinned by `RecurringFirstOccurrenceTests` and `TransactionEditCoordinatorTests`.

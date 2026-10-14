@@ -320,8 +320,8 @@ private struct AssistantForecastCard: View {
 // MARK: - Confirm
 
 /// A draft to save (plan §1, "do"): its operations as they will look in the history (a budget
-/// as its new limit next to the old one), what Tenra guessed, Save; once saved, Undo. Nothing
-/// is written before Save.
+/// as its new limit next to the old one, a subscription as its name, frequency and first
+/// charge), what Tenra guessed, Save; once saved, Undo. Nothing is written before Save.
 private struct AssistantDraftCard: View {
     @Environment(AppCoordinator.self) private var coordinator
 
@@ -347,6 +347,8 @@ private struct AssistantDraftCard: View {
                     )
                 } else if case .budget(let budget) = operation {
                     budgetRows(budget, store: store)
+                } else if case .recurring(let recurring) = operation {
+                    recurringRow(recurring.series)
                 }
             }
             if state == .pending {
@@ -411,6 +413,17 @@ private struct AssistantDraftCard: View {
         }
     }
 
+    /// The subscription or regular payment: its name, how often, the first charge, the amount.
+    private func recurringRow(_ series: RecurringSeries) -> some View {
+        let first = FastDateParser.date(from: series.startDate)?.formatted(.dateTime.day().month(.abbreviated)) ?? series.startDate
+        return InfoRow(
+            icon: series.kind == .subscription ? "repeat.circle" : "repeat",
+            label: "\(series.description) · \(series.frequency.displayName) · \(first)",
+            amount: NSDecimalNumber(decimal: series.amount).doubleValue,
+            currency: series.currency
+        )
+    }
+
     private static func periodName(_ period: CustomCategory.BudgetPeriod) -> String {
         switch period {
         case .weekly: String(localized: "budget.weekly")
@@ -425,8 +438,12 @@ private struct AssistantDraftCard: View {
             if case .single(let single) = operation { return single.warnings }
             return []
         }
+        let recurringGuessed = draft.operations.contains { operation in
+            if case .recurring(let recurring) = operation { return recurring.accountGuessed }
+            return false
+        }
         var lines: [String] = []
-        if warnings.contains(.accountInferred) {
+        if warnings.contains(.accountInferred) || recurringGuessed {
             lines.append(String(localized: "assistant.draft.accountGuessed"))
         }
         if warnings.contains(where: { if case .categorySubstituted = $0 { true } else { false } }) {
@@ -435,10 +452,11 @@ private struct AssistantDraftCard: View {
         return lines
     }
 
-    /// The operation as the transaction it will become, for the row; nil for a budget.
+    /// The operation as the transaction it will become, for the row; nil for a budget or a
+    /// recurring payment, which have rows of their own.
     private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
-        case .budget:
+        case .budget, .recurring:
             return nil
         case .single(let draft):
             return Transaction(

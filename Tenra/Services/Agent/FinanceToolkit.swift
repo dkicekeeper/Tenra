@@ -11,8 +11,8 @@
 //  `forecast_balance` projects the everyday accounts to a date and gives the daily allowance.
 //  `simulate_loan` prices a loan's refinancing or early repayment (LoanWhatIf) and
 //  `project_savings` grows regular saving at an assumed return (SavingsProjection).
-//  `draft_transactions` and `draft_budget` file drafts (AgentDraftBook) that the person saves
-//  on the confirm card. `draft_recurring` lands later and answers "not available".
+//  `draft_transactions`, `draft_budget` and `draft_recurring` file drafts (AgentDraftBook)
+//  that the person saves on the confirm card.
 //
 
 import Foundation
@@ -50,7 +50,8 @@ final class FinanceToolkit: AgentToolExecuting {
         self.calendar = calendar
     }
 
-    static let laterPhaseTools: Set<String> = ["draft_recurring"]
+    /// Tools the server describes that this version cannot run yet.
+    static let laterPhaseTools: Set<String> = []
 
     func execute(name: String, input: JSONValue) async -> AgentToolOutput {
         do {
@@ -67,6 +68,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "project_savings": return .success(try projectSavings(input))
             case "draft_transactions": return try await draftTransactions(input)
             case "draft_budget": return try draftBudget(input)
+            case "draft_recurring": return try draftRecurring(input)
             case _ where Self.laterPhaseTools.contains(name):
                 return .failure(Self.notYet(name))
             default:
@@ -580,11 +582,6 @@ final class FinanceToolkit: AgentToolExecuting {
         let items: [DraftItemInput]
     }
 
-    /// `draft_transactions`: resolves each operation the way the voice and Siri paths do
-    /// (`TransactionDraftService.makeDraft`) and files the ones that resolved as one draft.
-    /// An operation that cannot be drafted (no amount, no account, no exchange rate) comes
-    /// back under `skipped` with the reason. The result has the shape the eval simulates
-    /// (server/assistant/eval/simulator.ts), plus `guessed` for what the phone filled in.
     // MARK: - Planning
 
     private struct SimulateLoanInput: Decodable {
@@ -761,6 +758,11 @@ final class FinanceToolkit: AgentToolExecuting {
         ]
     }
 
+    /// `draft_transactions`: resolves each operation the way the voice and Siri paths do
+    /// (`TransactionDraftService.makeDraft`) and files the ones that resolved as one draft.
+    /// An operation that cannot be drafted (no amount, no account, no exchange rate) comes
+    /// back under `skipped` with the reason. The result has the shape the eval simulates
+    /// (server/assistant/eval/simulator.ts), plus `guessed` for what the phone filled in.
     private func draftTransactions(_ input: JSONValue) async throws -> AgentToolOutput {
         guard let drafts else { return .failure(Self.notYet("draft_transactions")) }
         let args = try input.decoded(as: DraftTransactionsInput.self)
@@ -823,6 +825,106 @@ final class FinanceToolkit: AgentToolExecuting {
             "period": .string(period.rawValue),
             "previous_limit": category.budgetAmount.map { JSONValue.number(FinanceToolkitCompute.round2($0)) } ?? .null,
             "previous_period": category.budgetAmount == nil ? .null : .string(category.budgetPeriod.rawValue),
+            "saved": false,
+        ])
+    }
+
+    private struct DraftRecurringInput: Decodable {
+        let kind: String
+        let name: String
+        let amount: Double
+        let currency: String?
+        let frequency: String
+        let nextDate: String
+        let category: String?
+        let account: String?
+
+        enum CodingKeys: String, CodingKey {
+            case kind, name, amount, currency, frequency, category, account
+            case nextDate = "next_date"
+        }
+    }
+
+    /// `draft_recurring`: a subscription or a regular payment as the series it will become,
+    /// starting on its next charge, saved through `SubscriptionCreationService` like the
+    /// subscription screen saves. The account is the one named, else the one the history
+    /// suggests for the category, else the first everyday account (marked as guessed).
+    private func draftRecurring(_ input: JSONValue) throws -> AgentToolOutput {
+        guard let drafts else { return .failure(Self.notYet("draft_recurring")) }
+        let args = try input.decoded(as: DraftRecurringInput.self)
+        let name = args.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { throw FinanceToolError(message: "name is required.") }
+        guard args.amount.isFinite, args.amount > 0 else { throw FinanceToolError(message: "amount must be positive.") }
+        let kind: RecurringSeriesKind
+        switch args.kind {
+        case "subscription": kind = .subscription
+        case "regular": kind = .generic
+        default: throw FinanceToolError(message: "kind must be subscription or regular.")
+        }
+        guard let frequency = RecurringFrequency(rawValue: args.frequency) else {
+            throw FinanceToolError(message: "frequency must be daily, weekly, monthly, quarterly or yearly.")
+        }
+        let todayKey = FastDateParser.string(from: now())
+        guard let start = FastDateParser.date(from: args.nextDate), let today = FastDateParser.date(from: todayKey) else {
+            throw FinanceToolError(message: "next_date must be YYYY-MM-DD.")
+        }
+        guard args.nextDate >= todayKey else { throw FinanceToolError(message: "next_date cannot be in the past.") }
+        guard let days = FastDateParser.calendar.dateComponents([.day], from: today, to: start).day, days <= 366 else {
+            throw FinanceToolError(message: "next_date must be within a year.")
+        }
+
+        // A subscription is an expense; a regular payment may be income too (a salary).
+        let candidates = store.categories.filter { kind == .generic || $0.type == .expense }
+        guard let reference = args.category, !reference.isEmpty else {
+            throw FinanceToolError(message: "Give a category id or name from <app_context>.")
+        }
+        guard let category = candidates.first(where: { $0.id == reference })
+            ?? candidates.first(where: { $0.name.lowercased() == reference.lowercased() }) else {
+            throw FinanceToolError(message: "Unknown category \(reference). Use a category id from <app_context>.")
+        }
+
+        let everyday = store.accounts.filter { !$0.isLoan && !$0.isDeposit }
+        var guessed: [JSONValue] = []
+        let account: Account
+        if let reference = args.account, !reference.isEmpty {
+            guard let named = resolveAccount(reference, in: everyday) else { throw FinanceToolError(message: "Unknown account \(reference).") }
+            account = named
+        } else if let suggested = suggestAccount?(category.name).flatMap({ id in everyday.first { $0.id == id } }) ?? everyday.first {
+            account = suggested
+            guessed.append("account")
+        } else {
+            throw FinanceToolError(message: "There is no everyday account to pay from.")
+        }
+
+        let currency = args.currency.map { $0.uppercased() }.flatMap { $0.isEmpty ? nil : $0 } ?? account.currency
+        let amount = Decimal(string: String(FinanceToolkitCompute.round2(args.amount))) ?? Decimal(args.amount)
+        let series = RecurringSeries(
+            amount: amount,
+            currency: currency,
+            category: category.name,
+            // A subscription's name doubles as its subcategory, as on the subscription screen.
+            subcategory: kind == .subscription ? name : nil,
+            description: name,
+            accountId: account.id,
+            frequency: frequency,
+            startDate: args.nextDate,
+            kind: kind,
+            status: kind == .subscription ? .active : nil
+        )
+        let id = drafts.add([.recurring(AgentRecurringDraft(series: series, accountGuessed: !guessed.isEmpty))])
+        return .success([
+            "draft_id": .string(id),
+            "kind": .string(args.kind),
+            "name": .string(name),
+            "amount": .number(FinanceToolkitCompute.round2(args.amount)),
+            "currency": .string(currency),
+            "frequency": .string(frequency.rawValue),
+            "next_date": .string(args.nextDate),
+            "category_id": .string(category.id),
+            "category": .string(category.name),
+            "account_id": .string(account.id),
+            "account": .string(account.name),
+            "guessed": .array(guessed),
             "saved": false,
         ])
     }
@@ -957,6 +1059,19 @@ final class FinanceToolkit: AgentToolExecuting {
                 "category_id": .string(budget.categoryId),
                 "amount": .number(FinanceToolkitCompute.round2(budget.amount)),
                 "period": .string(budget.period.rawValue),
+            ]
+        case .recurring(let recurring):
+            let series = recurring.series
+            return [
+                "type": .string(series.kind == .subscription ? "subscription" : "regular"),
+                "name": .string(series.description),
+                "amount": .number(NSDecimalNumber(decimal: series.amount).doubleValue),
+                "currency": .string(series.currency),
+                "frequency": .string(series.frequency.rawValue),
+                "next_date": .string(series.startDate),
+                "category": .string(series.category),
+                "account_id": series.accountId.map(JSONValue.string) ?? .null,
+                "account": series.accountId.flatMap(accountName).map(JSONValue.string) ?? .null,
             ]
         }
     }

@@ -8,8 +8,9 @@
 //  Save on the confirm card. Saving goes through the app's own write paths
 //  (`TransactionDraftService.commit` for income and expenses, `TransactionStore.add` with the
 //  transfer fields of `TransactionConversion` for transfers, `CategoriesViewModel.setBudget`
-//  for budgets), and Undo takes back what was saved: deletes the transactions, puts the
-//  previous budget back.
+//  for budgets, `SubscriptionCreationService.create` for subscriptions and regular payments),
+//  and Undo takes back what was saved: deletes the transactions or the series with what it
+//  generated, puts the previous budget back.
 //
 //  Drafts live in memory while the app runs; a new chat clears them. A thread kept across
 //  launches (AgentThreadStore) comes back without its drafts: their cards show nothing.
@@ -24,6 +25,15 @@ enum AgentDraftOperation: Equatable {
     case single(TransactionDraft)
     case transfer(AgentTransferDraft)
     case budget(AgentBudgetDraft)
+    case recurring(AgentRecurringDraft)
+}
+
+/// A subscription or a regular payment, as the series it will become (it starts on its next
+/// charge).
+struct AgentRecurringDraft: Equatable {
+    var series: RecurringSeries
+    /// The account was not named: the card says so.
+    var accountGuessed = false
 }
 
 struct AgentTransferDraft: Equatable {
@@ -52,6 +62,8 @@ struct AgentBudgetDraft: Equatable {
 enum AgentSavedRecord: Equatable {
     case transaction(Transaction)
     case budget(AgentBudgetDraft)
+    /// A series id.
+    case series(String)
 }
 
 enum AgentDraftError: Error {
@@ -161,6 +173,9 @@ extension AgentDraftBook.Writer {
                     guard let category = store.categoryById[budget.categoryId] else { throw AgentDraftError.categoryGone }
                     categoriesViewModel.setBudget(for: budget.categoryId, amount: budget.amount, period: budget.period, resetDay: category.budgetResetDay)
                     return .budget(budget)
+                case .recurring(let recurring):
+                    try await SubscriptionCreationService.create(recurring.series, store: store, categoriesViewModel: categoriesViewModel)
+                    return .series(recurring.series.id)
                 case .transfer(let transfer):
                     return .transaction(try await store.add(Transaction(
                         id: "",
@@ -183,6 +198,9 @@ extension AgentDraftBook.Writer {
                 case .transaction(let transaction):
                     guard let current = store.transactionById[transaction.id] else { return }
                     try await store.delete(current)
+                case .series(let id):
+                    guard store.recurringSeries.contains(where: { $0.id == id }) else { return }
+                    try await store.deleteSeries(id: id, deleteTransactions: true)
                 case .budget(let budget):
                     guard let category = store.categoryById[budget.categoryId] else { return }
                     if let previous = budget.previousAmount {

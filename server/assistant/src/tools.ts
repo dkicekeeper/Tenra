@@ -201,14 +201,15 @@ const draftTools: Tool[] = [
   },
   {
     name: "draft_recurring",
-    description: "Prepares a subscription or recurring payment for the user to confirm. Nothing is saved.",
+    description:
+      "Prepares a subscription (a service like Netflix) or a regular payment (rent, a loan payment, a salary) for the user to confirm. Nothing is saved. next_date is the next charge, today or later; category is a category id or name (a subscription takes an expense category); account defaults to the one the history suggests.",
     strict: true,
     input_schema: strictObject({
       kind: { type: "string", enum: ["subscription", "regular"] },
       name: { type: "string" },
       amount: { type: "number" },
       currency: nullable({ type: "string" }),
-      frequency: { type: "string", enum: ["daily", "weekly", "monthly", "yearly"] },
+      frequency: { type: "string", enum: ["daily", "weekly", "monthly", "quarterly", "yearly"] },
       next_date: date,
       category: nullable({ type: "string" }),
       account: nullable({ type: "string" }),

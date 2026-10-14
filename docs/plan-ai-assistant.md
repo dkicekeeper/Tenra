@@ -545,8 +545,11 @@ Private Cloud Compute (п. 4) и `pro` себе в RevenueCat (п. 3).
 - [x] CoreData v14: факты ассистента (`AgentFactEntity`).
 - [x] Цели (копилка, бесплатно) и долги (Pro) как разделы приложения: CoreData v15, карточки в
       «Финансах», списки, экраны, создание вручную (docs/domains/goals-and-debts.md).
-- [ ] Тэн и цели/долги: чтение в `<app_context>`, `draft_goal` / `draft_debt`, пополнение и возврат
-      черновиком, «Тэн пишет» о сроке долга и отставании цели, «Спросить Тэна» на их экранах.
+- [x] Тэн и цели/долги: id и названия в `<app_context>` (без сумм), `get_goals` / `get_debts`,
+      `draft_goal`, `draft_goal_contribution`, `draft_debt` (Pro: без него Тэн предлагает факт),
+      `draft_debt_repayment`; «Тэн пишет» о долге со сроком завтра и о цели, отставшей от графика
+      (раз в месяц); «Спросить Тэна» в меню цели и долга; промпт 2026-10-14.11, 6 кейсов eval
+      (FinanceToolkit+Plans.swift, docs/domains/goals-and-debts.md §Ten).
 - [ ] Siri iOS 27: intent schemas и View Annotations («Спроси Tenra, сколько осталось на еду»).
 
 **Фаза 5. Рост**

@@ -2040,3 +2040,15 @@
 "debt.notFoundDescription" = "Возможно, он был удалён.";
 "moneyEntry.notePlaceholder" = "Заметка";
 "moneyEntry.invalidAmount" = "Введите сумму";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "Смотрю цели и долги…";
+"assistant.notice.debt.owedToMe" = "Завтра должны вернуть %@";
+"assistant.notice.debt.iOwe" = "Завтра срок вернуть %@";
+"assistant.notice.ask.debt" = "Разбери долг: %@";
+"assistant.notice.goal.behind" = "Чтобы успеть к %2$@, откладывайте %1$@ в месяц";
+"assistant.notice.ask.goal" = "Как догнать цель «%@»?";
+"assistant.topic.goal.onTrack" = "Успеваю к цели «%@»?";
+"assistant.topic.goal.faster" = "Как быстрее накопить на «%@»?";
+"assistant.topic.debt.status" = "Сколько осталось по долгу: %@?";
+"assistant.topic.debt.plan" = "Как вернуть долг вовремя: %@?";

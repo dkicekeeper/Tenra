@@ -165,6 +165,18 @@ const readTools: Tool[] = [
       ["monthly", "years", "annual_return_percent"],
     ),
   },
+  {
+    name: "get_goals",
+    description:
+      "The user's savings goals: target, saved so far (a linked account's balance, or the money they marked towards it), what is left, percent, deadline, months left and what to put aside each month to make it, reached or overdue, plus everything saved in the base currency.",
+    input_schema: object({}),
+  },
+  {
+    name: "get_debts",
+    description:
+      "Personal debts between the user and people they know (not bank loans): open ones both ways (owed_to_me, i_owe) with amount, repaid, remaining, date, due date and overdue, the latest settled ones, and the open totals each way in the base currency.",
+    input_schema: object({}),
+  },
 ];
 
 const draftTools: Tool[] = [
@@ -223,6 +235,59 @@ const draftTools: Tool[] = [
     input_schema: strictObject({
       text: nullable({ type: "string", description: "One short sentence, under 200 characters" }),
       replaces: nullable({ type: "string", description: "Id of a remembered fact, e.g. f2" }),
+    }),
+  },
+  {
+    name: "draft_goal",
+    description:
+      "Prepares a new savings goal for the user to confirm. Nothing is saved. With account (an account id or name, not a loan) the goal follows that account's balance; without one, already_saved is what the user has put aside so far and later money is added with draft_goal_contribution. currency defaults to the account's, else the base currency. Returns draft_id, what is saved, what is left and, with a deadline, months_left and monthly.",
+    strict: true,
+    input_schema: strictObject({
+      name: { type: "string", description: "What the user saves for, short, in their language" },
+      target: { type: "number" },
+      currency: nullable({ type: "string" }),
+      deadline: nullable(date),
+      account: nullable({ type: "string" }),
+      already_saved: nullable({ type: "number" }),
+    }),
+  },
+  {
+    name: "draft_goal_contribution",
+    description:
+      "Prepares money the user put towards a goal without an account, in the goal's currency, for them to confirm. Nothing is saved. goal is a goal id from <app_context>. A goal with an account grows with that account: draft a transfer to it with draft_transactions instead.",
+    strict: true,
+    input_schema: strictObject({
+      goal: { type: "string" },
+      amount: { type: "number" },
+      date: nullable(date),
+      note: nullable({ type: "string" }),
+    }),
+  },
+  {
+    name: "draft_debt",
+    description:
+      "Prepares a personal debt for the user to confirm: money they lent to someone (owed_to_me) or borrowed from someone (i_owe). Nothing is saved. Not for bank loans. Personal debts are Tenra Pro: without it the tool says so.",
+    strict: true,
+    input_schema: strictObject({
+      direction: { type: "string", enum: ["owed_to_me", "i_owe"] },
+      person: { type: "string", description: "Who, as the user names them" },
+      amount: { type: "number" },
+      currency: nullable({ type: "string" }),
+      date: nullable(date),
+      due_date: nullable(date),
+      note: nullable({ type: "string" }),
+    }),
+  },
+  {
+    name: "draft_debt_repayment",
+    description:
+      "Prepares money back on an open debt, in its currency, for the user to confirm. Nothing is saved. debt is a debt id from <app_context>; amount null is everything that is left, which settles the debt.",
+    strict: true,
+    input_schema: strictObject({
+      debt: { type: "string" },
+      amount: nullable({ type: "number" }),
+      date: nullable(date),
+      note: nullable({ type: "string" }),
     }),
   },
 ];

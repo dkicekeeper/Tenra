@@ -165,11 +165,46 @@ export const FACTS: Record<"ru" | "en", { id: string; text: string }[]> = {
   ],
 };
 
+// Savings goals and personal debts (GoalStore, DebtStore on the phone), named in the language
+// of the case. The car follows the deposit's balance; the vacation counts what was put aside.
+export interface Goal {
+  id: string;
+  name: Record<"ru" | "en", string>;
+  target: number;
+  currency: "KZT" | "USD";
+  deadline: string | null;
+  accountId: string | null;
+  contributed: number;
+}
+
+export interface Debt {
+  id: string;
+  direction: "owed_to_me" | "i_owe";
+  person: Record<"ru" | "en", string>;
+  amount: number;
+  repaid: number;
+  currency: "KZT" | "USD";
+  date: string;
+  dueDate: string | null;
+}
+
+export const GOALS: Goal[] = [
+  { id: "goal_car", name: { ru: "Машина", en: "Car" }, target: 3_000_000, currency: "KZT", deadline: "2027-06-01", accountId: "acc_deposit", contributed: 0 },
+  { id: "goal_trip", name: { ru: "Отпуск", en: "Vacation" }, target: 600_000, currency: "KZT", deadline: "2027-07-01", accountId: null, contributed: 150_000 },
+];
+
+export const DEBTS: Debt[] = [
+  { id: "debt_askhat", direction: "owed_to_me", person: { ru: "Асхат", en: "Askhat" }, amount: 50_000, repaid: 20_000, currency: "KZT", date: "2026-10-01", dueDate: "2026-11-15" },
+  { id: "debt_mom", direction: "i_owe", person: { ru: "Мама", en: "Mom" }, amount: 100_000, repaid: 0, currency: "KZT", date: "2026-09-10", dueDate: null },
+];
+
 export function appContext(locale: "ru" | "en"): string {
   const accounts = ACCOUNTS.map((a) => `${a.id} "${a.name}" (${a.currency}, ${a.kind})`).join("; ");
   const expense = CATEGORIES.filter((c) => c.type === "expense").map((c) => `${c.id} "${c.name}"`).join("; ");
   const income = CATEGORIES.filter((c) => c.type === "income").map((c) => `${c.id} "${c.name}"`).join("; ");
   const facts = FACTS[locale].map((f) => `${f.id} "${f.text}"`).join("; ");
+  const goals = GOALS.map((g) => `${g.id} "${g.name[locale]}" (${g.currency})`).join("; ");
+  const debts = DEBTS.map((d) => `${d.id} "${d.person[locale]}" (${d.direction}, ${d.currency})`).join("; ");
   return [
     "<app_context>",
     `today: ${TODAY} (Wednesday)`,
@@ -179,6 +214,8 @@ export function appContext(locale: "ru" | "en"): string {
     `expense categories: ${expense}`,
     `income categories: ${income}`,
     `facts you remember about the user: ${facts}`,
+    `savings goals: ${goals}`,
+    `open debts: ${debts}`,
     "</app_context>",
   ].join("\n");
 }

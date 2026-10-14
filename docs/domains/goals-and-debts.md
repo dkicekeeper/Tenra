@@ -72,3 +72,26 @@ people and has no account.
 
 Navigation goes through `FinancesDestination` (`.goals`, `.goalDetail(id)`, `.debts`,
 `.debtDetail(id)`).
+
+## Ten
+
+- **Context.** `<app_context>` lists the goals and the open debts by id and name with their
+  currency (`savings goals:`, `open debts:` lines, AgentContextBuilder), never amounts.
+- **Read tools** (`FinanceToolkit+Plans.swift`): `get_goals` (target, saved, left, percent,
+  deadline, months left, monthly, reached, overdue, account; total saved in the base currency)
+  and `get_debts` (open debts both ways and the ten latest settled, with repaid, remaining,
+  due date, overdue; open totals each way). The numbers are GoalProgress and PersonalDebt.
+- **Drafts**, saved on the confirm card through `AgentDraftBook.Writer.savePlan` and undone by
+  `undoPlan`: `draft_goal` (with an account it follows the balance; without one it may start
+  from `already_saved`), `draft_goal_contribution` (refused for a goal with an account: the
+  answer points to a transfer), `draft_debt` (refused without Tenra Pro: the answer points to
+  `draft_fact`), `draft_debt_repayment` (no amount is all that is left; more than left is
+  refused; settles the debt on Save).
+- **Ten writes first** (`AssistantInbox`): a debt due tomorrow (`debt:<id>:<day>`) and a goal
+  behind its schedule (`goal:<id>:<month>`: a deadline, not reached, a month or more old, the
+  saved share a fifth or more below the share of time gone). Posted after the stores load and
+  whenever the app becomes active; the `<notice>` carries `debt_id` / `goal_id`.
+- **Ask Ten** in the "…" menu of a goal and a debt (`AssistantTopic.goal`, `.debt`).
+- The contract is `server/assistant/src/tools.ts`; the prompt's "Goals and debts" section says
+  when to draft what; eval cases `ru-new-goal`, `ru-goal-on-track`, `ru-goal-contribution`,
+  `ru-lent-money`, `en-paid-back`, `ru-who-owes-me`.

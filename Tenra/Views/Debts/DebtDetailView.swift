@@ -83,6 +83,7 @@ struct DebtDetailView: View {
                 }
             },
             toolbarMenu: {
+                AskAssistantMenuItem(topic: .debt(person: debt.person, owedToMe: debt.direction == .owedToMe))
                 Button {
                     HapticManager.selection()
                     showingEdit = true

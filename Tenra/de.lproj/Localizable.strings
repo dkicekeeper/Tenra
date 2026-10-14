@@ -2040,3 +2040,15 @@
 "debt.notFoundDescription" = "Sie wurde möglicherweise gelöscht.";
 "moneyEntry.notePlaceholder" = "Notiz";
 "moneyEntry.invalidAmount" = "Betrag eingeben";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "Prüfe Ziele und Schulden…";
+"assistant.notice.debt.owedToMe" = "Morgen sollen %@ zurückkommen";
+"assistant.notice.debt.iOwe" = "Morgen sollen Sie %@ zurückzahlen";
+"assistant.notice.ask.debt" = "Geh die Schuld mit %@ durch";
+"assistant.notice.goal.behind" = "Legen Sie %1$@ im Monat zurück, um es bis %2$@ zu schaffen";
+"assistant.notice.ask.goal" = "Wie hole ich bei „%@“ auf?";
+"assistant.topic.goal.onTrack" = "Liege ich bei „%@“ im Plan?";
+"assistant.topic.goal.faster" = "Wie spare ich schneller für „%@“?";
+"assistant.topic.debt.status" = "Wie viel ist bei der Schuld mit %@ noch offen?";
+"assistant.topic.debt.plan" = "Wie zahle ich %@ pünktlich zurück?";

@@ -2040,3 +2040,15 @@
 "debt.notFoundDescription" = "Silinmiş olabilir.";
 "moneyEntry.notePlaceholder" = "Not";
 "moneyEntry.invalidAmount" = "Bir tutar gir";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "Hedeflere ve borçlara bakıyorum…";
+"assistant.notice.debt.owedToMe" = "Yarın %@ geri gelmeli";
+"assistant.notice.debt.iOwe" = "Yarın %@ geri ödeme günü";
+"assistant.notice.ask.debt" = "%@ ile olan borcu incele";
+"assistant.notice.goal.behind" = "%2$@ tarihine yetişmek için ayda %1$@ ayır";
+"assistant.notice.ask.goal" = "“%@” hedefine nasıl yetişirim?";
+"assistant.topic.goal.onTrack" = "“%@” hedefinde yolunda mıyım?";
+"assistant.topic.goal.faster" = "“%@” için nasıl daha hızlı biriktiririm?";
+"assistant.topic.debt.status" = "%@ ile olan borçta ne kadar kaldı?";
+"assistant.topic.debt.plan" = "%@ borcunu zamanında nasıl öderim?";

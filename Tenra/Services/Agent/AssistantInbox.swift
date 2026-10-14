@@ -4,14 +4,15 @@
 //
 //  Ten writes first (docs/plan-ai-assistant.md, phase 3): what the app already notices becomes a
 //  message from the assistant. A critical or warning insight (the same kinds that may push,
-//  InsightSignalKind), last week's summary once a week, and a subscription charged tomorrow.
+//  InsightSignalKind), last week's summary once a week, a subscription charged tomorrow, a
+//  personal debt due tomorrow, and a savings goal fallen behind its schedule (once a month).
 //  Messages wait in this inbox until the person goes through them or closes them on Home ("Ten
 //  writes", AssistantNoticesSection; never in the chat). Going through one is a question like
 //  any other, so it spends a free answer (plan §6: messages are free to read, the analysis is
 //  not).
 //
 //  Each message has a key that never posts twice (an insight's id or signal key, the week, the
-//  series and its charge day). New insight messages are capped per day, so a bad week reads as
+//  series and its charge day, the debt and its due day, the goal and the month). New insight messages are capped per day, so a bad week reads as
 //  one or two notes, not a wall. The inbox lives in UserDefaults: small, and only this device's.
 //
 
@@ -24,6 +25,10 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         case signal
         case digest
         case charge
+        /// A personal debt due tomorrow.
+        case debt
+        /// A savings goal behind its schedule.
+        case goal
     }
 
     enum Mood: String, Codable, Sendable {
@@ -40,6 +45,8 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
     var question: String
     /// The insight it came from, for the model to look up.
     var insightId: String?
+    /// The debt or the goal it is about, for the model to look up.
+    var subjectId: String? = nil
     var createdAt: Date
     var isRead = false
 
@@ -50,6 +57,11 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         fields["title"] = .string(title)
         fields["text"] = .string(body)
         fields["insight_id"] = insightId.map(JSONValue.string) ?? .null
+        switch kind {
+        case .debt: fields["debt_id"] = subjectId.map(JSONValue.string) ?? .null
+        case .goal: fields["goal_id"] = subjectId.map(JSONValue.string) ?? .null
+        default: break
+        }
         return "<notice>\n\(JSONValue.object(fields).jsonString())\n</notice>"
     }
 }
@@ -139,6 +151,72 @@ enum AssistantNotices {
             )
         }
     }
+}
+
+extension AssistantNotices {
+    /// Open debts due tomorrow, either way.
+    static func debtsDue(_ debts: [PersonalDebt], now: Date, calendar: Calendar = .current) -> [AssistantNotice] {
+        guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) else { return [] }
+        return debts.compactMap { debt in
+            guard !debt.isSettled, let due = debt.dueDate, calendar.isDate(due, inSameDayAs: tomorrow) else { return nil }
+            let amount = Formatting.formatCurrencySmart(debt.remaining, currency: debt.currency)
+            let owedToMe = debt.direction == .owedToMe
+            return AssistantNotice(
+                id: "debt:\(debt.id):\(FastDateParser.string(from: tomorrow))",
+                kind: .debt,
+                title: debt.person,
+                body: String(format: owedToMe
+                    ? String(localized: "assistant.notice.debt.owedToMe")
+                    : String(localized: "assistant.notice.debt.iOwe"), amount),
+                mood: owedToMe ? .idle : .concerned,
+                question: String(format: String(localized: "assistant.notice.ask.debt"), debt.person),
+                insightId: nil,
+                subjectId: debt.id,
+                createdAt: now
+            )
+        }
+    }
+
+    /// Goals behind their schedule: with a deadline, not reached, started a month ago or more,
+    /// and saved less than the time gone asks for by a fifth of the target or more. Once a month
+    /// per goal.
+    static func goalsBehind(
+        _ goals: [SavingsGoal],
+        saved: (SavingsGoal) -> Double,
+        now: Date,
+        calendar: Calendar = .current
+    ) -> [AssistantNotice] {
+        goals.compactMap { goal in
+            guard let deadline = goal.deadline else { return nil }
+            let status = GoalProgress.status(target: goal.targetAmount, saved: saved(goal), deadline: deadline, today: now, calendar: calendar)
+            guard !status.isReached, let monthly = status.monthly else { return nil }
+            let span = deadline.timeIntervalSince(goal.createdAt)
+            let gone = now.timeIntervalSince(goal.createdAt)
+            guard span > 0, gone >= Self.goalGraceDays * 86_400 else { return nil }
+            guard status.fraction < min(1, gone / span) - Self.goalBehindShare else { return nil }
+            let month = String(FastDateParser.string(from: now).prefix(7))
+            return AssistantNotice(
+                id: "goal:\(goal.id):\(month)",
+                kind: .goal,
+                title: goal.name,
+                body: String(
+                    format: String(localized: "assistant.notice.goal.behind"),
+                    Formatting.formatCurrencySmart(monthly, currency: goal.currency),
+                    DateFormatters.displayDateOmittingCurrentYear(deadline)
+                ),
+                mood: .concerned,
+                question: String(format: String(localized: "assistant.notice.ask.goal"), goal.name),
+                insightId: nil,
+                subjectId: goal.id,
+                createdAt: now
+            )
+        }
+    }
+
+    /// A goal younger than this is never behind.
+    static let goalGraceDays: Double = 30
+    /// How far below the time gone the saved share must fall.
+    static let goalBehindShare = 0.2
 }
 
 // MARK: - Inbox

@@ -2040,3 +2040,15 @@
 "debt.notFoundDescription" = "Можливо, його було видалено.";
 "moneyEntry.notePlaceholder" = "Нотатка";
 "moneyEntry.invalidAmount" = "Введіть суму";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "Дивлюся цілі та борги…";
+"assistant.notice.debt.owedToMe" = "Завтра мають повернути %@";
+"assistant.notice.debt.iOwe" = "Завтра термін повернути %@";
+"assistant.notice.ask.debt" = "Розбери борг: %@";
+"assistant.notice.goal.behind" = "Щоб встигнути до %2$@, відкладайте %1$@ на місяць";
+"assistant.notice.ask.goal" = "Як наздогнати ціль «%@»?";
+"assistant.topic.goal.onTrack" = "Чи встигаю до цілі «%@»?";
+"assistant.topic.goal.faster" = "Як швидше накопичити на «%@»?";
+"assistant.topic.debt.status" = "Скільки залишилось за боргом: %@?";
+"assistant.topic.debt.plan" = "Як повернути борг вчасно: %@?";

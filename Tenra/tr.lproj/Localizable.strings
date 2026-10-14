@@ -1903,6 +1903,8 @@
 "assistant.topic.insight" = "“%@” ne anlama geliyor, ne yapmalıyım?";
 "assistant.topic.history.changes" = "Bu ay harcamalarımda ne değişti?";
 "assistant.topic.history.unusual" = "Olağan dışı harcamaları bul";
+"assistant.recent" = "Son sohbetler";
+"assistant.history" = "Geçmiş";
 "assistant.forecast.perDay" = "%@ tarihine kadar günlük";
 "assistant.forecast.free" = "Kullanılabilir: %@";
 "assistant.forecast.balance" = "Günlük bakiye";

@@ -3,7 +3,8 @@
 //  TenraTests
 //
 //  The assistant's threads in CoreData (v13, AgentThreadEntity): a thread written comes back
-//  whole as the latest, writing it again replaces it, and only the latest `keep` stay.
+//  whole as the latest, writing it again replaces it, only the latest `keep` stay, and the
+//  history lists the latest threads with a question and opens one by id.
 //
 
 import CoreData
@@ -70,6 +71,24 @@ struct AgentThreadStoreTests {
             try context.count(for: NSFetchRequest<AgentThreadEntity>(entityName: "AgentThreadEntity"))
         }
         #expect(stored == AgentThreadStore.keep)
+    }
+
+    @Test func theHistoryListsTheLatestThreadsWithAQuestion() async throws {
+        let store = AgentThreadStore(stack: try makeStack())
+        await store.save(snapshot("old", at: 100, question: "Первый"))
+        await store.save(snapshot("mid", at: 200, question: "Второй"))
+        await store.save(snapshot("new", at: 300, question: "Третий"))
+        var empty = snapshot("empty", at: 400)
+        empty.title = nil
+        await store.save(empty)
+
+        let recent = await store.recent(limit: 2)
+        #expect(recent.map(\.id) == ["new", "mid"])
+        #expect(recent.map(\.title) == ["Третий", "Второй"])
+        #expect(recent.first?.updatedAt == Date(timeIntervalSince1970: 300))
+
+        #expect(await store.thread(id: "old")?.title == "Первый")
+        #expect(await store.thread(id: "missing") == nil)
     }
 
     @Test func aThreadKeptBeforeFastPathHasNoLocalExchanges() throws {

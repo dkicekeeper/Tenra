@@ -1903,6 +1903,8 @@
 "assistant.topic.insight" = "「%@」について説明して、どうすればいいか教えて";
 "assistant.topic.history.changes" = "今月の支出で何が変わった？";
 "assistant.topic.history.unusual" = "いつもと違う支出を見つけて";
+"assistant.recent" = "最近の会話";
+"assistant.history" = "履歴";
 "assistant.forecast.perDay" = "%@まで1日あたり";
 "assistant.forecast.free" = "自由に使える額: %@";
 "assistant.forecast.balance" = "日ごとの残高";

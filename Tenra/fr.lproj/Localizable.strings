@@ -1903,6 +1903,8 @@
 "assistant.topic.insight" = "Explique « %@ » et ce que je peux faire";
 "assistant.topic.history.changes" = "Qu’est-ce qui a changé dans mes dépenses ce mois-ci ?";
 "assistant.topic.history.unusual" = "Trouve les dépenses inhabituelles";
+"assistant.recent" = "Discussions récentes";
+"assistant.history" = "Historique";
 "assistant.forecast.perDay" = "Par jour jusqu’au %@";
 "assistant.forecast.free" = "Disponible : %@";
 "assistant.forecast.balance" = "Solde par jour";

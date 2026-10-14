@@ -1903,6 +1903,8 @@
 "assistant.topic.insight" = "Поясни «%@» і що з цим робити";
 "assistant.topic.history.changes" = "Що змінилося у витратах цього місяця?";
 "assistant.topic.history.unusual" = "Знайди незвичні витрати";
+"assistant.recent" = "Нещодавні діалоги";
+"assistant.history" = "Історія";
 "assistant.forecast.perDay" = "На день до %@";
 "assistant.forecast.free" = "Вільно: %@";
 "assistant.forecast.balance" = "Залишок по днях";

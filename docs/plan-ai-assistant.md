@@ -278,8 +278,13 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
   `{"protocol": 1, "messages": [...]}` в формате Messages API. Сервер добавляет свой системный
   промпт, инструменты (`src/prompt.ts`, `src/tools.ts`), модель и кэширование; роль `system` от
   клиента и `cache_control` отклоняются.
-- Ответ: SSE. `tool {name}` (шаги «думает» в UI), `text {text}` (не показывается), `done`
-  (`content` хода, `stop_reason`, `usage`, `tier`, `quota`), `error {code, retryable}`.
+- Ответ: SSE. `tool {name}` (шаги «думает» в UI), `text {text}` (не показывается), `reply
+  {json}` (кусок ввода `render_reply`, пока модель его пишет: у инструмента
+  `eager_input_streaming`, приложение читает тексты блоков из незаконченного JSON,
+  `AgentPartialReply`, и показывает их по мере написания; старые версии событие пропускают),
+  `done` (`content` хода, `stop_reason`, `usage`, `tier`, `quota`), `error {code, retryable}`.
+- Текстовые блоки ответа в Markdown (жирная главная мысль, списки «- », шаги «1. », изредка
+  «### »): приложение делит их на блоки DesignKit `ArticleBody` (`AgentReplyMarkdown`).
 - История только дописывается: приложение сохраняет `done.content` как есть и шлёт обратно
   без правок (иначе ломаются блоки рассуждений и кэш). Отказ модели (`refused`) и обрезанный
   ввод инструмента (`truncated`) ход не сохраняют.

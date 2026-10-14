@@ -9,7 +9,9 @@
 //  and an insight an `InsightsCardView`, exactly as everywhere else in the app. A block whose
 //  reference does not resolve is left out. An `open` block is a way into the app's own screen
 //  (AssistantDestinationView); a `confirm` block is the draft card, where the person saves what
-//  the assistant prepared (AgentDraftBook).
+//  the assistant prepared (AgentDraftBook). Text blocks are Markdown, drawn as formatted text
+//  on the page (AssistantText); while the reply streams, its text shows as it is written
+//  (AssistantStreamingReply).
 //
 
 import SwiftUI
@@ -38,7 +40,7 @@ private struct AssistantBlockView: View {
     var body: some View {
         switch block {
         case .text(let text):
-            MessageBubble(text, role: .incoming)
+            AssistantText(text)
         case .metric(let label, let source, let path, let trendPath):
             if let metric = AgentReplyData.metric(label: label, source: source, path: path, trendPath: trendPath, results: results) {
                 AssistantMetricCard(metric: metric)
@@ -70,6 +72,37 @@ private struct AssistantBlockView: View {
         case .unsupported:
             EmptyView()
         }
+    }
+}
+
+// MARK: - Text
+
+/// A text block: its Markdown as headings, paragraphs, lists and notes (AgentReplyMarkdown,
+/// DesignKit's ArticleBody).
+struct AssistantText: View {
+    let text: String
+
+    init(_ text: String) {
+        self.text = text
+    }
+
+    var body: some View {
+        ArticleBody(AgentReplyMarkdown.blocks(text), spacing: AppSpacing.sm)
+    }
+}
+
+/// The reply's text while the model writes it; the finished reply takes its place, cards and all.
+struct AssistantStreamingReply: View {
+    let texts: [String]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
+            ForEach(Array(texts.enumerated()), id: \.offset) { _, text in
+                AssistantText(text)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 }
 

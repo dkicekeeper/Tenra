@@ -4,6 +4,7 @@ import { buildParams, donePayload, errorPayload } from "./claude";
 import { readConfig, type Env } from "./config";
 import { resolveTier, UpstreamError } from "./entitlement";
 import { PROMPT_VERSION } from "./prompt";
+import { RENDER_REPLY } from "./tools";
 import { consumeCall } from "./quota";
 import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } from "./validate";
 
@@ -12,6 +13,8 @@ import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } fr
 // results. Response: server-sent events
 //   tool  {name}            a tool call started (for the "thinking" steps in the UI)
 //   text  {text}            plain text delta (not shown: replies go through render_reply)
+//   reply {json}            a piece of render_reply's input as the model writes it, so the app
+//                           shows the reply's text while it streams (older apps ignore it)
 //   done  {content, ...}    the assistant turn to append verbatim, plus usage and quota
 //   error {code, retryable}
 //
@@ -97,11 +100,16 @@ export default {
       (async () => {
         try {
           const stream = client.beta.messages.stream(buildParams(config, turn.messages));
+          // The content block that is render_reply's call, while it streams.
+          let replyIndex: number | undefined;
           for await (const event of stream) {
             if (event.type === "content_block_start" && event.content_block.type === "tool_use") {
+              if (event.content_block.name === RENDER_REPLY) replyIndex = event.index;
               await send("tool", { name: event.content_block.name });
             } else if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
               await send("text", { text: event.delta.text });
+            } else if (event.type === "content_block_delta" && event.delta.type === "input_json_delta" && event.index === replyIndex) {
+              await send("reply", { json: event.delta.partial_json });
             }
           }
           const message = await stream.finalMessage();

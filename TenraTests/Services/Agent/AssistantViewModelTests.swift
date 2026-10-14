@@ -358,6 +358,50 @@ struct AssistantViewModelTests {
         #expect(box.saved?.title == "Ещё")
     }
 
+    @Test func aKeptChatOpensFromTheHistory() async throws {
+        let older = AgentThreadSnapshot(
+            id: "older",
+            createdAt: Self.now,
+            updatedAt: Self.now,
+            title: "Сколько на кафе?",
+            body: AgentThreadSnapshot.Body(
+                messages: [
+                    AgentWireMessage(role: .user, content: [["type": "text", "text": "Сколько на кафе?"]]),
+                    AgentWireMessage(role: .assistant, content: [AgentScript.render("toolu_1", source: "none", mood: "concerned")]),
+                ],
+                results: [:],
+                owedResults: []
+            )
+        )
+        let summaries = [
+            AgentThreadSummary(id: "older", title: "Сколько на кафе?", updatedAt: Self.now),
+            AgentThreadSummary(id: "oldest", title: "Привет", updatedAt: Self.now.addingTimeInterval(-60)),
+        ]
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_2", source: "none")])]]), toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            persistence: AssistantViewModel.Persistence(
+                load: { nil },
+                save: { _ in },
+                recent: { limit in Array(summaries.prefix(limit)) },
+                thread: { id in id == "older" ? older : nil }
+            )
+        )
+
+        await model.refreshRecent()
+        #expect(model.recentThreads.map(\.id) == ["older", "oldest"])
+
+        await model.open(threadId: "older")
+        #expect(model.entries.compactMap(\.question) == ["Сколько на кафе?"])
+        #expect(model.entries.count == 2)
+        #expect(model.replyMood == .concerned)
+        // The open chat is not in its own history.
+        #expect(model.recentThreads.map(\.id) == ["oldest"])
+        // A missing one leaves the screen as it is.
+        await model.open(threadId: "gone")
+        #expect(model.entries.count == 2)
+    }
+
     @Test func draftsNumberOnFromAKeptThread() {
         let results: [String: JSONValue] = ["r1": ["draft_id": "draft_2"], "r2": ["draft_id": "draft_7"], "r3": ["total": 1]]
         #expect(AssistantViewModel.lastDraftNumber(in: AgentThreadSnapshot.Body(messages: [], results: results, owedResults: [])) == 7)

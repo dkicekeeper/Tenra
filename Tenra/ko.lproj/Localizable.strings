@@ -1903,6 +1903,8 @@
 "assistant.topic.insight" = "‘%@’을(를) 설명하고 어떻게 하면 좋을지 알려 줘";
 "assistant.topic.history.changes" = "이번 달 지출에서 뭐가 달라졌어?";
 "assistant.topic.history.unusual" = "평소와 다른 지출을 찾아 줘";
+"assistant.recent" = "최근 대화";
+"assistant.history" = "기록";
 "assistant.forecast.perDay" = "%@까지 하루 사용 가능 금액";
 "assistant.forecast.free" = "사용 가능: %@";
 "assistant.forecast.balance" = "일별 잔액";

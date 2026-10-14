@@ -135,7 +135,12 @@ class AppCoordinator {
             describeDraft: { toolkit.describe($0) },
             fastPath: fastPath,
             persistence: threads.map { threads in
-                AssistantViewModel.Persistence(load: { await threads.latest() }, save: { await threads.save($0) })
+                AssistantViewModel.Persistence(
+                    load: { await threads.latest() },
+                    save: { await threads.save($0) },
+                    recent: { await threads.recent(limit: $0) },
+                    thread: { await threads.thread(id: $0) }
+                )
             }
         )
         assistantModel = model

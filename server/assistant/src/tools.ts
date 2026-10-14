@@ -235,6 +235,9 @@ export const RENDER_REPLY_TOO_EARLY =
 // blocks_decode check holds the models to the schema.
 const renderReply: Tool = {
   name: RENDER_REPLY,
+  // The reply streams to the app as it is written (index.ts, event "reply"): without this the
+  // API buffers each key-value pair, so a text block would arrive whole.
+  eager_input_streaming: true,
   description:
     "Shows your reply. Call exactly once, last, every turn. Blocks render top to bottom as native app cards; figures come from tool results by reference, never from text.",
   input_schema: strictObject({
@@ -242,7 +245,7 @@ const renderReply: Tool = {
       type: "array",
       items: {
         anyOf: [
-          block("text", { text: { type: "string", description: "One or two short sentences, no money amounts" } }),
+          block("text", { text: { type: "string", description: "Markdown: short sentences, **bold** for the key point, \"- \" bullets or \"1. \" steps, an optional \"### \" heading. No money amounts." } }),
           block("metric", { label: { type: "string" }, source, path, trend_path: nullable({ type: "string" }) }),
           block("chart", { kind: { type: "string", enum: ["bar", "line", "donut"] }, title: { type: "string" }, source, path }),
           block("transactions", { title: nullable({ type: "string" }), source }),

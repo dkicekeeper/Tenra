@@ -1903,6 +1903,8 @@
 "assistant.topic.insight" = "Explica «%@» y qué hacer al respecto";
 "assistant.topic.history.changes" = "¿Qué cambió en mis gastos este mes?";
 "assistant.topic.history.unusual" = "Encuentra gastos inusuales";
+"assistant.recent" = "Chats recientes";
+"assistant.history" = "Historial";
 "assistant.forecast.perDay" = "Al día hasta el %@";
 "assistant.forecast.free" = "Disponible: %@";
 "assistant.forecast.balance" = "Saldo por día";

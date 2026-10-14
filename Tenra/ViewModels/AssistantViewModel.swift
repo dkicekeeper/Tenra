@@ -60,7 +60,14 @@ final class AssistantViewModel {
     struct Persistence {
         var load: () async -> AgentThreadSnapshot?
         var save: (AgentThreadSnapshot) async -> Void
+        /// The latest kept threads, newest first, at most this many.
+        var recent: (Int) async -> [AgentThreadSummary] = { _ in [] }
+        /// One kept thread by id.
+        var thread: (String) async -> AgentThreadSnapshot? = { _ in nil }
     }
+
+    /// The kept threads the history shows, the open one aside.
+    static let recentLimit = 5
 
     struct Entry: Identifiable, Equatable {
         enum Content: Equatable {
@@ -89,6 +96,11 @@ final class AssistantViewModel {
     private(set) var phase: Phase = .idle
     /// The mood of the latest reply, for the mascot.
     private(set) var replyMood: AgentMood = .idle
+    /// The reply's text blocks while the model writes them; empty otherwise. The finished
+    /// reply takes their place.
+    private(set) var streamingReply: [String] = []
+    /// The latest kept threads but the open one, for the history (at most `recentLimit`).
+    private(set) var recentThreads: [AgentThreadSummary] = []
     /// The free allowance; nil with Pro.
     private(set) var allowance: AssistantAllowance.Status?
     /// The drafts the replies' confirm cards save; nil where drafting is not wired.
@@ -144,18 +156,57 @@ final class AssistantViewModel {
     func restore() async {
         guard !restoreDone, let persistence else { return }
         restoreDone = true
+        defer { Task { await refreshRecent() } }
         guard entries.isEmpty, !isWorking, let snapshot = await persistence.load() else { return }
         // A question may have gone while the thread was loading.
         guard entries.isEmpty, !isWorking else { return }
+        apply(snapshot)
+    }
+
+    /// Opens a kept thread from the history in place of the open one, which stays kept.
+    func open(threadId id: String) async {
+        guard !isWorking, !draftingLocally, id != threadId, let persistence,
+              let snapshot = await persistence.thread(id), !isWorking else { return }
+        restoreDone = true
+        clearThreadState()
+        apply(snapshot)
+        await refreshRecent()
+    }
+
+    /// Re-reads the history.
+    func refreshRecent() async {
+        guard let persistence else { return }
+        let open = threadId
+        let kept = await persistence.recent(Self.recentLimit + 1)
+        recentThreads = Array(kept.filter { $0.id != open }.prefix(Self.recentLimit))
+    }
+
+    /// A kept thread on screen: its history goes back to the conversation, its questions and
+    /// replies to the thread.
+    private func apply(_ snapshot: AgentThreadSnapshot) {
         conversation.restore(snapshot.body)
         local = snapshot.body.local
         entries = Self.entries(replaying: snapshot.body)
-        if case .reply(let reply, _)? = entries.last?.content { replyMood = reply.mood }
+        if case .reply(let reply, _)? = entries.last?.content { replyMood = reply.mood } else { replyMood = .idle }
         threadId = snapshot.id
         threadCreatedAt = snapshot.createdAt
         // The context is in the kept history, but it may be stale: the next question sends it.
         sentContext = nil
         drafts?.continueNumbering(after: Self.lastDraftNumber(in: snapshot.body))
+    }
+
+    /// What belongs to the thread on screen and is not kept with it: drafts, attachments, a
+    /// failed question, the step and the streamed reply.
+    private func clearThreadState() {
+        phase = .idle
+        failedEntryId = nil
+        streamingReply = []
+        drafts?.clear()
+        reportedDrafts = [:]
+        local = []
+        attachments = [:]
+        reviewedAttachments = []
+        unsentAttachments = []
     }
 
     /// The visible thread of a kept conversation: each question (the last text of a user
@@ -332,16 +383,11 @@ final class AssistantViewModel {
         threadCreatedAt = access.now()
         conversation.reset()
         entries = []
-        phase = .idle
         replyMood = .idle
         sentContext = nil
-        failedEntryId = nil
-        drafts?.clear()
-        reportedDrafts = [:]
-        local = []
-        attachments = [:]
-        reviewedAttachments = []
-        unsentAttachments = []
+        clearThreadState()
+        // The thread just left is in the history now.
+        Task { await refreshRecent() }
     }
 
     func retry() async {
@@ -412,9 +458,17 @@ final class AssistantViewModel {
         let preface = [contextToSend, status?.text].compactMap { $0 }.joined(separator: "\n")
         do {
             let outcome = try await conversation.send(text, context: preface.isEmpty ? nil : preface, notes: attached) { [weak self] progress in
-                guard let self, case .toolStarted(let name) = progress else { return }
-                self.phase = .working(AssistantStep(tool: name))
+                guard let self else { return }
+                switch progress {
+                case .toolStarted(let name):
+                    self.phase = .working(AssistantStep(tool: name))
+                    // Another tool after a streamed reply: that reply was turned back.
+                    if name != AgentProtocol.renderReplyTool { self.streamingReply = [] }
+                case .replyText(let texts):
+                    self.streamingReply = texts
+                }
             }
+            streamingReply = []
             sentContext = current
             if let status { reportedDrafts = status.states }
             unsentAttachments.removeFirst(min(attached.count, unsentAttachments.count))
@@ -428,6 +482,7 @@ final class AssistantViewModel {
             phase = .idle
             await persist()
         } catch {
+            streamingReply = []
             phase = .failed(AssistantFailure(error))
         }
     }

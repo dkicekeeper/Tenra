@@ -8,7 +8,12 @@
 //  suggestions for what to ask next. The composer floats over the content at the bottom.
 //
 //  The mascot shows what is going on: thinking while it works, the reply's mood after, confused
-//  or sad when a question could not be answered.
+//  or sad when a question could not be answered. In a thread it stands under the navigation bar
+//  (120 pt); the reply's text streams in as the model writes it (AssistantStreamingReply).
+//
+//  Sending a question scrolls it to the top of the screen, and its turn is at least a screen
+//  tall, so a long reply is read from its start. A tap on the thread puts the keyboard away. The
+//  latest chats (AgentThreadStore) are under the greeting and in the history menu.
 //
 //  Opened from a screen's "Ask Ten" (AssistantEntryPoints), it offers questions about that
 //  account, category, insight or the history in place of its general ones, until one goes.
@@ -48,36 +53,32 @@ struct AssistantView: View {
     @State private var questionAwaitingConsent: String?
     @AppStorage(AssistantMetrics.consentKey) private var hasConsent = false
     @FocusState private var composerFocused: Bool
+    @State private var scrollPosition = ScrollPosition(idType: UUID.self)
+    /// The thread's visible height, which the latest turn fills at least.
+    @State private var viewportHeight: CGFloat = 0
 
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: AppSpacing.lg) {
+            // A plain stack: a lazy one guessed the heights of replies it had not drawn, and
+            // a long reply scrolled the thread into empty space.
+            VStack(alignment: .leading, spacing: AppSpacing.lg) {
                 if model.entries.isEmpty {
                     greeting
                 }
-                ForEach(model.entries) { entry in
+                ForEach(earlierEntries) { entry in
                     entryView(entry)
+                        .id(entry.id)
                 }
-                if case .working(let step) = model.phase {
-                    workingRow(step.title)
-                        .transition(.opacity)
-                } else if readingAttachment {
-                    workingRow(String(localized: "assistant.attachment.reading"))
-                        .transition(.opacity)
-                }
-                if case .failed(let failure) = model.phase,
-                   failure == .proRequired || failure == .limitReached || failure == .freeLimit, !premium.isPro {
-                    DSButton(String(localized: "settings.pro.cta.title"), systemImage: "sparkles") {
-                        showingPaywall = true
+                // The latest question and everything after it, at least a screen tall: sending
+                // a question scrolls it to the top, and the reply is read from its start.
+                VStack(alignment: .leading, spacing: AppSpacing.lg) {
+                    ForEach(currentTurn) { entry in
+                        entryView(entry)
+                            .id(entry.id)
                     }
+                    turnFooter
                 }
-                if !model.entries.isEmpty, !topicQuestions.isEmpty, !model.isWorking {
-                    SuggestionChips(topicQuestions, systemImage: "sparkles", layout: .wrap) { send($0) }
-                        .transition(.opacity)
-                } else if !model.suggestions.isEmpty {
-                    SuggestionChips(model.suggestions) { send($0) }
-                        .transition(.opacity)
-                }
+                .frame(minHeight: currentTurn.isEmpty ? 0 : viewportHeight, alignment: .top)
             }
             .screenPadding()
             .padding(.vertical, AppSpacing.lg)
@@ -85,8 +86,19 @@ struct AssistantView: View {
             .animation(AppAnimation.smooth, value: model.isWorking)
             .animation(AppAnimation.smooth, value: readingAttachment)
         }
-        .defaultScrollAnchor(.bottom, for: .sizeChanges)
+        .scrollPosition($scrollPosition)
+        .defaultScrollAnchor(.bottom, for: .initialOffset)
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            geometry.containerSize.height - geometry.contentInsets.top - geometry.contentInsets.bottom
+        } action: { _, height in
+            viewportHeight = max(0, height - AppSpacing.lg)
+        }
+        .onChange(of: model.entries.last?.id) { _, _ in
+            scrollToCurrentTurn()
+        }
         .scrollDismissesKeyboard(.interactively)
+        // A tap anywhere on the thread puts the keyboard away (buttons still work).
+        .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
         .safeAreaBar(edge: .bottom) {
             VStack(spacing: AppSpacing.xs) {
                 if let allowance = model.allowance, allowance.remaining <= AssistantMetrics.allowanceHint, !premium.isPro {
@@ -133,7 +145,19 @@ struct AssistantView: View {
                 attachmentError = message
             }
         )
-        .navigationTitle(String(localized: "tab.assistant"))
+        // In a thread the mascot stands under the bar in place of the title.
+        .safeAreaBar(edge: .top) {
+            if !model.entries.isEmpty {
+                ParticleCreature(mood: mascotMood)
+                    .frame(width: AssistantMetrics.threadMascot, height: AssistantMetrics.threadMascot)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, -AppSpacing.xl)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                    .transition(.opacity)
+            }
+        }
+        .navigationTitle(model.entries.isEmpty ? String(localized: "tab.assistant") : "")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: AssistantRoute.self) { route in
             AssistantDestinationView(route: route)
@@ -146,11 +170,12 @@ struct AssistantView: View {
                     }
                 }
             }
-            if !model.entries.isEmpty {
-                ToolbarItem(placement: .principal) {
-                    ParticleCreature(mood: mascotMood, style: .compact)
-                        .frame(width: AssistantMetrics.headerMascot, height: AssistantMetrics.headerMascot)
+            if !model.recentThreads.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    historyMenu
                 }
+            }
+            if !model.entries.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         model.reset()
@@ -195,6 +220,62 @@ struct AssistantView: View {
         }
     }
 
+    // MARK: - Thread
+
+    /// Where the latest turn starts: the last question or attachment.
+    private var currentTurnStart: Int {
+        model.entries.lastIndex { entry in
+            switch entry.content {
+            case .question, .attachment: true
+            case .reply: false
+            }
+        } ?? model.entries.count
+    }
+
+    private var earlierEntries: ArraySlice<AssistantViewModel.Entry> {
+        model.entries[..<currentTurnStart]
+    }
+
+    private var currentTurn: ArraySlice<AssistantViewModel.Entry> {
+        model.entries[currentTurnStart...]
+    }
+
+    /// Under the latest turn: what the assistant is doing or writing, the Pro offer, the next
+    /// questions.
+    @ViewBuilder
+    private var turnFooter: some View {
+        if model.isWorking, !model.streamingReply.isEmpty {
+            AssistantStreamingReply(texts: model.streamingReply)
+        } else if case .working(let step) = model.phase {
+            workingRow(step.title)
+                .transition(.opacity)
+        } else if readingAttachment {
+            workingRow(String(localized: "assistant.attachment.reading"))
+                .transition(.opacity)
+        }
+        if case .failed(let failure) = model.phase,
+           failure == .proRequired || failure == .limitReached || failure == .freeLimit, !premium.isPro {
+            DSButton(String(localized: "settings.pro.cta.title"), systemImage: "sparkles") {
+                showingPaywall = true
+            }
+        }
+        if !model.entries.isEmpty, !topicQuestions.isEmpty, !model.isWorking {
+            SuggestionChips(topicQuestions, systemImage: "sparkles", layout: .wrap) { send($0) }
+                .transition(.opacity)
+        } else if !model.suggestions.isEmpty {
+            SuggestionChips(model.suggestions) { send($0) }
+                .transition(.opacity)
+        }
+    }
+
+    /// The latest question at the top of the screen.
+    private func scrollToCurrentTurn() {
+        guard let first = currentTurn.first else { return }
+        withAnimation(AppAnimation.smooth) {
+            scrollPosition.scrollTo(id: first.id, anchor: .top)
+        }
+    }
+
     // MARK: - Pieces
 
     private var greeting: some View {
@@ -215,8 +296,56 @@ struct AssistantView: View {
             }
             .multilineTextAlignment(.center)
             SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) { send($0) }
+            if !model.recentThreads.isEmpty {
+                recentChats
+            }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    /// The latest chats under the greeting; a tap opens one.
+    private var recentChats: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            SectionHeader(String(localized: "assistant.recent"))
+            VStack(spacing: AppSpacing.md) {
+                ForEach(model.recentThreads) { thread in
+                    Button {
+                        Task { await model.open(threadId: thread.id) }
+                    } label: {
+                        ItemRow(
+                            thread.title,
+                            meta: [MetaLine([.text(thread.updatedAt.formatted(.relative(presentation: .named)))])],
+                            leading: .symbol("bubble.left.and.text.bubble.right"),
+                            titleLineLimit: 1
+                        ) {
+                            DisclosureChevron()
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .cardContentPadding()
+            .cardStyle()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// The latest chats from inside a thread.
+    private var historyMenu: some View {
+        Menu {
+            ForEach(model.recentThreads) { thread in
+                Button {
+                    Task { await model.open(threadId: thread.id) }
+                } label: {
+                    Text(thread.title)
+                    Text(thread.updatedAt.formatted(.relative(presentation: .named)))
+                }
+            }
+        } label: {
+            Label(String(localized: "assistant.history"), systemImage: "clock.arrow.circlepath")
+        }
+        .disabled(model.isWorking)
     }
 
     @ViewBuilder
@@ -321,8 +450,10 @@ struct AssistantView: View {
 enum AssistantMetrics {
     /// The greeting's mascot.
     static let heroMascot: CGFloat = 220
-    /// The mascot in the navigation bar and next to the working step.
+    /// The mascot next to the working step.
     static let headerMascot: CGFloat = AppIconSize.xl
+    /// The mascot over a thread, under the navigation bar (the owner's size).
+    static let threadMascot: CGFloat = 120
     /// The longest question: plenty for a person, short enough to keep the turn cheap.
     static let questionLimit = 1000
     /// The free answers left from which the composer shows the count.

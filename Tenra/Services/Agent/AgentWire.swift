@@ -116,6 +116,8 @@ nonisolated enum AgentStreamEvent: Sendable, Equatable {
     case tool(name: String)
     /// Plain text outside `render_reply`; not shown to the user.
     case text(String)
+    /// A piece of `render_reply`'s input JSON as the model writes it (AgentPartialReply).
+    case reply(String)
     case done(AgentTurnDone)
     case error(code: String, retryable: Bool)
 }
@@ -152,6 +154,7 @@ nonisolated struct AgentSSEParser: Sendable {
 
     private struct NamePayload: Decodable { let name: String }
     private struct TextPayload: Decodable { let text: String }
+    private struct JSONPayload: Decodable { let json: String }
     private struct ErrorPayload: Decodable { let code: String; let retryable: Bool }
 
     static func decode(event: String, data: String) -> AgentStreamEvent? {
@@ -160,6 +163,7 @@ nonisolated struct AgentSSEParser: Sendable {
         switch event {
         case "tool": return (try? decoder.decode(NamePayload.self, from: bytes)).map { .tool(name: $0.name) }
         case "text": return (try? decoder.decode(TextPayload.self, from: bytes)).map { .text($0.text) }
+        case "reply": return (try? decoder.decode(JSONPayload.self, from: bytes)).map { .reply($0.json) }
         case "done": return (try? decoder.decode(AgentTurnDone.self, from: bytes)).map { .done($0) }
         case "error":
             let payload = try? decoder.decode(ErrorPayload.self, from: bytes)

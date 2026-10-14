@@ -59,6 +59,13 @@ nonisolated struct AgentThreadSnapshot: Equatable, Sendable {
     var body: Body
 }
 
+/// A kept thread in the history list: its first question and when it was last written.
+nonisolated struct AgentThreadSummary: Equatable, Identifiable, Sendable {
+    var id: String
+    var title: String
+    var updatedAt: Date
+}
+
 nonisolated final class AgentThreadStore: @unchecked Sendable {
     static let keep = 20
 
@@ -77,18 +84,48 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
             let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
             request.sortDescriptors = [NSSortDescriptor(key: "updatedAt", ascending: false)]
             request.fetchLimit = 1
-            guard let entity = try? context.fetch(request).first,
-                  let id = entity.id,
-                  let payload = entity.payload,
-                  let body = try? JSONDecoder().decode(AgentThreadSnapshot.Body.self, from: payload) else { return nil }
-            return AgentThreadSnapshot(
-                id: id,
-                createdAt: entity.createdAt ?? .distantPast,
-                updatedAt: entity.updatedAt ?? .distantPast,
-                title: entity.title,
-                body: body
-            )
+            return (try? context.fetch(request).first).flatMap(Self.snapshot)
         }
+    }
+
+    /// One kept thread, to open it again from the history.
+    func thread(id: String) async -> AgentThreadSnapshot? {
+        let context = stack.newBackgroundContext()
+        return await context.perform {
+            let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
+            request.predicate = NSPredicate(format: "id == %@", id)
+            request.fetchLimit = 1
+            return (try? context.fetch(request).first).flatMap(Self.snapshot)
+        }
+    }
+
+    /// The latest threads with a question, newest first, without their conversations.
+    func recent(limit: Int) async -> [AgentThreadSummary] {
+        let context = stack.newBackgroundContext()
+        return await context.perform {
+            let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
+            request.sortDescriptors = [NSSortDescriptor(key: "updatedAt", ascending: false)]
+            request.predicate = NSPredicate(format: "title != nil AND title != ''")
+            request.fetchLimit = limit
+            let entities = (try? context.fetch(request)) ?? []
+            return entities.compactMap { entity in
+                guard let id = entity.id, let title = entity.title else { return nil }
+                return AgentThreadSummary(id: id, title: title, updatedAt: entity.updatedAt ?? .distantPast)
+            }
+        }
+    }
+
+    private static func snapshot(_ entity: AgentThreadEntity) -> AgentThreadSnapshot? {
+        guard let id = entity.id,
+              let payload = entity.payload,
+              let body = try? JSONDecoder().decode(AgentThreadSnapshot.Body.self, from: payload) else { return nil }
+        return AgentThreadSnapshot(
+            id: id,
+            createdAt: entity.createdAt ?? .distantPast,
+            updatedAt: entity.updatedAt ?? .distantPast,
+            title: entity.title,
+            body: body
+        )
     }
 
     /// Writes the thread over its earlier copy, and lets the threads beyond `keep` go.

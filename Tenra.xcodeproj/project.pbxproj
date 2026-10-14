@@ -642,7 +642,7 @@
 			repositoryURL = "https://github.com/dkicekeeper/DesignKit";
 			requirement = {
 				kind = exactVersion;
-				version = 4.9.1;
+				version = 4.10.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

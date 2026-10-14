@@ -93,17 +93,17 @@ private struct AssistantAttachmentSources: ViewModifier {
         .sheet(isPresented: presenting(.file)) {
             DocumentPicker(contentTypes: [.pdf, .commaSeparatedText]) { url in
                 source = nil
-                open(url)
+                openFile(url)
             }
         }
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in
             guard url != nil, let url = coordinator.consumePendingAttachment() else { return }
-            open(url)
+            openFile(url)
         }
     }
 
     /// A picked or handed-over file: a CSV into its import flow, a PDF read as a statement.
-    private func open(_ url: URL) {
+    private func openFile(_ url: URL) {
         if UTType(filenameExtension: url.pathExtension)?.conforms(to: .commaSeparatedText) == true {
             csvFlow = ImportFlowCoordinator(
                 transactionsViewModel: coordinator.transactionsViewModel,

@@ -383,6 +383,8 @@ struct CategoryDetailView: View {
 
     @ViewBuilder
     private var toolbarMenu: some View {
+        AskAssistantMenuItem(topic: .category(name: liveCategory.name, isIncome: liveCategory.type == .income))
+
         Button {
             showingEdit = true
         } label: {

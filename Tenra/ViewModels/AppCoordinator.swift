@@ -75,6 +75,10 @@ class AppCoordinator {
     /// and attaches it (AssistantAttachmentSources). Cleared once taken.
     private(set) var pendingAttachment: URL?
 
+    /// What a screen asked Ten about ("Ask Ten" on an account, a category, an insight, the
+    /// history): the assistant opens with questions about it. Cleared once taken.
+    private(set) var assistantTopic: AssistantTopic?
+
     /// Cold-launch stash: when iOS launches the app from a notification tap, the
     /// `userNotificationCenter(_:didReceive:)` handler runs BEFORE `AppCoordinator`
     /// is constructed (the coordinator waits for CoreData prewarm). AppDelegate
@@ -155,6 +159,15 @@ class AppCoordinator {
     func consumePendingAttachment() -> URL? {
         defer { pendingAttachment = nil }
         return pendingAttachment
+    }
+
+    func ask(about topic: AssistantTopic) {
+        assistantTopic = topic
+    }
+
+    func consumeAssistantTopic() -> AssistantTopic? {
+        defer { assistantTopic = nil }
+        return assistantTopic
     }
 
     // MARK: - Onboarding gate

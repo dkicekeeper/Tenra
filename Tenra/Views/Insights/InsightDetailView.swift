@@ -78,6 +78,11 @@ struct InsightDetailView<CategoryDestination: View>: View {
         }
         .navigationTitle(insight.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                AskAssistantToolbarButton(topic: .insight(title: insight.title))
+            }
+        }
         .onAppear {
             logger.debug("📋 [InsightDetail] OPEN — type=\(String(describing: insight.type), privacy: .public), category=\(String(describing: insight.category), privacy: .public), metric=\(insight.metric.formattedValue, privacy: .public), drillDown=\(_onCategoryTap != nil)")
         }

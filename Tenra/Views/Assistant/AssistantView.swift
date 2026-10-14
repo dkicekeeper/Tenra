@@ -10,6 +10,9 @@
 //  The mascot shows what is going on: thinking while it works, the reply's mood after, confused
 //  or sad when a question could not be answered.
 //
+//  Opened from a screen's "Ask Ten" (AssistantEntryPoints), it offers questions about that
+//  account, category, insight or the history in place of its general ones, until one goes.
+//
 //  Nothing leaves the phone before the person agrees: the first question opens the consent
 //  sheet (App Review 5.1.2(i)), and goes once they turn the cloud mode on.
 //
@@ -32,11 +35,14 @@ struct AssistantView: View {
     var onClose: (() -> Void)?
 
     @Environment(PremiumManager.self) private var premium
+    @Environment(AppCoordinator.self) private var coordinator
     @State private var draft = ""
     @State private var showingVoice = false
     @State private var attachmentSource: AssistantAttachmentSource?
     @State private var readingAttachment = false
     @State private var attachmentError: String?
+    /// Questions about the screen the assistant was opened from.
+    @State private var topicQuestions: [String] = []
     @State private var showingPaywall = false
     @State private var showingConsent = false
     @State private var questionAwaitingConsent: String?
@@ -65,7 +71,10 @@ struct AssistantView: View {
                         showingPaywall = true
                     }
                 }
-                if !model.suggestions.isEmpty {
+                if !model.entries.isEmpty, !topicQuestions.isEmpty, !model.isWorking {
+                    SuggestionChips(topicQuestions, systemImage: "sparkles", layout: .wrap) { send($0) }
+                        .transition(.opacity)
+                } else if !model.suggestions.isEmpty {
                     SuggestionChips(model.suggestions) { send($0) }
                         .transition(.opacity)
                 }
@@ -160,6 +169,10 @@ struct AssistantView: View {
             AssistantVoiceSheet { send($0, spoken: true) }
         }
         .onAppear { model.refreshAllowance() }
+        .onChange(of: coordinator.assistantTopic, initial: true) { _, topic in
+            guard topic != nil, let topic = coordinator.consumeAssistantTopic() else { return }
+            topicQuestions = topic.questions
+        }
         .task { await model.restore() }
         .onChange(of: premium.isPro) { model.refreshAllowance() }
         .sheet(isPresented: $showingConsent) {
@@ -201,7 +214,7 @@ struct AssistantView: View {
                     .foregroundStyle(AppColors.Text.tertiary)
             }
             .multilineTextAlignment(.center)
-            SuggestionChips(Self.presets, systemImage: "sparkles", layout: .wrap) { send($0) }
+            SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) { send($0) }
         }
         .frame(maxWidth: .infinity)
     }
@@ -265,6 +278,7 @@ struct AssistantView: View {
     private func send(_ text: String, spoken: Bool = false) {
         guard !model.isWorking, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         if hasConsent { draft = "" }
+        topicQuestions = []
         Task {
             if await model.send(text, spoken: spoken, cloudAllowed: hasConsent) {
                 draft = ""

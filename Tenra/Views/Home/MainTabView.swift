@@ -64,7 +64,7 @@ struct MainTabView: View {
     /// passes App Attest, which the server asks of every turn. Elsewhere the tab keeps the
     /// Voice | Import mode, so neither is ever out of reach.
     private var assistantTakesActionTab: Bool {
-        AgentConfig.serverURL != nil && AgentAttestation.isSupported
+        AssistantAvailability.isAvailable
     }
 
     /// Home screen UI state that must survive ContentView recreation.
@@ -223,6 +223,11 @@ struct MainTabView: View {
         // A file opened in Tenra from another app goes to the assistant, which attaches it.
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in
             guard url != nil, assistantTakesActionTab else { return }
+            showingAssistant = true
+        }
+        // "Ask Ten" on an account, a category, an insight or the history.
+        .onChange(of: coordinator.assistantTopic) { _, topic in
+            guard topic != nil, assistantTakesActionTab else { return }
             showingAssistant = true
         }
         // The assistant over whichever tab is open; the tab stays where it was.

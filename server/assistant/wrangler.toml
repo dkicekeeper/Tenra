@@ -28,10 +28,10 @@ BLOCKED_COUNTRIES = "RU,BY"
 # The app App Attest assertions must come from: Team ID + bundle id.
 APP_ID = "SY2L2VMQP7.dakacom.Tenra"
 
-# Create once: `npx wrangler kv namespace create QUOTA`, then paste the id here.
+# The KV namespace `tenra-assistant-quota` (Cloudflare → Storage & databases → Workers KV).
 [[kv_namespaces]]
 binding = "QUOTA"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "c509b91968924c0b96deba4ebd1ea187"
 
 # Secrets (never in this file): `npx wrangler secret put ANTHROPIC_API_KEY`
 # and `npx wrangler secret put REVENUECAT_SECRET_KEY`.

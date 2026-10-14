@@ -2071,3 +2071,16 @@
 "assistant.chatter.hehe" = "Hi hi";
 "assistant.chatter.dizzy" = "Oh, la tête me tourne !";
 "settings.assistant.chatter" = "Ten bavarde";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "La garde-robe de Ten";
+"assistant.wardrobe.none" = "Rien";
+"assistant.wardrobe.partyHat" = "Chapeau de fête";
+"assistant.wardrobe.crown" = "Couronne";
+"assistant.wardrobe.beanie" = "Bonnet";
+"assistant.wardrobe.taqiya" = "Taqiya";
+"assistant.wardrobe.headphones" = "Casque audio";
+"assistant.wardrobe.glasses" = "Lunettes";
+"assistant.wardrobe.sunglasses" = "Lunettes de soleil";
+"assistant.wardrobe.sleepMask" = "Masque de sommeil";
+"assistant.wardrobe.footer" = "Les jours de fête, Ten s'habille tout seul : un chapeau pour le Nouvel An, une taqiya pour Nauryz, une couronne le jour où vous fêtez quelque chose ensemble.";

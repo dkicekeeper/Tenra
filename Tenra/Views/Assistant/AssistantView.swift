@@ -51,6 +51,8 @@ struct AssistantView: View {
     // Ten's lines and gestures on the home (AssistantChatter).
     @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
     @AppStorage(AssistantChatter.greetedDayKey) private var greetedDay = ""
+    @AppStorage(AssistantWardrobe.choiceKey) private var accessoryChoice = ""
+    @AppStorage(AssistantWardrobe.crownDayKey) private var crownDay = ""
     @State private var speech: CreatureSpeech?
     @State private var gesture: CreatureGesture = .wave
     @State private var gestureCount = 0
@@ -159,7 +161,8 @@ struct AssistantView: View {
     private var greeting: some View {
         VStack(spacing: AppSpacing.lg) {
             ParticleCreature(mood: AssistantMetrics.mood(for: model), isInteractive: true,
-                             speech: chatterOn ? speech : nil)
+                             speech: chatterOn ? speech : nil,
+                             accessory: AssistantWardrobe.accessory(choice: accessoryChoice, crownDay: crownDay, at: .now))
                 .creatureGesture(gesture, trigger: gestureCount)
                 // A life of its own (DesignKit 4.11): it looks round, stretches, dozes off when
                 // left alone and daydreams of money things while "Ten chats" is on.

@@ -49,6 +49,8 @@ struct AssistantChatView: View {
     @State private var viewportHeight: CGFloat = 0
     // Ten's thoughts and reactions (AssistantChatter).
     @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
+    @AppStorage(AssistantWardrobe.choiceKey) private var accessoryChoice = ""
+    @AppStorage(AssistantWardrobe.crownDayKey) private var crownDay = ""
     @State private var speech: CreatureSpeech?
     @State private var gesture: CreatureGesture = .nod
     @State private var gestureCount = 0
@@ -175,7 +177,8 @@ struct AssistantChatView: View {
     private var mascotBar: some View {
         // Its words go beside it, on the free side of the bar (VoiceOver reads them; Ten itself
         // is hidden from VoiceOver by ParticleCreature).
-        ParticleCreature(mood: mascotMood, speech: chatterOn ? speech : nil)
+        ParticleCreature(mood: mascotMood, speech: chatterOn ? speech : nil,
+                         accessory: AssistantWardrobe.accessory(choice: accessoryChoice, crownDay: crownDay, at: .now))
             .creatureGesture(gesture, trigger: gestureCount)
             // It looks round and stretches between replies (DesignKit 4.11).
             .creatureAmbience(.lively)
@@ -309,6 +312,8 @@ struct AssistantChatView: View {
             if model.replyMood == .celebrate {
                 speech = AssistantChatter.cheer
                 play(.hop)
+                // A crown for the rest of the day (AssistantWardrobe).
+                crownDay = AssistantChatter.dayKey(.now)
             } else {
                 if speech?.emotion == .thought { speech = nil }
                 play(.nod)

@@ -2071,3 +2071,16 @@
 "assistant.chatter.hehe" = "Хи-хи";
 "assistant.chatter.dizzy" = "Ой, всё кружится!";
 "settings.assistant.chatter" = "Тэн болтает";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "Гардероб Тэна";
+"assistant.wardrobe.none" = "Ничего";
+"assistant.wardrobe.partyHat" = "Праздничный колпак";
+"assistant.wardrobe.crown" = "Корона";
+"assistant.wardrobe.beanie" = "Шапка";
+"assistant.wardrobe.taqiya" = "Тюбетейка";
+"assistant.wardrobe.headphones" = "Наушники";
+"assistant.wardrobe.glasses" = "Очки";
+"assistant.wardrobe.sunglasses" = "Солнечные очки";
+"assistant.wardrobe.sleepMask" = "Маска для сна";
+"assistant.wardrobe.footer" = "По праздникам Тэн наряжается сам: колпак на Новый год, тюбетейка на Наурыз, корона в день, когда вы что-то отпраздновали вместе.";

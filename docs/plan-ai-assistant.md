@@ -397,8 +397,10 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
 5. **Дальше Claude:** прогон стенда, выбор модели (`ASSISTANT_MODEL`, `ASSISTANT_EFFORT`), деплой,
    `GET /v1/health` на выданном адресе `*.workers.dev`.
 
-Сделано: KV `tenra-assistant-quota` в `wrangler.toml`, поддомен Workers `dakacom.workers.dev`, так
-что сервер будет на `https://tenra-assistant.dakacom.workers.dev`.
+Сделано (2026-10-14): KV `tenra-assistant-quota` в `wrangler.toml`, секреты в GitHub, сервер
+развёрнут на `https://tenra-assistant.dakacom.workers.dev` (`/v1/health` отвечает, RevenueCat и KV
+работают), адрес в `Info.plist` (`TenraAssistantURL`), так что вкладка ассистента появляется в режиме
+«+». Модель выбирается по прогону стенда.
 
 **Фаза 1. «Спросить» (3-4 недели) → TestFlight как Tenra AI (beta)**
 - [x] `FinanceToolkit` (чтение), прокси с квотами, App Attest на сервере и в приложении.

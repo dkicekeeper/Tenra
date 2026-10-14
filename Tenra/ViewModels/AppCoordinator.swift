@@ -27,6 +27,9 @@ class AppCoordinator {
     @ObservationIgnored let categoriesViewModel: CategoriesViewModel
     @ObservationIgnored let depositsViewModel: DepositsViewModel
     @ObservationIgnored let loansViewModel: LoansViewModel
+    /// Savings goals (free) and personal debts (Pro): their own CoreData rows (v15).
+    @ObservationIgnored let goalStore: GoalStore
+    @ObservationIgnored let debtStore: DebtStore
     @ObservationIgnored let transactionsViewModel: TransactionsViewModel
     @ObservationIgnored let settingsViewModel: SettingsViewModel
     @ObservationIgnored let insightsViewModel: InsightsViewModel
@@ -283,6 +286,12 @@ class AppCoordinator {
         // 6. Loans (depends on Accounts) — mirrors DepositsViewModel pattern
         self.loansViewModel = LoansViewModel(repository: self.repository, accountsViewModel: accountsViewModel)
 
+        // 6.1 Goals and debts, outside the repository facade; previews on UserDefaults keep
+        // them in memory.
+        let keepsInStore = self.repository is CoreDataRepository
+        self.goalStore = GoalStore(repository: keepsInStore ? GoalRepository() : nil)
+        self.debtStore = DebtStore(repository: keepsInStore ? DebtRepository() : nil)
+
         // 7. Setup SettingsViewModel
         let storageService = SettingsStorageService()
         let wallpaperService = WallpaperManagementService()
@@ -356,6 +365,14 @@ class AppCoordinator {
         transactionsViewModel.balanceCoordinator = balanceCoordinator
         depositsViewModel.balanceCoordinator = balanceCoordinator
         loansViewModel.balanceCoordinator = balanceCoordinator
+        // A goal with a linked account follows its live balance.
+        goalStore.accountBalance = { [weak self] accountId in
+            guard let self, let account = self.transactionStore.accounts.first(where: { $0.id == accountId }) else { return nil }
+            return GoalStore.AccountBalance(
+                amount: self.balanceCoordinator.balances[accountId] ?? account.balance,
+                currency: account.currency
+            )
+        }
 
         // Inject TransactionStore into ViewModels
         transactionsViewModel.transactionStore = transactionStore
@@ -515,6 +532,11 @@ class AppCoordinator {
         // and the FRC's controllerDidChangeContent fires → sections rebuild without any
         // extra code on our part.
         isFullyInitialized = true
+        // Goals and debts are small and read off the main thread; the Finances cards show them.
+        Task { [goalStore, debtStore] in
+            await goalStore.load()
+            await debtStore.load()
+        }
         let t5 = CACurrentMediaTime()
         logger.debug("✅ [INIT] isFullyInitialized=true: total so far \(String(format: "%.0f", (t5-t_init_start)*1000))ms")
 

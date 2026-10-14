@@ -226,5 +226,37 @@
 			<string>Noch %d kostenlose Antworten</string>
 		</dict>
 	</dict>
+	<key>finances.goals.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Sparziel</string>
+			<key>other</key>
+			<string>%lld Sparziele</string>
+		</dict>
+	</dict>
+	<key>finances.debts.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld offene Schuld</string>
+			<key>other</key>
+			<string>%lld offene Schulden</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

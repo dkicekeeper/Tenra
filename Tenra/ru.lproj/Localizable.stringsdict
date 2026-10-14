@@ -282,5 +282,45 @@
 			<string>Осталось %d бесплатных ответов</string>
 		</dict>
 	</dict>
+	<key>finances.goals.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld цель</string>
+			<key>few</key>
+			<string>%lld цели</string>
+			<key>many</key>
+			<string>%lld целей</string>
+			<key>other</key>
+			<string>%lld целей</string>
+		</dict>
+	</dict>
+	<key>finances.debts.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld открытый долг</string>
+			<key>few</key>
+			<string>%lld открытых долга</string>
+			<key>many</key>
+			<string>%lld открытых долгов</string>
+			<key>other</key>
+			<string>%lld открытых долгов</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

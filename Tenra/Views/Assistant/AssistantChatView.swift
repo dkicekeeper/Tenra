@@ -177,6 +177,8 @@ struct AssistantChatView: View {
         // is hidden from VoiceOver by ParticleCreature).
         ParticleCreature(mood: mascotMood, speech: chatterOn ? speech : nil)
             .creatureGesture(gesture, trigger: gestureCount)
+            // It looks round and stretches between replies (DesignKit 4.11).
+            .creatureAmbience(.lively)
             .frame(width: AssistantMetrics.chatMascot, height: AssistantMetrics.chatMascot)
             .padding(.top, -AssistantMetrics.chatMascotLift)
             .padding(.bottom, AssistantMetrics.chatMascotTail)

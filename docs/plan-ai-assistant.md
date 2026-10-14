@@ -403,11 +403,11 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
       после облака; ApplePCC в фазе 3.
 - [x] Бесплатный лимит: счётчик ответов (`PremiumConfig`, Keychain), кнопка Pro в чате с
       продолжением вопроса после оформления, строка «осталось N» над полем ввода.
-- [ ] `ParticleCreature` в DesignKit по доске «Рой 2.0»: DesignKit PR #60 (4.6.0) зелёный, ждёт
-      merge; после него Tenra переходит на 4.6.0 и ветка `claude/assistant-screen` вливается.
+- [x] `ParticleCreature` в DesignKit по доске «Рой 2.0» (DesignKit 4.6.0, вместе с `MessageBubble`
+      и `SuggestionChips`).
 - [x] Каталог блоков v1: text, metric, chart, transactions, budgets, insight, suggestions, а
-      также open, confirm и forecast (ветка `claude/assistant-screen`).
-- [x] Экран ассистента: пресеты, лента, композер, согласие на облако (та же ветка).
+      также open, confirm и forecast.
+- [x] Экран ассистента: пресеты, лента, композер, согласие на облако.
 - [ ] Предусловие: `VoiceInputService` сейчас жёстко на `ru-RU`, для ассистента распознавание
       должно следовать языку приложения.
 

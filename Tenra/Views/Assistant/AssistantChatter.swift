@@ -7,7 +7,8 @@
 //  hint pointing at the ready-made questions while there are no chats, a thought while it works,
 //  a cheer for a celebrated reply, a word when something goes wrong, and a line now and then
 //  when it is tapped. "Ten chats" in Settings turns the lines off; the gestures stay. The details
-//  of an error stay in the thread: the bubble is only Ten's reaction.
+//  of an error stay in the thread: the words are only Ten's reaction. Each line's emotion sets
+//  how its letters move (joy hops, a thought sways, worry trembles); unset, it follows the mood.
 //
 
 import SwiftUI
@@ -30,18 +31,18 @@ enum AssistantChatter {
         return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
     }
 
-    /// The greeting for the hour, and its wave (none for the late-night whisper).
+    /// The greeting for the hour, glad, and its wave (none for the late-night whisper).
     static func greeting(at date: Date, calendar: Calendar = .current) -> (CreatureSpeech, CreatureGesture?) {
         let hour = calendar.component(.hour, from: date)
         switch hour {
         case 5..<12:
-            return (CreatureSpeech(String(localized: "assistant.chatter.morning")), .wave)
+            return (CreatureSpeech(String(localized: "assistant.chatter.morning"), emotion: .joy), .wave)
         case 12..<18:
-            return (CreatureSpeech(String(localized: "assistant.chatter.afternoon")), .wave)
+            return (CreatureSpeech(String(localized: "assistant.chatter.afternoon"), emotion: .joy), .wave)
         case 18..<23:
-            return (CreatureSpeech(String(localized: "assistant.chatter.evening")), .wave)
+            return (CreatureSpeech(String(localized: "assistant.chatter.evening"), emotion: .joy), .wave)
         default:
-            return (CreatureSpeech(String(localized: "assistant.chatter.night"), style: .whisper), nil)
+            return (CreatureSpeech(String(localized: "assistant.chatter.night"), emotion: .whisper), nil)
         }
     }
 
@@ -57,14 +58,14 @@ enum AssistantChatter {
             String(localized: "assistant.chatter.counting"),
             String(localized: "assistant.chatter.looking"),
         ]
-        return CreatureSpeech(lines[turn % lines.count], style: .think, placement: .trailing,
-                              maxWidth: AssistantMetrics.chatBubbleWidth, duration: .untilChanged, id: turn)
+        return CreatureSpeech(lines[turn % lines.count], emotion: .thought, placement: .trailing,
+                              maxWidth: AssistantMetrics.chatSpeechWidth, duration: .untilChanged, id: turn)
     }
 
     /// A celebrated reply.
     static var cheer: CreatureSpeech {
-        CreatureSpeech(String(localized: "assistant.chatter.yay"), style: .shout, placement: .trailing,
-                       maxWidth: AssistantMetrics.chatBubbleWidth)
+        CreatureSpeech(String(localized: "assistant.chatter.yay"), emotion: .joy, placement: .trailing,
+                       maxWidth: AssistantMetrics.chatSpeechWidth)
     }
 
     /// Ten's reaction to a question that was not answered, and its gesture; `nil` for the
@@ -72,17 +73,17 @@ enum AssistantChatter {
     static func reaction(to failure: AssistantFailure) -> (CreatureSpeech?, CreatureGesture) {
         switch failure {
         case .offline:
-            return (CreatureSpeech(String(localized: "assistant.chatter.offline"), style: .whisper,
-                                   placement: .trailing, maxWidth: AssistantMetrics.chatBubbleWidth), .flinch)
+            return (CreatureSpeech(String(localized: "assistant.chatter.offline"), emotion: .worry,
+                                   placement: .trailing, maxWidth: AssistantMetrics.chatSpeechWidth), .flinch)
         case .refused, .generic:
-            return (CreatureSpeech(String(localized: "assistant.chatter.unclear"), placement: .trailing,
-                                   maxWidth: AssistantMetrics.chatBubbleWidth), .shrug)
+            return (CreatureSpeech(String(localized: "assistant.chatter.unclear"), emotion: .calm, placement: .trailing,
+                                   maxWidth: AssistantMetrics.chatSpeechWidth), .shrug)
         case .busy, .limitReached, .proRequired, .regionUnavailable, .unavailable, .freeLimit:
             return (nil, .flinch)
         }
     }
 
-    /// A line for a tap on Ten, taking turns, so the same one never comes twice in a row.
+    /// A line for a tap on Ten, tickled, taking turns, so the same one never comes twice in a row.
     static func tapLine(_ turn: Int) -> CreatureSpeech {
         let lines = [
             String(localized: "assistant.chatter.tickles"),
@@ -90,11 +91,11 @@ enum AssistantChatter {
             String(localized: "assistant.chatter.help"),
             String(localized: "assistant.chatter.hehe"),
         ]
-        return CreatureSpeech(lines[turn % lines.count], id: "tap-\(turn)")
+        return CreatureSpeech(lines[turn % lines.count], emotion: .joy, id: "tap-\(turn)")
     }
 
     /// Three quick taps.
     static func dizzy(_ turn: Int) -> CreatureSpeech {
-        CreatureSpeech(String(localized: "assistant.chatter.dizzy"), style: .shout, id: "dizzy-\(turn)")
+        CreatureSpeech(String(localized: "assistant.chatter.dizzy"), emotion: .dizzy, id: "dizzy-\(turn)")
     }
 }

@@ -56,7 +56,7 @@ struct AssistantChatView: View {
             thread
             // Ten in the middle of the navigation bar, hanging over the top of the thread: over
             // the content that scrolls under it, never under it, and taking no room of its own.
-            // Its bubble goes beside it, on the free side of the bar (VoiceOver reads it; Ten
+            // Its words go beside it, on the free side of the bar (VoiceOver reads them; Ten
             // itself is hidden from VoiceOver by ParticleCreature).
             ParticleCreature(mood: mascotMood, speech: chatterOn ? speech : nil)
                 .creatureGesture(gesture, trigger: gestureCount)
@@ -280,7 +280,7 @@ struct AssistantChatView: View {
     /// A thought once Ten has worked a moment; gone when the work ends.
     private func thinkWhileWorking() async {
         guard model.isWorking else {
-            if speech?.style == .think { speech = nil }
+            if speech?.emotion == .thought { speech = nil }
             return
         }
         try? await Task.sleep(for: AssistantChatter.thoughtDelay)
@@ -299,7 +299,7 @@ struct AssistantChatView: View {
                 speech = AssistantChatter.cheer
                 play(.hop)
             } else {
-                if speech?.style == .think { speech = nil }
+                if speech?.emotion == .thought { speech = nil }
                 play(.nod)
             }
         case .failed(let failure):

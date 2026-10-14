@@ -162,7 +162,7 @@ struct AssistantView: View {
                              speech: chatterOn ? speech : nil)
                 .creatureGesture(gesture, trigger: gestureCount)
                 .frame(width: AssistantMetrics.heroMascot, height: AssistantMetrics.heroMascot)
-                // Room over Ten for its bubble.
+                // Room over Ten for its words.
                 .padding(.top, AssistantMetrics.speechRoom)
                 .simultaneousGesture(TapGesture().onEnded { tappedTen() })
                 // A moment after the screen settles, and once the chats are known.
@@ -345,13 +345,13 @@ struct AssistantView: View {
 enum AssistantMetrics {
     /// The greeting's mascot.
     static let heroMascot: CGFloat = 220
-    /// The room over the greeting's mascot for its speech bubble (DesignKit 4.10): one line in
-    /// an oval with its tail rises about this far over Ten's square.
+    /// The room over the greeting's mascot for its words (DesignKit 4.10): a line of two rises
+    /// about this far over Ten's square.
     static let speechRoom: CGFloat = 48
     /// How long the home waits before Ten greets.
     static let greetingDelay: Duration = .seconds(0.8)
-    /// A bubble beside Ten in a chat: from the middle of the navigation bar to the screen's edge.
-    static let chatBubbleWidth: CGFloat = 150
+    /// Words beside Ten in a chat: from the middle of the navigation bar to the screen's edge.
+    static let chatSpeechWidth: CGFloat = 150
     /// The mascot on a message Ten wrote (AssistantNoticeCard).
     static let headerMascot: CGFloat = AppIconSize.xl
     /// Ten in a chat, in the middle of the navigation bar (the owner's size).

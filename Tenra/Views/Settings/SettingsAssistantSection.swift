@@ -4,7 +4,7 @@
 //
 //  Settings → Assistant, where the assistant works (AssistantAvailability): cloud answers (the
 //  consent the chat asks for before the first question; turned off, it asks again), "Ten chats"
-//  (its lines in bubbles, AssistantChatter; turned off, it still gestures) and "What Ten knows
+//  (the lines it says, AssistantChatter; turned off, it still gestures) and "What Ten knows
 //  about me", the facts it remembers (AssistantMemoryView).
 //
 

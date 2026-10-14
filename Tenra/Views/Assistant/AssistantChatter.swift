@@ -51,16 +51,32 @@ enum AssistantChatter {
         CreatureSpeech(String(localized: "assistant.chatter.askMe"))
     }
 
-    /// The thought while Ten works, taking turns.
+    /// The thought while Ten works, taking turns: words, and every other time a picture drawn
+    /// in dots of light (DesignKit 4.11), read by VoiceOver as the words it stands for.
     static func thought(_ turn: Int) -> CreatureSpeech {
         let lines = [
             String(localized: "assistant.chatter.hmm"),
             String(localized: "assistant.chatter.counting"),
             String(localized: "assistant.chatter.looking"),
         ]
-        return CreatureSpeech(lines[turn % lines.count], emotion: .thought, placement: .trailing,
+        if turn % 2 == 1 {
+            let pictures = [
+                ("chart.bar.fill", String(localized: "assistant.chatter.counting")),
+                ("magnifyingglass", String(localized: "assistant.chatter.looking")),
+                ("creditcard.fill", String(localized: "assistant.chatter.counting")),
+            ]
+            let picture = pictures[(turn / 2) % pictures.count]
+            return CreatureSpeech(symbol: picture.0, label: picture.1, placement: .trailing,
+                                  duration: .untilChanged, id: turn)
+        }
+        return CreatureSpeech(lines[(turn / 2) % lines.count], emotion: .thought, placement: .trailing,
                               maxWidth: AssistantMetrics.chatSpeechWidth, duration: .untilChanged, id: turn)
     }
+
+    /// What Ten daydreams of on its home, left alone (DesignKit 4.11): money things and a break.
+    static let daydreams = [
+        "banknote.fill", "chart.bar.fill", "cup.and.saucer.fill", "star.fill", "cart.fill", "airplane",
+    ]
 
     /// A celebrated reply.
     static var cheer: CreatureSpeech {

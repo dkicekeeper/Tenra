@@ -161,6 +161,10 @@ struct AssistantView: View {
             ParticleCreature(mood: AssistantMetrics.mood(for: model), isInteractive: true,
                              speech: chatterOn ? speech : nil)
                 .creatureGesture(gesture, trigger: gestureCount)
+                // A life of its own (DesignKit 4.11): it looks round, stretches, dozes off when
+                // left alone and daydreams of money things while "Ten chats" is on.
+                .creatureAmbience(CreatureAmbience(dozesAfter: AssistantMetrics.dozesAfter,
+                                                   daydreams: chatterOn ? AssistantChatter.daydreams : []))
                 .frame(width: AssistantMetrics.heroMascot, height: AssistantMetrics.heroMascot)
                 // Room over Ten for its words.
                 .padding(.top, AssistantMetrics.speechRoom)
@@ -350,6 +354,8 @@ enum AssistantMetrics {
     static let speechRoom: CGFloat = 48
     /// How long the home waits before Ten greets.
     static let greetingDelay: Duration = .seconds(0.8)
+    /// Seconds left alone on the home before Ten dozes off (a tap wakes it).
+    static let dozesAfter: Double = 45
     /// Words beside Ten in a chat: from the middle of the navigation bar to the screen's edge.
     static let chatSpeechWidth: CGFloat = 150
     /// The mascot on a message Ten wrote (AssistantNoticeCard).

@@ -5,8 +5,9 @@
 //  Root tab bar using the iOS 26 Tab API: Home | Analytics | Finances and an action tab.
 //
 //  Where the assistant can run (its server set in Info.plist `TenraAssistantURL`, App Attest on
-//  the device; docs/plan-ai-assistant.md §3.8), the action tab is its mascot (Ten) and opens
-//  the assistant over the current tab; voice and import are reached from its field.
+//  the device; docs/plan-ai-assistant.md §3.8), the action tab is its mascot (Ten) and the
+//  assistant is that tab's page; voice and import are reached from its field. "Ask Ten" on a
+//  screen, a message Ten wrote on Home and a file opened in Tenra switch to it.
 //
 //  Elsewhere (Apple Music style): [+] animates the bar into "expanded" mode, Voice | Import |
 //  [×], and [×] restores the original three tabs.
@@ -23,6 +24,8 @@ enum AppTab: String, Hashable {
     case finances
     case voice
     case ocr
+    /// The assistant's page, in the action tab's place where it can run.
+    case assistant
     /// The action pseudo-tab — never "selected" in a navigation sense.
     case plusAction
 }
@@ -57,8 +60,6 @@ struct MainTabView: View {
     /// teardown. See `TabBarVisibility` for the full rationale.
     @State private var tabBarVisibility = TabBarVisibility()
 
-    /// The assistant over the current tab, opened by the action tab.
-    @State private var showingAssistant = false
     @Environment(\.scenePhase) private var scenePhase
 
     /// The assistant takes the action tab where it can answer: its server is set and the device
@@ -75,12 +76,17 @@ struct MainTabView: View {
 
     // MARK: Tabs
 
-    /// The "+" tab. Its content is never displayed — the tap is intercepted in
-    /// `onChange(of: selectedTab)`. The role is passed in so the body can pick
-    /// `.prominent` on iOS 27 and fall back to `.search` on iOS 26.
+    /// The action tab: the assistant's page where it can run; elsewhere "+", whose content is
+    /// never displayed (the tap is intercepted in `onChange(of: selectedTab)`). The role is
+    /// passed in so the body can pick `.prominent` on iOS 27 and fall back to `.search` on
+    /// iOS 26.
     private func actionTab(role: TabRole) -> some TabContent<AppTab> {
-        Tab(value: AppTab.plusAction, role: role) {
-            Color.clear.ignoresSafeArea()
+        Tab(value: assistantTakesActionTab ? AppTab.assistant : AppTab.plusAction, role: role) {
+            if assistantTakesActionTab {
+                AssistantTab()
+            } else {
+                Color.clear.ignoresSafeArea()
+            }
         } label: {
             if assistantTakesActionTab {
                 CreatureTabLabel(title: String(localized: "tab.assistant"))
@@ -88,8 +94,6 @@ struct MainTabView: View {
                 PlusTabLabel(isExpanded: tabBarMode == .expanded)
             }
         }
-        // What Ten wrote first and the person has not read (AssistantInbox).
-        .badge(assistantTakesActionTab ? AssistantInbox.shared.unread.count : 0)
     }
 
     // MARK: Body
@@ -229,17 +233,15 @@ struct MainTabView: View {
         }
         // A file opened in Tenra from another app goes to the assistant, which attaches it.
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in
-            guard url != nil, assistantTakesActionTab else { return }
-            showingAssistant = true
+            if url != nil { openAssistant() }
         }
         // "Ask Ten" on an account, a category, an insight or the history.
         .onChange(of: coordinator.assistantTopic) { _, topic in
-            guard topic != nil, assistantTakesActionTab else { return }
-            showingAssistant = true
+            if topic != nil { openAssistant() }
         }
-        // The assistant over whichever tab is open; the tab stays where it was.
-        .sheet(isPresented: $showingAssistant) {
-            AssistantTab(onClose: { showingAssistant = false })
+        // "Go through it" on a message Ten wrote, on Home.
+        .onChange(of: coordinator.pendingNotice) { _, notice in
+            if notice != nil { openAssistant() }
         }
         // The eye button on Home: every amount below (tabs, pushed screens, sheets) draws
         // "•••• ₸" while it is on. Outermost, so the sheets above get it too.
@@ -257,14 +259,8 @@ struct MainTabView: View {
             return
         }
 
-        // User tapped the action tab: the assistant, or + / ×
+        // User tapped the action tab: + / × (the assistant's tab is a page of its own)
         HapticManager.light()
-
-        if assistantTakesActionTab {
-            selectedTab = previousTab
-            showingAssistant = true
-            return
-        }
 
         withAnimation(AppAnimation.contentSpring) {
             if tabBarMode == .normal {
@@ -275,6 +271,13 @@ struct MainTabView: View {
                 selectedTab = previousTab     // Restore previous tab
             }
         }
+    }
+
+    /// Switches to the assistant's page; the tab the person was on keeps its place.
+    private func openAssistant() {
+        guard assistantTakesActionTab else { return }
+        if tabBarMode == .expanded { tabBarMode = .normal }
+        selectedTab = .assistant
     }
 }
 

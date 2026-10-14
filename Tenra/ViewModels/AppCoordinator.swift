@@ -79,6 +79,10 @@ class AppCoordinator {
     /// history): the assistant opens with questions about it. Cleared once taken.
     private(set) var assistantTopic: AssistantTopic?
 
+    /// A message Ten wrote that the person chose to go through on Home: the assistant opens and
+    /// asks its question. Cleared once taken.
+    private(set) var pendingNotice: AssistantNotice?
+
     /// Cold-launch stash: when iOS launches the app from a notification tap, the
     /// `userNotificationCenter(_:didReceive:)` handler runs BEFORE `AppCoordinator`
     /// is constructed (the coordinator waits for CoreData prewarm). AppDelegate
@@ -193,6 +197,15 @@ class AppCoordinator {
     func consumeAssistantTopic() -> AssistantTopic? {
         defer { assistantTopic = nil }
         return assistantTopic
+    }
+
+    func goThrough(_ notice: AssistantNotice) {
+        pendingNotice = notice
+    }
+
+    func consumePendingNotice() -> AssistantNotice? {
+        defer { pendingNotice = nil }
+        return pendingNotice
     }
 
     // MARK: - Onboarding gate

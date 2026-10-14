@@ -225,6 +225,8 @@ struct ContentView: View {
                 // historyNavigationLink still depends on the full load — the summary
                 // card it shows needs all transactions counted/converted.
                 accountsSection
+                // What Ten wrote first: here, not in the chat.
+                AssistantNoticesSection()
                 if coordinator.isFullyInitialized {
                     historyNavigationLink
                         .transition(.opacity)

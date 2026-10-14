@@ -113,6 +113,7 @@ class AppCoordinator {
                 saveUsage: { usage.save($0) }
             ),
             drafts: drafts,
+            describeDraft: { toolkit.describe($0) },
             persistence: threads.map { threads in
                 AssistantViewModel.Persistence(load: { await threads.latest() }, save: { await threads.save($0) })
             }

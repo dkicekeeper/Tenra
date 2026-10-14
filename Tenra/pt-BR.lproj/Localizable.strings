@@ -1877,6 +1877,8 @@
 "assistant.draft.accountGuessed" = "O Tenra escolheu a conta. Confira antes de salvar.";
 "assistant.draft.categoryGuessed" = "O Tenra escolheu a categoria. Confira antes de salvar.";
 "assistant.draft.budgetWas" = "Antes";
+"assistant.draft.editHint" = "Abre a operação para editar";
+"assistant.draft.editTip" = "Toque na operação para mudar.";
 "assistant.forecast.perDay" = "Por dia até %@";
 "assistant.forecast.free" = "Disponível: %@";
 "assistant.forecast.balance" = "Saldo por dia";

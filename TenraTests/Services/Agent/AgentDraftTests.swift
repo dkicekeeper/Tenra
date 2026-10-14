@@ -6,7 +6,9 @@
 //  voice and Siri paths do (ids or names, a guessed account marked as guessed, transfers
 //  between two regular accounts, what cannot be drafted skipped with a reason), `draft_budget`
 //  keeps the previous limit, and the draft book saves a draft whole or not at all and undoes
-//  it. All amounts are KZT, so no FX state is involved.
+//  it. An edit on the card replaces an operation of a draft not saved yet, resolved again by
+//  AgentDraftEditor. Amounts are KZT, or XTS (the ISO test code, never in the rate cache) where
+//  a conversion is the point, so no shared FX state is involved.
 //
 
 import Foundation
@@ -276,6 +278,108 @@ struct AgentDraftTests {
         await book.save("draft_1")
         #expect(fake.saved.count == 3)
         if case .saved? = book.states["draft_1"] {} else { Issue.record("expected saved after retry") }
+    }
+
+    private static func expense(_ amount: Double, category: String = "Кафе", account: String = "acc_kaspi", warnings: [DraftWarning] = []) -> TransactionDraft {
+        TransactionDraft(type: .expense, amount: amount, currency: "KZT", convertedAmount: nil, categoryName: category, subcategoryIds: [], accountId: account, date: now, note: "кофе", warnings: warnings)
+    }
+
+    @Test func anEditReplacesAnOperationOfADraftNotSavedYet() async {
+        let fake = FakeWriter()
+        let book = AgentDraftBook(writer: fake.writer)
+        let id = book.add([.single(Self.expense(1500)), .single(Self.expense(2300, category: "Такси"))])
+
+        #expect(book.replace(id, at: 1, with: .single(Self.expense(2500, category: "Такси"))))
+        #expect(book.drafts[id]?.operations == [.single(Self.expense(1500)), .single(Self.expense(2500, category: "Такси"))])
+        #expect(book.edited == [id])
+        #expect(!book.replace(id, at: 2, with: .single(Self.expense(1))))
+        #expect(!book.replace("draft_9", at: 0, with: .single(Self.expense(1))))
+
+        // Save writes the edited operation; a saved draft no longer changes.
+        await book.save(id)
+        if case .single(let saved)? = fake.saved.last { #expect(saved.amount == 2500) } else { Issue.record("expected the edited expense saved") }
+        #expect(!book.replace(id, at: 0, with: .single(Self.expense(1))))
+        #expect(book.drafts[id]?.operations.first == .single(Self.expense(1500)))
+
+        book.clear()
+        #expect(book.edited.isEmpty)
+    }
+
+    @Test func anEditAfterAFailedSaveIsReadyToSaveAgain() async {
+        let fake = FakeWriter()
+        fake.failOn = 0
+        let book = AgentDraftBook(writer: fake.writer)
+        let id = book.add([.single(Self.expense(1500))])
+        await book.save(id)
+        #expect(book.states[id] == .failed)
+
+        #expect(book.replace(id, at: 0, with: .single(Self.expense(1800))))
+        #expect(book.states[id] == .pending)
+    }
+
+    @Test func theFormGetsTheDraftAsItIs() {
+        let subcategories = [Subcategory(id: "sub_coffee", name: "Кофе"), Subcategory(id: "sub_lunch", name: "Обед")]
+        var draft = Self.expense(1500)
+        draft.subcategoryIds = ["sub_coffee"]
+
+        let operation = AgentDraftEditor.operation(from: draft, subcategories: subcategories)
+
+        #expect(operation.type == .expense)
+        #expect(operation.amount == Decimal(1500))
+        #expect(operation.currencyCode == "KZT")
+        #expect(operation.accountId == "acc_kaspi")
+        #expect(operation.categoryName == "Кафе")
+        #expect(operation.subcategoryNames == ["Кофе"])
+        #expect(operation.note == "кофе")
+        #expect(operation.date == Self.now)
+
+        // Uncategorized goes to the form as no category.
+        #expect(AgentDraftEditor.operation(from: Self.expense(1, category: ""), subcategories: []).categoryName == nil)
+    }
+
+    @Test func whatTheFormReturnsIsResolvedAgainWithoutGuesses() async {
+        let (_, _, store) = Self.make()
+        let subcategories = [Subcategory(id: "sub_taxi", name: "Ночное")]
+        let picked = ParsedOperation(type: .expense, amount: Decimal(2500), currencyCode: "KZT", date: Self.now, accountId: "acc_halyk", categoryName: "Такси", subcategoryNames: ["Ночное"], note: "такси домой")
+
+        let result = await AgentDraftEditor.draft(
+            from: picked,
+            accounts: store.accounts,
+            categories: store.categories,
+            subcategories: subcategories,
+            learned: VoiceLearningStore(defaults: UserDefaults(suiteName: "tests.\(UUID().uuidString)")!),
+            convert: { _, _, _ in Issue.record("KZT needs no conversion"); return nil }
+        )
+
+        guard case .success(let draft) = result else { Issue.record("expected a draft, got \(result)"); return }
+        #expect(draft.amount == 2500)
+        #expect(draft.accountId == "acc_halyk")
+        #expect(draft.categoryName == "Такси")
+        #expect(draft.subcategoryIds == ["sub_taxi"])
+        #expect(draft.note == "такси домой")
+        #expect(draft.warnings.isEmpty)
+        withExtendedLifetime(store) {}
+    }
+
+    @Test func anEditInAnotherCurrencyFetchesTheRateOnce() async {
+        let (_, _, store) = Self.make()
+        let learned = VoiceLearningStore(defaults: UserDefaults(suiteName: "tests.\(UUID().uuidString)")!)
+        let picked = ParsedOperation(type: .expense, amount: Decimal(10), currencyCode: "XTS", date: Self.now, accountId: "acc_kaspi", categoryName: "Кафе")
+        var asked: [String] = []
+
+        let converted = await AgentDraftEditor.draft(from: picked, accounts: store.accounts, categories: store.categories, subcategories: [], learned: learned) { amount, from, to in
+            asked.append("\(amount) \(from)->\(to)")
+            return 4_800
+        }
+        guard case .success(let draft) = converted else { Issue.record("expected a draft, got \(converted)"); return }
+        #expect(draft.currency == "XTS")
+        #expect(draft.convertedAmount == 4_800)
+        #expect(asked == ["10.0 XTS->KZT"])
+
+        let noRate = await AgentDraftEditor.draft(from: picked, accounts: store.accounts, categories: store.categories, subcategories: [], learned: learned) { _, _, _ in nil }
+        guard case .failure(let issue) = noRate else { Issue.record("expected no draft without a rate"); return }
+        #expect(AgentDraftEditor.message(for: issue) == String(localized: "currency.error.conversionFailed"))
+        withExtendedLifetime(store) {}
     }
 
     @Test func aNewChatClearsTheDrafts() {

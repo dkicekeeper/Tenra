@@ -198,6 +198,44 @@ struct AssistantViewModelTests {
         #expect(texts[2] == ["Сколько на кафе?"])
     }
 
+    @Test func anEditedDraftIsReportedWithWhatItHoldsNow() async {
+        let transport = ScriptedTransport([
+            [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_3", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_4", source: "none")])],
+        ])
+        let book = AgentDraftBook(writer: AgentDraftBook.Writer(
+            save: { _ in .transaction(Transaction(id: "tx1", date: "2026-10-28", description: "", amount: 1, currency: "KZT", type: .expense, category: "")) },
+            undo: { _ in }
+        ))
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            drafts: book,
+            describeDraft: { operation in
+                guard case .single(let draft) = operation else { return .null }
+                return ["amount": .number(draft.amount)]
+            }
+        )
+        func expense(_ amount: Double) -> AgentDraftOperation {
+            .single(TransactionDraft(type: .expense, amount: amount, currency: "KZT", convertedAmount: nil, categoryName: "Кафе", subcategoryIds: [], accountId: "acc_kaspi", date: Self.now, note: "", warnings: []))
+        }
+
+        await model.send("Кофе 1500")
+        let id = book.add([expense(1500)])
+        book.replace(id, at: 0, with: expense(1800))
+        await model.send("Что там с кофе?")
+        await model.send("А на такси?")
+        await book.save(id)
+        await model.send("Готово?")
+
+        let texts = transport.calls.map { call in call.last?.content.compactMap { $0["text"]?.stringValue } ?? [] }
+        #expect(texts[1] == ["<draft_status>\ndraft_1: edited by the user on the card, not saved yet, items now: [{\"amount\":1800}]\n</draft_status>", "Что там с кофе?"])
+        #expect(texts[2] == ["А на такси?"])
+        #expect(texts[3] == ["<draft_status>\ndraft_1: saved, edited by the user before saving, items now: [{\"amount\":1800}]\n</draft_status>", "Готово?"])
+    }
+
     @Test func aFreeAnswerSpendsTheAllowance() async {
         let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "none")])]])
         let box = UsageBox()

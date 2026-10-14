@@ -10,8 +10,9 @@
 //  The <app_context> block goes with the first question and again whenever it changes (a new
 //  day, an account or a category added), as the server's prompt expects.
 //
-//  What the person did on the confirm cards since the last reply (a draft saved or undone)
-//  goes with the next question as a <draft_status> block, so the model knows what is done.
+//  What the person did on the confirm cards since the last reply (a draft saved, undone or
+//  edited, with what an edited one holds now) goes with the next question as a <draft_status>
+//  block, so the model knows what is done.
 //
 //  Without Pro, every answer spends the free allowance (AssistantAllowance: 30 in the first
 //  week, then 10 a month). A question over the allowance is not sent: it stays in the thread
@@ -73,6 +74,8 @@ final class AssistantViewModel {
     private(set) var allowance: AssistantAllowance.Status?
     /// The drafts the replies' confirm cards save; nil where drafting is not wired.
     @ObservationIgnored let drafts: AgentDraftBook?
+    /// A draft operation as the draft tools describe it (FinanceToolkit), for an edited draft.
+    @ObservationIgnored private let describeDraft: ((AgentDraftOperation) -> JSONValue)?
 
     @ObservationIgnored private let conversation: AgentConversation
     @ObservationIgnored private let context: () -> String
@@ -92,12 +95,14 @@ final class AssistantViewModel {
         context: @escaping () -> String,
         access: Access = .unlimited,
         drafts: AgentDraftBook? = nil,
+        describeDraft: ((AgentDraftOperation) -> JSONValue)? = nil,
         persistence: Persistence? = nil
     ) {
         self.conversation = conversation
         self.context = context
         self.access = access
         self.drafts = drafts
+        self.describeDraft = describeDraft
         self.persistence = persistence
         self.threadCreatedAt = access.now()
         refreshAllowance()
@@ -217,17 +222,27 @@ final class AssistantViewModel {
         await ask(text, entry: failedEntryId)
     }
 
-    /// The drafts saved or undone since the model last heard, as a `<draft_status>` block, with
-    /// the states to remember once the turn goes through; nil when nothing changed.
+    /// The drafts saved, undone or edited since the model last heard, as a `<draft_status>`
+    /// block, with the states to remember once the turn goes through; nil when nothing changed.
+    /// An edited draft carries its items as they are now, so another edit is news again.
     private func draftStatus() -> (text: String, states: [String: String])? {
         guard let drafts else { return nil }
         var states: [String: String] = [:]
         for (id, state) in drafts.states {
+            var status: String?
             switch state {
-            case .saved: states[id] = "saved"
-            case .undone: states[id] = "undone"
+            case .saved: status = "saved"
+            case .undone: status = "undone"
             case .pending, .saving, .failed: break
             }
+            if drafts.edited.contains(id) {
+                var edit = status.map { "\($0), edited by the user before saving" } ?? "edited by the user on the card, not saved yet"
+                if let describeDraft, let operations = drafts.drafts[id]?.operations {
+                    edit += ", items now: " + JSONValue.array(operations.map(describeDraft)).jsonString()
+                }
+                status = edit
+            }
+            if let status { states[id] = status }
         }
         let changed = states.filter { reportedDrafts[$0.key] != $0.value }.sorted { $0.key < $1.key }
         guard !changed.isEmpty else { return nil }

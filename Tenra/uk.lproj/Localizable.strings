@@ -1877,6 +1877,8 @@
 "assistant.draft.accountGuessed" = "Рахунок вибрано автоматично. Перевірте перед збереженням.";
 "assistant.draft.categoryGuessed" = "Категорію вибрано автоматично. Перевірте перед збереженням.";
 "assistant.draft.budgetWas" = "Було";
+"assistant.draft.editHint" = "Відкриває операцію для редагування";
+"assistant.draft.editTip" = "Натисніть на операцію, щоб змінити.";
 "assistant.forecast.perDay" = "На день до %@";
 "assistant.forecast.free" = "Вільно: %@";
 "assistant.forecast.balance" = "Залишок по днях";

@@ -16,6 +16,11 @@ Present via `.sheet()`, **NEVER via `.navigationDestination()`** (nested `Naviga
 `VoiceInputConfirmationView` `onUpdate` mode:
 - Pass `onUpdate: ((ParsedOperation) -> Void)?` for edit-only behavior (returns updated `ParsedOperation` without saving)
 - `nil` = save mode
+- The returned `subcategoryNames` come from the subcategory picker's ids (the names the screen
+  opened with are only its starting point)
+- `editsDate: true` adds the add form's date buttons (`dateButtonsSafeArea`); the voice flow
+  keeps the date it heard. The assistant's confirm card uses both to edit a draft
+  (`AgentDraftEditor`, [plan-ai-assistant.md](../plan-ai-assistant.md) §3.1)
 
 ## Live preview cards are not `TransactionCard`
 

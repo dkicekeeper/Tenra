@@ -1877,6 +1877,8 @@
 "assistant.draft.accountGuessed" = "Tenra가 계정을 선택했습니다. 저장하기 전에 확인하세요.";
 "assistant.draft.categoryGuessed" = "Tenra가 카테고리를 선택했습니다. 저장하기 전에 확인하세요.";
 "assistant.draft.budgetWas" = "이전";
+"assistant.draft.editHint" = "거래를 열어 변경합니다";
+"assistant.draft.editTip" = "바꾸려면 거래를 탭하세요.";
 "assistant.forecast.perDay" = "%@까지 하루 사용 가능 금액";
 "assistant.forecast.free" = "사용 가능: %@";
 "assistant.forecast.balance" = "일별 잔액";

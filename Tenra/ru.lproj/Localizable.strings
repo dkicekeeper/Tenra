@@ -1877,6 +1877,8 @@
 "assistant.draft.accountGuessed" = "Счёт выбран автоматически. Проверьте перед сохранением.";
 "assistant.draft.categoryGuessed" = "Категория выбрана автоматически. Проверьте перед сохранением.";
 "assistant.draft.budgetWas" = "Было";
+"assistant.draft.editHint" = "Открывает операцию для правки";
+"assistant.draft.editTip" = "Нажмите на операцию, чтобы изменить.";
 "assistant.forecast.perDay" = "В день до %@";
 "assistant.forecast.free" = "Свободно: %@";
 "assistant.forecast.balance" = "Остаток по дням";

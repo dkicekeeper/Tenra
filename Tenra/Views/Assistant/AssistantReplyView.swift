@@ -321,12 +321,25 @@ private struct AssistantForecastCard: View {
 
 /// A draft to save (plan §1, "do"): its operations as they will look in the history (a budget
 /// as its new limit next to the old one, a subscription as its name, frequency and first
-/// charge), what Tenra guessed, Save; once saved, Undo. Nothing is written before Save.
+/// charge), what Tenra guessed, Save; once saved, Undo. Nothing is written before Save. Until
+/// then a tap on an income or an expense opens it in the voice confirmation form
+/// (AgentDraftEditor).
 private struct AssistantDraftCard: View {
     @Environment(AppCoordinator.self) private var coordinator
 
     let book: AgentDraftBook
     let draft: AgentDraft
+
+    /// An operation open in the form.
+    private struct Editing: Identifiable {
+        let index: Int
+        let operation: ParsedOperation
+        var id: Int { index }
+    }
+
+    @State private var editing: Editing?
+    /// Why the last edit did not apply.
+    @State private var editError: String?
 
     var body: some View {
         let store = coordinator.transactionStore
@@ -334,7 +347,7 @@ private struct AssistantDraftCard: View {
         AssistantCard(title: nil) {
             ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
                 if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
-                    TransactionCardView(
+                    let row = TransactionCardView(
                         transaction: preview,
                         currency: preview.currency,
                         styleData: CategoryStyleHelper.cached(
@@ -345,6 +358,21 @@ private struct AssistantDraftCard: View {
                         sourceAccount: preview.accountId.flatMap { store.accountById[$0] },
                         targetAccount: preview.targetAccountId.flatMap { store.accountById[$0] }
                     )
+                    if case .single(let single) = operation, state == .pending || state == .failed {
+                        Button {
+                            editError = nil
+                            editing = Editing(
+                                index: index,
+                                operation: AgentDraftEditor.operation(from: single, subcategories: coordinator.categoriesViewModel.subcategories)
+                            )
+                        } label: {
+                            row
+                        }
+                        .buttonStyle(.bounce)
+                        .accessibilityHint(String(localized: "assistant.draft.editHint"))
+                    } else {
+                        row
+                    }
                 } else if case .budget(let budget) = operation {
                     budgetRows(budget, store: store)
                 } else if case .recurring(let recurring) = operation {
@@ -355,10 +383,53 @@ private struct AssistantDraftCard: View {
                 ForEach(guesses, id: \.self) { guess in
                     InlineStatusText(message: guess, type: .warning)
                 }
+                // A guess is what an edit fixes: say where.
+                if !guesses.isEmpty, draft.operations.contains(where: { if case .single = $0 { true } else { false } }) {
+                    InlineStatusText(message: String(localized: "assistant.draft.editTip"), type: .info)
+                }
+                if let editError {
+                    InlineStatusText(message: editError, type: .error)
+                }
             }
             footer(state)
         }
         .animation(AppAnimation.smooth, value: state)
+        .sheet(item: $editing) { target in
+            VoiceInputConfirmationView(
+                transactionsViewModel: coordinator.transactionsViewModel,
+                accountsViewModel: coordinator.accountsViewModel,
+                categoriesViewModel: coordinator.categoriesViewModel,
+                parsedOperation: target.operation,
+                originalText: target.operation.note,
+                editsDate: true,
+                onUpdate: { updated in
+                    Task { await apply(updated, at: target.index) }
+                }
+            )
+            .environment(coordinator.transactionStore)
+        }
+    }
+
+    /// The form's operation, resolved again, in place of the one the assistant drafted.
+    private func apply(_ operation: ParsedOperation, at index: Int) async {
+        let store = coordinator.transactionStore
+        let result = await AgentDraftEditor.draft(
+            from: operation,
+            accounts: store.accounts,
+            categories: store.categories,
+            subcategories: coordinator.categoriesViewModel.subcategories,
+            learned: .shared,
+            convert: { await CurrencyConverter.convert(amount: $0, from: $1, to: $2) }
+        )
+        switch result {
+        case .success(let edited):
+            if book.replace(draft.id, at: index, with: .single(edited)) {
+                editError = nil
+            }
+        case .failure(let issue):
+            editError = AgentDraftEditor.message(for: issue)
+            HapticManager.error()
+        }
     }
 
     @ViewBuilder

@@ -1877,6 +1877,8 @@
 "assistant.draft.accountGuessed" = "Hesabı Tenra seçti. Kaydetmeden önce kontrol et.";
 "assistant.draft.categoryGuessed" = "Kategoriyi Tenra seçti. Kaydetmeden önce kontrol et.";
 "assistant.draft.budgetWas" = "Önceki";
+"assistant.draft.editHint" = "İşlemi değiştirmek için açar";
+"assistant.draft.editTip" = "Değiştirmek için işleme dokun.";
 "assistant.forecast.perDay" = "%@ tarihine kadar günlük";
 "assistant.forecast.free" = "Kullanılabilir: %@";
 "assistant.forecast.balance" = "Günlük bakiye";

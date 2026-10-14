@@ -1019,8 +1019,9 @@ final class FinanceToolkit: AgentToolExecuting {
         return accounts.first { $0.name.lowercased() == name }
     }
 
-    /// What the draft will write, for the model to describe and point the confirm block at.
-    private func describe(_ operation: AgentDraftOperation) -> JSONValue {
+    /// What the draft will write, for the model to describe and point the confirm block at, and
+    /// what an edited draft holds now (`<draft_status>`, AssistantViewModel).
+    func describe(_ operation: AgentDraftOperation) -> JSONValue {
         func accountName(_ id: String) -> String? { store.accounts.first { $0.id == id }?.name }
         switch operation {
         case .single(let draft):

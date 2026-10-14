@@ -1939,6 +1939,32 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Ассистент работает через облако";
-"assistant.consent.message" = "Чтобы ответить, он обращается к модели Claude от Anthropic. С телефона уходят только ваш вопрос и то, что нужно для ответа: суммы, категории, названия счетов и нужные операции. База, чеки и выписки остаются здесь. Сервер Tenra ничего не хранит, данные не используются для обучения моделей.";
+"assistant.consent.message" = "Чтобы ответить, он обращается к модели Claude от Anthropic. С телефона уходят только ваш вопрос и то, что нужно для ответа: суммы, категории, названия счетов, факты, которые он о вас помнит, и нужные операции. База, чеки и выписки остаются здесь. Сервер Tenra ничего не хранит, данные не используются для обучения моделей.";
 "assistant.consent.allow" = "Включить";
 "assistant.consent.notNow" = "Не сейчас";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Тэн запомнит это";
+"assistant.fact.forget" = "Тэн забудет это";
+"assistant.fact.was" = "Было: %@";
+"settings.assistant.header" = "Ассистент";
+"settings.assistant.cloud" = "Ответы из облака";
+"settings.assistant.footer" = "Тэн отвечает с помощью Claude, модели от Anthropic. Если выключить, Тэн снова спросит, прежде чем следующий вопрос уйдёт с телефона.";
+"assistant.memory.title" = "Что Тэн знает обо мне";
+"assistant.memory.emptyTitle" = "Тэн пока ничего о вас не знает";
+"assistant.memory.emptyMessage" = "Расскажите Тэну о своих деньгах в чате, например когда приходит зарплата или на что вы копите. Тэн предложит это запомнить, а решать вам.";
+"assistant.memory.footer" = "Тэн видит эти факты в каждом чате. Они хранятся на этом iPhone и уходят с него только вместе с вашими вопросами.";
+"assistant.memory.add" = "Добавить факт";
+"assistant.memory.new" = "Новый факт";
+"assistant.memory.edit" = "Изменить факт";
+"assistant.memory.placeholder" = "Например: зарплата приходит 10-го";
+"assistant.memory.editorFooter" = "Одно короткое предложение о ваших деньгах: когда приходит зарплата, на что копите, какая карта основная. Без номеров карт и паролей.";
+"assistant.memory.editHint" = "Открывает факт для изменения";
+"assistant.memory.forget" = "Забыть";
+"assistant.memory.forgetAll" = "Забыть всё";
+"assistant.memory.forgetAllTitle" = "Забыть все факты?";
+"assistant.memory.forgetAllMessage" = "Тэн снова ничего не будет о вас знать. Операции и чаты останутся.";
+"assistant.memory.tooLong" = "Уложитесь в одно короткое предложение.";
+"assistant.memory.full" = "Тэн помнит до %lld фактов. Забудьте один, чтобы добавить новый.";
+"assistant.memory.duplicate" = "Тэн уже это помнит.";
+"assistant.memory.gone" = "Этого факта больше нет в памяти.";

@@ -141,5 +141,21 @@ struct AgentProtocolTests {
         #expect(text.contains("expense categories: cat_1 \"Кафе\""))
         #expect(text.contains("income categories: cat_2 \"Зарплата\""))
         #expect(text.hasSuffix("</app_context>"))
+        // No facts, no facts line.
+        #expect(!text.contains("facts"))
+    }
+
+    @Test func contextBlockListsTheRememberedFacts() throws {
+        let snapshot = AgentContextSnapshot(
+            today: Date(timeIntervalSince1970: 1_793_170_800),
+            timeZone: try #require(TimeZone(identifier: "Asia/Almaty")),
+            locale: "ru",
+            baseCurrency: "KZT",
+            accounts: [],
+            categories: [],
+            facts: [.init(id: "f1", text: "Зарплата приходит 10-го"), .init(id: "f3", text: "Копит на \"машину\"")]
+        )
+        let text = AgentContextBuilder.text(for: snapshot)
+        #expect(text.contains("\nfacts you remember about the user: f1 \"Зарплата приходит 10-го\"; f3 \"Копит на 'машину'\"\n</app_context>"))
     }
 }

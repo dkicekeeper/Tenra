@@ -1939,6 +1939,32 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "アシスタントはクラウドで動作します";
-"assistant.consent.message" = "回答のため、Anthropic のモデル Claude に問い合わせます。端末から送られるのは、質問と回答に必要な情報（合計、カテゴリ、口座名、必要な取引）だけです。データベース、レシート、明細はこの端末に残ります。Tenra のサーバーは何も保存せず、データがモデルの学習に使われることはありません。";
+"assistant.consent.message" = "回答のため、Anthropic のモデル Claude に問い合わせます。端末から送られるのは、質問と回答に必要な情報（合計、カテゴリ、口座名、あなたについて覚えている情報、必要な取引）だけです。データベース、レシート、明細はこの端末に残ります。Tenra のサーバーは何も保存せず、データがモデルの学習に使われることはありません。";
 "assistant.consent.allow" = "オンにする";
 "assistant.consent.notNow" = "今はしない";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "テンがこれを覚えます";
+"assistant.fact.forget" = "テンがこれを忘れます";
+"assistant.fact.was" = "変更前: %@";
+"settings.assistant.header" = "アシスタント";
+"settings.assistant.cloud" = "クラウドで回答";
+"settings.assistant.footer" = "テンは Anthropic のモデル Claude で回答します。オフにすると、次の質問が端末から送られる前に改めて確認します。";
+"assistant.memory.title" = "テンが知っている私のこと";
+"assistant.memory.emptyTitle" = "テンはまだあなたのことを知りません";
+"assistant.memory.emptyMessage" = "チャットでお金のことをテンに話してください。たとえば給料日や、何のために貯金しているかなど。テンが覚えるよう提案し、決めるのはあなたです。";
+"assistant.memory.footer" = "テンはどのチャットでもこれらの情報を参照します。この iPhone に保存され、質問と一緒にのみ送信されます。";
+"assistant.memory.add" = "情報を追加";
+"assistant.memory.new" = "新しい情報";
+"assistant.memory.edit" = "情報を編集";
+"assistant.memory.placeholder" = "例: 給料は毎月10日";
+"assistant.memory.editorFooter" = "お金に関する短い一文: 給料日、貯金の目的、メインのカードなど。カード番号やパスワードは書かないでください。";
+"assistant.memory.editHint" = "情報を開いて編集します";
+"assistant.memory.forget" = "忘れる";
+"assistant.memory.forgetAll" = "すべて忘れる";
+"assistant.memory.forgetAllTitle" = "すべての情報を忘れますか？";
+"assistant.memory.forgetAllMessage" = "テンはあなたについて何も知らない状態に戻ります。取引とチャットは残ります。";
+"assistant.memory.tooLong" = "短い一文にしてください。";
+"assistant.memory.full" = "テンが覚えられるのは %lld 件までです。追加するには1件忘れてください。";
+"assistant.memory.duplicate" = "テンはすでにこれを覚えています。";
+"assistant.memory.gone" = "この情報はもう記憶にありません。";

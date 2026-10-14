@@ -109,7 +109,8 @@ final class AssistantViewModel {
     @ObservationIgnored private let describeDraft: ((AgentDraftOperation) -> JSONValue)?
 
     @ObservationIgnored private let conversation: AgentConversation
-    @ObservationIgnored private let context: () -> String
+    /// The `<app_context>` block; async, as the remembered facts may still be loading.
+    @ObservationIgnored private let context: @MainActor () async -> String
     @ObservationIgnored private var sentContext: String?
     @ObservationIgnored private var failedEntryId: UUID?
     /// The draft states the model was last told about.
@@ -135,7 +136,7 @@ final class AssistantViewModel {
 
     init(
         conversation: AgentConversation,
-        context: @escaping () -> String,
+        context: @escaping @MainActor () async -> String,
         access: Access = .unlimited,
         drafts: AgentDraftBook? = nil,
         describeDraft: ((AgentDraftOperation) -> JSONValue)? = nil,
@@ -467,7 +468,7 @@ final class AssistantViewModel {
                 return moved
             }
         }
-        let current = context()
+        let current = await context()
         let contextToSend = current == sentContext ? nil : current
         let status = draftStatus()
         let attached = unsentNotes

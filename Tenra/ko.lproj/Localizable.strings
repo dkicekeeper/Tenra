@@ -1939,6 +1939,32 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "어시스턴트는 클라우드에서 작동합니다";
-"assistant.consent.message" = "답변을 위해 Anthropic의 모델 Claude에 물어봅니다. 휴대폰 밖으로 나가는 것은 질문과 답변에 필요한 정보(합계, 카테고리, 계좌 이름, 필요한 거래)뿐입니다. 데이터베이스, 영수증, 명세서는 이곳에 남습니다. Tenra 서버는 아무것도 저장하지 않으며, 데이터는 모델 학습에 사용되지 않습니다.";
+"assistant.consent.message" = "답변을 위해 Anthropic의 모델 Claude에 물어봅니다. 휴대폰 밖으로 나가는 것은 질문과 답변에 필요한 정보(합계, 카테고리, 계좌 이름, 당신에 대해 기억하는 정보, 필요한 거래)뿐입니다. 데이터베이스, 영수증, 명세서는 이곳에 남습니다. Tenra 서버는 아무것도 저장하지 않으며, 데이터는 모델 학습에 사용되지 않습니다.";
 "assistant.consent.allow" = "켜기";
 "assistant.consent.notNow" = "나중에";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "텐이 이걸 기억해요";
+"assistant.fact.forget" = "텐이 이걸 잊어요";
+"assistant.fact.was" = "이전: %@";
+"settings.assistant.header" = "어시스턴트";
+"settings.assistant.cloud" = "클라우드 답변";
+"settings.assistant.footer" = "텐은 Anthropic의 모델 Claude로 답해요. 끄면 다음 질문이 휴대폰을 떠나기 전에 다시 물어봐요.";
+"assistant.memory.title" = "텐이 아는 나의 정보";
+"assistant.memory.emptyTitle" = "텐은 아직 당신을 잘 몰라요";
+"assistant.memory.emptyMessage" = "채팅에서 텐에게 돈 이야기를 들려주세요. 예를 들어 월급날이나 무엇을 위해 저축하는지요. 텐이 기억해 둘지 물어보고, 결정은 당신이 해요.";
+"assistant.memory.footer" = "텐은 모든 채팅에서 이 정보를 봐요. 이 iPhone에 저장되고 질문과 함께일 때만 밖으로 나가요.";
+"assistant.memory.add" = "정보 추가";
+"assistant.memory.new" = "새 정보";
+"assistant.memory.edit" = "정보 편집";
+"assistant.memory.placeholder" = "예: 월급은 매달 10일";
+"assistant.memory.editorFooter" = "돈에 관한 짧은 한 문장: 월급날, 저축 목적, 주로 쓰는 카드 등. 카드 번호나 비밀번호는 적지 마세요.";
+"assistant.memory.editHint" = "정보를 열어 편집해요";
+"assistant.memory.forget" = "잊기";
+"assistant.memory.forgetAll" = "모두 잊기";
+"assistant.memory.forgetAllTitle" = "모든 정보를 잊을까요?";
+"assistant.memory.forgetAllMessage" = "텐은 당신에 대해 다시 아무것도 모르게 돼요. 거래와 채팅은 그대로 남아요.";
+"assistant.memory.tooLong" = "짧은 한 문장으로 적어 주세요.";
+"assistant.memory.full" = "텐은 최대 %lld개까지 기억해요. 새로 추가하려면 하나를 잊어 주세요.";
+"assistant.memory.duplicate" = "텐이 이미 기억하고 있어요.";
+"assistant.memory.gone" = "이 정보는 더 이상 기억에 없어요.";

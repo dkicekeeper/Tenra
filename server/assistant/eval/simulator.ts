@@ -7,6 +7,7 @@ import {
   BASE_CURRENCY,
   BUDGETS,
   CATEGORIES,
+  FACTS,
   LOAN_TERMS,
   RECURRING,
   TODAY,
@@ -446,6 +447,26 @@ function projectSavings(input: Input) {
   };
 }
 
+// As FinanceToolkit.draftFact does: one short line, a fact id that exists, no text only to
+// forget, not remembered already. Both locales' facts share their ids.
+function draftFact(input: Input) {
+  const replaces = str(input, "replaces") || null;
+  const raw = input.text;
+  if (raw !== null && raw !== undefined && typeof raw !== "string") throw new ToolInputError("text must be a string or null");
+  const text = typeof raw === "string" ? raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).join(" ") : "";
+  const all = [...FACTS.ru, ...FACTS.en];
+  const previous = replaces ? all.find((f) => f.id === replaces) : undefined;
+  if (replaces && !previous) throw new ToolInputError(`There is no fact ${replaces}. Use a fact id from <app_context>.`);
+  if (!text) {
+    if (!previous) throw new ToolInputError("Give the fact's text, or replaces with the id of the fact to forget.");
+    return { draft_id: `draft_${++draftSeq}`, action: "forget", text: null, replaces, previous_text: previous.text, saved: false };
+  }
+  if (text.length > 200) throw new ToolInputError("Keep a fact under 200 characters: one short sentence.");
+  const same = all.find((f) => f.text.toLowerCase() === text.toLowerCase() && f.id !== replaces);
+  if (same) throw new ToolInputError(`This is remembered already as ${same.id}.`);
+  return { draft_id: `draft_${++draftSeq}`, action: previous ? "change" : "remember", text, replaces, previous_text: previous?.text ?? null, saved: false };
+}
+
 const HANDLERS: Record<string, (input: Input) => unknown> = {
   get_spending_summary: spendingSummary,
   compare_periods: comparePeriods,
@@ -460,6 +481,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_transactions: draftTransactions,
   draft_budget: draftBudget,
   draft_recurring: draftRecurring,
+  draft_fact: draftFact,
 };
 
 export function executeTool(name: string, input: Input): unknown {

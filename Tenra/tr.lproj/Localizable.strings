@@ -1939,6 +1939,32 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Asistan bulutta çalışır";
-"assistant.consent.message" = "Cevap vermek için Anthropic’in modeli Claude’a danışır. Telefondan yalnızca sorun ve cevap için baktıkları çıkar: toplamlar, kategoriler, hesap adları ve gereken işlemler. Veritabanın, fişlerin ve ekstrelerin burada kalır. Tenra sunucusu hiçbir şey saklamaz, verilerin model eğitiminde kullanılmaz.";
+"assistant.consent.message" = "Cevap vermek için Anthropic’in modeli Claude’a danışır. Telefondan yalnızca sorun ve cevap için baktıkları çıkar: toplamlar, kategoriler, hesap adları, senin hakkında hatırladığı bilgiler ve gereken işlemler. Veritabanın, fişlerin ve ekstrelerin burada kalır. Tenra sunucusu hiçbir şey saklamaz, verilerin model eğitiminde kullanılmaz.";
 "assistant.consent.allow" = "Aç";
 "assistant.consent.notNow" = "Şimdi değil";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Ten bunu hatırlayacak";
+"assistant.fact.forget" = "Ten bunu unutacak";
+"assistant.fact.was" = "Önceki: %@";
+"settings.assistant.header" = "Asistan";
+"settings.assistant.cloud" = "Buluttan cevaplar";
+"settings.assistant.footer" = "Ten, Anthropic’in modeli Claude ile cevap verir. Kapatırsan Ten, sonraki sorun telefondan çıkmadan önce yeniden sorar.";
+"assistant.memory.title" = "Ten benim hakkımda ne biliyor";
+"assistant.memory.emptyTitle" = "Ten henüz senin hakkında bir şey bilmiyor";
+"assistant.memory.emptyMessage" = "Sohbette Ten’e paranı anlat, örneğin maaşının ne zaman geldiğini ya da ne için biriktirdiğini. Ten bunu hatırlamayı önerir, kararı sen verirsin.";
+"assistant.memory.footer" = "Ten bu bilgileri her sohbette görür. Bu iPhone’da saklanır ve yalnızca sorularınla birlikte dışarı çıkar.";
+"assistant.memory.add" = "Bilgi ekle";
+"assistant.memory.new" = "Yeni bilgi";
+"assistant.memory.edit" = "Bilgiyi düzenle";
+"assistant.memory.placeholder" = "Örneğin: maaş ayın 10’unda gelir";
+"assistant.memory.editorFooter" = "Paran hakkında kısa bir cümle: maaşın ne zaman geliyor, ne için biriktiriyorsun, ana kartın hangisi. Kart numarası ya da şifre yazma.";
+"assistant.memory.editHint" = "Bilgiyi düzenlemek için açar";
+"assistant.memory.forget" = "Unut";
+"assistant.memory.forgetAll" = "Her şeyi unut";
+"assistant.memory.forgetAllTitle" = "Tüm bilgiler unutulsun mu?";
+"assistant.memory.forgetAllMessage" = "Ten artık senin hakkında hiçbir şey bilmeyecek. İşlemlerin ve sohbetlerin kalır.";
+"assistant.memory.tooLong" = "Kısa tek bir cümle yaz.";
+"assistant.memory.full" = "Ten en fazla %lld bilgi hatırlar. Yenisini eklemek için birini unut.";
+"assistant.memory.duplicate" = "Ten bunu zaten hatırlıyor.";
+"assistant.memory.gone" = "Bu bilgi artık hafızada değil.";

@@ -12,7 +12,8 @@
 //  `simulate_loan` prices a loan's refinancing or early repayment (LoanWhatIf) and
 //  `project_savings` grows regular saving at an assumed return (SavingsProjection).
 //  `draft_transactions`, `draft_budget` and `draft_recurring` file drafts (AgentDraftBook)
-//  that the person saves on the confirm card.
+//  that the person saves on the confirm card; `draft_fact` files a fact to remember, change or
+//  forget (AgentMemory) the same way.
 //
 
 import Foundation
@@ -21,6 +22,7 @@ final class FinanceToolkit: AgentToolExecuting {
     private let store: TransactionStore
     private weak var insights: InsightsViewModel?
     private let drafts: AgentDraftBook?
+    private let memory: AgentMemory?
     private let learned: VoiceLearningStore
     private let suggestAccount: ((String) -> String?)?
     private let now: () -> Date
@@ -29,6 +31,8 @@ final class FinanceToolkit: AgentToolExecuting {
     /// - Parameters:
     ///   - drafts: where `draft_transactions` files its drafts; without it drafting answers
     ///     "not available".
+    ///   - memory: the facts `draft_fact` checks a new one against; without it remembering
+    ///     answers "not available".
     ///   - learned: the accounts the person confirmed per category in the voice flow.
     ///   - suggestAccount: the account the history suggests for a category (by name), as the
     ///     add-expense screen ranks them.
@@ -36,6 +40,7 @@ final class FinanceToolkit: AgentToolExecuting {
         store: TransactionStore,
         insights: InsightsViewModel? = nil,
         drafts: AgentDraftBook? = nil,
+        memory: AgentMemory? = nil,
         learned: VoiceLearningStore? = nil,
         suggestAccount: ((String) -> String?)? = nil,
         now: @escaping () -> Date = Date.init,
@@ -44,6 +49,7 @@ final class FinanceToolkit: AgentToolExecuting {
         self.store = store
         self.insights = insights
         self.drafts = drafts
+        self.memory = memory
         self.learned = learned ?? .shared
         self.suggestAccount = suggestAccount
         self.now = now
@@ -69,6 +75,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_transactions": return try await draftTransactions(input)
             case "draft_budget": return try draftBudget(input)
             case "draft_recurring": return try draftRecurring(input)
+            case "draft_fact": return try await draftFact(input)
             case _ where Self.laterPhaseTools.contains(name):
                 return .failure(Self.notYet(name))
             default:
@@ -929,6 +936,49 @@ final class FinanceToolkit: AgentToolExecuting {
         ])
     }
 
+    private struct DraftFactInput: Decodable {
+        let text: String?
+        let replaces: String?
+    }
+
+    /// `draft_fact`: a fact about the person's money to remember across chats, or a change to
+    /// or the removal of a remembered one (`replaces`, its id from `<app_context>`; no text
+    /// forgets it). Checked against the facts now: not empty, not too long, not remembered
+    /// already, room for a new one.
+    private func draftFact(_ input: JSONValue) async throws -> AgentToolOutput {
+        guard let drafts, let memory else { return .failure(Self.notYet("draft_fact")) }
+        let args = try input.decoded(as: DraftFactInput.self)
+        await memory.load()
+        let replaces = args.replaces.flatMap { $0.isEmpty ? nil : $0 }
+        let text = args.text.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
+        let fact: AgentFactDraft
+        do {
+            fact = try memory.validated(text: text, replacing: replaces)
+        } catch let error as AgentMemoryError {
+            throw FinanceToolError(message: Self.message(for: error))
+        }
+        let id = drafts.add([.fact(fact)])
+        let action = fact.text == nil ? "forget" : (fact.replaces == nil ? "remember" : "change")
+        return .success([
+            "draft_id": .string(id),
+            "action": .string(action),
+            "text": fact.text.map(JSONValue.string) ?? .null,
+            "replaces": fact.replaces.map { JSONValue.string($0.id) } ?? .null,
+            "previous_text": fact.replaces.map { JSONValue.string($0.text) } ?? .null,
+            "saved": false,
+        ])
+    }
+
+    private static func message(for error: AgentMemoryError) -> String {
+        switch error {
+        case .empty: "Give the fact's text, or replaces with the id of the fact to forget."
+        case .tooLong: "Keep a fact under \(AgentMemory.maxLength) characters: one short sentence."
+        case .full: "The memory is full (\(AgentMemory.limit) facts). Offer to change or forget one of the facts in <app_context>."
+        case .duplicate(let id): "This is remembered already as \(id)."
+        case .unknown(let id): "There is no fact \(id). Use a fact id from <app_context>."
+        }
+    }
+
     private func draftOperation(_ item: DraftItemInput) async -> Result<AgentDraftOperation, FinanceToolError> {
         guard item.amount.isFinite, item.amount > 0 else { return .failure(FinanceToolError(message: "amount must be positive")) }
         let date = item.date.flatMap { FastDateParser.date(from: $0) } ?? now()
@@ -1108,6 +1158,12 @@ final class FinanceToolkit: AgentToolExecuting {
                 "category": .string(series.category),
                 "account_id": series.accountId.map(JSONValue.string) ?? .null,
                 "account": series.accountId.flatMap(accountName).map(JSONValue.string) ?? .null,
+            ]
+        case .fact(let fact):
+            return [
+                "type": "fact",
+                "text": fact.text.map(JSONValue.string) ?? .null,
+                "replaces": fact.replaces.map { JSONValue.string($0.id) } ?? .null,
             ]
         }
     }

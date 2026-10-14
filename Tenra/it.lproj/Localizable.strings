@@ -1939,6 +1939,32 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "L’assistente lavora nel cloud";
-"assistant.consent.message" = "Per rispondere, consulta Claude, un modello di Anthropic. Dal telefono escono solo la tua domanda e ciò che cerca per rispondere: totali, categorie, nomi dei conti e le operazioni necessarie. Il tuo archivio, gli scontrini e gli estratti conto restano qui. Il server di Tenra non conserva nulla e i tuoi dati non servono ad addestrare modelli.";
+"assistant.consent.message" = "Per rispondere, consulta Claude, un modello di Anthropic. Dal telefono escono solo la tua domanda e ciò che cerca per rispondere: totali, categorie, nomi dei conti, le informazioni che ricorda su di te e le operazioni necessarie. Il tuo archivio, gli scontrini e gli estratti conto restano qui. Il server di Tenra non conserva nulla e i tuoi dati non servono ad addestrare modelli.";
 "assistant.consent.allow" = "Attiva";
 "assistant.consent.notNow" = "Non ora";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Ten se lo ricorderà";
+"assistant.fact.forget" = "Ten lo dimenticherà";
+"assistant.fact.was" = "Prima: %@";
+"settings.assistant.header" = "Assistente";
+"settings.assistant.cloud" = "Risposte dal cloud";
+"settings.assistant.footer" = "Ten risponde con Claude, un modello di Anthropic. Se lo disattivi, Ten chiede di nuovo prima che la tua prossima domanda lasci il telefono.";
+"assistant.memory.title" = "Cosa sa Ten di me";
+"assistant.memory.emptyTitle" = "Ten non sa ancora nulla di te";
+"assistant.memory.emptyMessage" = "Racconta a Ten dei tuoi soldi nella chat, per esempio quando arriva lo stipendio o per cosa risparmi. Ten propone di ricordarlo, e decidi tu.";
+"assistant.memory.footer" = "Ten vede queste informazioni in ogni chat. Restano su questo iPhone e lo lasciano solo insieme alle tue domande.";
+"assistant.memory.add" = "Aggiungi un'informazione";
+"assistant.memory.new" = "Nuova informazione";
+"assistant.memory.edit" = "Modifica informazione";
+"assistant.memory.placeholder" = "Per esempio: lo stipendio arriva il 10";
+"assistant.memory.editorFooter" = "Una frase breve sui tuoi soldi: quando arriva lo stipendio, per cosa risparmi, qual è la carta principale. Niente numeri di carta o password.";
+"assistant.memory.editHint" = "Apre l'informazione per modificarla";
+"assistant.memory.forget" = "Dimentica";
+"assistant.memory.forgetAll" = "Dimentica tutto";
+"assistant.memory.forgetAllTitle" = "Dimenticare tutte le informazioni?";
+"assistant.memory.forgetAllMessage" = "Ten non saprà più nulla di te. Le tue operazioni e le chat restano.";
+"assistant.memory.tooLong" = "Basta una frase breve.";
+"assistant.memory.full" = "Ten ricorda fino a %lld informazioni. Dimenticane una per aggiungerne un'altra.";
+"assistant.memory.duplicate" = "Ten lo ricorda già.";
+"assistant.memory.gone" = "Questa informazione non è più in memoria.";

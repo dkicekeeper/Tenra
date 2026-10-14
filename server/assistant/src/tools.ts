@@ -215,6 +215,16 @@ const draftTools: Tool[] = [
       account: nullable({ type: "string" }),
     }),
   },
+  {
+    name: "draft_fact",
+    description:
+      "Prepares a fact about the user's money to remember across chats (payday, the main account, a goal they save for, money they owe or are owed), or a change to or the removal of a fact you remember. Nothing is kept until the user taps Save on the confirm block. replaces is the id of a remembered fact from <app_context> to change or forget; text is the fact as one short sentence in the user's language, or null together with replaces to forget it.",
+    strict: true,
+    input_schema: strictObject({
+      text: nullable({ type: "string", description: "One short sentence, under 200 characters" }),
+      replaces: nullable({ type: "string", description: "Id of a remembered fact, e.g. f2" }),
+    }),
+  },
 ];
 
 const source = { type: "string", description: "result_id of the tool result that holds the data, e.g. r1" };

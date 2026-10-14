@@ -107,7 +107,7 @@ Saves with the same operation name run one at a time; none is dropped.
 
 ## CoreData Schema
 
-**Current version**: v13 (lightweight migration only; the bump checklist is the `/coredata-schema-bump` skill).
+**Current version**: v14 (lightweight migration only; the bump checklist is the `/coredata-schema-bump` skill).
 
 | Version | Changes |
 |---------|---------|
@@ -119,6 +119,7 @@ Saves with the same operation name run one at a time; none is dropped.
 | v11 | `CategorySubcategoryLinkEntity.sortOrder` |
 | v12 | `AccountEntity.includeInBalance` (accounts excluded from the Finances total and insights aggregates) |
 | v13 | `AgentThreadEntity` (the assistant's threads as JSON, `byUpdatedAtIndex`; `AgentThreadStore`, [plan-ai-assistant.md](plan-ai-assistant.md) §3.4) |
+| v14 | `AgentFactEntity` (the facts the assistant remembers, `byCreatedAtIndex`; `AgentFactStore` under `AgentMemory`, [plan-ai-assistant.md](plan-ai-assistant.md) §3.4) |
 
 `CategoryAggregateEntity` and `AccountAggregateEntity` hold the persisted aggregate tables that the next launch warm-starts from (see [domains/categories.md](domains/categories.md)). `MonthlyAggregateEntity` remains in the model but nothing reads or writes it.
 

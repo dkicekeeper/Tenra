@@ -72,7 +72,7 @@ const near = (a: number, b: number, tolerance = 0.005) => Math.abs(a - b) <= Mat
 const MONEY_IN_TEXT = /\d[\d\s  .,]*\s?(₸|тг(?!\p{L})|тенге|\$|€|₽|руб|usd|kzt|eur|rub|dollars?|долл)/iu;
 const BIG_NUMBER = /\d[\d\s  ]{3,}\d|\d{4,}/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
-const SAVED_CLAIM = /(?<!\p{L})(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|сохранено|записано)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged)\b/iu;
+const SAVED_CLAIM = /(?<!\p{L})(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|запомнил[аи]?|сохранено|записано|запомнено)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged|remembered)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged|remembered)\b/iu;
 
 // A reply that turns a money question away. A one-line "picking specific products needs a
 // licensed adviser" followed by help is fine and does not match.

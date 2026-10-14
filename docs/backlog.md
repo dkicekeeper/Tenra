@@ -51,7 +51,7 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 
 - **Savings goals ("Копилка").** `копилка` is already in the ru keyword field. Goal = target +
   optional deadline + linked account, progress = that account's balance (no new transaction
-  types). Needs CoreData v13 (`/coredata-schema-bump`); bundle with personal debts.
+  types). Needs a CoreData bump (`/coredata-schema-bump`); bundle with personal debts.
 - **Personal debts ("Долги").** `долг` is in the ru keyword field; `LoanInfo` models bank loans
   only.
 - **Quick-add templates, widgets, Control Center, Lock Screen.** Templates first (in-app, cheap,

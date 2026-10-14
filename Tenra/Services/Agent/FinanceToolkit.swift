@@ -1013,15 +1013,26 @@ final class FinanceToolkit: AgentToolExecuting {
                 result = makeDraft(operation, conversion: .provided(converted))
             }
             guard case .success(var draft) = result else { return nil }
-            let named = store.accounts.first(where: { $0.id == draft.accountId }).map { account in
-                account.name.lowercased().split { !$0.isLetter && !$0.isNumber }.contains { $0.count >= 3 && lowered.contains($0) }
-            } ?? false
-            if !named, !draft.warnings.contains(.accountInferred) {
+            let account = store.accounts.first(where: { $0.id == draft.accountId })
+            if !Self.message(lowered, names: account),
+               !draft.warnings.contains(.accountInferred) {
                 draft.warnings.append(.accountInferred)
             }
             drafted.append(.single(draft))
         }
         return drafted
+    }
+
+    /// Whether the message names the account: a word of its name, three letters or more.
+    private static func message(_ lowered: String, names account: Account?) -> Bool {
+        guard let account else { return false }
+        let words: [Substring] = account.name.lowercased().split { (character: Character) -> Bool in
+            !character.isLetter && !character.isNumber
+        }
+        for word in words where word.count >= 3 && lowered.contains(word) {
+            return true
+        }
+        return false
     }
 
     private func makeDraft(_ operation: ParsedOperation, conversion: ConversionPolicy) -> Result<TransactionDraft, DraftIssue> {

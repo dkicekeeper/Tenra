@@ -27,11 +27,14 @@ enum AgentFastPath {
         guard !trimmed.isEmpty, trimmed.count <= maxLength,
               !operations.isEmpty, operations.count == clauses,
               !readsAsQuestion(trimmed) else { return false }
-        return operations.allSatisfy { operation in
-            (operation.type == .expense || operation.type == .income)
-                && (operation.amount ?? 0) > 0
-                && operation.categoryName?.isEmpty == false
-        }
+        return operations.allSatisfy(isDraftable)
+    }
+
+    private static func isDraftable(_ operation: ParsedOperation) -> Bool {
+        guard operation.type == .expense || operation.type == .income else { return false }
+        guard let amount = operation.amount, amount > 0 else { return false }
+        guard let category = operation.categoryName, !category.isEmpty else { return false }
+        return true
     }
 
     /// A question mark, or a word that asks, plans, compares, moves money or repeats, in any of

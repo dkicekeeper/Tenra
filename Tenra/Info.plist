@@ -66,6 +66,8 @@
 			<string>Any</string>
 		</dict>
 	</dict>
+	<key>TenraAssistantURL</key>
+	<string>https://tenra-assistant.dakacom.workers.dev</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

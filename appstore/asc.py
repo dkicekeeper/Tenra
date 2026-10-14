@@ -598,8 +598,15 @@ def push_experiment(app: str, submit: bool, start: bool) -> None:
     if start:
         if state not in ("APPROVED", "ACCEPTED"):
             sys.exit(f"Test is {state}: it starts after App Review approves it.")
-        send("PATCH", f"/v2/appStoreVersionExperiments/{record['id']}", {"data": {
-            "type": "appStoreVersionExperiments", "id": record["id"], "attributes": {"started": True}}})
+        try:
+            send("PATCH", f"/v2/appStoreVersionExperiments/{record['id']}", {"data": {
+                "type": "appStoreVersionExperiments", "id": record["id"], "attributes": {"started": True}}})
+        except ApiError as error:
+            # An approved test can already be running (started in App Store Connect).
+            if error.code == 409 and "already running" in str(error):
+                print("Test is already running.")
+                return
+            raise
         print("Test started.")
         return
     if state not in CPP_EDITABLE:

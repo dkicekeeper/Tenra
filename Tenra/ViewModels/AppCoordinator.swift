@@ -78,6 +78,44 @@ class AppCoordinator {
     /// coordinator exists. MainActor-isolated via the enclosing class isolation.
     static var pendingDeepLinkSeriesIdOnLaunch: String?
 
+    // MARK: - Assistant
+
+    @ObservationIgnored private var assistantModel: AssistantViewModel?
+
+    /// The AI assistant's thread, made on first use; nil while its server is not configured
+    /// (Info.plist `TenraAssistantURL`, docs/plan-ai-assistant.md §5.1). Without Pro it spends
+    /// the free allowance, and the server needs App Attest (§3.7).
+    func assistant() -> AssistantViewModel? {
+        if let assistantModel { return assistantModel }
+        guard let url = AgentConfig.serverURL else { return nil }
+        let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
+        let client = AgentServerClient(baseURL: url, attestation: attestation) {
+            await MainActor.run { PremiumManager.shared.appUserID }
+        }
+        let store = transactionStore
+        let accounts = accountsViewModel
+        let drafts = AgentDraftBook(writer: .app(store: store, categoriesViewModel: categoriesViewModel))
+        let toolkit = FinanceToolkit(
+            store: store,
+            insights: insightsViewModel,
+            drafts: drafts,
+            suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
+        )
+        let usage = AssistantUsageStore()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: client, toolkit: toolkit),
+            context: { AgentContextBuilder.text(for: AgentContextSnapshot(store: store)) },
+            access: AssistantViewModel.Access(
+                isPro: { PremiumManager.shared.isPro },
+                loadUsage: { usage.load() },
+                saveUsage: { usage.save($0) }
+            ),
+            drafts: drafts
+        )
+        assistantModel = model
+        return model
+    }
+
     func setPendingSubscription(seriesId: String) {
         pendingSubscriptionSeriesId = seriesId
     }

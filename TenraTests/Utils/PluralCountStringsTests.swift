@@ -33,6 +33,8 @@ struct PluralCountStringsTests {
         #expect(try count("finances.accounts.count", 3, in: "ru") == "3 счёта")
         #expect(try count("finances.deposits.count", 1, in: "ru") == "1 депозит")
         #expect(try count("finances.subcategories.linkedTo", 1, in: "ru") == "В 1 категории")
+        #expect(try count("assistant.allowance.remaining", 1, in: "ru") == "Остался 1 бесплатный ответ")
+        #expect(try count("assistant.allowance.remaining", 3, in: "ru") == "Осталось 3 бесплатных ответа")
     }
 
     @Test("English picks one and other")
@@ -41,6 +43,7 @@ struct PluralCountStringsTests {
         #expect(try count("loan.activeCount", 2, in: "en") == "2 active loans")
         #expect(try count("subcategory.usageCount", 1, in: "en") == "Used 1 time")
         #expect(try count("finances.categories.count", 12, in: "en") == "12 categories")
+        #expect(try count("assistant.allowance.remaining", 1, in: "en") == "1 free answer left")
     }
 
     @Test("Japanese keeps its single form")

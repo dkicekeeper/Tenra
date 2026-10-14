@@ -1844,3 +1844,58 @@
 "calendar.showMonth" = "Показати місяць";
 "calendar.showWeek" = "Показати тиждень";
 "skeleton.loading" = "Завантаження";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "Думаю…";
+"assistant.step.spending" = "Рахую витрати…";
+"assistant.step.comparing" = "Порівнюю періоди…";
+"assistant.step.searching" = "Шукаю операції…";
+"assistant.step.accounts" = "Дивлюся рахунки…";
+"assistant.step.budgets" = "Перевіряю бюджети…";
+"assistant.step.recurring" = "Дивлюся підписки…";
+"assistant.step.insights" = "Дивлюся аналітику…";
+"assistant.step.composing" = "Збираю відповідь…";
+"assistant.error.offline" = "Немає з’єднання. Перевірте інтернет і спробуйте ще раз.";
+"assistant.error.busy" = "Асистент зараз зайнятий. Спробуйте за хвилину.";
+"assistant.error.limit" = "Запитання на цей місяць закінчилися. Ліміт оновиться наступного місяця.";
+"assistant.error.pro" = "Асистент входить у Tenra Pro.";
+"assistant.error.region" = "Асистент поки недоступний у вашому регіоні.";
+"assistant.error.unavailable" = "Асистент зараз недоступний. Спробуйте пізніше.";
+"assistant.error.refused" = "З цим я не допоможу. Запитайте про ваші гроші.";
+"assistant.error.freeLimit" = "Безкоштовні відповіді поки закінчилися. З Tenra Pro можна питати далі.";
+"assistant.allowance.renews" = "Нові безкоштовні відповіді з %@";
+"assistant.open.missing" = "Цього вже немає в Tenra";
+"assistant.draft.save" = "Зберегти";
+"assistant.draft.saved" = "Збережено";
+"assistant.draft.undo" = "Скасувати";
+"assistant.draft.undone" = "Скасовано. Нічого не збережено.";
+"assistant.draft.failed" = "Не вдалося зберегти. Спробуйте ще раз.";
+"assistant.draft.accountGuessed" = "Рахунок вибрано автоматично. Перевірте перед збереженням.";
+"assistant.draft.categoryGuessed" = "Категорію вибрано автоматично. Перевірте перед збереженням.";
+"assistant.draft.budgetWas" = "Було";
+"assistant.forecast.perDay" = "На день до %@";
+"assistant.forecast.free" = "Вільно: %@";
+"assistant.forecast.balance" = "Залишок по днях";
+"assistant.forecast.obligations" = "Спишеться до %@";
+"assistant.error.generic" = "Щось пішло не так. Спробуйте ще раз.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Асистент";
+"assistant.greeting.title" = "Запитайте мене про гроші";
+"assistant.greeting.message" = "Я дивлюся ваші рахунки, витрати, бюджети й підписки на цьому телефоні та відповідаю картками.";
+"assistant.composer.placeholder" = "Запитайте про гроші…";
+"assistant.newChat" = "Новий чат";
+"assistant.preset.month" = "Мої витрати цього місяця";
+"assistant.preset.compare" = "Порівняй з минулим місяцем";
+"assistant.preset.budgets" = "Як справи з бюджетами?";
+"assistant.preset.subscriptions" = "Скільки коштують мої підписки?";
+"assistant.preset.allowance" = "Скільки можна витрачати на день до зарплати?";
+"premium.locked.assistant.title" = "Асистент у Tenra Pro";
+"premium.locked.assistant.message" = "Запитуйте про витрати, бюджети й підписки та отримуйте відповідь картками.";
+"common.retry" = "Повторити";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "Асистент працює через хмару";
+"assistant.consent.message" = "Щоб відповісти, він звертається до моделі Claude від Anthropic. З телефона йдуть лише ваше запитання й те, що потрібно для відповіді: суми, категорії, назви рахунків і потрібні операції. База, чеки й виписки залишаються тут. Сервер Tenra нічого не зберігає, дані не використовуються для навчання моделей.";
+"assistant.consent.allow" = "Увімкнути";
+"assistant.consent.notNow" = "Не зараз";

@@ -1844,3 +1844,58 @@
 "calendar.showMonth" = "Ayı göster";
 "calendar.showWeek" = "Haftayı göster";
 "skeleton.loading" = "Yükleniyor";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "Düşünüyorum…";
+"assistant.step.spending" = "Harcamaları topluyorum…";
+"assistant.step.comparing" = "Dönemleri karşılaştırıyorum…";
+"assistant.step.searching" = "İşlemlere bakıyorum…";
+"assistant.step.accounts" = "Hesaplara bakıyorum…";
+"assistant.step.budgets" = "Bütçeleri kontrol ediyorum…";
+"assistant.step.recurring" = "Aboneliklere bakıyorum…";
+"assistant.step.insights" = "Analizlerine bakıyorum…";
+"assistant.step.composing" = "Cevabı hazırlıyorum…";
+"assistant.error.offline" = "Bağlantı yok. İnterneti kontrol edip tekrar dene.";
+"assistant.error.busy" = "Asistan şu an meşgul. Birazdan tekrar dene.";
+"assistant.error.limit" = "Bu ayın sorularını kullandın. Sınır gelecek ay yenilenir.";
+"assistant.error.pro" = "Asistan Tenra Pro’ya dahildir.";
+"assistant.error.region" = "Asistan henüz bölgende kullanılamıyor.";
+"assistant.error.unavailable" = "Asistan şu an kullanılamıyor. Daha sonra tekrar dene.";
+"assistant.error.refused" = "Bu konuda yardımcı olamam. Bana paranla ilgili sor.";
+"assistant.error.freeLimit" = "Ücretsiz yanıtlar şimdilik bitti. Tenra Pro ile sormaya devam edebilirsin.";
+"assistant.allowance.renews" = "Yeni ücretsiz yanıtlar %@ tarihinde";
+"assistant.open.missing" = "Bu artık Tenra’da yok";
+"assistant.draft.save" = "Kaydet";
+"assistant.draft.saved" = "Kaydedildi";
+"assistant.draft.undo" = "Geri al";
+"assistant.draft.undone" = "Geri alındı. Hiçbir şey kaydedilmedi.";
+"assistant.draft.failed" = "Kaydedilemedi. Tekrar dene.";
+"assistant.draft.accountGuessed" = "Hesabı Tenra seçti. Kaydetmeden önce kontrol et.";
+"assistant.draft.categoryGuessed" = "Kategoriyi Tenra seçti. Kaydetmeden önce kontrol et.";
+"assistant.draft.budgetWas" = "Önceki";
+"assistant.forecast.perDay" = "%@ tarihine kadar günlük";
+"assistant.forecast.free" = "Kullanılabilir: %@";
+"assistant.forecast.balance" = "Günlük bakiye";
+"assistant.forecast.obligations" = "%@ tarihine kadar ödemeler";
+"assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Asistan";
+"assistant.greeting.title" = "Bana paranı sor";
+"assistant.greeting.message" = "Bu telefondaki hesaplarına, harcamalarına, bütçelerine ve aboneliklerine bakıp kartlarla cevap veririm.";
+"assistant.composer.placeholder" = "Paranla ilgili sor…";
+"assistant.newChat" = "Yeni sohbet";
+"assistant.preset.month" = "Bu ayki harcamalarım";
+"assistant.preset.compare" = "Geçen ayla karşılaştır";
+"assistant.preset.budgets" = "Bütçelerim ne durumda?";
+"assistant.preset.subscriptions" = "Aboneliklerim ne kadar tutuyor?";
+"assistant.preset.allowance" = "Maaşa kadar günde ne kadar harcayabilirim?";
+"premium.locked.assistant.title" = "Tenra Pro ile asistan";
+"premium.locked.assistant.message" = "Harcamalarını, bütçelerini ve aboneliklerini sor, cevabı kartlarla al.";
+"common.retry" = "Tekrar dene";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "Asistan bulutta çalışır";
+"assistant.consent.message" = "Cevap vermek için Anthropic’in modeli Claude’a danışır. Telefondan yalnızca sorun ve cevap için baktıkları çıkar: toplamlar, kategoriler, hesap adları ve gereken işlemler. Veritabanın, fişlerin ve ekstrelerin burada kalır. Tenra sunucusu hiçbir şey saklamaz, verilerin model eğitiminde kullanılmaz.";
+"assistant.consent.allow" = "Aç";
+"assistant.consent.notNow" = "Şimdi değil";

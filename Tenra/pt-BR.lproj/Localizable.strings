@@ -1844,3 +1844,58 @@
 "calendar.showMonth" = "Mostrar mês";
 "calendar.showWeek" = "Mostrar semana";
 "skeleton.loading" = "Carregando";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "Pensando…";
+"assistant.step.spending" = "Somando os gastos…";
+"assistant.step.comparing" = "Comparando períodos…";
+"assistant.step.searching" = "Procurando transações…";
+"assistant.step.accounts" = "Verificando contas…";
+"assistant.step.budgets" = "Verificando orçamentos…";
+"assistant.step.recurring" = "Olhando as assinaturas…";
+"assistant.step.insights" = "Lendo suas análises…";
+"assistant.step.composing" = "Montando a resposta…";
+"assistant.error.offline" = "Sem conexão. Verifique a internet e tente de novo.";
+"assistant.error.busy" = "O assistente está ocupado agora. Tente de novo em instantes.";
+"assistant.error.limit" = "Você já usou as perguntas deste mês. O limite renova no mês que vem.";
+"assistant.error.pro" = "O assistente faz parte do Tenra Pro.";
+"assistant.error.region" = "O assistente ainda não está disponível na sua região.";
+"assistant.error.unavailable" = "O assistente está indisponível agora. Tente mais tarde.";
+"assistant.error.refused" = "Com isso eu não posso ajudar. Pergunte sobre o seu dinheiro.";
+"assistant.error.freeLimit" = "As respostas grátis acabaram por enquanto. Com o Tenra Pro você pode continuar perguntando.";
+"assistant.allowance.renews" = "Novas respostas grátis a partir de %@";
+"assistant.open.missing" = "Isso não está mais no Tenra";
+"assistant.draft.save" = "Salvar";
+"assistant.draft.saved" = "Salvo";
+"assistant.draft.undo" = "Desfazer";
+"assistant.draft.undone" = "Desfeito. Nada foi salvo.";
+"assistant.draft.failed" = "Não foi possível salvar. Tente de novo.";
+"assistant.draft.accountGuessed" = "O Tenra escolheu a conta. Confira antes de salvar.";
+"assistant.draft.categoryGuessed" = "O Tenra escolheu a categoria. Confira antes de salvar.";
+"assistant.draft.budgetWas" = "Antes";
+"assistant.forecast.perDay" = "Por dia até %@";
+"assistant.forecast.free" = "Disponível: %@";
+"assistant.forecast.balance" = "Saldo por dia";
+"assistant.forecast.obligations" = "Pagamentos até %@";
+"assistant.error.generic" = "Algo deu errado. Tente de novo.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Assistente";
+"assistant.greeting.title" = "Pergunte sobre o seu dinheiro";
+"assistant.greeting.message" = "Eu vejo suas contas, gastos, orçamentos e assinaturas neste celular e respondo com cartões.";
+"assistant.composer.placeholder" = "Pergunte sobre seu dinheiro…";
+"assistant.newChat" = "Nova conversa";
+"assistant.preset.month" = "Meus gastos deste mês";
+"assistant.preset.compare" = "Compare com o mês passado";
+"assistant.preset.budgets" = "Como estão meus orçamentos?";
+"assistant.preset.subscriptions" = "Quanto custam minhas assinaturas?";
+"assistant.preset.allowance" = "Quanto posso gastar por dia até o salário?";
+"premium.locked.assistant.title" = "Assistente com o Tenra Pro";
+"premium.locked.assistant.message" = "Pergunte sobre gastos, orçamentos e assinaturas e receba a resposta em cartões.";
+"common.retry" = "Tentar de novo";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "O assistente funciona na nuvem";
+"assistant.consent.message" = "Para responder, ele consulta o Claude, um modelo da Anthropic. Só saem do celular a sua pergunta e o que ele consulta para responder: totais, categorias, nomes de contas e as transações necessárias. Sua base, recibos e extratos ficam aqui. O servidor do Tenra não guarda nada, e seus dados não são usados para treinar modelos.";
+"assistant.consent.allow" = "Ativar";
+"assistant.consent.notNow" = "Agora não";

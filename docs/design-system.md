@@ -394,6 +394,7 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
 | Toasts (`MessageBanner` over a screen), selection checkmarks in edit mode | `.transition(.popIn)` | edge-attached bars keep `.move(edge: .bottom)` |
 | A list replacing its skeleton (accounts, deposits, link payments) | content `.transition(.skeletonReveal)`, skeleton `.transition(.opacity)`, `.animation(AppAnimation.smooth, value: <is loading>)` on the container | the Insights feed keeps its `ContentRevealModifier` |
 | Finances cards | `PackedCircleIcons(style: .shelf)` (DesignKit 4.4.0): app icons in a row in a pocket, a light running across them; `FinanceCard` centres them in the card (4.5.0); 36 pt tiles in every card, the largest that fit and a "+N" for the rest, the row at the card's trailing edge (4.5.1) | no `.orbit` |
+| Assistant | `ParticleCreature` (DesignKit 4.6.0): interactive hero in the greeting, `.compact` in the navigation bar and next to the working step; questions in `MessageBubble`, presets and follow-ups in `SuggestionChips`, reply blocks with `.cascadeIn`, the working step with `.thinkingShimmer` | the mascot's mood follows the screen (thinking while it works, the reply's mood after, confused or sad on a failure); one still frame under Reduce Motion |
 
 ---
 

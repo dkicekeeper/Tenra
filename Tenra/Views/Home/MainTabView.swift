@@ -6,7 +6,8 @@
 //
 //  Mechanic (Apple Music style):
 //  • Normal mode  → Home | Analytics | Settings | [+]
-//  • Expanded mode → Voice | Import | [×]
+//  • Expanded mode → Voice | Import | [×], plus Assistant (beta) once its server is configured
+//    (Info.plist `TenraAssistantURL`, docs/plan-ai-assistant.md §5)
 //
 //  Tapping [+] animates the bar into "expanded" mode and switches
 //  to Voice tab. Tapping [×] restores the original three tabs.
@@ -23,6 +24,7 @@ enum AppTab: String, Hashable {
     case finances
     case voice
     case ocr
+    case assistant
     /// The action pseudo-tab — never "selected" in a navigation sense.
     case plusAction
 }
@@ -123,6 +125,16 @@ struct MainTabView: View {
                     value: AppTab.ocr
                 ) {
                     OCRTab()
+                }
+
+                if AgentConfig.serverURL != nil {
+                    Tab(
+                        String(localized: "tab.assistant"),
+                        systemImage: "sparkles",
+                        value: AppTab.assistant
+                    ) {
+                        AssistantTab()
+                    }
                 }
             }
 

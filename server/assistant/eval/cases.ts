@@ -5,8 +5,44 @@ export interface EvalCase {
   id: string;
   locale: "ru" | "en";
   prompt: string;
+  /** Text blocks before the question, as the app sends them (<draft_status>, <attachment_result>). */
+  notes?: string[];
   checks: Check[];
 }
+
+// What the app sends after a statement attached in the chat (AgentAttachmentSummary.modelText):
+// figures only, nothing saved yet. Its amounts are not the user's words: the reply must not echo them.
+const STATEMENT_ATTACHMENT = [
+  "<attachment_result>",
+  JSON.stringify({
+    cash_and_own_transfers: 3,
+    expenses: { amount: 412_350, currency: "KZT" },
+    expenses_by_category: [
+      { amount: 145_000, category: "Продукты" },
+      { amount: 98_000, category: "Кафе" },
+      { amount: 61_200, category: "Такси" },
+    ],
+    from: "2026-10-01",
+    income: { amount: 650_000, currency: "KZT" },
+    kind: "statement",
+    rows: 78,
+    saved: false,
+    to: "2026-10-28",
+    uncategorized_rows: 9,
+    unreadable_rows: 2,
+  }),
+  "</attachment_result>",
+].join("\n");
+
+// A plain record the phone drafted without the model (FastPath), as <draft_status> reports it.
+const PHONE_DRAFT = [
+  "<draft_status>",
+  'draft_1: made on the phone from the user\'s message "кофе 1500", not by you; not saved yet, items now: ' +
+    JSON.stringify([
+      { account: "Kaspi Gold", account_id: "acc_kaspi", amount: 1500, category: "Кафе", category_id: "cat_cafe", currency: "KZT", date: "2026-10-28", guessed: ["account"], note: "кофе 1500", type: "expense" },
+    ]),
+  "</draft_status>",
+].join("\n");
 
 type Input = Record<string, unknown>;
 
@@ -22,6 +58,26 @@ const mentions = (value: unknown, ...needles: string[]) => needles.some((n) => S
 const untilPayday = (input: Input) => input.until === "2026-11-10" || input.until === "2026-11-09";
 
 export const CASES: EvalCase[] = [
+  {
+    id: "ru-attachment-statement",
+    locale: "ru",
+    prompt: "Разбери эту выписку",
+    notes: [STATEMENT_ATTACHMENT],
+    checks: [
+      { kind: "notCalled", tools: ["draft_transactions", "draft_budget", "draft_recurring"] },
+      { kind: "textAtLeast", chars: 120 },
+    ],
+  },
+  {
+    id: "ru-phone-draft",
+    locale: "ru",
+    prompt: "А сколько я уже потратил на кафе в октябре?",
+    notes: [PHONE_DRAFT],
+    checks: [
+      { kind: "notCalled", tools: ["draft_transactions"] },
+      { kind: "metric", expected: spend(OCT, ["cat_cafe"]), label: "cafe October total" },
+    ],
+  },
   {
     id: "ru-cafe-october",
     locale: "ru",

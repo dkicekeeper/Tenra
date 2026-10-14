@@ -71,6 +71,8 @@ const near = (a: number, b: number, tolerance = 0.005) => Math.abs(a - b) <= Mat
 
 const MONEY_IN_TEXT = /\d[\d\s  .,]*\s?(₸|тг(?!\p{L})|тенге|\$|€|₽|руб|usd|kzt|eur|rub|dollars?|долл)/iu;
 const BIG_NUMBER = /\d[\d\s  ]{3,}\d|\d{4,}/;
+// A bare year ("к марту 2027") is a date, not an amount; with a currency MONEY_IN_TEXT still catches it.
+const YEAR = /^(?:19|20)\d{2}$/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
 const SAVED_CLAIM = /(?<!\p{L})(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|запомнил[аи]?|сохранено|записано|запомнено)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged|remembered)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged|remembered)\b/iu;
 
@@ -156,7 +158,7 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
   const text = textOf(record);
   const digits = (value: string) => value.replace(/\D/g, "");
   const typed = new Set((prompt.match(/\d[\d\s\u00a0\u202f.,]*\d|\d/g) ?? []).map(digits));
-  const found = [...text.matchAll(new RegExp(MONEY_IN_TEXT.source, "giu")), ...text.matchAll(new RegExp(BIG_NUMBER.source, "g"))].map((m) => m[0]);
+  const found = [...text.matchAll(new RegExp(MONEY_IN_TEXT.source, "giu")), ...[...text.matchAll(new RegExp(BIG_NUMBER.source, "g"))].filter((m) => !YEAR.test(m[0]))].map((m) => m[0]);
   const money = found.find((m) => !typed.has(digits(m)));
   results.push({ name: "no_money_in_text", pass: !money, detail: money });
 

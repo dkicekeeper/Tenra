@@ -34,7 +34,7 @@ this file is the full index.
 
 | File | Purpose |
 |------|---------|
-| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v12, backups |
+| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v15, backups |
 | [concurrency.md](concurrency.md) | Swift 6 concurrency, CoreData threading, `@Observable` rules, DataSnapshot |
 | [design-system.md](design-system.md) | Tenra on DesignKit: the bridge and hooks, what stays in Tenra, screen patterns, amount formatting, dates and category styling, effects in use (tokens and components: DesignKit's own docs) |
 | [gotchas.md](gotchas.md) | SwiftUI layout, performance hot paths, previews, ignorable console warnings |
@@ -50,6 +50,7 @@ this file is the full index.
 | [domains/csv.md](domains/csv.md) | CSV import/export round-trip rules |
 | [domains/currency.md](domains/currency.md) | FX rates, providers, prewarm, base-currency aggregation |
 | [domains/deposits.md](domains/deposits.md) | Interest accrual, capitalization, account ↔ deposit conversion |
+| [domains/goals-and-debts.md](domains/goals-and-debts.md) | Savings goals and personal debts: storage (v15), saved amount and progress, settling, the Pro gate, screens |
 | [domains/import.md](domains/import.md) | Statement and receipt recognition, DocumentSnapshot seam, Apple Intelligence policy |
 | [domains/insights.md](domains/insights.md) | InsightsService, DataSnapshot, PreAggregatedData, signal notifications, the metric catalogue |
 | [domains/intents.md](domains/intents.md) | App Intents and Siri, App Shortcuts, the Wallet automation and merchant memory |

@@ -4,11 +4,14 @@
 //
 //  One chat with the assistant, pushed from its home (AssistantView) as a page of its own
 //  (docs/plan-ai-assistant.md §3.3, §3.6): the person's questions in bubbles, the replies as the
-//  app's own cards, the step the assistant is on while it works, its suggestions for what to
-//  ask next, and the field. The navigation bar holds only the way back to the home and Ten in
-//  the middle, 120 pt (the owner's size): it rises into the bar and hangs over the top of the
-//  thread, with no backing of its own, drawn over the content that scrolls under it. The tab
-//  bar steps aside (TabBarVisibility), so the chat has the screen.
+//  app's own cards, the step the assistant is on while it works, and the field with Ten's
+//  suggestions for what to ask next in one row over it, where the thumb is. The navigation bar
+//  holds only the way back to the home and Ten in the middle, 120 pt (the owner's size): it
+//  rises into the bar and hangs over the top of the thread in a bar of its own (safeAreaBar),
+//  which reaches a little below it. The thread scrolls under both and the system's soft scroll
+//  edge effect blurs and dims it there, as under any iOS bar, so Ten always sits on that
+//  translucent backing and the text never runs through the particles. The tab bar steps aside
+//  (TabBarVisibility), so the chat has the screen.
 //
 //  Ten shows what is going on: thinking while it runs tools, answering while it writes, the
 //  reply's mood after, confused or sad when a question could not be answered. The reply's text
@@ -52,47 +55,36 @@ struct AssistantChatView: View {
     @State private var thoughtTurn = 0
 
     var body: some View {
-        ZStack(alignment: .top) {
-            thread
-            // Ten in the middle of the navigation bar, hanging over the top of the thread: over
-            // the content that scrolls under it, never under it, and taking no room of its own.
-            // Its words go beside it, on the free side of the bar (VoiceOver reads them; Ten
-            // itself is hidden from VoiceOver by ParticleCreature).
-            ParticleCreature(mood: mascotMood, speech: chatterOn ? speech : nil)
-                .creatureGesture(gesture, trigger: gestureCount)
-                .frame(width: AssistantMetrics.chatMascot, height: AssistantMetrics.chatMascot)
-                .offset(y: -AssistantMetrics.chatMascotLift)
-                .allowsHitTesting(false)
-        }
-        .task(id: model.isWorking) { await thinkWhileWorking() }
-        .onChange(of: model.phase) { old, new in react(from: old, to: new) }
-        .navigationBarTitleDisplayMode(.inline)
-        // The chat has the screen: the tab bar steps aside while it is open (the stable owner
-        // restores it, as for TransactionAddModal).
-        .toolbar(.hidden, for: .tabBar)
-        .onAppear {
-            tabBarVisibility?.isHidden = true
-            model.refreshAllowance()
-        }
-        .onDisappear { tabBarVisibility?.isHidden = false }
-        .onChange(of: premium.isPro) { model.refreshAllowance() }
-        .paywallSheet(isPresented: $showingPaywall) {
-            model.refreshAllowance()
-            Task { await model.retry() }
-        }
-        .sheet(isPresented: $showingVoice) {
-            AssistantVoiceSheet { send($0, spoken: true) }
-        }
-        .assistantConsent(
-            isPresented: $showingConsent,
-            onAllow: {
-                if let question = questionAwaitingConsent {
-                    questionAwaitingConsent = nil
-                    send(question)
-                }
-            },
-            onDecline: { questionAwaitingConsent = nil }
-        )
+        thread
+            .task(id: model.isWorking) { await thinkWhileWorking() }
+            .onChange(of: model.phase) { old, new in react(from: old, to: new) }
+            .navigationBarTitleDisplayMode(.inline)
+            // The chat has the screen: the tab bar steps aside while it is open (the stable owner
+            // restores it, as for TransactionAddModal).
+            .toolbar(.hidden, for: .tabBar)
+            .onAppear {
+                tabBarVisibility?.isHidden = true
+                model.refreshAllowance()
+            }
+            .onDisappear { tabBarVisibility?.isHidden = false }
+            .onChange(of: premium.isPro) { model.refreshAllowance() }
+            .paywallSheet(isPresented: $showingPaywall) {
+                model.refreshAllowance()
+                Task { await model.retry() }
+            }
+            .sheet(isPresented: $showingVoice) {
+                AssistantVoiceSheet { send($0, spoken: true) }
+            }
+            .assistantConsent(
+                isPresented: $showingConsent,
+                onAllow: {
+                    if let question = questionAwaitingConsent {
+                        questionAwaitingConsent = nil
+                        send(question)
+                    }
+                },
+                onDecline: { questionAwaitingConsent = nil }
+            )
     }
 
     /// The questions and replies, with the field floating at the bottom. At rest the thread
@@ -118,7 +110,8 @@ struct AssistantChatView: View {
                 .frame(minHeight: currentTurn.isEmpty ? 0 : viewportHeight, alignment: .top)
             }
             .screenPadding()
-            .padding(.vertical, AppSpacing.lg)
+            // No top padding: Ten's bar already ends a little below it.
+            .padding(.bottom, AppSpacing.lg)
             .animation(AppAnimation.smooth, value: model.entries.count)
             .animation(AppAnimation.smooth, value: model.isWorking)
             .animation(AppAnimation.smooth, value: readingAttachment)
@@ -136,8 +129,10 @@ struct AssistantChatView: View {
         .scrollDismissesKeyboard(.interactively)
         // A tap anywhere on the thread puts the keyboard away (buttons still work).
         .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
-        // The part of Ten below the navigation bar: the thread starts under it.
-        .safeAreaPadding(.top, AssistantMetrics.chatMascot - AssistantMetrics.chatMascotLift)
+        // Under the navigation bar and Ten the thread blurs and dims progressively, the iOS
+        // bar backing, not a solid plate.
+        .scrollEdgeEffectStyle(.soft, for: .top)
+        .safeAreaBar(edge: .top) { mascotBar }
         .safeAreaBar(edge: .bottom) {
             AssistantComposerBar(
                 model: model,
@@ -151,7 +146,9 @@ struct AssistantChatView: View {
                 },
                 onVoice: { showingVoice = true },
                 onPaywall: { showingPaywall = true },
-                onSend: { send(draft) }
+                onSend: { send(draft) },
+                suggestions: model.suggestions,
+                onSuggestion: { send($0) }
             )
         }
         .assistantAttachmentSources(
@@ -171,6 +168,22 @@ struct AssistantChatView: View {
 
     // MARK: - Thread
 
+    /// Ten in the middle of the navigation bar, hanging over the top of the thread as a bar of
+    /// its own: its part below the navigation bar plus a tail is the bar's height, so the
+    /// scroll edge effect covers all of Ten and fades out under the tail. Touches go through
+    /// to the thread.
+    private var mascotBar: some View {
+        // Its words go beside it, on the free side of the bar (VoiceOver reads them; Ten itself
+        // is hidden from VoiceOver by ParticleCreature).
+        ParticleCreature(mood: mascotMood, speech: chatterOn ? speech : nil)
+            .creatureGesture(gesture, trigger: gestureCount)
+            .frame(width: AssistantMetrics.chatMascot, height: AssistantMetrics.chatMascot)
+            .padding(.top, -AssistantMetrics.chatMascotLift)
+            .padding(.bottom, AssistantMetrics.chatMascotTail)
+            .frame(maxWidth: .infinity)
+            .allowsHitTesting(false)
+    }
+
     /// Where the latest turn starts: the last question or attachment.
     private var currentTurnStart: Int {
         model.entries.lastIndex { entry in
@@ -189,8 +202,8 @@ struct AssistantChatView: View {
         model.entries[currentTurnStart...]
     }
 
-    /// Under the latest turn: what the assistant is doing or writing, the Pro offer, the next
-    /// questions.
+    /// Under the latest turn: what the assistant is doing or writing, the Pro offer. The next
+    /// questions sit over the field (AssistantComposerBar).
     @ViewBuilder
     private var turnFooter: some View {
         if model.isWorking, !model.streamingReply.isEmpty {
@@ -207,10 +220,6 @@ struct AssistantChatView: View {
             DSButton(String(localized: "settings.pro.cta.title"), systemImage: "sparkles") {
                 showingPaywall = true
             }
-        }
-        if !model.suggestions.isEmpty {
-            SuggestionChips(model.suggestions) { send($0) }
-                .transition(.opacity)
         }
     }
 

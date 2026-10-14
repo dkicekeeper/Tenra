@@ -355,9 +355,10 @@ private struct AssistantForecastCard: View {
 
 /// A draft to save (plan §1, "do"): its operations as they will look in the history (a budget
 /// as its new limit next to the old one, a subscription as its name, frequency and first
-/// charge, a fact to remember as its text), what Tenra guessed, Save; once saved, Undo. Nothing is written before Save. Until
-/// then a tap on an income or an expense opens it in the voice confirmation form
-/// (AgentDraftEditor).
+/// charge, a fact to remember as its text, a goal as its name and target, a debt as who and
+/// how much, money towards a goal or back on a debt as the amount), what Tenra guessed, Save;
+/// once saved, Undo. Nothing is written before Save. Until then a tap on an income or an
+/// expense opens it in the voice confirmation form (AgentDraftEditor).
 private struct AssistantDraftCard: View {
     @Environment(AppCoordinator.self) private var coordinator
 
@@ -413,6 +414,14 @@ private struct AssistantDraftCard: View {
                     recurringRow(recurring.series)
                 } else if case .fact(let fact) = operation {
                     factRow(fact)
+                } else if case .goal(let goal) = operation {
+                    goalRow(goal, store: store)
+                } else if case .goalContribution(let goalId, let contribution) = operation {
+                    contributionRow(goalId: goalId, contribution)
+                } else if case .debt(let debt) = operation {
+                    debtRow(debt)
+                } else if case .debtRepayment(let debtId, let repayment) = operation {
+                    repaymentRow(debtId: debtId, repayment)
                 }
             }
             if state == .pending {
@@ -549,6 +558,53 @@ private struct AssistantDraftCard: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// A new goal: its name, the deadline and the account it follows, the target.
+    private func goalRow(_ goal: SavingsGoal, store: TransactionStore) -> some View {
+        var parts = [goal.name]
+        if let deadline = goal.deadline { parts.append(DateFormatters.displayDateOmittingCurrentYear(deadline)) }
+        if let accountId = goal.linkedAccountId, let account = store.accountById[accountId] { parts.append(account.name) }
+        return InfoRow(icon: "target", label: parts.joined(separator: " · "), amount: goal.targetAmount, currency: goal.currency)
+    }
+
+    /// Money towards a goal: the goal and the day, the amount.
+    private func contributionRow(goalId: String, _ contribution: GoalContribution) -> some View {
+        let goal = coordinator.goalStore.goal(id: goalId)
+        let day = DateFormatters.displayDateOmittingCurrentYear(contribution.date)
+        return InfoRow(
+            icon: "plus.circle",
+            label: "\(goal?.name ?? "") · \(day)",
+            amount: contribution.amount,
+            currency: goal?.currency ?? ""
+        )
+    }
+
+    /// A new debt: who, which way and by when, the amount.
+    private func debtRow(_ debt: PersonalDebt) -> some View {
+        var parts = [
+            debt.person,
+            debt.direction == .owedToMe ? String(localized: "debt.section.owedToMe") : String(localized: "debt.section.iOwe"),
+        ]
+        if let due = debt.dueDate { parts.append(DateFormatters.displayDateOmittingCurrentYear(due)) }
+        return InfoRow(
+            icon: debt.direction == .owedToMe ? "arrow.down.left.circle" : "arrow.up.right.circle",
+            label: parts.joined(separator: " · "),
+            amount: debt.amount,
+            currency: debt.currency
+        )
+    }
+
+    /// Money back on a debt: who and the day, the amount.
+    private func repaymentRow(debtId: String, _ repayment: DebtRepayment) -> some View {
+        let debt = coordinator.debtStore.debt(id: debtId)
+        let day = DateFormatters.displayDateOmittingCurrentYear(repayment.date)
+        return InfoRow(
+            icon: "arrow.uturn.down",
+            label: "\(debt?.person ?? "") · \(day)",
+            amount: repayment.amount,
+            currency: debt?.currency ?? ""
+        )
+    }
+
     private static func periodName(_ period: CustomCategory.BudgetPeriod) -> String {
         switch period {
         case .weekly: String(localized: "budget.weekly")
@@ -578,10 +634,10 @@ private struct AssistantDraftCard: View {
     }
 
     /// The operation as the transaction it will become, for the row; nil for a budget, a
-    /// recurring payment or a fact, which have rows of their own.
+    /// recurring payment, a fact, a goal or a debt, which have rows of their own.
     private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
-        case .budget, .recurring, .fact:
+        case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment:
             return nil
         case .single(let draft):
             return Transaction(

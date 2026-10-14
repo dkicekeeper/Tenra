@@ -9,9 +9,10 @@
 //  (`TransactionDraftService.commit` for income and expenses, `TransactionStore.add` with the
 //  transfer fields of `TransactionConversion` for transfers, `CategoriesViewModel.setBudget`
 //  for budgets, `SubscriptionCreationService.create` for subscriptions and regular payments,
-//  `AgentMemory.apply` for a fact to remember), and Undo takes back what was saved: deletes
-//  the transactions or the series with what it generated, puts the previous budget or fact
-//  back.
+//  `AgentMemory.apply` for a fact to remember, GoalStore and DebtStore for a goal, money put
+//  towards it, a debt and a repayment), and Undo takes back what was saved: deletes the
+//  transactions or the series with what it generated, puts the previous budget or fact back,
+//  deletes the goal, the debt or the entry.
 //
 //  Before Save the person can change an income or an expense on the card (the voice
 //  confirmation form, AgentDraftEditor); the next question tells the model what the draft
@@ -33,6 +34,14 @@ enum AgentDraftOperation: Equatable {
     case recurring(AgentRecurringDraft)
     /// A fact to remember, change or forget (AgentMemory).
     case fact(AgentFactDraft)
+    /// A new savings goal (GoalStore).
+    case goal(SavingsGoal)
+    /// Money put towards a goal that has no account (GoalStore).
+    case goalContribution(goalId: String, GoalContribution)
+    /// A new personal debt (DebtStore; Tenra Pro).
+    case debt(PersonalDebt)
+    /// Money back on a debt (DebtStore).
+    case debtRepayment(debtId: String, DebtRepayment)
 }
 
 /// A subscription or a regular payment, as the series it will become (it starts on its next
@@ -72,11 +81,19 @@ enum AgentSavedRecord: Equatable {
     /// A series id.
     case series(String)
     case fact(AgentFactChange)
+    /// A goal id.
+    case goal(String)
+    case goalContribution(goalId: String, contributionId: String)
+    /// A debt id.
+    case debt(String)
+    case debtRepayment(debtId: String, repaymentId: String)
 }
 
 enum AgentDraftError: Error {
     /// The category was deleted between the draft and Save.
     case categoryGone
+    /// The goal or the debt was deleted between the draft and Save, or there is nowhere to keep it.
+    case planGone
 }
 
 struct AgentDraft: Equatable, Identifiable {
@@ -191,9 +208,16 @@ final class AgentDraftBook {
 extension AgentDraftBook.Writer {
     /// Writes as the rest of the app does: the voice and Siri path for income and expenses,
     /// the store's transfer for transfers, the categories' budget call for budgets, the
-    /// assistant's memory for facts. Undo deletes a transaction as it is now (it may have been
-    /// edited since) and puts the previous budget or fact back.
-    static func app(store: TransactionStore, categoriesViewModel: CategoriesViewModel, memory: AgentMemory = .shared) -> Self {
+    /// assistant's memory for facts, the goal and debt stores for those. Undo deletes a
+    /// transaction as it is now (it may have been edited since) and puts the previous budget or
+    /// fact back.
+    static func app(
+        store: TransactionStore,
+        categoriesViewModel: CategoriesViewModel,
+        memory: AgentMemory = .shared,
+        goals: GoalStore? = nil,
+        debts: DebtStore? = nil
+    ) -> Self {
         Self(
             save: { operation in
                 switch operation {
@@ -208,6 +232,8 @@ extension AgentDraftBook.Writer {
                     return .series(recurring.series.id)
                 case .fact(let fact):
                     return .fact(try await memory.apply(fact))
+                case .goal, .goalContribution, .debt, .debtRepayment:
+                    return try await Self.savePlan(operation, goals: goals, debts: debts)
                 case .transfer(let transfer):
                     return .transaction(try await store.add(Transaction(
                         id: "",
@@ -235,6 +261,8 @@ extension AgentDraftBook.Writer {
                     try await store.deleteSeries(id: id, deleteTransactions: true)
                 case .fact(let change):
                     await memory.revert(change)
+                case .goal, .goalContribution, .debt, .debtRepayment:
+                    await Self.undoPlan(record, goals: goals, debts: debts)
                 case .budget(let budget):
                     guard let category = store.categoryById[budget.categoryId] else { return }
                     if let previous = budget.previousAmount {
@@ -245,5 +273,47 @@ extension AgentDraftBook.Writer {
                 }
             }
         )
+    }
+}
+
+extension AgentDraftBook.Writer {
+    /// Saves a goal, money towards it, a debt or a repayment through GoalStore and DebtStore.
+    static func savePlan(_ operation: AgentDraftOperation, goals: GoalStore?, debts: DebtStore?) async throws -> AgentSavedRecord {
+        switch operation {
+        case .goal(let goal):
+            guard let goals else { throw AgentDraftError.planGone }
+            await goals.add(goal)
+            return .goal(goal.id)
+        case .goalContribution(let goalId, let contribution):
+            guard let goals, goals.goal(id: goalId) != nil else { throw AgentDraftError.planGone }
+            await goals.addContribution(contribution, to: goalId)
+            return .goalContribution(goalId: goalId, contributionId: contribution.id)
+        case .debt(let debt):
+            guard let debts else { throw AgentDraftError.planGone }
+            await debts.add(debt)
+            return .debt(debt.id)
+        case .debtRepayment(let debtId, let repayment):
+            guard let debts, debts.debt(id: debtId) != nil else { throw AgentDraftError.planGone }
+            await debts.addRepayment(repayment, to: debtId)
+            return .debtRepayment(debtId: debtId, repaymentId: repayment.id)
+        default:
+            throw AgentDraftError.planGone
+        }
+    }
+
+    /// Takes back what `savePlan` wrote: deletes the goal, the debt or the entry.
+    static func undoPlan(_ record: AgentSavedRecord, goals: GoalStore?, debts: DebtStore?) async {
+        switch record {
+        case .goal(let id):
+            await goals?.delete(id: id)
+        case .goalContribution(let goalId, let contributionId):
+            await goals?.deleteContribution(id: contributionId, from: goalId)
+        case .debt(let id):
+            await debts?.delete(id: id)
+        case .debtRepayment(let debtId, let repaymentId):
+            await debts?.deleteRepayment(id: repaymentId, from: debtId)
+        default:
+            break
+        }
     }
 }

@@ -240,6 +240,73 @@ export const CASES: EvalCase[] = [
     checks: [{ kind: "notCalled", tools: ["draft_fact", "draft_transactions", "draft_budget", "draft_recurring"] }],
   },
   {
+    id: "ru-new-goal",
+    locale: "ru",
+    prompt: "Хочу накопить 600 тысяч на новый ноутбук к марту",
+    checks: [
+      {
+        kind: "toolArgs",
+        tool: "draft_goal",
+        match: (i) => i.target === 600_000 && mentions(i.name, "ноутбук") && /^2027-0[23]/.test(String(i.deadline ?? "")),
+        label: "laptop goal drafted by March",
+      },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_fact"] },
+    ],
+  },
+  {
+    id: "ru-goal-on-track",
+    locale: "ru",
+    prompt: "Успеваю накопить на отпуск к сроку?",
+    checks: [
+      { kind: "called", anyOf: ["get_goals"] },
+      { kind: "cardFrom", tool: "get_goals", label: "goal figures from get_goals" },
+      { kind: "notCalled", tools: ["draft_goal", "draft_goal_contribution"] },
+    ],
+  },
+  {
+    id: "ru-goal-contribution",
+    locale: "ru",
+    prompt: "Отложил ещё 50 000 на отпуск",
+    checks: [
+      { kind: "toolArgs", tool: "draft_goal_contribution", match: (i) => i.goal === "goal_trip" && i.amount === 50_000, label: "money towards the vacation" },
+      { kind: "block", type: "confirm" },
+    ],
+  },
+  {
+    id: "ru-lent-money",
+    locale: "ru",
+    prompt: "Дал Ерлану 30000 до пятницы",
+    checks: [
+      {
+        kind: "toolArgs",
+        tool: "draft_debt",
+        match: (i) => i.direction === "owed_to_me" && i.amount === 30_000 && mentions(i.person, "ерлан") && i.due_date === "2026-10-30",
+        label: "lent to Yerlan, due Friday",
+      },
+      { kind: "block", type: "confirm" },
+    ],
+  },
+  {
+    id: "en-paid-back",
+    locale: "en",
+    prompt: "Askhat paid me back 10000",
+    checks: [
+      { kind: "toolArgs", tool: "draft_debt_repayment", match: (i) => i.debt === "debt_askhat" && i.amount === 10_000, label: "repayment on Askhat's debt" },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_debt"] },
+    ],
+  },
+  {
+    id: "ru-who-owes-me",
+    locale: "ru",
+    prompt: "Кто мне сейчас должен и сколько?",
+    checks: [
+      { kind: "called", anyOf: ["get_debts"] },
+      { kind: "cardFrom", tool: "get_debts", label: "debts from get_debts" },
+    ],
+  },
+  {
     id: "ru-search-merchant",
     locale: "ru",
     prompt: "Покажи все траты в Starbucks за октябрь",

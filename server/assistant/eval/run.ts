@@ -62,7 +62,7 @@ async function runCase(client: Anthropic, model: string, effort: Effort, testCas
   const usage = emptyUsage();
   const started = Date.now();
   let calls = 0;
-  resetDrafts();
+  resetDrafts(testCase.locale);
 
   try {
     while (calls < maxCalls) {

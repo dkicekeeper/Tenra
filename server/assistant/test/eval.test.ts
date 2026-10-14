@@ -63,6 +63,10 @@ describe("grader", () => {
     expect(echoed.find((c) => c.name === "no_money_in_text")?.pass).toBe(true);
     const money = universalChecks(record(`Вы потратили ${cafeTotal} ₸ на кафе.`), "ru", "Сколько я потратил на кафе?");
     expect(money.find((c) => c.name === "no_money_in_text")?.pass).toBe(false);
+    const year = universalChecks(record("Цель на ноутбук к марту 2027 идёт по плану."), "ru", "Успеваю к цели?");
+    expect(year.find((c) => c.name === "no_money_in_text")?.pass).toBe(true);
+    const yearAmount = universalChecks(record("Осталось 2027 ₸."), "ru", "Сколько осталось?");
+    expect(yearAmount.find((c) => c.name === "no_money_in_text")?.pass).toBe(false);
     const broken = universalChecks(record("Кафе выросли.", "totals.sum"), "ru");
     expect(broken.find((c) => c.name === "refs_resolve")?.pass).toBe(false);
     // The model never sees tool_use ids: a block pointing at one resolves nothing.

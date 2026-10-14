@@ -4,13 +4,13 @@
 //
 //  One chat with the assistant, pushed from its home (AssistantView) as a page of its own
 //  (docs/plan-ai-assistant.md §3.3, §3.6): the person's questions in bubbles, the replies as the
-//  app's own cards, the step the assistant is on while it works, its suggestions for what to
-//  ask next, and the field. The navigation bar holds only the way back to the home and Ten in
-//  the middle, 120 pt (the owner's size): it rises into the bar and hangs over the top of the
-//  thread, with no backing of its own. The thread scrolls under it and fades out softly as it
-//  goes (a mask: gone under Ten's upper half, back by its lower edge), so the text never runs
-//  through the particles. The tab bar steps aside (TabBarVisibility), so the chat has the
-//  screen.
+//  app's own cards, the step the assistant is on while it works, and the field with Ten's
+//  suggestions for what to ask next in one row over it, where the thumb is. The navigation bar
+//  holds only the way back to the home and Ten in the middle, 120 pt (the owner's size): it
+//  rises into the bar and hangs over the top of the thread, with no backing of its own. The
+//  thread scrolls under it and fades out softly as it goes (a mask: gone under Ten's upper
+//  half, back by its lower edge), so the text never runs through the particles. The tab bar
+//  steps aside (TabBarVisibility), so the chat has the screen.
 //
 //  Ten shows what is going on: thinking while it runs tools, answering while it writes, the
 //  reply's mood after, confused or sad when a question could not be answered. The reply's text
@@ -149,7 +149,9 @@ struct AssistantChatView: View {
                 },
                 onVoice: { showingVoice = true },
                 onPaywall: { showingPaywall = true },
-                onSend: { send(draft) }
+                onSend: { send(draft) },
+                suggestions: model.suggestions,
+                onSuggestion: { send($0) }
             )
         }
         .assistantAttachmentSources(
@@ -204,8 +206,8 @@ struct AssistantChatView: View {
         model.entries[currentTurnStart...]
     }
 
-    /// Under the latest turn: what the assistant is doing or writing, the Pro offer, the next
-    /// questions.
+    /// Under the latest turn: what the assistant is doing or writing, the Pro offer. The next
+    /// questions sit over the field (AssistantComposerBar).
     @ViewBuilder
     private var turnFooter: some View {
         if model.isWorking, !model.streamingReply.isEmpty {
@@ -222,10 +224,6 @@ struct AssistantChatView: View {
             DSButton(String(localized: "settings.pro.cta.title"), systemImage: "sparkles") {
                 showingPaywall = true
             }
-        }
-        if !model.suggestions.isEmpty {
-            SuggestionChips(model.suggestions) { send($0) }
-                .transition(.opacity)
         }
     }
 

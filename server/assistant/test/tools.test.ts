@@ -37,6 +37,20 @@ describe("tool schemas", () => {
     }
   });
 
+  // The API refuses every request whose strict tools have more than 16 parameters with a union
+  // type ("Schemas contains too many parameters with union types"), so Ten stops answering.
+  it("keep strict union-typed parameters within the API's limit", () => {
+    const unions = (schema: unknown): number => {
+      if (Array.isArray(schema)) return schema.reduce((sum: number, s) => sum + unions(s), 0);
+      if (!schema || typeof schema !== "object") return 0;
+      const node = schema as Node;
+      const own = Array.isArray(node.anyOf) || Array.isArray(node.type) ? 1 : 0;
+      return own + Object.values(node).reduce((sum: number, v) => sum + unions(v), 0);
+    };
+    const count = TOOLS.filter((t) => t.strict).reduce((sum, t) => sum + unions(t.input_schema), 0);
+    expect(count).toBeLessThanOrEqual(16);
+  });
+
   it("avoid keywords strict mode does not support", () => {
     const serialized = JSON.stringify(TOOLS.filter((t) => t.strict).map((t) => t.input_schema));
     for (const keyword of ["minimum", "maximum", "minLength", "maxLength", "multipleOf", "minItems", "maxItems"]) {

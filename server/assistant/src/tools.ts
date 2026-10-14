@@ -179,6 +179,10 @@ const readTools: Tool[] = [
   },
 ];
 
+// The API compiles every strict schema into one grammar and refuses a request whose strict
+// tools have more than 16 parameters with a union type (a nullable is one), failing every
+// turn: the goal and debt drafts are not strict, their optional fields simply left out
+// (tools.test.ts holds the count).
 const draftTools: Tool[] = [
   {
     name: "draft_transactions",
@@ -241,54 +245,62 @@ const draftTools: Tool[] = [
     name: "draft_goal",
     description:
       "Prepares a new savings goal for the user to confirm. Nothing is saved. With account (an account id or name, not a loan) the goal follows that account's balance; without one, already_saved is what the user has put aside so far and later money is added with draft_goal_contribution. currency defaults to the account's, else the base currency. Returns draft_id, what is saved, what is left and, with a deadline, months_left and monthly.",
-    strict: true,
-    input_schema: strictObject({
-      name: { type: "string", description: "What the user saves for, short, in their language" },
-      target: { type: "number" },
-      currency: nullable({ type: "string" }),
-      deadline: nullable(date),
-      account: nullable({ type: "string" }),
-      already_saved: nullable({ type: "number" }),
-    }),
+    input_schema: object(
+      {
+        name: { type: "string", description: "What the user saves for, short, in their language" },
+        target: { type: "number" },
+        currency: { type: "string" },
+        deadline: date,
+        account: { type: "string" },
+        already_saved: { type: "number" },
+      },
+      ["name", "target"],
+    ),
   },
   {
     name: "draft_goal_contribution",
     description:
       "Prepares money the user put towards a goal without an account, in the goal's currency, for them to confirm. Nothing is saved. goal is a goal id from <app_context>. A goal with an account grows with that account: draft a transfer to it with draft_transactions instead.",
-    strict: true,
-    input_schema: strictObject({
-      goal: { type: "string" },
-      amount: { type: "number" },
-      date: nullable(date),
-      note: nullable({ type: "string" }),
-    }),
+    input_schema: object(
+      {
+        goal: { type: "string" },
+        amount: { type: "number" },
+        date,
+        note: { type: "string" },
+      },
+      ["goal", "amount"],
+    ),
   },
   {
     name: "draft_debt",
     description:
       "Prepares a personal debt for the user to confirm: money they lent to someone (owed_to_me) or borrowed from someone (i_owe). Nothing is saved. Not for bank loans. Personal debts are Tenra Pro: without it the tool says so.",
-    strict: true,
-    input_schema: strictObject({
-      direction: { type: "string", enum: ["owed_to_me", "i_owe"] },
-      person: { type: "string", description: "Who, as the user names them" },
-      amount: { type: "number" },
-      currency: nullable({ type: "string" }),
-      date: nullable(date),
-      due_date: nullable(date),
-      note: nullable({ type: "string" }),
-    }),
+    input_schema: object(
+      {
+        direction: { type: "string", enum: ["owed_to_me", "i_owe"] },
+        person: { type: "string", description: "Who, as the user names them" },
+        amount: { type: "number" },
+        currency: { type: "string" },
+        date,
+        due_date: date,
+        note: { type: "string" },
+      },
+      ["direction", "person", "amount"],
+    ),
   },
   {
     name: "draft_debt_repayment",
     description:
-      "Prepares money back on an open debt, in its currency, for the user to confirm. Nothing is saved. debt is a debt id from <app_context>; amount null is everything that is left, which settles the debt.",
-    strict: true,
-    input_schema: strictObject({
-      debt: { type: "string" },
-      amount: nullable({ type: "number" }),
-      date: nullable(date),
-      note: nullable({ type: "string" }),
-    }),
+      "Prepares money back on an open debt, in its currency, for the user to confirm. Nothing is saved. debt is a debt id from <app_context>; leave amount out for everything that is left, which settles the debt.",
+    input_schema: object(
+      {
+        debt: { type: "string" },
+        amount: { type: "number" },
+        date,
+        note: { type: "string" },
+      },
+      ["debt"],
+    ),
   },
 ];
 

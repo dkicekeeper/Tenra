@@ -95,6 +95,8 @@
 "currency.customizeAction" = "カスタマイズ…";
 "settings.wallpaper" = "ホームの壁紙";
 "settings.background" = "背景";
+"settings.voiceLanguage" = "音声の言語";
+"settings.voiceLanguage.app" = "アプリと同じ";
 "settings.background.none" = "背景なし";
 "settings.background.gradient" = "支出カラー";
 "settings.background.photo" = "写真";
@@ -1854,6 +1856,7 @@
 "assistant.step.budgets" = "予算を確認中…";
 "assistant.step.recurring" = "サブスクを確認中…";
 "assistant.step.insights" = "分析を確認中…";
+"assistant.step.calculating" = "計算中…";
 "assistant.step.composing" = "回答をまとめています…";
 "assistant.error.offline" = "接続できません。インターネットを確認して、もう一度お試しください。";
 "assistant.error.busy" = "アシスタントは混み合っています。少し待ってからもう一度お試しください。";
@@ -1861,6 +1864,7 @@
 "assistant.error.pro" = "アシスタントは Tenra Pro の機能です。";
 "assistant.error.region" = "お住まいの地域ではまだアシスタントを利用できません。";
 "assistant.error.unavailable" = "アシスタントは現在利用できません。後でもう一度お試しください。";
+"assistant.error.device" = "このデバイスではアシスタントを利用できません。";
 "assistant.error.refused" = "その内容にはお答えできません。お金のことを聞いてください。";
 "assistant.error.freeLimit" = "無料の回答は今のところ上限に達しました。Tenra Pro なら引き続き質問できます。";
 "assistant.allowance.renews" = "%@から新しい無料回答";
@@ -1881,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "アシスタント";
-"assistant.greeting.title" = "お金のことを聞いてください";
-"assistant.greeting.message" = "この iPhone の口座、支出、予算、サブスクを見て、カードでお答えします。";
+"assistant.greeting.title" = "こんにちは、テンです";
+"assistant.greeting.message" = "お金のことをお手伝いします。支出、節約、ローン、投資まで。この iPhone のデータを見て、カードでお答えします。";
 "assistant.composer.placeholder" = "お金について質問…";
 "assistant.newChat" = "新しいチャット";
 "assistant.preset.month" = "今月の支出";
@@ -1890,8 +1894,8 @@
 "assistant.preset.budgets" = "予算の状況は？";
 "assistant.preset.subscriptions" = "サブスクの合計はいくら？";
 "assistant.preset.allowance" = "給料日まで1日いくら使える？";
-"premium.locked.assistant.title" = "Tenra Pro のアシスタント";
-"premium.locked.assistant.message" = "支出、予算、サブスクについて質問すると、カードで答えが届きます。";
+"assistant.preset.save" = "どこで節約できる？";
+"assistant.preset.invest" = "投資は何から始めればいい？";
 "common.retry" = "再試行";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

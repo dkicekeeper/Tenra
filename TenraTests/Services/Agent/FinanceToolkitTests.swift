@@ -154,11 +154,11 @@ struct FinanceToolkitTests {
         #expect(badType.error == "type must be expense or income.")
     }
 
-    @Test func laterPhaseAndUnknownToolsAnswerWithoutCrashing() async {
+    @Test func unwiredAndUnknownToolsAnswerWithoutCrashing() async {
+        // Without a draft book (not wired) drafting answers "not available".
         let (draft, store) = await Self.run("draft_recurring", ["kind": "subscription", "name": "Netflix", "amount": 5_000, "frequency": "monthly", "next_date": "2026-11-05"])
         _ = store
         #expect(draft.error?.contains("not available") == true)
-        // Without a draft book (not wired) drafting answers the same way.
         let (unwired, kept) = await Self.run("draft_transactions", ["items": []])
         _ = kept
         #expect(unwired.error?.contains("not available") == true)

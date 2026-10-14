@@ -39,7 +39,10 @@ export type Check =
   | { kind: "metricFrom"; tool: string; pathEnds: string; args?: (input: Input) => boolean; label: string }
   | { kind: "block"; type: string }
   | { kind: "blockWith"; type: string; match: (block: Block) => boolean; label: string }
-  | { kind: "toolArgs"; tool: string; match: (input: Input) => boolean; label: string };
+  | { kind: "toolArgs"; tool: string; match: (input: Input) => boolean; label: string }
+  | { kind: "cardFrom"; tool: string; label: string }
+  | { kind: "textAtLeast"; chars: number }
+  | { kind: "noPick" };
 
 export interface CheckResult {
   name: string;
@@ -69,7 +72,13 @@ const near = (a: number, b: number, tolerance = 0.005) => Math.abs(a - b) <= Mat
 const MONEY_IN_TEXT = /\d[\d\s  .,]*\s?(₸|тг(?!\p{L})|тенге|\$|€|₽|руб|usd|kzt|eur|rub|dollars?|долл)/iu;
 const BIG_NUMBER = /\d[\d\s  ]{3,}\d|\d{4,}/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
-const SAVED_CLAIM = /(?<!\p{L})(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|сохранено|записано)(?!\p{L})|\b(i('ve| have) (saved|recorded|added|logged)|saved|recorded)\b/iu;
+const SAVED_CLAIM = /(?<!\p{L})(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|сохранено|записано)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged)\b/iu;
+
+// A reply that turns a money question away. A one-line "picking specific products needs a
+// licensed adviser" followed by help is fine and does not match.
+const REFUSAL = /не в моей (роли|компетенции)|не могу (помочь|давать|дать)|не даю (советов|рекомендаций)|вне моей компетенции|not (in|within) my (role|scope)|outside (of )?my (role|scope)|I can(no|')t (help|give|provide)|I'?m not able to (help|give)/iu;
+// Telling the person to buy a specific product (the line in the prompt's "Where the line is").
+const PICK = /рекоменду\p{L}*\s+(вам\s+)?(купить|покупать|вложить)|(?<!не\s)стоит\s+купить|(?<!\p{L})(купите|покупайте)(?!\p{L})|I(?:'d| would)? recommend (buying|investing in)|you should buy/iu;
 
 function textOf(record: RunRecord): string {
   return (record.reply?.blocks ?? []).filter((b) => b.type === "text").map((b) => String(b.text ?? "")).join(" ");
@@ -109,7 +118,8 @@ export function blockProblems(block: unknown): string[] {
     .map(([key]) => `${node.type}.${key} = ${JSON.stringify(node[key]) ?? "missing"}`);
 }
 
-export function universalChecks(record: RunRecord, locale: "ru" | "en"): CheckResult[] {
+/** `prompt`: the user's message; an amount repeated from it is not a made-up figure. */
+export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt = ""): CheckResult[] {
   const results: CheckResult[] = [];
   const blocks: unknown = record.reply?.blocks;
   results.push({ name: "rendered", pass: Array.isArray(blocks) && blocks.length > 0, detail: record.error });
@@ -144,7 +154,10 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en"): CheckRe
   results.push({ name: "refs_resolve", pass: broken.length === 0, detail: broken.join("; ") || undefined });
 
   const text = textOf(record);
-  const money = text.match(MONEY_IN_TEXT)?.[0] ?? text.match(BIG_NUMBER)?.[0];
+  const digits = (value: string) => value.replace(/\D/g, "");
+  const typed = new Set((prompt.match(/\d[\d\s\u00a0\u202f.,]*\d|\d/g) ?? []).map(digits));
+  const found = [...text.matchAll(new RegExp(MONEY_IN_TEXT.source, "giu")), ...text.matchAll(new RegExp(BIG_NUMBER.source, "g"))].map((m) => m[0]);
+  const money = found.find((m) => !typed.has(digits(m)));
   results.push({ name: "no_money_in_text", pass: !money, detail: money });
 
   const letters = text.replace(/[^\p{L}]/gu, "");
@@ -154,6 +167,12 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en"): CheckRe
 
   const claim = text.match(SAVED_CLAIM)?.[0];
   results.push({ name: "no_saved_claim", pass: !claim, detail: claim });
+
+  const refusal = text.match(REFUSAL)?.[0];
+  results.push({ name: "no_refusal", pass: !refusal, detail: refusal });
+
+  // The app's rule for user-facing text (CLAUDE.md): no em dashes.
+  results.push({ name: "no_em_dash", pass: !text.includes("\u2014") });
   return results;
 }
 
@@ -194,6 +213,18 @@ export function caseCheck(record: RunRecord, check: Check): CheckResult {
       const candidates = blocks.filter((b) => b.type === check.type);
       const pass = candidates.some((b) => check.match(b));
       return { name: check.label, pass, detail: pass ? undefined : JSON.stringify(candidates).slice(0, 300) || "none" };
+    }
+    case "cardFrom": {
+      const pass = blocks.some((b) => typeof b.source === "string" && resolveBlock(record, b).call?.name === check.tool);
+      return { name: check.label, pass, detail: pass ? undefined : blocks.map((b) => `${b.type}:${String(b.source ?? "")}`).join(",") };
+    }
+    case "textAtLeast": {
+      const length = textOf(record).length;
+      return { name: `text at least ${check.chars} chars`, pass: length >= check.chars, detail: `${length}` };
+    }
+    case "noPick": {
+      const pick = textOf(record).match(PICK)?.[0];
+      return { name: "no specific product pick", pass: !pick, detail: pick };
     }
     case "toolArgs": {
       const matching = calls.filter((c) => c.name === check.tool);

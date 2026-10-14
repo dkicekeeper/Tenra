@@ -1,0 +1,82 @@
+name: RevenueCat
+
+# Grants or revokes Tenra Pro (entitlement `pro`) for one customer, or shows what RevenueCat
+# knows about them, through the RevenueCat REST API v1 with the REVENUECAT_SECRET_KEY secret
+# (the assistant server's key). For the owner, whose Founding User status lives on the phone
+# while the assistant server sees only RevenueCat, and for one-off grants.
+#
+# The app user id is shown in the app ($RCAnonymousID:… for an anonymous customer); an anonymous
+# id changes when the app is deleted and installed again, and a grant stays with the old one.
+# The id never appears in the log: the repository is public, and the assistant server takes
+# it as the caller's identity. The server caches a customer's tier for 10 minutes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to do"
+        type: choice
+        options: [grant, revoke, status]
+        default: grant
+      app_user_id:
+        description: "RevenueCat app user id ($RCAnonymousID:…)"
+        required: true
+      days:
+        description: "grant: for how many days (3650 = ten years)"
+        default: "3650"
+
+permissions:
+  contents: read
+
+jobs:
+  revenuecat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call RevenueCat
+        env:
+          RC_KEY: ${{ secrets.REVENUECAT_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          # Read from the event payload, not through an expression, so the id is never printed.
+          id=$(jq -r '.inputs.app_user_id' "$GITHUB_EVENT_PATH" | tr -d '[:space:]')
+          action=$(jq -r '.inputs.action' "$GITHUB_EVENT_PATH")
+          days=$(jq -r '.inputs.days' "$GITHUB_EVENT_PATH")
+          enc=$(jq -rn --arg v "$id" '$v|@uri')
+          echo "::add-mask::$id"
+          echo "::add-mask::$enc"
+
+          # The same shape the assistant server accepts (validate.ts, isValidUserId).
+          [[ "$id" =~ ^[A-Za-z0-9\$:._-]{1,128}$ ]] || { echo "::error::app_user_id has characters RevenueCat ids do not"; exit 1; }
+          [[ "$days" =~ ^[1-9][0-9]{0,4}$ ]] || { echo "::error::days must be a whole number from 1 to 99999"; exit 1; }
+          [ -n "$RC_KEY" ] || { echo "::error::REVENUECAT_SECRET_KEY is not set"; exit 1; }
+
+          api="https://api.revenuecat.com/v1/subscribers/$enc"
+          call() {
+            curl -sS --fail-with-body -X "$1" "$2" \
+              -H "Authorization: Bearer $RC_KEY" -H "Accept: application/json" -H "Content-Type: application/json" \
+              ${3:+-d "$3"}
+          }
+
+          case "$action" in
+            grant)
+              end_ms=$(( ($(date +%s) + days * 86400) * 1000 ))
+              call POST "$api/entitlements/pro/promotional" "{\"end_time_ms\": $end_ms}" > /dev/null
+              echo "Granted pro for $days days." ;;
+            revoke)
+              call POST "$api/entitlements/pro/revoke_promotionals" > /dev/null
+              echo "Revoked promotional pro." ;;
+          esac
+
+          # GET creates a customer RevenueCat has never seen, so first_seen tells whether the
+          # app had reached RevenueCat with this id before.
+          call GET "$api" > subscriber.json
+          {
+            echo "### RevenueCat customer"
+            echo
+            jq -r '.subscriber | "- first seen: \(.first_seen)\n- last seen: \(.last_seen // "never")"' subscriber.json
+            echo
+            echo "| Entitlement | Expires (UTC) | Product |"
+            echo "|---|---|---|"
+            jq -r '.subscriber.entitlements | to_entries[] | "| \(.key) | \(.value.expires_date // "never") | \(.value.product_identifier) |"' subscriber.json
+          } | tee -a "$GITHUB_STEP_SUMMARY"

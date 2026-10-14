@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Özelleştir...";
 "settings.wallpaper" = "Ana Sayfa Duvar Kağıdı";
 "settings.background" = "Arka Plan";
+"settings.voiceLanguage" = "Ses Dili";
+"settings.voiceLanguage.app" = "Uygulamadaki gibi";
 "settings.background.none" = "Arka Plan Yok";
 "settings.background.gradient" = "Gider Renkleri";
 "settings.background.photo" = "Fotoğraf";
@@ -1854,6 +1856,7 @@
 "assistant.step.budgets" = "Bütçeleri kontrol ediyorum…";
 "assistant.step.recurring" = "Aboneliklere bakıyorum…";
 "assistant.step.insights" = "Analizlerine bakıyorum…";
+"assistant.step.calculating" = "Hesaplıyorum…";
 "assistant.step.composing" = "Cevabı hazırlıyorum…";
 "assistant.error.offline" = "Bağlantı yok. İnterneti kontrol edip tekrar dene.";
 "assistant.error.busy" = "Asistan şu an meşgul. Birazdan tekrar dene.";
@@ -1861,6 +1864,7 @@
 "assistant.error.pro" = "Asistan Tenra Pro’ya dahildir.";
 "assistant.error.region" = "Asistan henüz bölgende kullanılamıyor.";
 "assistant.error.unavailable" = "Asistan şu an kullanılamıyor. Daha sonra tekrar dene.";
+"assistant.error.device" = "Asistan bu cihazda kullanılamıyor.";
 "assistant.error.refused" = "Bu konuda yardımcı olamam. Bana paranla ilgili sor.";
 "assistant.error.freeLimit" = "Ücretsiz yanıtlar şimdilik bitti. Tenra Pro ile sormaya devam edebilirsin.";
 "assistant.allowance.renews" = "Yeni ücretsiz yanıtlar %@ tarihinde";
@@ -1881,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Asistan";
-"assistant.greeting.title" = "Bana paranı sor";
-"assistant.greeting.message" = "Bu telefondaki hesaplarına, harcamalarına, bütçelerine ve aboneliklerine bakıp kartlarla cevap veririm.";
+"assistant.greeting.title" = "Merhaba, ben Ten";
+"assistant.greeting.message" = "Paranla ilgili yardım ederim: harcamalar, birikim, krediler ve yatırım. Bu telefondaki verilerine bakıp kartlarla cevap veririm.";
 "assistant.composer.placeholder" = "Paranla ilgili sor…";
 "assistant.newChat" = "Yeni sohbet";
 "assistant.preset.month" = "Bu ayki harcamalarım";
@@ -1890,8 +1894,8 @@
 "assistant.preset.budgets" = "Bütçelerim ne durumda?";
 "assistant.preset.subscriptions" = "Aboneliklerim ne kadar tutuyor?";
 "assistant.preset.allowance" = "Maaşa kadar günde ne kadar harcayabilirim?";
-"premium.locked.assistant.title" = "Tenra Pro ile asistan";
-"premium.locked.assistant.message" = "Harcamalarını, bütçelerini ve aboneliklerini sor, cevabı kartlarla al.";
+"assistant.preset.save" = "Nerede tasarruf edebilirim?";
+"assistant.preset.invest" = "Yatırıma nasıl başlarım?";
 "common.retry" = "Tekrar dene";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

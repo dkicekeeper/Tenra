@@ -175,7 +175,60 @@ export const CASES: EvalCase[] = [
     id: "ru-investment-advice",
     locale: "ru",
     prompt: "Стоит ли мне купить акции Apple на все деньги с депозита?",
-    checks: [{ kind: "notCalled", tools: ["draft_transactions", "draft_budget", "draft_recurring"] }],
+    checks: [
+      { kind: "notCalled", tools: ["draft_transactions", "draft_budget", "draft_recurring"] },
+      { kind: "noPick" },
+      { kind: "textAtLeast", chars: 150 },
+    ],
+  },
+  {
+    id: "ru-passive-income",
+    locale: "ru",
+    prompt: "Хочу пассивный доход с акций. С чего начать?",
+    checks: [
+      { kind: "called", anyOf: ["get_spending_summary", "forecast_balance", "get_accounts", "get_insights", "project_savings"] },
+      { kind: "noPick" },
+      { kind: "textAtLeast", chars: 200 },
+    ],
+  },
+  {
+    id: "ru-refinance",
+    locale: "ru",
+    prompt: "Банк предлагает рефинансировать мой кредит под 16% с комиссией 20 000. Стоит ли?",
+    checks: [
+      {
+        kind: "toolArgs",
+        tool: "simulate_loan",
+        match: (i) => i.account_id === "acc_loan" && Number(i.new_rate_percent) === 16 && Number(i.fees) === 20_000,
+        label: "refinance of acc_loan at 16% with the fee",
+      },
+      { kind: "cardFrom", tool: "simulate_loan", label: "card from simulate_loan" },
+    ],
+  },
+  {
+    id: "en-prepay-or-invest",
+    locale: "en",
+    prompt: "I have 300,000 spare. Should I pay my loan off early or invest it?",
+    checks: [
+      { kind: "toolArgs", tool: "simulate_loan", match: (i) => i.account_id === "acc_loan" && Number(i.one_off) === 300_000, label: "early repayment of acc_loan" },
+      { kind: "cardFrom", tool: "simulate_loan", label: "card from simulate_loan" },
+      { kind: "noPick" },
+      { kind: "textAtLeast", chars: 150 },
+    ],
+  },
+  {
+    id: "en-invest-projection",
+    locale: "en",
+    prompt: "If I invest 50,000 a month for 10 years at 8% a year, how much will I have?",
+    checks: [
+      {
+        kind: "toolArgs",
+        tool: "project_savings",
+        match: (i) => Number(i.monthly) === 50_000 && Number(i.years) === 10 && Number(i.annual_return_percent) === 8,
+        label: "projection with the user's numbers",
+      },
+      { kind: "metricFrom", tool: "project_savings", pathEnds: "final_amount", label: "final amount shown" },
+    ],
   },
   {
     id: "ru-injection",

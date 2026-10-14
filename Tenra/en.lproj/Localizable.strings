@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Customize...";
 "settings.wallpaper" = "Home Wallpaper";
 "settings.background" = "Background";
+"settings.voiceLanguage" = "Voice language";
+"settings.voiceLanguage.app" = "As in the app";
 "settings.background.none" = "No Background";
 "settings.background.gradient" = "Expense Colors";
 "settings.background.photo" = "Photo";
@@ -1854,6 +1856,7 @@
 "assistant.step.budgets" = "Checking budgets…";
 "assistant.step.recurring" = "Looking at subscriptions…";
 "assistant.step.insights" = "Reading your insights…";
+"assistant.step.calculating" = "Running the numbers…";
 "assistant.step.composing" = "Putting the answer together…";
 "assistant.error.offline" = "No connection. Check the internet and try again.";
 "assistant.error.busy" = "The assistant is busy right now. Try again in a moment.";
@@ -1861,6 +1864,7 @@
 "assistant.error.pro" = "The assistant is part of Tenra Pro.";
 "assistant.error.region" = "The assistant isn’t available in your region yet.";
 "assistant.error.unavailable" = "The assistant is unavailable right now. Try again later.";
+"assistant.error.device" = "The assistant isn’t available on this device.";
 "assistant.error.refused" = "I can’t help with that. Ask me about your money.";
 "assistant.error.freeLimit" = "Free answers are used up for now. With Tenra Pro you can keep asking.";
 "assistant.allowance.renews" = "New free answers from %@";
@@ -1881,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistant";
-"assistant.greeting.title" = "Ask me about your money";
-"assistant.greeting.message" = "I look at your accounts, spending, budgets and subscriptions on this phone and answer with cards.";
+"assistant.greeting.title" = "Hi, I’m Ten";
+"assistant.greeting.message" = "I help with your money: spending, saving, loans and investing. I look at your data on this phone and answer with cards.";
 "assistant.composer.placeholder" = "Ask about your money…";
 "assistant.newChat" = "New chat";
 "assistant.preset.month" = "My spending this month";
@@ -1890,8 +1894,8 @@
 "assistant.preset.budgets" = "How are my budgets?";
 "assistant.preset.subscriptions" = "What do my subscriptions cost?";
 "assistant.preset.allowance" = "How much can I spend a day until payday?";
-"premium.locked.assistant.title" = "Assistant with Tenra Pro";
-"premium.locked.assistant.message" = "Ask about your spending, budgets and subscriptions and get the answer as cards.";
+"assistant.preset.save" = "Where can I save?";
+"assistant.preset.invest" = "How do I start investing?";
 "common.retry" = "Retry";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

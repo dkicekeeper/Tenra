@@ -102,6 +102,8 @@ class AppCoordinator {
             suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
         )
         let usage = AssistantUsageStore()
+        // Threads are kept in the CoreData store; previews on UserDefaults keep them in memory.
+        let threads = repository is CoreDataRepository ? AgentThreadStore() : nil
         let model = AssistantViewModel(
             conversation: AgentConversation(transport: client, toolkit: toolkit),
             context: { AgentContextBuilder.text(for: AgentContextSnapshot(store: store)) },
@@ -110,7 +112,10 @@ class AppCoordinator {
                 loadUsage: { usage.load() },
                 saveUsage: { usage.save($0) }
             ),
-            drafts: drafts
+            drafts: drafts,
+            persistence: threads.map { threads in
+                AssistantViewModel.Persistence(load: { await threads.latest() }, save: { await threads.save($0) })
+            }
         )
         assistantModel = model
         return model

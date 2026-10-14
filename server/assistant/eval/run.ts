@@ -115,7 +115,7 @@ async function runCase(client: Anthropic, model: string, effort: Effort, testCas
     record.error = error instanceof Anthropic.APIError ? `api ${error.status}: ${error.message}` : String(error);
   }
 
-  const checks = [...universalChecks(record, testCase.locale), ...testCase.checks.map((c) => caseCheck(record, c))];
+  const checks = [...universalChecks(record, testCase.locale, testCase.prompt), ...testCase.checks.map((c) => caseCheck(record, c))];
   return {
     outcome: { model, effort, case: testCase, record, checks, pass: checks.every((c) => c.pass), usage, calls, ms: Date.now() - started },
     transcript: messages,

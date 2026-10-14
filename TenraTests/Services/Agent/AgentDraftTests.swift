@@ -180,6 +180,55 @@ struct AgentDraftTests {
         #expect(badPeriod.error == "period must be weekly, monthly or yearly.")
     }
 
+    // MARK: - draft_recurring
+
+    @Test func aSubscriptionIsDraftedAsItsSeries() async throws {
+        let (toolkit, book, store) = Self.make()
+        _ = store
+        let output = await toolkit.execute(name: "draft_recurring", input: [
+            "kind": "subscription", "name": "Яндекс Плюс", "amount": 2_490, "currency": .null,
+            "frequency": "monthly", "next_date": "2026-11-05", "category": "кафе", "account": .null,
+        ])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["draft_id"] == "draft_1")
+        #expect(value["category_id"] == "cat_cafe")
+        #expect(value["currency"] == "KZT")
+        #expect(value.value(atPath: "guessed.0") == "account")
+        guard case .recurring(let recurring)? = book.drafts["draft_1"]?.operations.first else {
+            Issue.record("expected a recurring draft")
+            return
+        }
+        #expect(recurring.series.kind == .subscription)
+        #expect(recurring.series.description == "Яндекс Плюс")
+        #expect(recurring.series.subcategory == "Яндекс Плюс")
+        #expect(recurring.series.startDate == "2026-11-05")
+        #expect(recurring.series.frequency == .monthly)
+        #expect(recurring.series.amount == 2_490)
+        #expect(recurring.accountGuessed)
+    }
+
+    @Test func aRecurringDraftChecksItsInput() async {
+        let (toolkit, book, store) = Self.make()
+        _ = store
+        func run(_ changes: [String: JSONValue]) async -> String? {
+            var input: [String: JSONValue] = [
+                "kind": "regular", "name": "Аренда", "amount": 180_000, "frequency": "monthly",
+                "next_date": "2026-11-01", "category": "cat_taxi", "account": "acc_kaspi",
+            ]
+            for (key, value) in changes { input[key] = value }
+            return await toolkit.execute(name: "draft_recurring", input: .object(input)).error
+        }
+        #expect(await run(["next_date": "2026-10-01"]) == "next_date cannot be in the past.")
+        #expect(await run(["next_date": "2028-01-01"]) == "next_date must be within a year.")
+        #expect(await run(["frequency": "hourly"])?.contains("frequency must be") == true)
+        #expect(await run(["category": "Космос"])?.contains("Unknown category") == true)
+        #expect(await run(["account": "Мой банк"]) == "Unknown account Мой банк.")
+        // A subscription is an expense; a regular payment may be income.
+        #expect(await run(["kind": "subscription", "category": "cat_salary"])?.contains("Unknown category") == true)
+        #expect(await run(["category": "cat_salary"]) == nil)
+        #expect(book.drafts.count == 1)
+    }
+
     // MARK: - The book
 
     @Test func savingWritesEveryOperationAndUndoDeletesThem() async {

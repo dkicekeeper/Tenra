@@ -108,6 +108,7 @@ struct AssistantView: View {
             Task { await model.retry() }
         }
         .onAppear { model.refreshAllowance() }
+        .task { await model.restore() }
         .onChange(of: premium.isPro) { model.refreshAllowance() }
         .sheet(isPresented: $showingConsent) {
             PromptSheet(
@@ -235,6 +236,8 @@ struct AssistantView: View {
             String(localized: "assistant.preset.compare"),
             String(localized: "assistant.preset.budgets"),
             String(localized: "assistant.preset.subscriptions"),
+            String(localized: "assistant.preset.save"),
+            String(localized: "assistant.preset.invest"),
         ]
     }
 }

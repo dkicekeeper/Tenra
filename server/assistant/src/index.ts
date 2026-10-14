@@ -15,9 +15,11 @@ import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } fr
 //   done  {content, ...}    the assistant turn to append verbatim, plus usage and quota
 //   error {code, retryable}
 //
-// Without Pro, a turn must come from the real app: it carries an App Attest assertion over
-// its body (x-tenra-key, x-tenra-assertion), and the free quota is counted per attested key.
-// GET /v1/attest/challenge and POST /v1/attest register that key once per install.
+// Every turn must come from the real app: it carries an App Attest assertion over its body
+// (x-tenra-key, x-tenra-assertion). The user id is only a claim, so without the assertion a
+// Pro customer's id alone would spend their quota. Free answers are counted per attested key,
+// Pro calls per customer. GET /v1/attest/challenge and POST /v1/attest register that key once
+// per install.
 //
 // Nothing about the conversation is logged: only status codes and error codes.
 
@@ -69,20 +71,17 @@ export default {
       throw error;
     }
 
-    // Without Pro: the body must be signed by a key attested on a real device.
-    let quotaId = userId;
-    if (tier === "free") {
-      const keyId = request.headers.get("x-tenra-key");
-      const assertion = request.headers.get("x-tenra-assertion");
-      if (!isValidKeyId(keyId) || !assertion || assertion.length > 4096) return fail(401, "attest", { reason: "missing" });
-      try {
-        await checkAssertion(env.QUOTA, keyId, assertion, bytes, config.appId);
-      } catch (error) {
-        if (error instanceof AttestError) return fail(401, "attest", { reason: error.reason });
-        throw error;
-      }
-      quotaId = `key:${keyId}`;
+    // The body must be signed by a key attested on a real device, Pro or not.
+    const keyId = request.headers.get("x-tenra-key");
+    const assertion = request.headers.get("x-tenra-assertion");
+    if (!isValidKeyId(keyId) || !assertion || assertion.length > 4096) return fail(401, "attest", { reason: "missing" });
+    try {
+      await checkAssertion(env.QUOTA, keyId, assertion, bytes, config.appId);
+    } catch (error) {
+      if (error instanceof AttestError) return fail(401, "attest", { reason: error.reason });
+      throw error;
     }
+    const quotaId = tier === "free" ? `key:${keyId}` : userId;
 
     const quota = await consumeCall(env.QUOTA, quotaId, tier, config);
     if (!quota.allowed) return fail(429, quota.reason === "global" ? "busy" : "quota", { tier, used: quota.used, limit: quota.limit });

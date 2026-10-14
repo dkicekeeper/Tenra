@@ -7,12 +7,14 @@ import {
   BASE_CURRENCY,
   BUDGETS,
   CATEGORIES,
+  LOAN_TERMS,
   RECURRING,
   TODAY,
   TRANSACTIONS,
   USD_RATE,
   type Transaction,
 } from "./fixture";
+import { applyScenario, breakEvenMonths, loanPlan, PlanningError, projectSavings as growSavings, type LoanPlan, type LoanScenario } from "./planning";
 
 type Input = Record<string, unknown>;
 export class ToolInputError extends Error {}
@@ -300,8 +302,148 @@ function draftBudget(input: Input) {
   return { draft_id: `draft_${++draftSeq}`, category_id: category, category: categoryName(category), amount: input.amount, period: input.period, previous_limit: BUDGETS.find((b) => b.categoryId === category)?.limit ?? null, saved: false };
 }
 
+// As FinanceToolkit.draftRecurring does: a category is required (a subscription takes an
+// expense one), next_date is today or later and within a year.
 function draftRecurring(input: Input) {
-  return { draft_id: `draft_${++draftSeq}`, ...input, account: accountName(resolveAccount(input.account as string | null)), saved: false };
+  const kind = str(input, "kind", true);
+  if (kind !== "subscription" && kind !== "regular") throw new ToolInputError("kind must be subscription or regular.");
+  const name = (str(input, "name", true) ?? "").trim();
+  if (!name) throw new ToolInputError("name is required.");
+  const amount = optionalNumber(input, "amount");
+  if (amount === undefined || amount <= 0) throw new ToolInputError("amount must be positive.");
+  const frequency = str(input, "frequency", true)!;
+  if (!["daily", "weekly", "monthly", "quarterly", "yearly"].includes(frequency)) throw new ToolInputError("frequency must be daily, weekly, monthly, quarterly or yearly.");
+  const next = dateArg(input, "next_date", true)!;
+  if (next < TODAY) throw new ToolInputError("next_date cannot be in the past.");
+  if (daysBetween(TODAY, next) > 366) throw new ToolInputError("next_date must be within a year.");
+  const reference = str(input, "category");
+  if (!reference) throw new ToolInputError("Give a category id or name from <app_context>.");
+  const candidates = CATEGORIES.filter((c) => kind === "regular" || c.type === "expense");
+  const category = candidates.find((c) => c.id === reference) ?? candidates.find((c) => c.name.toLowerCase() === reference.toLowerCase());
+  if (!category) throw new ToolInputError(`Unknown category ${reference}. Use a category id from <app_context>.`);
+  const accountId = resolveAccount(input.account as string | null);
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    kind,
+    name,
+    amount: round(amount),
+    currency: str(input, "currency")?.toUpperCase() || (ACCOUNTS.find((a) => a.id === accountId)?.currency ?? BASE_CURRENCY),
+    frequency,
+    next_date: next,
+    category_id: category.id,
+    category: category.name,
+    account_id: accountId,
+    account: accountName(accountId),
+    guessed: input.account ? [] : ["account"],
+    saved: false,
+  };
+}
+
+function optionalNumber(input: Input, key: string): number | undefined {
+  const value = input[key];
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "number" || !Number.isFinite(value)) throw new ToolInputError(`${key} must be a number`);
+  return value;
+}
+
+function planJSON(plan: LoanPlan) {
+  return {
+    principal: round(plan.principal),
+    rate_percent: plan.ratePercent,
+    monthly_payment: round(plan.monthlyPayment),
+    months_left: plan.monthsLeft,
+    total_interest: round(plan.totalInterest),
+    total_paid: round(plan.principal + plan.totalInterest),
+  };
+}
+
+// As FinanceToolkit.simulateLoan does.
+function simulateLoan(input: Input) {
+  const n = (key: string) => optionalNumber(input, key);
+  for (const key of ["rate_percent", "new_rate_percent"]) {
+    const v = n(key);
+    if (v !== undefined && (v < 0 || v > 100)) throw new ToolInputError(`${key} must be from 0 to 100.`);
+  }
+  for (const key of ["months_left", "new_months"]) {
+    const v = n(key);
+    if (v !== undefined && (v < 1 || v > 600 || !Number.isInteger(v))) throw new ToolInputError(`${key} must be from 1 to 600.`);
+  }
+  for (const key of ["principal", "fees", "extra_monthly", "one_off"]) {
+    const v = n(key);
+    if (v !== undefined && v < 0) throw new ToolInputError(`${key} cannot be negative.`);
+  }
+  try {
+    const accountId = str(input, "account_id");
+    let current: LoanPlan;
+    let name: string | null = null;
+    if (accountId) {
+      const account = ACCOUNTS.find((a) => a.id === accountId);
+      if (!account) throw new ToolInputError(`Unknown account ${accountId}.`);
+      if (account.kind !== "loan" || account.id !== LOAN_TERMS.accountId) throw new ToolInputError(`Account ${accountId} is not a loan.`);
+      name = account.name;
+      current = loanPlan(-balanceOf(account.id), LOAN_TERMS.ratePercent, LOAN_TERMS.monthlyPayment, null);
+    } else {
+      const principal = n("principal");
+      const rate = n("rate_percent");
+      const months = n("months_left");
+      if (!principal || principal <= 0 || rate === undefined || months === undefined) {
+        throw new ToolInputError("Give account_id of a loan, or principal, rate_percent and months_left.");
+      }
+      current = loanPlan(principal, rate, null, months);
+    }
+    const scenario: LoanScenario = {
+      newRatePercent: n("new_rate_percent"),
+      newMonths: n("new_months"),
+      fees: n("fees") ?? 0,
+      extraMonthly: n("extra_monthly") ?? 0,
+      oneOff: n("one_off") ?? 0,
+      oneOffReducesPayment: str(input, "one_off_mode") === "reduce_payment",
+    };
+    const base = { currency: BASE_CURRENCY, loan: name, account_id: accountId ?? null, current: planJSON(current), scenario: null };
+    const empty = scenario.newRatePercent === undefined && scenario.newMonths === undefined && !scenario.fees && !scenario.extraMonthly && !scenario.oneOff;
+    if (empty) return base;
+    const after = applyScenario(scenario, current);
+    return {
+      ...base,
+      scenario: { ...planJSON(after), fees: round(scenario.fees) },
+      interest_saved: round(current.totalInterest - after.totalInterest - scenario.fees),
+      monthly_payment_change: round(after.monthlyPayment - current.monthlyPayment),
+      months_saved: current.monthsLeft - after.monthsLeft,
+      break_even_months: breakEvenMonths(scenario.fees, current, after),
+    };
+  } catch (error) {
+    if (error instanceof PlanningError) throw new ToolInputError(error.message);
+    throw error;
+  }
+}
+
+// As FinanceToolkit.projectSavings does.
+function projectSavings(input: Input) {
+  const monthly = optionalNumber(input, "monthly");
+  const years = optionalNumber(input, "years");
+  const annual = optionalNumber(input, "annual_return_percent");
+  if (monthly === undefined || years === undefined || annual === undefined) throw new ToolInputError("monthly, years and annual_return_percent are required");
+  const start = optionalNumber(input, "start") ?? 0;
+  const inflation = optionalNumber(input, "inflation_percent") ?? null;
+  if (!Number.isInteger(years) || years < 1 || years > 50) throw new ToolInputError("years must be from 1 to 50.");
+  if (annual < -50 || annual > 50) throw new ToolInputError("annual_return_percent must be from -50 to 50.");
+  if (inflation !== null && (inflation < -20 || inflation > 100)) throw new ToolInputError("inflation_percent must be from -20 to 100.");
+  if (monthly < 0 || start < 0 || monthly + start <= 0) throw new ToolInputError("monthly and start cannot be negative, and one of them must be above zero.");
+  const result = growSavings(start, monthly, annual, years, inflation);
+  const [y, m] = [Number(TODAY.slice(0, 4)), TODAY.slice(5, 7)];
+  return {
+    currency: (str(input, "currency") || BASE_CURRENCY).toUpperCase(),
+    years,
+    monthly,
+    start,
+    annual_return_percent: annual,
+    inflation_percent: inflation,
+    final_amount: round(result.finalAmount),
+    contributed: round(result.contributed),
+    growth: round(result.finalAmount - result.contributed),
+    final_amount_real: result.finalAmountReal === null ? null : round(result.finalAmountReal),
+    series: result.years.map((row) => ({ key: `${y + row.year}-${m}`, total: round(row.total), contributed: round(row.contributed) })),
+  };
 }
 
 const HANDLERS: Record<string, (input: Input) => unknown> = {
@@ -313,6 +455,8 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   list_recurring: listRecurring,
   get_insights: getInsights,
   forecast_balance: forecastBalance,
+  simulate_loan: simulateLoan,
+  project_savings: projectSavings,
   draft_transactions: draftTransactions,
   draft_budget: draftBudget,
   draft_recurring: draftRecurring,
@@ -325,4 +469,4 @@ export function executeTool(name: string, input: Input): unknown {
 }
 
 // Direct access for ground truths in cases.
-export const simulate = { spendingSummary, comparePeriods, getAccounts, getBudgets, listRecurring, forecastBalance };
+export const simulate = { spendingSummary, comparePeriods, getAccounts, getBudgets, listRecurring, forecastBalance, simulateLoan, projectSavings };

@@ -3,6 +3,7 @@ import { CASES } from "../eval/cases";
 import { TODAY, TRANSACTIONS } from "../eval/fixture";
 import { blockProblems, caseCheck, universalChecks, type RunRecord } from "../eval/grade";
 import { executeTool, resetDrafts, simulate } from "../eval/simulator";
+import { annuity, applyScenario, breakEvenMonths, loanPlan, projectSavings } from "../eval/planning";
 
 // The harness itself, without the API: the fixture is sane, and the grader passes a correct
 // reply and fails a wrong one.
@@ -57,7 +58,10 @@ describe("grader", () => {
   });
 
   it("fails money in text, broken paths and the wrong language", () => {
-    const money = universalChecks(record(`Вы потратили ${cafeTotal} ₸ на кафе.`), "ru");
+    // An amount the user typed may come back; a figure of the model's own may not.
+    const echoed = universalChecks(record("Если отложить 50 000 первого числа, лимит станет ниже."), "ru", "Если отложу 50 000 первого ноября?");
+    expect(echoed.find((c) => c.name === "no_money_in_text")?.pass).toBe(true);
+    const money = universalChecks(record(`Вы потратили ${cafeTotal} ₸ на кафе.`), "ru", "Сколько я потратил на кафе?");
     expect(money.find((c) => c.name === "no_money_in_text")?.pass).toBe(false);
     const broken = universalChecks(record("Кафе выросли.", "totals.sum"), "ru");
     expect(broken.find((c) => c.name === "refs_resolve")?.pass).toBe(false);
@@ -91,6 +95,18 @@ describe("grader", () => {
     expect(universalChecks(r, "ru").find((c) => c.name === "blocks_decode")?.pass).toBe(false);
   });
 
+  it("catches a refusal and a specific product pick, not a one-line caveat", () => {
+    const reply = (text: string): RunRecord => ({ calls: [], reply: { blocks: [{ type: "text", text }], mood: "idle", suggestions: [] } });
+    const refused = (text: string) => universalChecks(reply(text), "ru").find((c) => c.name === "no_refusal")?.pass === false;
+    expect(refused("Это не в моей роли, спросите о тратах.")).toBe(true);
+    expect(refused("Конкретные акции подскажет лицензированный советник, а я покажу, сколько вы можете откладывать.")).toBe(false);
+    expect(universalChecks(reply("Это задача \u2014 для советника."), "ru").find((c) => c.name === "no_em_dash")?.pass).toBe(false);
+    const picked = (text: string) => caseCheck(reply(text), { kind: "noPick" }).pass === false;
+    expect(picked("Рекомендую купить акции Apple.")).toBe(true);
+    expect(picked("Не стоит купить всё одним активом: сначала подушка.")).toBe(false);
+    expect(picked("Обычно сравнивают комиссии и диверсификацию фондов.")).toBe(false);
+  });
+
   it("catches a claim that a draft was saved", () => {
     resetDrafts();
     const input = { items: [{ type: "expense", amount: 1500, currency: null, category: "кофе", account: "acc_kaspi", to_account: null, date: null, note: "Кофе" }] };
@@ -101,5 +117,47 @@ describe("grader", () => {
     const results = universalChecks(r, "ru");
     expect(results.find((c) => c.name === "refs_resolve")?.pass).toBe(true);
     expect(results.find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
+    // "Interest saved" is finance, not a claim about the draft.
+    const say = (text: string): RunRecord => ({ calls: [], reply: { blocks: [{ type: "text", text }], mood: "idle", suggestions: [] } });
+    expect(universalChecks(say("The interest saved is shown below."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(true);
+    expect(universalChecks(say("I've saved your lunch."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
+    expect(universalChecks(say("Your lunch was saved."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
+  });
+});
+
+describe("planning formulas (same figures as AgentPlanningTests)", () => {
+  const near = (value: number | null | undefined, expected: number, tolerance = 0.02) => value !== null && value !== undefined && Math.abs(value - expected) <= tolerance;
+
+  it("prices a loan, its refinancing and early payments", () => {
+    const current = loanPlan(1_000_000, 22, 85_000, null);
+    expect(current.monthsLeft).toBe(14);
+    expect(near(current.totalInterest, 136_861.43)).toBe(true);
+    const refi = applyScenario({ newRatePercent: 16, fees: 20_000, extraMonthly: 0, oneOff: 0, oneOffReducesPayment: false }, current);
+    expect(near(refi.monthlyPayment, 78_776.3)).toBe(true);
+    expect(near(refi.totalInterest, 102_868.15)).toBe(true);
+    expect(breakEvenMonths(20_000, current, refi)).toBe(4);
+    expect(applyScenario({ fees: 0, extraMonthly: 15_000, oneOff: 0, oneOffReducesPayment: false }, current).monthsLeft).toBe(12);
+    const early = applyScenario({ fees: 0, extraMonthly: 0, oneOff: 300_000, oneOffReducesPayment: false }, current);
+    expect(early.monthsLeft).toBe(10);
+    expect(near(early.totalInterest, 65_789.64)).toBe(true);
+    expect(near(annuity(2_000_000, 18, 36), 72_304.79)).toBe(true);
+    expect(() => loanPlan(1_000_000, 22, 10_000, null)).toThrow();
+  });
+
+  it("compounds savings monthly", () => {
+    const result = projectSavings(0, 50_000, 8, 10, 6);
+    expect(near(result.finalAmount, 9_006_213.66, 0.5)).toBe(true);
+    expect(result.contributed).toBe(6_000_000);
+    expect(near(result.finalAmountReal, 5_029_022.67, 0.5)).toBe(true);
+    expect(near(result.years[0]?.total, 621_694.32, 0.5)).toBe(true);
+  });
+
+  it("serves both tools from the simulator", () => {
+    const loan = executeTool("simulate_loan", { account_id: "acc_loan", new_rate_percent: 16, fees: 20_000 }) as Record<string, unknown>;
+    expect(loan.loan).toBe("Кредит Halyk");
+    expect(typeof loan.interest_saved).toBe("number");
+    expect(() => executeTool("simulate_loan", { account_id: "acc_kaspi" })).toThrow("not a loan");
+    const savings = executeTool("project_savings", { monthly: 50_000, years: 10, annual_return_percent: 8 }) as { series: { key: string }[] };
+    expect(savings.series[0]?.key).toBe("2027-10");
   });
 });

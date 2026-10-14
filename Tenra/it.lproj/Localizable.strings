@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Personalizza...";
 "settings.wallpaper" = "Sfondo della home";
 "settings.background" = "Sfondo";
+"settings.voiceLanguage" = "Lingua della voce";
+"settings.voiceLanguage.app" = "Come nell’app";
 "settings.background.none" = "Nessuno sfondo";
 "settings.background.gradient" = "Colori delle spese";
 "settings.background.photo" = "Foto";
@@ -1854,6 +1856,7 @@
 "assistant.step.budgets" = "Controllo i budget…";
 "assistant.step.recurring" = "Guardo gli abbonamenti…";
 "assistant.step.insights" = "Leggo le tue analisi…";
+"assistant.step.calculating" = "Faccio i calcoli…";
 "assistant.step.composing" = "Preparo la risposta…";
 "assistant.error.offline" = "Nessuna connessione. Controlla internet e riprova.";
 "assistant.error.busy" = "L’assistente è occupato in questo momento. Riprova tra poco.";
@@ -1861,6 +1864,7 @@
 "assistant.error.pro" = "L’assistente fa parte di Tenra Pro.";
 "assistant.error.region" = "L’assistente non è ancora disponibile nella tua zona.";
 "assistant.error.unavailable" = "L’assistente non è disponibile ora. Riprova più tardi.";
+"assistant.error.device" = "L’assistente non è disponibile su questo dispositivo.";
 "assistant.error.refused" = "Con questo non posso aiutarti. Chiedimi dei tuoi soldi.";
 "assistant.error.freeLimit" = "Le risposte gratuite sono finite per ora. Con Tenra Pro puoi continuare a chiedere.";
 "assistant.allowance.renews" = "Nuove risposte gratuite dal %@";
@@ -1881,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistente";
-"assistant.greeting.title" = "Chiedimi dei tuoi soldi";
-"assistant.greeting.message" = "Guardo conti, spese, budget e abbonamenti su questo telefono e rispondo con delle schede.";
+"assistant.greeting.title" = "Ciao, sono Ten";
+"assistant.greeting.message" = "Ti aiuto con i tuoi soldi: spese, risparmio, prestiti e investimenti. Guardo i tuoi dati su questo telefono e rispondo con delle schede.";
 "assistant.composer.placeholder" = "Chiedi dei tuoi soldi…";
 "assistant.newChat" = "Nuova chat";
 "assistant.preset.month" = "Le mie spese di questo mese";
@@ -1890,8 +1894,8 @@
 "assistant.preset.budgets" = "Come vanno i miei budget?";
 "assistant.preset.subscriptions" = "Quanto costano i miei abbonamenti?";
 "assistant.preset.allowance" = "Quanto posso spendere al giorno fino allo stipendio?";
-"premium.locked.assistant.title" = "Assistente con Tenra Pro";
-"premium.locked.assistant.message" = "Chiedi di spese, budget e abbonamenti e ricevi la risposta in schede.";
+"assistant.preset.save" = "Dove posso risparmiare?";
+"assistant.preset.invest" = "Come inizio a investire?";
 "common.retry" = "Riprova";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

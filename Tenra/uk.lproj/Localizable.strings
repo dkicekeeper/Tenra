@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Налаштувати...";
 "settings.wallpaper" = "Шпалери головної";
 "settings.background" = "Тло";
+"settings.voiceLanguage" = "Мова голосу";
+"settings.voiceLanguage.app" = "Як у застосунку";
 "settings.background.none" = "Без тла";
 "settings.background.gradient" = "Кольори витрат";
 "settings.background.photo" = "Фото";
@@ -1854,6 +1856,7 @@
 "assistant.step.budgets" = "Перевіряю бюджети…";
 "assistant.step.recurring" = "Дивлюся підписки…";
 "assistant.step.insights" = "Дивлюся аналітику…";
+"assistant.step.calculating" = "Рахую…";
 "assistant.step.composing" = "Збираю відповідь…";
 "assistant.error.offline" = "Немає з’єднання. Перевірте інтернет і спробуйте ще раз.";
 "assistant.error.busy" = "Асистент зараз зайнятий. Спробуйте за хвилину.";
@@ -1861,6 +1864,7 @@
 "assistant.error.pro" = "Асистент входить у Tenra Pro.";
 "assistant.error.region" = "Асистент поки недоступний у вашому регіоні.";
 "assistant.error.unavailable" = "Асистент зараз недоступний. Спробуйте пізніше.";
+"assistant.error.device" = "Асистент недоступний на цьому пристрої.";
 "assistant.error.refused" = "З цим я не допоможу. Запитайте про ваші гроші.";
 "assistant.error.freeLimit" = "Безкоштовні відповіді поки закінчилися. З Tenra Pro можна питати далі.";
 "assistant.allowance.renews" = "Нові безкоштовні відповіді з %@";
@@ -1881,8 +1885,8 @@
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Асистент";
-"assistant.greeting.title" = "Запитайте мене про гроші";
-"assistant.greeting.message" = "Я дивлюся ваші рахунки, витрати, бюджети й підписки на цьому телефоні та відповідаю картками.";
+"assistant.greeting.title" = "Привіт, я Тен";
+"assistant.greeting.message" = "Допомагаю з грошима: витрати, заощадження, кредити й інвестиції. Дивлюся ваші дані на цьому телефоні та відповідаю картками.";
 "assistant.composer.placeholder" = "Запитайте про гроші…";
 "assistant.newChat" = "Новий чат";
 "assistant.preset.month" = "Мої витрати цього місяця";
@@ -1890,8 +1894,8 @@
 "assistant.preset.budgets" = "Як справи з бюджетами?";
 "assistant.preset.subscriptions" = "Скільки коштують мої підписки?";
 "assistant.preset.allowance" = "Скільки можна витрачати на день до зарплати?";
-"premium.locked.assistant.title" = "Асистент у Tenra Pro";
-"premium.locked.assistant.message" = "Запитуйте про витрати, бюджети й підписки та отримуйте відповідь картками.";
+"assistant.preset.save" = "Де я можу заощадити?";
+"assistant.preset.invest" = "З чого почати інвестувати?";
 "common.retry" = "Повторити";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */

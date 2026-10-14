@@ -17,6 +17,10 @@
 //  week, then 10 a month). A question over the allowance is not sent: it stays in the thread
 //  with the Pro offer, and goes once Pro is on (`retry()` after the paywall).
 //
+//  The thread is kept across launches (AgentThreadStore): written after every reply, brought
+//  back by `restore()` when the screen opens, its questions and replies replayed from the
+//  conversation itself. A new chat starts another thread.
+//
 
 import Foundation
 import Observation
@@ -33,6 +37,12 @@ final class AssistantViewModel {
         static let unlimited = Access(isPro: { true }, loadUsage: { AssistantUsage() }, saveUsage: { _ in })
     }
 
+    /// Where the thread is kept between launches (AgentThreadStore).
+    struct Persistence {
+        var load: () async -> AgentThreadSnapshot?
+        var save: (AgentThreadSnapshot) async -> Void
+    }
+
     struct Entry: Identifiable, Equatable {
         enum Content: Equatable {
             case question(String)
@@ -41,6 +51,11 @@ final class AssistantViewModel {
 
         let id: UUID
         let content: Content
+
+        var question: String? {
+            if case .question(let text) = content { return text }
+            return nil
+        }
     }
 
     enum Phase: Equatable {
@@ -66,13 +81,83 @@ final class AssistantViewModel {
     /// The draft states the model was last told about.
     @ObservationIgnored private var reportedDrafts: [String: String] = [:]
     @ObservationIgnored private let access: Access
+    @ObservationIgnored private let persistence: Persistence?
+    @ObservationIgnored private var threadId = UUID().uuidString
+    @ObservationIgnored private var threadCreatedAt: Date
+    /// The kept thread is brought back once, and never over a thread already going.
+    @ObservationIgnored private var restoreDone = false
 
-    init(conversation: AgentConversation, context: @escaping () -> String, access: Access = .unlimited, drafts: AgentDraftBook? = nil) {
+    init(
+        conversation: AgentConversation,
+        context: @escaping () -> String,
+        access: Access = .unlimited,
+        drafts: AgentDraftBook? = nil,
+        persistence: Persistence? = nil
+    ) {
         self.conversation = conversation
         self.context = context
         self.access = access
         self.drafts = drafts
+        self.persistence = persistence
+        self.threadCreatedAt = access.now()
         refreshAllowance()
+    }
+
+    /// Brings back the thread kept last, once, while nothing has been asked yet.
+    func restore() async {
+        guard !restoreDone, let persistence else { return }
+        restoreDone = true
+        guard entries.isEmpty, !isWorking, let snapshot = await persistence.load() else { return }
+        // A question may have gone while the thread was loading.
+        guard entries.isEmpty, !isWorking else { return }
+        conversation.restore(snapshot.body)
+        entries = Self.entries(replaying: snapshot.body)
+        if case .reply(let reply, _)? = entries.last?.content { replyMood = reply.mood }
+        threadId = snapshot.id
+        threadCreatedAt = snapshot.createdAt
+        // The context is in the kept history, but it may be stale: the next question sends it.
+        sentContext = nil
+        drafts?.continueNumbering(after: Self.lastDraftNumber(in: snapshot.body.results))
+    }
+
+    /// The visible thread of a kept conversation: each question (the last text of a user
+    /// message, after the context blocks) and each reply (a `render_reply` sent alone; one sent
+    /// next to other tools was turned back, AgentConversation).
+    static func entries(replaying body: AgentThreadSnapshot.Body) -> [Entry] {
+        var entries: [Entry] = []
+        for message in body.messages {
+            switch message.role {
+            case .user:
+                if let text = message.content.last(where: { $0["type"] == "text" })?["text"]?.stringValue {
+                    entries.append(Entry(id: UUID(), content: .question(text)))
+                }
+            case .assistant:
+                let uses = message.content.compactMap(AgentToolUse.init(block:))
+                guard uses.count == 1, let use = uses.first, use.name == AgentProtocol.renderReplyTool,
+                      let reply = try? use.input.decoded(as: AgentReply.self) else { continue }
+                entries.append(Entry(id: UUID(), content: .reply(reply, results: body.results)))
+            }
+        }
+        return entries
+    }
+
+    /// The highest `draft_N` among the results.
+    static func lastDraftNumber(in results: [String: JSONValue]) -> Int {
+        results.values
+            .compactMap { $0["draft_id"]?.stringValue }
+            .compactMap { $0.hasPrefix("draft_") ? Int($0.dropFirst("draft_".count)) : nil }
+            .max() ?? 0
+    }
+
+    private func persist() async {
+        guard let persistence else { return }
+        await persistence.save(AgentThreadSnapshot(
+            id: threadId,
+            createdAt: threadCreatedAt,
+            updatedAt: access.now(),
+            title: entries.lazy.compactMap(\.question).first,
+            body: conversation.body
+        ))
     }
 
     /// Re-reads Pro and the allowance (after a purchase, on appearing).
@@ -109,9 +194,12 @@ final class AssistantViewModel {
         await ask(text, entry: entry.id)
     }
 
-    /// A new thread; the next question carries the context again.
+    /// A new thread; the next question carries the context again. The old one stays kept.
     func reset() {
         guard !isWorking else { return }
+        restoreDone = true
+        threadId = UUID().uuidString
+        threadCreatedAt = access.now()
         conversation.reset()
         entries = []
         phase = .idle
@@ -155,6 +243,7 @@ final class AssistantViewModel {
             return
         }
         phase = .working(.understanding)
+        if conversation.trimIfNeeded() { sentContext = nil }
         let current = context()
         let contextToSend = current == sentContext ? nil : current
         let status = draftStatus()
@@ -174,6 +263,7 @@ final class AssistantViewModel {
             replyMood = outcome.reply.mood
             failedEntryId = nil
             phase = .idle
+            await persist()
         } catch {
             phase = .failed(AssistantFailure(error))
         }
@@ -190,6 +280,8 @@ enum AssistantStep: Equatable {
     case budgets
     case recurring
     case insights
+    /// Forecasts and what-ifs: the balance, a loan, savings.
+    case calculating
     case composing
 
     init(tool: String) {
@@ -201,6 +293,7 @@ enum AssistantStep: Equatable {
         case "get_budgets": self = .budgets
         case "list_recurring": self = .recurring
         case "get_insights": self = .insights
+        case "forecast_balance", "simulate_loan", "project_savings": self = .calculating
         case AgentProtocol.renderReplyTool: self = .composing
         default: self = .understanding
         }
@@ -216,6 +309,7 @@ enum AssistantStep: Equatable {
         case .budgets: String(localized: "assistant.step.budgets")
         case .recurring: String(localized: "assistant.step.recurring")
         case .insights: String(localized: "assistant.step.insights")
+        case .calculating: String(localized: "assistant.step.calculating")
         case .composing: String(localized: "assistant.step.composing")
         }
     }
@@ -243,8 +337,8 @@ enum AssistantFailure: Equatable {
             case .unauthorized: self = .proRequired
             case .regionUnavailable: self = .regionUnavailable
             case .disabled, .notConfigured, .entitlementUnavailable: self = .unavailable
-            // A device that cannot prove it runs the app gets the cloud only with Pro.
-            case .attestation: self = .proRequired
+            // The server could not verify this app instance; Pro does not change that.
+            case .attestation: self = .unavailable
             case .invalidRequest, .http: self = .generic
             }
         case let error as AgentConversationError:

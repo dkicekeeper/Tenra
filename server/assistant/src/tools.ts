@@ -132,6 +132,39 @@ const readTools: Tool[] = [
       ["until"],
     ),
   },
+  {
+    name: "simulate_loan",
+    description:
+      "Loan what-if, computed on the phone: what a loan costs from today (monthly payment, months left, total interest) and, when a scenario is given, the same after refinancing at a new rate or term with one-off fees, with an extra payment every month, or with an early repayment now. Returns the net interest saved (after fees), the change in the monthly payment, months saved and the months it takes the lower payment to pay back the fees. Pass account_id for a loan from <app_context>, or principal, rate_percent and months_left for a loan the user describes. Leave the scenario fields out to see the loan as it runs.",
+    input_schema: object({
+      account_id: { type: "string", description: "Loan account id from <app_context>" },
+      principal: { type: "number", description: "Loan not in the app: what is left to repay" },
+      rate_percent: { type: "number", description: "Loan not in the app: annual interest rate, %" },
+      months_left: { type: "integer", description: "Loan not in the app: months left" },
+      new_rate_percent: { type: "number", description: "Refinancing: new annual rate, %" },
+      new_months: { type: "integer", description: "Refinancing: new term in months" },
+      fees: { type: "number", description: "Refinancing: one-off costs paid up front" },
+      extra_monthly: { type: "number", description: "Paid on top of the payment every month" },
+      one_off: { type: "number", description: "Early repayment now" },
+      one_off_mode: { type: "string", enum: ["reduce_term", "reduce_payment"], description: "What the early repayment lowers; reduce_term by default" },
+    }),
+  },
+  {
+    name: "project_savings",
+    description:
+      "Compound growth of regular saving or investing: a starting amount, a monthly contribution and an annual return over a number of years. Returns the final amount, what was put in, the growth, the final amount in today's money when inflation is given, and a yearly series for a chart (path series). The return is an assumption (the user's, or one you state as an example), never a forecast.",
+    input_schema: object(
+      {
+        monthly: { type: "number", description: "Put in at the end of every month" },
+        years: { type: "integer", description: "1 to 50" },
+        annual_return_percent: { type: "number", description: "Assumed yearly return, %" },
+        start: { type: "number", description: "Amount at the start" },
+        inflation_percent: { type: "number", description: "Yearly inflation, % (for today's money)" },
+        currency: { type: "string", description: "ISO 4217; the base currency by default" },
+      },
+      ["monthly", "years", "annual_return_percent"],
+    ),
+  },
 ];
 
 const draftTools: Tool[] = [
@@ -168,14 +201,15 @@ const draftTools: Tool[] = [
   },
   {
     name: "draft_recurring",
-    description: "Prepares a subscription or recurring payment for the user to confirm. Nothing is saved.",
+    description:
+      "Prepares a subscription (a service like Netflix) or a regular payment (rent, a loan payment, a salary) for the user to confirm. Nothing is saved. next_date is the next charge, today or later; category is a category id or name (a subscription takes an expense category); account defaults to the one the history suggests.",
     strict: true,
     input_schema: strictObject({
       kind: { type: "string", enum: ["subscription", "regular"] },
       name: { type: "string" },
       amount: { type: "number" },
       currency: nullable({ type: "string" }),
-      frequency: { type: "string", enum: ["daily", "weekly", "monthly", "yearly"] },
+      frequency: { type: "string", enum: ["daily", "weekly", "monthly", "quarterly", "yearly"] },
       next_date: date,
       category: nullable({ type: "string" }),
       account: nullable({ type: "string" }),

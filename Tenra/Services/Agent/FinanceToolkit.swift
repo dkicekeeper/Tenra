@@ -9,8 +9,10 @@
 //  Read tools: spending summary, period comparison, search, accounts, budgets, recurring
 //  payments, insights. Heavy walks over the transactions run off the main actor on a snapshot.
 //  `forecast_balance` projects the everyday accounts to a date and gives the daily allowance.
-//  `draft_transactions` and `draft_budget` file drafts (AgentDraftBook) that the person saves
-//  on the confirm card. `draft_recurring` lands later and answers "not available".
+//  `simulate_loan` prices a loan's refinancing or early repayment (LoanWhatIf) and
+//  `project_savings` grows regular saving at an assumed return (SavingsProjection).
+//  `draft_transactions`, `draft_budget` and `draft_recurring` file drafts (AgentDraftBook)
+//  that the person saves on the confirm card.
 //
 
 import Foundation
@@ -48,7 +50,8 @@ final class FinanceToolkit: AgentToolExecuting {
         self.calendar = calendar
     }
 
-    static let laterPhaseTools: Set<String> = ["draft_recurring"]
+    /// Tools the server describes that this version cannot run yet.
+    static let laterPhaseTools: Set<String> = []
 
     func execute(name: String, input: JSONValue) async -> AgentToolOutput {
         do {
@@ -61,8 +64,11 @@ final class FinanceToolkit: AgentToolExecuting {
             case "list_recurring": return .success(try recurring(input))
             case "get_insights": return .success(insightsResult())
             case "forecast_balance": return .success(try await forecastBalance(input))
+            case "simulate_loan": return .success(try simulateLoan(input))
+            case "project_savings": return .success(try projectSavings(input))
             case "draft_transactions": return try await draftTransactions(input)
             case "draft_budget": return try draftBudget(input)
+            case "draft_recurring": return try draftRecurring(input)
             case _ where Self.laterPhaseTools.contains(name):
                 return .failure(Self.notYet(name))
             default:
@@ -576,6 +582,182 @@ final class FinanceToolkit: AgentToolExecuting {
         let items: [DraftItemInput]
     }
 
+    // MARK: - Planning
+
+    private struct SimulateLoanInput: Decodable {
+        let accountId: String?
+        let principal: Double?
+        let ratePercent: Double?
+        let monthsLeft: Int?
+        let newRatePercent: Double?
+        let newMonths: Int?
+        let fees: Double?
+        let extraMonthly: Double?
+        let oneOff: Double?
+        let oneOffMode: String?
+
+        enum CodingKeys: String, CodingKey {
+            case principal, fees
+            case accountId = "account_id"
+            case ratePercent = "rate_percent"
+            case monthsLeft = "months_left"
+            case newRatePercent = "new_rate_percent"
+            case newMonths = "new_months"
+            case extraMonthly = "extra_monthly"
+            case oneOff = "one_off"
+            case oneOffMode = "one_off_mode"
+        }
+    }
+
+    /// A loan from the app (by account id) or one the person describes, as it runs now, and
+    /// after the scenario when one is given. Amounts are in the loan's currency.
+    private func simulateLoan(_ input: JSONValue) throws -> JSONValue {
+        let args = try input.decoded(as: SimulateLoanInput.self)
+        for (name, value) in [("rate_percent", args.ratePercent), ("new_rate_percent", args.newRatePercent)] {
+            if let value, !(0...100).contains(value) { throw FinanceToolError(message: "\(name) must be from 0 to 100.") }
+        }
+        for (name, value) in [("months_left", args.monthsLeft), ("new_months", args.newMonths)] {
+            if let value, !(1...600).contains(value) { throw FinanceToolError(message: "\(name) must be from 1 to 600.") }
+        }
+        for (name, value) in [("principal", args.principal), ("fees", args.fees), ("extra_monthly", args.extraMonthly), ("one_off", args.oneOff)] {
+            if let value, value < 0 { throw FinanceToolError(message: "\(name) cannot be negative.") }
+        }
+
+        let current: LoanWhatIf.Plan
+        let currency: String
+        var name: String?
+        var accountId: String?
+        do {
+            if let id = args.accountId, !id.isEmpty {
+                guard let account = store.accounts.first(where: { $0.id == id }) else { throw FinanceToolError(message: "Unknown account \(id).") }
+                guard let loan = account.loanInfo else { throw FinanceToolError(message: "Account \(id) is not a loan.") }
+                guard !loan.isPaidOff else { throw FinanceToolError(message: "\(account.name) is paid off.") }
+                currency = account.currency
+                name = account.name
+                accountId = account.id
+                current = try LoanWhatIf.plan(
+                    principal: NSDecimalNumber(decimal: loan.remainingPrincipal).doubleValue,
+                    ratePercent: NSDecimalNumber(decimal: loan.interestRateAnnual).doubleValue,
+                    payment: NSDecimalNumber(decimal: loan.monthlyPayment).doubleValue,
+                    monthsLeft: LoanPaymentService.remainingPayments(loanInfo: loan)
+                )
+            } else {
+                guard let principal = args.principal, principal > 0, let rate = args.ratePercent, let months = args.monthsLeft else {
+                    throw FinanceToolError(message: "Give account_id of a loan, or principal, rate_percent and months_left.")
+                }
+                currency = store.baseCurrency
+                current = try LoanWhatIf.plan(principal: principal, ratePercent: rate, payment: nil, monthsLeft: months)
+            }
+        } catch LoanWhatIf.Failure.paymentBelowInterest {
+            throw FinanceToolError(message: "The loan's payment does not cover its monthly interest.")
+        }
+
+        let scenario = LoanWhatIf.Scenario(
+            newRatePercent: args.newRatePercent,
+            newMonths: args.newMonths,
+            fees: args.fees ?? 0,
+            extraMonthly: args.extraMonthly ?? 0,
+            oneOff: args.oneOff ?? 0,
+            oneOffReducesPayment: args.oneOffMode == "reduce_payment"
+        )
+        var result: [String: JSONValue] = [
+            "currency": .string(currency),
+            "loan": name.map(JSONValue.string) ?? .null,
+            "account_id": accountId.map(JSONValue.string) ?? .null,
+            "current": .object(Self.planJSON(current)),
+            "scenario": .null,
+        ]
+        guard !scenario.isEmpty else { return .object(result) }
+        let after: LoanWhatIf.Plan
+        do {
+            after = try LoanWhatIf.apply(scenario, to: current)
+        } catch LoanWhatIf.Failure.oneOffCoversLoan {
+            throw FinanceToolError(message: "one_off covers the whole loan: nothing would be left to compare.")
+        } catch {
+            throw FinanceToolError(message: "In this scenario the payment does not cover the monthly interest.")
+        }
+        var scenarioJSON = Self.planJSON(after)
+        scenarioJSON["fees"] = .number(FinanceToolkitCompute.round2(scenario.fees))
+        result["scenario"] = .object(scenarioJSON)
+        result["interest_saved"] = .number(FinanceToolkitCompute.round2(current.totalInterest - after.totalInterest - scenario.fees))
+        result["monthly_payment_change"] = .number(FinanceToolkitCompute.round2(after.monthlyPayment - current.monthlyPayment))
+        result["months_saved"] = .number(Double(current.monthsLeft - after.monthsLeft))
+        result["break_even_months"] = LoanWhatIf.breakEvenMonths(fees: scenario.fees, current: current, scenario: after)
+            .map { JSONValue.number(Double($0)) } ?? .null
+        return .object(result)
+    }
+
+    private static func planJSON(_ plan: LoanWhatIf.Plan) -> [String: JSONValue] {
+        [
+            "principal": .number(FinanceToolkitCompute.round2(plan.principal)),
+            "rate_percent": .number(plan.ratePercent),
+            "monthly_payment": .number(FinanceToolkitCompute.round2(plan.monthlyPayment)),
+            "months_left": .number(Double(plan.monthsLeft)),
+            "total_interest": .number(FinanceToolkitCompute.round2(plan.totalInterest)),
+            "total_paid": .number(FinanceToolkitCompute.round2(plan.principal + plan.totalInterest)),
+        ]
+    }
+
+    private struct ProjectSavingsInput: Decodable {
+        let monthly: Double
+        let years: Int
+        let annualReturnPercent: Double
+        let start: Double?
+        let inflationPercent: Double?
+        let currency: String?
+
+        enum CodingKeys: String, CodingKey {
+            case monthly, years, start, currency
+            case annualReturnPercent = "annual_return_percent"
+            case inflationPercent = "inflation_percent"
+        }
+    }
+
+    /// What regular saving grows to at an assumed return; a yearly series for the chart, keyed
+    /// by the month each year ends.
+    private func projectSavings(_ input: JSONValue) throws -> JSONValue {
+        let args = try input.decoded(as: ProjectSavingsInput.self)
+        let start = args.start ?? 0
+        guard (1...50).contains(args.years) else { throw FinanceToolError(message: "years must be from 1 to 50.") }
+        guard (-50...50).contains(args.annualReturnPercent) else { throw FinanceToolError(message: "annual_return_percent must be from -50 to 50.") }
+        if let inflation = args.inflationPercent, !(-20...100).contains(inflation) {
+            throw FinanceToolError(message: "inflation_percent must be from -20 to 100.")
+        }
+        guard args.monthly >= 0, start >= 0, args.monthly + start > 0 else {
+            throw FinanceToolError(message: "monthly and start cannot be negative, and one of them must be above zero.")
+        }
+        let projection = SavingsProjection.project(
+            start: start,
+            monthly: args.monthly,
+            annualReturnPercent: args.annualReturnPercent,
+            years: args.years,
+            inflationPercent: args.inflationPercent
+        )
+        let moment = now()
+        let series: [JSONValue] = projection.years.map { year in
+            let end = calendar.date(byAdding: .year, value: year.year, to: moment) ?? moment
+            return [
+                "key": .string(String(FastDateParser.string(from: end).prefix(7))),
+                "total": .number(FinanceToolkitCompute.round2(year.total)),
+                "contributed": .number(FinanceToolkitCompute.round2(year.contributed)),
+            ]
+        }
+        let currency = args.currency.map { $0.uppercased() }.flatMap { $0.isEmpty ? nil : $0 } ?? store.baseCurrency
+        return [
+            "currency": .string(currency),
+            "years": .number(Double(args.years)),
+            "monthly": .number(args.monthly),
+            "start": .number(start),
+            "annual_return_percent": .number(args.annualReturnPercent),
+            "inflation_percent": args.inflationPercent.map(JSONValue.number) ?? .null,
+            "final_amount": .number(FinanceToolkitCompute.round2(projection.finalAmount)),
+            "contributed": .number(FinanceToolkitCompute.round2(projection.contributed)),
+            "growth": .number(FinanceToolkitCompute.round2(projection.growth)),
+            "final_amount_real": projection.finalAmountReal.map { JSONValue.number(FinanceToolkitCompute.round2($0)) } ?? .null,
+            "series": .array(series),
+        ]
+    }
+
     /// `draft_transactions`: resolves each operation the way the voice and Siri paths do
     /// (`TransactionDraftService.makeDraft`) and files the ones that resolved as one draft.
     /// An operation that cannot be drafted (no amount, no account, no exchange rate) comes
@@ -643,6 +825,106 @@ final class FinanceToolkit: AgentToolExecuting {
             "period": .string(period.rawValue),
             "previous_limit": category.budgetAmount.map { JSONValue.number(FinanceToolkitCompute.round2($0)) } ?? .null,
             "previous_period": category.budgetAmount == nil ? .null : .string(category.budgetPeriod.rawValue),
+            "saved": false,
+        ])
+    }
+
+    private struct DraftRecurringInput: Decodable {
+        let kind: String
+        let name: String
+        let amount: Double
+        let currency: String?
+        let frequency: String
+        let nextDate: String
+        let category: String?
+        let account: String?
+
+        enum CodingKeys: String, CodingKey {
+            case kind, name, amount, currency, frequency, category, account
+            case nextDate = "next_date"
+        }
+    }
+
+    /// `draft_recurring`: a subscription or a regular payment as the series it will become,
+    /// starting on its next charge, saved through `SubscriptionCreationService` like the
+    /// subscription screen saves. The account is the one named, else the one the history
+    /// suggests for the category, else the first everyday account (marked as guessed).
+    private func draftRecurring(_ input: JSONValue) throws -> AgentToolOutput {
+        guard let drafts else { return .failure(Self.notYet("draft_recurring")) }
+        let args = try input.decoded(as: DraftRecurringInput.self)
+        let name = args.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { throw FinanceToolError(message: "name is required.") }
+        guard args.amount.isFinite, args.amount > 0 else { throw FinanceToolError(message: "amount must be positive.") }
+        let kind: RecurringSeriesKind
+        switch args.kind {
+        case "subscription": kind = .subscription
+        case "regular": kind = .generic
+        default: throw FinanceToolError(message: "kind must be subscription or regular.")
+        }
+        guard let frequency = RecurringFrequency(rawValue: args.frequency) else {
+            throw FinanceToolError(message: "frequency must be daily, weekly, monthly, quarterly or yearly.")
+        }
+        let todayKey = FastDateParser.string(from: now())
+        guard let start = FastDateParser.date(from: args.nextDate), let today = FastDateParser.date(from: todayKey) else {
+            throw FinanceToolError(message: "next_date must be YYYY-MM-DD.")
+        }
+        guard args.nextDate >= todayKey else { throw FinanceToolError(message: "next_date cannot be in the past.") }
+        guard let days = FastDateParser.calendar.dateComponents([.day], from: today, to: start).day, days <= 366 else {
+            throw FinanceToolError(message: "next_date must be within a year.")
+        }
+
+        // A subscription is an expense; a regular payment may be income too (a salary).
+        let candidates = store.categories.filter { kind == .generic || $0.type == .expense }
+        guard let reference = args.category, !reference.isEmpty else {
+            throw FinanceToolError(message: "Give a category id or name from <app_context>.")
+        }
+        guard let category = candidates.first(where: { $0.id == reference })
+            ?? candidates.first(where: { $0.name.lowercased() == reference.lowercased() }) else {
+            throw FinanceToolError(message: "Unknown category \(reference). Use a category id from <app_context>.")
+        }
+
+        let everyday = store.accounts.filter { !$0.isLoan && !$0.isDeposit }
+        var guessed: [JSONValue] = []
+        let account: Account
+        if let reference = args.account, !reference.isEmpty {
+            guard let named = resolveAccount(reference, in: everyday) else { throw FinanceToolError(message: "Unknown account \(reference).") }
+            account = named
+        } else if let suggested = suggestAccount?(category.name).flatMap({ id in everyday.first { $0.id == id } }) ?? everyday.first {
+            account = suggested
+            guessed.append("account")
+        } else {
+            throw FinanceToolError(message: "There is no everyday account to pay from.")
+        }
+
+        let currency = args.currency.map { $0.uppercased() }.flatMap { $0.isEmpty ? nil : $0 } ?? account.currency
+        let amount = Decimal(string: String(FinanceToolkitCompute.round2(args.amount))) ?? Decimal(args.amount)
+        let series = RecurringSeries(
+            amount: amount,
+            currency: currency,
+            category: category.name,
+            // A subscription's name doubles as its subcategory, as on the subscription screen.
+            subcategory: kind == .subscription ? name : nil,
+            description: name,
+            accountId: account.id,
+            frequency: frequency,
+            startDate: args.nextDate,
+            kind: kind,
+            status: kind == .subscription ? .active : nil
+        )
+        let id = drafts.add([.recurring(AgentRecurringDraft(series: series, accountGuessed: !guessed.isEmpty))])
+        return .success([
+            "draft_id": .string(id),
+            "kind": .string(args.kind),
+            "name": .string(name),
+            "amount": .number(FinanceToolkitCompute.round2(args.amount)),
+            "currency": .string(currency),
+            "frequency": .string(frequency.rawValue),
+            "next_date": .string(args.nextDate),
+            "category_id": .string(category.id),
+            "category": .string(category.name),
+            "account_id": .string(account.id),
+            "account": .string(account.name),
+            "guessed": .array(guessed),
             "saved": false,
         ])
     }
@@ -777,6 +1059,19 @@ final class FinanceToolkit: AgentToolExecuting {
                 "category_id": .string(budget.categoryId),
                 "amount": .number(FinanceToolkitCompute.round2(budget.amount)),
                 "period": .string(budget.period.rawValue),
+            ]
+        case .recurring(let recurring):
+            let series = recurring.series
+            return [
+                "type": .string(series.kind == .subscription ? "subscription" : "regular"),
+                "name": .string(series.description),
+                "amount": .number(NSDecimalNumber(decimal: series.amount).doubleValue),
+                "currency": .string(series.currency),
+                "frequency": .string(series.frequency.rawValue),
+                "next_date": .string(series.startDate),
+                "category": .string(series.category),
+                "account_id": series.accountId.map(JSONValue.string) ?? .null,
+                "account": series.accountId.flatMap(accountName).map(JSONValue.string) ?? .null,
             ]
         }
     }

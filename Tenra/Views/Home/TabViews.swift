@@ -112,24 +112,19 @@ struct VoiceTab: View {
 
 // MARK: - AssistantTab
 
-/// The AI assistant (beta, docs/plan-ai-assistant.md). Without Pro it answers within the free
-/// allowance, on devices that pass App Attest (the server counts free answers per attested
-/// key); elsewhere, the Simulator included, it is Pro only. The thread lives in
+/// The AI assistant (beta, docs/plan-ai-assistant.md): Pro, or the free allowance without it.
+/// The server answers only an app it can verify with App Attest, Pro or not, so a device
+/// without it (the Simulator included) gets no assistant. The thread lives in
 /// `AppCoordinator`, so it survives the tab bar switching modes.
 struct AssistantTab: View {
     @Environment(AppCoordinator.self) private var coordinator
-    @Environment(PremiumManager.self) private var premium
 
     var body: some View {
         NavigationStack {
-            if !premium.isPro && !AgentAttestation.isSupported {
-                PremiumLockedView(
-                    icon: "sparkles",
-                    title: String(localized: "premium.locked.assistant.title"),
-                    message: String(localized: "premium.locked.assistant.message")
-                )
-                .navigationTitle(String(localized: "tab.assistant"))
-                .navigationBarTitleDisplayMode(.inline)
+            if !AgentAttestation.isSupported {
+                EmptyState(icon: "sparkles", title: String(localized: "assistant.error.device"))
+                    .navigationTitle(String(localized: "tab.assistant"))
+                    .navigationBarTitleDisplayMode(.inline)
             } else if let assistant = coordinator.assistant() {
                 AssistantView(model: assistant)
             }

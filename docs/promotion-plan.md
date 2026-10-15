@@ -232,8 +232,8 @@ fr-ключей в 1.3). **08.10: первая покупка**, lifetime за 2
 - [ ] **Релиз 1.6** ([release-notes.md](release-notes.md), чек-лист внизу): What's New в 13 витринах,
   черновик App Privacy и заметки для App Review готовы, политика конфиденциальности опубликована
   (15.10). Аудит релиза 15.10 ([archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md))
-  исправил блокеры в ветке `claude/compassionate-curie-9bgxnb`. Осталось (основатель): слить
-  ветку и задеплоить сервер (Actions → Assistant → `deploy`), Workers Paid в Cloudflare, лимит
+  исправил блокеры в ветке `claude/compassionate-curie-9bgxnb`. Сервер с исправлениями
+  задеплоен 15.10 (версия `83a6b64a`). Осталось (основатель): слить PR #75, Workers Paid в Cloudflare, лимит
   трат в Anthropic выше $30, решение по Founding Users на сервере, архив с Mac (сборка 27+, первая
   с кодом iOS 27) и проверка на устройстве, новые скриншоты (пайплайну нужен демо-режим Тэна),
   App Privacy и возрастной рейтинг в App Store Connect, решение по тесту страницы (выход 1.6 его

@@ -213,10 +213,10 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
 [backlog.md](backlog.md). In order:
 
 1. **Merge the audit branch** into `main` once CI is green.
-2. **Deploy the Worker**: Actions → Assistant → Run workflow → `deploy` from `main`. Until then a
-   thread kept from before a prompt change fails with a 400 on its next question, a heavy user's
-   context is refused, and a copied Pro id still counts as Pro. Check: open an old chat in the
-   current TestFlight build and ask something.
+2. ~~**Deploy the Worker**~~: deployed from the audit branch on 2026-10-15 (version
+   `83a6b64a`). Check: open an old chat in the current TestFlight build and ask something.
+   TestFlight builds up to 26 don't sign the user id, so they count as free (150 calls a month
+   per install) until build 27.
 3. **Cloudflare Workers Paid** ($5 a month, [plan-ai-assistant.md](plan-ai-assistant.md) §5.1): the
    free plan's 1 000 KV writes a day (about 300 answers for everyone) and 10 ms CPU per request
    will not carry App Review plus real users.

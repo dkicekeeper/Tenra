@@ -153,19 +153,71 @@ private struct AssistantChartCard: View {
 
     var body: some View {
         AssistantCard(title: title) {
-            if kind == .donut && !chart.isTimeline {
-                MiniDonut(slices: DonutSlice.from(items))
-                    .frame(width: AppIconSize.Tile.xxxl, height: AppIconSize.Tile.xxxl)
-                    .frame(maxWidth: .infinity)
-            }
-            ForEach(items.prefix(Self.rowLimit)) { item in
-                CategoryBreakdownRow(item: item, currency: chart.currency)
+            if chart.isTimeline {
+                timeline
+            } else {
+                if kind == .donut {
+                    MiniDonut(slices: DonutSlice.from(items))
+                        .frame(width: AppIconSize.Tile.xxxl, height: AppIconSize.Tile.xxxl)
+                        .frame(maxWidth: .infinity)
+                }
+                ForEach(items.prefix(Self.rowLimit)) { item in
+                    CategoryBreakdownRow(item: item, currency: chart.currency)
+                }
             }
         }
     }
 
-    /// Each group as a breakdown item: a category keeps its own icon and colour, a merchant or
-    /// a period takes the accent.
+    // MARK: Timeline
+
+    /// Periods (months, weeks) as DesignKit's trend chart: a line when the reply asks for one,
+    /// bars otherwise (a donut of periods says nothing). A tap shows a period's amount.
+    @ViewBuilder
+    private var timeline: some View {
+        if kind == .line {
+            LineChart(dataPoints: timelinePoints, series: timelineSeries, valueFormat: .currency(chart.currency))
+        } else {
+            BarChart(dataPoints: timelinePoints, series: timelineSeries, valueFormat: .currency(chart.currency))
+        }
+    }
+
+    private static let seriesId = "value"
+
+    private var timelinePoints: [ChartValuePoint] {
+        chart.groups.map { group in
+            ChartValuePoint(
+                label: group.id,
+                axisLabel: axisLabel(group),
+                title: periodLabel(group),
+                values: [Self.seriesId: group.value]
+            )
+        }
+    }
+
+    /// The accent; green and red around zero when a period went below it (a net flow).
+    private var timelineSeries: ChartSeries<ChartValuePoint> {
+        let signed = chart.groups.contains { $0.value < 0 }
+        return .keyed(
+            Self.seriesId,
+            name: title,
+            coloring: signed ? .signed(positive: AppColors.income, negative: AppColors.destructive) : .solid(AppColors.accent),
+            baseline: signed ? .signed : .zero
+        )
+    }
+
+    /// "2026-10" → "Oct"; a week's Monday → "13.10" (the locale's order).
+    private func axisLabel(_ group: AgentReplyData.ChartGroup) -> String {
+        if group.id.count == 7, let month = FastDateParser.date(from: group.id + "-01") {
+            return month.formatted(.dateTime.month(.abbreviated))
+        }
+        if let day = FastDateParser.date(from: group.id) {
+            return day.formatted(.dateTime.day().month(.defaultDigits))
+        }
+        return group.label
+    }
+
+    /// Each group as a breakdown item: a category keeps its own icon and colour, a merchant
+    /// takes the accent.
     private var items: [CategoryBreakdownItem] {
         let categories = coordinator.transactionStore.categories
         let total = chart.groups.reduce(0) { $0 + max($1.value, 0) }

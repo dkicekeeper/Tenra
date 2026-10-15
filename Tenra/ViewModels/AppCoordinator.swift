@@ -124,9 +124,13 @@ class AppCoordinator {
         guard let url = AgentConfig.serverURL else { return nil }
         observeStoreResetForAssistant()
         let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
-        let client = AgentServerClient(baseURL: url, attestation: attestation) {
+        var client: AgentTransport = AgentServerClient(baseURL: url, attestation: attestation) {
             await MainActor.run { PremiumManager.shared.appUserID }
         }
+        #if DEBUG
+        // Screenshot capture: no App Attest and no network in the Simulator.
+        if ScreenshotDemoMode.isActive { client = ScreenshotDemoTransport(reply: .current()) }
+        #endif
         let store = transactionStore
         let accounts = accountsViewModel
         let memory = AgentMemory.shared

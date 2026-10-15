@@ -51,6 +51,14 @@ enum ScreenshotDemoSeeder {
             }
             try? await Task.sleep(for: .milliseconds(100))
         }
+
+        // Goals and debts (CoreData v15), and an empty inbox for Ten's notice on Home: the
+        // subscription charged tomorrow posts it once the coordinator has loaded.
+        let goals = GoalRepository()
+        for goal in dataset.goals { await goals.save(goal) }
+        let debts = DebtRepository()
+        for debt in dataset.debts { await debts.save(debt) }
+        AssistantInbox.shared.clear()
     }
 }
 
@@ -63,6 +71,8 @@ struct ScreenshotDemoDataset {
     let transactions: [Transaction]
     let series: [RecurringSeries]
     let occurrences: [RecurringOccurrence]
+    let goals: [SavingsGoal]
+    let debts: [PersonalDebt]
 
     init(currency: String) {
         var builder = Builder(currency: currency)
@@ -72,6 +82,8 @@ struct ScreenshotDemoDataset {
         self.transactions = builder.transactions
         self.series = builder.series
         self.occurrences = builder.occurrences
+        self.goals = builder.goals
+        self.debts = builder.debts
     }
 
     // MARK: Builder
@@ -88,6 +100,8 @@ struct ScreenshotDemoDataset {
         var transactions: [Transaction] = []
         var series: [RecurringSeries] = []
         var occurrences: [RecurringOccurrence] = []
+        var goals: [SavingsGoal] = []
+        var debts: [PersonalDebt] = []
 
         // Stable ids so re-runs produce identical data.
         let cardId = "demo-account-card"
@@ -148,6 +162,51 @@ struct ScreenshotDemoDataset {
             buildAccounts()
             buildTransactionHistory()
             buildSubscriptions()
+            buildPlans()
+        }
+
+        /// Savings goals (one following the savings account, one with money put in by hand,
+        /// one reached) and personal debts (a friend overdue, family with a date ahead).
+        mutating func buildPlans() {
+            func monthsAhead(_ months: Int) -> Date {
+                calendar.startOfDay(for: calendar.date(byAdding: .month, value: months, to: Date()) ?? Date())
+            }
+            goals = [
+                SavingsGoal(
+                    id: "demo-goal-trip", name: lexicon.goalTrip, iconSource: .sfSymbol("airplane"),
+                    targetAmount: ScreenshotDemoCurrency.amount(2500, in: savingsCurrency),
+                    currency: savingsCurrency, deadline: monthsAhead(7), linkedAccountId: savingsId,
+                    createdAt: date(daysAgo: 120), order: 0
+                ),
+                SavingsGoal(
+                    id: "demo-goal-phone", name: lexicon.goalPhone, iconSource: .sfSymbol("iphone"),
+                    targetAmount: local(1200), currency: currency, deadline: monthsAhead(4),
+                    contributions: [
+                        GoalContribution(id: "demo-goal-phone-1", amount: local(300), date: date(daysAgo: 60)),
+                        GoalContribution(id: "demo-goal-phone-2", amount: local(250), date: date(daysAgo: 25)),
+                    ],
+                    createdAt: date(daysAgo: 70), order: 1
+                ),
+                SavingsGoal(
+                    id: "demo-goal-bike", name: lexicon.goalBike, iconSource: .sfSymbol("bicycle"),
+                    targetAmount: local(400), currency: currency,
+                    contributions: [GoalContribution(id: "demo-goal-bike-1", amount: local(400), date: date(daysAgo: 30))],
+                    createdAt: date(daysAgo: 90), reachedAt: date(daysAgo: 30), order: 2
+                ),
+            ]
+            debts = [
+                PersonalDebt(
+                    id: "demo-debt-friend", direction: .owedToMe, person: lexicon.debtFriend,
+                    amount: local(300), currency: currency, date: date(daysAgo: 45),
+                    dueDate: calendar.startOfDay(for: date(daysAgo: 5)),
+                    repayments: [DebtRepayment(id: "demo-debt-friend-1", amount: local(100), date: date(daysAgo: 20))]
+                ),
+                PersonalDebt(
+                    id: "demo-debt-family", direction: .iOwe, person: lexicon.debtFamily,
+                    amount: local(500), currency: currency, date: date(daysAgo: 20),
+                    dueDate: calendar.startOfDay(for: date(daysAgo: -25))
+                ),
+            ]
         }
 
         mutating func buildCategories() {
@@ -322,10 +381,12 @@ struct ScreenshotDemoDataset {
 
         mutating func buildSubscriptions() {
             let subscriptionCategory = presetName("subscriptions")
+            // iCloud+ is charged tomorrow: Ten writes about it on Home ("Ten writes").
             let subs: [(name: String, brand: String, eurPrice: Double, chargeDay: Int)] = [
                 ("Netflix", "netflix", 12.99, 6),
                 ("Spotify", "spotify", 5.99, 14),
-                ("YouTube Premium", "youtube", 6.99, 24)
+                ("YouTube Premium", "youtube", 6.99, 24),
+                ("iCloud+", "icloud", 2.99, dayOfMonth(daysAgo: -1))
             ]
 
             for sub in subs {
@@ -529,6 +590,16 @@ struct ScreenshotDemoLexicon {
     let savingsTransfer: String
     /// Shown as the "recognized" phrase on the demo Voice screen.
     let voiceDemoPhrase: String
+    /// Ten's sentence over its cards in the demo chat (ScreenshotDemoTransport).
+    let tenReply: String
+    /// Savings goals: one following the savings account, one with money put in by hand, one
+    /// reached.
+    let goalTrip: String
+    let goalPhone: String
+    let goalBike: String
+    /// Personal debts: a friend who owes money (overdue), family the person owes.
+    let debtFriend: String
+    let debtFamily: String
 
     static func current() -> ScreenshotDemoLexicon {
         let preferred = Locale.preferredLanguages.first ?? "en"
@@ -544,7 +615,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Mittagessen", coffee: "Kaffee", supermarket: "REWE",
                          taxi: "Uber", delivery: "Lieferando", gym: "Fitnessstudio",
                          savingsTransfer: "Sparen",
-                         voiceDemoPhrase: "12 Euro für Mittagessen ausgegeben")
+                         voiceDemoPhrase: "12 Euro für Mittagessen ausgegeben",
+                         tenReply: "So haben Sie diesen Monat Ihr Geld ausgegeben, nach Kategorien.",
+                         goalTrip: "Urlaub", goalPhone: "Neues Handy", goalBike: "Fahrrad",
+                         debtFriend: "Lukas", debtFamily: "Mama")
         case "es" where isMX:
             return .init(card: "Tarjeta", cash: "Efectivo", savings: "Ahorro USD", deposit: "Depósito",
                          loan: "Préstamo", bank: "Banco", salary: "Sueldo", rent: "Renta",
@@ -552,7 +626,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Comida", coffee: "Café", supermarket: "Soriana",
                          taxi: "DiDi", delivery: "Rappi", gym: "Gimnasio",
                          savingsTransfer: "Ahorro",
-                         voiceDemoPhrase: "Gasté 200 pesos en el súper")
+                         voiceDemoPhrase: "Gasté 200 pesos en el súper",
+                         tenReply: "Así se repartió tu dinero este mes, por categorías.",
+                         goalTrip: "Vacaciones", goalPhone: "Celular nuevo", goalBike: "Bici",
+                         debtFriend: "Diego", debtFamily: "Mamá")
         case "es":
             return .init(card: "Tarjeta", cash: "Efectivo", savings: "Ahorro USD", deposit: "Depósito",
                          loan: "Préstamo", bank: "Banco", salary: "Nómina", rent: "Alquiler",
@@ -560,7 +637,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Almuerzo", coffee: "Café", supermarket: "Mercadona",
                          taxi: "Uber", delivery: "Glovo", gym: "Gimnasio",
                          savingsTransfer: "Ahorro",
-                         voiceDemoPhrase: "Gasté 12 euros en el súper")
+                         voiceDemoPhrase: "Gasté 12 euros en el súper",
+                         tenReply: "Así se repartió tu dinero este mes, por categorías.",
+                         goalTrip: "Vacaciones", goalPhone: "Móvil nuevo", goalBike: "Bici",
+                         debtFriend: "Javier", debtFamily: "Mamá")
         case "fr":
             return .init(card: "Carte", cash: "Espèces", savings: "Épargne USD", deposit: "Livret",
                          loan: "Crédit", bank: "Banque", salary: "Salaire", rent: "Loyer",
@@ -568,7 +648,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Déjeuner", coffee: "Café", supermarket: "Carrefour",
                          taxi: "Uber", delivery: "Uber Eats", gym: "Salle de sport",
                          savingsTransfer: "Épargne",
-                         voiceDemoPhrase: isCA ? "12 dollars d'épicerie hier" : "12 euros de courses hier")
+                         voiceDemoPhrase: isCA ? "12 dollars d'épicerie hier" : "12 euros de courses hier",
+                         tenReply: "Voici où est parti votre argent ce mois-ci, par catégorie.",
+                         goalTrip: "Vacances", goalPhone: "Nouveau téléphone", goalBike: "Vélo",
+                         debtFriend: "Julien", debtFamily: "Maman")
         case "tr":
             return .init(card: "Kart", cash: "Nakit", savings: "Birikim USD", deposit: "Mevduat",
                          loan: "Kredi", bank: "Banka", salary: "Maaş", rent: "Kira",
@@ -576,7 +659,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Öğle yemeği", coffee: "Kahve", supermarket: "Migros",
                          taxi: "Taksi", delivery: "Yemeksepeti", gym: "Spor salonu",
                          savingsTransfer: "Birikim",
-                         voiceDemoPhrase: "Markete 450 lira harcadım")
+                         voiceDemoPhrase: "Markete 450 lira harcadım",
+                         tenReply: "Bu ay paran kategorilere göre böyle dağıldı.",
+                         goalTrip: "Tatil", goalPhone: "Yeni telefon", goalBike: "Bisiklet",
+                         debtFriend: "Emre", debtFamily: "Annem")
         case "pt":
             return .init(card: "Cartão", cash: "Dinheiro", savings: "Poupança USD", deposit: "CDB",
                          loan: "Empréstimo", bank: "Banco", salary: "Salário", rent: "Aluguel",
@@ -584,7 +670,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Almoço", coffee: "Café", supermarket: "Supermercado",
                          taxi: "99", delivery: "iFood", gym: "Academia",
                          savingsTransfer: "Poupança",
-                         voiceDemoPhrase: "Gastei 50 reais no mercado")
+                         voiceDemoPhrase: "Gastei 50 reais no mercado",
+                         tenReply: "Veja para onde foi seu dinheiro este mês, por categoria.",
+                         goalTrip: "Viagem", goalPhone: "Celular novo", goalBike: "Bicicleta",
+                         debtFriend: "Lucas", debtFamily: "Mãe")
         case "it":
             return .init(card: "Carta", cash: "Contanti", savings: "Risparmi USD", deposit: "Deposito",
                          loan: "Prestito", bank: "Banca", salary: "Stipendio", rent: "Affitto",
@@ -592,7 +681,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Pranzo", coffee: "Caffè", supermarket: "Esselunga",
                          taxi: "Taxi", delivery: "Just Eat", gym: "Palestra",
                          savingsTransfer: "Risparmi",
-                         voiceDemoPhrase: "15 euro di benzina")
+                         voiceDemoPhrase: "15 euro di benzina",
+                         tenReply: "Ecco dove sono andati i tuoi soldi questo mese, per categoria.",
+                         goalTrip: "Vacanza", goalPhone: "Telefono nuovo", goalBike: "Bici",
+                         debtFriend: "Marco", debtFamily: "Mamma")
         case "uk":
             return .init(card: "Картка", cash: "Готівка", savings: "Заощадження USD", deposit: "Депозит",
                          loan: "Кредит", bank: "Банк", salary: "Зарплата", rent: "Оренда",
@@ -600,7 +692,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Обід", coffee: "Кава", supermarket: "Сільпо",
                          taxi: "Uklon", delivery: "Glovo", gym: "Спортзал",
                          savingsTransfer: "Заощадження",
-                         voiceDemoPhrase: "Витратив 250 гривень на продукти")
+                         voiceDemoPhrase: "Витратив 250 гривень на продукти",
+                         tenReply: "Ось куди пішли гроші цього місяця, за категоріями.",
+                         goalTrip: "Відпустка", goalPhone: "Новий телефон", goalBike: "Велосипед",
+                         debtFriend: "Олег", debtFamily: "Мама")
         case "ja":
             return .init(card: "カード", cash: "現金", savings: "外貨預金 USD", deposit: "定期預金",
                          loan: "ローン", bank: "銀行", salary: "給料", rent: "家賃",
@@ -608,7 +703,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "ランチ", coffee: "コーヒー", supermarket: "スーパー",
                          taxi: "タクシー", delivery: "Uber Eats", gym: "ジム",
                          savingsTransfer: "貯金",
-                         voiceDemoPhrase: "コンビニで500円使った")
+                         voiceDemoPhrase: "コンビニで500円使った",
+                         tenReply: "今月のお金の使い道を、カテゴリ別にまとめました。",
+                         goalTrip: "旅行", goalPhone: "新しいスマホ", goalBike: "自転車",
+                         debtFriend: "健太", debtFamily: "母")
         case "ko":
             return .init(card: "카드", cash: "현금", savings: "외화예금 USD", deposit: "예금",
                          loan: "대출", bank: "은행", salary: "월급", rent: "월세",
@@ -616,7 +714,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "점심", coffee: "커피", supermarket: "이마트",
                          taxi: "택시", delivery: "배달의민족", gym: "헬스장",
                          savingsTransfer: "저축",
-                         voiceDemoPhrase: "점심 12,000원 썼어")
+                         voiceDemoPhrase: "점심 12,000원 썼어",
+                         tenReply: "이번 달 돈이 어디에 쓰였는지 카테고리별로 정리했어요.",
+                         goalTrip: "여행", goalPhone: "새 휴대폰", goalBike: "자전거",
+                         debtFriend: "민준", debtFamily: "엄마")
         case "ru":
             return .init(card: "Карта", cash: "Наличные", savings: "Накопления USD", deposit: "Депозит",
                          loan: "Кредит", bank: "Банк", salary: "Зарплата", rent: "Аренда",
@@ -624,7 +725,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Обед", coffee: "Кофе", supermarket: "Супермаркет",
                          taxi: "Такси", delivery: "Доставка", gym: "Спортзал",
                          savingsTransfer: "Накопления",
-                         voiceDemoPhrase: "Потратил 5000 тенге на продукты")
+                         voiceDemoPhrase: "Потратил 5000 тенге на продукты",
+                         tenReply: "Вот куда ушли деньги в этом месяце, по категориям.",
+                         goalTrip: "Отпуск", goalPhone: "Новый телефон", goalBike: "Велосипед",
+                         debtFriend: "Асхат", debtFamily: "Мама")
         default:
             return .init(card: "Card", cash: "Cash", savings: "Savings USD", deposit: "Deposit",
                          loan: "Loan", bank: "Bank", salary: "Salary", rent: "Rent",
@@ -632,7 +736,10 @@ struct ScreenshotDemoLexicon {
                          lunch: "Lunch", coffee: "Coffee", supermarket: "Whole Foods",
                          taxi: "Uber", delivery: "DoorDash", gym: "Gym",
                          savingsTransfer: "Savings",
-                         voiceDemoPhrase: "Spent 12 dollars on lunch")
+                         voiceDemoPhrase: "Spent 12 dollars on lunch",
+                         tenReply: "Here is where your money went this month, by category.",
+                         goalTrip: "Vacation", goalPhone: "New phone", goalBike: "Bike",
+                         debtFriend: "Alex", debtFamily: "Mom")
         }
     }
 }

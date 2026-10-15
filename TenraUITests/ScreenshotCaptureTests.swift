@@ -3,11 +3,11 @@
 //  TenraUITests
 //
 //  Automated App Store screenshot capture. Launches the app in ScreenshotDemo
-//  mode (seeded dataset, Pro unlocked, offline FX) with the language/locale
-//  passed via TEST_RUNNER_* environment variables, walks the marketing screens
-//  (01-08 on the default product page, 09-12 for the custom product pages:
-//  subscriptions, a deposit, loans) and stores full-resolution screenshots as
-//  keepAlways attachments.
+//  mode (seeded dataset, Pro unlocked, offline FX, Ten's answers scripted on the
+//  phone) with the language/locale passed via TEST_RUNNER_* environment variables,
+//  walks the marketing screens (01-08 and 13-16 on the default product page, 09-12
+//  for the custom product pages: subscriptions, a deposit, loans) and stores
+//  full-resolution screenshots as keepAlways attachments.
 //
 //  Run via scripts/capture_screenshots.sh — it loops all storefront locales
 //  and exports the attachments from the .xcresult bundles.
@@ -135,16 +135,75 @@ final class ScreenshotCaptureTests: XCTestCase {
         goBack()
 
         captureCustomPageFrames()
+        captureGoalsAndDebts()
+        captureTen()
+    }
 
-        // ── 7. Voice input (expand the [+] pseudo-tab, then Voice) ───────────
-        tabBarButton(at: 3).tap()   // [+] → switches tab bar to expanded mode
-        sleep(1)
-        tabBarButton(at: 0).tap()   // Voice tab in expanded mode
+    // MARK: - Goals and debts
+
+    /// 15-16: a goal with what to put aside each month, then the debts with one overdue. Starts
+    /// and ends on the Finances tab.
+    private func captureGoalsAndDebts() {
+        let goalsCard = app.descendants(matching: .any)["finances.goalsCard"].firstMatch
+        scrollUntilHittable(goalsCard)
+        XCTAssertTrue(goalsCard.exists, "Goals card not found")
+        goalsCard.tap()
+        let goal = app.descendants(matching: .any)["goals.card"].firstMatch
+        if goal.waitForExistence(timeout: 10) {
+            goal.tap()
+            sleep(3)   // the hero's progress settles
+            snap("15-goal")
+        }
+        backToFinances()
+
+        let debtsCard = app.descendants(matching: .any)["finances.debtsCard"].firstMatch
+        scrollUntilHittable(debtsCard)
+        XCTAssertTrue(debtsCard.exists, "Debts card not found")
+        debtsCard.tap()
+        _ = app.descendants(matching: .any)["debts.card"].firstMatch.waitForExistence(timeout: 10)
         sleep(2)
-        // Trigger the interruption monitor if a mic/speech alert appeared.
-        app.tap()
-        sleep(2)
-        snap("07-voice")
+        snap("16-debts")
+        backToFinances()
+    }
+
+    // MARK: - Ten
+
+    /// 07, 14, 13 on Ten's tab (the action tab): the voice sheet with the demo phrase as heard,
+    /// that phrase drafted on the phone with Save, then a ready-made question answered on cards
+    /// (ScreenshotDemoTransport: no network).
+    private func captureTen() {
+        tabBarButton(at: 3).tap()
+        let presets = app.descendants(matching: .any)["assistant.presets"].firstMatch
+        XCTAssertTrue(presets.waitForExistence(timeout: 30), "Ten's home did not load")
+        sleep(3)   // Ten greets
+
+        // ── 7. Voice: the composer's microphone (its last button while the field is empty) ──
+        let composer = app.descendants(matching: .any)["assistant.composer"].firstMatch
+        if let microphone = composer.buttons.allElementsBoundByIndex.last {
+            microphone.tap()
+        }
+        let orb = app.descendants(matching: .any)["assistant.voice.orb"].firstMatch
+        if orb.waitForExistence(timeout: 10) {
+            sleep(2)
+            snap("07-voice")
+            orb.tap()
+        }
+
+        // ── 14. What was said, drafted on the phone ──────────────────────────
+        let send = app.descendants(matching: .any)["assistant.voice.send"].firstMatch
+        if send.waitForExistence(timeout: 10) {
+            send.tap()
+            sleep(5)
+            snap("14-ten-draft")
+            goBack()
+        }
+
+        // ── 13. A ready-made question answered on cards ──────────────────────
+        if presets.waitForExistence(timeout: 10) {
+            presets.buttons.firstMatch.tap()
+            sleep(8)   // two scripted turns, the cards cascade in
+            snap("13-ten-answer")
+        }
     }
 
     // MARK: - Custom product page frames
@@ -194,6 +253,14 @@ final class ScreenshotCaptureTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
+    private func scrollUntilHittable(_ element: XCUIElement) {
+        var attempts = 0
+        while !(element.exists && element.isHittable) && attempts < 6 {
+            app.swipeUp()
+            attempts += 1
+        }
+    }
 
     /// Steps back until the Finances root shows again: a zoom-transition detail can swallow one
     /// back gesture, which left the next card out of reach on a slow simulator.

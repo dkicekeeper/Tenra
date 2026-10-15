@@ -25,8 +25,8 @@ OUT_ROOT="screenshots/raw"
 RESULTS_ROOT="build/screenshot-results"
 BUNDLE_ID="dakacom.Tenra"
 FRAMES="${FRAMES:-all}"
-# 01-08 (default product page) + 09-12 (custom product pages); "cpp" takes only the last four.
-if [[ "$FRAMES" == "cpp" ]]; then EXPECTED=4; else EXPECTED=12; fi
+# 01-08 and 13-16 (default product page) + 09-12 (custom product pages); "cpp" takes only 09-12.
+if [[ "$FRAMES" == "cpp" ]]; then EXPECTED=4; else EXPECTED=16; fi
 
 # asc-locale | AppleLanguages | AppleLocale | demo currency
 LOCALES=(
@@ -130,7 +130,7 @@ if os.path.exists(manifest_path):
                     if not os.path.exists(src):
                         continue
                     base = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.splitext(human)[0])
-                    # Only our named marketing captures ("01-home"…"12-loans") —
+                    # Only our named marketing captures ("01-home"…"16-debts") —
                     # skip auto-attachments (failure recordings, synthesized events).
                     m = re.match(r"^([01][0-9]-[a-z-]+)", base)
                     if not m:

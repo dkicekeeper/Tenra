@@ -1,6 +1,6 @@
 {
-  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice, fx=08-multicurrency. Custom product page frames (ru, en-US, fr-FR only): subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans; the pages and their frame order are in appstore/product-pages.json.",
-  "defaultOrder": ["home", "finances", "insights", "score", "topcat", "history", "voice", "fx"],
+  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts. At most 10 frames per locale go to the store. Custom product page frames (ru, en-US, fr-FR only): subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans; the pages and their frame order are in appstore/product-pages.json.",
+  "defaultOrder": ["ten", "draft", "home", "finances", "goal", "debts", "score", "topcat", "history", "fx"],
   "locales": {
     "de-DE": {
       "frames": {
@@ -11,7 +11,11 @@
         "topcat":   { "title": "Entdecken Sie Ihre größten Ausgaben", "subtitle": "Ausgabenkategorien mit anschaulicher Monatsübersicht" },
         "history":  { "title": "Jede Buchung unter Kontrolle", "subtitle": "Ausgaben, Einnahmen und Zinsen in einem übersichtlichen Verlauf" },
         "voice":    { "title": "Ausgaben einfach per Sprache erfassen", "subtitle": "„12 Euro für Mittagessen“: gesagt, gebucht" },
-        "fx":       { "title": "EUR, USD, CHF: ein ehrlicher Gesamtwert", "subtitle": "Konten in mehreren Währungen, ein Gesamtsaldo in Ihrer Währung" }
+        "fx":       { "title": "EUR, USD, CHF: ein ehrlicher Gesamtwert", "subtitle": "Konten in mehreren Währungen, ein Gesamtsaldo in Ihrer Währung" },
+        "ten":     { "title": "Fragen Sie Ten zu Ihrem Geld", "subtitle": "Antworten auf Karten: Summen, Kategorien, Budgets" },
+        "draft":   { "title": "Sagen Sie es, Ten trägt es ein", "subtitle": "Gespeichert wird erst, wenn Sie auf „Speichern“ tippen" },
+        "goal":    { "title": "Sparen Sie für Ihre Ziele", "subtitle": "So viel legen Sie jeden Monat zurück" },
+        "debts":   { "title": "Wer wem was schuldet, und bis wann", "subtitle": "Verliehenes und Geliehenes mit Rückzahlungen" }
       }
     },
     "es-ES": {
@@ -23,7 +27,11 @@
         "topcat":   { "title": "Descubre tus mayores gastos", "subtitle": "Categorías de gasto con un desglose claro mes a mes" },
         "history":  { "title": "Cada movimiento bajo control", "subtitle": "Gastos, ingresos e intereses de depósitos en una sola lista" },
         "voice":    { "title": "Añade gastos con tu voz", "subtitle": "Di el importe y la categoría, y queda registrado" },
-        "fx":       { "title": "EUR, USD, GBP: un total real", "subtitle": "Cuentas en varias divisas, un saldo total en tu moneda" }
+        "fx":       { "title": "EUR, USD, GBP: un total real", "subtitle": "Cuentas en varias divisas, un saldo total en tu moneda" },
+        "ten":     { "title": "Pregunta a Ten por tu dinero", "subtitle": "Respuestas en tarjetas: totales, categorías, presupuestos" },
+        "draft":   { "title": "Dilo y Ten lo anota", "subtitle": "No se guarda nada hasta que tocas Guardar" },
+        "goal":    { "title": "Ahorra para lo que importa", "subtitle": "Mira cuánto apartar cada mes" },
+        "debts":   { "title": "Quién debe a quién, y hasta cuándo", "subtitle": "Lo que prestaste y lo que te prestaron" }
       }
     },
     "es-MX": {
@@ -35,7 +43,11 @@
         "topcat":   { "title": "Descubre tus mayores gastos", "subtitle": "Categorías de gasto con un desglose claro mes a mes" },
         "history":  { "title": "Cada movimiento bajo control", "subtitle": "Gastos, ingresos e intereses de depósitos en una sola lista" },
         "voice":    { "title": "Agrega gastos con tu voz", "subtitle": "Di el monto y la categoría, y queda registrado" },
-        "fx":       { "title": "MXN, USD, EUR: un total real", "subtitle": "Cuentas en varias monedas, un saldo total en tu moneda" }
+        "fx":       { "title": "MXN, USD, EUR: un total real", "subtitle": "Cuentas en varias monedas, un saldo total en tu moneda" },
+        "ten":     { "title": "Pregunta a Ten por tu dinero", "subtitle": "Respuestas en tarjetas: totales, categorías, presupuestos" },
+        "draft":   { "title": "Dilo y Ten lo anota", "subtitle": "No se guarda nada hasta que tocas Guardar" },
+        "goal":    { "title": "Ahorra para lo que importa", "subtitle": "Ve cuánto apartar cada mes" },
+        "debts":   { "title": "Quién debe a quién, y hasta cuándo", "subtitle": "Lo que prestaste y lo que te prestaron" }
       }
     },
     "fr-FR": {
@@ -48,6 +60,10 @@
         "history":  { "title": "Chaque opération sous contrôle", "subtitle": "Dépenses, revenus et intérêts des dépôts, dans un seul fil" },
         "voice":    { "title": "Ajoutez vos dépenses à la voix", "subtitle": "Dites le montant et la catégorie, c'est enregistré" },
         "fx":       { "title": "EUR, USD, CHF : un seul vrai total", "subtitle": "De vrais taux de change, un total fiable dans votre devise" },
+        "ten":     { "title": "Demandez à Ten où va votre argent", "subtitle": "Des réponses en cartes : totaux, catégories, budgets" },
+        "draft":   { "title": "Dites-le, Ten le note", "subtitle": "Rien n'est enregistré tant que vous n'avez pas touché Enregistrer" },
+        "goal":    { "title": "Épargnez pour vos projets", "subtitle": "Voyez combien mettre de côté chaque mois" },
+        "debts":   { "title": "Qui doit quoi, et pour quand", "subtitle": "Argent prêté et emprunté, avec les remboursements" },
         "subscriptions": { "title": "Vos abonnements sur un calendrier", "subtitle": "Ce qui sera prélevé et quand, avec les logos des services" },
         "subscription": { "title": "Chaque abonnement en détail", "subtitle": "Prochain prélèvement, total dépensé et historique" },
         "deposit":  { "title": "Ce que rapporte votre épargne", "subtitle": "Taux, capitalisation et prochains intérêts" },
@@ -63,13 +79,21 @@
         "topcat":   { "title": "Découvrez vos plus grosses dépenses", "subtitle": "Catégories de dépenses avec répartition claire par mois" },
         "history":  { "title": "Chaque opération sous contrôle", "subtitle": "Dépenses, revenus et intérêts des dépôts, dans un seul fil" },
         "voice":    { "title": "Ajoutez vos dépenses à la voix", "subtitle": "Dites le montant et la catégorie, c'est enregistré" },
-        "fx":       { "title": "CAD, USD, EUR : un seul vrai total", "subtitle": "De vrais taux de change, un total fiable dans votre devise" }
+        "fx":       { "title": "CAD, USD, EUR : un seul vrai total", "subtitle": "De vrais taux de change, un total fiable dans votre devise" },
+        "ten":     { "title": "Demandez à Ten où va votre argent", "subtitle": "Des réponses en cartes : totaux, catégories, budgets" },
+        "draft":   { "title": "Dites-le, Ten le note", "subtitle": "Rien n'est enregistré tant que vous n'avez pas touché Enregistrer" },
+        "goal":    { "title": "Épargnez pour vos projets", "subtitle": "Voyez combien mettre de côté chaque mois" },
+        "debts":   { "title": "Qui doit quoi, et pour quand", "subtitle": "Argent prêté et emprunté, avec les remboursements" }
       }
     },
     "tr": {
-      "order": ["fx", "home", "finances", "insights", "score", "topcat", "history", "voice"],
+      "order": ["fx", "ten", "draft", "home", "finances", "goal", "debts", "score", "topcat", "history"],
       "frames": {
         "fx":       { "title": "TL, dolar, euro: tek gerçek bakiye", "subtitle": "Tüm hesapların gerçek kurlarla tek dürüst toplamda" },
+        "ten":     { "title": "Paranı Ten'e sor", "subtitle": "Cevaplar kartlarda: toplamlar, kategoriler, bütçeler" },
+        "draft":   { "title": "Söyle, Ten kaydetsin", "subtitle": "Kaydet'e dokunana kadar hiçbir şey kaydedilmez" },
+        "goal":    { "title": "Önemli olan için biriktir", "subtitle": "Her ay ne kadar ayıracağını gör" },
+        "debts":   { "title": "Kim kime, ne zamana kadar borçlu", "subtitle": "Verilen ve alınan borçlar, geri ödemeleriyle" },
         "home":     { "title": "Her kategori için ayrı bütçe", "subtitle": "Limitler, harcamalar ve kalan, ana ekranda" },
         "finances": { "title": "Tüm finansların tek yerde", "subtitle": "Hesaplar, mevduatlar, abonelikler ve krediler, banka bağlantısı olmadan" },
         "insights": { "title": "Paran nereye gidiyor, gör", "subtitle": "Bakiye, harcamalar ve aylık net akış, ilk bakışta" },
@@ -88,7 +112,11 @@
         "topcat":   { "title": "Descubra seus maiores gastos", "subtitle": "Categorias de despesas com análise clara mês a mês" },
         "history":  { "title": "Cada transação sob controle", "subtitle": "Gastos, receitas e rendimentos da poupança em uma só lista" },
         "voice":    { "title": "Adicione gastos por voz", "subtitle": "\"Gastei 50 reais no mercado\" e pronto, está registrado" },
-        "fx":       { "title": "BRL, USD, EUR: um total honesto", "subtitle": "Contas em várias moedas, um único saldo confiável" }
+        "fx":       { "title": "BRL, USD, EUR: um total honesto", "subtitle": "Contas em várias moedas, um único saldo confiável" },
+        "ten":     { "title": "Pergunte ao Ten sobre seu dinheiro", "subtitle": "Respostas em cartões: totais, categorias, orçamentos" },
+        "draft":   { "title": "Fale, e o Ten anota", "subtitle": "Nada é salvo até você tocar em Salvar" },
+        "goal":    { "title": "Guarde para o que importa", "subtitle": "Veja quanto guardar por mês" },
+        "debts":   { "title": "Quem deve a quem, e até quando", "subtitle": "Dinheiro emprestado, devolvido e o que falta" }
       }
     },
     "it": {
@@ -100,7 +128,11 @@
         "topcat":   { "title": "Conosci le tue spese principali", "subtitle": "Categorie di spesa con ripartizione mensile chiara" },
         "history":  { "title": "Ogni movimento sotto controllo", "subtitle": "Spese, entrate e interessi sui depositi in un'unica cronologia" },
         "voice":    { "title": "Aggiungi le spese con la voce", "subtitle": "Di' importo e categoria: la spesa è registrata" },
-        "fx":       { "title": "EUR, USD, CHF: un unico totale", "subtitle": "Conti in valute diverse, un totale onesto in euro" }
+        "fx":       { "title": "EUR, USD, CHF: un unico totale", "subtitle": "Conti in valute diverse, un totale onesto in euro" },
+        "ten":     { "title": "Chiedi a Ten dei tuoi soldi", "subtitle": "Risposte su schede: totali, categorie, budget" },
+        "draft":   { "title": "Dillo e Ten lo annota", "subtitle": "Non si salva nulla finché non tocchi Salva" },
+        "goal":    { "title": "Risparmia per ciò che conta", "subtitle": "Vedi quanto mettere da parte ogni mese" },
+        "debts":   { "title": "Chi deve a chi, e entro quando", "subtitle": "Soldi prestati e ricevuti, con i rimborsi" }
       }
     },
     "uk": {
@@ -112,7 +144,11 @@
         "topcat":   { "title": "Дізнайтеся свої найбільші витрати", "subtitle": "Категорії витрат із наочною розбивкою за місяцями" },
         "history":  { "title": "Кожна операція під контролем", "subtitle": "Витрати, доходи й відсотки за депозитами в одній стрічці" },
         "voice":    { "title": "Додавайте витрати голосом", "subtitle": "Скажіть суму й категорію, і операцію записано" },
-        "fx":       { "title": "UAH, EUR, USD: один чесний підсумок", "subtitle": "Рахунки в різних валютах, курс завжди актуальний" }
+        "fx":       { "title": "UAH, EUR, USD: один чесний підсумок", "subtitle": "Рахунки в різних валютах, курс завжди актуальний" },
+        "ten":     { "title": "Запитайте Тена про гроші", "subtitle": "Відповіді на картках: суми, категорії, бюджети" },
+        "draft":   { "title": "Скажіть, і Тен запише", "subtitle": "Нічого не збережеться, доки ви не натиснете «Зберегти»" },
+        "goal":    { "title": "Заощаджуйте на важливе", "subtitle": "Видно, скільки відкладати щомісяця" },
+        "debts":   { "title": "Хто кому винен і до якого числа", "subtitle": "Борги й позики з поверненнями" }
       }
     },
     "ja": {
@@ -124,7 +160,11 @@
         "topcat":   { "title": "一番の出費はどこ？", "subtitle": "カテゴリ別の支出を、\n月ごとにわかりやすく" },
         "history":  { "title": "すべての取引を\nこの手の中に", "subtitle": "支出・収入・預金利息まで、\nひとつの履歴で" },
         "voice":    { "title": "話すだけで支出を記録", "subtitle": "「コンビニで500円」と\n言うだけで入力完了" },
-        "fx":       { "title": "円もドルもユーロも、\nひとつに", "subtitle": "JPY・USD・EUR、\n実際の為替レートで正直な合計" }
+        "fx":       { "title": "円もドルもユーロも、\nひとつに", "subtitle": "JPY・USD・EUR、\n実際の為替レートで正直な合計" },
+        "ten":     { "title": "お金のことはテンに聞こう", "subtitle": "合計、カテゴリ、予算をカードで回答" },
+        "draft":   { "title": "話せば、テンが記録", "subtitle": "「保存」をタップするまで保存されません" },
+        "goal":    { "title": "目標に向けて貯金", "subtitle": "毎月いくら貯めればよいかが分かる" },
+        "debts":   { "title": "貸し借りを期限まで管理", "subtitle": "貸したお金、借りたお金、返済を記録" }
       }
     },
     "ko": {
@@ -136,7 +176,11 @@
         "topcat":   { "title": "가장 큰 지출을\n찾아보세요", "subtitle": "카테고리별 지출을\n월별로 한눈에 비교해요" },
         "history":  { "title": "모든 내역이 한 줄로", "subtitle": "지출, 수입, 예금 이자까지\n하나의 타임라인에" },
         "voice":    { "title": "음성으로\n지출을 기록해요", "subtitle": "\"점심 12,000원 썼어\"라고 말하면 바로 입력돼요" },
-        "fx":       { "title": "₩, $, €:\n하나의 진짜 합계", "subtitle": "통화가 달라도 실시간 환율로\n정확하게 합산해요" }
+        "fx":       { "title": "₩, $, €:\n하나의 진짜 합계", "subtitle": "통화가 달라도 실시간 환율로\n정확하게 합산해요" },
+        "ten":     { "title": "돈 이야기는 텐에게 물어보세요", "subtitle": "합계, 카테고리, 예산을 카드로 답해요" },
+        "draft":   { "title": "말하면 텐이 기록해요", "subtitle": "'저장'을 탭하기 전에는 저장되지 않아요" },
+        "goal":    { "title": "중요한 목표를 위해 저축", "subtitle": "매달 얼마를 모아야 하는지 보여 줘요" },
+        "debts":   { "title": "누가 누구에게 언제까지", "subtitle": "빌려준 돈과 빌린 돈, 상환까지" }
       }
     },
     "en-US": {
@@ -149,6 +193,10 @@
         "history":  { "title": "Every transaction, under control", "subtitle": "Expenses, income, and deposit interest in one feed" },
         "voice":    { "title": "Add expenses by voice", "subtitle": "Say the amount and category, and it's logged" },
         "fx":       { "title": "USD, EUR, KZT: one true total", "subtitle": "Accounts in any currency, always at the current rate" },
+        "ten":     { "title": "Ask Ten about your money", "subtitle": "Answers on cards: totals, categories, budgets" },
+        "draft":   { "title": "Say it, Ten writes it down", "subtitle": "Nothing is saved until you tap Save" },
+        "goal":    { "title": "Save for what matters", "subtitle": "See how much to put aside each month" },
+        "debts":   { "title": "Who owes whom, and by when", "subtitle": "Money lent and borrowed, with repayments" },
         "subscriptions": { "title": "Every subscription on a calendar", "subtitle": "What gets charged and when, with service logos" },
         "subscription": { "title": "Every subscription in detail", "subtitle": "Next charge, total spent and every past payment" },
         "deposit":  { "title": "Know what your deposit earns", "subtitle": "Rate, capitalization and the next interest payment" },
@@ -165,6 +213,10 @@
         "history":  { "title": "Каждая операция под контролем", "subtitle": "Траты, доходы и проценты по депозитам в одной ленте" },
         "voice":    { "title": "Добавляйте траты голосом", "subtitle": "Скажите сумму и категорию, и операция записана" },
         "fx":       { "title": "KZT, USD, EUR: один честный итог", "subtitle": "Счета в разных валютах, курс всегда актуальный" },
+        "ten":     { "title": "Спросите Тэна о деньгах", "subtitle": "Ответы на карточках: суммы, категории, бюджеты" },
+        "draft":   { "title": "Скажите, и Тэн запишет", "subtitle": "Ничего не сохранится, пока вы не нажмёте «Сохранить»" },
+        "goal":    { "title": "Копите на важное", "subtitle": "Видно, сколько откладывать каждый месяц" },
+        "debts":   { "title": "Кто кому должен и до какого числа", "subtitle": "Долги и займы с возвратами" },
         "subscriptions": { "title": "Все подписки в календаре", "subtitle": "Когда и сколько спишут, с логотипами сервисов" },
         "subscription": { "title": "Каждая подписка под контролем", "subtitle": "Следующее списание, итог за всё время и история" },
         "deposit":  { "title": "Знайте доход по депозиту", "subtitle": "Ставка, капитализация и ближайшее начисление" },

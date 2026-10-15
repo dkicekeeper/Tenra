@@ -736,7 +736,7 @@ struct ScreenshotDemoLexicon {
                          lunch: "Lunch", coffee: "Coffee", supermarket: "Whole Foods",
                          taxi: "Uber", delivery: "DoorDash", gym: "Gym",
                          savingsTransfer: "Savings",
-                         voiceDemoPhrase: "Spent 12 dollars on lunch",
+                         voiceDemoPhrase: "Spent 12 dollars on groceries",
                          tenReply: "Here is where your money went this month, by category.",
                          goalTrip: "Vacation", goalPhone: "New phone", goalBike: "Bike",
                          debtFriend: "Alex", debtFamily: "Mom")

@@ -101,7 +101,7 @@ redraw only it):
 
 - **Edge light:** `VoiceLevelGlow` → DesignKit's `EdgeGlow(level:)`, one Metal colour effect
   along the screen edges.
-- **Stop button:** `VoiceStopOrb` → DesignKit's `VoiceOrbButton` (4.13.0: `VoiceWave(level:style: .orb)` with a stop glyph); only the
+- **Stop button:** `VoiceStopOrb` → DesignKit's `VoiceOrbButton` (4.14.0: `VoiceWave(level:style: .orb)` with a stop glyph); only the
   orb at rest (80 pt) takes the tap. `handleStopTap` plays `HapticManager.play(.tap)`.
 - **Before any text:** `ListeningPrompt` ("Speak...") carries `.thinkingShimmer` in the orb's
   colours (a still gradient under Reduce Motion).

@@ -2,7 +2,7 @@
 //  AssistantNoticeCard.swift
 //  Tenra
 //
-//  A message Ten wrote first (AssistantInbox): an adapter over DesignKit's NoticeCard (4.13.0),
+//  A message Ten wrote first (AssistantInbox): an adapter over DesignKit's NoticeCard (4.14.0),
 //  the mascot in the message's mood, its title and text, "Go through it" (a question to the
 //  assistant, which spends a free answer) and a button that hides it. Shown on Home while
 //  unread (AssistantNoticesSection), never in the chat.

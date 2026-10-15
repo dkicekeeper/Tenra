@@ -691,7 +691,7 @@ struct VoiceLevelGlow: View {
 
 // MARK: - Stop orb
 
-/// The stop button while recording: an adapter over DesignKit's VoiceOrbButton (4.13.0), the
+/// The stop button while recording: an adapter over DesignKit's VoiceOrbButton (4.14.0), the
 /// voice orb swelling with the voice, a stop glyph in the middle. Its own small view, so the
 /// level (about 47 updates a second) redraws the orb only; the feature tour's hint anchors to the
 /// orb at rest.

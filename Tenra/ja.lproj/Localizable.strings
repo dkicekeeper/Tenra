@@ -2092,3 +2092,13 @@
 "assistant.wardrobe.lock.goalReached" = "目標を達成";
 "assistant.wardrobe.lock.nauryz" = "ナウルズに解放";
 "assistant.wardrobe.locked" = "ロック中";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "何か目標に向けて貯めてみる？";
+"assistant.empty.debts" = "誰が誰に借りてる？メモしておこう";
+"assistant.empty.subscriptions" = "サブスクを追加すれば、支払いを知らせるよ";
+"assistant.empty.deposits" = "ここで預金が育っていくよ";
+"assistant.empty.loans" = "ローンも数えておくよ";
+"assistant.empty.accounts" = "まずは口座から始めよう？";
+"assistant.empty.history" = "まだ空っぽ。最初の1件を追加する？";
+"assistant.empty.memory" = "あなたのことを教えて。覚えておくよ";

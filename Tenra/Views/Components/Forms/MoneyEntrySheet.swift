@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Money towards a goal or back on a debt (docs/domains/goals-and-debts.md): an adapter over
-//  DesignKit's AmountEntrySheet (4.13.0), the hero of what it goes to, the amount on the
+//  DesignKit's AmountEntrySheet (4.14.0), the hero of what it goes to, the amount on the
 //  calculator keypad, a note, and the date buttons with Save. Tenra's AppSettings give the base
 //  currency, the currencies to offer and the quick-access sheet; an amount typed in another
 //  currency is converted to `currency` on save (DesignKitCurrencyConverter, wired in

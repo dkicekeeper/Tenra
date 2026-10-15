@@ -94,14 +94,15 @@ struct SubscriptionsListView: View {
     }
     
     private var emptyState: some View {
-        EmptyState(
+        MascotEmptyState(
             icon: "creditcard",
             title: String(localized: "subscriptions.empty"),
             description: String(localized: "subscriptions.emptyDescription"),
             actionTitle: String(localized: "subscriptions.addSubscription"),
             action: {
                 sheetItem = .new
-            }
+            },
+            line: String(localized: "assistant.empty.subscriptions")
         )
     }
     

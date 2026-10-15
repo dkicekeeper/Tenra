@@ -9,7 +9,7 @@
 //  holds only the way back to the home and Ten in the middle, 120 pt (the owner's size): it
 //  rises into the bar and hangs over the top of the thread in a bar of its own (safeAreaBar),
 //  which reaches a little below it. The thread scrolls under both, behind DesignKit's
-//  EdgeBackdrop (4.13.0, the owner's call on a device: the system's soft scroll edge effect was
+//  EdgeBackdrop (4.14.0, the owner's call on a device: the system's soft scroll edge effect was
 //  too faint for a 120 pt Ten): from the screen's top edge to the bar's tail the thread blurs and
 //  the page's colour lies over it, fading out towards the thread, so Ten always sits on a
 //  translucent backing and the text never runs through the particles. The tab bar steps aside

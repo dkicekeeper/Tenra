@@ -72,7 +72,7 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
                 backgroundDestination
             }
 
-            // DesignKit's list row (4.13.0): the settings row, its value and the list it pushes.
+            // DesignKit's list row (4.14.0): the settings row, its value and the list it pushes.
             NavigationPickerRow(
                 icon: "waveform",
                 title: String(localized: "settings.voiceLanguage"),

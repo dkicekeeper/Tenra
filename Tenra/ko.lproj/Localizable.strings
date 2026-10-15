@@ -2092,3 +2092,13 @@
 "assistant.wardrobe.lock.goalReached" = "목표 달성";
 "assistant.wardrobe.lock.nauryz" = "나우르즈에 열림";
 "assistant.wardrobe.locked" = "잠김";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "뭔가를 위해 모아 볼까요?";
+"assistant.empty.debts" = "누가 누구에게 빚졌죠? 적어 둘게요";
+"assistant.empty.subscriptions" = "구독을 추가하면 결제를 알려 드릴게요";
+"assistant.empty.deposits" = "여기서 예금이 자라요";
+"assistant.empty.loans" = "대출도 챙겨 드릴게요";
+"assistant.empty.accounts" = "계좌부터 시작할까요?";
+"assistant.empty.history" = "아직 비어 있어요. 첫 거래를 추가할까요?";
+"assistant.empty.memory" = "당신에 대해 알려 주세요, 기억할게요";

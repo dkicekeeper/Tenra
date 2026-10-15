@@ -118,7 +118,7 @@ enum AssistantWardrobe {
 }
 
 /// Ten's wardrobe, from the assistant's home (the owner's review on a device): Ten trying on the
-/// accessory in the middle of DesignKit's PickerCarousel (4.13.0) under it, its name and what
+/// accessory in the middle of DesignKit's PickerCarousel (4.14.0) under it, its name and what
 /// opens it, then the cards. Scrolling puts an open accessory on at once and only tries a locked
 /// one on. The cards are all one size (Ten, still, with room for a two-line name, a lock when
 /// closed).

@@ -10,6 +10,7 @@
 | Версии, сборки, встроенные покупки, отзывы, доступность в странах (статус DSA в ЕС), сбои из TestFlight | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → Run workflow (выбрать команду) |
 | Создать версию в App Store, вставить What's New из `docs/release-notes.md` (заметки версии, которая готовится) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
 | Специальные страницы продукта и тест страницы (скриншоты, промо-текст, ключевые слова) из `appstore/product-pages.json` | GitHub Actions, `.github/workflows/asc.yml` | `push-custom-pages`, `push-experiment` (поле `args`: `--submit`, `--start`) |
+| Скриншоты самой версии (страница по умолчанию) из `screenshots/final/` | GitHub Actions, `.github/workflows/asc.yml` | `push-version-screenshots`, поле `version` (в `args` можно `--locale ru,en-US`) |
 | Выдать или забрать Tenra Pro (`pro`) одному покупателю, посмотреть, что о нём знает RevenueCat | GitHub Actions, `.github/workflows/revenuecat.yml`, секрет `REVENUECAT_SECRET_KEY` | Actions → RevenueCat: `grant` / `revoke` / `status`, `app_user_id`, `days`; id в логе скрыт |
 | Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all` или `cpp` |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
@@ -88,6 +89,9 @@ python3 appstore/asc.py push-custom-pages [--submit]
                                                 # создать/обновить страницы из appstore/product-pages.json
 python3 appstore/asc.py push-experiment [--submit | --start]
                                                 # тест страницы из того же файла; --start после одобрения
+python3 appstore/asc.py push-version-screenshots --version 1.6 [--locale ru,en-US]
+                                                # скриншоты самой версии, в порядке кадров из
+                                                # scripts/screenshot_captions.json; без отправки
 python3 appstore/asc.py reviews [--limit 20]    # отзывы с текстом (оценки без текста API не отдаёт)
 python3 appstore/asc.py availability            # в скольких странах доступно, статус DSA в ЕС
 python3 appstore/asc.py crashes [--build 12]    # отчёты о сбоях из TestFlight, без данных тестировщика
@@ -99,15 +103,51 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 
 ## Скриншоты, специальные страницы и тест страницы
 
-1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-12, `cpp` только 02 и
+1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-16, `cpp` только 02 и
    09-12 для специальных страниц). Артефакт `raw-screenshots` кладётся в `screenshots/raw/<локаль>/`.
 2. **Собрать кадры в Figma** (файл Tenra, страница «Screenshots L10n»): шаблон `tpl-<кадр>`,
    картинка экрана заливкой слоя `Screenshot` внутри модели iPhone, заголовок Inter Semi Bold 98 и
    подзаголовок Inter Medium 58 из `scripts/screenshot_captions.json`, не больше двух строк
    заголовка. Экспорт 1320×2868 в `screenshots/final/<локаль>/`. Картинки грузятся в Figma сырыми
    байтами (`Content-Type: image/png`): multipart через прокси облака обрывается по таймауту.
-3. **Отправить:** `push-custom-pages --submit` или `push-experiment --submit`, потом после
-   одобрения `push-experiment --start`. Повторный запуск не перезаливает неизменённые скриншоты.
+3. **Отправить:** страница версии `push-version-screenshots --version <версия>` (версия уже
+   создана `prepare-version`, на ревью не отправляет); специальные страницы и тест
+   `push-custom-pages --submit` или `push-experiment --submit`, потом после одобрения
+   `push-experiment --start`. Повторный запуск не перезаливает неизменённые скриншоты.
+
+### Кадры
+
+| Файл | Ключ | Что на экране |
+|---|---|---|
+| `01-home` | `home` | главная: бюджеты, сверху сообщение Тэна о подписке со списанием завтра |
+| `02-finances` | `finances` | вкладка «Финансы» |
+| `03-insights` | `insights` | аналитика |
+| `04-health-score` | `score` | оценка финансового здоровья |
+| `05-top-category` | `topcat` | главная категория трат за прошлый месяц |
+| `06-history` | `history` | история |
+| `07-voice` | `voice` | голосовой лист Тэна слышит демо-фразу (`voiceDemoPhrase`) |
+| `08-multicurrency` | `fx` | счета в разных валютах |
+| `09-subscriptions` … `12-loans` | `subscriptions`, `subscription`, `deposit`, `loans` | для специальных страниц |
+| `13-ten-answers` | `ten` | Тэн отвечает на «Мои траты в этом месяце»: итог с изменением к тем же дням прошлого месяца и разбивка по категориям |
+| `14-ten-drafts` | `draft` | черновик из фразы кадра 07 с кнопкой «Сохранить» |
+| `15-goal` | `goal` | цель с ручными пополнениями и сроком: сколько откладывать в месяц |
+| `16-debts` | `debts` | долги: одолженное и просроченное, занятое со сроком через 12 дней |
+
+Страница версии берёт 10 кадров в порядке `defaultOrder` (`ten`, `draft`, `home`, `finances`,
+`goal`, `topcat`, `score`, `history`, `fx`, `voice`); у `tr` свой `order` с `fx` впереди.
+`insights` и `debts` сняты, но в десятку не входят. Ключ кадра → файл: `frames` в
+`appstore/product-pages.json`. Для 13-16 в Figma нужны шаблоны `tpl-ten`, `tpl-draft`, `tpl-goal`,
+`tpl-debts`.
+
+**Демо-режим** (`-ScreenshotDemo`, только в DEBUG; на личном телефоне не запускать: стирает
+базу). Данные: `ScreenshotDemoSeeder` (счета, 95 дней операций, подписки, три цели, два долга,
+факт, который помнит Тэн, подписка со списанием завтра) с именами из `ScreenshotDemoLexicon` и
+`ScreenshotDemoLexicon+Ten.swift` на языке кадра. Тэн работает и на Simulator (App Attest там
+нет): согласие на облако ставится при запуске, а вместо сервера отвечает `ScreenshotDemoTransport`
+без сети. Его вызовы инструментов исполняет настоящий `FinanceToolkit` по демо-данным, поэтому все
+цифры на карточках настоящие; заготовлены только слова ответа. Сообщения Тэна об инсайтах и
+неделе в демо не пишутся, на главной одно: о завтрашнем списании. Ответ про «этот месяц» считает
+с 1-го числа, поэтому в первые дни месяца карточки бедные: снимать лучше после 10-го.
 
 Ключевые слова специальной страницы берутся только из поля Keywords этой локали (`keywords`),
 одно слово принадлежит одной странице. Тест страницы идёт на версии, которая сейчас в магазине,

@@ -124,6 +124,9 @@ record ("кофе 1500 и такси 2300") is drafted on the phone by the assis
 ([plan-ai-assistant.md](../plan-ai-assistant.md) §3.8).
 
 Screenshot mode (`isScreenshotDemo`) passes no level: the glow and the orb breathe on their own.
+The assistant's sheet does the same in screenshot mode: it records nothing, shows the lexicon's
+`voiceDemoPhrase` as if heard, and the orb stops "listening" and leaves the phrase to send
+([asc.md](../asc.md), frames 07 and 14).
 
 ## Live preview card border
 

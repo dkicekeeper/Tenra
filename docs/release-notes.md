@@ -212,10 +212,35 @@ Tenra 1.6의 새로운 기능:
 2. **Workers Paid** in Cloudflare ($5 a month, [plan-ai-assistant.md](plan-ai-assistant.md) §5.1): the free plan's 1 000 KV writes a day and 10 ms CPU per request will not carry real traffic.
 3. **Archive from the Mac** (Xcode 27, as for 1.5). The build number must be above every CI TestFlight build (the latest is 23 on 2026-10-15, and each TestFlight run adds one: check TestFlight first).
 4. **`prepare-version`** with version `1.6` and that build: creates the version, pastes the What's New above into the 13 locales, selects the build.
-5. **App Privacy** in App Store Connect (draft below): through the web form only, the API does not set it.
-6. **App Review notes** (below) in App Review Information → Notes.
-7. **Submit for review** (the founder, in App Store Connect).
-8. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in [promotion-plan.md](promotion-plan.md) §1.
+5. **Screenshots** (below): capture, compose in Figma, then `push-version-screenshots --version 1.6`.
+6. **App Privacy** in App Store Connect (draft below): through the web form only, the API does not set it.
+7. **App Review notes** (below) in App Review Information → Notes.
+8. **Submit for review** (the founder, in App Store Connect).
+9. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in [promotion-plan.md](promotion-plan.md) §1.
+
+### Screenshots
+
+Every frame is reshot for 1.6: Ten takes the action tab, Home carries Ten's message, Finances
+gains goals and debts. The pipeline is in [asc.md](asc.md) (section "Скриншоты, специальные
+страницы и тест страницы", with the frame table and the demo mode).
+
+1. **Capture** all 13 locales: Actions → Screenshots, `frames` = `all`, locales `de-DE es-ES
+   es-MX fr-FR fr-CA tr pt-BR it uk ja ko en-US ru` (or several runs). Each locale gives 16 raw
+   frames in the `raw-screenshots` artifact. Capture after the 10th of a month: frame 13 counts
+   "this month" from the 1st.
+2. **Check the raw frames** before composing: 01 shows Ten's message about iCloud+ charged
+   tomorrow; 07 Ten's voice sheet with the demo phrase; 13 Ten's answer to "My spending this
+   month" (the total with its change, a donut by category, a tip); 14 the draft of the phrase
+   with Save; 15 the laptop goal with the monthly amount; 16 the debts, the lent one overdue.
+3. **Compose** in Figma ("Screenshots L10n"): new templates `tpl-ten`, `tpl-draft`, `tpl-goal`,
+   `tpl-debts`; every frame takes its caption from `scripts/screenshot_captions.json` (frame 07's
+   caption now names Ten). Export to `screenshots/final/<locale>/`.
+4. **Upload** to the 1.6 version: Actions → App Store Connect → `push-version-screenshots`,
+   version `1.6`. Ten frames in `defaultOrder`: Ten answers, Ten drafts, home, finances, goal,
+   top category, health score, history, multicurrency, voice (`tr` puts multicurrency first);
+   `insights` and `debts` are captured but left out of the ten. The custom product pages and
+   the page test keep their own frames (`appstore/product-pages.json`); their Voice page now
+   shows Ten's voice sheet once its frames are pushed again.
 
 ### App Privacy (draft: check against the form before saving)
 

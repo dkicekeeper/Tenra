@@ -102,11 +102,7 @@ class AppCoordinator {
     /// the free allowance, and the server needs App Attest (§3.7).
     func assistant() -> AssistantViewModel? {
         if let assistantModel { return assistantModel }
-        guard let url = AgentConfig.serverURL else { return nil }
-        let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
-        let client = AgentServerClient(baseURL: url, attestation: attestation) {
-            await MainActor.run { PremiumManager.shared.appUserID }
-        }
+        guard let transport = assistantTransport() else { return nil }
         let store = transactionStore
         let accounts = accountsViewModel
         let memory = AgentMemory.shared
@@ -138,7 +134,7 @@ class AppCoordinator {
         // Threads are kept in the CoreData store; previews on UserDefaults keep them in memory.
         let threads = repository is CoreDataRepository ? AgentThreadStore() : nil
         let model = AssistantViewModel(
-            conversation: AgentConversation(transport: client, toolkit: toolkit),
+            conversation: AgentConversation(transport: transport, toolkit: toolkit),
             context: {
                 await memory.load()
                 await goals.load()
@@ -165,6 +161,20 @@ class AppCoordinator {
         )
         assistantModel = model
         return model
+    }
+
+    /// The assistant's server, signed with App Attest where the device has it; nil while it is
+    /// not configured. In screenshot capture, a scripted one that runs its tools on the seeded
+    /// data, with no network (ScreenshotDemoTransport).
+    private func assistantTransport() -> AgentTransport? {
+        #if DEBUG
+        if ScreenshotDemoMode.isActive { return ScreenshotDemoTransport() }
+        #endif
+        guard let url = AgentConfig.serverURL else { return nil }
+        let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
+        return AgentServerClient(baseURL: url, attestation: attestation) {
+            await MainActor.run { PremiumManager.shared.appUserID }
+        }
     }
 
     func setPendingSubscription(seriesId: String) {

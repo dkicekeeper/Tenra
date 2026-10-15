@@ -15,6 +15,9 @@
                                                     create/update the pages in product-pages.json
     python3 appstore/asc.py push-experiment [--submit | --start]
                                                     the product page test in product-pages.json
+    python3 appstore/asc.py push-version-screenshots --version 1.6 [--locale ru,en-US]
+                                                    the version's own screenshots, in the frame order
+                                                    of scripts/screenshot_captions.json
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -353,6 +356,8 @@ def prepare_version(app: str, version: str, number: str | None, minutes: int) ->
 
 ROOT = Path(__file__).resolve().parent.parent
 PAGES = Path(__file__).resolve().parent / "product-pages.json"
+CAPTIONS = ROOT / "scripts" / "screenshot_captions.json"
+MAX_SCREENSHOTS = 10   # per screenshot set
 IPHONE = "APP_IPHONE_67"   # the 6.9" set (1320 x 2868), the only size Tenra uploads
 CPP_EDITABLE = {"PREPARE_FOR_SUBMISSION", "REJECTED"}
 
@@ -636,6 +641,39 @@ def push_experiment(app: str, submit: bool, start: bool) -> None:
         submit_for_review(app, [("appStoreVersionExperimentV2", record["id"])])
 
 
+def push_version_screenshots(app: str, version: str, only: list[str] | None) -> None:
+    """Upload the composed screenshots (screenshots/final/<locale>/) to the App Store version's own
+    product page, every locale the version has (or those in `only`), in the frame order of
+    scripts/screenshot_captions.json (a locale's `order`, else `defaultOrder`). Unchanged sets are
+    not uploaded again. The version must be editable; it is never submitted from here."""
+    config = page_config()
+    captions = json.loads(CAPTIONS.read_text(encoding="utf-8"))
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
+                       {"filter[versionString]": version, "filter[platform]": "IOS"})
+    if not found:
+        sys.exit(f"Version {version} is not in App Store Connect; create it with prepare-version first.")
+    record = found[0]
+    state = record["attributes"].get("appVersionState") or record["attributes"].get("appStoreState")
+    if state not in EDITABLE:
+        sys.exit(f"Version {version} is {state}: its screenshots can't be edited now.")
+    localizations, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    by_locale = {item["attributes"]["locale"]: item for item in localizations}
+    wanted = only or sorted(by_locale)
+    rows, files = [], {}
+    for locale in wanted:
+        if locale not in by_locale:
+            rows.append([locale, "no localization in this version", ""])
+            continue
+        order = captions["locales"].get(locale, {}).get("order", captions["defaultOrder"])
+        if len(order) > MAX_SCREENSHOTS:
+            sys.exit(f"{locale}: {len(order)} frames; the App Store takes {MAX_SCREENSHOTS}.")
+        files[locale] = (order, frame_files(config, order, locale))   # exits when one is missing
+    for locale, (order, paths) in files.items():
+        set_id = screenshot_set("appStoreVersionLocalization", by_locale[locale]["id"])
+        rows.append([locale, put_screenshots(set_id, paths), " ".join(order)])
+    table(f"Screenshots of version {version}", ["Locale", "Screenshots", "Frames"], rows)
+
+
 def reviews(app: str, limit: int) -> None:
     data = get(f"/v1/apps/{app}/customerReviews", {"sort": "-createdDate", "limit": limit})["data"]
     rows = []
@@ -797,6 +835,12 @@ def main(argv: list[str]) -> None:
         push_custom_pages(app, "--submit" in args)
     elif command == "push-experiment":
         push_experiment(app, "--submit" in args, "--start" in args)
+    elif command == "push-version-screenshots":
+        version = option("--version")
+        if not version:
+            sys.exit("push-version-screenshots needs --version X.Y")
+        locales = option("--locale")
+        push_version_screenshots(app, version, locales.split(",") if locales else None)
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

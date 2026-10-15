@@ -107,6 +107,7 @@ struct GoalsListView: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("goals.row")
         .screenPadding()
     }
 }

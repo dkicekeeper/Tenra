@@ -115,13 +115,14 @@ struct VoiceTab: View {
 /// The AI assistant (beta, docs/plan-ai-assistant.md), the action tab's page where it can run:
 /// Pro, or the free allowance without it. Its home (AssistantView) owns the navigation stack,
 /// each chat a page on it. The server answers only an app it can verify with App Attest, Pro or
-/// not, so a device without it (the Simulator included) gets no assistant. The thread lives in
-/// `AppCoordinator`, so it survives the tab changing.
+/// not, so a device without it (the Simulator included, screenshot capture aside) gets no
+/// assistant (AssistantAvailability). The thread lives in `AppCoordinator`, so it survives the
+/// tab changing.
 struct AssistantTab: View {
     @Environment(AppCoordinator.self) private var coordinator
 
     var body: some View {
-        if !AgentAttestation.isSupported {
+        if !AssistantAvailability.isAvailable {
             NavigationStack {
                 EmptyState(icon: "sparkles", title: String(localized: "assistant.error.device"))
                     .navigationTitle(String(localized: "tab.assistant"))

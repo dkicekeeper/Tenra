@@ -25,8 +25,9 @@ OUT_ROOT="screenshots/raw"
 RESULTS_ROOT="build/screenshot-results"
 BUNDLE_ID="dakacom.Tenra"
 FRAMES="${FRAMES:-all}"
-# 01-08 (default product page) + 09-12 (custom product pages); "cpp" takes only the last four.
-if [[ "$FRAMES" == "cpp" ]]; then EXPECTED=4; else EXPECTED=12; fi
+# 01-08 and 13-16 (default product page: 13 Ten answers, 14 Ten drafts, 15 a goal, 16 debts)
+# + 09-12 (custom product pages); "cpp" takes only 09-12.
+if [[ "$FRAMES" == "cpp" ]]; then EXPECTED=4; else EXPECTED=16; fi
 
 # asc-locale | AppleLanguages | AppleLocale | demo currency
 LOCALES=(
@@ -72,8 +73,9 @@ xcrun simctl status_bar "$SIM_UDID" override \
   --time "9:41" --batteryState charged --batteryLevel 100 \
   --cellularBars 4 --wifiBars 3 2>/dev/null || true
 
-# Mic permission for the Voice screen (no-op until the app is installed once;
-# the UI test's interruption monitor covers the speech-recognition alert).
+# Mic permission for the voice screens (no-op until the app is installed once;
+# the UI test's interruption monitor covers the speech-recognition alert). Ten's
+# voice sheet records nothing in demo mode, so it asks for neither.
 xcrun simctl privacy "$SIM_UDID" grant microphone "$BUNDLE_ID" 2>/dev/null || true
 
 mkdir -p "$OUT_ROOT" "$RESULTS_ROOT"
@@ -130,7 +132,7 @@ if os.path.exists(manifest_path):
                     if not os.path.exists(src):
                         continue
                     base = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.splitext(human)[0])
-                    # Only our named marketing captures ("01-home"…"12-loans") —
+                    # Only our named marketing captures ("01-home"…"16-debts") —
                     # skip auto-attachments (failure recordings, synthesized events).
                     m = re.match(r"^([01][0-9]-[a-z-]+)", base)
                     if not m:

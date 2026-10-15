@@ -65,6 +65,14 @@ enum ScreenshotDemoMode {
             defaults.set(filterData, forKey: "timeFilter")
         }
 
+        // Ten (the assistant) answers from a scripted transport here (ScreenshotDemoTransport),
+        // so the cloud consent is given up front: a question goes straight to the chat. Its
+        // messages on Home and its daily greeting start fresh every run, so every locale shows
+        // the same: the run before marked them posted or read.
+        defaults.set(true, forKey: AssistantMetrics.consentKey)
+        defaults.removeObject(forKey: AssistantInbox.storageKey)
+        defaults.removeObject(forKey: AssistantChatter.greetedDayKey)
+
         writeBaseCurrencySettings(to: defaults)
         writeOfflineRates(to: defaults)
     }

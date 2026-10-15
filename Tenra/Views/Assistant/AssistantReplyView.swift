@@ -29,6 +29,8 @@ struct AssistantReplyView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("assistant.reply")
     }
 }
 
@@ -548,6 +550,7 @@ private struct AssistantDraftCard: View {
                     if case .saved? = book.states[draft.id] { HapticManager.success() } else { HapticManager.error() }
                 }
             }
+            .accessibilityIdentifier("assistant.draft.save")
         case .saved:
             HStack {
                 InlineStatusText(message: String(localized: "assistant.draft.saved"), type: .success)

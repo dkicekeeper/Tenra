@@ -12,7 +12,11 @@
     "subscriptions": "09-subscriptions",
     "subscription": "10-subscription-detail",
     "deposit": "11-deposit",
-    "loans": "12-loans"
+    "loans": "12-loans",
+    "ten": "13-ten-answers",
+    "draft": "14-ten-drafts",
+    "goal": "15-goal",
+    "debts": "16-debts"
   },
   "customPages": [
     {

@@ -237,7 +237,8 @@ final class AssistantInbox {
     /// How long a posted key is remembered.
     static let rememberDays = 90
 
-    private static let storageKey = "assistant.inbox.v1"
+    /// Internal: screenshot capture (ScreenshotDemoMode) clears it so every run starts empty.
+    static let storageKey = "assistant.inbox.v1"
 
     private struct Stored: Codable {
         var notices: [AssistantNotice]

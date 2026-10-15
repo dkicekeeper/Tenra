@@ -10,6 +10,11 @@
 //  card), "Say it again" starts over. Nothing is sent before that tap, so a misheard phrase
 //  costs no answer.
 //
+//  Screenshot capture (DEBUG, ScreenshotDemoMode): speech recognition can't run in the
+//  Simulator, so the sheet shows the demo phrase as if it were being heard, the glow and the orb
+//  breathing on their own, as the voice screen does; the orb stops "listening" and leaves the
+//  phrase to send.
+//
 
 import SwiftUI
 import UIKit
@@ -26,6 +31,13 @@ struct AssistantVoiceSheet: View {
     @State private var showingPermissionAlert = false
     @State private var isPermissionDenied = false
     @State private var permissionMessage = ""
+    /// Screenshot capture: "listening" to the demo phrase, with nothing recorded.
+    @State private var demoListening = false
+
+    /// Listening, for real or for the screenshot.
+    private var isListening: Bool {
+        voiceService.isRecording || demoListening
+    }
 
     /// What was heard, the final transcription once there is one.
     private var heard: String {
@@ -35,8 +47,8 @@ struct AssistantVoiceSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                if voiceService.isRecording {
-                    VoiceLevelGlow(voiceService: voiceService, followsVoice: true)
+                if isListening {
+                    VoiceLevelGlow(voiceService: voiceService, followsVoice: !demoListening)
                         .ignoresSafeArea()
                         .transition(.opacity.animation(AppAnimation.gentleSpring))
                 }
@@ -48,7 +60,7 @@ struct AssistantVoiceSheet: View {
                     controls
                 }
             }
-            .animation(AppAnimation.gentleSpring, value: voiceService.isRecording)
+            .animation(AppAnimation.gentleSpring, value: isListening)
             .navigationTitle(String(localized: "tab.assistant"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -123,15 +135,17 @@ struct AssistantVoiceSheet: View {
 
     @ViewBuilder
     private var controls: some View {
-        if voiceService.isRecording {
+        if isListening {
             // The orb's frame leaves room for its glow and takes that room back vertically.
             HStack {
                 Spacer()
-                VoiceStopOrb(voiceService: voiceService, followsVoice: true) {
+                VoiceStopOrb(voiceService: voiceService, followsVoice: !demoListening) {
                     HapticManager.play(.tap)
                     silenceTimer?.cancel()
+                    demoListening = false
                     voiceService.stopRecording()
                 }
+                .accessibilityIdentifier("assistant.voice.stop")
                 Spacer()
             }
             .padding(.vertical, -AppSpacing.xl)
@@ -146,6 +160,7 @@ struct AssistantVoiceSheet: View {
                         onSend(text)
                         dismiss()
                     }
+                    .accessibilityIdentifier("assistant.voice.send")
                 }
                 DSButton(String(localized: "assistant.voice.again"), systemImage: "mic.fill", appearance: .flat, fullWidth: true) {
                     voiceService.transcribedText = ""
@@ -162,6 +177,13 @@ struct AssistantVoiceSheet: View {
     // MARK: - Recording
 
     private func start() {
+        #if DEBUG
+        if ScreenshotDemoMode.isActive {
+            voiceService.transcribedText = ScreenshotDemoLexicon.current().voiceDemoPhrase
+            demoListening = true
+            return
+        }
+        #endif
         Task {
             try? await Task.sleep(for: .milliseconds(VoiceInputConstants.autoStartDelayMs))
             guard await voiceService.requestAuthorization() else {

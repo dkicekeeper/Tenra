@@ -61,6 +61,10 @@ struct AssistantComposerBar: View {
                 ) {
                     onSend()
                 }
+                // The field, the paperclip and the microphone (its last button) for UI tests:
+                // DesignKit's composer names its own buttons by their localized labels only.
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("assistant.composer")
             }
             .screenPadding()
         }

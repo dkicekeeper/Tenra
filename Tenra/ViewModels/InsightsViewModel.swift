@@ -637,7 +637,7 @@ final class InsightsViewModel {
                 }
                 // Ten writes first: the same signals and last week's summary as messages in
                 // the assistant (AssistantInbox), whether or not pushes are allowed.
-                if AssistantAvailability.isAvailable {
+                if AssistantAvailability.postsInsightNotices {
                     let now = Date()
                     var notices = AssistantNotices.signals(from: finalInsights[.month] ?? [], now: now)
                     if let weekPoints = finalPoints[.week],

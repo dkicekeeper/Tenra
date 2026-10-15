@@ -14,7 +14,22 @@ import SwiftUI
 /// Where the assistant can run: its server is configured and the device has App Attest.
 enum AssistantAvailability {
     static var isAvailable: Bool {
-        AgentConfig.serverURL != nil && AgentAttestation.isSupported
+        #if DEBUG
+        // Screenshot capture runs in the Simulator, which has no App Attest: there Ten answers
+        // from a scripted transport (ScreenshotDemoTransport), never the network.
+        if ScreenshotDemoMode.isActive { return true }
+        #endif
+        return AgentConfig.serverURL != nil && AgentAttestation.isSupported
+    }
+
+    /// Whether insight signals and the weekly summary become messages from Ten. Screenshot
+    /// capture keeps to the one it seeds, the subscription charged tomorrow: these would post
+    /// over it on Home.
+    static var postsInsightNotices: Bool {
+        #if DEBUG
+        if ScreenshotDemoMode.isActive { return false }
+        #endif
+        return isAvailable
     }
 }
 

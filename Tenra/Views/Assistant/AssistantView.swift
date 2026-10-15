@@ -208,6 +208,9 @@ struct AssistantView: View {
             SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) {
                 start(.question($0, spoken: false))
             }
+            // The chips in order for UI tests (the first preset is "My spending this month").
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("assistant.presets")
             if !chats.isEmpty {
                 recentChats
             }

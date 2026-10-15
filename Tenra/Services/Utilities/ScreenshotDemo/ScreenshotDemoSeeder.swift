@@ -17,6 +17,12 @@
 //  ScreenshotDemoMode is active, so displayed balances derive from the seeded
 //  transactions via the one true `BalanceCalculationEngine` path.
 //
+//  1.6 (Ten, goals, debts): three savings goals (one following the savings
+//  account, one with money added by hand and a deadline, one reached), two
+//  personal debts (one lent and overdue, one borrowed and due in two weeks), a
+//  subscription charged tomorrow (Ten's message on Home) and one fact Ten
+//  remembers. Their names come from ScreenshotDemoLexicon+Ten.swift.
+//
 
 import Foundation
 
@@ -51,6 +57,14 @@ enum ScreenshotDemoSeeder {
             }
             try? await Task.sleep(for: .milliseconds(100))
         }
+
+        // Goals, debts and Ten's facts have their own rows outside the repository facade;
+        // their stores load them after the coordinator's full load, like real data.
+        let goals = GoalRepository()
+        for goal in dataset.goals { await goals.save(goal) }
+        let debts = DebtRepository()
+        for debt in dataset.debts { await debts.save(debt) }
+        await AgentFactStore().save(dataset.fact)
     }
 }
 
@@ -63,6 +77,9 @@ struct ScreenshotDemoDataset {
     let transactions: [Transaction]
     let series: [RecurringSeries]
     let occurrences: [RecurringOccurrence]
+    let goals: [SavingsGoal]
+    let debts: [PersonalDebt]
+    let fact: AgentFact
 
     init(currency: String) {
         var builder = Builder(currency: currency)
@@ -72,6 +89,9 @@ struct ScreenshotDemoDataset {
         self.transactions = builder.transactions
         self.series = builder.series
         self.occurrences = builder.occurrences
+        self.goals = builder.goals
+        self.debts = builder.debts
+        self.fact = builder.fact
     }
 
     // MARK: Builder
@@ -80,6 +100,7 @@ struct ScreenshotDemoDataset {
         let currency: String
         let savingsCurrency: String
         let lexicon: ScreenshotDemoLexicon
+        let ten: ScreenshotDemoLexicon.Ten
         let calendar = Calendar.current
         var rng = DeterministicRandom(seed: 20260714)
 
@@ -88,6 +109,9 @@ struct ScreenshotDemoDataset {
         var transactions: [Transaction] = []
         var series: [RecurringSeries] = []
         var occurrences: [RecurringOccurrence] = []
+        var goals: [SavingsGoal] = []
+        var debts: [PersonalDebt] = []
+        var fact = AgentFact(id: "f1", text: "", createdAt: Date(), updatedAt: Date())
 
         // Stable ids so re-runs produce identical data.
         let cardId = "demo-account-card"
@@ -100,6 +124,7 @@ struct ScreenshotDemoDataset {
             self.currency = currency
             self.savingsCurrency = currency == "USD" ? "EUR" : "USD"
             self.lexicon = ScreenshotDemoLexicon.current()
+            self.ten = ScreenshotDemoLexicon.ten()
         }
 
         // MARK: Amount helpers
@@ -148,6 +173,10 @@ struct ScreenshotDemoDataset {
             buildAccounts()
             buildTransactionHistory()
             buildSubscriptions()
+            buildChargeTomorrow()
+            buildGoals()
+            buildDebts()
+            fact = AgentFact(id: "f1", text: ten.fact, createdAt: date(daysAgo: 30), updatedAt: date(daysAgo: 30))
         }
 
         mutating func buildCategories() {
@@ -379,6 +408,135 @@ struct ScreenshotDemoDataset {
             }
         }
 
+        /// A subscription charged tomorrow: Ten writes about it on Home (AssistantInbox). Its
+        /// past charges are in the history like the other subscriptions'.
+        mutating func buildChargeTomorrow() {
+            let subscriptionCategory = presetName("subscriptions")
+            let price = subscriptionPrice(2.99)
+            let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: Date())) ?? Date()
+            // The charges before tomorrow, a month apart, oldest first, within the history.
+            let charges: [Date] = (1...3).reversed().compactMap { months in
+                calendar.date(byAdding: .month, value: -months, to: tomorrow)
+            }.filter { (calendar.dateComponents([.day], from: $0, to: Date()).day ?? 0) <= 95 }
+            guard let first = charges.first, let last = charges.last else { return }
+
+            let seriesId = "demo-series-icloud"
+            series.append(RecurringSeries(
+                id: seriesId,
+                amount: Decimal(price),
+                currency: currency,
+                category: subscriptionCategory,
+                description: "iCloud+",
+                accountId: cardId,
+                frequency: .monthly,
+                startDate: DateFormatters.dateFormatter.string(from: first),
+                lastGeneratedDate: DateFormatters.dateFormatter.string(from: last),
+                kind: .subscription,
+                iconSource: .brandService("icloud"),
+                reminderOffsets: [1],
+                status: .active
+            ))
+            for (index, charge) in charges.enumerated() {
+                let day = DateFormatters.dateFormatter.string(from: charge)
+                let txId = "demo-tx-icloud-\(index)"
+                transactions.append(Transaction(
+                    id: txId,
+                    date: day,
+                    description: "iCloud+",
+                    amount: price,
+                    currency: currency,
+                    type: .expense,
+                    category: subscriptionCategory,
+                    accountId: cardId,
+                    recurringSeriesId: seriesId,
+                    recurringOccurrenceId: "demo-occ-icloud-\(index)",
+                    createdAt: (calendar.date(bySettingHour: 9, minute: 0, second: 0, of: charge) ?? charge).timeIntervalSince1970
+                ))
+                occurrences.append(RecurringOccurrence(
+                    id: "demo-occ-icloud-\(index)",
+                    seriesId: seriesId,
+                    occurrenceDate: day,
+                    transactionId: txId
+                ))
+            }
+        }
+
+        /// Three goals: one with money added by hand and a deadline (first in the list, the
+        /// one the screenshot opens), one following the savings account, one reached. None is
+        /// behind its schedule, so Ten writes only about the charge tomorrow.
+        mutating func buildGoals() {
+            goals = [
+                SavingsGoal(
+                    id: "demo-goal-manual",
+                    name: ten.goalManual,
+                    iconSource: .sfSymbol("laptopcomputer"),
+                    targetAmount: local(1500),
+                    currency: currency,
+                    deadline: monthsFromNow(5),
+                    contributions: [
+                        GoalContribution(id: "demo-goal-manual-1", amount: local(300), date: date(daysAgo: 75)),
+                        GoalContribution(id: "demo-goal-manual-2", amount: local(250), date: date(daysAgo: 45)),
+                        GoalContribution(id: "demo-goal-manual-3", amount: local(200), date: date(daysAgo: 15)),
+                    ],
+                    createdAt: date(daysAgo: 80),
+                    order: 0
+                ),
+                SavingsGoal(
+                    id: "demo-goal-linked",
+                    name: ten.goalLinked,
+                    iconSource: .sfSymbol("airplane"),
+                    targetAmount: ScreenshotDemoCurrency.amount(3000, in: savingsCurrency),
+                    currency: savingsCurrency,
+                    deadline: monthsFromNow(8),
+                    linkedAccountId: savingsId,
+                    createdAt: date(daysAgo: 120),
+                    order: 1
+                ),
+                SavingsGoal(
+                    id: "demo-goal-reached",
+                    name: ten.goalReached,
+                    iconSource: .sfSymbol("headphones"),
+                    targetAmount: local(250),
+                    currency: currency,
+                    contributions: [
+                        GoalContribution(id: "demo-goal-reached-1", amount: local(150), date: date(daysAgo: 60)),
+                        GoalContribution(id: "demo-goal-reached-2", amount: local(100), date: date(daysAgo: 20)),
+                    ],
+                    createdAt: date(daysAgo: 70),
+                    reachedAt: date(daysAgo: 20),
+                    order: 2
+                ),
+            ]
+        }
+
+        /// Money lent and overdue (a red badge in the list), and money borrowed, due in two
+        /// weeks (not tomorrow: that would be a second message from Ten).
+        mutating func buildDebts() {
+            debts = [
+                PersonalDebt(
+                    id: "demo-debt-lent",
+                    direction: .owedToMe,
+                    person: ten.lentPerson,
+                    amount: local(300),
+                    currency: currency,
+                    date: date(daysAgo: 50),
+                    dueDate: date(daysAgo: 6),
+                    note: ten.lentNote,
+                    repayments: [DebtRepayment(id: "demo-debt-lent-1", amount: local(100), date: date(daysAgo: 20))]
+                ),
+                PersonalDebt(
+                    id: "demo-debt-borrowed",
+                    direction: .iOwe,
+                    person: ten.borrowedPerson,
+                    amount: local(400),
+                    currency: currency,
+                    date: date(daysAgo: 25),
+                    dueDate: date(daysAgo: -12),
+                    repayments: [DebtRepayment(id: "demo-debt-borrowed-1", amount: local(150), date: date(daysAgo: 10))]
+                ),
+            ]
+        }
+
         // MARK: Transaction helpers
 
         mutating func addIncome(daysAgo: Int, eurBase: Double, description: String, category: String) {
@@ -470,6 +628,10 @@ struct ScreenshotDemoDataset {
 
         func date(daysAgo: Int) -> Date {
             calendar.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
+        }
+
+        func monthsFromNow(_ months: Int) -> Date {
+            calendar.date(byAdding: .month, value: months, to: Date()) ?? Date()
         }
 
         func monthStartString(daysAgo: Int) -> String {

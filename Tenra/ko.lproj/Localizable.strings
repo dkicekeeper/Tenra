@@ -2083,4 +2083,10 @@
 "assistant.wardrobe.glasses" = "안경";
 "assistant.wardrobe.sunglasses" = "선글라스";
 "assistant.wardrobe.sleepMask" = "수면 안대";
-"assistant.wardrobe.footer" = "명절에는 텐이 스스로 차려입어요. 새해에는 파티 모자, 나우르즈에는 타키야, 함께 축하한 날에는 왕관을 써요.";
+"assistant.wardrobe.footer" = "명절에는 텐이 스스로 차려입어요. 새해에는 파티 모자, 나우르즈에는 타키야, 함께 축하한 날에는 왕관을 써요. 새 액세서리는 Tenra 연속 방문과 목표로 열려요.";
+"assistant.wardrobe.lock.streak7" = "Tenra 7일 연속 방문";
+"assistant.wardrobe.lock.streak30" = "Tenra 30일 연속 방문";
+"assistant.wardrobe.lock.firstGoal" = "목표 만들기";
+"assistant.wardrobe.lock.goalReached" = "목표 달성";
+"assistant.wardrobe.lock.nauryz" = "나우르즈에 열림";
+"assistant.wardrobe.locked" = "잠김";

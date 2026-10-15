@@ -53,6 +53,7 @@ struct AssistantView: View {
     @AppStorage(AssistantChatter.greetedDayKey) private var greetedDay = ""
     @AppStorage(AssistantWardrobe.choiceKey) private var accessoryChoice = ""
     @AppStorage(AssistantWardrobe.crownDayKey) private var crownDay = ""
+    @State private var daydreams = AssistantDaydreams.neutral
     @State private var speech: CreatureSpeech?
     @State private var gesture: CreatureGesture = .wave
     @State private var gestureCount = 0
@@ -165,9 +166,11 @@ struct AssistantView: View {
                              accessory: AssistantWardrobe.accessory(choice: accessoryChoice, crownDay: crownDay, at: .now))
                 .creatureGesture(gesture, trigger: gestureCount)
                 // A life of its own (DesignKit 4.11): it looks round, stretches, dozes off when
-                // left alone and daydreams of money things while "Ten chats" is on.
+                // left alone and, while "Ten chats" is on, daydreams of what is on the person's
+                // mind (AssistantDaydreams).
                 .creatureAmbience(CreatureAmbience(dozesAfter: AssistantMetrics.dozesAfter,
-                                                   daydreams: chatterOn ? AssistantChatter.daydreams : []))
+                                                   daydreams: chatterOn ? daydreams : []))
+                .task { await refreshDaydreams() }
                 .frame(width: AssistantMetrics.heroMascot, height: AssistantMetrics.heroMascot)
                 // Room over Ten for its words.
                 .padding(.top, AssistantMetrics.speechRoom)
@@ -205,6 +208,34 @@ struct AssistantView: View {
     private func play(_ next: CreatureGesture) {
         gesture = next
         gestureCount += 1
+    }
+
+    /// What Ten daydreams of: the next payment, the goal closest to done, rising spending, a
+    /// debt coming due (AssistantDaydreams), from the stores as they are when the home appears.
+    private func refreshDaydreams() async {
+        let goals = coordinator.goalStore
+        let debts = coordinator.debtStore
+        await goals.load()
+        await debts.load()
+        let store = coordinator.transactionStore
+        let payments = store.recurringSeries
+            .filter { $0.isActive && (!$0.isSubscription || $0.subscriptionStatus == .active) }
+            .compactMap { series in
+                store.nextChargeDate(for: series.id).map { AssistantDaydreams.Payment(icon: series.iconSource, date: $0) }
+            }
+        let goalItems = goals.goals.map { goal in
+            AssistantDaydreams.Goal(
+                icon: goal.iconSource,
+                progress: goal.targetAmount > 0 ? goals.saved(for: goal) / goal.targetAmount : 0,
+                reachedAt: goal.reachedAt
+            )
+        }
+        let rising = coordinator.insightsViewModel.insights.contains {
+            $0.type == .spendingSpike || $0.type == .categoryTrend
+        }
+        let due = debts.debts.compactMap { $0.isSettled ? nil : $0.dueDate }
+        daydreams = AssistantDaydreams.symbols(payments: payments, goals: goalItems, spendingRising: rising,
+                                               debtDueDates: due, now: .now)
     }
 
     /// Once a day: the greeting for the hour and a wave, or, while there are no chats, a hint

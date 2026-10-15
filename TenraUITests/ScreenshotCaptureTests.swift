@@ -313,6 +313,12 @@ final class ScreenshotCaptureTests: XCTestCase {
     private func tabBarButton(at index: Int) -> XCUIElement {
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 20), "Tab bar not found")
+        // A scrolled screen collapses the bar to the current tab and the action tab
+        // (`tabBarMinimizeBehavior(.onScrollDown)`): scroll back up until the tab is there.
+        for _ in 0..<4 where tabBar.buttons.count <= index {
+            app.swipeDown()
+            sleep(1)
+        }
         return tabBar.buttons.element(boundBy: index)
     }
 

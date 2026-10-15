@@ -1269,7 +1269,6 @@
 "settings.cloud.delete" = "Sil";
 "settings.cloud.storage" = "Depolama";
 "settings.cloud.storageUsed" = "%@ / %@";
-"settings.cloud.backupMetadata" = "%d hesap · %d işlem · %@";
 "settings.cloud.iCloud.toggle" = "Yedekleri iCloud'a kaydet";
 "settings.cloud.iCloud.footer" = "Yedekler iCloud'unda saklanır, Dosyalar uygulamasında gizlidir ve diğer cihazlarındaki Tenra'da kullanılabilir.";
 "settings.cloud.iCloud.unavailable" = "Yedekleri iCloud Drive'da saklamak için Ayarlar'dan iCloud'a giriş yap.";
@@ -1390,6 +1389,8 @@
 "insights.chart.line" = "Çizgi";
 "insights.chart.bar" = "Çubuk";
 "insights.today" = "Bugün";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@, %2$@";
 "insights.empty.title" = "Henüz veri yok";
 "insights.empty.subtitle" = "Biraz işlem geçmişi oluştuğunda grafik burada görünecek";
 
@@ -1988,6 +1989,7 @@
 "goal.account.none" = "Hesap yok";
 "goal.account.hint" = "Hesap seçersen hedef onun bakiyesini izler. Hesapsız, biriktirdiğini kendin işaretlersin.";
 "goal.alreadySaved" = "Şimdiden biriken";
+"goal.savedShare" = "Biriken";
 "goal.target" = "Hedef";
 "goal.left" = "Biriktirilecek";
 "goal.leftAmount" = "Kalan %@";
@@ -2090,3 +2092,13 @@
 "assistant.wardrobe.lock.goalReached" = "Bir hedefe ulaşın";
 "assistant.wardrobe.lock.nauryz" = "Nevruz'da açılır";
 "assistant.wardrobe.locked" = "Kilitli";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "Bir şey için birikim yapalım mı?";
+"assistant.empty.debts" = "Kim kime borçlu? Not edelim";
+"assistant.empty.subscriptions" = "Abonelikleri ekle, sana hatırlatırım";
+"assistant.empty.deposits" = "Mevduatların burada büyüyecek";
+"assistant.empty.loans" = "Kredileri de hesaplarım";
+"assistant.empty.accounts" = "Bir hesapla başlayalım mı?";
+"assistant.empty.history" = "Henüz boş. İlkini ekleyelim mi?";
+"assistant.empty.memory" = "Bana kendinden bahset, hatırlarım";

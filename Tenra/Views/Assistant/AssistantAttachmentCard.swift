@@ -23,7 +23,7 @@ struct AssistantAttachmentCard: View {
     @State private var showingPaywall = false
 
     var body: some View {
-        AssistantCard(title: title) {
+        ListCard(title: title) {
             switch summary.kind {
             case .receipt:
                 if let total = summary.expenses {
@@ -35,9 +35,7 @@ struct AssistantAttachmentCard: View {
                     )
                 }
             case .statement:
-                Text(statementLine)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.Text.secondary)
+                MetaLine(statementItems)
                 if let expenses = summary.expenses {
                     InfoRow(label: String(localized: "insights.expenses"), amount: expenses.amount, currency: expenses.currency)
                 }
@@ -111,12 +109,12 @@ struct AssistantAttachmentCard: View {
     }
 
     /// "78 operations · 1 Oct – 31 Oct".
-    private var statementLine: String {
+    /// "64 transactions · 1 Oct – 31 Oct": MetaLine draws the dots and stacks the items at the
+    /// largest text sizes.
+    private var statementItems: [MetaItem] {
         let count = String(format: NSLocalizedString("history.count", comment: "Transaction count"), summary.count)
-        let first = Self.day(summary.firstDate)
-        let last = Self.day(summary.lastDate)
-        guard let first, let last else { return count }
-        return first == last ? "\(count) · \(first)" : "\(count) · \(first) – \(last)"
+        guard let first = Self.day(summary.firstDate), let last = Self.day(summary.lastDate) else { return [.text(count)] }
+        return [.text(count), .text(first == last ? first : "\(first) – \(last)")]
     }
 
     private static func day(_ date: String?) -> String? {

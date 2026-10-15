@@ -1269,7 +1269,6 @@
 "settings.cloud.delete" = "Видалити";
 "settings.cloud.storage" = "Сховище";
 "settings.cloud.storageUsed" = "%@ із %@";
-"settings.cloud.backupMetadata" = "%d рахунків · %d операцій · %@";
 "settings.cloud.iCloud.toggle" = "Зберігати резервні копії в iCloud";
 "settings.cloud.iCloud.footer" = "Копії зберігаються у вашому iCloud, приховані з програми «Файли» і доступні в Tenra на інших ваших пристроях.";
 "settings.cloud.iCloud.unavailable" = "Увійдіть в iCloud у Налаштуваннях, щоб зберігати резервні копії в iCloud Drive.";
@@ -1390,6 +1389,8 @@
 "insights.chart.line" = "Лінія";
 "insights.chart.bar" = "Стовпці";
 "insights.today" = "Сьогодні";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@, %2$@";
 "insights.empty.title" = "Поки немає даних";
 "insights.empty.subtitle" = "Графік з'явиться, щойно у вас буде історія операцій";
 
@@ -1988,6 +1989,7 @@
 "goal.account.none" = "Без рахунку";
 "goal.account.hint" = "З рахунком ціль стежить за його балансом. Без рахунку ви самі відмічаєте, скільки відклали.";
 "goal.alreadySaved" = "Уже накопичено";
+"goal.savedShare" = "Накопичено";
 "goal.target" = "Ціль";
 "goal.left" = "Залишилось накопичити";
 "goal.leftAmount" = "Залишилось %@";
@@ -2090,3 +2092,13 @@
 "assistant.wardrobe.lock.goalReached" = "Досягніть цілі";
 "assistant.wardrobe.lock.nauryz" = "Відкриється на Наурыз";
 "assistant.wardrobe.locked" = "Закрито";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "Накопичимо на щось?";
+"assistant.empty.debts" = "Хто кому винен? Запишемо";
+"assistant.empty.subscriptions" = "Додайте підписки, я нагадаю про платежі";
+"assistant.empty.deposits" = "Тут ростимуть ваші вклади";
+"assistant.empty.loans" = "Кредити теж порахую";
+"assistant.empty.accounts" = "Почнемо з рахунку?";
+"assistant.empty.history" = "Поки порожньо. Додамо першу?";
+"assistant.empty.memory" = "Розкажіть про себе, я запам'ятаю";

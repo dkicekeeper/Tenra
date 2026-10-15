@@ -31,6 +31,11 @@ with the commit of every fix, are in
   `LoanDetailView` delete paths call `recalculateAccountBalances()` where
   `recalculateBalances(for:)` with the touched accounts would do.
 
+Found by the design-system audit of 2026-10-15 (everything since 1.5):
+- **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
+  hold rules and data, no views: they belong in `Services/Agent/`, as does the catalogue half
+  of `AssistantWardrobe`. Move once the wardrobe settles (another session is iterating on it).
+
 Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the
   confirmation snippet is the only guard. Decide whether intents deduplicate.

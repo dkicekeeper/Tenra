@@ -25,13 +25,21 @@ struct AssistantMemoryView: View {
     var body: some View {
         Group {
             if !memory.isLoaded {
-                Color.clear
+                // The rows to come (each fact is an ItemRow in the large style).
+                List {
+                    ForEach(0..<3, id: \.self) { _ in
+                        ItemRowSkeleton(style: .large)
+                    }
+                }
+                .transition(.opacity)
             } else if memory.facts.isEmpty {
-                EmptyState(
+                MascotEmptyState(
                     icon: "brain",
                     title: String(localized: "assistant.memory.emptyTitle"),
-                    description: String(localized: "assistant.memory.emptyMessage")
+                    description: String(localized: "assistant.memory.emptyMessage"),
+                    line: String(localized: "assistant.empty.memory")
                 )
+                .transition(.skeletonReveal)
             } else {
                 List {
                     Section {
@@ -51,8 +59,10 @@ struct AssistantMemoryView: View {
                         }
                     }
                 }
+                .transition(.skeletonReveal)
             }
         }
+        .animation(AppAnimation.smooth, value: memory.isLoaded)
         .navigationTitle(String(localized: "assistant.memory.title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -86,9 +96,8 @@ struct AssistantMemoryView: View {
                 fact.text,
                 meta: [MetaLine([.text(Text(fact.updatedAt, format: .dateTime.day().month().year()))])],
                 style: .large
-            ) {
-                DisclosureChevron()
-            }
+            )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityHint(String(localized: "assistant.memory.editHint"))

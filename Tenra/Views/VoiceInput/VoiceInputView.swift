@@ -12,6 +12,7 @@ import UIKit
 struct VoiceInputView: View {
     @Bindable var voiceService: VoiceInputService
     @Environment(\.dismiss) var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(TransactionStore.self) private var transactionStore
     let parser: VoiceInputParser
     let transactionsViewModel: TransactionsViewModel
@@ -391,7 +392,8 @@ struct VoiceInputView: View {
             .dsButton()
             .screenPadding()
             .padding(.bottom, AppSpacing.xl)
-            .transition(.move(edge: .bottom).combined(with: .opacity))
+            // Under Reduce Motion the button fades in instead of sliding up.
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
         }
     }
 
@@ -689,42 +691,28 @@ struct VoiceLevelGlow: View {
 
 // MARK: - Stop orb
 
-/// The stop button while recording: DesignKit's voice orb, swelling with the voice, with a
-/// small stop glyph in the middle. At rest the orb is about the size of the old 80 pt button;
-/// only that circle takes the tap. Its own small view, so the level (about 47 updates a second)
-/// redraws the orb only.
+/// The stop button while recording: an adapter over DesignKit's VoiceOrbButton (4.14.0), the
+/// voice orb swelling with the voice, a stop glyph in the middle. Its own small view, so the
+/// level (about 47 updates a second) redraws the orb only; the feature tour's hint anchors to the
+/// orb at rest.
 struct VoiceStopOrb: View {
     let voiceService: VoiceInputService
     /// Off for screenshots, where nothing is recorded: the orb then breathes on its own.
     let followsVoice: Bool
     let action: () -> Void
 
-    /// The orb's canvas: room for it to swell and for its glow.
-    private static let size: CGFloat = 144
-    /// The tappable circle: the canvas inset to about the orb at rest.
-    private static let tapInset: CGFloat = 32
-    /// The orb at rest, the circle the tap and the hint's cut-out go round.
-    private static let restingDiameter: CGFloat = size - 2 * tapInset
     /// The hint's cut-out: a circle round the resting orb and the spotlight's padding.
-    static let spotlightRadius: CGFloat = restingDiameter / 2 + AppSpacing.sm
+    static let spotlightRadius: CGFloat = VoiceOrbButton.restingDiameter / 2 + AppSpacing.sm
 
     var body: some View {
-        Button(action: action) {
-            VoiceWave(level: followsVoice ? voiceService.audioLevel : nil, style: .orb)
-                .frame(width: Self.size, height: Self.size)
-                .overlay {
-                    Image(systemName: "stop.fill")
-                        .font(.system(size: AppIconSize.lg))
-                        .foregroundStyle(AppColors.staticWhite)
-                        .shadow(color: .black.opacity(0.25), radius: 4)
-                }
-                .contentShape(Circle().inset(by: Self.tapInset))
-        }
-        .buttonStyle(.bounce)
-        .accessibilityLabel(String(localized: "voice.stopRecording"))
+        VoiceOrbButton(
+            level: followsVoice ? voiceService.audioLevel : nil,
+            accessibilityLabel: String(localized: "voice.stopRecording"),
+            action: action
+        )
         .background {
             Color.clear
-                .frame(width: Self.restingDiameter, height: Self.restingDiameter)
+                .frame(width: VoiceOrbButton.restingDiameter, height: VoiceOrbButton.restingDiameter)
                 .spotlightAnchor(FeatureTourState.Hint.voiceStopOrb)
         }
     }

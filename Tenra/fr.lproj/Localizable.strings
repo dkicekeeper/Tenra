@@ -1269,7 +1269,6 @@
 "settings.cloud.delete" = "Supprimer";
 "settings.cloud.storage" = "Stockage";
 "settings.cloud.storageUsed" = "%@ sur %@";
-"settings.cloud.backupMetadata" = "%d comptes · %d opérations · %@";
 "settings.cloud.iCloud.toggle" = "Enregistrer les sauvegardes dans iCloud";
 "settings.cloud.iCloud.footer" = "Les sauvegardes sont stockées dans votre iCloud, masquées dans l'app Fichiers, et disponibles dans Tenra sur vos autres appareils.";
 "settings.cloud.iCloud.unavailable" = "Connectez-vous à iCloud dans Réglages pour stocker les sauvegardes dans iCloud Drive.";
@@ -1390,6 +1389,8 @@
 "insights.chart.line" = "Ligne";
 "insights.chart.bar" = "Barres";
 "insights.today" = "Aujourd'hui";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@, %2$@";
 "insights.empty.title" = "Pas encore de données";
 "insights.empty.subtitle" = "Le graphique apparaîtra dès que vous aurez un historique d'opérations";
 
@@ -1988,6 +1989,7 @@
 "goal.account.none" = "Aucun compte";
 "goal.account.hint" = "Avec un compte, l’objectif suit son solde. Sans compte, vous notez vous-même ce que vous mettez de côté.";
 "goal.alreadySaved" = "Déjà épargné";
+"goal.savedShare" = "Épargné";
 "goal.target" = "Objectif";
 "goal.left" = "Reste à épargner";
 "goal.leftAmount" = "Reste %@";
@@ -2090,3 +2092,13 @@
 "assistant.wardrobe.lock.goalReached" = "Atteignez un objectif";
 "assistant.wardrobe.lock.nauryz" = "S'ouvre à Nauryz";
 "assistant.wardrobe.locked" = "Verrouillé";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "On économise pour quelque chose ?";
+"assistant.empty.debts" = "Qui doit quoi à qui ? Notons-le";
+"assistant.empty.subscriptions" = "Ajoutez vos abonnements, je vous les rappellerai";
+"assistant.empty.deposits" = "Vos dépôts grandiront ici";
+"assistant.empty.loans" = "Je compte aussi les crédits";
+"assistant.empty.accounts" = "On commence par un compte ?";
+"assistant.empty.history" = "Rien pour l'instant. On ajoute la première ?";
+"assistant.empty.memory" = "Parlez-moi de vous, je m'en souviendrai";

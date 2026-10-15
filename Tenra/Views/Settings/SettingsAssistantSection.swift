@@ -36,7 +36,7 @@ struct SettingsAssistantSection: View {
                     AssistantMemoryView(memory: memory)
                 }
             } header: {
-                Text(String(localized: "settings.assistant.header"))
+                SectionHeader(String(localized: "settings.assistant.header"), style: .compact)
             } footer: {
                 Text(String(localized: "settings.assistant.footer"))
             }

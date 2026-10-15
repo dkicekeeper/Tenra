@@ -1269,7 +1269,6 @@
 "settings.cloud.delete" = "Apagar";
 "settings.cloud.storage" = "Armazenamento";
 "settings.cloud.storageUsed" = "%@ de %@";
-"settings.cloud.backupMetadata" = "%d contas · %d transações · %@";
 "settings.cloud.iCloud.toggle" = "Salvar backups no iCloud";
 "settings.cloud.iCloud.footer" = "Os backups ficam no seu iCloud, ocultos no app Arquivos, e disponíveis no Tenra nos seus outros dispositivos.";
 "settings.cloud.iCloud.unavailable" = "Entre no iCloud nos Ajustes para armazenar backups no iCloud Drive.";
@@ -1390,6 +1389,8 @@
 "insights.chart.line" = "Linha";
 "insights.chart.bar" = "Barras";
 "insights.today" = "Hoje";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@, %2$@";
 "insights.empty.title" = "Ainda sem dados";
 "insights.empty.subtitle" = "O gráfico aparecerá assim que você tiver um histórico de transações";
 
@@ -1988,6 +1989,7 @@
 "goal.account.none" = "Sem conta";
 "goal.account.hint" = "Com uma conta, a meta acompanha o saldo dela. Sem conta, você marca o que guardou.";
 "goal.alreadySaved" = "Já guardado";
+"goal.savedShare" = "Guardado";
 "goal.target" = "Meta";
 "goal.left" = "Falta guardar";
 "goal.leftAmount" = "Faltam %@";
@@ -2090,3 +2092,13 @@
 "assistant.wardrobe.lock.goalReached" = "Alcance uma meta";
 "assistant.wardrobe.lock.nauryz" = "Abre no Nauryz";
 "assistant.wardrobe.locked" = "Bloqueado";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "Vamos juntar para algo?";
+"assistant.empty.debts" = "Quem deve a quem? Vamos anotar";
+"assistant.empty.subscriptions" = "Adicione assinaturas, eu te lembro";
+"assistant.empty.deposits" = "Aqui seus depósitos vão crescer";
+"assistant.empty.loans" = "Também acompanho os empréstimos";
+"assistant.empty.accounts" = "Vamos começar com uma conta?";
+"assistant.empty.history" = "Nada ainda. Vamos adicionar a primeira?";
+"assistant.empty.memory" = "Fale sobre você, eu vou lembrar";

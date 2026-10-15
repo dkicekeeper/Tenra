@@ -210,7 +210,7 @@ Tenra 1.6의 새로운 기능:
 
 1. **Device check** of TestFlight 18 (goals and debts) and 20 (Ten with goals and debts, the soft edge under Ten); fixes first.
 2. **Workers Paid** in Cloudflare ($5 a month, [plan-ai-assistant.md](plan-ai-assistant.md) §5.1): the free plan's 1 000 KV writes a day and 10 ms CPU per request will not carry real traffic.
-3. **Archive from the Mac** (Xcode 27, as for 1.5). The build number must be above the CI TestFlight builds: 21 or higher.
+3. **Archive from the Mac** (Xcode 27, as for 1.5). The build number must be above every CI TestFlight build (the latest is 23 on 2026-10-15, and each TestFlight run adds one: check TestFlight first).
 4. **`prepare-version`** with version `1.6` and that build: creates the version, pastes the What's New above into the 13 locales, selects the build.
 5. **App Privacy** in App Store Connect (draft below): through the web form only, the API does not set it.
 6. **App Review notes** (below) in App Review Information → Notes.

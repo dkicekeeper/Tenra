@@ -1,0 +1,31 @@
+name: Xcode probe
+
+# Throwaway: which Xcodes the macOS runners carry, and the Private Cloud Compute part of the
+# iOS 27 FoundationModels interface if an Xcode 27 is there. Runs only on this branch.
+
+on:
+  push:
+    branches: [claude/xcode-probe]
+
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-26, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: Xcodes on the runner
+        run: ls -d /Applications/Xcode*.app
+      - name: FoundationModels interface from the newest Xcode
+        run: |
+          NEWEST=$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$NEWEST" ]; then echo "No Xcode 27 on this runner"; exit 0; fi
+          echo "Using $NEWEST"
+          SDK="$NEWEST/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
+          F="$SDK/System/Library/Frameworks/FoundationModels.framework/Modules/FoundationModels.swiftmodule/arm64e-apple-ios.swiftinterface"
+          ls "$SDK/.." ; wc -l "$F"
+          grep -n "PrivateCloudCompute" "$F" | head -5
+          sed -n '30,262p' "$F"
+          grep -n "public init(model\|public convenience init(model\|protocol LanguageModel\b\|public protocol LanguageModel" "$F" | head -20

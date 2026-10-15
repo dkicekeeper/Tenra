@@ -237,7 +237,9 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    - A sandbox purchase; a subscription card with VoiceOver (reads "Active", not a key).
    - Home with an unread notice from Ten for a minute: Instruments → Energy Log, or watch the
      battery and the 120 Hz indicator. If Ten keeps the display busy, use the still glyph there.
-8. **Screenshots** (below): new frames for Ten, goals and debts; every old frame shows the "+" tab.
+8. **Screenshots** (below): captured on the 1.6 UI in 13 locales, composed, uploaded to version 1.6.
+   The custom product pages keep the 1.5 frames until 1.6 is out: `push-custom-pages --submit`
+   after the release (they show beside the live build).
 9. **App Store Connect, version 1.6** (created on 2026-10-15 with What's New in 13 locales; the
    age rating answered through the API, `asc.py age-rating`: the new "social media" question
    No, the rating stays 4+):
@@ -268,8 +270,9 @@ score, top category, history, fx; tr leads with fx. Composed by
 
 Run: Actions → Screenshots with `frames` = `all`, in runs of a few locales (each run has 120
 minutes), the artifact into `screenshots/raw/<locale>/`, compose, then upload:
-`push-version-screenshots` with `version` 1.6, and `push-custom-pages --submit` for the custom
-pages.
+`push-version-screenshots` with `version` 1.6; the custom pages (`push-custom-pages --submit`)
+once 1.6 is live. ja and ko leave the voice draft out (their order in
+`scripts/screenshot_captions.json`): the parser misreads those phrases ([backlog.md](backlog.md)).
 
 ### App Privacy (the answers for the web form)
 

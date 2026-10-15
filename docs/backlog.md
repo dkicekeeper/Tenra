@@ -55,6 +55,12 @@ Found by the release audit of 2026-10-15 (details and file references:
   repayment above what is left and a due date before the loan.
 - **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
+- **Voice parser in Japanese, Korean and Canadian French** (also Ten's FastPath drafts): no
+  ja or ko category keywords, so every phrase lands in Other; "500円" right after kana is no
+  amount (`\b` between two word characters) and "12,000원" reads as 12 (a comma is only a
+  decimal); the currency is the first substring of an unordered dictionary ("50 r$" can be
+  USD) and "$"/"dollars" are always USD, so a Canadian account books US dollars. The store
+  set leaves the voice draft out for ja and ko until this is fixed.
 - **Copy:** German Ten strings say "du", the app "Sie"; the Terms of Use say Tenra never sees
   financial data; mic and speech permission texts don't mention Ten.
 - **Server before traffic:** Durable Objects counters, a Rate Limiting binding, separate free and

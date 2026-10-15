@@ -208,6 +208,7 @@ All return lightweight value-type structs (`InMemoryMonthlyTotal`, `InMemoryCate
 
 ## Date labels — headings vs axis
 
+- **Hidden amounts in a subtitle.** A generator whose subtitle carries money (the savings rate's saved amount) also sets `Insight.hiddenSubtitle`, the same line with `Formatting.hiddenAmount` in place of the amount; the card and the detail header show `insight.subtitle(amountsHidden:)` with `\.amountsHidden`. The metric itself hides through `FormattedAmountText`. A new generator that puts an amount in its subtitle sets both.
 - **`InsightGranularity.headingLabel(for:)`** — use for ANY date acting as a heading / row-title: breakdown-list rows, `PeriodComparisonCard`, paged pager header, wealth/spending service subtitles. Capitalized, full month names, full week range (no abbreviations). Built on `String.capitalizedFirstLetter`.
 - **`InsightGranularity.periodLabel(for:)`** — axis / chart only: abbreviates `.week` ("3 янв"); month is full but locale-cased (ru → lowercase "май 2026"). Do NOT use it for headings — renders lowercase in ru locale. `PeriodDataPoint.label` is built from it (axis-oriented); heading call sites recompute via `headingLabel(for: point.key)`.
 

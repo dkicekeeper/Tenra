@@ -5,8 +5,8 @@
 //  One personal debt (docs/domains/goals-and-debts.md), on EntityDetailScaffold: what is left
 //  with the share returned in the hero; "Repayment" and "Settle" while it is open, "Reopen"
 //  once settled; which way, the amount, what came back, the dates and the note; then the
-//  repayments, newest first, a long press deletes one. A repayment that covers the rest
-//  settles the debt, with confetti.
+//  repayments, newest first, in a card of AmountRows (a long press deletes one, which breaks
+//  into dust). A repayment that covers the rest settles the debt, with confetti.
 //
 
 import SwiftUI
@@ -69,10 +69,11 @@ struct DebtDetailView: View {
                     primaryAmount: debt.remaining,
                     primaryCurrency: debt.currency,
                     subtitle: heroSubtitle(for: debt),
+                    // HeroSection draws "label · NN%": the label is a word, not the share.
                     progress: ProgressConfig(
                         current: debt.isSettled ? debt.amount : debt.repaid,
                         total: debt.amount,
-                        label: debt.progress.formatted(.percent.precision(.fractionLength(0))),
+                        label: String(localized: "debt.returned"),
                         color: AppColors.income
                     )
                 )
@@ -112,7 +113,9 @@ struct DebtDetailView: View {
                 }
             }
         )
-        .celebration(trigger: celebrations)
+        .heroAccentGlow(icon: debt.iconSource)
+        // The money sheet already played the success haptic.
+        .celebration(trigger: celebrations, playsHaptic: false)
         .sheet(isPresented: $showingEdit) {
             DebtEditView(debt: debt, appSettings: appSettings) { updated in
                 Task { await debtStore.update(updated) }
@@ -187,41 +190,39 @@ struct DebtDetailView: View {
             SectionHeader(String(localized: "debt.repayments"))
             VStack(spacing: 0) {
                 ForEach(repayments) { repayment in
-                    InfoRow(
-                        icon: "arrow.uturn.down",
-                        label: entryLabel(date: repayment.date, note: repayment.note),
-                        amount: repayment.amount,
-                        currency: debt.currency
-                    )
-                    .padding(.horizontal, AppSpacing.lg)
-                    .padding(.vertical, AppSpacing.sm)
-                    .contentShape(Rectangle())
-                    .contextMenu {
-                        Button(role: .destructive) {
-                            HapticManager.warning()
-                            Task { await debtStore.deleteRepayment(id: repayment.id, from: debt.id) }
-                        } label: {
-                            Label(String(localized: "button.delete"), systemImage: "trash")
+                    VStack(spacing: 0) {
+                        HistoryEntryRow(
+                            date: repayment.date,
+                            note: repayment.note,
+                            amount: repayment.amount,
+                            currency: debt.currency,
+                            symbol: "arrow.uturn.down"
+                        )
+                        .contentShape(Rectangle())
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                HapticManager.warning()
+                                Task { await debtStore.deleteRepayment(id: repayment.id, from: debt.id) }
+                            } label: {
+                                Label(String(localized: "button.delete"), systemImage: "trash")
+                            }
+                        }
+                        if repayment.id != repayments.last?.id {
+                            Divider().padding(.leading, AppIconSize.Tile.sm + AppSpacing.md)
                         }
                     }
-                    if repayment.id != repayments.last?.id {
-                        Divider().padding(.leading, AppSpacing.lg)
-                    }
+                    // A deleted entry breaks into dust, as a deleted transaction does.
+                    .transition(AsymmetricTransition(insertion: OpacityTransition(), removal: DissolveTransition()))
                 }
             }
-            .padding(.vertical, AppSpacing.sm)
+            .padding(AppSpacing.lg)
             .cardStyle()
+            .animation(AppAnimation.gentleSpring, value: repayments.map(\.id))
         }
         .screenPadding()
     }
 
     // MARK: - Helpers
-
-    private func entryLabel(date: Date, note: String?) -> String {
-        let day = DateFormatters.displayDateOmittingCurrentYear(date)
-        guard let note, !note.isEmpty else { return day }
-        return "\(day) · \(note)"
-    }
 
     private func amountText(_ amount: Double, _ currency: String) -> String {
         amountsHidden

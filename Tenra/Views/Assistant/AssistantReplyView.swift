@@ -315,6 +315,8 @@ private struct AssistantInsightCard: View {
 private struct AssistantForecastCard: View {
     let forecast: AgentReplyData.Forecast
 
+    @Environment(\.amountsHidden) private var amountsHidden
+
     private static let obligationLimit = 8
 
     var body: some View {
@@ -323,7 +325,9 @@ private struct AssistantForecastCard: View {
                 title: String(format: String(localized: "assistant.forecast.perDay"), untilText),
                 subtitle: String(
                     format: String(localized: "assistant.forecast.free"),
-                    Formatting.formatCurrencySmart(forecast.freeAmount, currency: forecast.currency)
+                    amountsHidden
+                        ? Formatting.hiddenAmount(currency: forecast.currency)
+                        : Formatting.formatCurrencySmart(forecast.freeAmount, currency: forecast.currency)
                 ),
                 value: .amount(forecast.dailyAllowance, currency: forecast.currency),
                 chartPlacement: .bottom
@@ -553,7 +557,8 @@ private struct AssistantDraftCard: View {
         return ItemRow(
             fact.text ?? fact.replaces?.text ?? "",
             meta: [MetaLine([.text(note)])],
-            leading: .symbol(fact.text == nil ? "eraser" : "brain")
+            leading: .symbol(fact.text == nil ? "eraser" : "brain"),
+            style: .large
         )
         .accessibilityElement(children: .combine)
     }
@@ -672,17 +677,24 @@ private struct AssistantDraftCard: View {
 
 // MARK: - Open
 
-/// A row into one of the app's screens, pushed on the assistant's stack.
+/// A row into one of the app's screens, pushed on the assistant's stack: a standard row (it
+/// pads itself) in a card, in the accent, with the chevron of a push outside a List.
 private struct AssistantOpenLink: View {
     let route: AssistantRoute
     let label: String
 
     var body: some View {
         NavigationLink(value: route) {
-            ActionRowLabel(label, systemImage: route.systemImage)
-                .padding(.horizontal, AppSpacing.lg)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .cardStyle()
+            UniversalRow(
+                config: .standard,
+                leadingIcon: .sfSymbol(route.systemImage, color: AppColors.accent, size: AppIconSize.lg),
+                title: label,
+                titleColor: AppColors.accent
+            ) {
+                DisclosureChevron()
+            }
+            .contentShape(Rectangle())
+            .cardStyle()
         }
         .buttonStyle(.plain)
     }

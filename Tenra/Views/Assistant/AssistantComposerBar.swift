@@ -41,14 +41,13 @@ struct AssistantComposerBar: View {
                     allowanceLine(allowance)
                         .transition(.opacity)
                 }
-                if let attachmentError {
-                    InlineStatusText(message: attachmentError, type: .error)
-                        .transition(.opacity)
-                }
+                // An attachment that could not be read shows in the field's own error slot
+                // (over the field, shared with the character count).
                 MessageComposer(
                     text: $draft,
                     placeholder: String(localized: "assistant.composer.placeholder"),
                     isSending: model.isWorking,
+                    errorMessage: attachmentError,
                     limit: AssistantMetrics.questionLimit,
                     focus: focus,
                     leading: {
@@ -73,14 +72,9 @@ struct AssistantComposerBar: View {
 
     /// "2 free answers left", or when the next ones come; a tap opens the paywall.
     private func allowanceLine(_ allowance: AssistantAllowance.Status) -> some View {
-        Button {
+        DSButton(Self.allowanceText(allowance), systemImage: "sparkles", appearance: .flat, role: .neutral, size: .small) {
             onPaywall()
-        } label: {
-            Label(Self.allowanceText(allowance), systemImage: "sparkles")
-                .font(AppTypography.caption)
-                .foregroundStyle(AppColors.Text.secondary)
         }
-        .buttonStyle(.plain)
         .accessibilityHint(String(localized: "settings.pro.cta.title"))
     }
 

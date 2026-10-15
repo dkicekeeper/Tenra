@@ -21,7 +21,7 @@ struct DebtCard: View {
         PayoffProgressCard(
             iconSource: debt.iconSource,
             title: debt.person,
-            subtitle: debt.note,
+            subtitle: oneLine(debt.note),
             remaining: debt.remaining,
             total: debt.amount,
             currency: debt.currency,
@@ -38,4 +38,13 @@ struct DebtCard: View {
             }
         }
     }
+
+    /// The note's first line, shortened: PayoffProgressCard's subtitle has no line limit, and a
+    /// long note would grow the card.
+    private func oneLine(_ note: String?) -> String? {
+        guard let line = note?.split(whereSeparator: \.isNewline).first.map(String.init), !line.isEmpty else { return nil }
+        return line.count > Self.noteLength ? String(line.prefix(Self.noteLength - 1)) + "…" : line
+    }
+
+    private static let noteLength = 48
 }

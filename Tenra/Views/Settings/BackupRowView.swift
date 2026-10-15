@@ -18,13 +18,14 @@ struct BackupRowView: View {
         ItemRow(
             metadata.formattedDate,
             badge: metadata.isAutomatic == true ? String(localized: "settings.cloud.autoBackup.badge") : nil,
-            meta: [MetaLine([.text(metadataLine)])],
+            meta: [MetaLine(metadataItems)],
             style: .large
         ) {
             // Affordance hinting the row is tappable to restore.
             Image(systemName: "arrow.counterclockwise")
                 .font(AppTypography.bodySmall)
                 .foregroundStyle(AppColors.accent)
+                .accessibilityHidden(true)
         }
         .contentShape(Rectangle())
         .onTapGesture {
@@ -42,8 +43,13 @@ struct BackupRowView: View {
         }
     }
 
-    private var metadataLine: String {
-        String(format: String(localized: "settings.cloud.backupMetadata"),
-               metadata.accountCount, metadata.transactionCount, metadata.formattedFileSize)
+    /// "3 accounts · 1,240 transactions · 2.1 MB": the counts in their plural forms, the dots
+    /// and the stacking at large text sizes are MetaLine's.
+    private var metadataItems: [MetaItem] {
+        [
+            .text(String(format: NSLocalizedString("finances.accounts.count", comment: "Count with plural forms in Localizable.stringsdict"), metadata.accountCount)),
+            .text(String(format: NSLocalizedString("history.count", comment: "Transaction count"), metadata.transactionCount)),
+            .text(metadata.formattedFileSize)
+        ]
     }
 }

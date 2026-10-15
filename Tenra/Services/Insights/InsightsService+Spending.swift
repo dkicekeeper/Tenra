@@ -646,7 +646,7 @@ extension InsightsService {
             id: "large_tx_\(candidate.tx.id)",
             type: .largeTransaction,
             title: String(localized: "insights.largeTransaction"),
-            subtitle: name + " — " + dateLabel,
+            subtitle: String(format: String(localized: "insights.pairFormat"), name, dateLabel),
             metric: InsightMetric(
                 value: candidate.amountBase,
                 formattedValue: Formatting.formatCurrencySmart(candidate.amountBase, currency: baseCurrency),

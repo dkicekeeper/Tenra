@@ -1269,7 +1269,6 @@
 "settings.cloud.delete" = "삭제";
 "settings.cloud.storage" = "저장 공간";
 "settings.cloud.storageUsed" = "%@ / %@";
-"settings.cloud.backupMetadata" = "계좌 %d개 · 거래 %d건 · %@";
 "settings.cloud.iCloud.toggle" = "iCloud에 백업 저장";
 "settings.cloud.iCloud.footer" = "백업은 iCloud에 저장되며 파일 앱에는 표시되지 않고 다른 기기의 Tenra에서 사용할 수 있습니다.";
 "settings.cloud.iCloud.unavailable" = "iCloud Drive에 백업을 저장하려면 설정에서 iCloud에 로그인하세요.";
@@ -1390,6 +1389,8 @@
 "insights.chart.line" = "선";
 "insights.chart.bar" = "막대";
 "insights.today" = "오늘";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@, %2$@";
 "insights.empty.title" = "아직 데이터가 없어요";
 "insights.empty.subtitle" = "거래 내역이 쌓이면 그래프가 나타나요";
 
@@ -1988,6 +1989,7 @@
 "goal.account.none" = "계좌 없음";
 "goal.account.hint" = "계좌를 고르면 그 잔액으로 진행 상황을 보여줘요. 계좌가 없으면 모은 금액을 직접 기록해요.";
 "goal.alreadySaved" = "이미 모은 금액";
+"goal.savedShare" = "모은 금액";
 "goal.target" = "목표 금액";
 "goal.left" = "남은 금액";
 "goal.leftAmount" = "%@ 남음";

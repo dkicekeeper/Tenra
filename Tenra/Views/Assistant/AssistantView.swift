@@ -305,6 +305,7 @@ struct AssistantView: View {
                             thread.title,
                             meta: [MetaLine([.text(thread.updatedAt.formatted(.relative(presentation: .named)))])],
                             leading: .symbol("bubble.left.and.text.bubble.right"),
+                            style: .large,
                             titleLineLimit: 1
                         ) {
                             DisclosureChevron()

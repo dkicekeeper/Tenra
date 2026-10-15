@@ -50,12 +50,9 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
                     config: .settings,
                     leadingIcon: .sfSymbol("dollarsign.circle",
                                            color: AppColors.accent,
-                                           size: AppIconSize.md)
+                                           size: AppIconSize.md),
+                    title: String(localized: "settings.baseCurrency")
                 ) {
-                    Text(String(localized: "settings.baseCurrency"))
-                        .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textPrimary)
-                } trailing: {
                     HStack(spacing: AppSpacing.sm) {
                         Text(Formatting.currencySymbol(for: selectedCurrency))
                             .font(AppTypography.body)
@@ -75,12 +72,22 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
                 backgroundDestination
             }
 
-            NavigationPickerRow(
-                icon: "waveform",
-                title: String(localized: "settings.voiceLanguage"),
-                selection: $voiceLanguage,
-                options: voiceLanguageOptions
-            )
+            // A settings row like the base currency's: NavigationPickerRow is a form-card row
+            // (its own padding, a larger icon and chevron) and does not belong in this List.
+            NavigationLink {
+                VoiceLanguagePickerView(selection: $voiceLanguage, options: voiceLanguageOptions)
+            } label: {
+                UniversalRow(
+                    config: .settings,
+                    leadingIcon: .sfSymbol("waveform", color: AppColors.accent, size: AppIconSize.md),
+                    title: String(localized: "settings.voiceLanguage")
+                ) {
+                    Text(voiceLanguageOptions.first { $0.value == voiceLanguage }?.label ?? "")
+                        .font(AppTypography.bodySmall)
+                        .foregroundStyle(AppColors.textSecondary)
+                        .lineLimit(1)
+                }
+            }
         }
     }
 

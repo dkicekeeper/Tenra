@@ -12,6 +12,9 @@ import SwiftUI
 struct InsightsCardView<BottomChart: View>: View {
     let insight: Insight
 
+    /// An insight whose subtitle carries an amount shows "••••" while amounts are hidden.
+    @Environment(\.amountsHidden) private var amountsHidden
+
     @ViewBuilder private let bottomChartContent: () -> BottomChart
 
     // MARK: - Init (backward compatible — no embedded chart)
@@ -83,7 +86,7 @@ struct InsightsCardView<BottomChart: View>: View {
             // Full-size chart, injected via init(insight:bottomChart:), replaces the mini chart.
             MetricCard(
                 title: insight.title,
-                subtitle: insight.subtitle,
+                subtitle: insight.subtitle(amountsHidden: amountsHidden),
                 value: value,
                 unit: insight.metric.unit,
                 trend: trend,
@@ -93,7 +96,7 @@ struct InsightsCardView<BottomChart: View>: View {
         } else if hasMiniChart {
             MetricCard(
                 title: insight.title,
-                subtitle: insight.subtitle,
+                subtitle: insight.subtitle(amountsHidden: amountsHidden),
                 value: value,
                 unit: insight.metric.unit,
                 trend: trend
@@ -104,7 +107,7 @@ struct InsightsCardView<BottomChart: View>: View {
             // No mini chart for this insight: the text takes the full card width.
             MetricCard(
                 title: insight.title,
-                subtitle: insight.subtitle,
+                subtitle: insight.subtitle(amountsHidden: amountsHidden),
                 value: value,
                 unit: insight.metric.unit,
                 trend: trend

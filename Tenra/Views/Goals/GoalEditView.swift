@@ -75,7 +75,7 @@ struct GoalEditView: View {
                         header: String(localized: "goal.account"),
                         footer: String(localized: "goal.account.hint")
                     ) {
-                        MenuPickerRow(
+                        NavigationPickerRow(
                             icon: "building.columns",
                             title: String(localized: "goal.account"),
                             selection: $linkedAccountId,

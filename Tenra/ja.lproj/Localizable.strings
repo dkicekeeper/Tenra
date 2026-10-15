@@ -1269,7 +1269,6 @@
 "settings.cloud.delete" = "削除";
 "settings.cloud.storage" = "ストレージ";
 "settings.cloud.storageUsed" = "%@ / %@";
-"settings.cloud.backupMetadata" = "%d口座 · %d件の取引 · %@";
 "settings.cloud.iCloud.toggle" = "iCloudにバックアップを保存";
 "settings.cloud.iCloud.footer" = "バックアップはiCloudに保存され、「ファイル」アプリには表示されず、他のデバイスのTenraで利用できます。";
 "settings.cloud.iCloud.unavailable" = "iCloud Driveにバックアップを保存するには、設定でiCloudにサインインしてください。";
@@ -1390,6 +1389,8 @@
 "insights.chart.line" = "折れ線";
 "insights.chart.bar" = "棒";
 "insights.today" = "今日";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@、%2$@";
 "insights.empty.title" = "まだデータがありません";
 "insights.empty.subtitle" = "取引の履歴がたまると、グラフが表示されます";
 
@@ -1988,6 +1989,7 @@
 "goal.account.none" = "口座なし";
 "goal.account.hint" = "口座を選ぶと、その残高で進み具合がわかります。口座なしなら、貯めた分を自分で記録します。";
 "goal.alreadySaved" = "すでに貯めた金額";
+"goal.savedShare" = "貯金済み";
 "goal.target" = "目標額";
 "goal.left" = "残り";
 "goal.leftAmount" = "残り%@";

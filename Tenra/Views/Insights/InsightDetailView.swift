@@ -22,6 +22,9 @@ struct InsightDetailView<CategoryDestination: View>: View {
 
     private var logger: Logger { Logger(subsystem: "Tenra", category: "InsightDetailView") }
 
+    /// The savings rate's subtitle carries the saved amount: "••••" while amounts are hidden.
+    @Environment(\.amountsHidden) private var amountsHidden
+
     // MARK: - Init (with drill-down)
     init(
         insight: Insight,
@@ -100,7 +103,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
             SavingsRateHeroCard(
                 rate: insight.metric.value,
                 color: insight.severity.color,
-                subtitle: insight.subtitle,
+                subtitle: insight.subtitle(amountsHidden: amountsHidden),
                 entranceDelay: Self.heroEntranceDelay
             )
         case (.largeTransaction, .halfGauge(let amount, let usual, _)?):

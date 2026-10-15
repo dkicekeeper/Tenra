@@ -3,8 +3,11 @@
 //  Tenra
 //
 //  The Debts card in Finances (docs/domains/goals-and-debts.md): what others owe the person
-//  and what the person owes, in the base currency, and how many debts are open. Debts are a
-//  Tenra Pro feature; the card shows them either way, adding one goes through the paywall.
+//  and what the person owes, in the base currency (RedactableAmount: hidden with the other
+//  amounts, a skeleton until the store loads), how many debts are open, and the open debts on
+//  the shelf like every Finances card (green arrows owed to the person, red ones owed by them,
+//  sized by what is left in the base currency). Debts are a Tenra Pro feature; the card shows
+//  them either way, adding one goes through the paywall.
 //
 
 import SwiftUI
@@ -17,7 +20,8 @@ struct DebtsCardView: View {
     let ratesVersion: Int
 
     var body: some View {
-        let openCount = debtStore.open(.owedToMe).count + debtStore.open(.iOwe).count
+        let open = debtStore.open(.owedToMe) + debtStore.open(.iOwe)
+        let openCount = open.count
         FinanceCard(
             title: String(localized: "finances.debts.title"),
             isEmpty: debtStore.debts.isEmpty,
@@ -29,7 +33,17 @@ struct DebtsCardView: View {
                 totalLine(String(localized: "finances.debts.iOwe"), amount: debtStore.total(.iOwe, in: baseCurrency))
             }
         } trailing: {
-            EmptyView()
+            PackedCircleIcons(
+                items: open.map { debt in
+                    PackedCircleItem(
+                        id: debt.id,
+                        iconSource: debt.iconSource,
+                        amount: CurrencyConverter.convertSync(amount: debt.remaining, from: debt.currency, to: baseCurrency) ?? debt.remaining,
+                        tint: debt.direction == .owedToMe ? AppColors.income : AppColors.destructive
+                    )
+                },
+                style: .shelf
+            )
         }
     }
 
@@ -38,13 +52,7 @@ struct DebtsCardView: View {
             Text(title)
                 .font(AppTypography.bodySmall)
                 .foregroundStyle(AppColors.textSecondary)
-            FormattedAmountText(
-                amount: amount,
-                currency: baseCurrency,
-                fontSize: AppTypography.h4,
-                fontWeight: .semibold,
-                color: AppColors.textPrimary
-            )
+            RedactableAmount(amount: amount, currency: baseCurrency, isLoading: !debtStore.isLoaded, fontSize: AppTypography.h4)
         }
     }
 }

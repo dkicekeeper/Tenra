@@ -626,7 +626,7 @@ struct ScreenshotDemoLexicon {
                          lunch: "Comida", coffee: "Café", supermarket: "Soriana",
                          taxi: "DiDi", delivery: "Rappi", gym: "Gimnasio",
                          savingsTransfer: "Ahorro",
-                         voiceDemoPhrase: "Gasté 200 pesos en el súper",
+                         voiceDemoPhrase: "Gasté 200 pesos en el supermercado",
                          tenReply: "Así se repartió tu dinero este mes, por categorías.",
                          goalTrip: "Vacaciones", goalPhone: "Celular nuevo", goalBike: "Bici",
                          debtFriend: "Diego", debtFamily: "Mamá")
@@ -637,7 +637,7 @@ struct ScreenshotDemoLexicon {
                          lunch: "Almuerzo", coffee: "Café", supermarket: "Mercadona",
                          taxi: "Uber", delivery: "Glovo", gym: "Gimnasio",
                          savingsTransfer: "Ahorro",
-                         voiceDemoPhrase: "Gasté 12 euros en el súper",
+                         voiceDemoPhrase: "Gasté 12 euros en el supermercado",
                          tenReply: "Así se repartió tu dinero este mes, por categorías.",
                          goalTrip: "Vacaciones", goalPhone: "Móvil nuevo", goalBike: "Bici",
                          debtFriend: "Javier", debtFamily: "Mamá")
@@ -648,7 +648,7 @@ struct ScreenshotDemoLexicon {
                          lunch: "Déjeuner", coffee: "Café", supermarket: "Carrefour",
                          taxi: "Uber", delivery: "Uber Eats", gym: "Salle de sport",
                          savingsTransfer: "Épargne",
-                         voiceDemoPhrase: isCA ? "12 dollars d'épicerie hier" : "12 euros de courses hier",
+                         voiceDemoPhrase: isCA ? "Payé 12 pour les courses hier" : "12 euros de courses hier",
                          tenReply: "Voici où est parti votre argent ce mois-ci, par catégorie.",
                          goalTrip: "Vacances", goalPhone: "Nouveau téléphone", goalBike: "Vélo",
                          debtFriend: "Julien", debtFamily: "Maman")

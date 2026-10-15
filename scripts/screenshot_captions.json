@@ -1,5 +1,5 @@
 {
-  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts. At most 10 frames per locale go to the store. Custom product page frames (ru, en-US, fr-FR only): subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans; the pages and their frame order are in appstore/product-pages.json.",
+  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first; ja and ko leave out the voice draft, whose category and amount the parser does not read in those languages yet, and show insights). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts. At most 10 frames per locale go to the store. Custom product page frames (ru, en-US, fr-FR only): subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans; the pages and their frame order are in appstore/product-pages.json.",
   "defaultOrder": ["ten", "draft", "home", "finances", "goal", "debts", "score", "topcat", "history", "fx"],
   "locales": {
     "de-DE": {
@@ -152,6 +152,7 @@
       }
     },
     "ja": {
+      "order": ["ten", "home", "finances", "goal", "debts", "score", "topcat", "history", "fx", "insights"],
       "frames": {
         "home":     { "title": "カテゴリごとに\n予算を管理", "subtitle": "今月の予算・支出・残りが、\nホーム画面でひと目でわかる" },
         "finances": { "title": "すべてのお金を\nこれひとつで", "subtitle": "口座・定期預金・サブスク・\nローンも、銀行連携なしで" },
@@ -168,6 +169,7 @@
       }
     },
     "ko": {
+      "order": ["ten", "home", "finances", "goal", "debts", "score", "topcat", "history", "fx", "insights"],
       "frames": {
         "home":     { "title": "카테고리별 예산이\n한눈에", "subtitle": "한 달 한도, 지출, 남은 금액을 홈 화면에서 바로 확인해요" },
         "finances": { "title": "모든 자산을 한곳에서", "subtitle": "계좌, 예금, 구독, 대출을 은행 연동 없이 관리해요" },

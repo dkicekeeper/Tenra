@@ -32,14 +32,7 @@ with the commit of every fix, are in
   `recalculateBalances(for:)` with the touched accounts would do.
 
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
-- **Ten's timeline charts** (`AssistantChartCard`): spending by month or week shows as
-  breakdown rows with the period as the title, the accent colour on every row. A timeline reads
-  better as DesignKit's `BarChart` (or a `Sparkline` above the rows); a donut is already skipped
-  for it.
-- **Overdue goal on its card:** `GoalCard` shows nothing when a goal's deadline has passed
-  (the detail's info row and Ten's notice do). A badge would change the shipped card: owner's
-  call.
-- **DesignKit candidates** (generic views still in Tenra): `MoneyEntrySheet` (as a neutral
+- **DesignKit candidates** (generic views still in Tenra; the owner approved porting them all on 2026-10-15, in progress): `MoneyEntrySheet` (as a neutral
   amount-entry sheet), `AssistantCard` (a titled list card), `AssistantNoticeCard` (a notice with
   an action and a hide button), the voice sheet's stop orb, a `NavigationPickerRow` that takes a
   row configuration (Settings' voice language uses its own `CheckmarkRow` list today), the

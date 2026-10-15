@@ -64,7 +64,7 @@ people and has no account.
 | Screen | File |
 |---|---|
 | Finances cards | `Views/Components/Cards/GoalsCardView.swift`, `DebtsCardView.swift` (after Loans): totals in `RedactableAmount` (hidden with the other amounts, a skeleton until the store loads), the open items on the `PackedCircleIcons(style: .shelf)` like every Finances card (debts: green owed to the person, red owed by them, sized by what is left in the base currency) |
-| List rows | `GoalCard`, `DebtCard`: adapters over DesignKit's `PayoffProgressCard`, as `LoanCard` (a debt's note on one line) |
+| List rows | `GoalCard`, `DebtCard`: adapters over DesignKit's `PayoffProgressCard`, as `LoanCard` (a debt's note on one line); past its deadline or due date a goal or a debt carries a red `Badge`, and an overdue goal's footer says what is left |
 | Lists | `Views/Goals/GoalsListView.swift`, `Views/Debts/DebtsListView.swift`: three `PayoffProgressCardSkeleton` until the store loads, then the list or the empty state with `.skeletonReveal` |
 | Details | `GoalDetailView`, `DebtDetailView` on `EntityDetailScaffold`: hero with progress ("label · NN%", `.heroAccentGlow` from the item's icon), actions, info rows, history in one card of `HistoryEntryRow` (`Views/Components/Rows/`, an adapter over `AmountRow`; long press deletes an entry, which leaves with `DissolveTransition`). Reaching a goal or settling a debt plays `.celebration(playsHaptic: false)`: the save already gave its haptic |
 | Edit | `GoalEditView` (hero with icon, name, target and currency; deadline; account, or none with "already saved"), `DebtEditView` (direction, amount, who, date, due date, note) |

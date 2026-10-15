@@ -72,22 +72,14 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
                 backgroundDestination
             }
 
-            // A settings row like the base currency's: NavigationPickerRow is a form-card row
-            // (its own padding, a larger icon and chevron) and does not belong in this List.
-            NavigationLink {
-                VoiceLanguagePickerView(selection: $voiceLanguage, options: voiceLanguageOptions)
-            } label: {
-                UniversalRow(
-                    config: .settings,
-                    leadingIcon: .sfSymbol("waveform", color: AppColors.accent, size: AppIconSize.md),
-                    title: String(localized: "settings.voiceLanguage")
-                ) {
-                    Text(voiceLanguageOptions.first { $0.value == voiceLanguage }?.label ?? "")
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
-                        .lineLimit(1)
-                }
-            }
+            // DesignKit's list row (4.14.0): the settings row, its value and the list it pushes.
+            NavigationPickerRow(
+                icon: "waveform",
+                title: String(localized: "settings.voiceLanguage"),
+                selection: $voiceLanguage,
+                options: voiceLanguageOptions,
+                style: .list
+            )
         }
     }
 

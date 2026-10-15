@@ -2,9 +2,10 @@
 //  AssistantNoticeCard.swift
 //  Tenra
 //
-//  A message Ten wrote first (AssistantInbox): the mascot in the message's mood, its title and
-//  text, "Go through it" (a question to the assistant, which spends a free answer) and a button
-//  that hides it. Shown on Home while unread (AssistantNoticesSection), never in the chat.
+//  A message Ten wrote first (AssistantInbox): an adapter over DesignKit's NoticeCard (4.14.0),
+//  the mascot in the message's mood, its title and text, "Go through it" (a question to the
+//  assistant, which spends a free answer) and a button that hides it. Shown on Home while
+//  unread (AssistantNoticesSection), never in the chat.
 //
 
 import SwiftUI
@@ -15,33 +16,19 @@ struct AssistantNoticeCard: View {
     let onHide: () -> Void
 
     var body: some View {
-        AssistantCard(title: nil) {
-            HStack(alignment: .top, spacing: AppSpacing.md) {
-                ParticleCreature(mood: notice.mood.creatureMood, style: .compact)
-                    .frame(width: AssistantMetrics.headerMascot, height: AssistantMetrics.headerMascot)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                    Text(notice.title)
-                        .font(AppTypography.bodyEmphasis)
-                        .foregroundStyle(AppColors.Text.primary)
-                    Text(notice.body)
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.Text.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                DSButton(
-                    String(localized: "assistant.notice.hide"),
-                    systemImage: "xmark",
-                    iconPlacement: .only,
-                    appearance: .flat,
-                    role: .neutral,
-                    size: .small,
-                    action: onHide
-                )
-            }
-            DSButton(String(localized: "assistant.notice.goThrough"), systemImage: "sparkles", appearance: .flat, size: .small, action: onAsk)
+        NoticeCard(
+            title: notice.title,
+            message: notice.body,
+            actionTitle: String(localized: "assistant.notice.goThrough"),
+            actionSystemImage: "sparkles",
+            action: onAsk,
+            hideLabel: String(localized: "assistant.notice.hide"),
+            onHide: onHide
+        ) {
+            ParticleCreature(mood: notice.mood.creatureMood, style: .compact)
+                .frame(width: AssistantMetrics.headerMascot, height: AssistantMetrics.headerMascot)
+                .accessibilityHidden(true)
         }
-        .accessibilityElement(children: .contain)
     }
 }
 

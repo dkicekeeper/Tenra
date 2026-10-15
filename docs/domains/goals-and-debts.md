@@ -68,7 +68,7 @@ people and has no account.
 | Lists | `Views/Goals/GoalsListView.swift`, `Views/Debts/DebtsListView.swift`: three `PayoffProgressCardSkeleton` until the store loads, then the list or the empty state with `.skeletonReveal` |
 | Details | `GoalDetailView`, `DebtDetailView` on `EntityDetailScaffold`: hero with progress ("label · NN%", `.heroAccentGlow` from the item's icon), actions, info rows, history in one card of `HistoryEntryRow` (`Views/Components/Rows/`, an adapter over `AmountRow`; long press deletes an entry, which leaves with `DissolveTransition`). Reaching a goal or settling a debt plays `.celebration(playsHaptic: false)`: the save already gave its haptic |
 | Edit | `GoalEditView` (hero with icon, name, target and currency; deadline; account, or none with "already saved"), `DebtEditView` (direction, amount, who, date, due date, note) |
-| Money in | `Views/Components/Forms/MoneyEntrySheet.swift`: a contribution or a repayment, laid out as `LoanPaymentView` (calculator keypad, note, date buttons); another currency converts to the goal's or debt's on save |
+| Money in | `Views/Components/Forms/MoneyEntrySheet.swift`, an adapter over DesignKit's `AmountEntrySheet` (4.14.0): a contribution or a repayment, laid out as `LoanPaymentView` (calculator keypad, note, date buttons); another currency converts to the goal's or debt's on save |
 
 Navigation goes through `FinancesDestination` (`.goals`, `.goalDetail(id)`, `.debts`,
 `.debtDetail(id)`).

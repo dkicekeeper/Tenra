@@ -216,20 +216,22 @@ private struct AssistantChartCard: View {
         return group.label
     }
 
-    /// Each group as a breakdown item: a category keeps its own icon and colour, a merchant
+    /// Each group as a breakdown item: a category keeps its own icon and colour, a loan payment
+    /// or deposit interest (no `CustomCategory`) the system style Insights gives them, a merchant
     /// takes the accent.
     private var items: [CategoryBreakdownItem] {
         let categories = coordinator.transactionStore.categories
         let total = chart.groups.reduce(0) { $0 + max($1.value, 0) }
         return chart.groups.map { group in
             let category = categories.first { $0.id == group.id }
+            let synthetic = category == nil ? InsightsService.syntheticCategoryStyle(for: group.id) : nil
             return CategoryBreakdownItem(
                 id: group.id,
                 categoryName: category?.name ?? periodLabel(group),
                 amount: group.value,
                 percentage: total > 0 ? group.value / total * 100 : 0,
-                color: category.map { Color(hex: $0.colorHex) } ?? AppColors.accent,
-                iconSource: category?.iconSource,
+                color: category.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? AppColors.accent,
+                iconSource: category?.iconSource ?? synthetic?.icon,
                 subcategories: []
             )
         }

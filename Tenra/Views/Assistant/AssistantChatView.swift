@@ -133,9 +133,11 @@ struct AssistantChatView: View {
         .scrollDismissesKeyboard(.interactively)
         // A tap anywhere on the thread puts the keyboard away (buttons still work).
         .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
-        // Under the navigation bar and Ten the thread blurs and dims progressively: the system's
-        // soft edge plus Ten's own backing (mascotBar's EdgeBackdrop), not a solid plate.
-        .scrollEdgeEffectStyle(.soft, for: .top)
+        // Under the navigation bar and Ten the thread blurs and dims progressively: Ten's own
+        // backing (mascotBar's EdgeBackdrop), not a solid plate. The system's edge effect stays
+        // off there: while it is on, the backing is not drawn and the thread fades into a dark
+        // plate under Ten (DesignKit 5.0, the edgeBackdropUnderBar snapshots).
+        .scrollEdgeEffectHidden(true, for: .top)
         .safeAreaBar(edge: .top) { mascotBar }
         .safeAreaBar(edge: .bottom) {
             AssistantComposerBar(

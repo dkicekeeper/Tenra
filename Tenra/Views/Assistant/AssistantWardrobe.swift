@@ -118,10 +118,10 @@ enum AssistantWardrobe {
 }
 
 /// Ten's wardrobe, from the assistant's home (the owner's review on a device): Ten trying on the
-/// accessory in the middle of a carousel under it, its name and what opens it, then the
-/// carousel. Scrolling puts an open accessory on at once and only tries a locked one on. The
-/// condition sits under Ten, not on a card, so a long one wraps in full; the cards are all one
-/// size (Ten, room for a two-line name, a lock when closed).
+/// accessory in the middle of DesignKit's PickerCarousel (4.13.0) under it, its name and what
+/// opens it, then the cards. Scrolling puts an open accessory on at once and only tries a locked
+/// one on. The cards are all one size (Ten, still, with room for a two-line name, a lock when
+/// closed).
 struct AssistantWardrobeView: View {
     @Environment(AppCoordinator.self) private var coordinator
     @AppStorage(AssistantWardrobe.choiceKey) private var choice = ""
@@ -129,9 +129,17 @@ struct AssistantWardrobeView: View {
     @AppStorage(AppStreak.bestKey) private var bestStreak = 0
     /// The card in the middle of the carousel, by `key(_:)`; it starts on what Ten wears.
     @State private var focused: String?
-    @State private var carouselWidth: CGFloat = 0
 
-    private let options: [CreatureAccessory?] = [nil] + CreatureAccessory.allCases
+    /// An accessory, or none, as a card of the carousel.
+    private struct Option: Identifiable {
+        let accessory: CreatureAccessory?
+        var id: String { AssistantWardrobeView.key(accessory) }
+    }
+
+    private let options: [Option] = {
+        let all: [CreatureAccessory?] = [nil] + CreatureAccessory.allCases
+        return all.map { Option(accessory: $0) }
+    }()
 
     init() {
         let worn = UserDefaults.standard.string(forKey: AssistantWardrobe.choiceKey) ?? ""
@@ -139,7 +147,7 @@ struct AssistantWardrobeView: View {
     }
 
     /// A card's id in the carousel, and back.
-    private static func key(_ accessory: CreatureAccessory?) -> String {
+    fileprivate static func key(_ accessory: CreatureAccessory?) -> String {
         accessory?.rawValue ?? "none"
     }
 
@@ -157,10 +165,19 @@ struct AssistantWardrobeView: View {
                     .frame(width: WardrobeMetrics.preview, height: WardrobeMetrics.preview)
                     .frame(maxWidth: .infinity)
 
-                details
-                    .padding(.horizontal, AppSpacing.lg)
-
-                carousel
+                PickerCarousel(
+                    items: options,
+                    focused: $focused,
+                    chosen: Self.key(CreatureAccessory(rawValue: choice)),
+                    title: { AssistantWardrobe.name($0.accessory) },
+                    condition: { option in
+                        guard let accessory = option.accessory, !isOpen(accessory) else { return nil }
+                        return AssistantWardrobe.condition(accessory)
+                    },
+                    lockedLabel: String(localized: "assistant.wardrobe.locked")
+                ) { option in
+                    ParticleCreature(mood: option.accessory == .sleepMask ? .asleep : .idle, accessory: option.accessory)
+                }
 
                 Text(String(localized: "assistant.wardrobe.footer"))
                     .font(AppTypography.bodySmall)
@@ -179,105 +196,6 @@ struct AssistantWardrobeView: View {
             let accessory = Self.accessory(key)
             if isOpen(accessory) { choice = accessory?.rawValue ?? "" }
         }
-    }
-
-    /// The name of what Ten tries on and, when it is locked, what opens it: large, in the
-    /// accent, wrapping in full however long it is. Two lines are kept for it, so a short one
-    /// does not move the carousel.
-    private var details: some View {
-        VStack(spacing: AppSpacing.xs) {
-            Text(AssistantWardrobe.name(tryingOn))
-                .font(AppTypography.h4)
-                .foregroundStyle(AppColors.Text.primary)
-                .multilineTextAlignment(.center)
-            ZStack(alignment: .top) {
-                Self.reservedLines(WardrobeMetrics.lines, font: AppTypography.bodyEmphasis)
-                if let tryingOn, !isOpen(tryingOn) {
-                    Label(AssistantWardrobe.condition(tryingOn), systemImage: "lock.fill")
-                        .font(AppTypography.bodyEmphasis)
-                        .foregroundStyle(AppColors.accent)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
-    }
-
-    /// The cards side by side, the one in the middle full size, the others a little smaller
-    /// and paler.
-    private var carousel: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: AppSpacing.md) {
-                ForEach(options, id: \.self) { option in
-                    card(option)
-                        .id(Self.key(option))
-                        .scrollTransition(.interactive, axis: .horizontal) { content, phase in
-                            content
-                                .scaleEffect(phase.isIdentity ? 1 : WardrobeMetrics.sideScale)
-                                .opacity(phase.isIdentity ? 1 : WardrobeMetrics.sideOpacity)
-                        }
-                }
-            }
-            .scrollTargetLayout()
-        }
-        .contentMargins(.horizontal, max(0, (carouselWidth - WardrobeMetrics.cardWidth) / 2), for: .scrollContent)
-        .scrollTargetBehavior(.viewAligned)
-        .scrollPosition(id: $focused, anchor: .center)
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { carouselWidth = $0 }
-    }
-
-    private func card(_ option: CreatureAccessory?) -> some View {
-        let isWorn = (option?.rawValue ?? "") == choice
-        let isOpen = isOpen(option)
-        return Button {
-            withAnimation(AppAnimation.contentSpring) { focused = Self.key(option) }
-        } label: {
-            VStack(spacing: AppSpacing.sm) {
-                ParticleCreature(mood: option == .sleepMask ? .asleep : .idle, accessory: option)
-                    .frame(width: WardrobeMetrics.cardMascot, height: WardrobeMetrics.cardMascot)
-                    .designKitMotion(false)
-                    .opacity(isOpen ? 1 : WardrobeMetrics.lockedOpacity)
-                ZStack(alignment: .top) {
-                    Self.reservedLines(WardrobeMetrics.lines, font: AppTypography.bodyEmphasis)
-                    Text(AssistantWardrobe.name(option))
-                        .font(AppTypography.bodyEmphasis)
-                        .foregroundStyle(isWorn ? AppColors.accent : AppColors.Text.primary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(WardrobeMetrics.lines)
-                }
-            }
-            .padding(AppSpacing.md)
-            .frame(width: WardrobeMetrics.cardWidth)
-            .background(RoundedRectangle(cornerRadius: AppRadius.lg).fill(AppColors.Background.elevation1))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppRadius.lg)
-                    .stroke(isWorn ? AppColors.accent : Color.clear, lineWidth: WardrobeMetrics.outline)
-            )
-            .overlay(alignment: .topTrailing) {
-                if !isOpen {
-                    Image(systemName: "lock.fill")
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.Text.secondary)
-                        .padding(AppSpacing.sm)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(AssistantWardrobe.name(option))
-        .accessibilityValue(option.map { isOpen ? "" : String(localized: "assistant.wardrobe.locked") + ", " + AssistantWardrobe.condition($0) } ?? "")
-        .accessibilityAddTraits(isWorn ? [.isButton, .isSelected] : .isButton)
-    }
-
-    /// Room for `count` lines of `font`, empty: the text over it never makes its box taller or
-    /// shorter than that.
-    private static func reservedLines(_ count: Int, font: Font) -> some View {
-        Text(verbatim: Array(repeating: " ", count: count).joined(separator: "\n"))
-            .font(font)
-            .hidden()
-            .accessibilityHidden(true)
     }
 
     /// What is open: what was opened before, the person's choice (kept open), and what the
@@ -307,19 +225,8 @@ struct AssistantWardrobeView: View {
 }
 
 private enum WardrobeMetrics {
-    /// Ten trying on, and Ten on each card.
+    /// Ten trying on, above the carousel.
     static let preview: CGFloat = 200
-    static let cardMascot: CGFloat = 96
-    /// A card's width; two lines kept for its name and for the condition under Ten.
-    static let cardWidth: CGFloat = 150
-    static let lines = 2
-    /// The cards beside the middle one.
-    static let sideScale: CGFloat = 0.9
-    static let sideOpacity: Double = 0.75
-    /// The worn card's outline.
-    static let outline: CGFloat = 2
-    /// Ten in a locked accessory on its card.
-    static let lockedOpacity: Double = 0.4
 }
 
 #Preview {

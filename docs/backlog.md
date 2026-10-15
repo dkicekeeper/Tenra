@@ -32,11 +32,6 @@ with the commit of every fix, are in
   `recalculateBalances(for:)` with the touched accounts would do.
 
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
-- **DesignKit candidates** (generic views still in Tenra; the owner approved porting them all on 2026-10-15, in progress): `MoneyEntrySheet` (as a neutral
-  amount-entry sheet), `AssistantCard` (a titled list card), `AssistantNoticeCard` (a notice with
-  an action and a hide button), the voice sheet's stop orb, a `NavigationPickerRow` that takes a
-  row configuration (Settings' voice language uses its own `CheckmarkRow` list today), the
-  wardrobe's tile and carousel, the creature thumbnail. A DesignKit round each, pixel-identical.
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
   hold rules and data, no views: they belong in `Services/Agent/`, as does the catalogue half
   of `AssistantWardrobe`. Move once the wardrobe settles (another session is iterating on it).

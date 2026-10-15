@@ -152,7 +152,7 @@ private struct AssistantChartCard: View {
     private static let rowLimit = 6
 
     var body: some View {
-        AssistantCard(title: title) {
+        ListCard(title: title) {
             if chart.isTimeline {
                 timeline
             } else {
@@ -262,7 +262,7 @@ private struct AssistantTransactionsCard: View {
         let store = coordinator.transactionStore
         let transactions = ids.prefix(Self.rowLimit).compactMap { store.transactionById[$0] }
         if !transactions.isEmpty {
-            AssistantCard(title: title) {
+            ListCard(title: title) {
                 ForEach(transactions) { transaction in
                     TransactionCardView(
                         transaction: transaction,
@@ -388,7 +388,7 @@ private struct AssistantForecastCard: View {
                     .accessibilityLabel(String(localized: "assistant.forecast.balance"))
             }
             if !forecast.obligations.isEmpty {
-                AssistantCard(title: String(format: String(localized: "assistant.forecast.obligations"), untilText)) {
+                ListCard(title: String(format: String(localized: "assistant.forecast.obligations"), untilText)) {
                     ForEach(Array(forecast.obligations.prefix(Self.obligationLimit).enumerated()), id: \.offset) { _, obligation in
                         InfoRow(label: label(obligation), amount: obligation.amount, currency: forecast.currency)
                     }
@@ -435,7 +435,7 @@ private struct AssistantDraftCard: View {
     var body: some View {
         let store = coordinator.transactionStore
         let state = book.states[draft.id] ?? .pending
-        AssistantCard(title: nil) {
+        ListCard {
             ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
                 if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
                     let row = TransactionCardView(
@@ -749,27 +749,5 @@ private struct AssistantOpenLink: View {
             .cardStyle()
         }
         .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Container
-
-/// Rows in a card under an optional header, as the insight detail lists lay them out.
-struct AssistantCard<Rows: View>: View {
-    let title: String?
-    @ViewBuilder let rows: () -> Rows
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            if let title, !title.isEmpty {
-                SectionHeader(title)
-            }
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                rows()
-            }
-            .padding(AppSpacing.lg)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
-        }
     }
 }

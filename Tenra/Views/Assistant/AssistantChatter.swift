@@ -73,11 +73,6 @@ enum AssistantChatter {
                               maxWidth: AssistantMetrics.chatSpeechWidth, duration: .untilChanged, id: turn)
     }
 
-    /// What Ten daydreams of on its home, left alone (DesignKit 4.11): money things and a break.
-    static let daydreams = [
-        "banknote.fill", "chart.bar.fill", "cup.and.saucer.fill", "star.fill", "cart.fill", "airplane",
-    ]
-
     /// A celebrated reply.
     static var cheer: CreatureSpeech {
         CreatureSpeech(String(localized: "assistant.chatter.yay"), emotion: .joy, placement: .trailing,

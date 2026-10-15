@@ -2083,4 +2083,10 @@
 "assistant.wardrobe.glasses" = "Gözlük";
 "assistant.wardrobe.sunglasses" = "Güneş gözlüğü";
 "assistant.wardrobe.sleepMask" = "Uyku maskesi";
-"assistant.wardrobe.footer" = "Bayramlarda Ten kendi giyinir: yılbaşında parti şapkası, Nevruz'da takke, birlikte bir şey kutladığınız gün taç.";
+"assistant.wardrobe.footer" = "Bayramlarda Ten kendi giyinir: yılbaşında parti şapkası, Nevruz'da takke, birlikte bir şey kutladığınız gün taç. Yenileri Tenra'da üst üste günlerle ve hedeflerle açılır.";
+"assistant.wardrobe.lock.streak7" = "Tenra'da 7 gün üst üste";
+"assistant.wardrobe.lock.streak30" = "Tenra'da 30 gün üst üste";
+"assistant.wardrobe.lock.firstGoal" = "Bir hedef oluşturun";
+"assistant.wardrobe.lock.goalReached" = "Bir hedefe ulaşın";
+"assistant.wardrobe.lock.nauryz" = "Nevruz'da açılır";
+"assistant.wardrobe.locked" = "Kilitli";

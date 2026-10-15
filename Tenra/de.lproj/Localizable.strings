@@ -2083,4 +2083,10 @@
 "assistant.wardrobe.glasses" = "Brille";
 "assistant.wardrobe.sunglasses" = "Sonnenbrille";
 "assistant.wardrobe.sleepMask" = "Schlafmaske";
-"assistant.wardrobe.footer" = "An Feiertagen zieht sich Ten selbst an: einen Partyhut zu Neujahr, eine Taqiya zu Nauryz, eine Krone an einem Tag, an dem ihr zusammen feiert.";
+"assistant.wardrobe.footer" = "An Feiertagen zieht sich Ten selbst an: einen Partyhut zu Neujahr, eine Taqiya zu Nauryz, eine Krone an einem Tag, an dem ihr zusammen feiert. Neue öffnen sich durch Tage in Folge in Tenra und durch Ziele.";
+"assistant.wardrobe.lock.streak7" = "7 Tage in Folge in Tenra";
+"assistant.wardrobe.lock.streak30" = "30 Tage in Folge in Tenra";
+"assistant.wardrobe.lock.firstGoal" = "Lege ein Ziel an";
+"assistant.wardrobe.lock.goalReached" = "Erreiche ein Ziel";
+"assistant.wardrobe.lock.nauryz" = "Öffnet sich zu Nauryz";
+"assistant.wardrobe.locked" = "Gesperrt";

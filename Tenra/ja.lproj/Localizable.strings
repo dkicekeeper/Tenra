@@ -2083,4 +2083,10 @@
 "assistant.wardrobe.glasses" = "メガネ";
 "assistant.wardrobe.sunglasses" = "サングラス";
 "assistant.wardrobe.sleepMask" = "アイマスク";
-"assistant.wardrobe.footer" = "祝日にはテンが自分で着替えます。お正月はパーティー帽、ナウルズにはタキヤ、一緒にお祝いした日には王冠。";
+"assistant.wardrobe.footer" = "祝日にはテンが自分で着替えます。お正月はパーティー帽、ナウルズにはタキヤ、一緒にお祝いした日には王冠。新しいアクセサリーはTenraの連続日数と目標で解放されます。";
+"assistant.wardrobe.lock.streak7" = "Tenraを7日連続で開く";
+"assistant.wardrobe.lock.streak30" = "Tenraを30日連続で開く";
+"assistant.wardrobe.lock.firstGoal" = "目標を作成";
+"assistant.wardrobe.lock.goalReached" = "目標を達成";
+"assistant.wardrobe.lock.nauryz" = "ナウルズに解放";
+"assistant.wardrobe.locked" = "ロック中";

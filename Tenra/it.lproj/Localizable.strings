@@ -2083,4 +2083,10 @@
 "assistant.wardrobe.glasses" = "Occhiali";
 "assistant.wardrobe.sunglasses" = "Occhiali da sole";
 "assistant.wardrobe.sleepMask" = "Mascherina per dormire";
-"assistant.wardrobe.footer" = "Nei giorni di festa Ten si veste da solo: un cappellino per Capodanno, una taqiya per Nauryz, una corona nel giorno in cui festeggiate qualcosa insieme.";
+"assistant.wardrobe.footer" = "Nei giorni di festa Ten si veste da solo: un cappellino per Capodanno, una taqiya per Nauryz, una corona nel giorno in cui festeggiate qualcosa insieme. I nuovi si aprono con giorni di fila in Tenra e con gli obiettivi.";
+"assistant.wardrobe.lock.streak7" = "7 giorni di fila in Tenra";
+"assistant.wardrobe.lock.streak30" = "30 giorni di fila in Tenra";
+"assistant.wardrobe.lock.firstGoal" = "Crea un obiettivo";
+"assistant.wardrobe.lock.goalReached" = "Raggiungi un obiettivo";
+"assistant.wardrobe.lock.nauryz" = "Si apre a Nauryz";
+"assistant.wardrobe.locked" = "Bloccato";

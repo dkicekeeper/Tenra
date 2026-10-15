@@ -2083,4 +2083,10 @@
 "assistant.wardrobe.glasses" = "Glasses";
 "assistant.wardrobe.sunglasses" = "Sunglasses";
 "assistant.wardrobe.sleepMask" = "Sleep mask";
-"assistant.wardrobe.footer" = "On holidays Ten dresses up on its own: a party hat for the New Year, a taqiya for Nauryz, a crown on a day you celebrate together.";
+"assistant.wardrobe.footer" = "On holidays Ten dresses up on its own: a party hat for the New Year, a taqiya for Nauryz, a crown on a day you celebrate together. New ones open for days in a row in Tenra and for goals.";
+"assistant.wardrobe.lock.streak7" = "7 days in a row in Tenra";
+"assistant.wardrobe.lock.streak30" = "30 days in a row in Tenra";
+"assistant.wardrobe.lock.firstGoal" = "Create a goal";
+"assistant.wardrobe.lock.goalReached" = "Reach a goal";
+"assistant.wardrobe.lock.nauryz" = "Opens on Nauryz";
+"assistant.wardrobe.locked" = "Locked";

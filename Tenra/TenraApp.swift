@@ -99,6 +99,9 @@ struct TenraApp: App {
                     // Count this foreground as a session for rating-prompt eligibility.
                     RatingPromptService.shared.recordSession()
 
+                    // Days in a row in Tenra: they open Ten's accessories (AppStreak).
+                    AppStreak.record()
+
                     // Re-derive relative time-filter bounds (e.g. .thisMonth) against
                     // the current date. scenePhase fires on both cold launch and
                     // background→foreground, so this covers a new month arriving while

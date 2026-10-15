@@ -2083,4 +2083,10 @@
 "assistant.wardrobe.glasses" = "Окуляри";
 "assistant.wardrobe.sunglasses" = "Сонцезахисні окуляри";
 "assistant.wardrobe.sleepMask" = "Маска для сну";
-"assistant.wardrobe.footer" = "На свята Тен вбирається сам: ковпак на Новий рік, тюбетейка на Наурыз, корона в день, коли ви щось святкували разом.";
+"assistant.wardrobe.footer" = "На свята Тен вбирається сам: ковпак на Новий рік, тюбетейка на Наурыз, корона в день, коли ви щось святкували разом. Нові аксесуари відкриваються за дні поспіль у Tenra і за цілі.";
+"assistant.wardrobe.lock.streak7" = "7 днів поспіль у Tenra";
+"assistant.wardrobe.lock.streak30" = "30 днів поспіль у Tenra";
+"assistant.wardrobe.lock.firstGoal" = "Поставте ціль";
+"assistant.wardrobe.lock.goalReached" = "Досягніть цілі";
+"assistant.wardrobe.lock.nauryz" = "Відкриється на Наурыз";
+"assistant.wardrobe.locked" = "Закрито";

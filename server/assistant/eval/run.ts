@@ -13,7 +13,7 @@ import { readConfig, type Effort } from "../src/config";
 import { RENDER_REPLY, RENDER_REPLY_TOO_EARLY } from "../src/tools";
 import { CASES, type EvalCase } from "./cases";
 import { appContext } from "./fixture";
-import { caseCheck, universalChecks, type CheckResult, type Reply, type RunRecord } from "./grade";
+import { caseCheck, typedByUser, universalChecks, type CheckResult, type Reply, type RunRecord } from "./grade";
 import { addUsage, cost, emptyUsage, estimate, PRICING, type Usage } from "./pricing";
 import { executeTool, resetDrafts, ToolInputError } from "./simulator";
 
@@ -123,7 +123,7 @@ async function runCase(client: Anthropic, model: string, effort: Effort, testCas
     record.error = error instanceof Anthropic.APIError ? `api ${error.status}: ${error.message}` : String(error);
   }
 
-  const checks = [...universalChecks(record, testCase.locale, testCase.prompt), ...testCase.checks.map((c) => caseCheck(record, c))];
+  const checks = [...universalChecks(record, testCase.locale, typedByUser(testCase.prompt, testCase.notes)), ...testCase.checks.map((c) => caseCheck(record, c))];
   return {
     outcome: { model, effort, case: testCase, record, checks, pass: checks.every((c) => c.pass), usage, calls, ms: Date.now() - started },
     transcript: messages,

@@ -33,10 +33,11 @@ struct AssistantMemoryView: View {
                 }
                 .transition(.opacity)
             } else if memory.facts.isEmpty {
-                EmptyState(
+                MascotEmptyState(
                     icon: "brain",
                     title: String(localized: "assistant.memory.emptyTitle"),
-                    description: String(localized: "assistant.memory.emptyMessage")
+                    description: String(localized: "assistant.memory.emptyMessage"),
+                    line: String(localized: "assistant.empty.memory")
                 )
                 .transition(.skeletonReveal)
             } else {

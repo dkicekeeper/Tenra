@@ -40,7 +40,7 @@ struct GoalsListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .transition(.opacity)
             } else if goalStore.goals.isEmpty {
-                EmptyState(
+                MascotEmptyState(
                     icon: "target",
                     title: String(localized: "goal.emptyTitle"),
                     description: String(localized: "goal.emptyDescription"),
@@ -48,7 +48,8 @@ struct GoalsListView: View {
                     action: {
                         HapticManager.light()
                         showingAdd = true
-                    }
+                    },
+                    line: String(localized: "assistant.empty.goals")
                 )
                 .transition(.skeletonReveal)
             } else {

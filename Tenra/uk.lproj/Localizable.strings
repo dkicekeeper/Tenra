@@ -2092,3 +2092,13 @@
 "assistant.wardrobe.lock.goalReached" = "Досягніть цілі";
 "assistant.wardrobe.lock.nauryz" = "Відкриється на Наурыз";
 "assistant.wardrobe.locked" = "Закрито";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "Накопичимо на щось?";
+"assistant.empty.debts" = "Хто кому винен? Запишемо";
+"assistant.empty.subscriptions" = "Додайте підписки, я нагадаю про платежі";
+"assistant.empty.deposits" = "Тут ростимуть ваші вклади";
+"assistant.empty.loans" = "Кредити теж порахую";
+"assistant.empty.accounts" = "Почнемо з рахунку?";
+"assistant.empty.history" = "Поки порожньо. Додамо першу?";
+"assistant.empty.memory" = "Розкажіть про себе, я запам'ятаю";

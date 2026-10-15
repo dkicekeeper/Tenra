@@ -104,13 +104,27 @@ struct HistoryTransactionsList: View {
             }
         }()
 
-        return EmptyState(
-            icon: !debouncedSearchText.isEmpty ? "magnifyingglass" : "doc.text",
-            title: !debouncedSearchText.isEmpty
-                ? String(localized: "emptyState.searchNoResults")
-                : String(localized: "emptyState.noTransactions"),
-            description: emptyMessage
-        )
+        // Nothing at all yet: Ten asks for the first one; an empty search or filter keeps its icon.
+        let isEmptyLedger = debouncedSearchText.isEmpty && selectedAccountFilter == nil
+            && transactionsViewModel.selectedCategories == nil
+        return Group {
+            if isEmptyLedger {
+                MascotEmptyState(
+                    icon: "doc.text",
+                    title: String(localized: "emptyState.noTransactions"),
+                    description: emptyMessage,
+                    line: String(localized: "assistant.empty.history")
+                )
+            } else {
+                EmptyState(
+                    icon: !debouncedSearchText.isEmpty ? "magnifyingglass" : "doc.text",
+                    title: !debouncedSearchText.isEmpty
+                        ? String(localized: "emptyState.searchNoResults")
+                        : String(localized: "emptyState.noTransactions"),
+                    description: emptyMessage
+                )
+            }
+        }
         .padding(.top, AppSpacing.xxxl)
     }
 

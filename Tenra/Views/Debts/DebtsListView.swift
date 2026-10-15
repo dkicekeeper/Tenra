@@ -35,12 +35,13 @@ struct DebtsListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .transition(.opacity)
             } else if debtStore.debts.isEmpty {
-                EmptyState(
+                MascotEmptyState(
                     icon: "person.2",
                     title: String(localized: "debt.emptyTitle"),
                     description: String(localized: "debt.emptyDescription"),
                     actionTitle: String(localized: "debt.new"),
-                    action: add
+                    action: add,
+                    line: String(localized: "assistant.empty.debts")
                 )
                 .transition(.skeletonReveal)
             } else {

@@ -238,12 +238,13 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    - Home with an unread notice from Ten for a minute: Instruments → Energy Log, or watch the
      battery and the 120 Hz indicator. If Ten keeps the display busy, use the still glyph there.
 8. **Screenshots** (below): new frames for Ten, goals and debts; every old frame shows the "+" tab.
-9. **App Store Connect, version 1.6**:
-   - `prepare-version` with version `1.6` and the build from step 6 (What's New above in 13
-     locales, the build selected).
-   - **App Privacy** through the web form (the API does not set it): the draft below.
-   - **Age rating**: answer the questionnaire again for 1.6 (Ten is a chat with an AI: no
-     user-generated content shared with others, no social features, no unrestricted web).
+9. **App Store Connect, version 1.6** (created on 2026-10-15 with What's New in 13 locales; the
+   age rating answered through the API, `asc.py age-rating`: the new "social media" question
+   No, the rating stays 4+):
+   - `prepare-version` with version `1.6` and the build from step 6 (selects the build).
+   - **App Privacy** through the web form (the API has no endpoint for it): the answers below.
+     The label is the app's, not the version's: it shows on the live page as soon as it is
+     published, so publish it with the submission.
    - **App Review notes** (below) in App Review Information → Notes.
    - The **product page test** started on 13.10 ends when 1.6 is released: release now and lose
      it, or hold the release (owner's call).
@@ -299,7 +300,12 @@ minutes): `ru en-US fr-FR de-DE es-ES es-MX fr-CA`, then `tr pt-BR it uk ja ko`.
 ("Screenshots L10n") into `screenshots/final/<locale>/`, upload, then `push-custom-pages --submit`
 for the custom pages.
 
-### App Privacy (draft: check against the form before saving)
+### App Privacy (the answers for the web form)
+
+App Store Connect → Tenra → App Privacy → Data Types → Edit. "Do you or your third-party partners
+collect data from this app?" Yes. Tick the five types in the table (Purchase History included),
+Save, then for each: Purpose "App Functionality" only; "Linked to the user's identity" No;
+"Used for tracking" No. Then Publish.
 
 With Ten, "Data Not Collected" no longer holds: a question and what Ten looks up for it go to
 Anthropic, which keeps API requests for a limited period for safety review, and Tenra's server
@@ -312,11 +318,8 @@ tracking or ads; no data broker; no account.
 | User Content › Other User Content | the questions typed or dictated in the chat | App Functionality | No | No |
 | Identifiers › Device ID | the App Attest key that counts free answers (kept until 400 days after its last use; the monthly count 40 days) | App Functionality | No | No |
 | Identifiers › User ID | RevenueCat's anonymous app user ID, to check Pro (cached 10 minutes) and count Pro answers | App Functionality | No | No |
+| Purchases › Purchase History | RevenueCat records the purchases against that anonymous ID (its own App Privacy guide asks for it; the 1.0-1.5 label left it out) | App Functionality | No | No |
 
-To check before saving:
-- RevenueCat (since 1.0.1) records purchases against an anonymous app user ID: its own guide asks
-  apps to declare **Purchases › Purchase History** (App Functionality); the 1.0-1.5 label said "Data
-  Not Collected". Compare with RevenueCat's "Apple App Privacy" page and add it if it applies.
 - The privacy policy page ([public/privacy-policy.html](public/privacy-policy.html)) names Anthropic,
   RevenueCat and the rate and logo sources since the 1.6 update; it must be live before submission.
 

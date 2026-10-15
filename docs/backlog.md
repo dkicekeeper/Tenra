@@ -40,8 +40,6 @@ Found by the release audit of 2026-10-15 (details and file references:
 [archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md)):
 - **Ten on Home keeps animating** while a notice is unread (`AssistantNoticeCard`, no
   `AmbientMotionGate`): measure on device, else the still `CreatureGlyph` there.
-- **Founding Users are free on the server** (150 calls a month per install): grant them `pro` in
-  RevenueCat or let the server know. Owner's call.
 - **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
   consent go out with the next cloud question; the Settings toggle skips the consent sheet; the
   cloud mode shows in the RU/BY storefronts (451 on every question).

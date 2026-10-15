@@ -75,6 +75,7 @@ const BIG_NUMBER = /\d[\d\s  ]{3,}\d|\d{4,}/;
 const YEAR = /^(?:19|20)\d{2}$/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
 const SAVED_CLAIM = /(?<!\p{L})(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|запомнил[аи]?|сохранено|записано|запомнено)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged|remembered)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged|remembered)\b/iu;
+const PURPOSE_CLAUSE = /(?<!\p{L})чтобы(?!\p{L})[^.!?,\n]*/giu;
 
 // A reply that turns a money question away. A one-line "picking specific products needs a
 // licensed adviser" followed by help is fine and does not match.
@@ -120,7 +121,13 @@ export function blockProblems(block: unknown): string[] {
     .map(([key]) => `${node.type}.${key} = ${JSON.stringify(node[key]) ?? "missing"}`);
 }
 
-/** `prompt`: the user's message; an amount repeated from it is not a made-up figure. */
+/** `prompt`: what the user wrote (typedByUser); an amount repeated from it is not a made-up figure. */
+/** The user's message plus the messages the phone drafted from (<draft_status> notes): the user typed both. */
+export function typedByUser(prompt: string, notes: string[] = []): string {
+  const drafted = notes.flatMap((note) => [...note.matchAll(/user's message "([^"]+)"/g)].map((m) => m[1]));
+  return [prompt, ...drafted].join("\n");
+}
+
 export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt = ""): CheckResult[] {
   const results: CheckResult[] = [];
   const blocks: unknown = record.reply?.blocks;
@@ -167,7 +174,8 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
   const share = letters.length ? cyrillic / letters.length : locale === "ru" ? 1 : 0;
   results.push({ name: "language", pass: locale === "ru" ? share >= 0.5 : share < 0.5, detail: `cyrillic ${Math.round(share * 100)}%` });
 
-  const claim = text.match(SAVED_CLAIM)?.[0];
+  // "Чтобы я её запомнил, нажмите Сохранить" asks for the tap; it does not claim a save.
+  const claim = text.replace(PURPOSE_CLAUSE, "").match(SAVED_CLAIM)?.[0];
   results.push({ name: "no_saved_claim", pass: !claim, detail: claim });
 
   const refusal = text.match(REFUSAL)?.[0];

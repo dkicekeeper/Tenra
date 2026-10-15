@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CASES } from "../eval/cases";
 import { TODAY, TRANSACTIONS } from "../eval/fixture";
-import { blockProblems, caseCheck, universalChecks, type RunRecord } from "../eval/grade";
+import { blockProblems, caseCheck, typedByUser, universalChecks, type RunRecord } from "../eval/grade";
 import { executeTool, resetDrafts, simulate } from "../eval/simulator";
 import { annuity, applyScenario, breakEvenMonths, loanPlan, projectSavings } from "../eval/planning";
 
@@ -126,6 +126,18 @@ describe("grader", () => {
     expect(universalChecks(say("The interest saved is shown below."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(true);
     expect(universalChecks(say("I've saved your lunch."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
     expect(universalChecks(say("Your lunch was saved."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
+    // Asking for the tap is not a claim; the same verb after it is.
+    expect(universalChecks(say("Чтобы я её запомнил, нажмите Сохранить."), "ru").find((c) => c.name === "no_saved_claim")?.pass).toBe(true);
+    expect(universalChecks(say("Чтобы не забыть, я запомнил это."), "ru").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
+    expect(universalChecks(say("Нажмите Сохранить. Я запомнил это."), "ru").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
+  });
+
+  it("counts what the phone drafted from as typed by the user", () => {
+    const note = '<draft_status>\ndraft_1: made on the phone from the user\'s message "кофе 1500", not by you\n</draft_status>';
+    const typed = typedByUser("А сколько на кафе?", [note]);
+    const say = (text: string): RunRecord => ({ calls: [], reply: { blocks: [{ type: "text", text }], mood: "idle", suggestions: [] } });
+    expect(universalChecks(say("С кофе за 1500 станет больше."), "ru", typed).find((c) => c.name === "no_money_in_text")?.pass).toBe(true);
+    expect(universalChecks(say("Всего 19 500 ₸."), "ru", typed).find((c) => c.name === "no_money_in_text")?.pass).toBe(false);
   });
 });
 

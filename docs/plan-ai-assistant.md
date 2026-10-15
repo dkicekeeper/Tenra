@@ -453,9 +453,15 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
       результаты, нет сумм в тексте, черновик вместо «сохранил», язык, prompt injection в заметке).
 - [x] Страны Anthropic API: Казахстан да, Россия и Беларусь нет.
 - [x] Шаги владельца из §5.1, прогон стенда, выбор модели: Haiku 5.5, effort low (§6).
-- [ ] На Mac проверить по swiftinterface iOS 27 SDK: `LanguageModel`, `PrivateCloudComputeLanguageModel`
-      (инициализация, квоты, `supportedLanguages`: есть ли русский), `Tool`, Dynamic Profiles (§5.1).
-- [ ] Запросить entitlement Private Cloud Compute для аккаунта.
+- [x] На Mac проверить по swiftinterface iOS 27 SDK (2026-10-15): `PrivateCloudComputeLanguageModel`
+      есть и соответствует `LanguageModel`; `availability` (с `UnavailableReason`), `quotaUsage`
+      (`belowLimit` / `limitReached`, `limitIncreaseSuggestion`), ошибки `networkFailure`,
+      `quotaLimitReached` (с `resetDate`), `serviceUnavailable`. `supportedLanguages` отдаётся во
+      время работы, так что есть ли русский, покажет только телефон на iOS 27.
+- [ ] Собирать код iOS 27 (ApplePCC, Siri iOS 27): на раннерах GitHub Xcode только до 26.6
+      (проверено 2026-10-15, macos-26 и macos-latest), поэтому CI и TestFlight его пропускают
+      (`#if compiler(>=6.4)`); пока такой код собирается только на Mac с Xcode 27.
+- [ ] Запросить entitlement Private Cloud Compute для аккаунта (вместе с ApplePCC, см. ниже).
 - [x] Имя персонажа: Тэн (Ten).
 - [ ] Тексты экрана согласия по 5.1.2(i) во все 11 локалей, черновик новой метки App Privacy.
 
@@ -537,7 +543,8 @@ Private Cloud Compute (п. 4) и `pro` себе в RevenueCat (п. 3).
       следующее. Работает и без разрешения на пуши.)
 - [x] Память фактов и экран «Что Тэн знает обо мне» (`draft_fact`, `AgentMemory`, CoreData v14,
       Настройки → «Ассистент» с переключателем облака; промпт 2026-10-14.10, §3.4).
-- [ ] ApplePCC в роутере (iOS 27).
+- [ ] ApplePCC в роутере (iOS 27). Решение владельца 2026-10-15: пока только Claude, ApplePCC
+      после появления Xcode 27 на раннерах GitHub.
 
 **Фаза 4. «Спланировать» (3-4 недели)**
 - [x] `forecast_balance` (дневной лимит до даты, сценарии «а если») и блок forecast; пресет
@@ -551,9 +558,10 @@ Private Cloud Compute (п. 4) и `pro` себе в RevenueCat (п. 3).
 - [x] Тэн и цели/долги: id и названия в `<app_context>` (без сумм), `get_goals` / `get_debts`,
       `draft_goal`, `draft_goal_contribution`, `draft_debt` (Pro: без него Тэн предлагает факт),
       `draft_debt_repayment`; «Тэн пишет» о долге со сроком завтра и о цели, отставшей от графика
-      (раз в месяц); «Спросить Тэна» в меню цели и долга; промпт 2026-10-14.12, 6 кейсов eval
+      (раз в месяц); «Спросить Тэна» в меню цели и долга; промпт 2026-10-14.12, 6 кейсов eval; правила ответа в схеме render_reply, промпт 2026-10-15.13
       (FinanceToolkit+Plans.swift, docs/domains/goals-and-debts.md §Ten).
 - [ ] Siri iOS 27: intent schemas и View Annotations («Спроси Tenra, сколько осталось на еду»).
+      После появления Xcode 27 на раннерах GitHub (решение владельца 2026-10-15).
 
 **Фаза 5. Рост**
 - [ ] ASO: ниша «ИИ помощник по финансам», «ai бюджет» в ключах 13 витрин; новые скриншоты с

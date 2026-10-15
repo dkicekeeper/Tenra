@@ -25,49 +25,54 @@
 </head>
 <body>
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: March 31, 2026</p>
+    <p class="updated">Last updated: October 15, 2026</p>
 
-    <p>Tenra ("we", "our", or "the app") is a personal finance tracking application. Your privacy is important to us. This Privacy Policy explains how Tenra handles your information.</p>
+    <p>Tenra ("we", "our", or "the app") is a personal finance app. Your privacy is important to us. This Privacy Policy explains what stays on your device, what leaves it and why.</p>
 
     <h2>1. Data Storage</h2>
-    <p>All your financial data — including accounts, transactions, budgets, categories, deposits, and recurring payments — is stored <strong>locally on your device</strong> using Apple's CoreData framework. We do not operate servers that store your personal or financial data.</p>
+    <p>Your financial data (accounts, transactions, budgets, categories, deposits, loans, recurring payments, savings goals and personal debts) is stored <strong>on your device</strong> with Apple's Core Data framework. Backups are saved in the app's folder on your device or, if you turn iCloud backups on, in your own iCloud Drive, which Apple holds under your Apple Account. We cannot read your data or your backups.</p>
 
-    <h2>2. Data We Do NOT Collect</h2>
+    <h2>2. Ten, the AI Assistant</h2>
+    <p>Ten is optional. Before your first question goes to the cloud, the app asks for your consent; you can turn this off at any time in Settings &rsaquo; Assistant &rsaquo; Answers from the cloud. Simple records such as "coffee 1500" are drafted on your device without the cloud.</p>
     <ul>
-        <li>We do not collect personal information (name, email, phone number)</li>
-        <li>We do not collect financial data (bank account numbers, card details)</li>
-        <li>We do not use analytics or tracking services</li>
-        <li>We do not use advertising identifiers (IDFA)</li>
-        <li>We do not track your location</li>
-        <li>We do not share any data with third parties</li>
+        <li><strong>What is sent:</strong> your question (typed, or dictated and turned into text), and what Ten looks up on your device to answer it: totals, categories, account names, the transactions it needs, your savings goals and debts by name, and the facts you asked it to remember. For an attached receipt or bank statement, only a summary read on your device is sent (period, totals, categories), never the document.</li>
+        <li><strong>Who processes it:</strong> the request goes through Tenra's server to Anthropic, which answers with its Claude model. Anthropic processes it under its commercial terms: it does not use it to train models and keeps it only for a limited period for safety and abuse review.</li>
+        <li><strong>What Tenra's server keeps:</strong> no questions and no answers. To count free answers it keeps an Apple App Attest key for your installation with a monthly number of answers (up to 40 days), and it checks with RevenueCat, by your anonymous app user ID, whether you have Tenra Pro (cached for 10 minutes).</li>
+        <li><strong>What stays on your device:</strong> your database, your chats, your receipts and statements, and the facts Ten remembers, which you can see and delete in Settings &rsaquo; Assistant &rsaquo; What Ten knows about me.</li>
     </ul>
 
-    <h2>3. Device Permissions</h2>
-    <p>Tenra may request the following device permissions:</p>
+    <h2>3. Purchases</h2>
+    <p>Tenra Pro is sold through the App Store; Apple handles payment. We use RevenueCat to know which purchases are active. RevenueCat receives your purchase history from Apple with an anonymous app user ID, not your name or email.</p>
+
+    <h2>4. Other Network Requests</h2>
     <ul>
-        <li><strong>Microphone &amp; Speech Recognition:</strong> Used exclusively for voice-to-text transaction input. Audio is processed on-device using Apple's Speech framework and is never transmitted to external servers.</li>
-        <li><strong>Document Picker:</strong> Used to import bank statement files (CSV, PDF) that you explicitly select. Files are processed locally on your device.</li>
-        <li><strong>Notifications:</strong> Used to send local reminders about upcoming subscription payments. No data is sent to remote servers.</li>
+        <li><strong>Currency rates:</strong> from the jsDelivr CDN (with a Cloudflare mirror) and the National Bank of Kazakhstan. These requests contain only currency codes and dates.</li>
+        <li><strong>Logos:</strong> from Tenra's logo collection on jsDelivr, logo.dev and Google's favicon service. These requests contain only a company or service name or its website address.</li>
+    </ul>
+    <p>None of these requests contain your financial data.</p>
+
+    <h2>5. Data We Do Not Collect</h2>
+    <ul>
+        <li>No account: we do not ask for your name, email or phone number</li>
+        <li>No bank logins, bank account numbers or card details</li>
+        <li>No analytics or tracking services, and no advertising identifier (IDFA)</li>
+        <li>No location</li>
+        <li>We do not sell or share your data for advertising</li>
     </ul>
 
-    <h2>4. Network Requests</h2>
-    <p>Tenra makes limited network requests solely to display company and bank logos:</p>
+    <h2>6. Device Permissions</h2>
     <ul>
-        <li><strong>Logo retrieval:</strong> The app may fetch logo images from Supabase storage, logo.dev API, and Google Favicon service. Only the company/service name is used in these requests — no personal or financial data is transmitted.</li>
+        <li><strong>Microphone and Speech Recognition:</strong> for voice input. Speech is recognized by Apple's Speech framework, on your device when your language supports it; otherwise Apple processes the audio under its own privacy policy. For Ten, only the resulting text is sent, as described above.</li>
+        <li><strong>Camera:</strong> to scan receipts. Images are read on your device.</li>
+        <li><strong>Files:</strong> to import bank statements (CSV, PDF) you select. Files are read on your device.</li>
+        <li><strong>Notifications:</strong> for local reminders and insights about your money, created on your device.</li>
     </ul>
-    <p>These requests do not contain any personal information or financial data.</p>
 
-    <h2>5. Data Security</h2>
-    <p>Your data is protected by iOS built-in security features including device encryption, app sandboxing, and biometric/passcode device lock. Since data never leaves your device, there is no risk of server-side data breaches.</p>
+    <h2>7. Data Security and Deletion</h2>
+    <p>Your data is protected by iOS security: device encryption, app sandboxing and your passcode or biometrics. You can delete all your data at any time in the app's Settings; deleting the app also removes it from your device. Backups in iCloud Drive can be deleted from the app's backup screen.</p>
 
-    <h2>6. Data Deletion</h2>
-    <p>You can delete all your data at any time through the app's Settings. Uninstalling the app will also permanently remove all stored data from your device.</p>
-
-    <h2>7. Children's Privacy</h2>
-    <p>Tenra is not directed at children under 13. We do not knowingly collect data from children.</p>
-
-    <h2>8. Changes to This Policy</h2>
-    <p>We may update this Privacy Policy from time to time. Changes will be reflected in the "Last updated" date above and in app updates.</p>
+    <h2>8. Children's Privacy and Changes</h2>
+    <p>Tenra is not directed at children under 13. We do not knowingly collect data from children. We may update this Privacy Policy; changes are shown by the "Last updated" date above and in app updates.</p>
 
     <h2>9. Contact</h2>
     <p>If you have questions about this Privacy Policy, contact us at: <a href="mailto:dakacom@gmail.com">dakacom@gmail.com</a></p>

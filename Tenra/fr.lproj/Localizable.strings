@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "Épargné (revenus − dépenses)";
 "insights.formula.savingsRate.row.rate" = "Taux d'épargne";
 "insights.formula.savingsRate.explainer" = "La part de vos revenus qui reste à la fin du mois. Un taux plus élevé vous donne plus de liberté : de la souplesse dans les mois creux, des objectifs financés plus vite et un vrai coussin de sécurité.";
-"insights.formula.savingsRate.rec.good" = "Vous épargnez plus de 20 %%. Gardez cette routine et envisagez de diriger le surplus vers un objectif à long terme.";
+"insights.formula.savingsRate.rec.good" = "Vous épargnez plus de 20 %. Gardez cette routine et envisagez de diriger le surplus vers un objectif à long terme.";
 "insights.formula.savingsRate.rec.fair" = "Correct, mais atteindre 20 %% représenterait %@ d'épargne en plus chaque mois. Réduisez les catégories récurrentes ou ponctuelles qui ont dérivé.";
 "insights.formula.savingsRate.rec.low" = "Sous 10 %%, aucune marge de sécurité. Visez au moins %@ de plus chaque mois. Commencez par la plus grosse catégorie non essentielle.";
 "insights.formula.emergencyFund.title" = "Fonds d'urgence";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Pour atteindre 20 %%, réduisez vos dépenses d'environ %@ par mois ou augmentez vos revenus d'environ %@ par mois.";
-"insights.health.rec.savingsRate.healthy" = "Excellent : gardez le rythme. 20 %% et plus est le niveau recommandé pour une résilience à long terme.";
+"insights.health.rec.savingsRate.healthy" = "Excellent : gardez le rythme. 20 % et plus est le niveau recommandé pour une résilience à long terme.";
 
 "insights.health.rec.budgetAdherence.empty" = "Les budgets ne sont pas configurés. Définissez-les sur vos catégories : cette composante comptera alors dans le score.";
 "insights.health.rec.budgetAdherence.partial" = "%d catégories dépassent leur budget. Ouvrez-les pour trouver la source du dépassement.";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "L’assistant fonctionne dans le cloud";
-"assistant.consent.message" = "Pour répondre, il interroge Claude, un modèle d’Anthropic. Seuls votre question et ce qu’il consulte pour répondre quittent le téléphone : totaux, catégories, noms de comptes, les informations qu’il retient sur vous et les opérations nécessaires. Votre base, vos reçus et relevés restent ici. Le serveur de Tenra ne garde rien et vos données ne servent pas à entraîner des modèles.";
+"assistant.consent.message" = "Pour répondre, il interroge Claude, un modèle d’Anthropic. Seuls votre question et ce qu’il consulte pour répondre quittent le téléphone : totaux, catégories, noms de comptes, vos objectifs et dettes, les informations qu’il retient sur vous et les opérations nécessaires. Votre base, vos reçus et relevés restent ici. Le serveur de Tenra ne garde ni questions ni réponses et vos données ne servent pas à entraîner des modèles.";
 "assistant.consent.allow" = "Activer";
 "assistant.consent.notNow" = "Pas maintenant";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "On commence par un compte ?";
 "assistant.empty.history" = "Rien pour l'instant. On ajoute la première ?";
 "assistant.empty.memory" = "Parlez-moi de vous, je m'en souviendrai";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Actif";
+"status.paused" = "Suspendu";
+"status.archived" = "Archivé";
+"status.pending" = "En attente";
+"textInput.characterCount" = "%1$lld sur %2$lld caractères";

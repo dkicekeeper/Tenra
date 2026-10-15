@@ -228,7 +228,7 @@ tracking or ads; no data broker; no account.
 |---|---|---|---|---|
 | Financial Info › Other Financial Info | totals, categories, account names, transactions Ten looks up for an answer | App Functionality | No: Anthropic gets no identifier | No |
 | User Content › Other User Content | the questions typed or dictated in the chat | App Functionality | No | No |
-| Identifiers › Device ID | the App Attest key that counts free answers (kept up to 40 days) | App Functionality | No | No |
+| Identifiers › Device ID | the App Attest key that counts free answers (kept until 400 days after its last use; the monthly count 40 days) | App Functionality | No | No |
 | Identifiers › User ID | RevenueCat's anonymous app user ID, to check Pro (cached 10 minutes) and count Pro answers | App Functionality | No | No |
 
 To check before saving:

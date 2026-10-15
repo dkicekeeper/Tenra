@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "Сбережено (доход − расход)";
 "insights.formula.savingsRate.row.rate" = "Норма сбережений";
 "insights.formula.savingsRate.explainer" = "Какая доля дохода уцелела до конца периода. Чем выше, тем больше свободы: подушка на просадки, ускорение целей и настоящий резерв.";
-"insights.formula.savingsRate.rec.good" = "Сберегаете больше 20%%. Держите ритм и направьте излишек на долгосрочную цель.";
+"insights.formula.savingsRate.rec.good" = "Сберегаете больше 20%. Держите ритм и направьте излишек на долгосрочную цель.";
 "insights.formula.savingsRate.rec.fair" = "Неплохо, но до 20%% не хватает %@ в месяц. Подрежьте регулярные или разовые категории, которые подросли.";
 "insights.formula.savingsRate.rec.low" = "Ниже 10%%: буфера почти нет. Минимум +%@ в месяц: начните с самой крупной дискреционной категории.";
 "insights.formula.emergencyFund.title" = "Резервный фонд";
@@ -917,7 +917,7 @@
 "insights.formula.yearOverYear.row.thisMonth" = "В этом месяце";
 "insights.formula.yearOverYear.row.lastYear" = "Тот же месяц год назад";
 "insights.formula.yearOverYear.row.absDelta" = "Абсолютное изменение";
-"insights.formula.yearOverYear.row.delta" = "Изменение в %%";
+"insights.formula.yearOverYear.row.delta" = "Изменение в процентах";
 "insights.formula.yearOverYear.explainer" = "Сравнение общих расходов за текущий месяц и тот же месяц год назад. Помогает отличить реальный сдвиг от сезонности: декабрь всегда «дороже», но именно этот декабрь тяжелее прошлого?";
 "insights.formula.yearOverYear.rec.down" = "Расходы заметно ниже год к году. Если это случайно, проверьте, не пропущена ли регулярная операция; иногда она «прячется» именно так.";
 "insights.formula.yearOverYear.rec.up" = "Рост на %@. Сравните топ-категории обоих месяцев: обычно скачок объясняется одной новой подпиской, дополнительным циклом аренды или крупной покупкой.";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Чтобы выйти на 20%%, сократите расходы на ≈ %@ в месяц или увеличьте доход на ≈ %@ в месяц.";
-"insights.health.rec.savingsRate.healthy" = "Отлично, сохраняйте темп. 20%%+ это рекомендованный уровень для долгосрочной устойчивости.";
+"insights.health.rec.savingsRate.healthy" = "Отлично, сохраняйте темп. 20%+ это рекомендованный уровень для долгосрочной устойчивости.";
 
 "insights.health.rec.budgetAdherence.empty" = "Бюджеты не настроены. Установите их в категориях. Это включит этот компонент в скор.";
 "insights.health.rec.budgetAdherence.partial" = "%d категорий вышли за бюджет. Откройте их, чтобы понять, где перерасход.";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Ассистент работает через облако";
-"assistant.consent.message" = "Чтобы ответить, он обращается к модели Claude от Anthropic. С телефона уходят только ваш вопрос и то, что нужно для ответа: суммы, категории, названия счетов, факты, которые он о вас помнит, и нужные операции. База, чеки и выписки остаются здесь. Сервер Tenra ничего не хранит, данные не используются для обучения моделей.";
+"assistant.consent.message" = "Чтобы ответить, он обращается к модели Claude от Anthropic. С телефона уходят только ваш вопрос и то, что нужно для ответа: суммы, категории, названия счетов, ваши цели и долги, факты, которые он о вас помнит, и нужные операции. База, чеки и выписки остаются здесь. Сервер Tenra не хранит вопросы и ответы, данные не используются для обучения моделей.";
 "assistant.consent.allow" = "Включить";
 "assistant.consent.notNow" = "Не сейчас";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "Начнём со счёта?";
 "assistant.empty.history" = "Пока пусто. Добавим первую?";
 "assistant.empty.memory" = "Расскажите о себе, я запомню";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Активна";
+"status.paused" = "Приостановлена";
+"status.archived" = "В архиве";
+"status.pending" = "Ожидает";
+"textInput.characterCount" = "%1$lld из %2$lld символов";

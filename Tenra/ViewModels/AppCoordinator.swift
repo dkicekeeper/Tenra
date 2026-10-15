@@ -96,6 +96,25 @@ class AppCoordinator {
     // MARK: - Assistant
 
     @ObservationIgnored private var assistantModel: AssistantViewModel?
+    @ObservationIgnored private var assistantStoreResetObserver: NSObjectProtocol?
+
+    /// "Delete all data" and a restored backup replace the store (storeDidResetNotification):
+    /// Ten's open thread and its messages on Home belong to the old data. The thread must not
+    /// be written into the new store, and the messages name the old goals, debts and
+    /// subscriptions.
+    private func observeStoreResetForAssistant() {
+        guard assistantStoreResetObserver == nil, repository is CoreDataRepository else { return }
+        assistantStoreResetObserver = NotificationCenter.default.addObserver(
+            forName: CoreDataStack.storeDidResetNotification,
+            object: CoreDataStack.shared,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                AssistantInbox.shared.clear()
+                self?.assistantModel?.storeDidReset()
+            }
+        }
+    }
 
     /// The AI assistant's thread, made on first use; nil while its server is not configured
     /// (Info.plist `TenraAssistantURL`, docs/plan-ai-assistant.md §5.1). Without Pro it spends
@@ -103,6 +122,7 @@ class AppCoordinator {
     func assistant() -> AssistantViewModel? {
         if let assistantModel { return assistantModel }
         guard let url = AgentConfig.serverURL else { return nil }
+        observeStoreResetForAssistant()
         let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
         let client = AgentServerClient(baseURL: url, attestation: attestation) {
             await MainActor.run { PremiumManager.shared.appUserID }
@@ -191,6 +211,7 @@ class AppCoordinator {
     /// the insights recompute.
     func refreshAssistantInbox(now: Date = Date()) {
         guard AssistantAvailability.isAvailable else { return }
+        observeStoreResetForAssistant()
         let scheduler = SubscriptionNotificationScheduler.shared
         AssistantInbox.shared.post(
             AssistantNotices.charges(

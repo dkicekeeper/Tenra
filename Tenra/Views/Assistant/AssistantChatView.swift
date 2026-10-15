@@ -74,7 +74,7 @@ struct AssistantChatView: View {
             .onChange(of: premium.isPro) { model.refreshAllowance() }
             .paywallSheet(isPresented: $showingPaywall) {
                 model.refreshAllowance()
-                Task { await model.retry() }
+                retryFailed()
             }
             .sheet(isPresented: $showingVoice) {
                 AssistantVoiceSheet { send($0, spoken: true) }
@@ -240,6 +240,16 @@ struct AssistantChatView: View {
         }
     }
 
+    /// Retry sends the question to the cloud again: not once the person turned that off in
+    /// Settings after it failed.
+    private func retryFailed() {
+        guard hasConsent else {
+            showingConsent = true
+            return
+        }
+        Task { await model.retry() }
+    }
+
     @ViewBuilder
     private func entryView(_ entry: AssistantViewModel.Entry) -> some View {
         switch entry.content {
@@ -248,7 +258,7 @@ struct AssistantChatView: View {
             MessageBubble(
                 text,
                 failure: failure?.message,
-                onRetry: failure?.canRetry == true ? { Task { await model.retry() } } : nil
+                onRetry: failure?.canRetry == true ? { retryFailed() } : nil
             )
         case .reply(let reply, let results):
             AssistantReplyView(reply: reply, results: results, drafts: model.drafts)

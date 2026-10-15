@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "Risparmiato (entrate − spese)";
 "insights.formula.savingsRate.row.rate" = "Tasso di risparmio";
 "insights.formula.savingsRate.explainer" = "Quale parte delle tue entrate sopravvive al mese. Un tasso più alto ti dà più libertà: flessibilità nei mesi lenti, obiettivi finanziati più in fretta e un vero cuscinetto d'emergenza.";
-"insights.formula.savingsRate.rec.good" = "Stai risparmiando più del 20%%: mantieni l'abitudine e valuta di indirizzare il surplus verso un obiettivo a lungo termine.";
+"insights.formula.savingsRate.rec.good" = "Stai risparmiando più del 20%: mantieni l'abitudine e valuta di indirizzare il surplus verso un obiettivo a lungo termine.";
 "insights.formula.savingsRate.rec.fair" = "Discreto, ma arrivare al 20%% significa %@ in più risparmiati ogni mese. Riduci le categorie ricorrenti o una tantum che sono cresciute.";
 "insights.formula.savingsRate.rec.low" = "Sotto il 10%% non lascia margine. Punta ad almeno %@ in più ogni mese: inizia dalla categoria discrezionale più grande.";
 "insights.formula.emergencyFund.title" = "Fondo di emergenza";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Per raggiungere il 20%%, riduci le spese di ≈ %@ al mese o aumenta le entrate di ≈ %@ al mese.";
-"insights.health.rec.savingsRate.healthy" = "Ottimo: mantieni il ritmo. Il 20%%+ è il livello consigliato per una solidità a lungo termine.";
+"insights.health.rec.savingsRate.healthy" = "Ottimo: mantieni il ritmo. Il 20%+ è il livello consigliato per una solidità a lungo termine.";
 
 "insights.health.rec.budgetAdherence.empty" = "I budget non sono configurati. Impostali sulle tue categorie: questo componente conterà quindi nel punteggio.";
 "insights.health.rec.budgetAdherence.partial" = "%d categorie sono fuori budget. Aprile per trovare la fonte dell'eccesso di spesa.";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "L’assistente lavora nel cloud";
-"assistant.consent.message" = "Per rispondere, consulta Claude, un modello di Anthropic. Dal telefono escono solo la tua domanda e ciò che cerca per rispondere: totali, categorie, nomi dei conti, le informazioni che ricorda su di te e le operazioni necessarie. Il tuo archivio, gli scontrini e gli estratti conto restano qui. Il server di Tenra non conserva nulla e i tuoi dati non servono ad addestrare modelli.";
+"assistant.consent.message" = "Per rispondere, consulta Claude, un modello di Anthropic. Dal telefono escono solo la tua domanda e ciò che cerca per rispondere: totali, categorie, nomi dei conti, i tuoi obiettivi e debiti, le informazioni che ricorda su di te e le operazioni necessarie. Il tuo archivio, gli scontrini e gli estratti conto restano qui. Il server di Tenra non conserva domande né risposte e i tuoi dati non servono ad addestrare modelli.";
 "assistant.consent.allow" = "Attiva";
 "assistant.consent.notNow" = "Non ora";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "Iniziamo con un conto?";
 "assistant.empty.history" = "Ancora niente. Aggiungiamo la prima?";
 "assistant.empty.memory" = "Raccontami di te, me lo ricorderò";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Attivo";
+"status.paused" = "Sospeso";
+"status.archived" = "Archiviato";
+"status.pending" = "In attesa";
+"textInput.characterCount" = "%1$lld di %2$lld caratteri";

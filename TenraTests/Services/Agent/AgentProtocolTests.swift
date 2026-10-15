@@ -123,6 +123,13 @@ struct AgentProtocolTests {
         #expect(value["protocol"] == .number(Double(AgentProtocol.version)))
         #expect(value.value(atPath: "messages.0.role") == "user")
         #expect(value.value(atPath: "messages.0.content.0.text") == "hi")
+        #expect(value["user"] == nil)
+    }
+
+    @Test func turnRequestSignsTheUserIdInItsBody() throws {
+        let data = try JSONEncoder().encode(AgentTurnRequest(messages: [.userText(["hi"])], user: "$RCAnonymousID:abc"))
+        let value = try JSONDecoder().decode(JSONValue.self, from: data)
+        #expect(value["user"] == .string("$RCAnonymousID:abc"))
     }
 
     @Test func contextBlockMatchesTheServerFormat() throws {

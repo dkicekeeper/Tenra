@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "Poupado (receita − despesas)";
 "insights.formula.savingsRate.row.rate" = "Taxa de poupança";
 "insights.formula.savingsRate.explainer" = "Que parcela da sua renda sobrevive ao mês. Uma taxa maior compra mais liberdade: flexibilidade nos meses fracos, metas alcançadas mais rápido e uma reserva de emergência de verdade.";
-"insights.formula.savingsRate.rec.good" = "Você está poupando mais de 20%%: mantenha a rotina e considere direcionar o excedente para uma meta de longo prazo.";
+"insights.formula.savingsRate.rec.good" = "Você está poupando mais de 20%: mantenha a rotina e considere direcionar o excedente para uma meta de longo prazo.";
 "insights.formula.savingsRate.rec.fair" = "Bom, mas chegar a 20%% significa %@ a mais poupado por mês. Corte categorias recorrentes ou pontuais que cresceram sem você perceber.";
 "insights.formula.savingsRate.rec.low" = "Abaixo de 10%% não sobra colchão. Tente poupar pelo menos %@ a mais por mês: comece pela maior categoria de gastos não essenciais.";
 "insights.formula.emergencyFund.title" = "Reserva de emergência";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Para chegar a 20%%, reduza as despesas em ≈ %@ por mês ou aumente a renda em ≈ %@ por mês.";
-"insights.health.rec.savingsRate.healthy" = "Excelente: mantenha o ritmo. 20%% ou mais é o nível recomendado para resiliência de longo prazo.";
+"insights.health.rec.savingsRate.healthy" = "Excelente: mantenha o ritmo. 20% ou mais é o nível recomendado para resiliência de longo prazo.";
 
 "insights.health.rec.budgetAdherence.empty" = "Os orçamentos não estão configurados. Defina-os nas suas categorias: este componente então passará a contar na nota.";
 "insights.health.rec.budgetAdherence.partial" = "%d categorias estão acima do orçamento. Abra-as para encontrar a origem do gasto excessivo.";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "O assistente funciona na nuvem";
-"assistant.consent.message" = "Para responder, ele consulta o Claude, um modelo da Anthropic. Só saem do celular a sua pergunta e o que ele consulta para responder: totais, categorias, nomes de contas, os fatos que ele lembra sobre você e as transações necessárias. Sua base, recibos e extratos ficam aqui. O servidor do Tenra não guarda nada, e seus dados não são usados para treinar modelos.";
+"assistant.consent.message" = "Para responder, ele consulta o Claude, um modelo da Anthropic. Só saem do celular a sua pergunta e o que ele consulta para responder: totais, categorias, nomes de contas, suas metas e dívidas, os fatos que ele lembra sobre você e as transações necessárias. Sua base, recibos e extratos ficam aqui. O servidor do Tenra não guarda perguntas nem respostas, e seus dados não são usados para treinar modelos.";
 "assistant.consent.allow" = "Ativar";
 "assistant.consent.notNow" = "Agora não";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "Vamos começar com uma conta?";
 "assistant.empty.history" = "Nada ainda. Vamos adicionar a primeira?";
 "assistant.empty.memory" = "Fale sobre você, eu vou lembrar";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Ativa";
+"status.paused" = "Pausada";
+"status.archived" = "Arquivada";
+"status.pending" = "Pendente";
+"textInput.characterCount" = "%1$lld de %2$lld caracteres";

@@ -282,6 +282,14 @@ final class AssistantInbox {
         save()
     }
 
+    /// "Delete all data" or a restored backup: the messages name the old data's goals, debts
+    /// and subscriptions. What the new data calls for posts again on the next refresh.
+    func clear() {
+        notices = []
+        posted = [:]
+        defaults.removeObject(forKey: Self.storageKey)
+    }
+
     private func save() {
         guard let data = try? JSONEncoder().encode(Stored(notices: notices, posted: posted)) else { return }
         defaults.set(data, forKey: Self.storageKey)

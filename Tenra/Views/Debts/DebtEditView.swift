@@ -144,9 +144,27 @@ struct DebtEditView: View {
         result.dueDate = hasDueDate ? Calendar.current.startOfDay(for: dueDate) : nil
         let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
         result.note = trimmedNote.isEmpty ? nil : trimmedNote
-        // An amount lowered to what already came back settles the debt.
-        if result.settledAt == nil, !result.repayments.isEmpty, result.repaid >= result.amount {
+        if let debt, debt.currency != currency, !debt.repayments.isEmpty {
+            // Repayments are kept in the debt's currency: they move to the new one with it, or
+            // the currency stays when there is no rate to move them at.
+            let moved = debt.repayments.map { repayment -> DebtRepayment? in
+                guard let amount = CurrencyConverter.convertSync(amount: repayment.amount, from: debt.currency, to: currency) else { return nil }
+                var copy = repayment
+                copy.amount = (amount * 100).rounded() / 100
+                return copy
+            }
+            if moved.allSatisfy({ $0 != nil }) {
+                result.repayments = moved.compactMap { $0 }
+            } else {
+                result.currency = debt.currency
+            }
+        }
+        // An amount lowered to what already came back settles the debt; one raised above it
+        // opens again a debt its repayments had settled.
+        if result.settledAt == nil, !result.repayments.isEmpty, result.isCovered {
             result.settledAt = result.repayments.last?.date ?? Date()
+        } else if result.settledAt != nil, debt?.isCovered == true, !result.isCovered {
+            result.settledAt = nil
         }
         HapticManager.success()
         onSave(result)

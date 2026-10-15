@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "Gespart (Einnahmen − Ausgaben)";
 "insights.formula.savingsRate.row.rate" = "Sparquote";
 "insights.formula.savingsRate.explainer" = "Welcher Anteil Ihres Einkommens den Monat übersteht. Eine höhere Quote verschafft Ihnen mehr Freiheit: Flexibilität in schwachen Monaten, schnellere Zielerreichung und einen echten Notgroschen.";
-"insights.formula.savingsRate.rec.good" = "Sie sparen mehr als 20%%. Behalten Sie die Routine bei und erwägen Sie, den Überschuss in ein langfristiges Ziel zu lenken.";
+"insights.formula.savingsRate.rec.good" = "Sie sparen mehr als 20%. Behalten Sie die Routine bei und erwägen Sie, den Überschuss in ein langfristiges Ziel zu lenken.";
 "insights.formula.savingsRate.rec.fair" = "Solide, aber mit 20%% würden Sie jeden Monat %@ zusätzlich sparen. Kürzen Sie wiederkehrende oder einmalige Kategorien, die gewachsen sind.";
 "insights.formula.savingsRate.rec.low" = "Unter 10%% bleibt kein Puffer. Streben Sie mindestens %@ mehr pro Monat an. Beginnen Sie mit der größten frei verfügbaren Kategorie.";
 "insights.formula.emergencyFund.title" = "Notgroschen";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Um 20 %% zu erreichen, senken Sie die Ausgaben um ≈ %@ pro Monat oder steigern Sie das Einkommen um ≈ %@ pro Monat.";
-"insights.health.rec.savingsRate.healthy" = "Ausgezeichnet – halten Sie das Tempo. 20 %%+ ist das empfohlene Niveau für langfristige Widerstandsfähigkeit.";
+"insights.health.rec.savingsRate.healthy" = "Ausgezeichnet – halten Sie das Tempo. 20 %+ ist das empfohlene Niveau für langfristige Widerstandsfähigkeit.";
 
 "insights.health.rec.budgetAdherence.empty" = "Budgets sind nicht eingerichtet. Legen Sie sie in Ihren Kategorien fest – diese Komponente zählt dann zum Score.";
 "insights.health.rec.budgetAdherence.partial" = "%d Kategorien liegen über dem Budget. Öffnen Sie sie, um die Quelle der Mehrausgaben zu finden.";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Der Assistent arbeitet in der Cloud";
-"assistant.consent.message" = "Für eine Antwort fragt er Claude, ein Modell von Anthropic. Nur deine Frage und was er für die Antwort nachschlägt verlassen das iPhone: Summen, Kategorien, Kontonamen, die Fakten, die er sich über dich merkt, und die nötigen Buchungen. Deine Datenbank, Belege und Kontoauszüge bleiben hier. Der Server von Tenra speichert nichts, und deine Daten werden nicht zum Training von Modellen genutzt.";
+"assistant.consent.message" = "Für eine Antwort fragt er Claude, ein Modell von Anthropic. Nur deine Frage und was er für die Antwort nachschlägt verlassen das iPhone: Summen, Kategorien, Kontonamen, deine Ziele und Schulden, die Fakten, die er sich über dich merkt, und die nötigen Buchungen. Deine Datenbank, Belege und Kontoauszüge bleiben hier. Der Server von Tenra speichert keine Fragen und Antworten, und deine Daten werden nicht zum Training von Modellen genutzt.";
 "assistant.consent.allow" = "Einschalten";
 "assistant.consent.notNow" = "Nicht jetzt";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "Fangen wir mit einem Konto an?";
 "assistant.empty.history" = "Noch leer. Fügen wir die erste hinzu?";
 "assistant.empty.memory" = "Erzähl mir von dir, ich merke es mir";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Aktiv";
+"status.paused" = "Pausiert";
+"status.archived" = "Archiviert";
+"status.pending" = "Ausstehend";
+"textInput.characterCount" = "%1$lld von %2$lld Zeichen";

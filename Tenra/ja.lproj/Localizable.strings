@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "貯蓄額（収入 − 支出）";
 "insights.formula.savingsRate.row.rate" = "貯蓄率";
 "insights.formula.savingsRate.explainer" = "収入のうち、その月を乗り越えて手元に残る割合です。貯蓄率が高いほど自由度が増します。収入の少ない月の余裕、目標達成の加速、そして本当の非常時の備えにつながります。";
-"insights.formula.savingsRate.rec.good" = "貯蓄率が20%%を超えています。この習慣を保ち、余剰分を長期的な目標に振り向けることをご検討ください。";
+"insights.formula.savingsRate.rec.good" = "貯蓄率が20%を超えています。この習慣を保ち、余剰分を長期的な目標に振り向けることをご検討ください。";
 "insights.formula.savingsRate.rec.fair" = "まずまずですが、20%%を目指すと毎月あと%@の貯蓄になります。増えてしまった定期コストや単発の支出を見直しましょう。";
 "insights.formula.savingsRate.rec.low" = "10%%未満では余裕がありません。毎月あと%@を目標にしましょう。まずは一番大きい自由支出のカテゴリから始めてください。";
 "insights.formula.emergencyFund.title" = "生活防衛資金";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "0以上";
 
 "insights.health.rec.savingsRate.below" = "20%%に届くには、支出を月あたり約%@減らすか、収入を月あたり約%@増やしましょう。";
-"insights.health.rec.savingsRate.healthy" = "とても良好です。このペースを保ちましょう。長期的な安定には20%%以上が目安です。";
+"insights.health.rec.savingsRate.healthy" = "とても良好です。このペースを保ちましょう。長期的な安定には20%以上が目安です。";
 
 "insights.health.rec.budgetAdherence.empty" = "予算が未設定です。各カテゴリに設定すると、この項目もスコアに反映されます。";
 "insights.health.rec.budgetAdherence.partial" = "%d件のカテゴリが予算を超えています。開いて、使いすぎの原因を確認しましょう。";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "アシスタントはクラウドで動作します";
-"assistant.consent.message" = "回答のため、Anthropic のモデル Claude に問い合わせます。端末から送られるのは、質問と回答に必要な情報（合計、カテゴリ、口座名、あなたについて覚えている情報、必要な取引）だけです。データベース、レシート、明細はこの端末に残ります。Tenra のサーバーは何も保存せず、データがモデルの学習に使われることはありません。";
+"assistant.consent.message" = "回答のため、Anthropic のモデル Claude に問い合わせます。端末から送られるのは、質問と回答に必要な情報（合計、カテゴリ、口座名、貯金目標と貸し借り、あなたについて覚えている情報、必要な取引）だけです。データベース、レシート、明細はこの端末に残ります。Tenra のサーバーは質問も回答も保存せず、データがモデルの学習に使われることはありません。";
 "assistant.consent.allow" = "オンにする";
 "assistant.consent.notNow" = "今はしない";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "まずは口座から始めよう？";
 "assistant.empty.history" = "まだ空っぽ。最初の1件を追加する？";
 "assistant.empty.memory" = "あなたのことを教えて。覚えておくよ";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "有効";
+"status.paused" = "一時停止中";
+"status.archived" = "アーカイブ済み";
+"status.pending" = "保留中";
+"textInput.characterCount" = "%2$lld文字中%1$lld文字";

@@ -22,6 +22,18 @@ enum DateFormatters {
         return formatter
     }()
 
+    /// "yyyy-MM-dd" in UTC, Gregorian, POSIX: the keys of historical FX rates and the date in
+    /// the rate APIs' URLs and responses. Without the POSIX locale a device whose region uses
+    /// another calendar (Buddhist, Japanese) writes another year into the key.
+    nonisolated static let rateDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
     /// Форматтер для времени в формате "HH:mm"
     nonisolated static let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()

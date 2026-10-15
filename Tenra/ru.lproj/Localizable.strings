@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Настроить...";
 "settings.wallpaper" = "Обои на главной";
 "settings.background" = "Фон";
+"settings.voiceLanguage" = "Язык голоса";
+"settings.voiceLanguage.app" = "Как в приложении";
 "settings.background.none" = "Без фона";
 "settings.background.gradient" = "Цвета расходов";
 "settings.background.photo" = "Фото";
@@ -176,6 +178,13 @@
 // MARK: - Search
 "search.placeholder" = "Поиск по сумме, категории или описанию";
 "search.subcategories" = "Поиск подкатегорий";
+"search.recent" = "Недавние";
+"search.recent.clear" = "Очистить";
+"search.recent.remove" = "Удалить";
+"search.suggestions" = "Подсказки";
+"search.fill" = "Изменить в поле поиска";
+"search.suggestion.category" = "Категория";
+"search.suggestion.subcategory" = "Подкатегория";
 
 // MARK: - Modals
 "modal.newAccount" = "Новый счёт";
@@ -319,7 +328,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "Новая подкатегория";
 "subcategory.namePlaceholder" = "Название подкатегории";
-"subcategory.usageCount" = "Использовано %d раз";
 "subcategory.notUsed" = "Ещё не использовалась";
 "subcategory.reorder" = "Подкатегории";
 "subcategory.sort.title" = "Сортировка";
@@ -460,7 +468,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "Нет активных подписок";
-"subscriptions.activeCount" = "Активных %lld";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "Следующее: %@";
@@ -757,7 +764,6 @@
 "filter.allAccounts" = "Все счета";
 "filter.allCategories" = "Все категории";
 "filter.allSubcategories" = "Все подкатегории";
-"filter.categoriesCount" = "%d категорий";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1041,10 +1047,8 @@
 "finances.title" = "Финансы";
 "finances.accounts.title" = "Счета";
 "finances.accounts.totalLabel" = "Общий баланс";
-"finances.accounts.count" = "%lld счетов";
 "finances.accounts.empty" = "Нет счетов";
 "finances.deposits.title" = "Депозиты";
-"finances.deposits.count" = "%lld депозитов";
 "finances.deposits.empty" = "Нет депозитов";
 "deposit.listTitle" = "Депозиты";
 "deposit.emptyTitle" = "Нет депозитов";
@@ -1053,11 +1057,8 @@
 "account.includeInBalance" = "Учитывать в балансе";
 "account.includeInBalanceHint" = "Учитывать этот счёт в общем балансе и аналитике.";
 "finances.categories.title" = "Категории";
-"finances.categories.count" = "%lld категорий";
 "finances.categories.empty" = "Нет категорий";
 "finances.subcategories.title" = "Подкатегории";
-"finances.subcategories.count" = "%lld подкатегорий";
-"finances.subcategories.linkedTo" = "В %lld категориях";
 "finances.subcategories.empty" = "Нет подкатегорий";
 
 // MARK: - Loans
@@ -1071,7 +1072,6 @@
 "loan.totalDebt" = "Общий долг";
 "loan.monthlyTotal" = "Ежемесячно";
 "loan.unpaidThisMonth" = "Не оплачено в этом месяце";
-"loan.activeCount" = "%d активных кредитов";
 "loan.typeAnnuityShort" = "Кредит";
 "loan.typeInstallmentShort" = "Рассрочка";
 "loan.of" = "из";
@@ -1349,7 +1349,6 @@
 "subscription.unlinkAll.confirm" = "Отвязать";
 "subscription.unlinkAll.message" = "Убрать связь с подпиской у %d операций? Сами операции останутся.";
 "subscription.linkPayments.subcategories" = "Подкатегории";
-"subscription.linkPayments.subcategoriesCount" = "%d подкатегорий";
 "subscription.filterAll" = "Все";
 
 // MARK: - Accounts (Types & Actions)
@@ -1560,6 +1559,13 @@
 "insights.health.subtitle.good" = "Хорошее состояние, есть куда оптимизировать.";
 "insights.health.subtitle.fair" = "Неплохо, но есть аспекты, требующие внимания.";
 "insights.health.subtitle.needsAttention" = "Несколько направлений требуют работы.";
+"insights.health.trend.sinceLastMonth" = "к прошлому месяцу";
+"insights.savingsRate.band.onTarget" = "Цель достигнута";
+"insights.savingsRate.band.belowTarget" = "Ниже цели в 20%";
+"insights.savingsRate.band.low" = "Меньше 10%";
+"insights.savingsRate.band.deficit" = "Расходы больше доходов";
+"insights.largeTransaction.timesUsual" = "В %@ раза больше обычной";
+"insights.budgetHeadroom.leftOf" = "Осталось из %@";
 
 "insights.health.unavailable.title" = "Недостаточно данных";
 "insights.health.unavailable.message" = "Добавьте операции дохода и расхода. После этого мы сможем оценить ваше финансовое здоровье.";
@@ -1702,6 +1708,14 @@
 "settings.siri.example1" = "Привет, Siri, запиши операцию в Tenra";
 "settings.siri.example2" = "Привет, Siri, сколько я потратил в Tenra";
 "settings.siri.example3" = "Привет, Siri, добавь трату в Tenra";
+"settings.merchants.title" = "Продавцы Wallet";
+"settings.merchants.footer" = "Оплаты у этих продавцов через автоматизацию Wallet записываются с этой категорией и подкатегорией. Нажмите на продавца, чтобы изменить их, или смахните влево, чтобы забыть.";
+"settings.merchants.emptyTitle" = "Пока нет продавцов";
+"settings.merchants.emptyMessage" = "Когда автоматизация Wallet добавляет трату, Tenra один раз спрашивает категорию для продавца и запоминает её здесь. В автоматизации передайте продавца в поле «Заметка» и оставьте «Категорию» пустой.";
+"settings.merchants.forget" = "Забыть";
+"settings.merchants.forgetMerchant" = "Забыть продавца";
+"settings.merchants.categoryDeleted" = "Категория удалена, Tenra спросит снова";
+"settings.merchants.editFooter" = "Следующие оплаты здесь запишутся с этой категорией. Если забыть продавца, Tenra спросит категорию при следующей оплате.";
 
 
 /* MARK: - Document import */
@@ -1832,3 +1846,247 @@
 "calendar.showMonth" = "Показать месяц";
 "calendar.showWeek" = "Показать неделю";
 "skeleton.loading" = "Загрузка";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "Думаю…";
+"assistant.step.spending" = "Считаю расходы…";
+"assistant.step.comparing" = "Сравниваю периоды…";
+"assistant.step.searching" = "Ищу операции…";
+"assistant.step.accounts" = "Смотрю счета…";
+"assistant.step.budgets" = "Проверяю бюджеты…";
+"assistant.step.recurring" = "Смотрю подписки…";
+"assistant.step.insights" = "Смотрю аналитику…";
+"assistant.step.calculating" = "Считаю…";
+"assistant.step.composing" = "Собираю ответ…";
+"assistant.error.offline" = "Нет соединения. Проверьте интернет и попробуйте ещё раз.";
+"assistant.error.busy" = "Ассистент сейчас занят. Попробуйте через минуту.";
+"assistant.error.limit" = "Вопросы на этот месяц закончились. Лимит обновится в следующем месяце.";
+"assistant.error.pro" = "Ассистент входит в Tenra Pro.";
+"assistant.error.region" = "Ассистент пока недоступен в вашем регионе.";
+"assistant.error.unavailable" = "Ассистент сейчас недоступен. Попробуйте позже.";
+"assistant.error.device" = "Ассистент недоступен на этом устройстве.";
+"assistant.error.refused" = "С этим я не помогу. Спросите о ваших деньгах.";
+"assistant.error.freeLimit" = "Бесплатные ответы пока закончились. С Tenra Pro можно спрашивать дальше.";
+"assistant.allowance.renews" = "Новые бесплатные ответы с %@";
+"assistant.open.missing" = "Этого уже нет в Tenra";
+"assistant.draft.save" = "Сохранить";
+"assistant.draft.saved" = "Сохранено";
+"assistant.draft.undo" = "Отменить";
+"assistant.draft.undone" = "Отменено. Ничего не сохранено.";
+"assistant.draft.failed" = "Не удалось сохранить. Попробуйте ещё раз.";
+"assistant.draft.accountGuessed" = "Счёт выбран автоматически. Проверьте перед сохранением.";
+"assistant.draft.categoryGuessed" = "Категория выбрана автоматически. Проверьте перед сохранением.";
+"assistant.draft.budgetWas" = "Было";
+"assistant.draft.editHint" = "Открывает операцию для правки";
+"assistant.draft.editTip" = "Нажмите на операцию, чтобы изменить.";
+"assistant.voice.send" = "Спросить Тэна";
+"assistant.voice.again" = "Сказать заново";
+"assistant.attach.scan" = "Сканировать чек";
+"assistant.attach.photo" = "Чек из фото";
+"assistant.attach.file" = "Выписка (PDF или CSV)";
+"assistant.attachment.receipt" = "Чек";
+"assistant.attachment.statement" = "Выписка";
+"assistant.attachment.review" = "Проверить и сохранить";
+"assistant.attachment.uncategorized" = "Без категории: %lld";
+"assistant.attachment.skipped" = "Не прочитано строк: %lld";
+"assistant.attachment.reading" = "Читаю документ…";
+"assistant.attachment.analyze" = "Разбери эту выписку";
+"assistant.ask" = "Спросить Тэна";
+"assistant.topic.account.status" = "Что происходит со счётом «%@»?";
+"assistant.topic.account.spending" = "Куда уходят деньги со счёта «%@»?";
+"assistant.topic.account.forecast" = "Хватит ли денег на счёте «%@» до конца месяца?";
+"assistant.topic.category.spending" = "Сколько я трачу в категории «%@»?";
+"assistant.topic.category.cut" = "Как меньше тратить в категории «%@»?";
+"assistant.topic.category.budget" = "Предложи бюджет для категории «%@»";
+"assistant.topic.income.trend" = "Как меняется доход «%@»?";
+"assistant.topic.income.compare" = "Сравни «%@» с прошлым месяцем";
+"assistant.topic.insight" = "Объясни «%@» и что с этим делать";
+"assistant.topic.history.changes" = "Что изменилось в тратах в этом месяце?";
+"assistant.topic.history.unusual" = "Найди необычные траты";
+"assistant.recent" = "Недавние диалоги";
+"assistant.recent.delete" = "Удалить чат";
+"assistant.notice.title" = "Тэн пишет";
+"assistant.notice.goThrough" = "Разобрать";
+"assistant.notice.hide" = "Скрыть";
+"assistant.notice.ask" = "Разбери: %@";
+"assistant.notice.ask.digest" = "Разбери мою прошлую неделю";
+"assistant.notice.ask.charge" = "Стоит ли оставлять %@?";
+"assistant.notice.charge" = "Завтра спишется %@";
+"assistant.forecast.perDay" = "В день до %@";
+"assistant.forecast.free" = "Свободно: %@";
+"assistant.forecast.balance" = "Остаток по дням";
+"assistant.forecast.obligations" = "Спишется до %@";
+"assistant.error.generic" = "Что-то пошло не так. Попробуйте ещё раз.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Ассистент";
+"assistant.greeting.title" = "Привет, я Тэн";
+"assistant.greeting.message" = "Помогаю с деньгами: траты, экономия, кредиты и инвестиции. Смотрю ваши данные на этом телефоне и отвечаю карточками.";
+"assistant.attach" = "Прикрепить чек или выписку";
+"assistant.greeting.tools" = "Скрепка: чек или выписка. Микрофон: скажите вслух.";
+"composer.send" = "Отправить";
+"composer.voice" = "Надиктовать";
+"assistant.composer.placeholder" = "Спросите о деньгах…";
+"assistant.preset.month" = "Мои траты в этом месяце";
+"assistant.preset.compare" = "Сравни с прошлым месяцем";
+"assistant.preset.budgets" = "Как дела с бюджетами?";
+"assistant.preset.subscriptions" = "Сколько стоят мои подписки?";
+"assistant.preset.allowance" = "Сколько можно тратить в день до зарплаты?";
+"assistant.preset.save" = "Где я могу сэкономить?";
+"assistant.preset.invest" = "С чего начать инвестировать?";
+"common.retry" = "Повторить";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "Ассистент работает через облако";
+"assistant.consent.message" = "Чтобы ответить, он обращается к модели Claude от Anthropic. С телефона уходят только ваш вопрос и то, что нужно для ответа: суммы, категории, названия счетов, факты, которые он о вас помнит, и нужные операции. База, чеки и выписки остаются здесь. Сервер Tenra ничего не хранит, данные не используются для обучения моделей.";
+"assistant.consent.allow" = "Включить";
+"assistant.consent.notNow" = "Не сейчас";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Тэн запомнит это";
+"assistant.fact.forget" = "Тэн забудет это";
+"assistant.fact.was" = "Было: %@";
+"settings.assistant.header" = "Ассистент";
+"settings.assistant.cloud" = "Ответы из облака";
+"settings.assistant.footer" = "Тэн отвечает с помощью Claude, модели от Anthropic. Если выключить, Тэн снова спросит, прежде чем следующий вопрос уйдёт с телефона.";
+"assistant.memory.title" = "Что Тэн знает обо мне";
+"assistant.memory.emptyTitle" = "Тэн пока ничего о вас не знает";
+"assistant.memory.emptyMessage" = "Расскажите Тэну о своих деньгах в чате, например когда приходит зарплата или на что вы копите. Тэн предложит это запомнить, а решать вам.";
+"assistant.memory.footer" = "Тэн видит эти факты в каждом чате. Они хранятся на этом iPhone и уходят с него только вместе с вашими вопросами.";
+"assistant.memory.add" = "Добавить факт";
+"assistant.memory.new" = "Новый факт";
+"assistant.memory.edit" = "Изменить факт";
+"assistant.memory.placeholder" = "Например: зарплата приходит 10-го";
+"assistant.memory.editorFooter" = "Одно короткое предложение о ваших деньгах: когда приходит зарплата, на что копите, какая карта основная. Без номеров карт и паролей.";
+"assistant.memory.editHint" = "Открывает факт для изменения";
+"assistant.memory.forget" = "Забыть";
+"assistant.memory.forgetAll" = "Забыть всё";
+"assistant.memory.forgetAllTitle" = "Забыть все факты?";
+"assistant.memory.forgetAllMessage" = "Тэн снова ничего не будет о вас знать. Операции и чаты останутся.";
+"assistant.memory.tooLong" = "Уложитесь в одно короткое предложение.";
+"assistant.memory.full" = "Тэн помнит до %lld фактов. Забудьте один, чтобы добавить новый.";
+"assistant.memory.duplicate" = "Тэн уже это помнит.";
+"assistant.memory.gone" = "Этого факта больше нет в памяти.";
+
+/* Goals and debts (docs/domains/goals-and-debts.md) */
+"finances.goals.title" = "Цели";
+"finances.goals.empty" = "Целей нет";
+"finances.debts.title" = "Долги";
+"finances.debts.empty" = "Долгов нет";
+"finances.debts.owedToMe" = "Вам должны";
+"finances.debts.iOwe" = "Вы должны";
+"goal.listTitle" = "Цели";
+"goal.emptyTitle" = "Целей пока нет";
+"goal.emptyDescription" = "Поставьте цель и следите, сколько осталось";
+"goal.new" = "Новая цель";
+"goal.editTitle" = "Изменить цель";
+"goal.namePlaceholder" = "На что копите?";
+"goal.targetHint" = "Сколько хотите накопить";
+"goal.deadline" = "Срок";
+"goal.hasDeadline" = "К определённой дате";
+"goal.account" = "Счёт";
+"goal.account.none" = "Без счёта";
+"goal.account.hint" = "Со счётом цель следит за его балансом. Без счёта вы сами отмечаете, сколько отложили.";
+"goal.alreadySaved" = "Уже накоплено";
+"goal.target" = "Цель";
+"goal.left" = "Осталось накопить";
+"goal.leftAmount" = "Осталось %@";
+"goal.monthly" = "Откладывать в месяц";
+"goal.perMonth" = "%@ в месяц";
+"goal.ofTarget" = "из %@";
+"goal.overdue" = "Срок прошёл";
+"goal.reached" = "Цель достигнута";
+"goal.reachedOn" = "Достигнута %@";
+"goal.reachedSection" = "Достигнутые";
+"goal.contribute" = "Пополнить";
+"goal.contributions" = "Пополнения";
+"goal.delete" = "Удалить цель";
+"goal.deleteTitle" = "Удалить цель?";
+"goal.deleteMessage" = "Цель и её пополнения будут удалены. Счета и операции не изменятся.";
+"goal.notFound" = "Цель не найдена";
+"goal.notFoundDescription" = "Возможно, она была удалена.";
+"debt.listTitle" = "Долги";
+"debt.emptyTitle" = "Долгов нет";
+"debt.emptyDescription" = "Записывайте, кто вам должен и кому должны вы";
+"debt.new" = "Новый долг";
+"debt.editTitle" = "Изменить долг";
+"debt.direction" = "Кто кому";
+"debt.direction.owedToMe" = "Мне должны";
+"debt.direction.iOwe" = "Мой долг";
+"debt.person" = "Кто";
+"debt.personPlaceholder" = "Имя";
+"debt.date" = "Дата";
+"debt.dueDate" = "Вернуть до";
+"debt.hasDueDate" = "Вернуть к дате";
+"debt.note" = "Заметка";
+"debt.notePlaceholder" = "За что";
+"debt.section.owedToMe" = "Вам должны";
+"debt.section.iOwe" = "Вы должны";
+"debt.section.settled" = "Погашенные";
+"debt.amount" = "Сумма";
+"debt.returned" = "Возвращено";
+"debt.leftAmount" = "Осталось %@";
+"debt.overdue" = "Просрочен";
+"debt.overdueSince" = "Просрочен с %@";
+"debt.settledOn" = "Погашен %@";
+"debt.recordRepayment" = "Возврат";
+"debt.settle" = "Погасить";
+"debt.reopen" = "Открыть снова";
+"debt.repayments" = "Возвраты";
+"debt.delete" = "Удалить долг";
+"debt.deleteTitle" = "Удалить долг?";
+"debt.deleteMessage" = "Долг и все возвраты по нему будут удалены. Счета и операции не изменятся.";
+"debt.notFound" = "Долг не найден";
+"debt.notFoundDescription" = "Возможно, он был удалён.";
+"moneyEntry.notePlaceholder" = "Заметка";
+"moneyEntry.invalidAmount" = "Введите сумму";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "Смотрю цели и долги…";
+"assistant.notice.debt.owedToMe" = "Завтра должны вернуть %@";
+"assistant.notice.debt.iOwe" = "Завтра срок вернуть %@";
+"assistant.notice.ask.debt" = "Разбери долг: %@";
+"assistant.notice.goal.behind" = "Чтобы успеть к %2$@, откладывайте %1$@ в месяц";
+"assistant.notice.ask.goal" = "Как догнать цель «%@»?";
+"assistant.topic.goal.onTrack" = "Успеваю к цели «%@»?";
+"assistant.topic.goal.faster" = "Как быстрее накопить на «%@»?";
+"assistant.topic.debt.status" = "Сколько осталось по долгу: %@?";
+"assistant.topic.debt.plan" = "Как вернуть долг вовремя: %@?";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Доброе утро!";
+"assistant.chatter.afternoon" = "Добрый день!";
+"assistant.chatter.evening" = "Добрый вечер!";
+"assistant.chatter.night" = "Тсс… уже поздно";
+"assistant.chatter.askMe" = "Спросите меня о чём-нибудь";
+"assistant.chatter.hmm" = "Хм…";
+"assistant.chatter.counting" = "Считаю…";
+"assistant.chatter.looking" = "Сейчас посмотрю…";
+"assistant.chatter.yay" = "Ура!";
+"assistant.chatter.offline" = "Нет связи…";
+"assistant.chatter.unclear" = "Не совсем ясно. Ещё раз?";
+"assistant.chatter.tickles" = "Щекотно!";
+"assistant.chatter.here" = "Я тут!";
+"assistant.chatter.help" = "Чем помочь?";
+"assistant.chatter.hehe" = "Хи-хи";
+"assistant.chatter.dizzy" = "Ой, всё кружится!";
+"settings.assistant.chatter" = "Тэн болтает";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "Гардероб Тэна";
+"assistant.wardrobe.none" = "Ничего";
+"assistant.wardrobe.partyHat" = "Праздничный колпак";
+"assistant.wardrobe.crown" = "Корона";
+"assistant.wardrobe.beanie" = "Шапка";
+"assistant.wardrobe.taqiya" = "Тюбетейка";
+"assistant.wardrobe.headphones" = "Наушники";
+"assistant.wardrobe.glasses" = "Очки";
+"assistant.wardrobe.sunglasses" = "Солнечные очки";
+"assistant.wardrobe.sleepMask" = "Маска для сна";
+"assistant.wardrobe.footer" = "По праздникам Тэн наряжается сам: колпак на Новый год, тюбетейка на Наурыз, корона в день, когда вы что-то отпраздновали вместе. Новые аксессуары открываются за дни подряд в Tenra и за цели.";
+"assistant.wardrobe.lock.streak7" = "7 дней подряд в Tenra";
+"assistant.wardrobe.lock.streak30" = "30 дней подряд в Tenra";
+"assistant.wardrobe.lock.firstGoal" = "Поставьте цель";
+"assistant.wardrobe.lock.goalReached" = "Достигните цели";
+"assistant.wardrobe.lock.nauryz" = "Откроется на Наурыз";
+"assistant.wardrobe.locked" = "Закрыто";

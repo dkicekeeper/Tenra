@@ -78,12 +78,12 @@ xcrun swiftc -enable-bare-slash-regex -default-isolation MainActor -o /tmp/run m
 
 ## Project Overview
 
-Tenra is a native iOS finance management application built with SwiftUI and CoreData. Tracks accounts, transactions, budgets, deposits, loans, and recurring payments.
+Tenra is a native iOS finance management application built with SwiftUI and CoreData. Tracks accounts, transactions, budgets, deposits, loans, recurring payments, savings goals and personal debts.
 
 **Tech Stack:**
 - SwiftUI (iOS 26+ with Liquid Glass adoption)
 - Swift 5.0 (project setting), targeting Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
-- CoreData for persistence (v12 schema)
+- CoreData for persistence (v15 schema)
 - Observation framework (@Observable)
 - MVVM + Coordinator architecture
 
@@ -94,7 +94,6 @@ Tenra/
 ├── Intents/             # App Intents / Siri surface (adapters only; logic in Services/Intents)
 ├── Models/              # CoreData entities and business models
 ├── ViewModels/          # Observable view models (@MainActor)
-│   └── Balance/         # Balance calculation helpers
 ├── Views/               # SwiftUI views and components
 │   ├── Components/      # Shared reusable components
 │   │   ├── Cards/       # Standalone card views
@@ -111,6 +110,8 @@ Tenra/
 │   ├── Subscriptions/   # Subscription views
 │   ├── History/         # History views
 │   ├── Deposits/        # Deposit views
+│   ├── Goals/           # Savings goal views
+│   ├── Debts/           # Personal debt views
 │   ├── Settings/        # Settings views
 │   ├── VoiceInput/      # Voice input views
 │   ├── CSV/             # CSV views
@@ -131,8 +132,8 @@ Tenra/
 - **TransactionStore** — single source of truth for transactions, accounts, categories; in-memory all 19k tx
 - **BalanceCoordinator** — single entry point for balance ops + caching
 - **Repository pattern** — `DataRepositoryProtocol` facade over 5 specialized repos in `Services/Repository/`. **Three places to update when extending the protocol or a sub-protocol** (e.g. `AccountRepositoryProtocol`): production impl (e.g. `AccountRepository`), `UserDefaultsRepository` (previews), and any test mock (e.g. `MockAccountRepository` in `TenraTests/Services/AccountRepositoryTests.swift`). Missing the test mock breaks `xcodebuild test` even though `xcodebuild build` passes.
-- **InsightsService** — `nonisolated final class`, runs on background via `Task.detached`. Cannot read MainActor-isolated `TransactionStore` indexes (e.g. `categoryAggregatesByKey`); uses legacy O(N) snapshot-based APIs instead — see `CategoryBudgetService.budgetProgress(for:transactions:baseCurrency:)` static helper.
-- **TransactionStore indexes** (`categoryById`, `subcategoryIdsByCategoryId`, `transactionIdsByCategoryName`, etc.) — declared `@ObservationIgnored var` (plain internal, NOT `private(set)`; `internal(set)` is redundant and now warns). Maintenance lives in extension files of the same module; `private(set)` would block setters across files. The three grouping indexes store **ids** and are read through computed `TransactionIndex` views (`transactionsByAccount`, `transactionsByCategoryName`, `transactionsBySeriesId`) — see [docs/gotchas.md](docs/gotchas.md) §Grouping indexes. See [TransactionStore.swift](Tenra/ViewModels/TransactionStore.swift).
+- **InsightsService** — `nonisolated final class`, runs on background via `Task.detached`. Cannot read MainActor-isolated `TransactionStore` indexes (e.g. `categoryAggregatesByKey`); uses legacy O(N) snapshot-based APIs instead — see `CategoryBudgetService.budgetProgress(for:transactions:baseCurrency:rates:)` static helper.
+- **TransactionStore indexes** (`categoryById`, `subcategoryIdsByCategoryId`, `transactionIdsByCategoryName`, etc.) — declared `@ObservationIgnored`: plain `var` when extension files maintain them (`private(set)` would block those setters; `internal(set)` is redundant and warns), `private(set)` when only `TransactionStore.swift` writes them (`transactionById`, `accountById`, `transactionIdsByAccount`, `mutationVersion`, `accountsMutationVersion`). The three grouping indexes store **ids** and are read through computed `TransactionIndex` views (`transactionsByAccount`, `transactionsByCategoryName`, `transactionsBySeriesId`) — see [docs/gotchas.md](docs/gotchas.md) §Grouping indexes. See [TransactionStore.swift](Tenra/ViewModels/TransactionStore.swift).
 
 For deep details see [docs/architecture.md](docs/architecture.md).
 
@@ -155,6 +156,7 @@ New file needed?
 │  ├─ PDF parsing? → Services/Import/
 │  ├─ Recurring? → Services/Recurring/
 │  ├─ Loans? → Services/Loans/
+│  ├─ Savings goals / personal debts? → Services/Goals/, Services/Debts/
 │  ├─ App Intents / Siri? → Services/Intents/
 │  ├─ Caching? → Services/Cache/
 │  ├─ Settings? → Services/Settings/
@@ -183,31 +185,33 @@ New file needed?
 
 | Working on... | Read first |
 |---|---|
-| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v12 model | [docs/architecture.md](docs/architecture.md) |
+| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v15 model | [docs/architecture.md](docs/architecture.md) |
 | `@Observable`, `Task`, `MainActor`, `nonisolated`, CoreData threading, `Sendable` | [docs/concurrency.md](docs/concurrency.md) |
-| `Views/Components/**`, animations, Icon, AppSpacing/Colors/Animation tokens, cardStyle, AnimatedInputComponents, amount formatting | [docs/design-system.md](docs/design-system.md) |
+| `Views/Components/**`, a new screen or sheet, DesignKit in Tenra (bridge, adapters, screen patterns), amount formatting, dates and category styling, animations and effects | [docs/design-system.md](docs/design-system.md); tokens and components themselves: DesignKit's `docs/design-system.md` |
 | `Services/Insights/**` (operational guide) | [docs/domains/insights.md](docs/domains/insights.md) |
 | `Services/Notifications/**` (insight signals, weekly digest, subscription reminders) | [docs/domains/insights.md](docs/domains/insights.md) §Signal notifications |
-| Per-metric formulas, granularity, severity behavior | [docs/INSIGHTS_METRICS_REFERENCE.md](docs/INSIGHTS_METRICS_REFERENCE.md) |
-| Localization, adding/editing UI strings, `*.lproj`, `.stringsdict`, ASO metadata | [docs/localization/README.md](docs/localization/README.md) |
-| Release prep, ASC versions/metadata, ASO, downloads/MRR analytics, ratings, ads | [docs/PROMOTION_PLAN.md](docs/PROMOTION_PLAN.md) — living doc, UPDATE it in the same session (snapshot, checklists, §7 metrics) |
+| Per-metric formulas, granularity, severity behavior | [docs/domains/insights.md](docs/domains/insights.md) §Metric catalogue |
+| Localization, adding/editing UI strings, `*.lproj`, `.stringsdict`, adding a language | [docs/localization.md](docs/localization.md) |
+| The product, Tenra Pro prices, release prep, ASC versions/metadata, ASO, downloads/MRR analytics, ratings, ads | [docs/promotion-plan.md](docs/promotion-plan.md) — living doc, UPDATE it in the same session (releases §1, metrics §6, open tasks §7) |
 | TestFlight builds from the cloud, reading App Store Connect (`appstore/asc.py`, `testflight.yml`, `asc.yml`) | [docs/asc.md](docs/asc.md) |
 | TransactionStore CRUD, FRC, addBatch, NSBatchDeleteRequest | [docs/domains/transactions.md](docs/domains/transactions.md) |
 | Categories, subcategories, budgets, category/subcategory indexes, style cache, reorder | [docs/domains/categories.md](docs/domains/categories.md) |
-| Accounts indexes (accountAggregatesByAccountId, transactionsBySeriesId, parsedDateById), AccountDetailView, ranking | [docs/domains/accounts.md](docs/domains/accounts.md) |
+| Accounts indexes (accountAggregatesByAccountId, transactionsBySeriesId, parsedDateByDateString), AccountDetailView, ranking | [docs/domains/accounts.md](docs/domains/accounts.md) |
 | Deposits, DepositInfo, interest accrual, capitalization | [docs/domains/deposits.md](docs/domains/deposits.md) |
 | Loans, LoanInfo, LoanPaymentService, manual payments, linking | [docs/domains/loans.md](docs/domains/loans.md) |
+| Savings goals, personal debts (`GoalStore`, `DebtStore`, `Views/Goals`, `Views/Debts`, `MoneyEntrySheet`) | [docs/domains/goals-and-debts.md](docs/domains/goals-and-debts.md) |
 | Recurring transactions, RecurringStore, series + occurrences | [docs/domains/recurring.md](docs/domains/recurring.md) |
 | Swift Charts (insight charts = DesignKit trend charts + `PeriodChartAdapters.swift`, scrollable, sparklines) | [docs/domains/charts.md](docs/domains/charts.md) |
 | CSV import/export round-trip rules | [docs/domains/csv.md](docs/domains/csv.md) |
-| `Services/Import/**`, statement/receipt recognition, Vision documents, Apple Intelligence parsing | [domains/import.md](docs/domains/import.md) |
+| `Services/Import/**`, statement/receipt recognition, Vision documents, Apple Intelligence parsing | [docs/domains/import.md](docs/domains/import.md) |
 | VoiceInput, speech recognition, the voice level, EdgeGlow and the orb | [docs/domains/voice.md](docs/domains/voice.md) |
 | FX rates, currency conversion, prewarm, providers, base-currency aggregation (`convertSync` vs `convertedAmount`) | [docs/domains/currency.md](docs/domains/currency.md) |
 | Logo providers, ServiceLogoRegistry, jsDelivr | [docs/domains/logos.md](docs/domains/logos.md) |
 | Performance hot-paths, SwiftUI Layout gotchas, `#Preview` crashes, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |
-| `Tenra/Intents/**`, `Services/Intents/**`, Siri, App Shortcuts | [specs/2026-07-31-app-intents-design.md](docs/superpowers/specs/2026-07-31-app-intents-design.md) |
+| `Tenra/Intents/**`, `Services/Intents/**`, Siri, App Shortcuts, the Wallet automation | [docs/domains/intents.md](docs/domains/intents.md) |
 | Adding a CoreData entity/attribute, bumping `Tenra.xcdatamodeld` | `/coredata-schema-bump` skill |
-| Audit plans, findings, their status | [plans/README.md](plans/README.md) — update the row/line when an item lands, is reverted, or is decided |
+| Open items, ideas, decisions that stand | [docs/backlog.md](docs/backlog.md) — delete a line when it lands, edit it when a decision changes |
+| The AI assistant: `server/assistant/**` (Cloudflare Worker, prompt, tools, eval), the app ↔ server protocol, the mascot, generative UI blocks | [docs/plan-ai-assistant.md](docs/plan-ai-assistant.md) (plan in flight; §3.7 protocol, §5.1 setup) |
 
 **Rule**: before editing files in a domain, Read the matching doc.
 
@@ -215,19 +219,19 @@ New file needed?
 
 These cause silent data corruption or crashes — internalize even without reading the domain doc:
 
-1. ⚠️ **`TransactionStore.allTransactions` setter is a no-op.** To delete transactions, use `TransactionStore.deleteTransactions(for...)` (routes through `apply(.deleted)`). See [domains/transactions.md](docs/domains/transactions.md).
-2. ⚠️ **Never mutate `Account.depositInfo.principalBalance` outside `DepositInterestService.reconcileDepositInterest`.** It's a cached result. Link-interest flow reclassifies tx type only — must NOT touch principalBalance / interestAccruedNotCapitalized. See [domains/deposits.md](docs/domains/deposits.md).
-3. ⚠️ **NEVER use `NSBatchDeleteRequest` then `context.save()` on the SAME context** when deleted objects have inverse relationships. Use `context.delete()` instead. See [concurrency.md](docs/concurrency.md).
+1. ⚠️ **`TransactionsViewModel.allTransactions` setter is a no-op.** To delete transactions, use `TransactionStore.deleteTransactions(forAccountId:/forAccountIds:/forCategoryName:type:)` (one `.bulkDeleted` through `deleteTransactionsInBulk`) or `delete(_:)` for one. See [domains/transactions.md](docs/domains/transactions.md).
+2. ⚠️ **Deposit interest state is advanced only by `DepositInterestService.reconcileDepositInterest`.** `DepositInfo.interestAccruedForCurrentPeriod`, `lastInterestCalculationDate` and `lastInterestPostingMonth` are initialised when a deposit is created or converted (`DepositInfo.init`, `DepositEditView`) and reset by `DepositsViewModel.recalculateInterest`, which then runs the reconciler again; nothing else writes them. There is no stored principal: the balance is `initialBalance` plus contributions (`BalanceCalculationEngine`), and capitalization grows only the reconciler's running principal. Linking transactions as interest rewrites their type, category and account, never `DepositInfo`. See [domains/deposits.md](docs/domains/deposits.md).
+3. ⚠️ **NEVER use `NSBatchDeleteRequest` then `context.save()` on the SAME context** when deleted objects have inverse relationships. Use `context.delete()` instead. See [domains/transactions.md](docs/domains/transactions.md#coredata-gotchas).
 4. ⚠️ **SwiftUI `List` with 500+ Sections = hard freeze.** Always slice via `Array(sections.prefix(visibleSectionLimit))` with infinite-scroll trigger. See [gotchas.md](docs/gotchas.md).
 5. ⚠️ **Generated recurring tx subcategories require explicit linking.** Always `await transactionStore.createSeries(series)` then call `categoriesViewModel.linkSubcategoriesToTransaction(...)`. See [domains/recurring.md](docs/domains/recurring.md).
 6. ⚠️ **`Transaction.convertedAmount` is in *account* currency, NOT base currency.** Never sum `convertedAmount ?? amount` across multi-currency transactions to get a base-currency total — bug shows as `$20 + $100 = "120 KZT"`. Always convert via `CurrencyConverter.convertSync(amount: tx.amount, from: tx.currency, to: baseCurrency)` with `convertedAmount ?? amount` as a cold-cache fallback only. See [domains/currency.md](docs/domains/currency.md).
-7. ⚠️ **NEVER render a money amount without a canonical formatter.** Forbidden in UI code: `Text("\(amount) \(currency)")`, `Text(String(format: "%.2f", amount))`, ad-hoc `NumberFormatter()` inside `body`/`List`/`ForEach`, raw `Formatting.formatCurrency(...)` for display (it always shows `.00`). Required: `FormattedAmountText` for standalone views, `InfoRow(... amount: currency:)` / `InfoRowConfig(... amount: currency:)` for info rows, `Formatting.formatCurrencySmart(_:currency:)` only when a `String` is needed (composed strings, hero subtitles). Overflow is the component's job, not the call site's: `FormattedAmountText` abbreviates via `AmountDisplayPolicy` (`.adaptive` by default) only when the full number doesn't fit — never pre-shorten with `Formatting.formatCurrencyCompact`. See [design-system.md §6 Amount Formatting](docs/design-system.md).
-8. ⚠️ **All balance / account-&-category aggregate / budget money math derives from one rule: `BalanceCalculationEngine.contribution(of:to:policy:)` + `LedgerPolicyRule.isRealized`.** Realized figures exclude future-dated tx (`txDate <= today`); forecasts include them. Don't re-implement per-type sign tables. Loan account balance derives from `loanInfo.remainingPrincipal` (never sum loan legs into balance); `DepositInterestService.principalDelta` is intentionally separate (capitalization gate) — don't merge it. Evidence + the phased refactor that established this model is archived at [docs/archive/DATA_INTEGRITY_AUDIT_2026_05_25.md](docs/archive/DATA_INTEGRITY_AUDIT_2026_05_25.md).
+7. ⚠️ **NEVER render a money amount without a canonical formatter.** Forbidden in UI code: `Text("\(amount) \(currency)")`, `Text(String(format: "%.2f", amount))`, ad-hoc `NumberFormatter()` inside `body`/`List`/`ForEach`, raw `Formatting.formatCurrency(...)` for display (it always shows `.00`). Required: `FormattedAmountText` for standalone views, `InfoRow(... amount: currency:)` / `InfoRowConfig(... amount: currency:)` for info rows, `Formatting.formatCurrencySmart(_:currency:)` only when a `String` is needed (composed strings, hero subtitles). Overflow is the component's job, not the call site's: `FormattedAmountText` abbreviates via `AmountDisplayPolicy` (`.adaptive` by default) only when the full number doesn't fit — never pre-shorten with `Formatting.formatCurrencyCompact`. See [design-system.md §5 Amounts](docs/design-system.md#5-amounts).
+8. ⚠️ **All balance / account-&-category aggregate / budget money math derives from one rule: `BalanceCalculationEngine.contribution(of:to:policy:)` + `LedgerPolicyRule.isRealized`.** Realized figures exclude future-dated tx (`txDate <= today`); forecasts include them. Don't re-implement per-type sign tables. Loan account balance derives from `loanInfo.remainingPrincipal` (never sum loan legs into balance); `DepositInterestService.principalDelta` is intentionally separate (capitalization gate) — don't merge it. Evidence + the phased refactor that established this model is archived at [docs/archive/data-integrity-audit-2026-05-25.md](docs/archive/data-integrity-audit-2026-05-25.md).
 9. ⚠️ **Heavy `loadData()`-style post-processing (per-tx Sets, Dictionaries, per-account/category/series grouping, DateFormatter sweeps, cold-rebuild aggregates) MUST go off MainActor via `Task.detached` + a `Sendable` snapshot struct.** Precedents: [`InsightsService.DataSnapshot`](Tenra/Services/Insights/InsightsService.swift), [`TransactionStore+LoadSnapshot.swift`](Tenra/ViewModels/TransactionStore+LoadSnapshot.swift) (load), [`SummaryCalculator`](Tenra/Services/Transactions/SummaryCalculator.swift) (per-filter). Direct on-MainActor sweeps over 19k tx stall the home-screen reveal animation. See [docs/concurrency.md](docs/concurrency.md) §DataSnapshot.
 10. ⚠️ **Editing a linked transaction must NEVER mutate its parent `RecurringSeries`.** `RecurringSeries.amount/currency/category/description/frequency/isActive` are canonical — series edits go through [SubscriptionEditView](Tenra/Views/Subscriptions/SubscriptionEditView.swift) (with its propagation prompt). `TransactionEditCoordinator.handleRecurringSeries` only creates a series when converting a one-off tx into a recurring one; it must NOT write to an existing series. Past symptom: editing today's subscription tx silently rewrote the subscription's hero amount and resumed paused series.
 11. ⚠️ **All income/expense/transfer summary totals derive from one rule: `TransactionType.summaryContribution(isFuture:)`** ([Models/SummaryContribution.swift](Tenra/Models/SummaryContribution.swift)). `SummaryCalculator`, `TransactionQueryService` and `InsightsService.moneyBucket` all route through it. NEVER add an ad-hoc `switch tx.type` for a summary card — that's how three summary paths silently diverged (deposit interest counted as income on home, dropped on history). Pinned by `SummaryContributionTests`.
-12. ⚠️ **Every memoization key / SwiftUI refresh trigger / cache-invalidation must include EVERY dimension the cached value depends on.** This is the single recurring stale-data defect: a key that omits a dimension which can change without changing the others returns a stale hit until app restart (fresh process = empty cache). Standard dimensions for any money/category/account cache: `transactionStore.mutationVersion` (NOT `transactionsCount` — misses in-place edits), `baseCurrency`, `currencyRatesVersion` (FX refresh), `categoriesMutationVersion`, `accountsMutationVersion` (or observe the `accounts` array), the active `TimeFilter`, category icon/colour/budget, and **today's date** for realized-vs-forecast or period-relative values. When wiring a cache into one trigger (e.g. aggregates into the FX observer), wire EVERY cache that shares that dimension. Prefer the existing O(1) `TransactionStore` indexes over a new snapshot cache. Evidence for this rule — 19 concrete instances + per-finding fixes — is archived at [docs/archive/CACHE_AUDIT_2026_06_03.md](docs/archive/CACHE_AUDIT_2026_06_03.md); the rule above is self-contained.
-13. ⚠️ **App is localized into 11 locales** (en, ru, de, es, fr, tr, pt-BR, it, uk, ja, ko — `Tenra/*.lproj/Localizable.strings`, 1347 keys each). Adding/editing a UI string means updating EVERY locale, else the 9 non-English locales render the raw key. Verify parity: `diff <(grep -oE '^"[^"]+"' Tenra/en.lproj/Localizable.strings) <(grep -oE '^"[^"]+"' Tenra/<L>.lproj/Localizable.strings)`. New locale = register in BOTH `knownRegions` (project.pbxproj) AND `CFBundleLocalizations` (Info.plist). Plurals live in `.stringsdict` (ru/uk: one/few/many/other; ja/ko: other only; rest: one/other). Adding keys via shell: do NOT use `perl -CSD` (re-encodes the script's UTF-8 bytes → mojibake in non-ASCII locales); use `python3` with `io.open(encoding="utf-8")`, then grep-verify one non-ASCII locale (ru/ja). See [docs/localization/README.md](docs/localization/README.md).
+12. ⚠️ **Every memoization key / SwiftUI refresh trigger / cache-invalidation must include EVERY dimension the cached value depends on.** This is the single recurring stale-data defect: a key that omits a dimension which can change without changing the others returns a stale hit until app restart (fresh process = empty cache). Standard dimensions for any money/category/account cache: `transactionStore.mutationVersion` (NOT `transactionsCount` — misses in-place edits), `baseCurrency`, `currencyRatesVersion` (FX refresh), `categoriesMutationVersion`, `accountsMutationVersion` (or observe the `accounts` array), the active `TimeFilter`, category icon/colour/budget, and **today's date** for realized-vs-forecast or period-relative values. When wiring a cache into one trigger (e.g. aggregates into the FX observer), wire EVERY cache that shares that dimension. Prefer the existing O(1) `TransactionStore` indexes over a new snapshot cache. Evidence for this rule — 19 concrete instances + per-finding fixes — is archived at [docs/archive/cache-audit-2026-06-03.md](docs/archive/cache-audit-2026-06-03.md); the rule above is self-contained.
+13. ⚠️ **App is localized into 11 locales** (en, ru, de, es, fr, tr, pt-BR, it, uk, ja, ko — `Tenra/*.lproj/Localizable.strings`). Adding/editing a UI string means updating EVERY locale, else the 9 non-English locales render the raw key. Verify parity: `diff <(grep -oE '^"[^"]+"' Tenra/en.lproj/Localizable.strings) <(grep -oE '^"[^"]+"' Tenra/<L>.lproj/Localizable.strings)`. New locale = register in BOTH `knownRegions` (project.pbxproj) AND `CFBundleLocalizations` (Info.plist). Plurals live in `.stringsdict` (ru/uk: one/few/many/other; ja/ko: other only; rest: one/other). Adding keys via shell: do NOT use `perl -CSD` (re-encodes the script's UTF-8 bytes → mojibake in non-ASCII locales); use `python3` with `io.open(encoding="utf-8")`, then grep-verify one non-ASCII locale (ru/ja). See [docs/localization.md](docs/localization.md).
 14. ⚠️ **Format-specifier order in `Localizable.strings`.** When a translation reorders `%@`/`%lld`/`%d` vs the English key, it MUST use positional specifiers (`%1$@ … %3$lld … %2$@`) — reordering plain specifiers binds args by appearance order and mismatches type (`%lld` lands on a String → garbage/crash). NEVER mix positional and plain in one string. Also: a bare `%` in a string rendered via `String(localized:)` (no `String(format:)`) must stay single — do NOT double it to `%%` (only format-strings with args need `%%`). Audit specifier parity before build; caused real bugs in de/ko/ja this session.
 15. ⚠️ **NEVER call `DateFormatter.date(from:)` in a loop over transactions — use [`FastDateParser`](Tenra/Utils/FastDateParser.swift).** Measured ~13.4 µs/call = 254 ms per 19k pass vs 4.8 ms (~53×); it was the single dominant CPU cost in the app. Applies to the canonical `"yyyy-MM-dd"` storage format only — user-facing localized dates stay on `DateFormatters`. Equivalence (including DateFormatter's *non-uniform* strictness: month 13 → nil, but 30 Feb → 2 Mar) is pinned by `FastDateParserTests`. Any `DateFormatter` parsing a stored key MUST set `locale = en_US_POSIX`, else non-Gregorian device regions misparse. In bulk conversion loops use `RateSnapshot` rather than `CurrencyConverter.convertSync`. See [docs/gotchas.md](docs/gotchas.md) §Date parsing.
 16. ⚠️ **`VoiceInputParser.categoryMap` is a flat `[String: ...]` literal — a duplicate key CRASHES at runtime (compiles fine).** When adding per-language category keywords, a key already used by another language (e.g. `benzin` DE+TR, `médico` ES+IT, `бензин` RU+UK) traps on first access. Grep the block for dup keys before building; omit collisions (a shared concept with an identically-spelled target already resolves). Same applies to `CSVColumnMapping.typeMappings`.
@@ -243,7 +247,7 @@ These cause silent data corruption or crashes — internalize even without readi
 
 ### Working with Transactions
 - Use `TransactionStore` for all transaction operations
-- Subscribe to `TransactionStoreEvent` for reactive updates
+- Mutations go through `TransactionEvent` (`Models/TransactionEvent.swift`) and `TransactionStore.apply`
 - Read [domains/transactions.md](docs/domains/transactions.md) before mutating CRUD/FRC/batch paths
 
 ### Working with Balance
@@ -263,36 +267,36 @@ These cause silent data corruption or crashes — internalize even without readi
 
   A component moved to DesignKit takes text, numbers, dates, colours, icons, closures and `@ViewBuilder` slots, never a Tenra model, and gets a **context-neutral name and API**: any app can use it (a "loan card" becomes a card with a title, an amount and a progress; the `LoanInfo` mapping stays here as an adapter). Porting checklist in DesignKit's CLAUDE.md; the move must be pixel-identical (snapshot tests in DesignKit, device check here).
 - **No raw design values** (CI `design-lint`, `scripts/design_lint.py`): colours, fonts, spacing, corner radii and animations come from DesignKit tokens (`AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppAnimation`) and components. The baseline (`scripts/design-lint-baseline.json`) is empty since 2026-10: any literal fails the check. Data-driven colours (a category's stored hex) are fine. A justified exception carries `// design-lint:ignore <reason>`. After cleaning one up, lower the baseline: `python3 scripts/design_lint.py --update-baseline`.
-- See [design-system.md](docs/design-system.md) for tokens, components, decision trees, padding contract
+- See [design-system.md](docs/design-system.md) for the bridge, what stays in Tenra, screen patterns and the amount rules; tokens, components, decision trees and the padding contract are in DesignKit's `docs/design-system.md`
 
 ### Snapshot `@State` driven by store mutation versions
 Pattern used in CategoriesManagementView, CategoryDetailView, CategorySubcategoriesView for O(1) reads with controlled invalidation.
-- `@ObservationIgnored` data (e.g. `store.subcategoryIdsByCategoryId`) read in `body` does NOT register a SwiftUI subscription. Touch a sibling Observable scalar (`store.categoriesMutationVersion`, `mutationVersion`, etc.) — even as `_ = store.xxx` — so the body re-evaluates when the index changes.
+- `@ObservationIgnored` data (e.g. `store.subcategoryIdsByCategoryId`, and `mutationVersion` itself) read in `body` does NOT register a SwiftUI subscription. Touch an observable sibling (`store.categoriesMutationVersion`, `subcategoriesMutationVersion`, or `transactions` for transaction edits), even as `_ = store.xxx`, so the body re-evaluates when the index changes.
 - `@State` snapshot populated via `.task(id: key)` is empty on first render. NEVER gate `if snapshot.isEmpty { EmptyState }` on it — the user sees an empty-state flash. Gate on source-of-truth instead: `if !store.categories.contains { $0.type == selectedType }`. Precedent: `CategoriesManagementView.hasCategoriesForCurrentType`.
 
 ### Entity detail view refresh trigger
-Account/Category/Subscription/Deposit/Loan detail views cache `[Transaction]` via `@State` and refresh through `.task(id: refreshTrigger)`. The trigger MUST key on `transactionStore.mutationVersion` (bumps on every add/update/delete) — NOT on a count of linked tx, which stays constant when an existing tx is edited and silently skips the refresh (visible bug: user edits tx → UI stale until re-navigation). Because `mutationVersion` is `@ObservationIgnored`, the trigger property must also touch the observable `transactions` array (`_ = transactionStore.transactions.count`) so the body re-evaluates on tx mutations. Precedents: [AccountDetailView](Tenra/Views/Accounts/AccountDetailView.swift), [CategoryDetailView](Tenra/Views/Categories/CategoryDetailView.swift), [SubscriptionDetailView](Tenra/Views/Subscriptions/SubscriptionDetailView.swift).
+Account/Category/Subscription/Deposit/Loan detail views cache `[Transaction]` via `@State` and refresh through `.task(id: refreshTrigger)`. The trigger MUST key on `transactionStore.mutationVersion` (bumps on every add/update/delete) — NOT on a count of linked tx, which stays constant when an existing tx is edited and silently skips the refresh (visible bug: user edits tx → UI stale until re-navigation). Because `mutationVersion` is `@ObservationIgnored`, the trigger property must also touch the observable `transactions` array (`_ = transactionStore.transactions.count`) so the body re-evaluates on tx mutations. Precedents: [AccountDetailView](Tenra/Views/Accounts/AccountDetailView.swift), [CategoryDetailView](Tenra/Views/Categories/CategoryDetailView.swift), [SubscriptionDetailView](Tenra/Views/Subscriptions/SubscriptionDetailView.swift), `TransactionCategoryPickerCoordinator.refreshKey`.
 
 ### SwiftUI `.swipeActions` outside a `List`
-On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `ScrollView`). iOS 27 honors it once the enclosing scroll container calls `swipeActionsContainer()` — gated once in [`swipeActionsContainerIfAvailable()`](Tenra/Extensions/View+SwipeActionsContainer.swift) and applied to the `ScrollView` in [EntityDetailScaffold](Tenra/Views/Components/EntityDetail/EntityDetailScaffold.swift). [GroupedTransactionList](Tenra/Views/Components/History/GroupedTransactionList.swift) still renders in `LazyVStack`, so on iOS 26 entity-detail screens reach delete/recurring only through [`TransactionCard`](Tenra/Views/Components/Cards/TransactionCard.swift)'s `.contextMenu` (long press). Keep `.contextMenu` and `.swipeActions` mirrored when adding new actions — the context menu stays on both versions.
+On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `ScrollView`). iOS 27 honors it once the enclosing scroll container calls `swipeActionsContainer()` — gated once in `swipeActionsContainerIfAvailable()` (DesignKit, `View+SwipeActionsContainer.swift`) and applied to the `ScrollView` in [EntityDetailScaffold](Tenra/Views/Components/EntityDetail/EntityDetailScaffold.swift). [GroupedTransactionList](Tenra/Views/Components/History/GroupedTransactionList.swift) still renders in `LazyVStack`, so on iOS 26 entity-detail screens reach delete/recurring only through [`TransactionCard`](Tenra/Views/Components/Cards/TransactionCard.swift)'s `.contextMenu` (long press). Keep `.contextMenu` and `.swipeActions` mirrored when adding new actions — the context menu stays on both versions.
 
 ## Monetization (Tenra Pro)
 
 - **SDK isolation**: ONLY [PremiumManager](Tenra/Services/Premium/PremiumManager.swift) imports `RevenueCat`; ONLY [PaywallSheet](Tenra/Views/Premium/PaywallSheet.swift) imports `RevenueCatUI`. Feature gates depend solely on `premium.isPro` — never import the SDK elsewhere.
 - **Gate pattern** (3 lines): `@Environment(PremiumManager.self)` + `@State showingPaywall` + `.paywallSheet(isPresented:onUnlocked:)`; `onUnlocked` resumes the interrupted flow (after a purchase, or a restore that actually unlocked Pro). Whole-tab gates use `PremiumLockedView` (Voice/OCR tabs in TabViews.swift).
 - **Paywall shows RevenueCatUI only when there is something to sell**: `PaywallSheet` first awaits `PremiumManager.checkOfferings()` (`OfferingsAvailability`, plain values); otherwise it shows a localized "temporarily unavailable" state with a retry (RevenueCatUI's own error alert closes the sheet: the 3-month "opens then closes" bug, RevenueCat error 23). A restore closes the sheet only when `applyPaywallResult(_:)` says `pro` is active, else "nothing to restore". Settings → About → Diagnostics shows whether the App Store returns products (launch health check).
-- **Offer codes** (promo codes): free users redeem them in Settings → Tenra Pro → "Redeem code" ([SettingsProSection](Tenra/Views/Settings/SettingsProSection.swift), StoreKit's `offerCodeRedemption` sheet, so the view imports StoreKit, never RevenueCat); `PremiumManager.syncAfterOfferCodeRedemption()` syncs with RevenueCat when the sheet closes. Codes are created in App Store Connect → the subscription → Offer Codes; one-off grants without a code: RevenueCat dashboard → customer → grant entitlement.
+- **Offer codes** (promo codes): free users redeem them in Settings → Tenra Pro → "Redeem code" ([SettingsProSection](Tenra/Views/Settings/SettingsProSection.swift), StoreKit's `offerCodeRedemption` sheet, so the view imports StoreKit, never RevenueCat); `PremiumManager.syncAfterOfferCodeRedemption()` syncs with RevenueCat when the sheet closes. Codes are created in App Store Connect → the subscription → Offer Codes; one-off grants without a code: Actions → RevenueCat (`revenuecat.yml`, `grant`) or the RevenueCat dashboard → customer → grant entitlement.
 - **Subscription status display**: read `PremiumManager.proStatus` (`ProStatus`: plan, renewal date, `willRenew`, `managementURL`) — never import RevenueCat for status. Settings block = self-contained [SettingsProSection](Tenra/Views/Settings/SettingsProSection.swift) (free CTA / active status / Founding User states).
-- **Gated**: 4th account (AccountsManagementView, incl. convert-to-deposit path), voice, PDF/CSV import (OCR tab + SettingsView), deposits, loans. **Deliberately free — do NOT gate**: Insights (aha-moment that sells Pro; soft paywall with 3-show/14-day cap lives in AnalyticsTab), CSV **export** (user data must always be exportable).
+- **Gated**: 4th account (AccountsManagementView, incl. convert-to-deposit path), voice, PDF/CSV import (OCR tab + SettingsView), deposits, loans, personal debts (adding one; kept debts stay open). **Deliberately free — do NOT gate**: Insights (aha-moment that sells Pro; soft paywall with 3-show/14-day cap lives in AnalyticsTab), CSV **export** (user data must always be exportable), savings goals (owner's decision, 2026-10-14).
 - **Grandfathering** ([FoundingUserPolicy](Tenra/Services/Premium/FoundingUserPolicy.swift)): Founding User = onboarded before the first Pro-build launch on this device (decided once in `configure()`), OR the App Store's signed `AppTransaction.originalPurchaseDate` (production only; TestFlight/sandbox dates are placeholders) is before `PremiumConfig.foundingUserDownloadCutoff`, so the status survives a reinstall or a new phone. `isFounder` is stored + observable and NEVER revoked (only `markFounder` writes it, only `true`). Build numbers can't identify pre-Pro downloads: they restart at 1 per marketing version. Product IDs / entitlement `pro` / offering `default` / free limits live in [PremiumConfig](Tenra/Services/Premium/PremiumConfig.swift) — must match ASC + RevenueCat dashboard exactly.
 - **Local testing**: Edit Scheme → Options → StoreKit Configuration → `Tenra/Tenra.storekit` (sandbox purchases, no ASC needed). Paywall content/design is configured in the RevenueCat dashboard (incl. required Terms/Privacy footer links — App Review 3.1.2(c)), not in code.
-- Strategy/pricing rationale: [docs/MONETIZATION_STRATEGY.md](docs/MONETIZATION_STRATEGY.md).
+- The model, the prices and what Pro sells: [docs/promotion-plan.md](docs/promotion-plan.md) §2.
 
 ## CoreData Schema Bumps
 
 ⚠️ **The Xcode project uses file-system-synchronized groups (`PBXFileSystemSynchronizedRootGroup`).** Adding, deleting, or renaming files (`.swift`, `.stringsdict`, etc.) needs NO `project.pbxproj` edits — just create/`rm` on disk and they're auto-included in the target. (Verified: deleted a view + added `.stringsdict` files, both picked up by the build.)
 
-Schema version-bump checklist (currently v12) lives in the `/coredata-schema-bump` skill ([.claude/skills/coredata-schema-bump/SKILL.md](.claude/skills/coredata-schema-bump/SKILL.md)) — invoke it before touching `Tenra.xcdatamodeld`.
+Schema version-bump checklist (currently v15) lives in the `/coredata-schema-bump` skill ([.claude/skills/coredata-schema-bump/SKILL.md](.claude/skills/coredata-schema-bump/SKILL.md)) — invoke it before touching `Tenra.xcdatamodeld`.
 
 ## Testing
 
@@ -311,6 +315,7 @@ Schema version-bump checklist (currently v12) lives in the `/coredata-schema-bum
 - ⚠️ swift-testing `-only-testing:TenraTests/Suite/method()` runs **0 tests** but still prints `** TEST SUCCEEDED **` — method-level filtering doesn't work; filter at the **suite** level. `Suite` must be the **type name** (e.g. `ExpressionEvaluatorTests`), NOT the `@Suite("display name")` — the display name also silently runs 0 tests.
 - ⚠️ The xcodebuild log may hold only `** TEST SUCCEEDED **`: no swift-testing summary line, and a run of 0 tests also "succeeds". Read counts from the result bundle: `xcrun xcresulttool get test-results summary --path <last *.xcresult in the log>` (`totalTestCount`/`passedTests`/`failedTests`); failing cases via `get test-results tests`. Don't grep `expect` (it matches `#expect` warnings).
 - ⚠️ **Suites touching process-global state must carry `.sharedProcessState`** ([TenraTests/SharedProcessStateTrait.swift](TenraTests/SharedProcessStateTrait.swift)). `.serialized` only orders tests *within* one suite, so two suites that both build in-memory `NSPersistentContainer(name: "Tenra")` or both mutate `CurrencyRateStore.shared` corrupted each other and made the full run fail ~half the time, blaming a different random set of tests each run. The trait serializes annotated suites against each other process-wide.
+- ⚠️ **Test waits count polls, never wall-clock time** (`for _ in 0..<1000 { …; try? await Task.sleep(for: .milliseconds(10)) }`, no `ContinuousClock` deadlines, no short semaphore timeouts). The CI host freezes simulator clones for minutes (every test in the clone then reports 300-800 s): a time deadline expires during the freeze and the test fails on a race it never ran.
 - ⚠️ A full-suite run can still occasionally print `** TEST FAILED **` with ZERO failing `Test case` lines, or a burst of `failed … (0.000 seconds)` across unrelated suites — both are harness-level flakes, not tests. Re-run once; if the re-run fails the same way, `grep -aE "error:|The following build commands failed"` the log before blaming the harness.
 - ⚠️ Tests that build a `TransactionStore` must **retain** it — `AccountsViewModel.transactionStore` is `weak`, so `accounts` (= `transactionStore?.accounts`) goes empty once the store deallocates.
 - ⚠️ `xcodebuild test -only-testing:...` does NOT skip compilation — one broken test file fails the whole target, and the test target is the ONLY place test files compile: adding a parameter to a production `init` (e.g. a new ViewModel dependency) breaks them while `xcodebuild build` stays green. When a test file's API has drifted, wrap it in `#if false` / `#endif` with a header comment (existing precedent: `TenraTests/Onboarding/OnboardingViewModelTests.swift`, `TenraTests/Services/Voice/VoiceInputParserTests.swift`).
@@ -341,7 +346,7 @@ When working with this project:
 7. **Performance first**: consider performance implications; consult [gotchas.md](docs/gotchas.md) for known hot-paths
 8. **Test changes**: verify builds and runs after modifications
 9. **Document refactoring**: update affected docs in `docs/` when architecture changes
-10. **Growth work updates the plan**: any release prep, ASO/metadata change, or ASC/RevenueCat analytics pull must also refresh [docs/PROMOTION_PLAN.md](docs/PROMOTION_PLAN.md) (data snapshot, checklists, §7 weekly metrics table) — it is the single source of truth for growth state
+10. **Growth work updates the plan**: any release prep, ASO/metadata change, or ASC/RevenueCat analytics pull must also refresh [docs/promotion-plan.md](docs/promotion-plan.md) (releases §1, the weekly metrics table §6, open tasks §7) — it is the single source of truth for growth state
 
 ### Preferred Tools
 - Use SwiftUI Expert skill for SwiftUI-specific tasks
@@ -350,7 +355,7 @@ When working with this project:
 - Use Glob for finding files by pattern
 
 ### Don't
-- **Don't build custom search UI — system search only** (`.searchable`, bottom-bar `DefaultToolbarItem(kind: .search)`, `.searchToolbarBehavior(.minimize)`). If a system variant misbehaves, pick another SYSTEM variant or restructure the screen (see gotchas.md §searchable drawer for the History precedent). User rule.
+- **Don't build custom search UI — system search only** (`.searchable`, bottom-bar `DefaultToolbarItem(kind: .search)`, `.searchToolbarBehavior(.minimize)`); recent queries and suggestions go in the system's suggestion list through DesignKit's `.dsSearchSuggestions` (docs/design-system.md §4 Search). If a system variant misbehaves, pick another SYSTEM variant or restructure the screen (see gotchas.md §searchable drawer for the History precedent). User rule.
 - **Don't use em dashes (—) in any user-facing text**: UI strings (`Localizable.strings`), ASC metadata (description/promo/What's New), release notes, screenshot captions, push/notification copy. Reads as AI-generated. Rephrase with a comma, colon, period, or split the sentence. (Legitimate uses stay: minus signs for amounts, list bullets in code/docs.)
 - Don't create unnecessary abstractions
 - Don't ignore existing architectural patterns
@@ -358,7 +363,7 @@ When working with this project:
 - Don't skip reading existing code before modifications
 - Don't use Combine when Observation framework is preferred
 - Don't create per-feature icon-style wrappers (e.g. an `InsightIconStyle`) — reuse `Icon` with the canonical style: `Icon(source:, size: AppIconSize.Tile.sm)` (logos, like AccountRow) or `.circle(size: AppIconSize.Tile.sm, tint: .monochrome(color), backgroundColor: color.opacity(0.15))` (colored category icons, like CategoryRow)
-- Don't hand-roll card/row shells — reuse `FinanceCard`, `UniversalRow` and the shared sub-components (see design-system.md Card/Row contracts)
+- Don't hand-roll card/row shells — reuse `FinanceCard`, `UniversalRow` and the shared sub-components (DesignKit's `docs/design-system.md`, the row and card contracts)
 - Don't flag `#Preview` block inconsistencies as production drifts in audits — distinguish preview-only from production usage when grep'ing
 - Don't write CLAUDE.md inline rules for things that fit in a domain doc — keep this file thin
 - Don't auto build/install/launch/screenshot the Simulator to verify UI changes — the user verifies visually. Build only to confirm compilation, then report what to check. (White-on-white plates are invisible in screenshots — `xcrun simctl ui <dev> appearance dark` exposes them.)
@@ -378,37 +383,16 @@ When unsure about architecture decisions:
 
 ---
 
-## Reference Docs Index
+## Documentation
 
-Active reference docs in `docs/`:
-
-| File | Purpose |
-|------|---------|
-| [architecture.md](docs/architecture.md) | MVVM+Coordinator deep dive, TransactionStore, BalanceCoordinator, Repository, CoreData v12 |
-| [concurrency.md](docs/concurrency.md) | Swift 6 concurrency, CoreData threading, @Observable rules |
-| [design-system.md](docs/design-system.md) | Design tokens, components, animations, padding contract, amount formatting |
-| [gotchas.md](docs/gotchas.md) | SwiftUI Layout, Performance hot-paths, code hygiene |
-| [INSIGHTS_METRICS_REFERENCE.md](docs/INSIGHTS_METRICS_REFERENCE.md) | Per-metric reference for InsightsService |
-| [domains/transactions.md](docs/domains/transactions.md) | TransactionStore CRUD, FRC, batch ops |
-| [domains/categories.md](docs/domains/categories.md) | Category / subcategory / budget aggregate indexes (O(1) reads), style cache invalidation, reorder |
-| [domains/accounts.md](docs/domains/accounts.md) | Account / series / parsed-date indexes, AccountDetailView read contract, ranking helpers |
-| [domains/insights.md](docs/domains/insights.md) | InsightsService architecture, DataSnapshot, PreAggregatedData |
-| [domains/deposits.md](docs/domains/deposits.md) | Interest accrual, capitalization, conversion |
-| [domains/loans.md](docs/domains/loans.md) | Manual payments, linking, amortization |
-| [domains/recurring.md](docs/domains/recurring.md) | Series + occurrences, frequency cases |
-| [domains/charts.md](docs/domains/charts.md) | Swift Charts patterns, scrollable, mini-charts |
-| [domains/csv.md](docs/domains/csv.md) | CSV round-trip rules |
-| [domains/import.md](docs/domains/import.md) | Statement + receipt recognition pipeline, DocumentSnapshot seam, Apple Intelligence policy |
-| [domains/voice.md](docs/domains/voice.md) | VoiceInput architecture, speech recognition |
-| [domains/currency.md](docs/domains/currency.md) | FX rates, providers, prewarm |
-| [domains/logos.md](docs/domains/logos.md) | Logo provider chain, ServiceLogoRegistry |
-| [MONETIZATION_STRATEGY.md](docs/MONETIZATION_STRATEGY.md) | Pro model rationale, pricing, competitor analysis, paywall strategy, rollout plan |
-| [PROMOTION_PLAN.md](docs/PROMOTION_PLAN.md) | Active growth/MRR plan: measurement, ratings, ASO iteration, Apple Search Ads pilot, weekly metrics table (see also app-marketing-context.md in repo root) |
-
-Historical docs (305 files) archived to `docs/archive/`.
+- **All current documentation lives in `docs/`; anything no longer current moves to `docs/archive/`** in the same commit that makes it stale (a plan that landed → `docs/archive/plans/`, release notes once the version ships, a finished audit → `docs/archive/`, a superseded spec → `docs/archive/specs/` after its lasting rules go into the domain doc). Current = describes the app as it is now, or work in flight. No docs elsewhere, apart from the tool-mandated `CLAUDE.md`, `AGENTS.md` and `.claude/skills/*/SKILL.md`.
+- **Flat:** only `docs/domains/` (one file per domain) and `docs/public/` (the Pages site) are folders. Work in flight is a file in `docs/`: a plan `plan-<topic>.md`, the What's New of the version being prepared `release-notes.md`; open items, ideas and decisions go in `docs/backlog.md`. Skills that default to other folders (superpowers → `docs/superpowers/`, GSD → `.planning/`) write there instead.
+- **No history in current docs:** "before X it did Y", bug stories and finished checklists go in the commit message or the archive.
+- **Names: lowercase, words joined by hyphens** (`promotion-plan.md`, `performance-audit-2026-07.md`), ISO dates, for folders and for `docs/archive/` too. Exceptions: `README.md` and locale codes (`pt-BR.md`).
+- **Index and layout: [docs/README.md](docs/README.md).** A new doc gets a row there; a new domain also gets a row in the "When to Read Which Doc" table above.
 
 ---
 
-**Last Updated**: 2026-08-26
+**Last Updated**: 2026-10-12
 **iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`: CI runs the GitHub runner's newest Xcode, still 26.x, where iOS 27 symbols don't exist)
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

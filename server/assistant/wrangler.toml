@@ -1,0 +1,38 @@
+name = "tenra-assistant"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# No request bodies or responses are logged. Workers observability keeps only
+# the metadata Cloudflare records itself (status, duration, colo).
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[vars]
+# Off switch: "false" makes every turn answer 503 `disabled` without calling Anthropic.
+ASSISTANT_ENABLED = "true"
+# Production model, chosen by the eval (docs/plan-ai-assistant.md §6): on 2026-10-14 Haiku 5.5
+# passed 25/25 like Sonnet and Opus at about 1/37 of Opus's cost.
+ASSISTANT_MODEL = "claude-haiku-5-5"
+ASSISTANT_EFFORT = "low"
+ASSISTANT_MAX_TOKENS = "16000"
+# Model calls per user per calendar month (UTC). One user message is about 2-3 calls.
+PRO_MONTHLY_CALLS = "900"
+# Without Pro, per App Attest key (one install) per month. The app's own allowance is 30
+# answers in the first week, then 10 a month; about 3 calls an answer, plus headroom.
+FREE_MONTHLY_CALLS = "150"
+# Circuit breaker on total spend: model calls per day across all users.
+GLOBAL_DAILY_CALLS = "5000"
+# Countries not served by the Anthropic API (anthropic.com/supported-countries).
+BLOCKED_COUNTRIES = "RU,BY"
+# The app App Attest assertions must come from: Team ID + bundle id.
+APP_ID = "SY2L2VMQP7.dakacom.Tenra"
+
+# The KV namespace `tenra-assistant-quota` (Cloudflare → Storage & databases → Workers KV).
+[[kv_namespaces]]
+binding = "QUOTA"
+id = "c509b91968924c0b96deba4ebd1ea187"
+
+# Secrets (never in this file): `npx wrangler secret put ANTHROPIC_API_KEY`
+# and `npx wrangler secret put REVENUECAT_SECRET_KEY`.

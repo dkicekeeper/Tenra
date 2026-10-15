@@ -646,7 +646,7 @@ extension VoiceInputView {
 
 /// "Speak..." while nothing is recognized yet: DesignKit's thinking shimmer runs through it, in
 /// the voice orb's colours (a still gradient under Reduce Motion).
-private struct ListeningPrompt: View {
+struct ListeningPrompt: View {
     var body: some View {
         Text(String(localized: "voice.speak"))
             .font(AppTypography.h1)
@@ -677,7 +677,7 @@ private struct ListeningPrompt: View {
 
 /// The recording screen's edge light, following the voice. Its own small view, so the level
 /// (about 47 updates a second) redraws the glow only, not the screen.
-private struct VoiceLevelGlow: View {
+struct VoiceLevelGlow: View {
     let voiceService: VoiceInputService
     /// Off for screenshots, where nothing is recorded: the glow then breathes on its own.
     let followsVoice: Bool
@@ -693,7 +693,7 @@ private struct VoiceLevelGlow: View {
 /// small stop glyph in the middle. At rest the orb is about the size of the old 80 pt button;
 /// only that circle takes the tap. Its own small view, so the level (about 47 updates a second)
 /// redraws the orb only.
-private struct VoiceStopOrb: View {
+struct VoiceStopOrb: View {
     let voiceService: VoiceInputService
     /// Off for screenshots, where nothing is recorded: the orb then breathes on its own.
     let followsVoice: Bool

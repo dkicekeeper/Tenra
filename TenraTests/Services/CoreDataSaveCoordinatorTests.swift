@@ -43,17 +43,25 @@ struct CoreDataSaveCoordinatorTests {
         var values: [String] { lock.withLock { entries } }
     }
 
-    /// Holds the first save inside its work until the test has queued the others.
+    /// Holds the first save inside its work until the test has queued the others. The test
+    /// always opens it; the long limit only keeps a broken run from hanging. A short one
+    /// decided the outcome when CI froze the simulator for minutes: the gate opened on its
+    /// own before the third save was queued.
     private final class Gate: @unchecked Sendable {
         private let semaphore = DispatchSemaphore(value: 0)
         private let lock = NSLock()
         private var entered = false
+        private var expired = false
 
         func block() {
             lock.withLock { entered = true }
-            _ = semaphore.wait(timeout: .now() + 10)
+            if semaphore.wait(timeout: .now() + 600) == .timedOut {
+                lock.withLock { expired = true }
+            }
         }
         var isBlocked: Bool { lock.withLock { entered } }
+        /// The limit ran out before the test opened the gate.
+        var timedOut: Bool { lock.withLock { expired } }
         func open() { semaphore.signal() }
     }
 
@@ -68,9 +76,10 @@ struct CoreDataSaveCoordinatorTests {
         return ids
     }
 
+    /// Polls up to ~10 s of sleeps. Counted in polls, not wall-clock time: a run frozen by the
+    /// host for minutes resumes polling instead of giving up on its first check.
     private func waitUntil(_ condition: () async -> Bool) async -> Bool {
-        let deadline = ContinuousClock.now + .seconds(5)
-        while ContinuousClock.now < deadline {
+        for _ in 0..<1000 {
             if await condition() { return true }
             try? await Task.sleep(for: .milliseconds(10))
         }
@@ -112,6 +121,7 @@ struct CoreDataSaveCoordinatorTests {
         try await superseded.value
         try await newest.value
 
+        #expect(!gate.timedOut)
         #expect(log.values == ["first", "third"])
     }
 
@@ -158,6 +168,7 @@ struct CoreDataSaveCoordinatorTests {
         try await b.value
         try await c.value
 
+        #expect(!gate.timedOut)
         #expect(log.values.count == 3)
         #expect(log.values.first == "a")
         #expect(Set(log.values) == ["a", "b", "c"])

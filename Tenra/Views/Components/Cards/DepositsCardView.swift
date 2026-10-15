@@ -39,7 +39,7 @@ struct DepositsCardView: View {
             title: String(localized: "finances.deposits.title", defaultValue: "Deposits"),
             isEmpty: deposits.isEmpty,
             emptyTitle: String(localized: "finances.deposits.empty", defaultValue: "No deposits"),
-            subtitle: String(format: String(localized: "finances.deposits.count", defaultValue: "%lld deposits"), deposits.count)
+            subtitle: String(format: NSLocalizedString("finances.deposits.count", comment: "Count with plural forms in Localizable.stringsdict"), deposits.count)
         ) {
             RedactableAmount(amount: totalAmount, currency: baseCurrency, isLoading: isLoadingTotal)
         } trailing: {
@@ -61,7 +61,9 @@ struct DepositsCardView: View {
                     iconSource: deposit.iconSource,
                     amount: max(balancesById[deposit.id] ?? 0, 0)
                 )
-            }
+            },
+            // App icons in a pocket (DesignKit 4.4.0), centred in the card (4.5.0).
+            style: .shelf
         )
     }
 

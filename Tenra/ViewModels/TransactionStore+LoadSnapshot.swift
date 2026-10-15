@@ -75,6 +75,9 @@ extension TransactionStore {
     ///     leg conversion. Build on MainActor from `accounts` before detaching.
     ///   - needsColdStartCategoryAggregates: pass `true` when CoreData had no
     ///     `CategoryAggregateEntity` rows (first launch / fresh install).
+    ///   - persistedCategoryAggregates: the rows CoreData had. When they no longer describe
+    ///     `transactions` (`persistedCategoryAggregatesMatch`), the category totals are
+    ///     rebuilt here as on a first launch.
     ///   - needsColdStartAccountAggregates: same for `AccountAggregateEntity`.
     nonisolated static func buildLoadSnapshot(
         transactions: [Transaction],
@@ -85,6 +88,7 @@ extension TransactionStore {
         baseCurrency: String,
         accountsCurrencyById: [String: String],
         needsColdStartCategoryAggregates: Bool,
+        persistedCategoryAggregates: [CategoryAggregate] = [],
         needsColdStartAccountAggregates: Bool
     ) -> LoadedIndexSnapshot {
 
@@ -201,7 +205,11 @@ extension TransactionStore {
 
         var coldStartCategoryAggregates: [String: CategoryAggregate]?
         var coldStartCategoryAggregatesAreFXStale = false
-        if needsColdStartCategoryAggregates {
+        if needsColdStartCategoryAggregates || !persistedCategoryAggregatesMatch(
+            persistedCategoryAggregates,
+            transactions: transactions,
+            parsedDates: parsedDates
+        ) {
             let (cat, fxStale) = computeCategoryAggregates(
                 transactions: transactions,
                 parsedDates: parsedDates,
@@ -242,6 +250,34 @@ extension TransactionStore {
             coldStartAccountAggregates: coldStartAccountAggregates,
             coldStartAccountAggregatesAreFXStale: coldStartAccountAggregatesAreFXStale
         )
+    }
+
+    // MARK: - Warm-start check (pure, off-MainActor)
+
+    /// Whether the category totals saved by the last session still describe `transactions`:
+    /// each category's all-time bucket counts exactly the realized transactions it would get
+    /// from a rebuild. A warm start only ever adds deltas to the saved table, so a table that
+    /// was wrong when saved stays wrong. Until 1.5 an App Intent run before the full load
+    /// (the Wallet automation) saved the one payment it added as the whole table, and every
+    /// budget on the Categories screen then read 0. A table saved before a future-dated
+    /// transaction came due fails the check too, and the rebuild folds it in.
+    nonisolated static func persistedCategoryAggregatesMatch(
+        _ persisted: [CategoryAggregate],
+        transactions: [Transaction],
+        parsedDates: [String: Date]
+    ) -> Bool {
+        var expected: [String: Int32] = [:]
+        for tx in transactions where isAggregatableForLoad(tx) {
+            guard let date = parsedDates[tx.date], LedgerPolicyRule.isRealized(date) else { continue }
+            expected[tx.category, default: 0] += 1
+        }
+        var saved: [String: Int32] = [:]
+        for aggregate in persisted
+        where aggregate.year == 0 && aggregate.month == 0 && aggregate.day == 0 && aggregate.subcategoryName == nil
+            && aggregate.transactionCount > 0 {
+            saved[aggregate.categoryName, default: 0] += aggregate.transactionCount
+        }
+        return saved == expected
     }
 
     // MARK: - Cold-start aggregates (pure, off-MainActor)

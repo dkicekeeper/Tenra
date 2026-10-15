@@ -5,6 +5,16 @@
     python3 appstore/asc.py builds [--limit 15]     builds with processing and TestFlight state
     python3 appstore/asc.py wait-build --build N [--version 1.5] [--wait 40]
                                                     wait until build N of that version is processed
+    python3 appstore/asc.py prepare-version --version 1.5 [--build N] [--wait 30]
+                                                    create the version, What's New from
+                                                    docs/release-notes.md, select build N (no submit)
+    python3 appstore/asc.py keywords [--locale ru,en-US]
+                                                    the app's keywords (custom pages link to them)
+    python3 appstore/asc.py custom-pages            custom product pages and their review state
+    python3 appstore/asc.py push-custom-pages [--submit]
+                                                    create/update the pages in product-pages.json
+    python3 appstore/asc.py push-experiment [--submit | --start]
+                                                    the product page test in product-pages.json
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -26,6 +36,7 @@ Needs PyJWT and cryptography (`pip install pyjwt cryptography`).
 
 import base64
 import gzip
+import hashlib
 import json
 import os
 import re
@@ -101,9 +112,14 @@ class ApiError(Exception):
         self.code = code
 
 
-def request(path: str, accept: str = "application/json") -> bytes:
+def request(path: str, accept: str = "application/json", method: str = "GET", body: dict | None = None) -> bytes:
     url = path if path.startswith("http") else API + path
-    req = urllib.request.Request(url, headers={"Authorization": "Bearer " + token(), "Accept": accept})
+    headers = {"Authorization": "Bearer " + token(), "Accept": accept}
+    data = None
+    if body is not None:
+        headers["Content-Type"] = "application/json"
+        data = json.dumps(body).encode()
+    req = urllib.request.Request(url, data=data, method=method, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=60) as response:
             return response.read()
@@ -121,6 +137,12 @@ def get(path: str, params: dict | None = None) -> dict:
     if params:
         path += ("&" if "?" in path else "?") + urllib.parse.urlencode(params)
     raw = request(path)
+    return json.loads(raw) if raw else {}
+
+
+def send(method: str, path: str, body: dict) -> dict:
+    """POST or PATCH a JSON:API document; a 204 comes back as {}."""
+    raw = request(path, method=method, body=body)
     return json.loads(raw) if raw else {}
 
 
@@ -246,6 +268,372 @@ def wait_build(app: str, number: str, version: str | None, minutes: int) -> None
         print(f"Build {number} is still processing; App Store Connect will email when it is done.")
     elif build["processing"] != "VALID":
         sys.exit(f"Build {number}: {build['processing']} (App Store Connect emails the reason).")
+
+
+NOTES = Path(__file__).resolve().parent.parent / "docs" / "release-notes.md"
+EDITABLE = {"PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED", "INVALID_BINARY"}
+
+
+def release_notes(version: str, path: Path = NOTES) -> dict[str, str]:
+    """What's New per ASC locale from docs/release-notes.md: each `## <locale>` heading followed by
+    a fenced block. The file's title must name the version, so stale notes are never sent."""
+    text = path.read_text(encoding="utf-8")
+    title = text.splitlines()[0] if text else ""
+    if f"Tenra {version}:" not in title:
+        sys.exit(f"{path.name} is not the notes of {version} (title: {title!r}).")
+    notes = {m.group(1): m.group(2).strip()
+             for m in re.finditer(r"^## ([a-z]{2}(?:-[A-Z]{2})?)\n\n```\n(.*?)\n```", text, re.S | re.M)}
+    if not notes:
+        sys.exit(f"No `## <locale>` blocks in {path.name}.")
+    for locale, note in notes.items():
+        if len(note) > 4000:
+            sys.exit(f"What's New for {locale} is {len(note)} characters; App Store Connect allows 4000.")
+    return notes
+
+
+def prepare_version(app: str, version: str, number: str | None, minutes: int) -> None:
+    """Create the App Store version (released after approval) if it is missing, set What's New for
+    every locale in docs/release-notes.md and select build `number` once it is processed. It never
+    submits for review."""
+    notes = release_notes(version)
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
+                       {"filter[versionString]": version, "filter[platform]": "IOS"})
+    if found:
+        record = found[0]
+        print(f"Version {version} already exists.")
+    else:
+        record = send("POST", "/v1/appStoreVersions", {"data": {
+            "type": "appStoreVersions",
+            "attributes": {"platform": "IOS", "versionString": version, "releaseType": "AFTER_APPROVAL"},
+            "relationships": {"app": {"data": {"type": "apps", "id": app}}},
+        }})["data"]
+        print(f"Version {version} created (released after approval).")
+    version_id = record["id"]
+    state = record["attributes"].get("appVersionState") or record["attributes"].get("appStoreState")
+    if state not in EDITABLE:
+        sys.exit(f"Version {version} is {state}: its metadata can't be edited now.")
+
+    existing, _ = get_all(f"/v1/appStoreVersions/{version_id}/appStoreVersionLocalizations", {"limit": 50})
+    by_locale = {item["attributes"]["locale"]: item["id"] for item in existing}
+    rows = []
+    for locale, note in notes.items():
+        if locale in by_locale:
+            send("PATCH", f"/v1/appStoreVersionLocalizations/{by_locale[locale]}", {"data": {
+                "type": "appStoreVersionLocalizations", "id": by_locale[locale], "attributes": {"whatsNew": note},
+            }})
+            rows.append([locale, "updated", len(note)])
+        else:
+            send("POST", "/v1/appStoreVersionLocalizations", {"data": {
+                "type": "appStoreVersionLocalizations",
+                "attributes": {"locale": locale, "whatsNew": note},
+                "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": version_id}}},
+            }})
+            rows.append([locale, "created (no description yet)", len(note)])
+    rows += [[locale, "not in release-notes.md, left as is", ""] for locale in sorted(set(by_locale) - set(notes))]
+    table(f"What's New, {version}", ["Locale", "Result", "Characters"], rows)
+
+    if not number:
+        return
+    deadline = time.time() + minutes * 60
+    while True:
+        build = next((b for b in builds(app, 20) if b["number"] == number and b["version"] == version), None)
+        if (build and build["processing"] != "PROCESSING") or time.time() > deadline:
+            break
+        print(f"Build {number}: {build['processing'] if build else 'not visible yet'}, waiting…", flush=True)
+        time.sleep(60)
+    if not build or build["processing"] != "VALID":
+        sys.exit(f"Build {number} of {version}: {build['processing'] if build else 'not in App Store Connect yet'}; "
+                 "run prepare-version again once it is processed.")
+    send("PATCH", f"/v1/appStoreVersions/{version_id}/relationships/build",
+         {"data": {"type": "builds", "id": build["id"]}})
+    print(f"Build {number} selected for version {version}. Submitting for review stays with the founder.")
+
+
+# Product pages: custom product pages and product page optimization ---------------------------------
+
+ROOT = Path(__file__).resolve().parent.parent
+PAGES = Path(__file__).resolve().parent / "product-pages.json"
+IPHONE = "APP_IPHONE_67"   # the 6.9" set (1320 x 2868), the only size Tenra uploads
+CPP_EDITABLE = {"PREPARE_FOR_SUBMISSION", "REJECTED"}
+
+
+def page_config() -> dict:
+    return json.loads(PAGES.read_text(encoding="utf-8"))
+
+
+def frame_files(config: dict, frames: list[str], locale: str) -> list[Path]:
+    """The composed screenshots (screenshots/final/<locale>/<stem>.png) for `frames`, in order."""
+    paths = [ROOT / "screenshots" / "final" / locale / f"{config['frames'][frame]}.png" for frame in frames]
+    missing = [str(path.relative_to(ROOT)) for path in paths if not path.exists()]
+    if missing:
+        sys.exit("Missing screenshots: " + ", ".join(missing))
+    return paths
+
+
+def screenshot_set(owner: str, owner_id: str) -> str:
+    """The 6.9" screenshot set of a custom page or treatment localization, created when missing.
+    `owner` is the relationship name: appCustomProductPageLocalization or
+    appStoreVersionExperimentTreatmentLocalization."""
+    sets, _ = get_all(f"/v1/{owner}s/{owner_id}/appScreenshotSets", {"limit": 50})
+    for item in sets:
+        if item["attributes"].get("screenshotDisplayType") == IPHONE:
+            return item["id"]
+    return send("POST", "/v1/appScreenshotSets", {"data": {
+        "type": "appScreenshotSets",
+        "attributes": {"screenshotDisplayType": IPHONE},
+        "relationships": {owner: {"data": {"type": owner + "s", "id": owner_id}}},
+    }})["data"]["id"]
+
+
+def settled_screenshots(set_id: str) -> list[dict]:
+    """The set's screenshots once its contents stop changing. A new treatment or page
+    localization gets a copy of the default page's screenshots a few seconds after it is
+    created: listing too early saw an empty set, and the copy then overfilled it."""
+    previous = None
+    for _ in range(10):
+        shots, _ = get_all(f"/v1/appScreenshotSets/{set_id}/appScreenshots", {"limit": 50})
+        ids = [shot["id"] for shot in shots]
+        if ids == previous:
+            return shots
+        previous = ids
+        time.sleep(3)
+    return shots
+
+
+def put_screenshots(set_id: str, files: list[Path]) -> str:
+    """Make the set hold exactly `files`, in order. Skips the upload when it already does."""
+    wanted = [hashlib.md5(path.read_bytes()).hexdigest() for path in files]
+    existing = settled_screenshots(set_id)
+    if [shot["attributes"].get("sourceFileChecksum") for shot in existing] == wanted:
+        return "unchanged"
+    for shot in existing:
+        request(f"/v1/appScreenshots/{shot['id']}", method="DELETE")
+    ids = []
+    for path, checksum in zip(files, wanted):
+        data = path.read_bytes()
+        body = {"data": {
+            "type": "appScreenshots",
+            "attributes": {"fileName": path.name, "fileSize": len(data)},
+            "relationships": {"appScreenshotSet": {"data": {"type": "appScreenshotSets", "id": set_id}}},
+        }}
+        try:
+            shot = send("POST", "/v1/appScreenshots", body)["data"]
+        except ApiError as error:
+            if error.code != 409:
+                raise
+            # The default page's copy arrived after all: keep only this run's uploads.
+            for other in settled_screenshots(set_id):
+                if other["id"] not in ids:
+                    request(f"/v1/appScreenshots/{other['id']}", method="DELETE")
+            shot = send("POST", "/v1/appScreenshots", body)["data"]
+        for operation in shot["attributes"]["uploadOperations"]:
+            # Presigned upload URLs: no App Store Connect token.
+            chunk = data[operation["offset"]:operation["offset"] + operation["length"]]
+            headers = {header["name"]: header["value"] for header in operation.get("requestHeaders") or []}
+            upload = urllib.request.Request(operation["url"], data=chunk, method=operation["method"], headers=headers)
+            try:
+                with urllib.request.urlopen(upload, timeout=120):
+                    pass
+            except urllib.error.HTTPError as error:
+                raise ApiError(error.code, f"upload of {path.name} failed") from None
+        send("PATCH", f"/v1/appScreenshots/{shot['id']}", {"data": {
+            "type": "appScreenshots", "id": shot["id"],
+            "attributes": {"uploaded": True, "sourceFileChecksum": checksum},
+        }})
+        ids.append(shot["id"])
+    send("PATCH", f"/v1/appScreenshotSets/{set_id}/relationships/appScreenshots",
+         {"data": [{"type": "appScreenshots", "id": shot_id} for shot_id in ids]})
+    return f"{len(ids)} uploaded"
+
+
+def keywords(app: str, locale: str) -> None:
+    items, _ = get_all(f"/v1/apps/{app}/searchKeywords",
+                       {"filter[platform]": "IOS", "filter[locale]": locale, "limit": 200})
+    table(f"App keywords, {locale}", ["Keyword id"], [[item["id"]] for item in items])
+
+
+def link_keywords(app: str, localization_id: str, locale: str, wanted: list[str]) -> str:
+    """Link the custom page localization to the app keywords named in `wanted` (case-insensitive);
+    unlink the others. Keywords that are not in the app's keyword list are reported, not added."""
+    available, _ = get_all(f"/v1/apps/{app}/searchKeywords",
+                           {"filter[platform]": "IOS", "filter[locale]": locale, "limit": 200})
+    by_text = {item["id"].casefold(): item["id"] for item in available}
+    ids = [by_text[word.casefold()] for word in wanted if word.casefold() in by_text]
+    unknown = [word for word in wanted if word.casefold() not in by_text]
+    path = f"/v1/appCustomProductPageLocalizations/{localization_id}/relationships/searchKeywords"
+    linked, _ = get_all(path, {"limit": 200})
+    stale = [{"type": "appKeywords", "id": item["id"]} for item in linked if item["id"] not in ids]
+    if stale:
+        request(path, method="DELETE", body={"data": stale})
+    if ids:
+        send("POST", path, {"data": [{"type": "appKeywords", "id": keyword} for keyword in ids]})
+    return f"{len(ids)} linked" + (f"; not app keywords: {', '.join(unknown)}" if unknown else "")
+
+
+def submit_for_review(app: str, items: list[tuple[str, str]]) -> None:
+    """Add (relationship, id) items to the open review submission, or a new one, and submit it."""
+    open_ones, _ = get_all("/v1/reviewSubmissions",
+                           {"filter[app]": app, "filter[platform]": "IOS", "filter[state]": "READY_FOR_REVIEW"})
+    submission = open_ones[0] if open_ones else send("POST", "/v1/reviewSubmissions", {"data": {
+        "type": "reviewSubmissions", "attributes": {"platform": "IOS"},
+        "relationships": {"app": {"data": {"type": "apps", "id": app}}},
+    }})["data"]
+    types = {"appCustomProductPageVersion": "appCustomProductPageVersions",
+             "appStoreVersionExperimentV2": "appStoreVersionExperiments"}
+    for relationship, item_id in items:
+        try:
+            send("POST", "/v1/reviewSubmissionItems", {"data": {"type": "reviewSubmissionItems", "relationships": {
+                "reviewSubmission": {"data": {"type": "reviewSubmissions", "id": submission["id"]}},
+                relationship: {"data": {"type": types[relationship], "id": item_id}},
+            }}})
+        except ApiError as error:
+            if error.code != 409:   # 409: already in this submission
+                raise
+    send("PATCH", f"/v1/reviewSubmissions/{submission['id']}", {"data": {
+        "type": "reviewSubmissions", "id": submission["id"], "attributes": {"submitted": True},
+    }})
+    print(f"Submitted for review: {len(items)} item(s).")
+
+
+def custom_pages(app: str) -> None:
+    pages, _ = get_all(f"/v1/apps/{app}/appCustomProductPages", {"limit": 50})
+    rows = []
+    for page in pages:
+        versions, _ = get_all(f"/v1/appCustomProductPages/{page['id']}/appCustomProductPageVersions", {"limit": 10})
+        states = ", ".join(v["attributes"].get("state", "?") for v in versions)
+        rows.append([page["attributes"].get("name"), page["attributes"].get("visible"), states,
+                     page["attributes"].get("url") or ""])
+    table("Custom product pages", ["Name", "Visible", "Versions", "URL"], rows)
+
+
+def editable_cpp_version(page_id: str) -> dict:
+    versions, _ = get_all(f"/v1/appCustomProductPages/{page_id}/appCustomProductPageVersions", {"limit": 10})
+    for version in versions:
+        if version["attributes"].get("state") in CPP_EDITABLE:
+            return version
+    return send("POST", "/v1/appCustomProductPageVersions", {"data": {
+        "type": "appCustomProductPageVersions",
+        "relationships": {"appCustomProductPage": {"data": {"type": "appCustomProductPages", "id": page_id}}},
+    }})["data"]
+
+
+def push_custom_pages(app: str, submit: bool) -> None:
+    """Create or update every custom product page in appstore/product-pages.json: promotional text,
+    screenshots and keywords per locale. With submit, sends the edited versions for review."""
+    config = page_config()
+    files = {(page["name"], locale): frame_files(config, page["frames"], locale)
+             for page in config["customPages"] for locale in page["locales"]}
+    existing, _ = get_all(f"/v1/apps/{app}/appCustomProductPages", {"limit": 50})
+    by_name = {page["attributes"]["name"]: page for page in existing}
+    rows, ready = [], []
+    for page in config["customPages"]:
+        record = by_name.get(page["name"])
+        if not record:
+            record = send("POST", "/v1/appCustomProductPages", {
+                "data": {
+                    "type": "appCustomProductPages",
+                    "attributes": {"name": page["name"]},
+                    "relationships": {
+                        "app": {"data": {"type": "apps", "id": app}},
+                        "appCustomProductPageVersions": {"data": [{"type": "appCustomProductPageVersions", "id": "${version}"}]},
+                    },
+                },
+                "included": [
+                    {"type": "appCustomProductPageVersions", "id": "${version}", "relationships": {
+                        "appCustomProductPageLocalizations": {"data": [
+                            {"type": "appCustomProductPageLocalizations", "id": "${" + locale + "}"}
+                            for locale in page["locales"]]},
+                    }},
+                    *[{"type": "appCustomProductPageLocalizations", "id": "${" + locale + "}",
+                       "attributes": {"locale": locale, "promotionalText": meta["promotionalText"]}}
+                      for locale, meta in page["locales"].items()],
+                ],
+            })["data"]
+        version = editable_cpp_version(record["id"])
+        localizations, _ = get_all(
+            f"/v1/appCustomProductPageVersions/{version['id']}/appCustomProductPageLocalizations", {"limit": 50})
+        by_locale = {item["attributes"]["locale"]: item for item in localizations}
+        for locale, meta in page["locales"].items():
+            localization = by_locale.get(locale)
+            if localization:
+                send("PATCH", f"/v1/appCustomProductPageLocalizations/{localization['id']}", {"data": {
+                    "type": "appCustomProductPageLocalizations", "id": localization["id"],
+                    "attributes": {"promotionalText": meta["promotionalText"]},
+                }})
+            else:
+                localization = send("POST", "/v1/appCustomProductPageLocalizations", {"data": {
+                    "type": "appCustomProductPageLocalizations",
+                    "attributes": {"locale": locale, "promotionalText": meta["promotionalText"]},
+                    "relationships": {"appCustomProductPageVersion": {
+                        "data": {"type": "appCustomProductPageVersions", "id": version["id"]}}},
+                }})["data"]
+            shots = put_screenshots(screenshot_set("appCustomProductPageLocalization", localization["id"]),
+                                    files[(page["name"], locale)])
+            words = link_keywords(app, localization["id"], locale, meta.get("keywords", []))
+            rows.append([page["name"], locale, shots, words])
+        ready.append(("appCustomProductPageVersion", version["id"]))
+    table("Custom product pages pushed", ["Page", "Locale", "Screenshots", "Keywords"], rows)
+    if submit:
+        submit_for_review(app, ready)
+
+
+def push_experiment(app: str, submit: bool, start: bool) -> None:
+    """Create or update the product page optimization test in appstore/product-pages.json; with
+    submit, send it for review; with start, start it once App Review has approved it."""
+    config = page_config()
+    test = config["experiment"]
+    locales = sorted(path.name for path in (ROOT / "screenshots" / "final").iterdir() if path.is_dir())
+    files = {(treatment["name"], locale): frame_files(config, treatment["frames"], locale)
+             for treatment in test["treatments"] for locale in locales}
+    existing, _ = get_all(f"/v1/apps/{app}/appStoreVersionExperimentsV2", {"limit": 20})
+    record = next((item for item in existing if item["attributes"].get("name") == test["name"]), None)
+    if not record:
+        record = send("POST", "/v2/appStoreVersionExperiments", {"data": {
+            "type": "appStoreVersionExperiments",
+            "attributes": {"name": test["name"], "platform": "IOS", "trafficProportion": test["trafficProportion"]},
+            "relationships": {"app": {"data": {"type": "apps", "id": app}}},
+        }})["data"]
+        print(f"Test {test['name']!r} created, {test['trafficProportion']}% of visitors.")
+    state = record["attributes"].get("state")
+    if start:
+        if state not in ("APPROVED", "ACCEPTED"):
+            sys.exit(f"Test is {state}: it starts after App Review approves it.")
+        try:
+            send("PATCH", f"/v2/appStoreVersionExperiments/{record['id']}", {"data": {
+                "type": "appStoreVersionExperiments", "id": record["id"], "attributes": {"started": True}}})
+        except ApiError as error:
+            # An approved test can already be running (started in App Store Connect).
+            if error.code == 409 and "already running" in str(error):
+                print("Test is already running.")
+                return
+            raise
+        print("Test started.")
+        return
+    if state not in CPP_EDITABLE:
+        sys.exit(f"Test is {state}: its treatments can't be edited now.")
+    treatments, _ = get_all(f"/v2/appStoreVersionExperiments/{record['id']}/appStoreVersionExperimentTreatments", {"limit": 10})
+    by_name = {item["attributes"].get("name"): item for item in treatments}
+    rows = []
+    for treatment in test["treatments"]:
+        item = by_name.get(treatment["name"]) or send("POST", "/v1/appStoreVersionExperimentTreatments", {"data": {
+            "type": "appStoreVersionExperimentTreatments", "attributes": {"name": treatment["name"]},
+            "relationships": {"appStoreVersionExperimentV2": {"data": {"type": "appStoreVersionExperiments", "id": record["id"]}}},
+        }})["data"]
+        localizations, _ = get_all(
+            f"/v1/appStoreVersionExperimentTreatments/{item['id']}/appStoreVersionExperimentTreatmentLocalizations", {"limit": 50})
+        by_locale = {loc["attributes"]["locale"]: loc for loc in localizations}
+        for locale in locales:
+            localization = by_locale.get(locale) or send("POST", "/v1/appStoreVersionExperimentTreatmentLocalizations", {"data": {
+                "type": "appStoreVersionExperimentTreatmentLocalizations", "attributes": {"locale": locale},
+                "relationships": {"appStoreVersionExperimentTreatment": {
+                    "data": {"type": "appStoreVersionExperimentTreatments", "id": item["id"]}}},
+            }})["data"]
+            shots = put_screenshots(screenshot_set("appStoreVersionExperimentTreatmentLocalization", localization["id"]),
+                                    files[(treatment["name"], locale)])
+            rows.append([treatment["name"], locale, shots])
+    table(f"Test {test['name']!r}", ["Treatment", "Locale", "Screenshots"], rows)
+    if submit:
+        submit_for_review(app, [("appStoreVersionExperimentV2", record["id"])])
 
 
 def reviews(app: str, limit: int) -> None:
@@ -395,6 +783,20 @@ def main(argv: list[str]) -> None:
         if not number:
             sys.exit("wait-build needs --build N")
         wait_build(app, number, option("--version"), int(option("--wait", 40)))
+    elif command == "prepare-version":
+        version = option("--version")
+        if not version:
+            sys.exit("prepare-version needs --version X.Y")
+        prepare_version(app, version, option("--build"), int(option("--wait", 0)))
+    elif command == "keywords":
+        for locale in option("--locale", "en-US").split(","):
+            keywords(app, locale)
+    elif command == "custom-pages":
+        custom_pages(app)
+    elif command == "push-custom-pages":
+        push_custom_pages(app, "--submit" in args)
+    elif command == "push-experiment":
+        push_experiment(app, "--submit" in args, "--start" in args)
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

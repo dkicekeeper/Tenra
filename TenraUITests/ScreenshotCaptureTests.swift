@@ -4,13 +4,16 @@
 //
 //  Automated App Store screenshot capture. Launches the app in ScreenshotDemo
 //  mode (seeded dataset, Pro unlocked, offline FX) with the language/locale
-//  passed via TEST_RUNNER_* environment variables, walks the 8 marketing
-//  screens and stores full-resolution screenshots as keepAlways attachments.
+//  passed via TEST_RUNNER_* environment variables, walks the marketing screens
+//  (01-08 on the default product page, 09-12 for the custom product pages:
+//  subscriptions, a deposit, loans) and stores full-resolution screenshots as
+//  keepAlways attachments.
 //
 //  Run via scripts/capture_screenshots.sh — it loops all storefront locales
 //  and exports the attachments from the .xcresult bundles.
 //
 //  Environment (set with TEST_RUNNER_ prefix on xcodebuild):
+//    SCREENSHOT_FRAMES         — "cpp" captures 02 and 09-12 (custom product pages); default all
 //    SCREENSHOT_LANGUAGE       — AppleLanguages value for the app ("de", "es-MX", …)
 //    SCREENSHOT_LOCALE         — AppleLocale value ("de_DE", "es_MX", …)
 //    SCREENSHOT_DEMO_CURRENCY  — seeded dataset currency ("EUR", "MXN", …)
@@ -59,6 +62,23 @@ final class ScreenshotCaptureTests: XCTestCase {
         XCTAssertTrue(historyLink.waitForExistence(timeout: 90), "Home did not load")
         // Let full init finish: balances recalc, deposit interest posting, reveal animations.
         sleep(6)
+
+        if env["SCREENSHOT_FRAMES"] == "cpp" {
+            // Only the custom product page frames: the default ones are already composed.
+            // The first locale of a CI run starts cold: a tab tap can land before the tab bar
+            // responds, so tap again until Finances shows.
+            let accountsCard = app.descendants(matching: .any)["finances.accountsCard"].firstMatch
+            for _ in 0..<3 where !accountsCard.exists {
+                tabBarButton(at: 2).tap()
+                _ = accountsCard.waitForExistence(timeout: 40)
+            }
+            XCTAssertTrue(accountsCard.exists, "Finances did not load")
+            sleep(2)
+            snap("02-finances")   // the custom pages reuse it
+            captureCustomPageFrames()
+            return
+        }
+
         snap("01-home")
 
         // ── 6. History (from Home) ───────────────────────────────────────────
@@ -70,7 +90,8 @@ final class ScreenshotCaptureTests: XCTestCase {
         // ── 3. Analytics / Insights ──────────────────────────────────────────
         tabBarButton(at: 1).tap()
         let healthBadge = app.descendants(matching: .any)["insights.healthScore"].firstMatch
-        XCTAssertTrue(healthBadge.waitForExistence(timeout: 60), "Insights did not load")
+        // A slow CI simulator needs minutes for the first Insights pass over the demo data.
+        XCTAssertTrue(healthBadge.waitForExistence(timeout: 180), "Insights did not load")
         sleep(2)
         snap("03-insights")
 
@@ -113,6 +134,8 @@ final class ScreenshotCaptureTests: XCTestCase {
         snap("08-multicurrency")
         goBack()
 
+        captureCustomPageFrames()
+
         // ── 7. Voice input (expand the [+] pseudo-tab, then Voice) ───────────
         tabBarButton(at: 3).tap()   // [+] → switches tab bar to expanded mode
         sleep(1)
@@ -124,7 +147,63 @@ final class ScreenshotCaptureTests: XCTestCase {
         snap("07-voice")
     }
 
+    // MARK: - Custom product page frames
+
+    /// 09-12, for the custom product pages: subscriptions, a deposit, loans. Starts and ends on
+    /// the Finances tab.
+    private func captureCustomPageFrames() {
+        // ── 9-10. Subscriptions: calendar and cards, then one subscription ──
+        let subscriptionsCard = app.descendants(matching: .any)["finances.subscriptionsCard"].firstMatch
+        XCTAssertTrue(subscriptionsCard.waitForExistence(timeout: 10), "Subscriptions card not found")
+        subscriptionsCard.tap()
+        sleep(3)   // logos load and the calendar settles
+        snap("09-subscriptions")
+        let firstSubscription = app.descendants(matching: .any)["subscriptions.card"].firstMatch
+        if firstSubscription.waitForExistence(timeout: 10) {
+            firstSubscription.tap()
+            sleep(3)
+            snap("10-subscription-detail")
+        }
+        backToFinances()
+
+        // ── 11. A deposit ────────────────────────────────────────────────────
+        let depositsCard = app.descendants(matching: .any)["finances.depositsCard"].firstMatch
+        XCTAssertTrue(depositsCard.waitForExistence(timeout: 10), "Deposits card not found")
+        depositsCard.tap()
+        let firstDeposit = app.cells.firstMatch
+        if firstDeposit.waitForExistence(timeout: 10) {
+            firstDeposit.tap()
+            sleep(3)
+            snap("11-deposit")
+        }
+        backToFinances()
+
+        // ── 12. Loans (this month's payment status) ──────────────────────────
+        let loansCard = app.descendants(matching: .any)["finances.loansCard"].firstMatch
+        var loanScrolls = 0
+        while !(loansCard.exists && loansCard.isHittable) && loanScrolls < 4 {
+            app.swipeUp()
+            loanScrolls += 1
+        }
+        if loansCard.exists {
+            loansCard.tap()
+            sleep(3)
+            snap("12-loans")
+            goBack()
+        }
+    }
+
     // MARK: - Helpers
+
+    /// Steps back until the Finances root shows again: a zoom-transition detail can swallow one
+    /// back gesture, which left the next card out of reach on a slow simulator.
+    private func backToFinances() {
+        let accountsCard = app.descendants(matching: .any)["finances.accountsCard"].firstMatch
+        for _ in 0..<4 {
+            if accountsCard.waitForExistence(timeout: 2) && accountsCard.isHittable { return }
+            goBack()
+        }
+    }
 
     private func tabBarButton(at index: Int) -> XCUIElement {
         let tabBar = app.tabBars.firstMatch

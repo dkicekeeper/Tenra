@@ -8,6 +8,10 @@
 | Сборка → App Store Connect → TestFlight | GitHub Actions, `.github/workflows/testflight.yml` | Actions → TestFlight → Run workflow, или Claude через GitHub API |
 | Ждать обработки сборки, таблица сборок | второй job того же workflow | сам после загрузки |
 | Версии, сборки, встроенные покупки, отзывы, доступность в странах (статус DSA в ЕС), сбои из TestFlight | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → Run workflow (выбрать команду) |
+| Создать версию в App Store, вставить What's New из `docs/release-notes.md` (заметки версии, которая готовится) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
+| Специальные страницы продукта и тест страницы (скриншоты, промо-текст, ключевые слова) из `appstore/product-pages.json` | GitHub Actions, `.github/workflows/asc.yml` | `push-custom-pages`, `push-experiment` (поле `args`: `--submit`, `--start`) |
+| Выдать или забрать Tenra Pro (`pro`) одному покупателю, посмотреть, что о нём знает RevenueCat | GitHub Actions, `.github/workflows/revenuecat.yml`, секрет `REVENUECAT_SECRET_KEY` | Actions → RevenueCat: `grant` / `revoke` / `status`, `app_user_id`, `days`; id в логе скрыт |
+| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all` или `cpp` |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
 
 Репозиторий Tenra публичный, поэтому логи Actions видны всем. Продажи и выручку `asc.py` в Actions
@@ -75,6 +79,15 @@ Claude запускает TestFlight через GitHub API (или ты: Actions
 python3 appstore/asc.py status                  # версии, последние сборки, встроенные покупки
 python3 appstore/asc.py builds [--limit 15]
 python3 appstore/asc.py wait-build --build 12 --version 1.5 --wait 40
+python3 appstore/asc.py prepare-version --version 1.5 --build 6 [--wait 30]
+                                                # создать версию (выпуск после одобрения), What's New
+                                                # из docs/release-notes.md, выбрать сборку; без отправки
+python3 appstore/asc.py keywords --locale ru,en-US   # слова из поля Keywords: к ним привязываются спец. страницы
+python3 appstore/asc.py custom-pages            # специальные страницы и состояние их версий
+python3 appstore/asc.py push-custom-pages [--submit]
+                                                # создать/обновить страницы из appstore/product-pages.json
+python3 appstore/asc.py push-experiment [--submit | --start]
+                                                # тест страницы из того же файла; --start после одобрения
 python3 appstore/asc.py reviews [--limit 20]    # отзывы с текстом (оценки без текста API не отдаёт)
 python3 appstore/asc.py availability            # в скольких странах доступно, статус DSA в ЕС
 python3 appstore/asc.py crashes [--build 12]    # отчёты о сбоях из TestFlight, без данных тестировщика
@@ -83,6 +96,22 @@ python3 appstore/asc.py sales [--days 7]        # продажи и выручк
 
 Нужны `pyjwt` и `cryptography` (в облачном контейнере уже есть; в Actions ставятся в venv).
 Vendor number для отчётов о продажах — 94171379 (`ASC_VENDOR_NUMBER`, если изменится).
+
+## Скриншоты, специальные страницы и тест страницы
+
+1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-12, `cpp` только 02 и
+   09-12 для специальных страниц). Артефакт `raw-screenshots` кладётся в `screenshots/raw/<локаль>/`.
+2. **Собрать кадры в Figma** (файл Tenra, страница «Screenshots L10n»): шаблон `tpl-<кадр>`,
+   картинка экрана заливкой слоя `Screenshot` внутри модели iPhone, заголовок Inter Semi Bold 98 и
+   подзаголовок Inter Medium 58 из `scripts/screenshot_captions.json`, не больше двух строк
+   заголовка. Экспорт 1320×2868 в `screenshots/final/<локаль>/`. Картинки грузятся в Figma сырыми
+   байтами (`Content-Type: image/png`): multipart через прокси облака обрывается по таймауту.
+3. **Отправить:** `push-custom-pages --submit` или `push-experiment --submit`, потом после
+   одобрения `push-experiment --start`. Повторный запуск не перезаливает неизменённые скриншоты.
+
+Ключевые слова специальной страницы берутся только из поля Keywords этой локали (`keywords`),
+одно слово принадлежит одной странице. Тест страницы идёт на версии, которая сейчас в магазине,
+один за раз, до 90 дней; иконку в нём не проверить, пока альтернативных иконок нет в сборке.
 
 ## Если что-то пошло не так
 

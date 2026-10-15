@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Özelleştir...";
 "settings.wallpaper" = "Ana Sayfa Duvar Kağıdı";
 "settings.background" = "Arka Plan";
+"settings.voiceLanguage" = "Ses Dili";
+"settings.voiceLanguage.app" = "Uygulamadaki gibi";
 "settings.background.none" = "Arka Plan Yok";
 "settings.background.gradient" = "Gider Renkleri";
 "settings.background.photo" = "Fotoğraf";
@@ -176,6 +178,13 @@
 // MARK: - Search
 "search.placeholder" = "Tutar, kategori ya da açıklamaya göre ara";
 "search.subcategories" = "Alt kategori ara";
+"search.recent" = "Son aramalar";
+"search.recent.clear" = "Temizle";
+"search.recent.remove" = "Kaldır";
+"search.suggestions" = "Öneriler";
+"search.fill" = "Arama alanında düzenle";
+"search.suggestion.category" = "Kategori";
+"search.suggestion.subcategory" = "Alt kategori";
 
 // MARK: - Modals
 "modal.newAccount" = "Yeni Hesap";
@@ -319,7 +328,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "Yeni Alt Kategori";
 "subcategory.namePlaceholder" = "Alt kategori adı";
-"subcategory.usageCount" = "%d kez kullanıldı";
 "subcategory.notUsed" = "Henüz kullanılmadı";
 "subcategory.reorder" = "Alt Kategoriler";
 "subcategory.sort.title" = "Sırala";
@@ -460,7 +468,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "Aktif abonelik yok";
-"subscriptions.activeCount" = "%lld aktif";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "Sonraki ödeme: %@";
@@ -757,7 +764,6 @@
 "filter.allAccounts" = "Tüm Hesaplar";
 "filter.allCategories" = "Tüm Kategoriler";
 "filter.allSubcategories" = "Tüm Alt Kategoriler";
-"filter.categoriesCount" = "%d kategori";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1041,10 +1047,8 @@
 "finances.title" = "Finans";
 "finances.accounts.title" = "Hesaplar";
 "finances.accounts.totalLabel" = "Toplam bakiye";
-"finances.accounts.count" = "%lld hesap";
 "finances.accounts.empty" = "Hesap yok";
 "finances.deposits.title" = "Mevduatlar";
-"finances.deposits.count" = "%lld mevduat";
 "finances.deposits.empty" = "Mevduat yok";
 "deposit.listTitle" = "Mevduatlar";
 "deposit.emptyTitle" = "Mevduat Yok";
@@ -1053,11 +1057,8 @@
 "account.includeInBalance" = "Bakiyeye dahil et";
 "account.includeInBalanceHint" = "Bu hesabı toplam bakiyene ve analizlere dahil et.";
 "finances.categories.title" = "Kategoriler";
-"finances.categories.count" = "%lld kategori";
 "finances.categories.empty" = "Kategori yok";
 "finances.subcategories.title" = "Alt kategoriler";
-"finances.subcategories.count" = "%lld alt kategori";
-"finances.subcategories.linkedTo" = "%lld kategoride";
 "finances.subcategories.empty" = "Alt kategori yok";
 
 // MARK: - Loans
@@ -1071,7 +1072,6 @@
 "loan.totalDebt" = "Toplam Borç";
 "loan.monthlyTotal" = "Aylık";
 "loan.unpaidThisMonth" = "Bu ay ödenmemiş";
-"loan.activeCount" = "%d aktif kredi";
 "loan.typeAnnuityShort" = "Kredi";
 "loan.typeInstallmentShort" = "Taksit";
 "loan.of" = "/";
@@ -1349,7 +1349,6 @@
 "subscription.unlinkAll.confirm" = "Bağlantıları Kaldır";
 "subscription.unlinkAll.message" = "%d işlemden abonelik bağlantısı kaldırılsın mı? İşlemlerin kendisi olduğu gibi kalır.";
 "subscription.linkPayments.subcategories" = "Alt kategoriler";
-"subscription.linkPayments.subcategoriesCount" = "%d alt kategori";
 "subscription.filterAll" = "Tümü";
 
 // MARK: - Accounts (Types & Actions)
@@ -1560,6 +1559,13 @@
 "insights.health.subtitle.good" = "Sağlam finanslar, iyileştirme alanı var.";
 "insights.health.subtitle.fair" = "Fena değil, ama birkaç alan ilgi bekliyor.";
 "insights.health.subtitle.needsAttention" = "Finanslarının birkaç yönü üzerinde çalışman gerekiyor.";
+"insights.health.trend.sinceLastMonth" = "geçen aya göre";
+"insights.savingsRate.band.onTarget" = "Hedefe ulaşıldı";
+"insights.savingsRate.band.belowTarget" = "%20 hedefinin altında";
+"insights.savingsRate.band.low" = "%10'un altında";
+"insights.savingsRate.band.deficit" = "Harcamalar gelirden fazla";
+"insights.largeTransaction.timesUsual" = "Olağanın %@ katı";
+"insights.budgetHeadroom.leftOf" = "%@ bütçeden kalan";
 
 "insights.health.unavailable.title" = "Yeterli veri yok";
 "insights.health.unavailable.message" = "Gelir ve gider işlemleri ekle. Yeterli veri oluştuğunda finansal sağlığını değerlendireceğiz.";
@@ -1702,6 +1708,14 @@
 "settings.siri.example1" = "Hey Siri, Tenra uygulamasına işlem kaydet";
 "settings.siri.example2" = "Hey Siri, Tenra uygulamasında ne kadar harcadım";
 "settings.siri.example3" = "Hey Siri, Tenra uygulamasına gider ekle";
+"settings.merchants.title" = "Wallet işyerleri";
+"settings.merchants.footer" = "Bu işyerlerinde Wallet otomasyonuyla yapılan ödemeler bu kategori ve alt kategoriyle kaydedilir. Değiştirmek için bir işyerine dokun, unutmak için sola kaydır.";
+"settings.merchants.emptyTitle" = "Henüz işyeri yok";
+"settings.merchants.emptyMessage" = "Wallet otomasyonu bir harcama eklediğinde Tenra her işyeri için kategoriyi bir kez sorar ve burada hatırlar. Otomasyonda işyerini \"Not\" alanına aktar ve \"Kategori\" alanını boş bırak.";
+"settings.merchants.forget" = "Unut";
+"settings.merchants.forgetMerchant" = "İşyerini unut";
+"settings.merchants.categoryDeleted" = "Kategori silindi, Tenra yeniden soracak";
+"settings.merchants.editFooter" = "Buradaki sonraki ödemeler bu kategoriyle kaydedilir. İşyerini unutursan Tenra bir sonraki ödemesinde yeniden sorar.";
 
 
 /* MARK: - Document import */
@@ -1832,3 +1846,247 @@
 "calendar.showMonth" = "Ayı göster";
 "calendar.showWeek" = "Haftayı göster";
 "skeleton.loading" = "Yükleniyor";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "Düşünüyorum…";
+"assistant.step.spending" = "Harcamaları topluyorum…";
+"assistant.step.comparing" = "Dönemleri karşılaştırıyorum…";
+"assistant.step.searching" = "İşlemlere bakıyorum…";
+"assistant.step.accounts" = "Hesaplara bakıyorum…";
+"assistant.step.budgets" = "Bütçeleri kontrol ediyorum…";
+"assistant.step.recurring" = "Aboneliklere bakıyorum…";
+"assistant.step.insights" = "Analizlerine bakıyorum…";
+"assistant.step.calculating" = "Hesaplıyorum…";
+"assistant.step.composing" = "Cevabı hazırlıyorum…";
+"assistant.error.offline" = "Bağlantı yok. İnterneti kontrol edip tekrar dene.";
+"assistant.error.busy" = "Asistan şu an meşgul. Birazdan tekrar dene.";
+"assistant.error.limit" = "Bu ayın sorularını kullandın. Sınır gelecek ay yenilenir.";
+"assistant.error.pro" = "Asistan Tenra Pro’ya dahildir.";
+"assistant.error.region" = "Asistan henüz bölgende kullanılamıyor.";
+"assistant.error.unavailable" = "Asistan şu an kullanılamıyor. Daha sonra tekrar dene.";
+"assistant.error.device" = "Asistan bu cihazda kullanılamıyor.";
+"assistant.error.refused" = "Bu konuda yardımcı olamam. Bana paranla ilgili sor.";
+"assistant.error.freeLimit" = "Ücretsiz yanıtlar şimdilik bitti. Tenra Pro ile sormaya devam edebilirsin.";
+"assistant.allowance.renews" = "Yeni ücretsiz yanıtlar %@ tarihinde";
+"assistant.open.missing" = "Bu artık Tenra’da yok";
+"assistant.draft.save" = "Kaydet";
+"assistant.draft.saved" = "Kaydedildi";
+"assistant.draft.undo" = "Geri al";
+"assistant.draft.undone" = "Geri alındı. Hiçbir şey kaydedilmedi.";
+"assistant.draft.failed" = "Kaydedilemedi. Tekrar dene.";
+"assistant.draft.accountGuessed" = "Hesabı Tenra seçti. Kaydetmeden önce kontrol et.";
+"assistant.draft.categoryGuessed" = "Kategoriyi Tenra seçti. Kaydetmeden önce kontrol et.";
+"assistant.draft.budgetWas" = "Önceki";
+"assistant.draft.editHint" = "İşlemi değiştirmek için açar";
+"assistant.draft.editTip" = "Değiştirmek için işleme dokun.";
+"assistant.voice.send" = "Ten’e sor";
+"assistant.voice.again" = "Yeniden söyle";
+"assistant.attach.scan" = "Fiş tara";
+"assistant.attach.photo" = "Fotoğraflardan fiş";
+"assistant.attach.file" = "Hesap özeti (PDF veya CSV)";
+"assistant.attachment.receipt" = "Fiş";
+"assistant.attachment.statement" = "Hesap özeti";
+"assistant.attachment.review" = "Kontrol et ve kaydet";
+"assistant.attachment.uncategorized" = "Kategorisiz: %lld";
+"assistant.attachment.skipped" = "Okunamayan satır: %lld";
+"assistant.attachment.reading" = "Belge okunuyor…";
+"assistant.attachment.analyze" = "Bu hesap özetini incele";
+"assistant.ask" = "Ten’e sor";
+"assistant.topic.account.status" = "“%@” hesabı nasıl gidiyor?";
+"assistant.topic.account.spending" = "“%@” hesabındaki para nereye gidiyor?";
+"assistant.topic.account.forecast" = "“%@” ay sonuna kadar yeter mi?";
+"assistant.topic.category.spending" = "“%@” için ne kadar harcıyorum?";
+"assistant.topic.category.cut" = "“%@” harcamalarını nasıl azaltırım?";
+"assistant.topic.category.budget" = "“%@” için bir bütçe öner";
+"assistant.topic.income.trend" = "“%@” gelirim nasıl değişiyor?";
+"assistant.topic.income.compare" = "“%@” ile geçen ayı karşılaştır";
+"assistant.topic.insight" = "“%@” ne anlama geliyor, ne yapmalıyım?";
+"assistant.topic.history.changes" = "Bu ay harcamalarımda ne değişti?";
+"assistant.topic.history.unusual" = "Olağan dışı harcamaları bul";
+"assistant.recent" = "Son sohbetler";
+"assistant.recent.delete" = "Sohbeti sil";
+"assistant.notice.title" = "Ten yazıyor";
+"assistant.notice.goThrough" = "İncele";
+"assistant.notice.hide" = "Gizle";
+"assistant.notice.ask" = "Bunu incele: %@";
+"assistant.notice.ask.digest" = "Geçen haftamı incele";
+"assistant.notice.ask.charge" = "%@ tutmaya değer mi?";
+"assistant.notice.charge" = "Yarın %@ çekilecek";
+"assistant.forecast.perDay" = "%@ tarihine kadar günlük";
+"assistant.forecast.free" = "Kullanılabilir: %@";
+"assistant.forecast.balance" = "Günlük bakiye";
+"assistant.forecast.obligations" = "%@ tarihine kadar ödemeler";
+"assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Asistan";
+"assistant.greeting.title" = "Merhaba, ben Ten";
+"assistant.greeting.message" = "Paranla ilgili yardım ederim: harcamalar, birikim, krediler ve yatırım. Bu telefondaki verilerine bakıp kartlarla cevap veririm.";
+"assistant.attach" = "Fiş veya hesap özeti ekle";
+"assistant.greeting.tools" = "Ataç: fiş veya hesap özeti. Mikrofon: sesli söyle.";
+"composer.send" = "Gönder";
+"composer.voice" = "Dikte et";
+"assistant.composer.placeholder" = "Paranla ilgili sor…";
+"assistant.preset.month" = "Bu ayki harcamalarım";
+"assistant.preset.compare" = "Geçen ayla karşılaştır";
+"assistant.preset.budgets" = "Bütçelerim ne durumda?";
+"assistant.preset.subscriptions" = "Aboneliklerim ne kadar tutuyor?";
+"assistant.preset.allowance" = "Maaşa kadar günde ne kadar harcayabilirim?";
+"assistant.preset.save" = "Nerede tasarruf edebilirim?";
+"assistant.preset.invest" = "Yatırıma nasıl başlarım?";
+"common.retry" = "Tekrar dene";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "Asistan bulutta çalışır";
+"assistant.consent.message" = "Cevap vermek için Anthropic’in modeli Claude’a danışır. Telefondan yalnızca sorun ve cevap için baktıkları çıkar: toplamlar, kategoriler, hesap adları, senin hakkında hatırladığı bilgiler ve gereken işlemler. Veritabanın, fişlerin ve ekstrelerin burada kalır. Tenra sunucusu hiçbir şey saklamaz, verilerin model eğitiminde kullanılmaz.";
+"assistant.consent.allow" = "Aç";
+"assistant.consent.notNow" = "Şimdi değil";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Ten bunu hatırlayacak";
+"assistant.fact.forget" = "Ten bunu unutacak";
+"assistant.fact.was" = "Önceki: %@";
+"settings.assistant.header" = "Asistan";
+"settings.assistant.cloud" = "Buluttan cevaplar";
+"settings.assistant.footer" = "Ten, Anthropic’in modeli Claude ile cevap verir. Kapatırsan Ten, sonraki sorun telefondan çıkmadan önce yeniden sorar.";
+"assistant.memory.title" = "Ten benim hakkımda ne biliyor";
+"assistant.memory.emptyTitle" = "Ten henüz senin hakkında bir şey bilmiyor";
+"assistant.memory.emptyMessage" = "Sohbette Ten’e paranı anlat, örneğin maaşının ne zaman geldiğini ya da ne için biriktirdiğini. Ten bunu hatırlamayı önerir, kararı sen verirsin.";
+"assistant.memory.footer" = "Ten bu bilgileri her sohbette görür. Bu iPhone’da saklanır ve yalnızca sorularınla birlikte dışarı çıkar.";
+"assistant.memory.add" = "Bilgi ekle";
+"assistant.memory.new" = "Yeni bilgi";
+"assistant.memory.edit" = "Bilgiyi düzenle";
+"assistant.memory.placeholder" = "Örneğin: maaş ayın 10’unda gelir";
+"assistant.memory.editorFooter" = "Paran hakkında kısa bir cümle: maaşın ne zaman geliyor, ne için biriktiriyorsun, ana kartın hangisi. Kart numarası ya da şifre yazma.";
+"assistant.memory.editHint" = "Bilgiyi düzenlemek için açar";
+"assistant.memory.forget" = "Unut";
+"assistant.memory.forgetAll" = "Her şeyi unut";
+"assistant.memory.forgetAllTitle" = "Tüm bilgiler unutulsun mu?";
+"assistant.memory.forgetAllMessage" = "Ten artık senin hakkında hiçbir şey bilmeyecek. İşlemlerin ve sohbetlerin kalır.";
+"assistant.memory.tooLong" = "Kısa tek bir cümle yaz.";
+"assistant.memory.full" = "Ten en fazla %lld bilgi hatırlar. Yenisini eklemek için birini unut.";
+"assistant.memory.duplicate" = "Ten bunu zaten hatırlıyor.";
+"assistant.memory.gone" = "Bu bilgi artık hafızada değil.";
+
+/* Goals and debts (docs/domains/goals-and-debts.md) */
+"finances.goals.title" = "Hedefler";
+"finances.goals.empty" = "Hedef yok";
+"finances.debts.title" = "Borçlar";
+"finances.debts.empty" = "Borç yok";
+"finances.debts.owedToMe" = "Alacağın";
+"finances.debts.iOwe" = "Borcun";
+"goal.listTitle" = "Hedefler";
+"goal.emptyTitle" = "Henüz hedef yok";
+"goal.emptyDescription" = "Bir hedef koy ve ne kadar kaldığını gör";
+"goal.new" = "Yeni hedef";
+"goal.editTitle" = "Hedefi düzenle";
+"goal.namePlaceholder" = "Ne için biriktiriyorsun?";
+"goal.targetHint" = "Biriktirmek istediğin tutar";
+"goal.deadline" = "Son tarih";
+"goal.hasDeadline" = "Bir tarihe kadar";
+"goal.account" = "Hesap";
+"goal.account.none" = "Hesap yok";
+"goal.account.hint" = "Hesap seçersen hedef onun bakiyesini izler. Hesapsız, biriktirdiğini kendin işaretlersin.";
+"goal.alreadySaved" = "Şimdiden biriken";
+"goal.target" = "Hedef";
+"goal.left" = "Biriktirilecek";
+"goal.leftAmount" = "Kalan %@";
+"goal.monthly" = "Aylık ayrılacak";
+"goal.perMonth" = "Ayda %@";
+"goal.ofTarget" = "Hedef %@";
+"goal.overdue" = "Süre doldu";
+"goal.reached" = "Hedefe ulaşıldı";
+"goal.reachedOn" = "%@ tarihinde ulaşıldı";
+"goal.reachedSection" = "Ulaşılanlar";
+"goal.contribute" = "Para ekle";
+"goal.contributions" = "Eklenenler";
+"goal.delete" = "Hedefi sil";
+"goal.deleteTitle" = "Hedef silinsin mi?";
+"goal.deleteMessage" = "Hedef ve eklenenler silinecek. Hesaplar ve işlemler değişmez.";
+"goal.notFound" = "Hedef bulunamadı";
+"goal.notFoundDescription" = "Silinmiş olabilir.";
+"debt.listTitle" = "Borçlar";
+"debt.emptyTitle" = "Borç yok";
+"debt.emptyDescription" = "Kimin sana, senin kime borçlu olduğunu takip et";
+"debt.new" = "Yeni borç";
+"debt.editTitle" = "Borcu düzenle";
+"debt.direction" = "Yön";
+"debt.direction.owedToMe" = "Bana borçlu";
+"debt.direction.iOwe" = "Ben borçluyum";
+"debt.person" = "Kim";
+"debt.personPlaceholder" = "İsim";
+"debt.date" = "Tarih";
+"debt.dueDate" = "Son tarih";
+"debt.hasDueDate" = "Bir tarihe kadar ödensin";
+"debt.note" = "Not";
+"debt.notePlaceholder" = "Ne için";
+"debt.section.owedToMe" = "Sana borçlu olanlar";
+"debt.section.iOwe" = "Borçlu olduğun";
+"debt.section.settled" = "Kapananlar";
+"debt.amount" = "Tutar";
+"debt.returned" = "Geri ödenen";
+"debt.leftAmount" = "Kalan %@";
+"debt.overdue" = "Gecikmiş";
+"debt.overdueSince" = "%@ tarihinden beri gecikmiş";
+"debt.settledOn" = "%@ tarihinde kapandı";
+"debt.recordRepayment" = "Geri ödeme";
+"debt.settle" = "Kapat";
+"debt.reopen" = "Yeniden aç";
+"debt.repayments" = "Geri ödemeler";
+"debt.delete" = "Borcu sil";
+"debt.deleteTitle" = "Borç silinsin mi?";
+"debt.deleteMessage" = "Borç ve geri ödemeleri silinecek. Hesaplar ve işlemler değişmez.";
+"debt.notFound" = "Borç bulunamadı";
+"debt.notFoundDescription" = "Silinmiş olabilir.";
+"moneyEntry.notePlaceholder" = "Not";
+"moneyEntry.invalidAmount" = "Bir tutar gir";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "Hedeflere ve borçlara bakıyorum…";
+"assistant.notice.debt.owedToMe" = "Yarın %@ geri gelmeli";
+"assistant.notice.debt.iOwe" = "Yarın %@ geri ödeme günü";
+"assistant.notice.ask.debt" = "%@ ile olan borcu incele";
+"assistant.notice.goal.behind" = "%2$@ tarihine yetişmek için ayda %1$@ ayır";
+"assistant.notice.ask.goal" = "“%@” hedefine nasıl yetişirim?";
+"assistant.topic.goal.onTrack" = "“%@” hedefinde yolunda mıyım?";
+"assistant.topic.goal.faster" = "“%@” için nasıl daha hızlı biriktiririm?";
+"assistant.topic.debt.status" = "%@ ile olan borçta ne kadar kaldı?";
+"assistant.topic.debt.plan" = "%@ borcunu zamanında nasıl öderim?";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Günaydın!";
+"assistant.chatter.afternoon" = "İyi günler!";
+"assistant.chatter.evening" = "İyi akşamlar!";
+"assistant.chatter.night" = "Şşş… geç oldu";
+"assistant.chatter.askMe" = "Bana istediğini sor";
+"assistant.chatter.hmm" = "Hmm…";
+"assistant.chatter.counting" = "Hesaplıyorum…";
+"assistant.chatter.looking" = "Bir bakayım…";
+"assistant.chatter.yay" = "Yaşasın!";
+"assistant.chatter.offline" = "Bağlantı yok…";
+"assistant.chatter.unclear" = "Pek anlaşılmadı. Tekrar?";
+"assistant.chatter.tickles" = "Gıdıklanıyorum!";
+"assistant.chatter.here" = "Buradayım!";
+"assistant.chatter.help" = "Nasıl yardımcı olabilirim?";
+"assistant.chatter.hehe" = "Hi hi";
+"assistant.chatter.dizzy" = "Ay, başım dönüyor!";
+"settings.assistant.chatter" = "Ten konuşkan";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "Ten'in gardırobu";
+"assistant.wardrobe.none" = "Hiçbiri";
+"assistant.wardrobe.partyHat" = "Parti şapkası";
+"assistant.wardrobe.crown" = "Taç";
+"assistant.wardrobe.beanie" = "Bere";
+"assistant.wardrobe.taqiya" = "Takke";
+"assistant.wardrobe.headphones" = "Kulaklık";
+"assistant.wardrobe.glasses" = "Gözlük";
+"assistant.wardrobe.sunglasses" = "Güneş gözlüğü";
+"assistant.wardrobe.sleepMask" = "Uyku maskesi";
+"assistant.wardrobe.footer" = "Bayramlarda Ten kendi giyinir: yılbaşında parti şapkası, Nevruz'da takke, birlikte bir şey kutladığınız gün taç. Yenileri Tenra'da üst üste günlerle ve hedeflerle açılır.";
+"assistant.wardrobe.lock.streak7" = "Tenra'da 7 gün üst üste";
+"assistant.wardrobe.lock.streak30" = "Tenra'da 30 gün üst üste";
+"assistant.wardrobe.lock.firstGoal" = "Bir hedef oluşturun";
+"assistant.wardrobe.lock.goalReached" = "Bir hedefe ulaşın";
+"assistant.wardrobe.lock.nauryz" = "Nevruz'da açılır";
+"assistant.wardrobe.locked" = "Kilitli";

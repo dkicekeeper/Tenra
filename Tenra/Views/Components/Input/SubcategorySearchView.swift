@@ -12,6 +12,8 @@ struct SubcategorySearchView: View {
     let categoryId: String
     @Binding var selectedSubcategoryIds: Set<String>
     @Binding var searchText: String
+    /// DesignKit's recent queries under the search field (3.5.0).
+    @AppStorage("subcategorySearch.recentSearches") private var recentSearches = RecentSearches()
     @Environment(\.dismiss) var dismiss
     
     // Режим работы: множественный выбор (для транзакций) или одиночный (для привязки к категории)
@@ -139,6 +141,7 @@ struct SubcategorySearchView: View {
                 : String(localized: "navigation.subcategorySearch"))
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: String(localized: "subcategorySearch.searchPrompt"))
+            .dsSearchSuggestions(text: $searchText, recent: $recentSearches)
             .safeAreaBar(edge: .bottom) {
                 // Кнопка создания внизу над полем поиска
                 if canCreateFromSearch {

@@ -37,7 +37,7 @@ struct SubcategoriesCardView: View {
             title: String(localized: "finances.subcategories.title"),
             isEmpty: subcategories.isEmpty,
             emptyTitle: String(localized: "finances.subcategories.empty"),
-            subtitle: String(format: String(localized: "finances.subcategories.linkedTo"), linkedCategories.count)
+            subtitle: String(format: NSLocalizedString("finances.subcategories.linkedTo", comment: "Count with plural forms in Localizable.stringsdict"), linkedCategories.count)
         ) {
             Text("\(subcategories.count)")
                 .font(AppTypography.h2)
@@ -55,7 +55,9 @@ struct SubcategoriesCardView: View {
                             amount: 1,
                             tint: category.color
                         )
-                    }
+                    },
+                    // App icons in a pocket (DesignKit 4.4.0), centred in the card (4.5.0).
+                    style: .shelf
                 )
             }
         }

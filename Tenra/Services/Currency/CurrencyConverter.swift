@@ -222,10 +222,8 @@ nonisolated final class CurrencyConverter: @unchecked Sendable {
         return result
     }
 
-    private static func dateKey(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        return formatter.string(from: date)
+    /// The historical-rate key of a date: "yyyy-MM-dd" in UTC, whatever the device's calendar.
+    static func dateKey(for date: Date) -> String {
+        DateFormatters.rateDateFormatter.string(from: date)
     }
 }

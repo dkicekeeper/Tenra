@@ -44,7 +44,7 @@ struct AccountsCardView: View {
             title: String(localized: "finances.accounts.title"),
             isEmpty: accounts.isEmpty,
             emptyTitle: String(localized: "finances.accounts.empty"),
-            subtitle: String(format: String(localized: "finances.accounts.count"), accounts.count)
+            subtitle: String(format: NSLocalizedString("finances.accounts.count", comment: "Count with plural forms in Localizable.stringsdict"), accounts.count)
         ) {
             RedactableAmount(amount: totalAmount, currency: baseCurrency, isLoading: isLoadingTotal)
         } trailing: {
@@ -66,7 +66,9 @@ struct AccountsCardView: View {
                     iconSource: account.iconSource,
                     amount: max(balancesById[account.id] ?? 0, 0)
                 )
-            }
+            },
+            // App icons in a pocket (DesignKit 4.4.0), centred in the card (4.5.0).
+            style: .shelf
         )
     }
 

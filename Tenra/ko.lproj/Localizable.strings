@@ -95,6 +95,8 @@
 "currency.customizeAction" = "사용자 지정...";
 "settings.wallpaper" = "홈 배경화면";
 "settings.background" = "배경";
+"settings.voiceLanguage" = "음성 언어";
+"settings.voiceLanguage.app" = "앱과 동일";
 "settings.background.none" = "배경 없음";
 "settings.background.gradient" = "지출 색상";
 "settings.background.photo" = "사진";
@@ -176,6 +178,13 @@
 // MARK: - Search
 "search.placeholder" = "금액, 카테고리, 설명으로 검색";
 "search.subcategories" = "하위 카테고리 검색";
+"search.recent" = "최근 검색";
+"search.recent.clear" = "지우기";
+"search.recent.remove" = "제거";
+"search.suggestions" = "추천";
+"search.fill" = "검색창에서 편집";
+"search.suggestion.category" = "카테고리";
+"search.suggestion.subcategory" = "하위 카테고리";
 
 // MARK: - Modals
 "modal.newAccount" = "새 계좌";
@@ -319,7 +328,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "새 하위 카테고리";
 "subcategory.namePlaceholder" = "하위 카테고리 이름";
-"subcategory.usageCount" = "%d회 사용됨";
 "subcategory.notUsed" = "아직 사용 안 함";
 "subcategory.reorder" = "하위 카테고리";
 "subcategory.sort.title" = "정렬";
@@ -460,7 +468,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "활성 구독이 없어요";
-"subscriptions.activeCount" = "%lld개 활성";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "다음 결제: %@";
@@ -757,7 +764,6 @@
 "filter.allAccounts" = "모든 계좌";
 "filter.allCategories" = "모든 카테고리";
 "filter.allSubcategories" = "모든 하위 카테고리";
-"filter.categoriesCount" = "%d개 카테고리";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1041,10 +1047,8 @@
 "finances.title" = "자산";
 "finances.accounts.title" = "계좌";
 "finances.accounts.totalLabel" = "총 잔액";
-"finances.accounts.count" = "계좌 %lld개";
 "finances.accounts.empty" = "계좌 없음";
 "finances.deposits.title" = "예금";
-"finances.deposits.count" = "예금 %lld개";
 "finances.deposits.empty" = "예금 없음";
 "deposit.listTitle" = "예금";
 "deposit.emptyTitle" = "예금 없음";
@@ -1053,11 +1057,8 @@
 "account.includeInBalance" = "잔액에 포함";
 "account.includeInBalanceHint" = "이 계좌를 총 잔액과 분석에 포함해요.";
 "finances.categories.title" = "카테고리";
-"finances.categories.count" = "카테고리 %lld개";
 "finances.categories.empty" = "카테고리 없음";
 "finances.subcategories.title" = "하위 카테고리";
-"finances.subcategories.count" = "하위 카테고리 %lld개";
-"finances.subcategories.linkedTo" = "카테고리 %lld개에 걸쳐";
 "finances.subcategories.empty" = "하위 카테고리 없음";
 
 // MARK: - Loans
@@ -1071,7 +1072,6 @@
 "loan.totalDebt" = "총 부채";
 "loan.monthlyTotal" = "월별";
 "loan.unpaidThisMonth" = "이번 달 미상환";
-"loan.activeCount" = "활성 대출 %d개";
 "loan.typeAnnuityShort" = "신용대출";
 "loan.typeInstallmentShort" = "할부";
 "loan.of" = "/";
@@ -1349,7 +1349,6 @@
 "subscription.unlinkAll.confirm" = "모두 연결 해제";
 "subscription.unlinkAll.message" = "거래 %d건에서 구독 연결을 제거할까요? 거래 자체는 그대로 유지돼요.";
 "subscription.linkPayments.subcategories" = "하위 카테고리";
-"subscription.linkPayments.subcategoriesCount" = "하위 카테고리 %d개";
 "subscription.filterAll" = "전체";
 
 // MARK: - Accounts (Types & Actions)
@@ -1560,6 +1559,13 @@
 "insights.health.subtitle.good" = "안정적이에요. 조금 더 최적화할 여지가 있어요.";
 "insights.health.subtitle.fair" = "기본기는 괜찮지만 몇 가지 신경 쓸 부분이 있어요.";
 "insights.health.subtitle.needsAttention" = "금융의 여러 부분을 손볼 필요가 있어요.";
+"insights.health.trend.sinceLastMonth" = "지난달 대비";
+"insights.savingsRate.band.onTarget" = "목표 달성";
+"insights.savingsRate.band.belowTarget" = "목표 20% 미만";
+"insights.savingsRate.band.low" = "10% 미만";
+"insights.savingsRate.band.deficit" = "지출이 수입보다 많아요";
+"insights.largeTransaction.timesUsual" = "평소의 %@배";
+"insights.budgetHeadroom.leftOf" = "%@ 중 남은 금액";
 
 "insights.health.unavailable.title" = "데이터가 충분하지 않아요";
 "insights.health.unavailable.message" = "수입과 지출 거래를 추가해 주세요. 데이터가 충분해지면 금융 건강을 평가해 드려요.";
@@ -1702,6 +1708,14 @@
 "settings.siri.example1" = "시리야, Tenra에 거래 기록";
 "settings.siri.example2" = "시리야, Tenra에서 얼마 썼어";
 "settings.siri.example3" = "시리야, Tenra에 지출 추가";
+"settings.merchants.title" = "Wallet 가맹점";
+"settings.merchants.footer" = "Wallet 자동화로 이 가맹점에서 결제하면 이 카테고리와 하위 카테고리로 기록돼요. 바꾸려면 가맹점을 탭하고, 잊으려면 왼쪽으로 쓸어 넘기세요.";
+"settings.merchants.emptyTitle" = "아직 가맹점이 없어요";
+"settings.merchants.emptyMessage" = "Wallet 자동화가 지출을 추가하면 Tenra가 가맹점마다 한 번만 카테고리를 묻고 여기에 기억해요. 자동화에서 가맹점을 '메모'로 넘기고 '카테고리'는 비워 두세요.";
+"settings.merchants.forget" = "잊기";
+"settings.merchants.forgetMerchant" = "가맹점 잊기";
+"settings.merchants.categoryDeleted" = "카테고리가 삭제되어 Tenra가 다시 물어봐요";
+"settings.merchants.editFooter" = "이 가맹점의 다음 결제는 이 카테고리로 기록돼요. 가맹점을 잊으면 다음 결제 때 Tenra가 다시 물어봐요.";
 
 
 /* MARK: - Document import */
@@ -1832,3 +1846,247 @@
 "calendar.showMonth" = "월 보기";
 "calendar.showWeek" = "주 보기";
 "skeleton.loading" = "로딩 중";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "생각하는 중…";
+"assistant.step.spending" = "지출을 합산하는 중…";
+"assistant.step.comparing" = "기간을 비교하는 중…";
+"assistant.step.searching" = "거래를 찾는 중…";
+"assistant.step.accounts" = "계좌를 확인하는 중…";
+"assistant.step.budgets" = "예산을 확인하는 중…";
+"assistant.step.recurring" = "구독을 살펴보는 중…";
+"assistant.step.insights" = "분석을 읽는 중…";
+"assistant.step.calculating" = "계산하는 중…";
+"assistant.step.composing" = "답변을 정리하는 중…";
+"assistant.error.offline" = "연결되지 않았습니다. 인터넷을 확인하고 다시 시도하세요.";
+"assistant.error.busy" = "지금은 어시스턴트가 바쁩니다. 잠시 후 다시 시도하세요.";
+"assistant.error.limit" = "이번 달 질문을 모두 사용했습니다. 한도는 다음 달에 초기화됩니다.";
+"assistant.error.pro" = "어시스턴트는 Tenra Pro에 포함되어 있습니다.";
+"assistant.error.region" = "아직 해당 지역에서는 어시스턴트를 사용할 수 없습니다.";
+"assistant.error.unavailable" = "지금은 어시스턴트를 사용할 수 없습니다. 나중에 다시 시도하세요.";
+"assistant.error.device" = "이 기기에서는 어시스턴트를 사용할 수 없습니다.";
+"assistant.error.refused" = "그 부분은 도와드릴 수 없습니다. 돈에 관해 물어보세요.";
+"assistant.error.freeLimit" = "무료 답변을 지금은 모두 사용했습니다. Tenra Pro에서는 계속 질문할 수 있습니다.";
+"assistant.allowance.renews" = "%@부터 새 무료 답변";
+"assistant.open.missing" = "이 항목은 더 이상 Tenra에 없습니다";
+"assistant.draft.save" = "저장";
+"assistant.draft.saved" = "저장됨";
+"assistant.draft.undo" = "실행 취소";
+"assistant.draft.undone" = "취소했습니다. 저장된 항목이 없습니다.";
+"assistant.draft.failed" = "저장하지 못했습니다. 다시 시도하세요.";
+"assistant.draft.accountGuessed" = "Tenra가 계정을 선택했습니다. 저장하기 전에 확인하세요.";
+"assistant.draft.categoryGuessed" = "Tenra가 카테고리를 선택했습니다. 저장하기 전에 확인하세요.";
+"assistant.draft.budgetWas" = "이전";
+"assistant.draft.editHint" = "거래를 열어 변경합니다";
+"assistant.draft.editTip" = "바꾸려면 거래를 탭하세요.";
+"assistant.voice.send" = "텐에게 묻기";
+"assistant.voice.again" = "다시 말하기";
+"assistant.attach.scan" = "영수증 스캔";
+"assistant.attach.photo" = "사진에서 영수증";
+"assistant.attach.file" = "명세서(PDF 또는 CSV)";
+"assistant.attachment.receipt" = "영수증";
+"assistant.attachment.statement" = "명세서";
+"assistant.attachment.review" = "확인하고 저장";
+"assistant.attachment.uncategorized" = "카테고리 없음: %lld";
+"assistant.attachment.skipped" = "읽지 못한 행: %lld";
+"assistant.attachment.reading" = "문서를 읽는 중…";
+"assistant.attachment.analyze" = "이 명세서 살펴봐 줘";
+"assistant.ask" = "텐에게 묻기";
+"assistant.topic.account.status" = "‘%@’ 계정은 어때?";
+"assistant.topic.account.spending" = "‘%@’에서 돈이 어디로 나가?";
+"assistant.topic.account.forecast" = "‘%@’ 잔액이 월말까지 버틸까?";
+"assistant.topic.category.spending" = "‘%@’에 얼마나 써?";
+"assistant.topic.category.cut" = "‘%@’ 지출을 줄이려면?";
+"assistant.topic.category.budget" = "‘%@’ 예산을 제안해 줘";
+"assistant.topic.income.trend" = "‘%@’ 수입은 어떻게 변하고 있어?";
+"assistant.topic.income.compare" = "‘%@’을(를) 지난달과 비교해 줘";
+"assistant.topic.insight" = "‘%@’을(를) 설명하고 어떻게 하면 좋을지 알려 줘";
+"assistant.topic.history.changes" = "이번 달 지출에서 뭐가 달라졌어?";
+"assistant.topic.history.unusual" = "평소와 다른 지출을 찾아 줘";
+"assistant.recent" = "최근 대화";
+"assistant.recent.delete" = "채팅 삭제";
+"assistant.notice.title" = "텐의 메시지";
+"assistant.notice.goThrough" = "살펴보기";
+"assistant.notice.hide" = "숨기기";
+"assistant.notice.ask" = "이것을 살펴봐 줘: %@";
+"assistant.notice.ask.digest" = "지난주를 살펴봐 줘";
+"assistant.notice.ask.charge" = "%@ 계속 유지할 만할까?";
+"assistant.notice.charge" = "내일 %@ 결제돼요";
+"assistant.forecast.perDay" = "%@까지 하루 사용 가능 금액";
+"assistant.forecast.free" = "사용 가능: %@";
+"assistant.forecast.balance" = "일별 잔액";
+"assistant.forecast.obligations" = "%@까지 나갈 금액";
+"assistant.error.generic" = "문제가 발생했습니다. 다시 시도하세요.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "어시스턴트";
+"assistant.greeting.title" = "안녕하세요, 텐이에요";
+"assistant.greeting.message" = "돈 관리를 도와드려요. 지출, 절약, 대출, 투자까지요. 이 휴대폰의 데이터를 보고 카드로 답해 드립니다.";
+"assistant.attach" = "영수증이나 명세서 첨부";
+"assistant.greeting.tools" = "클립: 영수증이나 명세서. 마이크: 말로 하기.";
+"composer.send" = "보내기";
+"composer.voice" = "받아쓰기";
+"assistant.composer.placeholder" = "돈에 대해 물어보세요…";
+"assistant.preset.month" = "이번 달 지출";
+"assistant.preset.compare" = "지난달과 비교해 줘";
+"assistant.preset.budgets" = "예산은 어때?";
+"assistant.preset.subscriptions" = "구독료는 얼마야?";
+"assistant.preset.allowance" = "월급날까지 하루에 얼마 쓸 수 있을까?";
+"assistant.preset.save" = "어디서 아낄 수 있을까?";
+"assistant.preset.invest" = "투자는 어떻게 시작하면 돼?";
+"common.retry" = "다시 시도";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "어시스턴트는 클라우드에서 작동합니다";
+"assistant.consent.message" = "답변을 위해 Anthropic의 모델 Claude에 물어봅니다. 휴대폰 밖으로 나가는 것은 질문과 답변에 필요한 정보(합계, 카테고리, 계좌 이름, 당신에 대해 기억하는 정보, 필요한 거래)뿐입니다. 데이터베이스, 영수증, 명세서는 이곳에 남습니다. Tenra 서버는 아무것도 저장하지 않으며, 데이터는 모델 학습에 사용되지 않습니다.";
+"assistant.consent.allow" = "켜기";
+"assistant.consent.notNow" = "나중에";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "텐이 이걸 기억해요";
+"assistant.fact.forget" = "텐이 이걸 잊어요";
+"assistant.fact.was" = "이전: %@";
+"settings.assistant.header" = "어시스턴트";
+"settings.assistant.cloud" = "클라우드 답변";
+"settings.assistant.footer" = "텐은 Anthropic의 모델 Claude로 답해요. 끄면 다음 질문이 휴대폰을 떠나기 전에 다시 물어봐요.";
+"assistant.memory.title" = "텐이 아는 나의 정보";
+"assistant.memory.emptyTitle" = "텐은 아직 당신을 잘 몰라요";
+"assistant.memory.emptyMessage" = "채팅에서 텐에게 돈 이야기를 들려주세요. 예를 들어 월급날이나 무엇을 위해 저축하는지요. 텐이 기억해 둘지 물어보고, 결정은 당신이 해요.";
+"assistant.memory.footer" = "텐은 모든 채팅에서 이 정보를 봐요. 이 iPhone에 저장되고 질문과 함께일 때만 밖으로 나가요.";
+"assistant.memory.add" = "정보 추가";
+"assistant.memory.new" = "새 정보";
+"assistant.memory.edit" = "정보 편집";
+"assistant.memory.placeholder" = "예: 월급은 매달 10일";
+"assistant.memory.editorFooter" = "돈에 관한 짧은 한 문장: 월급날, 저축 목적, 주로 쓰는 카드 등. 카드 번호나 비밀번호는 적지 마세요.";
+"assistant.memory.editHint" = "정보를 열어 편집해요";
+"assistant.memory.forget" = "잊기";
+"assistant.memory.forgetAll" = "모두 잊기";
+"assistant.memory.forgetAllTitle" = "모든 정보를 잊을까요?";
+"assistant.memory.forgetAllMessage" = "텐은 당신에 대해 다시 아무것도 모르게 돼요. 거래와 채팅은 그대로 남아요.";
+"assistant.memory.tooLong" = "짧은 한 문장으로 적어 주세요.";
+"assistant.memory.full" = "텐은 최대 %lld개까지 기억해요. 새로 추가하려면 하나를 잊어 주세요.";
+"assistant.memory.duplicate" = "텐이 이미 기억하고 있어요.";
+"assistant.memory.gone" = "이 정보는 더 이상 기억에 없어요.";
+
+/* Goals and debts (docs/domains/goals-and-debts.md) */
+"finances.goals.title" = "저축 목표";
+"finances.goals.empty" = "목표가 없어요";
+"finances.debts.title" = "빌린 돈";
+"finances.debts.empty" = "빌린 돈이 없어요";
+"finances.debts.owedToMe" = "받을 돈";
+"finances.debts.iOwe" = "갚을 돈";
+"goal.listTitle" = "저축 목표";
+"goal.emptyTitle" = "아직 목표가 없어요";
+"goal.emptyDescription" = "목표를 정하고 얼마나 남았는지 확인하세요";
+"goal.new" = "새 목표";
+"goal.editTitle" = "목표 편집";
+"goal.namePlaceholder" = "무엇을 위해 모으나요?";
+"goal.targetHint" = "모으고 싶은 금액";
+"goal.deadline" = "기한";
+"goal.hasDeadline" = "기한 정하기";
+"goal.account" = "계좌";
+"goal.account.none" = "계좌 없음";
+"goal.account.hint" = "계좌를 고르면 그 잔액으로 진행 상황을 보여줘요. 계좌가 없으면 모은 금액을 직접 기록해요.";
+"goal.alreadySaved" = "이미 모은 금액";
+"goal.target" = "목표 금액";
+"goal.left" = "남은 금액";
+"goal.leftAmount" = "%@ 남음";
+"goal.monthly" = "매달 모을 금액";
+"goal.perMonth" = "매달 %@";
+"goal.ofTarget" = "목표 %@";
+"goal.overdue" = "기한 지남";
+"goal.reached" = "목표 달성";
+"goal.reachedOn" = "%@ 달성";
+"goal.reachedSection" = "달성한 목표";
+"goal.contribute" = "입금";
+"goal.contributions" = "입금 기록";
+"goal.delete" = "목표 삭제";
+"goal.deleteTitle" = "목표를 삭제할까요?";
+"goal.deleteMessage" = "목표와 입금 기록이 삭제돼요. 계좌와 거래는 그대로예요.";
+"goal.notFound" = "목표를 찾을 수 없어요";
+"goal.notFoundDescription" = "삭제되었을 수 있어요.";
+"debt.listTitle" = "빌린 돈";
+"debt.emptyTitle" = "빌린 돈이 없어요";
+"debt.emptyDescription" = "누가 나에게 빌렸고 내가 누구에게 빌렸는지 기록하세요";
+"debt.new" = "새 기록";
+"debt.editTitle" = "기록 편집";
+"debt.direction" = "방향";
+"debt.direction.owedToMe" = "받을 돈";
+"debt.direction.iOwe" = "갚을 돈";
+"debt.person" = "누구";
+"debt.personPlaceholder" = "이름";
+"debt.date" = "날짜";
+"debt.dueDate" = "상환 기한";
+"debt.hasDueDate" = "기한 정하기";
+"debt.note" = "메모";
+"debt.notePlaceholder" = "무엇 때문인지";
+"debt.section.owedToMe" = "받을 돈";
+"debt.section.iOwe" = "갚을 돈";
+"debt.section.settled" = "완료";
+"debt.amount" = "금액";
+"debt.returned" = "돌려받은 금액";
+"debt.leftAmount" = "%@ 남음";
+"debt.overdue" = "기한 지남";
+"debt.overdueSince" = "%@부터 기한 지남";
+"debt.settledOn" = "%@ 완료";
+"debt.recordRepayment" = "상환";
+"debt.settle" = "완료하기";
+"debt.reopen" = "다시 열기";
+"debt.repayments" = "상환 기록";
+"debt.delete" = "기록 삭제";
+"debt.deleteTitle" = "기록을 삭제할까요?";
+"debt.deleteMessage" = "이 기록과 상환 내역이 삭제돼요. 계좌와 거래는 그대로예요.";
+"debt.notFound" = "기록을 찾을 수 없어요";
+"debt.notFoundDescription" = "삭제되었을 수 있어요.";
+"moneyEntry.notePlaceholder" = "메모";
+"moneyEntry.invalidAmount" = "금액을 입력하세요";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "목표와 빌린 돈을 확인하는 중…";
+"assistant.notice.debt.owedToMe" = "내일 %@ 돌려받는 날이에요";
+"assistant.notice.debt.iOwe" = "내일 %@ 갚는 날이에요";
+"assistant.notice.ask.debt" = "%@ 관련 기록을 정리해 줘";
+"assistant.notice.goal.behind" = "%2$@까지 달성하려면 매달 %1$@씩 모아야 해요";
+"assistant.notice.ask.goal" = "“%@” 목표를 어떻게 따라잡을까?";
+"assistant.topic.goal.onTrack" = "“%@” 목표는 잘 가고 있어?";
+"assistant.topic.goal.faster" = "“%@”를 더 빨리 모으려면?";
+"assistant.topic.debt.status" = "%@ 관련해서 얼마나 남았어?";
+"assistant.topic.debt.plan" = "%@에게 기한 안에 갚으려면?";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "좋은 아침이에요!";
+"assistant.chatter.afternoon" = "안녕하세요!";
+"assistant.chatter.evening" = "좋은 저녁이에요!";
+"assistant.chatter.night" = "쉿… 늦었어요";
+"assistant.chatter.askMe" = "무엇이든 물어보세요";
+"assistant.chatter.hmm" = "음…";
+"assistant.chatter.counting" = "계산 중…";
+"assistant.chatter.looking" = "잠깐 볼게요…";
+"assistant.chatter.yay" = "야호!";
+"assistant.chatter.offline" = "연결이 없어요…";
+"assistant.chatter.unclear" = "잘 모르겠어요. 다시 한 번?";
+"assistant.chatter.tickles" = "간지러워요!";
+"assistant.chatter.here" = "여기 있어요!";
+"assistant.chatter.help" = "무엇을 도와드릴까요?";
+"assistant.chatter.hehe" = "헤헤";
+"assistant.chatter.dizzy" = "어지러워요!";
+"settings.assistant.chatter" = "텐의 수다";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "텐의 옷장";
+"assistant.wardrobe.none" = "없음";
+"assistant.wardrobe.partyHat" = "파티 모자";
+"assistant.wardrobe.crown" = "왕관";
+"assistant.wardrobe.beanie" = "비니";
+"assistant.wardrobe.taqiya" = "타키야";
+"assistant.wardrobe.headphones" = "헤드폰";
+"assistant.wardrobe.glasses" = "안경";
+"assistant.wardrobe.sunglasses" = "선글라스";
+"assistant.wardrobe.sleepMask" = "수면 안대";
+"assistant.wardrobe.footer" = "명절에는 텐이 스스로 차려입어요. 새해에는 파티 모자, 나우르즈에는 타키야, 함께 축하한 날에는 왕관을 써요. 새 액세서리는 Tenra 연속 방문과 목표로 열려요.";
+"assistant.wardrobe.lock.streak7" = "Tenra 7일 연속 방문";
+"assistant.wardrobe.lock.streak30" = "Tenra 30일 연속 방문";
+"assistant.wardrobe.lock.firstGoal" = "목표 만들기";
+"assistant.wardrobe.lock.goalReached" = "목표 달성";
+"assistant.wardrobe.lock.nauryz" = "나우르즈에 열림";
+"assistant.wardrobe.locked" = "잠김";

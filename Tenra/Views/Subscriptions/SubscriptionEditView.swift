@@ -300,7 +300,7 @@ struct SubscriptionEditView: View {
         isSaving = true
 
         Task {
-            guard await hasAccountRate(for: series) else {
+            guard await SubscriptionCreationService.hasAccountRate(for: series, store: transactionStore) else {
                 isSaving = false
                 withAnimation(AppAnimation.contentSpring) {
                     validationError = String(localized: "currency.error.conversionFailed")
@@ -319,21 +319,28 @@ struct SubscriptionEditView: View {
             }
 
             do {
-                // 1. Resolve or create subcategory named after subscription.
-                let subcategory = resolveOrCreateSubcategory(name: series.description, categoryName: series.category)
-
-                // 2. Save the series (create vs update).
-                let isCreate = subscription == nil
-                if isCreate {
-                    try await transactionStore.createSeries(series)
-                } else {
-                    try await transactionStore.updateSeries(series)
+                // A new subscription: the path the assistant's draft_recurring shares (the series,
+                // its subcategory, the links).
+                guard let oldSeries = subscription else {
+                    try await SubscriptionCreationService.create(series, store: transactionStore, categoriesViewModel: categoriesViewModel)
+                    finishSave(needsPermissionSheet: needsPermissionSheet)
+                    return
                 }
 
+                // 1. Resolve or create subcategory named after subscription.
+                let subcategory = SubscriptionCreationService.resolveOrCreateSubcategory(
+                    name: series.description,
+                    categoryName: series.category,
+                    store: transactionStore,
+                    categoriesViewModel: categoriesViewModel
+                )
+
+                // 2. Save the series.
+                try await transactionStore.updateSeries(series)
+
                 // 3. Determine which transactions should receive propagated field updates + subcategory link.
-                let oldSeries = subscription
                 let scopedTxs = transactionsToUpdate(for: series, scope: scope)
-                let didRename = oldSeries.map { $0.description != series.description } ?? false
+                let didRename = oldSeries.description != series.description
 
                 // 4a. Auto-propagate name rename to ALL linked transactions, regardless of scope.
                 //     Renaming a subscription is a relabeling of the entity itself, so historical
@@ -348,7 +355,7 @@ struct SubscriptionEditView: View {
                 }
 
                 // 4b. For edit with propagation → rewrite remaining fields on scoped transactions.
-                if let oldSeries = oldSeries, scope != .seriesOnly {
+                if scope != .seriesOnly {
                     let changes = propagatableChanges(old: oldSeries, new: series)
                     for tx in scopedTxs {
                         let updated = applyChanges(to: tx, changes: changes, newSeries: series)
@@ -359,25 +366,12 @@ struct SubscriptionEditView: View {
                 }
 
                 // 5. Link subcategory to relevant transactions:
-                //    - On create: all current series transactions
                 //    - On rename: all linked transactions (subcategory mirrors the new name)
                 //    - Otherwise: just the scoped set
-                let txsToLink: [Transaction]
-                if isCreate || didRename {
-                    txsToLink = transactionStore.transactionsBySeriesId[series.id] ?? []
-                } else {
-                    txsToLink = scopedTxs
-                }
-                linkSubcategory(subcategory, toTransactions: txsToLink)
+                let txsToLink = didRename ? (transactionStore.transactionsBySeriesId[series.id] ?? []) : scopedTxs
+                SubscriptionCreationService.linkSubcategory(subcategory, toTransactions: txsToLink, categoriesViewModel: categoriesViewModel)
 
-                HapticManager.success()
-
-                if needsPermissionSheet {
-                    // Show the sheet; dismiss() is called via sheet's onDismiss.
-                    showingNotificationPermission = true
-                } else {
-                    dismiss()
-                }
+                finishSave(needsPermissionSheet: needsPermissionSheet)
             } catch {
                 isSaving = false
                 withAnimation(AppAnimation.contentSpring) {
@@ -474,15 +468,14 @@ struct SubscriptionEditView: View {
         ) ?? TransactionConversion()
     }
 
-    /// Whether the subscription's amount can be converted into its account's currency,
-    /// loading the rate on a cache miss. Its occurrences post in the account's currency;
-    /// without a rate they would move the balance by the raw foreign amount.
-    private func hasAccountRate(for series: RecurringSeries) async -> Bool {
-        guard let accountCurrency = series.accountId.flatMap({ transactionStore.accountById[$0]?.currency }),
-              accountCurrency != series.currency else { return true }
-        if TransactionConversion.cachedRate(1, series.currency, accountCurrency) != nil { return true }
-        await TransactionConversion.loadRates(Set([series.currency, accountCurrency]))
-        return TransactionConversion.cachedRate(1, series.currency, accountCurrency) != nil
+    private func finishSave(needsPermissionSheet: Bool) {
+        HapticManager.success()
+        if needsPermissionSheet {
+            // Show the sheet; dismiss() is called via sheet's onDismiss.
+            showingNotificationPermission = true
+        } else {
+            dismiss()
+        }
     }
 
     /// Returns a copy of `tx` with `description` swapped out — used by the auto-rename pass
@@ -508,45 +501,6 @@ struct SubscriptionEditView: View {
             recurringOccurrenceId: tx.recurringOccurrenceId,
             createdAt: tx.createdAt
         )
-    }
-
-    /// Find subcategory by case-insensitive name; create + link to the category if missing.
-    private func resolveOrCreateSubcategory(name: String, categoryName: String) -> Subcategory {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let existing = categoriesViewModel.subcategories.first(where: {
-            $0.name.caseInsensitiveCompare(trimmed) == .orderedSame
-        }) {
-            ensureSubcategoryLinkedToCategory(subcategoryId: existing.id, categoryName: categoryName)
-            return existing
-        }
-        let created = categoriesViewModel.addSubcategory(name: trimmed)
-        ensureSubcategoryLinkedToCategory(subcategoryId: created.id, categoryName: categoryName)
-        return created
-    }
-
-    private func ensureSubcategoryLinkedToCategory(subcategoryId: String, categoryName: String) {
-        // O(1) via index, fallback to legacy scan if store isn't wired up.
-        let categoryId: String? = transactionsViewModel.transactionStore?.categoryIdByName[categoryName.lowercased()]
-            ?? transactionsViewModel.customCategories.first(where: { $0.name == categoryName })?.id
-        guard let categoryId else { return }
-        let alreadyLinked = categoriesViewModel.categorySubcategoryLinks.contains {
-            $0.subcategoryId == subcategoryId && $0.categoryId == categoryId
-        }
-        if !alreadyLinked {
-            categoriesViewModel.linkSubcategoryToCategory(subcategoryId: subcategoryId, categoryId: categoryId)
-        }
-    }
-
-    private func linkSubcategory(_ subcategory: Subcategory, toTransactions txs: [Transaction]) {
-        // One batch: one link-table write and one usage-stats rebuild, not one per transaction.
-        var links: [String: [String]] = [:]
-        for tx in txs where links[tx.id] == nil {
-            let existing = categoriesViewModel.getSubcategoriesForTransaction(tx.id).map(\.id)
-            if existing.contains(subcategory.id) { continue }
-            links[tx.id] = existing + [subcategory.id]
-        }
-        guard !links.isEmpty else { return }
-        categoriesViewModel.batchLinkSubcategoriesToTransaction(links)
     }
 }
 

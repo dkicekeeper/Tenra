@@ -6,8 +6,8 @@ on:
     branches: [main, "claude/**"]
     paths-ignore:
       - 'docs/**'
-      - 'plans/**'
       - '**.md'
+      - 'server/**' # the assistant Worker has its own workflow (assistant.yml)
   workflow_dispatch:
 
 jobs:

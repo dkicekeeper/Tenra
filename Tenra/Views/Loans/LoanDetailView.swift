@@ -342,13 +342,7 @@ struct LoanDetailView: View {
                             Task {
                                 do {
                                     _ = try await transactionStore.add(transaction)
-                                    if !result.subcategoryIds.isEmpty {
-                                        appCoordinator.categoriesViewModel
-                                            .linkSubcategoriesToTransaction(
-                                                transactionId: transaction.id,
-                                                subcategoryIds: Array(result.subcategoryIds)
-                                            )
-                                    }
+                                    linkSubcategories(result.subcategoryIds, to: transaction)
                                     // Only the source bank + the loan account change —
                                     // a targeted recalc avoids the multi-second stall of
                                     // rescanning all transactions across every account.
@@ -396,13 +390,7 @@ struct LoanDetailView: View {
                             Task {
                                 do {
                                     _ = try await transactionStore.add(transaction)
-                                    if !result.subcategoryIds.isEmpty {
-                                        appCoordinator.categoriesViewModel
-                                            .linkSubcategoriesToTransaction(
-                                                transactionId: transaction.id,
-                                                subcategoryIds: Array(result.subcategoryIds)
-                                            )
-                                    }
+                                    linkSubcategories(result.subcategoryIds, to: transaction)
                                     // Targeted recalc — only the source bank + loan change.
                                     transactionsViewModel.recalculateBalances(
                                         for: [result.sourceAccountId, account.id]
@@ -807,6 +795,30 @@ struct LoanDetailView: View {
         } label: {
             Label(String(localized: "loan.delete", defaultValue: "Delete Loan"), systemImage: "trash")
         }
+    }
+
+    // MARK: - Subcategories
+
+    /// Tags a payment with the picked subcategories, linking each to the payment's expense
+    /// category first, as the add form does: a tag picked on a loan payment then shows in that
+    /// category's subcategory list too. Matched by name and expense type, since an income
+    /// category may share the name.
+    private func linkSubcategories(_ subcategoryIds: Set<String>, to transaction: Transaction) {
+        guard !subcategoryIds.isEmpty else { return }
+        let categoriesViewModel = appCoordinator.categoriesViewModel
+        if let categoryId = categoriesViewModel.customCategories
+            .first(where: { $0.name == transaction.category && $0.type == .expense })?.id {
+            for subcategoryId in subcategoryIds {
+                categoriesViewModel.linkSubcategoryToCategory(
+                    subcategoryId: subcategoryId,
+                    categoryId: categoryId
+                )
+            }
+        }
+        categoriesViewModel.linkSubcategoriesToTransaction(
+            transactionId: transaction.id,
+            subcategoryIds: Array(subcategoryIds)
+        )
     }
 
     // MARK: - Formatters

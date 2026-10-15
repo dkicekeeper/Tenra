@@ -38,12 +38,13 @@ struct TransactionEditCoordinatorTests {
     private func saveAndWait(_ editor: TransactionEditCoordinator) async -> Bool {
         var succeeded = false
         editor.save { succeeded = true }
-        // Bounded by time, not by a count of yields: a rate lookup runs off the main actor,
-        // and on a loaded CI simulator 2000 yields ran out before its error arrived.
-        let deadline = ContinuousClock.now + .seconds(30)
-        while !succeeded && editor.errorMessage == nil && editor.bulkCategoryProposal == nil
-                && ContinuousClock.now < deadline {
+        // Up to 3000 sleeps of 10 ms. Counted in sleeps, not yields (a rate lookup runs off the
+        // main actor; 2000 yields ran out on a loaded CI simulator) and not wall-clock time (the
+        // CI host can freeze a simulator for minutes, which expired a 30 s deadline).
+        var polls = 0
+        while !succeeded && editor.errorMessage == nil && editor.bulkCategoryProposal == nil && polls < 3000 {
             try? await Task.sleep(for: .milliseconds(10))
+            polls += 1
         }
         return succeeded
     }
@@ -129,9 +130,10 @@ struct TransactionEditCoordinatorTests {
         edit.formData.selectedCategory = "Groceries"
         var dismissed = false
         edit.save { dismissed = true }
-        let deadline = ContinuousClock.now + .seconds(30)
-        while edit.bulkCategoryProposal == nil && edit.errorMessage == nil && ContinuousClock.now < deadline {
+        var polls = 0   // counted, not timed: see saveAndWait
+        while edit.bulkCategoryProposal == nil && edit.errorMessage == nil && polls < 3000 {
             try? await Task.sleep(for: .milliseconds(10))
+            polls += 1
         }
 
         #expect(!dismissed, "the sheet stays open until the user answers")

@@ -15,6 +15,9 @@ extension InsightsService {
     /// Computes a composite 0-100 financial health score from five weighted components.
     /// Call after `generateAllInsights` once totals and period data points are available.
     /// Receives pre-captured snapshots — safe to call from Task.detached.
+    /// `asOf` and `balanceAdjustment` compute the score as it stood at an earlier date
+    /// (`computePreviousHealthScore`): the budget month and the last three months end at `asOf`,
+    /// and the balance is the current one plus the adjustment.
     nonisolated func computeHealthScore(
         totalIncome: Double,
         totalExpenses: Double,
@@ -26,12 +29,13 @@ extension InsightsService {
         categories: [CustomCategory],
         recurringSeries: [RecurringSeries],
         accounts: [Account],
-        preAggregated: PreAggregatedData? = nil
+        preAggregated: PreAggregatedData? = nil,
+        asOf now: Date = Date(),
+        balanceAdjustment: Double = 0
     ) -> FinancialHealthScore {
         guard totalIncome > 0 else { return .unavailable() }
 
         let calendar = Calendar.current
-        let now = Date()
         // Average monthly income across the data window. Used by components that
         // pair a per-month signal (recurring cost, latest net flow) with the
         // cumulative income total — without this normalisation a multi-month
@@ -92,12 +96,13 @@ extension InsightsService {
         // --- Component 4: Emergency Fund (weight 0.15) ---
         // Loans are liabilities — exclude them from the asset side.
         let totalBalance = accounts.filter { !$0.isLoan && $0.includeInBalance }.reduce(0.0) { $0 + balanceFor($1.id) }
+            + balanceAdjustment
         // Use preAggregated O(M) lookup when available; fall back to O(N) scan
         let last3Months: [InMemoryMonthlyTotal]
         if let preAggregated {
-            last3Months = preAggregated.lastMonthlyTotals(3)
+            last3Months = preAggregated.lastMonthlyTotals(3, anchor: now)
         } else {
-            last3Months = Self.computeLastMonthlyTotals(3, from: allTransactions, baseCurrency: baseCurrency)
+            last3Months = Self.computeLastMonthlyTotals(3, from: allTransactions, anchor: now, baseCurrency: baseCurrency)
         }
         let avgMonthlyExpenses = last3Months.isEmpty
             ? totalExpenses / 12
@@ -171,5 +176,48 @@ extension InsightsService {
             isBudgetComponentActive: totalBudgetCount > 0,
             monthsInWindow:          safeMonths
         )
+    }
+
+    // MARK: - Previous Score
+
+    /// The score as it stood at the end of last month, for the trend on the health hero: the
+    /// same computation over the months before the current one, with the balance less this
+    /// month's net flow. Budgets and recurring series are today's (their history is not kept).
+    /// Nil when the window does not end with the current month or nothing came in before it.
+    nonisolated func computePreviousHealthScore(
+        monthPoints: [PeriodDataPoint],
+        baseCurrency: String,
+        balanceFor: (String) -> Double,
+        allTransactions: [Transaction],
+        categories: [CustomCategory],
+        recurringSeries: [RecurringSeries],
+        accounts: [Account],
+        preAggregated: PreAggregatedData? = nil,
+        now: Date = Date()
+    ) -> Int? {
+        let calendar = Calendar.current
+        guard let current = monthPoints.last,
+              calendar.isDate(current.periodStart, equalTo: now, toGranularity: .month),
+              let lastMonthEnd = calendar.date(byAdding: .second, value: -1, to: startOfMonth(calendar, for: now))
+        else { return nil }
+        let earlier = monthPoints.dropLast()
+        var income = 0.0; var expenses = 0.0
+        for point in earlier { income += point.income; expenses += point.expenses }
+        guard income > 0 else { return nil }
+        return computeHealthScore(
+            totalIncome: income,
+            totalExpenses: expenses,
+            latestNetFlow: earlier.last?.netFlow ?? 0,
+            monthsInWindow: earlier.count,
+            baseCurrency: baseCurrency,
+            balanceFor: balanceFor,
+            allTransactions: allTransactions,
+            categories: categories,
+            recurringSeries: recurringSeries,
+            accounts: accounts,
+            preAggregated: preAggregated,
+            asOf: lastMonthEnd,
+            balanceAdjustment: -current.netFlow
+        ).score
     }
 }

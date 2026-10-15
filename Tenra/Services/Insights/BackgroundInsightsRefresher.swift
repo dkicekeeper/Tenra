@@ -14,7 +14,8 @@
 //  generate recurring catch-up or deposit interest — it sees data as of the last
 //  foreground session. Acceptable for transition-style alerts.
 //
-//  Spec: docs/superpowers/specs/2026-08-25-background-insight-signals-design.md
+//  Rules: docs/domains/insights.md §Signal notifications (original spec:
+//  docs/archive/specs/2026-08-25-background-insight-signals-design.md).
 //
 
 import Foundation

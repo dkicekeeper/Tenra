@@ -27,6 +27,9 @@ class AppCoordinator {
     @ObservationIgnored let categoriesViewModel: CategoriesViewModel
     @ObservationIgnored let depositsViewModel: DepositsViewModel
     @ObservationIgnored let loansViewModel: LoansViewModel
+    /// Savings goals (free) and personal debts (Pro): their own CoreData rows (v15).
+    @ObservationIgnored let goalStore: GoalStore
+    @ObservationIgnored let debtStore: DebtStore
     @ObservationIgnored let transactionsViewModel: TransactionsViewModel
     @ObservationIgnored let settingsViewModel: SettingsViewModel
     @ObservationIgnored let insightsViewModel: InsightsViewModel
@@ -71,6 +74,18 @@ class AppCoordinator {
     /// after navigation via `consumePendingSubscription()`.
     private(set) var pendingSubscriptionSeriesId: String?
 
+    /// A PDF or CSV opened in Tenra from another app ("Open in Tenra"): the assistant opens
+    /// and attaches it (AssistantAttachmentSources). Cleared once taken.
+    private(set) var pendingAttachment: URL?
+
+    /// What a screen asked Ten about ("Ask Ten" on an account, a category, an insight, the
+    /// history): the assistant opens with questions about it. Cleared once taken.
+    private(set) var assistantTopic: AssistantTopic?
+
+    /// A message Ten wrote that the person chose to go through on Home: the assistant opens and
+    /// asks its question. Cleared once taken.
+    private(set) var pendingNotice: AssistantNotice?
+
     /// Cold-launch stash: when iOS launches the app from a notification tap, the
     /// `userNotificationCenter(_:didReceive:)` handler runs BEFORE `AppCoordinator`
     /// is constructed (the coordinator waits for CoreData prewarm). AppDelegate
@@ -78,12 +93,133 @@ class AppCoordinator {
     /// coordinator exists. MainActor-isolated via the enclosing class isolation.
     static var pendingDeepLinkSeriesIdOnLaunch: String?
 
+    // MARK: - Assistant
+
+    @ObservationIgnored private var assistantModel: AssistantViewModel?
+
+    /// The AI assistant's thread, made on first use; nil while its server is not configured
+    /// (Info.plist `TenraAssistantURL`, docs/plan-ai-assistant.md §5.1). Without Pro it spends
+    /// the free allowance, and the server needs App Attest (§3.7).
+    func assistant() -> AssistantViewModel? {
+        if let assistantModel { return assistantModel }
+        guard let url = AgentConfig.serverURL else { return nil }
+        let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
+        let client = AgentServerClient(baseURL: url, attestation: attestation) {
+            await MainActor.run { PremiumManager.shared.appUserID }
+        }
+        let store = transactionStore
+        let accounts = accountsViewModel
+        let memory = AgentMemory.shared
+        let goals = goalStore
+        let debts = debtStore
+        let drafts = AgentDraftBook(writer: .app(store: store, categoriesViewModel: categoriesViewModel, memory: memory, goals: goals, debts: debts))
+        let toolkit = FinanceToolkit(
+            store: store,
+            insights: insightsViewModel,
+            drafts: drafts,
+            memory: memory,
+            goals: goals,
+            debts: debts,
+            isPro: { PremiumManager.shared.isPro },
+            suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
+        )
+        // FastPath: the voice parser reads a plain record, the toolkit drafts it.
+        let parser = VoiceInputParser(
+            categoriesViewModel: categoriesViewModel,
+            accountsViewModel: accountsViewModel,
+            transactionsViewModel: transactionsViewModel
+        )
+        let fastPath = AssistantViewModel.FastPath { text in
+            let operations = parser.parseMulti(text)
+            guard AgentFastPath.isRecord(text, operations: operations, clauses: VoiceInputSegmenter.segment(text).count) else { return nil }
+            return await toolkit.fastPathOperations(for: operations, message: text)
+        }
+        let usage = AssistantUsageStore()
+        // Threads are kept in the CoreData store; previews on UserDefaults keep them in memory.
+        let threads = repository is CoreDataRepository ? AgentThreadStore() : nil
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: client, toolkit: toolkit),
+            context: {
+                await memory.load()
+                await goals.load()
+                await debts.load()
+                return AgentContextBuilder.text(for: AgentContextSnapshot(store: store, facts: memory.facts, goals: goals.goals, debts: debts.debts))
+            },
+            access: AssistantViewModel.Access(
+                isPro: { PremiumManager.shared.isPro },
+                loadUsage: { usage.load() },
+                saveUsage: { usage.save($0) }
+            ),
+            drafts: drafts,
+            describeDraft: { toolkit.describe($0) },
+            fastPath: fastPath,
+            persistence: threads.map { threads in
+                AssistantViewModel.Persistence(
+                    load: { await threads.latest() },
+                    save: { await threads.save($0) },
+                    recent: { await threads.recent(limit: $0) },
+                    thread: { await threads.thread(id: $0) },
+                    delete: { await threads.delete(id: $0) }
+                )
+            }
+        )
+        assistantModel = model
+        return model
+    }
+
     func setPendingSubscription(seriesId: String) {
         pendingSubscriptionSeriesId = seriesId
     }
 
     func consumePendingSubscription() {
         pendingSubscriptionSeriesId = nil
+    }
+
+    /// A file handed over by another app; anything but a PDF or a CSV is ignored.
+    func openAttachment(_ url: URL) {
+        guard url.isFileURL, ["pdf", "csv"].contains(url.pathExtension.lowercased()) else { return }
+        pendingAttachment = url
+    }
+
+    func consumePendingAttachment() -> URL? {
+        defer { pendingAttachment = nil }
+        return pendingAttachment
+    }
+
+    /// Ten writes first about the subscriptions charged tomorrow, the debts due tomorrow and the
+    /// goals behind their schedule (AssistantInbox); insights and the weekly summary post from
+    /// the insights recompute.
+    func refreshAssistantInbox(now: Date = Date()) {
+        guard AssistantAvailability.isAvailable else { return }
+        let scheduler = SubscriptionNotificationScheduler.shared
+        AssistantInbox.shared.post(
+            AssistantNotices.charges(
+                subscriptions: transactionStore.activeSubscriptions,
+                nextCharge: { scheduler.calculateNextChargeDate(for: $0, today: now) },
+                now: now
+            )
+                + AssistantNotices.debtsDue(debtStore.debts, now: now)
+                + AssistantNotices.goalsBehind(goalStore.goals, saved: { [goalStore] in goalStore.saved(for: $0) }, now: now),
+            now: now
+        )
+    }
+
+    func ask(about topic: AssistantTopic) {
+        assistantTopic = topic
+    }
+
+    func consumeAssistantTopic() -> AssistantTopic? {
+        defer { assistantTopic = nil }
+        return assistantTopic
+    }
+
+    func goThrough(_ notice: AssistantNotice) {
+        pendingNotice = notice
+    }
+
+    func consumePendingNotice() -> AssistantNotice? {
+        defer { pendingNotice = nil }
+        return pendingNotice
     }
 
     // MARK: - Onboarding gate
@@ -160,6 +296,12 @@ class AppCoordinator {
         // 6. Loans (depends on Accounts) — mirrors DepositsViewModel pattern
         self.loansViewModel = LoansViewModel(repository: self.repository, accountsViewModel: accountsViewModel)
 
+        // 6.1 Goals and debts, outside the repository facade; previews on UserDefaults keep
+        // them in memory.
+        let keepsInStore = self.repository is CoreDataRepository
+        self.goalStore = GoalStore(repository: keepsInStore ? GoalRepository() : nil)
+        self.debtStore = DebtStore(repository: keepsInStore ? DebtRepository() : nil)
+
         // 7. Setup SettingsViewModel
         let storageService = SettingsStorageService()
         let wallpaperService = WallpaperManagementService()
@@ -233,6 +375,14 @@ class AppCoordinator {
         transactionsViewModel.balanceCoordinator = balanceCoordinator
         depositsViewModel.balanceCoordinator = balanceCoordinator
         loansViewModel.balanceCoordinator = balanceCoordinator
+        // A goal with a linked account follows its live balance.
+        goalStore.accountBalance = { [weak self] accountId in
+            guard let self, let account = self.transactionStore.accounts.first(where: { $0.id == accountId }) else { return nil }
+            return GoalStore.AccountBalance(
+                amount: self.balanceCoordinator.balances[accountId] ?? account.balance,
+                currency: account.currency
+            )
+        }
 
         // Inject TransactionStore into ViewModels
         transactionsViewModel.transactionStore = transactionStore
@@ -392,6 +542,13 @@ class AppCoordinator {
         // and the FRC's controllerDidChangeContent fires → sections rebuild without any
         // extra code on our part.
         isFullyInitialized = true
+        // Goals and debts are small and read off the main thread; the Finances cards show them.
+        Task { [weak self] in
+            await self?.goalStore.load()
+            await self?.debtStore.load()
+            // Due debts and goals behind schedule, now that they are read.
+            self?.refreshAssistantInbox()
+        }
         let t5 = CACurrentMediaTime()
         logger.debug("✅ [INIT] isFullyInitialized=true: total so far \(String(format: "%.0f", (t5-t_init_start)*1000))ms")
 

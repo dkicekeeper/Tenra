@@ -18,14 +18,16 @@ struct FinancialHealthDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AppSpacing.xl) {
+                // Edge to edge at the top: its gradient reaches up under the navigation bar.
                 HealthScoreHeroCard(score: score, isAvailable: isAvailable)
-                    .screenPadding()
 
                 HealthScoreWeightingCard(
                     isBudgetComponentActive: score.isBudgetComponentActive,
                     monthsInWindow: score.monthsInWindow
                 )
                 .screenPadding()
+                // Rises over the fading end of the hero's gradient.
+                .padding(.top, -AppSpacing.xxl)
 
                 if isAvailable {
                     componentsSection
@@ -38,8 +40,10 @@ struct FinancialHealthDetailView: View {
                     .screenPadding()
                 }
             }
-            .padding(.vertical, AppSpacing.md)
+            .padding(.bottom, AppSpacing.md)
         }
+        // The hero's colour reaches the top of the screen under the bar (DesignKit 4.5.0).
+        .heroScrollEdge()
         .navigationTitle(String(localized: "insights.healthScore"))
         .navigationBarTitleDisplayMode(.inline)
     }

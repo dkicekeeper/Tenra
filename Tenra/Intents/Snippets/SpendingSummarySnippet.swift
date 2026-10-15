@@ -32,7 +32,7 @@ struct SpendingSummarySnippet: View {
             )
 
             Text(String(
-                format: String(localized: "intent.checkSpending.transactionCount"),
+                format: NSLocalizedString("intent.checkSpending.transactionCount", comment: "Count with plural forms in Localizable.stringsdict"),
                 total.transactionCount
             ))
             .font(.footnote) // design-lint:ignore Siri draws snippets in its own process, where Inter is not registered

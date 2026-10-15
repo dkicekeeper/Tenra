@@ -197,6 +197,9 @@ struct HistoryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                AskAssistantToolbarButton(topic: .history)
+            }
             ToolbarItemGroup(placement: .bottomBar) {
                 Button {
                     showingTimeFilter = true
@@ -242,6 +245,12 @@ struct HistoryView: View {
             prompt: searchPrompt
         )
         .searchToolbarBehavior(.minimize)
+        // DesignKit's recent queries and suggestions in the system's suggestion list.
+        .modifier(HistorySearchSuggestions(
+            text: $filterCoordinator.searchText,
+            categories: categoriesViewModel.customCategories,
+            subcategories: categoriesViewModel.subcategories
+        ))
         .onAppear {
             handleOnAppear()
         }

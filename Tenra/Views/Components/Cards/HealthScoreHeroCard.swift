@@ -10,6 +10,11 @@
 //  Adapter over DesignKit's `ScoreGaugeCard`: maps the score, its grade colour
 //  and the grade-band copy. The score decodes itself on appearance (`decodesScore`);
 //  the feed's `HealthScoreCardView` stays still, as a lazy feed would replay it.
+//  DesignKit 4.2.0: the `.hero` style, the top of the screen edge to edge (no
+//  `.screenPadding()`): a gauge wider than the screen with a knob, "84/100", on a
+//  gradient of the grade colour that reaches under the navigation bar.
+//  DesignKit 4.3.0: a trend capsule with the change in points against the score at the end
+//  of last month ("↗ +5 since last month"), when there is one.
 //
 
 import SwiftUI
@@ -40,8 +45,28 @@ struct HealthScoreHeroCard: View {
                              ? String.LocalizationValue(gradeBandSubtitleKey)
                              : "insights.health.unavailable.title"),
             // The score decodes itself as the screen opens.
-            decodesScore: true
+            decodesScore: true,
+            style: .hero,
+            showsMaximum: true,
+            trend: trend
         )
+    }
+
+    /// The change in points since the end of last month; none without an earlier score.
+    private var trend: ScoreGaugeCard.Trend? {
+        guard isAvailable, let previous = score.previousScore else { return nil }
+        let change = score.score - previous
+        return ScoreGaugeCard.Trend(
+            direction: change > 0 ? .up : (change < 0 ? .down : .flat),
+            change: Self.pointsText(change),
+            caption: String(localized: "insights.health.trend.sinceLastMonth")
+        )
+    }
+
+    /// "+5", "−3" (a minus sign, not a hyphen), "0".
+    static func pointsText(_ change: Int) -> String {
+        let magnitude = abs(change).formatted(.number)
+        return change > 0 ? "+" + magnitude : (change < 0 ? "\u{2212}" + magnitude : magnitude)
     }
 }
 
@@ -49,14 +74,10 @@ struct HealthScoreHeroCard: View {
 
 #Preview("Good score") {
     HealthScoreHeroCard(score: FinancialHealthScore.mockGood(), isAvailable: true)
-        .screenPadding()
-        .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Needs attention") {
     HealthScoreHeroCard(score: FinancialHealthScore.mockNeedsAttention(), isAvailable: true)
-        .screenPadding()
-        .padding(.vertical, AppSpacing.md)
 }
 
 #Preview("Unavailable") {

@@ -4,7 +4,7 @@
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
 > report — do not improvise. When done, update the status row for this plan
-> in `plans/README.md` — unless a reviewer dispatched you and told you they
+> in `docs/plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
 > **Drift check (run first)**:
@@ -116,7 +116,7 @@ Canonical utility: `Tenra/Utils/DateFormatters.swift` has `nonisolated static le
 - `Tenra/Views/Loans/LoanDetailView.swift` (the one computed property only)
 - `Tenra/Views/Components/Input/TimeFilterView.swift` (the one formatter only)
 - `Tenra/Utils/DateFormatters.swift` (only if Step 3 adds a shared member)
-- `plans/README.md` (status row)
+- `docs/plans/README.md` (status row)
 
 **Out of scope** (do NOT touch, even though they look related):
 - Any other `DateFormatter()` in the codebase — there are more; this plan fixes the three vetted sites only. A broad sweep without per-site reading is how regressions happen (formatter configs differ subtly).
@@ -208,7 +208,7 @@ No new tests — these are behavior-preserving micro-changes guarded by the exis
 - [ ] `TimeFilterView.swift`: `customRangeDescription` allocates nothing per call
 - [ ] Build clean; full `-only-testing:TenraTests` → `** TEST SUCCEEDED **`
 - [ ] Only in-scope files modified (`git status`)
-- [ ] `plans/README.md` status row updated
+- [ ] `docs/plans/README.md` status row updated
 
 ## STOP conditions
 

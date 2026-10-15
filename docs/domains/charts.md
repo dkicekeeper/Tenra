@@ -1,233 +1,93 @@
 # Charts Domain
 
-Swift Charts patterns for `LineChart` / `BarChart` (multi-series), the `OrbChart` breakdown chart, and mini-charts.
-
-> **Where the code lives (2026-10).** The charts themselves are DesignKit's (0.5.0): `LineChart`,
-> `BarChart`, `ChartSwitcher`, `HeroSparkline`, `Sparkline` (= `MiniSparkline` here, a typealias),
-> `ChartSelectionBanner`, plus their cache/axis helpers, over a generic `ChartPoint` / `ChartSeries`
-> model. Tenra keeps `Views/Components/Charts/PeriodChartAdapters.swift`: `PeriodDataPoint: ChartPoint`
-> (axis labels per granularity, banner title), `PeriodChartSeries` → `ChartSeries` (`.chart`), and
-> inits with the old `granularity:` / `currency:` signatures. Change chart drawing by DesignKit PR; its
-> `docs/charts.md` is the canonical copy of the rules below. A new `PeriodChartSeries` case needs a
-> `value(for:)` arm and a `chart` arm (exhaustive switches).
-
-## 2026-07 charts refactor — rename map
-
-Feature-bound names replaced with reusable ones (old → new; grep for the new name):
-
-| Old | New |
-|---|---|
-| `SpendingOrbChart` | `OrbChart` (renders income breakdowns too) |
-| `PeriodLineChart` + `IncomeExpenseLineChart` | `LineChart` (multi-series; income/expense = `series: [.income, .spending]`) |
-| `PeriodBarChart` + `IncomeExpenseBarChart` | `BarChart` (multi-series, grouped via `position(by:)`) |
-| `PeriodChartSwitcher` / `IncomeExpenseChartSwitcher` / `PeriodTrendChartSwitcher` | `ChartSwitcher` |
-| `PeriodLineChartSeries` | `PeriodChartSeries` (kept the Period prefix — bound to `PeriodDataPoint`) |
-| `BudgetProgressBar` | `LinearProgressBar` (also renders health scores) |
-| `BudgetProgressCircle` | `ProgressRing` |
-| `ExpenseIncomeProgressBar` | `AmountComparisonBar` (now built on `ProportionBar`) |
-
-`ChartZoomControls` extracted to its own file (also hosts the shared `ChartStyle` bar/line enum). `ChartDisplayMode` deleted (dead code).
-
-### Multi-series period charts (the 4→2 merge)
-
-`LineChart` and `BarChart` take `series: [PeriodChartSeries]` (single-value convenience inits exist). The income/expense overlay is NOT a separate chart — it's `[.income, .spending]`: both cases already carried the needed styles in the enum, so the former `IncomeExpenseLineChart`/`IncomeExpenseBarChart`/`IncomeExpenseChartSwitcher` were deleted.
-
-- Marks always pass `series: .value("Type", s.seriesKey)` + `stacking: .unstacked` (line) / `position(by:)` when grouped (bar).
-- ⚠️ **Banner assumption**: 2+ series render the `.dual(income:expenses:)` banner reading `p.income`/`p.expenses` directly — the only shipped multi-series combo IS income+expense. A new combo needs a generalized banner first.
-- Selection halos: multi-series skips zero-valued points (halo at the baseline reads as noise); single-series always highlights.
-- Adding a `PeriodChartSeries` case: also set `seriesKey` (mark grouping) — plus the ~9 style switches listed below.
-
-`ChartSwitcher` (segmented bar/line picker + `ChartZoomControls`; zoom state lives here, passed down as a binding) wraps the pair everywhere: InsightsSummaryDetailView (`[.income, .spending]`, default `.bar`), InsightDetailView periodTrend details (single series, default `.line`). Charts no longer own a zoom toolbar — standalone use gets `.constant(1.0)`.
-
-### Y-domain headroom (peak clipping)
-
-⚠️ Both full-size charts pad the Y domain by **~6% of the span** (and below the floor when the domain goes negative) — without it the peak `PointMark`/bar top sits exactly on the plot edge and renders clipped. Keep the headroom when touching `fullYDomain`.
-
-⚠️ **Gradient styles must use the UNPADDED envelope, not the padded domain.** `lineStyle`/`areaStyle` gradients resolve against the mark's own bounds (the raw data envelope) — computing the cashFlow `zeroRatio` from the padded `fullYDomain` shifts the green→red transition above the true zero line (renders as a red band over y=0 when negatives exist). `LineChart.fullChart` passes `styleEnvelope = min(yMin,0)...max(yMax,1)` to the style builders and the padded `domain` only to `chartYScale`.
-
-### Progress components & entrance animation
-
-`ProportionBar` (base two-segment primitive), `LinearProgressBar` (percentage + overshoot), `ProgressRing`, `AmountComparisonBar` (ProportionBar + amount labels) all share the sweep-from-zero entrance pattern: `@State` display value + `onAppear`/`onChange` + Reduce Motion → `.linear(duration: 0)`.
-
-⚠️ **`animatesOnAppear: false` in lazy containers** (CategoryRow, CategoryChip, InsightsCardView feed) — `onAppear` re-fires each time a lazy row re-materialises during scroll, replaying the sweep. Detail screens and one-off cards keep the default `true`.
-
-**`ProgressRing` color model** — a static full-circle "trajectory" `AngularGradient` (green ≤45% → warning by 80% → destructive at 100%; over-budget = warning→red) revealed by the animated `trim`. The tip color tracks the fill level continuously with zero interpolation code — do NOT reintroduce threshold-snapped solid colors; gradient stops are progress fractions and must NOT be tied to the animated display value (stops aren't animatable).
-
-**`ProgressRing` trim-start inset** — round stroke caps protrude half a lineWidth beyond the trimmed path, so a trim starting at 0 bleeds counter-clockwise past 12 o'clock and paints the green start cap over the red arc tip at ~100% (2026-07 bug). The trim start is inset by `(lineWidth / 2) / (π × size)` (clamped to `end / 2` so tiny progress still renders) — do NOT "simplify" it back to `.trim(from: 0, ...)`.
-
-## Native Scroll Pattern
-
-Use **native `chartScrollableAxes`** instead of wrapping `Chart{}` in `ScrollView`:
-
-```swift
-.chartScrollableAxes(.horizontal)
-.chartXVisibleDomain(length: visibleCount)
-.chartScrollPosition(x: $binding)  // OR .chartScrollPosition(initialX: ...)
-```
-
-Better per-frame than `ScrollView { Chart }` with `defaultScrollAnchor`.
-
-## Bleed-to-Edge Scrollable Charts
-
-Scrollable charts must be **bleed-to-edge** — without `.screenPadding()` on parent, otherwise plot area is clipped and the first point sticks to the screen edge. Apply padding to header/list neighbours, NOT to the chart itself.
-
-## Gesture Conflicts
-
-### MagnifyGesture vs NavigationStack swipe-back
-
-⚠️ **`MagnifyGesture` conflicts with NavigationStack swipe-back** — on detail pages, do NOT use pinch zoom. Replace with `+/-` buttons.
-
-If `MagnifyGesture` is unavoidable, attach `.simultaneousGesture(...)` so native chart gestures (selection) aren't intercepted.
-
-### Horizontal paging vs swipe-back
-
-⚠️ **For swipeable horizontal paging inside a pushed detail, use `TabView(.page(indexDisplayMode:))`, NOT a custom horizontal `DragGesture`.** A `DragGesture` fights the NavigationStack edge swipe-to-go-back (the user gets inconsistent paging vs. dismiss). TabView paging consumes content-area horizontal swipes; edge-back still works from the screen edge. Precedents: `PagedCategoryBreakdownView` in `InsightDetailView.swift` and `InsightDeepDiveView`, which share the chevrons/band/empty page in `Views/Insights/PeriodPager.swift`.
-
-### Adding a `PeriodChartSeries` case
-
-Adding a case touches ~9 switches: `value`/`yDomain`/`pointColor`/`lineStyle`/`areaStyle`/`showZeroRuler`/`fullLineWidth` in the enum, `fullYDomain` in `LineChart`, and `tintColor` in `MiniSparkline`. The compiler flags all of them (exhaustive switches) — none are silent.
-
-### Custom tap selection blocks scroll
-
-⚠️ **Custom tap selection blocks scroll on `chartScrollableAxes` charts**: `chartOverlay { Color.clear.contentShape(...) ... }` absorbs touches at SwiftUI hit-testing layer, before gesture arbitration — `simultaneousGesture` / `onTapGesture(coordinateSpace:)` don't help.
-
-For tap selection on scrollable charts use **only** `chartXSelection(value:)`.
-
-## Chart Selection
-
-### value + range simultaneously
-
-`chartXSelection(value:)` + `chartXSelection(range:)` together — **value=tap, range=long-press-drag**, no conflict.
-
-⚠️ **Both bindings must be set simultaneously**, otherwise one overrides the other.
-
-### `chartScrollPosition(x:)` requires non-optional `Plottable`
-
-For `String?` wrap via `Binding<String>` with fallback to initial label.
-
-### Setter race during range-selection
-
-⚠️ Apple calls `chartScrollPosition.setter` during `chartXSelection(range:)` drag → if scroll position controls dynamic Y → bars jump.
-
-**Solution**: block setter and **freeze dynamic Y** while `selectedRange != nil`.
-
-## Multi-Series AreaMark
-
-`AreaMark` **stacks by default** — for overlay (income vs expense) you need `series:` PLUS `stacking: .unstacked` together.
-
-Without `series:`, two areas merge into one zigzag-series between x-points.
-
-## Axis Labels
-
-### Collision resolution
-
-```swift
-AxisValueLabel(collisionResolution: .greedy(minimumSpacing: 6))
-```
-
-Standard label thinning when dates collide. Apply everywhere `AxisMarks { }` uses String x-axis.
-
-### Initial trailing scroll
-
-```swift
-let initialLeftLabel = dataPoints[max(0, count - visibleCount)].label
-.chartScrollPosition(initialX: initialLeftLabel)
-```
-
-`chartXVisibleDomain(length: N)` for category axis shows N categories regardless of frame width — no `GeometryReader` needed; derive `visibleCount` from `zoomScale` only.
-
-### `chartScrollPosition(initialX:)` is stable
-
-For one-shot trailing-anchor when no other re-anchor sources exist (static yDomain, no `chartScrollPosition(x: $binding)`).
-
-The `x: $binding` form re-anchors viewport on body re-eval — caused "x-axis flips on tap" bug.
-
-## Category X-axis Order
-
-⚠️ **First-occurrence across marks in declaration order.**
-
-Lock via `chartXScale(domain: dataPoints.map { $0.label })` AND put conditional/selection marks AFTER `ForEach(dataPoints)`. A selection `RuleMark` declared first silently reorders the axis (tap-flips-date bug).
-
-## Conditional Styling
-
-`AnyShapeStyle` for conditional gradient/color on `LineMark.foregroundStyle()` — allows switching between solid and `LinearGradient` without overload conflicts.
-
-## Selection Banner Anti-Jump
-
-Wrap conditional banner in fixed-height `ZStack` (e.g. `.frame(height: 56)`) with opacity transition.
-
-Banner placed directly in VStack shifts chart vertically on selection appear/disappear.
-
-## Reusable Components
-
-### ChartZoomControls
-
-`ChartZoomControls(zoomScale: $zoomScale, range:)` — `+/-` buttons with step ×1.5, own file `Views/Components/Charts/ChartZoomControls.swift` (also hosts `ChartStyle`). Used in `ChartSwitcher` (picker left, zoom right in HStack).
-
-### PeriodChartHelpers
-
-Period charts share [Views/Components/Charts/PeriodChartHelpers.swift](../../Tenra/Views/Components/Charts/PeriodChartHelpers.swift):
-
-- `PeriodChartCache` — label→index + yMin/yMax + todayLabel + identity fingerprint
-- `rebuildPeriodCacheIfNeeded(_:dataPoints:values:)`
-- `.periodChartXAxis(labelMap:)` / `.periodChartYAxis()`
-- `.chartXLabelSelectionWithFeedback($selectedValueLabel)` (haptic via `HapticManager.selection()`)
-- `.chartBannerSlotStyle(animationKey:)`
-- `.chartSelectionAnnouncement(_:)` + `chartBannerAnnouncementText(...)`
-
-New `PeriodDataPoint`-driven charts plug into these — don't reimplement inline.
-
-### Body-time cache priming
-
-`let _ = rebuildCacheIfNeeded()` at the top of `body` runs synchronously before any cache-reading getter.
-
-⚠️ **`.onAppear` fires AFTER the first body-eval** — cold cache returns defaults on the first frame.
-
-### ChartSelectionBanner
-
-`ChartSelectionBanner` ([Views/Components/Charts/ChartSelectionBanner.swift](../../Tenra/Views/Components/Charts/ChartSelectionBanner.swift)) — `.dual(income:expenses:)` or `.single(value:color:)`. Capitalises the title's first char; falls back to `formatCompact` when `currency` is empty.
-
-## Compact Mode
-
-⚠️ **No compact mode** on `BarChart` / `LineChart` / `ChartSwitcher`.
-
-For insight-feed compact charts use **Canvas-based** `MiniSparkline` / `MiniDonut` (~50× cheaper to instantiate than Apple Charts).
-
-**Insight mini-visuals & `Insight.cardVisual`** (2026-07 visual refresh): generators set a purpose-built `InsightCardVisual` (`barPair` / `halfGauge` / `ring` / `donut` / `budgetBars` / `milestoneGauge`) with ready-to-draw values; `InsightsCardView.miniChart` renders it and falls back to the legacy detailData-derived chart when nil. `cardVisual` is part of `Insight ==` (value-based equality gotcha). Shared visual grammar: **solid fill = fact, translucent/dashed = forecast (`barPair(isProjection:)`, `LinearProgressBar(projectedPercentage:)`), muted gray = comparison base, tick = norm/target marker (limit tick = destructive)**. All minis are **centered in their 120pt card slot** (2026-07 UX pass — MiniBarPair used to right-align). `MiniBarPair` — pairwise was/now metrics (MoM, YoY, price increase, subscription growth, spending forecast). `MiniHalfGauge` — value vs norm tick on a RELATIVE scale `max(value × 1.15, norm × 2)` (spike, large tx, savings rate vs 20%, budget headroom spent-vs-budget) **plus an absolute mode** (`maxValue:`, no tick — the health score card, mini sibling of HeroHalfGauge's absolute mode); it is NOT a % -of-limit ring — that's `ProgressRing` (absolute scale, now with optional `showsTrack`; the `.ring` cardVisual case is currently unused by generators — budget headroom moved to `.halfGauge` because a ring next to the wealth donut read as a second donut). `budgetBars` — up to 3 thin `LinearProgressBar`s (overspend shows top-3 offenders; projectedOverspend passes `projectedPercentage` → forecast mode: scale `max(projected, 110)`, translucent projection segment, destructive limit tick at 100%). `MiniMilestoneGauge` — discrete segmented scale with target tick (emergency fund months, 3 of 6). `.sparkline(points:series:projectedValue:markExtremes:)` — MiniSparkline with generator-shaped points (NO card-side tail slice): dashed projection tail + hollow endpoint (projectedBalance), min/max extreme dots over FULL history (period records), custom per-category points (categoryTrend — points MUST carry real axis labels; HeroSparkline plots them on a category x-axis where empty labels collapse into one category). `MiniProportionBar` (`.proportionBar([DonutSlice])`) — stacked composition bar (recurring total: top-3 + other); flat bar, not a second donut, so adjacent feed cards stay visually distinct. All Canvas-based (no Apple Charts in feed cards), text-free (localization-free, `accessibilityHidden` — card text carries semantics).
-
-**Hero visuals & the wow toolkit** (2026-07 visual refresh, detail screens): `InsightDetailView.heroChartSection` renders a full-size hero from the SAME `cardVisual` payload the feed mini draws — **every mini has a DEDICATED hero component, never the Mini\* view scaled up**: `HeroHalfGauge` (also the health-score hero, absolute 0–100 mode with `zoneTicks`; tap replays the sweep), `HeroBarPair` (tap a bar → amount pill above it), `HeroMilestoneGauge` (tap replays the fill wave), `HeroSparkline` (real Swift Charts view — tap selection + `ChartSelectionBanner` like LineChart, plus dashed projection tail to a synthetic "→" category and min/max extreme PointMarks; non-scrollable, needs `currency`), `HeroProportionBar` (animated stacked bar + tappable legend rows: color dot / name / share % / amount — the legend is what makes the composition readable; labels/amounts are data-driven, no localization keys). All heroes take **`entranceDelay`** — `InsightDetailView` passes 0.5s so entrance animations start AFTER the zoom `navigationTransition` settles (animating during the transition made the hero visibly jump the moment the push completed; do not set it back to 0). Shared effects live in [HeroChartEffects.swift](../../Tenra/Views/Components/Charts/HeroChartEffects.swift): `chartGlow()` (colour-matched blurred self-copy underlay — OrbChart's orbShadow generalised; static blur, follows trim/shape animations for free), `materialize(delay:)` (spring pop + sharpen-out-of-blur, Reduce-Motion aware), `glassBar(cornerRadius:)` (iOS 26 Liquid Glass, no-op fallback). Layer discipline: data = thin crisp elements, wow = soft underlays; NEVER animate a blur radius per-frame. Gauge/bar heroes stay text-free (header/formula card carries numbers); HeroSparkline's banner and HeroProportionBar's legend surface data-driven values only. `ring`/`budgetBars`/`donut` payloads deliberately have NO hero (their details already render full-size sections).
-
-**`MiniSparkline` shows the recent tail, not the full series** (2026-07): `InsightsCardView.sparklineTail` slices `.periodTrend` points to the last 12 weeks / 12 months / 8 quarters before passing them in — the full all-time series at 120×60pt renders as noise, and one historical outlier flattens recent dynamics (y-domain follows the visible slice). The DETAIL view still receives the full series (insights.md contract — don't move the slice into the generators). The sparkline also draws a "you are here" dot on the last point (plot rect inset by `endDotRadius`) and, for `.cashFlow` with negatives in range, a dashed zero baseline.
-
-(`ChartDisplayMode` was dead code and deleted in the 2026-07 charts refactor.)
-
-## Breakdown Chart (OrbChart)
-
-⚠️ **`DonutChart` was removed** — [`OrbChart`](../../Tenra/Views/Components/Charts/OrbChart.swift) is the full-size category/subcategory breakdown chart (a blended glass "orb" + thin perimeter arcs + centred `%` labels). `DonutSlice` and its `from(_:)` / `from(_:baseColor:)` factories (sliver aggregation: merge <5% into "Other", drop a <3% tail) live in that file now, NOT a `DonutChart.swift`. `MiniDonut` still backs compact feed charts.
-- **Params**: `showLabels`, `centerIcon` (white glyph in the sphere centre) + `showsCenterIcon`, `size`, `animatesOnAppear`.
-- **Motion highlight**: `CMMotionManager` device-motion drives the specular glint. No Info.plist usage string needed (only pedometer/activity require one); Simulator `isDeviceMotionAvailable == false` → static no-op; neutral pose captured on first reading. 30 Hz updates isolated in a child view so only it invalidates.
-- **Staggered entrance**: one `@State` flip + per-layer `.animation(anim.delay(i·step), value: entered)` — see the SwiftUI note in [gotchas.md](../gotchas.md).
-
-## Mini-Charts in Scroll Feeds
-
-⚠️ **Mini-charts in scroll feeds → Canvas, not `Chart{}`**: Apple Charts per-card instantiation hitches `LazyVStack` section materialization at ~5ms per chart.
-
-For compact sparklines/donuts inside cards, use `Canvas`-based components:
-- [MiniDonut.swift](../../Tenra/Views/Components/Charts/MiniDonut.swift)
-- [MiniSparkline.swift](../../Tenra/Views/Components/Charts/MiniSparkline.swift)
-
-## Performance Anti-Patterns
-
-### Animation on hot paths
-
-⚠️ **`.animation(value:)` on scroll/zoom-dependent state = hot-path catastrophe**: every scroll event triggers spring → animation accumulation → lag. Apple Charts already smoothly interpolate — no spring needed on top.
-
-### `String(localized:)` in body
-
-⚠️ **`String(localized:)` in hot-path body of chart = anti-pattern**: each scroll frame recreates the localized string. Cache in `@State` / `static let` outside `body` or use stable string keys for `position(by:)`.
-
-### Heavy axis-label maps
-
-Use `ChartAxisLabelMapCache` (MainActor singleton, key = count + first + last) for cache.
-
-Any new heavy chart format function (`DateFormatter`, `Dictionary` builds) should go through a similar cache, otherwise rebuild on scroll/zoom dominates frame budget at 60fps.
+How Tenra feeds its data into DesignKit's charts. The charts themselves (`LineChart`, `BarChart`,
+`ChartSwitcher`, `HeroSparkline`, `Sparkline`, `ChartSelectionBanner`, `ChartZoomControls`,
+`OrbChart` / `DonutSlice`, `MiniDonut`, the `Mini*` / `Hero*` visuals, `ProgressRing`,
+`LinearProgressBar`) and the Swift Charts rules behind them live in DesignKit:
+[docs/charts.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/charts.md). A change to how a chart
+draws is a DesignKit PR.
+
+## `PeriodChartAdapters.swift`
+
+[`Views/Components/Charts/PeriodChartAdapters.swift`](../../Tenra/Views/Components/Charts/PeriodChartAdapters.swift)
+maps Tenra's model onto DesignKit's generic `ChartPoint` / `ChartSeries`:
+
+- **`PeriodDataPoint: ChartPoint`**: `chartLabel` = `label` (unique category-axis key),
+  `chartAxisLabel` = `PeriodAxisLabel.compact` ("ЯНВ", "W07", "Q1", with a `'25` suffix outside the
+  current year), `chartTitle` = `granularity.bannerLabel(for: key)` (banner title), `chartDate` =
+  `periodStart` (the first future period gets the "Today" marker).
+- **`PeriodChartSeries`** (`spending`, `income`, `avgDailyExpenses`, `cashFlow`, `wealth`) has two
+  members: `value(for:)` (what the series plots) and `chart` (the `ChartSeries`: id, the localized name
+  VoiceOver reads when several series share a chart, colouring, baseline, line width). A new case needs
+  an arm in both; the switches are exhaustive.
+- **Call-site inits** on `LineChart`, `BarChart`, `ChartSwitcher`, `HeroSparkline` and `Sparkline` take
+  `PeriodDataPoint`s, `PeriodChartSeries` and the `granularity:` / `currency:` parameters. An empty
+  `currency` formats banner and VoiceOver values compactly ("75K"). `MiniSparkline` is a typealias of
+  `Sparkline`.
+
+Several series on one chart overlay (line) or group (bar), and the banner lists each one; the income
+vs. expense chart is `series: [.income, .spending]`.
+
+Call sites:
+
+- `InsightsSummaryDetailView.chartSection`: `ChartSwitcher(series: focus.chartSeries, initialStyle: .bar)`;
+  `focus.chartSeries` is `[.income, .spending]` for the overview, one series for expenses, income and
+  net flow.
+- `InsightDetailView.chartSection` (`.periodTrend`): `ChartSwitcher` with the series matching the
+  insight, default style `.line`.
+
+Scrollable charts bleed to the screen edges: no horizontal padding on the chart's parent, padding goes on
+the neighbouring header and list.
+
+## Breakdown slices
+
+`DonutSlice` and its folding live in DesignKit (`OrbChart.swift`: `foldingSlivers` keeps slices of 5 % and
+more, at most 6, merges the rest into "Other" and drops that wedge under 3 %; `opacityStepped` shades
+one colour). Tenra's adapters are in [`Utils/DesignKitBridge.swift`](../../Tenra/Utils/DesignKitBridge.swift):
+`DonutSlice.from(_: [CategoryBreakdownItem])` (folded category slices) and
+`DonutSlice.from(_: [SubcategoryBreakdownItem], baseColor:)` (opacity steps of the category colour).
+Category breakdowns render with `OrbChart` in detail screens and `MiniDonut` in feed cards.
+
+## Horizontal paging
+
+Period pagers inside a pushed detail page with `TabView(.page)`, never a custom horizontal
+`DragGesture` (it fights the navigation edge swipe-back). `PagedCategoryBreakdownView`
+(`InsightDetailView.swift`) and `InsightDeepDiveView` share
+[`Views/Insights/PeriodPager.swift`](../../Tenra/Views/Insights/PeriodPager.swift): the index arithmetic
+(`PeriodPaging`, pinned by `PeriodPagingTests`), the chevrons centred on the page's chart
+(`PeriodPagerChartBand`) and the empty page (`PeriodPagerEmptyState`).
+
+## Insight mini-visuals
+
+Feed cards (`InsightsCardView.miniChart`) draw `Insight.cardVisual` (`InsightCardVisual`, set by the
+generators with ready-to-draw values) in a 120×60 pt slot, with DesignKit's Canvas components:
+
+| `cardVisual` | Feed mini | Detail hero |
+|---|---|---|
+| `.barPair` | `MiniBarPair` | `HeroBarPair` |
+| `.halfGauge` | `MiniHalfGauge` | `HeroHalfGauge` |
+| `.milestoneGauge` | `MiniMilestoneGauge` | `HeroMilestoneGauge` |
+| `.sparkline` | `MiniSparkline` | `HeroSparkline` |
+| `.proportionBar` | `MiniProportionBar` | `HeroProportionBar` |
+| `.ring` | `ProgressRing` | none |
+| `.budgetBars` | up to 3 `LinearProgressBar`s | none |
+| `.donut` | `MiniDonut` | none |
+
+- Visual grammar: solid fill = fact, translucent or dashed = forecast, grey = comparison base, tick =
+  norm or target.
+- With no `cardVisual` the card falls back to a chart derived from `detailData` (`legacyMiniChart`).
+- `cardVisual` is part of `Insight ==`.
+- Feed cards never instantiate Apple Charts (Canvas only), and pass `animatesOnAppear: false` to
+  `ProgressRing` / `LinearProgressBar`: the feed is a `LazyVStack`, where `onAppear` re-fires on scroll.
+- **`sparklineTail`**: a `.periodTrend` fallback sparkline shows only the last 12 weeks, 12 months or 8
+  quarters (years and all-time stay whole). The detail view gets the full series, so the slice stays in
+  the card, not in the generators (insights.md contract). `.sparkline` card visuals are shaped by their
+  generator and are not sliced; their points must carry real labels (the hero plots them on a category
+  axis).
+
+## Hero visuals
+
+`InsightDetailView.heroChartSection` renders the hero for the same `cardVisual` payload (table above).
+Every hero gets `entranceDelay: heroEntranceDelay` (0.5 s), so its entrance animation starts after the
+zoom navigation transition settles; at 0 the hero jumps when the push completes. `.ring`, `.budgetBars`
+and `.donut` have no hero: their detail screens already render full-size sections.

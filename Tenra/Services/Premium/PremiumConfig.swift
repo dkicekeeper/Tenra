@@ -6,7 +6,7 @@
 //  Kept separate from PremiumManager so non-RevenueCat code (feature gates,
 //  paywall triggers, tests) can reference IDs without importing the SDK.
 //
-//  See docs/MONETIZATION_STRATEGY.md for the model + pricing rationale.
+//  See docs/promotion-plan.md §2 for the model and the prices.
 //
 
 import Foundation
@@ -43,6 +43,15 @@ enum PremiumConfig {
     /// The daily logging loop stays free; scale + depth is Pro. See strategy doc §3.
     static let freeAccountLimit = 3
 
+    /// The AI assistant's free allowance (docs/promotion-plan.md §2, plan-ai-assistant.md §6):
+    /// enough to get hooked in the first week, then a taste every month. An action is one
+    /// question the assistant answers. Counted on the device (`AssistantUsageStore`).
+    enum Assistant {
+        nonisolated static let trialActions = 30
+        nonisolated static let trialDays = 7
+        nonisolated static let monthlyActions = 10
+    }
+
     // MARK: - Founding Users
 
     /// The first moment a new download got a Pro build. An Apple Account whose first download
@@ -50,7 +59,7 @@ enum PremiumConfig {
     /// is a Founding User on any device, after any reinstall (see FoundingUserPolicy).
     ///
     /// Version 1.0.1, the first with Tenra Pro, went on sale on about 2026-07-09
-    /// (docs/PROMOTION_PLAN.md, release table; build 4 was uploaded 2026-07-03). The exact
+    /// (docs/promotion-plan.md §1, releases; build 4 was uploaded 2026-07-03). The exact
     /// release time is not recorded in the repo, so the cutoff is the END of that day in
     /// Kazakhstan, 2026-07-10 00:00 UTC+5: the uncertain day counts in the user's favour.
     /// Build numbers can't be used instead: they restart at 1 with every marketing version.

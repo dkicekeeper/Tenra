@@ -5,7 +5,7 @@
 //  Insights product audit 2026-07 — Phase C.
 //  Diff engine turning freshly computed insights into local push notifications.
 //
-//  Benchmark-derived rules (docs/INSIGHTS_PRODUCT_AUDIT.md):
+//  Benchmark-derived rules (docs/archive/insights-product-audit-2026-07-13.md):
 //  - Push TRANSITIONS, not states: a signal id fires at most once per 7 days,
 //    so a budget that stays overspent doesn't nag daily.
 //  - Event signals (insights with a `signalKey`, e.g. a subscription price

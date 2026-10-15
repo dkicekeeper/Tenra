@@ -4,7 +4,7 @@
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
 > report — do not improvise. When done, update the status row for this plan
-> in `plans/README.md` — unless a reviewer dispatched you and told you they
+> in `docs/plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
 > **Drift check (run first)**:
@@ -82,7 +82,7 @@ Repo conventions: swift-testing (`@Suite`/`@Test`/`#expect`); suites constructin
 
 **In scope** (the only files you should create/modify):
 - `TenraTests/Services/CSV/CSVRoundTripTests.swift` (create)
-- `plans/README.md` (status row)
+- `docs/plans/README.md` (status row)
 
 **Out of scope** (do NOT touch):
 - ALL production code, including `Tenra/Services/CSV/**` and `Tenra/Models/**`. If a round-trip test exposes a genuine export/import asymmetry, **report it as a finding** (STOP condition) — fixing the contract is a separate, deliberate change because existing exported files in the wild depend on current behavior.
@@ -139,7 +139,7 @@ Note: if `CSVRow`'s init or `CSVFile`'s shape make the accessor-level assertions
 
 ### Step 4: Full regression run + commit
 
-**Verify**: full `TenraTests` run → `** TEST SUCCEEDED **`; `git status` shows only the new test file (+ plans/README.md).
+**Verify**: full `TenraTests` run → `** TEST SUCCEEDED **`; `git status` shows only the new test file (+ docs/plans/README.md).
 
 ## Test plan
 
@@ -151,7 +151,7 @@ This plan *is* a test plan — 7 new tests in `TenraTests/Services/CSV/CSVRoundT
 - [ ] Suite-filter run → `** TEST SUCCEEDED **` and the per-test lines show `passed` (not 0 tests run — if the output shows no `Test case` lines, the suite name filter is wrong; re-check the type name)
 - [ ] Full `-only-testing:TenraTests` run → `** TEST SUCCEEDED **`
 - [ ] Zero production files modified (`git diff --name-only` contains only `TenraTests/` and `plans/`)
-- [ ] `plans/README.md` status row updated
+- [ ] `docs/plans/README.md` status row updated
 
 ## STOP conditions
 

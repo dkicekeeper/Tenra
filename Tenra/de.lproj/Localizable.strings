@@ -95,6 +95,8 @@
 "currency.customizeAction" = "Anpassen...";
 "settings.wallpaper" = "Hintergrund der Übersicht";
 "settings.background" = "Hintergrund";
+"settings.voiceLanguage" = "Sprache für Spracheingabe";
+"settings.voiceLanguage.app" = "Wie in der App";
 "settings.background.none" = "Kein Hintergrund";
 "settings.background.gradient" = "Ausgabenfarben";
 "settings.background.photo" = "Foto";
@@ -176,6 +178,13 @@
 // MARK: - Search
 "search.placeholder" = "Nach Betrag, Kategorie oder Beschreibung suchen";
 "search.subcategories" = "Unterkategorien suchen";
+"search.recent" = "Zuletzt gesucht";
+"search.recent.clear" = "Löschen";
+"search.recent.remove" = "Entfernen";
+"search.suggestions" = "Vorschläge";
+"search.fill" = "Im Suchfeld bearbeiten";
+"search.suggestion.category" = "Kategorie";
+"search.suggestion.subcategory" = "Unterkategorie";
 
 // MARK: - Modals
 "modal.newAccount" = "Neues Konto";
@@ -319,7 +328,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "Neue Unterkategorie";
 "subcategory.namePlaceholder" = "Name der Unterkategorie";
-"subcategory.usageCount" = "%d-mal verwendet";
 "subcategory.notUsed" = "Noch nicht verwendet";
 "subcategory.reorder" = "Unterkategorien";
 "subcategory.sort.title" = "Sortieren";
@@ -460,7 +468,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "Keine aktiven Abos";
-"subscriptions.activeCount" = "%lld aktiv";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "Nächste Abbuchung: %@";
@@ -757,7 +764,6 @@
 "filter.allAccounts" = "Alle Konten";
 "filter.allCategories" = "Alle Kategorien";
 "filter.allSubcategories" = "Alle Unterkategorien";
-"filter.categoriesCount" = "%d Kategorien";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1041,10 +1047,8 @@
 "finances.title" = "Finanzen";
 "finances.accounts.title" = "Konten";
 "finances.accounts.totalLabel" = "Gesamter Kontostand";
-"finances.accounts.count" = "%lld Konten";
 "finances.accounts.empty" = "Keine Konten";
 "finances.deposits.title" = "Sparkonten";
-"finances.deposits.count" = "%lld Sparkonten";
 "finances.deposits.empty" = "Keine Sparkonten";
 "deposit.listTitle" = "Sparkonten";
 "deposit.emptyTitle" = "Keine Sparkonten";
@@ -1053,11 +1057,8 @@
 "account.includeInBalance" = "In Kontostand einbeziehen";
 "account.includeInBalanceHint" = "Dieses Konto im Gesamtkontostand und in der Analyse berücksichtigen.";
 "finances.categories.title" = "Kategorien";
-"finances.categories.count" = "%lld Kategorien";
 "finances.categories.empty" = "Keine Kategorien";
 "finances.subcategories.title" = "Unterkategorien";
-"finances.subcategories.count" = "%lld Unterkategorien";
-"finances.subcategories.linkedTo" = "In %lld Kategorien";
 "finances.subcategories.empty" = "Keine Unterkategorien";
 
 // MARK: - Loans
@@ -1071,7 +1072,6 @@
 "loan.totalDebt" = "Gesamtschulden";
 "loan.monthlyTotal" = "Monatlich";
 "loan.unpaidThisMonth" = "Diesen Monat offen";
-"loan.activeCount" = "%d aktive Kredite";
 "loan.typeAnnuityShort" = "Kredit";
 "loan.typeInstallmentShort" = "Ratenkauf";
 "loan.of" = "von";
@@ -1349,7 +1349,6 @@
 "subscription.unlinkAll.confirm" = "Alle trennen";
 "subscription.unlinkAll.message" = "Abo-Verknüpfung von %d Transaktionen entfernen? Die Transaktionen selbst bleiben erhalten.";
 "subscription.linkPayments.subcategories" = "Unterkategorien";
-"subscription.linkPayments.subcategoriesCount" = "%d Unterkategorien";
 "subscription.filterAll" = "Alle";
 
 // MARK: - Accounts (Types & Actions)
@@ -1560,6 +1559,13 @@
 "insights.health.subtitle.good" = "Solide Finanzen mit Optimierungspotenzial.";
 "insights.health.subtitle.fair" = "Ordentliche Basis, aber einige Bereiche brauchen Aufmerksamkeit.";
 "insights.health.subtitle.needsAttention" = "Mehrere Aspekte Ihrer Finanzen sollten verbessert werden.";
+"insights.health.trend.sinceLastMonth" = "seit letztem Monat";
+"insights.savingsRate.band.onTarget" = "Ziel erreicht";
+"insights.savingsRate.band.belowTarget" = "Unter dem Ziel von 20 %";
+"insights.savingsRate.band.low" = "Unter 10 %";
+"insights.savingsRate.band.deficit" = "Ausgaben über den Einnahmen";
+"insights.largeTransaction.timesUsual" = "%@-mal so viel wie üblich";
+"insights.budgetHeadroom.leftOf" = "Übrig von %@";
 
 "insights.health.unavailable.title" = "Nicht genügend Daten";
 "insights.health.unavailable.message" = "Fügen Sie Einnahmen und Ausgaben hinzu – sobald genügend Daten vorliegen, bewerten wir Ihre finanzielle Gesundheit.";
@@ -1702,6 +1708,14 @@
 "settings.siri.example1" = "Hey Siri, Buchung in Tenra erfassen";
 "settings.siri.example2" = "Hey Siri, wie viel habe ich in Tenra ausgegeben";
 "settings.siri.example3" = "Hey Siri, Ausgabe in Tenra hinzufügen";
+"settings.merchants.title" = "Wallet-Händler";
+"settings.merchants.footer" = "Zahlungen bei diesen Händlern über die Wallet-Automation erhalten diese Kategorie und Unterkategorie. Tippen Sie auf einen Händler, um sie zu ändern, oder wischen Sie nach links, um ihn zu vergessen.";
+"settings.merchants.emptyTitle" = "Noch keine Händler";
+"settings.merchants.emptyMessage" = "Wenn die Wallet-Automation eine Ausgabe hinzufügt, fragt Tenra einmal pro Händler nach der Kategorie und merkt sie sich hier. Geben Sie in der Automation den Händler an „Notiz“ weiter und lassen Sie „Kategorie“ leer.";
+"settings.merchants.forget" = "Vergessen";
+"settings.merchants.forgetMerchant" = "Händler vergessen";
+"settings.merchants.categoryDeleted" = "Kategorie gelöscht, Tenra fragt erneut";
+"settings.merchants.editFooter" = "Die nächsten Zahlungen hier werden mit dieser Kategorie erfasst. Vergessen Sie den Händler, fragt Tenra bei seiner nächsten Zahlung erneut.";
 
 
 /* MARK: - Document import */
@@ -1832,3 +1846,247 @@
 "calendar.showMonth" = "Monat anzeigen";
 "calendar.showWeek" = "Woche anzeigen";
 "skeleton.loading" = "Wird geladen";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "Denke nach…";
+"assistant.step.spending" = "Rechne Ausgaben zusammen…";
+"assistant.step.comparing" = "Vergleiche Zeiträume…";
+"assistant.step.searching" = "Durchsuche Buchungen…";
+"assistant.step.accounts" = "Prüfe Konten…";
+"assistant.step.budgets" = "Prüfe Budgets…";
+"assistant.step.recurring" = "Sehe mir Abos an…";
+"assistant.step.insights" = "Lese deine Analysen…";
+"assistant.step.calculating" = "Rechne nach…";
+"assistant.step.composing" = "Stelle die Antwort zusammen…";
+"assistant.error.offline" = "Keine Verbindung. Prüfe das Internet und versuche es erneut.";
+"assistant.error.busy" = "Der Assistent ist gerade ausgelastet. Versuche es gleich noch einmal.";
+"assistant.error.limit" = "Deine Fragen für diesen Monat sind aufgebraucht. Das Limit erneuert sich im nächsten Monat.";
+"assistant.error.pro" = "Der Assistent gehört zu Tenra Pro.";
+"assistant.error.region" = "Der Assistent ist in deiner Region noch nicht verfügbar.";
+"assistant.error.unavailable" = "Der Assistent ist gerade nicht verfügbar. Versuche es später erneut.";
+"assistant.error.device" = "Der Assistent ist auf diesem Gerät nicht verfügbar.";
+"assistant.error.refused" = "Dabei kann ich nicht helfen. Frag mich etwas zu deinem Geld.";
+"assistant.error.freeLimit" = "Die kostenlosen Antworten sind vorerst aufgebraucht. Mit Tenra Pro kannst du weiterfragen.";
+"assistant.allowance.renews" = "Neue kostenlose Antworten ab %@";
+"assistant.open.missing" = "Das gibt es in Tenra nicht mehr";
+"assistant.draft.save" = "Speichern";
+"assistant.draft.saved" = "Gespeichert";
+"assistant.draft.undo" = "Widerrufen";
+"assistant.draft.undone" = "Rückgängig gemacht. Nichts wurde gespeichert.";
+"assistant.draft.failed" = "Speichern fehlgeschlagen. Versuch es noch einmal.";
+"assistant.draft.accountGuessed" = "Tenra hat das Konto gewählt. Prüf es vor dem Speichern.";
+"assistant.draft.categoryGuessed" = "Tenra hat die Kategorie gewählt. Prüf sie vor dem Speichern.";
+"assistant.draft.budgetWas" = "Vorher";
+"assistant.draft.editHint" = "Öffnet die Buchung zum Bearbeiten";
+"assistant.draft.editTip" = "Tipp auf die Buchung, um sie zu ändern.";
+"assistant.voice.send" = "Ten fragen";
+"assistant.voice.again" = "Noch mal sagen";
+"assistant.attach.scan" = "Beleg scannen";
+"assistant.attach.photo" = "Beleg aus Fotos";
+"assistant.attach.file" = "Kontoauszug (PDF oder CSV)";
+"assistant.attachment.receipt" = "Beleg";
+"assistant.attachment.statement" = "Kontoauszug";
+"assistant.attachment.review" = "Prüfen und speichern";
+"assistant.attachment.uncategorized" = "Ohne Kategorie: %lld";
+"assistant.attachment.skipped" = "Nicht gelesene Zeilen: %lld";
+"assistant.attachment.reading" = "Dokument wird gelesen…";
+"assistant.attachment.analyze" = "Geh diesen Kontoauszug durch";
+"assistant.ask" = "Ten fragen";
+"assistant.topic.account.status" = "Wie steht es um „%@“?";
+"assistant.topic.account.spending" = "Wohin geht das Geld von „%@“?";
+"assistant.topic.account.forecast" = "Reicht „%@“ bis zum Monatsende?";
+"assistant.topic.category.spending" = "Wie viel gebe ich für „%@“ aus?";
+"assistant.topic.category.cut" = "Wie kann ich bei „%@“ weniger ausgeben?";
+"assistant.topic.category.budget" = "Schlag ein Budget für „%@“ vor";
+"assistant.topic.income.trend" = "Wie entwickelt sich mein Einkommen aus „%@“?";
+"assistant.topic.income.compare" = "Vergleich „%@“ mit dem Vormonat";
+"assistant.topic.insight" = "Erklär „%@“ und was ich tun kann";
+"assistant.topic.history.changes" = "Was hat sich diesen Monat bei meinen Ausgaben geändert?";
+"assistant.topic.history.unusual" = "Finde ungewöhnliche Ausgaben";
+"assistant.recent" = "Letzte Chats";
+"assistant.recent.delete" = "Chat löschen";
+"assistant.notice.title" = "Ten schreibt";
+"assistant.notice.goThrough" = "Durchgehen";
+"assistant.notice.hide" = "Ausblenden";
+"assistant.notice.ask" = "Geh das durch: %@";
+"assistant.notice.ask.digest" = "Geh meine letzte Woche durch";
+"assistant.notice.ask.charge" = "Lohnt sich %@ noch?";
+"assistant.notice.charge" = "Morgen wird %@ abgebucht";
+"assistant.forecast.perDay" = "Pro Tag bis %@";
+"assistant.forecast.free" = "Frei verfügbar: %@";
+"assistant.forecast.balance" = "Kontostand pro Tag";
+"assistant.forecast.obligations" = "Abbuchungen bis %@";
+"assistant.error.generic" = "Etwas ist schiefgelaufen. Versuche es erneut.";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "Assistent";
+"assistant.greeting.title" = "Hallo, ich bin Ten";
+"assistant.greeting.message" = "Ich helfe dir mit deinem Geld: Ausgaben, Sparen, Kredite und Investieren. Ich sehe mir deine Daten auf diesem iPhone an und antworte mit Karten.";
+"assistant.attach" = "Beleg oder Kontoauszug anhängen";
+"assistant.greeting.tools" = "Büroklammer: ein Beleg oder Kontoauszug. Mikrofon: sag es einfach.";
+"composer.send" = "Senden";
+"composer.voice" = "Diktieren";
+"assistant.composer.placeholder" = "Frag zu deinem Geld…";
+"assistant.preset.month" = "Meine Ausgaben diesen Monat";
+"assistant.preset.compare" = "Vergleiche mit dem Vormonat";
+"assistant.preset.budgets" = "Wie stehen meine Budgets?";
+"assistant.preset.subscriptions" = "Was kosten meine Abos?";
+"assistant.preset.allowance" = "Wie viel kann ich bis zum Zahltag pro Tag ausgeben?";
+"assistant.preset.save" = "Wo kann ich sparen?";
+"assistant.preset.invest" = "Wie fange ich mit dem Investieren an?";
+"common.retry" = "Erneut versuchen";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "Der Assistent arbeitet in der Cloud";
+"assistant.consent.message" = "Für eine Antwort fragt er Claude, ein Modell von Anthropic. Nur deine Frage und was er für die Antwort nachschlägt verlassen das iPhone: Summen, Kategorien, Kontonamen, die Fakten, die er sich über dich merkt, und die nötigen Buchungen. Deine Datenbank, Belege und Kontoauszüge bleiben hier. Der Server von Tenra speichert nichts, und deine Daten werden nicht zum Training von Modellen genutzt.";
+"assistant.consent.allow" = "Einschalten";
+"assistant.consent.notNow" = "Nicht jetzt";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "Ten merkt sich das";
+"assistant.fact.forget" = "Ten vergisst das";
+"assistant.fact.was" = "Vorher: %@";
+"settings.assistant.header" = "Assistent";
+"settings.assistant.cloud" = "Antworten aus der Cloud";
+"settings.assistant.footer" = "Ten antwortet mit Claude, einem Modell von Anthropic. Ausgeschaltet fragt Ten erneut, bevor deine nächste Frage das iPhone verlässt.";
+"assistant.memory.title" = "Was Ten über mich weiß";
+"assistant.memory.emptyTitle" = "Ten weiß noch nichts über dich";
+"assistant.memory.emptyMessage" = "Erzähl Ten im Chat von deinem Geld, zum Beispiel wann dein Gehalt kommt oder worauf du sparst. Ten bietet an, es sich zu merken, und du entscheidest.";
+"assistant.memory.footer" = "Ten sieht diese Fakten in jedem Chat. Sie bleiben auf diesem iPhone und verlassen es nur mit deinen Fragen.";
+"assistant.memory.add" = "Fakt hinzufügen";
+"assistant.memory.new" = "Neuer Fakt";
+"assistant.memory.edit" = "Fakt bearbeiten";
+"assistant.memory.placeholder" = "Zum Beispiel: Gehalt kommt am 10.";
+"assistant.memory.editorFooter" = "Ein kurzer Satz über dein Geld: wann dein Gehalt kommt, worauf du sparst, welche Karte die wichtigste ist. Keine Kartennummern oder Passwörter.";
+"assistant.memory.editHint" = "Öffnet den Fakt zum Bearbeiten";
+"assistant.memory.forget" = "Vergessen";
+"assistant.memory.forgetAll" = "Alles vergessen";
+"assistant.memory.forgetAllTitle" = "Alle Fakten vergessen?";
+"assistant.memory.forgetAllMessage" = "Ten weiß dann wieder nichts über dich. Deine Buchungen und Chats bleiben.";
+"assistant.memory.tooLong" = "Bleib bei einem kurzen Satz.";
+"assistant.memory.full" = "Ten merkt sich bis zu %lld Fakten. Vergiss einen, um einen neuen hinzuzufügen.";
+"assistant.memory.duplicate" = "Das merkt sich Ten schon.";
+"assistant.memory.gone" = "Diesen Fakt gibt es nicht mehr.";
+
+/* Goals and debts (docs/domains/goals-and-debts.md) */
+"finances.goals.title" = "Sparziele";
+"finances.goals.empty" = "Keine Sparziele";
+"finances.debts.title" = "Schulden";
+"finances.debts.empty" = "Keine Schulden";
+"finances.debts.owedToMe" = "Man schuldet Ihnen";
+"finances.debts.iOwe" = "Sie schulden";
+"goal.listTitle" = "Sparziele";
+"goal.emptyTitle" = "Noch keine Sparziele";
+"goal.emptyDescription" = "Setzen Sie sich ein Ziel und sehen Sie, wie nah Sie dran sind";
+"goal.new" = "Neues Ziel";
+"goal.editTitle" = "Ziel bearbeiten";
+"goal.namePlaceholder" = "Wofür sparen Sie?";
+"goal.targetHint" = "Der Betrag, den Sie sparen möchten";
+"goal.deadline" = "Termin";
+"goal.hasDeadline" = "Bis zu einem Datum";
+"goal.account" = "Konto";
+"goal.account.none" = "Kein Konto";
+"goal.account.hint" = "Mit Konto folgt das Ziel dessen Saldo. Ohne Konto tragen Sie selbst ein, was Sie zurücklegen.";
+"goal.alreadySaved" = "Bereits gespart";
+"goal.target" = "Ziel";
+"goal.left" = "Noch zu sparen";
+"goal.leftAmount" = "Noch %@";
+"goal.monthly" = "Monatlich zurücklegen";
+"goal.perMonth" = "%@ pro Monat";
+"goal.ofTarget" = "von %@";
+"goal.overdue" = "Termin verstrichen";
+"goal.reached" = "Ziel erreicht";
+"goal.reachedOn" = "Erreicht am %@";
+"goal.reachedSection" = "Erreicht";
+"goal.contribute" = "Einzahlen";
+"goal.contributions" = "Einzahlungen";
+"goal.delete" = "Ziel löschen";
+"goal.deleteTitle" = "Ziel löschen?";
+"goal.deleteMessage" = "Das Ziel und seine Einzahlungen werden gelöscht. Konten und Buchungen bleiben unverändert.";
+"goal.notFound" = "Ziel nicht gefunden";
+"goal.notFoundDescription" = "Es wurde möglicherweise gelöscht.";
+"debt.listTitle" = "Schulden";
+"debt.emptyTitle" = "Keine Schulden";
+"debt.emptyDescription" = "Behalten Sie im Blick, wer Ihnen etwas schuldet und wem Sie etwas schulden";
+"debt.new" = "Neue Schuld";
+"debt.editTitle" = "Schuld bearbeiten";
+"debt.direction" = "Richtung";
+"debt.direction.owedToMe" = "Man schuldet mir";
+"debt.direction.iOwe" = "Ich schulde";
+"debt.person" = "Wer";
+"debt.personPlaceholder" = "Name";
+"debt.date" = "Datum";
+"debt.dueDate" = "Fällig am";
+"debt.hasDueDate" = "Bis zu einem Datum zurück";
+"debt.note" = "Notiz";
+"debt.notePlaceholder" = "Wofür";
+"debt.section.owedToMe" = "Man schuldet Ihnen";
+"debt.section.iOwe" = "Sie schulden";
+"debt.section.settled" = "Beglichen";
+"debt.amount" = "Betrag";
+"debt.returned" = "Zurückgezahlt";
+"debt.leftAmount" = "Noch %@";
+"debt.overdue" = "Überfällig";
+"debt.overdueSince" = "Überfällig seit %@";
+"debt.settledOn" = "Beglichen am %@";
+"debt.recordRepayment" = "Rückzahlung";
+"debt.settle" = "Begleichen";
+"debt.reopen" = "Wieder öffnen";
+"debt.repayments" = "Rückzahlungen";
+"debt.delete" = "Schuld löschen";
+"debt.deleteTitle" = "Schuld löschen?";
+"debt.deleteMessage" = "Die Schuld und ihre Rückzahlungen werden gelöscht. Konten und Buchungen bleiben unverändert.";
+"debt.notFound" = "Schuld nicht gefunden";
+"debt.notFoundDescription" = "Sie wurde möglicherweise gelöscht.";
+"moneyEntry.notePlaceholder" = "Notiz";
+"moneyEntry.invalidAmount" = "Betrag eingeben";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "Prüfe Ziele und Schulden…";
+"assistant.notice.debt.owedToMe" = "Morgen sollen %@ zurückkommen";
+"assistant.notice.debt.iOwe" = "Morgen sollen Sie %@ zurückzahlen";
+"assistant.notice.ask.debt" = "Geh die Schuld mit %@ durch";
+"assistant.notice.goal.behind" = "Legen Sie %1$@ im Monat zurück, um es bis %2$@ zu schaffen";
+"assistant.notice.ask.goal" = "Wie hole ich bei „%@“ auf?";
+"assistant.topic.goal.onTrack" = "Liege ich bei „%@“ im Plan?";
+"assistant.topic.goal.faster" = "Wie spare ich schneller für „%@“?";
+"assistant.topic.debt.status" = "Wie viel ist bei der Schuld mit %@ noch offen?";
+"assistant.topic.debt.plan" = "Wie zahle ich %@ pünktlich zurück?";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "Guten Morgen!";
+"assistant.chatter.afternoon" = "Guten Tag!";
+"assistant.chatter.evening" = "Guten Abend!";
+"assistant.chatter.night" = "Pst… es ist spät";
+"assistant.chatter.askMe" = "Frag mich einfach";
+"assistant.chatter.hmm" = "Hmm…";
+"assistant.chatter.counting" = "Ich rechne…";
+"assistant.chatter.looking" = "Moment, ich schau mal…";
+"assistant.chatter.yay" = "Juhu!";
+"assistant.chatter.offline" = "Keine Verbindung…";
+"assistant.chatter.unclear" = "Nicht ganz klar. Nochmal?";
+"assistant.chatter.tickles" = "Das kitzelt!";
+"assistant.chatter.here" = "Ich bin da!";
+"assistant.chatter.help" = "Wie kann ich helfen?";
+"assistant.chatter.hehe" = "Hihi";
+"assistant.chatter.dizzy" = "Uii, mir ist schwindelig!";
+"settings.assistant.chatter" = "Ten plaudert";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "Tens Garderobe";
+"assistant.wardrobe.none" = "Nichts";
+"assistant.wardrobe.partyHat" = "Partyhut";
+"assistant.wardrobe.crown" = "Krone";
+"assistant.wardrobe.beanie" = "Mütze";
+"assistant.wardrobe.taqiya" = "Taqiya";
+"assistant.wardrobe.headphones" = "Kopfhörer";
+"assistant.wardrobe.glasses" = "Brille";
+"assistant.wardrobe.sunglasses" = "Sonnenbrille";
+"assistant.wardrobe.sleepMask" = "Schlafmaske";
+"assistant.wardrobe.footer" = "An Feiertagen zieht sich Ten selbst an: einen Partyhut zu Neujahr, eine Taqiya zu Nauryz, eine Krone an einem Tag, an dem ihr zusammen feiert. Neue öffnen sich durch Tage in Folge in Tenra und durch Ziele.";
+"assistant.wardrobe.lock.streak7" = "7 Tage in Folge in Tenra";
+"assistant.wardrobe.lock.streak30" = "30 Tage in Folge in Tenra";
+"assistant.wardrobe.lock.firstGoal" = "Lege ein Ziel an";
+"assistant.wardrobe.lock.goalReached" = "Erreiche ein Ziel";
+"assistant.wardrobe.lock.nauryz" = "Öffnet sich zu Nauryz";
+"assistant.wardrobe.locked" = "Gesperrt";

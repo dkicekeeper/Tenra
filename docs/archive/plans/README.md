@@ -149,5 +149,5 @@ Recorded so future audits don't re-litigate them:
   parsing make both disproportionately cheap *except* that a widget extension
   requires migrating the CoreData store into an App Group container (real
   migration, M–L). Suggested as a 1.2 design-spike, not a build plan.
-- Everything else forward-looking is already in `docs/RELEASE_1.1_PLAN.md`
+- Everything else forward-looking is already in `docs/release-1.1-plan.md`
   (iPad, ASO, rating prompt), which remains the active roadmap.

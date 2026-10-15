@@ -95,6 +95,8 @@
 "currency.customizeAction" = "カスタマイズ…";
 "settings.wallpaper" = "ホームの壁紙";
 "settings.background" = "背景";
+"settings.voiceLanguage" = "音声の言語";
+"settings.voiceLanguage.app" = "アプリと同じ";
 "settings.background.none" = "背景なし";
 "settings.background.gradient" = "支出カラー";
 "settings.background.photo" = "写真";
@@ -176,6 +178,13 @@
 // MARK: - Search
 "search.placeholder" = "金額・カテゴリ・説明で検索";
 "search.subcategories" = "サブカテゴリを検索";
+"search.recent" = "最近の検索";
+"search.recent.clear" = "消去";
+"search.recent.remove" = "削除";
+"search.suggestions" = "候補";
+"search.fill" = "検索フィールドで編集";
+"search.suggestion.category" = "カテゴリ";
+"search.suggestion.subcategory" = "サブカテゴリ";
 
 // MARK: - Modals
 "modal.newAccount" = "新しい口座";
@@ -319,7 +328,6 @@
 // MARK: - Subcategories Management
 "subcategory.new" = "新しいサブカテゴリ";
 "subcategory.namePlaceholder" = "サブカテゴリ名";
-"subcategory.usageCount" = "%d回使用";
 "subcategory.notUsed" = "まだ使用していません";
 "subcategory.reorder" = "サブカテゴリ";
 "subcategory.sort.title" = "並べ替え";
@@ -460,7 +468,6 @@
 
 // Active count (EmptyState)
 "emptyState.noActiveSubscriptions" = "有効なサブスクがありません";
-"subscriptions.activeCount" = "%lld件が有効";
 
 // Next charge inline text (format string for SubscriptionCard)
 "subscriptions.nextChargeOn" = "次回請求：%@";
@@ -757,7 +764,6 @@
 "filter.allAccounts" = "すべての口座";
 "filter.allCategories" = "すべてのカテゴリ";
 "filter.allSubcategories" = "すべてのサブカテゴリ";
-"filter.categoriesCount" = "%d件のカテゴリ";
 
 // MARK: - Animated Input (Phase 16)
 "input.amountPlaceholder" = "0";
@@ -1041,10 +1047,8 @@
 "finances.title" = "ファイナンス";
 "finances.accounts.title" = "口座";
 "finances.accounts.totalLabel" = "残高の合計";
-"finances.accounts.count" = "%lld件の口座";
 "finances.accounts.empty" = "口座がありません";
 "finances.deposits.title" = "預金";
-"finances.deposits.count" = "%lld件の預金";
 "finances.deposits.empty" = "預金がありません";
 "deposit.listTitle" = "預金";
 "deposit.emptyTitle" = "預金がありません";
@@ -1053,11 +1057,8 @@
 "account.includeInBalance" = "残高に含める";
 "account.includeInBalanceHint" = "この口座を残高の合計と分析に含めます。";
 "finances.categories.title" = "カテゴリ";
-"finances.categories.count" = "%lld件のカテゴリ";
 "finances.categories.empty" = "カテゴリがありません";
 "finances.subcategories.title" = "サブカテゴリ";
-"finances.subcategories.count" = "%lld件のサブカテゴリ";
-"finances.subcategories.linkedTo" = "%lld件のカテゴリにわたって";
 "finances.subcategories.empty" = "サブカテゴリがありません";
 
 // MARK: - Loans
@@ -1071,7 +1072,6 @@
 "loan.totalDebt" = "負債の合計";
 "loan.monthlyTotal" = "毎月";
 "loan.unpaidThisMonth" = "今月の未払い";
-"loan.activeCount" = "%d件の有効なローン";
 "loan.typeAnnuityShort" = "ローン";
 "loan.typeInstallmentShort" = "分割払い";
 "loan.of" = "／";
@@ -1349,7 +1349,6 @@
 "subscription.unlinkAll.confirm" = "すべて解除";
 "subscription.unlinkAll.message" = "%d件の取引からサブスクの紐づけを解除しますか？取引自体はそのまま残ります。";
 "subscription.linkPayments.subcategories" = "サブカテゴリ";
-"subscription.linkPayments.subcategoriesCount" = "%d件のサブカテゴリ";
 "subscription.filterAll" = "すべて";
 
 // MARK: - Accounts (Types & Actions)
@@ -1560,6 +1559,13 @@
 "insights.health.subtitle.good" = "健全な家計です。さらに改善する余地があります。";
 "insights.health.subtitle.fair" = "まずまずですが、いくつか注意したい点があります。";
 "insights.health.subtitle.needsAttention" = "家計にはいくつか改善が必要な点があります。";
+"insights.health.trend.sinceLastMonth" = "先月から";
+"insights.savingsRate.band.onTarget" = "目標達成";
+"insights.savingsRate.band.belowTarget" = "目標の20%未満";
+"insights.savingsRate.band.low" = "10%未満";
+"insights.savingsRate.band.deficit" = "支出が収入を上回っています";
+"insights.largeTransaction.timesUsual" = "通常の%@倍";
+"insights.budgetHeadroom.leftOf" = "%@のうち残り";
 
 "insights.health.unavailable.title" = "データが足りません";
 "insights.health.unavailable.message" = "収入と支出の取引を追加してください。十分なデータがそろうと、家計の健康状態を評価します。";
@@ -1702,6 +1708,14 @@
 "settings.siri.example1" = "ヘイ Siri、Tenra に取引を記録";
 "settings.siri.example2" = "ヘイ Siri、Tenra でいくら使った";
 "settings.siri.example3" = "ヘイ Siri、Tenra に支出を追加";
+"settings.merchants.title" = "Wallet の店舗";
+"settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。変更するには店舗をタップ、忘れるには左にスワイプします。";
+"settings.merchants.emptyTitle" = "まだ店舗はありません";
+"settings.merchants.emptyMessage" = "Wallet のオートメーションが支出を追加すると、Tenra は店舗ごとに一度だけカテゴリを尋ね、ここに覚えておきます。オートメーションでは店舗を「メモ」に渡し、「カテゴリ」は空のままにしてください。";
+"settings.merchants.forget" = "忘れる";
+"settings.merchants.forgetMerchant" = "店舗を忘れる";
+"settings.merchants.categoryDeleted" = "カテゴリが削除されました。Tenra が再度尋ねます";
+"settings.merchants.editFooter" = "この店舗での次回以降の支払いは、このカテゴリで記録されます。店舗を忘れると、次回の支払いで Tenra が再度尋ねます。";
 
 
 /* MARK: - Document import */
@@ -1832,3 +1846,247 @@
 "calendar.showMonth" = "月を表示";
 "calendar.showWeek" = "週を表示";
 "skeleton.loading" = "読み込み中";
+
+/* AI assistant: what it is doing, why it could not answer */
+"assistant.step.understanding" = "考え中…";
+"assistant.step.spending" = "支出を集計中…";
+"assistant.step.comparing" = "期間を比較中…";
+"assistant.step.searching" = "取引を検索中…";
+"assistant.step.accounts" = "口座を確認中…";
+"assistant.step.budgets" = "予算を確認中…";
+"assistant.step.recurring" = "サブスクを確認中…";
+"assistant.step.insights" = "分析を確認中…";
+"assistant.step.calculating" = "計算中…";
+"assistant.step.composing" = "回答をまとめています…";
+"assistant.error.offline" = "接続できません。インターネットを確認して、もう一度お試しください。";
+"assistant.error.busy" = "アシスタントは混み合っています。少し待ってからもう一度お試しください。";
+"assistant.error.limit" = "今月の質問回数を使い切りました。上限は来月リセットされます。";
+"assistant.error.pro" = "アシスタントは Tenra Pro の機能です。";
+"assistant.error.region" = "お住まいの地域ではまだアシスタントを利用できません。";
+"assistant.error.unavailable" = "アシスタントは現在利用できません。後でもう一度お試しください。";
+"assistant.error.device" = "このデバイスではアシスタントを利用できません。";
+"assistant.error.refused" = "その内容にはお答えできません。お金のことを聞いてください。";
+"assistant.error.freeLimit" = "無料の回答は今のところ上限に達しました。Tenra Pro なら引き続き質問できます。";
+"assistant.allowance.renews" = "%@から新しい無料回答";
+"assistant.open.missing" = "これは Tenra にもうありません";
+"assistant.draft.save" = "保存";
+"assistant.draft.saved" = "保存しました";
+"assistant.draft.undo" = "取り消す";
+"assistant.draft.undone" = "取り消しました。何も保存されていません。";
+"assistant.draft.failed" = "保存できませんでした。もう一度お試しください。";
+"assistant.draft.accountGuessed" = "口座は Tenra が選びました。保存する前に確認してください。";
+"assistant.draft.categoryGuessed" = "カテゴリは Tenra が選びました。保存する前に確認してください。";
+"assistant.draft.budgetWas" = "変更前";
+"assistant.draft.editHint" = "取引を開いて変更します";
+"assistant.draft.editTip" = "変更するには取引をタップしてください。";
+"assistant.voice.send" = "テンに聞く";
+"assistant.voice.again" = "もう一度話す";
+"assistant.attach.scan" = "レシートをスキャン";
+"assistant.attach.photo" = "写真からレシート";
+"assistant.attach.file" = "明細書（PDF または CSV）";
+"assistant.attachment.receipt" = "レシート";
+"assistant.attachment.statement" = "明細書";
+"assistant.attachment.review" = "確認して保存";
+"assistant.attachment.uncategorized" = "カテゴリなし：%lld";
+"assistant.attachment.skipped" = "読み取れなかった行：%lld";
+"assistant.attachment.reading" = "書類を読み取っています…";
+"assistant.attachment.analyze" = "この明細書を見て";
+"assistant.ask" = "テンに聞く";
+"assistant.topic.account.status" = "「%@」の状況は？";
+"assistant.topic.account.spending" = "「%@」のお金はどこに使われている？";
+"assistant.topic.account.forecast" = "「%@」は月末までもつ？";
+"assistant.topic.category.spending" = "「%@」にいくら使っている？";
+"assistant.topic.category.cut" = "「%@」の支出を減らすには？";
+"assistant.topic.category.budget" = "「%@」の予算を提案して";
+"assistant.topic.income.trend" = "「%@」の収入はどう変わっている？";
+"assistant.topic.income.compare" = "「%@」を先月と比べて";
+"assistant.topic.insight" = "「%@」について説明して、どうすればいいか教えて";
+"assistant.topic.history.changes" = "今月の支出で何が変わった？";
+"assistant.topic.history.unusual" = "いつもと違う支出を見つけて";
+"assistant.recent" = "最近の会話";
+"assistant.recent.delete" = "チャットを削除";
+"assistant.notice.title" = "テンからのお知らせ";
+"assistant.notice.goThrough" = "詳しく見る";
+"assistant.notice.hide" = "非表示";
+"assistant.notice.ask" = "これを詳しく：%@";
+"assistant.notice.ask.digest" = "先週を振り返って";
+"assistant.notice.ask.charge" = "%@は続ける価値がある？";
+"assistant.notice.charge" = "明日 %@ が引き落とされます";
+"assistant.forecast.perDay" = "%@まで1日あたり";
+"assistant.forecast.free" = "自由に使える額: %@";
+"assistant.forecast.balance" = "日ごとの残高";
+"assistant.forecast.obligations" = "%@までの支払い";
+"assistant.error.generic" = "問題が発生しました。もう一度お試しください。";
+
+/* AI assistant: the chat screen */
+"tab.assistant" = "アシスタント";
+"assistant.greeting.title" = "こんにちは、テンです";
+"assistant.greeting.message" = "お金のことをお手伝いします。支出、節約、ローン、投資まで。この iPhone のデータを見て、カードでお答えします。";
+"assistant.attach" = "レシートや明細を添付";
+"assistant.greeting.tools" = "クリップ：レシートや明細。マイク：声で伝える。";
+"composer.send" = "送信";
+"composer.voice" = "音声入力";
+"assistant.composer.placeholder" = "お金について質問…";
+"assistant.preset.month" = "今月の支出";
+"assistant.preset.compare" = "先月と比べて";
+"assistant.preset.budgets" = "予算の状況は？";
+"assistant.preset.subscriptions" = "サブスクの合計はいくら？";
+"assistant.preset.allowance" = "給料日まで1日いくら使える？";
+"assistant.preset.save" = "どこで節約できる？";
+"assistant.preset.invest" = "投資は何から始めればいい？";
+"common.retry" = "再試行";
+
+/* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
+"assistant.consent.title" = "アシスタントはクラウドで動作します";
+"assistant.consent.message" = "回答のため、Anthropic のモデル Claude に問い合わせます。端末から送られるのは、質問と回答に必要な情報（合計、カテゴリ、口座名、あなたについて覚えている情報、必要な取引）だけです。データベース、レシート、明細はこの端末に残ります。Tenra のサーバーは何も保存せず、データがモデルの学習に使われることはありません。";
+"assistant.consent.allow" = "オンにする";
+"assistant.consent.notNow" = "今はしない";
+
+/* AI assistant: the facts Ten remembers (AgentMemory), their card and Settings → Assistant */
+"assistant.fact.remember" = "テンがこれを覚えます";
+"assistant.fact.forget" = "テンがこれを忘れます";
+"assistant.fact.was" = "変更前: %@";
+"settings.assistant.header" = "アシスタント";
+"settings.assistant.cloud" = "クラウドで回答";
+"settings.assistant.footer" = "テンは Anthropic のモデル Claude で回答します。オフにすると、次の質問が端末から送られる前に改めて確認します。";
+"assistant.memory.title" = "テンが知っている私のこと";
+"assistant.memory.emptyTitle" = "テンはまだあなたのことを知りません";
+"assistant.memory.emptyMessage" = "チャットでお金のことをテンに話してください。たとえば給料日や、何のために貯金しているかなど。テンが覚えるよう提案し、決めるのはあなたです。";
+"assistant.memory.footer" = "テンはどのチャットでもこれらの情報を参照します。この iPhone に保存され、質問と一緒にのみ送信されます。";
+"assistant.memory.add" = "情報を追加";
+"assistant.memory.new" = "新しい情報";
+"assistant.memory.edit" = "情報を編集";
+"assistant.memory.placeholder" = "例: 給料は毎月10日";
+"assistant.memory.editorFooter" = "お金に関する短い一文: 給料日、貯金の目的、メインのカードなど。カード番号やパスワードは書かないでください。";
+"assistant.memory.editHint" = "情報を開いて編集します";
+"assistant.memory.forget" = "忘れる";
+"assistant.memory.forgetAll" = "すべて忘れる";
+"assistant.memory.forgetAllTitle" = "すべての情報を忘れますか？";
+"assistant.memory.forgetAllMessage" = "テンはあなたについて何も知らない状態に戻ります。取引とチャットは残ります。";
+"assistant.memory.tooLong" = "短い一文にしてください。";
+"assistant.memory.full" = "テンが覚えられるのは %lld 件までです。追加するには1件忘れてください。";
+"assistant.memory.duplicate" = "テンはすでにこれを覚えています。";
+"assistant.memory.gone" = "この情報はもう記憶にありません。";
+
+/* Goals and debts (docs/domains/goals-and-debts.md) */
+"finances.goals.title" = "貯金目標";
+"finances.goals.empty" = "目標はありません";
+"finances.debts.title" = "貸し借り";
+"finances.debts.empty" = "貸し借りはありません";
+"finances.debts.owedToMe" = "貸している";
+"finances.debts.iOwe" = "借りている";
+"goal.listTitle" = "貯金目標";
+"goal.emptyTitle" = "まだ目標がありません";
+"goal.emptyDescription" = "目標を決めて、あといくらかを確認しましょう";
+"goal.new" = "新しい目標";
+"goal.editTitle" = "目標を編集";
+"goal.namePlaceholder" = "何のために貯めますか？";
+"goal.targetHint" = "貯めたい金額";
+"goal.deadline" = "期限";
+"goal.hasDeadline" = "期限を決める";
+"goal.account" = "口座";
+"goal.account.none" = "口座なし";
+"goal.account.hint" = "口座を選ぶと、その残高で進み具合がわかります。口座なしなら、貯めた分を自分で記録します。";
+"goal.alreadySaved" = "すでに貯めた金額";
+"goal.target" = "目標額";
+"goal.left" = "残り";
+"goal.leftAmount" = "残り%@";
+"goal.monthly" = "毎月の積立額";
+"goal.perMonth" = "毎月%@";
+"goal.ofTarget" = "目標 %@";
+"goal.overdue" = "期限切れ";
+"goal.reached" = "目標達成";
+"goal.reachedOn" = "%@に達成";
+"goal.reachedSection" = "達成済み";
+"goal.contribute" = "入金";
+"goal.contributions" = "入金履歴";
+"goal.delete" = "目標を削除";
+"goal.deleteTitle" = "目標を削除しますか？";
+"goal.deleteMessage" = "この目標と入金履歴が削除されます。口座と取引は変わりません。";
+"goal.notFound" = "目標が見つかりません";
+"goal.notFoundDescription" = "削除された可能性があります。";
+"debt.listTitle" = "貸し借り";
+"debt.emptyTitle" = "貸し借りはありません";
+"debt.emptyDescription" = "誰にいくら貸しているか、誰にいくら借りているかを記録しましょう";
+"debt.new" = "新しい貸し借り";
+"debt.editTitle" = "貸し借りを編集";
+"debt.direction" = "貸し借り";
+"debt.direction.owedToMe" = "貸している";
+"debt.direction.iOwe" = "借りている";
+"debt.person" = "相手";
+"debt.personPlaceholder" = "名前";
+"debt.date" = "日付";
+"debt.dueDate" = "返済期限";
+"debt.hasDueDate" = "期限を決める";
+"debt.note" = "メモ";
+"debt.notePlaceholder" = "何のためか";
+"debt.section.owedToMe" = "貸している";
+"debt.section.iOwe" = "借りている";
+"debt.section.settled" = "完済";
+"debt.amount" = "金額";
+"debt.returned" = "返済済み";
+"debt.leftAmount" = "残り%@";
+"debt.overdue" = "期限切れ";
+"debt.overdueSince" = "%@から期限切れ";
+"debt.settledOn" = "%@に完済";
+"debt.recordRepayment" = "返済";
+"debt.settle" = "完済にする";
+"debt.reopen" = "再開";
+"debt.repayments" = "返済履歴";
+"debt.delete" = "貸し借りを削除";
+"debt.deleteTitle" = "貸し借りを削除しますか？";
+"debt.deleteMessage" = "この貸し借りと返済の記録が削除されます。口座と取引は変わりません。";
+"debt.notFound" = "見つかりません";
+"debt.notFoundDescription" = "削除された可能性があります。";
+"moneyEntry.notePlaceholder" = "メモ";
+"moneyEntry.invalidAmount" = "金額を入力してください";
+
+/* Ten and goals and debts */
+"assistant.step.plans" = "目標と貸し借りを確認しています…";
+"assistant.notice.debt.owedToMe" = "明日が%@の返済期限です";
+"assistant.notice.debt.iOwe" = "明日、%@を返す期限です";
+"assistant.notice.ask.debt" = "%@との貸し借りを確認して";
+"assistant.notice.goal.behind" = "%2$@までに達成するには毎月%1$@を貯めましょう";
+"assistant.notice.ask.goal" = "「%@」の遅れを取り戻すには？";
+"assistant.topic.goal.onTrack" = "「%@」は順調ですか？";
+"assistant.topic.goal.faster" = "「%@」をもっと早く貯めるには？";
+"assistant.topic.debt.status" = "%@との貸し借りはあといくら残っていますか？";
+"assistant.topic.debt.plan" = "%@に期限内に返すには？";
+
+/* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
+"assistant.chatter.morning" = "おはようございます！";
+"assistant.chatter.afternoon" = "こんにちは！";
+"assistant.chatter.evening" = "こんばんは！";
+"assistant.chatter.night" = "しーっ…もう遅いですよ";
+"assistant.chatter.askMe" = "なんでも聞いてください";
+"assistant.chatter.hmm" = "うーん…";
+"assistant.chatter.counting" = "計算中…";
+"assistant.chatter.looking" = "ちょっと見てみますね…";
+"assistant.chatter.yay" = "やった！";
+"assistant.chatter.offline" = "接続できません…";
+"assistant.chatter.unclear" = "よくわかりませんでした。もう一度？";
+"assistant.chatter.tickles" = "くすぐったい！";
+"assistant.chatter.here" = "ここにいますよ！";
+"assistant.chatter.help" = "何かお手伝いしましょうか？";
+"assistant.chatter.hehe" = "えへへ";
+"assistant.chatter.dizzy" = "わあ、目が回る！";
+"settings.assistant.chatter" = "テンのおしゃべり";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "テンのワードローブ";
+"assistant.wardrobe.none" = "なし";
+"assistant.wardrobe.partyHat" = "パーティー帽";
+"assistant.wardrobe.crown" = "王冠";
+"assistant.wardrobe.beanie" = "ニット帽";
+"assistant.wardrobe.taqiya" = "タキヤ";
+"assistant.wardrobe.headphones" = "ヘッドホン";
+"assistant.wardrobe.glasses" = "メガネ";
+"assistant.wardrobe.sunglasses" = "サングラス";
+"assistant.wardrobe.sleepMask" = "アイマスク";
+"assistant.wardrobe.footer" = "祝日にはテンが自分で着替えます。お正月はパーティー帽、ナウルズにはタキヤ、一緒にお祝いした日には王冠。新しいアクセサリーはTenraの連続日数と目標で解放されます。";
+"assistant.wardrobe.lock.streak7" = "Tenraを7日連続で開く";
+"assistant.wardrobe.lock.streak30" = "Tenraを30日連続で開く";
+"assistant.wardrobe.lock.firstGoal" = "目標を作成";
+"assistant.wardrobe.lock.goalReached" = "目標を達成";
+"assistant.wardrobe.lock.nauryz" = "ナウルズに解放";
+"assistant.wardrobe.locked" = "ロック中";

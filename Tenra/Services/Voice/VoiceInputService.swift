@@ -50,7 +50,7 @@ class VoiceInputService: NSObject {
     @ObservationIgnored private var audioEngine: AVAudioEngine?
     @ObservationIgnored private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     @ObservationIgnored private var recognitionTask: SFSpeechRecognitionTask?
-    @ObservationIgnored private let speechRecognizer: SFSpeechRecognizer?
+    @ObservationIgnored private var speechRecognizer: SFSpeechRecognizer?
     @ObservationIgnored private var finalTranscription: String = ""
     @ObservationIgnored private var isStopping: Bool = false
 
@@ -75,8 +75,8 @@ class VoiceInputService: NSObject {
     @ObservationIgnored weak var accountsViewModel: AccountsViewModel?
     
     override init() {
-        // Инициализируем распознаватель для русского языка
-        let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "ru-RU"))
+        // The language chosen in Settings, else the app's (VoiceRecognitionLanguage).
+        let recognizer = SFSpeechRecognizer(locale: VoiceRecognitionLanguage.current())
         recognizer?.delegate = nil // Будет установлен после super.init()
         self.speechRecognizer = recognizer
         super.init()
@@ -84,6 +84,17 @@ class VoiceInputService: NSObject {
         self.speechRecognizer?.delegate = self
     }
     
+    /// A new recognizer when the voice language changed since this one was made (the service
+    /// lives as long as its screen, the setting can change meanwhile).
+    private func refreshRecognizerIfNeeded() {
+        guard !isRecording else { return }
+        let locale = VoiceRecognitionLanguage.current()
+        guard speechRecognizer?.locale.identifier != locale.identifier else { return }
+        speechRecognizer?.delegate = nil
+        speechRecognizer = SFSpeechRecognizer(locale: locale)
+        speechRecognizer?.delegate = self
+    }
+
     // Проверка доступности распознавания речи
     var isSpeechRecognitionAvailable: Bool {
         guard let recognizer = speechRecognizer else { return false }
@@ -130,6 +141,8 @@ class VoiceInputService: NSObject {
         if VoiceInputConstants.enableParsingDebugLogs {
         }
         #endif
+
+        refreshRecognizerIfNeeded()
 
         // Проверяем доступность
         guard let recognizer = speechRecognizer, recognizer.isAvailable else {

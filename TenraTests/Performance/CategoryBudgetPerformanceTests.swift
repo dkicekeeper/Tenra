@@ -6,7 +6,8 @@
 //  flaky on CI). Instead they assert a wall-clock upper bound — orders of
 //  magnitude above the expected runtime so spurious slowness doesn't break
 //  builds, but a regression that re-introduces an O(N_tx) scan would still
-//  trip them.
+//  trip them. Each bound is checked against the fastest of a few timed
+//  rounds: a loaded CI simulator slows some rounds, a regression slows all.
 //
 //  Targets (Debug build, iPhone 17 Pro simulator):
 //   • 19 000 transactions seeded as monthly aggregate buckets
@@ -64,6 +65,17 @@ struct CategoryBudgetPerformanceTests {
         store.seedCategoryAggregates(from: seed)
     }
 
+    /// The fastest of `rounds` timed runs of `body`, in seconds.
+    private static func fastest(of rounds: Int = 5, _ body: () -> Void) -> TimeInterval {
+        var best = TimeInterval.infinity
+        for _ in 0..<rounds {
+            let t0 = Date()
+            body()
+            best = min(best, Date().timeIntervalSince(t0))
+        }
+        return best
+    }
+
     // MARK: - Budget service is O(≤31)
 
     @Test("budgetProgress for a category returns in well under 50 ms")
@@ -82,11 +94,11 @@ struct CategoryBudgetPerformanceTests {
         // Warm-up run to defeat first-call costs (lazy mem-alloc, etc.).
         _ = svc.budgetProgress(for: cat)
 
-        let t0 = Date()
-        for _ in 0..<1_000 {
-            _ = svc.budgetProgress(for: cat)
+        let elapsed = Self.fastest {
+            for _ in 0..<1_000 {
+                _ = svc.budgetProgress(for: cat)
+            }
         }
-        let elapsed = Date().timeIntervalSince(t0)
         // 1000 calls × ≤31 hashmap lookups each. Should finish in <50 ms.
         #expect(elapsed < 0.050, "1000 budgetProgress calls took \(elapsed)s; expected <0.050s. Regression to O(N_tx) suspected.")
     }
@@ -109,11 +121,11 @@ struct CategoryBudgetPerformanceTests {
         // Warm-up
         for c in cats { _ = svc.budgetProgress(for: c) }
 
-        let t0 = Date()
-        for _ in 0..<10 {
-            for c in cats { _ = svc.budgetProgress(for: c) }
+        let elapsed = Self.fastest {
+            for _ in 0..<10 {
+                for c in cats { _ = svc.budgetProgress(for: c) }
+            }
         }
-        let elapsed = Date().timeIntervalSince(t0)
         // 10 × 30 = 300 budgetProgress calls, each ≤31 lookups. <50 ms easily.
         #expect(elapsed < 0.050, "300 budgetProgress calls took \(elapsed)s; expected <0.050s.")
     }
@@ -135,15 +147,15 @@ struct CategoryBudgetPerformanceTests {
             baseCurrency: "KZT", store: store
         )
 
-        let t0 = Date()
-        for _ in 0..<1_000 {
-            _ = CategoryAggregatesCalculator.compute(
-                categoryName: "Cat-0",
-                periodStart: monthInterval.start, periodEnd: monthInterval.end,
-                baseCurrency: "KZT", store: store
-            )
+        let elapsed = Self.fastest {
+            for _ in 0..<1_000 {
+                _ = CategoryAggregatesCalculator.compute(
+                    categoryName: "Cat-0",
+                    periodStart: monthInterval.start, periodEnd: monthInterval.end,
+                    baseCurrency: "KZT", store: store
+                )
+            }
         }
-        let elapsed = Date().timeIntervalSince(t0)
         #expect(elapsed < 0.050, "1000 compute calls took \(elapsed)s; expected <0.050s.")
     }
 }

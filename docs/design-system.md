@@ -1,1182 +1,350 @@
-# UI Components & Design System Guide
+# Design system: Tenra on DesignKit
 
-> Reference for Claude: which components to use, where, and how.
->
-> **Where the code lives (2026-10).** Tokens and shared components moved to the **DesignKit**
-> package (github.com/dkicekeeper/DesignKit, `Sources/DesignTokens|DesignSupport|DesignComponents`),
-> shared with Dalada and re-exported here by `Tenra/Utils/DesignKitBridge.swift`. File paths
-> below that point into `Tenra/Utils` or `Tenra/Views/Components` for those components are
-> historical — the canonical copy of this guide is DesignKit's `docs/design-system.md` (§0 lists
-> what ships there and what stays app-side). Change shared components by DesignKit PR.
+Tokens and shared components live in the **DesignKit** package
+([github.com/dkicekeeper/DesignKit](https://github.com/dkicekeeper/DesignKit)), shared with Dalada.
+This file covers what is Tenra's own: how the app wires DesignKit, which views stay in Tenra and
+why, how its screens are built, and its rules for amounts, dates, categories and motion. For a
+token, a modifier or a component, read DesignKit's docs (§1).
 
----
+*Checked against the code on 2026-10-12, DesignKit 3.5.0.*
 
-## Table of Contents
+## Contents
 
-1. [Design Tokens](#1-design-tokens)
-2. [View Modifiers](#2-view-modifiers)
-3. [Shared Components](#3-shared-components)
-4. [View Patterns](#4-view-patterns)
-5. [Decision Trees](#5-decision-trees)
-6. [Formatting & Display](#6-formatting--display)
-7. [Haptics](#7-haptics)
-8. [Remaining Native Form Views](#8-remaining-native-form-views)
-9. [Animation Guidelines](#9-animation-guidelines)
-10. [cardStyle Padding Contract](#10-cardstyle-padding-contract)
-11. [AnimatedInputComponents Deep Dive](#11-animatedinputcomponents-deep-dive)
-12. [Amount Formatting Files](#12-amount-formatting-files)
+1. [Where things live](#1-where-things-live)
+2. [DesignKitBridge](#2-designkitbridge)
+3. [What stays in Tenra](#3-what-stays-in-tenra)
+4. [Screen patterns](#4-screen-patterns)
+5. [Amounts](#5-amounts)
+6. [Dates, categories, transaction colours](#6-dates-categories-transaction-colours)
+7. [Motion and effects](#7-motion-and-effects)
+8. [Checklist for a UI change](#8-checklist-for-a-ui-change)
 
 ---
 
-## 1. Design Tokens
+## 1. Where things live
 
-All tokens live in `Utils/`. Never use raw values — always reference the token.
+| Looking for | Read in DesignKit |
+|---|---|
+| Tokens (`AppColors`, `AppSpacing`, `AppRadius`, `AppIconSize`, `AppTypography`, `AppAnimation`), modifiers (`cardStyle`, `screenPadding`, `filterChipStyle`, …), every component with its skeleton, the decision trees, the `cardStyle` padding contract, haptics, formatting internals | [design-system.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/design-system.md) (§0 is the inventory, §0.1 the host hooks) |
+| Springs, transitions, effects, Reduce Motion, `AmbientMotionGate` | [motion.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/motion.md) |
+| Charts, gauges, progress | [charts.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/charts.md) |
+| Package and SwiftUI layout traps | [gotchas.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/gotchas.md) (Tenra's own: [gotchas.md](gotchas.md)) |
+| Names that changed in 2.0 and were removed in 3.0 | [migration-2.0.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/migration-2.0.md), [migration-3.0.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/migration-3.0.md) |
+| Localization keys the components read from Tenra's strings | [localization-keys.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/localization-keys.md) |
 
-### Colors (`AppColors`)
+**What a component looks like:** the **DesignKit Gallery** app in TestFlight. Every public
+component has a page with its styles, its states (the "Loading" state is its skeleton) and
+controls for its parameters, in light and dark.
 
-Background hierarchy: `bgBase` → `bgCard` → `bgMuted` (base screen → elevated card → sunken control).
+**Version.** Tenra pins an exact DesignKit version (`Tenra.xcodeproj` → Package Dependencies).
+The **DesignKit update** workflow (`.github/workflows/designkit.yml`) checks for a new release
+daily, builds, runs TenraTests and commits the bump to `main`. What each version added and
+changed, and how to move to it, is DesignKit's
+[CHANGELOG.md](https://github.com/dkicekeeper/DesignKit/blob/main/CHANGELOG.md) (the same text
+is its release notes and the Gallery's Updates screen). A visual change is listed under
+**Changed**, and the changed snapshot PNGs in its PR show exactly what changed: check it on
+device.
 
-| Token | Value | Use For |
-|-------|-------|---------|
-| `bgBase` | `.systemBackground` | Screen-level background |
-| `bgCard` | `.secondarySystemBackground` | Elevated cards, `cardStyle` pre-iOS-26 fallback |
-| `bgMuted` | `.systemGray5` | Chips, progress-bar tracks, sunken controls |
-| `textPrimary` | `.primary` | Main text |
-| `textSecondary` | `.secondary` | Subtitles, metadata |
-| `textTertiary` | `.gray` | Hints, placeholders |
-| `accent` | `.indigo` | Interactive elements, primary CTA tint. The asset-catalog `AccentColor` (Assets.xcassets) is set to the SAME system indigo (light 0x5856D6 / dark 0x5E5CE6) — it drives system chrome (active tab tint, default buttons, search cursor). Keep the two in sync: an empty AccentColor silently falls back to system blue (was the case until 2026-08-26). |
-| `destructive` | `.red` | Delete, errors |
-| `success` | `.green` | Positive UI feedback (active status, success banners) |
-| `warning` | `.orange` | Caution feedback (paused status, warning banners) |
-| `staticWhite` | `.white` | Text on dark/coloured fills — does NOT adapt to theme |
-| `income` | RGB(0.13, 0.70, 0.37) | Income amounts (deliberately distinct from `success`) |
-| `expense` | `.primary` | Expense amounts — deliberately NOT red (see comment in AppColors.swift) |
-| `transfer` | Cyan-teal | Internal transfer amounts |
-| `planned` | `.blue` | Future/planned transactions |
+**A shared component or token changes by DesignKit PR**, never by a copy in Tenra. DesignKit's CI
+builds Tenra and Dalada against the change. Develop with Xcode's local package override: drag a
+DesignKit checkout into the project.
 
-For archived/inactive UI use `Color(.systemGray)` directly — there is no dedicated token.
-
-**Category colors:** Use `CategoryColors.color(for:opacity:customCategories:)` (or the store-backed `@MainActor` overload for O(1) lookup) — 14-color hex palette with custom category override.
-
-### Spacing (`AppSpacing`)
-
-4pt grid system. Token names are numeric only — no semantic aliases.
-
-| Token | Value | Use For |
-|-------|-------|---------|
-| `xxs` | 2 | Minimum micro spacing |
-| `xs` | 4 | Icon-to-text inline gaps |
-| `sm` | 8 | Row vertical padding, small gaps |
-| `md` | 12 | Default VStack/HStack spacing |
-| `lg` | 16 | Screen horizontal padding (`.screenPadding()`), card content padding (`.cardContentPadding()`), between-card spacing |
-| `xl` | 20 | Between major sections |
-| `xxl` | 24 | Between screen sections |
-| `xxxl` | 32 | Large screen margins |
-
-**Horizontal-inset convention:** screen-edge insets use `.screenPadding()`; card content uses `.cardContentPadding()` (both 16pt). A bare `.padding(.horizontal, AppSpacing.lg)` that remains is *intentional internal/component spacing* (chips, rows inside cards, doubled banner insets) — do not mass-migrate it.
-
-### Corner Radius (`AppRadius`)
-
-| Token | Value | Use For |
-|-------|-------|---------|
-| `xs` | 4 | Badges, indicators |
-| `md` / `card` / `button` | 12 | Standard cards and buttons |
-| `lg` | 16 | Large cards |
-| `xl` | 20 | Pills, filter chips, `.cardStyle()` default |
-
-For full circles use `.infinity` inline (rare — only avatars/icon backgrounds use it). For values between tokens (8pt chips, 6pt compact corners) inline the numeric literal — no token.
-
-### Icon Sizes (`AppIconSize`)
-
-Two scales, named like `AppSpacing` (DesignKit 1.13.0). **Glyphs** stand on their own:
-
-| Token | Value | Use For |
-|-------|-------|---------|
-| `xs` | 12 | A glyph at caption size |
-| `sm` | 16 | Inline icons in text |
-| `md` | 20 | Toolbar, list default |
-| `lg` | 24 | Emphasized list icons, `UniversalRow` leading icons |
-| `xl` | 32 | Bank logos in rows |
-
-**Tiles** (`AppIconSize.Tile`) carry their own backing (circle, rounded square, coin, avatar):
-
-| Token | Value | Use For |
-|-------|-------|---------|
-| `Tile.sm` | 44 | Category circles (QuickAdd), content-row icons |
-| `Tile.md` | 48 | Hero icons (empty states) |
-| `Tile.lg` | 52 | Category row icons |
-| `Tile.xl` | 64 | Category coins, large display icons |
-| `Tile.xxl` | 72 | Budget ring (coin + 8pt stroke space) |
-| `Tile.xxxl` | 80 | Hero icons, large action buttons (voice input) |
-
-The 1.x names (`avatar`, `xxl`, `xxxl`, `categoryIcon`, `mega`, `budgetRing`, `ultra`) are deprecated aliases of the same values; Xcode's fix-it renames them.
-
-### Container Sizes
-
-There is no `AppSize` enum. Component-local sizes (cursor height/width, voice button diameter, CSV preview heights, etc.) live as numeric literals at use-site or as `private` constants in the component file. This is deliberate — global tokens are for 3+ shared use sites; everything else is local.
-
-### Typography (`AppTypography`)
-
-All use Inter variable font with Dynamic Type scaling:
-
-| Token | Size | Weight | Use For |
-|-------|------|--------|---------|
-| `h1` | 34 | bold | Screen titles |
-| `h2` | 28 | semibold | Detail view balances |
-| `h3` | 24 | semibold | Section titles (Insights) |
-| `h4` | 20 | semibold | Card headers, `EmptyState` titles |
-| `bodyEmphasis` | 18 | semibold | Row names, button labels, section subheaders |
-| `body` | 18 | regular | Default text |
-| `bodySmall` | 16 | regular | Secondary text, subtitles |
-| `caption` | 14 | regular | Timestamps, metadata, section headers |
-| `caption2` | 12 | regular | Non-critical decorative text only |
-
-For dynamic-size amount inputs use `Font.custom(AppTypography.fontFamily, …)` directly — that's the one place the family name is exposed.
-
-### Animations (`AppAnimation`)
-
-| Token | Type | Use For |
-|-------|------|---------|
-| `contentSpring` | response:0.3 damping:0.7 | Content transitions, toggles, validation errors |
-| `gentleSpring` | response:0.4 damping:0.8 | Smooth value animations, amounts, empty↔loaded |
-| `heroSpring` | response:0.6 damping:0.7 | Hero icon entrance (slower, dramatic) |
-| `facepileSpring` | response:0.4 damping:0.7 | Staggered facepile icon pop-in |
-| `progressBarSpring` | response:0.55 damping:0.72 | Animated bar width changes |
-| `contentRevealAnimation` | easeOut(0.35) | Section fade-in during initialization |
-| `fast` | 0.1s | Button press (raw `Double`) |
-| `standard` | 0.25s | State changes (raw `Double`) |
-| `slow` | 0.35s | Modals (raw `Double`) |
-| `chartAppearAnimation` | spring(0.55, 0.82), reduce-motion aware | Chart entrance |
-| `chartUpdateAnimation` | spring(0.5, 0.85), reduce-motion aware | Chart data updates |
-| `chartBannerFade` | easeInOut(0.15), reduce-motion aware | Chart selection banner appear/disappear |
-
-**Magic numbers:** `facepileHiddenScale` (0.5), `facepileStagger` (0.06s per icon), `chartHiddenScale` (0.94), `chartAppearDelay` (0.05s).
-
-**Reduce-motion-aware:** `fastAnimation` (replaces `easeInOut(fast)`), `adaptiveSpring` (overshoot spring used by `BounceButtonStyle`). Check `isReduceMotionEnabled` flag directly when rolling your own.
-
-**Component-local animation constants** live as `private enum` inside the component file (precedent: `BannerAnimation` in `MessageBanner.swift`, `Orb.opacity/blur` in `CategoryGradientBackground.swift`). Don't pull single-component tunables back into `AppAnimation`.
-
-**`BounceButtonStyle`:** `scaleEffect(0.96)` + `brightness(-0.05)` on press. Apply via `.buttonStyle(.bounce)`.
+**No raw design values** (`python3 scripts/design_lint.py`, CI `design-lint`): colours, fonts,
+spacing, radii and animations come from the tokens. The baseline is empty, so any literal fails;
+a justified exception carries `// design-lint:ignore <reason>`. A category's stored hex is data,
+not a design value.
 
 ---
 
-## 2. View Modifiers
+## 2. DesignKitBridge
 
-### Layout Modifiers (`AppModifiers`)
+[`Tenra/Utils/DesignKitBridge.swift`](../Tenra/Utils/DesignKitBridge.swift) is the seam:
 
-| Modifier | Effect | When to Use |
-|----------|--------|-------------|
-| `.cardStyle(radius:)` | Liquid Glass (iOS 26+) or `.ultraThinMaterial` card background. Default radius: `AppRadius.xl` (20pt). Since DesignKit 3.0 the glass is drawn behind the content, so what sits in the card keeps its exact colours (no darkened markers or labels) | **Display cards only.** Account/Loan/Health hero cards, list cards, detail-view cards — anything without interactive `Picker(.menu)` / `Menu` inside |
-| `.formCardStyle(radius:)` | `.ultraThinMaterial` card background on every iOS. Same shape/padding contract as `cardStyle`. | **Form-section cards.** `FormSection`, `BudgetSettingsSection` — any card that wraps `MenuPickerRow` / `Picker(.menu)` / `Menu`. iOS 26's `glassEffect` becomes the morph-source for menus, so single-row form sections would collapse the whole row into the popover at tap. `formCardStyle` uses Material to side-step that |
-| `.filterChipStyle(isSelected:)` | Glass chip styling with accent tint when selected. Animated selection transition | Filter buttons, `UniversalFilterButton` |
-| `.screenPadding()` | `.padding(.horizontal, AppSpacing.lg)` (16pt) | Screen-level horizontal insets |
-| `.cardContentPadding()` | `.padding(AppSpacing.lg)` (16pt) | Internal card content padding — canonical, matches §10 |
-| `.futureTransactionStyle(isFuture:)` | `.opacity(0.55)` when future | Planned/future transaction rows |
-| `.chartAppear(delay:)` | Scale(0.94→1.0) + opacity entrance from bottom | Outermost chart container, scrollable list cards |
-| `.staggeredEntrance(delay:)` | Scale(0.5→1.0) + opacity pop-in with spring | Facepile icons, overlapping avatar stacks |
-| `.contentReveal(isReady:delay:)` | Opacity fade-in when ready | Staggered section reveals during initialization |
-| `.borderBeam(isActive:colors:cornerRadius:lineWidth:duration:)` | Animated glowing beam traveling around the border via rotating `AngularGradient`. Two-layer (sharp + blurred glow). `TimelineView`-driven; ticks only while `isActive == true`. Reduce-Motion aware | Highlighting cards during transient active states (voice recognition preview, focus, processing). Match `cornerRadius` to the underlying card |
+- **Re-exports** `DesignTokens`, `DesignSupport` and `DesignComponents` (`@_exported import`):
+  every Tenra file and TenraTests see DesignKit with no per-file imports.
+- **`DesignKitBridge.configure()`**, called once from `TenraApp.init()`, wires the host hooks:
 
-### Buttons (`DSButton`, `.dsButton`, DesignKit 2.0)
+  | Hook | Tenra's side |
+  |---|---|
+  | `DesignKitFonts.registerIfNeeded()` | Inter from DesignKit's bundle; Tenra has no font files or `UIAppFonts` |
+  | `DesignKitLogoLoader.loader` | `LogoService.logoImage(brandName:)`: brand logos in `Icon(source: .brandService)`, `.heroAccentGlow`, `DominantColorExtractor` |
+  | `DesignKitCurrencyConverter.convert` / `.convertSync` | `CurrencyConverter` (async, and instant from cached rates while the user types) |
+  | `DesignKitLogoCatalog.sections` / `.search` / `.domainSuffixes` | `ServiceLogoRegistry` for the icon picker's brands tab; typed names try `.com` and `.kz` |
 
-| Call | Visual | Usage |
-|-------|--------|-------|
-| `DSButton(title, systemImage:, iconPlacement:, appearance:, role:, size:, shape:, fullWidth:, isLoading:, isDisabled:) { }` | appearance `.primary` (`.glassProminent`) / `.secondary` (`.glass`) / `.flat`; role `.normal` / `.destructive` / `.neutral`; icon `.leading` / `.trailing` / `.top` (a tile) / `.only` | Every button: a CTA (`fullWidth: true`), a retry with `isLoading`, the detail screen's action tiles (`iconPlacement: .top`), the bulk delete bar (`role: .destructive, shape: .capsule`) |
-| `.dsButton(_:role:size:disabled:)` | the same styles on a `Button` with its own label | A label DSButton cannot draw |
-| `.buttonStyle(.bounce)` | Scale 0.96 on press | Interactive card taps (non-glass) |
-
-The role is applied by the style: `DSButton(role: .destructive)` is red in every appearance.
-`.primaryButton()` / `.secondaryButton()`, `LoadingButtonLabel`, `BulkDeleteButton` and
-`EntityActionButton` are deprecated since DesignKit 2.0 (DesignKit docs/migration-2.0.md).
-
-**Group adjacent glass elements in `GlassEffectContainer`** (glass can't sample other glass → inconsistent rendering otherwise). Use it for rows of `.glass`/`.glassProminent` buttons or clusters of `.glassEffect()` views; set its `spacing:` to match the stack spacing. Used ungated in app code (app target = iOS 26). Precedents: `EntityDetailScaffold` action bar, `DateButtons`, `ChartZoomControls`. Leaf components that still support pre-iOS-26 (`CategoryChip`, `SegmentedPicker`) gate glass with `#available(iOS 26)` + `.ultraThinMaterial` fallback.
+  `DesignKitTheme.accent` keeps DesignKit's default, system indigo (= Tenra's `AccentColor`):
+  Tenra's look is DesignKit's reference.
+- **Adapters over Tenra models**, as extensions: `CategoryColors.color(for:opacity:customCategories:)`
+  and `(store:)` (custom category colours), the `IconSource` brand registry,
+  `DonutSlice.from([CategoryBreakdownItem])` and `.from([SubcategoryBreakdownItem], baseColor:)`,
+  `LimitProgress(BudgetProgress)` (a budget as a ring), and `InsightsStatCard where Trend ==
+  InsightsStatTrend` (the stat card's sparkline).
 
 ---
 
-## 3. Shared Components
+## 3. What stays in Tenra
 
-### Container Components
+Every component that can be generic lives in DesignKit, even if only Tenra uses it (owner's
+decision, 2026-10). `Tenra/Views/Components/` keeps two kinds of views:
 
-#### `EditSheetContainer`
-**Purpose:** Universal modal edit-sheet shell.
+- **Adapters**: a view under its old Tenra name that maps a Tenra model onto a DesignKit
+  component and keeps the tap, swipe, navigation and VoiceOver copy. No layout of their own.
+- **Parts of screens and flows**: views that read a store, a ViewModel, a service or
+  `AppCoordinator`, or drive navigation.
 
-```swift
-EditSheetContainer(
-    title: String,
-    isSaveDisabled: Bool,
-    wrapInForm: Bool = true,     // false for hero-style edit views
-    onSave: { },
-    onCancel: { }
-) {
-    // Content
-}
-```
-
-| Mode | `wrapInForm` | Content Structure | Used By |
-|------|-------------|-------------------|---------|
-| Hero-form | `false` | `ScrollView` → `VStack` → `EditableHeroSection` + `FormSection` | Account, Subscription, Category edit |
-| Native form | `true` | `Form` → `Section` groups | Deposit, Loan edit, Payment/Rate forms |
-
-#### `FormSection`
-**Purpose:** Groups form rows with optional header/footer.
-
-```swift
-FormSection(header: "Settings", footer: nil, style: .card) {
-    UniversalRow(config: .standard) { ... }
-    Divider()
-    MenuPickerRow(...)
-}
-```
-
-| Style | Background | Use For |
-|-------|-----------|---------|
-| `.card` | `.formCardStyle()` (Material; **not** Liquid Glass) | Default; hero-form sections. Material is intentional — iOS 26 `glassEffect` would become the morph-source for any `Picker(.menu)` / `MenuPickerRow` inside, collapsing single-row sections into the popover at tap |
-| `.list` | None | Inside `List` |
-| `.plain` | None | Raw passthrough |
-
-#### `EditableHeroSection`
-**Purpose:** Animated hero section for entity edit views.
-
-```swift
-EditableHeroSection(
-    iconSource: $iconSource,
-    title: $name,
-    balance: $balance,        // only if config.showBalance
-    currency: $currency,      // only if config.showCurrency
-    selectedColor: $colorHex, // only if config.showColorPicker
-    titlePlaceholder: "Name",
-    config: .accountHero
-)
-```
-
-| Preset | Shows |
-|--------|-------|
-| `.accountHero` | Balance + Currency |
-| `.categoryHero` | Color picker |
-| `.subscriptionHero` | Balance + Currency |
-
-#### `HeroSection`
-**Purpose:** Read-only icon + title (+ optional amount / subtitle / progress) hero for entity-**detail** screens and simple icon+title contexts (`InsightDetailView`, `InsightDeepDiveView`, `TransactionAddModal`). For edit flows with bindings use `EditableHeroSection` instead.
-
-- ⚠️ **`icon: nil` renders a placeholder container** (intentional). To omit the icon block entirely (e.g. the icon lives elsewhere, like a `OrbChart` centre), pass **`showsIcon: false`** — not `icon: nil`.
-- **`primaryAmount` / `primaryCurrency`** — built-in amount slot (h3). Prefer it over a sibling `FormattedAmountText`. **`primaryAmountColor`** overrides its colour (default `AppColors.textSecondary`).
-
----
-
-### Row Components
-
-#### `UniversalRow`
-**The atomic building block for ALL form rows.** Every row inside `FormSection(.card)` must use it.
-
-```swift
-// Preferred — title is auto-styled (AppTypography.body + textPrimary).
-// Use this form whenever the leading content is a plain string label.
-UniversalRow(
-    leadingIcon: .sfSymbol("star", color: .blue, size: .lg),
-    title: "Label"
-) {
-    Text("Value").font(AppTypography.bodySmall)
-}
-
-// Full form — only when the leading content is NOT a plain string
-// (e.g. a two-line VStack, a custom HStack, etc.).
-UniversalRow(
-    config: .standard,
-    leadingIcon: .sfSymbol("star", color: .blue, size: .lg)
-) {
-    VStack(alignment: .leading) {
-        Text("Loan name").font(AppTypography.body)
-        Text("Bank").font(AppTypography.caption).foregroundStyle(.secondary)
-    }
-} trailing: {
-    Text("Value").font(AppTypography.bodySmall)
-}
-```
-
-**Rule:** do NOT manually apply `.font(AppTypography.body).foregroundStyle(AppColors.textPrimary)` to the title `Text` — use the `title:` initializer instead. Keeps form styling consistent.
-
-**Configurations:**
-
-| Preset | V-Padding | H-Padding | Context |
-|--------|-----------|-----------|---------|
-| `.standard` | 12 | 16 | Form rows in `FormSection` |
-| `.settings` | 4 | 0 | Settings list rows |
-| `.selectable` | 12 | 16 | Checkmark selection lists |
-| `.sheetList` | 12 | 16 | Modal selection sheets |
-| `.info` | 8 | 0 | Read-only label+value (container owns H-padding) |
-
-**IconConfig factories:**
-
-```swift
-.sfSymbol("star", color: .blue, size: .lg)   // SF Symbol with color
-.brandService("netflix", size: .xl)          // Brand service icon
-.custom(source: iconSource, style: style)    // Custom IconSource + IconStyle
-.auto(source: iconSource, size: .xl)         // Picks style by source (sfSymbol→categoryIcon, brandService→serviceLogo)
-```
-
-**Interaction modifiers:**
-
-```swift
-row.navigationRow { DetailView() }           // NavigationLink wrapper
-row.actionRow(role: .destructive) { delete() } // Button wrapper
-row.selectableRow(isSelected: true) { select() } // Tap gesture wrapper
-```
-
-#### Row token contract
-
-Every row in `Views/Components/Rows/` follows these token rules. New rows MUST conform; deviations are bugs unless explicitly justified inline.
-
-| Slot | Token | Notes |
-|------|-------|-------|
-| **Leading icon — content rows** | `AppIconSize.Tile.sm` (44) | AccountRow, CategoryRow, CategoryBreakdownRow (all `AmountRow`), BudgetProgressRow; a limit row keeps the ring's 52 pt slot with or without a budget |
-| **Leading icon — form rows** | `AppIconSize.lg` (24) | InfoRow, MenuPickerRow, DatePickerRow |
-| **Leading icon — settings rows** | `AppIconSize.md` (20) | ActionSettingsRow, NavigationSettingsRow |
-| **Leading icon — filter lists** | `AppIconSize.xl` (32), always plated | AccountFilterView, CategoryFilterView (`CheckmarkRow`), TransactionSubcategoryFilterSheet: an SF Symbol on `AppColors.pale` of its tint (category colour, accent; neutral: `AppColors.Status.neutralPale`), a logo `.serviceLogo` (fills its circle). Not `bgCard`: it matches the sheets' grouped rows in dark mode |
-| **HStack spacing (icon ↔ content)** | `AppSpacing.md` (12) | All rows |
-| **Inner VStack (title ↔ subtitle)** | `AppSpacing.xs` (4) | Never `xxs` |
-| **Title — management lists** | `AppTypography.h4` (20 semibold) | AccountRow, CategoryRow (larger touch lists) |
-| **Title — detail / breakdown rows** | `AppTypography.body` (18) or `bodyEmphasis` (18 semibold) | Insights detail rows. Use the `bodyEmphasis` **token** — never `body` + `.fontWeight(.semibold)` |
-| **Subtitle / secondary line** | `AppTypography.bodySmall` (16) / `AppColors.textSecondary` | One token for all secondary subtitles |
-| **Trailing amount** | `FormattedAmountText` (default body/semibold) | Never hand-format money |
-| **Horizontal inset** | per-row `.screenPadding()` | Rows declare `hPad 0` (UniversalRow `.info`) and own their inset at the call site, so the full width — incl. padding — is tappable inside `NavigationLink`. Lists do NOT wrap the whole `VStack` (would double-pad self-padding `SectionHeader(.large)`) |
-| **Navigation chevron (outside `List`)** | `DisclosureChevron` | `chevron.forward` (RTL-aware) + tertiary. Never hand-roll `chevron.right` |
-
-**Shared row sub-components:** `AmountPercentage` (amount + %), `SpentBudgetText` (spent / budget), `DisclosureChevron`, `PeriodBreakdownRow`, `BudgetProgressRow`. Reuse before building a new row.
-
-#### `InfoRow`
-Read-only label + value. Wrapper for `UniversalRow(config: .info)`.
-
-```swift
-InfoRow(icon: "calendar", label: "Next Payment", value: "March 15, 2026")
-```
-
-Use in: detail views for metadata display. NOT for editable fields.
-
-#### `MenuPickerRow`
-In-form single-select picker with dropdown menu.
-
-```swift
-MenuPickerRow(
-    icon: "arrow.triangle.2.circlepath",
-    title: "Frequency",
-    selection: $frequency,
-    options: [("Monthly", .monthly), ("Weekly", .weekly)]
-)
-```
-
-Use in: form sections for frequency, period, reminder, etc.
-
-#### `DatePickerRow`
-Inline `DatePicker` inside `UniversalRow`.
-
-```swift
-DatePickerRow(icon: "calendar", title: "Start Date", selection: $startDate)
-```
-
-#### `FormTextField`
-**The single text-field component for the whole app.** Four styles — pick by context:
-
-| Style | Use it for | Chrome |
+| Folder | Adapters (→ DesignKit component) | Screen parts |
 |---|---|---|
-| `.standard` | Stand-alone field with a label above (subscription name, transaction description). | Full-width, `AppRadius.lg`, padding `lg`, tinted bg, accent border on focus. |
-| `.multiline(min:max:)` | Stand-alone multi-line (notes, descriptions). | Same chrome as `.standard`. |
-| `.inline` | Editable trailing inside a `UniversalRow` — bank name, rate, amount. | **No chrome.** Right-aligned text only. Keeps row height stable. |
-| `.inlineMultiline(min:max:)` | Multi-line trailing inside a `UniversalRow` — notes column. | **No chrome.** Right-aligned text, `lineLimit(min...max)` bounds the vertical growth. |
+| `Cards` | `AccountCard` → `BalanceCard`, `CategoryChip` → `ProgressRingTile`, `CategoryGradientBackground` → `AuroraBackground`, `HealthScoreCardView` → `ScoreCard`, `HealthScoreHeroCard` → `ScoreGaugeCard`, `HealthScoreWeightingCard` → `WeightBreakdownCard`, `HealthComponentCard` → `TargetProgressCard`, `InsightFormulaCard` → `CalculationCard`, `InsightsCardView` → `MetricCard`, `InsightsTotalsCard` → `TotalsCard`, `LoanCard` → `PayoffProgressCard`, `PeriodComparisonCard` → `ComparisonCard`, `SubscriptionCard` → `RecurringPaymentCard`, `TransactionCardView` → `TransactionRow`, `TransactionsSummaryCard` → `CashFlowCard` | `TransactionCard` (tap → edit, swipe, context menu), `HistoryTransactionsList`, the Finances cards (`AccountsCardView`, `DepositsCardView`, `SubscriptionsCardView`, `LoansCardView`, `CategoriesCardView`, `SubcategoriesCardView`) |
+| `Charts` | `PeriodChartAdapters` (`PeriodDataPoint: ChartPoint`, `PeriodChartSeries` → `ChartSeries`) | |
+| `EntityDetail` | | `EntityDetailScaffold` |
+| `Feedback` | `AnimatedTranscriptionText` → `StreamingText`, `InsightTrendBadge` → `TrendBadge`, `LoanTypeBadge` / `LoanMonthStatusBadge` → `Badge`, `StatusIndicatorBadge` (status mapping) | `RatingSurveyView`, `ExportActivityView` |
+| `Forms` | `EditableHeroSection` → `EditableHero` | `BudgetSettingsSection`, the loan and deposit sheets (§4) |
+| `Headers` | | `InsightsSectionView` |
+| `History` | | `GroupedTransactionList` |
+| `Icons` | `IconPickerView` → `IconPicker` | |
+| `Input` | `AccountRadioButton` → `SelectableBalanceCard`, `AmountInputView` → `CurrencyAmountInput`, `CurrencySelectorView` → `CurrencyPickerMenu`, `SubscriptionCalendarView` → `MonthCalendar` | the filter sheets, the selectors, carousels and grids that load data, `HomeBackgroundPicker`, the import sheets |
+| `LinkPayments` | | `LinkPaymentsView` |
+| `Rows` | `AccountRow` / `CategoryRow` / `CategoryBreakdownRow` → `AmountRow`, `AmortizationScheduleRow` → `ScheduleRow`, `BudgetProgressRow` → `LimitProgressCard`, `MenuPickerRow` (domain inits) | `PeriodBreakdownRow` |
 
-**Inline rationale:** the trailing slot of a `UniversalRow` already pairs the field with a row-level title and an icon, so a tinted chip on top of that would double the visual weight and stretch row height on focus. The inline styles render the TextField with native chrome only — alignment + keyboard + focus — so the row stays compact. `errorMessage`/`helpText` are suppressed in inline mode; surface validation at form level (`InlineStatusText`).
-
-```swift
-// Standalone — has its own label above. Tinted chrome.
-FormTextField(text: $description, placeholder: "Optional", style: .multiline(min: 2, max: 4))
-
-// Inside a UniversalRow — bare right-aligned field
-UniversalRow(leadingIcon: .sfSymbol("building.columns"), title: "Bank") {
-    FormTextField(text: $bankName, placeholder: "Bank name", style: .inline)
-}
-
-// Decimal input — keyboard variant
-UniversalRow(leadingIcon: .sfSymbol("percent"), title: "Rate (year)") {
-    FormTextField(text: $rate, placeholder: "0.0", style: .inline, keyboardType: .decimalPad)
-}
-
-// Auto-focus on appear (replaces ad-hoc @FocusState … .task patterns)
-FormTextField(text: $rate, placeholder: "0.0", style: .inline,
-              keyboardType: .decimalPad, autofocus: true)
-
-// Multi-line trailing for notes — bounded so focus doesn't jump the row to 4 lines
-UniversalRow(leadingIcon: .sfSymbol("note.text"), title: "Note") {
-    FormTextField(text: $noteText, placeholder: "Optional",
-                  style: .inlineMultiline(min: 1, max: 4))
-}
-```
-
-**Do NOT:**
-- Drop a bare `TextField(...).inlineFieldStyle(...)` into a `UniversalRow` trailing — the deprecated modifier exists for legacy compatibility only; use `.inline` style instead.
-- Wrap the inline field in an `HStack` with a suffix `Text("%")` / `Text("KZT")` — bake the unit into the row's title ("Rate (year)", "Term (month)", "Amount, KZT"). Keeps the row stable when typing.
-- Roll a second TextField wrapper. There's exactly one component — `FormTextField`.
-
-Use in: subscription/deposit/loan form sections. NOT for transaction dates (use `DateButtons`).
-
-#### `BudgetSettingsSection`
-Pre-built budget config card: amount + period + reset day.
-
-```swift
-BudgetSettingsSection(
-    budgetAmount: $budgetAmount,
-    selectedPeriod: $period,
-    resetDay: $resetDay
-)
-```
-
-Use in: `CategoryEditView` only.
+Each file's header comment names what it adapts. Tenra keeps its screens over its own models by
+choice: filter sheets, home sections, transaction lists, entity detail screens, the lock screen,
+`PremiumLockedView`.
 
 ---
 
-### Card Components
+## 4. Screen patterns
 
-All display cards share one contract: inner padding `AppSpacing.lg` (16), `.cardStyle()` (default radius `AppRadius.xl` = 20), section title `AppTypography.h3` / `AppColors.textPrimary`, entity-card title `AppTypography.h4`. Money always via `FormattedAmountText`. Conform new cards to this; don't hand-roll the glass shell.
+Build a new screen from the closest pattern. Every one is made of DesignKit pieces; the structure
+is Tenra's.
 
-#### `FinanceCard`
-Shell for home-screen finance-product entry cards (accounts, deposits, loans, subscriptions, categories, subcategories). Owns the `HStack(title + hero/subtitle | icons)` layout, compact empty-state swap, padding and `.cardStyle()`. Each card supplies title, `isEmpty`, empty copy, `subtitle` (count line), a `hero` value view and a `trailing` facepile.
+### Entity edit sheet (hero form)
 
-```swift
-FinanceCard(
-    title: ..., isEmpty: accounts.isEmpty, emptyTitle: ..., subtitle: ...
-) {
-    RedactableAmount(amount: total, currency: base, isLoading: loading) // or FormattedAmountText / count Text
-} trailing: {
-    PackedCircleIcons(items: ...)
-}
-```
-
-- **`RedactableAmount`** — hero amount that shows a redacted placeholder while an async (FX) total computes, then cross-fades. Use for cards whose total needs conversion (accounts, deposits, subscriptions).
-- Don't reintroduce the inline `HStack(.top, md) → VStack(.leading, lg) → title → if isEmpty …` shell in a new finance card — wrap `FinanceCard`.
-- **`PackedCircleIcons`** (the trailing circles): glossy marbles since DesignKit 2.9.0. A white symbol on a marble of its colour, a logo as the marble's skin, a shadow of its colour; they burst out of the middle and sway gently (still under Reduce Motion). `style: .flat` is the old pale-disc look.
-
-#### `RecommendationBox`
-Tinted "lightbulb + advice" callout (icon + text on `color.opacity(0.10)`, `AppRadius.md`). Shared by `InsightFormulaCard` and `HealthComponentCard`. Use for any card-bottom recommendation line.
-
-#### `EmptyCard`
-Distinct from `FinanceCard`'s inline empty state: a standalone, optionally-tappable empty card (section title + compact empty message) for empty home sections that act as an "add first item" CTA.
-
----
-
-### Icon Components
-
-#### `Icon`
-**The single rendering engine for all entity icons.**
-
-```swift
-// Auto-style (convenience)
-Icon(source: .sfSymbol("star.fill"), size: AppIconSize.xl)
-
-// Explicit style
-Icon(source: .bankLogo(.kaspi), style: .bankLogo(size: AppIconSize.xl))
-```
-
-**When to use `Icon`:** Entity/category icons with styled backgrounds — accounts, categories, subscriptions, brand logos.
-
-**When to use `Image(systemName:)` directly:** Semantic UI indicators — chevron, checkmark, xmark, toolbar actions, inline arrows.
-
-**Accessibility:** `Icon.body` has `accessibilityHidden(true)` — it is always decorative within its parent row/card. The parent element owns the accessibility label. Do not override this unless `Icon` is the sole content of an interactive element with no other text.
-
-**Icon picker catalog:** `IconPickerView` is an adapter over DesignKit's `IconPicker` (1.10.0). Its Icons tab shows
-DesignKit's `IconCatalog` (~550 SF Symbols in 18 groups, a search across the 11 app languages; generated by DesignKit's
-`scripts/generate_icon_catalog.py`, pinned by its `IconCatalogTests`). The Logos tab is Tenra's `ServiceLogoRegistry`,
-handed to DesignKit through `DesignKitLogoCatalog` in `DesignKitBridge.configure()`. New group titles need a key in
-all 11 locales (`iconPicker.…`) here, and the English default in DesignKit.
-
-**IconStyle presets:**
-
-| Preset | Shape | Context |
-|--------|-------|---------|
-| `.categoryIcon(size:)` | Circle, accent tint | Category rows, chips |
-| `.categoryCoin(size:)` | Circle, surface bg | Large category coins |
-| `.bankLogo(size:)` | RoundedSquare, md radius | Account rows |
-| `.bankLogoLarge(size:)` | RoundedSquare, lg radius | Account cards |
-| `.serviceLogo(size:)` | RoundedSquare, md radius | Subscription cards |
-| `.serviceLogoLarge(size:)` | RoundedSquare, lg radius | Subscription detail |
-| `.placeholder(size:)` | Circle, secondary tint | Nil source fallback |
-| `.glassHero(size:)` | Circle + glass | Detail view hero |
-| `.glassService(size:)` | RoundedSquare + glass | Service hero |
-| `.inline(tint:)` | Small circle | Text fields, chips |
-| `.toolbar(tint:)` | Medium circle | Toolbar buttons |
-| `.emptyState()` | XL circle | Empty state illustration |
-
----
-
-### Carousel & Filter Components
-
-#### `UniversalCarousel`
-**The only horizontal scroll container. Never create raw `ScrollView(.horizontal) { HStack {} }`.**
-
-```swift
-UniversalCarousel(config: .filter) {
-    ForEach(items) { item in
-        UniversalFilterButton(title: item.name, isSelected: item.isSelected) { ... }
-    }
-}
-```
-
-| Preset | Spacing | H-Padding | Use For |
-|--------|---------|-----------|---------|
-| `.standard` | 12 | 16 | Account carousel, general horizontal lists |
-| `.compact` | 8 | 8 | Color picker, tight grids |
-| `.filter` | 12 | 16 | Filter chip rows |
-| `.cards` | 12 | 0 | Edge-to-edge cards (apply `.screenPadding()` externally) |
-| `.csvPreview` | 8 | 12 | CSV column preview (shows indicators) |
-
-#### `UniversalFilterButton`
-Filter chip in two modes.
-
-```swift
-// Button mode
-UniversalFilterButton(title: "This Month", isSelected: true) { selectPeriod() }
-
-// Menu mode
-UniversalFilterButton(title: "Account", isSelected: hasFilter) {
-    Button("All Accounts") { clearFilter() }
-    ForEach(accounts) { acc in
-        Button(acc.name) { selectAccount(acc) }
-    }
-}
-```
-
----
-
-### Input Components
-
-#### `FormTextField`
-Enhanced text field with error/help states.
-
-```swift
-FormTextField(
-    text: $name,
-    placeholder: "Enter name",
-    style: .standard,         // or .multiline(min: 2, max: 6), .compact
-    errorMessage: nameError,
-    helpText: "Required field"
-)
-```
-
-Use for: text inputs inside `FormSection`. NOT for amounts (use `AnimatedAmountInput`) or hero titles (use `AnimatedTitleInput`).
-
-#### `AnimatedAmountInput`
-Hero-style large formatted amount with `.numericText()` transition.
-
-```swift
-AnimatedAmountInput(amount: $amountString, baseFontSize: 48, color: .primary)
-```
-
-Use in: `EditableHeroSection` balance fields. NOT for compact form rows.
-
-#### `AnimatedTitleInput`
-Hero-style name input with `.interpolate` character transition.
-
-```swift
-AnimatedTitleInput(text: $name, placeholder: "Account Name", font: AppTypography.h1)
-```
-
-Use in: `EditableHeroSection` title fields only.
-
-#### `DateButtons`
-Yesterday / Today / Calendar picker for transaction forms.
-
-```swift
-// As safe-area bottom bar:
-.dateButtonsSafeArea(selectedDate: $date, onSave: { saveDate($0) })
-```
-
-Use for: transaction entry/edit forms only. For other date fields use `DatePickerRow`.
-
-#### `CurrencySelectorView`
-Currency symbol menu button styled as filter chip.
-
-```swift
-CurrencySelectorView(selectedCurrency: $currency, availableCurrencies: ["KZT", "USD", "EUR"])
-```
-
-Use in: `EditableHeroSection` (automatic when `config.showCurrency`). Not standalone.
-
----
-
-### Feedback & Status Components
-
-#### `MessageBanner`
-Transient animated feedback banner.
-
-```swift
-MessageBanner.success("Saved successfully")
-MessageBanner.error("Failed to load")
-MessageBanner.warning("Low balance")
-MessageBanner.info("Sync completed")
-```
-
-Show conditionally via `.overlay(alignment: .top)` + `.animation(AppAnimation.gentleSpring, value: message)`. For auto-dismiss after N seconds, set the state to `nil` inside a `Task` after `Task.sleep`:
-
-```swift
-@State private var errorMessage: String? = nil
-
-// In catch block:
-errorMessage = "Payment failed."
-Task {
-    try? await Task.sleep(for: .seconds(4))
-    errorMessage = nil
-}
-
-// In body:
-.overlay(alignment: .top) {
-    if let msg = errorMessage {
-        MessageBanner.error(msg)
-            .padding(.horizontal, AppSpacing.md)
-            .padding(.top, AppSpacing.sm)
-            .transition(.move(edge: .top).combined(with: .opacity))
-    }
-}
-.animation(AppAnimation.gentleSpring, value: errorMessage)
-```
-
-#### `InlineStatusText`
-Persistent inline validation/hint text.
-
-```swift
-InlineStatusText(message: "Amount must be positive", type: .error)
-```
-
-Use for: persistent form validation. NOT for transient post-action feedback (use `MessageBanner`).
-
-#### `StatusIndicatorBadge`
-Entity lifecycle status icon.
-
-```swift
-StatusIndicatorBadge(status: .active, font: AppTypography.h4)
-```
-
-Cases: `.active` (green checkmark), `.paused` (orange pause), `.archived` (gray archive), `.pending` (blue clock).
-
-#### `EmptyState`
-Empty/error state display.
-
-```swift
-EmptyState(
-    icon: "tray",
-    title: "No Transactions",
-    description: "Add your first transaction to get started",
-    actionTitle: "Add Transaction",
-    action: { showAdd = true },
-    style: .standard  // or .compact, .error
-)
-```
-
-| Style | Context |
-|-------|---------|
-| `.standard` | Full-screen empty state (management views) |
-| `.compact` | Inside cards (home summary) |
-| `.error` | Load failures (with pulse icon + retry) |
-
----
-
-### Display Components
-
-#### `FormattedAmountText`
-Currency amount with smart decimal hiding and numeric transition.
-
-```swift
-FormattedAmountText(
-    amount: 1234.56,
-    currency: "KZT",
-    prefix: "-",
-    fontSize: AppTypography.h2,
-    fontWeight: .semibold,
-    color: AppColors.expense
-)
-```
-
-Use for: ALL display-only amounts — detail view balances, row subtitles, card totals, section headers.
-
-#### `SectionHeader`
-Section header text with four styles.
-
-```swift
-SectionHeader("Transactions", style: .default)       // bodyEmphasis
-SectionHeader("March 10", style: .emphasized)         // bodySmall semibold
-SectionHeader("SETTINGS", style: .compact)            // caption uppercase
-SectionHeader("Spending", systemImage: "chart.bar", style: .insights) // h3 + icon
-```
-
-#### `DateSectionHeaderView`
-Transaction list date group header with optional daily total.
-
-```swift
-DateSectionHeaderView(dateKey: "2026-03-10", amount: 45000.0, currency: "KZT")
-```
-
-#### `ProgressRing`
-Circular progress arc for budget consumption.
-
-```swift
-ProgressRing(progress: 0.75, size: AppIconSize.Tile.lg, isOverBudget: false)
-```
-
----
-
-### Content Reveal (Loading Transitions)
-
-#### `.contentReveal(isReady:delay:)`
-Fades content in when `isReady` becomes true. Preserves view identity (no `if/else` branching).
-Optional `delay` staggers multiple sections for a smooth cascading reveal.
-
-```swift
-// Single section
-accountsSection
-    .contentReveal(isReady: coordinator.isFastPathDone)
-
-// Staggered reveal — sections fade in 50ms apart
-historySection
-    .contentReveal(isReady: coordinator.isFullyInitialized)
-subscriptionsSection
-    .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.05)
-loansSection
-    .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.1)
-```
-
-**Why not skeletons?** The previous `SkeletonLoadingModifier` used `if/else` branching which destroyed view identity — causing shimmer animation failures, UI jerk on content reveal, and layout recalculation spikes when multiple sections materialized simultaneously. `ContentRevealModifier` keeps content always in the hierarchy (just invisible) and uses simple opacity fade.
-
-#### `.staggeredEntrance(delay:)`
-Animates view entrance with scale + opacity pop-in. Used for facepile icon stacks.
-
-```swift
-ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-    Icon(source: item.iconSource, style: iconStyle)
-        .staggeredEntrance(delay: Double(index) * AppAnimation.facepileStagger)
-}
-```
-
-Used in: `StaticSubscriptionIconsView`, `LoanFacepileIconsView`.
-
-#### `BlurSlideTransition` (text reveal)
-Canonical transition for animated text appearance: insertion slides up from below + un-blurs + fades in; removal keeps sliding up + blurs + fades out. Lives in `Views/Components/Feedback/BlurSlideTransition.swift`. Use the presets — don't hand-tune parameters at call sites:
-
-| Preset | Params | Use For |
-|--------|--------|---------|
-| `.blurSlideHero` | slide 24, blur 10 | Block-level text (onboarding hero title/subtitle) |
-| `.blurSlideWord` | slide 18, blur 6 | Per-word streaming text (voice transcription). Lighter on purpose — many words can transition at once and per-word blur is the dominant GPU cost |
-
-```swift
-Text(phase.title)
-    .id(index)
-    .transition(.blurSlideHero)
-
-// Per-word: DesignKit's StreamingText (2.9.0) — stable word IDs ensure only NEW words animate
-Text(token.text)
-    .transition(.blurSlideWord)
-```
-
-Used in: `OnboardingWelcomeStep`; `.blurSlideWord` inside DesignKit's `StreamingText` (2.9.0), which `AnimatedTranscriptionText` adapts (the recognised entities become highlights).
-
-#### `AccentGlow` (ambient edge glow)
-Blurred gradient circle rising from a screen edge (`Views/Components/Feedback/AccentGlow.swift`). Static — no animation loop, no hit-testing, hidden from VoiceOver. Tunables in `GlowMetrics` (blur 120, 85% off-screen, hero intensity 0.45).
-
-| Preset | Edge | Tint | Use For |
-|--------|------|------|---------|
-| `.onboardingAccentGlow()` | bottom, full intensity | `AppColors.accent` | Onboarding screen backgrounds |
-| `.heroAccentGlow(icon:tint:)` | top, 0.45 intensity | Resolved from the hero icon | Entity-detail screens (apply to `EntityDetailScaffold`, pass the same `icon`/`tint` as the `HeroSection`) |
-
-`heroAccentGlow` tint resolution: explicit `IconTint` colour (monochrome/hierarchical/palette) → that colour immediately; `.brandService` → dominant logo colour via `DominantColorExtractor` (async — glow renders with the fallback and cross-fades with `gentleSpring` when the brand colour arrives); otherwise `AppColors.accent`. Pure black/white logos yield no extractable accent — the fallback stays.
-
-```swift
-EntityDetailScaffold(... hero: { HeroSection(icon: liveCategory.iconSource, ...) })
-    .heroAccentGlow(icon: liveCategory.iconSource, tint: .monochrome(liveCategory.color))
-```
-
-Used in: `OnboardingWelcomeStep` (bottom), Account/Category/Subscription/Deposit/Loan detail views (top).
-
----
-
-## 4. View Patterns
-
-### Edit View — Hero Style
-Used by: `AccountEditView`, `SubscriptionEditView`, `CategoryEditView`, `DepositEditView`, `LoanEditView`
+`AccountEditView`, `CategoryEditView`, `SubscriptionEditView`, `DepositEditView`, `LoanEditView`,
+`OnboardingAccountStep`.
 
 ```
-EditSheetContainer(wrapInForm: false)
+EditSheetContainer(title:, wrapInForm: false, onSave:, onCancel:)   ✕ and ✓ in the toolbar
 └── ScrollView
     └── VStack(spacing: AppSpacing.xl)
-        ├── EditableHeroSection(config: .accountHero)  // icon + title + balance
-        ├── FormSection(.card, header: "Details") {
-        │   ├── UniversalRow { ... }
-        │   ├── Divider()
-        │   ├── MenuPickerRow(...)
-        │   ├── Divider()
-        │   └── DatePickerRow(...)
+        ├── EditableHeroSection(…)           icon (opens the picker), name, optional amount
+        ├── FormSection(header:) {           a card of rows, dividers inset by AppSpacing.lg
+        │   UniversalRow / MenuPickerRow / DatePickerRow / FormTextField(style: .inline)
         │   }
-        └── FormSection(.card, header: "More") { ... }
+        └── FormSection(…) { … }
 ```
 
-### Edit View — Native Form
-Used by: `LoanPaymentView`, `LoanRateChangeView`, `LoanEarlyRepaymentView`, `DepositRateChangeView`
+Entity heroes type on the system keyboard: they are forms, not calculators.
 
-```
-EditSheetContainer(wrapInForm: true)
-└── Form (auto-wrapped)
-    ├── Section(header: "Basic Info") {
-    │   ├── TextField(...)
-    │   ├── Picker(...)
-    │   └── Toggle(...)
-    │   }
-    ├── Section(header: "Details") {
-    │   ├── DatePicker(...)
-    │   └── TextField(...)
-    │   }
-    └── InlineStatusText(...)  // validation below sections
-```
+### Action sheet (rate change, pay all)
 
-### Detail View
-Used by: `SubscriptionDetailView`, `DepositDetailView`, `LoanDetailView`
+`LoanRateChangeView`, `DepositRateChangeView`, `LoanPayAllView`. The same container and cards
+without a hero: `EditSheetContainer(wrapInForm: false)` → `ScrollView` → a `FormSection` with the
+fields, then a conditional impact `FormSection`. **Tenra has no system `Form` sheets left:**
+`wrapInForm: true` is unused, and a new sheet is built from cards.
 
-```
-ScrollView
-└── VStack(spacing: AppSpacing.lg)
-    ├── Card 1: Header (.cardStyle())
-    │   └── Icon(.glassHero) + Title + Balance
-    ├── Card 2: Info (.cardStyle())
-    │   └── InfoRow list
-    ├── Card 3: Stats (.cardStyle())
-    │   └── InfoRow / custom rows
-    ├── Actions Section
-    │   ├── DSButton("…", fullWidth: true) { }
-    │   └── DSButton("…", appearance: .secondary, fullWidth: true) { }
-    └── .toolbar { Menu("...") { edit, delete, ... } }
-```
+### Money entry (calculator)
 
-Cards use staggered `.chartAppear(delay:)` for entrance animation.
+`TransactionAddModal`, `TransactionEditView`, `AccountActionView`, `LoanPaymentView`,
+`LoanEarlyRepaymentView`: a `ScrollView` with `HeroSection`, `AmountInputView(calculatorModel:)`,
+the source and category selectors under `SectionHeader`s and `FormSection`s for the rest, with the
+`CalculatorKeypad` in `.safeAreaInset(edge: .bottom)`. Rules in §5.
 
-### List View — Management
-Used by: `AccountsManagementView`, `CategoriesManagementView`
+### Entity detail
 
-```
-List {
-    ForEach(items) { item in
-        CustomRow(item)
-            .swipeActions(edge: .trailing) { delete }
-    }
-    .onMove { reorder }
-}
-.toolbar { Button("Add") { showAddSheet = true } }
-.sheet(isPresented: $showAddSheet) { EditView() }
-```
-
-### List View — Scrollable Cards
-Used by: `SubscriptionsListView`, `LoansListView`
+`AccountDetailView`, `CategoryDetailView`, `SubscriptionDetailView`, `DepositDetailView`,
+`LoanDetailView`, all through `EntityDetailScaffold`:
 
 ```
 ScrollView
 └── VStack(spacing: AppSpacing.lg)
-    ├── Optional summary card (.cardStyle())
-    └── ForEach(items) { item in
-            NavigationLink(value: destination) {
-                ItemCard()
-            }
-            .chartAppear(delay: index * 0.05)
-        }
+    ├── hero (HeroSection)         .screenPadding().scrollHero()
+    ├── actions bar                primary + secondary DSButton
+    ├── info rows card             InfoRow list in .cardStyle()
+    ├── custom sections            the screen's own cards
+    └── GroupedTransactionList     day headers SectionHeader (default style), TransactionCard rows
++ .heroAccentGlow(icon:tint:) on the screen; the title and amount appear in the nav bar once the
+  hero scrolls out; the toolbar menu (edit, delete, …)
 ```
 
-### Transaction List (History)
-```
-List {
-    ForEach(sections.prefix(visibleSectionLimit)) { section in
-        Section {
-            ForEach(section.transactions) { tx in
-                TransactionCard(transaction: tx, styleData: preComputed, ...)
-            }
-        } header: {
-            DateSectionHeaderView(dateKey: section.dateKey, amount: total, currency: cur)
-        }
-    }
-    // Infinite scroll trigger
-    if visibleSectionLimit < sections.count {
-        ProgressView().onAppear { visibleSectionLimit += 100 }
-    }
-}
-```
+### Lists
+
+- **Management** (`AccountsManagementView`, `CategoriesManagementView`): `List` of `AccountRow` /
+  `CategoryRow`, `.onMove` while reordering, swipe to delete in the row adapter.
+- **Cards** (`SubscriptionsListView`, `LoansListView`): `ScrollView` of `SubscriptionCard` /
+  `LoanCard` in `NavigationLink`s, `EmptyState` when there are none.
+- **Deposits** (`DepositsListView`): `List` of `AccountRow`; `AmountRowSkeleton(style: .list)`
+  rows while loading, replaced through `.transition(.skeletonReveal)` (§7).
+- **Subcategories** (`SubcategoriesManagementView`): `List` of `SubcategoryManagementRow`, a
+  plain `Button` over `ItemRow(style: .large, titleFont: AppTypography.h4)` with the usage in a
+  `MetaLine` ("Used 14 times · Oct 9, 2026").
+
+### History
+
+`HistoryTransactionsList`: a `List` of day `Section`s whose header is
+`SectionHeader(day, style: .card) { day total }` and whose rows are
+`TransactionCard(…).equatable()` with `listRowInsets`. `TransactionCard` adds the edit sheet,
+swipe and context menu to `TransactionCardView`, which maps the transaction onto DesignKit's
+`TransactionRow`. Sections are sliced with an infinite-scroll trigger: 500+ sections in a `List`
+freeze (CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `ForEach` (§6).
 
 ### Settings
-```
-List {
-    SettingsGeneralSection(...)
-    SettingsDataManagementSection(...)
-    SettingsExportImportSection(...)
-    SettingsDangerZoneSection(...)
+
+`List` of `Section(header: SectionHeader(title, style: .compact))` with
+`UniversalRow(config: .settings)` rows: `.navigationRow {}`, `.actionRow(role:) {}` or a trailing
+`Toggle`. The list insets the rows, so `.settings` has no horizontal padding of its own.
+
+- **Backups** (`BackupRowView`): `ItemRow(style: .large)` with the date, the "Auto" badge, a
+  `MetaLine` of counts and size, and the restore arrow as its accessory; tap restores, swipe
+  deletes.
+- **Quick-access currencies** (`QuickAccessCurrencyPickerView`): DesignKit's `CurrencyRow`, the
+  row `CurrencyList` draws; an account's currency with `isLocked: true` (grey check), the others
+  in a plain `Button` with `.contentShape(Rectangle())`.
+
+### Tabs
+
+- **Home** (`ContentView`): `ScrollView` → `VStack(spacing: AppSpacing.lg)`: `AccountsCarousel`
+  (`AccountCard` = `BalanceCard(isLive: true)`) or `EmptyCard`; `TransactionsSummaryCard` in a
+  `NavigationLink` to History (`.buttonStyle(.bounce)`); the category grid
+  (`TransactionCategoryPickerView`). Background by the user's choice: none, the spending gradient
+  (`CategoryGradientBackground`, still) or a wallpaper.
+- **Finances** (`FinancesView`): `ScrollView` of `FinanceCard` summaries (accounts, deposits,
+  subscriptions, loans, categories, subcategories), each with `PackedCircleIcons` in the default
+  `.glossy` style. The `.fan` and `.orbit` styles (DesignKit 3.3.0) are not used: the owner keeps
+  the marbles.
+- **Analytics** (`InsightsView`): sections through `InsightsSectionView`
+  (`SectionHeader(title, systemImage:, style: .large)`); detail screens put
+  `SectionHeader(style: .large)` over their charts.
+- **Filter sheets** (`AccountFilterView`, `CategoryFilterView`, `TimeFilterView`):
+  `SectionHeader(title)` (default style) over selectable rows.
+
+### Search
+
+System search only (CLAUDE.md): `.searchable` places the field (History: the bottom bar,
+`.searchToolbarBehavior(.minimize)`), and DesignKit's `.dsSearchSuggestions` (3.5.0) puts the
+recent queries and suggestions in the system's own suggestion list. Each screen keeps its
+`RecentSearches` with `@AppStorage` under its own key:
+
+| Screen | Recent queries key | Suggestions |
+|---|---|---|
+| History (`HistorySearchSuggestions`) | `history.recentSearches` | the user's categories and subcategories (the search matches them by name; accounts are left out, the text search does not match them) |
+| `LinkPaymentsView` | `linkPayments.recentSearches` | none |
+| `SubcategorySearchView` | `subcategorySearch.recentSearches` | none |
+
+The suggestions cover the screen while the field is focused and something matches; a tap fills
+the field and hides them until the text changes, so the live list shows again.
+
+### Empty, loading, error
+
+- Loading: the component's `<Name>Skeleton` in its place, not a `ProgressView()`.
+- Empty: `EmptyState` (`.standard` on a screen, `.compact` in a card, `.error` for a failure).
+- A card that switches between empty and loaded animates the switch:
+
+```swift
+if items.isEmpty {
+    EmptyState(…).transition(.opacity)
+} else {
+    loadedContent.transition(.opacity)
 }
-```
-
-Each section uses `UniversalRow(config: .settings)` with `.navigationRow {}` or `.actionRow(role:) {}`.
-
-### Home Screen (Dashboard)
-```
-ScrollView
-└── VStack(spacing: AppSpacing.lg)
-    ├── AccountsCarousel (UniversalCarousel)
-    ├── TransactionsSummaryCard (3-state: loading/empty/data)
-    ├── CategoryGridView (adaptive grid of category chips)
-    ├── SubscriptionsCardView (.cardStyle())
-    └── LoansCardView (.cardStyle())
+// outside the conditional
+.animation(AppAnimation.gentleSpring, value: items.isEmpty)
 ```
 
 ---
 
-## 5. Decision Trees
+## 5. Amounts
 
-### "Which input component?"
+### Hard rule
 
-```
-Amount input?
-├── Hero-style (large, animated) → AnimatedAmountInput
-└── Compact form row → FormTextField(keyboardType: .decimalPad)
+**A money value never reaches the user without a canonical formatter** (CLAUDE.md rule #7). No
+exceptions for temporary code, debug screens or committed previews. Every type below is
+DesignKit's (`DesignSupport`, `DesignComponents`) except `AmountInputView`; the internals, the
+overflow policy and the formatter cache are in DesignKit's design-system.md §6 and §12.
 
-Text input?
-├── Hero title (large, animated) → AnimatedTitleInput
-├── Multiline description → FormTextField(style: .multiline(min:max:))
-└── Single-line form field → FormTextField(style: .standard)
-
-Date input?
-├── Transaction (needs Yesterday/Today shortcuts) → DateButtons / .dateButtonsSafeArea()
-└── Other (subscription start, deposit posting) → DatePickerRow
-
-Single-select picker?
-├── Few options (2-5) in form → MenuPickerRow
-├── 2-4 exclusive modes → SegmentedPicker
-└── Many options → NavigationLink to selection list
-
-Currency?
-└── CurrencySelectorView (inside EditableHeroSection, automatic)
-```
-
-### "Which row component?"
-
-```
-Inside FormSection(.card)?
-└── Always use UniversalRow(config: .standard)
-    ├── Read-only label+value → InfoRow (wrapper)
-    ├── Picker → MenuPickerRow (wrapper)
-    ├── Date → DatePickerRow (wrapper)
-    └── Custom content → UniversalRow directly
-
-Inside List (settings)?
-└── UniversalRow(config: .settings)
-    ├── With navigation → .navigationRow { }
-    ├── With action → .actionRow(role:) { }
-    └── With toggle → trailing: { Toggle(...) }
-
-Transaction list row?
-└── TransactionCard (NOT UniversalRow)
-
-Account list row?
-└── AccountRow (custom, NOT UniversalRow)
-```
-
-### "Which container?"
-
-```
-Modal edit form?
-└── EditSheetContainer
-    ├── Entity edit (account/category/subscription/deposit/loan) → wrapInForm: false (hero-form)
-    └── Simple action form (payment, rate change) → wrapInForm: true
-
-Grouping form rows?
-├── Inside hero-form → FormSection(.card)
-├── Inside native Form → Section(header:)
-└── Inside List → FormSection(.list) or Section
-
-Horizontal scroll?
-└── UniversalCarousel with appropriate preset
-
-Card-style container?
-└── VStack { ... }.cardStyle()
-```
-
-### "Which icon approach?"
-
-```
-Entity icon with styled background?
-└── Icon(source:style:)
-    ├── Account → .bankLogo(size:) or .bankLogoLarge(size:)
-    ├── Category → .categoryIcon(size:) or .categoryCoin(size:)
-    ├── Subscription → .serviceLogo(size:) or .glassHero(size:)
-    └── Nil/unknown → .placeholder(size:)
-
-Semantic UI indicator?
-└── Image(systemName:) directly
-    Examples: chevron.right, checkmark, xmark, plus, ellipsis
-```
-
-### "Which feedback component?"
-
-```
-Transient post-action result?
-└── MessageBanner (.success/.error/.warning/.info)
-
-Persistent form validation?
-└── InlineStatusText (.error/.warning/.info/.success)
-
-Entity lifecycle status?
-└── StatusIndicatorBadge (.active/.paused/.archived/.pending)
-
-No data to show?
-└── EmptyState
-    ├── Full screen → .standard
-    ├── Inside card → .compact
-    └── Error/failure → .error
-```
-
----
-
-## 6. Formatting & Display
-
-### Amount Formatting
-
-#### Hard rule
-**A money value MUST never reach the user without a canonical formatter.** No exceptions for "temporary" code, debug screens, prototypes, or previews that get committed. If you are about to render a `Double`/`Decimal` that represents money, use one of the entries in the decision tree below — nothing else.
-
-#### Decision tree — what to use
+### What to use
 
 ```
 Rendering a money amount?
-├── Standalone view (card, header, list row's trailing amount, chart label)?
-│   └── → FormattedAmountText(amount:currency:prefix:fontSize:fontWeight:color:)
-│
-├── Inside InfoRow / InfoRowConfig (label-value row in detail screens)?
-│   ├── Single amount → InfoRow(... amount: X, currency: Y, prefix: "")
-│   │                 → InfoRowConfig(... amount: X, currency: Y, prefix: "")
-│   │   (renders FormattedAmountText internally, with `value:` fallback for VoiceOver)
-│   │
-│   └── Composite value ("X / Y (Z%)", "spent / budget", "+A · −B")?
-│       → InfoRowConfig(... value: "<accessibility-fallback>", valueContent: AnyView(
-│             HStack { FormattedAmountText(...); Text("/"); FormattedAmountText(...); ... }
-│         ))
-│       NEVER inline composite money rows as plain `Text("\(spent) / \(total)")` — the
-│       individual amounts lose smart-decimal collapse and dimmed `.XX` styling, looking
-│       inconsistent with adjacent rows.
-│
-├── Need a plain String (HeroSection.subtitle, composed sentence like "Scheduled: %@",
-│   "X / Y (Z%)", accessibilityLabel)?
-│   └── → Formatting.formatCurrencySmart(amount, currency:)
-│
-├── Input component (user typing an amount)?
-│   └── → AmountInputView / AmountInput / AmountDigitDisplay / AnimatedAmountInput
-│       (these use AmountInputFormatting internally — do not bypass)
-│
-├── Compact chart axis label?
-│   └── → ChartValueFormat.compactString(amount)  (DesignKit)
-│
-├── Storage, CSV, search-match key, persistence?
-│   └── → AmountFormatter.format(_:) / .parse(_:)
-│
-└── Hot-path List/ForEach where you need a NumberFormatter object?
-    └── → AmountDisplayConfiguration.formatter (CACHED — never call .makeNumberFormatter())
+├── Standalone view (card, header, a row's trailing amount, chart label)
+│   └── FormattedAmountText(amount:currency:prefix:fontSize:fontWeight:color:)
+├── Label-value row in a detail screen
+│   ├── One amount → InfoRow(… amount:, currency:, prefix:) / InfoRowConfig(… amount:, currency:)
+│   └── Composite ("X / Y (Z%)", "spent / budget", "+A · −B")
+│       → InfoRowConfig(… value: "<VoiceOver text>", valueContent: AnyView(
+│             HStack { FormattedAmountText(…); Text("/"); FormattedAmountText(…) }))
+│         never Text("\(spent) / \(total)"): the amounts lose smart decimals and the dimmed .XX
+├── A String is needed (HeroSection.subtitle, a sentence, accessibilityLabel)
+│   └── Formatting.formatCurrencySmart(amount, currency:)
+├── The user types an amount
+│   └── AmountInputView (Tenra) over CurrencyAmountInput / AmountInput; never bypass
+│       AmountInputFormatting
+├── Compact chart axis label
+│   └── ChartValueFormat.compactString(amount)
+├── Storage, CSV, search key, persistence
+│   └── AmountFormatter.format(_:) / .parse(_:)
+└── A NumberFormatter in a List / ForEach
+    └── AmountDisplayConfiguration.formatter (cached; never .makeNumberFormatter())
 ```
 
-#### Calculator amount input
+### Overflow
 
-`AmountInputView(calculatorModel:)` swaps the system keyboard for an in-app `CalculatorKeypad` driven by `CalculatorInputModel` (pure `Decimal` evaluator `ExpressionEvaluator` — `+ − × ÷`, no `=`, live result). Used in `TransactionAddModal`, `AccountActionView`, `TransactionEditView`, `LoanPaymentView`, `LoanEarlyRepaymentView`. (Entity-edit heroes via `EditableHeroSection` stay on the system keyboard — they're forms, not calculators.)
+`FormattedAmountText` handles a narrow container itself (`AmountDisplayPolicy.adaptive`, the
+default): the full number, then "1,2 млн ₸", then "1 млн ₸". A value that fits always renders in
+full, and VoiceOver always reads the full amount. Never pre-shorten with
+`Formatting.formatCurrencyCompact` at the call site. `.full` is for amount editors and the
+calculator display, `.compact` for very tight chrome.
 
-- Host owns `@State CalculatorInputModel`, places `CalculatorKeypad` via `.safeAreaInset(.bottom)`, and mirrors `calc.amountText → formData.amountText` with `.onChange` (validation/save/conversion keep reading the existing amount binding).
-- Pre-fill via `CalculatorInputModel(seed:)` (at init) or `.seed(_:)` (in `onAppear`, for defaults computed late).
-- ⚠️ **A form with BOTH the keypad AND an inline `FormTextField` (description) must coordinate focus or two keyboards stack.** Pattern: host `@FocusState descriptionFocused`; pass `externalFocus: $descriptionFocused` to the text field; show the keypad `if !descriptionFocused`; wire `AmountInputView(onCalculatorTap:)` to set it `false`. `FormTextField(externalFocus:)` is optional and defaults to internal focus (existing call sites unchanged).
+### Sign and prefix
 
-#### Forbidden patterns (will be flagged in code review)
+- Negative is automatic: `-1 200 ₸` for a negative `Double`.
+- Positive needs `prefix: "+"`: `prefix: diff > 0 ? "+" : ""` on `FormattedAmountText` or `InfoRow`.
+- Income and expense in transaction lists: `TransactionDisplayHelper.amountPrefix(for:)` and
+  `.amountColor(for:)` (§6), passed to `FormattedAmountText`.
 
-| Pattern | Why forbidden | Fix |
-|---------|---------------|-----|
-| `Text("\(amount) \(currency)")` | No grouping separator, no symbol lookup, no smart decimals | `FormattedAmountText(amount:currency:)` |
-| `Text(String(format: "%.2f", amount))` | No currency, locale-deaf | `FormattedAmountText` or `formatCurrencySmart` |
-| `Text(String(format: "%@%@", "+", Formatting.formatCurrency(...)))` | Manual sign composition | `FormattedAmountText(... prefix: "+")` or `formatCurrencySmart` + read sign from value |
-| `NumberFormatter()` allocated inside `body`/`List`/`ForEach` | Per-frame allocation in hot path | `AmountDisplayConfiguration.formatter` |
-| `Formatting.formatCurrency(...)` **for display** | Always shows `.00` ("14 924 515.00 ₸") — looks broken for round numbers | `formatCurrencySmart` (or `FormattedAmountText`). `formatCurrency` is reserved for accessibilityLabel and storage |
-| `Decimal` / `NSDecimalNumber` rendered via interpolation | Same — no symbol, no grouping | Convert with `NSDecimalNumber(decimal:).doubleValue` and pass to a formatter |
+### Forbidden (flagged in review)
 
-#### Overflow: `AmountDisplayPolicy`
-
-`FormattedAmountText` decides for itself what to do when the container is too narrow — no
-call site should hand-shorten an amount.
-
-| Policy | Behaviour | Where |
+| Pattern | Why | Use |
 |---|---|---|
-| `.adaptive` (**default**) | `ViewThatFits`: full number → "1,2 млн ₸" → "1 млн ₸" | everything by default |
-| `.full` | never abbreviates | amount editors, calculator display |
-| `.compact` | always abbreviated | very tight chrome |
+| `Text("\(amount) \(currency)")` | no grouping, no symbol, no smart decimals | `FormattedAmountText` |
+| `Text(String(format: "%.2f", amount))` | no currency, ignores the locale | `FormattedAmountText` / `formatCurrencySmart` |
+| `String(format: "%@%@", "+", Formatting.formatCurrency(…))` | hand-built sign | `prefix: "+"` |
+| `NumberFormatter()` in `body` / `List` / `ForEach` | an allocation per frame | `AmountDisplayConfiguration.formatter` |
+| `Formatting.formatCurrency(…)` for display | always shows `.00` ("14 924 515.00 ₸") | `formatCurrencySmart` / `FormattedAmountText`; `formatCurrency` is for VoiceOver and storage |
+| A `Decimal` in string interpolation | no symbol, no grouping | `NSDecimalNumber(decimal:).doubleValue` into a formatter |
 
-Rules that make this safe:
-- **A value that fits always renders in full**, so adopting `.adaptive` changed nothing on
-  screens whose amounts already fitted. Never pre-shorten by calling
-  `Formatting.formatCurrencyCompact` directly in a view.
-- Abbreviations come from the system's compact notation
-  (`Formatting.formatCurrencyCompact`), so unit names follow the reader's locale —
-  including ja/ko, which group by 10 000 (万 / 억), not 1 000. A hand-rolled K/M table
-  prints the wrong magnitude there. Pinned by `FormattingCompactTests`.
-- A compact string can be **longer** than the full one ("10 тыс. ₸" vs "10 000 ₸"), so a
-  candidate is offered only when it is actually shorter; otherwise the full text repeats
-  in that slot. Never put an `if` inside `ViewThatFits` — an absent candidate becomes an
-  `EmptyView`, which always "fits" and renders nothing.
-- VoiceOver always reads the FULL amount (`accessibilityLabel`). An abbreviation is a
-  layout concession, not a change of value.
-- `.minimumScaleFactor` at the call site still applies, as the last resort after the
-  smallest candidate.
+### Calculator input
 
-#### Reference table
+`AmountInputView(calculatorModel:)` swaps the system keyboard for DesignKit's `CalculatorKeypad`
+over `CalculatorInputModel` (its `ExpressionEvaluator`: `+ − × ÷` on `Decimal`, no `=`, a live
+result). Used in `TransactionAddModal`, `TransactionEditView`, `AccountActionView`,
+`LoanPaymentView`, `LoanEarlyRepaymentView`.
 
-| Context | Function / Component | Decimals |
-|---------|----------------------|----------|
-| Standalone view display | **`FormattedAmountText`** | Smart (hides `.00`, dims `.XX`); abbreviates only when it doesn't fit |
-| Abbreviated amount (fallback only) | `Formatting.formatCurrencyCompact(_:currency:)` | Localized compact ("1,2 млн ₸") |
-| InfoRow / InfoRowConfig | **`init(... amount: currency:)`** | Smart (delegates to `FormattedAmountText`) |
-| Composed display string | **`Formatting.formatCurrencySmart(_:currency:)`** | Smart (0 or 2) |
-| Accessibility / VoiceOver / CSV | `Formatting.formatCurrency(_:currency:)` | Always 2 (legacy compat — DO NOT use for display) |
-| Storage / parse | `AmountFormatter.format(_:)` / `.parse(_:)` | Always 2 |
-| User typing | `AmountInputFormatting.displayAmount(for:)` | 0–2 |
-| Chart axis (compact) | `ChartValueFormat.compactString(_:)` (DesignKit) | Compact ("12K", "1.2M") |
-| `NumberFormatter` instance in hot path | `AmountDisplayConfiguration.formatter` (cached) | Configured |
+- The host owns `@State CalculatorInputModel`, puts `CalculatorKeypad` in
+  `.safeAreaInset(edge: .bottom)` and mirrors `calc.amountText` into its form's amount with
+  `.onChange` (validation, save and conversion keep reading that binding).
+- Pre-fill with `CalculatorInputModel(seed:)` at init, or `.seed(_:)` in `onAppear` for a default
+  computed late.
+- ⚠️ **A sheet with the keypad and an inline `FormTextField` (the note) coordinates focus, or two
+  keyboards stack.** The host keeps `@FocusState descriptionFocused`, passes
+  `externalFocus: $descriptionFocused` to the field, shows the keypad only
+  `if !descriptionFocused`, and sets it to `false` from `AmountInputView(onCalculatorTap:)`.
 
-**Never call `AmountDisplayConfiguration.makeNumberFormatter()` in List/ForEach** — use `.formatter` (cached).
+---
 
-#### Sign and prefix
+## 6. Dates, categories, transaction colours
 
-For signed deltas ("+1 200 ₸" / "−500 ₸"):
-- **Negative is automatic** — `NumberFormatter` and `FormattedAmountText` already render `"-1 200 ₸"` for negative `Double`.
-- **Positive needs explicit `prefix: "+"`** — pass `prefix: diff > 0 ? "+" : ""` to `FormattedAmountText` or `InfoRow(... amount:currency:prefix:)`.
-- DO NOT compose with `String(format: "%@%@", "+", Formatting.formatCurrency(...))`.
+These helpers are Tenra's (`Tenra/Utils`): they read Tenra models.
 
-For income/expense `+`/`−` styling in transaction lists, use `TransactionDisplayHelper.amountPrefix(for:)` + `TransactionDisplayHelper.amountColor(for:)` and pass results to `FormattedAmountText`.
+**Dates** (`DateFormatters`, cached, `nonisolated`):
 
-### Currency Symbols
+| Member | Format | For |
+|---|---|---|
+| `dateFormatter` | `yyyy-MM-dd` | storage, parsing |
+| `displayDateFormatter` | `d MMMM` (device locale) | display |
+| `displayDateWithYearFormatter` | `d MMMM yyyy` | display with the year |
+| `displayDateOmittingCurrentYear(_:)` | the year only outside the current one | next-charge dates and the like |
+| `displayString(from:)` | ISO string → `d MMMM` | a stored date string |
+| `timeFormatter` | `HH:mm` | time |
 
-```swift
-Formatting.currencySymbol(for: "KZT") // → "₸"
-```
-
-Supported: KZT→₸, USD→$, EUR→€, RUB→₽, GBP→£, CNY→¥, JPY→¥. Unknown → code string.
-
-### Transaction Amount Color/Prefix
-
-```swift
-TransactionDisplayHelper.amountColor(for: .income)   // → .green
-TransactionDisplayHelper.amountPrefix(for: .expense)  // → "-"
-```
-
-Deposit-aware overloads accept `targetAccountId`, `depositAccountId`, `isPlanned`.
-
-### Date Formatting
-
-| Formatter | Format | Use For |
-|-----------|--------|---------|
-| `DateFormatters.dateFormatter` | `yyyy-MM-dd` | Storage, parsing |
-| `DateFormatters.displayDateFormatter` | `d MMMM` | Display ("10 March") |
-| `DateFormatters.displayDateWithYearFormatter` | `d MMMM yyyy` | Display with year |
-| `DateFormatters.timeFormatter` | `HH:mm` | Time display |
-
-### Category Styling
-
-Pre-compute at ForEach call site, not inside row views:
+**Category style.** Resolve it at the `ForEach`, not inside the row:
 
 ```swift
 let styleData = CategoryStyleHelper.cached(
@@ -1184,218 +352,59 @@ let styleData = CategoryStyleHelper.cached(
     type: tx.type,
     customCategories: customCategories
 )
-// Pass styleData (Equatable struct) to TransactionCard
+// pass styleData (an Equatable struct) to TransactionCard
 ```
 
-`CategoryStyleCache.shared` handles caching. Invalidate on category edit via `.invalidateCategory(_:type:)`.
+`CategoryStyleCache.shared` holds the results; a category edit drops its entry with
+`invalidateCategory(_:type:)`. Category colours in DesignKit components come through
+`CategoryColors.color(for:opacity:customCategories:)` (§2).
+
+**Transaction amount colour and sign.** `TransactionDisplayHelper.amountColor(for:)` and
+`.amountPrefix(for:)`; the deposit-aware overloads take `targetAccountId`, `depositAccountId` and
+`isPlanned`. Future-dated rows dim through `displayOpacity(for:)`.
 
 ---
 
-## 7. Haptics
+## 7. Motion and effects
 
-Use `HapticManager` for all haptic feedback:
+The rules are DesignKit's ([motion.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/motion.md)):
 
-| Event | Call |
-|-------|------|
-| Navigation tap, filter change | `HapticManager.selection()` |
-| Sheet open, picker tap | `HapticManager.light()` |
-| Save/confirm success | `HapticManager.success()` |
-| Destructive action initiation | `HapticManager.warning()` |
-| Validation failure | `HapticManager.error()` |
-| Drag/reorder | `HapticManager.medium()` |
+- Animations come from `AppAnimation`: `.snappy` answers a touch, `.smooth` is content that
+  changes. No bare `withAnimation {}`, `.easeInOut(duration:)` or inline `.spring(…)`.
+- Movement goes through the Reduce Motion aware tokens or
+  `@Environment(\.accessibilityReduceMotion)`; opacity-only fades stay under Reduce Motion.
+- A `TimelineView` decoration that never ends goes behind `AmbientMotionGate` and draws a still
+  frame when the gate is closed.
 
-View modifier: `.hapticFeedback(.light)` attaches tap gesture haptic.
-
----
-
-## 8. Remaining Native Form Views
-
-The following views still use `EditSheetContainer(wrapInForm: true)` with native `Form`/`Section`. This is intentional — they are simple single-purpose forms (payment entry, rate change) where hero-style UI would be overkill:
-
-- `LoanPaymentView` — single amount + date entry
-- `LoanRateChangeView` — single rate + date entry
-- `LoanEarlyRepaymentView` — amount + type selection
-- `DepositRateChangeView` — single rate + date entry
-
-All primary entity edit views (`Account`, `Subscription`, `Category`, `Deposit`, `Loan`) now use the hero-form pattern consistently.
-
----
-
-## 9. Animation Guidelines
-
-### Never use hardcoded springs
-
-All animations must use `AppAnimation` constants. Never use inline `.spring(response:dampingFraction:)`.
-
-| Context | Token |
-|---------|-------|
-| Validation errors, content toggles | `AppAnimation.contentSpring` |
-| Amount changes, state transitions | `AppAnimation.gentleSpring` |
-| Facepile icon entrance | `AppAnimation.facepileSpring` |
-| Chart entrance (opacity+scale) | `AppAnimation.chartAppearAnimation` |
-| Chart data updates | `AppAnimation.chartUpdateAnimation` |
-| Chart selection banner | `AppAnimation.chartBannerFade` |
-| Section fade-in on init | `AppAnimation.contentRevealAnimation` |
-| Progress bar expansion | `AppAnimation.progressBarSpring` |
-| Visible-overshoot bounce (button press) | `AppAnimation.adaptiveSpring` |
-
-### Animation Modifiers
-
-- **`.staggeredEntrance(delay:)`** — `scale(0.5→1.0)` + opacity pop-in. Use for facepile icons, overlapping avatar stacks. Delay per icon: `Double(index) * AppAnimation.facepileStagger`.
-- **`.chartAppear(delay:)`** — `scale(0.94→1.0)` + opacity from bottom. Use for chart containers and card entrances in scrollable lists.
-- **`.contentReveal(isReady:delay:)`** — opacity fade-in. Use for staggered section reveals during initialization (home, insights).
-- **`.filterChipStyle(isSelected:)`** — includes animated selection transition via `contentSpring`.
-
-### Card State Transitions (empty↔loaded)
-
-Cards with empty/loaded states must animate the transition:
-
-```swift
-if items.isEmpty {
-    EmptyState(...).transition(.opacity)
-} else {
-    loadedContent.transition(.opacity)
-}
-// Outside the conditional:
-.animation(AppAnimation.gentleSpring, value: items.isEmpty)
-```
-
-### Reduce Motion
-
-Movement-based decorative animations respect Reduce Motion. Two mechanisms:
-
-- **Token layer** — Reduce Motion-aware variants (`adaptiveSpring`, `fastAnimation`, `chartAppearAnimation`, `chartUpdateAnimation`, `heroEntranceAnimation`, `donutSweepAnimation`, `progressFillAnimation`, etc.) return `.linear(duration: 0)` / `nil` when enabled. Route movement (scale/offset/width/arc sweeps) through these.
-- **View layer** — for continuous or structural motion (voice glow, border beam, pulsing indicators, staggered card slides, banner scale/offset) read `@Environment(\.accessibilityReduceMotion)` so the view re-evaluates when the setting is toggled mid-session. Prefer this over the static `AppAnimation.isReduceMotionEnabled` read, which does not invalidate a running animation.
-
-**Opacity-only fades are NOT gated** — they aid comprehension and contain no movement, so they should survive Reduce Motion (`chartBannerFade`, `ContentRevealModifier`, banner opacity). Reduce Motion means *fewer and gentler* motion, not zero feedback.
-
-### Ambient motion (continuous redraw)
-
-A `TimelineView`-driven animation that never ends — the voice edge light (`EdgeGlow`, 30 fps),
-the border beam's display-rate sweep — is *ambient*: decorative, information-free, and paying a
-render cost every frame it is on screen. Those views go through DesignKit's
-`AmbientMotionGate`, which suspends them under Reduce Motion **and**, on iOS 27, while
-`systemPrefersReducedResourceUsage` is true (the system asking apps to back off under thermal or
-power pressure).
-
-The gate hands its content a `Bool`; render a **static frame** when it is false (`EdgeGlow`
-draws its light at rest) rather than removing the view, so nothing shifts in layout. Put new
-`TimelineView` decoration behind this gate instead of reading `accessibilityReduceMotion`
-directly — the iOS 27 signal then comes for free.
-
-### DesignKit effects in Tenra (2.4.0–3.0.0)
-
-Where each lives, so a new screen reuses the pattern instead of inventing one (DesignKit
-docs/motion.md has the effects themselves):
+Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern:
 
 | Where | Effect | Rule |
 |---|---|---|
-| Home background | `AuroraBackground(_ spots:)` by spending (`CategoryGradientBackground`) | **Still**: a moving background under Liquid Glass redraws every glass card each frame |
+| Home background | `AuroraBackground` by spending (`CategoryGradientBackground`) | **still**: a moving background under Liquid Glass redraws every glass card each frame |
 | Accounts carousel | `BalanceCard(isLive: true)` | rolls up once per card identity; flashes the direction of a change |
-| Financial health hero | `ScoreGaugeCard(decodesScore: true)` | not on the feed's `HealthScoreCardView`: a lazy feed would replay it on scroll |
-| Voice screen | `EdgeGlow`, `VoiceWave(.orb)` stop button, `.thinkingShimmer`, `StreamingText`, `.cascadeIn`, one-time `.spotlight` | see docs/domains/voice.md |
-| Loan detail | `.celebration` on the false → true edge of `isPaidOffLoan` (with the existing banner and haptic) | only the moment, never the state |
-| Detail histories (`GroupedTransactionList`), voice cards | `.dissolve` removal, opacity insertion | for a delete of something the person owned, not every disappearance |
-| One-time hints | `.spotlight` + `FeatureTourState` | a hint points at content the person can see, not at system chrome (tab bar, toolbar) |
-| Entity detail heroes (`EntityDetailScaffold`) | `.scrollHero()` on the hero | the hero stretches when pulled down and drifts away slower, fading; every detail screen gets it from the scaffold |
+| Financial health hero | `ScoreGaugeCard(decodesScore: true, style: .hero, showsMaximum: true)` (DesignKit 4.2.0: edge to edge, a gauge wider than the screen, on a gradient of the grade colour; the weighting card rises over its end), with a trend in points against the score at the end of last month (4.3.0, `FinancialHealthScore.previousScore`) | not on the feed's `HealthScoreCardView`: a lazy feed would replay it on scroll |
+| Savings rate detail | `SavingsRateHeroCard` over `ScoreGaugeCard(value:unit: "%", style: .hero)` (4.3.0): the rate on 0–40% with the 10% and 20% marks, its band, the saved amount; in place of the header and the hero gauge, the formula card rises over its end; `entranceDelay` waits for the zoom into the detail | the insight's feed card keeps its mini gauge |
+| Insight details | DesignKit 4.5.0: the header (`HeroSection` with its trend) and the hero visual on `.heroBackground(insight.severity.color)`, edge to edge from the screen's top edge (`.heroScrollEdge()` on the scroll view; 4.5.1); in dark mode a deep gradient with the pieces in white, in light mode a pale tint with black text (4.5.1); the chart and detail cards rise over the gradient's end. A long amount shrinks inside the gauge's arc (4.5.1). Large expense: `LargeTransactionHeroCard` over `ScoreGaugeCard(amount:…norm:)`, the expense against the usual one ("13,9× the usual"). Budget headroom: `BudgetHeadroomHeroCard`, what is left of the budgets ("left of 380 000 ₸") | the colour is the insight's tone; the paged category breakdown keeps its own layout |
+| Entity detail | `.scrollHero()` on the hero (from `EntityDetailScaffold`), `.heroAccentGlow` on the screen | every detail screen; the glow's colour comes from the hero icon |
+| Voice screen | `EdgeGlow`, `VoiceWave(style: .orb)` stop button, `.thinkingShimmer`, `StreamingText`, `.cascadeIn`, `.borderBeam` on the live card, a one-time `.spotlight` | [domains/voice.md](domains/voice.md) |
+| Loan detail | `.celebration` on the false → true edge of `isPaidOffLoan`, with the banner and the haptic | the moment only, never the state |
+| Detail histories (`GroupedTransactionList`), voice cards | `.dissolve` removal, opacity insertion | for deleting something the person owned, not every disappearance |
+| One-time hints | `.spotlight` + `FeatureTourState` | points at content the person can see, not at system chrome (tab bar, toolbar) |
 | Settings, Tenra Pro | `.shine` once each time the purchase row appears; `.holographic()` on the Active / Founder badge | foil only on the badge, so the row's taps stay the row's |
-| Toasts (`MessageBanner` over a screen), selection checkmarks in edit mode | `.transition(.popIn)` | in place of `.move(edge:)` / `.scale` + opacity; edge-attached bars keep `.move(edge: .bottom)` |
-| A list replacing its skeleton (accounts, deposits, link payments) | content `.transition(.skeletonReveal)`, skeleton `.transition(.opacity)`, `.animation(AppAnimation.smooth, value: <is loading>)` on the container | the Insights feed keeps its own `ContentRevealModifier` |
-| Any animation | `AppAnimation.snappy` (an answer to a touch), `.smooth` (content that changes) | no bare `withAnimation {}` or `.easeInOut(duration:)` |
+| Toasts (`MessageBanner` over a screen), selection checkmarks in edit mode | `.transition(.popIn)` | edge-attached bars keep `.move(edge: .bottom)` |
+| A list replacing its skeleton (accounts, deposits, link payments) | content `.transition(.skeletonReveal)`, skeleton `.transition(.opacity)`, `.animation(AppAnimation.smooth, value: <is loading>)` on the container | the Insights feed keeps its `ContentRevealModifier` |
+| Finances cards | `PackedCircleIcons(style: .shelf)` (DesignKit 4.4.0): app icons in a row in a pocket, a light running across them; `FinanceCard` centres them in the card (4.5.0); 36 pt tiles in every card, the largest that fit and a "+N" for the rest, the row at the card's trailing edge (4.5.1) | no `.orbit` |
+| Assistant | `ParticleCreature` (DesignKit 4.6.0; a sphere of light without glass since 4.7.0): interactive hero on the assistant's home (`AssistantView`), the full creature at 120 pt in the middle of a chat's navigation bar (`AssistantChatView`, a page pushed per chat: back and Ten only, no tab bar), rising into the bar and hanging over the top of the thread in a `safeAreaBar(edge: .top)` that reaches `chatMascotTail` below it, so the system's soft scroll edge effect (`.scrollEdgeEffectStyle(.soft, for: .top)`) blurs and dims the thread under all of Ten, a translucent iOS bar backing rather than a plate or a mask; `.compact` on the "Ten writes" cards, which live on Home (`AssistantNoticesSection`), not in the chat; the action tab is `CreatureTabLabel` (4.8.0, the still `CreatureGlyph`) and the assistant's home is that tab's page, its latest chats `ItemRow`s with a delete context menu, the field `MessageComposer(leading:onVoice:)` (almost opaque while focused, 4.9.0) with a paperclip `MessageComposerAccessory` and the microphone; questions in `MessageBubble`, reply text as `ArticleBody` (Markdown split by `AgentReplyMarkdown`, streamed as it is written), recent chats as `ItemRow`s in a card, presets in `SuggestionChips(layout: .wrap)` on the home, a reply's follow-ups as one edge-to-edge `.scroll` row pinned over a chat's field (`AssistantComposerBar`), reply blocks with `.cascadeIn`, the working step with `.thinkingShimmer`; the voice sheet reuses the voice screen's `EdgeGlow`, stop orb and `StreamingText`; attachment and confirm cards are `AssistantCard` (a `cardStyle()` card under an optional `SectionHeader`) with `InfoRow`, `InlineStatusText` and a full-width `DSButton`; "Ask Ten" on other screens shows `CreatureGlyph.templateImage(size:)` | the mascot's mood follows the screen (thinking while it works, the reply's mood after, confused or sad on a failure); one still frame under Reduce Motion; since 4.7.0 it has no glass: the particles, a thin lit rim and a soft halo, drawn in coloured ink on a light page and glowing on a dark one, over a soft blurred shadow; since 4.9.1 a soft core of the mood's colours fills the sphere (its body on a light page, a fainter glow on a dark one), breathing with it and flaring at a tap; since 4.10.0 it speaks in words of light and gestures (`AssistantChatter` over `speech:` and `.creatureGesture`): a glad greeting with a wave once a day on the home (a whisper late at night), a hint pointing down at the presets while there are no chats, a thought beside it in a chat while it works over 1.5 s, a nod for a reply, a hop and a cheer for a celebrated one, a flinch or a shrug for a failure, a line now and then for a tap and dizzy after three; Settings → Assistant → "Ten chats" turns the lines off and keeps the gestures; since 4.11.0 a life of its own (`.creatureAmbience`): on the home it looks round, stretches, rocks and bounces now and then, dozes off after 45 s alone (a tap wakes it) and, while "Ten chats" is on, daydreams of money things in pictures of light; in a chat it fidgets between replies, and every other thought while it works is a picture (a chart, a magnifier, a card); since 4.12.0 it wears an accessory of light (`accessory:` from `AssistantWardrobe`): a party hat from New Year's Eve to 2 January, a taqiya for Nauryz (21 to 23 March), a crown on a day it celebrated a reply, otherwise what the person chose in Settings → Assistant → Ten's wardrobe (`AssistantWardrobeView`: Ten in it, and a grid of still Tens in each); glasses, headphones and the beanie are open from the start, sunglasses open for 7 days in a row in Tenra and the sleep mask for 30 (`AppStreak`, counted on each foreground), the party hat for a first goal, the crown for a goal reached, the taqiya on Nauryz; the rest show dim with a lock and what opens them, and what opened stays open. Its daydreams on the home come from the person's data (`AssistantDaydreams`): the next payment within 3 days (its icon or a card), the goal closest to done (its icon, a trophy for one reached this week), rising spending (from the Insights' spike and trend cards), a debt due within a week, then a coffee, a star and a plane; pictures only, never an amount or a name |
 
 ---
 
-## 10. cardStyle Padding Contract
+## 8. Checklist for a UI change
 
-`cardStyle()` = **pure visual only** (shape + material, NO padding). Never rely on it for spacing.
-
-### Rows own their padding
-
-`RowConfiguration` presets:
-
-| Preset | V padding | H padding |
-|--------|-----------|-----------|
-| `.standard` | 12 | 16 |
-| `.info` | 8 | 0 |
-| `.selectable` | 12 | 16 |
-| `.sheetList` | 12 | 16 |
-| `.settings` | 4 | 0 |
-
-### Arbitrary content
-
-VStack, HStack, custom cards must add `.padding(AppSpacing.lg)` (or the equivalent `.cardContentPadding()` helper) explicitly before `.cardStyle()`. Both are 16pt — there is no separate "compact card" inset.
-
-### Why H:0 for `.info` and `.settings`
-
-- **`.info` H:0** — InfoRow always lives inside a container with `.padding(.lg)` — adding own H padding would double it to 32pt
-- **`.settings` H:0** — `List` / `Form` apply `listRowInsets` (16pt leading/trailing) automatically — rows inside must NOT add H padding
-
-### Dividers inside cards
-
-`.padding(.leading, AppSpacing.lg)` (16pt) to align with row content start.
-
----
-
-## 11. AnimatedInputComponents Deep Dive
-
-`Tenra/Views/Components/Input/AnimatedInputComponents.swift` contains:
-
-| Component | Purpose |
-|-----------|---------|
-| `BlinkingCursor` | Animated cursor for text inputs |
-| `AmountDigitDisplay` | Animated amount display using single `Text` with `.numericText()` transition |
-| `AmountInput` | Self-contained amount input (`AmountDigitDisplay` + hidden `TextField` + focus management) |
-| `AmountInputView` | Thin wrapper around `AmountInput` + currency selector + conversion display + error |
-
-### Visual Digit Grouping via `AttributedString.kern`
-
-⚠️ **Critical for `.numericText()` animation correctness.**
-
-Space characters in the string shift character positions on grouping change ("1 234" → "12 345"), causing **multiple digits to animate**.
-
-`AttributedString.kern` is a styling attribute **invisible to `.numericText()`** — the string stays "12345" but renders as "12 345". Only the actual typed/deleted digit animates.
-
-Used in both `AmountDigitDisplay` and `AmountInputView` conversion display.
-
-### Font Sizing
-
-Via `.minimumScaleFactor(0.3)` — handles long amounts gracefully without clipping.
-
-### `AmountInput` Configuration
-
-- `baseFontSize`
-- `color`
-- `placeholderColor`
-- `autoFocus`
-- `showContextMenu`
-- `onAmountChange`
-
-### `AnimatedTitleInput`
-
-Uses `contentTransition(.interpolate)` — **intentionally different** from `AmountDigitDisplay`'s `.numericText()`. Don't unify.
-
----
-
-## 12. Amount Formatting Files
-
-Three separate files with distinct purposes:
-
-| File | Purpose | Decimal places |
-|------|---------|----------------|
-| `Tenra/Utils/AmountFormatter.swift` | Stored values: format/parse/validate; `minimumFractionDigits=2` | Always 2 ("1 234.50") |
-| `Tenra/Utils/AmountDisplayConfiguration.swift` | Global formatter config. **Hot path: `.formatter`** (cached). `makeNumberFormatter()` creates new object — never call in `List`/`ForEach` | Configurable (default 2) |
-| `Tenra/Utils/AmountInputFormatting.swift` | Input component mechanics: `cleanAmountString`, `displayAmount(for:)`, `groupDigits()`, `formatLargeNumber()` | 0–2 (no trailing zeros) |
-
-### Cache Invalidation
-
-⚠️ **`AmountDisplayConfiguration` cache invalidation**:
-
-```swift
-static var shared = Config() { didSet { _cache = nil } }
-```
-
-Mutating `shared.prop = x` also triggers `didSet` (Swift copies struct and reassigns).
-
----
-
-*Last Updated: 2026-05-05*
+1. Look for the component in the DesignKit Gallery and in DesignKit's design-system.md §0 first.
+2. Missing, or needs a new parameter → a DesignKit PR (the porting checklist in its CLAUDE.md:
+   neutral name, skeleton, Gallery page, snapshot test), then a thin adapter here if it takes a
+   Tenra model.
+3. Build the screen from the closest pattern in §4; amounts per §5.
+4. Strings in all 11 locales (CLAUDE.md rule #13); no em dashes in user-facing text.
+5. `python3 scripts/design_lint.py` passes.
+6. Don't change a shipped screen's layout as a side effect; the owner checks UI on device.

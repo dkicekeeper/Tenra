@@ -4,7 +4,7 @@
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
 > report — do not improvise. When done, update the status row for this plan
-> in `plans/README.md` — unless a reviewer dispatched you and told you they
+> in `docs/plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
 > **Drift check (run first)**:
@@ -23,7 +23,7 @@
 
 ## Why this matters
 
-Voice input is marketed bilingual (EN + RU storefronts; "Add expenses by voice" is the top ASO differentiator per `docs/RELEASE_1.1_PLAN.md`), but the parser's date and operation-type keywords are **Russian-only**:
+Voice input is marketed bilingual (EN + RU storefronts; "Add expenses by voice" is the top ASO differentiator per `docs/release-1.1-plan.md`), but the parser's date and operation-type keywords are **Russian-only**:
 
 - `parseDate` recognizes only «сегодня»/«вчера» — "yesterday taxi 20" silently logs **today**.
 - `incomeKeywords`/`expenseKeywords` are RU-only — "received salary 1000" logs as an **expense** (the type falls through to the `.expense` default in `parseType`).

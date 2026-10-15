@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  DEBUG-only scaffolding for the Wallet automation spike
-//  (plans/004-spike-wallet-automation.md). Records what the Shortcuts
+//  (docs/archive/plans/2026-09-24-audit/004-spike-wallet-automation.md). Records what the Shortcuts
 //  "Wallet" automation actually passes to an app action, so the design of real
 //  automatic Apple Pay logging can be decided from evidence. Local only, never
 //  compiled into Release, deleted once the spike has a recommendation.

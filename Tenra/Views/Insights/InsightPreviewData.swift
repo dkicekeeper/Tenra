@@ -402,7 +402,8 @@ extension FinancialHealthScore {
             totalExpensesWindow: 3_060_000,
             baseCurrency: "KZT",
             isBudgetComponentActive: true,
-            monthsInWindow: 6
+            monthsInWindow: 6,
+            previousScore: 67
         )
     }
 
@@ -430,7 +431,8 @@ extension FinancialHealthScore {
             totalExpensesWindow: 3_456_000,
             baseCurrency: "KZT",
             isBudgetComponentActive: true,
-            monthsInWindow: 6
+            monthsInWindow: 6,
+            previousScore: 41
         )
     }
 }

@@ -26,11 +26,19 @@ nonisolated final class NationalBankKZProvider: CurrencyRateProvider {
         self.urlSession = urlSession
     }
 
+    /// The `fdate` the National Bank expects ("dd.MM.yyyy", the device's day), always in the
+    /// Gregorian calendar: a device region with another calendar would otherwise ask for 2569.
+    static func requestDateString(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "dd.MM.yyyy"
+        return formatter.string(from: date)
+    }
+
     func fetchRates(on date: Date?) async throws -> ExchangeRates {
         let target = date ?? Date()
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy"
-        let dateString = dateFormatter.string(from: target)
+        let dateString = Self.requestDateString(for: target)
 
         guard let url = URL(string: "\(Self.baseURL)?fdate=\(dateString)") else {
             throw CurrencyProviderError.invalidURL

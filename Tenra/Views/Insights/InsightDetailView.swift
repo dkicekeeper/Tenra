@@ -56,26 +56,83 @@ struct InsightDetailView<CategoryDestination: View>: View {
                         // detail lists. Every detail shows the header — formula
                         // details render InsightFormulaCard with showsHero: false
                         // so the metric isn't duplicated.
-                        headerSection
+                        // DesignKit 4.5.0: the header and the hero visual sit edge to edge
+                        // on the colour of the insight's tone, up under the navigation bar.
+                        heroHeader
 
-                        // Hero visual (2026-07 visual refresh) — full-size sibling
-                        // of the feed card's cardVisual, above the data sections.
-                        heroChartSection
+                        VStack(alignment: .leading, spacing: AppSpacing.xl) {
+                            // Full-size chart
+                            chartSection
 
-                        // Full-size chart
-                        chartSection
-
-                        // Detail breakdown
-                        detailSection
+                            // Detail breakdown
+                            detailSection
+                        }
+                        // Rises over the fading end of the hero's gradient.
+                        .padding(.top, -AppSpacing.xxl)
                     }
-                    .padding(.vertical, AppSpacing.md)
+                    .padding(.bottom, AppSpacing.md)
                 }
+                // The hero's colour reaches the top of the screen under the bar.
+                .heroScrollEdge()
             }
         }
         .navigationTitle(insight.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                AskAssistantToolbarButton(topic: .insight(title: insight.title))
+            }
+        }
         .onAppear {
             logger.debug("📋 [InsightDetail] OPEN — type=\(String(describing: insight.type), privacy: .public), category=\(String(describing: insight.category), privacy: .public), metric=\(insight.metric.formattedValue, privacy: .public), drillDown=\(_onCategoryTap != nil)")
+        }
+    }
+
+    /// The top of the screen on the colour of the insight's tone (DesignKit 4.5.0). Three
+    /// insights lead with a hero gauge of their own (`ScoreGaugeCard` in the hero style) in
+    /// place of the header and the half gauge: the savings rate, a large expense against the
+    /// usual one, and what is left of the budgets. The others put their header and hero visual
+    /// on the colour, in white.
+    @ViewBuilder
+    private var heroHeader: some View {
+        switch (insight.type, insight.cardVisual) {
+        case (.savingsRate, _):
+            SavingsRateHeroCard(
+                rate: insight.metric.value,
+                color: insight.severity.color,
+                subtitle: insight.subtitle,
+                entranceDelay: Self.heroEntranceDelay
+            )
+        case (.largeTransaction, .halfGauge(let amount, let usual, _)?):
+            LargeTransactionHeroCard(
+                amount: amount,
+                usual: usual,
+                currency: insight.metric.currency ?? currency,
+                color: insight.severity.color,
+                subtitle: insight.subtitle,
+                entranceDelay: Self.heroEntranceDelay
+            )
+        case (.budgetUnderutilized, .halfGauge(_, let budget, _)?):
+            BudgetHeadroomHeroCard(
+                headroom: insight.metric.value,
+                budget: budget,
+                currency: insight.metric.currency ?? currency,
+                color: insight.severity.color,
+                categoriesText: insight.subtitle,
+                entranceDelay: Self.heroEntranceDelay
+            )
+        default:
+            VStack(spacing: AppSpacing.xl) {
+                headerSection
+
+                // Hero visual (2026-07 visual refresh) — full-size sibling
+                // of the feed card's cardVisual, above the data sections.
+                heroChartSection
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, AppSpacing.md)
+            .padding(.bottom, AppSpacing.xxl)
+            .heroBackground(insight.severity.color)
         }
     }
 

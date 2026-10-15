@@ -51,11 +51,13 @@ struct CategoryDetailView: View {
     /// global period filter changes, when the budget amount changes, or when the
     /// FX-rate cache is updated.
     ///
-    /// Reads scalar `mutationVersion`/`categoriesMutationVersion`/`currencyRatesVersion`
-    /// counters instead of subscribing to the entire 19k transactions array —
-    /// the body re-evals only when something actually relevant changed.
+    /// `mutationVersion` is `@ObservationIgnored`, so reading it alone never re-evaluates the
+    /// body: an edited transaction left the screen stale until it was reopened. Reading the
+    /// observable `transactions` (its count, nothing is copied) registers the subscription,
+    /// as in `SubscriptionDetailView`; the key itself stays the cheap scalar counters.
     private var refreshTrigger: RefreshKey {
-        RefreshKey(
+        _ = transactionStore.transactions.count
+        return RefreshKey(
             mutationVersion: transactionStore.mutationVersion,
             categoriesVersion: transactionStore.categoriesMutationVersion,
             ratesVersion: transactionStore.currencyRatesVersion,
@@ -381,6 +383,8 @@ struct CategoryDetailView: View {
 
     @ViewBuilder
     private var toolbarMenu: some View {
+        AskAssistantMenuItem(topic: .category(name: liveCategory.name, isIncome: liveCategory.type == .income))
+
         Button {
             showingEdit = true
         } label: {

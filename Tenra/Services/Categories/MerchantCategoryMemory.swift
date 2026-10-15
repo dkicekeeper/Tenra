@@ -22,10 +22,16 @@
 //  The natural ceiling is the number of distinct merchants the user pays with
 //  Apple Pay, which stays small.
 //
+//  Settings → Siri & Shortcuts → Wallet merchants (`MerchantCategoriesView`) lists
+//  the remembered merchants: the user reassigns a category and subcategory or
+//  forgets a merchant there. `@Observable`, so that list follows every change.
+//
 
 import Foundation
+import Observation
 
 @MainActor
+@Observable
 final class MerchantCategoryMemory {
 
     struct Entry: Codable, Equatable {
@@ -34,13 +40,25 @@ final class MerchantCategoryMemory {
         /// category had no subcategories when asked). Empty: the user chose
         /// "no subcategory".
         var subcategoryIds: [String]?
+        /// The merchant as Wallet last wrote it ("GREENMART CASH&CARRY 123"), for the
+        /// list in Settings. nil in entries saved before the list existed.
+        var displayName: String?
+    }
+
+    /// A remembered merchant, as the Settings list shows it.
+    struct Merchant: Identifiable, Equatable {
+        /// The normalized merchant: the memory's key.
+        let id: String
+        let displayName: String
+        let categoryId: String
+        let subcategoryIds: [String]?
     }
 
     static let shared = MerchantCategoryMemory()
 
     private static let storageKey = "intent.merchantCategory.v1"
 
-    private let defaults: UserDefaults
+    @ObservationIgnored private let defaults: UserDefaults
     /// `[normalized merchant: entry]`
     private var entries: [String: Entry]
 
@@ -75,12 +93,46 @@ final class MerchantCategoryMemory {
     /// category does not erase a subcategory fixed in the app.
     func remember(categoryId: String, subcategoryIds: [String]? = nil, forMerchant merchant: String) {
         guard !categoryId.isEmpty, let key = Self.key(forMerchant: merchant) else { return }
-        var entry = Entry(categoryId: categoryId, subcategoryIds: subcategoryIds?.sorted())
+        let name = merchant.trimmingCharacters(in: .whitespacesAndNewlines)
+        var entry = Entry(categoryId: categoryId, subcategoryIds: subcategoryIds?.sorted(), displayName: name)
         if subcategoryIds == nil, let previous = entries[key], previous.categoryId == categoryId {
             entry.subcategoryIds = previous.subcategoryIds
         }
         guard entries[key] != entry else { return }
         entries[key] = entry
+        persist()
+    }
+
+    // MARK: - The Settings list
+
+    /// Every remembered merchant, by name.
+    var merchants: [Merchant] {
+        entries
+            .map { key, entry in
+                Merchant(
+                    id: key,
+                    displayName: entry.displayName ?? key.capitalized,
+                    categoryId: entry.categoryId,
+                    subcategoryIds: entry.subcategoryIds
+                )
+            }
+            .sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+    }
+
+    /// The user's choice in Settings for a listed merchant: a category and its
+    /// subcategories (empty: "no subcategory"). The name stays as Wallet wrote it.
+    func reassign(merchantId: String, categoryId: String, subcategoryIds: [String]) {
+        guard !categoryId.isEmpty, var entry = entries[merchantId] else { return }
+        entry.categoryId = categoryId
+        entry.subcategoryIds = subcategoryIds.sorted()
+        guard entries[merchantId] != entry else { return }
+        entries[merchantId] = entry
+        persist()
+    }
+
+    /// Forgets a merchant: its next payment asks for a category again.
+    func forget(merchantId: String) {
+        guard entries.removeValue(forKey: merchantId) != nil else { return }
         persist()
     }
 

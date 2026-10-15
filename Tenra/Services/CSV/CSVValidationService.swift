@@ -279,6 +279,10 @@ nonisolated class CSVValidationService: CSVValidationServiceProtocol {
 
     private func parseDate(_ dateString: String, format: DateFormatType) -> Date? {
         let formatter = DateFormatter()
+        // Fixed formats read in the Gregorian calendar whatever the device region: a Buddhist
+        // or Japanese region would read "2026-07-28" as another year.
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
 
         switch format {
         case .iso:

@@ -75,27 +75,9 @@ struct QuickAccessCurrencyPickerView: View {
 
     // MARK: - Rows
 
+    /// An account's currency: always in the menu, the check in grey (DesignKit's CurrencyRow).
     private func lockedRow(_ currency: CurrencyInfo) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                Text(currency.code)
-                    .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
-                Text(currency.name)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
-
-            Spacer()
-
-            Text(currency.symbol)
-                .font(AppTypography.body)
-                .foregroundStyle(AppColors.textSecondary)
-
-            Image(systemName: "checkmark")
-                .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textTertiary)
-        }
+        CurrencyRow(currency, isSelected: false, isLocked: true)
     }
 
     private func toggleRow(_ currency: CurrencyInfo) -> some View {
@@ -107,29 +89,8 @@ struct QuickAccessCurrencyPickerView: View {
             }
             HapticManager.selection()
         } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                    Text(currency.code)
-                        .font(AppTypography.bodyEmphasis)
-                        .foregroundStyle(AppColors.textPrimary)
-                    Text(currency.name)
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
-                }
-
-                Spacer()
-
-                Text(currency.symbol)
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
-
-                if selectedCurrencyCodes.contains(currency.code) {
-                    Image(systemName: "checkmark")
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.accent)
-                }
-            }
-            .contentShape(Rectangle())
+            CurrencyRow(currency, isSelected: selectedCurrencyCodes.contains(currency.code))
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

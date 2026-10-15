@@ -34,7 +34,7 @@ struct SubscriptionsCardView: View {
             title: String(localized: "subscriptions.title"),
             isEmpty: subscriptions.isEmpty,
             emptyTitle: String(localized: "emptyState.noActiveSubscriptions"),
-            subtitle: String(format: String(localized: "subscriptions.activeCount"), subscriptions.count)
+            subtitle: String(format: NSLocalizedString("subscriptions.activeCount", comment: "Count with plural forms in Localizable.stringsdict"), subscriptions.count)
         ) {
             RedactableAmount(amount: totalAmount, currency: baseCurrency, isLoading: isLoadingTotal)
         } trailing: {
@@ -45,7 +45,9 @@ struct SubscriptionsCardView: View {
                         iconSource: sub.iconSource,
                         amount: convertedAmounts[sub.id] ?? (sub.amount as NSDecimalNumber).doubleValue
                     )
-                }
+                },
+                // App icons in a pocket (DesignKit 4.4.0), centred in the card (4.5.0).
+                style: .shelf
             )
         }
         // Fix #3: replaced two separate `onChange + unstructured Task {}` blocks with a single

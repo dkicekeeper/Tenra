@@ -25,6 +25,8 @@ struct TenraApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var timeFilterManager = TimeFilterManager()
     @State private var coordinator: AppCoordinator? = nil
+    /// A file opened in Tenra before the coordinator exists (a cold launch from "Open in").
+    @State private var openedBeforeLaunch: URL?
     /// Set when the database could not be opened: the window shows only the error screen,
     /// and no coordinator exists to read, save over, back up or replace the store.
     @State private var storeFailure: StoreLoadFailure? = nil
@@ -73,6 +75,14 @@ struct TenraApp: App {
             .task {
                 await bootstrap()
             }
+            // "Open in Tenra" for a statement or a CSV: the assistant takes it.
+            .onOpenURL { url in
+                if let coordinator {
+                    coordinator.openAttachment(url)
+                } else {
+                    openedBeforeLaunch = url
+                }
+            }
             .onChange(of: scenePhase) { _, phase in
                 AppLockService.shared.handleScenePhase(phase)
 
@@ -88,6 +98,9 @@ struct TenraApp: App {
 
                     // Count this foreground as a session for rating-prompt eligibility.
                     RatingPromptService.shared.recordSession()
+
+                    // Days in a row in Tenra: they open Ten's accessories (AppStreak).
+                    AppStreak.record()
 
                     // Re-derive relative time-filter bounds (e.g. .thisMonth) against
                     // the current date. scenePhase fires on both cold launch and
@@ -159,6 +172,10 @@ struct TenraApp: App {
         IntentEnvironment.shared.register(c)
         await c.initializeFastPath() // returns at once when the intent already ran it
         coordinator = c
+        if let url = openedBeforeLaunch {
+            openedBeforeLaunch = nil
+            c.openAttachment(url)
+        }
         // After the first frame; runs its probes off the main actor.
         DiagnosticsCenter.shared.scheduleLaunchHealthCheck()
     }

@@ -4,7 +4,7 @@
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
 > report — do not improvise. When done, update the status row for this plan
-> in `plans/README.md` — unless a reviewer dispatched you and told you they
+> in `docs/plans/README.md` — unless a reviewer dispatched you and told you they
 > maintain the index.
 >
 > **Drift check (run first)**: `git diff --stat 4392be3..HEAD -- .github/workflows/ CLAUDE.md`
@@ -63,7 +63,7 @@ grep -aE "Test case .* (passed|failed)|\*\* TEST (SUCCEEDED|FAILED)"
 **In scope** (the only files you should create/modify):
 - `.github/workflows/ci.yml` (create)
 - `CLAUDE.md` (one short subsection documenting CI exists; optional)
-- `plans/README.md` (status row)
+- `docs/plans/README.md` (status row)
 
 **Out of scope** (do NOT touch):
 - `.github/workflows/static.yml` — the Pages deploy; unrelated.
@@ -174,7 +174,7 @@ This plan adds no Swift tests. Its test is the workflow itself running green on 
 - [ ] Local `xcodebuild test ... -only-testing:TenraTests` → `** TEST SUCCEEDED **`
 - [ ] `static.yml` untouched (`git diff 4392be3..HEAD -- .github/workflows/static.yml` → empty)
 - [ ] No files outside the in-scope list modified (`git status`)
-- [ ] `plans/README.md` status row updated
+- [ ] `docs/plans/README.md` status row updated
 
 ## STOP conditions
 

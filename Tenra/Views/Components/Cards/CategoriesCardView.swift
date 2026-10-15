@@ -19,7 +19,7 @@ struct CategoriesCardView: View {
             title: String(localized: "finances.categories.title"),
             isEmpty: categories.isEmpty,
             emptyTitle: String(localized: "finances.categories.empty"),
-            subtitle: String(format: String(localized: "finances.categories.count"), categories.count)
+            subtitle: String(format: NSLocalizedString("finances.categories.count", comment: "Count with plural forms in Localizable.stringsdict"), categories.count)
         ) {
             Text("\(categories.count)")
                 .font(AppTypography.h2)
@@ -45,7 +45,9 @@ struct CategoriesCardView: View {
                     amount: 1,
                     tint: category.color
                 )
-            }
+            },
+            // App icons in a pocket (DesignKit 4.4.0), centred in the card (4.5.0).
+            style: .shelf
         )
     }
 }

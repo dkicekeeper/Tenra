@@ -64,10 +64,7 @@ nonisolated final class JsDelivrCurrencyProvider: CurrencyRateProvider {
         let baseLower = apiBase.lowercased()
         let datePath: String
         if let date {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            formatter.timeZone = TimeZone(identifier: "UTC")
-            datePath = formatter.string(from: date)
+            datePath = DateFormatters.rateDateFormatter.string(from: date)
         } else {
             datePath = "latest"
         }
@@ -110,10 +107,7 @@ nonisolated final class JsDelivrCurrencyProvider: CurrencyRateProvider {
         // Optional `date` field in response — fall back to requested date.
         let date: Date
         if let dateString = json["date"] as? String {
-            let parser = DateFormatter()
-            parser.dateFormat = "yyyy-MM-dd"
-            parser.timeZone = TimeZone(identifier: "UTC")
-            date = parser.date(from: dateString) ?? requestedDate
+            date = DateFormatters.rateDateFormatter.date(from: dateString) ?? requestedDate
         } else {
             date = requestedDate
         }

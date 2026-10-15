@@ -11,6 +11,7 @@
 #   ./scripts/capture_screenshots.sh            # all locales
 #   ONLY=de-DE ./scripts/capture_screenshots.sh # single locale
 #   SIM_NAME="iPhone 17 Pro" SIM_OS=26.5 ./scripts/capture_screenshots.sh
+#   FRAMES=cpp ./scripts/capture_screenshots.sh # only 09-12 (custom product pages)
 #
 # SIM_OS is required since Xcode 27: a bare name implies the newest OS, and
 # iPhone 17 Pro only exists on 26.5. Store shots stay on the public iOS.
@@ -23,6 +24,9 @@ SIM_OS="${SIM_OS:-26.5}"
 OUT_ROOT="screenshots/raw"
 RESULTS_ROOT="build/screenshot-results"
 BUNDLE_ID="dakacom.Tenra"
+FRAMES="${FRAMES:-all}"
+# 01-08 (default product page) + 09-12 (custom product pages); "cpp" takes only the last four.
+if [[ "$FRAMES" == "cpp" ]]; then EXPECTED=4; else EXPECTED=12; fi
 
 # asc-locale | AppleLanguages | AppleLocale | demo currency
 LOCALES=(
@@ -87,6 +91,7 @@ for entry in "${LOCALES[@]}"; do
   TEST_RUNNER_SCREENSHOT_LANGUAGE="$app_lang" \
   TEST_RUNNER_SCREENSHOT_LOCALE="$apple_locale" \
   TEST_RUNNER_SCREENSHOT_DEMO_CURRENCY="$currency" \
+  TEST_RUNNER_SCREENSHOT_FRAMES="$FRAMES" \
   xcodebuild test \
     -scheme Tenra \
     -destination "platform=iOS Simulator,id=$SIM_UDID" \
@@ -97,7 +102,8 @@ for entry in "${LOCALES[@]}"; do
 
   # Export attachments (PNG screenshots) from the result bundle.
   dest="$OUT_ROOT/$asc_locale"
-  rm -rf "$dest"
+  # A cpp run adds 09-12 next to the existing default frames.
+  if [[ "$FRAMES" != "cpp" ]]; then rm -rf "$dest"; fi
   mkdir -p "$dest"
   export_dir="$(mktemp -d)"
   if xcrun xcresulttool export attachments --path "$result_bundle" --output-path "$export_dir" >/dev/null 2>&1; then
@@ -124,9 +130,9 @@ if os.path.exists(manifest_path):
                     if not os.path.exists(src):
                         continue
                     base = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.splitext(human)[0])
-                    # Only our named marketing captures ("01-home"…"08-multicurrency") —
+                    # Only our named marketing captures ("01-home"…"12-loans") —
                     # skip auto-attachments (failure recordings, synthesized events).
-                    m = re.match(r"^(0[1-8]-[a-z-]+)", base)
+                    m = re.match(r"^([01][0-9]-[a-z-]+)", base)
                     if not m:
                         continue
                     shutil.copy(src, os.path.join(dest, m.group(1) + ".png"))
@@ -150,9 +156,13 @@ PY
   fi
   rm -rf "$export_dir"
 
-  shots=$(ls "$dest" 2>/dev/null | wc -l | tr -d ' ')
-  if [[ "$shots" -lt 8 ]]; then
-    echo "  ⚠️ $asc_locale: only $shots screenshots (expected 8)"
+  if [[ "$FRAMES" == "cpp" ]]; then
+    shots=$(ls "$dest" 2>/dev/null | grep -cE '^(09|1[0-2])-' | tr -d ' ')
+  else
+    shots=$(ls "$dest" 2>/dev/null | wc -l | tr -d ' ')
+  fi
+  if [[ "$shots" -lt "$EXPECTED" ]]; then
+    echo "  ⚠️ $asc_locale: only $shots screenshots (expected $EXPECTED)"
     failures+=("$asc_locale")
   else
     echo "  ✅ $asc_locale: $shots screenshots"

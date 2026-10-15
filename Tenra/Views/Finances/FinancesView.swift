@@ -2,8 +2,8 @@
 //  FinancesView.swift
 //  Tenra
 //
-//  Tab-level hub for managing financial entities: accounts, subscriptions,
-//  loans, categories, and subcategories. Each card navigates to the
+//  Tab-level hub for managing financial entities: accounts, deposits, subscriptions,
+//  loans, goals, debts, categories, and subcategories. Each card navigates to the
 //  existing list/management view for that entity.
 //
 
@@ -17,6 +17,10 @@ enum FinancesDestination: Hashable {
     case subscriptions
     case loans
     case loanDetail(String) // accountId
+    case goals
+    case goalDetail(String) // goal id
+    case debts
+    case debtDetail(String) // debt id
     case categories
     case subcategories
 }
@@ -51,10 +55,14 @@ struct FinancesView: View {
                         .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.10)
                     loansCard
                         .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.15)
+                    goalsCard
+                        .contentReveal(isReady: coordinator.isFullyInitialized && coordinator.goalStore.isLoaded, delay: 0.20)
+                    debtsCard
+                        .contentReveal(isReady: coordinator.isFullyInitialized && coordinator.debtStore.isLoaded, delay: 0.25)
                     categoriesCard
-                        .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.20)
+                        .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.30)
                     subcategoriesCard
-                        .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.25)
+                        .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.35)
                 }
                 .padding(.vertical, AppSpacing.md)
             }
@@ -98,6 +106,16 @@ struct FinancesView: View {
                         accountId: accountId
                     )
                     .environment(timeFilterManager)
+                case .goals:
+                    GoalsListView(goalStore: coordinator.goalStore)
+                case .goalDetail(let goalId):
+                    GoalDetailView(goalStore: coordinator.goalStore, goalId: goalId)
+                        .environment(timeFilterManager)
+                case .debts:
+                    DebtsListView(debtStore: coordinator.debtStore)
+                case .debtDetail(let debtId):
+                    DebtDetailView(debtStore: coordinator.debtStore, debtId: debtId)
+                        .environment(timeFilterManager)
                 case .categories:
                     CategoriesManagementView(
                         categoriesViewModel: categoriesViewModel,
@@ -166,6 +184,7 @@ struct FinancesView: View {
             )
         }
         .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.depositsCard")
         .screenPadding()
     }
 
@@ -177,6 +196,7 @@ struct FinancesView: View {
             )
         }
         .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.subscriptionsCard")
         .screenPadding()
     }
 
@@ -188,6 +208,33 @@ struct FinancesView: View {
             )
         }
         .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.loansCard")
+        .screenPadding()
+    }
+
+    private var goalsCard: some View {
+        NavigationLink(value: FinancesDestination.goals) {
+            GoalsCardView(
+                goalStore: coordinator.goalStore,
+                baseCurrency: transactionsViewModel.appSettings.baseCurrency,
+                ratesVersion: transactionStore.currencyRatesVersion
+            )
+        }
+        .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.goalsCard")
+        .screenPadding()
+    }
+
+    private var debtsCard: some View {
+        NavigationLink(value: FinancesDestination.debts) {
+            DebtsCardView(
+                debtStore: coordinator.debtStore,
+                baseCurrency: transactionsViewModel.appSettings.baseCurrency,
+                ratesVersion: transactionStore.currencyRatesVersion
+            )
+        }
+        .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.debtsCard")
         .screenPadding()
     }
 

@@ -154,7 +154,9 @@ final class ScreenshotCaptureTests: XCTestCase {
             sleep(3)   // the hero's progress settles
             snap("15-goal")
         }
-        backToFinances()
+        // The Finances root is scrolled down here: its accounts card is out of reach, so
+        // waiting for it would step back once too often and tap the root's own toolbar.
+        backToFinances(showing: goalsCard)
 
         let debtsCard = app.descendants(matching: .any)["finances.debtsCard"].firstMatch
         scrollUntilHittable(debtsCard)
@@ -163,7 +165,7 @@ final class ScreenshotCaptureTests: XCTestCase {
         _ = app.descendants(matching: .any)["debts.card"].firstMatch.waitForExistence(timeout: 10)
         sleep(2)
         snap("16-debts")
-        backToFinances()
+        backToFinances(showing: debtsCard)
     }
 
     // MARK: - Ten
@@ -172,7 +174,10 @@ final class ScreenshotCaptureTests: XCTestCase {
     /// that phrase drafted on the phone with Save, then a ready-made question answered on cards
     /// (ScreenshotDemoTransport: no network).
     private func captureTen() {
-        tabBarButton(at: 3).tap()
+        // The tab bar collapses on scroll down (`tabBarMinimizeBehavior(.onScrollDown)`): scroll
+        // Finances back up, then take the action tab, the bar's last button in either state.
+        for _ in 0..<3 { app.swipeDown() }
+        actionTabButton().tap()
         let presets = app.descendants(matching: .any)["assistant.presets"].firstMatch
         XCTAssertTrue(presets.waitForExistence(timeout: 30), "Ten's home did not load")
         sleep(3)   // Ten greets
@@ -263,13 +268,20 @@ final class ScreenshotCaptureTests: XCTestCase {
     }
 
     /// Steps back until the Finances root shows again: a zoom-transition detail can swallow one
-    /// back gesture, which left the next card out of reach on a slow simulator.
-    private func backToFinances() {
-        let accountsCard = app.descendants(matching: .any)["finances.accountsCard"].firstMatch
+    /// back gesture, which left the next card out of reach on a slow simulator. `card` is one
+    /// the root shows at its current scroll (the accounts card unless it was scrolled).
+    private func backToFinances(showing card: XCUIElement? = nil) {
+        let marker = card ?? app.descendants(matching: .any)["finances.accountsCard"].firstMatch
         for _ in 0..<4 {
-            if accountsCard.waitForExistence(timeout: 2) && accountsCard.isHittable { return }
+            if marker.waitForExistence(timeout: 2) && marker.isHittable { return }
             goBack()
         }
+    }
+
+    private func actionTabButton() -> XCUIElement {
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 20), "Tab bar not found")
+        return tabBar.buttons.allElementsBoundByIndex.last ?? tabBar.buttons.firstMatch
     }
 
     private func tabBarButton(at index: Int) -> XCUIElement {

@@ -105,11 +105,16 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
    `ScreenshotDemoTransport` без сети, а сид добавляет цели, долги и подписку со списанием
    завтра (сообщение Тэна на главной). Кадры 13-16: ответ Тэна на карточках, черновик из
    голоса, цель, долги; 07 теперь голосовой экран Тэна.
-2. **Собрать кадры в Figma** (файл Tenra, страница «Screenshots L10n»): шаблон `tpl-<кадр>`,
-   картинка экрана заливкой слоя `Screenshot` внутри модели iPhone, заголовок Inter Semi Bold 98 и
-   подзаголовок Inter Medium 58 из `scripts/screenshot_captions.json`, не больше двух строк
-   заголовка. Экспорт 1320×2868 в `screenshots/final/<локаль>/`. Картинки грузятся в Figma сырыми
-   байтами (`Content-Type: image/png`): multipart через прокси облака обрывается по таймауту.
+2. **Собрать кадры:** `python3 scripts/compose_screenshots.py [локали] [--frames 13-ten-answer …]`
+   кладёт 1320×2868 в `screenshots/final/<локаль>/`. Фон и iPhone берутся из шести шаблонов
+   `screenshots/templates/background-a…f.png` (сняты с макетов Figma, файл Tenra, страница
+   «Screenshots L10n»), экран вставляется в дисплей модели с Dynamic Island поверх, подпись из
+   `scripts/screenshot_captions.json`: заголовок Inter SemiBold 98, подзаголовок Inter Medium 58
+   (ja и ko: Noto Sans JP/KR), не больше двух строк каждый, строки выровнены по длине; `\n` в
+   подписи ставит перенос руками. Какой кадр на каком фоне: `FRAMES` в скрипте (в порядке
+   магазина один фон не стоит два раза подряд). Нужны Pillow и numpy; шрифты скрипт берёт из
+   системы или скачивает в `~/.cache/tenra-fonts`. Новый дизайн фона или модели: экспортировать
+   шаблон из Figma без подписи, экран залить чёрным, положить в `screenshots/templates/`.
 3. **Отправить:** скриншоты версии: `push-version-screenshots` с `version` (кадры из
    `defaultOrder` в `scripts/screenshot_captions.json`, у tr свой `order`, не больше 10);
    специальные страницы: `push-custom-pages --submit`; тест страницы: `push-experiment --submit`,

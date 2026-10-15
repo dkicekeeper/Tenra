@@ -257,48 +257,19 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
 
 ### Screenshots
 
-App Store Connect takes the 6.9" set (1320×2868) for every iPhone; at most 10 per locale. The
-pipeline ([asc.md](asc.md), Screenshots) shoots raw frames in the Simulator, where Ten never
-appears (`AssistantAvailability` needs App Attest), and the demo seed has no goals, debts, notices
-or conversation. Code it needs first (DEBUG only):
-1. Ten available in demo mode (`ScreenshotDemoMode.isActive`), cloud consent set, and a scripted
-   `AgentTransport` (from `TenraTests/.../AgentTestDoubles.swift`'s `ScriptedTransport`) whose
-   tool calls the real `FinanceToolkit` answers from the seed: no network.
-2. The seed: two or three goals (one linked to the savings account, one manual, one reached), two
-   debts (one lent and overdue, one borrowed with a due date), a subscription charged tomorrow
-   (Ten's notice on Home), a remembered fact.
-3. A demo phrase in Ten's voice sheet; accessibility ids on the composer, the mic, the presets, a
-   draft's Save, goal and debt rows.
-4. `ScreenshotCaptureTests`: frame 07 (the voice tab no longer exists where Ten runs) and the new
-   frames; `scripts/capture_screenshots.sh` `EXPECTED`; captions for the new frames in 13 locales
-   (`scripts/screenshot_captions.json`, no em dashes), `appstore/product-pages.json` frames, Figma
-   templates `tpl-<frame>`.
-5. An `asc.py` command that uploads the version's own screenshots (today only custom pages and
-   the page test are uploaded); without it they are replaced by hand in App Store Connect.
+App Store Connect takes the 6.9" set (1320×2868) for every iPhone; at most 10 per locale. In
+ScreenshotDemo mode Ten runs in the Simulator on a scripted transport, and the seed has goals,
+debts and a subscription charged tomorrow (Ten's notice on Home); see [asc.md](asc.md),
+Screenshots. Frames: 01-12 reshot on the 1.6 UI (Ten's tab instead of "+"), 07 is now Ten's
+voice sheet, new 13 (Ten answers on cards), 14 (a spoken expense drafted with Save), 15 (a goal),
+16 (debts, one overdue). Store order (10): Ten answers, Ten drafts, home, finances, goal, debts,
+score, top category, history, fx; tr leads with fx. Composed by
+`scripts/compose_screenshots.py` on the Figma templates' backgrounds.
 
-| Frame | Shows now | 1.6 |
-|---|---|---|
-| 01 home | budgets, accounts, history, "+" tab | reshoot: Ten's tab, a notice from Ten |
-| 02 finances | Finances cards | reshoot with the goals and debts cards |
-| 03 insights | insights list | reshoot (tab bar, shelf) |
-| 04 score | health score in a card | reshoot: the hero gauge with its trend |
-| 05 topcat | category donut | reshoot: the detail on its colour |
-| 06 history | history list | reshoot (tab bar, "Ask Ten") |
-| 07 voice | the voice tab | replace with Ten's voice sheet |
-| 08 fx | accounts in several currencies | reshoot (tab bar) |
-| 09-12 | subscriptions, a subscription, a deposit, loans (custom pages) | reshoot (tab bar) |
-| new: Ten answers | "How much did I spend this month?" on cards | new |
-| new: Ten drafts | "coffee 1500" as a card with Save | new |
-| new: goal | a goal with what to put aside each month | new |
-| new: debts | debts, one overdue | new |
-
-Suggested default order (10): Ten answers, Ten drafts, home, finances, goal, topcat, score,
-history, fx, voice. The custom page "voice" then uses the new voice frame.
-
-Run: Actions → Screenshots with `frames` = `all`, in two runs of locales (each run has 120
-minutes): `ru en-US fr-FR de-DE es-ES es-MX fr-CA`, then `tr pt-BR it uk ja ko`. Compose in Figma
-("Screenshots L10n") into `screenshots/final/<locale>/`, upload, then `push-custom-pages --submit`
-for the custom pages.
+Run: Actions → Screenshots with `frames` = `all`, in runs of a few locales (each run has 120
+minutes), the artifact into `screenshots/raw/<locale>/`, compose, then upload:
+`push-version-screenshots` with `version` 1.6, and `push-custom-pages --submit` for the custom
+pages.
 
 ### App Privacy (the answers for the web form)
 

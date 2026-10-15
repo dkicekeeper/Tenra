@@ -12,6 +12,7 @@ import UIKit
 struct VoiceInputView: View {
     @Bindable var voiceService: VoiceInputService
     @Environment(\.dismiss) var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(TransactionStore.self) private var transactionStore
     let parser: VoiceInputParser
     let transactionsViewModel: TransactionsViewModel
@@ -391,7 +392,8 @@ struct VoiceInputView: View {
             .dsButton()
             .screenPadding()
             .padding(.bottom, AppSpacing.xl)
-            .transition(.move(edge: .bottom).combined(with: .opacity))
+            // Under Reduce Motion the button fades in instead of sliding up.
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
         }
     }
 

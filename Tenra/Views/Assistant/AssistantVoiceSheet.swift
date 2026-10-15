@@ -19,6 +19,7 @@ struct AssistantVoiceSheet: View {
     let onSend: (String) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(AppCoordinator.self) private var coordinator
     @State private var voiceService = VoiceInputService()
     @State private var silenceTimer: Task<Void, Never>?
@@ -153,7 +154,8 @@ struct AssistantVoiceSheet: View {
             }
             .screenPadding()
             .padding(.bottom, AppSpacing.xl)
-            .transition(.move(edge: .bottom).combined(with: .opacity))
+            // Under Reduce Motion the controls fade in instead of sliding up.
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
         }
     }
 

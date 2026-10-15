@@ -30,7 +30,15 @@ struct GoalsListView: View {
         let reached = goalStore.goals.filter { goalStore.status(for: $0, today: today).isReached }
         Group {
             if !goalStore.isLoaded {
-                Color.clear
+                // The cards to come (GoalCard is DesignKit's PayoffProgressCard).
+                VStack(spacing: AppSpacing.md) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        PayoffProgressCardSkeleton().screenPadding()
+                    }
+                }
+                .padding(.vertical, AppSpacing.md)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .transition(.opacity)
             } else if goalStore.goals.isEmpty {
                 EmptyState(
                     icon: "target",
@@ -42,6 +50,7 @@ struct GoalsListView: View {
                         showingAdd = true
                     }
                 )
+                .transition(.skeletonReveal)
             } else {
                 ScrollView {
                     VStack(spacing: AppSpacing.md) {
@@ -60,8 +69,10 @@ struct GoalsListView: View {
                     }
                     .padding(.vertical, AppSpacing.md)
                 }
+                .transition(.skeletonReveal)
             }
         }
+        .animation(AppAnimation.smooth, value: goalStore.isLoaded)
         .navigationTitle(String(localized: "goal.listTitle"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {

@@ -31,6 +31,23 @@ with the commit of every fix, are in
   `LoanDetailView` delete paths call `recalculateAccountBalances()` where
   `recalculateBalances(for:)` with the touched accounts would do.
 
+Found by the design-system audit of 2026-10-15 (everything since 1.5):
+- **Ten's timeline charts** (`AssistantChartCard`): spending by month or week shows as
+  breakdown rows with the period as the title, the accent colour on every row. A timeline reads
+  better as DesignKit's `BarChart` (or a `Sparkline` above the rows); a donut is already skipped
+  for it.
+- **Overdue goal on its card:** `GoalCard` shows nothing when a goal's deadline has passed
+  (the detail's info row and Ten's notice do). A badge would change the shipped card: owner's
+  call.
+- **DesignKit candidates** (generic views still in Tenra): `MoneyEntrySheet` (as a neutral
+  amount-entry sheet), `AssistantCard` (a titled list card), `AssistantNoticeCard` (a notice with
+  an action and a hide button), the voice sheet's stop orb, a `NavigationPickerRow` that takes a
+  row configuration (Settings' voice language uses its own `CheckmarkRow` list today), the
+  wardrobe's tile and carousel, the creature thumbnail. A DesignKit round each, pixel-identical.
+- **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
+  hold rules and data, no views: they belong in `Services/Agent/`, as does the catalogue half
+  of `AssistantWardrobe`. Move once the wardrobe settles (another session is iterating on it).
+
 Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the
   confirmation snippet is the only guard. Decide whether intents deduplicate.

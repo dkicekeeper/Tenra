@@ -44,7 +44,7 @@ struct QuickAccessCurrencyPickerView: View {
     var body: some View {
         List {
             if showSelectedSection {
-                Section(header: Text(String(localized: "currency.selected"))) {
+                Section(header: SectionHeader(String(localized: "currency.selected"), style: .compact)) {
                     ForEach(selectedCurrencyInfos) { currency in
                         if accountCurrencies.contains(currency.code) {
                             lockedRow(currency)
@@ -55,7 +55,7 @@ struct QuickAccessCurrencyPickerView: View {
                 }
             }
 
-            Section(header: Text(String(localized: "currency.all"))) {
+            Section(header: SectionHeader(String(localized: "currency.all"), style: .compact)) {
                 ForEach(filteredCurrencies) { currency in
                     let isInSelectedSection = showSelectedSection
                         && (accountCurrencies.contains(currency.code) || selectedCurrencyCodes.contains(currency.code))

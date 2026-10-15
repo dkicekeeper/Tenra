@@ -29,11 +29,15 @@ struct AssistantNoticeCard: View {
                         .foregroundStyle(AppColors.Text.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                Button(String(localized: "assistant.notice.hide"), systemImage: "xmark", action: onHide)
-                    .labelStyle(.iconOnly)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.Text.tertiary)
-                    .buttonStyle(.plain)
+                DSButton(
+                    String(localized: "assistant.notice.hide"),
+                    systemImage: "xmark",
+                    iconPlacement: .only,
+                    appearance: .flat,
+                    role: .neutral,
+                    size: .small,
+                    action: onHide
+                )
             }
             DSButton(String(localized: "assistant.notice.goThrough"), systemImage: "sparkles", appearance: .flat, size: .small, action: onAsk)
         }
@@ -51,25 +55,34 @@ struct AssistantNoticesSection: View {
 
     var body: some View {
         let unread = inbox.unread
-        if AssistantAvailability.isAvailable, let notice = unread.first {
-            let title = String(localized: "assistant.notice.title")
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                SectionHeader(unread.count > 1 ? "\(title) · \(unread.count)" : title)
-                AssistantNoticeCard(
-                    notice: notice,
-                    onAsk: {
-                        HapticManager.light()
-                        coordinator.goThrough(notice)
-                    },
-                    onHide: { inbox.markRead(notice.id) }
-                )
-                .id(notice.id)
-                .transition(.opacity)
+        // The animation sits outside the conditional, so the section fades in and out (the
+        // last one hidden) instead of making Home jump.
+        Group {
+            if AssistantAvailability.isAvailable, let notice = unread.first {
+                section(notice: notice, count: unread.count)
+                    .transition(.opacity)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .screenPadding()
-            .animation(AppAnimation.smooth, value: notice.id)
         }
+        .animation(AppAnimation.smooth, value: unread.first?.id)
+    }
+
+    private func section(notice: AssistantNotice, count: Int) -> some View {
+        let title = String(localized: "assistant.notice.title")
+        return VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            SectionHeader(count > 1 ? "\(title) · \(count)" : title)
+            AssistantNoticeCard(
+                notice: notice,
+                onAsk: {
+                    HapticManager.light()
+                    coordinator.goThrough(notice)
+                },
+                onHide: { inbox.markRead(notice.id) }
+            )
+            .id(notice.id)
+            .transition(.opacity)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .screenPadding()
     }
 }
 

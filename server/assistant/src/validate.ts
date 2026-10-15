@@ -10,13 +10,20 @@ export const PROTOCOL_VERSION = 1;
 export const LIMITS = {
   bodyBytes: 256 * 1024,
   messages: 80,
-  userTextChars: 4000,
-  toolResultChars: 32 * 1024,
+  // The app's <app_context> block (accounts, categories with their ids, up to 30 facts, goals,
+  // debts) is one text block; a heavy user's passes 4 000 characters. The body limit above
+  // bounds the cost either way.
+  userTextChars: 16 * 1024,
+  // forecast_balance's daily series for a year with its obligations passes 32 KB.
+  toolResultChars: 64 * 1024,
 } as const;
 
 export interface TurnRequest {
   protocol: number;
   messages: Anthropic.Beta.BetaMessageParam[];
+  /** The RevenueCat app user id inside the signed body (apps from 1.6 on); the header alone is
+   *  only a claim anyone could copy. */
+  user?: string;
 }
 
 export class ValidationError extends Error {
@@ -96,7 +103,10 @@ export function parseTurnRequest(raw: string): TurnRequest {
   const last = messages[messages.length - 1] as Json;
   if (last.role !== "user") throw new ValidationError("last_role");
 
-  return { protocol: PROTOCOL_VERSION, messages: messages as Anthropic.Beta.BetaMessageParam[] };
+  const user = body.user;
+  if (user !== undefined && (typeof user !== "string" || !isValidUserId(user))) throw new ValidationError("user");
+
+  return { protocol: PROTOCOL_VERSION, messages: messages as Anthropic.Beta.BetaMessageParam[], user };
 }
 
 // RevenueCat app user ids: `$RCAnonymousID:<hex>` or an id the app sets.

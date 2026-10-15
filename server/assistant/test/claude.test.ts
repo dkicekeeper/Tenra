@@ -1,6 +1,6 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import Anthropic from "@anthropic-ai/sdk";
 import { describe, expect, it } from "vitest";
-import { buildParams, donePayload, normalizeForEcho } from "../src/claude";
+import { buildParams, donePayload, errorPayload, normalizeForEcho } from "../src/claude";
 import { readConfig } from "../src/config";
 import { SYSTEM_PROMPT } from "../src/prompt";
 import { RENDER_REPLY, TOOLS } from "../src/tools";
@@ -12,10 +12,16 @@ describe("buildParams", () => {
   it("opts into the server-side fallback only where the model supports it", () => {
     const opus = buildParams(readConfig({ ASSISTANT_MODEL: "claude-opus-5-5" }), [userTurn("hi")]);
     expect(opus.fallbacks).toBe("default");
-    expect(opus.betas).toEqual(["server-side-fallback-2026-07-01"]);
+    expect(opus.betas).toEqual(["thinking-binding-controls-2026-08-01", "server-side-fallback-2026-07-01"]);
     const haiku = buildParams(readConfig({ ASSISTANT_MODEL: "claude-haiku-5-5" }), [userTurn("hi")]);
     expect(haiku.fallbacks).toBeUndefined();
-    expect(haiku.betas).toBeUndefined();
+    expect(haiku.betas).toEqual(["thinking-binding-controls-2026-08-01"]);
+  });
+
+  it("drops thinking blocks a deploy or a trimmed thread made stale instead of failing the turn", () => {
+    const params = buildParams(readConfig({}), [userTurn("hi")]);
+    expect(params.thinking).toEqual({ type: "adaptive", block_binding: { prefix_mismatch_behavior: "drop_block" } });
+    expect(params.betas).toContain("thinking-binding-controls-2026-08-01");
   });
 
   it("keeps the cached prefix stable", () => {
@@ -77,5 +83,22 @@ describe("donePayload", () => {
     const done = donePayload(message("max_tokens", [{ type: "tool_use", id: "t", name: RENDER_REPLY, input: {} } as Block]));
     expect(done.truncated).toBe(true);
     expect(done.usage).toEqual({ input_tokens: 10, output_tokens: 5, cache_read_input_tokens: 0, cache_creation_input_tokens: 3 });
+  });
+});
+
+describe("errorPayload", () => {
+  // An error event in the middle of a stream: no HTTP status, the type from its body.
+  const streamError = (type: string) =>
+    new Anthropic.APIError(undefined, { type: "error", error: { type, message: "x" } }, undefined, undefined, type as never);
+
+  it("lets the app retry an overloaded or failing upstream", () => {
+    expect(errorPayload(streamError("overloaded_error"))).toEqual({ code: "upstream_busy", retryable: true });
+    expect(errorPayload(streamError("api_error"))).toEqual({ code: "upstream_unavailable", retryable: true });
+  });
+
+  it("does not offer a retry that cannot help", () => {
+    expect(errorPayload(streamError("billing_error"))).toEqual({ code: "upstream_unavailable", retryable: false });
+    expect(errorPayload(streamError("invalid_request_error"))).toEqual({ code: "bad_request", retryable: false });
+    expect(errorPayload(new Error("boom"))).toEqual({ code: "internal", retryable: false });
   });
 });

@@ -453,8 +453,14 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
       результаты, нет сумм в тексте, черновик вместо «сохранил», язык, prompt injection в заметке).
 - [x] Страны Anthropic API: Казахстан да, Россия и Беларусь нет.
 - [x] Шаги владельца из §5.1, прогон стенда, выбор модели: Haiku 5.5, effort low (§6).
-- [ ] На Mac проверить по swiftinterface iOS 27 SDK: `LanguageModel`, `PrivateCloudComputeLanguageModel`
-      (инициализация, квоты, `supportedLanguages`: есть ли русский), `Tool`, Dynamic Profiles (§5.1).
+- [x] На Mac проверить по swiftinterface iOS 27 SDK (2026-10-15): `PrivateCloudComputeLanguageModel`
+      есть и соответствует `LanguageModel`; `availability` (с `UnavailableReason`), `quotaUsage`
+      (`belowLimit` / `limitReached`, `limitIncreaseSuggestion`), ошибки `networkFailure`,
+      `quotaLimitReached` (с `resetDate`), `serviceUnavailable`. `supportedLanguages` отдаётся во
+      время работы, так что есть ли русский, покажет только телефон на iOS 27.
+- [ ] Собирать код iOS 27 (ApplePCC, Siri iOS 27): на раннерах GitHub Xcode только до 26.6
+      (проверено 2026-10-15, macos-26 и macos-latest), поэтому CI и TestFlight его пропускают
+      (`#if compiler(>=6.4)`); пока такой код собирается только на Mac с Xcode 27.
 - [ ] Запросить entitlement Private Cloud Compute для аккаунта.
 - [x] Имя персонажа: Тэн (Ten).
 - [ ] Тексты экрана согласия по 5.1.2(i) во все 11 локалей, черновик новой метки App Privacy.

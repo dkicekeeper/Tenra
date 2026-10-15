@@ -326,21 +326,34 @@ const renderReply: Tool = {
   // API buffers each key-value pair, so a text block would arrive whole.
   eager_input_streaming: true,
   description:
-    "Shows your reply. Call exactly once, last, every turn. Blocks render top to bottom as native app cards; figures come from tool results by reference, never from text.",
+    "Shows your reply. Call exactly once, last, every turn. Blocks render top to bottom as native app cards; figures come from tool results by reference, never from text. Every text, label and suggestion is in the language of the user's latest message, even though these instructions and the tool results are in English.",
   input_schema: strictObject({
     blocks: {
       type: "array",
       items: {
         anyOf: [
-          block("text", { text: { type: "string", description: "Markdown: short sentences, **bold** for the key point, \"- \" bullets or \"1. \" steps, an optional \"### \" heading. No money amounts." } }),
+          block("text", {
+            text: {
+              type: "string",
+              description:
+                "Markdown in the language of the user's latest message: short sentences, **bold** for the key point (never a number), \"- \" bullets or \"1. \" steps, an optional \"### \" heading. No digits for money, not even a figure copied from a tool result: the cards beside the text show it, so refer to them in words (\"the daily allowance below\"). Only an amount the user wrote may come back.",
+            },
+          }),
           block("metric", { label: { type: "string" }, source, path, trend_path: nullable({ type: "string" }) }),
           block("chart", { kind: { type: "string", enum: ["bar", "line", "donut"] }, title: { type: "string" }, source, path }),
           block("transactions", { title: nullable({ type: "string" }), source }),
-          block("budgets", { source, category_ids: nullable({ type: "array", items: { type: "string" } }) }),
-          block("recurring", { source }),
+          block("budgets", {
+            source: { ...source, description: "result_id of get_budgets: shows each budget with its limit, spent and left; use it instead of listing budgets in text" },
+            category_ids: nullable({ type: "array", items: { type: "string" } }),
+          }),
+          block("recurring", {
+            source: { ...source, description: "result_id of list_recurring: shows the subscriptions and payments with amounts and next dates; use it instead of listing them in text" },
+          }),
           block("forecast", { source }),
           block("insight", { source, insight_id: { type: "string" } }),
-          block("confirm", { draft_id: { type: "string" } }),
+          block("confirm", {
+            draft_id: { type: "string", description: "A draft_id a draft tool returned to you; never a draft from <draft_status>, whose card is already in the chat" },
+          }),
           block("open", {
             destination: { type: "string", enum: ["category", "account", "analytics", "history", "budgets", "subscriptions"] },
             target_id: nullable({ type: "string" }),

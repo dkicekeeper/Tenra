@@ -558,7 +558,7 @@ Private Cloud Compute (п. 4) и `pro` себе в RevenueCat (п. 3).
 - [x] Тэн и цели/долги: id и названия в `<app_context>` (без сумм), `get_goals` / `get_debts`,
       `draft_goal`, `draft_goal_contribution`, `draft_debt` (Pro: без него Тэн предлагает факт),
       `draft_debt_repayment`; «Тэн пишет» о долге со сроком завтра и о цели, отставшей от графика
-      (раз в месяц); «Спросить Тэна» в меню цели и долга; промпт 2026-10-14.12, 6 кейсов eval
+      (раз в месяц); «Спросить Тэна» в меню цели и долга; промпт 2026-10-14.12, 6 кейсов eval; правила ответа в схеме render_reply, промпт 2026-10-15.13
       (FinanceToolkit+Plans.swift, docs/domains/goals-and-debts.md §Ten).
 - [ ] Siri iOS 27: intent schemas и View Annotations («Спроси Tenra, сколько осталось на еду»).
       После появления Xcode 27 на раннерах GitHub (решение владельца 2026-10-15).

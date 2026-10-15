@@ -5,7 +5,8 @@
 //  What Ten wears (DesignKit 4.12, the owner's plan: events and a wardrobe). On a holiday it
 //  dresses up on its own: a party hat from New Year's Eve to 2 January, a taqiya for Nauryz
 //  (21 to 23 March); on a day it celebrated a reply with the person it wears a crown. Any other
-//  day it wears what the person chose in Settings → Assistant → Ten's wardrobe, or nothing.
+//  day it wears what the person chose in Ten's wardrobe (a hanger at the top right of the
+//  assistant's home), or nothing.
 //
 //  Unlocking (the owner's scheme): glasses, headphones and the beanie from the start; sunglasses
 //  for 7 days in a row in Tenra and the sleep mask for 30 (AppStreak); the party hat for a first
@@ -116,8 +117,9 @@ enum AssistantWardrobe {
     }
 }
 
-/// Settings → Assistant → Ten's wardrobe: Ten in what it wears, and the choices under it, each
-/// a still Ten wearing it.
+/// Ten's wardrobe, from the assistant's home: Ten in what it wears, and the choices under it in
+/// two columns, each a still Ten wearing it. Every card has room for a two-line name and a
+/// two-line condition, so the cards are all one height.
 struct AssistantWardrobeView: View {
     @Environment(AppCoordinator.self) private var coordinator
     @AppStorage(AssistantWardrobe.choiceKey) private var choice = ""
@@ -133,7 +135,8 @@ struct AssistantWardrobeView: View {
                     .frame(width: WardrobeMetrics.preview, height: WardrobeMetrics.preview)
                     .frame(maxWidth: .infinity)
 
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.md), count: 3),
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.md),
+                                         count: WardrobeMetrics.columns),
                           spacing: AppSpacing.md) {
                     ForEach(options, id: \.self) { option in
                         tile(option)
@@ -141,7 +144,7 @@ struct AssistantWardrobeView: View {
                 }
 
                 Text(String(localized: "assistant.wardrobe.footer"))
-                    .font(AppTypography.caption)
+                    .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.Text.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -189,7 +192,7 @@ struct AssistantWardrobeView: View {
             HapticManager.selection()
             withAnimation(AppAnimation.contentSpring) { choice = option?.rawValue ?? "" }
         } label: {
-            VStack(spacing: AppSpacing.xs) {
+            VStack(spacing: AppSpacing.sm) {
                 ParticleCreature(mood: option == .sleepMask ? .asleep : .idle, accessory: option)
                     .frame(width: WardrobeMetrics.tile, height: WardrobeMetrics.tile)
                     .designKitMotion(false)
@@ -202,19 +205,18 @@ struct AssistantWardrobeView: View {
                         }
                     }
                 Text(AssistantWardrobe.name(option))
-                    .font(AppTypography.caption)
+                    .font(AppTypography.bodyEmphasis)
                     .foregroundStyle(isSelected ? AppColors.accent : AppColors.Text.primary)
                     .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                if let option, !isOpen {
-                    Text(AssistantWardrobe.condition(option))
-                        .font(AppTypography.caption2)
-                        .foregroundStyle(AppColors.Text.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                }
+                    .lineLimit(WardrobeMetrics.lines, reservesSpace: true)
+                // What opens it, or the same room left empty: every card is one height.
+                Text(option.map { isOpen ? "" : AssistantWardrobe.condition($0) } ?? "")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColors.Text.secondary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(WardrobeMetrics.lines, reservesSpace: true)
             }
-            .padding(AppSpacing.sm)
+            .padding(AppSpacing.md)
             .frame(maxWidth: .infinity)
             .background(RoundedRectangle(cornerRadius: AppRadius.lg).fill(AppColors.Background.elevation1))
             .overlay(
@@ -232,8 +234,11 @@ struct AssistantWardrobeView: View {
 
 private enum WardrobeMetrics {
     /// Ten in what it wears, and Ten on each choice.
-    static let preview: CGFloat = 180
-    static let tile: CGFloat = 76
+    static let preview: CGFloat = 200
+    static let tile: CGFloat = 120
+    /// Two cards a row; two lines each for the name and the condition.
+    static let columns = 2
+    static let lines = 2
     /// The chosen tile's outline.
     static let outline: CGFloat = 2
     /// Ten in a locked accessory.

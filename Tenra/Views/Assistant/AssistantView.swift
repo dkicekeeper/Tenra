@@ -27,6 +27,8 @@ import SwiftUI
 enum AssistantPage: Hashable {
     /// The open chat (AssistantViewModel's thread).
     case chat
+    /// What Ten wears (AssistantWardrobeView), from the hanger at the top right.
+    case wardrobe
 }
 
 struct AssistantView: View {
@@ -96,9 +98,19 @@ struct AssistantView: View {
             }
             .navigationTitle(String(localized: "tab.assistant"))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                // Ten's wardrobe: what it wears and what is still to open.
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink(value: AssistantPage.wardrobe) {
+                        Label(String(localized: "assistant.wardrobe.title"), systemImage: "hanger")
+                            .labelStyle(.iconOnly)
+                    }
+                }
+            }
             .navigationDestination(for: AssistantPage.self) { page in
                 switch page {
                 case .chat: AssistantChatView(model: model)
+                case .wardrobe: AssistantWardrobeView()
                 }
             }
             .navigationDestination(for: AssistantRoute.self) { route in

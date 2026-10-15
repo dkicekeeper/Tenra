@@ -4,9 +4,9 @@
 //
 //  Settings → Assistant, where the assistant works (AssistantAvailability): cloud answers (the
 //  consent the chat asks for before the first question; turned off, it asks again), "Ten chats"
-//  (the lines it says, AssistantChatter; turned off, it still gestures), "Ten's wardrobe", what
-//  it wears (AssistantWardrobeView), and "What Ten knows about me", the facts it remembers
-//  (AssistantMemoryView).
+//  (the lines it says, AssistantChatter; turned off, it still gestures) and "What Ten knows
+//  about me", the facts it remembers (AssistantMemoryView). Ten's wardrobe opens from the
+//  assistant's home (a hanger at the top right).
 //
 
 import SwiftUI
@@ -29,12 +29,6 @@ struct SettingsAssistantSection: View {
                     title: String(localized: "settings.assistant.chatter"),
                     isOn: $chatterOn
                 )
-                NavigationSettingsRow(
-                    icon: "tshirt",
-                    title: String(localized: "assistant.wardrobe.title")
-                ) {
-                    AssistantWardrobeView()
-                }
                 NavigationSettingsRow(
                     icon: "brain",
                     title: String(localized: "assistant.memory.title")

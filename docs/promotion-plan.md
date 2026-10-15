@@ -230,7 +230,12 @@ fr-ключей в 1.3). **08.10: первая покупка**, lifetime за 2
   Haiku 5.5, промпт 2026-10-15.13); осталось `pro` себе в RevenueCat. Entitlement Private Cloud
   Compute отложен до Xcode 27 на раннерах GitHub ([backlog.md](backlog.md), решения).
 - [ ] **Релиз 1.6** ([release-notes.md](release-notes.md), чек-лист внизу): What's New в 13 витринах,
-  черновик App Privacy и заметки для App Review готовы. Осталось (основатель): проверка сборок
-  18 и 20 на устройстве, Workers Paid в Cloudflare, одобрить новую политику конфиденциальности (PR),
-  метка App Privacy в App Store Connect, архив с Mac (сборка 21+), `prepare-version`, отправка.
+  черновик App Privacy и заметки для App Review готовы, политика конфиденциальности опубликована
+  (15.10). Аудит релиза 15.10 ([archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md))
+  исправил блокеры в ветке `claude/compassionate-curie-9bgxnb`. Осталось (основатель): слить
+  ветку и задеплоить сервер (Actions → Assistant → `deploy`), Workers Paid в Cloudflare, лимит
+  трат в Anthropic выше $30, решение по Founding Users на сервере, архив с Mac (сборка 27+, первая
+  с кодом iOS 27) и проверка на устройстве, новые скриншоты (пайплайну нужен демо-режим Тэна),
+  App Privacy и возрастной рейтинг в App Store Connect, решение по тесту страницы (выход 1.6 его
+  завершит), раздел о Тэне в условиях использования, `prepare-version`, отправка.
 - [ ] Ответы на отзывы, паритет ключей, `семейный` (§5 A и C).

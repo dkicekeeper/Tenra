@@ -36,6 +36,33 @@ Found by the design-system audit of 2026-10-15 (everything since 1.5):
   hold rules and data, no views: they belong in `Services/Agent/`, as does the catalogue half
   of `AssistantWardrobe`. Move once the wardrobe settles (another session is iterating on it).
 
+Found by the release audit of 2026-10-15 (details and file references:
+[archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md)):
+- **Ten on Home keeps animating** while a notice is unread (`AssistantNoticeCard`, no
+  `AmbientMotionGate`): measure on device, else the still `CreatureGlyph` there.
+- **Founding Users are free on the server** (150 calls a month per install): grant them `pro` in
+  RevenueCat or let the server know. Owner's call.
+- **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
+  consent go out with the next cloud question; the Settings toggle skips the consent sheet; the
+  cloud mode shows in the RU/BY storefronts (451 on every question).
+- **Ten's error paths:** attestation and RevenueCat failures read as permanent, no Retry, a new
+  key per question; a size 400 offers a Retry that resends the same request.
+- **Notices:** amounts ignore "hide amounts"; a notice outlives its deleted debt, goal or
+  subscription.
+- **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
+  re-parses the reply and re-renders the chat; allowance Keychain calls on the main thread;
+  FastPath runs the voice parser on questions; `forecast_balance` series O(days × occurrences).
+- **Goals and debts:** goal screens ignore FX refreshes and a new day; `reachedAt` only while the
+  goal's screen is open; Pro re-check and over-repayment at a draft's Save; the UI accepts a
+  repayment above what is left and a due date before the loan.
+- **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
+  load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
+- **Copy:** German Ten strings say "du", the app "Sie"; the Terms of Use say Tenra never sees
+  financial data; mic and speech permission texts don't mention Ten.
+- **Server before traffic:** Durable Objects counters, a Rate Limiting binding, separate free and
+  Pro caps, a RevenueCat timeout, no count for a failed upstream call, abort on disconnect, a
+  `protocol` range and an app build header.
+
 Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the
   confirmation snippet is the only guard. Decide whether intents deduplicate.

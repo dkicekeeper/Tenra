@@ -208,14 +208,96 @@ Tenra 1.6의 새로운 기능:
 
 ## Submission checklist (1.6)
 
-1. **Device check** of TestFlight 18 (goals and debts) and 20 (Ten with goals and debts, the soft edge under Ten); fixes first.
-2. **Workers Paid** in Cloudflare ($5 a month, [plan-ai-assistant.md](plan-ai-assistant.md) §5.1): the free plan's 1 000 KV writes a day and 10 ms CPU per request will not carry real traffic.
-3. **Archive from the Mac** (Xcode 27, as for 1.5). The build number must be above every CI TestFlight build (the latest is 23 on 2026-10-15, and each TestFlight run adds one: check TestFlight first).
-4. **`prepare-version`** with version `1.6` and that build: creates the version, pastes the What's New above into the 13 locales, selects the build.
-5. **App Privacy** in App Store Connect (draft below): through the web form only, the API does not set it.
-6. **App Review notes** (below) in App Review Information → Notes.
-7. **Submit for review** (the founder, in App Store Connect).
-8. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in [promotion-plan.md](promotion-plan.md) §1.
+The release audit of 2026-10-15 ([archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md))
+fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stays open is in
+[backlog.md](backlog.md). In order:
+
+1. **Merge the audit branch** into `main` once CI is green.
+2. **Deploy the Worker**: Actions → Assistant → Run workflow → `deploy` from `main`. Until then a
+   thread kept from before a prompt change fails with a 400 on its next question, a heavy user's
+   context is refused, and a copied Pro id still counts as Pro. Check: open an old chat in the
+   current TestFlight build and ask something.
+3. **Cloudflare Workers Paid** ($5 a month, [plan-ai-assistant.md](plan-ai-assistant.md) §5.1): the
+   free plan's 1 000 KV writes a day (about 300 answers for everyone) and 10 ms CPU per request
+   will not carry App Review plus real users.
+4. **Anthropic Console**: raise the Tenra workspace's monthly spend limit above the $30 beta cap.
+5. **RevenueCat**: `pro` for yourself (Actions → RevenueCat → `grant`), and decide on Founding
+   Users: the app treats them as Pro, the server as free (150 calls a month per install).
+6. **Archive from the Mac** (Xcode 27) with a build number above 26 (the latest CI TestFlight
+   build; check TestFlight first). This is the first build with the iOS 27 code paths compiled
+   in: no TestFlight build has run them.
+7. **Device check of that build** from TestFlight, on the iOS 27 iPhone:
+   - Ten's place at the right end of the tab bar; the consent sheet ("Turn on", "Not now");
+     "coffee 1500" before consent (drafts on the phone); one cloud answer; Settings › Assistant.
+   - A long chat, then Settings → backup → restore that backup → open Ten: the chat is there,
+     no crash. "Delete all data": Ten's home and Home's notices are empty.
+   - A debt of 13 437.29, a repayment of 1 142.49, then the suggested rest: it settles. Change a
+     goal's currency with money in it: the amounts move.
+   - Without Pro (or a sandbox account without it): paperclip → File → a CSV shows the paywall.
+   - A sandbox purchase; a subscription card with VoiceOver (reads "Active", not a key).
+   - Home with an unread notice from Ten for a minute: Instruments → Energy Log, or watch the
+     battery and the 120 Hz indicator. If Ten keeps the display busy, use the still glyph there.
+8. **Screenshots** (below): new frames for Ten, goals and debts; every old frame shows the "+" tab.
+9. **App Store Connect, version 1.6**:
+   - `prepare-version` with version `1.6` and the build from step 6 (What's New above in 13
+     locales, the build selected).
+   - **App Privacy** through the web form (the API does not set it): the draft below.
+   - **Age rating**: answer the questionnaire again for 1.6 (Ten is a chat with an AI: no
+     user-generated content shared with others, no social features, no unrestricted web).
+   - **App Review notes** (below) in App Review Information → Notes.
+   - The **product page test** started on 13.10 ends when 1.6 is released: release now and lose
+     it, or hold the release (owner's call).
+10. **Terms of Use** ([public/terms-of-use.html](public/terms-of-use.html)): they still say Tenra
+    never sees financial data. Add a section on Ten (answers can be wrong, not financial advice,
+    questions go to Anthropic) before or with the release.
+11. **Submit for review** (the founder, in App Store Connect).
+12. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in
+    [promotion-plan.md](promotion-plan.md) §1, the week after release against the week before in §6.
+
+### Screenshots
+
+App Store Connect takes the 6.9" set (1320×2868) for every iPhone; at most 10 per locale. The
+pipeline ([asc.md](asc.md), Screenshots) shoots raw frames in the Simulator, where Ten never
+appears (`AssistantAvailability` needs App Attest), and the demo seed has no goals, debts, notices
+or conversation. Code it needs first (DEBUG only):
+1. Ten available in demo mode (`ScreenshotDemoMode.isActive`), cloud consent set, and a scripted
+   `AgentTransport` (from `TenraTests/.../AgentTestDoubles.swift`'s `ScriptedTransport`) whose
+   tool calls the real `FinanceToolkit` answers from the seed: no network.
+2. The seed: two or three goals (one linked to the savings account, one manual, one reached), two
+   debts (one lent and overdue, one borrowed with a due date), a subscription charged tomorrow
+   (Ten's notice on Home), a remembered fact.
+3. A demo phrase in Ten's voice sheet; accessibility ids on the composer, the mic, the presets, a
+   draft's Save, goal and debt rows.
+4. `ScreenshotCaptureTests`: frame 07 (the voice tab no longer exists where Ten runs) and the new
+   frames; `scripts/capture_screenshots.sh` `EXPECTED`; captions for the new frames in 13 locales
+   (`scripts/screenshot_captions.json`, no em dashes), `appstore/product-pages.json` frames, Figma
+   templates `tpl-<frame>`.
+5. An `asc.py` command that uploads the version's own screenshots (today only custom pages and
+   the page test are uploaded); without it they are replaced by hand in App Store Connect.
+
+| Frame | Shows now | 1.6 |
+|---|---|---|
+| 01 home | budgets, accounts, history, "+" tab | reshoot: Ten's tab, a notice from Ten |
+| 02 finances | Finances cards | reshoot with the goals and debts cards |
+| 03 insights | insights list | reshoot (tab bar, shelf) |
+| 04 score | health score in a card | reshoot: the hero gauge with its trend |
+| 05 topcat | category donut | reshoot: the detail on its colour |
+| 06 history | history list | reshoot (tab bar, "Ask Ten") |
+| 07 voice | the voice tab | replace with Ten's voice sheet |
+| 08 fx | accounts in several currencies | reshoot (tab bar) |
+| 09-12 | subscriptions, a subscription, a deposit, loans (custom pages) | reshoot (tab bar) |
+| new: Ten answers | "How much did I spend this month?" on cards | new |
+| new: Ten drafts | "coffee 1500" as a card with Save | new |
+| new: goal | a goal with what to put aside each month | new |
+| new: debts | debts, one overdue | new |
+
+Suggested default order (10): Ten answers, Ten drafts, home, finances, goal, topcat, score,
+history, fx, voice. The custom page "voice" then uses the new voice frame.
+
+Run: Actions → Screenshots with `frames` = `all`, in two runs of locales (each run has 120
+minutes): `ru en-US fr-FR de-DE es-ES es-MX fr-CA`, then `tr pt-BR it uk ja ko`. Compose in Figma
+("Screenshots L10n") into `screenshots/final/<locale>/`, upload, then `push-custom-pages --submit`
+for the custom pages.
 
 ### App Privacy (draft: check against the form before saving)
 

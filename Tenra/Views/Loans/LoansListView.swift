@@ -65,7 +65,7 @@ struct LoansListView: View {
     var body: some View {
         Group {
             if loansViewModel.loans.isEmpty {
-                EmptyState(
+                MascotEmptyState(
                     icon: "creditcard",
                     title: String(localized: "loan.emptyTitle", defaultValue: "No Loans"),
                     description: String(localized: "loan.emptyDescription", defaultValue: "Add your credits and installments to track payments and progress"),
@@ -79,7 +79,8 @@ struct LoansListView: View {
                         } else {
                             showingPaywall = true
                         }
-                    }
+                    },
+                    line: String(localized: "assistant.empty.loans")
                 )
             } else {
                 let monthStatuses = currentMonthStatuses

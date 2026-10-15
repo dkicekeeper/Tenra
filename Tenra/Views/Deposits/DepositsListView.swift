@@ -38,7 +38,7 @@ struct DepositsListView: View {
     var body: some View {
         Group {
             if deposits.isEmpty {
-                EmptyState(
+                MascotEmptyState(
                     icon: "lock.square.stack.fill",
                     title: String(localized: "deposit.emptyTitle", defaultValue: "No Deposits"),
                     description: String(localized: "deposit.emptyDescription", defaultValue: "Add a deposit to track interest accrual and capitalization"),
@@ -52,7 +52,8 @@ struct DepositsListView: View {
                         } else {
                             showingPaywall = true
                         }
-                    }
+                    },
+                    line: String(localized: "assistant.empty.deposits")
                 )
             } else if let coordinator = accountsViewModel.balanceCoordinator {
                 List {

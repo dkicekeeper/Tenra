@@ -2092,3 +2092,13 @@
 "assistant.wardrobe.lock.goalReached" = "Bir hedefe ulaşın";
 "assistant.wardrobe.lock.nauryz" = "Nevruz'da açılır";
 "assistant.wardrobe.locked" = "Kilitli";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "Bir şey için birikim yapalım mı?";
+"assistant.empty.debts" = "Kim kime borçlu? Not edelim";
+"assistant.empty.subscriptions" = "Abonelikleri ekle, sana hatırlatırım";
+"assistant.empty.deposits" = "Mevduatların burada büyüyecek";
+"assistant.empty.loans" = "Kredileri de hesaplarım";
+"assistant.empty.accounts" = "Bir hesapla başlayalım mı?";
+"assistant.empty.history" = "Henüz boş. İlkini ekleyelim mi?";
+"assistant.empty.memory" = "Bana kendinden bahset, hatırlarım";

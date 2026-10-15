@@ -2092,3 +2092,13 @@
 "assistant.wardrobe.lock.goalReached" = "Raggiungi un obiettivo";
 "assistant.wardrobe.lock.nauryz" = "Si apre a Nauryz";
 "assistant.wardrobe.locked" = "Bloccato";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "Risparmiamo per qualcosa?";
+"assistant.empty.debts" = "Chi deve a chi? Annotiamolo";
+"assistant.empty.subscriptions" = "Aggiungi gli abbonamenti, te li ricorderò";
+"assistant.empty.deposits" = "Qui cresceranno i tuoi depositi";
+"assistant.empty.loans" = "Tengo il conto anche dei prestiti";
+"assistant.empty.accounts" = "Iniziamo con un conto?";
+"assistant.empty.history" = "Ancora niente. Aggiungiamo la prima?";
+"assistant.empty.memory" = "Raccontami di te, me lo ricorderò";

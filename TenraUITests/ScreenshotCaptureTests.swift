@@ -79,6 +79,12 @@ final class ScreenshotCaptureTests: XCTestCase {
             return
         }
 
+        if env["SCREENSHOT_FRAMES"] == "ten" {
+            // Only Ten's frames (07, 13, 14): a quick run while they are being worked on.
+            captureTen()
+            return
+        }
+
         snap("01-home")
 
         // ── 6. History (from Home) ───────────────────────────────────────────
@@ -182,33 +188,53 @@ final class ScreenshotCaptureTests: XCTestCase {
         XCTAssertTrue(presets.waitForExistence(timeout: 30), "Ten's home did not load")
         sleep(3)   // Ten greets
 
-        // ── 7. Voice: the composer's microphone (its last button while the field is empty) ──
+        // ── 7. Voice: the composer's microphone (its right-most button while the field is empty) ──
         let composer = app.descendants(matching: .any)["assistant.composer"].firstMatch
-        if let microphone = composer.buttons.allElementsBoundByIndex.last {
-            microphone.tap()
+        let microphone = composer.buttons.allElementsBoundByIndex.max { $0.frame.maxX < $1.frame.maxX }
+        guard let microphone, microphone.isHittable else {
+            debugSnapshot("composer")
+            return
         }
+        microphone.tap()
         let orb = app.descendants(matching: .any)["assistant.voice.orb"].firstMatch
-        if orb.waitForExistence(timeout: 10) {
-            sleep(2)
-            snap("07-voice")
-            orb.tap()
+        guard orb.waitForExistence(timeout: 10) else {
+            debugSnapshot("voice")
+            return
         }
+        sleep(2)
+        snap("07-voice")
+        orb.tap()
 
         // ── 14. What was said, drafted on the phone ──────────────────────────
         let send = app.descendants(matching: .any)["assistant.voice.send"].firstMatch
-        if send.waitForExistence(timeout: 10) {
-            send.tap()
-            sleep(5)
-            snap("14-ten-draft")
-            goBack()
+        guard send.waitForExistence(timeout: 10) else {
+            debugSnapshot("send")
+            return
         }
+        send.tap()
+        sleep(5)
+        snap("14-ten-draft")
+        goBack()
 
         // ── 13. A ready-made question answered on cards ──────────────────────
-        if presets.waitForExistence(timeout: 10) {
-            presets.buttons.firstMatch.tap()
-            sleep(8)   // two scripted turns, the cards cascade in
-            snap("13-ten-answer")
+        _ = presets.waitForExistence(timeout: 10)
+        guard let preset = presets.buttons.allElementsBoundByIndex.first(where: { $0.isHittable }) else {
+            debugSnapshot("presets")
+            return
         }
+        preset.tap()
+        sleep(8)   // two scripted turns, the cards cascade in
+        snap("13-ten-answer")
+    }
+
+    /// When a step of Ten's frames finds nothing: the screen and the accessibility tree, exported
+    /// next to the frames as `19-debug-<step>` (the tree is text in a .png-named file).
+    private func debugSnapshot(_ step: String) {
+        snap("19-debug-\(step)")
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = "19-debug-\(step)-tree"
+        tree.lifetime = .keepAlways
+        add(tree)
     }
 
     // MARK: - Custom product page frames

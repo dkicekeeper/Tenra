@@ -12,6 +12,7 @@
 #   ONLY=de-DE ./scripts/capture_screenshots.sh # single locale
 #   SIM_NAME="iPhone 17 Pro" SIM_OS=26.5 ./scripts/capture_screenshots.sh
 #   FRAMES=cpp ./scripts/capture_screenshots.sh # only 09-12 (custom product pages)
+#   FRAMES=ten ./scripts/capture_screenshots.sh # only Ten's 07, 13, 14
 #
 # SIM_OS is required since Xcode 27: a bare name implies the newest OS, and
 # iPhone 17 Pro only exists on 26.5. Store shots stay on the public iOS.
@@ -26,7 +27,7 @@ RESULTS_ROOT="build/screenshot-results"
 BUNDLE_ID="dakacom.Tenra"
 FRAMES="${FRAMES:-all}"
 # 01-08 and 13-16 (default product page) + 09-12 (custom product pages); "cpp" takes only 09-12.
-if [[ "$FRAMES" == "cpp" ]]; then EXPECTED=4; else EXPECTED=16; fi
+case "$FRAMES" in cpp) EXPECTED=4 ;; ten) EXPECTED=3 ;; *) EXPECTED=16 ;; esac
 
 # asc-locale | AppleLanguages | AppleLocale | demo currency
 LOCALES=(
@@ -102,8 +103,8 @@ for entry in "${LOCALES[@]}"; do
 
   # Export attachments (PNG screenshots) from the result bundle.
   dest="$OUT_ROOT/$asc_locale"
-  # A cpp run adds 09-12 next to the existing default frames.
-  if [[ "$FRAMES" != "cpp" ]]; then rm -rf "$dest"; fi
+  # A cpp or ten run adds its frames next to the existing ones.
+  if [[ "$FRAMES" == "all" ]]; then rm -rf "$dest"; fi
   mkdir -p "$dest"
   export_dir="$(mktemp -d)"
   if xcrun xcresulttool export attachments --path "$result_bundle" --output-path "$export_dir" >/dev/null 2>&1; then

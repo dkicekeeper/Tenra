@@ -2071,3 +2071,16 @@
 "assistant.chatter.hehe" = "Hee-hee";
 "assistant.chatter.dizzy" = "Whoa, I’m dizzy!";
 "settings.assistant.chatter" = "Ten chats";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "Ten's wardrobe";
+"assistant.wardrobe.none" = "Nothing";
+"assistant.wardrobe.partyHat" = "Party hat";
+"assistant.wardrobe.crown" = "Crown";
+"assistant.wardrobe.beanie" = "Beanie";
+"assistant.wardrobe.taqiya" = "Taqiya";
+"assistant.wardrobe.headphones" = "Headphones";
+"assistant.wardrobe.glasses" = "Glasses";
+"assistant.wardrobe.sunglasses" = "Sunglasses";
+"assistant.wardrobe.sleepMask" = "Sleep mask";
+"assistant.wardrobe.footer" = "On holidays Ten dresses up on its own: a party hat for the New Year, a taqiya for Nauryz, a crown on a day you celebrate together.";

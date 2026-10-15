@@ -2071,3 +2071,16 @@
 "assistant.chatter.hehe" = "헤헤";
 "assistant.chatter.dizzy" = "어지러워요!";
 "settings.assistant.chatter" = "텐의 수다";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "텐의 옷장";
+"assistant.wardrobe.none" = "없음";
+"assistant.wardrobe.partyHat" = "파티 모자";
+"assistant.wardrobe.crown" = "왕관";
+"assistant.wardrobe.beanie" = "비니";
+"assistant.wardrobe.taqiya" = "타키야";
+"assistant.wardrobe.headphones" = "헤드폰";
+"assistant.wardrobe.glasses" = "안경";
+"assistant.wardrobe.sunglasses" = "선글라스";
+"assistant.wardrobe.sleepMask" = "수면 안대";
+"assistant.wardrobe.footer" = "명절에는 텐이 스스로 차려입어요. 새해에는 파티 모자, 나우르즈에는 타키야, 함께 축하한 날에는 왕관을 써요.";

@@ -2071,3 +2071,16 @@
 "assistant.chatter.hehe" = "Hi hi";
 "assistant.chatter.dizzy" = "Ay, başım dönüyor!";
 "settings.assistant.chatter" = "Ten konuşkan";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "Ten'in gardırobu";
+"assistant.wardrobe.none" = "Hiçbiri";
+"assistant.wardrobe.partyHat" = "Parti şapkası";
+"assistant.wardrobe.crown" = "Taç";
+"assistant.wardrobe.beanie" = "Bere";
+"assistant.wardrobe.taqiya" = "Takke";
+"assistant.wardrobe.headphones" = "Kulaklık";
+"assistant.wardrobe.glasses" = "Gözlük";
+"assistant.wardrobe.sunglasses" = "Güneş gözlüğü";
+"assistant.wardrobe.sleepMask" = "Uyku maskesi";
+"assistant.wardrobe.footer" = "Bayramlarda Ten kendi giyinir: yılbaşında parti şapkası, Nevruz'da takke, birlikte bir şey kutladığınız gün taç.";

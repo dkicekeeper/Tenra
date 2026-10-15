@@ -2071,3 +2071,16 @@
 "assistant.chatter.hehe" = "えへへ";
 "assistant.chatter.dizzy" = "わあ、目が回る！";
 "settings.assistant.chatter" = "テンのおしゃべり";
+
+/* Ten's wardrobe (DesignKit 4.12) */
+"assistant.wardrobe.title" = "テンのワードローブ";
+"assistant.wardrobe.none" = "なし";
+"assistant.wardrobe.partyHat" = "パーティー帽";
+"assistant.wardrobe.crown" = "王冠";
+"assistant.wardrobe.beanie" = "ニット帽";
+"assistant.wardrobe.taqiya" = "タキヤ";
+"assistant.wardrobe.headphones" = "ヘッドホン";
+"assistant.wardrobe.glasses" = "メガネ";
+"assistant.wardrobe.sunglasses" = "サングラス";
+"assistant.wardrobe.sleepMask" = "アイマスク";
+"assistant.wardrobe.footer" = "祝日にはテンが自分で着替えます。お正月はパーティー帽、ナウルズにはタキヤ、一緒にお祝いした日には王冠。";

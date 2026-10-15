@@ -15,6 +15,11 @@
                                                     create/update the pages in product-pages.json
     python3 appstore/asc.py push-experiment [--submit | --start]
                                                     the product page test in product-pages.json
+    python3 appstore/asc.py age-rating [--apply]    the age rating answers; --apply sets Tenra's
+                                                    (needs a version in preparation)
+    python3 appstore/asc.py push-version-screenshots --version 1.6 [--locale ru,en-US]
+                                                    the version's own 6.9" screenshots, the frames
+                                                    of `defaultOrder` in screenshot_captions.json
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -636,6 +641,84 @@ def push_experiment(app: str, submit: bool, start: bool) -> None:
         submit_for_review(app, [("appStoreVersionExperimentV2", record["id"])])
 
 
+# Age rating -------------------------------------------------------------------------------------
+
+# Tenra's answers to the age rating questionnaire (App Information → Age Rating): a money tracker
+# whose AI assistant talks to the person only. No chat between people, nothing shared with others,
+# no ads, no web browsing, no health or medical topics, no gambling. Apple's App Privacy answers
+# are not in the API: they stay in the web form (docs/release-notes.md).
+AGE_RATING = {
+    "alcoholTobaccoOrDrugUseOrReferences": "NONE", "contests": "NONE", "gamblingSimulated": "NONE",
+    "gunsOrOtherWeapons": "NONE", "horrorOrFearThemes": "NONE", "matureOrSuggestiveThemes": "NONE",
+    "medicalOrTreatmentInformation": "NONE", "profanityOrCrudeHumor": "NONE",
+    "sexualContentGraphicAndNudity": "NONE", "sexualContentOrNudity": "NONE",
+    "violenceCartoonOrFantasy": "NONE", "violenceRealistic": "NONE",
+    "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+    "gambling": False, "lootBox": False, "unrestrictedWebAccess": False,
+    "messagingAndChat": False, "userGeneratedContent": False, "advertising": False,
+    "healthOrWellnessTopics": False, "parentalControls": False, "ageAssurance": False,
+    "socialMedia": False,
+}
+APP_INFO_EDITABLE = {"PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED"}
+
+
+def age_rating(app: str, apply: bool) -> None:
+    """The age rating declaration of each app info (live and in preparation) against Tenra's
+    answers; with `apply`, sets them on the one in preparation."""
+    infos, _ = get_all(f"/v1/apps/{app}/appInfos", {"limit": 10})
+    editable = None
+    for info in infos:
+        state = info["attributes"].get("state") or info["attributes"].get("appStoreState")
+        rating = info["attributes"].get("appStoreAgeRating")
+        declaration = get(f"/v1/appInfos/{info['id']}/ageRatingDeclaration")["data"]
+        current = declaration["attributes"]
+        rows = [[key, current.get(key), wanted, "" if current.get(key) == wanted else "differs"]
+                for key, wanted in AGE_RATING.items()]
+        table(f"App info {state} (rating {rating})", ["Question", "Now", "Tenra", ""], rows)
+        if state in APP_INFO_EDITABLE:
+            editable = declaration["id"]
+    if not apply:
+        return
+    if not editable:
+        sys.exit("No app info in preparation: create the version first (prepare-version).")
+    send("PATCH", f"/v1/ageRatingDeclarations/{editable}", {"data": {
+        "type": "ageRatingDeclarations", "id": editable, "attributes": AGE_RATING,
+    }})
+    print("Age rating answers set on the version in preparation.")
+
+
+# Version screenshots -----------------------------------------------------------------------------
+
+CAPTIONS = ROOT / "scripts" / "screenshot_captions.json"
+
+
+def push_version_screenshots(app: str, version: str, locales: list[str] | None) -> None:
+    """The version's own 6.9" screenshots: per locale, the frames of `defaultOrder` (or the
+    locale's own order) from screenshots/final/<locale>/. Only a version in preparation."""
+    captions = json.loads(CAPTIONS.read_text(encoding="utf-8"))
+    config = page_config()
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
+                       {"filter[versionString]": version, "filter[platform]": "IOS"})
+    if not found:
+        sys.exit(f"Version {version} does not exist: run prepare-version first.")
+    record = found[0]
+    state = record["attributes"].get("appVersionState") or record["attributes"].get("appStoreState")
+    if state not in EDITABLE:
+        sys.exit(f"Version {version} is {state}: its screenshots can't be changed now.")
+    existing, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    rows = []
+    for item in existing:
+        locale = item["attributes"]["locale"]
+        if locales and locale not in locales:
+            continue
+        settings = captions["locales"].get(locale, {})
+        frames = settings.get("order") or captions["defaultOrder"]
+        files = frame_files(config, frames, locale)
+        set_id = screenshot_set("appStoreVersionLocalization", item["id"])
+        rows.append([locale, len(files), put_screenshots(set_id, files)])
+    table(f"Screenshots, {version}", ["Locale", "Frames", "Result"], rows)
+
+
 def reviews(app: str, limit: int) -> None:
     data = get(f"/v1/apps/{app}/customerReviews", {"sort": "-createdDate", "limit": limit})["data"]
     rows = []
@@ -797,6 +880,14 @@ def main(argv: list[str]) -> None:
         push_custom_pages(app, "--submit" in args)
     elif command == "push-experiment":
         push_experiment(app, "--submit" in args, "--start" in args)
+    elif command == "age-rating":
+        age_rating(app, "--apply" in args)
+    elif command == "push-version-screenshots":
+        version = option("--version")
+        if not version:
+            sys.exit("push-version-screenshots needs --version X.Y")
+        locales = option("--locale")
+        push_version_screenshots(app, version, locales.split(",") if locales else None)
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

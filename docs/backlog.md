@@ -55,8 +55,9 @@ Found by the release audit of 2026-10-15 (details and file references:
   repayment above what is left and a due date before the loan.
 - **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
-- **Voice parser in Japanese, Korean and Canadian French** (also Ten's FastPath drafts): no
-  ja or ko category keywords, so every phrase lands in Other; "500円" right after kana is no
+- **Voice parser in English, Japanese, Korean and Canadian French** (also Ten's FastPath
+  drafts): English has keywords only for Transport ("taxi") and Pets, none for Groceries or
+  Dining out; ja and ko have none, so those phrases land in Other; "500円" right after kana is no
   amount (`\b` between two word characters) and "12,000원" reads as 12 (a comma is only a
   decimal); the currency is the first substring of an unordered dictionary ("50 r$" can be
   USD) and "$"/"dollars" are always USD, so a Canadian account books US dollars. The store

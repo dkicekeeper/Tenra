@@ -340,15 +340,294 @@ class VoiceInputParser {
             "навчання": ("Освіта", nil),
             "подарунок": ("Подарунки", nil),
             "ветеринар": ("Домашні улюбленці", nil),
-            "підписка": ("Підписки", nil)
+            "підписка": ("Підписки", nil),
+
+            // FR-CA — the Quebec word for groceries.
+            "épicerie": ("Courses", nil),
+
+            // EN — targets are the English onboarding preset names. Words other
+            // languages share ("restaurant", "taxi", "hotel", "cinema") are keyed once
+            // above: `categoryGroups` finds the person's own category for them whatever
+            // language they set up in. Short words that sit inside other words ("rent"
+            // in "trente") are in `wholeWordCategoryMap`.
+            "groceries": ("Groceries", nil),
+            "grocery": ("Groceries", nil),
+            "supermarket": ("Groceries", nil),
+            "lunch": ("Dining out", nil),
+            "dinner": ("Dining out", nil),
+            "breakfast": ("Dining out", nil),
+            "coffee": ("Dining out", nil),
+            "takeout": ("Dining out", nil),
+            "cafe": ("Dining out", nil),
+            "gasoline": ("Transport", nil),
+            "petrol": ("Transport", nil),
+            "fuel": ("Transport", nil),
+            "parking": ("Transport", nil),
+            "subway": ("Transport", nil),
+            "metro": ("Transport", nil),
+            "lyft": ("Transport", nil),
+            "mortgage": ("Housing", nil),
+            "apartment": ("Housing", nil),
+            "utilities": ("Utilities", nil),
+            "electricity": ("Utilities", nil),
+            "water bill": ("Utilities", nil),
+            "phone bill": ("Utilities", nil),
+            "internet": ("Utilities", nil),
+            "pharmacy": ("Health", nil),
+            "doctor": ("Health", nil),
+            "dentist": ("Health", nil),
+            "medicine": ("Health", nil),
+            "hospital": ("Health", nil),
+            "clothes": ("Clothing", nil),
+            "clothing": ("Clothing", nil),
+            "shoes": ("Clothing", nil),
+            "movie": ("Entertainment", nil),
+            "concert": ("Entertainment", nil),
+            "theater": ("Entertainment", nil),
+            "theatre": ("Entertainment", nil),
+            "flight": ("Travel", nil),
+            "airbnb": ("Travel", nil),
+            "vacation": ("Travel", nil),
+            "tuition": ("Education", nil),
+            "school": ("Education", nil),
+            "textbook": ("Education", nil),
+            "gift": ("Gifts", nil),
+            "birthday": ("Gifts", nil),
+            "subscription": ("Subscriptions", nil),
+            "netflix": ("Subscriptions", nil),
+            "spotify": ("Subscriptions", nil),
+            "pet food": ("Pets", nil),
+            "haircut": ("Services", nil),
+            "barber": ("Services", nil),
+            "repair": ("Services", nil),
+            "salary": ("Salary", nil),
+            "paycheck": ("Salary", nil),
+
+            // JA — targets are the Japanese onboarding preset names. Matched as
+            // substrings, which suits text without spaces ("コンビニで500円").
+            "スーパー": ("食費", nil),
+            "コンビニ": ("食費", nil),
+            "食料品": ("食費", nil),
+            "食材": ("食費", nil),
+            "ランチ": ("外食", nil),
+            "昼食": ("外食", nil),
+            "昼ご飯": ("外食", nil),
+            "夕食": ("外食", nil),
+            "晩ご飯": ("外食", nil),
+            "朝食": ("外食", nil),
+            "カフェ": ("外食", nil),
+            "コーヒー": ("外食", nil),
+            "レストラン": ("外食", nil),
+            "居酒屋": ("外食", nil),
+            "外食": ("外食", nil),
+            "タクシー": ("交通", nil),
+            "電車": ("交通", nil),
+            "地下鉄": ("交通", nil),
+            "バス代": ("交通", nil),
+            "ガソリン": ("交通", nil),
+            "駐車": ("交通", nil),
+            "新幹線": ("交通", nil),
+            "交通費": ("交通", nil),
+            "家賃": ("住居", nil),
+            "電気代": ("光熱費", nil),
+            "ガス代": ("光熱費", nil),
+            "水道代": ("光熱費", nil),
+            "光熱費": ("光熱費", nil),
+            "携帯代": ("光熱費", nil),
+            "通信費": ("光熱費", nil),
+            "薬局": ("健康", nil),
+            "病院": ("健康", nil),
+            "歯医者": ("健康", nil),
+            "洋服": ("衣類", nil),
+            "服": ("衣類", nil),
+            "靴": ("衣類", nil),
+            "映画": ("娯楽", nil),
+            "カラオケ": ("娯楽", nil),
+            "ゲーム": ("娯楽", nil),
+            "コンサート": ("娯楽", nil),
+            "旅行": ("旅行", nil),
+            "ホテル": ("旅行", nil),
+            "航空券": ("旅行", nil),
+            "学費": ("教育", nil),
+            "授業料": ("教育", nil),
+            "塾": ("教育", nil),
+            "プレゼント": ("ギフト", nil),
+            "お土産": ("ギフト", nil),
+            "サブスク": ("サブスク", nil),
+            "ペット": ("ペット", nil),
+            "動物病院": ("ペット", nil),
+            "美容院": ("サービス", nil),
+            "美容室": ("サービス", nil),
+            "修理": ("サービス", nil),
+            "クリーニング": ("サービス", nil),
+            "給料": ("給与", nil),
+            "給与": ("給与", nil),
+
+            // KO — targets are the Korean onboarding preset names. "마트" is left out
+            // (it sits inside "스마트폰"), and so is "약" (inside "예약", "약속").
+            "장보기": ("장보기", nil),
+            "식료품": ("장보기", nil),
+            "슈퍼": ("장보기", nil),
+            "편의점": ("장보기", nil),
+            "이마트": ("장보기", nil),
+            "점심": ("외식", nil),
+            "저녁식사": ("외식", nil),
+            "아침식사": ("외식", nil),
+            "커피": ("외식", nil),
+            "카페": ("외식", nil),
+            "식당": ("외식", nil),
+            "외식": ("외식", nil),
+            "배달": ("외식", nil),
+            "택시": ("교통", nil),
+            "버스": ("교통", nil),
+            "지하철": ("교통", nil),
+            "주유": ("교통", nil),
+            "기름값": ("교통", nil),
+            "주차": ("교통", nil),
+            "기차": ("교통", nil),
+            "월세": ("주거", nil),
+            "관리비": ("공과금", nil),
+            "전기세": ("공과금", nil),
+            "전기요금": ("공과금", nil),
+            "가스비": ("공과금", nil),
+            "수도세": ("공과금", nil),
+            "통신비": ("공과금", nil),
+            "공과금": ("공과금", nil),
+            "약국": ("건강", nil),
+            "병원": ("건강", nil),
+            "치과": ("건강", nil),
+            "옷": ("의류", nil),
+            "신발": ("의류", nil),
+            "영화": ("여가", nil),
+            "공연": ("여가", nil),
+            "콘서트": ("여가", nil),
+            "게임": ("여가", nil),
+            "여행": ("여행", nil),
+            "호텔": ("여행", nil),
+            "항공권": ("여행", nil),
+            "학원": ("교육", nil),
+            "학비": ("교육", nil),
+            "선물": ("선물", nil),
+            "넷플릭스": ("구독", nil),
+            "반려동물": ("반려동물", nil),
+            "동물병원": ("반려동물", nil),
+            "사료": ("반려동물", nil),
+            "미용실": ("서비스", nil),
+            "수리": ("서비스", nil),
+            "세탁": ("서비스", nil),
+            "월급": ("급여", nil),
+            "급여": ("급여", nil)
         ]
 
-    /// `categoryMap.keys` sorted by length descending. Computed once and
-    /// reused so `parseCategory` doesn't pay the sort cost per call. Used
-    /// instead of iterating `categoryMap` directly because Dictionary
-    /// iteration is intentionally randomized in Swift.
-    private lazy var sortedCategoryKeys: [String] =
-        categoryMap.keys.sorted { $0.count > $1.count }
+    /// Short keywords matched as whole words only: as substrings they fire
+    /// inside unrelated words ("rent" in "parent", "bus" in "business", "bar"
+    /// in "barber", "vet" in Turkish "evet"). Kept apart from `categoryMap`,
+    /// whose keys match anywhere in the text.
+    private lazy var wholeWordCategoryMap: [String: (category: String, subcategory: String?)] = [
+        "rent": ("Housing", nil),
+        "gas": ("Transport", nil),
+        "bus": ("Transport", nil),
+        "cab": ("Transport", nil),
+        "bar": ("Dining out", nil),
+        "trip": ("Travel", nil),
+        "vet": ("Pets", nil)
+    ]
+
+    private struct CategoryKeyword {
+        let key: String
+        let wholeWord: Bool
+    }
+
+    /// The keys of both maps, longest first so longer phrases ("еда доставка")
+    /// win over their substrings ("еда") and "medicine" over "cine"; equal
+    /// lengths go alphabetically. Without that total order the same phrase
+    /// could pick a different category on each launch, because `Dictionary`
+    /// order is randomized per process. Computed once.
+    private lazy var sortedCategoryKeys: [CategoryKeyword] =
+        (categoryMap.keys.map { CategoryKeyword(key: $0, wholeWord: false) }
+            + wholeWordCategoryMap.keys.map { CategoryKeyword(key: $0, wholeWord: true) })
+        .sorted { $0.key.count != $1.key.count ? $0.key.count > $1.key.count : $0.key < $1.key }
+
+    private func categoryEntry(_ keyword: CategoryKeyword) -> (category: String, subcategory: String?)? {
+        keyword.wholeWord ? wholeWordCategoryMap[keyword.key] : categoryMap[keyword.key]
+    }
+
+    private func matches(_ keyword: CategoryKeyword, in text: String) -> Bool {
+        keyword.wholeWord ? Self.containsWord(keyword.key, in: text) : text.contains(keyword.key)
+    }
+
+    /// Whether `word` occurs in `text` with no letter right before or after it.
+    /// `\b` can't be used: it sees no boundary between a CJK character and a digit.
+    static func containsWord(_ word: String, in text: String) -> Bool {
+        var searchStart = text.startIndex
+        while searchStart < text.endIndex,
+              let range = text.range(of: word, range: searchStart..<text.endIndex) {
+            let letterBefore = range.lowerBound > text.startIndex
+                && text[text.index(before: range.lowerBound)].isLetter
+            let letterAfter = range.upperBound < text.endIndex && text[range.upperBound].isLetter
+            if !letterBefore && !letterAfter { return true }
+            searchStart = text.index(after: range.lowerBound)
+        }
+        return false
+    }
+
+    /// Each onboarding preset under its name in every app language
+    /// (`onboarding.preset.*`; `VoiceCategoryTargetsTests` pins the groups to
+    /// the strings files). A keyword targets one language's name ("Groceries",
+    /// "食費"), while the user's categories carry the names of the language
+    /// they onboarded in, so the target resolves through its group: "groceries"
+    /// lands in "Продукты" for someone whose categories are Russian.
+    static let categoryGroups: [[String]] = [
+        ["Groceries", "Продукты", "Lebensmittel", "Supermercado", "Courses", "Market", "Mercado", "Spesa", "Продукти", "食費", "장보기"],
+        ["Dining out", "Кафе и рестораны", "Essen gehen", "Restaurantes", "Restaurants", "Dışarıda yemek", "Ristoranti", "Кафе та ресторани", "外食", "외식"],
+        ["Transport", "Транспорт", "Transporte", "Transports", "Ulaşım", "Trasporti", "交通", "교통"],
+        ["Housing", "Жильё", "Wohnen", "Vivienda", "Logement", "Konut", "Moradia", "Casa", "Житло", "住居", "주거"],
+        ["Utilities", "Коммунальные", "Nebenkosten", "Servicios públicos", "Charges", "Faturalar", "Contas de casa", "Utenze", "Комунальні послуги", "光熱費", "공과금"],
+        ["Health", "Здоровье", "Gesundheit", "Salud", "Santé", "Sağlık", "Saúde", "Salute", "Здоров'я", "健康", "건강"],
+        ["Clothing", "Одежда", "Kleidung", "Ropa", "Vêtements", "Giyim", "Roupas", "Abbigliamento", "Одяг", "衣類", "의류"],
+        ["Entertainment", "Развлечения", "Unterhaltung", "Entretenimiento", "Loisirs", "Eğlence", "Lazer", "Svago", "Розваги", "娯楽", "여가"],
+        ["Travel", "Путешествия", "Reisen", "Viajes", "Voyages", "Seyahat", "Viagens", "Viaggi", "Подорожі", "旅行", "여행"],
+        ["Education", "Образование", "Bildung", "Educación", "Éducation", "Eğitim", "Educação", "Istruzione", "Освіта", "教育", "교육"],
+        ["Gifts", "Подарки", "Geschenke", "Regalos", "Cadeaux", "Hediyeler", "Presentes", "Regali", "Подарунки", "ギフト", "선물"],
+        ["Subscriptions", "Подписки", "Abos", "Suscripciones", "Abonnements", "Abonelikler", "Assinaturas", "Abbonamenti", "Підписки", "サブスク", "구독"],
+        ["Pets", "Питомцы", "Haustiere", "Mascotas", "Animaux", "Evcil hayvanlar", "Animali", "Домашні улюбленці", "ペット", "반려동물"],
+        ["Services", "Услуги", "Dienstleistungen", "Servicios", "Hizmetler", "Serviços", "Servizi", "Послуги", "サービス", "서비스"],
+        ["Other", "Прочее", "Sonstiges", "Otros", "Autre", "Diğer", "Outros", "Altro", "Інше", "その他", "기타"],
+        ["Salary", "Зарплата", "Gehalt", "Salario", "Salaire", "Maaş", "Salário", "Stipendio", "給与", "급여"],
+        ["Other income", "Прочие доходы", "Sonstige Einnahmen", "Otros ingresos", "Autres revenus", "Diğer gelirler", "Outras receitas", "Altre entrate", "Інші доходи", "その他の収入", "기타 수입"]
+    ]
+
+    private static let categoryGroupByName: [String: [String]] = {
+        var result: [String: [String]] = [:]
+        for group in categoryGroups {
+            for name in group { result[categoryNameKey(name)] = group }
+        }
+        return result
+    }()
+
+    /// Comparison key for category names: case and "ё" don't matter.
+    private static func categoryNameKey(_ name: String) -> String {
+        name.lowercased()
+            .replacingOccurrences(of: "ё", with: "е")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// The user's category named `name`, ignoring case and "ё".
+    private func liveCategoryName(_ name: String) -> String? {
+        let key = Self.categoryNameKey(name)
+        return liveCategories.first { Self.categoryNameKey($0.name) == key }?.name
+    }
+
+    /// The user's category for a keyword target: the target itself when the
+    /// user has it, else the same preset under another language's name, else
+    /// the target unchanged.
+    private func resolveCategoryName(_ target: String) -> String {
+        if let own = liveCategoryName(target) { return own }
+        for name in Self.categoryGroupByName[Self.categoryNameKey(target)] ?? [] {
+            if let own = liveCategoryName(name) { return own }
+        }
+        return target
+    }
 
     /// Income keywords for entity detection — cached
     private lazy var incomeKeywords: [String] =
@@ -360,14 +639,27 @@ class VoiceInputParser {
 
     // MARK: - Pre-compiled регулярные выражения для производительности
 
+    /// A written amount: grouped thousands ("12,000", "1.234,56", "10 000")
+    /// or a plain number with up to two decimals ("1500", "12,50").
+    /// `decimalAmount` reads which separator is the decimal one.
+    private static let amountPattern = #"\d{1,3}(?:[\s,.]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?"#
+
+    /// Currency words and signs that make a neighbouring number an amount.
+    private static let amountCurrencyTokens = #"тенге|тг|₸|доллар|долларов|\$|usd|евро|eur|€|рубл|rub|₽|円|¥|원|₩|₺|₴"#
+
+    /// Capture group 1 is the number in every pattern. Digit lookarounds
+    /// replace `\b`, which finds no boundary between a digit and CJK text
+    /// ("500円", "コンビニで500").
     private let amountRegexes: [NSRegularExpression] = {
+        let number = "((?:" + VoiceInputParser.amountPattern + "))"
+        let currency = "(?:" + VoiceInputParser.amountCurrencyTokens + ")"
         let patterns = [
-            // Число с валютой перед числом
-            #"(?:тенге|тг|₸|доллар|долларов|\$|usd|евро|eur|€|рубл|rub|₽)\s*(\d{1,3}(?:\s*\d{3})*(?:[.,]\d{1,2})?)"#,
-            // Число с валютой после числа
-            #"(\d{1,3}(?:\s*\d{3})*(?:[.,]\d{1,2})?)\s*(?:тенге|тг|₸|доллар|долларов|\$|usd|евро|eur|€|рубл|rub|₽)"#,
+            // Валюта перед числом
+            currency + #"\s*"# + number + #"(?![\p{N}])"#,
+            // Валюта после числа
+            #"(?<![\p{N}.,])"# + number + #"\s*"# + currency,
             // Просто число (ищем самое большое число)
-            #"\b(\d{1,3}(?:\s*\d{3})*(?:[.,]\d{1,2})?)\b"#
+            #"(?<![\p{N}.,])"# + number + #"(?![\p{N}])"#
         ]
         return patterns.compactMap { try? NSRegularExpression(pattern: $0, options: .caseInsensitive) }
     }()
@@ -523,19 +815,12 @@ class VoiceInputParser {
         }
         #endif
 
-        // 4. Извлекаем валюту
-        operation.currencyCode = parseCurrency(from: normalizedText)
-
-        #if DEBUG
-        if VoiceInputConstants.enableParsingDebugLogs {
-            if operation.currencyCode != nil {
-            }
-        }
-        #endif
-
-        // 5. Ищем счет
+        // 4. Ищем счет (до валюты: "$" и "dollars" читаются в валюте счета)
         let accountResult = findAccount(from: normalizedText)
         operation.accountId = accountResult.accountId
+
+        // 5. Извлекаем валюту
+        operation.currencyCode = parseCurrency(from: normalizedText, accountId: operation.accountId)
 
         #if DEBUG
         if VoiceInputConstants.enableParsingDebugLogs {
@@ -633,8 +918,8 @@ class VoiceInputParser {
             }
 
             let explicitType = parseTypeOptional(from: normalized)
-            let explicitCurrency = parseCurrency(from: normalized)
             let explicitAccountId = findAccount(from: normalized).accountId
+            let explicitCurrency = parseCurrency(from: normalized, accountId: explicitAccountId ?? lastAccountId)
             let (categoryName, subcategoryNames) = parseCategory(from: normalized)
 
             // Per-category smart default: prefer the account most-used for
@@ -681,7 +966,7 @@ class VoiceInputParser {
     // MARK: - Private Methods
     
     private func normalizeText(_ text: String) -> String {
-        var normalized = text.lowercased()
+        var normalized = Self.expandCJKNumerals(text.lowercased())
             .replacingOccurrences(of: "ё", with: "е")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -696,6 +981,80 @@ class VoiceInputParser {
         return normalized.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
+    /// Japanese and Korean amounts mix digits with the units 億/억 (10^8),
+    /// 万/만 (10^4), 千/천, 百/백: "1万2000円", "1만 2천 원", "3千500". This
+    /// rewrites such a span as plain digits ("12000円") so the amount regexes
+    /// read it. A unit with no digit before it is left alone ("千葉"), unless
+    /// it stands right before 円/원: "만원" is 10 000 won, "百円" is 100 yen.
+    static func expandCJKNumerals(_ text: String) -> String {
+        guard text.contains(where: { cjkUnitValues[$0] != nil }) else { return text }
+        var result = text
+        // Replace right to left so earlier ranges stay valid.
+        for regex in [cjkNumeralRegex, cjkBareUnitRegex] {
+            let source = result as NSString
+            for match in regex.matches(in: result, range: NSRange(location: 0, length: source.length)).reversed() {
+                let span = source.substring(with: match.range(at: 1))
+                guard let value = cjkNumeralValue(span),
+                      let range = Range(match.range(at: 1), in: result) else { continue }
+                result.replaceSubrange(range, with: NSDecimalNumber(decimal: value).stringValue)
+            }
+        }
+        return result
+    }
+
+    private static let cjkUnitValues: [Character: Decimal] = [
+        "億": 100_000_000, "억": 100_000_000,
+        "万": 10_000, "만": 10_000,
+        "千": 1_000, "천": 1_000,
+        "百": 100, "백": 100
+    ]
+
+    /// A digit, a unit, then more digit-unit pairs and optional trailing digits,
+    /// with at most one space between parts: "1万2000", "1만 2천", "1.5万".
+    private static let cjkNumeralRegex = try! NSRegularExpression(
+        pattern: #"(?<![\p{N}.,])(\d+(?:[.,]\d+)?\s?[億억万만千천百백](?:\s?\d+(?:[.,]\d+)?\s?[億억万만千천百백]|\s?[億억万만千천百백])*(?:\s?\d+)?)(?![\p{N}])"#
+    )
+
+    /// Units with no digit before them, right before 円/원: "만원", "百円".
+    private static let cjkBareUnitRegex = try! NSRegularExpression(
+        pattern: #"(?<![\p{N}])([億억万만千천百백]+)(?=\s?[円원])"#
+    )
+
+    /// Sums a span of digits and units: small units (千, 百) build a section,
+    /// a big unit (万, 億) multiplies everything since the last big unit.
+    private static func cjkNumeralValue(_ span: String) -> Decimal? {
+        var total: Decimal = 0
+        var section: Decimal = 0
+        var number: Decimal?
+        var digits = ""
+        func flushDigits() {
+            guard !digits.isEmpty else { return }
+            number = decimalAmount(digits)
+            digits = ""
+        }
+        for character in span {
+            // Units first: `Character.isNumber` is true for 万, 千 and 百 too.
+            if let unit = cjkUnitValues[character] {
+                flushDigits()
+                if unit >= 10_000 {
+                    let coefficient = section + (number ?? 0)
+                    total += (coefficient == 0 ? 1 : coefficient) * unit
+                    section = 0
+                } else {
+                    section += (number ?? 1) * unit
+                }
+                number = nil
+            } else if character.isASCII && (character.isNumber || character == "." || character == ",") {
+                digits.append(character)
+            } else {
+                flushDigits()
+            }
+        }
+        flushDigits()
+        total += section + (number ?? 0)
+        return total > 0 ? total : nil
+    }
+
     // 1. Парсинг даты
     private func parseDate(from text: String) -> Date {
         let calendar = Calendar.current
@@ -852,12 +1211,7 @@ class VoiceInputParser {
             for match in matches {
                 if match.numberOfRanges > 1,
                    let range = Range(match.range(at: 1), in: text) {
-                    let amountString = String(text[range])
-                        .replacingOccurrences(of: ",", with: ".")
-                        .replacingOccurrences(of: " ", with: "") // Убираем пробелы в числах типа "10 000"
-                        .trimmingCharacters(in: .whitespaces)
-
-                    if let amount = Decimal(string: amountString) {
+                    if let amount = Self.decimalAmount(String(text[range])) {
                         // Приоритет: паттерны с валютой (0-1) имеют больший приоритет, чем просто числа (2)
                         let priority = index <= 1 ? 0 : 1
                         let position = match.range(at: 1).location
@@ -913,6 +1267,22 @@ class VoiceInputParser {
         return parseAmountFromWords(text)
     }
     
+    /// Reads a written amount whatever the separators: the last group is
+    /// decimals when it has one or two digits ("12,50", "1.234,56"),
+    /// otherwise every separator groups thousands ("12,000", "1.500", "10 000").
+    static func decimalAmount(_ written: String) -> Decimal? {
+        let compact = written.unicodeScalars
+            .filter { !CharacterSet.whitespaces.contains($0) }
+            .map(String.init).joined()
+        let parts = compact.split(whereSeparator: { $0 == "," || $0 == "." }).map(String.init)
+        guard let last = parts.last,
+              parts.allSatisfy({ $0.allSatisfy { $0.isASCII && $0.isNumber } }) else { return nil }
+        if parts.count > 1, last.count <= 2 {
+            return Decimal(string: parts.dropLast().joined() + "." + last)
+        }
+        return Decimal(string: parts.joined())
+    }
+
     // Парсинг суммы словами (до 9999)
     private func parseAmountFromWords(_ text: String) -> Decimal? {
         let words = text.components(separatedBy: CharacterSet.whitespaces.union(.punctuationCharacters))
@@ -982,49 +1352,70 @@ class VoiceInputParser {
     }
     
     // 4. Парсинг валюты
-    private func parseCurrency(from text: String) -> String? {
-        let currencyMap: [String: String] = [
-            "тенге": "KZT",
-            "тг": "KZT",
-            "₸": "KZT",
-            "доллар": "USD",
-            "долларов": "USD",
-            "usd": "USD",
-            "$": "USD",
-            "евро": "EUR",
-            "eur": "EUR",
-            "€": "EUR",
-            "рубл": "RUB",
-            "rub": "RUB",
-            "dollar": "USD",
-            "dólar": "USD",
-            "dolar": "USD",
-            // "tl" is intentionally absent — it is a substring of common
-            // Turkish words ("katlı", "atlet"); "lira"/"₺" are unambiguous.
-            "lira": "TRY",
-            "₺": "TRY",
-            "reais": "BRL",
-            "r$": "BRL",
-            "гривень": "UAH",
-            "гривня": "UAH",
-            "гривні": "UAH",
-            "грн": "UAH",
-            "₴": "UAH",
-            "円": "JPY",
-            "¥": "JPY",
-            "원": "KRW",
-            "₩": "KRW"
-        ]
-        
-        for (keyword, code) in currencyMap {
-            if text.contains(keyword) {
+    /// The currency the text names, if any. "$" and "dollars" read in the local
+    /// currency when it is a dollar (a Canadian says "12 dollars" for CAD):
+    /// the named account's currency, else the default account's.
+    private func parseCurrency(from text: String, accountId: String?) -> String? {
+        let localCurrency = accountId.flatMap { id in liveAccounts.first { $0.id == id }?.currency }
+            ?? cachedDefaultAccount?.currency
+            ?? liveAccounts.first { !$0.isLoan && !$0.isDeposit }?.currency
+        return Self.currencyCode(in: text, localCurrency: localCurrency)
+    }
+
+    /// Currency words and signs, longest first so "r$" wins over "$" and the
+    /// result doesn't depend on `Dictionary` order. "$" and "dollar" are
+    /// placeholders that `currencyCode(in:localCurrency:)` resolves.
+    /// "tl" is intentionally absent: it is a substring of common Turkish words
+    /// ("katlı", "atlet"); "lira"/"₺" are unambiguous.
+    private static let currencyKeywords: [(keyword: String, code: String)] = [
+        ("тенге", "KZT"), ("тг", "KZT"), ("₸", "KZT"),
+        ("доллар", "dollar"), ("долларов", "dollar"), ("dollar", "dollar"), ("dólar", "dollar"), ("dolar", "dollar"),
+        ("usd", "USD"), ("$", "$"),
+        ("евро", "EUR"), ("eur", "EUR"), ("€", "EUR"),
+        ("рубл", "RUB"), ("rub", "RUB"), ("₽", "RUB"),
+        ("lira", "TRY"), ("₺", "TRY"),
+        ("reais", "BRL"), ("r$", "BRL"),
+        ("гривень", "UAH"), ("гривня", "UAH"), ("гривні", "UAH"), ("грн", "UAH"), ("₴", "UAH"),
+        ("円", "JPY"), ("¥", "JPY"),
+        ("원", "KRW"), ("₩", "KRW")
+    ].sorted { $0.keyword.count != $1.keyword.count ? $0.keyword.count > $1.keyword.count : $0.keyword < $1.keyword }
+
+    /// Currencies written with a bare "$" at home.
+    private static let dollarSignCurrencies: Set<String> = ["USD", "CAD", "AUD", "NZD", "SGD", "HKD", "TWD", "MXN", "ARS", "CLP", "COP"]
+
+    /// Currencies called "dollars" at home.
+    private static let dollarNamedCurrencies: Set<String> = ["USD", "CAD", "AUD", "NZD", "SGD", "HKD", "TWD"]
+
+    /// The currency `text` names. A keyword that starts with a letter only
+    /// counts at the start of a word, so "eur" doesn't fire inside "coiffeur"
+    /// or "원" inside "병원"; signs count anywhere.
+    static func currencyCode(in text: String, localCurrency: String?) -> String? {
+        for (keyword, code) in currencyKeywords where containsCurrencyKeyword(keyword, in: text) {
+            switch code {
+            case "$":
+                return localCurrency.flatMap { dollarSignCurrencies.contains($0) ? $0 : nil } ?? "USD"
+            case "dollar":
+                return localCurrency.flatMap { dollarNamedCurrencies.contains($0) ? $0 : nil } ?? "USD"
+            default:
                 return code
             }
         }
-        
         return nil
     }
-    
+
+    private static func containsCurrencyKeyword(_ keyword: String, in text: String) -> Bool {
+        guard keyword.first?.isLetter == true else { return text.contains(keyword) }
+        var searchStart = text.startIndex
+        while searchStart < text.endIndex,
+              let range = text.range(of: keyword, range: searchStart..<text.endIndex) {
+            if range.lowerBound == text.startIndex || !text[text.index(before: range.lowerBound)].isLetter {
+                return true
+            }
+            searchStart = text.index(after: range.lowerBound)
+        }
+        return false
+    }
+
     // Результат поиска счета
     private struct AccountSearchResult {
         let accountId: String?
@@ -1130,17 +1521,18 @@ class VoiceInputParser {
             .filter { !$0.isEmpty && !stopWords.contains($0) }
     }
     
-    /// Suggestion-only lookup into `categoryMap` for imported merchant strings.
+    /// Suggestion-only lookup into the keyword maps for imported merchant strings.
     /// Unlike `parseCategory`, it never falls back to "Other" and matches whole
     /// words (`CategorySuggestionService.matches`), so "medicine" does not hit
-    /// "cine". Returns the map's raw category name (e.g. "Транспорт"); the caller
-    /// resolves it against the user's categories.
+    /// "cine". Returns the user's category from the target's preset group
+    /// (`resolveCategoryName`), else the map's raw name (e.g. "Транспорт"); the
+    /// caller resolves it against the user's categories.
     func keywordCategory(in text: String) -> String? {
         let merchant = CategorySuggestionService.normalizedMerchant(text)
         guard !merchant.isEmpty else { return nil }
         for keyword in sortedCategoryKeys
-        where CategorySuggestionService.matches(keyword: keyword, inNormalized: merchant) {
-            if let entry = categoryMap[keyword] { return entry.category }
+        where CategorySuggestionService.matches(keyword: keyword.key, inNormalized: merchant) {
+            if let entry = categoryEntry(keyword) { return resolveCategoryName(entry.category) }
         }
         return nil
     }
@@ -1149,7 +1541,9 @@ class VoiceInputParser {
     /// pins these to real onboarding preset names, so a map value can never again
     /// point at a category nobody has (the old "Еда"/"Покупки" targets sent the most
     /// common Russian phrases to "Other").
-    var categoryMapTargets: Set<String> { Set(categoryMap.values.map(\.category)) }
+    var categoryMapTargets: Set<String> {
+        Set(categoryMap.values.map(\.category)).union(wholeWordCategoryMap.values.map(\.category))
+    }
 
     // 6. Парсинг категории и подкатегорий (сначала подкатегории, потом категории)
     private func parseCategory(from text: String) -> (category: String?, subcategories: [String]) {
@@ -1157,14 +1551,10 @@ class VoiceInputParser {
         var foundSubcategories: [String] = []
         var foundCategory: String?
 
-        // Sort keys by length desc so longer phrases ("еда доставка") win over
-        // their substrings ("еда"), and so the iteration is deterministic —
-        // Swift's `Dictionary` iteration order is intentionally randomized,
-        // which previously made identical input produce different categories
-        // across runs.
+        // Longest keyword first, in a total order (`sortedCategoryKeys`).
         for keyword in sortedCategoryKeys {
-            guard let (category, subcategory) = categoryMap[keyword] else { continue }
-            if text.contains(keyword) {
+            guard let (category, subcategory) = categoryEntry(keyword) else { continue }
+            if matches(keyword, in: text) {
                 // Сначала проверяем подкатегорию
                 if let subcategory = subcategory {
                     let matchingSubcategory = liveSubcategories.first { normalizeText($0.name) == normalizeText(subcategory) }
@@ -1173,10 +1563,10 @@ class VoiceInputParser {
                     }
                 }
                 
-                // Затем категорию
+                // Затем категорию: своя у пользователя, в том числе под именем
+                // из другого языка ("groceries" → "Продукты")
                 if foundCategory == nil {
-                    let matchingCategory = liveCategories.first { normalizeText($0.name) == normalizeText(category) }
-                    foundCategory = matchingCategory?.name ?? category
+                    foundCategory = resolveCategoryName(category)
                 }
                 
                 // Если нашли и подкатегорию и категорию, можно выйти
@@ -1186,10 +1576,13 @@ class VoiceInputParser {
             }
         }
         
-        // Если не нашли, возвращаем "Другое"
+        // Если не нашли, возвращаем "Другое": "category.other" ("Другое") или
+        // пресет "Прочее" на любом языке
         if foundCategory == nil {
             let otherName = String(localized: "category.other")
-            foundCategory = liveCategories.first { normalizeText($0.name) == normalizeText(otherName) }?.name ?? otherName
+            foundCategory = liveCategoryName(otherName)
+                ?? Self.categoryGroupByName[Self.categoryNameKey("Other")]?.lazy.compactMap { self.liveCategoryName($0) }.first
+                ?? otherName
         }
         
         return (foundCategory, foundSubcategories)
@@ -1284,19 +1677,18 @@ class VoiceInputParser {
     private func detectCategoryEntity(in text: String, nsText: NSString) -> RecognizedEntity? {
         let normalizedText = normalizeText(text)
 
-        // Check categoryMap for known keywords
-        for (keyword, categoryInfo) in categoryMap {
-            if normalizedText.contains(keyword) {
-                // Find position of keyword
-                if let range = text.lowercased().range(of: keyword) {
-                    let nsRange = NSRange(range, in: text)
-                    return RecognizedEntity(
-                        type: .category,
-                        range: nsRange,
-                        value: categoryInfo.category,
-                        confidence: 0.8
-                    )
-                }
+        // Same keywords and order as `parseCategory`
+        for keyword in sortedCategoryKeys where matches(keyword, in: normalizedText) {
+            guard let categoryInfo = categoryEntry(keyword) else { continue }
+            // Find position of keyword
+            if let range = text.lowercased().range(of: keyword.key) {
+                let nsRange = NSRange(range, in: text)
+                return RecognizedEntity(
+                    type: .category,
+                    range: nsRange,
+                    value: categoryInfo.category,
+                    confidence: 0.8
+                )
             }
         }
 

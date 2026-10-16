@@ -271,8 +271,7 @@ score, top category, history, fx; tr leads with fx. Composed by
 Run: Actions → Screenshots with `frames` = `all`, in runs of a few locales (each run has 120
 minutes), the artifact into `screenshots/raw/<locale>/`, compose, then upload:
 `push-version-screenshots` with `version` 1.6; the custom pages (`push-custom-pages --submit`)
-once 1.6 is live. ja and ko leave the voice draft out (their order in
-`scripts/screenshot_captions.json`): the parser misreads those phrases ([backlog.md](backlog.md)).
+once 1.6 is live.
 
 ### App Privacy (the answers for the web form)
 

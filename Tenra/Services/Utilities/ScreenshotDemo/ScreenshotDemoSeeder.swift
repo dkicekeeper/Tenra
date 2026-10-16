@@ -648,7 +648,7 @@ struct ScreenshotDemoLexicon {
                          lunch: "Déjeuner", coffee: "Café", supermarket: "Carrefour",
                          taxi: "Uber", delivery: "Uber Eats", gym: "Salle de sport",
                          savingsTransfer: "Épargne",
-                         voiceDemoPhrase: isCA ? "Payé 12 pour les courses hier" : "12 euros de courses hier",
+                         voiceDemoPhrase: isCA ? "12 dollars d'épicerie hier" : "12 euros de courses hier",
                          tenReply: "Voici où est parti votre argent ce mois-ci, par catégorie.",
                          goalTrip: "Vacances", goalPhone: "Nouveau téléphone", goalBike: "Vélo",
                          debtFriend: "Julien", debtFamily: "Maman")
@@ -736,7 +736,7 @@ struct ScreenshotDemoLexicon {
                          lunch: "Lunch", coffee: "Coffee", supermarket: "Whole Foods",
                          taxi: "Uber", delivery: "DoorDash", gym: "Gym",
                          savingsTransfer: "Savings",
-                         voiceDemoPhrase: "Spent 15 dollars on a taxi",
+                         voiceDemoPhrase: "Spent 12 dollars on lunch",
                          tenReply: "Here is where your money went this month, by category.",
                          goalTrip: "Vacation", goalPhone: "New phone", goalBike: "Bike",
                          debtFriend: "Alex", debtFamily: "Mom")

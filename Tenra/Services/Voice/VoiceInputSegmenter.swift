@@ -198,7 +198,9 @@ enum VoiceInputSegmenter {
         // Group 1: digit amount. Group 2: word amount. Leading non-letter
         // for the word branch is consumed OUTSIDE group 2, so group 2's
         // location is the first letter of the word stem.
-        let pattern = #"(\d+(?:[.,]\d+)?)|(?:^|[^\p{L}])((?:"# + stemAlt + #")\p{L}*)"#
+        // A CJK unit right after the digits stays in the token, so "1만 2천"
+        // is one cluster (one space apart), as `VoiceInputParser` reads it.
+        let pattern = #"(\d+(?:[.,]\d+)?[億억万만千천百백]?)|(?:^|[^\p{L}])((?:"# + stemAlt + #")\p{L}*)"#
         return try! NSRegularExpression(pattern: pattern, options: [.caseInsensitive])
     }()
 

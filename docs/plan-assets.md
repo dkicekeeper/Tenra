@@ -171,6 +171,9 @@ JSON-ом на строке, как взносы у целей. `AssetRepository
 Мне должны / Я должен = Σ PersonalDebt.remaining открытых долгов по направлению
 ```
 
+Портфели акций и крипты ([plan-investments.md](plan-investments.md)) войдут сюда отдельной
+строкой «Инвестиции», когда появятся: калькулятор сразу строится так, чтобы строки добавлялись.
+
 Считает `NetWorthCalculator` (`nonisolated`, на `Sendable`-снимке, как `InsightsService`). Ключ
 пересчёта по правилу #12: `mutationVersion` операций, балансы, версия активов, версии целей и
 долгов, кредиты (`accountsMutationVersion`), `baseCurrency`, `currencyRatesVersion` и

@@ -69,6 +69,7 @@ this file is the full index.
 | [backlog.md](backlog.md) | Open items, ideas not planned yet, decisions that stand |
 | [plan-ai-assistant.md](plan-ai-assistant.md) | Plan in flight: Tenra as an AI finance assistant (hybrid Apple + Claude brain, generative UI blocks, orb mascot, phases, cloud economics), the `server/assistant` protocol and setup |
 | [plan-assets.md](plan-assets.md) | Plan, owner's decisions taken 2026-10-16, not started: assets (real estate, vehicles) with market valuations, rent and upkeep, and net worth |
+| [plan-investments.md](plan-investments.md) | Draft plan, awaiting the owner's decisions: investment portfolios (KASE and US stocks, ETFs, crypto on exchanges and wallets), quote sources and their licences, read-only exchange keys, what Ten may and may not say about investments |
 | [public/](public/) | The support site: privacy policy, terms of use, support (GitHub Pages) |
 
 ## Archive

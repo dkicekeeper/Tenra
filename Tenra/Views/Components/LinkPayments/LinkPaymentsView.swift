@@ -114,6 +114,8 @@ struct LinkPaymentsView: View {
 
     var body: some View {
         transactionList
+            // Named: built with Xcode 27 the edges as they come are hard (DesignKit 5.1.0).
+            .scrollEdgeEffectStyle(.soft, for: [.top, .bottom])
             .safeAreaBar(edge: .top) {
                 filterHeader
             }

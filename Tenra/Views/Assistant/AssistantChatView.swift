@@ -134,6 +134,8 @@ struct AssistantChatView: View {
         // Under the navigation bar and Ten the system's hard edge effect: the bars' backing
         // reaches down to the end of Ten's bar, so the thread never runs through the particles.
         .scrollEdgeEffectStyle(.hard, for: .top)
+        // Under the composer the soft edge, named: built with Xcode 27 it would be hard too.
+        .scrollEdgeEffectStyle(.soft, for: .bottom)
         .safeAreaBar(edge: .top) { mascotBar }
         .safeAreaBar(edge: .bottom) {
             AssistantComposerBar(

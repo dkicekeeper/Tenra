@@ -80,6 +80,8 @@ struct AssistantView: View {
             .scrollDismissesKeyboard(.interactively)
             // A tap anywhere puts the keyboard away (buttons still work).
             .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
+            // Named: built with Xcode 27 the edge as it comes is hard (DesignKit 5.1.0).
+            .scrollEdgeEffectStyle(.soft, for: .bottom)
             .safeAreaBar(edge: .bottom) {
                 AssistantComposerBar(
                     model: model,

@@ -116,6 +116,12 @@ choice: filter sheets, home sections, transaction lists, entity detail screens, 
 Build a new screen from the closest pattern. Every one is made of DesignKit pieces; the structure
 is Tenra's.
 
+A bar over scrolling content (`safeAreaBar`) names its edge style on the scroll view: built with
+Xcode 27 the style as it comes is hard, a plate with a line (DesignKit 5.1.0, its gotchas.md).
+`.scrollEdgeEffectStyle(.soft, for: edge)` everywhere, except the hard top over Ten's chat thread
+(the owner's choice); DesignKit's own bars (`.dateButtonsSafeArea`, `IconPicker`,
+`.heroScrollEdge()`) name theirs.
+
 ### Entity edit sheet (hero form)
 
 `AccountEditView`, `CategoryEditView`, `SubscriptionEditView`, `DepositEditView`, `LoanEditView`,
@@ -440,5 +446,5 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
    Tenra model.
 3. Build the screen from the closest pattern in §4; amounts per §5.
 4. Strings in all 11 locales (CLAUDE.md rule #13); no em dashes in user-facing text.
-5. `python3 scripts/design_lint.py` passes.
+5. `python3 scripts/design_lint.py` passes. A new `safeAreaBar` names its scroll edge style (§4).
 6. Don't change a shipped screen's layout as a side effect; the owner checks UI on device.

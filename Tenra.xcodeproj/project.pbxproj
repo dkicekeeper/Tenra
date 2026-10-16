@@ -642,7 +642,7 @@
 			repositoryURL = "https://github.com/dkicekeeper/DesignKit";
 			requirement = {
 				kind = revision;
-				revision = f3f79ec634a49400c4e895f024e4bd163c312d4a;
+				revision = 77284a293dc8f6a343efe1d78f8bdf4e4e8bbc7b;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

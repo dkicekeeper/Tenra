@@ -250,9 +250,10 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    - **App Review notes** (below) in App Review Information → Notes.
    - The **product page test** started on 13.10 ends when 1.6 is released: release now and lose
      it, or hold the release (owner's call).
-10. **Terms of Use** ([public/terms-of-use.html](public/terms-of-use.html)): they still say Tenra
-    never sees financial data. Add a section on Ten (answers can be wrong, not financial advice,
-    questions go to Anthropic) before or with the release.
+10. **Terms of Use** ([public/terms-of-use.html](public/terms-of-use.html)): section 4 on Ten
+    (optional, answers can be wrong, nothing saved without confirmation, questions go to Anthropic,
+    monthly limits) and the data section rewritten on 2026-10-16. The owner reads it before
+    submitting; it goes live with the merge to `main`.
 11. **Submit for review** (the founder, in App Store Connect).
 12. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in
     [promotion-plan.md](promotion-plan.md) §1, the week after release against the week before in §6.

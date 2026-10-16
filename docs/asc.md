@@ -11,7 +11,7 @@
 | Создать версию в App Store, вставить What's New из `docs/release-notes.md` (заметки версии, которая готовится) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
 | Специальные страницы продукта и тест страницы (скриншоты, промо-текст, ключевые слова) из `appstore/product-pages.json` | GitHub Actions, `.github/workflows/asc.yml` | `push-custom-pages`, `push-experiment` (поле `args`: `--submit`, `--start`) |
 | Выдать или забрать Tenra Pro (`pro`) одному покупателю, посмотреть, что о нём знает RevenueCat | GitHub Actions, `.github/workflows/revenuecat.yml`, секрет `REVENUECAT_SECRET_KEY` | Actions → RevenueCat: `grant` / `revoke` / `status`, `app_user_id`, `days`; id в логе скрыт |
-| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all` или `cpp` |
+| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp` или `ten` |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
 
 Репозиторий Tenra публичный, поэтому логи Actions видны всем. Продажи и выручку `asc.py` в Actions
@@ -99,15 +99,37 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 
 ## Скриншоты, специальные страницы и тест страницы
 
-1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-12, `cpp` только 02 и
-   09-12 для специальных страниц). Артефакт `raw-screenshots` кладётся в `screenshots/raw/<локаль>/`.
-2. **Собрать кадры в Figma** (файл Tenra, страница «Screenshots L10n»): шаблон `tpl-<кадр>`,
-   картинка экрана заливкой слоя `Screenshot` внутри модели iPhone, заголовок Inter Semi Bold 98 и
-   подзаголовок Inter Medium 58 из `scripts/screenshot_captions.json`, не больше двух строк
-   заголовка. Экспорт 1320×2868 в `screenshots/final/<локаль>/`. Картинки грузятся в Figma сырыми
-   байтами (`Content-Type: image/png`): multipart через прокси облака обрывается по таймауту.
-3. **Отправить:** `push-custom-pages --submit` или `push-experiment --submit`, потом после
-   одобрения `push-experiment --start`. Повторный запуск не перезаливает неизменённые скриншоты.
+1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-16, `cpp` только 02 и
+   09-12 для специальных страниц, `ten` только 07, 13, 14). Workflow держит один запуск и одну
+   очередь: новый запуск, пока один ждёт, отменяет ждущий. Шаг Тэна, который ничего не нашёл,
+   кладёт рядом `19-debug-<шаг>` (экран) и `19-debug-<шаг>-tree` (дерево доступности, текст). Артефакт `raw-screenshots` кладётся в `screenshots/raw/<локаль>/`.
+   Все 13 локалей помещаются в один запуск (около 80 минут). Перед сборкой просмотреть кадры:
+   у первой локали запуска логотипы подписок могут не успеть загрузиться (квадраты с буквами
+   вместо Netflix и YouTube), сумма или строка истории может попасть в кадр посреди анимации.
+   Такие локали переснять отдельным запуском, первой поставив другую. У tr таб-бар на 05 свёрнут,
+   а заголовок долгов (16) мелкий: длинные строки прокручивают экран, это норма.
+   В режиме ScreenshotDemo Тэн доступен и в симуляторе: ответы играет
+   `ScreenshotDemoTransport` без сети, а сид добавляет цели, долги и подписку со списанием
+   завтра (сообщение Тэна на главной). Кадры 13-16: ответ Тэна на карточках, черновик из
+   голоса, цель, долги; 07 теперь голосовой экран Тэна.
+2. **Собрать кадры:** `python3 scripts/compose_screenshots.py [локали] [--frames 13-ten-answer …]`
+   кладёт 1320×2868 в `screenshots/final/<локаль>/`. Фон и iPhone берутся из шести шаблонов
+   `screenshots/templates/background-a…f.png` (сняты с макетов Figma, файл Tenra, страница
+   «Screenshots L10n»), экран вставляется в дисплей модели с Dynamic Island поверх, подпись из
+   `scripts/screenshot_captions.json`: заголовок Inter SemiBold 98, подзаголовок Inter Medium 58
+   (ja и ko: Noto Sans JP/KR), не больше двух строк каждый, строки выровнены по длине; `\n` в
+   подписи ставит перенос руками. Какой кадр на каком фоне: `FRAMES` в скрипте (в порядке
+   магазина один фон не стоит два раза подряд). Нужны Pillow и numpy; шрифты скрипт берёт из
+   системы или скачивает в `~/.cache/tenra-fonts`. Новый дизайн фона или модели: экспортировать
+   шаблон из Figma без подписи, экран залить чёрным, положить в `screenshots/templates/`.
+3. **Отправить:** скриншоты версии: `push-version-screenshots` с `version` (кадры из
+   `defaultOrder` в `scripts/screenshot_captions.json`, у tr свой `order`, не больше 10);
+   специальные страницы: `push-custom-pages --submit`; тест страницы: `push-experiment --submit`,
+   потом после одобрения `push-experiment --start`. Повторный запуск не перезаливает
+   неизменённые скриншоты.
+4. **Возрастной рейтинг:** `age-rating` показывает ответы анкеты против ответов Tenra в
+   `asc.py`, `age-rating` с `args` `--apply` ставит их на версию в подготовке. Анкету App
+   Privacy API не умеет: только веб-форма.
 
 Ключевые слова специальной страницы берутся только из поля Keywords этой локали (`keywords`),
 одно слово принадлежит одной странице. Тест страницы идёт на версии, которая сейчас в магазине,

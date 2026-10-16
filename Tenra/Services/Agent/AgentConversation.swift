@@ -90,13 +90,25 @@ final class AgentConversation {
     /// history keeps at most this many before a question.
     static let maxKeptMessages = 60
 
-    /// Over `maxKeptMessages`, the oldest questions go, whole: the history then starts at a
-    /// question, without the results owed to the reply before it. Returns whether anything
-    /// went; the <app_context> went with the first message then, so it has to go again.
+    /// The server takes a body of at most 256 KB, and one turn's tool results can add half of
+    /// that (a year's forecast, a long search), so the history keeps at most this much before
+    /// a question.
+    static let maxKeptBytes = 128 * 1024
+
+    /// Over `maxKeptMessages` or `maxKeptBytes`, the oldest questions go, whole: the history then
+    /// starts at a question, without the results owed to the reply before it. Returns whether
+    /// anything went; the <app_context> went with the first message then, so it has to go again.
     @discardableResult
     func trimIfNeeded() -> Bool {
-        guard messages.count > Self.maxKeptMessages else { return false }
-        let earliest = messages.count - Self.maxKeptMessages
+        let encoder = JSONEncoder()
+        let sizes = messages.map { (try? encoder.encode($0).count) ?? 0 }
+        var earliest = max(0, messages.count - Self.maxKeptMessages)
+        var keptBytes = sizes[earliest...].reduce(0, +)
+        while keptBytes > Self.maxKeptBytes, earliest < messages.count - 1 {
+            keptBytes -= sizes[earliest]
+            earliest += 1
+        }
+        guard earliest > 0 else { return false }
         guard let start = messages.indices.dropFirst(earliest).first(where: { index in
             messages[index].role == .user && messages[index].content.contains { $0["type"] == "text" }
         }) else { return false }

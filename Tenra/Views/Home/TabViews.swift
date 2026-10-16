@@ -121,7 +121,7 @@ struct AssistantTab: View {
     @Environment(AppCoordinator.self) private var coordinator
 
     var body: some View {
-        if !AgentAttestation.isSupported {
+        if !AssistantAvailability.deviceSupported {
             NavigationStack {
                 EmptyState(icon: "sparkles", title: String(localized: "assistant.error.device"))
                     .navigationTitle(String(localized: "tab.assistant"))

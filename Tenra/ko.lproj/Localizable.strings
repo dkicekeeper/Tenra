@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "저축액 (수입 − 지출)";
 "insights.formula.savingsRate.row.rate" = "저축률";
 "insights.formula.savingsRate.explainer" = "수입 중 한 달을 버티고 남는 비율이에요. 저축률이 높을수록 여유가 커져요. 수입이 적은 달의 유연성, 더 빠른 목표 달성, 그리고 든든한 비상금이 생겨요.";
-"insights.formula.savingsRate.rec.good" = "20%% 이상 저축하고 있어요. 이 습관을 유지하고 남는 돈을 장기 목표로 돌려 보세요.";
+"insights.formula.savingsRate.rec.good" = "20% 이상 저축하고 있어요. 이 습관을 유지하고 남는 돈을 장기 목표로 돌려 보세요.";
 "insights.formula.savingsRate.rec.fair" = "괜찮지만, 20%%까지 올리면 매달 %@를 더 저축할 수 있어요. 슬금슬금 늘어난 반복·일회성 카테고리를 줄여 보세요.";
 "insights.formula.savingsRate.rec.low" = "10%% 미만이면 여유가 없어요. 매달 최소 %@를 더 저축하는 것을 목표로, 가장 큰 재량 지출 카테고리부터 시작해 보세요.";
 "insights.formula.emergencyFund.title" = "비상금";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "20%%에 도달하려면 매달 지출을 약 %@ 줄이거나 수입을 약 %@ 늘려 보세요.";
-"insights.health.rec.savingsRate.healthy" = "훌륭해요. 이 속도를 유지하세요. 20%% 이상이 장기적으로 권장되는 수준이에요.";
+"insights.health.rec.savingsRate.healthy" = "훌륭해요. 이 속도를 유지하세요. 20% 이상이 장기적으로 권장되는 수준이에요.";
 
 "insights.health.rec.budgetAdherence.empty" = "예산이 설정돼 있지 않아요. 카테고리에 예산을 설정하면 이 항목이 점수에 반영돼요.";
 "insights.health.rec.budgetAdherence.partial" = "카테고리 %d개가 예산을 초과했어요. 열어서 과다 지출의 원인을 찾아보세요.";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "어시스턴트는 클라우드에서 작동합니다";
-"assistant.consent.message" = "답변을 위해 Anthropic의 모델 Claude에 물어봅니다. 휴대폰 밖으로 나가는 것은 질문과 답변에 필요한 정보(합계, 카테고리, 계좌 이름, 당신에 대해 기억하는 정보, 필요한 거래)뿐입니다. 데이터베이스, 영수증, 명세서는 이곳에 남습니다. Tenra 서버는 아무것도 저장하지 않으며, 데이터는 모델 학습에 사용되지 않습니다.";
+"assistant.consent.message" = "답변을 위해 Anthropic의 모델 Claude에 물어봅니다. 휴대폰 밖으로 나가는 것은 질문과 답변에 필요한 정보(합계, 카테고리, 계좌 이름, 저축 목표와 빌린 돈, 당신에 대해 기억하는 정보, 필요한 거래)뿐입니다. 데이터베이스, 영수증, 명세서는 이곳에 남습니다. Tenra 서버는 질문과 답변을 저장하지 않으며, 데이터는 모델 학습에 사용되지 않습니다.";
 "assistant.consent.allow" = "켜기";
 "assistant.consent.notNow" = "나중에";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "계좌부터 시작할까요?";
 "assistant.empty.history" = "아직 비어 있어요. 첫 거래를 추가할까요?";
 "assistant.empty.memory" = "당신에 대해 알려 주세요, 기억할게요";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "활성";
+"status.paused" = "일시정지";
+"status.archived" = "보관됨";
+"status.pending" = "대기 중";
+"textInput.characterCount" = "%2$lld자 중 %1$lld자";

@@ -92,7 +92,7 @@ describe("App Attest", () => {
     await kv.put("tier:p", "pro");
     await kv.put(`attest-key:${fixture.keyId}`, await storedKey());
     const config = { APP_ID: fixture.appId, PRO_MONTHLY_CALLS: "0" };
-    const payload = body([userTurn("hi")]);
+    const payload = JSON.stringify({ protocol: 1, messages: [userTurn("hi")], user: "p" });
 
     // A Pro id alone is only a claim.
     const missing = await worker.fetch(post({ "x-tenra-user": "p" }, payload), env(config, kv), ctx);
@@ -106,5 +106,27 @@ describe("App Attest", () => {
     );
     expect(signed.status).toBe(429);
     expect(await signed.json()).toMatchObject({ error: "quota", tier: "pro", limit: 0 });
+  });
+
+  it("counts a Pro id only inside the signed body", async () => {
+    const kv = new MemoryKV();
+    await kv.put("tier:p", "pro");
+    await kv.put(`attest-key:${fixture.keyId}`, await storedKey());
+    const config = { APP_ID: fixture.appId, PRO_MONTHLY_CALLS: "0", FREE_MONTHLY_CALLS: "0" };
+    const signedHeaders = async (payload: string, counter: number) => ({
+      "x-tenra-key": fixture.keyId,
+      "x-tenra-assertion": await assertion(new TextEncoder().encode(payload), counter),
+    });
+
+    // A copied Pro id in the header of a body that names nobody is a free request.
+    const unsigned = body([userTurn("hi")]);
+    const copied = await worker.fetch(post({ "x-tenra-user": "p", ...(await signedHeaders(unsigned, 1)) }, unsigned), env(config, kv), ctx);
+    expect(await copied.json()).toMatchObject({ error: "quota", tier: "free" });
+
+    // A header that disagrees with the signed body is refused.
+    const other = JSON.stringify({ protocol: 1, messages: [userTurn("hi")], user: "q" });
+    const mismatch = await worker.fetch(post({ "x-tenra-user": "p", ...(await signedHeaders(other, 2)) }, other), env(config, kv), ctx);
+    expect(mismatch.status).toBe(401);
+    expect(await mismatch.json()).toEqual({ error: "user" });
   });
 });

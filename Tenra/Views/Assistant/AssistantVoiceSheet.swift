@@ -26,17 +26,37 @@ struct AssistantVoiceSheet: View {
     @State private var showingPermissionAlert = false
     @State private var isPermissionDenied = false
     @State private var permissionMessage = ""
+    /// Screenshot capture (DEBUG): the Simulator recognizes no speech, so the sheet shows the
+    /// demo phrase as heard while it "records", and the orb stops it.
+    @State private var demoRecording = AssistantVoiceSheet.isScreenshotDemo
+
+    private static var isScreenshotDemo: Bool {
+        #if DEBUG
+        return ScreenshotDemoMode.isActive
+        #else
+        return false
+        #endif
+    }
+
+    private var demoPhrase: String? {
+        #if DEBUG
+        return Self.isScreenshotDemo ? ScreenshotDemoLexicon.current().voiceDemoPhrase : nil
+        #else
+        return nil
+        #endif
+    }
 
     /// What was heard, the final transcription once there is one.
     private var heard: String {
-        voiceService.getFinalText().trimmingCharacters(in: .whitespacesAndNewlines)
+        if let demoPhrase { return demoPhrase }
+        return voiceService.getFinalText().trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     var body: some View {
         NavigationStack {
             ZStack {
-                if voiceService.isRecording {
-                    VoiceLevelGlow(voiceService: voiceService, followsVoice: true)
+                if voiceService.isRecording || demoRecording {
+                    VoiceLevelGlow(voiceService: voiceService, followsVoice: !Self.isScreenshotDemo)
                         .ignoresSafeArea()
                         .transition(.opacity.animation(AppAnimation.gentleSpring))
                 }
@@ -86,6 +106,7 @@ struct AssistantVoiceSheet: View {
         .onAppear {
             voiceService.categoriesViewModel = coordinator.categoriesViewModel
             voiceService.accountsViewModel = coordinator.accountsViewModel
+            guard !Self.isScreenshotDemo else { return }
             start()
         }
         .onDisappear {
@@ -101,7 +122,9 @@ struct AssistantVoiceSheet: View {
     @ViewBuilder
     private var transcript: some View {
         Group {
-            if voiceService.transcribedText.isEmpty {
+            if let demoPhrase {
+                AnimatedTranscriptionText(text: demoPhrase, entities: [], font: AppTypography.h1, alignment: .leading)
+            } else if voiceService.transcribedText.isEmpty {
                 if voiceService.isRecording {
                     ListeningPrompt()
                 } else {
@@ -123,22 +146,27 @@ struct AssistantVoiceSheet: View {
 
     @ViewBuilder
     private var controls: some View {
-        if voiceService.isRecording {
+        if voiceService.isRecording || demoRecording {
             // The orb's frame leaves room for its glow and takes that room back vertically.
             HStack {
                 Spacer()
-                VoiceStopOrb(voiceService: voiceService, followsVoice: true) {
+                VoiceStopOrb(voiceService: voiceService, followsVoice: !Self.isScreenshotDemo) {
                     HapticManager.play(.tap)
+                    if demoRecording {
+                        demoRecording = false
+                        return
+                    }
                     silenceTimer?.cancel()
                     voiceService.stopRecording()
                 }
+                .accessibilityIdentifier("assistant.voice.orb")
                 Spacer()
             }
             .padding(.vertical, -AppSpacing.xl)
             .padding(.bottom, AppSpacing.xl)
         } else {
             VStack(spacing: AppSpacing.sm) {
-                if !voiceService.transcribedText.isEmpty {
+                if !voiceService.transcribedText.isEmpty || demoPhrase != nil {
                     DSButton(String(localized: "assistant.voice.send"), systemImage: "arrow.up", fullWidth: true) {
                         let text = heard
                         guard !text.isEmpty else { return }
@@ -146,6 +174,7 @@ struct AssistantVoiceSheet: View {
                         onSend(text)
                         dismiss()
                     }
+                    .accessibilityIdentifier("assistant.voice.send")
                 }
                 DSButton(String(localized: "assistant.voice.again"), systemImage: "mic.fill", appearance: .flat, fullWidth: true) {
                     voiceService.transcribedText = ""

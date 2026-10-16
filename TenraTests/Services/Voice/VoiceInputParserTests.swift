@@ -24,21 +24,27 @@ struct VoiceInputParserTests {
     /// Builds a parser backed by an isolated in-memory repository so tests
     /// never touch shared state. VMs are returned and must be retained by the
     /// caller — the parser holds only *weak* references to them.
+    /// `CategoriesViewModel.transactionStore` is weak: the stores live here.
+    private static var stores: [TransactionStore] = []
+
     private static func makeParser() -> (VoiceInputParser, CategoriesViewModel, AccountsViewModel, TransactionsViewModel) {
         let repo = UserDefaultsRepository(
             userDefaults: UserDefaults(suiteName: "voice_parser_tests.\(UUID().uuidString)")!
         )
+        let store = TransactionStore(
+            repository: repo,
+            balanceCoordinator: BalanceCoordinator(repository: repo),
+            recurringStore: RecurringStore(repository: repo)
+        )
+        stores.append(store)
         let categoriesVM = CategoriesViewModel(repository: repo)
+        categoriesVM.transactionStore = store
         let accountsVM   = AccountsViewModel(repository: repo)
         let transactionsVM = TransactionsViewModel(repository: repo)
 
-        // Seed a handful of categories so the live-category lookup in
-        // parseCategory() finds a match and returns the seeded name.
-        // The parser also has a built-in categoryMap keyed on RU keywords
-        // ("такси" → "Транспорт", "кофе" → "Кафе и рестораны", etc.); when no live
-        // category matches it falls back to the hardcoded string directly,
-        // so the assertions below work whether or not these inserts land
-        // before parse() runs — but seeding makes the path deterministic.
+        // Seed the user's categories (Russian presets) in the store, which
+        // `customCategories` reads, so the parser resolves keywords onto them:
+        // a keyword in any language lands in the matching seeded category.
         categoriesVM.addCategory(CustomCategory(
             name: "Транспорт",
             iconSource: .sfSymbol("car.fill"),
@@ -162,9 +168,10 @@ struct VoiceInputParserTests {
     // MARK: - 3a. German keywords (Phase 1 localization)
 
     /// "50 für lebensmittel ausgegeben" — "ausgegeben" is in expenseKeywords
-    /// (DE group) → .expense; "lebensmittel" is in categoryMap (DE section)
-    /// → category "Lebensmittel" (the German onboarding preset name).
-    @Test("DE: '50 für lebensmittel ausgegeben' → expense, Lebensmittel")
+    /// (DE group) → .expense; "lebensmittel" targets the German preset name
+    /// "Lebensmittel", which resolves through its preset group to the user's
+    /// own groceries category (seeded in Russian: "Продукты").
+    @Test("DE: '50 für lebensmittel ausgegeben' → expense, the user's groceries")
     func deExpenseKeyword() {
         let (parser, cat, acc, tx) = Self.makeParser()
         _ = (cat, acc, tx)
@@ -173,7 +180,7 @@ struct VoiceInputParserTests {
 
         #expect(result.amount == Decimal(50))
         #expect(result.type == .expense)
-        #expect(result.categoryName == "Lebensmittel")
+        #expect(result.categoryName == "Продукты")
     }
 
     /// "gehalt bekommen 3000" — both "gehalt" and "bekommen" are in
@@ -360,8 +367,8 @@ struct VoiceInputParserTests {
     // MARK: - 3d. Italian / Ukrainian keywords (Phase 4 localization)
 
     /// "speso 30 al ristorante" — "speso" is in expenseKeywords (IT group);
-    /// "ristorante" maps to preset "Ristoranti".
-    @Test("IT: 'speso 30 al ristorante' → expense, Ristoranti")
+    /// "ristorante" maps to preset "Ristoranti", the user's dining category here.
+    @Test("IT: 'speso 30 al ristorante' → expense, the user's dining category")
     func itExpenseKeyword() {
         let (parser, cat, acc, tx) = Self.makeParser()
         _ = (cat, acc, tx)
@@ -370,7 +377,7 @@ struct VoiceInputParserTests {
 
         #expect(result.type == .expense)
         #expect(result.amount == Decimal(30))
-        #expect(result.categoryName == "Ristoranti")
+        #expect(result.categoryName == "Кафе и рестораны")
     }
 
     /// "ricevuto lo stipendio 2000" — "ricevuto"/"stipendio" are IT income keywords.
@@ -402,8 +409,8 @@ struct VoiceInputParserTests {
     }
 
     /// "витратив 200 на продукти" — "витратив" is a UK expense keyword;
-    /// "продукти" maps to preset "Продукти".
-    @Test("UK: 'витратив 200 на продукти' → expense, Продукти")
+    /// "продукти" maps to preset "Продукти", the user's groceries here.
+    @Test("UK: 'витратив 200 на продукти' → expense, the user's groceries")
     func ukExpenseKeyword() {
         let (parser, cat, acc, tx) = Self.makeParser()
         _ = (cat, acc, tx)
@@ -412,7 +419,7 @@ struct VoiceInputParserTests {
 
         #expect(result.type == .expense)
         #expect(result.amount == Decimal(200))
-        #expect(result.categoryName == "Продукти")
+        #expect(result.categoryName == "Продукты")
     }
 
     /// "отримав зарплату 15000" — "отримав"/"зарплата" are UK income keywords.

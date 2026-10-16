@@ -208,16 +208,79 @@ Tenra 1.6의 새로운 기능:
 
 ## Submission checklist (1.6)
 
-1. **Device check** of TestFlight 18 (goals and debts) and 20 (Ten with goals and debts, the soft edge under Ten); fixes first.
-2. **Workers Paid** in Cloudflare ($5 a month, [plan-ai-assistant.md](plan-ai-assistant.md) §5.1): the free plan's 1 000 KV writes a day and 10 ms CPU per request will not carry real traffic.
-3. **Archive from the Mac** (Xcode 27, as for 1.5). The build number must be above every CI TestFlight build (the latest is 23 on 2026-10-15, and each TestFlight run adds one: check TestFlight first).
-4. **`prepare-version`** with version `1.6` and that build: creates the version, pastes the What's New above into the 13 locales, selects the build.
-5. **App Privacy** in App Store Connect (draft below): through the web form only, the API does not set it.
-6. **App Review notes** (below) in App Review Information → Notes.
-7. **Submit for review** (the founder, in App Store Connect).
-8. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in [promotion-plan.md](promotion-plan.md) §1.
+The release audit of 2026-10-15 ([archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md))
+fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stays open is in
+[backlog.md](backlog.md). In order:
 
-### App Privacy (draft: check against the form before saving)
+1. **Merge the audit branch** into `main` once CI is green.
+2. ~~**Deploy the Worker**~~: deployed from the audit branch on 2026-10-15 (version
+   `83a6b64a`). Check: open an old chat in the current TestFlight build and ask something.
+   TestFlight builds up to 28 don't sign the user id (27 and 28 are the DesignKit 5.0 checks,
+   built from `claude/designkit-5` without this branch), so they count as free (150 calls a
+   month per install).
+3. **Cloudflare Workers Paid** ($5 a month, [plan-ai-assistant.md](plan-ai-assistant.md) §5.1): the
+   free plan's 1 000 KV writes a day (about 300 answers for everyone) and 10 ms CPU per request
+   will not carry App Review plus real users.
+4. **Anthropic Console**: raise the Tenra workspace's monthly spend limit above the $30 beta cap.
+5. ~~**RevenueCat**~~: the founder is the only Founding User and has lifetime `pro`.
+6. **Archive from the Mac** (Xcode 27) with a build number above 28 (the latest CI TestFlight
+   build; check TestFlight first), after the audit branch and DesignKit 5.0 are on `main`. This is the first build with the iOS 27 code paths compiled
+   in: no TestFlight build has run them.
+7. **Device check of that build** from TestFlight, on the iOS 27 iPhone:
+   - Ten's place at the right end of the tab bar; the consent sheet ("Turn on", "Not now");
+     "coffee 1500" before consent (drafts on the phone); one cloud answer; Settings › Assistant.
+   - A long chat, then Settings → backup → restore that backup → open Ten: the chat is there,
+     no crash. "Delete all data": Ten's home and Home's notices are empty.
+   - A debt of 13 437.29, a repayment of 1 142.49, then the suggested rest: it settles. Change a
+     goal's currency with money in it: the amounts move.
+   - Without Pro (or a sandbox account without it): paperclip → File → a CSV shows the paywall.
+   - A sandbox purchase; a subscription card with VoiceOver (reads "Active", not a key).
+   - Home with an unread notice from Ten for a minute: Instruments → Energy Log, or watch the
+     battery and the 120 Hz indicator. If Ten keeps the display busy, use the still glyph there.
+8. **Screenshots** (below): captured on the 1.6 UI with DesignKit 5.0 and the new voice parser in
+   13 locales (2026-10-16), composed, uploaded to version 1.6.
+   The custom product pages keep the 1.5 frames until 1.6 is out: `push-custom-pages --submit`
+   after the release (they show beside the live build).
+9. **App Store Connect, version 1.6** (created on 2026-10-15 with What's New in 13 locales; the
+   age rating answered through the API, `asc.py age-rating`: the new "social media" question
+   No, the rating stays 4+):
+   - `prepare-version` with version `1.6` and the build from step 6 (selects the build).
+   - **App Privacy** through the web form (the API has no endpoint for it): the answers below.
+     The label is the app's, not the version's: it shows on the live page as soon as it is
+     published, so publish it with the submission.
+   - **App Review notes** (below) in App Review Information → Notes.
+   - The **product page test** started on 13.10 ends when 1.6 is released: release now and lose
+     it, or hold the release (owner's call).
+10. **Terms of Use** ([public/terms-of-use.html](public/terms-of-use.html)): section 4 on Ten
+    (optional, answers can be wrong, nothing saved without confirmation, questions go to Anthropic,
+    monthly limits) and the data section rewritten on 2026-10-16. The owner reads it before
+    submitting; it goes live with the merge to `main`.
+11. **Submit for review** (the founder, in App Store Connect).
+12. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in
+    [promotion-plan.md](promotion-plan.md) §1, the week after release against the week before in §6.
+
+### Screenshots
+
+App Store Connect takes the 6.9" set (1320×2868) for every iPhone; at most 10 per locale. In
+ScreenshotDemo mode Ten runs in the Simulator on a scripted transport, and the seed has goals,
+debts and a subscription charged tomorrow (Ten's notice on Home); see [asc.md](asc.md),
+Screenshots. Frames: 01-12 reshot on the 1.6 UI (Ten's tab instead of "+"), 07 is now Ten's
+voice sheet, new 13 (Ten answers on cards), 14 (a spoken expense drafted with Save), 15 (a goal),
+16 (debts, one overdue). Store order (10): Ten answers, Ten drafts, home, finances, goal, debts,
+score, top category, history, fx; tr leads with fx. Composed by
+`scripts/compose_screenshots.py` on the Figma templates' backgrounds.
+
+Run: Actions → Screenshots with `frames` = `all` (all 13 locales fit in one 120-minute run, about
+80 minutes), the artifact into `screenshots/raw/<locale>/`, compose, then upload:
+`push-version-screenshots` with `version` 1.6; the custom pages (`push-custom-pages --submit`)
+once 1.6 is live.
+
+### App Privacy (the answers for the web form)
+
+App Store Connect → Tenra → App Privacy → Data Types → Edit. "Do you or your third-party partners
+collect data from this app?" Yes. Tick the five types in the table (Purchase History included),
+Save, then for each: Purpose "App Functionality" only; "Linked to the user's identity" No;
+"Used for tracking" No. Then Publish.
 
 With Ten, "Data Not Collected" no longer holds: a question and what Ten looks up for it go to
 Anthropic, which keeps API requests for a limited period for safety review, and Tenra's server
@@ -228,13 +291,10 @@ tracking or ads; no data broker; no account.
 |---|---|---|---|---|
 | Financial Info › Other Financial Info | totals, categories, account names, transactions Ten looks up for an answer | App Functionality | No: Anthropic gets no identifier | No |
 | User Content › Other User Content | the questions typed or dictated in the chat | App Functionality | No | No |
-| Identifiers › Device ID | the App Attest key that counts free answers (kept up to 40 days) | App Functionality | No | No |
+| Identifiers › Device ID | the App Attest key that counts free answers (kept until 400 days after its last use; the monthly count 40 days) | App Functionality | No | No |
 | Identifiers › User ID | RevenueCat's anonymous app user ID, to check Pro (cached 10 minutes) and count Pro answers | App Functionality | No | No |
+| Purchases › Purchase History | RevenueCat records the purchases against that anonymous ID (its own App Privacy guide asks for it; the 1.0-1.5 label left it out) | App Functionality | No | No |
 
-To check before saving:
-- RevenueCat (since 1.0.1) records purchases against an anonymous app user ID: its own guide asks
-  apps to declare **Purchases › Purchase History** (App Functionality); the 1.0-1.5 label said "Data
-  Not Collected". Compare with RevenueCat's "Apple App Privacy" page and add it if it applies.
 - The privacy policy page ([public/privacy-policy.html](public/privacy-policy.html)) names Anthropic,
   RevenueCat and the rate and logo sources since the 1.6 update; it must be live before submission.
 

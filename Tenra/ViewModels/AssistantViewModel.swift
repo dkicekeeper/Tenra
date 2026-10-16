@@ -445,6 +445,23 @@ final class AssistantViewModel {
         Task { await refreshRecent() }
     }
 
+    /// "Delete all data" or a restored backup replaced the store: the open thread, its drafts
+    /// and attachments belong to the old data, and must neither show nor be written into the
+    /// new store. The next appearance brings back the new store's latest thread, if any.
+    func storeDidReset() {
+        conversation.reset()
+        entries = []
+        replyMood = .idle
+        sentContext = nil
+        clearThreadState()
+        threadId = UUID().uuidString
+        threadCreatedAt = access.now()
+        threadUpdatedAt = access.now()
+        restoreDone = false
+        recentThreads = []
+        Task { await refreshRecent() }
+    }
+
     func retry() async {
         guard case .failed = phase, let failedEntryId,
               let entry = entries.first(where: { $0.id == failedEntryId }),

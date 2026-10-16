@@ -208,6 +208,8 @@ struct AssistantView: View {
             SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) {
                 start(.question($0, spoken: false))
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("assistant.presets")
             if !chats.isEmpty {
                 recentChats
             }

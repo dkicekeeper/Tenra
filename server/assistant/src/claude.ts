@@ -10,6 +10,14 @@ type ContentBlock = Anthropic.Beta.BetaContentBlock;
 // API. Claude Haiku 5.5 has no server-side fallback: a refusal is returned as is.
 const SERVER_FALLBACK_MODELS = new Set(["claude-opus-5-5", "claude-sonnet-5-5", "claude-opus-5", "claude-fable-5-1"]);
 
+// A thinking block is bound to everything sent before it: the system prompt, the tools and the
+// earlier messages. Kept threads outlive both: a deploy changes SYSTEM_PROMPT or TOOLS, and the
+// app drops the oldest messages of a long thread (AgentConversation.trimIfNeeded). On an
+// enforced account (created after 2026-08-31) such a block is a 400 that no retry fixes, so the
+// thread would be dead. "drop_block" drops the stale blocks instead and the turn goes on
+// without that reasoning.
+const THINKING_BINDING_BETA = "thinking-binding-controls-2026-08-01";
+
 export function buildParams(config: Config, messages: Anthropic.Beta.BetaMessageParam[]): Params {
   const params: Params = {
     model: config.model,
@@ -19,14 +27,16 @@ export function buildParams(config: Config, messages: Anthropic.Beta.BetaMessage
     tools: TOOLS,
     // Forced tool choice is a 400 on the current models: render_reply is required by the prompt.
     tool_choice: { type: "auto" },
+    thinking: { type: "adaptive", block_binding: { prefix_mismatch_behavior: "drop_block" } },
     output_config: { effort: config.effort },
     // Caches the longest stable prefix, conversation included, across the turn's calls.
     cache_control: { type: "ephemeral" },
     messages,
     stream: true,
+    betas: [THINKING_BINDING_BETA],
   };
   if (SERVER_FALLBACK_MODELS.has(config.model)) {
-    params.betas = ["server-side-fallback-2026-07-01"];
+    params.betas = [THINKING_BINDING_BETA, "server-side-fallback-2026-07-01"];
     params.fallbacks = "default";
   }
   return params;
@@ -94,6 +104,23 @@ export function errorPayload(error: unknown): ErrorPayload {
   if (error instanceof Anthropic.RateLimitError) return { code: "upstream_busy", retryable: true };
   if (error instanceof Anthropic.BadRequestError) return { code: "bad_request", retryable: false };
   if (error instanceof Anthropic.APIConnectionError) return { code: "upstream_unavailable", retryable: true };
-  if (error instanceof Anthropic.APIError && (error.status ?? 0) >= 500) return { code: "upstream_unavailable", retryable: true };
+  if (error instanceof Anthropic.APIError) {
+    // An error event in the middle of a stream has no HTTP status, only the body's type.
+    switch (error.type) {
+      case "overloaded_error":
+      case "rate_limit_error":
+        return { code: "upstream_busy", retryable: true };
+      case "api_error":
+      case "timeout_error":
+        return { code: "upstream_unavailable", retryable: true };
+      case "invalid_request_error":
+        return { code: "bad_request", retryable: false };
+      case "authentication_error":
+      case "permission_error":
+      case "billing_error":
+        return { code: "upstream_unavailable", retryable: false };
+    }
+    if ((error.status ?? 0) >= 500) return { code: "upstream_unavailable", retryable: true };
+  }
   return { code: "internal", retryable: false };
 }

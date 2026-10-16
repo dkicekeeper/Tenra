@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "Saved (income − expenses)";
 "insights.formula.savingsRate.row.rate" = "Savings rate";
 "insights.formula.savingsRate.explainer" = "What share of your income survives the month. A higher rate buys you more freedom: flexibility in slow months, faster goal funding, and a real emergency cushion.";
-"insights.formula.savingsRate.rec.good" = "You're saving more than 20%%. Keep the routine and consider directing the surplus toward a long-term goal.";
+"insights.formula.savingsRate.rec.good" = "You're saving more than 20%. Keep the routine and consider directing the surplus toward a long-term goal.";
 "insights.formula.savingsRate.rec.fair" = "Decent, but pushing to 20%% means an extra %@ saved each month. Trim recurring or one-off categories that crept up.";
 "insights.formula.savingsRate.rec.low" = "Below 10%% leaves no buffer. Aim for at least %@ more each month. Start with the largest discretionary category.";
 "insights.formula.emergencyFund.title" = "Emergency Fund";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "To reach 20%%, cut expenses by ≈ %@ per month or grow income by ≈ %@ per month.";
-"insights.health.rec.savingsRate.healthy" = "Excellent, keep the pace. 20%%+ is the recommended level for long-term resilience.";
+"insights.health.rec.savingsRate.healthy" = "Excellent, keep the pace. 20%+ is the recommended level for long-term resilience.";
 
 "insights.health.rec.budgetAdherence.empty" = "Budgets aren't configured. Set them up on your categories. This component will then count toward the score.";
 "insights.health.rec.budgetAdherence.partial" = "%d categories are over budget. Open them to find the source of overspend.";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "The assistant works in the cloud";
-"assistant.consent.message" = "To answer, it asks Claude, a model by Anthropic. Only your question and what it looks up for the answer leave the phone: totals, categories, account names, the facts it remembers about you and the transactions it needs. Your database, receipts and statements stay here. Tenra’s server keeps nothing, and your data is not used to train models.";
+"assistant.consent.message" = "To answer, it asks Claude, a model by Anthropic. Only your question and what it looks up for the answer leave the phone: totals, categories, account names, your goals and debts, the facts it remembers about you and the transactions it needs. Your database, receipts and statements stay here. Tenra’s server keeps no questions or answers, and your data is not used to train models.";
 "assistant.consent.allow" = "Turn on";
 "assistant.consent.notNow" = "Not now";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "Shall we start with an account?";
 "assistant.empty.history" = "Nothing yet. Add the first one?";
 "assistant.empty.memory" = "Tell me about yourself, I'll remember";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Active";
+"status.paused" = "Paused";
+"status.archived" = "Archived";
+"status.pending" = "Pending";
+"textInput.characterCount" = "%1$lld of %2$lld characters";

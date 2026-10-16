@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "Biriken (gelir − gider)";
 "insights.formula.savingsRate.row.rate" = "Birikim oranı";
 "insights.formula.savingsRate.explainer" = "Gelirinin ne kadarı ay sonuna kalıyor. Oran ne kadar yüksekse o kadar özgürlük demek: durgun aylarda esneklik, hedeflere daha hızlı ulaşma ve gerçek bir güvence fonu.";
-"insights.formula.savingsRate.rec.good" = "%%20'den fazlasını biriktiriyorsun. Bu düzeni koru ve fazlayı uzun vadeli bir hedefe yönlendirmeyi düşün.";
+"insights.formula.savingsRate.rec.good" = "%20'den fazlasını biriktiriyorsun. Bu düzeni koru ve fazlayı uzun vadeli bir hedefe yönlendirmeyi düşün.";
 "insights.formula.savingsRate.rec.fair" = "Fena değil, ama %%20'ye çıkmak her ay fazladan %@ birikim demek. Sinsice artan tekrarlayan veya tek seferlik kategorileri kırp.";
 "insights.formula.savingsRate.rec.low" = "%%10'un altı hiç tampon bırakmaz. Her ay en az %@ daha biriktirmeyi hedefle. En büyük keyfi harcama kategorisinden başla.";
 "insights.formula.emergencyFund.title" = "Güvence Fonu";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "%%20'ye ulaşmak için giderleri ayda ≈ %@ azalt ya da geliri ayda ≈ %@ artır.";
-"insights.health.rec.savingsRate.healthy" = "Mükemmel, tempoyu koru. Uzun vadeli dayanıklılık için önerilen seviye %%20 ve üzeri.";
+"insights.health.rec.savingsRate.healthy" = "Mükemmel, tempoyu koru. Uzun vadeli dayanıklılık için önerilen seviye %20 ve üzeri.";
 
 "insights.health.rec.budgetAdherence.empty" = "Bütçeler ayarlanmamış. Kategorilerinde bütçe belirle. Bu bileşen o zaman puana dahil olur.";
 "insights.health.rec.budgetAdherence.partial" = "%d kategori bütçeyi aştı. Fazla harcamanın kaynağını bulmak için bu kategorileri aç.";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Asistan bulutta çalışır";
-"assistant.consent.message" = "Cevap vermek için Anthropic’in modeli Claude’a danışır. Telefondan yalnızca sorun ve cevap için baktıkları çıkar: toplamlar, kategoriler, hesap adları, senin hakkında hatırladığı bilgiler ve gereken işlemler. Veritabanın, fişlerin ve ekstrelerin burada kalır. Tenra sunucusu hiçbir şey saklamaz, verilerin model eğitiminde kullanılmaz.";
+"assistant.consent.message" = "Cevap vermek için Anthropic’in modeli Claude’a danışır. Telefondan yalnızca sorun ve cevap için baktıkları çıkar: toplamlar, kategoriler, hesap adları, hedeflerin ve borçların, senin hakkında hatırladığı bilgiler ve gereken işlemler. Veritabanın, fişlerin ve ekstrelerin burada kalır. Tenra sunucusu soru ve cevap saklamaz, verilerin model eğitiminde kullanılmaz.";
 "assistant.consent.allow" = "Aç";
 "assistant.consent.notNow" = "Şimdi değil";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "Bir hesapla başlayalım mı?";
 "assistant.empty.history" = "Henüz boş. İlkini ekleyelim mi?";
 "assistant.empty.memory" = "Bana kendinden bahset, hatırlarım";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Aktif";
+"status.paused" = "Duraklatıldı";
+"status.archived" = "Arşivlendi";
+"status.pending" = "Beklemede";
+"textInput.characterCount" = "%1$lld / %2$lld karakter";

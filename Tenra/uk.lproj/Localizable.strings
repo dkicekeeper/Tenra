@@ -871,7 +871,7 @@
 "insights.formula.savingsRate.row.saved" = "Заощаджено (дохід − витрати)";
 "insights.formula.savingsRate.row.rate" = "Норма заощаджень";
 "insights.formula.savingsRate.explainer" = "Яка частка вашого доходу переживає місяць. Вища норма дає більше свободи: гнучкість у мляві місяці, швидше фінансування цілей і справжню фінансову подушку.";
-"insights.formula.savingsRate.rec.good" = "Ви заощаджуєте понад 20%%. Тримайте цей ритм і подумайте, щоб спрямувати надлишок на довгострокову ціль.";
+"insights.formula.savingsRate.rec.good" = "Ви заощаджуєте понад 20%. Тримайте цей ритм і подумайте, щоб спрямувати надлишок на довгострокову ціль.";
 "insights.formula.savingsRate.rec.fair" = "Непогано, але зростання до 20%% означає додаткові %@ заощаджень щомісяця. Скоротіть регулярні чи разові категорії, які підросли.";
 "insights.formula.savingsRate.rec.low" = "Нижче 10%% не залишає запасу. Прагніть щонайменше на %@ більше щомісяця. Почніть із найбільшої необов'язкової категорії.";
 "insights.formula.emergencyFund.title" = "Фінансова подушка";
@@ -1609,7 +1609,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Щоб досягти 20%%, скоротьте витрати на ≈ %@ на місяць або збільште дохід на ≈ %@ на місяць.";
-"insights.health.rec.savingsRate.healthy" = "Чудово, тримайте темп. 20%%+ вважається рекомендованим рівнем для довгострокової стійкості.";
+"insights.health.rec.savingsRate.healthy" = "Чудово, тримайте темп. 20%+ вважається рекомендованим рівнем для довгострокової стійкості.";
 
 "insights.health.rec.budgetAdherence.empty" = "Бюджети не налаштовано. Задайте їх для своїх категорій, тоді цей компонент враховуватиметься в балі.";
 "insights.health.rec.budgetAdherence.partial" = "%d категорій перевищують бюджет. Відкрийте їх, щоб знайти джерело перевитрат.";
@@ -1939,7 +1939,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Асистент працює через хмару";
-"assistant.consent.message" = "Щоб відповісти, він звертається до моделі Claude від Anthropic. З телефона йдуть лише ваше запитання й те, що потрібно для відповіді: суми, категорії, назви рахунків, факти, які він про вас пам'ятає, і потрібні операції. База, чеки й виписки залишаються тут. Сервер Tenra нічого не зберігає, дані не використовуються для навчання моделей.";
+"assistant.consent.message" = "Щоб відповісти, він звертається до моделі Claude від Anthropic. З телефона йдуть лише ваше запитання й те, що потрібно для відповіді: суми, категорії, назви рахунків, ваші цілі й борги, факти, які він про вас пам'ятає, і потрібні операції. База, чеки й виписки залишаються тут. Сервер Tenra не зберігає запитань і відповідей, дані не використовуються для навчання моделей.";
 "assistant.consent.allow" = "Увімкнути";
 "assistant.consent.notNow" = "Не зараз";
 
@@ -2102,3 +2102,10 @@
 "assistant.empty.accounts" = "Почнемо з рахунку?";
 "assistant.empty.history" = "Поки порожньо. Додамо першу?";
 "assistant.empty.memory" = "Розкажіть про себе, я запам'ятаю";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Активна";
+"status.paused" = "Призупинена";
+"status.archived" = "Архівована";
+"status.pending" = "Очікує";
+"textInput.characterCount" = "%1$lld з %2$lld символів";

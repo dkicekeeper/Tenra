@@ -79,7 +79,7 @@ nonisolated final class AgentServerClient: AgentTransport {
             let task = Task {
                 do {
                     guard let user = await userID() else { throw AgentServerError.unauthorized }
-                    let body = try JSONEncoder().encode(AgentTurnRequest(messages: messages))
+                    let body = try JSONEncoder().encode(AgentTurnRequest(messages: messages, user: user))
                     var bytes = try await Self.send(body, user: user, baseURL: baseURL, session: session, attestation: attestation)
                     if case .failure(let error) = bytes, error == .attestation(reason: "unknown_key"), let attestation {
                         // The server lost the key (or never had it): register a new one, once.
@@ -117,7 +117,7 @@ nonisolated final class AgentServerClient: AgentTransport {
         request.setValue(user, forHTTPHeaderField: "x-tenra-user")
         request.httpBody = body
         if let attestation, let headers = try? await attestation.headers(for: body) {
-            // Without a signature Pro still works; the server asks for one only without Pro.
+            // Without a signature the server refuses the turn (401 attest), Pro or not.
             for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
         }
 

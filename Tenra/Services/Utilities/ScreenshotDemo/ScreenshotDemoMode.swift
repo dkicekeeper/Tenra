@@ -56,6 +56,10 @@ enum ScreenshotDemoMode {
         // loans are unlocked without RevenueCat network access.
         defaults.set(true, forKey: "tenra.premium.isFounder.v1")
 
+        // Ten answers from the cloud without its consent sheet; the answers themselves are
+        // scripted on the phone (ScreenshotDemoTransport).
+        defaults.set(true, forKey: AssistantMetrics.consentKey)
+
         // Home budgets/summary read best with a month window (budget rings show
         // progress); .allTime is the migration default otherwise. The previous,
         // complete month rather than .thisMonth, so a capture early in the month

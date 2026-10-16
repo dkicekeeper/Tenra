@@ -61,6 +61,8 @@ struct AssistantComposerBar: View {
                 ) {
                     onSend()
                 }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("assistant.composer")
             }
             .screenPadding()
         }

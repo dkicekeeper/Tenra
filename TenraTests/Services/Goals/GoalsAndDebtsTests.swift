@@ -161,6 +161,26 @@ struct GoalsAndDebtsTests {
         #expect(store.debt(id: "d")?.remaining == 50_000)
     }
 
+    @Test func centsThatAddUpCoverTheDebtWhicheverRepaymentGoes() async {
+        let store = DebtStore(repository: nil)
+        await store.add(PersonalDebt(id: "d", direction: .iOwe, person: "Mum", amount: 13_437.29, currency: "USD"))
+        await store.addRepayment(DebtRepayment(id: "r1", amount: 1_142.49, date: Self.day(2026, 10, 1)), to: "d")
+        // The rest as the sheet shows it: 1 142.49 + 12 294.80 is 13 437.289999999999 in Double.
+        await store.addRepayment(DebtRepayment(id: "r2", amount: 12_294.80, date: Self.day(2026, 10, 10)), to: "d")
+        #expect(store.debt(id: "d")?.settledAt == Self.day(2026, 10, 10))
+        #expect(store.debt(id: "d")?.remaining == 0)
+
+        // An earlier repayment goes, not the one that settled it: open again with what it carried.
+        await store.deleteRepayment(id: "r1", from: "d")
+        #expect(store.debt(id: "d")?.isSettled == false)
+        #expect(abs((store.debt(id: "d")?.remaining ?? 0) - 1_142.49) < 0.001)
+
+        // A goal whose contributions add up to its target the same way is reached.
+        let reached = GoalProgress.status(target: 0.4, saved: Array(repeating: 0.05, count: 8).reduce(0, +), deadline: nil, today: Self.day(2026, 10, 14), calendar: Self.calendar)
+        #expect(reached.isReached)
+        #expect(reached.left == 0)
+    }
+
     @Test func openDebtsSortByDueDateAndTotalOneWay() async {
         let store = DebtStore(repository: nil)
         await store.add(PersonalDebt(id: "a", direction: .owedToMe, person: "A", amount: 100, currency: "KZT", date: Self.day(2026, 9, 1), dueDate: Self.day(2026, 11, 1)))

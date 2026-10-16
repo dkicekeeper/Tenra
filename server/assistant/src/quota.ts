@@ -2,8 +2,8 @@ import type { Config } from "./config";
 
 // Soft quotas in Workers KV. KV is eventually consistent, so two calls from different
 // locations in the same second can both pass the last slot: acceptable for a monthly
-// budget. The global daily counter is the hard stop on spend; the Anthropic Console
-// spend limit sits behind it.
+// budget. The global daily counter is a soft stop on spend; the Anthropic Console spend
+// limit is the hard one behind it.
 
 export type Tier = "pro" | "free";
 
@@ -38,9 +38,12 @@ export async function consumeCall(kv: KVLike, userId: string, tier: Tier, config
   if (global >= config.globalDailyCalls) return { allowed: false, used, limit, reason: "global" };
   if (used >= limit) return { allowed: false, used, limit, reason: "user" };
 
+  // KV takes one write per second per key and refuses more with an error. The daily key is
+  // shared by every call, so two calls in the same second would fail one of them: a lost count
+  // is cheaper than a lost answer.
   await Promise.all([
-    kv.put(userKey, String(used + 1), { expirationTtl: 40 * 24 * 3600 }),
-    kv.put(globalKey, String(global + 1), { expirationTtl: 2 * 24 * 3600 }),
+    kv.put(userKey, String(used + 1), { expirationTtl: 40 * 24 * 3600 }).catch(() => undefined),
+    kv.put(globalKey, String(global + 1), { expirationTtl: 2 * 24 * 3600 }).catch(() => undefined),
   ]);
   return { allowed: true, used: used + 1, limit };
 }

@@ -14,7 +14,17 @@ import SwiftUI
 /// Where the assistant can run: its server is configured and the device has App Attest.
 enum AssistantAvailability {
     static var isAvailable: Bool {
-        AgentConfig.serverURL != nil && AgentAttestation.isSupported
+        AgentConfig.serverURL != nil && deviceSupported
+    }
+
+    /// The device has App Attest, which the server asks of every turn. The screenshot capture
+    /// (DEBUG) runs in the Simulator, which has none: its answers are scripted on the phone
+    /// (ScreenshotDemoTransport).
+    static var deviceSupported: Bool {
+        #if DEBUG
+        if ScreenshotDemoMode.isActive { return true }
+        #endif
+        return AgentAttestation.isSupported
     }
 }
 

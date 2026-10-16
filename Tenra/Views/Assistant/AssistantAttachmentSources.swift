@@ -8,7 +8,8 @@
 //  - a receipt from the camera scanner or from photos: VisionDocumentExtractor, then
 //    ReceiptInterpreter;
 //  - a PDF statement: DocumentImportService, then StatementReviewPreparer;
-//  - a CSV file: the CSV import flow as it is (preview, column mapping, result), with no card.
+//  - a CSV file: the CSV import flow as it is (preview, column mapping, result), with no card;
+//    Tenra Pro, as Settings → Import CSV is.
 //  A file opened in Tenra from another app (AppCoordinator.pendingAttachment) is read the same
 //  way. Statements hold names, account numbers and balances: the copy read here is deleted once
 //  read.
@@ -70,7 +71,11 @@ private struct AssistantAttachmentSources: ViewModifier {
     let onFailure: (String) -> Void
 
     @Environment(AppCoordinator.self) private var coordinator
+    @Environment(PremiumManager.self) private var premium
     @State private var photo: PhotosPickerItem?
+    /// A CSV waiting on the paywall.
+    @State private var csvAwaitingPro: URL?
+    @State private var showingPaywall = false
     /// The CSV flow; replaced by a wired one when a CSV is picked.
     @State private var csvFlow = ImportFlowCoordinator(transactionsViewModel: nil, categoriesViewModel: nil, accountsViewModel: nil)
 
@@ -110,25 +115,50 @@ private struct AssistantAttachmentSources: ViewModifier {
             guard takesHandedOverFiles, url != nil, let url = coordinator.consumePendingAttachment() else { return }
             openFile(url)
         }
+        .paywallSheet(isPresented: $showingPaywall) {
+            guard let url = csvAwaitingPro else { return }
+            csvAwaitingPro = nil
+            importCSV(url)
+        }
+        .onChange(of: showingPaywall) { _, shown in
+            // Closed without Pro: the copy of the file goes.
+            guard !shown, !premium.isPro, let url = csvAwaitingPro else { return }
+            csvAwaitingPro = nil
+            Self.discardCopy(url)
+        }
     }
 
     /// A picked or handed-over file: a CSV into its import flow, a PDF read as a statement.
     private func openFile(_ url: URL) {
         if UTType(filenameExtension: url.pathExtension)?.conforms(to: .commaSeparatedText) == true {
-            csvFlow = ImportFlowCoordinator(
-                transactionsViewModel: coordinator.transactionsViewModel,
-                categoriesViewModel: coordinator.categoriesViewModel,
-                accountsViewModel: coordinator.accountsViewModel
-            )
-            Task {
-                await csvFlow.startImport(from: url)
-                Self.discardCopy(url)
+            guard premium.isPro else {
+                csvAwaitingPro = url
+                // Once the file picker's sheet is gone: a sheet asked for while another is
+                // closing never shows.
+                Task {
+                    try? await Task.sleep(for: .milliseconds(500))
+                    showingPaywall = true
+                }
+                return
             }
+            importCSV(url)
         } else {
             read {
                 defer { Self.discardCopy(url) }
                 return try await statement(from: url)
             }
+        }
+    }
+
+    private func importCSV(_ url: URL) {
+        csvFlow = ImportFlowCoordinator(
+            transactionsViewModel: coordinator.transactionsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel
+        )
+        Task {
+            await csvFlow.startImport(from: url)
+            Self.discardCopy(url)
         }
     }
 

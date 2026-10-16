@@ -3,11 +3,11 @@
 //  TenraUITests
 //
 //  Automated App Store screenshot capture. Launches the app in ScreenshotDemo
-//  mode (seeded dataset, Pro unlocked, offline FX) with the language/locale
-//  passed via TEST_RUNNER_* environment variables, walks the marketing screens
-//  (01-08 on the default product page, 09-12 for the custom product pages:
-//  subscriptions, a deposit, loans) and stores full-resolution screenshots as
-//  keepAlways attachments.
+//  mode (seeded dataset, Pro unlocked, offline FX, Ten's answers scripted on the
+//  phone) with the language/locale passed via TEST_RUNNER_* environment variables,
+//  walks the marketing screens (01-08 and 13-16 on the default product page, 09-12
+//  for the custom product pages: subscriptions, a deposit, loans) and stores
+//  full-resolution screenshots as keepAlways attachments.
 //
 //  Run via scripts/capture_screenshots.sh — it loops all storefront locales
 //  and exports the attachments from the .xcresult bundles.
@@ -79,6 +79,12 @@ final class ScreenshotCaptureTests: XCTestCase {
             return
         }
 
+        if env["SCREENSHOT_FRAMES"] == "ten" {
+            // Only Ten's frames (07, 13, 14): a quick run while they are being worked on.
+            captureTen()
+            return
+        }
+
         snap("01-home")
 
         // ── 6. History (from Home) ───────────────────────────────────────────
@@ -135,16 +141,100 @@ final class ScreenshotCaptureTests: XCTestCase {
         goBack()
 
         captureCustomPageFrames()
+        captureGoalsAndDebts()
+        captureTen()
+    }
 
-        // ── 7. Voice input (expand the [+] pseudo-tab, then Voice) ───────────
-        tabBarButton(at: 3).tap()   // [+] → switches tab bar to expanded mode
-        sleep(1)
-        tabBarButton(at: 0).tap()   // Voice tab in expanded mode
+    // MARK: - Goals and debts
+
+    /// 15-16: a goal with what to put aside each month, then the debts with one overdue. Starts
+    /// and ends on the Finances tab.
+    private func captureGoalsAndDebts() {
+        let goalsCard = app.descendants(matching: .any)["finances.goalsCard"].firstMatch
+        scrollUntilHittable(goalsCard)
+        XCTAssertTrue(goalsCard.exists, "Goals card not found")
+        goalsCard.tap()
+        let goal = app.descendants(matching: .any)["goals.card"].firstMatch
+        if goal.waitForExistence(timeout: 10) {
+            goal.tap()
+            sleep(3)   // the hero's progress settles
+            snap("15-goal")
+        }
+        // The Finances root is scrolled down here: its accounts card is out of reach, so
+        // waiting for it would step back once too often and tap the root's own toolbar.
+        backToFinances(showing: goalsCard)
+
+        let debtsCard = app.descendants(matching: .any)["finances.debtsCard"].firstMatch
+        scrollUntilHittable(debtsCard)
+        XCTAssertTrue(debtsCard.exists, "Debts card not found")
+        debtsCard.tap()
+        _ = app.descendants(matching: .any)["debts.card"].firstMatch.waitForExistence(timeout: 10)
         sleep(2)
-        // Trigger the interruption monitor if a mic/speech alert appeared.
-        app.tap()
+        snap("16-debts")
+        backToFinances(showing: debtsCard)
+    }
+
+    // MARK: - Ten
+
+    /// 07, 14, 13 on Ten's tab (the action tab): the voice sheet with the demo phrase as heard,
+    /// that phrase drafted on the phone with Save, then a ready-made question answered on cards
+    /// (ScreenshotDemoTransport: no network).
+    private func captureTen() {
+        // The tab bar collapses on scroll down (`tabBarMinimizeBehavior(.onScrollDown)`): scroll
+        // Finances back up, then take the action tab, the bar's last button in either state.
+        for _ in 0..<3 { app.swipeDown() }
+        actionTabButton().tap()
+        let presets = app.descendants(matching: .any)["assistant.presets"].firstMatch
+        XCTAssertTrue(presets.waitForExistence(timeout: 30), "Ten's home did not load")
+        sleep(3)   // Ten greets
+
+        // ── 7. Voice: the composer's microphone (its right-most button while the field is empty) ──
+        let composer = app.descendants(matching: .any)["assistant.composer"].firstMatch
+        let microphone = composer.buttons.allElementsBoundByIndex.max { $0.frame.maxX < $1.frame.maxX }
+        guard let microphone, microphone.isHittable else {
+            debugSnapshot("composer")
+            return
+        }
+        microphone.tap()
+        let orb = app.descendants(matching: .any)["assistant.voice.orb"].firstMatch
+        guard orb.waitForExistence(timeout: 10) else {
+            debugSnapshot("voice")
+            return
+        }
         sleep(2)
         snap("07-voice")
+        orb.tap()
+
+        // ── 14. What was said, drafted on the phone ──────────────────────────
+        let send = app.descendants(matching: .any)["assistant.voice.send"].firstMatch
+        guard send.waitForExistence(timeout: 10) else {
+            debugSnapshot("send")
+            return
+        }
+        send.tap()
+        sleep(5)
+        snap("14-ten-draft")
+        goBack()
+
+        // ── 13. A ready-made question answered on cards ──────────────────────
+        _ = presets.waitForExistence(timeout: 10)
+        guard let preset = presets.buttons.allElementsBoundByIndex.first(where: { $0.isHittable }) else {
+            debugSnapshot("presets")
+            return
+        }
+        preset.tap()
+        sleep(8)   // two scripted turns, the cards cascade in
+        snap("13-ten-answer")
+    }
+
+    /// When a step of Ten's frames finds nothing: the screen and the accessibility tree, exported
+    /// next to the frames as `19-debug-<step>` (the tree is text in a .png-named file).
+    private func debugSnapshot(_ step: String) {
+        snap("19-debug-\(step)")
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = "19-debug-\(step)-tree"
+        tree.lifetime = .keepAlways
+        add(tree)
     }
 
     // MARK: - Custom product page frames
@@ -195,19 +285,40 @@ final class ScreenshotCaptureTests: XCTestCase {
 
     // MARK: - Helpers
 
+    private func scrollUntilHittable(_ element: XCUIElement) {
+        var attempts = 0
+        while !(element.exists && element.isHittable) && attempts < 6 {
+            app.swipeUp()
+            attempts += 1
+        }
+    }
+
     /// Steps back until the Finances root shows again: a zoom-transition detail can swallow one
-    /// back gesture, which left the next card out of reach on a slow simulator.
-    private func backToFinances() {
-        let accountsCard = app.descendants(matching: .any)["finances.accountsCard"].firstMatch
+    /// back gesture, which left the next card out of reach on a slow simulator. `card` is one
+    /// the root shows at its current scroll (the accounts card unless it was scrolled).
+    private func backToFinances(showing card: XCUIElement? = nil) {
+        let marker = card ?? app.descendants(matching: .any)["finances.accountsCard"].firstMatch
         for _ in 0..<4 {
-            if accountsCard.waitForExistence(timeout: 2) && accountsCard.isHittable { return }
+            if marker.waitForExistence(timeout: 2) && marker.isHittable { return }
             goBack()
         }
+    }
+
+    private func actionTabButton() -> XCUIElement {
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 20), "Tab bar not found")
+        return tabBar.buttons.allElementsBoundByIndex.last ?? tabBar.buttons.firstMatch
     }
 
     private func tabBarButton(at index: Int) -> XCUIElement {
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 20), "Tab bar not found")
+        // A scrolled screen collapses the bar to the current tab and the action tab
+        // (`tabBarMinimizeBehavior(.onScrollDown)`): scroll back up until the tab is there.
+        for _ in 0..<4 where tabBar.buttons.count <= index {
+            app.swipeDown()
+            sleep(1)
+        }
         return tabBar.buttons.element(boundBy: index)
     }
 

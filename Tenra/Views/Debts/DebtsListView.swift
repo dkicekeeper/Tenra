@@ -91,6 +91,7 @@ struct DebtsListView: View {
                     DebtCard(debt: debt, today: today)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("debts.card")
                 .screenPadding()
                 .chartAppear(delay: Double(index) * 0.05)
             }

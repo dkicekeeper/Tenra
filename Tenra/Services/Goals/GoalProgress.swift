@@ -35,7 +35,9 @@ nonisolated enum GoalProgress {
         today: Date,
         calendar: Calendar = .current
     ) -> Status {
-        let isReached = target > 0 && saved >= target
+        // Within half a cent: amounts are Doubles, and a sum of contributions can fall a hair
+        // short of a target it matches (PersonalDebt.centTolerance).
+        let isReached = target > 0 && saved >= target - PersonalDebt.centTolerance
         let left = isReached ? 0 : max(0, target - saved)
         let fraction = target > 0 ? min(1, max(0, saved / target)) : 0
         var monthsLeft: Int?

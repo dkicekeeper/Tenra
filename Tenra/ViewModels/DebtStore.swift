@@ -110,17 +110,20 @@ final class DebtStore {
         guard var debt = debt(id: debtId) else { return }
         debt.repayments.append(repayment)
         debt.repayments.sort { $0.date < $1.date }
-        if debt.settledAt == nil, debt.repaid >= debt.amount {
+        if debt.settledAt == nil, debt.isCovered {
             debt.settledAt = repayment.date
         }
         await update(debt)
     }
 
-    /// Deletes a repayment; when it was the one that settled the debt, the debt is open again.
+    /// Deletes a repayment; a debt its repayments settled is open again once they no longer
+    /// cover it, whichever one goes. One settled by hand (the rest forgiven) never was covered,
+    /// and stays settled.
     func deleteRepayment(id: String, from debtId: String) async {
-        guard var debt = debt(id: debtId), let repayment = debt.repayments.first(where: { $0.id == id }) else { return }
+        guard var debt = debt(id: debtId), debt.repayments.contains(where: { $0.id == id }) else { return }
+        let wasCovered = debt.isCovered
         debt.repayments.removeAll { $0.id == id }
-        if debt.settledAt == repayment.date, debt.repaid < debt.amount {
+        if debt.settledAt != nil, wasCovered, !debt.isCovered {
             debt.settledAt = nil
         }
         await update(debt)

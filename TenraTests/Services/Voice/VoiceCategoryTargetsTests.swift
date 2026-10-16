@@ -18,20 +18,26 @@ struct VoiceCategoryTargetsTests {
 
     private static let locales = ["en", "ru", "de", "es", "fr", "tr", "pt-BR", "it", "uk", "ja", "ko"]
 
-    private static func presetNames() -> Set<String> {
-        let keys = Set((CategoryPreset.defaultExpense + CategoryPreset.defaultIncome).map(\.nameKey))
-        var names = Set<String>()
+    private static let presetKeys = (CategoryPreset.defaultExpense + CategoryPreset.defaultIncome).map(\.nameKey)
+
+    /// Each preset key's name in every app locale.
+    private static func presetNamesByKey() -> [String: Set<String>] {
+        var names: [String: Set<String>] = [:]
         for locale in locales {
             for bundle in [Bundle.main, Bundle(for: CategoriesViewModel.self)] {
                 guard let path = bundle.path(forResource: "Localizable", ofType: "strings", inDirectory: nil, forLocalization: locale),
                       let table = NSDictionary(contentsOfFile: path) as? [String: String] else { continue }
-                for key in keys {
-                    if let value = table[key] { names.insert(value) }
+                for key in presetKeys {
+                    if let value = table[key] { names[key, default: []].insert(value) }
                 }
                 break
             }
         }
         return names
+    }
+
+    private static func presetNames() -> Set<String> {
+        presetNamesByKey().values.reduce(into: Set<String>()) { $0.formUnion($1) }
     }
 
     @Test func everyKeywordTargetIsAnOnboardingPreset() {
@@ -50,5 +56,20 @@ struct VoiceCategoryTargetsTests {
 
         let orphans = parser.categoryMapTargets.subtracting(presets).sorted()
         #expect(orphans.isEmpty, "voice keywords point at categories onboarding never creates: \(orphans)")
+    }
+
+    /// `VoiceInputParser.categoryGroups` resolves a keyword target to the user's
+    /// category in another language, so each group must be exactly one preset's
+    /// names across the locales, and no name may sit in two groups.
+    @Test func categoryGroupsMatchThePresetNames() {
+        let byKey = Self.presetNamesByKey()
+        #expect(byKey.count == Self.presetKeys.count, "preset names were not loaded from the bundle")
+
+        let expected = Set(byKey.values)
+        let actual = Set(VoiceInputParser.categoryGroups.map(Set.init))
+        #expect(actual == expected, "groups differ from the strings files: missing \(expected.subtracting(actual)), extra \(actual.subtracting(expected))")
+
+        let all = VoiceInputParser.categoryGroups.flatMap { $0 }
+        #expect(all.count == Set(all).count, "a name is listed twice")
     }
 }

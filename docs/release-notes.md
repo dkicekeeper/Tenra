@@ -215,16 +215,16 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
 1. **Merge the audit branch** into `main` once CI is green.
 2. ~~**Deploy the Worker**~~: deployed from the audit branch on 2026-10-15 (version
    `83a6b64a`). Check: open an old chat in the current TestFlight build and ask something.
-   TestFlight builds up to 26 don't sign the user id, so they count as free (150 calls a month
-   per install) until build 27.
+   TestFlight builds up to 27 don't sign the user id (27 is the DesignKit 5.0 check, built from
+   `claude/designkit-5` without this branch), so they count as free (150 calls a month per
+   install).
 3. **Cloudflare Workers Paid** ($5 a month, [plan-ai-assistant.md](plan-ai-assistant.md) §5.1): the
    free plan's 1 000 KV writes a day (about 300 answers for everyone) and 10 ms CPU per request
    will not carry App Review plus real users.
 4. **Anthropic Console**: raise the Tenra workspace's monthly spend limit above the $30 beta cap.
-5. **RevenueCat**: `pro` for yourself (Actions → RevenueCat → `grant`), and decide on Founding
-   Users: the app treats them as Pro, the server as free (150 calls a month per install).
-6. **Archive from the Mac** (Xcode 27) with a build number above 26 (the latest CI TestFlight
-   build; check TestFlight first). This is the first build with the iOS 27 code paths compiled
+5. ~~**RevenueCat**~~: the founder is the only Founding User and has lifetime `pro`.
+6. **Archive from the Mac** (Xcode 27) with a build number above 27 (the latest CI TestFlight
+   build; check TestFlight first), after the audit branch and DesignKit 5.0 are on `main`. This is the first build with the iOS 27 code paths compiled
    in: no TestFlight build has run them.
 7. **Device check of that build** from TestFlight, on the iOS 27 iPhone:
    - Ten's place at the right end of the tab bar; the consent sheet ("Turn on", "Not now");

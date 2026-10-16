@@ -117,25 +117,40 @@ class ApiError(Exception):
         self.code = code
 
 
+# Requests that are safe to send again after App Store Connect answers with a 5xx: a POST could
+# create a second resource, so it is never retried.
+RETRIED_METHODS = ("GET", "PATCH", "DELETE")
+RETRY_DELAYS = (5, 15, 45)
+
+
 def request(path: str, accept: str = "application/json", method: str = "GET", body: dict | None = None) -> bytes:
     url = path if path.startswith("http") else API + path
-    headers = {"Authorization": "Bearer " + token(), "Accept": accept}
-    data = None
-    if body is not None:
-        headers["Content-Type"] = "application/json"
-        data = json.dumps(body).encode()
-    req = urllib.request.Request(url, data=data, method=method, headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=60) as response:
-            return response.read()
-    except urllib.error.HTTPError as error:
-        details = error.read().decode(errors="replace")
+    data = None if body is None else json.dumps(body).encode()
+    attempt = 0
+    while True:
+        headers = {"Authorization": "Bearer " + token(), "Accept": accept}
+        if data is not None:
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(url, data=data, method=method, headers=headers)
         try:
-            errors = json.loads(details).get("errors", [])
-            details = "; ".join(f"{e.get('title', '')}: {e.get('detail', '')}" for e in errors) or details
-        except ValueError:
-            pass
-        raise ApiError(error.code, details[:600]) from None
+            with urllib.request.urlopen(req, timeout=60) as response:
+                return response.read()
+        except urllib.error.HTTPError as error:
+            details = error.read().decode(errors="replace")
+            try:
+                errors = json.loads(details).get("errors", [])
+                details = "; ".join(f"{e.get('title', '')}: {e.get('detail', '')}" for e in errors) or details
+            except ValueError:
+                pass
+            if error.code >= 500 and method in RETRIED_METHODS and attempt < len(RETRY_DELAYS):
+                print(f"  {method} {path.split('?')[0]}: HTTP {error.code}, retrying in {RETRY_DELAYS[attempt]} s", flush=True)
+                time.sleep(RETRY_DELAYS[attempt])
+                attempt += 1
+                continue
+            # A DELETE whose earlier attempt went through on the server despite the 5xx.
+            if error.code == 404 and method == "DELETE" and attempt > 0:
+                return b""
+            raise ApiError(error.code, f"{method} {path.split('?')[0]}: {details[:600]}") from None
 
 
 def get(path: str, params: dict | None = None) -> dict:
@@ -714,8 +729,11 @@ def push_version_screenshots(app: str, version: str, locales: list[str] | None) 
         settings = captions["locales"].get(locale, {})
         frames = settings.get("order") or captions["defaultOrder"]
         files = frame_files(config, frames, locale)
+        print(f"{locale}: {len(files)} frames", flush=True)
         set_id = screenshot_set("appStoreVersionLocalization", item["id"])
-        rows.append([locale, len(files), put_screenshots(set_id, files)])
+        result = put_screenshots(set_id, files)
+        print(f"{locale}: {result}", flush=True)
+        rows.append([locale, len(files), result])
     table(f"Screenshots, {version}", ["Locale", "Frames", "Result"], rows)
 
 

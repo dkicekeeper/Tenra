@@ -237,7 +237,8 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    - A sandbox purchase; a subscription card with VoiceOver (reads "Active", not a key).
    - Home with an unread notice from Ten for a minute: Instruments → Energy Log, or watch the
      battery and the 120 Hz indicator. If Ten keeps the display busy, use the still glyph there.
-8. **Screenshots** (below): captured on the 1.6 UI in 13 locales, composed, uploaded to version 1.6.
+8. **Screenshots** (below): captured on the 1.6 UI with DesignKit 5.0 and the new voice parser in
+   13 locales (2026-10-16), composed, uploaded to version 1.6.
    The custom product pages keep the 1.5 frames until 1.6 is out: `push-custom-pages --submit`
    after the release (they show beside the live build).
 9. **App Store Connect, version 1.6** (created on 2026-10-15 with What's New in 13 locales; the
@@ -269,8 +270,8 @@ voice sheet, new 13 (Ten answers on cards), 14 (a spoken expense drafted with Sa
 score, top category, history, fx; tr leads with fx. Composed by
 `scripts/compose_screenshots.py` on the Figma templates' backgrounds.
 
-Run: Actions → Screenshots with `frames` = `all`, in runs of a few locales (each run has 120
-minutes), the artifact into `screenshots/raw/<locale>/`, compose, then upload:
+Run: Actions → Screenshots with `frames` = `all` (all 13 locales fit in one 120-minute run, about
+80 minutes), the artifact into `screenshots/raw/<locale>/`, compose, then upload:
 `push-version-screenshots` with `version` 1.6; the custom pages (`push-custom-pages --submit`)
 once 1.6 is live.
 

@@ -117,8 +117,8 @@ class ApiError(Exception):
         self.code = code
 
 
-# Requests that are safe to send again after App Store Connect answers with a 5xx: a POST could
-# create a second resource, so it is never retried.
+# Requests that are safe to send again after App Store Connect answers with a 5xx, times out or
+# drops the connection: a POST could create a second resource, so it is never retried.
 RETRIED_METHODS = ("GET", "PATCH", "DELETE")
 RETRY_DELAYS = (5, 15, 45)
 
@@ -133,7 +133,7 @@ def request(path: str, accept: str = "application/json", method: str = "GET", bo
             headers["Content-Type"] = "application/json"
         req = urllib.request.Request(url, data=data, method=method, headers=headers)
         try:
-            with urllib.request.urlopen(req, timeout=60) as response:
+            with urllib.request.urlopen(req, timeout=120) as response:
                 return response.read()
         except urllib.error.HTTPError as error:
             details = error.read().decode(errors="replace")
@@ -151,6 +151,14 @@ def request(path: str, accept: str = "application/json", method: str = "GET", bo
             if error.code == 404 and method == "DELETE" and attempt > 0:
                 return b""
             raise ApiError(error.code, f"{method} {path.split('?')[0]}: {details[:600]}") from None
+        except (TimeoutError, ConnectionError, urllib.error.URLError) as error:
+            # No HTTP status at all: a read timeout or a dropped connection.
+            if method in RETRIED_METHODS and attempt < len(RETRY_DELAYS):
+                print(f"  {method} {path.split('?')[0]}: {type(error).__name__}, retrying in {RETRY_DELAYS[attempt]} s", flush=True)
+                time.sleep(RETRY_DELAYS[attempt])
+                attempt += 1
+                continue
+            raise ApiError(0, f"{method} {path.split('?')[0]}: {error}") from None
 
 
 def get(path: str, params: dict | None = None) -> dict:

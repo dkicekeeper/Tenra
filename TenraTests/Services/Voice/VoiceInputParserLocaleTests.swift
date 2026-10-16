@@ -14,13 +14,25 @@ import Foundation
 @MainActor
 struct VoiceInputParserLocaleTests {
 
+    /// `CategoriesViewModel.transactionStore` is weak: the stores live here.
+    private static var stores: [TransactionStore] = []
+
     /// Parser over an isolated repository with `categories` seeded as expense
     /// categories. The parser holds the VMs weakly, so the caller retains them.
+    /// The categories live in a `TransactionStore` (`customCategories` reads it),
+    /// so the parser sees the seeded names.
     private static func makeParser(categories: [String]) -> (VoiceInputParser, CategoriesViewModel, AccountsViewModel, TransactionsViewModel) {
         let repo = UserDefaultsRepository(
             userDefaults: UserDefaults(suiteName: "voice_locale_tests.\(UUID().uuidString)")!
         )
+        let store = TransactionStore(
+            repository: repo,
+            balanceCoordinator: BalanceCoordinator(repository: repo),
+            recurringStore: RecurringStore(repository: repo)
+        )
+        stores.append(store)
         let categoriesVM = CategoriesViewModel(repository: repo)
+        categoriesVM.transactionStore = store
         let accountsVM = AccountsViewModel(repository: repo)
         let transactionsVM = TransactionsViewModel(repository: repo)
         for name in categories {

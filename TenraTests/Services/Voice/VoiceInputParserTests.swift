@@ -24,21 +24,27 @@ struct VoiceInputParserTests {
     /// Builds a parser backed by an isolated in-memory repository so tests
     /// never touch shared state. VMs are returned and must be retained by the
     /// caller — the parser holds only *weak* references to them.
+    /// `CategoriesViewModel.transactionStore` is weak: the stores live here.
+    private static var stores: [TransactionStore] = []
+
     private static func makeParser() -> (VoiceInputParser, CategoriesViewModel, AccountsViewModel, TransactionsViewModel) {
         let repo = UserDefaultsRepository(
             userDefaults: UserDefaults(suiteName: "voice_parser_tests.\(UUID().uuidString)")!
         )
+        let store = TransactionStore(
+            repository: repo,
+            balanceCoordinator: BalanceCoordinator(repository: repo),
+            recurringStore: RecurringStore(repository: repo)
+        )
+        stores.append(store)
         let categoriesVM = CategoriesViewModel(repository: repo)
+        categoriesVM.transactionStore = store
         let accountsVM   = AccountsViewModel(repository: repo)
         let transactionsVM = TransactionsViewModel(repository: repo)
 
-        // Seed a handful of categories so the live-category lookup in
-        // parseCategory() finds a match and returns the seeded name.
-        // The parser also has a built-in categoryMap keyed on RU keywords
-        // ("такси" → "Транспорт", "кофе" → "Кафе и рестораны", etc.); when no live
-        // category matches it falls back to the hardcoded string directly,
-        // so the assertions below work whether or not these inserts land
-        // before parse() runs — but seeding makes the path deterministic.
+        // Seed the user's categories (Russian presets) in the store, which
+        // `customCategories` reads, so the parser resolves keywords onto them:
+        // a keyword in any language lands in the matching seeded category.
         categoriesVM.addCategory(CustomCategory(
             name: "Транспорт",
             iconSource: .sfSymbol("car.fill"),

@@ -447,9 +447,13 @@ def put_screenshots(set_id: str, files: list[Path]) -> str:
         try:
             shot = send("POST", "/v1/appScreenshots", body)["data"]
         except ApiError as error:
-            if error.code != 409:
+            # 409: the default page's copy arrived after all. 5xx: the reservation may or may not
+            # exist. Either way keep only this run's uploads, then reserve again.
+            if error.code != 409 and error.code < 500:
                 raise
-            # The default page's copy arrived after all: keep only this run's uploads.
+            if error.code >= 500:
+                print(f"  POST {path.name}: HTTP {error.code}, clearing the set's strays and retrying", flush=True)
+                time.sleep(RETRY_DELAYS[0])
             for other in settled_screenshots(set_id):
                 if other["id"] not in ids:
                     request(f"/v1/appScreenshots/{other['id']}", method="DELETE")

@@ -68,7 +68,7 @@ this file is the full index.
 | [asc.md](asc.md) | App Store Connect and TestFlight from a cloud session (`appstore/asc.py`, workflows) |
 | [backlog.md](backlog.md) | Open items, ideas not planned yet, decisions that stand |
 | [plan-ai-assistant.md](plan-ai-assistant.md) | Plan in flight: Tenra as an AI finance assistant (hybrid Apple + Claude brain, generative UI blocks, orb mascot, phases, cloud economics), the `server/assistant` protocol and setup |
-| [plan-assets.md](plan-assets.md) | Draft plan, awaiting the owner's decisions: assets (real estate, vehicles) with market valuations, rent and upkeep, and net worth |
+| [plan-assets.md](plan-assets.md) | Plan, owner's decisions taken 2026-10-16, not started: assets (real estate, vehicles) with market valuations, rent and upkeep, and net worth |
 | [public/](public/) | The support site: privacy policy, terms of use, support (GitHub Pages) |
 
 ## Archive

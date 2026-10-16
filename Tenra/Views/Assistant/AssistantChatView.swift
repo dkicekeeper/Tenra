@@ -8,12 +8,10 @@
 //  suggestions for what to ask next in one row over it, where the thumb is. The navigation bar
 //  holds only the way back to the home and Ten in the middle, 120 pt (the owner's size): it
 //  rises into the bar and hangs over the top of the thread in a bar of its own (safeAreaBar),
-//  which reaches a little below it. The thread scrolls under both, behind DesignKit's
-//  EdgeBackdrop (4.14.0, the owner's call on a device: the system's soft scroll edge effect was
-//  too faint for a 120 pt Ten): from the screen's top edge to the bar's tail the thread blurs and
-//  the page's colour lies over it, fading out towards the thread, so Ten always sits on a
-//  translucent backing and the text never runs through the particles. The tab bar steps aside
-//  (TabBarVisibility), so the chat has the screen.
+//  which reaches a little below it. The thread scrolls under both, behind the system's hard
+//  scroll edge effect (DesignKit 5.0, the owner's call after comparing it with a hand-drawn blur
+//  on a device), so Ten always sits on the bar's backing and the text never runs through the
+//  particles. The tab bar steps aside (TabBarVisibility), so the chat has the screen.
 //
 //  Ten shows what is going on: thinking while it runs tools, answering while it writes, the
 //  reply's mood after, confused or sad when a question could not be answered. The reply's text
@@ -133,9 +131,9 @@ struct AssistantChatView: View {
         .scrollDismissesKeyboard(.interactively)
         // A tap anywhere on the thread puts the keyboard away (buttons still work).
         .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
-        // Under the navigation bar and Ten the thread blurs and dims progressively: the system's
-        // soft edge plus Ten's own backing (mascotBar's EdgeBackdrop), not a solid plate.
-        .scrollEdgeEffectStyle(.soft, for: .top)
+        // Under the navigation bar and Ten the system's hard edge effect: the bars' backing
+        // reaches down to the end of Ten's bar, so the thread never runs through the particles.
+        .scrollEdgeEffectStyle(.hard, for: .top)
         .safeAreaBar(edge: .top) { mascotBar }
         .safeAreaBar(edge: .bottom) {
             AssistantComposerBar(
@@ -173,10 +171,8 @@ struct AssistantChatView: View {
     // MARK: - Thread
 
     /// Ten in the middle of the navigation bar, hanging over the top of the thread as a bar of
-    /// its own: its part below the navigation bar plus a tail is the bar's height. The bar's
-    /// EdgeBackdrop runs from the screen's top edge to the end of the tail, so all of Ten sits on
-    /// the blurred, tinted thread, and fades out under the tail. Touches go through to the
-    /// thread.
+    /// its own: its part below the navigation bar plus a tail is the bar's height, so the
+    /// thread's hard edge effect covers all of Ten. Touches go through to the thread.
     private var mascotBar: some View {
         // Its words go beside it, on the free side of the bar (VoiceOver reads them; Ten itself
         // is hidden from VoiceOver by ParticleCreature).
@@ -189,7 +185,6 @@ struct AssistantChatView: View {
             .padding(.top, -AssistantMetrics.chatMascotLift)
             .padding(.bottom, AssistantMetrics.chatMascotTail)
             .frame(maxWidth: .infinity)
-            .edgeBackdrop(.top)
             .allowsHitTesting(false)
     }
 

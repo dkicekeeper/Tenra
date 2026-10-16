@@ -23,7 +23,7 @@ struct AssistantAttachmentCard: View {
     @State private var showingPaywall = false
 
     var body: some View {
-        ListCard(title: title) {
+        FormSection(header: title, style: .glass) {
             switch summary.kind {
             case .receipt:
                 if let total = summary.expenses {

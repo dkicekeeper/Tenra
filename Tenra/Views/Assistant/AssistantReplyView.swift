@@ -152,7 +152,7 @@ private struct AssistantChartCard: View {
     private static let rowLimit = 6
 
     var body: some View {
-        ListCard(title: title) {
+        FormSection(header: title, style: .glass) {
             if chart.isTimeline {
                 timeline
             } else {
@@ -264,7 +264,7 @@ private struct AssistantTransactionsCard: View {
         let store = coordinator.transactionStore
         let transactions = ids.prefix(Self.rowLimit).compactMap { store.transactionById[$0] }
         if !transactions.isEmpty {
-            ListCard(title: title) {
+            FormSection(header: title, style: .glass) {
                 ForEach(transactions) { transaction in
                     TransactionCardView(
                         transaction: transaction,
@@ -390,7 +390,7 @@ private struct AssistantForecastCard: View {
                     .accessibilityLabel(String(localized: "assistant.forecast.balance"))
             }
             if !forecast.obligations.isEmpty {
-                ListCard(title: String(format: String(localized: "assistant.forecast.obligations"), untilText)) {
+                FormSection(header: String(format: String(localized: "assistant.forecast.obligations"), untilText), style: .glass) {
                     ForEach(Array(forecast.obligations.prefix(Self.obligationLimit).enumerated()), id: \.offset) { _, obligation in
                         InfoRow(label: label(obligation), amount: obligation.amount, currency: forecast.currency)
                     }
@@ -437,7 +437,7 @@ private struct AssistantDraftCard: View {
     var body: some View {
         let store = coordinator.transactionStore
         let state = book.states[draft.id] ?? .pending
-        ListCard {
+        FormSection(style: .glass) {
             ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
                 if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
                     let row = TransactionCardView(

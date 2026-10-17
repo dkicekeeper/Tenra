@@ -17,11 +17,15 @@ extension FinanceToolkit {
     // MARK: - Read
 
     /// `get_goals`: every goal with what is saved, what is left, the deadline and what to put
-    /// aside each month, and everything saved in the base currency.
+    /// aside each month, saved and left in the base currency too, and everything saved in the
+    /// base currency.
     func goalsResult() async throws -> AgentToolOutput {
         guard let goals else { return .failure(Self.notYet("get_goals")) }
         await goals.load()
+        await loadMissingRates(goals.goals.map(\.currency))
         let today = now()
+        let base = store.baseCurrency
+        let rates = RateSnapshot()
         let items: [JSONValue] = goals.goals.map { goal in
             let status = GoalProgress.status(
                 target: goal.targetAmount,
@@ -38,6 +42,8 @@ extension FinanceToolkit {
                 "target": .number(FinanceToolkitCompute.round2(goal.targetAmount)),
                 "saved": .number(FinanceToolkitCompute.round2(status.saved)),
                 "left": .number(FinanceToolkitCompute.round2(status.left)),
+                "saved_base": Self.inBase(status.saved, goal.currency, base, rates),
+                "left_base": Self.inBase(status.left, goal.currency, base, rates),
                 "percent": .number((status.fraction * 100).rounded()),
                 "reached": .bool(status.isReached),
                 "deadline": goal.deadline.map { JSONValue.string(FastDateParser.string(from: $0)) } ?? .null,
@@ -56,12 +62,15 @@ extension FinanceToolkit {
     }
 
     /// `get_debts`: open debts both ways (the soonest due first) and the latest settled ones,
-    /// with what came back and what is left, and the open totals in the base currency.
+    /// with what came back and what is left (in the base currency too), and the open totals in
+    /// the base currency.
     func debtsResult() async throws -> AgentToolOutput {
         guard let debts else { return .failure(Self.notYet("get_debts")) }
         await debts.load()
+        await loadMissingRates(debts.debts.map(\.currency))
         let today = now()
         let base = store.baseCurrency
+        let rates = RateSnapshot()
         let listed = debts.open(.owedToMe) + debts.open(.iOwe) + debts.settled.prefix(Self.settledDebtsListed)
         let items: [JSONValue] = listed.map { debt in
             [
@@ -72,6 +81,7 @@ extension FinanceToolkit {
                 "amount": .number(FinanceToolkitCompute.round2(debt.amount)),
                 "repaid": .number(FinanceToolkitCompute.round2(debt.repaid)),
                 "remaining": .number(FinanceToolkitCompute.round2(debt.remaining)),
+                "remaining_base": Self.inBase(debt.remaining, debt.currency, base, rates),
                 "date": .string(FastDateParser.string(from: debt.date)),
                 "due_date": debt.dueDate.map { JSONValue.string(FastDateParser.string(from: $0)) } ?? .null,
                 "overdue": .bool(debt.isOverdue(today: today, calendar: calendar)),
@@ -90,6 +100,12 @@ extension FinanceToolkit {
 
     /// Settled debts listed by `get_debts`, the latest first.
     static let settledDebtsListed = 10
+
+    /// An amount in the base currency for a result row, null without a rate.
+    static func inBase(_ amount: Double, _ currency: String, _ base: String, _ rates: RateSnapshot) -> JSONValue {
+        let converted = currency == base ? amount : rates.convert(amount, from: currency, to: base)
+        return converted.map { JSONValue.number(FinanceToolkitCompute.round2($0)) } ?? .null
+    }
 
     // MARK: - Draft a goal
 

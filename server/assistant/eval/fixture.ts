@@ -91,6 +91,8 @@ export const RECURRING: Recurring[] = [
   { id: "rec_icloud", name: "iCloud+", kind: "subscription", type: "expense", amount: 1_490, currency: "KZT", dayOfMonth: 12, categoryId: "cat_subs", accountId: "acc_kaspi", active: true },
   { id: "rec_spotify", name: "Spotify", kind: "subscription", type: "expense", amount: 2_990, currency: "KZT", dayOfMonth: 14, categoryId: "cat_subs", accountId: "acc_kaspi", active: true },
   { id: "rec_salary", name: "Зарплата", kind: "regular", type: "income", amount: 650_000, currency: "KZT", dayOfMonth: 10, categoryId: "cat_salary", accountId: "acc_kaspi", active: true },
+  // A subscription in dollars: its cost counts in the monthly total through the rate.
+  { id: "rec_chatgpt", name: "ChatGPT Plus", kind: "subscription", type: "expense", amount: 20, currency: "USD", dayOfMonth: 20, categoryId: "cat_subs", accountId: "acc_usd", active: true },
 ];
 
 // mulberry32: small deterministic PRNG.

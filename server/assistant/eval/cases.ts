@@ -137,7 +137,35 @@ export const CASES: EvalCase[] = [
     checks: [
       { kind: "called", anyOf: ["list_recurring"] },
       { kind: "block", type: "recurring" },
-      { kind: "metric", expected: simulate.listRecurring({ kind: "subscription" }).subscriptions_monthly_total, label: "subscriptions monthly total" },
+      { kind: "metric", expected: simulate.listRecurring({ kind: "subscription" }).subscriptions_monthly_total_base, label: "subscriptions monthly total" },
+    ],
+  },
+  {
+    // A subscription in dollars: Ten has the app's rates and shows its cost in tenge.
+    id: "ru-subscription-in-dollars",
+    locale: "ru",
+    prompt: "Сколько в тенге стоит моя подписка ChatGPT?",
+    checks: [
+      { kind: "called", anyOf: ["list_recurring", "convert_currency"] },
+      { kind: "metric", expected: simulate.convertCurrency({ amount: 20, from: "USD" }).converted, label: "ChatGPT in tenge" },
+    ],
+  },
+  {
+    id: "ru-dollar-rate",
+    locale: "ru",
+    prompt: "Какой сейчас курс доллара?",
+    checks: [
+      { kind: "toolArgs", tool: "convert_currency", match: (i) => String(i.from).toUpperCase() === "USD", label: "converts from USD" },
+      { kind: "metric", expected: simulate.convertCurrency({ from: "USD" }).rate, label: "the dollar rate" },
+    ],
+  },
+  {
+    id: "en-convert-dollars",
+    locale: "en",
+    prompt: "How much is 150 dollars in tenge?",
+    checks: [
+      { kind: "toolArgs", tool: "convert_currency", match: (i) => Number(i.amount) === 150 && String(i.from).toUpperCase() === "USD", label: "150 USD converted" },
+      { kind: "metric", expected: simulate.convertCurrency({ amount: 150, from: "USD" }).converted, label: "150 USD in tenge" },
     ],
   },
   {

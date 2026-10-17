@@ -5,8 +5,8 @@
 //  What Ten says and does around the conversation (DesignKit 4.10, the owner's list): a greeting
 //  once a day on the assistant's home (morning, afternoon, evening, a whisper late at night), a
 //  hint pointing at the ready-made questions while there are no chats, a thought while it works,
-//  a cheer for a celebrated reply, a word when something goes wrong, and a line now and then
-//  when it is tapped. "Ten chats" in Settings turns the lines off; the gestures stay. The details
+//  a cheer for a celebrated reply, a word for a proud, a kind or a worrying one, a word when
+//  something goes wrong, and a line now and then when it is tapped. "Ten chats" in Settings turns the lines off; the gestures stay. The details
 //  of an error stay in the thread: the words are only Ten's reaction. Each line's emotion sets
 //  how its letters move (joy hops, a thought sways, worry trembles); unset, it follows the mood.
 //
@@ -29,6 +29,12 @@ enum AssistantChatter {
     static func dayKey(_ date: Date, calendar: Calendar = .current) -> String {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+    }
+
+    /// Late at night (23:00 to 05:00): Ten whispers and, at rest, looks sleepy.
+    static func isLate(_ date: Date, calendar: Calendar = .current) -> Bool {
+        let hour = calendar.component(.hour, from: date)
+        return hour >= 23 || hour < 5
     }
 
     /// The greeting for the hour, glad, and its wave (none for the late-night whisper).
@@ -76,6 +82,24 @@ enum AssistantChatter {
     /// A celebrated reply.
     static var cheer: CreatureSpeech {
         CreatureSpeech(String(localized: "assistant.chatter.yay"), emotion: .joy, placement: .trailing,
+                       maxWidth: AssistantMetrics.chatSpeechWidth)
+    }
+
+    /// A reply about progress the person made (a budget kept, money put towards a goal).
+    static var wellDone: CreatureSpeech {
+        CreatureSpeech(String(localized: "assistant.chatter.wellDone"), emotion: .joy, placement: .trailing,
+                       maxWidth: AssistantMetrics.chatSpeechWidth)
+    }
+
+    /// The person thanked Ten.
+    static var aww: CreatureSpeech {
+        CreatureSpeech(String(localized: "assistant.chatter.aww"), emotion: .joy, placement: .trailing,
+                       maxWidth: AssistantMetrics.chatSpeechWidth)
+    }
+
+    /// A worrying reply (overspending, a debt overdue, a goal behind): a word of sympathy.
+    static var sympathy: CreatureSpeech {
+        CreatureSpeech(String(localized: "assistant.chatter.sympathy"), emotion: .sad, placement: .trailing,
                        maxWidth: AssistantMetrics.chatSpeechWidth)
     }
 

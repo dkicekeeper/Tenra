@@ -180,7 +180,8 @@ is too large», 400 на каждый запрос). Приложение раз
 ```swift
 struct AgentReply {
     var blocks: [AgentBlock]
-    var mood: MascotMood          // idle, happy, concerned, celebrating ...
+    var mood: AgentMood           // idle, happy, concerned, celebrate, proud, surprised, love,
+                                  // playful, empty (render_reply's enum; prompt.ts says when)
     var suggestions: [String]     // быстрые ответы-чипы
 }
 

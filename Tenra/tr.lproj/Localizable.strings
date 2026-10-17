@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Özelleştir...";
 "settings.wallpaper" = "Ana Sayfa Duvar Kağıdı";
 "settings.background" = "Arka Plan";
+"home.hint.categories" = "Harcama eklemek için bir kategoriye dokunun";
 "settings.voiceLanguage" = "Ses Dili";
 "settings.voiceLanguage.app" = "Uygulamadaki gibi";
 "settings.background.none" = "Arka Plan Yok";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "Fotoğraf";
 "settings.background.blurWallpaper" = "Duvar Kağıdını Bulanıklaştır";
 "settings.background.removePhoto" = "Fotoğrafı Kaldır";
+"settings.background.choosePhoto" = "Fotoğraf seç";
+"settings.background.changePhoto" = "Fotoğrafı değiştir";
 "settings.background.preview" = "Arka plan önizlemesi";
 "settings.background.opacity" = "Renk yoğunluğu";
 "settings.background.opacityTitle" = "Gider rengi";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "Tutar";
 "quickAdd.description" = "Açıklama";
 "quickAdd.descriptionPlaceholder" = "Açıklama (isteğe bağlı)";
+"quickAdd.balanceAfter" = "Sonraki bakiye";
 "quickAdd.recurring" = "Tekrarlayan İşlem";
 "quickAdd.makeRecurring" = "Tekrarlayan";
 "quickAdd.frequency" = "Sıklık";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "Satırlar";
 "csvImport.preview.columns" = "Sütunlar";
 "csvImport.mapping.title" = "Sütun Eşleştirme";
+"csvImport.step.preview" = "Önizleme";
+"csvImport.step.columns" = "Sütunlar";
+"csvImport.step.import" = "İçe aktar";
 "csvImport.mapping.required" = "Zorunlu Alanlar";
 "csvImport.mapping.optional" = "İsteğe Bağlı Alanlar";
 "csvImport.mapping.date" = "Tarih";
@@ -2071,6 +2078,9 @@
 "assistant.chatter.here" = "Buradayım!";
 "assistant.chatter.help" = "Nasıl yardımcı olabilirim?";
 "assistant.chatter.hehe" = "Hi hi";
+"assistant.chatter.wellDone" = "Aferin!";
+"assistant.chatter.aww" = "Aa, teşekkürler!";
+"assistant.chatter.sympathy" = "Eyvah…";
 "assistant.chatter.dizzy" = "Ay, başım dönüyor!";
 "settings.assistant.chatter" = "Ten konuşkan";
 

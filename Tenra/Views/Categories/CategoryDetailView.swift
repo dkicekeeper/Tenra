@@ -332,22 +332,15 @@ struct CategoryDetailView: View {
                 value: "\(spent) / \(total) (\(pct)%)",
                 valueContent: AnyView(
                     HStack(spacing: AppSpacing.xxs) {
-                        FormattedAmountText(
-                            amount: spentAmount,
+                        // Spent against the budget (DesignKit's SpentBudgetText).
+                        SpentBudgetText(
+                            spent: spentAmount,
+                            budget: budgetTotal,
                             currency: baseCurrency,
-                            fontSize: AppTypography.bodyEmphasis,
+                            font: AppTypography.bodyEmphasis,
                             fontWeight: .semibold,
-                            color: AppColors.textPrimary
-                        )
-                        Text("/")
-                            .font(AppTypography.bodyEmphasis)
-                            .foregroundStyle(AppColors.textTertiary)
-                        FormattedAmountText(
-                            amount: budgetTotal,
-                            currency: baseCurrency,
-                            fontSize: AppTypography.bodyEmphasis,
-                            fontWeight: .semibold,
-                            color: AppColors.textPrimary
+                            amountColor: AppColors.textPrimary,
+                            separatorColor: AppColors.textTertiary
                         )
                         Text("(\(pct)%)")
                             .font(AppTypography.bodyEmphasis)

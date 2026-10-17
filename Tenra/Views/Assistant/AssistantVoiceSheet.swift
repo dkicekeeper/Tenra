@@ -8,7 +8,8 @@
 //  are recognized. Stopped, by the orb or after five seconds without new words, it shows what
 //  it heard: "Ask Ten" sends it as a question (the reply drafts what was said, with its confirm
 //  card), "Say it again" starts over. Nothing is sent before that tap, so a misheard phrase
-//  costs no answer.
+//  costs no answer. Ten sits in the title, listening to the voice as it records (DesignKit
+//  `.listening` with the voice level), glad once it heard something.
 //
 
 import SwiftUI
@@ -77,6 +78,14 @@ struct AssistantVoiceSheet: View {
                         voiceService.stopRecording()
                         dismiss()
                     }
+                }
+                ToolbarItem(placement: .principal) {
+                    ListeningTen(
+                        voiceService: voiceService,
+                        isRecording: voiceService.isRecording || demoRecording,
+                        heardSomething: !voiceService.transcribedText.isEmpty || demoPhrase != nil,
+                        followsVoice: !Self.isScreenshotDemo
+                    )
                 }
             }
         }
@@ -205,5 +214,28 @@ struct AssistantVoiceSheet: View {
                 showingPermissionAlert = true
             }
         }
+    }
+}
+
+/// Ten in the voice sheet's title: listening while it records, its swarm following the voice
+/// level; glad once it heard something, at rest otherwise. A view of its own, as the level
+/// changes dozens of times a second. The title it stands in for stays for VoiceOver.
+private struct ListeningTen: View {
+    let voiceService: VoiceInputService
+    let isRecording: Bool
+    let heardSomething: Bool
+    /// Off for the screenshots, where the level stays at zero: the swarm ripples on its own.
+    let followsVoice: Bool
+
+    var body: some View {
+        ParticleCreature(
+            mood: isRecording ? .listening : (heardSomething ? .happy : .idle),
+            style: .compact,
+            level: isRecording && followsVoice ? voiceService.audioLevel : nil
+        )
+        .frame(width: AppIconSize.xl, height: AppIconSize.xl)
+        .accessibilityElement()
+        .accessibilityLabel(String(localized: "tab.assistant"))
+        .accessibilityAddTraits(.isHeader)
     }
 }

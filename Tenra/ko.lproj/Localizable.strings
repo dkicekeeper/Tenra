@@ -95,6 +95,7 @@
 "currency.customizeAction" = "사용자 지정...";
 "settings.wallpaper" = "홈 배경화면";
 "settings.background" = "배경";
+"home.hint.categories" = "카테고리를 탭해 지출을 추가하세요";
 "settings.voiceLanguage" = "음성 언어";
 "settings.voiceLanguage.app" = "앱과 동일";
 "settings.background.none" = "배경 없음";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "사진";
 "settings.background.blurWallpaper" = "배경화면 흐리게";
 "settings.background.removePhoto" = "사진 제거";
+"settings.background.choosePhoto" = "사진 선택";
+"settings.background.changePhoto" = "사진 변경";
 "settings.background.preview" = "배경 미리보기";
 "settings.background.opacity" = "색상 강도";
 "settings.background.opacityTitle" = "지출 색상";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "금액";
 "quickAdd.description" = "설명";
 "quickAdd.descriptionPlaceholder" = "설명 (선택)";
+"quickAdd.balanceAfter" = "거래 후 잔액";
 "quickAdd.recurring" = "반복 거래";
 "quickAdd.makeRecurring" = "반복";
 "quickAdd.frequency" = "주기";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "행";
 "csvImport.preview.columns" = "열";
 "csvImport.mapping.title" = "열 매핑";
+"csvImport.step.preview" = "미리보기";
+"csvImport.step.columns" = "열";
+"csvImport.step.import" = "가져오기";
 "csvImport.mapping.required" = "필수 항목";
 "csvImport.mapping.optional" = "선택 항목";
 "csvImport.mapping.date" = "날짜";
@@ -2071,6 +2078,9 @@
 "assistant.chatter.here" = "여기 있어요!";
 "assistant.chatter.help" = "무엇을 도와드릴까요?";
 "assistant.chatter.hehe" = "헤헤";
+"assistant.chatter.wellDone" = "잘했어요!";
+"assistant.chatter.aww" = "와, 고마워요!";
+"assistant.chatter.sympathy" = "아이고…";
 "assistant.chatter.dizzy" = "어지러워요!";
 "settings.assistant.chatter" = "텐의 수다";
 

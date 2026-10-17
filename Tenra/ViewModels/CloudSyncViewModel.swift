@@ -52,9 +52,9 @@ final class CloudSyncViewModel {
     /// newer create/delete doesn't put the old list back.
     @ObservationIgnored private var listGeneration = 0
 
-    /// Why the last automatic backup failed, until the Backups screen has shown it. The
-    /// automatic backup runs at launch, away from the only place backup errors appear.
-    @ObservationIgnored private var automaticBackupFailure: String?
+    /// Why the last automatic backup failed, until a backup succeeds: the Backups screen keeps
+    /// it in a banner (the automatic backup runs at launch, away from that screen).
+    private(set) var automaticBackupFailure: String?
 
     /// Set by AppCoordinator after init — used for full re-initialization after restore
     @ObservationIgnored weak var appCoordinator: AppCoordinator?
@@ -113,18 +113,11 @@ final class CloudSyncViewModel {
             automaticBackupFailure = nil
             Self.logger.info("Automatic backup created: \(metadata.id, privacy: .public)")
         } catch {
-            // Retried at the next launch (no new backup, so it is still due); shown once on
-            // the Backups screen meanwhile.
+            // Retried at the next launch (no new backup, so it is still due); the Backups
+            // screen shows it meanwhile.
             automaticBackupFailure = error.localizedDescription
             Self.logger.error("Automatic backup failed: \(error.localizedDescription, privacy: .public)")
         }
-    }
-
-    /// Shows a failed automatic backup once, through the screen's error banner.
-    func showAutomaticBackupFailureIfAny() async {
-        guard let failure = automaticBackupFailure else { return }
-        automaticBackupFailure = nil
-        await showError(String(format: String(localized: "settings.cloud.autoBackup.failed"), failure))
     }
 
     /// Puts a new backup at the top of the list and drops the ones the service evicted for
@@ -195,6 +188,7 @@ final class CloudSyncViewModel {
                 categoryCount: categoryCount
             )
             insertCreatedBackup(metadata)
+            automaticBackupFailure = nil
             await showSuccess(String(localized: "settings.cloud.backupCreated"))
         } catch {
             await showError(error.localizedDescription)

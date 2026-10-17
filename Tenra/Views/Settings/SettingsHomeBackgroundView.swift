@@ -2,18 +2,14 @@
 //  SettingsHomeBackgroundView.swift
 //  Tenra
 //
-//  Dedicated page for home screen background settings.
-//  Hero live preview + mode picker + per-mode controls (blur / opacity).
+//  The home screen's background: DesignKit's option carousel (HomeBackgroundPicker), the
+//  chosen background large over the row of options, and under it that option's settings: the
+//  intensity of the expense colours, or a photo to pick, its blur and a way to remove it.
 //
 
 import SwiftUI
 import PhotosUI
 
-/// Full-page background settings:
-///   • Hero preview — mirrors what the home screen will look like (adapts L/D)
-///   • Mode picker — none / gradient / photo
-///   • Opacity slider for the "expense colour" gradient (when mode == .gradient)
-///   • Blur toggle + remove photo (when mode == .wallpaper)
 struct SettingsHomeBackgroundView: View {
 
     // MARK: - Props
@@ -32,45 +28,67 @@ struct SettingsHomeBackgroundView: View {
     let onBlurChange: (Bool) -> Void
     let onOpacityChange: (Double) -> Void
 
+    @State private var selectedPhoto: PhotosPickerItem?
+
     // MARK: - Body
 
     var body: some View {
-        List {
-            // Mode picker — cards themselves act as live previews (gradient uses
-            // the real category colours + current opacity; wallpaper uses the
-            // saved photo with blur). No separate hero preview.
-            Section {
-                HomeBackgroundPicker(
-                    currentMode: currentMode,
-                    wallpaperImage: wallpaperImage,
-                    blurWallpaper: blurWallpaper,
-                    gradientOpacity: backgroundOpacity,
-                    gradientWeights: categoryWeights,
-                    customCategories: customCategories,
-                    onModeSelect: onModeSelect,
-                    onPhotoChange: onPhotoChange
-                )
-                .listRowInsets(EdgeInsets(top: AppSpacing.sm,
-                                          leading: 0,
-                                          bottom: AppSpacing.sm,
-                                          trailing: 0))
+        ScrollView {
+            HomeBackgroundPicker(
+                currentMode: currentMode,
+                wallpaperImage: wallpaperImage,
+                blurWallpaper: blurWallpaper,
+                gradientOpacity: backgroundOpacity,
+                gradientWeights: categoryWeights,
+                customCategories: customCategories,
+                onModeSelect: onModeSelect
+            ) { mode in
+                settings(for: mode)
+                    .screenPadding()
             }
+            .padding(.vertical, AppSpacing.lg)
+        }
+        .navigationTitle(String(localized: "settings.background"))
+        .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: selectedPhoto) { _, item in
+            guard let item else { return }
+            selectedPhoto = nil
+            onModeSelect(.wallpaper)
+            Task { await onPhotoChange(item) }
+        }
+    }
 
-            // Gradient-specific control: opacity of the expense colour layer
-            if currentMode == .gradient {
-                Section(header: SectionHeader(String(localized: "settings.background.opacityTitle",
-                                  defaultValue: "Expense colour"), style: .compact)) {
-                    OpacitySliderRow(
-                        value: backgroundOpacity,
-                        onChange: onOpacityChange
-                    )
+    // MARK: - Settings
+
+    @ViewBuilder
+    private func settings(for mode: HomeBackgroundMode) -> some View {
+        switch mode {
+        case .none:
+            EmptyView()
+        case .gradient:
+            FormSection(header: String(localized: "settings.background.opacityTitle", defaultValue: "Expense colour")) {
+                OpacitySliderRow(value: backgroundOpacity, onChange: onOpacityChange)
+            }
+        case .wallpaper:
+            FormSection {
+                PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                    UniversalRow(
+                        config: .settings,
+                        leadingIcon: .sfSymbol("photo.on.rectangle", color: AppColors.accent, size: AppIconSize.md)
+                    ) {
+                        Text(wallpaperImage == nil
+                             ? String(localized: "settings.background.choosePhoto")
+                             : String(localized: "settings.background.changePhoto"))
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppColors.Text.primary)
+                    } trailing: {
+                        DisclosureChevron()
+                    }
+                    .contentShape(Rectangle())
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
-
-            // Wallpaper-specific controls
-            if currentMode == .wallpaper {
-                Section {
+                .buttonStyle(.plain)
+                if wallpaperImage != nil {
+                    Divider()
                     ToggleSettingsRow(
                         icon: "camera.filters",
                         title: String(localized: "settings.background.blurWallpaper"),
@@ -79,29 +97,23 @@ struct SettingsHomeBackgroundView: View {
                             set: { onBlurChange($0) }
                         )
                     )
-
-                    if wallpaperImage != nil {
-                        UniversalRow(
-                            config: .settings,
-                            leadingIcon: .sfSymbol("trash", color: AppColors.destructive, size: AppIconSize.md)
-                        ) {
-                            Text(String(localized: "settings.background.removePhoto"))
-                                .font(AppTypography.body)
-                                .foregroundStyle(AppColors.destructive)
-                        } trailing: {
-                            EmptyView()
-                        }
-                        .actionRow(role: .destructive) {
-                            Task { await onWallpaperRemove() }
-                        }
+                    Divider()
+                    UniversalRow(
+                        config: .settings,
+                        leadingIcon: .sfSymbol("trash", color: AppColors.destructive, size: AppIconSize.md)
+                    ) {
+                        Text(String(localized: "settings.background.removePhoto"))
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppColors.destructive)
+                    } trailing: {
+                        EmptyView()
+                    }
+                    .actionRow(role: .destructive) {
+                        Task { await onWallpaperRemove() }
                     }
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .navigationTitle(String(localized: "settings.background"))
-        .navigationBarTitleDisplayMode(.inline)
-        .animation(AppAnimation.gentleSpring, value: currentMode)
     }
 }
 

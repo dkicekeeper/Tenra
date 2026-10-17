@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Налаштувати...";
 "settings.wallpaper" = "Шпалери головної";
 "settings.background" = "Тло";
+"home.hint.categories" = "Натисніть на категорію, щоб додати витрату";
 "settings.voiceLanguage" = "Мова голосу";
 "settings.voiceLanguage.app" = "Як у застосунку";
 "settings.background.none" = "Без тла";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "Фото";
 "settings.background.blurWallpaper" = "Розмити шпалери";
 "settings.background.removePhoto" = "Прибрати фото";
+"settings.background.choosePhoto" = "Вибрати фото";
+"settings.background.changePhoto" = "Змінити фото";
 "settings.background.preview" = "Перегляд тла";
 "settings.background.opacity" = "Інтенсивність кольору";
 "settings.background.opacityTitle" = "Колір витрат";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "Сума";
 "quickAdd.description" = "Опис";
 "quickAdd.descriptionPlaceholder" = "Опис (необов'язково)";
+"quickAdd.balanceAfter" = "Залишиться на рахунку";
 "quickAdd.recurring" = "Регулярна операція";
 "quickAdd.makeRecurring" = "Регулярна";
 "quickAdd.frequency" = "Періодичність";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "Рядки";
 "csvImport.preview.columns" = "Стовпці";
 "csvImport.mapping.title" = "Зіставлення стовпців";
+"csvImport.step.preview" = "Перегляд";
+"csvImport.step.columns" = "Стовпці";
+"csvImport.step.import" = "Імпорт";
 "csvImport.mapping.required" = "Обов'язкові поля";
 "csvImport.mapping.optional" = "Необов'язкові поля";
 "csvImport.mapping.date" = "Дата";
@@ -2071,6 +2078,9 @@
 "assistant.chatter.here" = "Я тут!";
 "assistant.chatter.help" = "Чим допомогти?";
 "assistant.chatter.hehe" = "Хі-хі";
+"assistant.chatter.wellDone" = "Молодець!";
+"assistant.chatter.aww" = "Ой, дякую!";
+"assistant.chatter.sympathy" = "Ех…";
 "assistant.chatter.dizzy" = "Ой, усе крутиться!";
 "settings.assistant.chatter" = "Тен базікає";
 

@@ -2,27 +2,22 @@
 //  HomeBackgroundPicker.swift
 //  Tenra
 //
-//  Apple Wallpaper-style mode picker for the home screen background.
-//  Three cards in a horizontal scroll — None / Gradient / Photo.
-//  - Labels rendered below cards (always legible, not overlaid on artwork)
-//  - Wallpaper card tap opens PhotosPicker directly; photo becomes the thumbnail
-//  - Blur applied to wallpaper thumbnail when blurWallpaper is enabled
+//  The home screen's background, as Ten's wardrobe picks an accessory: DesignKit's
+//  `OptionCardPicker(style: .carousel)` (5.2.0). The chosen background large on top in a
+//  phone's shape, the three (none, the expense colours, a photo) in a row of cards under it,
+//  and under the row what the screen sets for the chosen one (`settings`). The cards are live
+//  previews: the gradient in the person's expense colours at the chosen intensity, the photo
+//  saved, blurred when the home blurs it.
 //
 
 import SwiftUI
-import PhotosUI
 
 // MARK: - HomeBackgroundPicker
 
-/// Horizontal card picker for choosing the home screen background mode.
-///
-/// Design:
-/// - Scrollable row of thumbnail cards with labels below (not overlaid)
-/// - Selected card gets an accent border + ✓ badge
-/// - None/Gradient cards: tap to select
-/// - Wallpaper card: tap always opens PhotosPicker; selected photo becomes thumbnail;
-///   thumbnail is blurred when `blurWallpaper` is `true`
-struct HomeBackgroundPicker: View {
+/// The background picker. The mode follows the carousel, except for a photo, which needs one
+/// picked first: until then the carousel shows it with its settings ("Choose a Photo") and the
+/// home keeps its background.
+struct HomeBackgroundPicker<Settings: View>: View {
 
     // MARK: - Props
 
@@ -31,58 +26,60 @@ struct HomeBackgroundPicker: View {
     let wallpaperImage: UIImage?
     /// Mirrors the home screen blur setting so the card preview matches reality.
     let blurWallpaper: Bool
-    /// Current opacity for the expense-colour gradient (default used if unset).
-    var gradientOpacity: Double = 0.35
+    /// Current opacity for the expense-colour gradient.
+    let gradientOpacity: Double
     /// Real top-expense weights so the gradient card reflects actual data.
-    var gradientWeights: [CategoryColorWeight] = []
+    let gradientWeights: [CategoryColorWeight]
     /// Custom categories — needed to resolve orb tints.
-    var customCategories: [CustomCategory] = []
+    let customCategories: [CustomCategory]
     let onModeSelect: (HomeBackgroundMode) -> Void
-    let onPhotoChange: (PhotosPickerItem?) async -> Void
+    let settings: (HomeBackgroundMode) -> Settings
 
-    // MARK: - State
+    /// The option in the carousel's middle.
+    @State private var shown: HomeBackgroundMode
 
-    @State private var selectedPhoto: PhotosPickerItem? = nil
-
-    // MARK: - Layout constants
-
-    private let cardHeight: CGFloat = 168   // ~9:16 phone aspect ratio
+    init(
+        currentMode: HomeBackgroundMode,
+        wallpaperImage: UIImage?,
+        blurWallpaper: Bool,
+        gradientOpacity: Double = 0.35,
+        gradientWeights: [CategoryColorWeight] = [],
+        customCategories: [CustomCategory] = [],
+        onModeSelect: @escaping (HomeBackgroundMode) -> Void,
+        @ViewBuilder settings: @escaping (HomeBackgroundMode) -> Settings
+    ) {
+        self.currentMode = currentMode
+        self.wallpaperImage = wallpaperImage
+        self.blurWallpaper = blurWallpaper
+        self.gradientOpacity = gradientOpacity
+        self.gradientWeights = gradientWeights
+        self.customCategories = customCategories
+        self.onModeSelect = onModeSelect
+        self.settings = settings
+        _shown = State(initialValue: currentMode)
+    }
 
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: AppSpacing.md) {
-            ForEach(HomeBackgroundMode.allCases, id: \.self) { mode in
-                if mode == .wallpaper {
-                    // Wallpaper card — tap always opens photo picker
-                    PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                        modeCard(mode)
-                    }
-                    .onChange(of: selectedPhoto) { _, newItem in
-                        guard newItem != nil else { return }
-                        onModeSelect(.wallpaper)
-                        Task { await onPhotoChange(newItem) }
-                    }
-                } else {
-                    Button { onModeSelect(mode) } label: {
-                        modeCard(mode)
-                    }
-                    .buttonStyle(.plain)
+        OptionCardPicker(
+            HomeBackgroundMode.allCases,
+            selection: Binding(
+                get: { shown },
+                set: { mode in
+                    shown = mode
+                    if mode != .wallpaper || wallpaperImage != nil { onModeSelect(mode) }
                 }
-            }
-        }
-        .screenPadding()
-        .padding(.vertical, AppSpacing.sm)
-        .animation(AppAnimation.gentleSpring, value: currentMode)
-    }
-
-    // MARK: - Mode Card
-
-    /// DesignKit's `OptionCard` (2.9.0): the artwork, the title, the accent outline and check.
-    private func modeCard(_ mode: HomeBackgroundMode) -> some View {
-        OptionCard(title: mode.localizedTitle, isSelected: currentMode == mode) {
+            ),
+            style: .carousel,
+            title: { $0.localizedTitle }
+        ) { mode in
             modeArtwork(mode)
+        } settings: { mode in
+            settings(mode)
         }
+        // A photo picked, or the mode changed elsewhere.
+        .onChange(of: currentMode) { _, mode in shown = mode }
     }
 
     // MARK: - Gradient Preview Fallback
@@ -169,19 +166,16 @@ extension HomeBackgroundMode {
 #Preview {
     struct PreviewWrapper: View {
         @State private var mode: HomeBackgroundMode = .none
-        @State private var blur = false
 
         var body: some View {
-            List {
-                Section("Background") {
-                    HomeBackgroundPicker(
-                        currentMode: mode,
-                        wallpaperImage: nil,
-                        blurWallpaper: blur,
-                        onModeSelect: { mode = $0 },
-                        onPhotoChange: { _ in }
-                    )
-                    .listRowInsets(EdgeInsets())
+            ScrollView {
+                HomeBackgroundPicker(
+                    currentMode: mode,
+                    wallpaperImage: nil,
+                    blurWallpaper: false,
+                    onModeSelect: { mode = $0 }
+                ) { _ in
+                    EmptyView()
                 }
             }
         }

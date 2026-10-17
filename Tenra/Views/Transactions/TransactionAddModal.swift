@@ -180,6 +180,15 @@ struct TransactionAddModal: View {
                     )
                 }
 
+                // What the chosen account will hold once this is saved: the digits roll and
+                // flash as the amount is typed (DesignKit's LiveAmountText).
+                if let after = balanceAfter {
+                    InfoRowLayout(label: String(localized: "quickAdd.balanceAfter")) {
+                        LiveAmountText(amount: after.amount, currency: after.currency, rollsUpOnAppear: false)
+                    }
+                    .screenPadding()
+                }
+
                 if categoryId != nil {
                     SubcategorySelectorView(
                         categoriesViewModel: coordinator.categoriesViewModel,
@@ -202,6 +211,33 @@ struct TransactionAddModal: View {
                 )
                 .screenPadding()
             }
+        }
+    }
+
+    /// The chosen account's balance once this income or expense is saved, in the account's
+    /// currency (an amount in another currency converted at the cached rate). Nil without an
+    /// account, an amount or a rate, and for a future date, which leaves the balance as it is
+    /// until that day.
+    private var balanceAfter: (amount: Double, currency: String)? {
+        let form = coordinator.formData
+        guard let accountId = form.accountId,
+              let account = coordinator.accountsViewModel.accounts.first(where: { $0.id == accountId }),
+              let balance = coordinator.accountsViewModel.balanceCoordinator?.balances[accountId],
+              let amount = form.amountDouble, amount > 0,
+              Calendar.current.startOfDay(for: form.selectedDate) <= Calendar.current.startOfDay(for: .now)
+        else { return nil }
+        let inAccountCurrency: Double
+        if form.currency == account.currency {
+            inAccountCurrency = amount
+        } else if let converted = CurrencyConverter.convertSync(amount: amount, from: form.currency, to: account.currency) {
+            inAccountCurrency = converted
+        } else {
+            return nil
+        }
+        switch form.type {
+        case .expense: return (balance - inAccountCurrency, account.currency)
+        case .income: return (balance + inAccountCurrency, account.currency)
+        default: return nil
         }
     }
 

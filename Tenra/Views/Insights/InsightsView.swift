@@ -27,17 +27,26 @@ struct InsightsView: View {
             VStack(spacing: AppSpacing.xl) {
                 if !insightsViewModel.isLoading && !insightsViewModel.hasData {
                     emptyState
-                } else if insightsViewModel.isLoading && !insightsViewModel.hasData {
+                        .transition(.skeletonReveal)
+                } else if !insightsViewModel.hasComputed {
+                    // Until the feed is computed once: its own shapes.
                     insightsSkeleton
+                        .transition(.opacity)
                 } else {
-                    insightsSummaryHeaderSection
-                    insightsFilterSection
-                    insightsSectionsSection
+                    // The first computed feed comes into focus where its skeleton was; later
+                    // recomputes keep it, each section fading with ContentRevealModifier.
+                    VStack(spacing: AppSpacing.xl) {
+                        insightsSummaryHeaderSection
+                        insightsFilterSection
+                        insightsSectionsSection
+                    }
+                    .transition(.skeletonReveal)
                 }
             }
             .padding(.vertical, AppSpacing.md)
-            // Note: no outer animation needed — each section's ContentRevealModifier
-            // owns its own opacity animation, preventing compositing conflicts.
+            // Only the first load's switch from the skeleton animates here; each section's
+            // ContentRevealModifier owns its own opacity on later loads.
+            .animation(AppAnimation.smooth, value: insightsViewModel.hasComputed)
         }
         .navigationTitle(String(localized: "insights.title"))
         .navigationBarTitleDisplayMode(.large)

@@ -36,6 +36,31 @@ struct AssistantInboxTests {
 
     private static let now = Date(timeIntervalSince1970: 1_800_000_000)
 
+    /// A spike or a large expense is out of the ordinary: Ten looks surprised, worried at the rest.
+    @Test func aSpikeOrALargeExpenseSurprisesTen() {
+        let notices = AssistantNotices.signals(from: [
+            Self.insight("spike", severity: .warning, type: .spendingSpike),
+            Self.insight("large", severity: .warning, type: .largeTransaction),
+            Self.insight("over", severity: .warning),
+        ], now: Self.now)
+        let moods = Dictionary(uniqueKeysWithValues: notices.map { ($0.insightId ?? "", $0.mood) })
+        #expect(moods["spike"] == .surprised)
+        #expect(moods["large"] == .surprised)
+        #expect(moods["over"] == .concerned)
+    }
+
+    @Test func lateNightIsFromElevenToFive() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        func at(_ hour: Int) -> Date {
+            calendar.date(from: DateComponents(year: 2026, month: 10, day: 17, hour: hour, minute: 30))!
+        }
+        #expect(AssistantChatter.isLate(at(23), calendar: calendar))
+        #expect(AssistantChatter.isLate(at(4), calendar: calendar))
+        #expect(!AssistantChatter.isLate(at(5), calendar: calendar))
+        #expect(!AssistantChatter.isLate(at(22), calendar: calendar))
+    }
+
     @Test func criticalAndWarningInsightsBecomeMessagesWorstFirst() {
         let notices = AssistantNotices.signals(from: [
             Self.insight("warn", severity: .warning),

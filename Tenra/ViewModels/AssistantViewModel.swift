@@ -99,9 +99,26 @@ final class AssistantViewModel {
     private(set) var phase: Phase = .idle
     /// The mood of the latest reply, for the mascot.
     private(set) var replyMood: AgentMood = .idle
+    /// The tools the assistant ran for the question it works on (render_reply aside): after a
+    /// long run Ten looks determined (AssistantMetrics.mood).
+    private(set) var toolsRun = 0
     /// The reply's text blocks while the model writes them; empty otherwise. The finished
     /// reply takes their place.
     private(set) var streamingReply: [String] = []
+    /// The currency of the latest reply's first money card, when the reply answers with a
+    /// total: Ten shows the currency's sign in a coin (AssistantMetrics.mood).
+    var replyTotalCurrency: String? {
+        guard case .reply(let reply, let results)? = entries.last?.content else { return nil }
+        for block in reply.blocks {
+            guard case .metric(let label, let source, let path, let trendPath) = block,
+                  let metric = AgentReplyData.metric(label: label, source: source, path: path,
+                                                     trendPath: trendPath, results: results),
+                  case .amount(_, currency: let currency) = metric.value else { continue }
+            return currency
+        }
+        return nil
+    }
+
     /// The latest kept threads but the open one, for the history (at most `recentLimit`).
     private(set) var recentThreads: [AgentThreadSummary] = []
     /// The free allowance; nil with Pro.
@@ -511,6 +528,7 @@ final class AssistantViewModel {
             return
         }
         phase = .working(.understanding)
+        toolsRun = 0
         let kept = conversation.messages.count
         if conversation.trimIfNeeded() {
             sentContext = nil
@@ -534,6 +552,7 @@ final class AssistantViewModel {
                 switch progress {
                 case .toolStarted(let name):
                     self.phase = .working(AssistantStep(tool: name))
+                    if name != AgentProtocol.renderReplyTool { self.toolsRun += 1 }
                     // Another tool after a streamed reply: that reply was turned back.
                     if name != AgentProtocol.renderReplyTool { self.streamingReply = [] }
                 case .replyText(let texts):

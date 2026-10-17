@@ -33,6 +33,8 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
 
     enum Mood: String, Codable, Sendable {
         case idle, happy, concerned, celebrate
+        /// An unusually large expense or a sudden jump.
+        case surprised
     }
 
     /// The key that keeps it from posting twice.
@@ -86,7 +88,7 @@ enum AssistantNotices {
                     kind: .signal,
                     title: insight.title,
                     body: InsightSignalService.notificationBody(for: insight),
-                    mood: .concerned,
+                    mood: InsightSignalKind.from(insight)?.isSurprise == true ? .surprised : .concerned,
                     question: String(format: String(localized: "assistant.notice.ask"), insight.title),
                     insightId: insight.id,
                     createdAt: now

@@ -155,10 +155,9 @@ struct OCRTab: View {
             VStack(spacing: AppSpacing.xxl) {
                 Spacer()
 
-                // Fix #11: AppIconSize.Tile.xl (64pt) instead of magic literal
-                Image(systemName: "doc.viewfinder")
-                    .font(.system(size: AppIconSize.Tile.xl, weight: .light))
-                    .foregroundStyle(AppColors.accent)
+                // The symbol draws itself on a pale disc (DesignKit's HeroSymbol), as an
+                // onboarding page's picture.
+                HeroSymbol(systemImage: "doc.viewfinder", size: AppIconSize.Tile.xl * 2)
 
                 VStack(spacing: AppSpacing.sm) {
                     Text(String(localized: "tab.ocr"))

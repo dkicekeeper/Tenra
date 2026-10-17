@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Customize...";
 "settings.wallpaper" = "Home Wallpaper";
 "settings.background" = "Background";
+"home.hint.categories" = "Tap a category to add an expense";
 "settings.voiceLanguage" = "Voice language";
 "settings.voiceLanguage.app" = "As in the app";
 "settings.background.none" = "No Background";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "Photo";
 "settings.background.blurWallpaper" = "Blur Wallpaper";
 "settings.background.removePhoto" = "Remove Photo";
+"settings.background.choosePhoto" = "Choose a Photo";
+"settings.background.changePhoto" = "Change Photo";
 "settings.background.preview" = "Background preview";
 "settings.background.opacity" = "Colour intensity";
 "settings.background.opacityTitle" = "Expense colour";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "Amount";
 "quickAdd.description" = "Description";
 "quickAdd.descriptionPlaceholder" = "Description (optional)";
+"quickAdd.balanceAfter" = "Balance after";
 "quickAdd.recurring" = "Recurring Transaction";
 "quickAdd.makeRecurring" = "Recurring";
 "quickAdd.frequency" = "Frequency";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "Rows";
 "csvImport.preview.columns" = "Columns";
 "csvImport.mapping.title" = "Column Mapping";
+"csvImport.step.preview" = "Preview";
+"csvImport.step.columns" = "Columns";
+"csvImport.step.import" = "Import";
 "csvImport.mapping.required" = "Required Fields";
 "csvImport.mapping.optional" = "Optional Fields";
 "csvImport.mapping.date" = "Date";
@@ -2071,6 +2078,9 @@
 "assistant.chatter.here" = "I’m here!";
 "assistant.chatter.help" = "How can I help?";
 "assistant.chatter.hehe" = "Hee-hee";
+"assistant.chatter.wellDone" = "Well done!";
+"assistant.chatter.aww" = "Aww, thank you!";
+"assistant.chatter.sympathy" = "Oh dear…";
 "assistant.chatter.dizzy" = "Whoa, I’m dizzy!";
 "settings.assistant.chatter" = "Ten chats";
 

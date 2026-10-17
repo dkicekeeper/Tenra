@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Personnaliser...";
 "settings.wallpaper" = "Fond d'écran d'accueil";
 "settings.background" = "Arrière-plan";
+"home.hint.categories" = "Touchez une catégorie pour ajouter une dépense";
 "settings.voiceLanguage" = "Langue de la voix";
 "settings.voiceLanguage.app" = "Comme dans l’app";
 "settings.background.none" = "Aucun arrière-plan";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "Photo";
 "settings.background.blurWallpaper" = "Flouter le fond";
 "settings.background.removePhoto" = "Supprimer la photo";
+"settings.background.choosePhoto" = "Choisir une photo";
+"settings.background.changePhoto" = "Changer de photo";
 "settings.background.preview" = "Aperçu de l'arrière-plan";
 "settings.background.opacity" = "Intensité de la couleur";
 "settings.background.opacityTitle" = "Couleur des dépenses";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "Montant";
 "quickAdd.description" = "Description";
 "quickAdd.descriptionPlaceholder" = "Description (facultatif)";
+"quickAdd.balanceAfter" = "Solde après";
 "quickAdd.recurring" = "Opération récurrente";
 "quickAdd.makeRecurring" = "Récurrente";
 "quickAdd.frequency" = "Fréquence";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "Lignes";
 "csvImport.preview.columns" = "Colonnes";
 "csvImport.mapping.title" = "Mappage des colonnes";
+"csvImport.step.preview" = "Aperçu";
+"csvImport.step.columns" = "Colonnes";
+"csvImport.step.import" = "Import";
 "csvImport.mapping.required" = "Champs requis";
 "csvImport.mapping.optional" = "Champs facultatifs";
 "csvImport.mapping.date" = "Date";
@@ -2071,6 +2078,9 @@
 "assistant.chatter.here" = "Je suis là !";
 "assistant.chatter.help" = "Comment puis-je aider ?";
 "assistant.chatter.hehe" = "Hi hi";
+"assistant.chatter.wellDone" = "Bravo !";
+"assistant.chatter.aww" = "Oh, merci !";
+"assistant.chatter.sympathy" = "Aïe…";
 "assistant.chatter.dizzy" = "Oh, la tête me tourne !";
 "settings.assistant.chatter" = "Ten bavarde";
 

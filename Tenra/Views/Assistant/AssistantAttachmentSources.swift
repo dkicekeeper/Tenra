@@ -43,12 +43,14 @@ struct AssistantAttachmentMenu: View {
 }
 
 extension View {
-    /// Presents the picked source and reads the attachment. `reading` is on while it reads.
+    /// Presents the picked source and reads the attachment. `reading` is on while it reads;
+    /// `progress` follows a statement's pages (0...1), for Ten's light (`.working(progress:)`).
     /// - Parameter takesHandedOverFiles: this page also reads a file opened in Tenra from another
     ///   app (the assistant's home; a chat leaves it to the home).
     func assistantAttachmentSources(
         source: Binding<AssistantAttachmentSource?>,
         reading: Binding<Bool>,
+        progress: Binding<Double?>,
         takesHandedOverFiles: Bool,
         onRead: @escaping (AgentAttachment, AgentAttachmentSummary) -> Void,
         onFailure: @escaping (String) -> Void
@@ -56,6 +58,7 @@ extension View {
         modifier(AssistantAttachmentSources(
             source: source,
             reading: reading,
+            progress: progress,
             takesHandedOverFiles: takesHandedOverFiles,
             onRead: onRead,
             onFailure: onFailure
@@ -66,6 +69,7 @@ extension View {
 private struct AssistantAttachmentSources: ViewModifier {
     @Binding var source: AssistantAttachmentSource?
     @Binding var reading: Bool
+    @Binding var progress: Double?
     let takesHandedOverFiles: Bool
     let onRead: (AgentAttachment, AgentAttachmentSummary) -> Void
     let onFailure: (String) -> Void
@@ -187,8 +191,12 @@ private struct AssistantAttachmentSources: ViewModifier {
     /// nothing (ReceiptInterpreter's contract).
     private func read(_ work: @escaping () async throws -> (AgentAttachment, AgentAttachmentSummary)?) {
         reading = true
+        progress = nil
         Task {
-            defer { reading = false }
+            defer {
+                reading = false
+                progress = nil
+            }
             do {
                 if let read = try await work() {
                     onRead(read.0, read.1)
@@ -214,7 +222,10 @@ private struct AssistantAttachmentSources: ViewModifier {
 
     private func statement(from url: URL) async throws -> (AgentAttachment, AgentAttachmentSummary)? {
         let baseCurrency = coordinator.transactionStore.baseCurrency
-        let outcome = try await DocumentImportService.importStatement(from: url, defaultCurrency: baseCurrency)
+        let report = pageReporter()
+        let outcome = try await DocumentImportService.importStatement(from: url, defaultCurrency: baseCurrency) { page, pages in
+            report(page, pages)
+        }
         guard !outcome.statement.transactions.isEmpty else { throw AttachmentReadError.unreadable }
         let review = await StatementReviewPreparer.prepare(
             outcome,
@@ -225,6 +236,17 @@ private struct AssistantAttachmentSources: ViewModifier {
         )
         let accountName = review.statementAccountId.flatMap { id in coordinator.transactionStore.accounts.first { $0.id == id }?.name }
         return (.statement(review), .statement(review, accountName: accountName))
+    }
+
+    /// The pages read so far as `progress`, on the main actor (the importer reports from its own
+    /// task). Up to 90%: recognising and sorting the rows comes after the pages.
+    private func pageReporter() -> @Sendable (Int, Int) -> Void {
+        let progress = $progress
+        return { page, pages in
+            Task { @MainActor in
+                progress.wrappedValue = pages > 0 ? 0.9 * Double(page) / Double(pages) : 0
+            }
+        }
     }
 
     /// A photo as Vision reads it: drawn upright (a camera photo keeps its rotation in EXIF,

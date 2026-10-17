@@ -3,9 +3,10 @@
 //  Tenra
 //
 //  A message Ten wrote first (AssistantInbox): an adapter over DesignKit's NoticeCard (4.14.0),
-//  the mascot in the message's mood, its title and text, "Go through it" (a question to the
-//  assistant, which spends a free answer) and a button that hides it. Shown on Home while
-//  unread (AssistantNoticesSection), never in the chat.
+//  the mascot in the message's mood at the card's picture size (NoticeCardMetrics, 5.2.0), its
+//  title and text, "Go through it" (a question to the assistant, which spends a free answer)
+//  and a button that hides it. Ten perks up once at a message it has not shown before. Shown
+//  on Home while unread (AssistantNoticesSection), never in the chat.
 //
 
 import SwiftUI
@@ -14,6 +15,10 @@ struct AssistantNoticeCard: View {
     let notice: AssistantNotice
     let onAsk: () -> Void
     let onHide: () -> Void
+
+    /// The last message Ten perked up at, so it does it once per message.
+    @AppStorage("assistant.notice.perked") private var perkedNotice = ""
+    @State private var perks = 0
 
     var body: some View {
         NoticeCard(
@@ -26,8 +31,18 @@ struct AssistantNoticeCard: View {
             onHide: onHide
         ) {
             ParticleCreature(mood: notice.mood.creatureMood, style: .compact)
-                .frame(width: AssistantMetrics.headerMascot, height: AssistantMetrics.headerMascot)
+                .creatureGesture(.perk, trigger: perks)
+                .frame(width: NoticeCardMetrics.leadingSize, height: NoticeCardMetrics.leadingSize)
                 .accessibilityHidden(true)
+        }
+        // A gesture plays when its trigger changes, never on appear: a moment after the card
+        // settles.
+        .task(id: notice.id) {
+            guard perkedNotice != notice.id else { return }
+            try? await Task.sleep(for: .seconds(0.6))
+            guard !Task.isCancelled else { return }
+            perkedNotice = notice.id
+            perks += 1
         }
     }
 }
@@ -80,6 +95,7 @@ extension AssistantNotice.Mood {
         case .happy: .happy
         case .concerned: .worried
         case .celebrate: .celebrating
+        case .surprised: .surprised
         }
     }
 }

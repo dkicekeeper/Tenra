@@ -12,6 +12,8 @@ enum FeatureTourState {
     enum Hint: String, Hashable {
         /// The voice orb is the stop button (voice input).
         case voiceStopOrb = "featureTour.voiceStopOrb"
+        /// A tap on a category on Home adds an expense (the first launch, DesignKit's Tooltip).
+        case homeCategories = "featureTour.homeCategories"
     }
 
     static func hasSeen(_ hint: Hint) -> Bool {

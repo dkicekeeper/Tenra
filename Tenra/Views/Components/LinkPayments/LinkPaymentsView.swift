@@ -357,6 +357,8 @@ struct LinkPaymentsView: View {
                     }
                 )
                 .screenPadding()
+                // Comes into focus where its skeleton was (DesignKit's skeleton → content).
+                .transition(.skeletonReveal)
             }
         }
         .scrollDismissesKeyboard(.interactively)
@@ -390,6 +392,7 @@ struct LinkPaymentsView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.skeletonReveal)
             }
         }
         // The candidates come in where their skeleton was.

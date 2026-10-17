@@ -95,6 +95,7 @@
 "currency.customizeAction" = "カスタマイズ…";
 "settings.wallpaper" = "ホームの壁紙";
 "settings.background" = "背景";
+"home.hint.categories" = "カテゴリをタップして支出を追加";
 "settings.voiceLanguage" = "音声の言語";
 "settings.voiceLanguage.app" = "アプリと同じ";
 "settings.background.none" = "背景なし";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "写真";
 "settings.background.blurWallpaper" = "壁紙をぼかす";
 "settings.background.removePhoto" = "写真を削除";
+"settings.background.choosePhoto" = "写真を選択";
+"settings.background.changePhoto" = "写真を変更";
 "settings.background.preview" = "背景プレビュー";
 "settings.background.opacity" = "色の濃さ";
 "settings.background.opacityTitle" = "支出カラー";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "金額";
 "quickAdd.description" = "説明";
 "quickAdd.descriptionPlaceholder" = "説明（任意）";
+"quickAdd.balanceAfter" = "取引後の残高";
 "quickAdd.recurring" = "定期取引";
 "quickAdd.makeRecurring" = "定期";
 "quickAdd.frequency" = "頻度";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "行数";
 "csvImport.preview.columns" = "列数";
 "csvImport.mapping.title" = "列のマッピング";
+"csvImport.step.preview" = "プレビュー";
+"csvImport.step.columns" = "列";
+"csvImport.step.import" = "インポート";
 "csvImport.mapping.required" = "必須フィールド";
 "csvImport.mapping.optional" = "任意フィールド";
 "csvImport.mapping.date" = "日付";
@@ -2071,6 +2078,9 @@
 "assistant.chatter.here" = "ここにいますよ！";
 "assistant.chatter.help" = "何かお手伝いしましょうか？";
 "assistant.chatter.hehe" = "えへへ";
+"assistant.chatter.wellDone" = "よくできました！";
+"assistant.chatter.aww" = "わあ、ありがとう！";
+"assistant.chatter.sympathy" = "あらら…";
 "assistant.chatter.dizzy" = "わあ、目が回る！";
 "settings.assistant.chatter" = "テンのおしゃべり";
 

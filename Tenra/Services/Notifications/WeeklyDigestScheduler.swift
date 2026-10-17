@@ -92,6 +92,10 @@ final class WeeklyDigestScheduler {
         content.title = String(localized: "notification.weeklyDigest.title")
         content.body = body
         content.sound = .default
+        // From Ten, glad to sum the week up.
+        if let art = TenNotificationArt.attachment(mood: .happy) {
+            content.attachments = [art]
+        }
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)

@@ -24,6 +24,8 @@ struct GoalDetailView: View {
     @State private var showingDelete = false
     /// Bumped when the goal is reached: one confetti burst each time.
     @State private var celebrations = 0
+    /// Bumped by each contribution that does not reach the goal (`.sparkleBurst`).
+    @State private var contributionSparkles = 0
 
     private var appSettings: AppSettings { coordinator.transactionsViewModel.appSettings }
 
@@ -82,6 +84,9 @@ struct GoalDetailView: View {
                         color: AppColors.income
                     )
                 )
+                // Money put towards the goal: a small burst of sparkles over it (DesignKit);
+                // reaching the goal celebrates instead.
+                .sparkleBurst(trigger: contributionSparkles, tint: AppColors.income)
             },
             customSections: {
                 if !follows, !goal.contributions.isEmpty {
@@ -130,7 +135,7 @@ struct GoalDetailView: View {
             ) { amount, date, note in
                 Task {
                     await goalStore.addContribution(GoalContribution(amount: amount, date: date, note: note), to: goal.id)
-                    await checkReached()
+                    if !(await checkReached()) { contributionSparkles += 1 }
                 }
             }
         }
@@ -229,10 +234,12 @@ struct GoalDetailView: View {
 
     // MARK: - Helpers
 
-    private func checkReached() async {
-        if await goalStore.refreshReached(goalId: goalId) {
-            celebrations += 1
-        }
+    /// Celebrates a goal that has just been reached; true when it was.
+    @discardableResult
+    private func checkReached() async -> Bool {
+        guard await goalStore.refreshReached(goalId: goalId) else { return false }
+        celebrations += 1
+        return true
     }
 
     private func amountText(_ amount: Double, _ currency: String) -> String {

@@ -22,6 +22,9 @@ struct CSVPreviewView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: AppSpacing.lg) {
+                CSVImportSteps(current: CSVImportSteps.preview)
+                    .screenPadding()
+
                 // File information card
                 fileInfoSection
 

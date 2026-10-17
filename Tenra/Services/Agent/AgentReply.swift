@@ -15,6 +15,16 @@ import Foundation
 
 nonisolated enum AgentMood: String, Sendable, Equatable, Decodable {
     case idle, happy, concerned, celebrate
+    /// Steady progress the person made: a budget kept, money put towards a goal.
+    case proud
+    /// Something out of the ordinary: an unusually large expense, a sudden jump.
+    case surprised
+    /// The person thanked Ten or said something kind.
+    case love
+    /// A light tip or a friendly joke.
+    case playful
+    /// What the person asked about has nothing to show.
+    case empty
 
     init(from decoder: Decoder) throws {
         let raw = try decoder.singleValueContainer().decode(String.self)

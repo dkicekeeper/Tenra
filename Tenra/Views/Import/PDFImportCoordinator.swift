@@ -37,10 +37,19 @@ struct PDFImportCoordinator: View {
     @State private var showingScanner = false
     @State private var showingDiagnostics = false
     @State private var receiptDraft: ReceiptDraft? = nil
+    /// Why the last statement or receipt could not be read: a banner over the sources, where
+    /// the person tried, until the next attempt (DesignKit's `StatusBanner`).
+    @State private var importError: String?
 
     // MARK: - Body
     var body: some View {
         VStack(spacing: AppSpacing.md) {
+            if let importError {
+                StatusBanner(importError, status: .negative)
+                    .screenPadding()
+                    .transition(.opacity)
+            }
+
             sourcePicker
 
             if let outcome = importOutcome {
@@ -92,6 +101,7 @@ struct PDFImportCoordinator: View {
                     loadingOverlay
                 }
             }
+            .animation(AppAnimation.smooth, value: importError)
     }
 
     // MARK: - Source Picker
@@ -190,7 +200,7 @@ struct PDFImportCoordinator: View {
     // MARK: - PDF Analysis
     private func analyzePDF(url: URL) async {
         transactionsViewModel.isLoading = true
-        transactionsViewModel.errorMessage = nil
+        importError = nil
         ocrProgress = nil
 
         do {
@@ -229,7 +239,7 @@ struct PDFImportCoordinator: View {
                 showingTransactionPreview = true
             }
         } catch {
-            transactionsViewModel.errorMessage = error.localizedDescription
+            importError = error.localizedDescription
         }
 
         transactionsViewModel.isLoading = false
@@ -239,7 +249,7 @@ struct PDFImportCoordinator: View {
     // MARK: - Receipt Analysis
     private func analyzeReceipt(images: [CGImage]) async {
         transactionsViewModel.isLoading = true
-        transactionsViewModel.errorMessage = nil
+        importError = nil
 
         do {
             let snapshot = try await VisionDocumentExtractor.extract(images: images)
@@ -251,14 +261,14 @@ struct PDFImportCoordinator: View {
             if let draft {
                 receiptDraft = draft
             } else {
-                transactionsViewModel.errorMessage = String(localized: "import.error.receiptNotRecognized")
+                importError = String(localized: "import.error.receiptNotRecognized")
             }
         } catch is CancellationError {
             // The user backed out of the scan mid-interpretation. Per
             // ReceiptInterpreter's contract this must stop silently, not
             // surface as an error the user never asked to see.
         } catch {
-            transactionsViewModel.errorMessage = error.localizedDescription
+            importError = error.localizedDescription
         }
 
         transactionsViewModel.isLoading = false

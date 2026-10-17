@@ -49,6 +49,12 @@ enum InsightSignalKind: String, CaseIterable, Sendable {
         }
     }
 
+    /// Something out of the ordinary rather than a slow drift: Ten looks surprised on its
+    /// message and notification, worried otherwise.
+    var isSurprise: Bool {
+        self == .spendingSpike || self == .largeTransaction
+    }
+
     /// Maps a computed insight to its signal kind. Nil = not push-worthy.
     /// Severity gates encode the "is this worth interrupting for" thresholds.
     nonisolated static func from(_ insight: Insight) -> InsightSignalKind? {
@@ -354,6 +360,11 @@ final class InsightSignalService {
             content.title = insight.title
             content.body = Self.notificationBody(for: insight)
             content.sound = .default
+            // From Ten: worried, or surprised at something out of the ordinary.
+            let surprise = InsightSignalKind.from(insight)?.isSurprise == true
+            if let art = TenNotificationArt.attachment(mood: surprise ? .surprised : .worried) {
+                content.attachments = [art]
+            }
             // Near-immediate dates deliver now; future ones get a calendar trigger
             // so they survive the app being suspended or relaunched.
             let trigger: UNNotificationTrigger?

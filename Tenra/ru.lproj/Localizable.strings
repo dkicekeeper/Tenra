@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Настроить...";
 "settings.wallpaper" = "Обои на главной";
 "settings.background" = "Фон";
+"home.hint.categories" = "Нажмите на категорию, чтобы добавить расход";
 "settings.voiceLanguage" = "Язык голоса";
 "settings.voiceLanguage.app" = "Как в приложении";
 "settings.background.none" = "Без фона";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "Фото";
 "settings.background.blurWallpaper" = "Размыть обои";
 "settings.background.removePhoto" = "Удалить фото";
+"settings.background.choosePhoto" = "Выбрать фото";
+"settings.background.changePhoto" = "Сменить фото";
 "settings.background.preview" = "Превью фона";
 "settings.background.opacity" = "Интенсивность цвета";
 "settings.background.opacityTitle" = "Цвет расходов";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "Сумма";
 "quickAdd.description" = "Описание";
 "quickAdd.descriptionPlaceholder" = "Описание (необязательно)";
+"quickAdd.balanceAfter" = "Останется на счёте";
 "quickAdd.recurring" = "Повторяющаяся операция";
 "quickAdd.makeRecurring" = "Повторение";
 "quickAdd.frequency" = "Частота";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "Строк";
 "csvImport.preview.columns" = "Колонок";
 "csvImport.mapping.title" = "Маппинг колонок";
+"csvImport.step.preview" = "Просмотр";
+"csvImport.step.columns" = "Столбцы";
+"csvImport.step.import" = "Импорт";
 "csvImport.mapping.required" = "Обязательные поля";
 "csvImport.mapping.optional" = "Опциональные поля";
 "csvImport.mapping.date" = "Дата";
@@ -2071,6 +2078,9 @@
 "assistant.chatter.here" = "Я тут!";
 "assistant.chatter.help" = "Чем помочь?";
 "assistant.chatter.hehe" = "Хи-хи";
+"assistant.chatter.wellDone" = "Молодец!";
+"assistant.chatter.aww" = "Ой, спасибо!";
+"assistant.chatter.sympathy" = "Эх…";
 "assistant.chatter.dizzy" = "Ой, всё кружится!";
 "settings.assistant.chatter" = "Тэн болтает";
 

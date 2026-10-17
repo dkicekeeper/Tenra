@@ -362,7 +362,7 @@ const renderReply: Tool = {
         ],
       },
     },
-    mood: { type: "string", enum: ["idle", "happy", "concerned", "celebrate"] },
+    mood: { type: "string", enum: ["idle", "happy", "concerned", "celebrate", "proud", "surprised", "love", "playful", "empty"] },
     suggestions: { type: "array", items: { type: "string" } },
   }),
 };

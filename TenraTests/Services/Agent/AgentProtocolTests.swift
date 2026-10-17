@@ -102,6 +102,18 @@ struct AgentProtocolTests {
         #expect(reply.suggestions.isEmpty)
     }
 
+    /// The moods the server's render_reply schema allows (server/assistant/src/tools.ts).
+    @Test func everyServerMoodDecodes() throws {
+        let moods: [String: AgentMood] = [
+            "idle": .idle, "happy": .happy, "concerned": .concerned, "celebrate": .celebrate,
+            "proud": .proud, "surprised": .surprised, "love": .love, "playful": .playful, "empty": .empty,
+        ]
+        for (raw, mood) in moods {
+            let reply = try JSONDecoder().decode(AgentReply.self, from: Data(#"{"blocks":[],"mood":"\#(raw)","suggestions":[]}"#.utf8))
+            #expect(reply.mood == mood, "\(raw)")
+        }
+    }
+
     @Test func unknownMoodFallsBackToIdle() throws {
         let reply = try JSONDecoder().decode(AgentReply.self, from: Data(#"{"blocks":[],"mood":"ecstatic","suggestions":[]}"#.utf8))
         #expect(reply.mood == .idle)

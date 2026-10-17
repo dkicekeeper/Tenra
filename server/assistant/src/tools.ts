@@ -180,7 +180,7 @@ const readTools: Tool[] = [
   {
     name: "convert_currency",
     description:
-      "Converts an amount from one currency to another (the base currency by default) at the exchange rates the app converts everything with, computed on the phone. Returns the converted amount (path converted), the rate for one unit (path rate) and the day the app last updated its rates (rates_date). Use for 'what is the dollar rate' (convert 1 from USD) or 'how much is 100 euros in tenge'.",
+      "Converts an amount from one currency to another (the base currency by default) at the exchange rates the app converts everything with, computed on the phone. Returns the converted amount (path converted), the rate for one unit (path rate) and the day the app last updated its rates (rates_date). It is the app's reference rate for the day, the same for every user, not a bank's buy or sell rate. Use for 'what is the dollar rate' (convert 1 from USD) or 'how much is 100 euros in tenge'.",
     input_schema: object(
       {
         amount: { type: "number", description: "1 by default" },

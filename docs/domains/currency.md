@@ -12,8 +12,20 @@ CurrencyRateStore (lock-protected cache + UserDefaults persistence + CurrencyRat
 Services/Currency/Providers/* (CurrencyRateProviderChain)
        ↓
    JsDelivrCurrencyProvider (primary, jsDelivr CDN + Cloudflare mirror, 200+ currencies)
-   NationalBankKZProvider (XML fallback, 8 currencies)
+   OfficialRatesProvider (fallback: official reference rates)
+       ├─ ECBCurrencyProvider (ECB euro table, ~30 currencies, daily XML + 90-day history)
+       └─ NationalBankKZProvider (XML, 8 currencies, the tenge's euro rate)
 ```
+
+**One source for every country.** Rates do not depend on the person's region: every device
+reads the same daily table of `fawazahmed0/currency-api` (a market blend, not a central bank's
+fixing; Ten calls it the app's reference rate for the day). When both of its hosts are down,
+`OfficialRatesProvider` gives the ECB's table in tenge, the store's pivot, through the National
+Bank's euro rate, adding the bank's currencies the ECB lacks (RUB, KGS, UZS). With the bank down
+too, the euro rate already in the cache anchors the table: pairs without the tenge (KRW and USD,
+say) stay exact, pairs with it are as old as that rate; without any cached euro rate the ECB
+table cannot be stored. With the ECB down, the bank's table alone. The ECB quotes no KZT, RUB or
+UAH, and keeps 90 days of history: an older date goes to the bank alone.
 
 ## Public API (`CurrencyConverter`)
 

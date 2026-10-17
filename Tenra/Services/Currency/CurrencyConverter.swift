@@ -24,8 +24,9 @@
 //  ─────────────────────────────────────────────────────────────────────
 //
 //  Provider chain order (fastest+widest first):
-//      1. JsDelivr (200+ currencies, public CDN, no auth, USD-pivot)
-//      2. NationalBankKZ (legacy, KZT-resident fallback, 8 currencies)
+//      1. JsDelivr (200+ currencies, public CDN + Cloudflare mirror, no auth, USD-pivot)
+//      2. Official rates: the ECB's euro table (~30 currencies) in tenge through the
+//         National Bank of Kazakhstan's euro rate, plus the bank's 8 (OfficialRatesProvider)
 //
 //  Public API contract unchanged:
 //      `convertSync(amount:from:to:)`        — cache-only sync conversion
@@ -47,8 +48,8 @@ nonisolated final class CurrencyConverter: @unchecked Sendable {
 
     private static let logger = Logger(subsystem: "Tenra", category: "CurrencyConverter")
 
-    /// Default provider chain. jsDelivr first (broadest coverage), NBK as
-    /// last-resort fallback. Never call providers directly from outside —
+    /// Default provider chain. jsDelivr first (broadest coverage), the official ECB and
+    /// National Bank rates as the fallback. Never call providers directly from outside —
     /// always through this chain so retries and fallbacks fire.
     ///
     /// Empty in a unit-test host (XCTest loaded into the app process, never in the app a
@@ -62,7 +63,7 @@ nonisolated final class CurrencyConverter: @unchecked Sendable {
         }
         return CurrencyRateProviderChain(providers: [
             JsDelivrCurrencyProvider(apiBase: "USD"),
-            NationalBankKZProvider()
+            OfficialRatesProvider()
         ])
     }()
 

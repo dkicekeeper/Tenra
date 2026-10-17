@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Provider abstraction for fetching exchange rates from various sources
-//  (jsDelivr, Frankfurter, National Bank of Kazakhstan, ...).
+//  (jsDelivr, the ECB, the National Bank of Kazakhstan).
 //
 //  Convention used throughout the currency layer:
 //      rates[X] = "how many `pivot` you receive for 1 unit of X"

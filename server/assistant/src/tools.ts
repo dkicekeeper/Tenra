@@ -360,7 +360,7 @@ const renderReply: Tool = {
             category_ids: nullable({ type: "array", items: { type: "string" } }),
           }),
           block("recurring", {
-            source: { ...source, description: "result_id of list_recurring: shows the subscriptions and payments with amounts and next dates; use it instead of listing them in text" },
+            source: { ...source, description: "result_id of list_recurring: shows the subscriptions and payments with amounts and next dates, not their total (for what they cost a month add a metric at subscriptions_monthly_total_base); use it instead of listing them in text" },
           }),
           block("forecast", { source }),
           block("insight", { source, insight_id: { type: "string" } }),

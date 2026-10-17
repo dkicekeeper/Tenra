@@ -89,6 +89,7 @@ struct AssistantVoiceSheet: View {
                 }
             }
         }
+        .softScrollEdges()
         .alert(String(localized: "voice.error"), isPresented: $showingPermissionAlert) {
             Button(String(localized: "voice.ok")) { dismiss() }
             if isPermissionDenied {

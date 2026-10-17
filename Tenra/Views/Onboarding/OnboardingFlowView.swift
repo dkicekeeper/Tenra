@@ -30,6 +30,7 @@ struct OnboardingFlowView: View {
                     }
                 }
         }
+        .softScrollEdges()
     }
 }
 

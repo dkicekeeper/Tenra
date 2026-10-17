@@ -430,6 +430,7 @@ struct AccountsManagementView: View {
                     accountsViewModel: accountsViewModel
                 )
             }
+            .softScrollEdges()
         }
         .sheet(item: $convertingAccount) { account in
             DepositEditView(

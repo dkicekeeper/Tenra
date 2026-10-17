@@ -144,6 +144,7 @@ struct AccountActionView: View {
                 )
                     .environment(timeFilterManager)
             }
+            .softScrollEdges()
         }
         .onChange(of: viewModel.shouldDismiss) { _, should in
             if should { dismiss() }

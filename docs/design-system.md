@@ -138,11 +138,23 @@ what is still unused and where it could go):
   `AmountComparisonBar` (in `CashFlowCard`), `OnboardingStepIndicator` (in
   `OnboardingPageContainer`).
 
+Every `NavigationStack` carries `.softScrollEdges()` (DesignKit 5.4.0), a sheet's and a
+full-screen cover's too, since a stack in a sheet does not take it from the screen under it: built
+with Xcode 27 the edge under the navigation bar and the tab bar as it comes on iOS 27 is hard, an
+almost opaque plate with a line (its gotchas.md). On iOS 26 and in an Xcode 26 build (the cloud
+TestFlight) it names nothing. DesignKit's sheets (`EditSheetContainer`, `DateRangePickerSheet`,
+`IconPicker`, …) carry their own. A new `NavigationStack` gets it too.
+
 A bar over scrolling content (`safeAreaBar`) names its edge style on the scroll view: built with
 Xcode 27 the style as it comes is hard, a plate with a line (DesignKit 5.1.0, its gotchas.md).
 `.scrollEdgeEffectStyle(.soft, for: edge)` everywhere, except the hard top over Ten's chat thread
-(the owner's choice); DesignKit's own bars (`.dateButtonsSafeArea`, `IconPicker`,
-`.heroScrollEdge()`) name theirs.
+(the owner's choice, named on its scroll view, so the stack's soft edge does not reach it);
+DesignKit's own bars (`.dateButtonsSafeArea`, `IconPicker`, `.heroScrollEdge()`) name theirs.
+A segmented control that switches the whole screen is such a bar under the navigation bar
+(Categories' Expenses / Income, an account's Transfer / Top-up), not a toolbar item: the bar's
+blur goes on under it and it stays while the list scrolls; a picker that is a form's field (a
+debt's direction, a voice entry's type, a loan repayment's strategy, the loans filter) stays in
+the content.
 
 ### Entity edit sheet (hero form)
 
@@ -468,5 +480,5 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
    Tenra model.
 3. Build the screen from the closest pattern in §4; amounts per §5.
 4. Strings in all 11 locales (CLAUDE.md rule #13); no em dashes in user-facing text.
-5. `python3 scripts/design_lint.py` passes. A new `safeAreaBar` names its scroll edge style (§4).
+5. `python3 scripts/design_lint.py` passes. A new `safeAreaBar` names its scroll edge style, a new `NavigationStack` carries `.softScrollEdges()` (§4).
 6. Don't change a shipped screen's layout as a side effect; the owner checks UI on device.

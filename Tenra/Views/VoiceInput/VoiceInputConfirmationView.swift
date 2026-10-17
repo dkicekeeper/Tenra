@@ -318,6 +318,7 @@ struct VoiceInputConfirmationView: View {
                 Text(saveErrorMessage ?? "")
             }
         }
+        .softScrollEdges()
     }
 
     private var canSave: Bool {

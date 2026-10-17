@@ -80,6 +80,7 @@ struct PDFImportCoordinator: View {
                             intelligenceStatus: outcome.intelligenceStatus
                         )
                     }
+                    .softScrollEdges()
                 }
             }
             .sheet(isPresented: Binding(

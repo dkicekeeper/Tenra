@@ -140,6 +140,7 @@ struct ReceiptConfirmationView: View {
                 }
             }
         }
+        .softScrollEdges()
     }
 
     private var addButton: some View {

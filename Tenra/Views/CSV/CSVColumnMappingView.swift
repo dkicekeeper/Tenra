@@ -40,6 +40,7 @@ struct CSVColumnMappingView: View {
                 toolbarContent
             }
         }
+        .softScrollEdges()
     }
 
     // MARK: - Sections

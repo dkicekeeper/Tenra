@@ -50,6 +50,7 @@ extension View {
                     }
                 }
             }
+            .softScrollEdges()
         }
         .onChange(of: appSettings.quickAccessCurrencies) { _, _ in
             appSettings.save()

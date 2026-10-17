@@ -121,6 +121,7 @@ struct AssistantView: View {
                 AssistantDestinationView(route: route)
             }
         }
+        .softScrollEdges()
         .assistantAttachmentSources(
             source: $attachmentSource,
             reading: $readingAttachment,

@@ -172,6 +172,7 @@ struct SubcategorySearchView: View {
                 }
             }
         }
+        .softScrollEdges()
     }
 
     private func createButton(subcategoryName: String) -> some View {

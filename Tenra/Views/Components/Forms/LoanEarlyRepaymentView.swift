@@ -162,6 +162,7 @@ struct LoanEarlyRepaymentView: View {
             }
             .onAppear(perform: applyDefaults)
         }
+        .softScrollEdges()
     }
 
     // MARK: - Sections

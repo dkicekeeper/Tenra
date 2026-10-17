@@ -71,6 +71,7 @@ struct VoiceInputView: View {
                         }
                     }
             }
+            .softScrollEdges()
         }
     }
 

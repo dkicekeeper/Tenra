@@ -76,6 +76,7 @@ private struct PaywallSheetContent: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .toolbar { closeButton }
             }
+            .softScrollEdges()
             .task { await check() }
         case .unavailable(let availability):
             NavigationStack {
@@ -91,6 +92,7 @@ private struct PaywallSheetContent: View {
                 )
                 .toolbar { closeButton }
             }
+            .softScrollEdges()
         }
     }
 

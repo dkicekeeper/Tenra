@@ -59,6 +59,7 @@ struct CSVImportResultView: View {
             .navigationTitle(String(localized: "csvImport.result.title"))
             .navigationBarTitleDisplayMode(.inline)
         }
+        .softScrollEdges()
         .onAppear {
             if statistics.persistenceError != nil {
                 HapticManager.error()

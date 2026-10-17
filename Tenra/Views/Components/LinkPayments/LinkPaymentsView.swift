@@ -694,6 +694,7 @@ struct TransactionSubcategoryFilterSheet: View {
                 }
             }
         }
+        .softScrollEdges()
     }
 
     private func toggle(_ name: String) {

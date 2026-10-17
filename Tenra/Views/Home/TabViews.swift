@@ -48,6 +48,7 @@ struct AnalyticsTab: View {
                 }
                 .paywallSheet(isPresented: $showingSoftPaywall)
         }
+        .softScrollEdges()
     }
 }
 
@@ -107,6 +108,7 @@ struct VoiceTab: View {
             }
             }
         }
+        .softScrollEdges()
     }
 }
 
@@ -127,6 +129,7 @@ struct AssistantTab: View {
                     .navigationTitle(String(localized: "tab.assistant"))
                     .navigationBarTitleDisplayMode(.inline)
             }
+            .softScrollEdges()
         } else if let assistant = coordinator.assistant() {
             AssistantView(model: assistant)
         }
@@ -183,5 +186,6 @@ struct OCRTab: View {
             .navigationBarTitleDisplayMode(.inline)
             }
         }
+        .softScrollEdges()
     }
 }

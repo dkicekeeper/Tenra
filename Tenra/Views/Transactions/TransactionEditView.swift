@@ -249,6 +249,7 @@ struct TransactionEditView: View {
                 }
             }
         }
+        .softScrollEdges()
     }
 
     // MARK: - Toolbar

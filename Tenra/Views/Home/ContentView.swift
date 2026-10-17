@@ -214,6 +214,7 @@ struct ContentView: View {
                 homeState.wallpaperImageName = name
             }
         }
+        .softScrollEdges()
     }
 
     // MARK: - Main Content
@@ -483,6 +484,7 @@ struct ContentView: View {
                 cloudSyncViewModel: coordinator.cloudSyncViewModel
             )
         }
+        .softScrollEdges()
     }
 
     /// Decodes `fileURL` into a UIImage downsampled to `screenSize × scale` pixels.

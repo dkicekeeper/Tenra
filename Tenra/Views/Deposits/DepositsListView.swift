@@ -182,6 +182,7 @@ struct DepositsListView: View {
                     accountsViewModel: accountsViewModel
                 )
             }
+            .softScrollEdges()
         }
         .alert(String(localized: "deposit.deleteTitle", defaultValue: "Delete deposit?"), isPresented: $showingDeleteDialog, presenting: depositToDelete) { deposit in
             Button(String(localized: "button.cancel"), role: .cancel) { depositToDelete = nil }

@@ -225,7 +225,8 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
 5. ~~**RevenueCat**~~: the founder is the only Founding User and has lifetime `pro`.
 6. ~~**Archive from the Mac**~~: build 32, Xcode 27.1, uploaded on 2026-10-18 and in TestFlight
    (internal). The first build with the iOS 27 code paths compiled in.
-7. **Device check of that build** from TestFlight, on the iOS 27 iPhone:
+7. ~~**Device check of that build**~~: build 32 checked on the iOS 27 iPhone on 2026-10-18, all
+   fine. The list:
    - Ten's place at the right end of the tab bar; the consent sheet ("Turn on", "Not now");
      "coffee 1500" before consent (drafts on the phone); one cloud answer; Settings › Assistant.
    - A long chat, then Settings → backup → restore that backup → open Ten: the chat is there,
@@ -251,10 +252,8 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
      contact details carried over, no demo account.
    - The **product page test** started on 13.10 ends when 1.6 is released: release now and lose
      it, or hold the release (owner's call).
-10. **Terms of Use** ([public/terms-of-use.html](public/terms-of-use.html)): section 4 on Ten
-    (optional, answers can be wrong, nothing saved without confirmation, questions go to Anthropic,
-    monthly limits) and the data section rewritten on 2026-10-16. The owner reads it before
-    submitting; it goes live with the merge to `main`.
+10. ~~**Terms of Use**~~ ([public/terms-of-use.html](public/terms-of-use.html)): section 4 on Ten
+    and the data section (2026-10-16), live and read by the owner on 2026-10-18.
 11. **Submit for review** (the founder, in App Store Connect).
 12. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in
     [promotion-plan.md](promotion-plan.md) §1, the week after release against the week before in §6.

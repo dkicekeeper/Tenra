@@ -250,8 +250,9 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
      label is the app's, not the version's: once published it shows on the live page.
    - ~~**App Review notes**~~: the text below set on version 1.6 through the API on 2026-10-18;
      contact details carried over, no demo account.
-   - The **product page test** started on 13.10 ends when 1.6 is released: release now and lose
-     it, or hold the release (owner's call).
+   - ~~**Product page test**~~: the owner's call on 2026-10-18 is to release 1.6 right after
+     approval (the version's release type is already "after approval") and let the test that
+     started on 13.10 end with it.
 10. ~~**Terms of Use**~~ ([public/terms-of-use.html](public/terms-of-use.html)): section 4 on Ten
     and the data section (2026-10-16), live and read by the owner on 2026-10-18.
 11. **Submit for review** (the founder, in App Store Connect).

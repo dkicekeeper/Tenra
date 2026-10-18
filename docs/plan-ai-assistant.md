@@ -500,9 +500,9 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
 1. **Cloudflare.** Workers & Pages → KV → Create namespace `tenra-assistant-quota`; его ID
    вписать в `server/assistant/wrangler.toml` (не секрет, можно прислать в чат). My Profile →
    API Tokens → Create Token → шаблон «Edit Cloudflare Workers» → секрет `CLOUDFLARE_API_TOKEN`;
-   Account ID (правая колонка на странице Workers) → секрет `CLOUDFLARE_ACCOUNT_ID`. Для беты
-   хватит бесплатного плана; к публичному запуску Workers Paid ($5 в месяц): на бесплатном
-   1 000 записей в KV в день и 10 мс CPU на запрос, которых длинному стриму может не хватить.
+   Account ID (правая колонка на странице Workers) → секрет `CLOUDFLARE_ACCOUNT_ID`. Аккаунт на
+   Workers Paid ($5 в месяц, с 18.10): у бесплатного плана 1 000 записей в KV в день и 10 мс CPU
+   на запрос, которых длинному стриму и ревью не хватило бы.
 2. **Anthropic.** Console → отдельный workspace «Tenra» → API key в нём → секрет
    `ANTHROPIC_API_KEY`. В Limits задать месячный лимит трат workspace (для беты хватит $30).
 3. **RevenueCat.** Project settings → API keys → secret key → секрет `REVENUECAT_SECRET_KEY`.

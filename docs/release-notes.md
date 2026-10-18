@@ -218,9 +218,9 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    TestFlight builds up to 28 don't sign the user id (27 and 28 are the DesignKit 5.0 checks,
    built from `claude/designkit-5` without this branch), so they count as free (150 calls a
    month per install).
-3. **Cloudflare Workers Paid** ($5 a month, [plan-ai-assistant.md](plan-ai-assistant.md) §5.1): the
-   free plan's 1 000 KV writes a day (about 300 answers for everyone) and 10 ms CPU per request
-   will not carry App Review plus real users.
+3. ~~**Cloudflare Workers Paid**~~: subscribed on 2026-10-18 ($5 a month,
+   [plan-ai-assistant.md](plan-ai-assistant.md) §5.1), so the free plan's 1 000 KV writes a day
+   and 10 ms CPU per request no longer cap App Review and real users.
 4. **Anthropic Console**: raise the Tenra workspace's monthly spend limit above the $30 beta cap.
 5. ~~**RevenueCat**~~: the founder is the only Founding User and has lifetime `pro`.
 6. ~~**Archive from the Mac**~~: build 32, Xcode 27.1, uploaded on 2026-10-18 and in TestFlight

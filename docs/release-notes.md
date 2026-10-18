@@ -247,7 +247,8 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
      Connect reports it ready for submission.
    - ~~**App Privacy**~~: filled in the web form on 2026-10-18 with the five types below. The
      label is the app's, not the version's: once published it shows on the live page.
-   - **App Review notes** (below) in App Review Information → Notes.
+   - ~~**App Review notes**~~: the text below set on version 1.6 through the API on 2026-10-18;
+     contact details carried over, no demo account.
    - The **product page test** started on 13.10 ends when 1.6 is released: release now and lose
      it, or hold the release (owner's call).
 10. **Terms of Use** ([public/terms-of-use.html](public/terms-of-use.html)): section 4 on Ten

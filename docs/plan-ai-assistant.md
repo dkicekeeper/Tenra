@@ -504,7 +504,8 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
    Workers Paid ($5 в месяц, с 18.10): у бесплатного плана 1 000 записей в KV в день и 10 мс CPU
    на запрос, которых длинному стриму и ревью не хватило бы.
 2. **Anthropic.** Console → отдельный workspace «Tenra» → API key в нём → секрет
-   `ANTHROPIC_API_KEY`. В Limits задать месячный лимит трат workspace (для беты хватит $30).
+   `ANTHROPIC_API_KEY`. В Limits задан месячный лимит трат workspace: $20 (решение 18.10, поднять при росте трат;
+   на лимите Тэн молчит у всех до следующего месяца).
 3. **RevenueCat.** Project settings → API keys → secret key → секрет `REVENUECAT_SECRET_KEY`.
    Customers → свой app user id → Grant entitlement `pro` бессрочно: статус Founding User
    хранится на телефоне, сервер видит только RevenueCat. Если покупателя не видно в панели:

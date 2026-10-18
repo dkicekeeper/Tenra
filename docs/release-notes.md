@@ -221,7 +221,10 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
 3. ~~**Cloudflare Workers Paid**~~: subscribed on 2026-10-18 ($5 a month,
    [plan-ai-assistant.md](plan-ai-assistant.md) §5.1), so the free plan's 1 000 KV writes a day
    and 10 ms CPU per request no longer cap App Review and real users.
-4. **Anthropic Console**: raise the Tenra workspace's monthly spend limit above the $30 beta cap.
+4. ~~**Anthropic Console**~~: the Tenra workspace's limit stays at $20 a month (the owner's call on
+   2026-10-18: $7.54 spent so far, enough for App Review). Raise it if spending climbs after the
+   release: at the cap Ten stops answering for everyone until the next month. Manual eval runs
+   (`assistant.yml`) spend the same budget.
 5. ~~**RevenueCat**~~: the founder is the only Founding User and has lifetime `pro`.
 6. ~~**Archive from the Mac**~~: build 32, Xcode 27.1, uploaded on 2026-10-18 and in TestFlight
    (internal). The first build with the iOS 27 code paths compiled in.
@@ -246,8 +249,8 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    No, the rating stays 4+):
    - ~~Select the build~~: build 32 attached to 1.6 on 2026-10-18 through the API; App Store
      Connect reports it ready for submission.
-   - ~~**App Privacy**~~: filled in the web form on 2026-10-18 with the five types below. The
-     label is the app's, not the version's: once published it shows on the live page.
+   - ~~**App Privacy**~~: filled and published on 2026-10-18 with the five types below; the
+     label is the app's, so the live page already shows it.
    - ~~**App Review notes**~~: the text below set on version 1.6 through the API on 2026-10-18;
      contact details carried over, no demo account.
    - ~~**Product page test**~~: the owner's call on 2026-10-18 is to release 1.6 right after

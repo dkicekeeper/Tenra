@@ -223,9 +223,8 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    will not carry App Review plus real users.
 4. **Anthropic Console**: raise the Tenra workspace's monthly spend limit above the $30 beta cap.
 5. ~~**RevenueCat**~~: the founder is the only Founding User and has lifetime `pro`.
-6. **Archive from the Mac** (Xcode 27) as build 32 (set in the project on 2026-10-18), above 31 (the latest CI TestFlight
-   build, 2026-10-17; check TestFlight first). The audit branch and DesignKit 5.x are on `main`.
-   This is the first build with the iOS 27 code paths compiled in: no TestFlight build has run them.
+6. ~~**Archive from the Mac**~~: build 32, Xcode 27.1, uploaded on 2026-10-18 and in TestFlight
+   (internal). The first build with the iOS 27 code paths compiled in.
 7. **Device check of that build** from TestFlight, on the iOS 27 iPhone:
    - Ten's place at the right end of the tab bar; the consent sheet ("Turn on", "Not now");
      "coffee 1500" before consent (drafts on the phone); one cloud answer; Settings › Assistant.
@@ -244,7 +243,8 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
 9. **App Store Connect, version 1.6** (created on 2026-10-15 with What's New in 13 locales; the
    age rating answered through the API, `asc.py age-rating`: the new "social media" question
    No, the rating stays 4+):
-   - `prepare-version` with version `1.6` and the build from step 6 (selects the build).
+   - ~~Select the build~~: build 32 attached to 1.6 on 2026-10-18 through the API; App Store
+     Connect reports it ready for submission.
    - ~~**App Privacy**~~: filled in the web form on 2026-10-18 with the five types below. The
      label is the app's, not the version's: once published it shows on the live page.
    - **App Review notes** (below) in App Review Information → Notes.

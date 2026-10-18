@@ -212,7 +212,7 @@ The release audit of 2026-10-15 ([archive/release-audit-1.6-2026-10-15.md](archi
 fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stays open is in
 [backlog.md](backlog.md). In order:
 
-1. **Merge the audit branch** into `main` once CI is green.
+1. ~~**Merge the audit branch**~~: on `main` as #75 (2026-10-16), the rest as #79.
 2. ~~**Deploy the Worker**~~: deployed from the audit branch on 2026-10-15 (version
    `83a6b64a`). Check: open an old chat in the current TestFlight build and ask something.
    TestFlight builds up to 28 don't sign the user id (27 and 28 are the DesignKit 5.0 checks,
@@ -223,9 +223,9 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    will not carry App Review plus real users.
 4. **Anthropic Console**: raise the Tenra workspace's monthly spend limit above the $30 beta cap.
 5. ~~**RevenueCat**~~: the founder is the only Founding User and has lifetime `pro`.
-6. **Archive from the Mac** (Xcode 27) with a build number above 28 (the latest CI TestFlight
-   build; check TestFlight first), after the audit branch and DesignKit 5.0 are on `main`. This is the first build with the iOS 27 code paths compiled
-   in: no TestFlight build has run them.
+6. **Archive from the Mac** (Xcode 27) with a build number above 31 (the latest CI TestFlight
+   build, 2026-10-17; check TestFlight first). The audit branch and DesignKit 5.x are on `main`.
+   This is the first build with the iOS 27 code paths compiled in: no TestFlight build has run them.
 7. **Device check of that build** from TestFlight, on the iOS 27 iPhone:
    - Ten's place at the right end of the tab bar; the consent sheet ("Turn on", "Not now");
      "coffee 1500" before consent (drafts on the phone); one cloud answer; Settings › Assistant.

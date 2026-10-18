@@ -31,6 +31,15 @@ struct Insight: Identifiable, Hashable {
     /// insight once per key instead of once per 7 days per `id` (the rule for STATE
     /// signals such as a budget that stays overspent). Not part of `==`: never rendered.
     var signalKey: String? = nil
+    /// The subtitle with its amount drawn as "••••" (`Formatting.hiddenAmount`), for an
+    /// insight whose subtitle carries an amount (the savings rate's saved money). Shown
+    /// through `subtitle(amountsHidden:)` while the person hides amounts.
+    var hiddenSubtitle: String? = nil
+
+    /// The subtitle to show: the hidden variant while amounts are hidden, when there is one.
+    func subtitle(amountsHidden: Bool) -> String {
+        amountsHidden ? (hiddenSubtitle ?? subtitle) : subtitle
+    }
 
     // Hash by id only (detailData holds non-Hashable Colors). Equality is VALUE-BASED on the
     // display-affecting fields, though — insight ids are stable across granularities
@@ -43,6 +52,7 @@ struct Insight: Identifiable, Hashable {
         lhs.type == rhs.type &&
         lhs.title == rhs.title &&
         lhs.subtitle == rhs.subtitle &&
+        lhs.hiddenSubtitle == rhs.hiddenSubtitle &&
         lhs.metric == rhs.metric &&
         lhs.trend == rhs.trend &&
         lhs.severity == rhs.severity &&

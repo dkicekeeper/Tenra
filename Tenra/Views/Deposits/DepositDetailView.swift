@@ -169,6 +169,7 @@ struct DepositDetailView: View {
                 )
                 .environment(timeFilterManager)
             }
+            .softScrollEdges()
         }
         .sheet(isPresented: $showingRateChange) {
             DepositRateChangeView(
@@ -193,6 +194,7 @@ struct DepositDetailView: View {
                     accountsViewModel: depositsViewModel.accountsViewModel
                 )
             }
+            .softScrollEdges()
         }
         .alert(String(localized: "deposit.deleteTitle"), isPresented: $showingDeleteConfirmation) {
             Button(String(localized: "button.delete"), role: .destructive) {

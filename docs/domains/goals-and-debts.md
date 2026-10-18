@@ -27,6 +27,12 @@ people and has no account.
   on `AccountEntity`.
 - Backups carry them (the store file is copied whole), "delete all data" destroys them with the
   store, and both stores reload on `CoreDataStack.storeDidResetNotification`.
+- Amounts are Doubles, so a debt counts as covered and a goal as reached within half a cent
+  (`PersonalDebt.centTolerance`): 1 142.49 + 12 294.80 adds up to 13 437.289999999999. A debt
+  its repayments settled opens again once they no longer cover it (a repayment deleted, the
+  amount raised); one settled by hand stays settled. Changing the currency of a goal or a debt
+  moves its contributions or repayments to the new one at today's rate; without a rate the
+  currency stays as it was.
 - `GoalStore` and `DebtStore` (`ViewModels/`, `@Observable`) are the single source of truth,
   owned by `AppCoordinator` and loaded right after `isFullyInitialized`. A nil repository keeps
   them in memory (previews on `UserDefaultsRepository`, tests).
@@ -63,12 +69,12 @@ people and has no account.
 
 | Screen | File |
 |---|---|
-| Finances cards | `Views/Components/Cards/GoalsCardView.swift`, `DebtsCardView.swift` (after Loans) |
-| List rows | `GoalCard`, `DebtCard`: adapters over DesignKit's `PayoffProgressCard`, as `LoanCard` |
-| Lists | `Views/Goals/GoalsListView.swift`, `Views/Debts/DebtsListView.swift` |
-| Details | `GoalDetailView`, `DebtDetailView` on `EntityDetailScaffold`: hero with progress, actions, info rows, history (long press deletes an entry) |
+| Finances cards | `Views/Components/Cards/GoalsCardView.swift`, `DebtsCardView.swift` (after Loans): totals in `RedactableAmount` (hidden with the other amounts, a skeleton until the store loads), the open items on the `PackedCircleIcons(style: .shelf)` like every Finances card (debts: green owed to the person, red owed by them, sized by what is left in the base currency) |
+| List rows | `GoalCard`, `DebtCard`: adapters over DesignKit's `PayoffProgressCard`, as `LoanCard` (a debt's note on one line); past its deadline or due date a goal or a debt carries a red `Badge`, and an overdue goal's footer says what is left |
+| Lists | `Views/Goals/GoalsListView.swift`, `Views/Debts/DebtsListView.swift`: three `PayoffProgressCardSkeleton` until the store loads, then the list or the empty state with `.skeletonReveal` |
+| Details | `GoalDetailView`, `DebtDetailView` on `EntityDetailScaffold`: hero with progress ("label · NN%", `.heroAccentGlow` from the item's icon), actions, info rows, history in one card of `HistoryEntryRow` (`Views/Components/Rows/`, an adapter over `AmountRow`; long press deletes an entry, which leaves with `DissolveTransition`). Reaching a goal or settling a debt plays `.celebration(playsHaptic: false)`: the save already gave its haptic |
 | Edit | `GoalEditView` (hero with icon, name, target and currency; deadline; account, or none with "already saved"), `DebtEditView` (direction, amount, who, date, due date, note) |
-| Money in | `Views/Components/Forms/MoneyEntrySheet.swift`: a contribution or a repayment, laid out as `LoanPaymentView` (calculator keypad, note, date buttons); another currency converts to the goal's or debt's on save |
+| Money in | `Views/Components/Forms/MoneyEntrySheet.swift`, an adapter over DesignKit's `AmountEntrySheet` (4.14.0): a contribution or a repayment, laid out as `LoanPaymentView` (calculator keypad, note, date buttons); another currency converts to the goal's or debt's on save |
 
 Navigation goes through `FinancesDestination` (`.goals`, `.goalDetail(id)`, `.debts`,
 `.debtDetail(id)`).

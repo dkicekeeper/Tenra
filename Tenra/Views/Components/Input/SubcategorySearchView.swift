@@ -142,6 +142,8 @@ struct SubcategorySearchView: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: String(localized: "subcategorySearch.searchPrompt"))
             .dsSearchSuggestions(text: $searchText, recent: $recentSearches)
+            // Named: built with Xcode 27 the edge as it comes is hard (DesignKit 5.1.0).
+            .scrollEdgeEffectStyle(.soft, for: .bottom)
             .safeAreaBar(edge: .bottom) {
                 // Кнопка создания внизу над полем поиска
                 if canCreateFromSearch {
@@ -170,6 +172,7 @@ struct SubcategorySearchView: View {
                 }
             }
         }
+        .softScrollEdges()
     }
 
     private func createButton(subcategoryName: String) -> some View {

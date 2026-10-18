@@ -26,6 +26,11 @@ struct CSVColumnMappingView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    CSVImportSteps(current: CSVImportSteps.columns)
+                }
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
                 requiredFieldsSection
                 optionalFieldsSection
             }
@@ -35,6 +40,7 @@ struct CSVColumnMappingView: View {
                 toolbarContent
             }
         }
+        .softScrollEdges()
     }
 
     // MARK: - Sections

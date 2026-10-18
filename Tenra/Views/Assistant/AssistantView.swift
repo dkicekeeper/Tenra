@@ -41,6 +41,8 @@ struct AssistantView: View {
     @State private var showingVoice = false
     @State private var attachmentSource: AssistantAttachmentSource?
     @State private var readingAttachment = false
+    /// How far a statement being read has got (0...1), for Ten's light.
+    @State private var readingProgress: Double?
     @State private var attachmentError: String?
     /// Questions about the screen the assistant was opened from.
     @State private var topicQuestions: [String] = []
@@ -80,6 +82,8 @@ struct AssistantView: View {
             .scrollDismissesKeyboard(.interactively)
             // A tap anywhere puts the keyboard away (buttons still work).
             .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
+            // Named: built with Xcode 27 the edge as it comes is hard (DesignKit 5.1.0).
+            .scrollEdgeEffectStyle(.soft, for: .bottom)
             .safeAreaBar(edge: .bottom) {
                 AssistantComposerBar(
                     model: model,
@@ -117,9 +121,11 @@ struct AssistantView: View {
                 AssistantDestinationView(route: route)
             }
         }
+        .softScrollEdges()
         .assistantAttachmentSources(
             source: $attachmentSource,
             reading: $readingAttachment,
+            progress: $readingProgress,
             takesHandedOverFiles: true,
             onRead: { attachment, summary in
                 HapticManager.success()
@@ -173,7 +179,8 @@ struct AssistantView: View {
 
     private var greeting: some View {
         VStack(spacing: AppSpacing.lg) {
-            ParticleCreature(mood: AssistantMetrics.mood(for: model), isInteractive: true,
+            ParticleCreature(mood: AssistantMetrics.mood(for: model, reading: readingAttachment ? readingProgress ?? 0 : nil),
+                             isInteractive: true,
                              speech: chatterOn ? speech : nil,
                              accessory: AssistantWardrobe.accessory(choice: accessoryChoice, crownDay: crownDay, at: .now))
                 .creatureGesture(gesture, trigger: gestureCount)
@@ -182,6 +189,8 @@ struct AssistantView: View {
                 // mind (AssistantDaydreams).
                 .creatureAmbience(CreatureAmbience(dozesAfter: AssistantMetrics.dozesAfter,
                                                    daydreams: chatterOn ? daydreams : []))
+                // Its eyes look to the side the phone dips to (DesignKit 5.3.0).
+                .creatureFollowsTilt()
                 .task { await refreshDaydreams() }
                 .frame(width: AssistantMetrics.heroMascot, height: AssistantMetrics.heroMascot)
                 // Room over Ten for its words.
@@ -208,6 +217,8 @@ struct AssistantView: View {
             SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) {
                 start(.question($0, spoken: false))
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("assistant.presets")
             if !chats.isEmpty {
                 recentChats
             }
@@ -305,6 +316,7 @@ struct AssistantView: View {
                             thread.title,
                             meta: [MetaLine([.text(thread.updatedAt.formatted(.relative(presentation: .named)))])],
                             leading: .symbol("bubble.left.and.text.bubble.right"),
+                            style: .large,
                             titleLineLimit: 1
                         ) {
                             DisclosureChevron()
@@ -404,8 +416,6 @@ enum AssistantMetrics {
     static let dozesAfter: Double = 45
     /// Words beside Ten in a chat: from the middle of the navigation bar to the screen's edge.
     static let chatSpeechWidth: CGFloat = 150
-    /// The mascot on a message Ten wrote (AssistantNoticeCard).
-    static let headerMascot: CGFloat = AppIconSize.xl
     /// Ten in a chat, in the middle of the navigation bar (the owner's size).
     static let chatMascot: CGFloat = 120
     /// How far Ten rises into the navigation bar (its inline height); the rest hangs over the
@@ -421,20 +431,38 @@ enum AssistantMetrics {
     /// The person agreed to the cloud mode (the consent sheet's "Turn on").
     static let consentKey = "assistant.cloudConsent.v1"
 
-    /// What Ten shows: thinking while the assistant runs tools, answering while it writes the
-    /// reply, the reply's mood after, confused or sad when a question was not answered.
-    static func mood(for model: AssistantViewModel) -> ParticleCreature.Mood {
+    /// The tools after which Ten, still working, looks determined rather than thoughtful.
+    static let determinedAfterTools = 3
+
+    /// What Ten shows: thinking while the assistant runs tools (determined after a long run),
+    /// answering while it writes the reply, the reply's mood after, confused or sad when a
+    /// question was not answered. While an attachment is read (`reading`, 0...1) it fills with
+    /// light; a reply with a total shows the currency's sign; at rest late at night, sleepy.
+    static func mood(for model: AssistantViewModel, reading: Double? = nil, at date: Date = .now) -> ParticleCreature.Mood {
         switch model.phase {
         case .working:
-            return model.streamingReply.isEmpty ? .thinking : .answering
+            guard model.streamingReply.isEmpty else { return .answering }
+            return model.toolsRun >= determinedAfterTools ? .determined : .thinking
         case .failed(let failure):
             return failure == .offline ? .sad : .confused
         case .idle:
+            if let reading { return .working(progress: reading) }
             switch model.replyMood {
             case .happy: return .happy
             case .concerned: return .worried
             case .celebrate: return .celebrating
-            case .idle: return .idle
+            case .proud: return .proud
+            case .surprised: return .surprised
+            case .love: return .love
+            case .playful: return .wink
+            case .empty: return .idle
+            case .idle:
+                // The coin holds one character ("₸", "$"), not "R$" or "CHF".
+                if let currency = model.replyTotalCurrency {
+                    let symbol = Formatting.currencySymbol(for: currency)
+                    if symbol.count == 1 { return .glyph(symbol) }
+                }
+                return AssistantChatter.isLate(date) ? .sleepy : .idle
             }
         }
     }

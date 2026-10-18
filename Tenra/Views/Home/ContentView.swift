@@ -32,6 +32,8 @@ struct ContentView: View {
     @State private var showingTimeFilter = false
     @State private var showingAddAccount = false
     @State private var showingSettings = false
+    /// The first launch's hint over the categories (showCategoryHintIfNeeded).
+    @State private var showingCategoryHint = false
 
     // MARK: - Summary Trigger
     // Equatable snapshot of every input that drives the summary card.
@@ -212,6 +214,7 @@ struct ContentView: View {
                 homeState.wallpaperImageName = name
             }
         }
+        .softScrollEdges()
     }
 
     // MARK: - Main Content
@@ -289,6 +292,37 @@ struct ContentView: View {
             timeFilterManager: timeFilterManager
         )
         .screenPadding()
+        // The first launch: a hint over the categories, once (DesignKit's Tooltip, over the
+        // grid so nothing moves; touches go through to the tiles).
+        .overlay(alignment: .top) {
+            if showingCategoryHint {
+                Tooltip(String(localized: "home.hint.categories"))
+                    .tooltipAnchor(.top)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
+        }
+        .zIndex(showingCategoryHint ? 1 : 0)
+        .task(id: coordinator.isFullyInitialized) { await showCategoryHintIfNeeded() }
+    }
+
+    /// Once, for a person without transactions yet (a new install after onboarding): a tooltip
+    /// over the categories saying a tap adds an expense, for a few seconds. Someone with a
+    /// history found that long ago: the hint is only marked as seen.
+    private func showCategoryHintIfNeeded() async {
+        guard coordinator.isFullyInitialized, !FeatureTourState.hasSeen(.homeCategories) else { return }
+        guard transactionStore.transactionsCount == 0 else {
+            FeatureTourState.markSeen(.homeCategories)
+            return
+        }
+        guard !categoriesViewModel.customCategories.isEmpty else { return }
+        try? await Task.sleep(for: .seconds(1))
+        guard !Task.isCancelled else { return }
+        FeatureTourState.markSeen(.homeCategories)
+        withAnimation(AppAnimation.smooth) { showingCategoryHint = true }
+        // Gone after a while, or at once when Home goes away (the task is cancelled).
+        try? await Task.sleep(for: .seconds(6))
+        withAnimation(AppAnimation.smooth) { showingCategoryHint = false }
     }
 
     @ViewBuilder
@@ -450,6 +484,7 @@ struct ContentView: View {
                 cloudSyncViewModel: coordinator.cloudSyncViewModel
             )
         }
+        .softScrollEdges()
     }
 
     /// Decodes `fileURL` into a UIImage downsampled to `screenSize × scale` pixels.

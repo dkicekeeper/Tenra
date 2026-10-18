@@ -195,11 +195,12 @@ function nextDate(dayOfMonth: number, after = TODAY): string {
 function listRecurring(input: Input) {
   const kind = str(input, "kind") ?? "all";
   const items = RECURRING.filter((r) => (kind === "all" || r.kind === kind) && (!input.active_only || r.active)).map((r) => ({
-    id: r.id, name: r.name, kind: r.kind, type: r.type, amount: r.amount, currency: r.currency, frequency: "monthly",
+    id: r.id, name: r.name, kind: r.kind, type: r.type, amount: r.amount, currency: r.currency,
+    amount_base: round(toBase(r.amount, r.currency)), monthly_base: round(toBase(r.amount, r.currency)), frequency: "monthly",
     next_date: nextDate(r.dayOfMonth), category: categoryName(r.categoryId), account: accountName(r.accountId), active: r.active,
   }));
-  const monthly = items.filter((i) => i.kind === "subscription" && i.type === "expense").reduce((n, i) => n + toBase(i.amount, i.currency), 0);
-  return { currency: BASE_CURRENCY, items, subscriptions_monthly_total: round(monthly) };
+  const monthly = items.filter((i) => i.kind === "subscription" && i.type === "expense").reduce((n, i) => n + i.monthly_base, 0);
+  return { currency: BASE_CURRENCY, items, subscriptions_monthly_total_base: round(monthly), missing_rates: [] as string[] };
 }
 
 function getInsights() {
@@ -218,7 +219,7 @@ function getInsights() {
     insights: [
       { id: "ins_cafe_trend", type: "categoryTrend", severity: "warning", title: "Кафе растёт", category_id: "cat_cafe" },
       { id: "ins_cafe_budget", type: "budgetAlert", severity: cafeBudget.percent >= 90 ? "critical" : "warning", title: "Бюджет на кафе", percent: cafeBudget.percent },
-      { id: "ins_subs", type: "recurringLoad", severity: "neutral", title: "Подписки", monthly_total: listRecurring({ kind: "subscription" }).subscriptions_monthly_total },
+      { id: "ins_subs", type: "recurringLoad", severity: "neutral", title: "Подписки", monthly_total: listRecurring({ kind: "subscription" }).subscriptions_monthly_total_base },
     ],
   };
 }
@@ -655,6 +656,21 @@ function draftDebtRepayment(input: Input) {
   };
 }
 
+// The app's rates: tenge per unit (FinanceToolkit.convertCurrency over CurrencyRateStore).
+const RATES: Record<string, number> = { KZT: 1, USD: USD_RATE };
+
+function convertCurrency(input: Input) {
+  const from = str(input, "from", true)!.toUpperCase();
+  const to = (str(input, "to") ?? BASE_CURRENCY).toUpperCase();
+  const amount = input.amount === null || input.amount === undefined ? 1 : Number(input.amount);
+  if (!Number.isFinite(amount) || amount < 0) throw new ToolInputError("amount must be zero or more.");
+  const fromRate = RATES[from];
+  const toRate = RATES[to];
+  if (fromRate === undefined || toRate === undefined) throw new ToolInputError(`The app has no exchange rate between ${from} and ${to}. Tell the user so.`);
+  const rate = fromRate / toRate;
+  return { currency: to, converted: round(amount * rate), rate: Math.round(rate * 1_000_000) / 1_000_000, from: { currency: from, amount: round(amount) }, rates_date: TODAY };
+}
+
 const HANDLERS: Record<string, (input: Input) => unknown> = {
   get_spending_summary: spendingSummary,
   compare_periods: comparePeriods,
@@ -676,6 +692,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_goal_contribution: draftGoalContribution,
   draft_debt: draftDebt,
   draft_debt_repayment: draftDebtRepayment,
+  convert_currency: convertCurrency,
 };
 
 export function executeTool(name: string, input: Input): unknown {
@@ -685,4 +702,4 @@ export function executeTool(name: string, input: Input): unknown {
 }
 
 // Direct access for ground truths in cases.
-export const simulate = { spendingSummary, comparePeriods, getAccounts, getBudgets, listRecurring, forecastBalance, simulateLoan, projectSavings, getGoals, getDebts };
+export const simulate = { spendingSummary, comparePeriods, getAccounts, getBudgets, listRecurring, forecastBalance, simulateLoan, projectSavings, getGoals, getDebts, convertCurrency };

@@ -101,4 +101,23 @@ struct AgentThreadStoreTests {
         let again = try JSONDecoder().decode(AgentThreadSnapshot.Body.self, from: JSONEncoder().encode(kept))
         #expect(again == kept)
     }
+
+    @Test func aLongThreadIsKeptCompressedAndAnOldPlainOneStillReads() throws {
+        // 60 messages of tool output: far over the ~100 KB at which Core Data would move the
+        // value into a file beside the store, which backups don't carry.
+        let row = String(repeating: "{\"date\":\"2026-10-01\",\"amount\":1500,\"category\":\"Кафе\"},", count: 60)
+        let messages = (0..<60).map { index in
+            AgentWireMessage(role: index.isMultiple(of: 2) ? .user : .assistant, content: [["type": "text", "text": .string("\(index) \(row)")]])
+        }
+        let body = AgentThreadSnapshot.Body(messages: messages, results: ["r1": ["result_id": "r1", "rows": .string(row)]], owedResults: [])
+        let json = try JSONEncoder().encode(body)
+        #expect(json.count > 200_000)
+
+        let payload = try #require(AgentThreadStore.encodePayload(body))
+        #expect(payload.count < 50_000)
+        #expect(AgentThreadStore.decodePayload(payload) == body)
+        // Threads written before 1.6 (build 27) are plain JSON.
+        #expect(AgentThreadStore.decodePayload(json) == body)
+        #expect(AgentThreadStore.decodePayload(Data("garbage".utf8)) == nil)
+    }
 }

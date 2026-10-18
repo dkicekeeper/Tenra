@@ -68,6 +68,9 @@ final class InsightsViewModel {
 
     private(set) var insights: [Insight] = []
     private(set) var isLoading: Bool = false
+    /// The feed has been computed once: until then the screen shows its skeleton, and the
+    /// content replaces it (`.skeletonReveal`); later recomputes keep the content on screen.
+    private(set) var hasComputed = false
     private(set) var errorMessage: String?
     var selectedFilter: InsightFilter = .all
     private(set) var periodDataPoints: [PeriodDataPoint] = []
@@ -434,6 +437,7 @@ final class InsightsViewModel {
                     // flip isLoading while a newer recompute is running.
                     guard let self, self.computeGeneration == myGen, self.isLoading else { return }
                     self.isLoading = false
+                    self.hasComputed = true
                 }
             }
             guard let self, !Task.isCancelled else { return }
@@ -684,6 +688,7 @@ final class InsightsViewModel {
             currentBucketLabel = granularity.currentBucketLabel()
             availableBalance   = pendingAvailableBalance
             isLoading        = false
+            hasComputed      = true
         }
     }
 

@@ -101,7 +101,7 @@ redraw only it):
 
 - **Edge light:** `VoiceLevelGlow` → DesignKit's `EdgeGlow(level:)`, one Metal colour effect
   along the screen edges.
-- **Stop button:** `VoiceStopOrb` → `VoiceWave(level:style: .orb)` with a stop glyph; only the
+- **Stop button:** `VoiceStopOrb` → DesignKit's `VoiceOrbButton` (4.14.0: `VoiceWave(level:style: .orb)` with a stop glyph); only the
   orb at rest (80 pt) takes the tap. `handleStopTap` plays `HapticManager.play(.tap)`.
 - **Before any text:** `ListeningPrompt` ("Speak...") carries `.thinkingShimmer` in the orb's
   colours (a still gradient under Reduce Motion).
@@ -139,6 +139,35 @@ so the post-stop confirmation state stays calm.
 - Match the modifier's `cornerRadius` to the card's — `cardStyle()` defaults to `AppRadius.xl`, which is also `borderBeam`'s default.
 - The modifiers are DesignKit's (`docs/motion.md` there); see [gotchas.md](../gotchas.md) for the AngularGradient rotation pitfall.
 
+## Parsing (`VoiceInputParser`)
+
+`parseMulti` (voice, Ten's FastPath, the Log Transaction intent) splits the phrase with
+`VoiceInputSegmenter` and parses each clause; `parse` reads one.
+
+- **Amount.** Grouped thousands and decimals in any convention: `decimalAmount` takes a last
+  group of one or two digits as decimals ("12,50", "1.234,56"), anything else as thousands
+  ("12,000", "1.500", "10 000"). The regexes use digit lookarounds, not `\b`, which finds no
+  boundary between a digit and CJK text ("コンビニで500円"). A number next to a currency word
+  beats a bare one; a year-shaped bare number (1900-2100) only loses to another amount.
+- **CJK units.** `normalizeText` rewrites 億/억, 万/만, 千/천, 百/백 spans as digits
+  (`expandCJKNumerals`: "1万2000円", "1만 2천 원" → 12000; "만원", "百円" before 円/원). A unit
+  without a digit before it stays text ("千葉"). The segmenter keeps a unit inside the amount
+  token, so "1만 2천" stays one clause and FastPath's clause count matches.
+- **Currency.** `currencyKeywords`, longest first. A keyword starting with a letter counts only
+  at the start of a word ("eur" not in "coiffeur", "원" not in "병원"). "$" and "dollars" read
+  in the local currency when it is a dollar (`dollarSignCurrencies` also covers MXN and the
+  other peso "$" countries, `dollarNamedCurrencies` only real dollars), else USD; the local
+  currency is the named account's, else the default account's. The account is found before
+  the currency for that reason. No currency word → the account's currency.
+- **Category.** Two maps: `categoryMap` matches anywhere, `wholeWordCategoryMap` (short English
+  words: "rent", "bus", "bar", "vet") only as whole words. Keys run longest first with ties
+  alphabetical, so the pick never depends on `Dictionary` order. Every target is an onboarding
+  preset name in one language (pinned by `VoiceCategoryTargetsTests`); `resolveCategoryName`
+  then finds the user's category through `categoryGroups` (each preset under all its names), so
+  "groceries" lands in "Продукты" and "lebensmittel" in "Groceries". No keyword → "Other" in any
+  language. Adding keywords: a duplicate key across either map traps at runtime; check before
+  building.
+
 ## Account & category resolution (shared with App Intents)
 
 `TransactionDraftService.makeDraft` (`Services/Intents/`) is the single resolver behind both
@@ -153,8 +182,8 @@ records that key using the *resolved* name. Looking the preference up under the 
 guess instead means `VoiceLearningStore` never matches for anyone who renamed a category,
 which is most people.
 
-**3. A category miss never blocks the write.** `VoiceInputParser` maps keywords onto
-hardcoded names (`"кофе"` → `"Еда"`) while users rename categories freely. Resolution among
+**3. A category miss never blocks the write.** `VoiceInputParser` maps keywords onto preset
+names (resolved across languages, see Parsing above) while users rename categories freely. Resolution among
 the user's categories of the operation's type widens exact → case-insensitive (both exact) →
 substring either way (min 3 chars, first match in user order) → localized `category.other` →
 **uncategorized**; anything but an exact match adds `DraftWarning.categorySubstituted`.

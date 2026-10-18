@@ -225,6 +225,7 @@ struct MainTabView: View {
                     originalText: operation.note
                 )
             }
+            .softScrollEdges()
             .environment(coordinator.transactionStore)
         }
         // Ten writes first about tomorrow's charges whenever the app comes to the front.

@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Anpassen...";
 "settings.wallpaper" = "Hintergrund der Übersicht";
 "settings.background" = "Hintergrund";
+"home.hint.categories" = "Tippen Sie auf eine Kategorie, um eine Ausgabe hinzuzufügen";
 "settings.voiceLanguage" = "Sprache für Spracheingabe";
 "settings.voiceLanguage.app" = "Wie in der App";
 "settings.background.none" = "Kein Hintergrund";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "Foto";
 "settings.background.blurWallpaper" = "Hintergrund weichzeichnen";
 "settings.background.removePhoto" = "Foto entfernen";
+"settings.background.choosePhoto" = "Foto auswählen";
+"settings.background.changePhoto" = "Foto ändern";
 "settings.background.preview" = "Hintergrundvorschau";
 "settings.background.opacity" = "Farbintensität";
 "settings.background.opacityTitle" = "Ausgabenfarbe";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "Betrag";
 "quickAdd.description" = "Beschreibung";
 "quickAdd.descriptionPlaceholder" = "Beschreibung (optional)";
+"quickAdd.balanceAfter" = "Saldo danach";
 "quickAdd.recurring" = "Wiederkehrende Transaktion";
 "quickAdd.makeRecurring" = "Wiederkehrend";
 "quickAdd.frequency" = "Häufigkeit";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "Zeilen";
 "csvImport.preview.columns" = "Spalten";
 "csvImport.mapping.title" = "Spaltenzuordnung";
+"csvImport.step.preview" = "Vorschau";
+"csvImport.step.columns" = "Spalten";
+"csvImport.step.import" = "Import";
 "csvImport.mapping.required" = "Pflichtfelder";
 "csvImport.mapping.optional" = "Optionale Felder";
 "csvImport.mapping.date" = "Datum";
@@ -871,7 +878,7 @@
 "insights.formula.savingsRate.row.saved" = "Gespart (Einnahmen − Ausgaben)";
 "insights.formula.savingsRate.row.rate" = "Sparquote";
 "insights.formula.savingsRate.explainer" = "Welcher Anteil Ihres Einkommens den Monat übersteht. Eine höhere Quote verschafft Ihnen mehr Freiheit: Flexibilität in schwachen Monaten, schnellere Zielerreichung und einen echten Notgroschen.";
-"insights.formula.savingsRate.rec.good" = "Sie sparen mehr als 20%%. Behalten Sie die Routine bei und erwägen Sie, den Überschuss in ein langfristiges Ziel zu lenken.";
+"insights.formula.savingsRate.rec.good" = "Sie sparen mehr als 20%. Behalten Sie die Routine bei und erwägen Sie, den Überschuss in ein langfristiges Ziel zu lenken.";
 "insights.formula.savingsRate.rec.fair" = "Solide, aber mit 20%% würden Sie jeden Monat %@ zusätzlich sparen. Kürzen Sie wiederkehrende oder einmalige Kategorien, die gewachsen sind.";
 "insights.formula.savingsRate.rec.low" = "Unter 10%% bleibt kein Puffer. Streben Sie mindestens %@ mehr pro Monat an. Beginnen Sie mit der größten frei verfügbaren Kategorie.";
 "insights.formula.emergencyFund.title" = "Notgroschen";
@@ -1269,7 +1276,6 @@
 "settings.cloud.delete" = "Löschen";
 "settings.cloud.storage" = "Speicher";
 "settings.cloud.storageUsed" = "%@ von %@";
-"settings.cloud.backupMetadata" = "%d Konten · %d Transaktionen · %@";
 "settings.cloud.iCloud.toggle" = "Backups in iCloud speichern";
 "settings.cloud.iCloud.footer" = "Backups werden in Ihrer iCloud gespeichert, sind in der Dateien-App ausgeblendet und in Tenra auf Ihren anderen Geräten verfügbar.";
 "settings.cloud.iCloud.unavailable" = "Melden Sie sich in den Einstellungen bei iCloud an, um Backups in iCloud Drive zu speichern.";
@@ -1390,6 +1396,8 @@
 "insights.chart.line" = "Linie";
 "insights.chart.bar" = "Balken";
 "insights.today" = "Heute";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@, %2$@";
 "insights.empty.title" = "Noch keine Daten";
 "insights.empty.subtitle" = "Das Diagramm erscheint, sobald ein Transaktionsverlauf vorhanden ist";
 
@@ -1608,7 +1616,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Um 20 %% zu erreichen, senken Sie die Ausgaben um ≈ %@ pro Monat oder steigern Sie das Einkommen um ≈ %@ pro Monat.";
-"insights.health.rec.savingsRate.healthy" = "Ausgezeichnet – halten Sie das Tempo. 20 %%+ ist das empfohlene Niveau für langfristige Widerstandsfähigkeit.";
+"insights.health.rec.savingsRate.healthy" = "Ausgezeichnet – halten Sie das Tempo. 20 %+ ist das empfohlene Niveau für langfristige Widerstandsfähigkeit.";
 
 "insights.health.rec.budgetAdherence.empty" = "Budgets sind nicht eingerichtet. Legen Sie sie in Ihren Kategorien fest – diese Komponente zählt dann zum Score.";
 "insights.health.rec.budgetAdherence.partial" = "%d Kategorien liegen über dem Budget. Öffnen Sie sie, um die Quelle der Mehrausgaben zu finden.";
@@ -1938,7 +1946,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Der Assistent arbeitet in der Cloud";
-"assistant.consent.message" = "Für eine Antwort fragt er Claude, ein Modell von Anthropic. Nur deine Frage und was er für die Antwort nachschlägt verlassen das iPhone: Summen, Kategorien, Kontonamen, die Fakten, die er sich über dich merkt, und die nötigen Buchungen. Deine Datenbank, Belege und Kontoauszüge bleiben hier. Der Server von Tenra speichert nichts, und deine Daten werden nicht zum Training von Modellen genutzt.";
+"assistant.consent.message" = "Für eine Antwort fragt er Claude, ein Modell von Anthropic. Nur deine Frage und was er für die Antwort nachschlägt verlassen das iPhone: Summen, Kategorien, Kontonamen, deine Ziele und Schulden, die Fakten, die er sich über dich merkt, und die nötigen Buchungen. Deine Datenbank, Belege und Kontoauszüge bleiben hier. Der Server von Tenra speichert keine Fragen und Antworten, und deine Daten werden nicht zum Training von Modellen genutzt.";
 "assistant.consent.allow" = "Einschalten";
 "assistant.consent.notNow" = "Nicht jetzt";
 
@@ -1988,6 +1996,7 @@
 "goal.account.none" = "Kein Konto";
 "goal.account.hint" = "Mit Konto folgt das Ziel dessen Saldo. Ohne Konto tragen Sie selbst ein, was Sie zurücklegen.";
 "goal.alreadySaved" = "Bereits gespart";
+"goal.savedShare" = "Gespart";
 "goal.target" = "Ziel";
 "goal.left" = "Noch zu sparen";
 "goal.leftAmount" = "Noch %@";
@@ -2069,6 +2078,9 @@
 "assistant.chatter.here" = "Ich bin da!";
 "assistant.chatter.help" = "Wie kann ich helfen?";
 "assistant.chatter.hehe" = "Hihi";
+"assistant.chatter.wellDone" = "Gut gemacht!";
+"assistant.chatter.aww" = "Oh, danke!";
+"assistant.chatter.sympathy" = "Oje…";
 "assistant.chatter.dizzy" = "Uii, mir ist schwindelig!";
 "settings.assistant.chatter" = "Ten plaudert";
 
@@ -2090,3 +2102,20 @@
 "assistant.wardrobe.lock.goalReached" = "Erreiche ein Ziel";
 "assistant.wardrobe.lock.nauryz" = "Öffnet sich zu Nauryz";
 "assistant.wardrobe.locked" = "Gesperrt";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "Sparen wir auf etwas?";
+"assistant.empty.debts" = "Wer schuldet wem was? Schreiben wir's auf";
+"assistant.empty.subscriptions" = "Füg Abos hinzu, ich erinnere dich";
+"assistant.empty.deposits" = "Hier wachsen deine Einlagen";
+"assistant.empty.loans" = "Kredite rechne ich auch mit";
+"assistant.empty.accounts" = "Fangen wir mit einem Konto an?";
+"assistant.empty.history" = "Noch leer. Fügen wir die erste hinzu?";
+"assistant.empty.memory" = "Erzähl mir von dir, ich merke es mir";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Aktiv";
+"status.paused" = "Pausiert";
+"status.archived" = "Archiviert";
+"status.pending" = "Ausstehend";
+"textInput.characterCount" = "%1$lld von %2$lld Zeichen";

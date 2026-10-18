@@ -171,6 +171,7 @@ struct CSVEntityMappingView: View {
                 extractUniqueValues()
             }
         }
+        .softScrollEdges()
     }
     
     private func parseType(_ typeString: String) -> TransactionType? {

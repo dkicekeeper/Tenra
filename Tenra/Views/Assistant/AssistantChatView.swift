@@ -8,14 +8,17 @@
 //  suggestions for what to ask next in one row over it, where the thumb is. The navigation bar
 //  holds only the way back to the home and Ten in the middle, 120 pt (the owner's size): it
 //  rises into the bar and hangs over the top of the thread in a bar of its own (safeAreaBar),
-//  which reaches a little below it. The thread scrolls under both and the system's soft scroll
-//  edge effect blurs and dims it there, as under any iOS bar, so Ten always sits on that
-//  translucent backing and the text never runs through the particles. The tab bar steps aside
-//  (TabBarVisibility), so the chat has the screen.
+//  which reaches a little below it. The thread scrolls under both, behind the system's hard
+//  scroll edge effect (DesignKit 5.0, the owner's call after comparing it with a hand-drawn blur
+//  on a device), so Ten always sits on the bar's backing and the text never runs through the
+//  particles. The tab bar steps aside (TabBarVisibility), so the chat has the screen.
 //
 //  Ten shows what is going on: thinking while it runs tools, answering while it writes, the
-//  reply's mood after, confused or sad when a question could not be answered. The reply's text
-//  streams in as the model writes it (AssistantStreamingReply) and can be selected and copied.
+//  reply's mood after, confused or sad when a question could not be answered; its reactions
+//  play their haptics (DesignKit 5.3.0). Until the first word of a reply it "types"
+//  (TypingIndicator). The reply's text streams in as the model writes it
+//  (AssistantStreamingReply) and can be selected and copied. A question sent here enters as a
+//  message does (`.messageBubble`); the history the chat opened with does not move.
 //
 //  Sending a question scrolls it to the top of the screen, and its turn is at least a screen
 //  tall, so a long reply is read from its start. A tap on the thread puts the keyboard away.
@@ -38,6 +41,8 @@ struct AssistantChatView: View {
     @State private var showingVoice = false
     @State private var attachmentSource: AssistantAttachmentSource?
     @State private var readingAttachment = false
+    /// How far a statement being read has got (0...1), for Ten's light.
+    @State private var readingProgress: Double?
     @State private var attachmentError: String?
     @State private var showingPaywall = false
     @State private var showingConsent = false
@@ -55,6 +60,8 @@ struct AssistantChatView: View {
     @State private var gesture: CreatureGesture = .nod
     @State private var gestureCount = 0
     @State private var thoughtTurn = 0
+    /// The entries on screen when the chat opened: they do not enter as new messages.
+    @State private var openedWith: Set<UUID> = []
 
     var body: some View {
         thread
@@ -66,13 +73,14 @@ struct AssistantChatView: View {
             .toolbar(.hidden, for: .tabBar)
             .onAppear {
                 tabBarVisibility?.isHidden = true
+                openedWith = Set(model.entries.map(\.id))
                 model.refreshAllowance()
             }
             .onDisappear { tabBarVisibility?.isHidden = false }
             .onChange(of: premium.isPro) { model.refreshAllowance() }
             .paywallSheet(isPresented: $showingPaywall) {
                 model.refreshAllowance()
-                Task { await model.retry() }
+                retryFailed()
             }
             .sheet(isPresented: $showingVoice) {
                 AssistantVoiceSheet { send($0, spoken: true) }
@@ -131,9 +139,11 @@ struct AssistantChatView: View {
         .scrollDismissesKeyboard(.interactively)
         // A tap anywhere on the thread puts the keyboard away (buttons still work).
         .simultaneousGesture(TapGesture().onEnded { composerFocused = false })
-        // Under the navigation bar and Ten the thread blurs and dims progressively, the iOS
-        // bar backing, not a solid plate.
-        .scrollEdgeEffectStyle(.soft, for: .top)
+        // Under the navigation bar and Ten the system's hard edge effect: the bars' backing
+        // reaches down to the end of Ten's bar, so the thread never runs through the particles.
+        .scrollEdgeEffectStyle(.hard, for: .top)
+        // Under the composer the soft edge, named: built with Xcode 27 it would be hard too.
+        .scrollEdgeEffectStyle(.soft, for: .bottom)
         .safeAreaBar(edge: .top) { mascotBar }
         .safeAreaBar(edge: .bottom) {
             AssistantComposerBar(
@@ -156,6 +166,7 @@ struct AssistantChatView: View {
         .assistantAttachmentSources(
             source: $attachmentSource,
             reading: $readingAttachment,
+            progress: $readingProgress,
             takesHandedOverFiles: false,
             onRead: { attachment, summary in
                 HapticManager.success()
@@ -172,14 +183,13 @@ struct AssistantChatView: View {
 
     /// Ten in the middle of the navigation bar, hanging over the top of the thread as a bar of
     /// its own: its part below the navigation bar plus a tail is the bar's height, so the
-    /// scroll edge effect covers all of Ten and fades out under the tail. Touches go through
-    /// to the thread.
+    /// thread's hard edge effect covers all of Ten. Touches go through to the thread.
     private var mascotBar: some View {
         // Its words go beside it, on the free side of the bar (VoiceOver reads them; Ten itself
         // is hidden from VoiceOver by ParticleCreature).
         ParticleCreature(mood: mascotMood, speech: chatterOn ? speech : nil,
                          accessory: AssistantWardrobe.accessory(choice: accessoryChoice, crownDay: crownDay, at: .now))
-            .creatureGesture(gesture, trigger: gestureCount)
+            .creatureGesture(gesture, trigger: gestureCount, haptic: true)
             // It looks round and stretches between replies (DesignKit 4.11).
             .creatureAmbience(.lively)
             .frame(width: AssistantMetrics.chatMascot, height: AssistantMetrics.chatMascot)
@@ -214,8 +224,12 @@ struct AssistantChatView: View {
         if model.isWorking, !model.streamingReply.isEmpty {
             AssistantStreamingReply(texts: model.streamingReply)
         } else if case .working(let step) = model.phase {
-            workingRow(step.title)
-                .transition(.opacity)
+            // Ten "types" until the reply's first word, over the step it is on.
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                TypingIndicator()
+                workingRow(step.title)
+            }
+            .transition(.opacity)
         } else if readingAttachment {
             workingRow(String(localized: "assistant.attachment.reading"))
                 .transition(.opacity)
@@ -236,6 +250,16 @@ struct AssistantChatView: View {
         }
     }
 
+    /// Retry sends the question to the cloud again: not once the person turned that off in
+    /// Settings after it failed.
+    private func retryFailed() {
+        guard hasConsent else {
+            showingConsent = true
+            return
+        }
+        Task { await model.retry() }
+    }
+
     @ViewBuilder
     private func entryView(_ entry: AssistantViewModel.Entry) -> some View {
         switch entry.content {
@@ -244,8 +268,9 @@ struct AssistantChatView: View {
             MessageBubble(
                 text,
                 failure: failure?.message,
-                onRetry: failure?.canRetry == true ? { Task { await model.retry() } } : nil
+                onRetry: failure?.canRetry == true ? { retryFailed() } : nil
             )
+            .transition(openedWith.contains(entry.id) ? .identity : AnyTransition(MessageBubbleTransition(.outgoing)))
         case .reply(let reply, let results):
             AssistantReplyView(reply: reply, results: results, drafts: model.drafts)
         case .attachment(let summary):
@@ -281,7 +306,7 @@ struct AssistantChatView: View {
     }
 
     private var mascotMood: ParticleCreature.Mood {
-        AssistantMetrics.mood(for: model)
+        AssistantMetrics.mood(for: model, reading: readingAttachment ? readingProgress ?? 0 : nil)
     }
 
     // MARK: - Ten's thoughts and reactions
@@ -304,18 +329,33 @@ struct AssistantChatView: View {
     }
 
     /// When the work ends: a nod for a reply, a cheer for a celebrated one, a word for a
-    /// question that was not answered.
+    /// proud, a kind or a worrying one, a shake when nothing was found, a word for a question
+    /// that was not answered.
     private func react(from old: AssistantViewModel.Phase, to new: AssistantViewModel.Phase) {
         guard case .working = old else { return }
         switch new {
         case .idle:
-            if model.replyMood == .celebrate {
+            if speech?.emotion == .thought { speech = nil }
+            switch model.replyMood {
+            case .celebrate:
                 speech = AssistantChatter.cheer
                 play(.hop)
                 // A crown for the rest of the day (AssistantWardrobe).
                 crownDay = AssistantChatter.dayKey(.now)
-            } else {
-                if speech?.emotion == .thought { speech = nil }
+            case .proud:
+                speech = AssistantChatter.wellDone
+                play(.hop)
+            case .love:
+                speech = AssistantChatter.aww
+                play(.hop)
+            case .concerned:
+                speech = AssistantChatter.sympathy
+                play(.nod)
+            case .surprised:
+                play(.perk)
+            case .empty:
+                play(.shake)
+            case .idle, .happy, .playful:
                 play(.nod)
             }
         case .failed(let failure):

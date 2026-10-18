@@ -8,6 +8,10 @@
 //
 //  Read tools: spending summary, period comparison, search, accounts, budgets, recurring
 //  payments, insights. Heavy walks over the transactions run off the main actor on a snapshot.
+//  An amount in another currency is converted to the base currency with the app's rates (a
+//  `_base` field, and in every total); a rate the cache lacks is loaded first, and a currency
+//  still without one is listed in `missing_rates`, never counted as zero. `convert_currency`
+//  converts an amount the person asks about.
 //  `forecast_balance` projects the everyday accounts to a date and gives the daily allowance.
 //  `simulate_loan` prices a loan's refinancing or early repayment (LoanWhatIf) and
 //  `project_savings` grows regular saving at an assumed return (SavingsProjection).
@@ -33,6 +37,9 @@ final class FinanceToolkit: AgentToolExecuting {
     private let suggestAccount: ((String) -> String?)?
     let now: () -> Date
     let calendar: Calendar
+    /// Loads exchange rates into the cache (from the network on a miss); tests pass one that
+    /// stays offline.
+    private let loadRates: @MainActor (Set<String>) async -> Void
 
     /// - Parameters:
     ///   - drafts: where `draft_transactions` files its drafts; without it drafting answers
@@ -45,6 +52,7 @@ final class FinanceToolkit: AgentToolExecuting {
     ///   - learned: the accounts the person confirmed per category in the voice flow.
     ///   - suggestAccount: the account the history suggests for a category (by name), as the
     ///     add-expense screen ranks them.
+    ///   - loadRates: loads the rates of the given currencies into the cache.
     init(
         store: TransactionStore,
         insights: InsightsViewModel? = nil,
@@ -56,7 +64,8 @@ final class FinanceToolkit: AgentToolExecuting {
         learned: VoiceLearningStore? = nil,
         suggestAccount: ((String) -> String?)? = nil,
         now: @escaping () -> Date = Date.init,
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        loadRates: @escaping @MainActor (Set<String>) async -> Void = { await TransactionConversion.loadRates($0) }
     ) {
         self.store = store
         self.insights = insights
@@ -69,6 +78,7 @@ final class FinanceToolkit: AgentToolExecuting {
         self.suggestAccount = suggestAccount
         self.now = now
         self.calendar = calendar
+        self.loadRates = loadRates
     }
 
     /// Tools the server describes that this version cannot run yet.
@@ -80,13 +90,14 @@ final class FinanceToolkit: AgentToolExecuting {
             case "get_spending_summary": return .success(try await spendingSummary(input))
             case "compare_periods": return .success(try await comparePeriods(input))
             case "search_transactions": return .success(try await searchTransactions(input))
-            case "get_accounts": return .success(accounts())
+            case "get_accounts": return .success(await accounts())
             case "get_budgets": return .success(budgets())
-            case "list_recurring": return .success(try recurring(input))
+            case "list_recurring": return .success(try await recurring(input))
             case "get_insights": return .success(insightsResult())
             case "forecast_balance": return .success(try await forecastBalance(input))
             case "simulate_loan": return .success(try simulateLoan(input))
             case "project_savings": return .success(try projectSavings(input))
+            case "convert_currency": return .success(try await convertCurrency(input))
             case "draft_transactions": return try await draftTransactions(input)
             case "draft_budget": return try draftBudget(input)
             case "draft_recurring": return try draftRecurring(input)
@@ -132,6 +143,26 @@ final class FinanceToolkit: AgentToolExecuting {
             categoryNameById: nameById,
             accountNameById: Dictionary(store.accounts.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
         )
+    }
+
+    // MARK: - Exchange rates
+
+    /// Loads the rates the cache lacks for `currencies`, so a tool converts an amount in
+    /// another currency instead of leaving it out. A stale rate counts as present: better than
+    /// waiting on the network, as on the add-transaction screen.
+    func loadMissingRates(_ currencies: some Sequence<String>) async {
+        let base = store.baseCurrency
+        let missing = Set(currencies).filter { $0 != base && CurrencyConverter.convertSync(amount: 1, from: $0, to: base) == nil }
+        guard !missing.isEmpty else { return }
+        await loadRates(missing.union([base]))
+    }
+
+    /// The same for the currencies of the snapshot's transactions, gathered off the main actor.
+    private func loadMissingRates(for snapshot: FinanceSnapshot) async {
+        let currencies = await Task.detached(priority: .userInitiated) {
+            Set(snapshot.transactions.map(\.currency))
+        }.value
+        await loadMissingRates(currencies)
     }
 
     // MARK: - Inputs
@@ -214,6 +245,7 @@ final class FinanceToolkit: AgentToolExecuting {
         let period = try FinanceToolkitCompute.Period(from: args.from, to: args.to)
         let kind = try parseKind(args.type)
         let snapshot = makeSnapshot()
+        await loadMissingRates(for: snapshot)
         let categoryIds = args.categoryIds, accountIds = args.accountIds, groupBy = args.groupBy ?? "none"
         return try await Task.detached(priority: .userInitiated) {
             try FinanceToolkitCompute.spendingSummary(snapshot, period: period, kind: kind, categoryIds: categoryIds, accountIds: accountIds, groupBy: groupBy)
@@ -226,6 +258,7 @@ final class FinanceToolkit: AgentToolExecuting {
         let previous = try FinanceToolkitCompute.Period(from: args.previous.from, to: args.previous.to)
         let kind = try parseKind(args.type)
         let snapshot = makeSnapshot()
+        await loadMissingRates(for: snapshot)
         let groupBy = args.groupBy ?? "none"
         return try await Task.detached(priority: .userInitiated) {
             try FinanceToolkitCompute.comparePeriods(snapshot, current: current, previous: previous, kind: kind, groupBy: groupBy)
@@ -247,23 +280,27 @@ final class FinanceToolkit: AgentToolExecuting {
         query.largestFirst = args.sort == "largest"
         query.limit = args.limit ?? 20
         let snapshot = makeSnapshot()
+        await loadMissingRates(for: snapshot)
         let finalQuery = query
         return await Task.detached(priority: .userInitiated) {
             FinanceToolkitCompute.search(snapshot, finalQuery)
         }.value
     }
 
-    private func accounts() -> JSONValue {
+    private func accounts() async -> JSONValue {
         let base = store.baseCurrency
+        await loadMissingRates(store.accounts.map(\.currency))
         let rates = RateSnapshot()
         let balances = store.balanceCoordinator.balances
         var total = 0.0
+        var missingRates: Set<String> = []
         var rows: [JSONValue] = []
         for account in store.accounts {
             let balance = balances[account.id] ?? account.balance
             let inBase: Double? = account.currency == base ? balance : rates.convert(balance, from: account.currency, to: base)
             let counted = !account.isLoan && account.includeInBalance
             if counted, let inBase { total += inBase }
+            if counted, inBase == nil { missingRates.insert(account.currency) }
             var row: [String: JSONValue] = [
                 "id": .string(account.id),
                 "name": .string(account.name),
@@ -278,7 +315,12 @@ final class FinanceToolkit: AgentToolExecuting {
             }
             rows.append(.object(row))
         }
-        return ["currency": .string(base), "total_base": .number(FinanceToolkitCompute.round2(total)), "accounts": .array(rows)]
+        return [
+            "currency": .string(base),
+            "total_base": .number(FinanceToolkitCompute.round2(total)),
+            "accounts": .array(rows),
+            "missing_rates": .array(missingRates.sorted().map(JSONValue.string)),
+        ]
     }
 
     private func budgets() -> JSONValue {
@@ -311,12 +353,18 @@ final class FinanceToolkit: AgentToolExecuting {
         return ["currency": .string(store.baseCurrency), "budgets": .array(rows)]
     }
 
-    private func recurring(_ input: JSONValue) throws -> JSONValue {
+    /// `list_recurring`: every series with its amount in its own currency, the amount and the
+    /// monthly cost in the base currency (`amount_base`, `monthly_base`), and the monthly total
+    /// of the active expense subscriptions in the base currency. A subscription without a rate
+    /// is left out of the total and its currency listed in `missing_rates`.
+    private func recurring(_ input: JSONValue) async throws -> JSONValue {
         let args = try input.decoded(as: RecurringInput.self)
         let onlySubscriptions = args.kind == "subscription"
         let activeOnly = args.activeOnly ?? true
         let base = store.baseCurrency
+        await loadMissingRates(store.recurringSeries.map(\.currency))
         let rates = RateSnapshot()
+        var missingRates: Set<String> = []
         let today = now()
         let typeByName = Dictionary(store.categories.map { ($0.name, $0.type) }, uniquingKeysWith: { first, _ in first })
         let accountNames = Dictionary(store.accounts.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
@@ -332,9 +380,10 @@ final class FinanceToolkit: AgentToolExecuting {
                 : FastDateParser.date(from: series.startDate).flatMap {
                     RecurringDateMath.firstOccurrence(after: today, start: $0, frequency: series.frequency, calendar: calendar)
                 }
+            let amountBase = series.currency == base ? amount : rates.convert(amount, from: series.currency, to: base)
+            let monthlyBase = amountBase.map { $0 * Self.monthlyFactor(series.frequency) }
             if series.isSubscription, series.isActive, !isIncome {
-                let monthly = amount * Self.monthlyFactor(series.frequency)
-                monthlyTotal += series.currency == base ? monthly : (rates.convert(monthly, from: series.currency, to: base) ?? 0)
+                if let monthlyBase { monthlyTotal += monthlyBase } else { missingRates.insert(series.currency) }
             }
             rows.append([
                 "id": .string(series.id),
@@ -343,6 +392,8 @@ final class FinanceToolkit: AgentToolExecuting {
                 "type": .string(isIncome ? "income" : "expense"),
                 "amount": .number(FinanceToolkitCompute.round2(amount)),
                 "currency": .string(series.currency),
+                "amount_base": amountBase.map { JSONValue.number(FinanceToolkitCompute.round2($0)) } ?? .null,
+                "monthly_base": monthlyBase.map { JSONValue.number(FinanceToolkitCompute.round2($0)) } ?? .null,
                 "frequency": .string(series.frequency.rawValue),
                 "next_date": next.map { JSONValue.string(FastDateParser.string(from: $0)) } ?? .null,
                 "category": .string(series.category),
@@ -350,7 +401,12 @@ final class FinanceToolkit: AgentToolExecuting {
                 "active": .bool(series.isActive),
             ])
         }
-        return ["currency": .string(base), "items": .array(rows), "subscriptions_monthly_total_base": .number(FinanceToolkitCompute.round2(monthlyTotal))]
+        return [
+            "currency": .string(base),
+            "items": .array(rows),
+            "subscriptions_monthly_total_base": .number(FinanceToolkitCompute.round2(monthlyTotal)),
+            "missing_rates": .array(missingRates.sorted().map(JSONValue.string)),
+        ]
     }
 
     static func monthlyFactor(_ frequency: RecurringFrequency) -> Double {
@@ -393,6 +449,40 @@ final class FinanceToolkit: AgentToolExecuting {
         let available = insights.healthScore != nil || !insights.insights.isEmpty
         result["available"] = .bool(available)
         if !available { result["note"] = "Insights are still being computed. Answer from the other tools." }
+        return .object(result)
+    }
+
+    // MARK: - Currency conversion
+
+    private struct ConvertInput: Decodable {
+        let amount: Double?
+        let from: String
+        let to: String?
+    }
+
+    /// `convert_currency`: an amount (1 by default) in another currency, the base one by
+    /// default, at the rates the app converts everything with; the rate for one unit and the
+    /// day the app last updated its rates. A rate the cache lacks is loaded first.
+    private func convertCurrency(_ input: JSONValue) async throws -> JSONValue {
+        let args = try input.decoded(as: ConvertInput.self)
+        let from = args.from.uppercased()
+        let to = args.to.map { $0.uppercased() }.flatMap { $0.isEmpty ? nil : $0 } ?? store.baseCurrency
+        let amount = args.amount ?? 1
+        guard amount.isFinite, amount >= 0 else { throw FinanceToolError(message: "amount must be zero or more.") }
+        guard from.count == 3, to.count == 3 else { throw FinanceToolError(message: "Currencies are ISO 4217 codes, such as USD.") }
+        await loadMissingRates([from, to])
+        guard let rate = CurrencyConverter.convertSync(amount: 1, from: from, to: to) else {
+            throw FinanceToolError(message: "The app has no exchange rate between \(from) and \(to). Tell the user so.")
+        }
+        var result: [String: JSONValue] = [
+            "currency": .string(to),
+            "converted": .number(FinanceToolkitCompute.round2(amount * rate)),
+            "rate": .number((rate * 1_000_000).rounded() / 1_000_000),
+            "from": ["currency": .string(from), "amount": .number(FinanceToolkitCompute.round2(amount))],
+        ]
+        if let updated = CurrencyRateStore.shared.lastUpdated {
+            result["rates_date"] = .string(FastDateParser.string(from: updated))
+        }
         return .object(result)
     }
 
@@ -449,6 +539,7 @@ final class FinanceToolkit: AgentToolExecuting {
         guard days <= Self.forecastMaxDays else { throw FinanceToolError(message: "until must be within a year.") }
 
         let base = store.baseCurrency
+        await loadMissingRates(store.accounts.map(\.currency) + store.recurringSeries.map(\.currency))
         let rates = RateSnapshot()
         var missingRates: Set<String> = []
         func inBase(_ amount: Double, _ currency: String) -> Double? {

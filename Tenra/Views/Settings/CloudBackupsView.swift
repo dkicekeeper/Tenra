@@ -47,6 +47,19 @@ struct CloudBackupsView: View {
                     : "settings.cloud.iCloud.unavailable"))
             }
 
+            // A failed automatic backup stays in sight until a backup succeeds (DesignKit's
+            // StatusBanner).
+            if let failure = cloudSyncViewModel.automaticBackupFailure {
+                Section {
+                    StatusBanner(
+                        String(format: String(localized: "settings.cloud.autoBackup.failed"), failure),
+                        status: .negative
+                    )
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                }
+            }
+
             Section {
                 Toggle(isOn: Binding(
                     get: { cloudSyncViewModel.automaticBackupsEnabled },
@@ -165,7 +178,6 @@ struct CloudBackupsView: View {
         }
         .task {
             cloudSyncViewModel.loadBackups()
-            await cloudSyncViewModel.showAutomaticBackupFailureIfAny()
         }
     }
 }

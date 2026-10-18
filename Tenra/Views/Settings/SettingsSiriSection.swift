@@ -30,7 +30,7 @@ struct SettingsSiriSection: View {
             ShortcutsLink()
                 .shortcutsLinkStyle(.automaticOutline)
         } header: {
-            Text("settings.siri.header")
+            SectionHeader(String(localized: "settings.siri.header"), style: .compact)
         } footer: {
             Text("settings.siri.footer")
         }

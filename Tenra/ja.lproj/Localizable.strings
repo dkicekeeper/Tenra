@@ -95,6 +95,7 @@
 "currency.customizeAction" = "カスタマイズ…";
 "settings.wallpaper" = "ホームの壁紙";
 "settings.background" = "背景";
+"home.hint.categories" = "カテゴリをタップして支出を追加";
 "settings.voiceLanguage" = "音声の言語";
 "settings.voiceLanguage.app" = "アプリと同じ";
 "settings.background.none" = "背景なし";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "写真";
 "settings.background.blurWallpaper" = "壁紙をぼかす";
 "settings.background.removePhoto" = "写真を削除";
+"settings.background.choosePhoto" = "写真を選択";
+"settings.background.changePhoto" = "写真を変更";
 "settings.background.preview" = "背景プレビュー";
 "settings.background.opacity" = "色の濃さ";
 "settings.background.opacityTitle" = "支出カラー";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "金額";
 "quickAdd.description" = "説明";
 "quickAdd.descriptionPlaceholder" = "説明（任意）";
+"quickAdd.balanceAfter" = "取引後の残高";
 "quickAdd.recurring" = "定期取引";
 "quickAdd.makeRecurring" = "定期";
 "quickAdd.frequency" = "頻度";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "行数";
 "csvImport.preview.columns" = "列数";
 "csvImport.mapping.title" = "列のマッピング";
+"csvImport.step.preview" = "プレビュー";
+"csvImport.step.columns" = "列";
+"csvImport.step.import" = "インポート";
 "csvImport.mapping.required" = "必須フィールド";
 "csvImport.mapping.optional" = "任意フィールド";
 "csvImport.mapping.date" = "日付";
@@ -871,7 +878,7 @@
 "insights.formula.savingsRate.row.saved" = "貯蓄額（収入 − 支出）";
 "insights.formula.savingsRate.row.rate" = "貯蓄率";
 "insights.formula.savingsRate.explainer" = "収入のうち、その月を乗り越えて手元に残る割合です。貯蓄率が高いほど自由度が増します。収入の少ない月の余裕、目標達成の加速、そして本当の非常時の備えにつながります。";
-"insights.formula.savingsRate.rec.good" = "貯蓄率が20%%を超えています。この習慣を保ち、余剰分を長期的な目標に振り向けることをご検討ください。";
+"insights.formula.savingsRate.rec.good" = "貯蓄率が20%を超えています。この習慣を保ち、余剰分を長期的な目標に振り向けることをご検討ください。";
 "insights.formula.savingsRate.rec.fair" = "まずまずですが、20%%を目指すと毎月あと%@の貯蓄になります。増えてしまった定期コストや単発の支出を見直しましょう。";
 "insights.formula.savingsRate.rec.low" = "10%%未満では余裕がありません。毎月あと%@を目標にしましょう。まずは一番大きい自由支出のカテゴリから始めてください。";
 "insights.formula.emergencyFund.title" = "生活防衛資金";
@@ -1269,7 +1276,6 @@
 "settings.cloud.delete" = "削除";
 "settings.cloud.storage" = "ストレージ";
 "settings.cloud.storageUsed" = "%@ / %@";
-"settings.cloud.backupMetadata" = "%d口座 · %d件の取引 · %@";
 "settings.cloud.iCloud.toggle" = "iCloudにバックアップを保存";
 "settings.cloud.iCloud.footer" = "バックアップはiCloudに保存され、「ファイル」アプリには表示されず、他のデバイスのTenraで利用できます。";
 "settings.cloud.iCloud.unavailable" = "iCloud Driveにバックアップを保存するには、設定でiCloudにサインインしてください。";
@@ -1390,6 +1396,8 @@
 "insights.chart.line" = "折れ線";
 "insights.chart.bar" = "棒";
 "insights.today" = "今日";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@、%2$@";
 "insights.empty.title" = "まだデータがありません";
 "insights.empty.subtitle" = "取引の履歴がたまると、グラフが表示されます";
 
@@ -1608,7 +1616,7 @@
 "insights.health.target.cashFlow" = "0以上";
 
 "insights.health.rec.savingsRate.below" = "20%%に届くには、支出を月あたり約%@減らすか、収入を月あたり約%@増やしましょう。";
-"insights.health.rec.savingsRate.healthy" = "とても良好です。このペースを保ちましょう。長期的な安定には20%%以上が目安です。";
+"insights.health.rec.savingsRate.healthy" = "とても良好です。このペースを保ちましょう。長期的な安定には20%以上が目安です。";
 
 "insights.health.rec.budgetAdherence.empty" = "予算が未設定です。各カテゴリに設定すると、この項目もスコアに反映されます。";
 "insights.health.rec.budgetAdherence.partial" = "%d件のカテゴリが予算を超えています。開いて、使いすぎの原因を確認しましょう。";
@@ -1938,7 +1946,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "アシスタントはクラウドで動作します";
-"assistant.consent.message" = "回答のため、Anthropic のモデル Claude に問い合わせます。端末から送られるのは、質問と回答に必要な情報（合計、カテゴリ、口座名、あなたについて覚えている情報、必要な取引）だけです。データベース、レシート、明細はこの端末に残ります。Tenra のサーバーは何も保存せず、データがモデルの学習に使われることはありません。";
+"assistant.consent.message" = "回答のため、Anthropic のモデル Claude に問い合わせます。端末から送られるのは、質問と回答に必要な情報（合計、カテゴリ、口座名、貯金目標と貸し借り、あなたについて覚えている情報、必要な取引）だけです。データベース、レシート、明細はこの端末に残ります。Tenra のサーバーは質問も回答も保存せず、データがモデルの学習に使われることはありません。";
 "assistant.consent.allow" = "オンにする";
 "assistant.consent.notNow" = "今はしない";
 
@@ -1988,6 +1996,7 @@
 "goal.account.none" = "口座なし";
 "goal.account.hint" = "口座を選ぶと、その残高で進み具合がわかります。口座なしなら、貯めた分を自分で記録します。";
 "goal.alreadySaved" = "すでに貯めた金額";
+"goal.savedShare" = "貯金済み";
 "goal.target" = "目標額";
 "goal.left" = "残り";
 "goal.leftAmount" = "残り%@";
@@ -2069,6 +2078,9 @@
 "assistant.chatter.here" = "ここにいますよ！";
 "assistant.chatter.help" = "何かお手伝いしましょうか？";
 "assistant.chatter.hehe" = "えへへ";
+"assistant.chatter.wellDone" = "よくできました！";
+"assistant.chatter.aww" = "わあ、ありがとう！";
+"assistant.chatter.sympathy" = "あらら…";
 "assistant.chatter.dizzy" = "わあ、目が回る！";
 "settings.assistant.chatter" = "テンのおしゃべり";
 
@@ -2090,3 +2102,20 @@
 "assistant.wardrobe.lock.goalReached" = "目標を達成";
 "assistant.wardrobe.lock.nauryz" = "ナウルズに解放";
 "assistant.wardrobe.locked" = "ロック中";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "何か目標に向けて貯めてみる？";
+"assistant.empty.debts" = "誰が誰に借りてる？メモしておこう";
+"assistant.empty.subscriptions" = "サブスクを追加すれば、支払いを知らせるよ";
+"assistant.empty.deposits" = "ここで預金が育っていくよ";
+"assistant.empty.loans" = "ローンも数えておくよ";
+"assistant.empty.accounts" = "まずは口座から始めよう？";
+"assistant.empty.history" = "まだ空っぽ。最初の1件を追加する？";
+"assistant.empty.memory" = "あなたのことを教えて。覚えておくよ";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "有効";
+"status.paused" = "一時停止中";
+"status.archived" = "アーカイブ済み";
+"status.pending" = "保留中";
+"textInput.characterCount" = "%2$lld文字中%1$lld文字";

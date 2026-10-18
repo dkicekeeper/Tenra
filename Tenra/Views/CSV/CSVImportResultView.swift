@@ -26,11 +26,13 @@ struct CSVImportResultView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: AppSpacing.xxl) {
+                CSVImportSteps(current: CSVImportSteps.done)
+
                 // Persistence failure banner — shown above everything else
                 if let persistenceError = statistics.persistenceError {
-                    InlineStatusText(
-                        message: String(localized: "csvImport.error.persistenceFailed") + " \(persistenceError)",
-                        type: .error
+                    StatusBanner(
+                        String(localized: "csvImport.error.persistenceFailed") + " \(persistenceError)",
+                        status: .negative
                     )
                 }
 
@@ -57,6 +59,7 @@ struct CSVImportResultView: View {
             .navigationTitle(String(localized: "csvImport.result.title"))
             .navigationBarTitleDisplayMode(.inline)
         }
+        .softScrollEdges()
         .onAppear {
             if statistics.persistenceError != nil {
                 HapticManager.error()
@@ -70,10 +73,14 @@ struct CSVImportResultView: View {
 
     // MARK: - Sections
 
+    /// "Import finished": the symbol draws itself on a pale disc (DesignKit's HeroSymbol).
     private var resultIcon: some View {
-        Image(systemName: statistics.successRate > 0.8 ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-            .font(.system(size: AppIconSize.Tile.xl))
-            .foregroundStyle(statistics.successRate > 0.8 ? AppColors.success : AppColors.warning)
+        let succeeded = statistics.successRate > 0.8
+        return HeroSymbol(
+            systemImage: succeeded ? "checkmark" : "exclamationmark.triangle",
+            size: AppIconSize.Tile.xl * 2,
+            tint: succeeded ? AppColors.success : AppColors.warning
+        )
     }
 
     private var statisticsSection: some View {

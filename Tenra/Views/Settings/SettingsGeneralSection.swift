@@ -50,12 +50,9 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
                     config: .settings,
                     leadingIcon: .sfSymbol("dollarsign.circle",
                                            color: AppColors.accent,
-                                           size: AppIconSize.md)
+                                           size: AppIconSize.md),
+                    title: String(localized: "settings.baseCurrency")
                 ) {
-                    Text(String(localized: "settings.baseCurrency"))
-                        .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textPrimary)
-                } trailing: {
                     HStack(spacing: AppSpacing.sm) {
                         Text(Formatting.currencySymbol(for: selectedCurrency))
                             .font(AppTypography.body)
@@ -75,11 +72,13 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
                 backgroundDestination
             }
 
+            // DesignKit's list row (4.14.0): the settings row, its value and the list it pushes.
             NavigationPickerRow(
                 icon: "waveform",
                 title: String(localized: "settings.voiceLanguage"),
                 selection: $voiceLanguage,
-                options: voiceLanguageOptions
+                options: voiceLanguageOptions,
+                style: .list
             )
         }
     }

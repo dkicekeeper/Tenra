@@ -100,6 +100,7 @@ struct NotificationDebugView: View {
                 await loadPendingNotifications()
             }
         }
+        .softScrollEdges()
     }
 
     private var statusText: String {

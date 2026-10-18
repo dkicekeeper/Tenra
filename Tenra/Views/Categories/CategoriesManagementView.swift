@@ -323,7 +323,11 @@ struct CategoriesManagementView: View {
             primaryTrailingItem
             #endif
         }
-        .safeAreaInset(edge: .top) {
+        // The picker as a bar under the navigation bar: the bar's soft edge goes on under it, so
+        // the rows blur under both (a safeAreaInset has no edge effect of its own). Named:
+        // built with Xcode 27 the edge as it comes is hard (DesignKit 5.1.0).
+        .scrollEdgeEffectStyle(.soft, for: .top)
+        .safeAreaBar(edge: .top) {
             SegmentedPicker(
                 title: "",
                 selection: $selectedType,
@@ -334,7 +338,6 @@ struct CategoriesManagementView: View {
             )
             .screenPadding()
             .padding(.vertical, AppSpacing.md)
-            .background(Color(.clear))
             .onChange(of: selectedType) { _, _ in
                 HapticManager.selection()
                 selection.removeAll()

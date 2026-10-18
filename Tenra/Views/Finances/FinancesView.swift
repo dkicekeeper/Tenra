@@ -137,6 +137,7 @@ struct FinancesView: View {
                 navigateToPendingSubscriptionIfPossible()
             }
         }
+        .softScrollEdges()
     }
 
     /// Resolves a pending deep-link to a subscription detail. If the matching

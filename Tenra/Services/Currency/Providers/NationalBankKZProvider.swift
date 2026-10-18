@@ -2,9 +2,9 @@
 //  NationalBankKZProvider.swift
 //  Tenra
 //
-//  Legacy fallback provider — National Bank of Kazakhstan RSS/XML feed.
-//  Kept as the last-resort source for KZT-resident users in case both the
-//  jsDelivr CDN and its Cloudflare mirror are unreachable.
+//  National Bank of Kazakhstan RSS/XML feed. Through `OfficialRatesProvider`, when both the
+//  jsDelivr CDN and its Cloudflare mirror are unreachable: its euro rate puts the ECB's table
+//  into tenge, and its own currencies fill what the ECB lacks; alone when the ECB is down too.
 //
 //  Endpoint: https://nationalbank.kz/rss/get_rates.cfm?fdate=DD.MM.YYYY
 //  Format:   RSS-like XML with <item><title>USD</title><description>442.5</description><quant>1</quant></item>

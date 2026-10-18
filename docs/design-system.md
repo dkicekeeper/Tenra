@@ -6,7 +6,7 @@ This file covers what is Tenra's own: how the app wires DesignKit, which views s
 why, how its screens are built, and its rules for amounts, dates, categories and motion. For a
 token, a modifier or a component, read DesignKit's docs (§1).
 
-*Checked against the code on 2026-10-12, DesignKit 3.5.0.*
+*Checked against the code on 2026-10-15, DesignKit 4.12.0 (design-system audit of everything since 1.5).*
 
 ## Contents
 
@@ -93,17 +93,17 @@ decision, 2026-10). `Tenra/Views/Components/` keeps two kinds of views:
 
 | Folder | Adapters (→ DesignKit component) | Screen parts |
 |---|---|---|
-| `Cards` | `AccountCard` → `BalanceCard`, `CategoryChip` → `ProgressRingTile`, `CategoryGradientBackground` → `AuroraBackground`, `HealthScoreCardView` → `ScoreCard`, `HealthScoreHeroCard` → `ScoreGaugeCard`, `HealthScoreWeightingCard` → `WeightBreakdownCard`, `HealthComponentCard` → `TargetProgressCard`, `InsightFormulaCard` → `CalculationCard`, `InsightsCardView` → `MetricCard`, `InsightsTotalsCard` → `TotalsCard`, `LoanCard` → `PayoffProgressCard`, `PeriodComparisonCard` → `ComparisonCard`, `SubscriptionCard` → `RecurringPaymentCard`, `TransactionCardView` → `TransactionRow`, `TransactionsSummaryCard` → `CashFlowCard` | `TransactionCard` (tap → edit, swipe, context menu), `HistoryTransactionsList`, the Finances cards (`AccountsCardView`, `DepositsCardView`, `SubscriptionsCardView`, `LoansCardView`, `CategoriesCardView`, `SubcategoriesCardView`) |
+| `Cards` | `AccountCard` → `BalanceCard`, `CategoryChip` → `ProgressRingTile`, `CategoryGradientBackground` → `AuroraBackground`, `HealthScoreCardView` → `ScoreCard`, `HealthScoreHeroCard` → `ScoreGaugeCard`, `HealthScoreWeightingCard` → `WeightBreakdownCard`, `HealthComponentCard` → `TargetProgressCard`, `InsightFormulaCard` → `CalculationCard`, `InsightsCardView` → `MetricCard`, `InsightsTotalsCard` → `TotalsCard`, `LoanCard` / `GoalCard` / `DebtCard` → `PayoffProgressCard`, `SavingsRateHeroCard` / `LargeTransactionHeroCard` / `BudgetHeadroomHeroCard` → `ScoreGaugeCard`, `PeriodComparisonCard` → `ComparisonCard`, `SubscriptionCard` → `RecurringPaymentCard`, `TransactionCardView` → `TransactionRow`, `TransactionsSummaryCard` → `CashFlowCard` | `TransactionCard` (tap → edit, swipe, context menu), `HistoryTransactionsList`, the Finances cards (`AccountsCardView`, `DepositsCardView`, `SubscriptionsCardView`, `LoansCardView`, `GoalsCardView`, `DebtsCardView`, `CategoriesCardView`, `SubcategoriesCardView`) |
 | `Charts` | `PeriodChartAdapters` (`PeriodDataPoint: ChartPoint`, `PeriodChartSeries` → `ChartSeries`) | |
 | `EntityDetail` | | `EntityDetailScaffold` |
 | `Feedback` | `AnimatedTranscriptionText` → `StreamingText`, `InsightTrendBadge` → `TrendBadge`, `LoanTypeBadge` / `LoanMonthStatusBadge` → `Badge`, `StatusIndicatorBadge` (status mapping) | `RatingSurveyView`, `ExportActivityView` |
-| `Forms` | `EditableHeroSection` → `EditableHero` | `BudgetSettingsSection`, the loan and deposit sheets (§4) |
+| `Forms` | `EditableHeroSection` → `EditableHero`, `MoneyEntrySheet` → `AmountEntrySheet` (4.14.0; AppSettings' currencies and the quick-access sheet) | `BudgetSettingsSection`, the loan and deposit sheets |
 | `Headers` | | `InsightsSectionView` |
 | `History` | | `GroupedTransactionList` |
 | `Icons` | `IconPickerView` → `IconPicker` | |
 | `Input` | `AccountRadioButton` → `SelectableBalanceCard`, `AmountInputView` → `CurrencyAmountInput`, `CurrencySelectorView` → `CurrencyPickerMenu`, `SubscriptionCalendarView` → `MonthCalendar` | the filter sheets, the selectors, carousels and grids that load data, `HomeBackgroundPicker`, the import sheets |
 | `LinkPayments` | | `LinkPaymentsView` |
-| `Rows` | `AccountRow` / `CategoryRow` / `CategoryBreakdownRow` → `AmountRow`, `AmortizationScheduleRow` → `ScheduleRow`, `BudgetProgressRow` → `LimitProgressCard`, `MenuPickerRow` (domain inits) | `PeriodBreakdownRow` |
+| `Rows` | `AccountRow` / `CategoryRow` / `CategoryBreakdownRow` → `AmountRow`, `AmortizationScheduleRow` → `ScheduleRow`, `BudgetProgressRow` → `LimitProgressCard`, `HistoryEntryRow` → `AmountRow`, `MenuPickerRow` (domain inits) | `PeriodBreakdownRow` |
 
 Each file's header comment names what it adapts. Tenra keeps its screens over its own models by
 choice: filter sheets, home sections, transaction lists, entity detail screens, the lock screen,
@@ -115,6 +115,46 @@ choice: filter sheets, home sections, transaction lists, entity detail screens, 
 
 Build a new screen from the closest pattern. Every one is made of DesignKit pieces; the structure
 is Tenra's.
+
+DesignKit pieces on Tenra's screens that are easy to miss (DesignKit's `docs/adoption.md` lists
+what is still unused and where it could go):
+- `StatusBanner`: an error that stays in the layout where it happened. A statement or receipt the
+  import tab could not read (`PDFImportCoordinator`), a CSV import that failed to save
+  (`CSVImportResultView`), an automatic backup that failed, until a backup succeeds
+  (`CloudBackupsView`, `CloudSyncViewModel.automaticBackupFailure`).
+- `HeroSymbol`: the import tab's picture and the CSV import's result.
+- `StepTracker`: the CSV import's sheets (`CSVImportSteps`: preview, columns, import; all done on
+  the result).
+- `Tooltip` with `FeatureTourState`: once, the first launch's hint over Home's categories, for a
+  person without transactions (`ContentView.showCategoryHintIfNeeded`).
+- `LiveAmountText` in `InfoRowLayout`: the add form's "Balance after" for an income or expense
+  dated today or earlier (`TransactionAddModal.balanceAfter`).
+- `SpentBudgetText`: the category screen's budget row.
+- `.sparkleBurst`: money put towards a goal (`GoalDetailView`); reaching it celebrates instead.
+- `OptionCardPicker(style: .carousel)`: Home's background (`HomeBackgroundPicker`), the option's
+  settings under the row; a photo is applied once one is picked.
+- Through DesignKit's own components, not called directly: `ChartSelectionBanner` and
+  `ChartZoomControls` (in `LineChart`, `BarChart`, `ChartSwitcher`), `.chartDrawIn`,
+  `AmountComparisonBar` (in `CashFlowCard`), `OnboardingStepIndicator` (in
+  `OnboardingPageContainer`).
+
+Every `NavigationStack` carries `.softScrollEdges()` (DesignKit 5.4.0), a sheet's and a
+full-screen cover's too, since a stack in a sheet does not take it from the screen under it: built
+with Xcode 27 the edge under the navigation bar and the tab bar as it comes on iOS 27 is hard, an
+almost opaque plate with a line (its gotchas.md). On iOS 26 and in an Xcode 26 build (the cloud
+TestFlight) it names nothing. DesignKit's sheets (`EditSheetContainer`, `DateRangePickerSheet`,
+`IconPicker`, …) carry their own. A new `NavigationStack` gets it too.
+
+A bar over scrolling content (`safeAreaBar`) names its edge style on the scroll view: built with
+Xcode 27 the style as it comes is hard, a plate with a line (DesignKit 5.1.0, its gotchas.md).
+`.scrollEdgeEffectStyle(.soft, for: edge)` everywhere, except the hard top over Ten's chat thread
+(the owner's choice, named on its scroll view, so the stack's soft edge does not reach it);
+DesignKit's own bars (`.dateButtonsSafeArea`, `IconPicker`, `.heroScrollEdge()`) name theirs.
+A segmented control that switches the whole screen is such a bar under the navigation bar
+(Categories' Expenses / Income, an account's Transfer / Top-up), not a toolbar item: the bar's
+blur goes on under it and it stays while the list scrolls; a picker that is a form's field (a
+debt's direction, a voice entry's type, a loan repayment's strategy, the loans filter) stays in
+the content.
 
 ### Entity edit sheet (hero form)
 
@@ -146,12 +186,14 @@ fields, then a conditional impact `FormSection`. **Tenra has no system `Form` sh
 `TransactionAddModal`, `TransactionEditView`, `AccountActionView`, `LoanPaymentView`,
 `LoanEarlyRepaymentView`: a `ScrollView` with `HeroSection`, `AmountInputView(calculatorModel:)`,
 the source and category selectors under `SectionHeader`s and `FormSection`s for the rest, with the
-`CalculatorKeypad` in `.safeAreaInset(edge: .bottom)`. Rules in §5.
+`CalculatorKeypad` in `.safeAreaInset(edge: .bottom)`. Rules in §5. Money towards a goal or back
+on a debt (only a note and a date) is `MoneyEntrySheet`, an adapter over DesignKit's
+`AmountEntrySheet` (4.14.0), the same layout ready-made.
 
 ### Entity detail
 
 `AccountDetailView`, `CategoryDetailView`, `SubscriptionDetailView`, `DepositDetailView`,
-`LoanDetailView`, all through `EntityDetailScaffold`:
+`LoanDetailView`, `GoalDetailView`, `DebtDetailView`, all through `EntityDetailScaffold`:
 
 ```
 ScrollView
@@ -165,12 +207,21 @@ ScrollView
   hero scrolls out; the toolbar menu (edit, delete, …)
 ```
 
+- A hero with a progress passes a word as `ProgressConfig.label` ("Paid off", "Saved",
+  "Returned"): `HeroSection` draws "label · NN%" itself.
+- A goal's contributions and a debt's repayments (no transactions behind them) are a custom
+  section: `SectionHeader` over a card of `HistoryEntryRow`s (DesignKit's `AmountRow`, info style:
+  the note as the title, the date under it) padded `AppSpacing.lg` like the info rows card,
+  dividers inset past the row's icon, a deleted entry dissolving (§7).
+
 ### Lists
 
 - **Management** (`AccountsManagementView`, `CategoriesManagementView`): `List` of `AccountRow` /
   `CategoryRow`, `.onMove` while reordering, swipe to delete in the row adapter.
-- **Cards** (`SubscriptionsListView`, `LoansListView`): `ScrollView` of `SubscriptionCard` /
-  `LoanCard` in `NavigationLink`s, `EmptyState` when there are none.
+- **Cards** (`SubscriptionsListView`, `LoansListView`, `GoalsListView`, `DebtsListView`):
+  `ScrollView` of `SubscriptionCard` / `LoanCard` / `GoalCard` / `DebtCard` in `NavigationLink`s
+  with a staggered `.chartAppear`, `EmptyState` when there are none. Goals and debts show three
+  `PayoffProgressCardSkeleton`s until their store loads, replaced through `.skeletonReveal` (§7).
 - **Deposits** (`DepositsListView`): `List` of `AccountRow`; `AmountRowSkeleton(style: .list)`
   rows while loading, replaced through `.transition(.skeletonReveal)` (§7).
 - **Subcategories** (`SubcategoriesManagementView`): `List` of `SubcategoryManagementRow`, a
@@ -188,9 +239,20 @@ freeze (CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `F
 
 ### Settings
 
-`List` of `Section(header: SectionHeader(title, style: .compact))` with
-`UniversalRow(config: .settings)` rows: `.navigationRow {}`, `.actionRow(role:) {}` or a trailing
-`Toggle`. The list insets the rows, so `.settings` has no horizontal padding of its own.
+`List` of `Section(header: SectionHeader(title, style: .compact))` (every section, with a
+`footer:` of plain `Text` when it has one) with `UniversalRow(config: .settings)` rows:
+`.navigationRow {}`, `.actionRow(role:) {}`, `ToggleSettingsRow`, `NavigationSettingsRow` or a
+trailing `Toggle`. The list insets the rows, so `.settings` has no horizontal padding of its own.
+Form-card rows (`MenuPickerRow`, `NavigationPickerRow` in its default `.form` style) pad
+themselves and stay out of this list.
+
+- **A choice from a list**: the voice language is DesignKit's `NavigationPickerRow(style: .list)`
+  (4.14.0: the `.settings` row with the chosen value in `bodySmall` secondary, pushing a `List`
+  of `CheckmarkRow`s with system search when long); the base currency is a `NavigationLink` with
+  the same row, pushing `CurrencyPickerView`.
+- **Assistant** (`SettingsAssistantSection`): the cloud and "Ten chats" toggles and "What Ten
+  knows about me" (`AssistantMemoryView`: a `List` of `ItemRow(style: .large)` without a chevron,
+  since a row opens an editor sheet; `ItemRowSkeleton(style: .large)` rows while loading).
 
 - **Backups** (`BackupRowView`): `ItemRow(style: .large)` with the date, the "Auto" badge, a
   `MetaLine` of counts and size, and the restore arrow as its accessory; tap restores, swipe
@@ -203,13 +265,16 @@ freeze (CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `F
 
 - **Home** (`ContentView`): `ScrollView` → `VStack(spacing: AppSpacing.lg)`: `AccountsCarousel`
   (`AccountCard` = `BalanceCard(isLive: true)`) or `EmptyCard`; `TransactionsSummaryCard` in a
-  `NavigationLink` to History (`.buttonStyle(.bounce)`); the category grid
+  `NavigationLink` to History (`.buttonStyle(.bounce)`); "Ten writes"
+  (`AssistantNoticesSection`: the newest unread notice under a `SectionHeader`, fading in and out
+  with the animation outside its conditional); the category grid
   (`TransactionCategoryPickerView`). Background by the user's choice: none, the spending gradient
   (`CategoryGradientBackground`, still) or a wallpaper.
 - **Finances** (`FinancesView`): `ScrollView` of `FinanceCard` summaries (accounts, deposits,
-  subscriptions, loans, categories, subcategories), each with `PackedCircleIcons` in the default
-  `.glossy` style. The `.fan` and `.orbit` styles (DesignKit 3.3.0) are not used: the owner keeps
-  the marbles.
+  subscriptions, loans, goals, debts, categories, subcategories), each with its figure in
+  `RedactableAmount` (hidden with the other amounts, a skeleton while loading) and
+  `PackedCircleIcons(style: .shelf)` (§7). The Debts card shows two totals (owed to the person,
+  owed by them) and its open debts on the shelf, green and red by direction.
 - **Analytics** (`InsightsView`): sections through `InsightsSectionView`
   (`SectionHeader(title, systemImage:, style: .large)`); detail screens put
   `SectionHeader(style: .large)` over their charts.
@@ -283,6 +348,14 @@ Rendering a money amount?
 └── A NumberFormatter in a List / ForEach
     └── AmountDisplayConfiguration.formatter (cached; never .makeNumberFormatter())
 ```
+
+### Hidden amounts
+
+The eye on Home sets `\.amountsHidden`. `FormattedAmountText`, `RedactableAmount` and the rows
+built on them (`AmountRow`, `InfoRow`) hide themselves. A `String` the app builds with an amount
+uses `amountsHidden ? Formatting.hiddenAmount(currency:) : Formatting.formatCurrencySmart(…)`
+(a hero subtitle, a forecast line, a money sheet's "left" line). An insight whose subtitle carries
+an amount also sets `Insight.hiddenSubtitle`, and views show `insight.subtitle(amountsHidden:)`.
 
 ### Overflow
 
@@ -388,13 +461,14 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
 | Entity detail | `.scrollHero()` on the hero (from `EntityDetailScaffold`), `.heroAccentGlow` on the screen | every detail screen; the glow's colour comes from the hero icon |
 | Voice screen | `EdgeGlow`, `VoiceWave(style: .orb)` stop button, `.thinkingShimmer`, `StreamingText`, `.cascadeIn`, `.borderBeam` on the live card, a one-time `.spotlight` | [domains/voice.md](domains/voice.md) |
 | Loan detail | `.celebration` on the false → true edge of `isPaidOffLoan`, with the banner and the haptic | the moment only, never the state |
-| Detail histories (`GroupedTransactionList`), voice cards | `.dissolve` removal, opacity insertion | for deleting something the person owned, not every disappearance |
+| Goal reached, debt settled | `.celebration(trigger:, playsHaptic: false)` when a contribution, an edit or the account's balance reaches the target, or a repayment covers the rest | the money sheet has already played the success haptic |
+| Detail histories (`GroupedTransactionList`, a goal's contributions, a debt's repayments), voice cards | `.dissolve` removal, opacity insertion | for deleting something the person owned, not every disappearance |
 | One-time hints | `.spotlight` + `FeatureTourState` | points at content the person can see, not at system chrome (tab bar, toolbar) |
 | Settings, Tenra Pro | `.shine` once each time the purchase row appears; `.holographic()` on the Active / Founder badge | foil only on the badge, so the row's taps stay the row's |
 | Toasts (`MessageBanner` over a screen), selection checkmarks in edit mode | `.transition(.popIn)` | edge-attached bars keep `.move(edge: .bottom)` |
-| A list replacing its skeleton (accounts, deposits, link payments) | content `.transition(.skeletonReveal)`, skeleton `.transition(.opacity)`, `.animation(AppAnimation.smooth, value: <is loading>)` on the container | the Insights feed keeps its `ContentRevealModifier` |
+| A list replacing its skeleton (accounts, deposits, link payments, goals, debts, what Ten knows) | content `.transition(.skeletonReveal)`, skeleton `.transition(.opacity)`, `.animation(AppAnimation.smooth, value: <is loading>)` on the container | the Insights feed shows its skeleton until it is computed once (`InsightsViewModel.hasComputed`) and comes in through `.skeletonReveal`; later recomputes keep it, each section fading with `ContentRevealModifier` |
 | Finances cards | `PackedCircleIcons(style: .shelf)` (DesignKit 4.4.0): app icons in a row in a pocket, a light running across them; `FinanceCard` centres them in the card (4.5.0); 36 pt tiles in every card, the largest that fit and a "+N" for the rest, the row at the card's trailing edge (4.5.1) | no `.orbit` |
-| Assistant | `ParticleCreature` (DesignKit 4.6.0; a sphere of light without glass since 4.7.0): interactive hero on the assistant's home (`AssistantView`), the full creature at 120 pt in the middle of a chat's navigation bar (`AssistantChatView`, a page pushed per chat: back and Ten only, no tab bar), rising into the bar and hanging over the top of the thread in a `safeAreaBar(edge: .top)` that reaches `chatMascotTail` below it, so the system's soft scroll edge effect (`.scrollEdgeEffectStyle(.soft, for: .top)`) blurs and dims the thread under all of Ten, a translucent iOS bar backing rather than a plate or a mask; `.compact` on the "Ten writes" cards, which live on Home (`AssistantNoticesSection`), not in the chat; the action tab is `CreatureTabLabel` (4.8.0, the still `CreatureGlyph`) and the assistant's home is that tab's page, its latest chats `ItemRow`s with a delete context menu, the field `MessageComposer(leading:onVoice:)` (almost opaque while focused, 4.9.0) with a paperclip `MessageComposerAccessory` and the microphone; questions in `MessageBubble`, reply text as `ArticleBody` (Markdown split by `AgentReplyMarkdown`, streamed as it is written), recent chats as `ItemRow`s in a card, presets in `SuggestionChips(layout: .wrap)` on the home, a reply's follow-ups as one edge-to-edge `.scroll` row pinned over a chat's field (`AssistantComposerBar`), reply blocks with `.cascadeIn`, the working step with `.thinkingShimmer`; the voice sheet reuses the voice screen's `EdgeGlow`, stop orb and `StreamingText`; attachment and confirm cards are `AssistantCard` (a `cardStyle()` card under an optional `SectionHeader`) with `InfoRow`, `InlineStatusText` and a full-width `DSButton`; "Ask Ten" on other screens shows `CreatureGlyph.templateImage(size:)` | the mascot's mood follows the screen (thinking while it works, the reply's mood after, confused or sad on a failure); one still frame under Reduce Motion; since 4.7.0 it has no glass: the particles, a thin lit rim and a soft halo, drawn in coloured ink on a light page and glowing on a dark one, over a soft blurred shadow; since 4.9.1 a soft core of the mood's colours fills the sphere (its body on a light page, a fainter glow on a dark one), breathing with it and flaring at a tap; since 4.10.0 it speaks in words of light and gestures (`AssistantChatter` over `speech:` and `.creatureGesture`): a glad greeting with a wave once a day on the home (a whisper late at night), a hint pointing down at the presets while there are no chats, a thought beside it in a chat while it works over 1.5 s, a nod for a reply, a hop and a cheer for a celebrated one, a flinch or a shrug for a failure, a line now and then for a tap and dizzy after three; Settings → Assistant → "Ten chats" turns the lines off and keeps the gestures; since 4.11.0 a life of its own (`.creatureAmbience`): on the home it looks round, stretches, rocks and bounces now and then, dozes off after 45 s alone (a tap wakes it) and, while "Ten chats" is on, daydreams of money things in pictures of light; in a chat it fidgets between replies, and every other thought while it works is a picture (a chart, a magnifier, a card); since 4.12.0 it wears an accessory of light (`accessory:` from `AssistantWardrobe`): a party hat from New Year's Eve to 2 January, a taqiya for Nauryz (21 to 23 March), a crown on a day it celebrated a reply, otherwise what the person chose in Ten's wardrobe, opened from a hanger at the top right of the assistant's home (`AssistantWardrobeView`: Ten trying on the accessory in the middle of a carousel under it, its name and, when locked, what opens it in the accent, wrapping in full; then the carousel of cards of one size, a still Ten in each with room for a two-line name and a lock when closed; scrolling puts an open accessory on at once and only tries a locked one on); glasses, headphones and the beanie are open from the start, sunglasses open for 7 days in a row in Tenra and the sleep mask for 30 (`AppStreak`, counted on each foreground), the party hat for a first goal, the crown for a goal reached, the taqiya on Nauryz; the rest show dim with a lock and what opens them, and what opened stays open. Its daydreams on the home come from the person's data (`AssistantDaydreams`): the next payment within 3 days (its icon or a card), the goal closest to done (its icon, a trophy for one reached this week), rising spending (from the Insights' spike and trend cards), a debt due within a week, then a coffee, a star and a plane; pictures only, never an amount or a name |
+| Assistant | `ParticleCreature` (DesignKit 4.6.0; a sphere of light without glass since 4.7.0): interactive hero on the assistant's home (`AssistantView`), the full creature at 120 pt in the middle of a chat's navigation bar (`AssistantChatView`, a page pushed per chat: back and Ten only, no tab bar), rising into the bar and hanging over the top of the thread in a `safeAreaBar(edge: .top)` that reaches `chatMascotTail` below it, over the system's hard scroll edge effect (`.scrollEdgeEffectStyle(.hard, for: .top)` on the thread, DesignKit 5.0.0: the owner compared it on a device with a hand-drawn blur, `EdgeBackdrop`, which 5.0 removed); the chat is pushed, not presented with `.fullScreenCover` from a scroll view, where the system draws no edge effect; `.compact` on the "Ten writes" cards (`AssistantNoticeCard` over DesignKit's `NoticeCard`, 4.14.0), which live on Home (`AssistantNoticesSection`), not in the chat; the action tab is `CreatureTabLabel` (4.8.0, the still `CreatureGlyph`) and the assistant's home is that tab's page, its latest chats `ItemRow`s with a delete context menu, the field `MessageComposer(leading:onVoice:)` (almost opaque while focused, 4.9.0) with a paperclip `MessageComposerAccessory` and the microphone; questions in `MessageBubble`, reply text as `ArticleBody` (Markdown split by `AgentReplyMarkdown`, streamed as it is written), recent chats as `ItemRow`s in a card, presets in `SuggestionChips(layout: .wrap)` on the home, a reply's follow-ups as one edge-to-edge `.scroll` row pinned over a chat's field (`AssistantComposerBar`), reply blocks with `.cascadeIn`, a chart block's categories as `CategoryBreakdownRow`s (a `MiniDonut` above when asked) and its periods as DesignKit's `BarChart` (`LineChart` when asked), the working step with `.thinkingShimmer`; the voice sheet reuses the voice screen's `EdgeGlow`, stop orb (`VoiceStopOrb` over DesignKit's `VoiceOrbButton`, 4.14.0) and `StreamingText`; attachment, confirm and list cards are DesignKit's `FormSection(header:style: .glass)` (5.0.0: a `cardStyle()` card that pads and spaces its rows, under an optional `SectionHeader`) with `InfoRow`, `InlineStatusText` and a full-width `DSButton`; "Ask Ten" on other screens shows `CreatureGlyph.templateImage(size:)` | the mascot's mood follows the screen (thinking while it works, the reply's mood after, confused or sad on a failure); one still frame under Reduce Motion; since 4.7.0 it has no glass: the particles, a thin lit rim and a soft halo, drawn in coloured ink on a light page and glowing on a dark one, over a soft blurred shadow; since 4.9.1 a soft core of the mood's colours fills the sphere (its body on a light page, a fainter glow on a dark one), breathing with it and flaring at a tap; since 4.10.0 it speaks in words of light and gestures (`AssistantChatter` over `speech:` and `.creatureGesture`): a glad greeting with a wave once a day on the home (a whisper late at night), a hint pointing down at the presets while there are no chats, a thought beside it in a chat while it works over 1.5 s, a nod for a reply, a hop and a cheer for a celebrated one, a flinch or a shrug for a failure, a line now and then for a tap and dizzy after three; Settings → Assistant → "Ten chats" turns the lines off and keeps the gestures; since 4.11.0 a life of its own (`.creatureAmbience`): on the home it looks round, stretches, rocks and bounces now and then, dozes off after 45 s alone (a tap wakes it) and, while "Ten chats" is on, daydreams of money things in pictures of light; in a chat it fidgets between replies, and every other thought while it works is a picture (a chart, a magnifier, a card); since 4.12.0 it wears an accessory of light (`accessory:` from `AssistantWardrobe`): a party hat from New Year's Eve to 2 January, a taqiya for Nauryz (21 to 23 March), a crown on a day it celebrated a reply, otherwise what the person chose in Ten's wardrobe, opened from a hanger at the top right of the assistant's home (`AssistantWardrobeView`: Ten trying on the accessory in the middle of DesignKit's `PickerCarousel` (4.14.0) under it, its name and, when locked, what opens it in the accent, wrapping in full; then the cards of one size, a still Ten in each with room for a two-line name and a lock when closed; scrolling puts an open accessory on at once and only tries a locked one on); glasses, headphones and the beanie are open from the start, sunglasses open for 7 days in a row in Tenra and the sleep mask for 30 (`AppStreak`, counted on each foreground), the party hat for a first goal, the crown for a goal reached, the taqiya on Nauryz; the rest show dim with a lock and what opens them, and what opened stays open. Its daydreams on the home come from the person's data (`AssistantDaydreams`): the next payment within 3 days (its icon or a card), the goal closest to done (its icon, a trophy for one reached this week), rising spending (from the Insights' spike and trend cards), a debt due within a week, then a coffee, a star and a plane; pictures only, never an amount or a name. Since DesignKit 4.13.0 Ten is in the empty lists too (`MascotEmptyState` over `EmptyState(…) { artwork }`): goals, debts, subscriptions, deposits, loans, accounts, an empty history and "What Ten knows about me"; it says a line (`assistant.empty.*`) and points down at the button that adds the first one, or waves where there is none; "Ten chats" off keeps the gesture; errors, empty searches and empty details keep their icons, and so does every list where the assistant is not available. Since DesignKit 5.3.0 (`AssistantMetrics.mood`): a reply's mood is one of render_reply's nine, proud, surprised, love, a wink for playful and a shake for empty besides happy, worried and celebrating; a reply with a money card shows its currency's sign in a coin (`.glyph`, one-character signs only); after 3 tools it looks determined; at rest late at night, sleepy; while a statement is read it fills with light (`.working(progress:)`); its reactions play their haptics, with a word for a proud, a kind or a worrying reply (emotion `.sad`); the home's Ten follows the phone's tilt; the voice sheet's title is a small Ten listening to the voice level; a "Ten writes" card's mascot is `NoticeCardMetrics.leadingSize` (48 pt) and perks up once at a new message; until a reply's first word the chat shows a `TypingIndicator`, and a question sent enters with `.messageBubble(.outgoing)` (the history the chat opened with does not move); its notifications carry its still picture (insights.md, Signal notifications) |
 
 ---
 
@@ -406,5 +480,5 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
    Tenra model.
 3. Build the screen from the closest pattern in §4; amounts per §5.
 4. Strings in all 11 locales (CLAUDE.md rule #13); no em dashes in user-facing text.
-5. `python3 scripts/design_lint.py` passes.
+5. `python3 scripts/design_lint.py` passes. A new `safeAreaBar` names its scroll edge style, a new `NavigationStack` carries `.softScrollEdges()` (§4).
 6. Don't change a shipped screen's layout as a side effect; the owner checks UI on device.

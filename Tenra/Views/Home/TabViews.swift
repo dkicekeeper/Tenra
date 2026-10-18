@@ -48,6 +48,7 @@ struct AnalyticsTab: View {
                 }
                 .paywallSheet(isPresented: $showingSoftPaywall)
         }
+        .softScrollEdges()
     }
 }
 
@@ -107,6 +108,7 @@ struct VoiceTab: View {
             }
             }
         }
+        .softScrollEdges()
     }
 }
 
@@ -121,12 +123,13 @@ struct AssistantTab: View {
     @Environment(AppCoordinator.self) private var coordinator
 
     var body: some View {
-        if !AgentAttestation.isSupported {
+        if !AssistantAvailability.deviceSupported {
             NavigationStack {
                 EmptyState(icon: "sparkles", title: String(localized: "assistant.error.device"))
                     .navigationTitle(String(localized: "tab.assistant"))
                     .navigationBarTitleDisplayMode(.inline)
             }
+            .softScrollEdges()
         } else if let assistant = coordinator.assistant() {
             AssistantView(model: assistant)
         }
@@ -155,10 +158,9 @@ struct OCRTab: View {
             VStack(spacing: AppSpacing.xxl) {
                 Spacer()
 
-                // Fix #11: AppIconSize.Tile.xl (64pt) instead of magic literal
-                Image(systemName: "doc.viewfinder")
-                    .font(.system(size: AppIconSize.Tile.xl, weight: .light))
-                    .foregroundStyle(AppColors.accent)
+                // The symbol draws itself on a pale disc (DesignKit's HeroSymbol), as an
+                // onboarding page's picture.
+                HeroSymbol(systemImage: "doc.viewfinder", size: AppIconSize.Tile.xl * 2)
 
                 VStack(spacing: AppSpacing.sm) {
                     Text(String(localized: "tab.ocr"))
@@ -184,5 +186,6 @@ struct OCRTab: View {
             .navigationBarTitleDisplayMode(.inline)
             }
         }
+        .softScrollEdges()
     }
 }

@@ -393,6 +393,6 @@ When unsure about architecture decisions:
 
 ---
 
-**Last Updated**: 2026-10-12
+**Last Updated**: 2026-10-15
 **iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`: CI runs the GitHub runner's newest Xcode, still 26.x, where iOS 27 symbols don't exist)
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

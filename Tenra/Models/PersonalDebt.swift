@@ -80,9 +80,20 @@ nonisolated struct PersonalDebt: Equatable, Hashable, Identifiable, Sendable {
         repayments.reduce(0) { $0 + $1.amount }
     }
 
-    /// What is still owed; 0 once settled.
+    /// Amounts are Doubles: ten repayments of 19.99 add up to 199.89999999999998, a hair under
+    /// 199.90. Within half a cent counts as covered, so a debt that reads "0 left" settles.
+    static let centTolerance = 0.005
+
+    /// What came back covers the amount.
+    var isCovered: Bool {
+        repaid >= amount - Self.centTolerance
+    }
+
+    /// What is still owed; 0 once settled or covered.
     var remaining: Double {
-        settledAt == nil ? max(0, amount - repaid) : 0
+        guard settledAt == nil else { return 0 }
+        let left = amount - repaid
+        return left < Self.centTolerance ? 0 : left
     }
 
     var isSettled: Bool { settledAt != nil }

@@ -82,6 +82,8 @@ struct AccountActionView: View {
                 .screenPadding()
             }
         }
+        // Named: built with Xcode 27 the edge as it comes is hard (DesignKit 5.1.0).
+        .scrollEdgeEffectStyle(.soft, for: .top)
         .safeAreaBar(edge: .top) { topBar }
         .navigationTitle(viewModel.navigationTitleText)
         .navigationBarTitleDisplayMode(.inline)
@@ -142,6 +144,7 @@ struct AccountActionView: View {
                 )
                     .environment(timeFilterManager)
             }
+            .softScrollEdges()
         }
         .onChange(of: viewModel.shouldDismiss) { _, should in
             if should { dismiss() }

@@ -25,15 +25,25 @@ struct DebtsListView: View {
         let settled = debtStore.settled
         Group {
             if !debtStore.isLoaded {
-                Color.clear
+                // The cards to come (DebtCard is DesignKit's PayoffProgressCard).
+                VStack(spacing: AppSpacing.md) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        PayoffProgressCardSkeleton().screenPadding()
+                    }
+                }
+                .padding(.vertical, AppSpacing.md)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .transition(.opacity)
             } else if debtStore.debts.isEmpty {
-                EmptyState(
+                MascotEmptyState(
                     icon: "person.2",
                     title: String(localized: "debt.emptyTitle"),
                     description: String(localized: "debt.emptyDescription"),
                     actionTitle: String(localized: "debt.new"),
-                    action: add
+                    action: add,
+                    line: String(localized: "assistant.empty.debts")
                 )
+                .transition(.skeletonReveal)
             } else {
                 ScrollView {
                     VStack(spacing: AppSpacing.md) {
@@ -43,8 +53,10 @@ struct DebtsListView: View {
                     }
                     .padding(.vertical, AppSpacing.md)
                 }
+                .transition(.skeletonReveal)
             }
         }
+        .animation(AppAnimation.smooth, value: debtStore.isLoaded)
         .navigationTitle(String(localized: "debt.listTitle"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
@@ -74,12 +86,14 @@ struct DebtsListView: View {
             SectionHeader(title)
                 .screenPadding()
                 .padding(.top, AppSpacing.sm)
-            ForEach(debts) { debt in
+            ForEach(Array(debts.enumerated()), id: \.element.id) { index, debt in
                 NavigationLink(value: FinancesDestination.debtDetail(debt.id)) {
                     DebtCard(debt: debt, today: today)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("debts.card")
                 .screenPadding()
+                .chartAppear(delay: Double(index) * 0.05)
             }
         }
     }

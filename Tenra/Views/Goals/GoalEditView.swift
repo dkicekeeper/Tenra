@@ -75,7 +75,7 @@ struct GoalEditView: View {
                         header: String(localized: "goal.account"),
                         footer: String(localized: "goal.account.hint")
                     ) {
-                        MenuPickerRow(
+                        NavigationPickerRow(
                             icon: "building.columns",
                             title: String(localized: "goal.account"),
                             selection: $linkedAccountId,
@@ -137,6 +137,21 @@ struct GoalEditView: View {
         result.iconSource = iconSource
         result.targetAmount = target
         result.currency = currency
+        if let goal, goal.currency != currency, !goal.contributions.isEmpty {
+            // Contributions are kept in the goal's currency: they move to the new one with it,
+            // or the currency stays when there is no rate to move them at.
+            let moved = goal.contributions.map { contribution -> GoalContribution? in
+                guard let amount = CurrencyConverter.convertSync(amount: contribution.amount, from: goal.currency, to: currency) else { return nil }
+                var copy = contribution
+                copy.amount = (amount * 100).rounded() / 100
+                return copy
+            }
+            if moved.allSatisfy({ $0 != nil }) {
+                result.contributions = moved.compactMap { $0 }
+            } else {
+                result.currency = goal.currency
+            }
+        }
         result.deadline = hasDeadline ? Calendar.current.startOfDay(for: deadline) : nil
         result.linkedAccountId = linkedAccountId.isEmpty ? nil : linkedAccountId
         if goal == nil, result.linkedAccountId == nil,

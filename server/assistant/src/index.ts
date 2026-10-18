@@ -5,7 +5,7 @@ import { readConfig, type Env } from "./config";
 import { resolveTier, UpstreamError } from "./entitlement";
 import { PROMPT_VERSION } from "./prompt";
 import { RENDER_REPLY } from "./tools";
-import { consumeCall } from "./quota";
+import { consumeCall, type Tier } from "./quota";
 import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } from "./validate";
 
 // POST /v1/turn — one model call of the assistant loop. The app runs the loop: it sends the
@@ -19,8 +19,8 @@ import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } fr
 //   error {code, retryable}
 //
 // Every turn must come from the real app: it carries an App Attest assertion over its body
-// (x-tenra-key, x-tenra-assertion). The user id is only a claim, so without the assertion a
-// Pro customer's id alone would spend their quota. Free answers are counted per attested key,
+// (x-tenra-key, x-tenra-assertion). The user id counts only inside that signed body, so a
+// copied Pro customer's id alone spends nothing. Free answers are counted per attested key,
 // Pro calls per customer. GET /v1/attest/challenge and POST /v1/attest register that key once
 // per install.
 //
@@ -41,7 +41,9 @@ export default {
     const config = readConfig(env);
     if (!config.enabled) return fail(503, "disabled");
 
-    const country = request.headers.get("cf-ipcountry")?.toUpperCase();
+    // request.cf is set on every request; the cf-ipcountry header only with IP Geolocation on
+    // the zone, which a workers.dev route doesn't have.
+    const country = ((request.cf?.country as string | undefined) ?? request.headers.get("cf-ipcountry") ?? undefined)?.toUpperCase();
     if (country && config.blockedCountries.has(country)) return fail(451, "region_unavailable");
 
     if (url.pathname === "/v1/attest/challenge") {
@@ -63,18 +65,9 @@ export default {
       throw error;
     }
 
-    let tier;
-    try {
-      tier = await resolveTier(env.QUOTA, env.REVENUECAT_SECRET_KEY, userId);
-    } catch (error) {
-      if (error instanceof UpstreamError) {
-        console.log(`entitlement ${error.status}`);
-        return fail(502, "entitlement_unavailable");
-      }
-      throw error;
-    }
-
-    // The body must be signed by a key attested on a real device, Pro or not.
+    // The body must be signed by a key attested on a real device, Pro or not. Checked before
+    // anything that costs a RevenueCat call or a KV write, so a request that is not from the
+    // app stops here.
     const keyId = request.headers.get("x-tenra-key");
     const assertion = request.headers.get("x-tenra-assertion");
     if (!isValidKeyId(keyId) || !assertion || assertion.length > 4096) return fail(401, "attest", { reason: "missing" });
@@ -83,6 +76,23 @@ export default {
     } catch (error) {
       if (error instanceof AttestError) return fail(401, "attest", { reason: error.reason });
       throw error;
+    }
+
+    // Pro is looked up only for the user id inside the signed body: the header alone is a claim
+    // anyone could copy from someone's Support ID. Apps before 1.6 (build 27) don't sign it and
+    // count as free.
+    if (turn.user !== undefined && turn.user !== userId) return fail(401, "user");
+    let tier: Tier = "free";
+    if (turn.user !== undefined) {
+      try {
+        tier = await resolveTier(env.QUOTA, env.REVENUECAT_SECRET_KEY, turn.user);
+      } catch (error) {
+        if (error instanceof UpstreamError) {
+          console.log(`entitlement ${error.status}`);
+          return fail(502, "entitlement_unavailable");
+        }
+        throw error;
+      }
     }
     const quotaId = tier === "free" ? `key:${keyId}` : userId;
 

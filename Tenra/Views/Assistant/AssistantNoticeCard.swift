@@ -2,9 +2,11 @@
 //  AssistantNoticeCard.swift
 //  Tenra
 //
-//  A message Ten wrote first (AssistantInbox): the mascot in the message's mood, its title and
-//  text, "Go through it" (a question to the assistant, which spends a free answer) and a button
-//  that hides it. Shown on Home while unread (AssistantNoticesSection), never in the chat.
+//  A message Ten wrote first (AssistantInbox): an adapter over DesignKit's NoticeCard (4.14.0),
+//  the mascot in the message's mood at the card's picture size (NoticeCardMetrics, 5.2.0), its
+//  title and text, "Go through it" (a question to the assistant, which spends a free answer)
+//  and a button that hides it. Ten perks up once at a message it has not shown before. Shown
+//  on Home while unread (AssistantNoticesSection), never in the chat.
 //
 
 import SwiftUI
@@ -14,30 +16,34 @@ struct AssistantNoticeCard: View {
     let onAsk: () -> Void
     let onHide: () -> Void
 
+    /// The last message Ten perked up at, so it does it once per message.
+    @AppStorage("assistant.notice.perked") private var perkedNotice = ""
+    @State private var perks = 0
+
     var body: some View {
-        AssistantCard(title: nil) {
-            HStack(alignment: .top, spacing: AppSpacing.md) {
-                ParticleCreature(mood: notice.mood.creatureMood, style: .compact)
-                    .frame(width: AssistantMetrics.headerMascot, height: AssistantMetrics.headerMascot)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                    Text(notice.title)
-                        .font(AppTypography.bodyEmphasis)
-                        .foregroundStyle(AppColors.Text.primary)
-                    Text(notice.body)
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.Text.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Button(String(localized: "assistant.notice.hide"), systemImage: "xmark", action: onHide)
-                    .labelStyle(.iconOnly)
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.Text.tertiary)
-                    .buttonStyle(.plain)
-            }
-            DSButton(String(localized: "assistant.notice.goThrough"), systemImage: "sparkles", appearance: .flat, size: .small, action: onAsk)
+        NoticeCard(
+            title: notice.title,
+            message: notice.body,
+            actionTitle: String(localized: "assistant.notice.goThrough"),
+            actionSystemImage: "sparkles",
+            action: onAsk,
+            hideLabel: String(localized: "assistant.notice.hide"),
+            onHide: onHide
+        ) {
+            ParticleCreature(mood: notice.mood.creatureMood, style: .compact)
+                .creatureGesture(.perk, trigger: perks)
+                .frame(width: NoticeCardMetrics.leadingSize, height: NoticeCardMetrics.leadingSize)
+                .accessibilityHidden(true)
         }
-        .accessibilityElement(children: .contain)
+        // A gesture plays when its trigger changes, never on appear: a moment after the card
+        // settles.
+        .task(id: notice.id) {
+            guard perkedNotice != notice.id else { return }
+            try? await Task.sleep(for: .seconds(0.6))
+            guard !Task.isCancelled else { return }
+            perkedNotice = notice.id
+            perks += 1
+        }
     }
 }
 
@@ -51,25 +57,34 @@ struct AssistantNoticesSection: View {
 
     var body: some View {
         let unread = inbox.unread
-        if AssistantAvailability.isAvailable, let notice = unread.first {
-            let title = String(localized: "assistant.notice.title")
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                SectionHeader(unread.count > 1 ? "\(title) · \(unread.count)" : title)
-                AssistantNoticeCard(
-                    notice: notice,
-                    onAsk: {
-                        HapticManager.light()
-                        coordinator.goThrough(notice)
-                    },
-                    onHide: { inbox.markRead(notice.id) }
-                )
-                .id(notice.id)
-                .transition(.opacity)
+        // The animation sits outside the conditional, so the section fades in and out (the
+        // last one hidden) instead of making Home jump.
+        Group {
+            if AssistantAvailability.isAvailable, let notice = unread.first {
+                section(notice: notice, count: unread.count)
+                    .transition(.opacity)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .screenPadding()
-            .animation(AppAnimation.smooth, value: notice.id)
         }
+        .animation(AppAnimation.smooth, value: unread.first?.id)
+    }
+
+    private func section(notice: AssistantNotice, count: Int) -> some View {
+        let title = String(localized: "assistant.notice.title")
+        return VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            SectionHeader(count > 1 ? "\(title) · \(count)" : title)
+            AssistantNoticeCard(
+                notice: notice,
+                onAsk: {
+                    HapticManager.light()
+                    coordinator.goThrough(notice)
+                },
+                onHide: { inbox.markRead(notice.id) }
+            )
+            .id(notice.id)
+            .transition(.opacity)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .screenPadding()
     }
 }
 
@@ -80,6 +95,7 @@ extension AssistantNotice.Mood {
         case .happy: .happy
         case .concerned: .worried
         case .celebrate: .celebrating
+        case .surprised: .surprised
         }
     }
 }

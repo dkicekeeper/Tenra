@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Настроить...";
 "settings.wallpaper" = "Обои на главной";
 "settings.background" = "Фон";
+"home.hint.categories" = "Нажмите на категорию, чтобы добавить расход";
 "settings.voiceLanguage" = "Язык голоса";
 "settings.voiceLanguage.app" = "Как в приложении";
 "settings.background.none" = "Без фона";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "Фото";
 "settings.background.blurWallpaper" = "Размыть обои";
 "settings.background.removePhoto" = "Удалить фото";
+"settings.background.choosePhoto" = "Выбрать фото";
+"settings.background.changePhoto" = "Сменить фото";
 "settings.background.preview" = "Превью фона";
 "settings.background.opacity" = "Интенсивность цвета";
 "settings.background.opacityTitle" = "Цвет расходов";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "Сумма";
 "quickAdd.description" = "Описание";
 "quickAdd.descriptionPlaceholder" = "Описание (необязательно)";
+"quickAdd.balanceAfter" = "Останется на счёте";
 "quickAdd.recurring" = "Повторяющаяся операция";
 "quickAdd.makeRecurring" = "Повторение";
 "quickAdd.frequency" = "Частота";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "Строк";
 "csvImport.preview.columns" = "Колонок";
 "csvImport.mapping.title" = "Маппинг колонок";
+"csvImport.step.preview" = "Просмотр";
+"csvImport.step.columns" = "Столбцы";
+"csvImport.step.import" = "Импорт";
 "csvImport.mapping.required" = "Обязательные поля";
 "csvImport.mapping.optional" = "Опциональные поля";
 "csvImport.mapping.date" = "Дата";
@@ -871,7 +878,7 @@
 "insights.formula.savingsRate.row.saved" = "Сбережено (доход − расход)";
 "insights.formula.savingsRate.row.rate" = "Норма сбережений";
 "insights.formula.savingsRate.explainer" = "Какая доля дохода уцелела до конца периода. Чем выше, тем больше свободы: подушка на просадки, ускорение целей и настоящий резерв.";
-"insights.formula.savingsRate.rec.good" = "Сберегаете больше 20%%. Держите ритм и направьте излишек на долгосрочную цель.";
+"insights.formula.savingsRate.rec.good" = "Сберегаете больше 20%. Держите ритм и направьте излишек на долгосрочную цель.";
 "insights.formula.savingsRate.rec.fair" = "Неплохо, но до 20%% не хватает %@ в месяц. Подрежьте регулярные или разовые категории, которые подросли.";
 "insights.formula.savingsRate.rec.low" = "Ниже 10%%: буфера почти нет. Минимум +%@ в месяц: начните с самой крупной дискреционной категории.";
 "insights.formula.emergencyFund.title" = "Резервный фонд";
@@ -917,7 +924,7 @@
 "insights.formula.yearOverYear.row.thisMonth" = "В этом месяце";
 "insights.formula.yearOverYear.row.lastYear" = "Тот же месяц год назад";
 "insights.formula.yearOverYear.row.absDelta" = "Абсолютное изменение";
-"insights.formula.yearOverYear.row.delta" = "Изменение в %%";
+"insights.formula.yearOverYear.row.delta" = "Изменение в процентах";
 "insights.formula.yearOverYear.explainer" = "Сравнение общих расходов за текущий месяц и тот же месяц год назад. Помогает отличить реальный сдвиг от сезонности: декабрь всегда «дороже», но именно этот декабрь тяжелее прошлого?";
 "insights.formula.yearOverYear.rec.down" = "Расходы заметно ниже год к году. Если это случайно, проверьте, не пропущена ли регулярная операция; иногда она «прячется» именно так.";
 "insights.formula.yearOverYear.rec.up" = "Рост на %@. Сравните топ-категории обоих месяцев: обычно скачок объясняется одной новой подпиской, дополнительным циклом аренды или крупной покупкой.";
@@ -1269,7 +1276,6 @@
 "settings.cloud.delete" = "Удалить";
 "settings.cloud.storage" = "Хранилище";
 "settings.cloud.storageUsed" = "%@ из %@";
-"settings.cloud.backupMetadata" = "%d счетов · %d операций · %@";
 "settings.cloud.iCloud.toggle" = "Сохранять копии в iCloud";
 "settings.cloud.iCloud.footer" = "Копии хранятся в вашем iCloud, скрыты из приложения «Файлы» и доступны в Tenra на других ваших устройствах.";
 "settings.cloud.iCloud.unavailable" = "Войдите в iCloud в Настройках, чтобы хранить копии в iCloud Drive.";
@@ -1390,6 +1396,8 @@
 "insights.chart.line" = "Линия";
 "insights.chart.bar" = "Бары";
 "insights.today" = "Сегодня";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@, %2$@";
 "insights.empty.title" = "Нет данных";
 "insights.empty.subtitle" = "Здесь появится график, как только наберётся история операций";
 
@@ -1608,7 +1616,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "Чтобы выйти на 20%%, сократите расходы на ≈ %@ в месяц или увеличьте доход на ≈ %@ в месяц.";
-"insights.health.rec.savingsRate.healthy" = "Отлично, сохраняйте темп. 20%%+ это рекомендованный уровень для долгосрочной устойчивости.";
+"insights.health.rec.savingsRate.healthy" = "Отлично, сохраняйте темп. 20%+ это рекомендованный уровень для долгосрочной устойчивости.";
 
 "insights.health.rec.budgetAdherence.empty" = "Бюджеты не настроены. Установите их в категориях. Это включит этот компонент в скор.";
 "insights.health.rec.budgetAdherence.partial" = "%d категорий вышли за бюджет. Откройте их, чтобы понять, где перерасход.";
@@ -1938,7 +1946,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Ассистент работает через облако";
-"assistant.consent.message" = "Чтобы ответить, он обращается к модели Claude от Anthropic. С телефона уходят только ваш вопрос и то, что нужно для ответа: суммы, категории, названия счетов, факты, которые он о вас помнит, и нужные операции. База, чеки и выписки остаются здесь. Сервер Tenra ничего не хранит, данные не используются для обучения моделей.";
+"assistant.consent.message" = "Чтобы ответить, он обращается к модели Claude от Anthropic. С телефона уходят только ваш вопрос и то, что нужно для ответа: суммы, категории, названия счетов, ваши цели и долги, факты, которые он о вас помнит, и нужные операции. База, чеки и выписки остаются здесь. Сервер Tenra не хранит вопросы и ответы, данные не используются для обучения моделей.";
 "assistant.consent.allow" = "Включить";
 "assistant.consent.notNow" = "Не сейчас";
 
@@ -1988,6 +1996,7 @@
 "goal.account.none" = "Без счёта";
 "goal.account.hint" = "Со счётом цель следит за его балансом. Без счёта вы сами отмечаете, сколько отложили.";
 "goal.alreadySaved" = "Уже накоплено";
+"goal.savedShare" = "Накоплено";
 "goal.target" = "Цель";
 "goal.left" = "Осталось накопить";
 "goal.leftAmount" = "Осталось %@";
@@ -2069,6 +2078,9 @@
 "assistant.chatter.here" = "Я тут!";
 "assistant.chatter.help" = "Чем помочь?";
 "assistant.chatter.hehe" = "Хи-хи";
+"assistant.chatter.wellDone" = "Молодец!";
+"assistant.chatter.aww" = "Ой, спасибо!";
+"assistant.chatter.sympathy" = "Эх…";
 "assistant.chatter.dizzy" = "Ой, всё кружится!";
 "settings.assistant.chatter" = "Тэн болтает";
 
@@ -2090,3 +2102,20 @@
 "assistant.wardrobe.lock.goalReached" = "Достигните цели";
 "assistant.wardrobe.lock.nauryz" = "Откроется на Наурыз";
 "assistant.wardrobe.locked" = "Закрыто";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "Накопим на что-нибудь?";
+"assistant.empty.debts" = "Кто кому должен? Запишем";
+"assistant.empty.subscriptions" = "Добавьте подписки, я напомню о платежах";
+"assistant.empty.deposits" = "Здесь будут расти ваши вклады";
+"assistant.empty.loans" = "Кредиты тоже посчитаю";
+"assistant.empty.accounts" = "Начнём со счёта?";
+"assistant.empty.history" = "Пока пусто. Добавим первую?";
+"assistant.empty.memory" = "Расскажите о себе, я запомню";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Активна";
+"status.paused" = "Приостановлена";
+"status.archived" = "В архиве";
+"status.pending" = "Ожидает";
+"textInput.characterCount" = "%1$lld из %2$lld символов";

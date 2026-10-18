@@ -55,7 +55,11 @@ extension InsightsService {
         let savedAmount = allIncome - allExpenses
         // 20% counts as on target, as the recommendation and the detail's band read it.
         let severity: InsightSeverity = rate >= 20 ? .positive : (rate >= 10 ? .warning : .critical)
-        let periodSuffix: String = bucketLabel.isEmpty ? "" : " — " + bucketLabel
+        // "66 000 ₸, September 2026"; while amounts are hidden "•••• ₸, September 2026".
+        let savedText = Formatting.formatCurrencySmart(max(0, savedAmount), currency: baseCurrency)
+        let withPeriod: (String) -> String = { amount in
+            bucketLabel.isEmpty ? amount : String(format: String(localized: "insights.pairFormat"), amount, bucketLabel)
+        }
 
         let recommendation: String
         if rate >= 20 {
@@ -106,7 +110,7 @@ extension InsightsService {
             id: "savings_rate",
             type: .savingsRate,
             title: String(localized: "insights.savingsRate"),
-            subtitle: Formatting.formatCurrencySmart(max(0, savedAmount), currency: baseCurrency) + periodSuffix,
+            subtitle: withPeriod(savedText),
             metric: InsightMetric(
                 value: rate,
                 formattedValue: String(format: "%.1f%%", rate),
@@ -121,7 +125,8 @@ extension InsightsService {
             // to gauge — leave nil so the card takes full width.
             cardVisual: rate > 0
                 ? .halfGauge(value: rate, norm: 20, color: severity.color)
-                : nil
+                : nil,
+            hiddenSubtitle: withPeriod(Formatting.hiddenAmount(currency: baseCurrency))
         )
     }
 

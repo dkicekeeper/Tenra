@@ -95,6 +95,7 @@
 "currency.customizeAction" = "사용자 지정...";
 "settings.wallpaper" = "홈 배경화면";
 "settings.background" = "배경";
+"home.hint.categories" = "카테고리를 탭해 지출을 추가하세요";
 "settings.voiceLanguage" = "음성 언어";
 "settings.voiceLanguage.app" = "앱과 동일";
 "settings.background.none" = "배경 없음";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "사진";
 "settings.background.blurWallpaper" = "배경화면 흐리게";
 "settings.background.removePhoto" = "사진 제거";
+"settings.background.choosePhoto" = "사진 선택";
+"settings.background.changePhoto" = "사진 변경";
 "settings.background.preview" = "배경 미리보기";
 "settings.background.opacity" = "색상 강도";
 "settings.background.opacityTitle" = "지출 색상";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "금액";
 "quickAdd.description" = "설명";
 "quickAdd.descriptionPlaceholder" = "설명 (선택)";
+"quickAdd.balanceAfter" = "거래 후 잔액";
 "quickAdd.recurring" = "반복 거래";
 "quickAdd.makeRecurring" = "반복";
 "quickAdd.frequency" = "주기";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "행";
 "csvImport.preview.columns" = "열";
 "csvImport.mapping.title" = "열 매핑";
+"csvImport.step.preview" = "미리보기";
+"csvImport.step.columns" = "열";
+"csvImport.step.import" = "가져오기";
 "csvImport.mapping.required" = "필수 항목";
 "csvImport.mapping.optional" = "선택 항목";
 "csvImport.mapping.date" = "날짜";
@@ -871,7 +878,7 @@
 "insights.formula.savingsRate.row.saved" = "저축액 (수입 − 지출)";
 "insights.formula.savingsRate.row.rate" = "저축률";
 "insights.formula.savingsRate.explainer" = "수입 중 한 달을 버티고 남는 비율이에요. 저축률이 높을수록 여유가 커져요. 수입이 적은 달의 유연성, 더 빠른 목표 달성, 그리고 든든한 비상금이 생겨요.";
-"insights.formula.savingsRate.rec.good" = "20%% 이상 저축하고 있어요. 이 습관을 유지하고 남는 돈을 장기 목표로 돌려 보세요.";
+"insights.formula.savingsRate.rec.good" = "20% 이상 저축하고 있어요. 이 습관을 유지하고 남는 돈을 장기 목표로 돌려 보세요.";
 "insights.formula.savingsRate.rec.fair" = "괜찮지만, 20%%까지 올리면 매달 %@를 더 저축할 수 있어요. 슬금슬금 늘어난 반복·일회성 카테고리를 줄여 보세요.";
 "insights.formula.savingsRate.rec.low" = "10%% 미만이면 여유가 없어요. 매달 최소 %@를 더 저축하는 것을 목표로, 가장 큰 재량 지출 카테고리부터 시작해 보세요.";
 "insights.formula.emergencyFund.title" = "비상금";
@@ -1269,7 +1276,6 @@
 "settings.cloud.delete" = "삭제";
 "settings.cloud.storage" = "저장 공간";
 "settings.cloud.storageUsed" = "%@ / %@";
-"settings.cloud.backupMetadata" = "계좌 %d개 · 거래 %d건 · %@";
 "settings.cloud.iCloud.toggle" = "iCloud에 백업 저장";
 "settings.cloud.iCloud.footer" = "백업은 iCloud에 저장되며 파일 앱에는 표시되지 않고 다른 기기의 Tenra에서 사용할 수 있습니다.";
 "settings.cloud.iCloud.unavailable" = "iCloud Drive에 백업을 저장하려면 설정에서 iCloud에 로그인하세요.";
@@ -1390,6 +1396,8 @@
 "insights.chart.line" = "선";
 "insights.chart.bar" = "막대";
 "insights.today" = "오늘";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@, %2$@";
 "insights.empty.title" = "아직 데이터가 없어요";
 "insights.empty.subtitle" = "거래 내역이 쌓이면 그래프가 나타나요";
 
@@ -1608,7 +1616,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "20%%에 도달하려면 매달 지출을 약 %@ 줄이거나 수입을 약 %@ 늘려 보세요.";
-"insights.health.rec.savingsRate.healthy" = "훌륭해요. 이 속도를 유지하세요. 20%% 이상이 장기적으로 권장되는 수준이에요.";
+"insights.health.rec.savingsRate.healthy" = "훌륭해요. 이 속도를 유지하세요. 20% 이상이 장기적으로 권장되는 수준이에요.";
 
 "insights.health.rec.budgetAdherence.empty" = "예산이 설정돼 있지 않아요. 카테고리에 예산을 설정하면 이 항목이 점수에 반영돼요.";
 "insights.health.rec.budgetAdherence.partial" = "카테고리 %d개가 예산을 초과했어요. 열어서 과다 지출의 원인을 찾아보세요.";
@@ -1938,7 +1946,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "어시스턴트는 클라우드에서 작동합니다";
-"assistant.consent.message" = "답변을 위해 Anthropic의 모델 Claude에 물어봅니다. 휴대폰 밖으로 나가는 것은 질문과 답변에 필요한 정보(합계, 카테고리, 계좌 이름, 당신에 대해 기억하는 정보, 필요한 거래)뿐입니다. 데이터베이스, 영수증, 명세서는 이곳에 남습니다. Tenra 서버는 아무것도 저장하지 않으며, 데이터는 모델 학습에 사용되지 않습니다.";
+"assistant.consent.message" = "답변을 위해 Anthropic의 모델 Claude에 물어봅니다. 휴대폰 밖으로 나가는 것은 질문과 답변에 필요한 정보(합계, 카테고리, 계좌 이름, 저축 목표와 빌린 돈, 당신에 대해 기억하는 정보, 필요한 거래)뿐입니다. 데이터베이스, 영수증, 명세서는 이곳에 남습니다. Tenra 서버는 질문과 답변을 저장하지 않으며, 데이터는 모델 학습에 사용되지 않습니다.";
 "assistant.consent.allow" = "켜기";
 "assistant.consent.notNow" = "나중에";
 
@@ -1988,6 +1996,7 @@
 "goal.account.none" = "계좌 없음";
 "goal.account.hint" = "계좌를 고르면 그 잔액으로 진행 상황을 보여줘요. 계좌가 없으면 모은 금액을 직접 기록해요.";
 "goal.alreadySaved" = "이미 모은 금액";
+"goal.savedShare" = "모은 금액";
 "goal.target" = "목표 금액";
 "goal.left" = "남은 금액";
 "goal.leftAmount" = "%@ 남음";
@@ -2069,6 +2078,9 @@
 "assistant.chatter.here" = "여기 있어요!";
 "assistant.chatter.help" = "무엇을 도와드릴까요?";
 "assistant.chatter.hehe" = "헤헤";
+"assistant.chatter.wellDone" = "잘했어요!";
+"assistant.chatter.aww" = "와, 고마워요!";
+"assistant.chatter.sympathy" = "아이고…";
 "assistant.chatter.dizzy" = "어지러워요!";
 "settings.assistant.chatter" = "텐의 수다";
 
@@ -2090,3 +2102,20 @@
 "assistant.wardrobe.lock.goalReached" = "목표 달성";
 "assistant.wardrobe.lock.nauryz" = "나우르즈에 열림";
 "assistant.wardrobe.locked" = "잠김";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "뭔가를 위해 모아 볼까요?";
+"assistant.empty.debts" = "누가 누구에게 빚졌죠? 적어 둘게요";
+"assistant.empty.subscriptions" = "구독을 추가하면 결제를 알려 드릴게요";
+"assistant.empty.deposits" = "여기서 예금이 자라요";
+"assistant.empty.loans" = "대출도 챙겨 드릴게요";
+"assistant.empty.accounts" = "계좌부터 시작할까요?";
+"assistant.empty.history" = "아직 비어 있어요. 첫 거래를 추가할까요?";
+"assistant.empty.memory" = "당신에 대해 알려 주세요, 기억할게요";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "활성";
+"status.paused" = "일시정지";
+"status.archived" = "보관됨";
+"status.pending" = "대기 중";
+"textInput.characterCount" = "%2$lld자 중 %1$lld자";

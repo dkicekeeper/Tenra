@@ -77,7 +77,7 @@ const readTools: Tool[] = [
   {
     name: "get_accounts",
     description:
-      "All accounts with their current balance, currency and kind (regular, deposit, loan), plus the total in the base currency.",
+      "All accounts with their current balance, currency and kind (regular, deposit, loan), each balance in the base currency too (balance_base), plus the total in the base currency.",
     input_schema: object({}),
   },
   {
@@ -89,7 +89,7 @@ const readTools: Tool[] = [
   {
     name: "list_recurring",
     description:
-      "Subscriptions and other recurring payments with amount, frequency, next charge date and status.",
+      "Subscriptions and other recurring payments with amount in their own currency and in the base currency (amount_base, and monthly_base for a month), frequency, next charge date and status, plus what the active subscriptions cost a month in the base currency (subscriptions_monthly_total_base), payments in other currencies included.",
     input_schema: object(
       {
         kind: { type: "string", enum: ["subscription", "all"] },
@@ -168,14 +168,27 @@ const readTools: Tool[] = [
   {
     name: "get_goals",
     description:
-      "The user's savings goals: target, saved so far (a linked account's balance, or the money they marked towards it), what is left, percent, deadline, months left and what to put aside each month to make it, reached or overdue, plus everything saved in the base currency.",
+      "The user's savings goals: target, saved so far (a linked account's balance, or the money they marked towards it), what is left, percent, deadline, months left and what to put aside each month to make it, reached or overdue, saved and left in the base currency too (saved_base, left_base), plus everything saved in the base currency.",
     input_schema: object({}),
   },
   {
     name: "get_debts",
     description:
-      "Personal debts between the user and people they know (not bank loans): open ones both ways (owed_to_me, i_owe) with amount, repaid, remaining, date, due date and overdue, the latest settled ones, and the open totals each way in the base currency.",
+      "Personal debts between the user and people they know (not bank loans): open ones both ways (owed_to_me, i_owe) with amount, repaid, remaining (and remaining_base in the base currency), date, due date and overdue, the latest settled ones, and the open totals each way in the base currency.",
     input_schema: object({}),
+  },
+  {
+    name: "convert_currency",
+    description:
+      "Converts an amount from one currency to another (the base currency by default) at the exchange rates the app converts everything with, computed on the phone. Returns the converted amount (path converted), the rate for one unit (path rate) and the day the app last updated its rates (rates_date). It is the app's reference rate for the day, the same for every user, not a bank's buy or sell rate. Use for 'what is the dollar rate' (convert 1 from USD) or 'how much is 100 euros in tenge'.",
+    input_schema: object(
+      {
+        amount: { type: "number", description: "1 by default" },
+        from: { type: "string", description: "ISO 4217, for example USD" },
+        to: { type: "string", description: "ISO 4217; the base currency by default" },
+      },
+      ["from"],
+    ),
   },
 ];
 
@@ -347,7 +360,7 @@ const renderReply: Tool = {
             category_ids: nullable({ type: "array", items: { type: "string" } }),
           }),
           block("recurring", {
-            source: { ...source, description: "result_id of list_recurring: shows the subscriptions and payments with amounts and next dates; use it instead of listing them in text" },
+            source: { ...source, description: "result_id of list_recurring: shows the subscriptions and payments with amounts and next dates, not their total (for what they cost a month add a metric at subscriptions_monthly_total_base); use it instead of listing them in text" },
           }),
           block("forecast", { source }),
           block("insight", { source, insight_id: { type: "string" } }),
@@ -362,7 +375,7 @@ const renderReply: Tool = {
         ],
       },
     },
-    mood: { type: "string", enum: ["idle", "happy", "concerned", "celebrate"] },
+    mood: { type: "string", enum: ["idle", "happy", "concerned", "celebrate", "proud", "surprised", "love", "playful", "empty"] },
     suggestions: { type: "array", items: { type: "string" } },
   }),
 };

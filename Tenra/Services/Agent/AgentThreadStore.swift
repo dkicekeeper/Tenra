@@ -118,7 +118,7 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
     private static func snapshot(_ entity: AgentThreadEntity) -> AgentThreadSnapshot? {
         guard let id = entity.id,
               let payload = entity.payload,
-              let body = try? JSONDecoder().decode(AgentThreadSnapshot.Body.self, from: payload) else { return nil }
+              let body = decodePayload(payload) else { return nil }
         return AgentThreadSnapshot(
             id: id,
             createdAt: entity.createdAt ?? .distantPast,
@@ -145,9 +145,32 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
         }
     }
 
+    /// The thread as written: its JSON compressed with LZFSE. `payload` allows external storage,
+    /// and Core Data moves a value over about 100 KB into a file beside the store; a backup
+    /// copies `Tenra.sqlite` alone, so a thread restored from it would point at a missing file
+    /// and crash on read. Compressed, a long thread stays far below that. Threads written
+    /// before are plain JSON and still read.
+    static func encodePayload(_ body: AgentThreadSnapshot.Body) -> Data? {
+        guard let json = try? JSONEncoder().encode(body) else { return nil }
+        guard let compressed = try? (json as NSData).compressed(using: .lzfse) else { return json }
+        return compressed as Data
+    }
+
+    static func decodePayload(_ payload: Data) -> AgentThreadSnapshot.Body? {
+        let json: Data
+        if payload.first == UInt8(ascii: "{") {
+            json = payload
+        } else if let inflated = try? (payload as NSData).decompressed(using: .lzfse) {
+            json = inflated as Data
+        } else {
+            return nil
+        }
+        return try? JSONDecoder().decode(AgentThreadSnapshot.Body.self, from: json)
+    }
+
     /// Writes the thread over its earlier copy, and lets the threads beyond `keep` go.
     func save(_ snapshot: AgentThreadSnapshot) async {
-        guard let payload = try? JSONEncoder().encode(snapshot.body) else { return }
+        guard let payload = Self.encodePayload(snapshot.body) else { return }
         let context = stack.newBackgroundContext()
         await context.perform {
             do {

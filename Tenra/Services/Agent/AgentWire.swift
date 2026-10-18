@@ -35,10 +35,14 @@ nonisolated struct AgentWireMessage: Sendable, Equatable, Codable {
 nonisolated struct AgentTurnRequest: Sendable, Encodable {
     let `protocol`: Int
     let messages: [AgentWireMessage]
+    /// The RevenueCat app user id, inside the body App Attest signs: the server looks Pro up
+    /// only for this one, never for the `x-tenra-user` header alone.
+    let user: String?
 
-    init(messages: [AgentWireMessage]) {
+    init(messages: [AgentWireMessage], user: String? = nil) {
         self.`protocol` = AgentProtocol.version
         self.messages = messages
+        self.user = user
     }
 }
 

@@ -114,6 +114,8 @@ struct LinkPaymentsView: View {
 
     var body: some View {
         transactionList
+            // Named: built with Xcode 27 the edges as they come are hard (DesignKit 5.1.0).
+            .scrollEdgeEffectStyle(.soft, for: [.top, .bottom])
             .safeAreaBar(edge: .top) {
                 filterHeader
             }
@@ -355,6 +357,8 @@ struct LinkPaymentsView: View {
                     }
                 )
                 .screenPadding()
+                // Comes into focus where its skeleton was (DesignKit's skeleton → content).
+                .transition(.skeletonReveal)
             }
         }
         .scrollDismissesKeyboard(.interactively)
@@ -388,6 +392,7 @@ struct LinkPaymentsView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.skeletonReveal)
             }
         }
         // The candidates come in where their skeleton was.
@@ -689,6 +694,7 @@ struct TransactionSubcategoryFilterSheet: View {
                 }
             }
         }
+        .softScrollEdges()
     }
 
     private func toggle(_ name: String) {

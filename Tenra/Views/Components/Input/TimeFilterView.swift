@@ -103,6 +103,7 @@ struct TimeFilterView: View {
                 }
             }
         }
+        .softScrollEdges()
     }
 
     /// Static formatter — allocated once, reused every body evaluation.

@@ -5,9 +5,9 @@
 //  One savings goal (docs/domains/goals-and-debts.md), on EntityDetailScaffold: the saved
 //  amount with the share of the target in the hero; "Add money" (a goal without an account)
 //  and "Edit"; the target, what is left, the deadline, what to put aside each month and the
-//  account it follows; then the contributions, newest first, a long press deletes one. When
-//  the goal is reached (a contribution, an edit, or the linked account's balance growing),
-//  confetti bursts once.
+//  account it follows; then the contributions, newest first, in a card of AmountRows (a long
+//  press deletes one, which breaks into dust). When the goal is reached (a contribution, an
+//  edit, or the linked account's balance growing), confetti bursts once.
 //
 
 import SwiftUI
@@ -24,6 +24,8 @@ struct GoalDetailView: View {
     @State private var showingDelete = false
     /// Bumped when the goal is reached: one confetti burst each time.
     @State private var celebrations = 0
+    /// Bumped by each contribution that does not reach the goal (`.sparkleBurst`).
+    @State private var contributionSparkles = 0
 
     private var appSettings: AppSettings { coordinator.transactionsViewModel.appSettings }
 
@@ -74,13 +76,17 @@ struct GoalDetailView: View {
                     primaryAmount: status.saved,
                     primaryCurrency: goal.currency,
                     subtitle: String(format: String(localized: "goal.ofTarget"), amountText(goal.targetAmount, goal.currency)),
+                    // HeroSection draws "label · NN%": the label is a word, not the share.
                     progress: ProgressConfig(
                         current: status.saved,
                         total: goal.targetAmount,
-                        label: status.fraction.formatted(.percent.precision(.fractionLength(0))),
-                        color: status.isReached ? AppColors.income : AppColors.accent
+                        label: String(localized: "goal.savedShare"),
+                        color: AppColors.income
                     )
                 )
+                // Money put towards the goal: a small burst of sparkles over it (DesignKit);
+                // reaching the goal celebrates instead.
+                .sparkleBurst(trigger: contributionSparkles, tint: AppColors.income)
             },
             customSections: {
                 if !follows, !goal.contributions.isEmpty {
@@ -104,7 +110,9 @@ struct GoalDetailView: View {
                 }
             }
         )
-        .celebration(trigger: celebrations)
+        .heroAccentGlow(icon: goal.iconSource ?? SavingsGoal.defaultIcon)
+        // The money sheet already played the success haptic.
+        .celebration(trigger: celebrations, playsHaptic: false)
         .sheet(isPresented: $showingEdit) {
             GoalEditView(
                 goal: goal,
@@ -127,7 +135,7 @@ struct GoalDetailView: View {
             ) { amount, date, note in
                 Task {
                     await goalStore.addContribution(GoalContribution(amount: amount, date: date, note: note), to: goal.id)
-                    await checkReached()
+                    if !(await checkReached()) { contributionSparkles += 1 }
                 }
             }
         }
@@ -189,49 +197,49 @@ struct GoalDetailView: View {
             SectionHeader(String(localized: "goal.contributions"))
             VStack(spacing: 0) {
                 ForEach(contributions) { contribution in
-                    InfoRow(
-                        icon: "plus.circle",
-                        label: entryLabel(date: contribution.date, note: contribution.note),
-                        amount: contribution.amount,
-                        currency: goal.currency
-                    )
-                    .padding(.horizontal, AppSpacing.lg)
-                    .padding(.vertical, AppSpacing.sm)
-                    .contentShape(Rectangle())
-                    .contextMenu {
-                        Button(role: .destructive) {
-                            HapticManager.warning()
-                            Task {
-                                await goalStore.deleteContribution(id: contribution.id, from: goal.id)
-                                await checkReached()
+                    VStack(spacing: 0) {
+                        HistoryEntryRow(
+                            date: contribution.date,
+                            note: contribution.note,
+                            amount: contribution.amount,
+                            currency: goal.currency,
+                            symbol: "plus"
+                        )
+                        .contentShape(Rectangle())
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                HapticManager.warning()
+                                Task {
+                                    await goalStore.deleteContribution(id: contribution.id, from: goal.id)
+                                    await checkReached()
+                                }
+                            } label: {
+                                Label(String(localized: "button.delete"), systemImage: "trash")
                             }
-                        } label: {
-                            Label(String(localized: "button.delete"), systemImage: "trash")
+                        }
+                        if contribution.id != contributions.last?.id {
+                            Divider().padding(.leading, AppIconSize.Tile.sm + AppSpacing.md)
                         }
                     }
-                    if contribution.id != contributions.last?.id {
-                        Divider().padding(.leading, AppSpacing.lg)
-                    }
+                    // A deleted entry breaks into dust, as a deleted transaction does.
+                    .transition(AsymmetricTransition(insertion: OpacityTransition(), removal: DissolveTransition()))
                 }
             }
-            .padding(.vertical, AppSpacing.sm)
+            .padding(AppSpacing.lg)
             .cardStyle()
+            .animation(AppAnimation.gentleSpring, value: contributions.map(\.id))
         }
         .screenPadding()
     }
 
     // MARK: - Helpers
 
-    private func checkReached() async {
-        if await goalStore.refreshReached(goalId: goalId) {
-            celebrations += 1
-        }
-    }
-
-    private func entryLabel(date: Date, note: String?) -> String {
-        let day = DateFormatters.displayDateOmittingCurrentYear(date)
-        guard let note, !note.isEmpty else { return day }
-        return "\(day) · \(note)"
+    /// Celebrates a goal that has just been reached; true when it was.
+    @discardableResult
+    private func checkReached() async -> Bool {
+        guard await goalStore.refreshReached(goalId: goalId) else { return false }
+        celebrations += 1
+        return true
     }
 
     private func amountText(_ amount: Double, _ currency: String) -> String {

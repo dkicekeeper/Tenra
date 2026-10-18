@@ -125,6 +125,30 @@ struct AgentConversationTests {
         #expect(!conversation.trimIfNeeded())
     }
 
+    @Test func aHeavyHistoryLosesItsOldestQuestionsBeforeTheServerRefusesIt() throws {
+        let conversation = AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit())
+        // 10 questions whose tool output is 20 KB each: few messages, a body over the limit.
+        let bulk = String(repeating: "x", count: 20_000)
+        var messages: [AgentWireMessage] = []
+        for index in 0..<10 {
+            var content: [JSONValue] = []
+            if index > 0 { content.append(AgentToolResult(toolUseId: "toolu_\(index - 1)", content: bulk, isError: false).block) }
+            content.append(["type": "text", "text": .string("q\(index)")])
+            messages.append(AgentWireMessage(role: .user, content: content))
+            messages.append(AgentWireMessage(role: .assistant, content: [AgentScript.render("toolu_\(index)", source: "none")]))
+        }
+        conversation.restore(AgentThreadSnapshot.Body(messages: messages, results: [:], owedResults: []))
+
+        #expect(conversation.trimIfNeeded())
+        let size = try JSONEncoder().encode(conversation.messages).count
+        #expect(size <= AgentConversation.maxKeptBytes)
+        let first = conversation.messages[0]
+        #expect(first.role == .user)
+        #expect(first.content.count == 1)
+        #expect(first.content.first?["type"] == "text")
+        #expect(!conversation.trimIfNeeded())
+    }
+
     @Test func toolFailuresGoBackAsErrors() async throws {
         let transport = ScriptedTransport([
             [AgentScript.done([AgentScript.toolUse("toolu_1", "delete_everything")])],

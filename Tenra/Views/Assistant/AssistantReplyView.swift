@@ -152,32 +152,86 @@ private struct AssistantChartCard: View {
     private static let rowLimit = 6
 
     var body: some View {
-        AssistantCard(title: title) {
-            if kind == .donut && !chart.isTimeline {
-                MiniDonut(slices: DonutSlice.from(items))
-                    .frame(width: AppIconSize.Tile.xxxl, height: AppIconSize.Tile.xxxl)
-                    .frame(maxWidth: .infinity)
-            }
-            ForEach(items.prefix(Self.rowLimit)) { item in
-                CategoryBreakdownRow(item: item, currency: chart.currency)
+        FormSection(header: title, style: .glass) {
+            if chart.isTimeline {
+                timeline
+            } else {
+                if kind == .donut {
+                    MiniDonut(slices: DonutSlice.from(items))
+                        .frame(width: AppIconSize.Tile.xxxl, height: AppIconSize.Tile.xxxl)
+                        .frame(maxWidth: .infinity)
+                }
+                ForEach(items.prefix(Self.rowLimit)) { item in
+                    CategoryBreakdownRow(item: item, currency: chart.currency)
+                }
             }
         }
     }
 
-    /// Each group as a breakdown item: a category keeps its own icon and colour, a merchant or
-    /// a period takes the accent.
+    // MARK: Timeline
+
+    /// Periods (months, weeks) as DesignKit's trend chart: a line when the reply asks for one,
+    /// bars otherwise (a donut of periods says nothing). A tap shows a period's amount.
+    @ViewBuilder
+    private var timeline: some View {
+        if kind == .line {
+            LineChart(dataPoints: timelinePoints, series: timelineSeries, valueFormat: .currency(chart.currency))
+        } else {
+            BarChart(dataPoints: timelinePoints, series: timelineSeries, valueFormat: .currency(chart.currency))
+        }
+    }
+
+    private static let seriesId = "value"
+
+    private var timelinePoints: [ChartValuePoint] {
+        chart.groups.map { group in
+            ChartValuePoint(
+                label: group.id,
+                axisLabel: axisLabel(group),
+                title: periodLabel(group),
+                values: [Self.seriesId: group.value]
+            )
+        }
+    }
+
+    /// The accent; green and red around zero when a period went below it (a net flow).
+    private var timelineSeries: ChartSeries<ChartValuePoint> {
+        let signed = chart.groups.contains { $0.value < 0 }
+        return .keyed(
+            Self.seriesId,
+            name: title,
+            coloring: signed ? .signed(positive: AppColors.income, negative: AppColors.destructive) : .solid(AppColors.accent),
+            baseline: signed ? .signed : .zero
+        )
+    }
+
+    /// "2026-10" → "Oct"; a week's Monday → "13.10" (the locale's order).
+    private func axisLabel(_ group: AgentReplyData.ChartGroup) -> String {
+        if group.id.count == 7, let month = FastDateParser.date(from: group.id + "-01") {
+            return month.formatted(.dateTime.month(.abbreviated))
+        }
+        if let day = FastDateParser.date(from: group.id) {
+            return day.formatted(.dateTime.day().month(.defaultDigits))
+        }
+        return group.label
+    }
+
+    /// Each group as a breakdown item: a category keeps its own icon and colour, a loan payment
+    /// or deposit interest (no `CustomCategory`) the system style Insights gives them, a merchant
+    /// takes the accent.
     private var items: [CategoryBreakdownItem] {
         let categories = coordinator.transactionStore.categories
         let total = chart.groups.reduce(0) { $0 + max($1.value, 0) }
         return chart.groups.map { group in
             let category = categories.first { $0.id == group.id }
+            let synthetic = category == nil ? InsightsService.syntheticCategoryStyle(for: group.id) : nil
             return CategoryBreakdownItem(
                 id: group.id,
                 categoryName: category?.name ?? periodLabel(group),
                 amount: group.value,
                 percentage: total > 0 ? group.value / total * 100 : 0,
-                color: category.map { Color(hex: $0.colorHex) } ?? AppColors.accent,
-                iconSource: category?.iconSource,
+                color: category.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? AppColors.accent,
+                iconSource: category?.iconSource ?? synthetic?.icon,
                 subcategories: []
             )
         }
@@ -210,7 +264,7 @@ private struct AssistantTransactionsCard: View {
         let store = coordinator.transactionStore
         let transactions = ids.prefix(Self.rowLimit).compactMap { store.transactionById[$0] }
         if !transactions.isEmpty {
-            AssistantCard(title: title) {
+            FormSection(header: title, style: .glass) {
                 ForEach(transactions) { transaction in
                     TransactionCardView(
                         transaction: transaction,
@@ -315,6 +369,8 @@ private struct AssistantInsightCard: View {
 private struct AssistantForecastCard: View {
     let forecast: AgentReplyData.Forecast
 
+    @Environment(\.amountsHidden) private var amountsHidden
+
     private static let obligationLimit = 8
 
     var body: some View {
@@ -323,7 +379,9 @@ private struct AssistantForecastCard: View {
                 title: String(format: String(localized: "assistant.forecast.perDay"), untilText),
                 subtitle: String(
                     format: String(localized: "assistant.forecast.free"),
-                    Formatting.formatCurrencySmart(forecast.freeAmount, currency: forecast.currency)
+                    amountsHidden
+                        ? Formatting.hiddenAmount(currency: forecast.currency)
+                        : Formatting.formatCurrencySmart(forecast.freeAmount, currency: forecast.currency)
                 ),
                 value: .amount(forecast.dailyAllowance, currency: forecast.currency),
                 chartPlacement: .bottom
@@ -332,7 +390,7 @@ private struct AssistantForecastCard: View {
                     .accessibilityLabel(String(localized: "assistant.forecast.balance"))
             }
             if !forecast.obligations.isEmpty {
-                AssistantCard(title: String(format: String(localized: "assistant.forecast.obligations"), untilText)) {
+                FormSection(header: String(format: String(localized: "assistant.forecast.obligations"), untilText), style: .glass) {
                     ForEach(Array(forecast.obligations.prefix(Self.obligationLimit).enumerated()), id: \.offset) { _, obligation in
                         InfoRow(label: label(obligation), amount: obligation.amount, currency: forecast.currency)
                     }
@@ -379,7 +437,7 @@ private struct AssistantDraftCard: View {
     var body: some View {
         let store = coordinator.transactionStore
         let state = book.states[draft.id] ?? .pending
-        AssistantCard(title: nil) {
+        FormSection(style: .glass) {
             ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
                 if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
                     let row = TransactionCardView(
@@ -553,7 +611,8 @@ private struct AssistantDraftCard: View {
         return ItemRow(
             fact.text ?? fact.replaces?.text ?? "",
             meta: [MetaLine([.text(note)])],
-            leading: .symbol(fact.text == nil ? "eraser" : "brain")
+            leading: .symbol(fact.text == nil ? "eraser" : "brain"),
+            style: .large
         )
         .accessibilityElement(children: .combine)
     }
@@ -672,40 +731,25 @@ private struct AssistantDraftCard: View {
 
 // MARK: - Open
 
-/// A row into one of the app's screens, pushed on the assistant's stack.
+/// A row into one of the app's screens, pushed on the assistant's stack: a standard row (it
+/// pads itself) in a card, in the accent, with the chevron of a push outside a List.
 private struct AssistantOpenLink: View {
     let route: AssistantRoute
     let label: String
 
     var body: some View {
         NavigationLink(value: route) {
-            ActionRowLabel(label, systemImage: route.systemImage)
-                .padding(.horizontal, AppSpacing.lg)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .cardStyle()
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Container
-
-/// Rows in a card under an optional header, as the insight detail lists lay them out.
-struct AssistantCard<Rows: View>: View {
-    let title: String?
-    @ViewBuilder let rows: () -> Rows
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            if let title, !title.isEmpty {
-                SectionHeader(title)
+            UniversalRow(
+                config: .standard,
+                leadingIcon: .sfSymbol(route.systemImage, color: AppColors.accent, size: AppIconSize.lg),
+                title: label,
+                titleColor: AppColors.accent
+            ) {
+                DisclosureChevron()
             }
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                rows()
-            }
-            .padding(AppSpacing.lg)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
             .cardStyle()
         }
+        .buttonStyle(.plain)
     }
 }

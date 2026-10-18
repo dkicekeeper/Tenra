@@ -75,6 +75,7 @@ struct AccountFilterView: View {
                 }
             }
         }
+        .softScrollEdges()
     }
 
     // MARK: - Account Section

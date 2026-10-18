@@ -3,7 +3,7 @@ name: Screenshots
 # Raw App Store screenshots on a GitHub macOS runner, so no Mac is needed: runs
 # scripts/capture_screenshots.sh (TenraUITests/ScreenshotCaptureTests with the ScreenshotDemo
 # dataset) for the chosen storefront locales and uploads screenshots/raw/<locale>/ as the
-# "raw-screenshots" artifact (only the captured locales). The frames are then composed in Figma ("Screenshots L10n").
+# "raw-screenshots" artifact (only the captured locales). scripts/compose_screenshots.py then composes the store frames.
 # Run: Actions → Screenshots → Run workflow, or Claude through the GitHub API.
 
 on:
@@ -14,7 +14,7 @@ on:
         required: false
         default: "ru en-US fr-FR"
       frames:
-        description: "all (01-12) or cpp (only 09-12, the custom product page frames)"
+        description: "all (01-16), cpp (only 09-12, the custom product page frames) or ten (only 07, 13, 14)"
         required: false
         default: cpp
 

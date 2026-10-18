@@ -114,6 +114,7 @@ struct CategoryFilterView: View {
                 }
             }
         }
+        .softScrollEdges()
     }
 
     // MARK: - Category Section

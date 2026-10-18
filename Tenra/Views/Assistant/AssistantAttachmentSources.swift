@@ -8,7 +8,8 @@
 //  - a receipt from the camera scanner or from photos: VisionDocumentExtractor, then
 //    ReceiptInterpreter;
 //  - a PDF statement: DocumentImportService, then StatementReviewPreparer;
-//  - a CSV file: the CSV import flow as it is (preview, column mapping, result), with no card.
+//  - a CSV file: the CSV import flow as it is (preview, column mapping, result), with no card;
+//    Tenra Pro, as Settings → Import CSV is.
 //  A file opened in Tenra from another app (AppCoordinator.pendingAttachment) is read the same
 //  way. Statements hold names, account numbers and balances: the copy read here is deleted once
 //  read.
@@ -42,12 +43,14 @@ struct AssistantAttachmentMenu: View {
 }
 
 extension View {
-    /// Presents the picked source and reads the attachment. `reading` is on while it reads.
+    /// Presents the picked source and reads the attachment. `reading` is on while it reads;
+    /// `progress` follows a statement's pages (0...1), for Ten's light (`.working(progress:)`).
     /// - Parameter takesHandedOverFiles: this page also reads a file opened in Tenra from another
     ///   app (the assistant's home; a chat leaves it to the home).
     func assistantAttachmentSources(
         source: Binding<AssistantAttachmentSource?>,
         reading: Binding<Bool>,
+        progress: Binding<Double?>,
         takesHandedOverFiles: Bool,
         onRead: @escaping (AgentAttachment, AgentAttachmentSummary) -> Void,
         onFailure: @escaping (String) -> Void
@@ -55,6 +58,7 @@ extension View {
         modifier(AssistantAttachmentSources(
             source: source,
             reading: reading,
+            progress: progress,
             takesHandedOverFiles: takesHandedOverFiles,
             onRead: onRead,
             onFailure: onFailure
@@ -65,12 +69,17 @@ extension View {
 private struct AssistantAttachmentSources: ViewModifier {
     @Binding var source: AssistantAttachmentSource?
     @Binding var reading: Bool
+    @Binding var progress: Double?
     let takesHandedOverFiles: Bool
     let onRead: (AgentAttachment, AgentAttachmentSummary) -> Void
     let onFailure: (String) -> Void
 
     @Environment(AppCoordinator.self) private var coordinator
+    @Environment(PremiumManager.self) private var premium
     @State private var photo: PhotosPickerItem?
+    /// A CSV waiting on the paywall.
+    @State private var csvAwaitingPro: URL?
+    @State private var showingPaywall = false
     /// The CSV flow; replaced by a wired one when a CSV is picked.
     @State private var csvFlow = ImportFlowCoordinator(transactionsViewModel: nil, categoriesViewModel: nil, accountsViewModel: nil)
 
@@ -110,25 +119,50 @@ private struct AssistantAttachmentSources: ViewModifier {
             guard takesHandedOverFiles, url != nil, let url = coordinator.consumePendingAttachment() else { return }
             openFile(url)
         }
+        .paywallSheet(isPresented: $showingPaywall) {
+            guard let url = csvAwaitingPro else { return }
+            csvAwaitingPro = nil
+            importCSV(url)
+        }
+        .onChange(of: showingPaywall) { _, shown in
+            // Closed without Pro: the copy of the file goes.
+            guard !shown, !premium.isPro, let url = csvAwaitingPro else { return }
+            csvAwaitingPro = nil
+            Self.discardCopy(url)
+        }
     }
 
     /// A picked or handed-over file: a CSV into its import flow, a PDF read as a statement.
     private func openFile(_ url: URL) {
         if UTType(filenameExtension: url.pathExtension)?.conforms(to: .commaSeparatedText) == true {
-            csvFlow = ImportFlowCoordinator(
-                transactionsViewModel: coordinator.transactionsViewModel,
-                categoriesViewModel: coordinator.categoriesViewModel,
-                accountsViewModel: coordinator.accountsViewModel
-            )
-            Task {
-                await csvFlow.startImport(from: url)
-                Self.discardCopy(url)
+            guard premium.isPro else {
+                csvAwaitingPro = url
+                // Once the file picker's sheet is gone: a sheet asked for while another is
+                // closing never shows.
+                Task {
+                    try? await Task.sleep(for: .milliseconds(500))
+                    showingPaywall = true
+                }
+                return
             }
+            importCSV(url)
         } else {
             read {
                 defer { Self.discardCopy(url) }
                 return try await statement(from: url)
             }
+        }
+    }
+
+    private func importCSV(_ url: URL) {
+        csvFlow = ImportFlowCoordinator(
+            transactionsViewModel: coordinator.transactionsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel
+        )
+        Task {
+            await csvFlow.startImport(from: url)
+            Self.discardCopy(url)
         }
     }
 
@@ -157,8 +191,12 @@ private struct AssistantAttachmentSources: ViewModifier {
     /// nothing (ReceiptInterpreter's contract).
     private func read(_ work: @escaping () async throws -> (AgentAttachment, AgentAttachmentSummary)?) {
         reading = true
+        progress = nil
         Task {
-            defer { reading = false }
+            defer {
+                reading = false
+                progress = nil
+            }
             do {
                 if let read = try await work() {
                     onRead(read.0, read.1)
@@ -184,7 +222,10 @@ private struct AssistantAttachmentSources: ViewModifier {
 
     private func statement(from url: URL) async throws -> (AgentAttachment, AgentAttachmentSummary)? {
         let baseCurrency = coordinator.transactionStore.baseCurrency
-        let outcome = try await DocumentImportService.importStatement(from: url, defaultCurrency: baseCurrency)
+        let report = pageReporter()
+        let outcome = try await DocumentImportService.importStatement(from: url, defaultCurrency: baseCurrency) { page, pages in
+            report(page, pages)
+        }
         guard !outcome.statement.transactions.isEmpty else { throw AttachmentReadError.unreadable }
         let review = await StatementReviewPreparer.prepare(
             outcome,
@@ -195,6 +236,17 @@ private struct AssistantAttachmentSources: ViewModifier {
         )
         let accountName = review.statementAccountId.flatMap { id in coordinator.transactionStore.accounts.first { $0.id == id }?.name }
         return (.statement(review), .statement(review, accountName: accountName))
+    }
+
+    /// The pages read so far as `progress`, on the main actor (the importer reports from its own
+    /// task). Up to 90%: recognising and sorting the rows comes after the pages.
+    private func pageReporter() -> @Sendable (Int, Int) -> Void {
+        let progress = $progress
+        return { page, pages in
+            Task { @MainActor in
+                progress.wrappedValue = pages > 0 ? 0.9 * Double(page) / Double(pages) : 0
+            }
+        }
     }
 
     /// A photo as Vision reads it: drawn upright (a camera photo keeps its rotation in EXIF,

@@ -203,14 +203,15 @@ struct AccountsManagementView: View {
     var body: some View {
         Group {
             if sortedAccounts.isEmpty {
-                EmptyState(
+                MascotEmptyState(
                     icon: "creditcard",
                     title: String(localized: "emptyState.noAccounts"),
                     description: String(localized: "emptyState.startTracking"),
                     actionTitle: String(localized: "account.newAccount"),
                     action: {
                         showingAddAccount = true
-                    }
+                    },
+                    line: String(localized: "assistant.empty.accounts")
                 )
             } else if let coordinator = accountsViewModel.balanceCoordinator {
                 #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
@@ -429,6 +430,7 @@ struct AccountsManagementView: View {
                     accountsViewModel: accountsViewModel
                 )
             }
+            .softScrollEdges()
         }
         .sheet(item: $convertingAccount) { account in
             DepositEditView(

@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Özelleştir...";
 "settings.wallpaper" = "Ana Sayfa Duvar Kağıdı";
 "settings.background" = "Arka Plan";
+"home.hint.categories" = "Harcama eklemek için bir kategoriye dokunun";
 "settings.voiceLanguage" = "Ses Dili";
 "settings.voiceLanguage.app" = "Uygulamadaki gibi";
 "settings.background.none" = "Arka Plan Yok";
@@ -102,6 +103,8 @@
 "settings.background.photo" = "Fotoğraf";
 "settings.background.blurWallpaper" = "Duvar Kağıdını Bulanıklaştır";
 "settings.background.removePhoto" = "Fotoğrafı Kaldır";
+"settings.background.choosePhoto" = "Fotoğraf seç";
+"settings.background.changePhoto" = "Fotoğrafı değiştir";
 "settings.background.preview" = "Arka plan önizlemesi";
 "settings.background.opacity" = "Renk yoğunluğu";
 "settings.background.opacityTitle" = "Gider rengi";
@@ -389,6 +392,7 @@
 "quickAdd.amount" = "Tutar";
 "quickAdd.description" = "Açıklama";
 "quickAdd.descriptionPlaceholder" = "Açıklama (isteğe bağlı)";
+"quickAdd.balanceAfter" = "Sonraki bakiye";
 "quickAdd.recurring" = "Tekrarlayan İşlem";
 "quickAdd.makeRecurring" = "Tekrarlayan";
 "quickAdd.frequency" = "Sıklık";
@@ -612,6 +616,9 @@
 "csvImport.preview.rows" = "Satırlar";
 "csvImport.preview.columns" = "Sütunlar";
 "csvImport.mapping.title" = "Sütun Eşleştirme";
+"csvImport.step.preview" = "Önizleme";
+"csvImport.step.columns" = "Sütunlar";
+"csvImport.step.import" = "İçe aktar";
 "csvImport.mapping.required" = "Zorunlu Alanlar";
 "csvImport.mapping.optional" = "İsteğe Bağlı Alanlar";
 "csvImport.mapping.date" = "Tarih";
@@ -871,7 +878,7 @@
 "insights.formula.savingsRate.row.saved" = "Biriken (gelir − gider)";
 "insights.formula.savingsRate.row.rate" = "Birikim oranı";
 "insights.formula.savingsRate.explainer" = "Gelirinin ne kadarı ay sonuna kalıyor. Oran ne kadar yüksekse o kadar özgürlük demek: durgun aylarda esneklik, hedeflere daha hızlı ulaşma ve gerçek bir güvence fonu.";
-"insights.formula.savingsRate.rec.good" = "%%20'den fazlasını biriktiriyorsun. Bu düzeni koru ve fazlayı uzun vadeli bir hedefe yönlendirmeyi düşün.";
+"insights.formula.savingsRate.rec.good" = "%20'den fazlasını biriktiriyorsun. Bu düzeni koru ve fazlayı uzun vadeli bir hedefe yönlendirmeyi düşün.";
 "insights.formula.savingsRate.rec.fair" = "Fena değil, ama %%20'ye çıkmak her ay fazladan %@ birikim demek. Sinsice artan tekrarlayan veya tek seferlik kategorileri kırp.";
 "insights.formula.savingsRate.rec.low" = "%%10'un altı hiç tampon bırakmaz. Her ay en az %@ daha biriktirmeyi hedefle. En büyük keyfi harcama kategorisinden başla.";
 "insights.formula.emergencyFund.title" = "Güvence Fonu";
@@ -1269,7 +1276,6 @@
 "settings.cloud.delete" = "Sil";
 "settings.cloud.storage" = "Depolama";
 "settings.cloud.storageUsed" = "%@ / %@";
-"settings.cloud.backupMetadata" = "%d hesap · %d işlem · %@";
 "settings.cloud.iCloud.toggle" = "Yedekleri iCloud'a kaydet";
 "settings.cloud.iCloud.footer" = "Yedekler iCloud'unda saklanır, Dosyalar uygulamasında gizlidir ve diğer cihazlarındaki Tenra'da kullanılabilir.";
 "settings.cloud.iCloud.unavailable" = "Yedekleri iCloud Drive'da saklamak için Ayarlar'dan iCloud'a giriş yap.";
@@ -1390,6 +1396,8 @@
 "insights.chart.line" = "Çizgi";
 "insights.chart.bar" = "Çubuk";
 "insights.today" = "Bugün";
+/* Two parts of an insight subtitle, e.g. a merchant and its date */
+"insights.pairFormat" = "%1$@, %2$@";
 "insights.empty.title" = "Henüz veri yok";
 "insights.empty.subtitle" = "Biraz işlem geçmişi oluştuğunda grafik burada görünecek";
 
@@ -1608,7 +1616,7 @@
 "insights.health.target.cashFlow" = "≥ 0";
 
 "insights.health.rec.savingsRate.below" = "%%20'ye ulaşmak için giderleri ayda ≈ %@ azalt ya da geliri ayda ≈ %@ artır.";
-"insights.health.rec.savingsRate.healthy" = "Mükemmel, tempoyu koru. Uzun vadeli dayanıklılık için önerilen seviye %%20 ve üzeri.";
+"insights.health.rec.savingsRate.healthy" = "Mükemmel, tempoyu koru. Uzun vadeli dayanıklılık için önerilen seviye %20 ve üzeri.";
 
 "insights.health.rec.budgetAdherence.empty" = "Bütçeler ayarlanmamış. Kategorilerinde bütçe belirle. Bu bileşen o zaman puana dahil olur.";
 "insights.health.rec.budgetAdherence.partial" = "%d kategori bütçeyi aştı. Fazla harcamanın kaynağını bulmak için bu kategorileri aç.";
@@ -1938,7 +1946,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Asistan bulutta çalışır";
-"assistant.consent.message" = "Cevap vermek için Anthropic’in modeli Claude’a danışır. Telefondan yalnızca sorun ve cevap için baktıkları çıkar: toplamlar, kategoriler, hesap adları, senin hakkında hatırladığı bilgiler ve gereken işlemler. Veritabanın, fişlerin ve ekstrelerin burada kalır. Tenra sunucusu hiçbir şey saklamaz, verilerin model eğitiminde kullanılmaz.";
+"assistant.consent.message" = "Cevap vermek için Anthropic’in modeli Claude’a danışır. Telefondan yalnızca sorun ve cevap için baktıkları çıkar: toplamlar, kategoriler, hesap adları, hedeflerin ve borçların, senin hakkında hatırladığı bilgiler ve gereken işlemler. Veritabanın, fişlerin ve ekstrelerin burada kalır. Tenra sunucusu soru ve cevap saklamaz, verilerin model eğitiminde kullanılmaz.";
 "assistant.consent.allow" = "Aç";
 "assistant.consent.notNow" = "Şimdi değil";
 
@@ -1988,6 +1996,7 @@
 "goal.account.none" = "Hesap yok";
 "goal.account.hint" = "Hesap seçersen hedef onun bakiyesini izler. Hesapsız, biriktirdiğini kendin işaretlersin.";
 "goal.alreadySaved" = "Şimdiden biriken";
+"goal.savedShare" = "Biriken";
 "goal.target" = "Hedef";
 "goal.left" = "Biriktirilecek";
 "goal.leftAmount" = "Kalan %@";
@@ -2069,6 +2078,9 @@
 "assistant.chatter.here" = "Buradayım!";
 "assistant.chatter.help" = "Nasıl yardımcı olabilirim?";
 "assistant.chatter.hehe" = "Hi hi";
+"assistant.chatter.wellDone" = "Aferin!";
+"assistant.chatter.aww" = "Aa, teşekkürler!";
+"assistant.chatter.sympathy" = "Eyvah…";
 "assistant.chatter.dizzy" = "Ay, başım dönüyor!";
 "settings.assistant.chatter" = "Ten konuşkan";
 
@@ -2090,3 +2102,20 @@
 "assistant.wardrobe.lock.goalReached" = "Bir hedefe ulaşın";
 "assistant.wardrobe.lock.nauryz" = "Nevruz'da açılır";
 "assistant.wardrobe.locked" = "Kilitli";
+
+/* Ten in empty lists (DesignKit 4.13) */
+"assistant.empty.goals" = "Bir şey için birikim yapalım mı?";
+"assistant.empty.debts" = "Kim kime borçlu? Not edelim";
+"assistant.empty.subscriptions" = "Abonelikleri ekle, sana hatırlatırım";
+"assistant.empty.deposits" = "Mevduatların burada büyüyecek";
+"assistant.empty.loans" = "Kredileri de hesaplarım";
+"assistant.empty.accounts" = "Bir hesapla başlayalım mı?";
+"assistant.empty.history" = "Henüz boş. İlkini ekleyelim mi?";
+"assistant.empty.memory" = "Bana kendinden bahset, hatırlarım";
+
+/* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
+"status.active" = "Aktif";
+"status.paused" = "Duraklatıldı";
+"status.archived" = "Arşivlendi";
+"status.pending" = "Beklemede";
+"textInput.characterCount" = "%1$lld / %2$lld karakter";

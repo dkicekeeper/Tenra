@@ -108,6 +108,7 @@ nonisolated enum LoanWhatIf {
     static func breakEvenMonths(fees: Double, current: Plan, scenario: Plan) -> Int? {
         let saving = current.monthlyPayment - scenario.monthlyPayment
         guard fees > 0, saving > 0.005 else { return nil }
-        return Int((fees / saving).rounded(.up))
+        // The fees come from the model: absurd ones must not overflow Int (a trap).
+        return Int(exactly: (fees / saving).rounded(.up))
     }
 }

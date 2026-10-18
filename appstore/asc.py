@@ -15,6 +15,11 @@
                                                     create/update the pages in product-pages.json
     python3 appstore/asc.py push-experiment [--submit | --start]
                                                     the product page test in product-pages.json
+    python3 appstore/asc.py age-rating [--apply]    the age rating answers; --apply sets Tenra's
+                                                    (needs a version in preparation)
+    python3 appstore/asc.py push-version-screenshots --version 1.6 [--locale ru,en-US]
+                                                    the version's own 6.9" screenshots, the frames
+                                                    of `defaultOrder` in screenshot_captions.json
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -112,25 +117,48 @@ class ApiError(Exception):
         self.code = code
 
 
+# Requests that are safe to send again after App Store Connect answers with a 5xx, times out or
+# drops the connection: a POST could create a second resource, so it is never retried.
+RETRIED_METHODS = ("GET", "PATCH", "DELETE")
+RETRY_DELAYS = (5, 15, 45)
+
+
 def request(path: str, accept: str = "application/json", method: str = "GET", body: dict | None = None) -> bytes:
     url = path if path.startswith("http") else API + path
-    headers = {"Authorization": "Bearer " + token(), "Accept": accept}
-    data = None
-    if body is not None:
-        headers["Content-Type"] = "application/json"
-        data = json.dumps(body).encode()
-    req = urllib.request.Request(url, data=data, method=method, headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=60) as response:
-            return response.read()
-    except urllib.error.HTTPError as error:
-        details = error.read().decode(errors="replace")
+    data = None if body is None else json.dumps(body).encode()
+    attempt = 0
+    while True:
+        headers = {"Authorization": "Bearer " + token(), "Accept": accept}
+        if data is not None:
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(url, data=data, method=method, headers=headers)
         try:
-            errors = json.loads(details).get("errors", [])
-            details = "; ".join(f"{e.get('title', '')}: {e.get('detail', '')}" for e in errors) or details
-        except ValueError:
-            pass
-        raise ApiError(error.code, details[:600]) from None
+            with urllib.request.urlopen(req, timeout=120) as response:
+                return response.read()
+        except urllib.error.HTTPError as error:
+            details = error.read().decode(errors="replace")
+            try:
+                errors = json.loads(details).get("errors", [])
+                details = "; ".join(f"{e.get('title', '')}: {e.get('detail', '')}" for e in errors) or details
+            except ValueError:
+                pass
+            if error.code >= 500 and method in RETRIED_METHODS and attempt < len(RETRY_DELAYS):
+                print(f"  {method} {path.split('?')[0]}: HTTP {error.code}, retrying in {RETRY_DELAYS[attempt]} s", flush=True)
+                time.sleep(RETRY_DELAYS[attempt])
+                attempt += 1
+                continue
+            # A DELETE whose earlier attempt went through on the server despite the 5xx.
+            if error.code == 404 and method == "DELETE" and attempt > 0:
+                return b""
+            raise ApiError(error.code, f"{method} {path.split('?')[0]}: {details[:600]}") from None
+        except (TimeoutError, ConnectionError, urllib.error.URLError) as error:
+            # No HTTP status at all: a read timeout or a dropped connection.
+            if method in RETRIED_METHODS and attempt < len(RETRY_DELAYS):
+                print(f"  {method} {path.split('?')[0]}: {type(error).__name__}, retrying in {RETRY_DELAYS[attempt]} s", flush=True)
+                time.sleep(RETRY_DELAYS[attempt])
+                attempt += 1
+                continue
+            raise ApiError(0, f"{method} {path.split('?')[0]}: {error}") from None
 
 
 def get(path: str, params: dict | None = None) -> dict:
@@ -419,9 +447,13 @@ def put_screenshots(set_id: str, files: list[Path]) -> str:
         try:
             shot = send("POST", "/v1/appScreenshots", body)["data"]
         except ApiError as error:
-            if error.code != 409:
+            # 409: the default page's copy arrived after all. 5xx: the reservation may or may not
+            # exist. Either way keep only this run's uploads, then reserve again.
+            if error.code != 409 and error.code < 500:
                 raise
-            # The default page's copy arrived after all: keep only this run's uploads.
+            if error.code >= 500:
+                print(f"  POST {path.name}: HTTP {error.code}, clearing the set's strays and retrying", flush=True)
+                time.sleep(RETRY_DELAYS[0])
             for other in settled_screenshots(set_id):
                 if other["id"] not in ids:
                     request(f"/v1/appScreenshots/{other['id']}", method="DELETE")
@@ -636,6 +668,87 @@ def push_experiment(app: str, submit: bool, start: bool) -> None:
         submit_for_review(app, [("appStoreVersionExperimentV2", record["id"])])
 
 
+# Age rating -------------------------------------------------------------------------------------
+
+# Tenra's answers to the age rating questionnaire (App Information → Age Rating): a money tracker
+# whose AI assistant talks to the person only. No chat between people, nothing shared with others,
+# no ads, no web browsing, no health or medical topics, no gambling. Apple's App Privacy answers
+# are not in the API: they stay in the web form (docs/release-notes.md).
+AGE_RATING = {
+    "alcoholTobaccoOrDrugUseOrReferences": "NONE", "contests": "NONE", "gamblingSimulated": "NONE",
+    "gunsOrOtherWeapons": "NONE", "horrorOrFearThemes": "NONE", "matureOrSuggestiveThemes": "NONE",
+    "medicalOrTreatmentInformation": "NONE", "profanityOrCrudeHumor": "NONE",
+    "sexualContentGraphicAndNudity": "NONE", "sexualContentOrNudity": "NONE",
+    "violenceCartoonOrFantasy": "NONE", "violenceRealistic": "NONE",
+    "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+    "gambling": False, "lootBox": False, "unrestrictedWebAccess": False,
+    "messagingAndChat": False, "userGeneratedContent": False, "advertising": False,
+    "healthOrWellnessTopics": False, "parentalControls": False, "ageAssurance": False,
+    "socialMedia": False,
+}
+APP_INFO_EDITABLE = {"PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED"}
+
+
+def age_rating(app: str, apply: bool) -> None:
+    """The age rating declaration of each app info (live and in preparation) against Tenra's
+    answers; with `apply`, sets them on the one in preparation."""
+    infos, _ = get_all(f"/v1/apps/{app}/appInfos", {"limit": 10})
+    editable = None
+    for info in infos:
+        state = info["attributes"].get("state") or info["attributes"].get("appStoreState")
+        rating = info["attributes"].get("appStoreAgeRating")
+        declaration = get(f"/v1/appInfos/{info['id']}/ageRatingDeclaration")["data"]
+        current = declaration["attributes"]
+        rows = [[key, current.get(key), wanted, "" if current.get(key) == wanted else "differs"]
+                for key, wanted in AGE_RATING.items()]
+        table(f"App info {state} (rating {rating})", ["Question", "Now", "Tenra", ""], rows)
+        if state in APP_INFO_EDITABLE:
+            editable = declaration["id"]
+    if not apply:
+        return
+    if not editable:
+        sys.exit("No app info in preparation: create the version first (prepare-version).")
+    send("PATCH", f"/v1/ageRatingDeclarations/{editable}", {"data": {
+        "type": "ageRatingDeclarations", "id": editable, "attributes": AGE_RATING,
+    }})
+    print("Age rating answers set on the version in preparation.")
+
+
+# Version screenshots -----------------------------------------------------------------------------
+
+CAPTIONS = ROOT / "scripts" / "screenshot_captions.json"
+
+
+def push_version_screenshots(app: str, version: str, locales: list[str] | None) -> None:
+    """The version's own 6.9" screenshots: per locale, the frames of `defaultOrder` (or the
+    locale's own order) from screenshots/final/<locale>/. Only a version in preparation."""
+    captions = json.loads(CAPTIONS.read_text(encoding="utf-8"))
+    config = page_config()
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
+                       {"filter[versionString]": version, "filter[platform]": "IOS"})
+    if not found:
+        sys.exit(f"Version {version} does not exist: run prepare-version first.")
+    record = found[0]
+    state = record["attributes"].get("appVersionState") or record["attributes"].get("appStoreState")
+    if state not in EDITABLE:
+        sys.exit(f"Version {version} is {state}: its screenshots can't be changed now.")
+    existing, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    rows = []
+    for item in existing:
+        locale = item["attributes"]["locale"]
+        if locales and locale not in locales:
+            continue
+        settings = captions["locales"].get(locale, {})
+        frames = settings.get("order") or captions["defaultOrder"]
+        files = frame_files(config, frames, locale)
+        print(f"{locale}: {len(files)} frames", flush=True)
+        set_id = screenshot_set("appStoreVersionLocalization", item["id"])
+        result = put_screenshots(set_id, files)
+        print(f"{locale}: {result}", flush=True)
+        rows.append([locale, len(files), result])
+    table(f"Screenshots, {version}", ["Locale", "Frames", "Result"], rows)
+
+
 def reviews(app: str, limit: int) -> None:
     data = get(f"/v1/apps/{app}/customerReviews", {"sort": "-createdDate", "limit": limit})["data"]
     rows = []
@@ -797,6 +910,14 @@ def main(argv: list[str]) -> None:
         push_custom_pages(app, "--submit" in args)
     elif command == "push-experiment":
         push_experiment(app, "--submit" in args, "--start" in args)
+    elif command == "age-rating":
+        age_rating(app, "--apply" in args)
+    elif command == "push-version-screenshots":
+        version = option("--version")
+        if not version:
+            sys.exit("push-version-screenshots needs --version X.Y")
+        locales = option("--locale")
+        push_version_screenshots(app, version, locales.split(",") if locales else None)
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

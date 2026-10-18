@@ -171,6 +171,7 @@ struct LoanPaymentView: View {
             }
             .onAppear(perform: applyDefaults)
         }
+        .softScrollEdges()
     }
 
     // MARK: - Sections

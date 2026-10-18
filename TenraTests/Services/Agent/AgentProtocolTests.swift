@@ -102,6 +102,18 @@ struct AgentProtocolTests {
         #expect(reply.suggestions.isEmpty)
     }
 
+    /// The moods the server's render_reply schema allows (server/assistant/src/tools.ts).
+    @Test func everyServerMoodDecodes() throws {
+        let moods: [String: AgentMood] = [
+            "idle": .idle, "happy": .happy, "concerned": .concerned, "celebrate": .celebrate,
+            "proud": .proud, "surprised": .surprised, "love": .love, "playful": .playful, "empty": .empty,
+        ]
+        for (raw, mood) in moods {
+            let reply = try JSONDecoder().decode(AgentReply.self, from: Data(#"{"blocks":[],"mood":"\#(raw)","suggestions":[]}"#.utf8))
+            #expect(reply.mood == mood, "\(raw)")
+        }
+    }
+
     @Test func unknownMoodFallsBackToIdle() throws {
         let reply = try JSONDecoder().decode(AgentReply.self, from: Data(#"{"blocks":[],"mood":"ecstatic","suggestions":[]}"#.utf8))
         #expect(reply.mood == .idle)
@@ -123,6 +135,13 @@ struct AgentProtocolTests {
         #expect(value["protocol"] == .number(Double(AgentProtocol.version)))
         #expect(value.value(atPath: "messages.0.role") == "user")
         #expect(value.value(atPath: "messages.0.content.0.text") == "hi")
+        #expect(value["user"] == nil)
+    }
+
+    @Test func turnRequestSignsTheUserIdInItsBody() throws {
+        let data = try JSONEncoder().encode(AgentTurnRequest(messages: [.userText(["hi"])], user: "$RCAnonymousID:abc"))
+        let value = try JSONDecoder().decode(JSONValue.self, from: data)
+        #expect(value["user"] == .string("$RCAnonymousID:abc"))
     }
 
     @Test func contextBlockMatchesTheServerFormat() throws {

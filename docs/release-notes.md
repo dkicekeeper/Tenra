@@ -258,7 +258,7 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
      started on 13.10 end with it.
 10. ~~**Terms of Use**~~ ([public/terms-of-use.html](public/terms-of-use.html)): section 4 on Ten
     and the data section (2026-10-16), live and read by the owner on 2026-10-18.
-11. **Submit for review** (the founder, in App Store Connect).
+11. ~~**Submit for review**~~: submitted by the founder on 2026-10-18 (Waiting for Review).
 12. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in
     [promotion-plan.md](promotion-plan.md) §1, the week after release against the week before in §6.
 

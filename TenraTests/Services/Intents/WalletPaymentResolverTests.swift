@@ -211,4 +211,101 @@ struct WalletPaymentResolverTests {
         )
         #expect(choice == WalletPaymentResolver.CategoryChoice(name: "", subcategoryIds: nil, isGuess: true))
     }
+    // MARK: - Subscription charges
+
+    private func occurrence(
+        _ id: String,
+        _ description: String,
+        amount: Double = 4_990,
+        currency: String = "KZT",
+        date: String,
+        seriesId: String? = "series-1"
+    ) -> Transaction {
+        Transaction(
+            id: id,
+            date: date,
+            description: description,
+            amount: amount,
+            currency: currency,
+            type: .expense,
+            category: "Подписки",
+            accountId: "a1",
+            recurringSeriesId: seriesId
+        )
+    }
+
+    private func day(_ key: String) -> Int {
+        ImportDuplicateDetector.dayNumber(key) ?? 0
+    }
+
+    @Test("A payment repeats the subscription charge whose description shares a brand word")
+    func matchesSubscriptionCharge() {
+        let match = WalletPaymentResolver.subscriptionOccurrence(
+            amount: 4_990,
+            currency: "KZT",
+            day: day("2026-10-19"),
+            merchant: "NETFLIX.COM",
+            occurrences: [occurrence("tx-1", "Netflix", date: "2026-10-18")]
+        )
+        #expect(match?.id == "tx-1")
+    }
+
+    @Test("Same amount and date but another merchant is a new payment")
+    func otherMerchantIsNotTheSubscription() {
+        let match = WalletPaymentResolver.subscriptionOccurrence(
+            amount: 4_990,
+            currency: "KZT",
+            day: day("2026-10-19"),
+            merchant: "COFFEE BOOM 12",
+            occurrences: [occurrence("tx-1", "Netflix", date: "2026-10-19")]
+        )
+        #expect(match == nil)
+    }
+
+    @Test("Generic words like com or bill alone do not match")
+    func genericWordsDoNotMatch() {
+        #expect(WalletPaymentResolver.brandWords("APPLE.COM/BILL") == ["apple"])
+        let match = WalletPaymentResolver.subscriptionOccurrence(
+            amount: 4_990,
+            currency: "KZT",
+            day: day("2026-10-19"),
+            merchant: "SHOP.COM BILL",
+            occurrences: [occurrence("tx-1", "Music com bill", date: "2026-10-19")]
+        )
+        #expect(match == nil)
+    }
+
+    @Test("Outside three days, five percent, the currency or a series, nothing matches")
+    func outsideTheWindow() {
+        let payment = (amount: 4_990.0, currency: "KZT", day: day("2026-10-19"), merchant: "NETFLIX.COM")
+        let candidates = [
+            occurrence("far", "Netflix", date: "2026-10-23"),
+            occurrence("dearer", "Netflix", amount: 5_300, date: "2026-10-19"),
+            occurrence("usd", "Netflix", currency: "USD", date: "2026-10-19"),
+            occurrence("one-off", "Netflix", date: "2026-10-19", seriesId: nil)
+        ]
+        let match = WalletPaymentResolver.subscriptionOccurrence(
+            amount: payment.amount,
+            currency: payment.currency,
+            day: payment.day,
+            merchant: payment.merchant,
+            occurrences: candidates
+        )
+        #expect(match == nil)
+    }
+
+    @Test("The closest charge wins")
+    func closestChargeWins() {
+        let match = WalletPaymentResolver.subscriptionOccurrence(
+            amount: 4_990,
+            currency: "KZT",
+            day: day("2026-10-19"),
+            merchant: "NETFLIX.COM",
+            occurrences: [
+                occurrence("tx-early", "Netflix", date: "2026-10-16"),
+                occurrence("tx-close", "Netflix", amount: 5_100, date: "2026-10-20")
+            ]
+        )
+        #expect(match?.id == "tx-close")
+    }
 }

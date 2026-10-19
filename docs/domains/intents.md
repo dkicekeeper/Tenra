@@ -266,12 +266,17 @@ for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-captu
 4. Account (`WalletPaymentResolver.account`): fixed in the automation → `CardAccountMemory` for
    the card → the only account a card can pay from → `IntentAccountSuggester` for the category →
    the first one. The last two are guesses; loans and deposits never qualify.
-5. Currency: the passed code, else the account's. Cache, then one `CurrencyConverter.convert`,
+5. A subscription's charge (`WalletPaymentResolver.subscriptionOccurrence`): an expense of a
+   recurring series in the same currency, within `ImportDuplicateDetector`'s 3 days and 5 %, whose
+   description shares a brand word with the merchant ("Netflix" / "NETFLIX.COM"; generic words like
+   com or bill don't count) → nothing new, the series already recorded it. Without a shared word
+   the payment is recorded: a duplicate can be deleted, a dropped payment is lost.
+6. Currency: the passed code, else the account's. Cache, then one `CurrencyConverter.convert`,
    else the payment waits in `WalletCaptureStore.pending` (saving without a rate would move the
    balance by the raw foreign amount). The queue is recorded, each payment with its own date,
    before the next payment and when the app comes to the front (`MainTabView`).
-6. `TransactionDraftService.commit`; a guessed account does not reach `VoiceLearningStore`.
-7. `WalletCaptureStore.record`: the transaction id with the payment and its guesses. A capture
+7. `TransactionDraftService.commit`; a guessed account does not reach `VoiceLearningStore`.
+8. `WalletCaptureStore.record`: the transaction id with the payment and its guesses. A capture
    with a guess not yet looked at is "To review". Captures live 90 days.
 
 Learning: `WalletPaymentRecorder.confirm` remembers a captured transaction's category and

@@ -8,10 +8,11 @@
 //  1. no amount (a transit gate, a payload the trigger lost) → nothing to record;
 //  2. the same payment within 90 seconds → the terminal fired twice;
 //  3. account and category through WalletPaymentResolver, guesses noted;
-//  4. another currency: the cached rate, else one network request (the only one an
+//  4. a subscription's charge the series already recorded → nothing new;
+//  5. another currency: the cached rate, else one network request (the only one an
 //     intent makes, owner's decision 2026-10-19), else the payment waits in
 //     WalletCaptureStore.pending for a rate;
-//  5. saved through TransactionDraftService.commit, journaled in WalletCaptureStore.
+//  6. saved through TransactionDraftService.commit, journaled in WalletCaptureStore.
 //
 //  Runs in whatever process the intent got: a cold one has only the fast path
 //  loaded, so the merchant's history comes from a bounded CoreData fetch, never
@@ -28,6 +29,8 @@ enum WalletPaymentRecorder {
         case saved(amount: Double, currency: String, categoryName: String)
         case noAmount
         case duplicate
+        /// The charge of a subscription whose series already recorded it.
+        case subscription(name: String)
         /// Waits in WalletCaptureStore.pending for an exchange rate.
         case queued
         case noAccount
@@ -111,6 +114,22 @@ enum WalletPaymentRecorder {
                 )
             }
         ) else { return .noAccount }
+
+        // A subscription paid with Apple Pay: its series already recorded this charge, as a
+        // statement import would see it (ImportDuplicateDetector's window and tolerance).
+        let currency = payment.currencyCode
+            ?? accounts.first { $0.id == account.accountId }?.currency
+            ?? ""
+        if let day = ImportDuplicateDetector.dayNumber(DateFormatters.dateFormatter.string(from: payment.date)),
+           let occurrence = WalletPaymentResolver.subscriptionOccurrence(
+               amount: payment.amount,
+               currency: currency,
+               day: day,
+               merchant: payment.merchant,
+               occurrences: subscriptionOccurrences(around: payment.date, context: context)
+           ) {
+            return .subscription(name: occurrence.description)
+        }
 
         let operation = ParsedOperation(
             type: .expense,
@@ -247,6 +266,20 @@ enum WalletPaymentRecorder {
             categories: categories,
             keywordMatcher: { parser.keywordCategory(in: $0) }
         )
+    }
+
+    /// Expenses of recurring series dated around a payment: a handful of rows, whatever
+    /// the size of the history.
+    static func subscriptionOccurrences(around date: Date, context: NSManagedObjectContext) -> [Transaction] {
+        let window = TimeInterval(ImportDuplicateDetector.subscriptionDayWindow + 1) * 86_400
+        let request = NSFetchRequest<TransactionEntity>(entityName: "TransactionEntity")
+        request.predicate = NSPredicate(
+            format: "recurringSeriesId != nil AND type == %@ AND date >= %@ AND date <= %@",
+            TransactionType.expense.rawValue,
+            date.addingTimeInterval(-window) as NSDate,
+            date.addingTimeInterval(window) as NSDate
+        )
+        return ((try? context.fetch(request)) ?? []).map { $0.toTransaction() }
     }
 
     /// Recent expenses whose description contains the merchant's first word. Broad on

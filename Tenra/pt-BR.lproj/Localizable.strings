@@ -1706,6 +1706,7 @@
 "intent.walletPayment.parameter.card" = "Cartão";
 "intent.walletPayment.parameter.account" = "Conta";
 "intent.walletPayment.duplicate" = "Este pagamento já foi registrado.";
+"intent.walletPayment.subscription" = "Já registrado como a assinatura “%@”.";
 "intent.walletPayment.noAmount" = "Este pagamento não tem valor, nada foi registrado.";
 "intent.walletPayment.queued" = "Ainda não há taxa de câmbio. O Tenra registra o pagamento assim que tiver uma.";
 "intent.walletPayment.noAccount" = "Adicione uma conta no Tenra para registrar pagamentos.";

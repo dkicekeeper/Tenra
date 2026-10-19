@@ -1706,6 +1706,7 @@
 "intent.walletPayment.parameter.card" = "카드";
 "intent.walletPayment.parameter.account" = "계좌";
 "intent.walletPayment.duplicate" = "이 결제는 이미 기록되어 있어요.";
+"intent.walletPayment.subscription" = "이미 '%@' 구독으로 기록되어 있어요.";
 "intent.walletPayment.noAmount" = "이 결제에는 금액이 없어 아무것도 기록하지 않았어요.";
 "intent.walletPayment.queued" = "아직 환율이 없어요. 환율을 받는 대로 Tenra가 결제를 기록할게요.";
 "intent.walletPayment.noAccount" = "결제를 기록하려면 Tenra에 계좌를 추가하세요.";

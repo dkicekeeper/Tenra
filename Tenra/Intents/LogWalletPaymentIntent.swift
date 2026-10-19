@@ -67,6 +67,9 @@ struct LogWalletPaymentIntent: AppIntent {
             return .result(dialog: IntentDialog(stringLiteral: text))
         case .duplicate:
             return .result(dialog: "intent.walletPayment.duplicate")
+        case .subscription(let name):
+            let text = String(format: String(localized: "intent.walletPayment.subscription"), name)
+            return .result(dialog: IntentDialog(stringLiteral: text))
         case .noAmount:
             return .result(dialog: "intent.walletPayment.noAmount")
         case .queued:

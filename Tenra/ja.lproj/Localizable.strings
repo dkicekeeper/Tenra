@@ -1706,6 +1706,7 @@
 "intent.walletPayment.parameter.card" = "カード";
 "intent.walletPayment.parameter.account" = "口座";
 "intent.walletPayment.duplicate" = "この支払いはすでに記録されています。";
+"intent.walletPayment.subscription" = "サブスクリプション「%@」としてすでに記録されています。";
 "intent.walletPayment.noAmount" = "この支払いには金額がないため、何も記録していません。";
 "intent.walletPayment.queued" = "まだ為替レートがありません。レートを取得しだい、Tenra が支払いを記録します。";
 "intent.walletPayment.noAccount" = "支払いを記録するには、Tenra に口座を追加してください。";

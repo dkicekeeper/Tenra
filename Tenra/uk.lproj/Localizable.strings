@@ -1706,6 +1706,7 @@
 "intent.walletPayment.parameter.card" = "Картка";
 "intent.walletPayment.parameter.account" = "Рахунок";
 "intent.walletPayment.duplicate" = "Цю оплату вже записано.";
+"intent.walletPayment.subscription" = "Уже записано як підписку «%@».";
 "intent.walletPayment.noAmount" = "В оплаті немає суми, нічого не записано.";
 "intent.walletPayment.queued" = "Курсу валюти поки немає. Tenra запише оплату, щойно він з'явиться.";
 "intent.walletPayment.noAccount" = "Додайте рахунок у Tenra, щоб записувати оплати.";

@@ -1706,6 +1706,7 @@
 "intent.walletPayment.parameter.card" = "Karte";
 "intent.walletPayment.parameter.account" = "Konto";
 "intent.walletPayment.duplicate" = "Diese Zahlung ist bereits erfasst.";
+"intent.walletPayment.subscription" = "Bereits als Abo „%@“ erfasst.";
 "intent.walletPayment.noAmount" = "Diese Zahlung hat keinen Betrag, nichts erfasst.";
 "intent.walletPayment.queued" = "Noch kein Wechselkurs. Tenra erfasst die Zahlung, sobald einer verfügbar ist.";
 "intent.walletPayment.noAccount" = "Fügen Sie in Tenra ein Konto hinzu, um Zahlungen zu erfassen.";

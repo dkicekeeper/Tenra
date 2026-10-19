@@ -59,6 +59,58 @@ enum WalletPaymentResolver {
         return AccountChoice(accountId: first.id, isGuess: true)
     }
 
+    // MARK: - Subscription charges
+
+    /// Merchant words that name no one: domains, legal forms, billing labels.
+    private nonisolated static let genericMerchantWords: Set<String> = [
+        "com", "net", "org", "www", "app", "apps", "bill", "billing", "pay", "payment",
+        "inc", "ltd", "llc", "llp", "gmbh", "too", "тоо", "ип", "the", "kz", "ru"
+    ]
+
+    /// The words of a merchant or description that can identify a brand.
+    nonisolated static func brandWords(_ text: String) -> Set<String> {
+        Set(
+            CategorySuggestionService.normalizedMerchant(text)
+                .split(separator: " ")
+                .map(String.init)
+                .filter { $0.count >= CategorySuggestionService.minimumMerchantLength && !genericMerchantWords.contains($0) }
+        )
+    }
+
+    /// The subscription charge a payment repeats: an occurrence of a recurring series in
+    /// the same currency, within the statement import's window and tolerance
+    /// (`ImportDuplicateDetector.subscriptionDayWindow`, `subscriptionAmountTolerance`), whose
+    /// description shares a brand word with the merchant ("Netflix" and "NETFLIX.COM"),
+    /// closest date first. The word is required: a missed match leaves a duplicate the user
+    /// can delete, a false one would drop a real payment (a coffee priced like a
+    /// subscription).
+    nonisolated static func subscriptionOccurrence(
+        amount: Double,
+        currency: String,
+        day: Int,
+        merchant: String,
+        occurrences: [Transaction]
+    ) -> Transaction? {
+        let merchantWords = brandWords(merchant)
+        guard !merchantWords.isEmpty else { return nil }
+        return occurrences
+            .compactMap { occurrence -> (Transaction, Int)? in
+                guard occurrence.recurringSeriesId?.isEmpty == false,
+                      occurrence.type == .expense,
+                      occurrence.currency == currency,
+                      abs(occurrence.amount - amount) <= ImportDuplicateDetector.subscriptionAmountTolerance * amount,
+                      let occurrenceDay = ImportDuplicateDetector.dayNumber(occurrence.date),
+                      abs(occurrenceDay - day) <= ImportDuplicateDetector.subscriptionDayWindow,
+                      !brandWords(occurrence.description).isDisjoint(with: merchantWords)
+                else { return nil }
+                return (occurrence, abs(occurrenceDay - day))
+            }
+            .min { $0.1 != $1.1 ? $0.1 < $1.1 : $0.0.id < $1.0.id }?
+            .0
+    }
+
+    // MARK: - Category
+
     struct CategoryChoice: Equatable {
         /// "" means uncategorized, which the store accepts.
         let name: String

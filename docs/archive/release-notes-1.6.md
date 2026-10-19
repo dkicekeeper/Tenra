@@ -1,13 +1,13 @@
 # Tenra 1.6: What's New (ASC, 13 storefront locales)
 
 Version 1.6, drafted 2026-10-15. Code: `main` from `ffa4541` on (TestFlight 1.6 builds 10-20).
-`prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes each block into App Store
+`prepare-version` (Actions → App Store Connect, [asc.md](../asc.md)) pastes each block into App Store
 Connect → Tenra → 1.6 → the locale → "What's New in This Version". No em dashes (user rule).
 Promotional Text stays as in 1.5. When 1.6 ships, move this file to `archive/release-notes-1.6.md`.
 
 New since 1.5 (submitted 2026-10-12):
-- Ten, the AI assistant ([plan-ai-assistant.md](plan-ai-assistant.md)): questions in plain words answered on the app's own cards; drafts saved only on Save (transactions, budgets, subscriptions, facts, goals, debts); notices it writes first (insight signals, the weekly digest, a charge tomorrow, a debt due, a goal behind); voice and receipt or statement attachments in the chat; facts it remembers, listed in Settings › Assistant; its own tab, speech bubbles and gestures, a wardrobe with accessories it earns and holiday outfits. 30 free answers in the first 7 days, then 10 a month; Tenra Pro unlimited. Claude by Anthropic through Tenra's server, after a consent screen.
-- Savings goals (free) and personal debts (Tenra Pro) in Finances: cards, lists, detail and edit screens ([domains/goals-and-debts.md](domains/goals-and-debts.md)).
+- Ten, the AI assistant ([plan-ai-assistant.md](../plan-ai-assistant.md)): questions in plain words answered on the app's own cards; drafts saved only on Save (transactions, budgets, subscriptions, facts, goals, debts); notices it writes first (insight signals, the weekly digest, a charge tomorrow, a debt due, a goal behind); voice and receipt or statement attachments in the chat; facts it remembers, listed in Settings › Assistant; its own tab, speech bubbles and gestures, a wardrobe with accessories it earns and holiday outfits. 30 free answers in the first 7 days, then 10 a month; Tenra Pro unlimited. Claude by Anthropic through Tenra's server, after a consent screen.
+- Savings goals (free) and personal debts (Tenra Pro) in Finances: cards, lists, detail and edit screens ([domains/goals-and-debts.md](../domains/goals-and-debts.md)).
 - Insights: the Financial Health and savings rate details open on a hero gauge, every insight detail opens on the colour of its tone, the Finances cards show icons on a shelf.
 - DesignKit 4.x: rows for backups, subcategories and quick-access currencies, History's "load more" footer.
 
@@ -208,9 +208,9 @@ Tenra 1.6의 새로운 기능:
 
 ## Submission checklist (1.6)
 
-The release audit of 2026-10-15 ([archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md))
+The release audit of 2026-10-15 ([archive/release-audit-1.6-2026-10-15.md](release-audit-1.6-2026-10-15.md))
 fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stays open is in
-[backlog.md](backlog.md). In order:
+[backlog.md](../backlog.md). In order:
 
 1. ~~**Merge the audit branch**~~: on `main` as #75 (2026-10-16), the rest as #79.
 2. ~~**Deploy the Worker**~~: deployed from the audit branch on 2026-10-15 (version
@@ -219,7 +219,7 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    built from `claude/designkit-5` without this branch), so they count as free (150 calls a
    month per install).
 3. ~~**Cloudflare Workers Paid**~~: subscribed on 2026-10-18 ($5 a month,
-   [plan-ai-assistant.md](plan-ai-assistant.md) §5.1), so the free plan's 1 000 KV writes a day
+   [plan-ai-assistant.md](../plan-ai-assistant.md) §5.1), so the free plan's 1 000 KV writes a day
    and 10 ms CPU per request no longer cap App Review and real users.
 4. ~~**Anthropic Console**~~: the Tenra workspace's limit stays at $20 a month (the owner's call on
    2026-10-18: $7.54 spent so far, enough for App Review). Raise it if spending climbs after the
@@ -256,17 +256,18 @@ fixed what blocked the release on `claude/compassionate-curie-9bgxnb`; what stay
    - ~~**Product page test**~~: the owner's call on 2026-10-18 is to release 1.6 right after
      approval (the version's release type is already "after approval") and let the test that
      started on 13.10 end with it.
-10. ~~**Terms of Use**~~ ([public/terms-of-use.html](public/terms-of-use.html)): section 4 on Ten
+10. ~~**Terms of Use**~~ ([public/terms-of-use.html](../public/terms-of-use.html)): section 4 on Ten
     and the data section (2026-10-16), live and read by the owner on 2026-10-18.
 11. ~~**Submit for review**~~: submitted by the founder on 2026-10-18 (Waiting for Review).
-12. After release: this file to `archive/release-notes-1.6.md`, the 1.6 row in
-    [promotion-plan.md](promotion-plan.md) §1, the week after release against the week before in §6.
+12. ~~After release~~: in the store on 2026-10-19 (build 32); this file archived, the 1.6 row in
+    [promotion-plan.md](../promotion-plan.md) §1 updated, the custom product pages sent for review
+    with the 1.6 frames; the week after release against the week before goes in §6.
 
 ### Screenshots
 
 App Store Connect takes the 6.9" set (1320×2868) for every iPhone; at most 10 per locale. In
 ScreenshotDemo mode Ten runs in the Simulator on a scripted transport, and the seed has goals,
-debts and a subscription charged tomorrow (Ten's notice on Home); see [asc.md](asc.md),
+debts and a subscription charged tomorrow (Ten's notice on Home); see [asc.md](../asc.md),
 Screenshots. Frames: 01-12 reshot on the 1.6 UI (Ten's tab instead of "+"), 07 is now Ten's
 voice sheet, new 13 (Ten answers on cards), 14 (a spoken expense drafted with Save), 15 (a goal),
 16 (debts, one overdue). Store order (10): Ten answers, Ten drafts, home, finances, goal, debts,
@@ -298,7 +299,7 @@ tracking or ads; no data broker; no account.
 | Identifiers › User ID | RevenueCat's anonymous app user ID, to check Pro (cached 10 minutes) and count Pro answers | App Functionality | No | No |
 | Purchases › Purchase History | RevenueCat records the purchases against that anonymous ID (its own App Privacy guide asks for it; the 1.0-1.5 label left it out) | App Functionality | No | No |
 
-- The privacy policy page ([public/privacy-policy.html](public/privacy-policy.html)) names Anthropic,
+- The privacy policy page ([public/privacy-policy.html](../public/privacy-policy.html)) names Anthropic,
   RevenueCat and the rate and logo sources since the 1.6 update; it must be live before submission.
 
 ### App Review notes (paste as is)

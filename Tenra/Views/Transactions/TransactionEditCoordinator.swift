@@ -340,13 +340,21 @@ final class TransactionEditCoordinator {
                 subcategoryIds: Array(formData.selectedSubcategoryIds)
             )
 
-            // A category or subcategory fixed here also fixes what the Wallet
-            // automation will pick next time for this merchant.
-            if transaction.type == .expense,
-               updatedTransaction.category != transaction.category
-                   || formData.selectedSubcategoryIds != previousSubcategoryIds,
-               let newCategoryId = categoriesViewModel.customCategories
-                   .first(where: { $0.type == .expense && $0.name == updatedTransaction.category })?.id {
+            // An Apple Pay payment the Wallet action recorded: any save here confirms
+            // it, so its category and account become the choice for its merchant and card.
+            // Otherwise a category or subcategory fixed here still fixes what the older
+            // Wallet automation (AddExpenseIntent) picks next time for this merchant.
+            if WalletCaptureStore.shared.capture(forTransactionId: transaction.id) != nil {
+                WalletPaymentRecorder.confirm(
+                    updatedTransaction,
+                    subcategoryIds: Array(formData.selectedSubcategoryIds),
+                    categories: categoriesViewModel.customCategories
+                )
+            } else if transaction.type == .expense,
+                      updatedTransaction.category != transaction.category
+                          || formData.selectedSubcategoryIds != previousSubcategoryIds,
+                      let newCategoryId = categoriesViewModel.customCategories
+                          .first(where: { $0.type == .expense && $0.name == updatedTransaction.category })?.id {
                 MerchantCategoryMemory.shared.correct(
                     categoryId: newCategoryId,
                     subcategoryIds: Array(formData.selectedSubcategoryIds),

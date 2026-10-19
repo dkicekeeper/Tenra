@@ -1698,6 +1698,17 @@
 "intent.addExpense.saved" = "Eklendi: %1$@, %2$@.";
 "intent.addExpense.askCategory" = "%@ için hangi kategori? Tenra bunu hatırlayacak.";
 "intent.addExpense.askSubcategory" = "%@ için hangi alt kategori?";
+"intent.walletPayment.title" = "Apple Pay ödemesini kaydet";
+"intent.walletPayment.description" = "Wallet otomasyonu için: kartla yapılan ödemeyi işyeri, kart ve para birimiyle, hiçbir şey sormadan kaydeder. Tenra her işyerinin kategorisini ve her kartın hesabını hatırlar.";
+"intent.walletPayment.parameter.amount" = "Tutar";
+"intent.walletPayment.parameter.currency" = "Para birimi kodu";
+"intent.walletPayment.parameter.merchant" = "İşyeri";
+"intent.walletPayment.parameter.card" = "Kart";
+"intent.walletPayment.parameter.account" = "Hesap";
+"intent.walletPayment.duplicate" = "Bu ödeme zaten kaydedildi.";
+"intent.walletPayment.noAmount" = "Bu ödemede tutar yok, hiçbir şey kaydedilmedi.";
+"intent.walletPayment.queued" = "Henüz döviz kuru yok. Tenra ödemeyi kur gelir gelmez kaydedecek.";
+"intent.walletPayment.noAccount" = "Ödemeleri kaydetmek için Tenra'ya bir hesap ekleyin.";
 "intent.entity.account" = "Hesap";
 "intent.entity.category" = "Kategori";
 "intent.entity.subcategory" = "Alt kategori";

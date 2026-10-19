@@ -1698,6 +1698,17 @@
 "intent.addExpense.saved" = "追加しました: %1$@、%2$@。";
 "intent.addExpense.askCategory" = "%@ のカテゴリは？Tenra が覚えておきます。";
 "intent.addExpense.askSubcategory" = "%@ のサブカテゴリは？";
+"intent.walletPayment.title" = "Apple Pay の支払いを記録";
+"intent.walletPayment.description" = "Wallet のオートメーション用: カード払いを店舗、カード、通貨とともに、何も尋ねずに記録します。Tenra は店舗ごとのカテゴリとカードごとの口座を記憶します。";
+"intent.walletPayment.parameter.amount" = "金額";
+"intent.walletPayment.parameter.currency" = "通貨コード";
+"intent.walletPayment.parameter.merchant" = "店舗";
+"intent.walletPayment.parameter.card" = "カード";
+"intent.walletPayment.parameter.account" = "口座";
+"intent.walletPayment.duplicate" = "この支払いはすでに記録されています。";
+"intent.walletPayment.noAmount" = "この支払いには金額がないため、何も記録していません。";
+"intent.walletPayment.queued" = "まだ為替レートがありません。レートを取得しだい、Tenra が支払いを記録します。";
+"intent.walletPayment.noAccount" = "支払いを記録するには、Tenra に口座を追加してください。";
 "intent.entity.account" = "口座";
 "intent.entity.category" = "カテゴリ";
 "intent.entity.subcategory" = "サブカテゴリ";

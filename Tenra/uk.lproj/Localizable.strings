@@ -1698,6 +1698,17 @@
 "intent.addExpense.saved" = "Додано: %1$@, %2$@.";
 "intent.addExpense.askCategory" = "Яка категорія для %@? Tenra її запам'ятає.";
 "intent.addExpense.askSubcategory" = "Яка підкатегорія для %@?";
+"intent.walletPayment.title" = "Записати оплату Apple Pay";
+"intent.walletPayment.description" = "Для автоматизації Wallet: записує оплату карткою з продавцем, карткою та валютою, нічого не питаючи. Tenra запам'ятовує категорію кожного продавця і рахунок кожної картки.";
+"intent.walletPayment.parameter.amount" = "Сума";
+"intent.walletPayment.parameter.currency" = "Код валюти";
+"intent.walletPayment.parameter.merchant" = "Продавець";
+"intent.walletPayment.parameter.card" = "Картка";
+"intent.walletPayment.parameter.account" = "Рахунок";
+"intent.walletPayment.duplicate" = "Цю оплату вже записано.";
+"intent.walletPayment.noAmount" = "В оплаті немає суми, нічого не записано.";
+"intent.walletPayment.queued" = "Курсу валюти поки немає. Tenra запише оплату, щойно він з'явиться.";
+"intent.walletPayment.noAccount" = "Додайте рахунок у Tenra, щоб записувати оплати.";
 "intent.entity.account" = "Рахунок";
 "intent.entity.category" = "Категорія";
 "intent.entity.subcategory" = "Підкатегорія";

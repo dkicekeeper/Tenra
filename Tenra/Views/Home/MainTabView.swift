@@ -230,7 +230,12 @@ struct MainTabView: View {
         }
         // Ten writes first about tomorrow's charges whenever the app comes to the front.
         .onChange(of: scenePhase, initial: true) { _, phase in
-            if phase == .active { coordinator.refreshAssistantInbox() }
+            guard phase == .active else { return }
+            coordinator.refreshAssistantInbox()
+            // Apple Pay payments that waited for an exchange rate (LogWalletPaymentIntent).
+            if !WalletCaptureStore.shared.pending.isEmpty {
+                Task { await WalletPaymentRecorder.recordPending(services: IntentServices(coordinator: coordinator)) }
+            }
         }
         // A file opened in Tenra from another app goes to the assistant, which attaches it.
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in

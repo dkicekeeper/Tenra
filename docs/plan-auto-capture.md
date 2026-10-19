@@ -141,8 +141,9 @@ Shortcut Input → Card or Pass. «Показывать при запуске» 
 ## 9. Прогресс
 
 - [x] План, backlog
-- [ ] Фаза 1а: `LogWalletPaymentIntent`, `WalletPaymentRecorder`, `WalletPaymentResolver`,
+- [x] Фаза 1а: `LogWalletPaymentIntent`, `WalletPaymentRecorder`, `WalletPaymentResolver`,
   `CardAccountMemory`, `WalletCaptureStore`, обучение из правки, тесты, строки, intents.md
+  (проверка на устройстве по §8 впереди)
 - [ ] Фаза 1б: «На проверку», уведомление, список карт, инструкция, удаление пробы
 - [ ] Фаза 1в: привязка к подпискам
 - [ ] Фаза 2: справочник мерчантов и логотипы

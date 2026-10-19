@@ -35,7 +35,13 @@ amount, category (`CategoryAppEntity`), subcategory (`SubcategoryAppEntity`), ac
 The currency is the account's, the date is now. With no category but a merchant in the note,
 the category comes from the merchant memory (§6).
 
-### 1.3 `CheckSpendingIntent`
+### 1.3 `LogWalletPaymentIntent`
+
+The action for the Wallet automation (§6): amount, currency code, merchant, card and an
+optional account. Never asks and never comes to the foreground (`supportedModes = .background`):
+what Tenra cannot know is saved as a guess and journaled for review.
+
+### 1.4 `CheckSpendingIntent`
 
 Read-only: spending today / this week / this month (`SpendingPeriod`), as a spoken dialog
 plus a snippet. `authenticationPolicy = .requiresAuthentication`: totals need an unlocked
@@ -62,6 +68,8 @@ A financial write must never happen silently on a misheard phrase:
 - `AddExpenseIntent` confirms only when `draft.warnings` is not empty. When the user supplied
   every parameter (an automation or an Action Button binding) it commits directly, because a
   prompt would make automations unusable.
+- `LogWalletPaymentIntent` never confirms (owner's decision 2026-10-19): a card payment did
+  happen, so it is saved at once and what was guessed is journaled for review instead (§6.1).
 
 ### 2.2 Blocking issues → open the app
 
@@ -78,7 +86,9 @@ On an issue the intent hands the parsed operation to `IntentHandoff.shared` and 
 to the foreground; `MainTabView` picks up `pendingOperation` and opens the voice
 confirmation screen prefilled. Opening the app is a normal branch, not a failure. Intents
 never make a network call: they pass `ConversionPolicy.cachedOnly` and treat
-`needsFXConversion` as blocking.
+`needsFXConversion` as blocking. The one exception is `LogWalletPaymentIntent`, which asks for
+the exchange rate once on a cache miss and otherwise queues the payment (§6, owner's decision
+2026-10-19).
 
 ### 2.3 Pro gate
 
@@ -103,13 +113,14 @@ left out, and that logging several at once is part of Tenra Pro
 
 ### 3.1 Files
 
-- `Tenra/Intents/`: the three intents, `TenraShortcuts`, `Entities/` (account, category,
+- `Tenra/Intents/`: the four intents, `TenraShortcuts`, `Entities/` (account, category,
   subcategory `AppEntity`s with their queries), `Snippets/` (`TransactionConfirmationSnippet`,
   `TransactionConfirmationSnippetIntent`, `SpendingSummarySnippet`), and the DEBUG-only
   `WalletPaymentProbeIntent`.
 - `Services/Intents/`: `IntentEnvironment`, `TransactionDraft` + `TransactionDraftService`,
   `IntentAccountSuggester`, `IntentSubcategoryStore`, `SpendingQueryService`, `IntentHandoff`,
-  `IntentUsageCounters`, and the DEBUG `WalletPaymentProbeLog`.
+  `IntentUsageCounters`, the Wallet action's `WalletPaymentResolver`, `WalletPaymentRecorder`,
+  `WalletCaptureStore`, `CardAccountMemory`, and the DEBUG `WalletPaymentProbeLog`.
 
 ### 3.2 `IntentEnvironment`
 
@@ -235,9 +246,45 @@ a green build).
 
 ## 6. Wallet automation and merchant memory
 
-The Shortcuts "Wallet" automation (When I tap my card → "Add an expense") runs
-`AddExpenseIntent` on every Apple Pay payment. Setup that makes it silent after the first
-payment at a merchant:
+The Shortcuts "Wallet" trigger fires when a card is tapped at a terminal (iPhone or Apple Watch),
+not for Apple Pay on websites and in apps. It passes Amount (a currency amount whose Currency
+Code is nested: reachable only through a Set Variable step), Merchant, Card or Pass and Date; no
+merchant category. It is known to time out, to send an empty merchant with amount 0, and to fire
+for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-capture.md).
+
+### 6.1 `LogWalletPaymentIntent` (silent)
+
+`WalletPaymentRecorder.record`:
+
+1. Amount ≤ 0 (a transit gate, a lost payload) → nothing recorded.
+2. The same amount, currency, normalized merchant and card within 90 seconds
+   (`WalletCaptureStore.isDuplicate`, captures and queue) → the terminal fired twice.
+3. Category (`WalletPaymentResolver.category`): `MerchantCategoryMemory` with its subcategories,
+   else `CategorySuggestionProvider.suggestion` over a bounded fetch of the merchant's history
+   (descriptions containing its first word, 200 newest) plus brands and the voice keywords, else
+   "Other". Everything but the memory is a guess.
+4. Account (`WalletPaymentResolver.account`): fixed in the automation → `CardAccountMemory` for
+   the card → the only account a card can pay from → `IntentAccountSuggester` for the category →
+   the first one. The last two are guesses; loans and deposits never qualify.
+5. Currency: the passed code, else the account's. Cache, then one `CurrencyConverter.convert`,
+   else the payment waits in `WalletCaptureStore.pending` (saving without a rate would move the
+   balance by the raw foreign amount). The queue is recorded, each payment with its own date,
+   before the next payment and when the app comes to the front (`MainTabView`).
+6. `TransactionDraftService.commit`; a guessed account does not reach `VoiceLearningStore`.
+7. `WalletCaptureStore.record`: the transaction id with the payment and its guesses. A capture
+   with a guess not yet looked at is "To review". Captures live 90 days.
+
+Learning: saving a captured transaction from the edit screen (`TransactionEditCoordinator`)
+calls `WalletPaymentRecorder.confirm`: its category and subcategories are remembered for the
+merchant, its account for the card, and the capture is reviewed. An account fixed in the
+automation is remembered for the card at once. Guesses are never remembered.
+
+Pinned by `WalletPaymentResolverTests`, `WalletCaptureStoreTests`, `CardAccountMemoryTests`.
+
+### 6.2 `AddExpenseIntent` (asks once per merchant)
+
+The older setup (When I tap my card → "Add an expense") runs `AddExpenseIntent` on every Apple
+Pay payment. Setup that makes it silent after the first payment at a merchant:
 
 - **Note ← Shortcut Input → Merchant.** The merchant is the memory's key; without it nothing is
   remembered and the payment falls back to "Other" with a confirmation.

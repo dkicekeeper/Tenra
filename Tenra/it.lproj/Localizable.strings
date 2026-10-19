@@ -1698,6 +1698,17 @@
 "intent.addExpense.saved" = "Aggiunto: %1$@, %2$@.";
 "intent.addExpense.askCategory" = "Quale categoria per %@? Tenra se la ricorderà.";
 "intent.addExpense.askSubcategory" = "Quale sottocategoria per %@?";
+"intent.walletPayment.title" = "Registra un pagamento Apple Pay";
+"intent.walletPayment.description" = "Per l'automazione Wallet: registra un pagamento con carta con esercente, carta e valuta, senza chiedere nulla. Tenra ricorda la categoria di ogni esercente e il conto di ogni carta.";
+"intent.walletPayment.parameter.amount" = "Importo";
+"intent.walletPayment.parameter.currency" = "Codice valuta";
+"intent.walletPayment.parameter.merchant" = "Esercente";
+"intent.walletPayment.parameter.card" = "Carta";
+"intent.walletPayment.parameter.account" = "Conto";
+"intent.walletPayment.duplicate" = "Questo pagamento è già registrato.";
+"intent.walletPayment.noAmount" = "Questo pagamento non ha un importo, non è stato registrato nulla.";
+"intent.walletPayment.queued" = "Non c'è ancora un tasso di cambio. Tenra registrerà il pagamento appena ne avrà uno.";
+"intent.walletPayment.noAccount" = "Aggiungi un conto in Tenra per registrare i pagamenti.";
 "intent.entity.account" = "Conto";
 "intent.entity.category" = "Categoria";
 "intent.entity.subcategory" = "Sottocategoria";

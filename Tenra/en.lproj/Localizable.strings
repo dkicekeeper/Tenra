@@ -1698,6 +1698,17 @@
 "intent.addExpense.saved" = "Added %1$@, %2$@.";
 "intent.addExpense.askCategory" = "Which category for %@? Tenra will remember it.";
 "intent.addExpense.askSubcategory" = "Which subcategory for %@?";
+"intent.walletPayment.title" = "Log an Apple Pay payment";
+"intent.walletPayment.description" = "For the Wallet automation: records a card payment with its merchant, card and currency, without asking anything. Tenra remembers the category of each merchant and the account of each card.";
+"intent.walletPayment.parameter.amount" = "Amount";
+"intent.walletPayment.parameter.currency" = "Currency code";
+"intent.walletPayment.parameter.merchant" = "Merchant";
+"intent.walletPayment.parameter.card" = "Card";
+"intent.walletPayment.parameter.account" = "Account";
+"intent.walletPayment.duplicate" = "This payment is already recorded.";
+"intent.walletPayment.noAmount" = "No amount in this payment, nothing recorded.";
+"intent.walletPayment.queued" = "No exchange rate yet. Tenra records this payment as soon as it gets one.";
+"intent.walletPayment.noAccount" = "Add an account in Tenra to record payments.";
 "intent.entity.account" = "Account";
 "intent.entity.category" = "Category";
 "intent.entity.subcategory" = "Subcategory";

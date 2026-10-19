@@ -1730,11 +1730,25 @@
 "settings.merchants.title" = "Comercios de Wallet";
 "settings.merchants.footer" = "Los pagos en estos comercios con la automatización de Wallet reciben esta categoría y subcategoría. Toca un comercio para cambiarlas o desliza a la izquierda para olvidarlo.";
 "settings.merchants.emptyTitle" = "Aún no hay comercios";
-"settings.merchants.emptyMessage" = "Cuando la automatización de Wallet añade un gasto, Tenra pregunta la categoría una vez por comercio y la recuerda aquí. En la automatización, pasa el comercio a «Nota» y deja «Categoría» vacía.";
+"settings.merchants.emptyMessage" = "Aquí se recuerda la categoría de cada comercio donde pagas con Apple Pay a través de la automatización de Wallet, en cuanto la eliges, confirmas o corriges.";
 "settings.merchants.forget" = "Olvidar";
 "settings.merchants.forgetMerchant" = "Olvidar comercio";
 "settings.merchants.categoryDeleted" = "Categoría eliminada, Tenra volverá a preguntar";
-"settings.merchants.editFooter" = "Los próximos pagos aquí se registrarán con esta categoría. Si olvidas el comercio, Tenra volverá a preguntar en su próximo pago.";
+"settings.merchants.editFooter" = "Los próximos pagos aquí se registrarán con esta categoría. Olvida el comercio para empezar de nuevo en su próximo pago.";
+"walletReview.title" = "Por revisar";
+"walletReview.footer" = "La categoría o la cuenta de estos pagos con Apple Pay se eligió automáticamente. Toca un pago para corregirlo o desliza a la derecha si es correcto. Tu elección se recordará para el comercio y la tarjeta.";
+"walletReview.emptyTitle" = "Nada que revisar";
+"walletReview.emptyMessage" = "Aquí aparecen los pagos con Apple Pay con una categoría o cuenta elegida automáticamente, hasta que los revises.";
+"walletReview.confirm" = "Correcto";
+"walletReview.confirmAll" = "Todo correcto";
+"walletReview.notification.title" = "Revisa un pago";
+"walletReview.notification.category" = "%1$@ se registró en «%2$@». Toca para revisarlo.";
+"walletReview.notification.account" = "%1$@ se registró en la cuenta «%2$@». Toca para revisarlo.";
+"settings.cards.title" = "Tarjetas de Wallet";
+"settings.cards.footer" = "Los pagos con Apple Pay con estas tarjetas se registran en la cuenta indicada. Toca una tarjeta para elegir otra cuenta o desliza a la izquierda para olvidarla.";
+"settings.cards.emptyTitle" = "Aún no hay tarjetas";
+"settings.cards.emptyMessage" = "Cuando la automatización de Wallet pasa la tarjeta, Tenra recuerda aquí la cuenta que elijas o confirmes para ella.";
+"settings.cards.accountDeleted" = "Cuenta eliminada";
 
 
 /* MARK: - Document import */

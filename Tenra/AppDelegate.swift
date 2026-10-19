@@ -87,6 +87,12 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             NotificationCenter.default.post(name: .insightSignalNotificationTapped, object: nil)
         }
 
+        // "Check a payment" (WalletReviewNotifier) → the To review list. The flag is read by
+        // MainTabView on a warm launch and on its first appearance after a cold one.
+        if identifier.hasPrefix(WalletReviewNotifier.identifierPrefix) {
+            WalletCaptureStore.shared.isReviewRequested = true
+        }
+
         // Parse notification ID: "subscription_{seriesId}_{offsetDays}"
         if identifier.hasPrefix("subscription_") {
             let components = identifier.components(separatedBy: "_")

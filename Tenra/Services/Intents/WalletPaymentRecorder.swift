@@ -173,7 +173,21 @@ enum WalletPaymentRecorder {
         var guesses: Set<WalletCaptureStore.Guess> = []
         if category.isGuess { guesses.insert(.category) }
         if account.isGuess { guesses.insert(.account) }
+        // One "check a payment" notification per merchant until the user looks at it.
+        let merchantKey = CategorySuggestionService.normalizedMerchant(payment.merchant)
+        let merchantAlreadyWaiting = captures.toReview.contains {
+            CategorySuggestionService.normalizedMerchant($0.payment.merchant) == merchantKey
+        }
         captures.record(transactionId: saved.id, payment: payment, guesses: guesses)
+        if !guesses.isEmpty, !merchantAlreadyWaiting {
+            await WalletReviewNotifier.notify(
+                transactionId: saved.id,
+                payment: payment,
+                guesses: guesses,
+                categoryName: saved.category,
+                accountName: accounts.first { $0.id == account.accountId }?.name ?? ""
+            )
+        }
 
         // An account fixed in the automation is the user's choice for this card.
         if let fixed = payment.accountId, fixed == account.accountId {

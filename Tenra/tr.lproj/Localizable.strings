@@ -1730,11 +1730,25 @@
 "settings.merchants.title" = "Wallet işyerleri";
 "settings.merchants.footer" = "Bu işyerlerinde Wallet otomasyonuyla yapılan ödemeler bu kategori ve alt kategoriyle kaydedilir. Değiştirmek için bir işyerine dokun, unutmak için sola kaydır.";
 "settings.merchants.emptyTitle" = "Henüz işyeri yok";
-"settings.merchants.emptyMessage" = "Wallet otomasyonu bir harcama eklediğinde Tenra her işyeri için kategoriyi bir kez sorar ve burada hatırlar. Otomasyonda işyerini \"Not\" alanına aktar ve \"Kategori\" alanını boş bırak.";
+"settings.merchants.emptyMessage" = "Wallet otomasyonuyla Apple Pay ile ödeme yaptığın her işyerinin kategorisi, onu seçtiğin, onayladığın veya düzelttiğin anda burada hatırlanır.";
 "settings.merchants.forget" = "Unut";
 "settings.merchants.forgetMerchant" = "İşyerini unut";
 "settings.merchants.categoryDeleted" = "Kategori silindi, Tenra yeniden soracak";
-"settings.merchants.editFooter" = "Buradaki sonraki ödemeler bu kategoriyle kaydedilir. İşyerini unutursan Tenra bir sonraki ödemesinde yeniden sorar.";
+"settings.merchants.editFooter" = "Buradaki sonraki ödemeler bu kategoriyle kaydedilir. Bir sonraki ödemesinde baştan başlamak için işyerini unut.";
+"walletReview.title" = "Kontrol edilecekler";
+"walletReview.footer" = "Bu Apple Pay ödemelerinin kategorisi veya hesabı otomatik seçildi. Düzeltmek için bir ödemeye dokun, doğruysa sağa kaydır. Seçimin işyeri ve kart için hatırlanır.";
+"walletReview.emptyTitle" = "Kontrol edilecek bir şey yok";
+"walletReview.emptyMessage" = "Kategorisi veya hesabı otomatik seçilen Apple Pay ödemeleri, sen kontrol edene kadar burada görünür.";
+"walletReview.confirm" = "Doğru";
+"walletReview.confirmAll" = "Hepsi doğru";
+"walletReview.notification.title" = "Bir ödemeyi kontrol et";
+"walletReview.notification.category" = "%1$@ ödemesi %2$@ kategorisine kaydedildi. Kontrol etmek için dokun.";
+"walletReview.notification.account" = "%1$@ ödemesi %2$@ hesabına kaydedildi. Kontrol etmek için dokun.";
+"settings.cards.title" = "Wallet kartları";
+"settings.cards.footer" = "Bu kartlarla yapılan Apple Pay ödemeleri gösterilen hesaba kaydedilir. Başka bir hesap seçmek için bir karta dokun, unutmak için sola kaydır.";
+"settings.cards.emptyTitle" = "Henüz kart yok";
+"settings.cards.emptyMessage" = "Wallet otomasyonu kartı aktardığında Tenra, onun için seçtiğin veya onayladığın hesabı burada hatırlar.";
+"settings.cards.accountDeleted" = "Hesap silindi";
 
 
 /* MARK: - Document import */

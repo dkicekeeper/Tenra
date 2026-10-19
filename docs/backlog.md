@@ -19,8 +19,7 @@ with the commit of every fix, are in
 - **Automatic payment capture and merchants** (plan in flight:
   [plan-auto-capture.md](plan-auto-capture.md)): a silent Wallet action with currency, card and
   duplicate handling, a "To review" list, merchant logos, then receipts shared from bank apps and
-  merchant screens and insights. The DEBUG Wallet probe (`WalletPaymentProbeIntent`,
-  `WalletPaymentProbeLog`, its Experiments section) goes in its phase 1b.
+  merchant screens and insights.
 - **Legacy converted deposits (DP1).** A read-only DEBUG diagnostic lists deposits converted
   before the `conversionTimestamp` fix (Settings → Experiments, `LegacyDepositDiagnostics`).
   Recovery waits for real data.

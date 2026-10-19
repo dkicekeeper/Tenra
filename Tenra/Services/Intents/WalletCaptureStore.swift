@@ -79,6 +79,9 @@ final class WalletCaptureStore {
     private var captures: [String: Capture]
     /// Oldest first.
     private(set) var pending: [WalletPayment]
+    /// Set by a tap on a "check a payment" notification (WalletReviewNotifier): MainTabView
+    /// presents the To review list. Not persisted.
+    var isReviewRequested = false
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults

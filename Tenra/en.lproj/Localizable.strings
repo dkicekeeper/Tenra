@@ -1730,11 +1730,25 @@
 "settings.merchants.title" = "Wallet merchants";
 "settings.merchants.footer" = "Payments at these merchants through the Wallet automation get this category and subcategory. Tap a merchant to change them, or swipe left to forget it.";
 "settings.merchants.emptyTitle" = "No merchants yet";
-"settings.merchants.emptyMessage" = "When the Wallet automation adds an expense, Tenra asks for the category once per merchant and remembers it here. In the automation, pass the merchant to Note and leave Category empty.";
+"settings.merchants.emptyMessage" = "The category of each merchant you pay with Apple Pay through the Wallet automation is remembered here, once you choose, confirm or fix it.";
 "settings.merchants.forget" = "Forget";
 "settings.merchants.forgetMerchant" = "Forget merchant";
 "settings.merchants.categoryDeleted" = "Category deleted, Tenra will ask again";
-"settings.merchants.editFooter" = "The next payments here are recorded with this category. Forget the merchant and Tenra asks again on its next payment.";
+"settings.merchants.editFooter" = "The next payments here are recorded with this category. Forget the merchant to start over on its next payment.";
+"walletReview.title" = "To review";
+"walletReview.footer" = "Tenra picked the category or the account of these Apple Pay payments on its own. Tap a payment to fix it, or swipe right if it is correct. Your choice is remembered for the merchant and the card.";
+"walletReview.emptyTitle" = "Nothing to review";
+"walletReview.emptyMessage" = "Apple Pay payments recorded with an automatic category or account appear here until you check them.";
+"walletReview.confirm" = "Correct";
+"walletReview.confirmAll" = "All correct";
+"walletReview.notification.title" = "Check a payment";
+"walletReview.notification.category" = "%1$@ is recorded in %2$@. Tap to check.";
+"walletReview.notification.account" = "%1$@ is recorded on %2$@. Tap to check.";
+"settings.cards.title" = "Wallet cards";
+"settings.cards.footer" = "Apple Pay payments with these cards are recorded on the account shown. Tap a card to pick another account, or swipe left to forget it.";
+"settings.cards.emptyTitle" = "No cards yet";
+"settings.cards.emptyMessage" = "When the Wallet automation passes the card, Tenra remembers the account you choose or confirm for it here.";
+"settings.cards.accountDeleted" = "Account deleted";
 
 
 /* MARK: - Document import */

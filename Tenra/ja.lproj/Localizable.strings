@@ -1730,11 +1730,25 @@
 "settings.merchants.title" = "Wallet の店舗";
 "settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。変更するには店舗をタップ、忘れるには左にスワイプします。";
 "settings.merchants.emptyTitle" = "まだ店舗はありません";
-"settings.merchants.emptyMessage" = "Wallet のオートメーションが支出を追加すると、Tenra は店舗ごとに一度だけカテゴリを尋ね、ここに覚えておきます。オートメーションでは店舗を「メモ」に渡し、「カテゴリ」は空のままにしてください。";
+"settings.merchants.emptyMessage" = "Wallet のオートメーションで Apple Pay を使って支払った店舗のカテゴリは、選ぶ、確認する、または修正すると、ここに記憶されます。";
 "settings.merchants.forget" = "忘れる";
 "settings.merchants.forgetMerchant" = "店舗を忘れる";
 "settings.merchants.categoryDeleted" = "カテゴリが削除されました。Tenra が再度尋ねます";
-"settings.merchants.editFooter" = "この店舗での次回以降の支払いは、このカテゴリで記録されます。店舗を忘れると、次回の支払いで Tenra が再度尋ねます。";
+"settings.merchants.editFooter" = "この店舗での次回以降の支払いは、このカテゴリで記録されます。次回の支払いからやり直すには、店舗を忘れてください。";
+"walletReview.title" = "確認待ち";
+"walletReview.footer" = "これらの Apple Pay の支払いは、カテゴリまたは口座が自動で選ばれています。修正するには支払いをタップ、正しければ右にスワイプしてください。選んだ内容は店舗とカードごとに記憶されます。";
+"walletReview.emptyTitle" = "確認するものはありません";
+"walletReview.emptyMessage" = "カテゴリまたは口座が自動で選ばれた Apple Pay の支払いは、確認するまでここに表示されます。";
+"walletReview.confirm" = "正しい";
+"walletReview.confirmAll" = "すべて正しい";
+"walletReview.notification.title" = "支払いを確認してください";
+"walletReview.notification.category" = "%1$@ を「%2$@」に記録しました。タップして確認してください。";
+"walletReview.notification.account" = "%1$@ を口座「%2$@」に記録しました。タップして確認してください。";
+"settings.cards.title" = "Wallet のカード";
+"settings.cards.footer" = "これらのカードでの Apple Pay の支払いは、表示された口座に記録されます。別の口座を選ぶにはカードをタップ、忘れるには左にスワイプします。";
+"settings.cards.emptyTitle" = "まだカードはありません";
+"settings.cards.emptyMessage" = "Wallet のオートメーションがカードを渡すと、そのカードに選んだ、または確認した口座を Tenra がここに記憶します。";
+"settings.cards.accountDeleted" = "削除された口座";
 
 
 /* MARK: - Document import */

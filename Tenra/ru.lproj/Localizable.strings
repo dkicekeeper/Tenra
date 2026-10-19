@@ -1730,11 +1730,25 @@
 "settings.merchants.title" = "Продавцы Wallet";
 "settings.merchants.footer" = "Оплаты у этих продавцов через автоматизацию Wallet записываются с этой категорией и подкатегорией. Нажмите на продавца, чтобы изменить их, или смахните влево, чтобы забыть.";
 "settings.merchants.emptyTitle" = "Пока нет продавцов";
-"settings.merchants.emptyMessage" = "Когда автоматизация Wallet добавляет трату, Tenra один раз спрашивает категорию для продавца и запоминает её здесь. В автоматизации передайте продавца в поле «Заметка» и оставьте «Категорию» пустой.";
+"settings.merchants.emptyMessage" = "Здесь запоминается категория каждого продавца, у которого вы платите Apple Pay через автоматизацию Wallet, как только вы её выберете, подтвердите или исправите.";
 "settings.merchants.forget" = "Забыть";
 "settings.merchants.forgetMerchant" = "Забыть продавца";
 "settings.merchants.categoryDeleted" = "Категория удалена, Tenra спросит снова";
-"settings.merchants.editFooter" = "Следующие оплаты здесь запишутся с этой категорией. Если забыть продавца, Tenra спросит категорию при следующей оплате.";
+"settings.merchants.editFooter" = "Следующие оплаты здесь запишутся с этой категорией. Забудьте продавца, чтобы начать заново с его следующей оплаты.";
+"walletReview.title" = "На проверку";
+"walletReview.footer" = "У этих оплат Apple Pay категория или счёт выбраны автоматически. Нажмите на оплату, чтобы исправить, или смахните вправо, если всё верно. Ваш выбор запомнится для продавца и карты.";
+"walletReview.emptyTitle" = "Проверять нечего";
+"walletReview.emptyMessage" = "Здесь появляются оплаты Apple Pay, у которых категория или счёт выбраны автоматически, пока вы их не проверите.";
+"walletReview.confirm" = "Верно";
+"walletReview.confirmAll" = "Всё верно";
+"walletReview.notification.title" = "Проверьте оплату";
+"walletReview.notification.category" = "%1$@: записано в «%2$@». Нажмите, чтобы проверить.";
+"walletReview.notification.account" = "%1$@: записано на счёт «%2$@». Нажмите, чтобы проверить.";
+"settings.cards.title" = "Карты Wallet";
+"settings.cards.footer" = "Оплаты Apple Pay этими картами записываются на указанный счёт. Нажмите на карту, чтобы выбрать другой счёт, или смахните влево, чтобы забыть.";
+"settings.cards.emptyTitle" = "Карт пока нет";
+"settings.cards.emptyMessage" = "Когда автоматизация Wallet передаёт карту, Tenra запоминает здесь счёт, который вы для неё выбрали или подтвердили.";
+"settings.cards.accountDeleted" = "Счёт удалён";
 
 
 /* MARK: - Document import */

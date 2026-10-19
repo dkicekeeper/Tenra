@@ -1730,11 +1730,25 @@
 "settings.merchants.title" = "Wallet-Händler";
 "settings.merchants.footer" = "Zahlungen bei diesen Händlern über die Wallet-Automation erhalten diese Kategorie und Unterkategorie. Tippen Sie auf einen Händler, um sie zu ändern, oder wischen Sie nach links, um ihn zu vergessen.";
 "settings.merchants.emptyTitle" = "Noch keine Händler";
-"settings.merchants.emptyMessage" = "Wenn die Wallet-Automation eine Ausgabe hinzufügt, fragt Tenra einmal pro Händler nach der Kategorie und merkt sie sich hier. Geben Sie in der Automation den Händler an „Notiz“ weiter und lassen Sie „Kategorie“ leer.";
+"settings.merchants.emptyMessage" = "Hier wird die Kategorie jedes Händlers gemerkt, bei dem Sie über die Wallet-Automation mit Apple Pay zahlen, sobald Sie sie wählen, bestätigen oder korrigieren.";
 "settings.merchants.forget" = "Vergessen";
 "settings.merchants.forgetMerchant" = "Händler vergessen";
 "settings.merchants.categoryDeleted" = "Kategorie gelöscht, Tenra fragt erneut";
-"settings.merchants.editFooter" = "Die nächsten Zahlungen hier werden mit dieser Kategorie erfasst. Vergessen Sie den Händler, fragt Tenra bei seiner nächsten Zahlung erneut.";
+"settings.merchants.editFooter" = "Die nächsten Zahlungen hier werden mit dieser Kategorie erfasst. Vergessen Sie den Händler, um bei seiner nächsten Zahlung neu zu beginnen.";
+"walletReview.title" = "Zu prüfen";
+"walletReview.footer" = "Bei diesen Apple Pay-Zahlungen wurden Kategorie oder Konto automatisch gewählt. Tippen Sie auf eine Zahlung, um sie zu korrigieren, oder wischen Sie nach rechts, wenn alles stimmt. Ihre Wahl wird für den Händler und die Karte gemerkt.";
+"walletReview.emptyTitle" = "Nichts zu prüfen";
+"walletReview.emptyMessage" = "Hier erscheinen Apple Pay-Zahlungen mit automatisch gewählter Kategorie oder automatisch gewähltem Konto, bis Sie sie prüfen.";
+"walletReview.confirm" = "Stimmt";
+"walletReview.confirmAll" = "Alles stimmt";
+"walletReview.notification.title" = "Zahlung prüfen";
+"walletReview.notification.category" = "%1$@ wurde unter „%2$@“ erfasst. Zum Prüfen tippen.";
+"walletReview.notification.account" = "%1$@ wurde auf dem Konto „%2$@“ erfasst. Zum Prüfen tippen.";
+"settings.cards.title" = "Wallet-Karten";
+"settings.cards.footer" = "Apple Pay-Zahlungen mit diesen Karten werden auf dem angezeigten Konto erfasst. Tippen Sie auf eine Karte, um ein anderes Konto zu wählen, oder wischen Sie nach links, um sie zu vergessen.";
+"settings.cards.emptyTitle" = "Noch keine Karten";
+"settings.cards.emptyMessage" = "Wenn die Wallet-Automation die Karte übergibt, merkt sich Tenra hier das Konto, das Sie dafür wählen oder bestätigen.";
+"settings.cards.accountDeleted" = "Konto gelöscht";
 
 
 /* MARK: - Document import */

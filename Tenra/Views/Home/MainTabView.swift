@@ -228,6 +228,29 @@ struct MainTabView: View {
             .softScrollEdges()
             .environment(coordinator.transactionStore)
         }
+        // A tap on "check a payment" (WalletReviewNotifier): the Apple Pay payments saved
+        // with a guess.
+        .sheet(isPresented: Binding(
+            get: { WalletCaptureStore.shared.isReviewRequested },
+            set: { WalletCaptureStore.shared.isReviewRequested = $0 }
+        )) {
+            NavigationStack {
+                WalletReviewView(
+                    transactionsViewModel: coordinator.transactionsViewModel,
+                    categoriesViewModel: coordinator.categoriesViewModel,
+                    accountsViewModel: coordinator.accountsViewModel
+                )
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "button.close"), systemImage: "xmark") {
+                            WalletCaptureStore.shared.isReviewRequested = false
+                        }
+                    }
+                }
+            }
+            .softScrollEdges()
+            .environment(coordinator.transactionStore)
+        }
         // Ten writes first about tomorrow's charges whenever the app comes to the front.
         .onChange(of: scenePhase, initial: true) { _, phase in
             guard phase == .active else { return }

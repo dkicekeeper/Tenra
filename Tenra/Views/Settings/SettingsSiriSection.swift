@@ -4,14 +4,17 @@
 //
 //  Teaches the Siri phrases. Without this, App Shortcuts are discoverable only
 //  by accident, and an undiscovered feature has no effect on retention.
-//  Also the way to the merchants the Wallet automation remembered.
+//  Also the way to what the Wallet automation keeps: the payments it saved with a
+//  guess (To review), the merchants and the cards it remembered.
 //
 
 import SwiftUI
 import AppIntents
 
 struct SettingsSiriSection: View {
+    let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
+    let accountsViewModel: AccountsViewModel
 
     var body: some View {
         Section {
@@ -21,10 +24,28 @@ struct SettingsSiriSection: View {
             }
 
             NavigationSettingsRow(
+                icon: "checkmark.circle",
+                title: String(localized: "walletReview.title")
+            ) {
+                WalletReviewView(
+                    transactionsViewModel: transactionsViewModel,
+                    categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel
+                )
+            }
+
+            NavigationSettingsRow(
                 icon: "wallet.pass",
                 title: String(localized: "settings.merchants.title")
             ) {
                 MerchantCategoriesView(categoriesViewModel: categoriesViewModel)
+            }
+
+            NavigationSettingsRow(
+                icon: "creditcard",
+                title: String(localized: "settings.cards.title")
+            ) {
+                WalletCardsView(accountsViewModel: accountsViewModel)
             }
 
             ShortcutsLink()

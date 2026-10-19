@@ -69,6 +69,21 @@ final class CardAccountMemory {
         persist()
     }
 
+    /// A remembered card, as the Settings list shows it.
+    struct Card: Identifiable, Equatable {
+        /// The normalized card: the memory's key.
+        let id: String
+        let displayName: String
+        let accountId: String
+    }
+
+    /// Every remembered card, by name.
+    var cards: [Card] {
+        entries
+            .map { Card(id: $0.key, displayName: $0.value.displayName, accountId: $0.value.accountId) }
+            .sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+    }
+
     /// Forgets a card: its next payment goes to the suggested account again.
     func forget(card: String) {
         guard let key = Self.key(forCard: card), entries.removeValue(forKey: key) != nil else { return }

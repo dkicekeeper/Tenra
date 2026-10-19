@@ -100,8 +100,8 @@ left out, and that logging several at once is part of Tenra Pro
 
 ### 2.4 Discoverability
 
-- Settings → **Siri & Shortcuts** (`SettingsSiriSection`): localized example phrases, the
-  Wallet merchants list (§6) and a `ShortcutsLink` to the Shortcuts app.
+- Settings → **Siri & Shortcuts** (`SettingsSiriSection`): localized example phrases, To
+  review, the Wallet merchants and cards lists (§6) and a `ShortcutsLink` to the Shortcuts app.
 - `VoiceInputConfirmationView` donates `LogTransactionIntent` after a successful in-app voice
   save (`LogTransactionIntent.donate(phrase:)`).
 - `TenraShortcuts` (`AppShortcutsProvider`) surfaces the shortcuts in Spotlight and Siri
@@ -115,12 +115,12 @@ left out, and that logging several at once is part of Tenra Pro
 
 - `Tenra/Intents/`: the four intents, `TenraShortcuts`, `Entities/` (account, category,
   subcategory `AppEntity`s with their queries), `Snippets/` (`TransactionConfirmationSnippet`,
-  `TransactionConfirmationSnippetIntent`, `SpendingSummarySnippet`), and the DEBUG-only
-  `WalletPaymentProbeIntent`.
+  `TransactionConfirmationSnippetIntent`, `SpendingSummarySnippet`).
 - `Services/Intents/`: `IntentEnvironment`, `TransactionDraft` + `TransactionDraftService`,
   `IntentAccountSuggester`, `IntentSubcategoryStore`, `SpendingQueryService`, `IntentHandoff`,
   `IntentUsageCounters`, the Wallet action's `WalletPaymentResolver`, `WalletPaymentRecorder`,
-  `WalletCaptureStore`, `CardAccountMemory`, and the DEBUG `WalletPaymentProbeLog`.
+  `WalletCaptureStore`, `CardAccountMemory`. `Services/Notifications/WalletReviewNotifier`
+  and the Settings screens `WalletReviewView`, `WalletCardsView`, `MerchantCategoriesView`.
 
 ### 3.2 `IntentEnvironment`
 
@@ -274,10 +274,23 @@ for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-captu
 7. `WalletCaptureStore.record`: the transaction id with the payment and its guesses. A capture
    with a guess not yet looked at is "To review". Captures live 90 days.
 
-Learning: saving a captured transaction from the edit screen (`TransactionEditCoordinator`)
-calls `WalletPaymentRecorder.confirm`: its category and subcategories are remembered for the
-merchant, its account for the card, and the capture is reviewed. An account fixed in the
-automation is remembered for the card at once. Guesses are never remembered.
+Learning: `WalletPaymentRecorder.confirm` remembers a captured transaction's category and
+subcategories for the merchant and its account for the card, and marks the capture reviewed. It
+runs when the transaction is saved from the edit screen (`TransactionEditCoordinator`) and on
+"Correct" / "All correct" in To review. An account fixed in the automation is remembered for the
+card at once. Guesses are never remembered.
+
+**To review** (`WalletReviewView`, Settings → Siri & Shortcuts, also a sheet over `MainTabView`):
+`WalletCaptureStore.toReview` as `TransactionCard`s; tap edits (saving confirms), swipe right or
+the toolbar confirms. Captures of deleted transactions are dropped once the store has loaded.
+
+**Notification** (`WalletReviewNotifier`): after a save with a guess, "Check a payment" with the
+merchant and the guessed category (or account), no amount (lock screen). One per merchant while
+an earlier payment there still waits; never asks for the permission. A tap sets
+`WalletCaptureStore.isReviewRequested` (`AppDelegate`), and `MainTabView` presents To review.
+
+**Wallet cards** (`WalletCardsView`): `CardAccountMemory.cards`, the account picked with
+`NavigationPickerRow(style: .list)`, swipe to forget.
 
 Pinned by `WalletPaymentResolverTests`, `WalletCaptureStoreTests`, `CardAccountMemoryTests`.
 

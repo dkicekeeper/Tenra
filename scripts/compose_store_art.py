@@ -263,8 +263,8 @@ def search(locale, title, subtitle, screen, ten_folder):
 
     # The headline on the left, Ten over it.
     left = sx0 + 40
-    text_w = px + pad - left - 140
-    title_font, title_lines, title_size = fitted(title, locale, "SemiBold", 184, text_w, 3, two_lines_down_to=140)
+    text_w = px + pad - left - 80
+    title_font, title_lines, title_size = fitted(title, locale, "SemiBold", 176, text_w, 3, two_lines_down_to=150)
     sub_font, sub_lines, sub_size = fitted(subtitle, locale, "Medium", 88, text_w, 3, two_lines_down_to=76)
     ten = ten_picture(ten_folder, 260)
     title_pitch, sub_pitch = round(title_size * 1.12), round(sub_size * 1.25)

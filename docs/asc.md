@@ -11,7 +11,7 @@
 | Создать версию в App Store, вставить What's New из `docs/release-notes.md` (заметки версии, которая готовится) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
 | Специальные страницы продукта и тест страницы (скриншоты, промо-текст, ключевые слова) из `appstore/product-pages.json` | GitHub Actions, `.github/workflows/asc.yml` | `push-custom-pages`, `push-experiment` (поле `args`: `--submit`, `--start`) |
 | Выдать или забрать Tenra Pro (`pro`) одному покупателю, посмотреть, что о нём знает RevenueCat | GitHub Actions, `.github/workflows/revenuecat.yml`, секрет `REVENUECAT_SECRET_KEY` | Actions → RevenueCat: `grant` / `revoke` / `status`, `app_user_id`, `days`; id в логе скрыт |
-| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp` или `ten` |
+| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp` или `ten`; `art` рисует Тэна для шапки |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
 
 Репозиторий Tenra публичный, поэтому логи Actions видны всем. Продажи и выручку `asc.py` в Actions
@@ -131,7 +131,21 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
    специальные страницы: `push-custom-pages --submit`; тест страницы: `push-experiment --submit`,
    потом после одобрения `push-experiment --start`. Повторный запуск не перезаливает
    неизменённые скриншоты.
-4. **Возрастной рейтинг:** `age-rating` показывает ответы анкеты против ответов Tenra в
+4. **Шапка и кадр для поиска (iOS 27):** `python3 scripts/compose_store_art.py [локали]
+   [--preview <папка>]` собирает в `screenshots/art/<локаль>/` шапку `header.jpg` (3840×1646:
+   Тэн и фраза `header` из `scripts/screenshot_captions.json`) и кадр поиска `search.jpg`
+   (3840×2560: заголовок и один экран в iPhone, ответ Тэна 13), для каждой специальной
+   страницы `search-<страница>.jpg` по её `searchFrame` в `product-pages.json`. Тэн берётся из
+   `screenshots/art/ten/` (Actions → Screenshots с `art`: тест `StoreArtRenderTests` рисует его
+   через `ParticleCreature.image`). Всё важное держать в безопасных зонах Apple (`SAFE` в
+   скрипте): на iPhone видна только середина шапки, а поиск показывает кадр шириной около
+   365 pt, `--preview` кладёт копию в 384 px, по ней проверять, что заголовок читается.
+   Отправка: `push-creatives` (по умолчанию на вышедшую версию, новая версия не нужна),
+   `--pages` ставит их и на специальные страницы (после `push-custom-pages` без `--submit`),
+   `--submit` отправляет новые картинки и версии страниц на проверку. Картинка загружается в
+   библиотеку один раз: в её `referenceName` md5 файла; размещение с другой картинкой
+   заменяется (изменить размещение API не даёт).
+5. **Возрастной рейтинг:** `age-rating` показывает ответы анкеты против ответов Tenra в
    `asc.py`, `age-rating` с `args` `--apply` ставит их на версию в подготовке. Анкету App
    Privacy API не умеет: только веб-форма.
 

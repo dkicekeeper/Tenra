@@ -910,8 +910,10 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
     """The header and search art from screenshots/art/<locale>/ on every localization of the
     version (the latest one on the App Store by default: the art can change without a new
     version), and with `pages` on the custom pages' editable versions too (search-<page>.png,
-    after push-custom-pages). With submit, sends the new images, and the page versions with
-    `pages`, for review."""
+    after push-custom-pages). With submit, sends the images App Review has not taken yet, and
+    the page versions with `pages`, for review. A version already on the App Store takes only
+    approved images: those show "after review", and running this again once App Review has
+    approved them places them."""
     library = get(f"/v1/apps/{app}/assetLibrary")["data"]["id"]
     images, _ = get_all(f"/v1/appAssetLibraries/{library}/images", {"limit": 200})
     for image in images:
@@ -941,7 +943,14 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
                 continue
             image_id = library_image(library, existing, path)
             used.add(image_id)
-            result = place("appStoreVersionLocalization", item["id"], placement_type, image_id)
+            try:
+                result = place("appStoreVersionLocalization", item["id"], placement_type, image_id)
+            except ApiError as error:
+                # A version on the App Store takes only an image App Review has approved: the
+                # image goes to review first, and a run after the approval places it.
+                if error.code != 409 or "APPROVED" not in str(error):
+                    raise
+                result = "after review"
             rows.append([name, locale, stem, result])
             print(f"{name} {locale} {stem}: {result}", flush=True)
 

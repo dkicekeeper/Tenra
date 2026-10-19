@@ -6,7 +6,7 @@ name: App Store Connect
 # docs/release-notes.md and selects the build once it is processed (never submits);
 # push-custom-pages and push-experiment create the custom product pages and the product page
 # test from appstore/product-pages.json (args: --submit sends them for review, --start starts
-# an approved test).
+# an approved test, --stop ends a running one). store-pages reads what each storefront page shows.
 # Run: Actions → App Store Connect → Run workflow, or Claude through the GitHub API. The result is
 # in the run's summary. Same API key as TestFlight: the ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8
 # repository secrets (docs/asc.md).

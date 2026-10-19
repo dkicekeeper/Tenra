@@ -13,8 +13,10 @@
     python3 appstore/asc.py custom-pages            custom product pages and their review state
     python3 appstore/asc.py push-custom-pages [--submit]
                                                     create/update the pages in product-pages.json
-    python3 appstore/asc.py push-experiment [--submit | --start]
+    python3 appstore/asc.py push-experiment [--submit | --start | --stop]
                                                     the product page test in product-pages.json
+                                                    (--stop ends a running test: a new app version
+                                                    does not end it)
     python3 appstore/asc.py age-rating [--apply]    the age rating answers; --apply sets Tenra's
                                                     (needs a version in preparation)
     python3 appstore/asc.py push-version-screenshots --version 1.6 [--locale ru,en-US]
@@ -613,9 +615,10 @@ def push_custom_pages(app: str, submit: bool) -> None:
         submit_for_review(app, ready)
 
 
-def push_experiment(app: str, submit: bool, start: bool) -> None:
+def push_experiment(app: str, submit: bool, start: bool, stop: bool = False) -> None:
     """Create or update the product page optimization test in appstore/product-pages.json; with
-    submit, send it for review; with start, start it once App Review has approved it."""
+    submit, send it for review; with start, start it once App Review has approved it; with stop,
+    end it (every visitor then sees the default page)."""
     config = page_config()
     test = config["experiment"]
     locales = sorted(path.name for path in (ROOT / "screenshots" / "final").iterdir() if path.is_dir())
@@ -631,6 +634,13 @@ def push_experiment(app: str, submit: bool, start: bool) -> None:
         }})["data"]
         print(f"Test {test['name']!r} created, {test['trafficProportion']}% of visitors.")
     state = record["attributes"].get("state")
+    if stop:
+        if not record["attributes"].get("started") and state not in ("APPROVED", "ACCEPTED"):
+            sys.exit(f"Test is {state}: not running.")
+        updated = send("PATCH", f"/v2/appStoreVersionExperiments/{record['id']}", {"data": {
+            "type": "appStoreVersionExperiments", "id": record["id"], "attributes": {"started": False}}})["data"]
+        print(f"Test stopped: {updated['attributes'].get('state')}, ends {(updated['attributes'].get('endDate') or '')[:10]}.")
+        return
     if start:
         if state not in ("APPROVED", "ACCEPTED"):
             sys.exit(f"Test is {state}: it starts after App Review approves it.")
@@ -964,7 +974,7 @@ def main(argv: list[str]) -> None:
     elif command == "push-custom-pages":
         push_custom_pages(app, "--submit" in args)
     elif command == "push-experiment":
-        push_experiment(app, "--submit" in args, "--start" in args)
+        push_experiment(app, "--submit" in args, "--start" in args, "--stop" in args)
     elif command == "age-rating":
         age_rating(app, "--apply" in args)
     elif command == "push-version-screenshots":

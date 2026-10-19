@@ -53,9 +53,9 @@ struct ScreenshotDemoTransportTests {
     }
 
     private static func renderedReply(_ events: [AgentStreamEvent]) throws -> AgentReply {
-        let call = try #require(call(in: events))
-        #expect(call["name"] == .string(AgentProtocol.renderReplyTool))
-        let input = try #require(call["input"])
+        let render = try #require(Self.call(in: events))
+        #expect(render["name"] == .string(AgentProtocol.renderReplyTool))
+        let input = try #require(render["input"])
         return try JSONDecoder().decode(AgentReply.self, from: JSONEncoder().encode(input))
     }
 

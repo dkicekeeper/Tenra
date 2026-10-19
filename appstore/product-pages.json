@@ -24,6 +24,7 @@
   "customPages": [
     {
       "name": "Subscriptions",
+      "searchFrame": "tensubs",
       "frames": ["subscriptions", "tensubs", "subscription", "finances", "home", "insights"],
       "locales": {
         "ru": {
@@ -82,6 +83,7 @@
     },
     {
       "name": "Voice",
+      "searchFrame": "draft",
       "frames": ["voice", "draft", "history", "home", "insights", "finances"],
       "locales": {
         "ru": {
@@ -140,6 +142,7 @@
     },
     {
       "name": "Multicurrency",
+      "searchFrame": "tenfx",
       "frames": ["fx", "tenfx", "finances", "history", "home", "insights"],
       "locales": {
         "ru": {
@@ -198,6 +201,7 @@
     },
     {
       "name": "Deposits and loans",
+      "searchFrame": "tenloan",
       "frames": ["deposit", "tenloan", "loans", "finances", "history", "home"],
       "locales": {
         "ru": {

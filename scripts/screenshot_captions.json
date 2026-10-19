@@ -1,8 +1,9 @@
 {
-  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts. At most 10 frames per locale go to the store. Custom product page frames: subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans, and Ten's answers tensubs=17-ten-subscriptions, tenfx=18-ten-currencies, tenloan=19-ten-loan; the pages and their frame order are in appstore/product-pages.json.",
+  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts. At most 10 frames per locale go to the store. `header` is the phrase of the store's header art (scripts/compose_store_art.py). Custom product page frames: subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans, and Ten's answers tensubs=17-ten-subscriptions, tenfx=18-ten-currencies, tenloan=19-ten-loan; the pages and their frame order are in appstore/product-pages.json.",
   "defaultOrder": ["ten", "draft", "home", "finances", "goal", "debts", "score", "topcat", "history", "fx"],
   "locales": {
     "de-DE": {
+      "header": "Fragen Sie Ten, wohin Ihr Geld fließt",
       "frames": {
         "home":     { "title": "Budget für jede Kategorie", "subtitle": "Limits, Ausgaben und Restbudget direkt auf dem Startbildschirm" },
         "finances": { "title": "Alle Ihre Finanzen an einem Ort", "subtitle": "Konten, Festgeld, Abos und Kredite, ganz ohne Bankzugang" },
@@ -26,6 +27,7 @@
       }
     },
     "es-ES": {
+      "header": "Pregunta a Ten a dónde va tu dinero",
       "frames": {
         "home":     { "title": "Presupuesto para cada categoría", "subtitle": "Límites, gastos y saldo restante del mes, directo en la pantalla principal" },
         "finances": { "title": "Todas tus finanzas en un solo lugar", "subtitle": "Cuentas, depósitos, suscripciones y préstamos, sin conectar tu banco" },
@@ -49,6 +51,7 @@
       }
     },
     "es-MX": {
+      "header": "Pregunta a Ten a dónde va tu dinero",
       "frames": {
         "home":     { "title": "Presupuesto para cada categoría", "subtitle": "Límites, gastos y saldo restante del mes, directo en la pantalla principal" },
         "finances": { "title": "Todas tus finanzas en un solo lugar", "subtitle": "Cuentas, depósitos, suscripciones y préstamos, sin conectar tu banco" },
@@ -72,6 +75,7 @@
       }
     },
     "fr-FR": {
+      "header": "Demandez à Ten où va votre argent",
       "frames": {
         "home":     { "title": "Un budget pour chaque catégorie", "subtitle": "Limites, dépenses et solde du mois, dès l'écran d'accueil" },
         "finances": { "title": "Toutes vos finances au même endroit", "subtitle": "Comptes, dépôts, abonnements et crédits, sans connexion bancaire" },
@@ -95,6 +99,7 @@
       }
     },
     "fr-CA": {
+      "header": "Demandez à Ten où va votre argent",
       "frames": {
         "home":     { "title": "Un budget pour chaque catégorie", "subtitle": "Limites, dépenses et solde du mois, dès l'écran d'accueil" },
         "finances": { "title": "Toutes vos finances au même endroit", "subtitle": "Comptes, dépôts, abonnements et crédits, sans connexion bancaire" },
@@ -118,6 +123,7 @@
       }
     },
     "tr": {
+      "header": "Paranın nereye gittiğini Ten'e sor",
       "order": ["fx", "ten", "draft", "home", "finances", "goal", "debts", "score", "topcat", "history"],
       "frames": {
         "fx":       { "title": "TL, dolar, euro: tek gerçek bakiye", "subtitle": "Tüm hesapların gerçek kurlarla tek dürüst toplamda" },
@@ -142,6 +148,7 @@
       }
     },
     "pt-BR": {
+      "header": "Pergunte ao Ten para onde vai seu dinheiro",
       "frames": {
         "home":     { "title": "Orçamento para cada categoria", "subtitle": "Limites, gastos e quanto sobra no mês, direto na tela inicial" },
         "finances": { "title": "Todas as suas finanças em um só lugar", "subtitle": "Contas, poupança, assinaturas e empréstimos, sem conectar seu banco" },
@@ -165,6 +172,7 @@
       }
     },
     "it": {
+      "header": "Chiedi a Ten dove vanno i tuoi soldi",
       "frames": {
         "home":     { "title": "Un budget per ogni categoria", "subtitle": "Limiti, spese e quanto ti resta nel mese, subito in home" },
         "finances": { "title": "Tutte le tue finanze in un posto", "subtitle": "Conti, depositi, abbonamenti e prestiti, senza collegare la banca" },
@@ -188,6 +196,7 @@
       }
     },
     "uk": {
+      "header": "Запитайте Тена, куди йдуть гроші",
       "frames": {
         "home":     { "title": "Бюджет для кожної категорії", "subtitle": "Ліміти, витрати й залишок на місяць, одразу на головному екрані" },
         "finances": { "title": "Усі ваші фінанси в одному місці", "subtitle": "Рахунки, депозити, підписки й кредити, без доступу до банку" },
@@ -211,6 +220,7 @@
       }
     },
     "ja": {
+      "header": "お金の行き先は、テンに聞こう",
       "frames": {
         "home":     { "title": "カテゴリごとに\n予算を管理", "subtitle": "今月の予算・支出・残りが、\nホーム画面でひと目でわかる" },
         "finances": { "title": "すべてのお金を\nこれひとつで", "subtitle": "口座・定期預金・サブスク・\nローンも、銀行連携なしで" },
@@ -234,6 +244,7 @@
       }
     },
     "ko": {
+      "header": "돈이 어디로 가는지 텐에게 물어보세요",
       "frames": {
         "home":     { "title": "카테고리별 예산이\n한눈에", "subtitle": "한 달 한도, 지출, 남은 금액을 홈 화면에서 바로 확인해요" },
         "finances": { "title": "모든 자산을 한곳에서", "subtitle": "계좌, 예금, 구독, 대출을 은행 연동 없이 관리해요" },
@@ -257,6 +268,7 @@
       }
     },
     "en-US": {
+      "header": "Ask Ten where your money goes",
       "frames": {
         "home":     { "title": "A budget for every category", "subtitle": "Limits, spending, and what's left, right on your home screen" },
         "finances": { "title": "All your money in one place", "subtitle": "Accounts, deposits, subscriptions, and loans. No bank login required" },
@@ -280,6 +292,7 @@
       }
     },
     "ru": {
+      "header": "Спросите Тэна, куда уходят деньги",
       "frames": {
         "home":     { "title": "Бюджет по каждой категории", "subtitle": "Лимиты, траты и остаток на месяц сразу на главном экране" },
         "finances": { "title": "Все ваши финансы в одном месте", "subtitle": "Счета, депозиты, подписки и кредиты без привязки банка" },

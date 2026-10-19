@@ -17,6 +17,11 @@ on:
         description: "all (01-19), cpp (only 09-12, the custom product page frames) or ten (only Ten's 07, 13, 14, 17-19)"
         required: false
         default: cpp
+      art:
+        description: "Also draw Ten's still pictures for the store's header and search art (art/ in the artifact)"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -71,6 +76,23 @@ jobs:
           done
           find build/raw-out -name '*.png' | sort
           exit $status
+
+      # Ten's stills (TenraTests/Views/StoreArtRenderTests) for scripts/compose_store_art.py.
+      - name: Ten for the store art
+        if: ${{ always() && inputs.art }}
+        env:
+          SIM_NAME: iPhone 17 Pro
+          SIM_OS: ${{ steps.sim.outputs.os }}
+        run: |
+          mkdir -p build/raw-out/art
+          TEST_RUNNER_STORE_ART_DIR="$PWD/build/raw-out/art" xcodebuild test \
+            -scheme Tenra \
+            -destination "platform=iOS Simulator,name=$SIM_NAME,OS=$SIM_OS" \
+            -only-testing:TenraTests/StoreArtRenderTests \
+            -parallel-testing-enabled NO \
+            2>&1 | grep -aE "Test case .* (passed|failed)|\*\* TEST (SUCCEEDED|FAILED)|error:" | head -20
+          ls -la build/raw-out/art
+          test -n "$(ls build/raw-out/art)"
 
       - uses: actions/upload-artifact@v4
         if: always()

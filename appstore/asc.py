@@ -20,6 +20,10 @@
     python3 appstore/asc.py push-version-screenshots --version 1.6 [--locale ru,en-US]
                                                     the version's own 6.9" screenshots, the frames
                                                     of `defaultOrder` in screenshot_captions.json
+    python3 appstore/asc.py store-pages [--version 1.6]
+                                                    what each storefront page shows: the version's
+                                                    screenshots per locale against screenshots/final,
+                                                    the page tests, the custom pages' languages
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -749,6 +753,57 @@ def push_version_screenshots(app: str, version: str, locales: list[str] | None) 
     table(f"Screenshots, {version}", ["Locale", "Frames", "Result"], rows)
 
 
+def store_pages(app: str, version: str | None) -> None:
+    """What the store shows, read only: per localization of the version (the latest one on the
+    App Store by default), each screenshot set and how many of its screenshots are files in
+    screenshots/final/<locale>/ now; the product page tests with their state; the languages of
+    each custom page's versions."""
+    params = {"filter[platform]": "IOS", "limit": 20}
+    if version:
+        params["filter[versionString]"] = version
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions", params)
+    if not version:
+        found = [v for v in found if v["attributes"].get("appStoreState") == "READY_FOR_DISTRIBUTION"
+                 or v["attributes"].get("appVersionState") == "READY_FOR_DISTRIBUTION"]
+        found.sort(key=lambda v: v["attributes"].get("createdDate") or "", reverse=True)
+    if not found:
+        sys.exit("No such version on the App Store.")
+    record = found[0]
+    name = record["attributes"].get("versionString")
+    localizations, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    rows = []
+    for item in sorted(localizations, key=lambda i: i["attributes"]["locale"]):
+        locale = item["attributes"]["locale"]
+        folder = ROOT / "screenshots" / "final" / locale
+        ours = {hashlib.md5(path.read_bytes()).hexdigest() for path in folder.glob("*.png")} if folder.is_dir() else set()
+        sets, _ = get_all(f"/v1/appStoreVersionLocalizations/{item['id']}/appScreenshotSets", {"limit": 50})
+        if not sets:
+            rows.append([locale, "none", 0, "-"])
+        for screenshot_set_record in sets:
+            shots, _ = get_all(f"/v1/appScreenshotSets/{screenshot_set_record['id']}/appScreenshots", {"limit": 50})
+            current = sum(1 for shot in shots if shot["attributes"].get("sourceFileChecksum") in ours)
+            rows.append([locale, screenshot_set_record["attributes"].get("screenshotDisplayType"), len(shots),
+                         f"{current}/{len(shots)}" if ours else "no folder"])
+    table(f"Screenshots of {name} (current = a file in screenshots/final/<locale>/)",
+          ["Locale", "Set", "Shots", "Current"], rows)
+
+    tests, _ = get_all(f"/v1/apps/{app}/appStoreVersionExperimentsV2", {"limit": 20})
+    table("Product page tests", ["Name", "State", "Traffic", "Started", "Ends"],
+          [[t["attributes"].get("name"), t["attributes"].get("state"), t["attributes"].get("trafficProportion"),
+            (t["attributes"].get("startDate") or "")[:10], (t["attributes"].get("endDate") or "")[:10]] for t in tests])
+
+    pages, _ = get_all(f"/v1/apps/{app}/appCustomProductPages", {"limit": 50})
+    rows = []
+    for page in pages:
+        versions, _ = get_all(f"/v1/appCustomProductPages/{page['id']}/appCustomProductPageVersions", {"limit": 10})
+        for page_version in versions:
+            locs, _ = get_all(f"/v1/appCustomProductPageVersions/{page_version['id']}/appCustomProductPageLocalizations",
+                              {"limit": 50})
+            rows.append([page["attributes"].get("name"), page_version["attributes"].get("state"),
+                         ", ".join(sorted(loc["attributes"]["locale"] for loc in locs))])
+    table("Custom product pages", ["Page", "Version", "Languages"], rows)
+
+
 def reviews(app: str, limit: int) -> None:
     data = get(f"/v1/apps/{app}/customerReviews", {"sort": "-createdDate", "limit": limit})["data"]
     rows = []
@@ -918,6 +973,8 @@ def main(argv: list[str]) -> None:
             sys.exit("push-version-screenshots needs --version X.Y")
         locales = option("--locale")
         push_version_screenshots(app, version, locales.split(",") if locales else None)
+    elif command == "store-pages":
+        store_pages(app, option("--version"))
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

@@ -513,8 +513,9 @@ def link_keywords(app: str, localization_id: str, locale: str, wanted: list[str]
     return f"{len(ids)} linked" + (f"; not app keywords: {', '.join(unknown)}" if unknown else "")
 
 
-def submit_for_review(app: str, items: list[tuple[str, str]]) -> None:
-    """Add (relationship, id) items to the open review submission, or a new one, and submit it."""
+def submit_for_review(app: str, items: list[tuple[str, str]], lenient: set[str] = frozenset()) -> None:
+    """Add (relationship, id) items to the open review submission, or a new one, and submit it.
+    An item of a `lenient` relationship that App Store Connect refuses is reported, not fatal."""
     open_ones, _ = get_all("/v1/reviewSubmissions",
                            {"filter[app]": app, "filter[platform]": "IOS", "filter[state]": "READY_FOR_REVIEW"})
     submission = open_ones[0] if open_ones else send("POST", "/v1/reviewSubmissions", {"data": {
@@ -524,19 +525,27 @@ def submit_for_review(app: str, items: list[tuple[str, str]]) -> None:
     types = {"appCustomProductPageVersion": "appCustomProductPageVersions",
              "appStoreVersionExperimentV2": "appStoreVersionExperiments",
              "appAssetLibraryImage": "appAssetLibraryImages"}
+    added = 0
     for relationship, item_id in items:
         try:
             send("POST", "/v1/reviewSubmissionItems", {"data": {"type": "reviewSubmissionItems", "relationships": {
                 "reviewSubmission": {"data": {"type": "reviewSubmissions", "id": submission["id"]}},
                 relationship: {"data": {"type": types[relationship], "id": item_id}},
             }}})
+            added += 1
         except ApiError as error:
-            if error.code != 409:   # 409: already in this submission
+            if error.code == 409:   # already in this submission
+                added += 1
+            elif relationship in lenient:
+                print(f"  {relationship} {item_id}: not added ({error})", flush=True)
+            else:
                 raise
+    if not added:
+        sys.exit("App Store Connect took none of the items: nothing submitted.")
     send("PATCH", f"/v1/reviewSubmissions/{submission['id']}", {"data": {
         "type": "reviewSubmissions", "id": submission["id"], "attributes": {"submitted": True},
     }})
-    print(f"Submitted for review: {len(items)} item(s).")
+    print(f"Submitted for review: {added} of {len(items)} item(s).")
 
 
 def custom_pages(app: str) -> None:
@@ -907,7 +916,7 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
     images, _ = get_all(f"/v1/appAssetLibraries/{library}/images", {"limit": 200})
     existing = {image["attributes"].get("referenceName"): image for image in images
                 if image["attributes"].get("state") not in ("FAILED", "ARCHIVED")}
-    before = set(existing)
+    used: set[str] = set()
 
     def art(locale: str, stem: str) -> Path | None:
         path = ART / locale / f"{stem}.jpg"
@@ -926,7 +935,9 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
             if not path:
                 rows.append([name, locale, stem, "no file"])
                 continue
-            result = place("appStoreVersionLocalization", item["id"], placement_type, library_image(library, existing, path))
+            image_id = library_image(library, existing, path)
+            used.add(image_id)
+            result = place("appStoreVersionLocalization", item["id"], placement_type, image_id)
             rows.append([name, locale, stem, result])
             print(f"{name} {locale} {stem}: {result}", flush=True)
 
@@ -953,19 +964,23 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
                     if not path:
                         rows.append([page["name"], locale, stem, "no file"])
                         continue
-                    result = place("appCustomProductPageLocalization", item["id"], placement_type,
-                                   library_image(library, existing, path))
+                    image_id = library_image(library, existing, path)
+                    used.add(image_id)
+                    result = place("appCustomProductPageLocalization", item["id"], placement_type, image_id)
                     rows.append([page["name"], locale, stem, result])
                     print(f"{page['name']} {locale} {stem}: {result}", flush=True)
             ready.append(("appCustomProductPageVersion", page_version["id"]))
     table("Creative assets", ["Page", "Locale", "Art", "Result"], rows)
 
     if submit:
-        new = [("appAssetLibraryImage", existing[reference]["id"]) for reference in existing if reference not in before]
-        if not new and not ready:
-            print("Nothing new to submit.")
+        # Every image placed here that App Review has not taken yet, from this run or an earlier one.
+        waiting = [("appAssetLibraryImage", image_id) for image_id in sorted(used)
+                   if get(f"/v1/appAssetLibraryImages/{image_id}")["data"]["attributes"].get("state")
+                   in ("COMPLETE", "PREPARE_FOR_SUBMISSION", "READY_FOR_REVIEW", "REJECTED")]
+        if not waiting and not ready:
+            print("Nothing to submit.")
             return
-        submit_for_review(app, new + ready)
+        submit_for_review(app, waiting + ready, lenient={"appAssetLibraryImage"})
 
 
 def reviews(app: str, limit: int) -> None:

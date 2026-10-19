@@ -50,7 +50,8 @@ CENTER_X = 659.5
 TITLE_WIDTH, SUBTITLE_WIDTH = 1135, 1125
 
 # Frame file -> its caption key and template. Six backgrounds (a-f) cycle so that neither the
-# default order nor tr's puts the same background twice in a row.
+# default order nor tr's, nor a custom product page's (appstore/product-pages.json), puts the
+# same background twice in a row.
 FRAMES = {
     "01-home": ("home", "a"),
     "02-finances": ("finances", "b"),
@@ -68,6 +69,9 @@ FRAMES = {
     "14-ten-draft": ("draft", "d"),
     "15-goal": ("goal", "c"),
     "16-debts": ("debts", "f"),
+    "17-ten-subscriptions": ("tensubs", "e"),
+    "18-ten-currencies": ("tenfx", "d"),
+    "19-ten-loan": ("tenloan", "c"),
 }
 
 FONTS = {

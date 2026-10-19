@@ -6,7 +6,8 @@
 //  mode (seeded dataset, Pro unlocked, offline FX, Ten's answers scripted on the
 //  phone) with the language/locale passed via TEST_RUNNER_* environment variables,
 //  walks the marketing screens (01-08 and 13-16 on the default product page, 09-12
-//  for the custom product pages: subscriptions, a deposit, loans) and stores
+//  and Ten's 17-19 for the custom product pages: subscriptions, currencies, a deposit,
+//  loans) and stores
 //  full-resolution screenshots as keepAlways attachments.
 //
 //  Run via scripts/capture_screenshots.sh — it loops all storefront locales
@@ -80,7 +81,7 @@ final class ScreenshotCaptureTests: XCTestCase {
         }
 
         if env["SCREENSHOT_FRAMES"] == "ten" {
-            // Only Ten's frames (07, 13, 14): a quick run while they are being worked on.
+            // Only Ten's frames (07, 13, 14, 17-19): a quick run while they are being worked on.
             captureTen()
             return
         }
@@ -176,9 +177,9 @@ final class ScreenshotCaptureTests: XCTestCase {
 
     // MARK: - Ten
 
-    /// 07, 14, 13 on Ten's tab (the action tab): the voice sheet with the demo phrase as heard,
-    /// that phrase drafted on the phone with Save, then a ready-made question answered on cards
-    /// (ScreenshotDemoTransport: no network).
+    /// 07, 14, 13, 17-19 on Ten's tab (the action tab): the voice sheet with the demo phrase as
+    /// heard, that phrase drafted on the phone with Save, then the demo's questions answered on
+    /// cards (ScreenshotDemoTransport: no network).
     private func captureTen() {
         // The tab bar collapses on scroll down (`tabBarMinimizeBehavior(.onScrollDown)`): scroll
         // Finances back up, then take the action tab, the bar's last button in either state.
@@ -216,23 +217,30 @@ final class ScreenshotCaptureTests: XCTestCase {
         snap("14-ten-draft")
         goBack()
 
-        // ── 13. A ready-made question answered on cards ──────────────────────
-        _ = presets.waitForExistence(timeout: 10)
-        guard let preset = presets.buttons.allElementsBoundByIndex.first(where: { $0.isHittable }) else {
-            debugSnapshot("presets")
-            return
+        // ── 13, 17-19. The demo's questions answered on cards ────────────────
+        // In order: this month's spending, subscriptions, all currencies, an early loan payment
+        // (the custom product pages' Ten frames). Each answer opens its own chat.
+        let answers = ["13-ten-answer", "17-ten-subscriptions", "18-ten-currencies", "19-ten-loan"]
+        for (index, frame) in answers.enumerated() {
+            if index > 0 { goBack() }
+            _ = presets.waitForExistence(timeout: 10)
+            let chips = presets.buttons.allElementsBoundByIndex
+            guard chips.indices.contains(index), chips[index].isHittable else {
+                debugSnapshot("presets-\(index)")
+                return
+            }
+            chips[index].tap()
+            sleep(8)   // two scripted turns, the cards cascade in
+            snap(frame)
         }
-        preset.tap()
-        sleep(8)   // two scripted turns, the cards cascade in
-        snap("13-ten-answer")
     }
 
     /// When a step of Ten's frames finds nothing: the screen and the accessibility tree, exported
-    /// next to the frames as `19-debug-<step>` (the tree is text in a .png-named file).
+    /// next to the frames as `90-debug-<step>` (the tree is text in a .png-named file).
     private func debugSnapshot(_ step: String) {
-        snap("19-debug-\(step)")
+        snap("90-debug-\(step)")
         let tree = XCTAttachment(string: app.debugDescription)
-        tree.name = "19-debug-\(step)-tree"
+        tree.name = "90-debug-\(step)-tree"
         tree.lifetime = .keepAlways
         add(tree)
     }

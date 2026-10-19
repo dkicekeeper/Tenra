@@ -16,12 +16,15 @@
     "ten": "13-ten-answer",
     "draft": "14-ten-draft",
     "goal": "15-goal",
-    "debts": "16-debts"
+    "debts": "16-debts",
+    "tensubs": "17-ten-subscriptions",
+    "tenfx": "18-ten-currencies",
+    "tenloan": "19-ten-loan"
   },
   "customPages": [
     {
       "name": "Subscriptions",
-      "frames": ["subscriptions", "subscription", "finances", "home", "insights", "history"],
+      "frames": ["subscriptions", "tensubs", "subscription", "finances", "home", "insights"],
       "locales": {
         "ru": {
           "promotionalText": "Календарь подписок с логотипами сервисов и напоминанием до списания. Видно, сколько уходит в месяц. Без привязки банка, данные на вашем устройстве.",
@@ -34,12 +37,52 @@
         "fr-FR": {
           "promotionalText": "Le calendrier de vos abonnements, avec logos et rappel avant chaque prélèvement. Voyez ce qui part chaque mois. Sans banque, données sur votre appareil.",
           "keywords": ["facture", "charges"]
+        },
+        "de-DE": {
+          "promotionalText": "Ein Kalender Ihrer Abos mit Logos und Erinnerung vor jeder Abbuchung. Sehen Sie, was jeden Monat abgeht. Ohne Bankzugang, Ihre Daten bleiben auf dem Gerät.",
+          "keywords": ["kosten"]
+        },
+        "es-ES": {
+          "promotionalText": "Un calendario de tus suscripciones con logos y aviso antes de cada cobro. Mira cuánto gastas cada mes. Sin conectar tu banco, tus datos quedan en tu móvil.",
+          "keywords": []
+        },
+        "es-MX": {
+          "promotionalText": "Un calendario de tus suscripciones con logos y aviso antes de cada cobro. Mira cuánto gastas cada mes. Sin conectar tu banco, tus datos quedan en tu celular.",
+          "keywords": []
+        },
+        "fr-CA": {
+          "promotionalText": "Le calendrier de vos abonnements, avec logos et rappel avant chaque prélèvement. Voyez ce qui part chaque mois. Sans banque, données sur votre appareil.",
+          "keywords": ["facture", "charges"]
+        },
+        "tr": {
+          "promotionalText": "Aboneliklerin logolarıyla bir takvimde, her ödemeden önce hatırlatma. Her ay ne kadar gittiğini gör. Banka bağlantısı yok, verilerin cihazında kalır.",
+          "keywords": ["abonelik", "fatura"]
+        },
+        "pt-BR": {
+          "promotionalText": "Um calendário das suas assinaturas, com logos e lembrete antes de cada cobrança. Veja quanto sai todo mês. Sem conectar o banco, dados no seu aparelho.",
+          "keywords": ["assinatura"]
+        },
+        "it": {
+          "promotionalText": "Un calendario dei tuoi abbonamenti, con loghi e promemoria prima di ogni addebito. Vedi quanto spendi ogni mese. Senza collegare la banca, dati sul telefono.",
+          "keywords": ["bollette"]
+        },
+        "uk": {
+          "promotionalText": "Календар підписок з логотипами сервісів і нагадуванням до списання. Видно, скільки йде щомісяця. Без підключення банку, дані на вашому пристрої.",
+          "keywords": []
+        },
+        "ja": {
+          "promotionalText": "サブスクをサービスのロゴ付きでカレンダーに表示し、引き落とし前にお知らせ。毎月いくらかかるかがわかります。銀行連携なし、データは端末内に。",
+          "keywords": ["固定費"]
+        },
+        "ko": {
+          "promotionalText": "서비스 로고와 함께 구독을 캘린더로 보고, 결제 전에 알림을 받아요. 매달 얼마가 나가는지 한눈에. 은행 연동 없이, 데이터는 기기에만.",
+          "keywords": ["고정비"]
         }
       }
     },
     {
       "name": "Voice",
-      "frames": ["voice", "history", "home", "insights", "finances"],
+      "frames": ["voice", "draft", "history", "home", "insights", "finances"],
       "locales": {
         "ru": {
           "promotionalText": "Скажите «потратил 5000 на продукты», и операция записана с категорией и счётом. Без привязки банка, данные только на вашем устройстве.",
@@ -52,12 +95,52 @@
         "fr-FR": {
           "promotionalText": "Dites « 20 euros de courses » et c'est enregistré, avec la bonne catégorie et le bon compte. Sans connexion bancaire, vos données restent sur l'appareil.",
           "keywords": []
+        },
+        "de-DE": {
+          "promotionalText": "Sagen Sie „20 Euro für Lebensmittel“, und es ist mit Kategorie und Konto gebucht. Ohne Bankzugang, Ihre Daten bleiben auf Ihrem Gerät.",
+          "keywords": []
+        },
+        "es-ES": {
+          "promotionalText": "Di «20 euros en el súper» y queda registrado con su categoría y cuenta. Sin conectar tu banco, tus datos se quedan en tu dispositivo.",
+          "keywords": []
+        },
+        "es-MX": {
+          "promotionalText": "Di «gasté 200 pesos en el súper» y queda registrado con su categoría y cuenta. Sin conectar tu banco, tus datos se quedan en tu celular.",
+          "keywords": []
+        },
+        "fr-CA": {
+          "promotionalText": "Dites « 20 dollars d'épicerie » et c'est enregistré, avec la bonne catégorie et le bon compte. Sans connexion bancaire, vos données restent sur l'appareil.",
+          "keywords": []
+        },
+        "tr": {
+          "promotionalText": "\"Markete 450 lira harcadım\" de, doğru kategori ve hesapla kaydedilsin. Banka bağlantısı yok, verilerin cihazında kalır.",
+          "keywords": []
+        },
+        "pt-BR": {
+          "promotionalText": "Diga \"gastei 50 reais no mercado\" e pronto: registrado com a categoria e a conta certas. Sem conectar o banco, seus dados ficam no seu aparelho.",
+          "keywords": []
+        },
+        "it": {
+          "promotionalText": "Di' \"15 euro di benzina\" ed è registrato con la categoria e il conto giusti. Senza collegare la banca, i tuoi dati restano sul dispositivo.",
+          "keywords": []
+        },
+        "uk": {
+          "promotionalText": "Скажіть «витратив 250 гривень на продукти», і операцію записано з категорією та рахунком. Без підключення банку, дані лише на вашому пристрої.",
+          "keywords": []
+        },
+        "ja": {
+          "promotionalText": "「コンビニで500円使った」と話すだけで、カテゴリと口座つきで記録。銀行連携なし、データはあなたの端末だけに保存されます。",
+          "keywords": ["音声"]
+        },
+        "ko": {
+          "promotionalText": "\"점심 12,000원 썼어\"라고 말하면 카테고리와 계좌까지 기록돼요. 은행 연동 없이, 데이터는 내 기기에만 저장돼요.",
+          "keywords": []
         }
       }
     },
     {
       "name": "Multicurrency",
-      "frames": ["fx", "finances", "history", "home", "insights"],
+      "frames": ["fx", "tenfx", "finances", "history", "home", "insights"],
       "locales": {
         "ru": {
           "promotionalText": "Счета в тенге, долларах, евро и рублях в одном итоге по текущему курсу. Переводы между валютами с курсом на дату операции. Без привязки банка.",
@@ -70,12 +153,52 @@
         "fr-FR": {
           "promotionalText": "Comptes en euros, dollars ou toute autre devise, réunis dans un total au taux du jour. Les virements entre devises gardent le taux de leur date. Sans banque.",
           "keywords": ["devise"]
+        },
+        "de-DE": {
+          "promotionalText": "Konten in Euro, Dollar und jeder anderen Währung, zusammengerechnet zum aktuellen Kurs. Überweisungen behalten den Kurs ihres Tages. Ohne Bankzugang.",
+          "keywords": ["währung"]
+        },
+        "es-ES": {
+          "promotionalText": "Cuentas en euros, dólares o cualquier divisa, sumadas al cambio actual. Las transferencias entre divisas guardan el cambio de su día. Sin conectar tu banco.",
+          "keywords": ["divisas"]
+        },
+        "es-MX": {
+          "promotionalText": "Cuentas en pesos, dólares o cualquier moneda, sumadas al tipo de cambio actual. Las transferencias guardan el tipo de cambio de su día. Sin conectar tu banco.",
+          "keywords": ["divisas"]
+        },
+        "fr-CA": {
+          "promotionalText": "Comptes en dollars canadiens, américains ou toute autre devise, réunis dans un total au taux du jour. Les virements gardent le taux de leur date. Sans banque.",
+          "keywords": ["devise"]
+        },
+        "tr": {
+          "promotionalText": "TL, dolar, euro ve diğer para birimlerindeki hesapların güncel kurla tek toplamda. Dövizler arası transferler kendi gününün kurunu korur. Banka bağlantısı yok.",
+          "keywords": ["döviz", "kur"]
+        },
+        "pt-BR": {
+          "promotionalText": "Contas em reais, dólares, euros ou outra moeda, somadas pela cotação atual. Transferências entre moedas mantêm a cotação do dia. Sem conectar o banco.",
+          "keywords": []
+        },
+        "it": {
+          "promotionalText": "Conti in euro, dollari o qualsiasi valuta, sommati al cambio attuale. I trasferimenti tra valute mantengono il cambio del loro giorno. Senza collegare la banca.",
+          "keywords": ["valuta"]
+        },
+        "uk": {
+          "promotionalText": "Рахунки в гривнях, доларах, євро в одному підсумку за поточним курсом. Перекази між валютами зберігають курс свого дня. Без підключення банку.",
+          "keywords": ["валюта"]
+        },
+        "ja": {
+          "promotionalText": "円、ドル、ユーロなど複数通貨の口座を今のレートで合算。通貨間の振替はその日のレートを保持します。銀行連携は不要です。",
+          "keywords": ["外貨"]
+        },
+        "ko": {
+          "promotionalText": "원화, 달러, 유로 등 여러 통화 계좌를 현재 환율로 합산해요. 통화 간 이체는 그날의 환율을 유지해요. 은행 연동이 필요 없어요.",
+          "keywords": ["환율", "외화"]
         }
       }
     },
     {
       "name": "Deposits and loans",
-      "frames": ["deposit", "loans", "finances", "history", "home"],
+      "frames": ["deposit", "tenloan", "loans", "finances", "history", "home"],
       "locales": {
         "ru": {
           "promotionalText": "Проценты по депозитам с капитализацией считаются сами. По кредитам видно, внесён ли платёж за месяц и сколько осталось. Без привязки банка.",
@@ -88,6 +211,46 @@
         "fr-FR": {
           "promotionalText": "Les intérêts de vos dépôts, capitalisation comprise, sont calculés pour vous. Pour vos crédits, voyez si la mensualité est payée et ce qu'il reste. Sans banque.",
           "keywords": ["prêt", "dette", "livret"]
+        },
+        "de-DE": {
+          "promotionalText": "Zinsen auf Festgeld samt Zinseszins werden für Sie berechnet. Bei Krediten sehen Sie, ob die Rate bezahlt ist und was noch offen ist. Ohne Bankzugang.",
+          "keywords": ["kredit", "zinsen", "schulden"]
+        },
+        "es-ES": {
+          "promotionalText": "Los intereses de tus depósitos, con capitalización, se calculan solos. En tus préstamos ves si la cuota del mes está pagada y cuánto queda. Sin conectar tu banco.",
+          "keywords": ["prestamo", "deposito", "deuda"]
+        },
+        "es-MX": {
+          "promotionalText": "Los intereses de tus depósitos, con capitalización, se calculan solos. En tus préstamos ves si el pago del mes está hecho y cuánto falta. Sin conectar tu banco.",
+          "keywords": ["prestamo", "deposito", "deuda"]
+        },
+        "fr-CA": {
+          "promotionalText": "Les intérêts de vos dépôts, capitalisation comprise, sont calculés pour vous. Pour vos crédits, voyez si la mensualité est payée et ce qu'il reste. Sans banque.",
+          "keywords": ["prêt", "dette", "livret"]
+        },
+        "tr": {
+          "promotionalText": "Mevduat faizin bileşik faizle birlikte otomatik hesaplanır. Kredilerde bu ayın taksiti ödendi mi, ne kadar kaldı gör. Banka bağlantısı yok.",
+          "keywords": ["kredi", "mevduat", "borç"]
+        },
+        "pt-BR": {
+          "promotionalText": "Os rendimentos do seu CDB, com juros compostos, são calculados para você. Nos empréstimos, veja se a parcela do mês foi paga e quanto falta. Sem conectar o banco.",
+          "keywords": ["dívida"]
+        },
+        "it": {
+          "promotionalText": "Gli interessi dei depositi, con capitalizzazione, si calcolano da soli. Per i prestiti vedi se la rata del mese è pagata e quanto resta. Senza collegare la banca.",
+          "keywords": ["mutuo", "deposito", "debiti"]
+        },
+        "uk": {
+          "promotionalText": "Відсотки за депозитами з капіталізацією рахуються самі. За кредитами видно, чи внесено платіж за місяць і скільки лишилося. Без підключення банку.",
+          "keywords": ["кредит", "депозит", "борг"]
+        },
+        "ja": {
+          "promotionalText": "定期預金の利息は複利も含めて自動で計算。ローンは今月の返済が済んだか、残りはいくらかがわかります。銀行連携は不要です。",
+          "keywords": ["ローン", "定期預金"]
+        },
+        "ko": {
+          "promotionalText": "예금 이자는 복리까지 자동으로 계산돼요. 대출은 이번 달 상환 여부와 남은 금액을 바로 확인해요. 은행 연동이 필요 없어요.",
+          "keywords": ["대출", "적금", "예적금"]
         }
       }
     }

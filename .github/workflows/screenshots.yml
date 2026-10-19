@@ -14,7 +14,7 @@ on:
         required: false
         default: "ru en-US fr-FR"
       frames:
-        description: "all (01-16), cpp (only 09-12, the custom product page frames) or ten (only 07, 13, 14)"
+        description: "all (01-19), cpp (only 09-12, the custom product page frames) or ten (only Ten's 07, 13, 14, 17-19)"
         required: false
         default: cpp
 

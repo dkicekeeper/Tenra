@@ -1,5 +1,5 @@
 {
-  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts. At most 10 frames per locale go to the store. Custom product page frames (ru, en-US, fr-FR only): subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans; the pages and their frame order are in appstore/product-pages.json.",
+  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts. At most 10 frames per locale go to the store. Custom product page frames: subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans, and Ten's answers tensubs=17-ten-subscriptions, tenfx=18-ten-currencies, tenloan=19-ten-loan; the pages and their frame order are in appstore/product-pages.json.",
   "defaultOrder": ["ten", "draft", "home", "finances", "goal", "debts", "score", "topcat", "history", "fx"],
   "locales": {
     "de-DE": {
@@ -15,7 +15,14 @@
         "ten":     { "title": "Fragen Sie Ten zu Ihrem Geld", "subtitle": "Antworten auf Karten: Summen, Kategorien, Budgets" },
         "draft":   { "title": "Sagen Sie es, Ten trägt es ein", "subtitle": "Gespeichert wird erst, wenn Sie auf „Speichern“ tippen" },
         "goal":    { "title": "Sparen Sie für Ihre Ziele", "subtitle": "So viel legen Sie jeden Monat zurück" },
-        "debts":   { "title": "Wer wem was schuldet, und bis wann", "subtitle": "Verliehenes und Geliehenes mit Rückzahlungen" }
+        "debts":   { "title": "Wer wem was schuldet, und bis wann", "subtitle": "Verliehenes und Geliehenes mit Rückzahlungen" },
+        "subscriptions":{ "title": "Alle Abos im Kalender", "subtitle": "Was wann abgebucht wird, mit den Logos der Dienste" },
+        "subscription":{ "title": "Jedes Abo im Detail", "subtitle": "Nächste Abbuchung, Gesamtsumme und Verlauf" },
+        "deposit":  { "title": "Wissen, was Ihr Festgeld bringt", "subtitle": "Zinssatz, Zinseszins und die nächste Gutschrift" },
+        "loans":    { "title": "Kredite im Griff", "subtitle": "Ob die Rate bezahlt ist und wie viel noch offen ist" },
+        "tensubs":  { "title": "Fragen Sie nach Ihren Abos", "subtitle": "Ten rechnet die Monatssumme aus und listet jedes Abo" },
+        "tenfx":    { "title": "Geld in allen Währungen", "subtitle": "Ten rechnet Ihre Konten zum heutigen Kurs zusammen" },
+        "tenloan":  { "title": "Was bringt eine Sondertilgung?", "subtitle": "Ten zeigt, wie viel Zinsen Sie sparen" }
       }
     },
     "es-ES": {
@@ -31,7 +38,14 @@
         "ten":     { "title": "Pregunta a Ten por tu dinero", "subtitle": "Respuestas en tarjetas: totales, categorías, presupuestos" },
         "draft":   { "title": "Dilo y Ten lo anota", "subtitle": "No se guarda nada hasta que tocas Guardar" },
         "goal":    { "title": "Ahorra para lo que importa", "subtitle": "Mira cuánto apartar cada mes" },
-        "debts":   { "title": "Quién debe a quién, y hasta cuándo", "subtitle": "Lo que prestaste y lo que te prestaron" }
+        "debts":   { "title": "Quién debe a quién, y hasta cuándo", "subtitle": "Lo que prestaste y lo que te prestaron" },
+        "subscriptions":{ "title": "Tus suscripciones en un calendario", "subtitle": "Qué se cobra y cuándo, con el logo de cada servicio" },
+        "subscription":{ "title": "Cada suscripción en detalle", "subtitle": "Próximo cobro, total gastado e historial" },
+        "deposit":  { "title": "Lo que rinde tu depósito", "subtitle": "Tipo de interés, capitalización y próximo abono" },
+        "loans":    { "title": "Tus préstamos bajo control", "subtitle": "Si la cuota del mes está pagada y cuánto queda" },
+        "tensubs":  { "title": "Pregunta por tus suscripciones", "subtitle": "Ten suma el total al mes y te las muestra una a una" },
+        "tenfx":    { "title": "Tu dinero en todas las monedas", "subtitle": "Ten suma tus cuentas al tipo de cambio de hoy" },
+        "tenloan":  { "title": "¿Y si amortizas antes?", "subtitle": "Ten te dice cuánto ahorras en intereses" }
       }
     },
     "es-MX": {
@@ -47,7 +61,14 @@
         "ten":     { "title": "Pregunta a Ten por tu dinero", "subtitle": "Respuestas en tarjetas: totales, categorías, presupuestos" },
         "draft":   { "title": "Dilo y Ten lo anota", "subtitle": "No se guarda nada hasta que tocas Guardar" },
         "goal":    { "title": "Ahorra para lo que importa", "subtitle": "Ve cuánto apartar cada mes" },
-        "debts":   { "title": "Quién debe a quién, y hasta cuándo", "subtitle": "Lo que prestaste y lo que te prestaron" }
+        "debts":   { "title": "Quién debe a quién, y hasta cuándo", "subtitle": "Lo que prestaste y lo que te prestaron" },
+        "subscriptions":{ "title": "Tus suscripciones en un calendario", "subtitle": "Qué se cobra y cuándo, con el logo de cada servicio" },
+        "subscription":{ "title": "Cada suscripción en detalle", "subtitle": "Próximo cobro, total gastado e historial" },
+        "deposit":  { "title": "Lo que rinde tu depósito", "subtitle": "Tasa, capitalización y el próximo pago de intereses" },
+        "loans":    { "title": "Tus préstamos bajo control", "subtitle": "Si el pago del mes está hecho y cuánto falta" },
+        "tensubs":  { "title": "Pregunta por tus suscripciones", "subtitle": "Ten suma el total al mes y te las muestra una a una" },
+        "tenfx":    { "title": "Tu dinero en todas las monedas", "subtitle": "Ten suma tus cuentas al tipo de cambio de hoy" },
+        "tenloan":  { "title": "¿Y si adelantas pagos?", "subtitle": "Ten te dice cuánto ahorras en intereses" }
       }
     },
     "fr-FR": {
@@ -67,7 +88,10 @@
         "subscriptions": { "title": "Vos abonnements sur un calendrier", "subtitle": "Ce qui sera prélevé et quand, avec les logos des services" },
         "subscription": { "title": "Chaque abonnement en détail", "subtitle": "Prochain prélèvement, total dépensé et historique" },
         "deposit":  { "title": "Ce que rapporte votre épargne", "subtitle": "Taux, capitalisation et prochains intérêts" },
-        "loans":    { "title": "Vos crédits sous contrôle", "subtitle": "Mensualité du mois payée ou non, et reste à payer" }
+        "loans":    { "title": "Vos crédits sous contrôle", "subtitle": "Mensualité du mois payée ou non, et reste à payer" },
+        "tensubs":  { "title": "Interrogez Ten sur vos abonnements", "subtitle": "Le total par mois et la liste de chacun" },
+        "tenfx":    { "title": "Votre argent, toutes devises", "subtitle": "Ten additionne vos comptes au taux du jour" },
+        "tenloan":  { "title": "Et si vous remboursiez en avance ?", "subtitle": "Ten montre les intérêts que vous économisez" }
       }
     },
     "fr-CA": {
@@ -83,7 +107,14 @@
         "ten":     { "title": "Demandez à Ten où va votre argent", "subtitle": "Des réponses en cartes : totaux, catégories, budgets" },
         "draft":   { "title": "Dites-le, Ten le note", "subtitle": "Rien n'est enregistré tant que vous n'avez pas touché Enregistrer" },
         "goal":    { "title": "Épargnez pour vos projets", "subtitle": "Voyez combien mettre de côté chaque mois" },
-        "debts":   { "title": "Qui doit quoi, et pour quand", "subtitle": "Argent prêté et emprunté, avec les remboursements" }
+        "debts":   { "title": "Qui doit quoi, et pour quand", "subtitle": "Argent prêté et emprunté, avec les remboursements" },
+        "subscriptions":{ "title": "Vos abonnements sur un calendrier", "subtitle": "Ce qui sera prélevé et quand, avec les logos des services" },
+        "subscription":{ "title": "Chaque abonnement en détail", "subtitle": "Prochain prélèvement, total dépensé et historique" },
+        "deposit":  { "title": "Ce que rapporte votre épargne", "subtitle": "Taux, capitalisation et prochains intérêts" },
+        "loans":    { "title": "Vos crédits sous contrôle", "subtitle": "Mensualité du mois payée ou non, et reste à payer" },
+        "tensubs":  { "title": "Interrogez Ten sur vos abonnements", "subtitle": "Le total par mois et la liste de chacun" },
+        "tenfx":    { "title": "Votre argent, toutes devises", "subtitle": "Ten additionne vos comptes au taux du jour" },
+        "tenloan":  { "title": "Et si vous remboursiez en avance ?", "subtitle": "Ten montre les intérêts que vous économisez" }
       }
     },
     "tr": {
@@ -100,7 +131,14 @@
         "score":    { "title": "Finansal sağlığının tek puanı", "subtitle": "Birikim, bütçeler ve güvence fonu, anlaşılır tek skorda" },
         "topcat":   { "title": "En büyük harcamalarını keşfet", "subtitle": "Aylara göre net dağılımıyla harcama kategorileri" },
         "history":  { "title": "Her işlem kontrol altında", "subtitle": "Harcamalar, gelirler ve mevduat faizleri, tek akışta" },
-        "voice":    { "title": "Harcamalarını sesle ekle", "subtitle": "\"Markete 450 lira harcadım\" de, bitti" }
+        "voice":    { "title": "Harcamalarını sesle ekle", "subtitle": "\"Markete 450 lira harcadım\" de, bitti" },
+        "subscriptions":{ "title": "Tüm abonelikler takvimde", "subtitle": "Ne zaman ne kadar çekilecek, servis logolarıyla" },
+        "subscription":{ "title": "Her abonelik ayrıntısıyla", "subtitle": "Sonraki ödeme, toplam harcama ve geçmiş" },
+        "deposit":  { "title": "Mevduatının getirisini bil", "subtitle": "Faiz oranı, bileşik faiz ve sonraki ödeme" },
+        "loans":    { "title": "Krediler kontrol altında", "subtitle": "Bu ayın taksiti ödendi mi, ne kadar kaldı" },
+        "tensubs":  { "title": "Aboneliklerini Ten'e sor", "subtitle": "Aylık toplamı hesaplar, hepsini tek tek listeler" },
+        "tenfx":    { "title": "Tüm para birimlerinde paran", "subtitle": "Ten hesaplarını bugünkü kurla toplar" },
+        "tenloan":  { "title": "Krediyi erken kapatsan?", "subtitle": "Ten ne kadar faiz tasarruf edeceğini gösterir" }
       }
     },
     "pt-BR": {
@@ -116,7 +154,14 @@
         "ten":     { "title": "Pergunte ao Ten sobre seu dinheiro", "subtitle": "Respostas em cartões: totais, categorias, orçamentos" },
         "draft":   { "title": "Fale, e o Ten anota", "subtitle": "Nada é salvo até você tocar em Salvar" },
         "goal":    { "title": "Guarde para o que importa", "subtitle": "Veja quanto guardar por mês" },
-        "debts":   { "title": "Quem deve a quem, e até quando", "subtitle": "Dinheiro emprestado, devolvido e o que falta" }
+        "debts":   { "title": "Quem deve a quem, e até quando", "subtitle": "Dinheiro emprestado, devolvido e o que falta" },
+        "subscriptions":{ "title": "Todas as assinaturas no calendário", "subtitle": "O que será cobrado e quando, com o logo de cada serviço" },
+        "subscription":{ "title": "Cada assinatura em detalhes", "subtitle": "Próxima cobrança, total gasto e histórico" },
+        "deposit":  { "title": "Saiba quanto rende seu CDB", "subtitle": "Taxa, juros compostos e o próximo rendimento" },
+        "loans":    { "title": "Empréstimos sob controle", "subtitle": "Veja se a parcela do mês foi paga e quanto falta" },
+        "tensubs":  { "title": "Pergunte sobre suas assinaturas", "subtitle": "O Ten soma o total do mês e mostra cada uma" },
+        "tenfx":    { "title": "Seu dinheiro em todas as moedas", "subtitle": "O Ten soma suas contas pela cotação de hoje" },
+        "tenloan":  { "title": "E se adiantar o empréstimo?", "subtitle": "O Ten mostra quanto você economiza em juros" }
       }
     },
     "it": {
@@ -132,7 +177,14 @@
         "ten":     { "title": "Chiedi a Ten dei tuoi soldi", "subtitle": "Risposte su schede: totali, categorie, budget" },
         "draft":   { "title": "Dillo e Ten lo annota", "subtitle": "Non si salva nulla finché non tocchi Salva" },
         "goal":    { "title": "Risparmia per ciò che conta", "subtitle": "Vedi quanto mettere da parte ogni mese" },
-        "debts":   { "title": "Chi deve a chi, e entro quando", "subtitle": "Soldi prestati e ricevuti, con i rimborsi" }
+        "debts":   { "title": "Chi deve a chi, e entro quando", "subtitle": "Soldi prestati e ricevuti, con i rimborsi" },
+        "subscriptions":{ "title": "Tutti gli abbonamenti in calendario", "subtitle": "Cosa viene addebitato e quando, con i loghi dei servizi" },
+        "subscription":{ "title": "Ogni abbonamento nel dettaglio", "subtitle": "Prossimo addebito, totale speso e storico" },
+        "deposit":  { "title": "Quanto rende il tuo deposito", "subtitle": "Tasso, capitalizzazione e prossimi interessi" },
+        "loans":    { "title": "Prestiti sotto controllo", "subtitle": "Se la rata del mese è pagata e quanto resta" },
+        "tensubs":  { "title": "Chiedi dei tuoi abbonamenti", "subtitle": "Ten calcola il totale al mese e li elenca tutti" },
+        "tenfx":    { "title": "I tuoi soldi in ogni valuta", "subtitle": "Ten somma i tuoi conti al cambio di oggi" },
+        "tenloan":  { "title": "E se estingui prima il prestito?", "subtitle": "Ten ti mostra quanti interessi risparmi" }
       }
     },
     "uk": {
@@ -148,7 +200,14 @@
         "ten":     { "title": "Запитайте Тена про гроші", "subtitle": "Відповіді на картках: суми, категорії, бюджети" },
         "draft":   { "title": "Скажіть, і Тен запише", "subtitle": "Нічого не збережеться, доки ви не натиснете «Зберегти»" },
         "goal":    { "title": "Заощаджуйте на важливе", "subtitle": "Видно, скільки відкладати щомісяця" },
-        "debts":   { "title": "Хто кому винен і до якого числа", "subtitle": "Борги й позики з поверненнями" }
+        "debts":   { "title": "Хто кому винен і до якого числа", "subtitle": "Борги й позики з поверненнями" },
+        "subscriptions":{ "title": "Усі підписки в календарі", "subtitle": "Коли і скільки спишуть, з логотипами сервісів" },
+        "subscription":{ "title": "Кожна підписка під контролем", "subtitle": "Наступне списання, сума за весь час та історія" },
+        "deposit":  { "title": "Знайте дохід за депозитом", "subtitle": "Ставка, капіталізація і найближче нарахування" },
+        "loans":    { "title": "Кредити під контролем", "subtitle": "Видно, чи внесено платіж за місяць і скільки лишилося" },
+        "tensubs":  { "title": "Запитайте про підписки", "subtitle": "Тен порахує суму за місяць і покаже кожну" },
+        "tenfx":    { "title": "Гроші в усіх валютах", "subtitle": "Тен складе рахунки в одну суму за сьогоднішнім курсом" },
+        "tenloan":  { "title": "А якщо погасити достроково?", "subtitle": "Тен покаже, скільки зекономите на відсотках" }
       }
     },
     "ja": {
@@ -164,7 +223,14 @@
         "ten":     { "title": "お金のことはテンに聞こう", "subtitle": "合計、カテゴリ、予算をカードで回答" },
         "draft":   { "title": "話せば、テンが記録", "subtitle": "「保存」をタップするまで保存されません" },
         "goal":    { "title": "目標に向けて貯金", "subtitle": "毎月いくら貯めればよいかが分かる" },
-        "debts":   { "title": "貸し借りを期限まで管理", "subtitle": "貸したお金、借りたお金、返済を記録" }
+        "debts":   { "title": "貸し借りを期限まで管理", "subtitle": "貸したお金、借りたお金、返済を記録" },
+        "subscriptions":{ "title": "サブスクをカレンダーで", "subtitle": "いつ、いくら引き落とされるかをロゴ付きで" },
+        "subscription":{ "title": "サブスクごとの詳細", "subtitle": "次回の請求、累計額、支払い履歴" },
+        "deposit":  { "title": "定期預金の利息がわかる", "subtitle": "金利、複利、次回の利息" },
+        "loans":    { "title": "ローンをしっかり管理", "subtitle": "今月の返済状況と残高がひと目でわかる" },
+        "tensubs":  { "title": "サブスクの合計もテンに", "subtitle": "月額の合計と一覧をひとつの回答で" },
+        "tenfx":    { "title": "すべての通貨を、ひとつの合計に", "subtitle": "テンが今日のレートで口座を合算" },
+        "tenloan":  { "title": "繰り上げ返済したら？", "subtitle": "節約できる利息をテンが計算" }
       }
     },
     "ko": {
@@ -180,7 +246,14 @@
         "ten":     { "title": "돈 이야기는 텐에게 물어보세요", "subtitle": "합계, 카테고리, 예산을 카드로 답해요" },
         "draft":   { "title": "말하면 텐이 기록해요", "subtitle": "'저장'을 탭하기 전에는 저장되지 않아요" },
         "goal":    { "title": "중요한 목표를 위해 저축", "subtitle": "매달 얼마를 모아야 하는지 보여 줘요" },
-        "debts":   { "title": "누가 누구에게 언제까지", "subtitle": "빌려준 돈과 빌린 돈, 상환까지" }
+        "debts":   { "title": "누가 누구에게 언제까지", "subtitle": "빌려준 돈과 빌린 돈, 상환까지" },
+        "subscriptions":{ "title": "모든 구독을 캘린더로", "subtitle": "언제 얼마가 나가는지 서비스 로고와 함께" },
+        "subscription":{ "title": "구독별 상세 내역", "subtitle": "다음 결제일, 누적 금액, 결제 기록" },
+        "deposit":  { "title": "예금 이자를 한눈에", "subtitle": "금리, 복리, 다음 이자 지급일" },
+        "loans":    { "title": "대출을 한눈에", "subtitle": "이번 달 상환 여부와 남은 금액" },
+        "tensubs":  { "title": "구독료도 텐에게 물어보세요", "subtitle": "월 합계와 구독 목록을 한 번에 보여줘요" },
+        "tenfx":    { "title": "모든 통화를 하나의 합계로", "subtitle": "텐이 오늘 환율로 계좌를 합산해요" },
+        "tenloan":  { "title": "대출을 미리 갚으면?", "subtitle": "아낄 수 있는 이자를 텐이 계산해요" }
       }
     },
     "en-US": {
@@ -200,7 +273,10 @@
         "subscriptions": { "title": "Every subscription on a calendar", "subtitle": "What gets charged and when, with service logos" },
         "subscription": { "title": "Every subscription in detail", "subtitle": "Next charge, total spent and every past payment" },
         "deposit":  { "title": "Know what your deposit earns", "subtitle": "Rate, capitalization and the next interest payment" },
-        "loans":    { "title": "Loans under control", "subtitle": "See if this month's payment is made and what's left" }
+        "loans":    { "title": "Loans under control", "subtitle": "See if this month's payment is made and what's left" },
+        "tensubs":  { "title": "Ask about subscriptions", "subtitle": "Ten adds them up per month and lists each one" },
+        "tenfx":    { "title": "Money in every currency", "subtitle": "Ten adds up your accounts at today's rate" },
+        "tenloan":  { "title": "What if you pay off early?", "subtitle": "Ten shows how much interest you save" }
       }
     },
     "ru": {
@@ -220,7 +296,10 @@
         "subscriptions": { "title": "Все подписки в календаре", "subtitle": "Когда и сколько спишут, с логотипами сервисов" },
         "subscription": { "title": "Каждая подписка под контролем", "subtitle": "Следующее списание, итог за всё время и история" },
         "deposit":  { "title": "Знайте доход по депозиту", "subtitle": "Ставка, капитализация и ближайшее начисление" },
-        "loans":    { "title": "Кредиты под контролем", "subtitle": "Видно, внесён ли платёж за месяц и сколько осталось" }
+        "loans":    { "title": "Кредиты под контролем", "subtitle": "Видно, внесён ли платёж за месяц и сколько осталось" },
+        "tensubs":  { "title": "Спросите про подписки", "subtitle": "Тэн сложит их в итог за месяц и покажет списком" },
+        "tenfx":    { "title": "Деньги во всех валютах", "subtitle": "Тэн сложит счета в одну сумму по курсу на сегодня" },
+        "tenloan":  { "title": "Что если погасить досрочно?", "subtitle": "Тэн покажет, сколько сэкономите на процентах" }
       }
     }
   }

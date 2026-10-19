@@ -16,11 +16,11 @@ with the commit of every fix, are in
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come
   back to an unsaved attachment.
 
-- **Wallet probe code (DEBUG only).** The spike it served (does logging Apple Pay through the
-  Shortcuts "Wallet" automation work?) was overtaken by the shipped automation (1.4, merchant
-  memory; [domains/intents.md](domains/intents.md) §6). `WalletPaymentProbeIntent`,
-  `WalletPaymentProbeLog` and their Experiments section still compile into DEBUG builds:
-  remove them, or keep them for measuring trigger coverage. Owner's call.
+- **Automatic payment capture and merchants** (plan in flight:
+  [plan-auto-capture.md](plan-auto-capture.md)): a silent Wallet action with currency, card and
+  duplicate handling, a "To review" list, merchant logos, then receipts shared from bank apps and
+  merchant screens and insights. The DEBUG Wallet probe (`WalletPaymentProbeIntent`,
+  `WalletPaymentProbeLog`, its Experiments section) goes in its phase 1b.
 - **Legacy converted deposits (DP1).** A read-only DEBUG diagnostic lists deposits converted
   before the `conversionTimestamp` fix (Settings → Experiments, `LegacyDepositDiagnostics`).
   Recovery waits for real data.
@@ -63,7 +63,8 @@ Found by the release audit of 2026-10-15 (details and file references:
 
 Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the
-  confirmation snippet is the only guard. Decide whether intents deduplicate.
+  confirmation snippet is the only guard. Decide whether intents deduplicate. (Wallet payments get
+  their own 90-second guard in [plan-auto-capture.md](plan-auto-capture.md).)
 - **Health score budget adherence** uses the calendar month, not each budget's own period;
   **`largeTransaction`** counts `.expense` only, so loan payments never qualify. Design calls.
 - **`SilenceDetector`** is created in `VoiceInputService` but never fed audio.
@@ -98,6 +99,11 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Category tiles:** 3 per row, titles on one line (plan 018 reverted 2026-09-25: two-line
   titles made the grid jump).
 - **Logo lookups** send brand names to Google favicons and logo.dev: accepted (2026-09-25).
+  Merchant names from payments go to logo.dev's name lookup too, after the local sources
+  (2026-10-19).
+- **No SMS or email capture** (2026-10-19): every bank the owner uses notifies by push, which iOS
+  never shows other apps. Payments outside Apple Pay come from statements, shared receipts or by
+  hand ([plan-auto-capture.md](plan-auto-capture.md) §2).
 - **No automatic repairs that move balances** (2026-10-06): a transfer out of a deposit lowers
   its interest base by the raw amount (pinned by a characterization test); changing an
   account's currency doesn't reconvert its transactions; transfers saved without a target

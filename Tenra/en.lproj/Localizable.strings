@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Customize...";
 "settings.wallpaper" = "Home Wallpaper";
 "settings.background" = "Background";
+"settings.merchantLogos" = "Merchant logos";
 "home.hint.categories" = "Tap a category to add an expense";
 "settings.voiceLanguage" = "Voice language";
 "settings.voiceLanguage.app" = "As in the app";

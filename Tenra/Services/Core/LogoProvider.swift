@@ -50,7 +50,9 @@ nonisolated final class LogoDevProvider: LogoProvider {
     }()
 
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
-        guard let url = LogoDevConfig.logoURL(for: domain) else {
+        // A merchant's name is not a domain: logo.dev would answer a monogram for it.
+        guard !domain.hasPrefix(LogoDevNameProvider.scheme),
+              let url = LogoDevConfig.logoURL(for: domain) else {
             return nil
         }
 
@@ -67,5 +69,35 @@ nonisolated final class LogoDevProvider: LogoProvider {
         } catch {
             return nil
         }
+    }
+}
+
+/// A merchant's logo found by its name on logo.dev (`LogoDevConfig.nameLogoURL`), for
+/// the keys MerchantLogoResolver stores as `scheme` + name. Answers nil for any other key
+/// and for an unknown name (`fallback=404`), so the chain moves on.
+nonisolated final class LogoDevNameProvider: LogoProvider {
+    static let scheme = "name:"
+
+    let name = "logoDevName"
+
+    private static let session: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 5
+        config.timeoutIntervalForResource = 5
+        return URLSession(configuration: config)
+    }()
+
+    func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
+        guard domain.hasPrefix(Self.scheme) else { return nil }
+        return await Self.fetch(name: String(domain.dropFirst(Self.scheme.count)))
+    }
+
+    static func fetch(name: String) async -> UIImage? {
+        guard let url = LogoDevConfig.nameLogoURL(for: name),
+              let result = try? await session.data(from: url),
+              (result.1 as? HTTPURLResponse)?.statusCode == 200 else {
+            return nil
+        }
+        return UIImage(data: result.0)
     }
 }

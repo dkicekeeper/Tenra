@@ -5,8 +5,11 @@ Logo provider chain (`Services/Core/`), `ServiceLogoRegistry`, and brand icon re
 ## Provider Chain
 
 ```
-JsDelivrLogoProvider → LogoDevProvider → GoogleFaviconProvider → LettermarkProvider
+JsDelivrLogoProvider → LogoDevNameProvider → LogoDevProvider → GoogleFaviconProvider → LettermarkProvider
 ```
+
+`LogoDevNameProvider` answers only keys starting with `name:` (a merchant's logo found by its
+name, below); the others skip those keys.
 
 `LogoProviderChain.fetch()` returns `LogoProviderResult` with `providerName` + `shouldCacheToDisk`.
 
@@ -82,3 +85,30 @@ Fields: `domain`, `displayName`, `category`, `aliases`.
 Cases: `.banks`, `.streaming`, `.productivity`, `.social`, `.fitness`, `.gaming`, `.devTools`, `.services`, `.localServices`, `.telecom`, `.cis`.
 
 Bank and brand logos render through the provider chain with `IconSource.brandService(domain)`; `IconStyle.roundedLogo()` / `.roundedLogoLarge()` are the logo styles (a circle in the logo's own colours).
+
+## Merchant logos
+
+A transaction row shows its merchant's logo instead of the category icon (`TransactionCard`,
+after a subscription's and a loan's logo; the category stays the row's title), behind Settings →
+General → "Merchant logos" (`MerchantLogoStore.enabledKey`, on by default). Plan:
+[plan-auto-capture.md](../plan-auto-capture.md) §5.
+
+- `MerchantName.displayName` (`Services/Categories/`): the clean name from a bank's or Wallet's
+  text ("MAGNUM CASH&CARRY 123" → "Magnum Cash&Carry"): store numbers, processor prefixes
+  (SQ \*, PAYPAL \*), legal forms (ТОО, ИП, LLP) and a trailing city or country go; text in
+  capitals is re-cased, acronyms of up to three letters and domains excepted. Display and lookup
+  only: the stored description is never rewritten.
+- `MerchantLogoResolver.lookUp`, most private first: `ServiceLogoRegistry` by the clean name or
+  its first words → the tenra-assets index matched on device
+  (`JsDelivrLogoProvider.indexName(forMerchant:)`) → logo.dev by name
+  (`img.logo.dev/name/{name}?fallback=404`, the image saved to `LogoDiskCache` under
+  `name:<clean name>`; owner's decision 2026-10-19; never for a sole proprietor, ИП / IP, whose
+  name is a person's: `MerchantName.isSoleProprietor`). No lettermark and no Google favicon: a
+  merchant without a real logo keeps its category icon.
+- `MerchantLogoStore`: normalized merchant → `.found(key)` or `.missing` with the date; "missing"
+  is looked up again after 30 days. `iconSource(forDescription:)` memoizes per description and
+  reads `version`, so rows re-render when a logo is found.
+- Lookups run only in the app, when it comes to the front (`MainTabView`), at most 12 per pass, for
+  the merchants Apple Pay payments came from (`MerchantCategoryMemory`, `WalletCaptureStore`).
+  Any transaction whose description is the same merchant gets the logo, whatever recorded it.
+- Pinned by `MerchantLogoTests`.

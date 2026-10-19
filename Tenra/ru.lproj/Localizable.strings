@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Настроить...";
 "settings.wallpaper" = "Обои на главной";
 "settings.background" = "Фон";
+"settings.merchantLogos" = "Логотипы магазинов";
 "home.hint.categories" = "Нажмите на категорию, чтобы добавить расход";
 "settings.voiceLanguage" = "Язык голоса";
 "settings.voiceLanguage.app" = "Как в приложении";

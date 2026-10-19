@@ -105,6 +105,14 @@ final class WalletCaptureStore {
             }
     }
 
+    /// The merchants of the kept captures, as Wallet wrote them, one per merchant.
+    var merchants: [String] {
+        var seen = Set<String>()
+        return captures.values
+            .map(\.payment.merchant)
+            .filter { !$0.isEmpty && seen.insert(CategorySuggestionService.normalizedMerchant($0)).inserted }
+    }
+
     func record(transactionId: String, payment: WalletPayment, guesses: Set<Guess>, now: Date = Date()) {
         guard !transactionId.isEmpty else { return }
         captures = captures.filter { now.timeIntervalSince($0.value.payment.date) <= Self.retention }

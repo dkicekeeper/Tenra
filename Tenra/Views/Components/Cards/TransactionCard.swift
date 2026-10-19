@@ -50,6 +50,9 @@ struct TransactionCard: View, Equatable {
 
     @Environment(TransactionStore.self) private var transactionStore
 
+    /// Settings → "Merchant logos" (on by default).
+    @AppStorage(MerchantLogoStore.enabledKey) private var showsMerchantLogos = true
+
     init(
         transaction: Transaction,
         currency: String,
@@ -98,6 +101,8 @@ struct TransactionCard: View, Equatable {
         //   2. loan-account logo for loan-payment / early-repayment rows so the
         //      bank/loan brand surfaces in History instead of the generic
         //      "Loan Payment" category symbol (loan account == `targetAccount`).
+        //   3. the merchant's logo for an expense or income, once MerchantLogoStore found a
+        //      real one (Settings switch); the category stays the row's title.
         // Falls back to the category icon resolved inside `TransactionCardView`.
         let loanIconSource: IconSource? = {
             switch transaction.type {
@@ -107,9 +112,12 @@ struct TransactionCard: View, Equatable {
                 return nil
             }
         }()
-        let subscriptionIconSource: IconSource? = (series?.kind == .subscription)
-            ? series?.iconSource
-            : loanIconSource
+        let merchantIconSource: IconSource? = showsMerchantLogos
+            && (transaction.type == .expense || transaction.type == .income)
+            ? MerchantLogoStore.shared.iconSource(forDescription: transaction.description)
+            : nil
+        let seriesIconSource: IconSource? = series?.kind == .subscription ? series?.iconSource : nil
+        let subscriptionIconSource: IconSource? = seriesIconSource ?? loanIconSource ?? merchantIconSource
         let showRecurringBadge = transaction.recurringSeriesId != nil && isFutureDate && isSeriesActive
 
         return Button {

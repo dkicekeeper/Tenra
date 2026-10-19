@@ -20,6 +20,7 @@ nonisolated final class GoogleFaviconProvider: LogoProvider {
     }()
 
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
+        guard !domain.hasPrefix(LogoDevNameProvider.scheme) else { return nil }
         var components = URLComponents(string: "https://www.google.com/s2/favicons")!
         components.queryItems = [
             URLQueryItem(name: "domain", value: domain),

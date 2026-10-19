@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 /// Central logo service with waterfall provider chain.
-/// Chain: jsDelivr → LogoDev → GoogleFavicon → Lettermark
+/// Chain: jsDelivr → LogoDev by name (merchant keys only) → LogoDev → GoogleFavicon → Lettermark
 final class LogoService {
     static let shared = LogoService()
 
@@ -19,6 +19,7 @@ final class LogoService {
     // LogoService is NOT @Observable — no @ObservationIgnored needed
     private let providers: [any LogoProvider] = [
         JsDelivrLogoProvider(),
+        LogoDevNameProvider(),
         LogoDevProvider(),
         GoogleFaviconProvider(),
         LettermarkProvider(),

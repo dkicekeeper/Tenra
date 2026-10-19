@@ -22,6 +22,7 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
 
     /// Empty: as in the app.
     @AppStorage(VoiceRecognitionLanguage.defaultsKey) private var voiceLanguage = ""
+    @AppStorage(MerchantLogoStore.enabledKey) private var showsMerchantLogos = true
 
     // MARK: - Initializer
 
@@ -71,6 +72,13 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
             ) {
                 backgroundDestination
             }
+
+            // A merchant's logo instead of the category icon in transaction rows (MerchantLogoStore).
+            ToggleSettingsRow(
+                icon: "storefront",
+                title: String(localized: "settings.merchantLogos"),
+                isOn: $showsMerchantLogos
+            )
 
             // DesignKit's list row (4.14.0): the settings row, its value and the list it pushes.
             NavigationPickerRow(

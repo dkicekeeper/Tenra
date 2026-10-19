@@ -95,6 +95,7 @@
 "currency.customizeAction" = "사용자 지정...";
 "settings.wallpaper" = "홈 배경화면";
 "settings.background" = "배경";
+"settings.merchantLogos" = "가맹점 로고";
 "home.hint.categories" = "카테고리를 탭해 지출을 추가하세요";
 "settings.voiceLanguage" = "음성 언어";
 "settings.voiceLanguage.app" = "앱과 동일";

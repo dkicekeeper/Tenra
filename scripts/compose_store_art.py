@@ -205,7 +205,7 @@ def ten_picture(folder, side):
         sys.exit(f"{path} not found: run Actions → Screenshots with `art` and put its art/ folder there")
     image = Image.open(path).convert("RGBA")
     # The picture has room around the creature: crop to what it draws.
-    box = image.getchannel("A").point(lambda v: 255 if v > 8 else 0).getbbox() or (0, 0, *image.size)
+    box = image.getchannel("A").point(lambda v: 255 if v > 40 else 0).getbbox() or (0, 0, *image.size)
     image = image.crop(box)
     scale = side / max(image.size)
     return image.resize((round(image.width * scale), round(image.height * scale)), Image.LANCZOS)
@@ -225,7 +225,7 @@ def header(locale, phrase, ten_folder):
         (0.20, 0.85, 0.12, 0.28, ORANGE, 0.45),
     ])
     safe_w, safe_h = sx1 - sx0, sy1 - sy0
-    ten_side = round(safe_h * 0.72)
+    ten_side = round(safe_h * 0.8)
     ten = ten_picture(ten_folder, ten_side)
     gap = round(safe_w * 0.04)
     text_w = safe_w - ten.width - gap

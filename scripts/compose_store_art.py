@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Compose the App Store's header and search art (iOS 27): screenshots/raw/ -> screenshots/art/.
 
-    header.jpg          3840x1646 (21:9), the product page's header: Ten and a phrase.
-    search.jpg          3840x2560 (3:2), the search result: a headline and one screen in an
-                        iPhone; search-<page>.jpg the same for each custom product page.
+    header.png          3840x1646 (21:9), the product page's header: Ten and a phrase.
+    search.png          3840x2560 (3:2), the search result: a headline and one screen in an
+                        iPhone; search-<page>.png the same for each custom product page.
 
 Both go to every page in its locale: the default product page and the custom product pages
 (appstore/product-pages.json: a page's `searchFrame` is the caption key of its search art, the
@@ -18,7 +18,7 @@ The background is the screenshots' (the dark field with colour glows of screensh
 drawn at full size. Ten comes from `--ten` (default screenshots/art/ten, from Actions →
 Screenshots with `art`: TenraTests/Views/StoreArtRenderTests); the phrase from `header` in
 scripts/screenshot_captions.json, the headline from the frame's caption. Fonts as in
-compose_screenshots.py. JPEG, no transparency: Apple refuses an alpha channel.
+compose_screenshots.py. PNG without transparency: Apple refuses an alpha channel.
 asc.py push-creatives uploads the files.
 """
 import argparse
@@ -28,7 +28,7 @@ import os
 import sys
 
 import numpy as np
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import compose_screenshots as shots  # noqa: E402  (fonts, line breaking, captions)
@@ -66,10 +66,8 @@ def glow_field(size, blobs, blur=0.11):
         alpha = np.asarray(layer).astype(np.float32)[..., None] / 255 * strength
         acc = acc * (1 - alpha) + np.array(colour, np.float32) * alpha
     acc = np.maximum(acc, np.array(BASE, np.float32))
+    # Scaled up from 1/8: the gradients stay smooth without noise (noise made a PNG of 6 MB).
     field = Image.fromarray(np.clip(acc.round(), 0, 255).astype(np.uint8), "RGB").resize(size, Image.BICUBIC)
-    # A little noise so the long gradients don't band.
-    noise = Image.effect_noise(size, 3).convert("RGB")
-    field = ImageChops.add(field, noise, scale=1, offset=-128)
     return field.convert("RGBA")
 
 
@@ -200,15 +198,26 @@ def shadowed(image, blur, opacity=0.55, offset=(0, 0)):
 # MARK: - Ten
 
 def ten_picture(folder, side):
+    """Ten `side` px across what it visibly draws, and that part's box inside the picture: the
+    picture keeps the faint glow around it, which fades out in a circle so no edge shows."""
     path = os.path.join(folder, f"ten-{TEN_MOOD}-{TEN_SCHEME}.png")
     if not os.path.exists(path):
         sys.exit(f"{path} not found: run Actions → Screenshots with `art` and put its art/ folder there")
     image = Image.open(path).convert("RGBA")
-    # The picture has room around the creature: crop to what it draws.
+    # Worked near the final size: the 2400 px still is slow to process whole.
+    visible = image.getchannel("A").point(lambda v: 255 if v > 40 else 0).getbbox() or (0, 0, *image.size)
+    work = round(image.width * side / max(visible[2] - visible[0], visible[3] - visible[1]))
+    image = image.resize((work, work), Image.LANCZOS)
+    # The glow runs to the still's edges: fade it out inside the inscribed circle.
+    yy, xx = np.mgrid[0:work, 0:work].astype(np.float32)
+    r = np.hypot(xx - work / 2, yy - work / 2) / (work / 2)
+    fade = np.clip((1.0 - r) / 0.16, 0, 1)
+    alpha = np.asarray(image.getchannel("A")).astype(np.float32) * fade
+    image.putalpha(Image.fromarray(alpha.round().astype(np.uint8), "L"))
+    outer = image.getchannel("A").getbbox() or (0, 0, work, work)
+    image = image.crop(outer)
     box = image.getchannel("A").point(lambda v: 255 if v > 40 else 0).getbbox() or (0, 0, *image.size)
-    image = image.crop(box)
-    scale = side / max(image.size)
-    return image.resize((round(image.width * scale), round(image.height * scale)), Image.LANCZOS)
+    return image, box
 
 
 # MARK: - Header
@@ -226,19 +235,20 @@ def header(locale, phrase, ten_folder):
     ])
     safe_w, safe_h = sx1 - sx0, sy1 - sy0
     ten_side = round(safe_h * 0.8)
-    ten = ten_picture(ten_folder, ten_side)
+    ten, ten_box = ten_picture(ten_folder, ten_side)
+    ten_w, ten_h = ten_box[2] - ten_box[0], ten_box[3] - ten_box[1]
     gap = round(safe_w * 0.04)
-    text_w = safe_w - ten.width - gap
+    text_w = safe_w - ten_w - gap
     font, lines, size = fitted(phrase, locale, "SemiBold", 132, text_w, 3, two_lines_down_to=100)
     pitch = round(size * 1.16)
     block_h = font.getmetrics()[0] + (len(lines) - 1) * pitch + font.getmetrics()[1] // 2
     text_widest = max(shots.ink_width(font, l) for l in lines)
     # Ten and the phrase together, centred in the safe area.
-    total = ten.width + gap + text_widest
+    total = ten_w + gap + text_widest
     x = sx0 + (safe_w - total) // 2
-    paste(base, ten, x, sy0 + (safe_h - ten.height) // 2)
+    paste(base, ten, x - ten_box[0], sy0 + (safe_h - ten_h) // 2 - ten_box[1])
     text = text_layer((text_w + 40, block_h + 40), lines, font, pitch)
-    paste(base, text, x + ten.width + gap, sy0 + (safe_h - block_h) // 2)
+    paste(base, text, x + ten_w + gap, sy0 + (safe_h - block_h) // 2)
     return to_image(base), lines
 
 
@@ -266,15 +276,16 @@ def search(locale, title, subtitle, screen, ten_folder):
     text_w = px + pad - left - 80
     title_font, title_lines, title_size = fitted(title, locale, "SemiBold", 176, text_w, 3, two_lines_down_to=150)
     sub_font, sub_lines, sub_size = fitted(subtitle, locale, "Medium", 88, text_w, 3, two_lines_down_to=76)
-    ten = ten_picture(ten_folder, 260)
+    ten, ten_box = ten_picture(ten_folder, 260)
+    ten_h = ten_box[3] - ten_box[1]
     title_pitch, sub_pitch = round(title_size * 1.12), round(sub_size * 1.25)
     title_h = title_font.getmetrics()[0] + (len(title_lines) - 1) * title_pitch + title_font.getmetrics()[1] // 2
     sub_h = sub_font.getmetrics()[0] + (len(sub_lines) - 1) * sub_pitch + sub_font.getmetrics()[1] // 2
     gap1, gap2 = 70, 56
-    block = ten.height + gap1 + title_h + gap2 + sub_h
+    block = ten_h + gap1 + title_h + gap2 + sub_h
     y = sy0 + (sy1 - sy0 - block) // 2
-    paste(base, ten, left - 20, y)
-    y += ten.height + gap1
+    paste(base, ten, left - ten_box[0], y - ten_box[1])
+    y += ten_h + gap1
     paste(base, text_layer((text_w + 40, title_h + 40), title_lines, title_font, title_pitch), left, y)
     y += title_h + gap2
     paste(base, text_layer((text_w + 40, sub_h + 40), sub_lines, sub_font, sub_pitch, fill=(255, 255, 255, 200)), left, y)
@@ -313,8 +324,8 @@ def main():
             outputs.append((slug, image))
             print(f"{locale} {slug}: {' / '.join(title_lines)} | {' / '.join(sub_lines)}")
         for slug, image in outputs:
-            # JPEG: the fine noise of the glows makes a PNG of it 6 MB.
-            image.save(os.path.join(out, f"{slug}.jpg"), quality=90, optimize=True)
+            # PNG: App Store Connect refused a JPEG of the art (INVALID_ASSET_FILE_FORMAT).
+            image.save(os.path.join(out, f"{slug}.png"), optimize=True)
             if args.preview:
                 folder = os.path.join(args.preview, locale)
                 os.makedirs(folder, exist_ok=True)

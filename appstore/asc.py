@@ -909,17 +909,21 @@ def place(owner: str, owner_id: str, placement_type: str, image_id: str) -> str:
 def push_creatives(app: str, version: str | None, locales: list[str] | None, pages: bool, submit: bool) -> None:
     """The header and search art from screenshots/art/<locale>/ on every localization of the
     version (the latest one on the App Store by default: the art can change without a new
-    version), and with `pages` on the custom pages' editable versions too (search-<page>.jpg,
+    version), and with `pages` on the custom pages' editable versions too (search-<page>.png,
     after push-custom-pages). With submit, sends the new images, and the page versions with
     `pages`, for review."""
     library = get(f"/v1/apps/{app}/assetLibrary")["data"]["id"]
     images, _ = get_all(f"/v1/appAssetLibraries/{library}/images", {"limit": 200})
+    for image in images:
+        # Our uploads App Store Connect refused: gone, so a fixed file uploads afresh.
+        if (image["attributes"].get("referenceName") or "").startswith("tenra-") and image["attributes"].get("state") == "FAILED":
+            request(f"/v1/appAssetLibraryImages/{image['id']}", method="DELETE")
     existing = {image["attributes"].get("referenceName"): image for image in images
                 if image["attributes"].get("state") not in ("FAILED", "ARCHIVED")}
     used: set[str] = set()
 
     def art(locale: str, stem: str) -> Path | None:
-        path = ART / locale / f"{stem}.jpg"
+        path = ART / locale / f"{stem}.png"
         return path if path.exists() else None
 
     record = store_version(app, version)

@@ -134,10 +134,10 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
    потом после одобрения `push-experiment --start`. Повторный запуск не перезаливает
    неизменённые скриншоты.
 4. **Шапка и кадр для поиска (iOS 27):** `python3 scripts/compose_store_art.py [локали]
-   [--preview <папка>]` собирает в `screenshots/art/<локаль>/` шапку `header.jpg` (3840×1646:
-   Тэн и фраза `header` из `scripts/screenshot_captions.json`) и кадр поиска `search.jpg`
+   [--preview <папка>]` собирает в `screenshots/art/<локаль>/` шапку `header.png` (3840×1646:
+   Тэн и фраза `header` из `scripts/screenshot_captions.json`) и кадр поиска `search.png`
    (3840×2560: заголовок и один экран в iPhone, ответ Тэна 13), для каждой специальной
-   страницы `search-<страница>.jpg` по её `searchFrame` в `product-pages.json`. Тэн берётся из
+   страницы `search-<страница>.png` по её `searchFrame` в `product-pages.json`. Тэн берётся из
    `screenshots/art/ten/` (Actions → Screenshots с `art`: тест `StoreArtRenderTests` рисует его
    через `ParticleCreature.image`). Всё важное держать в безопасных зонах Apple (`SAFE` в
    скрипте): на iPhone видна только середина шапки, а поиск показывает кадр шириной около

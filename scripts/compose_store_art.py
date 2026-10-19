@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 """Compose the App Store's header and search art (iOS 27): screenshots/raw/ -> screenshots/art/.
 
-    header.png   3840x1646 (21:9), the product page's header: Ten and a phrase.
-    search.png   3840x2560 (3:2), the search result: a headline and one screen in an iPhone.
+    header.jpg          3840x1646 (21:9), the product page's header: Ten and a phrase.
+    search.jpg          3840x2560 (3:2), the search result: a headline and one screen in an
+                        iPhone; search-<page>.jpg the same for each custom product page.
 
 Both go to every page in its locale: the default product page and the custom product pages
 (appstore/product-pages.json: a page's `searchFrame` is the caption key of its search art, the
 default page's is `ten`). What matters stays inside Apple's safe areas (SAFE below): on iPhone
 the header shows only its middle, under the status bar and above the app's name, and search
-shows its art at about 365 pt wide, a tenth of 3840 px (--preview writes that size next to it).
+shows its art at about 365 pt wide, a tenth of 3840 px (--preview writes that size).
 
     python3 scripts/compose_store_art.py                  # every locale in screenshots/raw
-    python3 scripts/compose_store_art.py ru en-US --preview
+    python3 scripts/compose_store_art.py ru en-US --preview /tmp/art   # and copies to look at
 
 The background is the screenshots' (the dark field with colour glows of screenshots/templates),
-drawn at full size. Ten comes from `--ten` (default screenshots/art/ten, Actions → Screenshots
-with `art`: TenraTests/Views/StoreArtRenderTests); the phrase from `header` in
+drawn at full size. Ten comes from `--ten` (default screenshots/art/ten, from Actions →
+Screenshots with `art`: TenraTests/Views/StoreArtRenderTests); the phrase from `header` in
 scripts/screenshot_captions.json, the headline from the frame's caption. Fonts as in
-compose_screenshots.py. No transparency in the output: Apple refuses an alpha channel.
+compose_screenshots.py. JPEG, no transparency: Apple refuses an alpha channel.
+asc.py push-creatives uploads the files.
 """
 import argparse
 import io
@@ -287,7 +289,7 @@ def main():
     parser.add_argument("--raw", default=shots.RAW)
     parser.add_argument("--ten", default=os.path.join(ART, "ten"), help="folder with Ten's pictures")
     parser.add_argument("--out", default=ART)
-    parser.add_argument("--preview", action="store_true", help="also write 384 px wide copies")
+    parser.add_argument("--preview", metavar="DIR", help="also write 384 px wide copies, and 1600 px ones, there")
     args = parser.parse_args()
     captions = json.load(io.open(shots.CAPTIONS, encoding="utf-8"))["locales"]
     pages = json.load(io.open(PAGES, encoding="utf-8"))
@@ -311,10 +313,14 @@ def main():
             outputs.append((slug, image))
             print(f"{locale} {slug}: {' / '.join(title_lines)} | {' / '.join(sub_lines)}")
         for slug, image in outputs:
-            image.save(os.path.join(out, f"{slug}.png"))
+            # JPEG: the fine noise of the glows makes a PNG of it 6 MB.
+            image.save(os.path.join(out, f"{slug}.jpg"), quality=90, optimize=True)
             if args.preview:
-                image.resize((384, round(384 * image.height / image.width)), Image.LANCZOS).save(
-                    os.path.join(out, f"{slug}-preview.png"))
+                folder = os.path.join(args.preview, locale)
+                os.makedirs(folder, exist_ok=True)
+                for width in (384, 1600):
+                    image.resize((width, round(width * image.height / image.width)), Image.LANCZOS).save(
+                        os.path.join(folder, f"{slug}-{width}.png"))
 
 
 if __name__ == "__main__":

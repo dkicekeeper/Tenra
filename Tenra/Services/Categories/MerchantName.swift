@@ -52,12 +52,15 @@ nonisolated enum MerchantName {
         let name = displayName(raw)
         let options: String.CompareOptions = [.caseInsensitive, .diacriticInsensitive]
         if raw.range(of: name, options: options) != nil { return name }
-        let word = name
-            .split(separator: " ")
-            .map(String.init)
-            .filter { $0.count >= CategorySuggestionService.minimumMerchantLength && raw.range(of: $0, options: options) != nil }
-            .max { $0.count != $1.count ? $0.count < $1.count : $0 > $1 }
-        return word ?? raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        var best: String?
+        for part in name.split(separator: " ") {
+            let word = String(part)
+            guard word.count >= CategorySuggestionService.minimumMerchantLength,
+                  raw.range(of: word, options: options) != nil else { continue }
+            if let current = best, current.count >= word.count { continue }
+            best = word
+        }
+        return best ?? raw.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     static func displayName(_ raw: String) -> String {

@@ -60,14 +60,15 @@ struct HistorySearchSuggestions: ViewModifier {
             logos.iconSource(forDescription: $0) != nil || logos.customName(forDescription: $0) != nil
         }
         var seen = Set<String>()
-        return (remembered + branded).compactMap { sample in
+        return (remembered + branded).compactMap { sample -> SearchSuggestion? in
             let key = CategorySuggestionService.normalizedMerchant(sample)
             guard key.count >= CategorySuggestionService.minimumMerchantLength,
                   seen.insert(key).inserted else { return nil }
+            let logo: IconSource? = showsMerchantLogos ? logos.iconSource(forDescription: sample) : nil
             return SearchSuggestion(
                 logos.customName(forDescription: sample) ?? MerchantName.displayName(sample),
                 subtitle: merchantTitle,
-                icon: (showsMerchantLogos ? logos.iconSource(forDescription: sample) : nil) ?? .sfSymbol("storefront"),
+                icon: logo ?? IconSource.sfSymbol("storefront"),
                 completion: MerchantName.searchQuery(sample),
                 id: "merchant-\(key)"
             )

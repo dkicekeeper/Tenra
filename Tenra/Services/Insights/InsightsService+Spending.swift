@@ -570,7 +570,10 @@ extension InsightsService {
             .sorted { $0.value.total != $1.value.total ? $0.value.total > $1.value.total : $0.key < $1.key }
         guard ranked.count >= Self.topMerchantMinimumMerchants else { return nil }
 
-        let periodTotal = range == nil ? bucketTotal : (periodPoints.first { $0.key == currentKey }?.expenses ?? bucketTotal)
+        var periodTotal = bucketTotal
+        if range != nil, let point = periodPoints.first(where: { $0.key == currentKey }) {
+            periodTotal = point.expenses
+        }
         var categoryByName: [String: CustomCategory] = [:]
         for category in categories { categoryByName[category.name] = category }
 

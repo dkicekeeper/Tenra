@@ -536,7 +536,8 @@ def submit_for_review(app: str, items: list[tuple[str, str]], lenient: set[str] 
             }}})
             added += 1
         except ApiError as error:
-            if error.code == 409:   # already in this submission
+            # A 409 is also App Store Connect refusing the item: only "already" means it is in.
+            if error.code == 409 and "already" in str(error).lower():
                 added += 1
             elif relationship in lenient:
                 print(f"  {relationship} {item_id}: not added ({error})", flush=True)

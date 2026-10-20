@@ -176,12 +176,15 @@ final class LoadGate: @unchecked Sendable {
     private var isOpen = false
     private var waiting = false
 
-    /// Blocks the calling (background) thread until `open()`, or 10 s at most.
+    /// Blocks the calling (background) thread until `open()`, or 10 min at most: the limit only
+    /// frees a thread whose test failed before opening the gate. A short one opened the gate on
+    /// its own while the CI host froze the simulator clone, and the test then failed on a race
+    /// it never ran (CLAUDE.md, test waits count polls).
     func wait() {
         condition.lock()
         defer { condition.unlock() }
         waiting = true
-        let deadline = Date().addingTimeInterval(10)
+        let deadline = Date().addingTimeInterval(600)
         while !isOpen {
             if !condition.wait(until: deadline) { break }
         }

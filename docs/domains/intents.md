@@ -296,8 +296,10 @@ an earlier payment there still waits; never asks for the permission. A tap sets
 `WalletCaptureStore.isReviewRequested` (`AppDelegate`), and `MainTabView` presents To review.
 
 **A merchant's screen** (`MerchantDetailView`, from the Wallet merchants list and from the
-storefront button of a remembered merchant's transaction in `TransactionEditView`; Edit in its
-menu opens `MerchantCategoryEditView`): `EntityDetailScaffold` with the merchant's logo and name, spent
+storefront button in `TransactionEditView` of a transaction whose merchant is remembered or has a
+logo or a given name, so a transfer to a person gets none; Edit in its menu opens
+`MerchantCategoryEditView`, also for a merchant the memory does not hold yet, starting from its
+usual expense category, which the save remembers): `EntityDetailScaffold` with the merchant's logo and name, spent
 in the selected period, visits, average check, last visit, usual category, total, and every
 transaction of the merchant whatever recorded it. `MerchantHistory.summary` sweeps the history off
 the main actor through `SummaryCalculator`, keyed on `mutationVersion`, rates, base currency, the

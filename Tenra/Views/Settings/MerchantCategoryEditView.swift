@@ -4,7 +4,8 @@
 //
 //  Reassigns a remembered Wallet merchant (MerchantCategoriesView): the expense
 //  category and subcategories its next payments get, with the pickers the
-//  transaction forms use. On top, the merchant's name and logo (MerchantLogoStore):
+//  transaction forms use. A merchant of the history the memory does not hold yet
+//  (MerchantDetailView) is remembered on save. On top, the merchant's name and logo (MerchantLogoStore):
 //  a name the user types replaces the bank's text in its transaction rows, an icon
 //  they pick replaces the logo Tenra found. "Forget" drops all of it.
 //
@@ -164,11 +165,19 @@ struct MerchantCategoryEditView: View {
 
     private func save() {
         guard let categoryId = selectedCategoryId else { return }
-        memory.reassign(
-            merchantId: merchant.id,
-            categoryId: categoryId,
-            subcategoryIds: Array(selectedSubcategoryIds)
-        )
+        if memory.merchant(forDescription: merchant.displayName) != nil {
+            memory.reassign(
+                merchantId: merchant.id,
+                categoryId: categoryId,
+                subcategoryIds: Array(selectedSubcategoryIds)
+            )
+        } else {
+            memory.remember(
+                categoryId: categoryId,
+                subcategoryIds: Array(selectedSubcategoryIds),
+                forMerchant: merchant.displayName
+            )
+        }
         let store = MerchantLogoStore.shared
         if icon != initialIcon {
             store.setCustomIcon(icon, forMerchant: merchant.displayName)

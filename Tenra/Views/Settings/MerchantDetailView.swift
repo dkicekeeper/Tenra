@@ -5,9 +5,9 @@
 //  One merchant's screen (docs/plan-auto-capture.md §7): its logo and name, what was
 //  spent there in the selected period, visits, the average check, the last visit and
 //  every transaction, whatever recorded it (Apple Pay, a statement, by hand).
-//  Opened from Settings → Siri & Shortcuts → Wallet merchants and from a remembered
-//  merchant's transaction (TransactionEditView); the menu edits the merchant
-//  (MerchantCategoryEditView).
+//  Opened from Settings → Siri & Shortcuts → Wallet merchants and from the transaction
+//  of a remembered merchant or of one with a logo or a given name (TransactionEditView);
+//  the menu edits the merchant (MerchantCategoryEditView).
 //
 //  Built on EntityDetailScaffold like the category screen. The history sweep runs off
 //  the main actor (MerchantHistory, red flag #9), keyed on every dimension it reads
@@ -189,9 +189,18 @@ struct MerchantDetailView: View {
 
     // MARK: - Toolbar menu
 
+    /// A merchant the memory does not hold yet, as the edit sheet's starting values: its usual
+    /// expense category. nil without one (a merchant of income only), since the sheet saves
+    /// an expense category.
+    private var unremembered: MerchantCategoryMemory.Merchant? {
+        guard let category = usualCategory,
+              let key = MerchantCategoryMemory.key(forMerchant: merchant) else { return nil }
+        return MerchantCategoryMemory.Merchant(id: key, displayName: merchant, categoryId: category.id, subcategoryIds: nil)
+    }
+
     @ViewBuilder
     private var toolbarMenu: some View {
-        if let known = MerchantCategoryMemory.shared.merchant(forDescription: merchant) {
+        if let known = MerchantCategoryMemory.shared.merchant(forDescription: merchant) ?? unremembered {
             Button {
                 editing = known
             } label: {

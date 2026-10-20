@@ -99,7 +99,11 @@ General → "Merchant logos" (`MerchantLogoStore.enabledKey`, on by default). Pl
   capitals is re-cased, acronyms of up to three letters and domains excepted. Display and lookup
   only: the stored description is never rewritten.
 - `MerchantLogoResolver.lookUp`, most private first: `ServiceLogoRegistry` by the clean name or
-  its first words → the tenra-assets index matched on device
+  its first words → `MerchantLogoResolver.knownBrands` (on device: brands the category suggestions
+  know whose text names no registry entry or tenra-assets file as it is: a tenra-assets file under
+  another name, "ANVAR" → anvarmarket, Cyrillic spellings, else the brand's site, checked
+  2026-10-20; an array of pairs, keywords unique, matched as `brandPresetId` matches) → the
+  tenra-assets index matched on device
   (`JsDelivrLogoProvider.indexName(forMerchant:)`) → logo.dev by name
   (`img.logo.dev/name/{name}?fallback=404`, the image saved to `LogoDiskCache` under
   `name:<clean name>`; owner's decision 2026-10-19; never for a sole proprietor, ИП / IP, whose

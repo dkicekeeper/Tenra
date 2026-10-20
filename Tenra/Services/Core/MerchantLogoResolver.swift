@@ -6,8 +6,10 @@
 //  (docs/plan-auto-capture.md §5), most private source first:
 //
 //  1. ServiceLogoRegistry by the merchant's clean name or its first words: on device;
-//  2. the tenra-assets index (JsDelivrLogoProvider.indexName): matched on device;
-//  3. logo.dev by name (LogoDevNameProvider, owner's decision 2026-10-19): the clean
+//  2. `knownBrands`: the brands category suggestions know (CategorySuggestionService.brandPresets)
+//     whose text names no registry entry or tenra-assets file as it is: on device;
+//  3. the tenra-assets index (JsDelivrLogoProvider.indexName): matched on device;
+//  4. logo.dev by name (LogoDevNameProvider, owner's decision 2026-10-19): the clean
 //     name, and nothing else about the payment, leaves the device; never for a sole
 //     proprietor (ИП), whose name is a person's.
 //
@@ -15,9 +17,9 @@
 //  app, when it comes to the front: an intent never makes these requests.
 //
 //  Two kinds of merchants:
-//  • the ones Apple Pay payments came from (remembered or captured): all three sources,
+//  • the ones Apple Pay payments came from (remembered or captured): all four sources,
 //    a few per pass. Apple Pay only pays shops, never people;
-//  • the frequent ones in the history (statement imports, hand entries): sources 1 and 2
+//  • the frequent ones in the history (statement imports, hand entries): sources 1 to 3
 //    only. A statement's rows include transfers to people ("Асель К."), and a person's
 //    name must never leave the device.
 //
@@ -92,6 +94,9 @@ enum MerchantLogoResolver {
         if let domain = registryDomain(forMerchant: name) {
             return .found(domain)
         }
+        if let key = knownBrandKey(forMerchant: merchant) {
+            return .found(key)
+        }
         if let indexName = await JsDelivrLogoProvider.indexName(forMerchant: name) {
             return .found(indexName)
         }
@@ -102,6 +107,42 @@ enum MerchantLogoResolver {
             return .found(key)
         }
         return .missing
+    }
+
+    /// Logo keys for brands a merchant's text names by a word of its own, longest keyword
+    /// first: a tenra-assets file whose name differs ("ANVAR" → anvarmarket.png, "ALSECO" →
+    /// Alseko.png, Cyrillic spellings), else the brand's own site, checked 2026-10-20, which
+    /// LogoService's providers draw from. An array of pairs, not a dictionary literal: a
+    /// repeated key would trap at run time (CLAUDE.md red flag 16). Keywords are matched as
+    /// `CategorySuggestionService.brandPresetId` matches them.
+    nonisolated static let knownBrands: [(keyword: String, key: String)] = [
+        // tenra-assets files under another name
+        ("anvar", "anvarmarket"), ("arbuz", "arbuzkz"), ("magnum", "magnum"), ("магнум", "magnum"),
+        ("alseco", "alseko"), ("sinooil", "sinoil"), ("mcdonald", "mcdonalds"),
+        ("dodo pizza", "dodopizza"), ("додо пицца", "dodopizza"),
+        // Kazakhstan
+        ("coffee boom", "coffeeboom.kz"), ("qazaq oil", "qazaqoil.kz"), ("kinopark", "kinopark.kz"),
+        ("chaplin", "chaplin.kz"), ("invitro", "invitro.kz"),
+        // Elsewhere
+        ("пятерочка", "5ka.ru"), ("перекресток", "perekrestok.ru"),
+        ("carrefour", "carrefour.com"), ("lidl", "lidl.com"), ("walmart", "walmart.com"),
+        ("costco", "costco.com"), ("kroger", "kroger.com"), ("whole foods", "wholefoodsmarket.com"),
+        ("trader joe", "traderjoes.com"), ("burger king", "bk.com"), ("domino", "dominos.com"),
+        ("papa john", "papajohns.com"), ("uber", "uber.com"), ("bolt", "bolt.eu"),
+        ("shell", "shell.com"), ("playstation", "playstation.com"), ("airbnb", "airbnb.com"),
+        ("aviasales", "aviasales.ru"), ("zara", "zara.com"), ("uniqlo", "uniqlo.com"),
+        ("apple com", "apple.com")
+    ]
+
+    private nonisolated static let knownBrandsByLength = knownBrands.sorted { $0.keyword.count > $1.keyword.count }
+
+    /// The logo key `knownBrands` gives a merchant's text, or nil.
+    nonisolated static func knownBrandKey(forMerchant merchant: String) -> String? {
+        let normalized = CategorySuggestionService.normalizedMerchant(merchant)
+        guard !normalized.isEmpty else { return nil }
+        return knownBrandsByLength
+            .first { CategorySuggestionService.matches(keyword: $0.keyword, inNormalized: normalized) }?
+            .key
     }
 
     /// The registry's domain for a clean merchant name: the whole name, its first two

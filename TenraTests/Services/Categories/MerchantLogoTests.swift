@@ -79,6 +79,23 @@ struct MerchantLogoTests {
         #expect(MerchantLogoResolver.registryDomain(forMerchant: "Corner Bakery") == nil)
     }
 
+    @Test("A brand the category suggestions know gets its logo key, whatever else the text says")
+    func knownBrands() {
+        #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "COFFEE BOOM 12 ALMATY") == "coffeeboom.kz")
+        #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "ДОДО ПИЦЦА") == "dodopizza")
+        #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "ANVAR 7") == "anvarmarket")
+        #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "UBER *TRIP") == "uber.com")
+        // A short keyword is a whole word only: "Bolt" is not in "Boltik".
+        #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "BOLTIK") == nil)
+        #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "Corner Bakery") == nil)
+    }
+
+    @Test("No keyword appears twice in the known brands")
+    func knownBrandsUnique() {
+        let keywords = MerchantLogoResolver.knownBrands.map { $0.keyword }
+        #expect(Set(keywords).count == keywords.count)
+    }
+
     // MARK: - Store
 
     private func makeStore() -> MerchantLogoStore {

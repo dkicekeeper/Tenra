@@ -17,8 +17,8 @@ with the commit of every fix, are in
   back to an unsaved attachment.
 
 - **Automatic payment capture and merchants** (plan in flight:
-  [plan-auto-capture.md](plan-auto-capture.md) §9): what is left is Kazakh merchant logos in
-  tenra-assets and domains for `brandPresets`, then the device checks of §8.
+  [plan-auto-capture.md](plan-auto-capture.md) §9): built; what is left is the device checks of
+  §8, then the plan moves to the archive.
 - **Legacy converted deposits (DP1).** A read-only DEBUG diagnostic lists deposits converted
   before the `conversionTimestamp` fix (Settings → Experiments, `LegacyDepositDiagnostics`).
   Recovery waits for real data.

@@ -1764,6 +1764,8 @@
 "settings.merchants.emptyMessage" = "Wallet のオートメーションで Apple Pay を使って支払った店舗のカテゴリは、選ぶ、確認する、または修正すると、ここに記憶されます。";
 "settings.merchants.forget" = "忘れる";
 "settings.merchants.forgetMerchant" = "店舗を忘れる";
+"settings.merchants.showLogo" = "ロゴを表示";
+"settings.merchants.showLogo.footer" = "オフにすると、この店舗の取引にはカテゴリのアイコンが表示されます。";
 "settings.merchants.categoryDeleted" = "カテゴリが削除されました。Tenra が再度尋ねます";
 "settings.merchants.editFooter" = "この店舗での次回以降の支払いは、このカテゴリで記録されます。次回の支払いからやり直すには、店舗を忘れてください。";
 "merchant.detail.visits" = "来店回数";

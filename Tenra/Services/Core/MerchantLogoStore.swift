@@ -15,8 +15,8 @@
 //  "No logo" is checked again after 30 days: tenra-assets and logo.dev grow.
 //
 //  Also what the user chose for a merchant in its edit sheet (MerchantCategoryEditView):
-//  an icon or logo of their own, which a lookup never replaces, and a name, which the
-//  merchant's transaction rows show instead of the bank's text.
+//  an icon or logo of their own or no logo at all, which a lookup never replaces, and a
+//  name, which the merchant's transaction rows show instead of the bank's text.
 //
 //  Storage: two Codable blobs in `UserDefaults`, the logos and the names.
 //
@@ -35,6 +35,8 @@ final class MerchantLogoStore {
         case missing
         /// Picked by the user: never looked up again.
         case custom(IconSource)
+        /// "No logo", the user's choice: the category icon stays and no lookup runs.
+        case hidden
     }
 
     struct Entry: Codable, Equatable {
@@ -77,7 +79,7 @@ final class MerchantLogoStore {
         switch entries[merchant]?.state {
         case .found(let key)?: return .brandService(key)
         case .custom(let icon)?: return icon
-        case .missing?, nil: return nil
+        case .missing?, .hidden?, nil: return nil
         }
     }
 
@@ -126,6 +128,20 @@ final class MerchantLogoStore {
         persistNames()
     }
 
+    /// "No logo" for the merchant, so its rows keep the category icon; false goes back to
+    /// the lookup.
+    func setHidden(_ hidden: Bool, forMerchant merchant: String) {
+        guard let key = Self.key(merchant) else { return }
+        if hidden {
+            entries[key] = Entry(state: .hidden, checkedAt: Date(), lookedUpOnline: nil)
+        } else {
+            guard entries[key]?.state == .hidden else { return }
+            entries.removeValue(forKey: key)
+        }
+        version += 1
+        persist()
+    }
+
     private static func key(_ merchant: String) -> String? {
         let key = CategorySuggestionService.normalizedMerchant(merchant)
         return key.count >= CategorySuggestionService.minimumMerchantLength ? key : nil
@@ -143,10 +159,13 @@ final class MerchantLogoStore {
             || (online && entry.lookedUpOnline == false)
     }
 
-    /// A lookup's result. Never replaces an icon the user picked meanwhile.
+    /// A lookup's result. Never replaces what the user chose meanwhile: an icon or no logo.
     func record(_ state: State, merchant: String, online: Bool = true, now: Date = Date()) {
         guard let key = Self.key(merchant) else { return }
-        if case .custom? = entries[key]?.state { return }
+        switch entries[key]?.state {
+        case .custom?, .hidden?: return
+        default: break
+        }
         entries[key] = Entry(state: state, checkedAt: now, lookedUpOnline: online)
         version += 1
         persist()

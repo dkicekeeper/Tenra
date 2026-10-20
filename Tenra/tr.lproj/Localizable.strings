@@ -1764,6 +1764,8 @@
 "settings.merchants.emptyMessage" = "Wallet otomasyonuyla Apple Pay ile ödeme yaptığın her işyerinin kategorisi, onu seçtiğin, onayladığın veya düzelttiğin anda burada hatırlanır.";
 "settings.merchants.forget" = "Unut";
 "settings.merchants.forgetMerchant" = "İşyerini unut";
+"settings.merchants.showLogo" = "Logoyu göster";
+"settings.merchants.showLogo.footer" = "Kapalıyken bu işyerinin işlemlerinde kategori simgesi kalır.";
 "settings.merchants.categoryDeleted" = "Kategori silindi, Tenra yeniden soracak";
 "settings.merchants.editFooter" = "Buradaki sonraki ödemeler bu kategoriyle kaydedilir. Bir sonraki ödemesinde baştan başlamak için işyerini unut.";
 "merchant.detail.visits" = "Ziyaretler";

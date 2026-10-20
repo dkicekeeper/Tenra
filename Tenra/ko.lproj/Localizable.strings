@@ -1764,6 +1764,8 @@
 "settings.merchants.emptyMessage" = "Wallet 자동화로 Apple Pay 결제한 가맹점의 카테고리는 고르거나 확인하거나 고치면 여기에 기억돼요.";
 "settings.merchants.forget" = "잊기";
 "settings.merchants.forgetMerchant" = "가맹점 잊기";
+"settings.merchants.showLogo" = "로고 표시";
+"settings.merchants.showLogo.footer" = "끄면 이 가맹점의 거래에 카테고리 아이콘이 표시됩니다.";
 "settings.merchants.categoryDeleted" = "카테고리가 삭제되어 Tenra가 다시 물어봐요";
 "settings.merchants.editFooter" = "이 가맹점의 다음 결제는 이 카테고리로 기록돼요. 다음 결제부터 새로 시작하려면 가맹점을 잊으세요.";
 "merchant.detail.visits" = "방문 횟수";

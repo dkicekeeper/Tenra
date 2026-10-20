@@ -1764,6 +1764,8 @@
 "settings.merchants.emptyMessage" = "Qui viene ricordata la categoria di ogni esercente dove paghi con Apple Pay tramite l'automazione Wallet, appena la scegli, confermi o correggi.";
 "settings.merchants.forget" = "Dimentica";
 "settings.merchants.forgetMerchant" = "Dimentica esercente";
+"settings.merchants.showLogo" = "Mostra logo";
+"settings.merchants.showLogo.footer" = "Disattivalo per lasciare l'icona della categoria nelle operazioni di questo esercente.";
 "settings.merchants.categoryDeleted" = "Categoria eliminata, Tenra chiederà di nuovo";
 "settings.merchants.editFooter" = "I prossimi pagamenti qui verranno registrati con questa categoria. Dimentica l'esercente per ricominciare dal suo prossimo pagamento.";
 "merchant.detail.visits" = "Visite";

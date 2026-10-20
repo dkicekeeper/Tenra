@@ -1764,6 +1764,8 @@
 "settings.merchants.emptyMessage" = "Hier wird die Kategorie jedes Händlers gemerkt, bei dem Sie über die Wallet-Automation mit Apple Pay zahlen, sobald Sie sie wählen, bestätigen oder korrigieren.";
 "settings.merchants.forget" = "Vergessen";
 "settings.merchants.forgetMerchant" = "Händler vergessen";
+"settings.merchants.showLogo" = "Logo anzeigen";
+"settings.merchants.showLogo.footer" = "Aus: Die Buchungen dieses Händlers behalten das Kategoriesymbol.";
 "settings.merchants.categoryDeleted" = "Kategorie gelöscht, Tenra fragt erneut";
 "settings.merchants.editFooter" = "Die nächsten Zahlungen hier werden mit dieser Kategorie erfasst. Vergessen Sie den Händler, um bei seiner nächsten Zahlung neu zu beginnen.";
 "merchant.detail.visits" = "Besuche";

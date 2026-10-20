@@ -162,6 +162,22 @@ struct MerchantLogoTests {
         #expect(store.needsLookup(merchant: "Corner Bakery"))
     }
 
+    @Test("No logo keeps the category icon, a lookup never brings one back; undone, the lookup runs")
+    func hiddenLogo() {
+        let store = makeStore()
+        store.record(.found("bakery.com"), merchant: "Corner Bakery")
+        store.setHidden(true, forMerchant: "CORNER BAKERY 2")
+
+        #expect(store.iconSource(forDescription: "Corner Bakery") == nil)
+        #expect(!store.needsLookup(merchant: "Corner Bakery"))
+        store.record(.found("bakery.com"), merchant: "Corner Bakery")
+        #expect(store.iconSource(forDescription: "Corner Bakery") == nil)
+
+        store.setHidden(false, forMerchant: "Corner Bakery")
+        #expect(store.state(forMerchant: "Corner Bakery") == nil)
+        #expect(store.needsLookup(merchant: "Corner Bakery"))
+    }
+
     @Test("A name given to the merchant shows for its descriptions; cleared, the bank's text is back")
     func customName() {
         let store = makeStore()

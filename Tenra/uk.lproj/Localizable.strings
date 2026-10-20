@@ -1764,6 +1764,8 @@
 "settings.merchants.emptyMessage" = "Тут запам'ятовується категорія кожного продавця, у якого ви платите Apple Pay через автоматизацію Wallet, щойно ви її виберете, підтвердите або виправите.";
 "settings.merchants.forget" = "Забути";
 "settings.merchants.forgetMerchant" = "Забути продавця";
+"settings.merchants.showLogo" = "Показувати логотип";
+"settings.merchants.showLogo.footer" = "Вимкніть, щоб в операціях цього продавця залишалася іконка категорії.";
 "settings.merchants.categoryDeleted" = "Категорію видалено, Tenra запитає знову";
 "settings.merchants.editFooter" = "Наступні оплати тут запишуться з цією категорією. Забудьте продавця, щоб почати заново з його наступної оплати.";
 "merchant.detail.visits" = "Візити";

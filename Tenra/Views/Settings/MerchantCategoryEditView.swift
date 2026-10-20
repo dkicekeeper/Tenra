@@ -7,7 +7,7 @@
 //  transaction forms use. A merchant of the history the memory does not hold yet
 //  (MerchantDetailView) is remembered on save. On top, the merchant's name and logo (MerchantLogoStore):
 //  a name the user types replaces the bank's text in its transaction rows, an icon
-//  they pick replaces the logo Tenra found. "Forget" drops all of it.
+//  they pick replaces the logo Tenra found, and "Show logo" off keeps the category icon. "Forget" drops all of it.
 //
 
 import SwiftUI
@@ -26,6 +26,9 @@ struct MerchantCategoryEditView: View {
     @State private var subcategorySearchText = ""
     @State private var name: String
     @State private var icon: IconSource?
+    /// Off: "no logo", the merchant's rows keep the category icon (MerchantLogoStore.setHidden).
+    @State private var showsLogo: Bool
+    private let initiallyShowsLogo: Bool
     /// What the hero showed when the sheet opened: only a change is saved.
     private let initialName: String
     private let initialIcon: IconSource?
@@ -56,6 +59,9 @@ struct MerchantCategoryEditView: View {
         initialIcon = startIcon
         _name = State(initialValue: startName)
         _icon = State(initialValue: startIcon)
+        let startShowsLogo = store.state(forMerchant: merchant.displayName) != .hidden
+        initiallyShowsLogo = startShowsLogo
+        _showsLogo = State(initialValue: startShowsLogo)
     }
 
     private var expenseCategories: [CustomCategory] {
@@ -82,6 +88,16 @@ struct MerchantCategoryEditView: View {
                         titlePlaceholder: automaticName
                     )
 
+                    FormSection(footer: String(localized: "settings.merchants.showLogo.footer")) {
+                        ToggleSettingsRow(
+                            icon: "storefront",
+                            title: String(localized: "settings.merchants.showLogo"),
+                            config: .standard,
+                            isOn: $showsLogo
+                        )
+                    }
+                    .screenPadding()
+
                     categorySection
                     subcategorySection
 
@@ -102,6 +118,9 @@ struct MerchantCategoryEditView: View {
                 }
                 .padding(.vertical, AppSpacing.lg)
             }
+        }
+        .onChange(of: showsLogo) { _, shows in
+            if !shows { icon = nil }
         }
         .onChange(of: selectedCategory) { _, _ in
             // Another category's subcategories don't apply.
@@ -179,8 +198,11 @@ struct MerchantCategoryEditView: View {
             )
         }
         let store = MerchantLogoStore.shared
-        if icon != initialIcon {
-            store.setCustomIcon(icon, forMerchant: merchant.displayName)
+        if !showsLogo {
+            if initiallyShowsLogo { store.setHidden(true, forMerchant: merchant.displayName) }
+        } else {
+            if !initiallyShowsLogo { store.setHidden(false, forMerchant: merchant.displayName) }
+            if icon != initialIcon { store.setCustomIcon(icon, forMerchant: merchant.displayName) }
         }
         if name != initialName {
             // Back to Tenra's own name when cleared or typed as it was.
@@ -195,9 +217,11 @@ struct MerchantCategoryEditView: View {
         memory.forget(merchantId: merchant.id)
         let store = MerchantLogoStore.shared
         store.setCustomName(nil, forMerchant: merchant.displayName)
-        // A picked icon goes; a found logo would only be found again.
-        if case .custom? = store.state(forMerchant: merchant.displayName) {
-            store.setCustomIcon(nil, forMerchant: merchant.displayName)
+        // A picked icon and "no logo" go; a found logo would only be found again.
+        switch store.state(forMerchant: merchant.displayName) {
+        case .custom?: store.setCustomIcon(nil, forMerchant: merchant.displayName)
+        case .hidden?: store.setHidden(false, forMerchant: merchant.displayName)
+        default: break
         }
         dismiss()
     }

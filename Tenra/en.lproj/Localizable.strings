@@ -1764,6 +1764,8 @@
 "settings.merchants.emptyMessage" = "The category of each merchant you pay with Apple Pay through the Wallet automation is remembered here, once you choose, confirm or fix it.";
 "settings.merchants.forget" = "Forget";
 "settings.merchants.forgetMerchant" = "Forget merchant";
+"settings.merchants.showLogo" = "Show logo";
+"settings.merchants.showLogo.footer" = "Off: this merchant's transactions keep the category icon.";
 "settings.merchants.categoryDeleted" = "Category deleted, Tenra will ask again";
 "settings.merchants.editFooter" = "The next payments here are recorded with this category. Forget the merchant to start over on its next payment.";
 "merchant.detail.visits" = "Visits";

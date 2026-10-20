@@ -152,6 +152,10 @@ suggested at review time, because an empty category drops a row out of every cat
 aggregate and budget. `CategorySuggestionProvider` (`Services/Categories/`) fills the
 pickers in `ImportTransactionPreviewView` and `ReceiptConfirmationView`, tier by tier:
 
+0. **Merchant memory** (expense only, batch `suggestions`): the category the user chose for the
+   merchant (`MerchantCategoryMemory`: Wallet payments, To review, the merchant's edit sheet),
+   if it still exists. It beats history: it is the latest explicit choice, history the most
+   frequent one.
 1. **History**: the category the user used most for the same merchant and type
    (`CategorySuggestionService.buildHistoryIndex`, built in `Task.detached` on every
    import and never cached, so it always reflects the store). This tier is the

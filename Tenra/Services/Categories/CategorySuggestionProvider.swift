@@ -2,7 +2,10 @@
 //  CategorySuggestionProvider.swift
 //  Tenra
 //
-//  Combines the three suggestion tiers for not-yet-saved transactions:
+//  Combines the suggestion tiers for not-yet-saved transactions:
+//    0. the expense category the user chose for the merchant
+//       (`MerchantCategoryMemory`: Wallet payments, To review, the merchant's
+//       edit sheet), in the batch `suggestions` only,
 //    1. the user's own history for the same merchant (only if that category
 //       still exists),
 //    2. the curated brand list (`CategorySuggestionService.brandPresets`),
@@ -25,7 +28,8 @@ enum CategorySuggestionProvider {
         for transactions: [Transaction],
         history: [Transaction],
         categories: [CustomCategory],
-        keywordMatcher: (String) -> String?
+        keywordMatcher: (String) -> String?,
+        memory: MerchantCategoryMemory? = .shared
     ) async -> [String: String] {
         let candidates = transactions.filter { $0.type == .expense || $0.type == .income }
         guard !candidates.isEmpty else { return [:] }
@@ -36,6 +40,11 @@ enum CategorySuggestionProvider {
 
         var result: [String: String] = [:]
         for tx in candidates {
+            // The user's own choice for the merchant beats the most used category.
+            if tx.type == .expense, let remembered = memory?.category(forMerchant: tx.description, in: categories) {
+                result[tx.id] = remembered.name
+                continue
+            }
             if let name = suggestion(
                 for: tx.description,
                 type: tx.type,

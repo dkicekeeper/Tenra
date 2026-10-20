@@ -12,7 +12,8 @@
 //  memory, so every description of one merchant ("MAGNUM CASH&CARRY 123",
 //  "... 456") gets the same logo, whatever recorded it.
 //
-//  "No logo" is checked again after 30 days: tenra-assets and logo.dev grow.
+//  "No logo" is checked again after 30 days: tenra-assets and logo.dev grow. Every lookup
+//  result is checked again once when the lookup rules change (`lookupRules`).
 //
 //  Also what the user chose for a merchant in its edit sheet (MerchantCategoryEditView):
 //  an icon or logo of their own or no logo at all, which a lookup never replaces, and a
@@ -45,6 +46,8 @@ final class MerchantLogoStore {
         /// Whether logo.dev was asked too. nil in entries saved before history merchants
         /// were looked up on device only, all of which were asked.
         var lookedUpOnline: Bool?
+        /// `lookupRules` when it was looked up; nil before they were counted (rules 1).
+        var rules: Int?
     }
 
     static let shared = MerchantLogoStore()
@@ -54,6 +57,10 @@ final class MerchantLogoStore {
     /// The Settings switch (on by default): `@AppStorage` in the views that read it.
     static let enabledKey = "settings.merchantLogos"
     static let recheckInterval: TimeInterval = 30 * 24 * 60 * 60
+    /// Raised when MerchantLogoResolver's rules change, so what the old ones found or missed
+    /// is looked up again once. 2: no first-word brand before an initial or for a bank,
+    /// remembered merchants on device only, a whole word for name-like brands.
+    static let lookupRules = 2
 
     @ObservationIgnored private let defaults: UserDefaults
     /// `[normalized merchant: entry]`
@@ -147,16 +154,24 @@ final class MerchantLogoStore {
         return key.count >= CategorySuggestionService.minimumMerchantLength ? key : nil
     }
 
-    /// True when the merchant was never looked up, had no logo 30 days ago, or was looked up
-    /// on device only and may now be asked online (it turned up in an Apple Pay payment).
+    /// True when the merchant was never looked up or was looked up under older rules, had no
+    /// logo 30 days ago, or was looked up on device only and may now be asked online (it
+    /// turned up in an Apple Pay payment).
     func needsLookup(merchant: String, online: Bool = true, now: Date = Date()) -> Bool {
         let key = CategorySuggestionService.normalizedMerchant(merchant)
         guard key.count >= CategorySuggestionService.minimumMerchantLength else { return false }
         guard let entry = entries[key] else { return true }
-        // Found or picked: never looked up again.
-        guard entry.state == .missing else { return false }
-        return now.timeIntervalSince(entry.checkedAt) > Self.recheckInterval
-            || (online && entry.lookedUpOnline == false)
+        switch entry.state {
+        case .custom, .hidden:
+            // The user's choice: never looked up again.
+            return false
+        case .found:
+            return (entry.rules ?? 1) < Self.lookupRules
+        case .missing:
+            return (entry.rules ?? 1) < Self.lookupRules
+                || now.timeIntervalSince(entry.checkedAt) > Self.recheckInterval
+                || (online && entry.lookedUpOnline == false)
+        }
     }
 
     /// A lookup's result. Never replaces what the user chose meanwhile: an icon or no logo.
@@ -166,7 +181,7 @@ final class MerchantLogoStore {
         case .custom?, .hidden?: return
         default: break
         }
-        entries[key] = Entry(state: state, checkedAt: now, lookedUpOnline: online)
+        entries[key] = Entry(state: state, checkedAt: now, lookedUpOnline: online, rules: Self.lookupRules)
         version += 1
         persist()
     }

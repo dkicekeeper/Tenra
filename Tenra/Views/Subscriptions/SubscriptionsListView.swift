@@ -18,12 +18,12 @@ struct SubscriptionsListView: View {
         case new
         case edit(RecurringSeries)
         /// A "looks like a subscription" candidate, as a new subscription's starting values.
-        case draft(RecurringSeries)
+        case draft(RecurringSeries, SubscriptionCandidateDetector.Candidate)
         var id: String {
             switch self {
             case .new: return "new"
             case .edit(let sub): return sub.id
-            case .draft(let sub): return "draft-" + sub.id
+            case .draft(let sub, _): return "draft-" + sub.id
             }
         }
     }
@@ -99,14 +99,20 @@ struct SubscriptionsListView: View {
                     accountsViewModel: accountsViewModel,
                     subscription: subscription
                 )
-            case .draft(let draft):
+            case .draft(let draft, let candidate):
                 SubscriptionEditView(
                     transactionStore: transactionStore,
                     transactionsViewModel: transactionsViewModel,
                     categoriesViewModel: categoriesViewModel,
                     accountsViewModel: accountsViewModel,
                     subscription: nil,
-                    draft: draft
+                    draft: draft,
+                    // Its charges stay one-offs and a renamed subscription shares no word with
+                    // the merchant: without this the candidate would be offered again.
+                    onCreated: {
+                        SubscriptionCandidateDismissals.dismiss(candidate.merchant)
+                        candidates.removeAll { $0.id == candidate.id }
+                    }
                 )
             }
         }
@@ -164,7 +170,7 @@ struct SubscriptionsListView: View {
                 ForEach(candidates) { candidate in
                     let draft = draftSeries(for: candidate)
                     Button {
-                        sheetItem = .draft(draft)
+                        sheetItem = .draft(draft, candidate)
                     } label: {
                         SubscriptionCard(
                             subscription: draft,
@@ -196,7 +202,8 @@ struct SubscriptionsListView: View {
         let logos = MerchantLogoStore.shared
         return RecurringSeries(
             id: "candidate-" + candidate.id,
-            amount: Decimal(candidate.amount),
+            // Through its text: Decimal(Double) keeps binary noise (9.99 → 9.990000000000002).
+            amount: Decimal(string: String(candidate.amount)) ?? Decimal(candidate.amount),
             currency: candidate.currency,
             category: candidate.category,
             description: logos.customName(forDescription: candidate.sampleDescription)

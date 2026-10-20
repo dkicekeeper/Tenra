@@ -33,6 +33,8 @@ struct MerchantDetailView: View {
     @State private var hasLoaded = false
     @State private var accountsById: [String: Account] = [:]
     @State private var editing: MerchantCategoryMemory.Merchant?
+    /// Settings → "Merchant logos" (on by default), as on the merchant's transaction rows.
+    @AppStorage(MerchantLogoStore.enabledKey) private var showsMerchantLogos = true
 
     private var merchantKey: String { CategorySuggestionService.normalizedMerchant(merchant) }
 
@@ -46,9 +48,9 @@ struct MerchantDetailView: View {
         }
     }
 
-    /// The merchant's logo, else its usual category's icon, else a shop.
+    /// The merchant's logo (when logos are on), else its usual category's icon, else a shop.
     private var heroIcon: (source: IconSource, tint: IconTint) {
-        if let logo = MerchantLogoStore.shared.iconSource(forDescription: merchant) {
+        if showsMerchantLogos, let logo = MerchantLogoStore.shared.iconSource(forDescription: merchant) {
             return (logo, .original)
         }
         if let category = usualCategory {

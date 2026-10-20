@@ -50,8 +50,9 @@ nonisolated final class LogoDevProvider: LogoProvider {
     }()
 
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
-        // A merchant's name is not a domain: logo.dev would answer a monogram for it.
-        guard !domain.hasPrefix(LogoDevNameProvider.scheme),
+        // A merchant's name or a tenra-assets file name ("magnum") is not a domain: logo.dev
+        // would answer a monogram for it, which would be kept on disk as the logo.
+        guard !domain.hasPrefix(LogoDevNameProvider.scheme), domain.contains("."),
               let url = LogoDevConfig.logoURL(for: domain) else {
             return nil
         }
@@ -93,11 +94,28 @@ nonisolated final class LogoDevNameProvider: LogoProvider {
     }
 
     static func fetch(name: String) async -> UIImage? {
-        guard let url = LogoDevConfig.nameLogoURL(for: name),
-              let result = try? await session.data(from: url),
-              (result.1 as? HTTPURLResponse)?.statusCode == 200 else {
-            return nil
+        guard case .found(let image) = await lookUp(name: name) else { return nil }
+        return image
+    }
+
+    nonisolated enum NameLookup {
+        case found(UIImage)
+        /// logo.dev answered that it has none (`fallback=404`), or there is no API key.
+        case notFound
+        /// No answer: no network, a timeout, a server error. Ask again later.
+        case failed
+    }
+
+    static func lookUp(name: String) async -> NameLookup {
+        guard let url = LogoDevConfig.nameLogoURL(for: name) else { return .notFound }
+        guard let result = try? await session.data(from: url),
+              let status = (result.1 as? HTTPURLResponse)?.statusCode else {
+            return .failed
         }
-        return UIImage(data: result.0)
+        switch status {
+        case 200: return UIImage(data: result.0).map(NameLookup.found) ?? .notFound
+        case 404: return .notFound
+        default: return .failed
+        }
     }
 }

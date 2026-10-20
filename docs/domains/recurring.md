@@ -80,7 +80,9 @@ Tapping a candidate opens `SubscriptionEditView(draft:)`: the latest amount, cat
 the merchant's clean name and logo (`MerchantLogoStore`), and the next expected charge as
 `startDate`, so the generator records nothing that is already in the history. "Not a
 subscription" (context menu) stores the normalized merchant in `SubscriptionCandidateDismissals`
-(UserDefaults). The refresh key holds `mutationVersion`, every series description and today's
+(UserDefaults), and so does saving the draft (`SubscriptionEditView.onCreated`): a renamed
+subscription shares no word with the merchant, and its charges stay one-offs. The draft's amount
+goes through its text (`Decimal(string:)`), never `Decimal(Double)`'s binary noise. The refresh key holds `mutationVersion`, every series description and today's
 date. Pinned by `SubscriptionCandidateDetectorTests`.
 
 ## Making an Existing Transaction Recurring

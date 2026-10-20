@@ -13,12 +13,17 @@
 //     name, and nothing else about the payment, leaves the device; never for a sole
 //     proprietor (ИП), whose name is a person's.
 //
-//  Nothing found → `.missing`, and the row keeps its category icon. Runs only in the
-//  app, when it comes to the front: an intent never makes these requests.
+//  Nothing found → `.missing`, and the row keeps its category icon. A lookup that could
+//  not tell (no network: the tenra-assets index or logo.dev did not answer) records
+//  nothing, so the next pass asks again. Runs only in the app, when it comes to the front:
+//  an intent never makes these requests.
 //
-//  Two kinds of merchants:
-//  • the ones Apple Pay payments came from (remembered or captured): all four sources,
-//    a few per pass. Apple Pay only pays shops, never people;
+//  Three kinds of merchants:
+//  • the ones Apple Pay payments came from (WalletCaptureStore, LogWalletPaymentIntent):
+//    all four sources, a few per pass. Apple Pay only pays shops, never people;
+//  • the remembered ones (MerchantCategoryMemory): sources 1 to 3 only. Besides Apple Pay
+//    merchants it keeps a receipt's recipient and the note of any "Add expense" shortcut
+//    run ("Асель день рождения"), which may name a person;
 //  • the frequent ones in the history (statement imports, hand entries): sources 1 to 3
 //    only. A statement's rows include transfers to people ("Асель К."), and a person's
 //    name must never leave the device.
@@ -50,10 +55,15 @@ enum MerchantLogoResolver {
         defer { isRunning = false }
 
         var seen = Set<String>()
-        let applePay = (MerchantCategoryMemory.shared.merchants.map(\.displayName) + WalletCaptureStore.shared.merchants)
+        let applePay = WalletCaptureStore.shared.merchants
             .filter { seen.insert(CategorySuggestionService.normalizedMerchant($0)).inserted }
         for merchant in applePay.filter({ store.needsLookup(merchant: $0, online: true) }).prefix(lookupsPerPass) {
-            store.record(await lookUp(merchant, online: true), merchant: merchant, online: true)
+            await lookUpAndRecord(merchant, online: true, store: store)
+        }
+        let remembered = MerchantCategoryMemory.shared.merchants.map(\.displayName)
+            .filter { seen.insert(CategorySuggestionService.normalizedMerchant($0)).inserted }
+        for merchant in remembered.filter({ store.needsLookup(merchant: $0, online: false) }).prefix(localLookupsPerPass) {
+            await lookUpAndRecord(merchant, online: false, store: store)
         }
 
         let now = Date()
@@ -68,8 +78,13 @@ enum MerchantLogoResolver {
             .filter { store.needsLookup(merchant: $0, online: false) }
             .prefix(localLookupsPerPass)
         for merchant in local {
-            store.record(await lookUp(merchant, online: false), merchant: merchant, online: false)
+            await lookUpAndRecord(merchant, online: false, store: store)
         }
+    }
+
+    private static func lookUpAndRecord(_ merchant: String, online: Bool, store: MerchantLogoStore) async {
+        guard let state = await lookUp(merchant, online: online) else { return }
+        store.record(state, merchant: merchant, online: online)
     }
 
     /// Expense and income descriptions that name the same merchant at least
@@ -87,8 +102,9 @@ enum MerchantLogoResolver {
             .map { $0.value.sample }
     }
 
-    /// `online`: whether logo.dev may be asked by name (Apple Pay merchants only).
-    static func lookUp(_ merchant: String, online: Bool = true) async -> MerchantLogoStore.State {
+    /// `online`: whether logo.dev may be asked by name (Apple Pay merchants only). nil when
+    /// it could not tell: the tenra-assets index or logo.dev did not answer.
+    static func lookUp(_ merchant: String, online: Bool = true) async -> MerchantLogoStore.State? {
         let name = MerchantName.displayName(merchant)
 
         if let domain = registryDomain(forMerchant: name) {
@@ -101,12 +117,19 @@ enum MerchantLogoResolver {
             return .found(indexName)
         }
         // A sole proprietor's name is a person's: it stays on the device.
-        if online, !MerchantName.isSoleProprietor(merchant), let image = await LogoDevNameProvider.fetch(name: name) {
-            let key = LogoDevNameProvider.scheme + name
-            LogoDiskCache.shared.save(image, for: key)
-            return .found(key)
+        if online, !MerchantName.isSoleProprietor(merchant) {
+            switch await LogoDevNameProvider.lookUp(name: name) {
+            case .found(let image):
+                let key = LogoDevNameProvider.scheme + name
+                LogoService.shared.remember(image, for: key)
+                return .found(key)
+            case .failed:
+                return nil
+            case .notFound:
+                break
+            }
         }
-        return .missing
+        return await JsDelivrLogoProvider.hasIndex() ? .missing : nil
     }
 
     /// Logo keys for brands a merchant's text names by a word of its own, longest keyword
@@ -114,7 +137,8 @@ enum MerchantLogoResolver {
     /// Alseko.png, Cyrillic spellings), else the brand's own site, checked 2026-10-20, which
     /// LogoService's providers draw from. An array of pairs, not a dictionary literal: a
     /// repeated key would trap at run time (CLAUDE.md red flag 16). Keywords are matched as
-    /// `CategorySuggestionService.brandPresetId` matches them.
+    /// `CategorySuggestionService.brandPresetId` matches them, `wholeWordBrands` as a whole
+    /// word only. No brand that is also a first name ("Zara").
     nonisolated static let knownBrands: [(keyword: String, key: String)] = [
         // tenra-assets files under another name
         ("anvar", "anvarmarket"), ("arbuz", "arbuzkz"), ("magnum", "magnum"), ("магнум", "magnum"),
@@ -130,9 +154,12 @@ enum MerchantLogoResolver {
         ("trader joe", "traderjoes.com"), ("burger king", "bk.com"), ("domino", "dominos.com"),
         ("papa john", "papajohns.com"), ("uber", "uber.com"), ("bolt", "bolt.eu"),
         ("shell", "shell.com"), ("playstation", "playstation.com"), ("airbnb", "airbnb.com"),
-        ("aviasales", "aviasales.ru"), ("zara", "zara.com"), ("uniqlo", "uniqlo.com"),
+        ("aviasales", "aviasales.ru"), ("uniqlo", "uniqlo.com"),
         ("apple com", "apple.com")
     ]
+
+    /// Keywords that begin surnames as well ("Anvarov", "Arbuzov", "Shelly"): a whole word only.
+    private nonisolated static let wholeWordBrands: Set<String> = ["anvar", "arbuz", "shell"]
 
     private nonisolated static let knownBrandsByLength = knownBrands.sorted { $0.keyword.count > $1.keyword.count }
 
@@ -140,20 +167,35 @@ enum MerchantLogoResolver {
     nonisolated static func knownBrandKey(forMerchant merchant: String) -> String? {
         let normalized = CategorySuggestionService.normalizedMerchant(merchant)
         guard !normalized.isEmpty else { return nil }
+        let padded = " " + normalized + " "
         return knownBrandsByLength
-            .first { CategorySuggestionService.matches(keyword: $0.keyword, inNormalized: normalized) }?
+            .first { brand in
+                wholeWordBrands.contains(brand.keyword)
+                    ? padded.contains(" " + brand.keyword + " ")
+                    : CategorySuggestionService.matches(keyword: brand.keyword, inNormalized: normalized)
+            }?
             .key
     }
 
-    /// The registry's domain for a clean merchant name: the whole name, its first two
-    /// words, or its first word ("Netflix", "Yandex Go", "Starbucks Coffee" → Starbucks).
+    /// The registry's domain for a clean merchant name: the whole name or its first two
+    /// words ("Netflix", "Yandex Go"), else its first word ("Starbucks Coffee" → Starbucks)
+    /// when that is long enough to be a brand, is not a bank's (their names are ordinary
+    /// words and first names: "Altyn", "Береке") and is not a person's first name before an
+    /// initial ("Алтын К.", a transfer in a statement).
     static func registryDomain(forMerchant name: String) -> String? {
         let words = CategorySuggestionService.normalizedMerchant(name).split(separator: " ").map(String.init)
         var candidates = [name.lowercased(), words.joined(separator: " ")]
         if words.count > 2 { candidates.append(words.prefix(2).joined(separator: " ")) }
-        if let first = words.first, first.count >= CategorySuggestionService.minimumMerchantLength {
-            candidates.append(first)
+        if let domain = candidates.lazy.compactMap({ ServiceLogoRegistry.aliasMap[$0]?.domain }).first {
+            return domain
         }
-        return candidates.lazy.compactMap { ServiceLogoRegistry.aliasMap[$0]?.domain }.first
+        guard let first = words.first, first.count >= firstWordBrandLength,
+              !MerchantName.isPersonWithInitials(name),
+              let entry = ServiceLogoRegistry.aliasMap[first], entry.category != .banks else {
+            return nil
+        }
+        return entry.domain
     }
+
+    private static let firstWordBrandLength = 5
 }

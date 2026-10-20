@@ -37,11 +37,26 @@ nonisolated enum MerchantName {
     /// Quotes and separators around a word ("«SMALL»", "MAGNUM,").
     private static let wrapping = CharacterSet(charactersIn: "\"'`«»“”„,;:()[]")
 
-    /// A sole proprietor ("ИП ИВАНОВ", "IP IVANOV"): the name is a person's, so it is never
-    /// sent anywhere to look up a logo.
+    /// A sole proprietor ("ИП ИВАНОВ", "IVANOV IP", "I.P. IVANOV", the Kazakh "ЖК"): the name
+    /// is a person's, so it is never sent anywhere to look up a logo. Any word counts: a wrong
+    /// guess only keeps a shop's lookup on the device.
     static func isSoleProprietor(_ raw: String) -> Bool {
-        guard let first = raw.split(whereSeparator: \.isWhitespace).first else { return false }
-        return ["ип", "ip"].contains(first.trimmingCharacters(in: wrapping).lowercased())
+        raw.split(whereSeparator: \.isWhitespace).contains { word in
+            let bare = word.trimmingCharacters(in: wrapping).replacingOccurrences(of: ".", with: "")
+            return soleProprietorForms.contains(bare.lowercased())
+        }
+    }
+
+    private static let soleProprietorForms: Set<String> = ["ип", "ip", "жк"]
+
+    /// A person's name with a masked surname ("Асель К.", "ALTYN K.", "Иван И. П."), as a
+    /// statement prints a transfer: its first word is a first name, never a brand's.
+    static func isPersonWithInitials(_ raw: String) -> Bool {
+        let words = raw.split(whereSeparator: \.isWhitespace)
+            .map { $0.trimmingCharacters(in: wrapping).replacingOccurrences(of: ".", with: "") }
+            .filter { !$0.isEmpty }
+        guard words.count > 1 else { return false }
+        return words.dropFirst().allSatisfy { $0.count == 1 && $0.first?.isLetter == true }
     }
 
     /// What to search for to find this merchant's transactions: the History search matches

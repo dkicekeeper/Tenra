@@ -38,6 +38,15 @@ final class LogoService {
         }
     }
 
+    /// A logo found outside the chain (MerchantLogoResolver's lookup by name), kept under its
+    /// key in memory and on disk: the rows the lookup refreshes find it at once, before the
+    /// disk write ends, instead of asking for it again.
+    @MainActor
+    func remember(_ image: UIImage, for key: String) {
+        memoryCache.setObject(image, forKey: key as NSString)
+        diskCache.save(image, for: key)
+    }
+
     /// Loads a brand logo through the provider chain.
     /// Resolves brandName to domain before cache/fetch.
     /// Never throws — LettermarkProvider always succeeds.

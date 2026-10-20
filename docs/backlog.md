@@ -19,6 +19,13 @@ with the commit of every fix, are in
 - **Automatic payment capture and merchants** (plan in flight:
   [plan-auto-capture.md](plan-auto-capture.md) §9): built; what is left is the device checks of
   §8, then the plan moves to the archive.
+- **One merchant under several keys.** Every merchant store keys on
+  `CategorySuggestionService.normalizedMerchant`, which keeps processor prefixes, legal forms and
+  a trailing city: Wallet's "MAGNUM CASH&CARRY 123" and a statement's "ТОО MAGNUM CASH&CARRY
+  ALMATY KZ" are two merchants (name, logo choice, merchant screen totals, subscription runs).
+  Keying on the clean name (`MerchantName.displayName`, normalized) needs a migration of the stored
+  keys in `MerchantCategoryMemory`, `MerchantLogoStore`, `WalletCaptureStore` and the candidate
+  dismissals. Decide whether it is worth it.
 - **Legacy converted deposits (DP1).** A read-only DEBUG diagnostic lists deposits converted
   before the `conversionTimestamp` fix (Settings → Experiments, `LegacyDepositDiagnostics`).
   Recovery waits for real data.

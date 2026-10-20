@@ -67,6 +67,18 @@ struct MerchantLogoTests {
         #expect(MerchantName.isSoleProprietor("IP IVANOV"))
         #expect(!MerchantName.isSoleProprietor("IPHONE STORE"))
         #expect(!MerchantName.isSoleProprietor("TOO GREENMART"))
+        // Any word: the legal form at the end, with dots, or the Kazakh one.
+        #expect(MerchantName.isSoleProprietor("IVANOV IP"))
+        #expect(MerchantName.isSoleProprietor("I.P. IVANOV"))
+        #expect(MerchantName.isSoleProprietor("ЖК «АСАНОВ»"))
+    }
+
+    @Test("A first name before an initial is a person's, as a statement prints a transfer")
+    func personWithInitials() {
+        #expect(MerchantName.isPersonWithInitials("Асель К."))
+        #expect(MerchantName.isPersonWithInitials("ALTYN K"))
+        #expect(!MerchantName.isPersonWithInitials("Alma TV"))
+        #expect(!MerchantName.isPersonWithInitials("Greenmart"))
     }
 
     // MARK: - Registry
@@ -77,6 +89,10 @@ struct MerchantLogoTests {
         #expect(MerchantLogoResolver.registryDomain(forMerchant: "netflix.com") == "netflix.com")
         #expect(MerchantLogoResolver.registryDomain(forMerchant: "Yandex Go Ride") == "yandex.go")
         #expect(MerchantLogoResolver.registryDomain(forMerchant: "Corner Bakery") == nil)
+        #expect(MerchantLogoResolver.registryDomain(forMerchant: "Netflix Subscription") == "netflix.com")
+        // The first word alone is never a bank's name nor a first name before an initial.
+        #expect(MerchantLogoResolver.registryDomain(forMerchant: "Алтын Кайратовна") == nil)
+        #expect(MerchantLogoResolver.registryDomain(forMerchant: "Spotify K.") == nil)
     }
 
     @Test("A brand the category suggestions know gets its logo key, whatever else the text says")
@@ -87,6 +103,9 @@ struct MerchantLogoTests {
         #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "UBER *TRIP") == "uber.com")
         // A short keyword is a whole word only: "Bolt" is not in "Boltik".
         #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "BOLTIK") == nil)
+        // A keyword that begins surnames is a whole word only, and no brand is a first name.
+        #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "ANVAROV A.") == nil)
+        #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "ZARA K.") == nil)
         #expect(MerchantLogoResolver.knownBrandKey(forMerchant: "Corner Bakery") == nil)
     }
 
@@ -130,6 +149,20 @@ struct MerchantLogoTests {
         #expect(!store.needsLookup(merchant: "NETFLIX", now: Date().addingTimeInterval(MerchantLogoStore.recheckInterval * 2)))
         #expect(store.needsLookup(merchant: "Corner Bakery"))
         #expect(!store.needsLookup(merchant: "12"))
+    }
+
+    @Test("What older lookup rules found or missed is looked up once more")
+    func olderRules() throws {
+        let defaults = UserDefaults(suiteName: "merchant.logo.\(UUID().uuidString)")!
+        let old = MerchantLogoStore.Entry(state: .found("altynbank.kz"), checkedAt: Date(), lookedUpOnline: false, rules: nil)
+        let key = CategorySuggestionService.normalizedMerchant("Алтын К.")
+        defaults.set(try JSONEncoder().encode([key: old]), forKey: "merchantLogo.v1")
+        let store = MerchantLogoStore(defaults: defaults)
+
+        #expect(store.needsLookup(merchant: "Алтын К.", online: false))
+        store.record(.missing, merchant: "Алтын К.", online: false)
+        #expect(!store.needsLookup(merchant: "Алтын К.", online: false))
+        #expect(store.iconSource(forDescription: "Алтын К.") == nil)
     }
 
     @Test("A merchant looked up on device only is asked online once it pays with Apple Pay")

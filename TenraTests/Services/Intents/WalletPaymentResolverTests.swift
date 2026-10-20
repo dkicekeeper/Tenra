@@ -250,6 +250,39 @@ struct WalletPaymentResolverTests {
         #expect(match?.id == "tx-1")
     }
 
+    @Test("A service billed under its parent's name matches: iCloud+ and APPLE.COM/BILL")
+    func matchesBillingParent() {
+        let apple = WalletPaymentResolver.subscriptionOccurrence(
+            amount: 450,
+            currency: "KZT",
+            day: day("2026-10-19"),
+            merchant: "APPLE.COM/BILL",
+            occurrences: [occurrence("tx-icloud", "iCloud+", amount: 450, date: "2026-10-19")]
+        )
+        #expect(apple?.id == "tx-icloud")
+
+        let google = WalletPaymentResolver.subscriptionOccurrence(
+            amount: 2_990,
+            currency: "KZT",
+            day: day("2026-10-19"),
+            merchant: "GOOGLE *SERVICES",
+            occurrences: [occurrence("tx-youtube", "YouTube Premium", amount: 2_990, date: "2026-10-18")]
+        )
+        #expect(google?.id == "tx-youtube")
+    }
+
+    @Test("The billing company does not match the other way round: an Apple charge is not any subscription")
+    func billingParentOneWay() {
+        let match = WalletPaymentResolver.subscriptionOccurrence(
+            amount: 450,
+            currency: "KZT",
+            day: day("2026-10-19"),
+            merchant: "ICLOUD STORAGE",
+            occurrences: [occurrence("tx-music", "Apple Music", amount: 450, date: "2026-10-19")]
+        )
+        #expect(match == nil)
+    }
+
     @Test("Same amount and date but another merchant is a new payment")
     func otherMerchantIsNotTheSubscription() {
         let match = WalletPaymentResolver.subscriptionOccurrence(

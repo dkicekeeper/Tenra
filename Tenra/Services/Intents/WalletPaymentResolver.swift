@@ -67,6 +67,13 @@ enum WalletPaymentResolver {
         "inc", "ltd", "llc", "llp", "gmbh", "too", "тоо", "ип", "the", "kz", "ru"
     ]
 
+    /// Services billed under their parent's name: an iCloud+ subscription is charged as
+    /// "APPLE.COM/BILL", YouTube Premium as "GOOGLE *YouTube".
+    private nonisolated static let billingParent: [String: String] = [
+        "icloud": "apple", "itunes": "apple",
+        "youtube": "google"
+    ]
+
     /// The words of a merchant or description that can identify a brand.
     nonisolated static func brandWords(_ text: String) -> Set<String> {
         Set(
@@ -77,10 +84,17 @@ enum WalletPaymentResolver {
         )
     }
 
+    /// A subscription's brand words plus the company that bills it ("iCloud+" → icloud, apple).
+    nonisolated static func billedWords(_ description: String) -> Set<String> {
+        let words = brandWords(description)
+        return words.union(words.compactMap { billingParent[$0] })
+    }
+
     /// The subscription charge a payment repeats: an occurrence of a recurring series in
     /// the same currency, within the statement import's window and tolerance
     /// (`ImportDuplicateDetector.subscriptionDayWindow`, `subscriptionAmountTolerance`), whose
-    /// description shares a brand word with the merchant ("Netflix" and "NETFLIX.COM"),
+    /// description shares a brand word with the merchant ("Netflix" and "NETFLIX.COM", or
+    /// the billing company: "iCloud+" and "APPLE.COM/BILL"),
     /// closest date first. The word is required: a missed match leaves a duplicate the user
     /// can delete, a false one would drop a real payment (a coffee priced like a
     /// subscription).
@@ -101,7 +115,7 @@ enum WalletPaymentResolver {
                       abs(occurrence.amount - amount) <= ImportDuplicateDetector.subscriptionAmountTolerance * amount,
                       let occurrenceDay = ImportDuplicateDetector.dayNumber(occurrence.date),
                       abs(occurrenceDay - day) <= ImportDuplicateDetector.subscriptionDayWindow,
-                      !brandWords(occurrence.description).isDisjoint(with: merchantWords)
+                      !billedWords(occurrence.description).isDisjoint(with: merchantWords)
                 else { return nil }
                 return (occurrence, abs(occurrenceDay - day))
             }

@@ -42,6 +42,8 @@ struct LogWalletPaymentIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
+        // The moment of the tap, before anything waits: a slow drain must not move it.
+        let now = Date()
         let services = try await IntentEnvironment.shared.services()
 
         // Payments that waited for an exchange rate go first, so the history keeps its order.
@@ -54,7 +56,7 @@ struct LogWalletPaymentIntent: AppIntent {
             merchant: (merchant ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
             card: (card ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
             accountId: account?.id,
-            date: Date()
+            date: now
         )
 
         switch try await WalletPaymentRecorder.record(payment, services: services) {

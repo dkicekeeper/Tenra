@@ -181,6 +181,78 @@ struct WalletCaptureStoreTests {
         #expect(captures.toReview.isEmpty)
     }
 
+    @Test("An edit teaches only what changed: a guessed account kept as it was stays a guess")
+    func editTeachesChangesOnly() {
+        let defaults = makeDefaults()
+        let captures = WalletCaptureStore(defaults: defaults)
+        let merchants = MerchantCategoryMemory(defaults: defaults)
+        let cards = CardAccountMemory(defaults: defaults)
+        captures.record(transactionId: "tx-1", payment: payment(), guesses: [.account], now: start)
+        let before = transaction("tx-1", category: "Продукты", accountId: "a1")
+
+        // Only the note changed.
+        WalletPaymentRecorder.confirm(
+            transaction("tx-1", category: "Продукты", accountId: "a1"),
+            subcategoryIds: [],
+            categories: [groceries],
+            editedFrom: before,
+            previousSubcategoryIds: [],
+            captures: captures,
+            merchants: merchants,
+            cards: cards
+        )
+        #expect(cards.accountId(forCard: "gold card") == nil)
+        #expect(merchants.merchants.isEmpty)
+        #expect(captures.toReview.isEmpty)
+
+        // The account changed: that is the card's account now.
+        WalletPaymentRecorder.confirm(
+            transaction("tx-1", category: "Продукты", accountId: "a2"),
+            subcategoryIds: [],
+            categories: [groceries],
+            editedFrom: before,
+            previousSubcategoryIds: [],
+            captures: captures,
+            merchants: merchants,
+            cards: cards
+        )
+        #expect(cards.accountId(forCard: "gold card") == "a2")
+    }
+
+    @Test("A guessed category the user had not reviewed is confirmed by saving its edit")
+    func editConfirmsUnreviewedCategoryGuess() {
+        let defaults = makeDefaults()
+        let captures = WalletCaptureStore(defaults: defaults)
+        let merchants = MerchantCategoryMemory(defaults: defaults)
+        let cards = CardAccountMemory(defaults: defaults)
+        captures.record(transactionId: "tx-1", payment: payment(), guesses: [.category], now: start)
+        let before = transaction("tx-1", category: "Продукты", accountId: "a1")
+
+        WalletPaymentRecorder.confirm(
+            before,
+            subcategoryIds: [],
+            categories: [groceries],
+            editedFrom: before,
+            previousSubcategoryIds: [],
+            captures: captures,
+            merchants: merchants,
+            cards: cards
+        )
+        #expect(merchants.category(forMerchant: "GREENMART CASH&CARRY 1", in: [groceries])?.id == groceries.id)
+        #expect(cards.accountId(forCard: "gold card") == nil)
+    }
+
+    @Test("A subscription charge taken for a payment stays taken after a relaunch")
+    func matchedOccurrences() {
+        let defaults = makeDefaults()
+        do {
+            let store = WalletCaptureStore(defaults: defaults)
+            #expect(!store.isMatched(occurrenceId: "occ-1"))
+            store.noteMatched(occurrenceId: "occ-1", now: start)
+        }
+        #expect(WalletCaptureStore(defaults: defaults).isMatched(occurrenceId: "occ-1"))
+    }
+
     @Test("A transaction the Wallet action did not record teaches nothing")
     func confirmIgnoresOtherTransactions() {
         let defaults = makeDefaults()

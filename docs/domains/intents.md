@@ -258,16 +258,26 @@ for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-captu
 
 1. Amount ≤ 0 (a transit gate, a lost payload) → nothing recorded.
 2. The same amount, currency, normalized merchant and card within 90 seconds
-   (`WalletCaptureStore.isDuplicate`, captures and queue) → the terminal fired twice.
+   (`WalletCaptureStore.isDuplicate`, captures and queue) → the terminal fired twice. The
+   payment's time is taken when the intent starts, before the queue drains. Right after this
+   check the payment goes into `WalletCaptureStore.pending` (before the first await, so a second
+   run of the same tap sees it) and leaves it only once saved: a run the system ends mid-save
+   (a slow rate request) leaves it queued, never lost. `inFlight` keeps a drain off it meanwhile,
+   and a drain drops a queued payment a capture already shows (saved by a run that ended before
+   taking it off the queue).
 3. Category (`WalletPaymentResolver.category`): `MerchantCategoryMemory` with its subcategories,
    else `CategorySuggestionProvider.suggestion` over a bounded fetch of the merchant's history
-   (descriptions containing its first word, 200 newest) plus brands and the voice keywords, else
+   (descriptions containing the first word of its clean name, so not "ИП" or "ТОО", 200 newest)
+   plus brands and the voice keywords, else
    "Other". Everything but the memory is a guess.
 4. Account (`WalletPaymentResolver.account`): fixed in the automation → `CardAccountMemory` for
    the card → the only account a card can pay from → `IntentAccountSuggester` for the category →
    the first one. The last two are guesses; loans and deposits never qualify.
 5. A subscription's charge (`WalletPaymentResolver.subscriptionOccurrence`): an expense of a
-   recurring series in the same currency, within `ImportDuplicateDetector`'s 3 days and 5 %, whose
+   recurring series on the payment's account, not yet taken for another payment
+   (`WalletCaptureStore.noteMatched`, so one charge stands for one payment: a second payment at
+   the same gym that week is recorded), in the same currency, within `ImportDuplicateDetector`'s
+   3 days and 5 %, whose
    description shares a brand word with the merchant ("Netflix" / "NETFLIX.COM"; generic words like
    com or bill don't count; a service counts its billing company too: iCloud+ and iTunes as Apple,
    YouTube as Google) → nothing new, the series already recorded it. Without a shared word
@@ -281,10 +291,12 @@ for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-captu
    with a guess not yet looked at is "To review". Captures live 90 days.
 
 Learning: `WalletPaymentRecorder.confirm` remembers a captured transaction's category and
-subcategories for the merchant and its account for the card, and marks the capture reviewed. It
-runs when the transaction is saved from the edit screen (`TransactionEditCoordinator`) and on
-"Correct" / "All correct" in To review. An account fixed in the automation is remembered for the
-card at once. Guesses are never remembered.
+subcategories for the merchant and its account for the card, and marks the capture reviewed. On
+"Correct" / "All correct" in To review it confirms everything shown. From the edit screen
+(`TransactionEditCoordinator`, `editedFrom:`) only what the save changed, plus a guessed category
+not reviewed yet: editing an old payment's note must not undo what the user set since, and a
+guessed account kept as it was stays a guess. An account fixed in the automation is remembered for
+the card at once. Guesses are never remembered on their own.
 
 **To review** (`WalletReviewView`, Settings → Siri & Shortcuts, also a sheet over `MainTabView`):
 `WalletCaptureStore.toReview` as `TransactionCard`s; tap edits (saving confirms), swipe right or
@@ -292,7 +304,7 @@ the toolbar confirms. Captures of deleted transactions are dropped once the stor
 
 **Notification** (`WalletReviewNotifier`): after a save with a guess, "Check a payment" with the
 merchant and the guessed category (or account), no amount (lock screen). One per merchant while
-an earlier payment there still waits; never asks for the permission. A tap sets
+an earlier payment there still waits (a deleted one no longer does, once the store has loaded); never asks for the permission. A tap sets
 `WalletCaptureStore.isReviewRequested` (`AppDelegate`), and `MainTabView` presents To review.
 
 **A merchant's screen** (`MerchantDetailView`, from the Wallet merchants list and from the

@@ -63,6 +63,9 @@ final class WalletCaptureStore {
     private struct Snapshot: Codable {
         var captures: [String: Capture]
         var pending: [WalletPayment]
+        /// Subscription occurrences a payment was taken for (`[transaction id: when]`). nil in
+        /// snapshots saved before it was kept.
+        var matchedOccurrences: [String: Date]?
     }
 
     static let shared = WalletCaptureStore()
@@ -79,6 +82,9 @@ final class WalletCaptureStore {
     private var captures: [String: Capture]
     /// Oldest first.
     private(set) var pending: [WalletPayment]
+    /// Occurrences of a recurring series already taken for an Apple Pay payment, so one
+    /// charge of the series stands for one payment only. `[transaction id: when]`.
+    private var matchedOccurrences: [String: Date]
     /// Set by a tap on a "check a payment" notification (WalletReviewNotifier): MainTabView
     /// presents the To review list. Not persisted.
     var isReviewRequested = false
@@ -88,6 +94,7 @@ final class WalletCaptureStore {
         let snapshot = Self.load(from: defaults)
         self.captures = snapshot.captures
         self.pending = snapshot.pending
+        self.matchedOccurrences = snapshot.matchedOccurrences ?? [:]
     }
 
     // MARK: - Captures
@@ -103,6 +110,11 @@ final class WalletCaptureStore {
             .sorted { lhs, rhs in
                 lhs.payment.date != rhs.payment.date ? lhs.payment.date > rhs.payment.date : lhs.id < rhs.id
             }
+    }
+
+    /// Whether a payment was saved: a queued one that a run ended before taking off the queue.
+    func isRecorded(paymentId: String) -> Bool {
+        captures.values.contains { $0.payment.id == paymentId }
     }
 
     /// The transactions the Wallet action saved, while their captures are kept (90 days).
@@ -136,6 +148,19 @@ final class WalletCaptureStore {
         let kept = captures.filter { transactionIds.contains($0.key) }
         guard kept.count != captures.count else { return }
         captures = kept
+        persist()
+    }
+
+    // MARK: - Subscription occurrences
+
+    func isMatched(occurrenceId: String) -> Bool {
+        matchedOccurrences[occurrenceId] != nil
+    }
+
+    /// A payment was taken for this occurrence: later payments must not be.
+    func noteMatched(occurrenceId: String, now: Date = Date()) {
+        matchedOccurrences = matchedOccurrences.filter { now.timeIntervalSince($0.value) <= Self.retention }
+        matchedOccurrences[occurrenceId] = now
         persist()
     }
 
@@ -180,6 +205,7 @@ final class WalletCaptureStore {
     func reset() {
         captures = [:]
         pending = []
+        matchedOccurrences = [:]
         defaults.removeObject(forKey: Self.storageKey)
     }
 
@@ -188,13 +214,13 @@ final class WalletCaptureStore {
     private static func load(from defaults: UserDefaults) -> Snapshot {
         guard let data = defaults.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode(Snapshot.self, from: data) else {
-            return Snapshot(captures: [:], pending: [])
+            return Snapshot(captures: [:], pending: [], matchedOccurrences: [:])
         }
         return decoded
     }
 
     private func persist() {
-        let snapshot = Snapshot(captures: captures, pending: pending)
+        let snapshot = Snapshot(captures: captures, pending: pending, matchedOccurrences: matchedOccurrences)
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: Self.storageKey)
     }

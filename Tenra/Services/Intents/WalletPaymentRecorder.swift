@@ -41,11 +41,17 @@ enum WalletPaymentRecorder {
     private static let historyLimit = 200
 
     /// Guards against two drains in one process (an intent and the app coming to
-    /// the front) recording the same queued payment twice.
+    /// the front) running at once.
     private static var isDraining = false
 
-    /// Records one payment from the automation. A payment that cannot be converted
-    /// yet is queued, not lost.
+    /// Payments being saved right now. The intent and a drain both run on the main actor
+    /// and interleave at every await: a drain skips these, they wait in `pending` meanwhile.
+    private static var inFlight: Set<String> = []
+
+    /// Records one payment from the automation. The payment goes into the queue before the
+    /// first await and leaves it only once saved: a second run of the same tap then sees it
+    /// as a duplicate, and a run the system ends mid-save (a slow rate request) leaves it
+    /// queued, never lost.
     static func record(
         _ payment: WalletPayment,
         services: IntentServices,
@@ -54,26 +60,37 @@ enum WalletPaymentRecorder {
         guard payment.amount.isFinite, payment.amount > 0 else { return .noAmount }
         if captures.isDuplicate(payment) { return .duplicate }
 
+        inFlight.insert(payment.id)
+        captures.enqueue(payment)
+        defer { inFlight.remove(payment.id) }
+
+        // A thrown save stays queued: the next drain tries it again.
         let outcome = try await save(payment, services: services, captures: captures)
-        if outcome == .queued {
-            captures.enqueue(payment)
+        if outcome != .queued {
+            captures.removePending(id: payment.id)
         }
         return outcome
     }
 
     /// Records the payments that waited for an exchange rate, oldest first, each with
     /// its own date. Called before every new payment and when the app comes to the front.
+    /// A payment leaves the queue only once saved.
     static func recordPending(services: IntentServices, captures: WalletCaptureStore = .shared) async {
         guard !isDraining, !captures.pending.isEmpty else { return }
         isDraining = true
         defer { isDraining = false }
 
-        for payment in captures.pending {
-            // Taken off the queue first, so nothing else records it meanwhile.
-            captures.removePending(id: payment.id)
+        for payment in captures.pending where !inFlight.contains(payment.id) {
+            // Saved by a run that ended before it took the payment off the queue.
+            if captures.isRecorded(paymentId: payment.id) {
+                captures.removePending(id: payment.id)
+                continue
+            }
+            inFlight.insert(payment.id)
             let outcome = try? await save(payment, services: services, captures: captures)
-            if outcome == nil || outcome == .queued {
-                captures.enqueue(payment)
+            inFlight.remove(payment.id)
+            if let outcome, outcome != .queued {
+                captures.removePending(id: payment.id)
             }
         }
     }
@@ -117,17 +134,23 @@ enum WalletPaymentRecorder {
 
         // A subscription paid with Apple Pay: its series already recorded this charge, as a
         // statement import would see it (ImportDuplicateDetector's window and tolerance).
+        // Only a charge on the payment's account that no earlier payment was taken for: a
+        // second payment at the same gym that week (a friend's pass) is a payment of its own.
         let currency = payment.currencyCode
             ?? accounts.first { $0.id == account.accountId }?.currency
             ?? ""
+        let candidates = subscriptionOccurrences(around: payment.date, context: context).filter {
+            $0.accountId == account.accountId && !captures.isMatched(occurrenceId: $0.id)
+        }
         if let day = ImportDuplicateDetector.dayNumber(DateFormatters.dateFormatter.string(from: payment.date)),
            let occurrence = WalletPaymentResolver.subscriptionOccurrence(
                amount: payment.amount,
                currency: currency,
                day: day,
                merchant: payment.merchant,
-               occurrences: subscriptionOccurrences(around: payment.date, context: context)
+               occurrences: candidates
            ) {
+            captures.noteMatched(occurrenceId: occurrence.id)
             return .subscription(name: occurrence.description)
         }
 
@@ -192,10 +215,13 @@ enum WalletPaymentRecorder {
         var guesses: Set<WalletCaptureStore.Guess> = []
         if category.isGuess { guesses.insert(.category) }
         if account.isGuess { guesses.insert(.account) }
-        // One "check a payment" notification per merchant until the user looks at it.
+        // One "check a payment" notification per merchant until the user looks at it. A
+        // payment deleted meanwhile no longer waits (the store's index, once it is loaded).
         let merchantKey = CategorySuggestionService.normalizedMerchant(payment.merchant)
+        let store = services.store
         let merchantAlreadyWaiting = captures.toReview.contains {
             CategorySuggestionService.normalizedMerchant($0.payment.merchant) == merchantKey
+                && (!store.hasCompletedInitialLoad || store.transactionById[$0.id] != nil)
         }
         captures.record(transactionId: saved.id, payment: payment, guesses: guesses)
         if !guesses.isEmpty, !merchantAlreadyWaiting {
@@ -220,18 +246,33 @@ enum WalletPaymentRecorder {
 
     /// The user looked at a captured payment and kept or fixed it, so what it is saved
     /// with now is their choice: the category and subcategories for its merchant, the
-    /// account for its card. Called by the edit screen and the To review list. A
-    /// transaction the Wallet action did not record is left alone.
+    /// account for its card. A transaction the Wallet action did not record is left alone.
+    ///
+    /// From To review ("Correct", "All correct", `editedFrom` nil) everything shown is
+    /// confirmed. From the edit screen (`editedFrom` the transaction as it was) only what
+    /// the user changed, plus a category Tenra guessed that they had not reviewed yet: a
+    /// later edit of an old payment (its note) must not undo what they set since for the
+    /// merchant or the card, and a guessed account kept as it was stays a guess.
     static func confirm(
         _ transaction: Transaction,
         subcategoryIds: [String],
         categories: [CustomCategory],
+        editedFrom previous: Transaction? = nil,
+        previousSubcategoryIds: Set<String>? = nil,
         captures: WalletCaptureStore = .shared,
         merchants: MerchantCategoryMemory = .shared,
         cards: CardAccountMemory = .shared
     ) {
         guard let capture = captures.capture(forTransactionId: transaction.id) else { return }
-        if transaction.type == .expense,
+        let isEdit = previous != nil
+        let categoryChanged = previous.map { $0.category != transaction.category } ?? false
+        let subcategoriesChanged = previousSubcategoryIds.map { $0 != Set(subcategoryIds) } ?? false
+        let accountChanged = previous.map { $0.accountId != transaction.accountId } ?? false
+        let unreviewedCategoryGuess = !capture.isReviewed && capture.guesses.contains(.category)
+        let teachesCategory = !isEdit || categoryChanged || subcategoriesChanged || unreviewedCategoryGuess
+        let teachesAccount = !isEdit || accountChanged
+
+        if teachesCategory, transaction.type == .expense,
            let categoryId = categories
                .first(where: { $0.type == .expense && $0.name == transaction.category })?.id {
             merchants.remember(
@@ -240,7 +281,7 @@ enum WalletPaymentRecorder {
                 forMerchant: capture.payment.merchant
             )
         }
-        if let accountId = transaction.accountId {
+        if teachesAccount, let accountId = transaction.accountId {
             cards.remember(accountId: accountId, forCard: capture.payment.card)
         }
         captures.markReviewed(transactionId: transaction.id)
@@ -284,9 +325,10 @@ enum WalletPaymentRecorder {
 
     /// Recent expenses whose description contains the merchant's first word. Broad on
     /// purpose ("MAGNUM CASH&CARRY 123" and "... 456" share it): the history index then
-    /// compares normalized merchants exactly.
+    /// compares normalized merchants exactly. The word of its clean name (MerchantName), so
+    /// a legal form in front ("ИП", "ТОО") is not the word searched.
     static func history(of merchant: String, context: NSManagedObjectContext) -> [Transaction] {
-        guard let firstWord = CategorySuggestionService.normalizedMerchant(merchant)
+        guard let firstWord = CategorySuggestionService.normalizedMerchant(MerchantName.displayName(merchant))
             .split(separator: " ")
             .first,
             firstWord.count >= CategorySuggestionService.minimumMerchantLength else { return [] }

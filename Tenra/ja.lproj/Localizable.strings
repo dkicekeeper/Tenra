@@ -114,6 +114,14 @@
 "settings.subcategories" = "サブカテゴリ";
 "settings.accounts" = "口座";
 "settings.exportImport" = "エクスポート・インポート";
+"settings.importReminder" = "明細書のリマインダー";
+"settings.importReminder.off" = "オフ";
+"settings.importReminder.week" = "毎週";
+"settings.importReminder.twoWeeks" = "2週間ごと";
+"settings.importReminder.month" = "毎月";
+"settings.importReminder.footer" = "銀行の明細書を読み込むと、次の明細書をTenraがお知らせします。Apple Pay以外の振込や支払いは明細書からのみ取り込まれます。";
+"importReminder.notification.title" = "明細書を読み込みましょう";
+"importReminder.notification.body" = "銀行のPDF明細書をTenraで開いて、Apple Payで記録されなかった振込や支払いを追加しましょう。";
 "settings.exportData" = "データをエクスポート";
 "settings.importData" = "データをインポート";
 "settings.dangerZone" = "危険な操作";

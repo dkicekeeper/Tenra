@@ -114,6 +114,14 @@
 "settings.subcategories" = "하위 카테고리";
 "settings.accounts" = "계좌";
 "settings.exportImport" = "내보내기 및 가져오기";
+"settings.importReminder" = "명세서 알림";
+"settings.importReminder.off" = "끔";
+"settings.importReminder.week" = "매주";
+"settings.importReminder.twoWeeks" = "2주마다";
+"settings.importReminder.month" = "매월";
+"settings.importReminder.footer" = "은행 명세서를 가져오면 Tenra가 다음 명세서를 알려 드립니다. Apple Pay 외의 이체와 결제는 명세서로만 들어옵니다.";
+"importReminder.notification.title" = "명세서를 가져올 시간이에요";
+"importReminder.notification.body" = "은행의 PDF 명세서를 Tenra에서 열어 Apple Pay가 기록하지 않은 이체와 결제를 추가하세요.";
 "settings.exportData" = "데이터 내보내기";
 "settings.importData" = "데이터 가져오기";
 "settings.dangerZone" = "위험 구역";

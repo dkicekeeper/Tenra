@@ -114,6 +114,14 @@
 "settings.subcategories" = "Unterkategorien";
 "settings.accounts" = "Konten";
 "settings.exportImport" = "Export & Import";
+"settings.importReminder" = "Erinnerung an Kontoauszug";
+"settings.importReminder.off" = "Aus";
+"settings.importReminder.week" = "Jede Woche";
+"settings.importReminder.twoWeeks" = "Alle 2 Wochen";
+"settings.importReminder.month" = "Jeden Monat";
+"settings.importReminder.footer" = "Nach dem Import eines Kontoauszugs erinnert Tenra Sie an den nächsten: Überweisungen und Zahlungen außerhalb von Apple Pay kommen nur mit einem Kontoauszug herein.";
+"importReminder.notification.title" = "Zeit für einen Kontoauszug";
+"importReminder.notification.body" = "Öffnen Sie den PDF-Kontoauszug Ihrer Bank in Tenra, um Überweisungen und Zahlungen hinzuzufügen, die Apple Pay nicht erfasst hat.";
 "settings.exportData" = "Daten exportieren";
 "settings.importData" = "Daten importieren";
 "settings.dangerZone" = "Gefahrenzone";

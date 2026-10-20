@@ -114,6 +114,14 @@
 "settings.subcategories" = "Subcategories";
 "settings.accounts" = "Accounts";
 "settings.exportImport" = "Export & Import";
+"settings.importReminder" = "Statement reminder";
+"settings.importReminder.off" = "Off";
+"settings.importReminder.week" = "Every week";
+"settings.importReminder.twoWeeks" = "Every 2 weeks";
+"settings.importReminder.month" = "Every month";
+"settings.importReminder.footer" = "After you import a bank statement, Tenra reminds you to import the next one: transfers and payments outside Apple Pay only come in with a statement.";
+"importReminder.notification.title" = "Time for a bank statement";
+"importReminder.notification.body" = "Open your bank's PDF statement in Tenra to add the transfers and payments Apple Pay did not record.";
 "settings.exportData" = "Export Data";
 "settings.importData" = "Import Data";
 "settings.dangerZone" = "Danger Zone";

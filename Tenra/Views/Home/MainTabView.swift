@@ -255,6 +255,8 @@ struct MainTabView: View {
         .onChange(of: scenePhase, initial: true) { _, phase in
             guard phase == .active else { return }
             coordinator.refreshAssistantInbox()
+            // The next statement reminders, scheduled ahead (StatementImportReminder).
+            Task { await StatementImportReminder.reschedule() }
             // Apple Pay payments that waited for an exchange rate (LogWalletPaymentIntent).
             if !WalletCaptureStore.shared.pending.isEmpty {
                 Task { await WalletPaymentRecorder.recordPending(services: IntentServices(coordinator: coordinator)) }

@@ -114,6 +114,14 @@
 "settings.subcategories" = "Подкатегории";
 "settings.accounts" = "Счета";
 "settings.exportImport" = "Экспорт и импорт";
+"settings.importReminder" = "Напоминать о выписке";
+"settings.importReminder.off" = "Выкл.";
+"settings.importReminder.week" = "Каждую неделю";
+"settings.importReminder.twoWeeks" = "Раз в 2 недели";
+"settings.importReminder.month" = "Раз в месяц";
+"settings.importReminder.footer" = "После импорта выписки Tenra напомнит загрузить следующую: переводы и оплаты не через Apple Pay попадают в Tenra только с выпиской.";
+"importReminder.notification.title" = "Пора загрузить выписку";
+"importReminder.notification.body" = "Откройте PDF-выписку банка в Tenra, чтобы добавить переводы и оплаты, которые не записал Apple Pay.";
 "settings.exportData" = "Экспорт данных";
 "settings.importData" = "Импорт данных";
 "settings.dangerZone" = "Опасные действия";

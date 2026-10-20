@@ -114,6 +114,14 @@
 "settings.subcategories" = "Sottocategorie";
 "settings.accounts" = "Conti";
 "settings.exportImport" = "Esporta e importa";
+"settings.importReminder" = "Promemoria estratto conto";
+"settings.importReminder.off" = "Disattivato";
+"settings.importReminder.week" = "Ogni settimana";
+"settings.importReminder.twoWeeks" = "Ogni 2 settimane";
+"settings.importReminder.month" = "Ogni mese";
+"settings.importReminder.footer" = "Dopo aver importato un estratto conto, Tenra ti ricorda di importare il successivo: bonifici e pagamenti fuori da Apple Pay arrivano solo con un estratto conto.";
+"importReminder.notification.title" = "È ora di un estratto conto";
+"importReminder.notification.body" = "Apri l'estratto conto PDF della tua banca in Tenra per aggiungere bonifici e pagamenti che Apple Pay non ha registrato.";
 "settings.exportData" = "Esporta dati";
 "settings.importData" = "Importa dati";
 "settings.dangerZone" = "Zona pericolosa";

@@ -17,10 +17,8 @@ with the commit of every fix, are in
   back to an unsaved attachment.
 
 - **Automatic payment capture and merchants** (plan in flight:
-  [plan-auto-capture.md](plan-auto-capture.md) §9): what is left waits on the owner: the format of
-  a Kaspi receipt shared to Tenra, the Russian Wallet field names in Shortcuts for the in-app
-  setup guide, Kazakh merchant logos in tenra-assets and domains for `brandPresets`, and how
-  often to remind about a statement import.
+  [plan-auto-capture.md](plan-auto-capture.md) §9): what is left is the in-app setup guide for
+  the Wallet automation, Kazakh merchant logos in tenra-assets and domains for `brandPresets`.
 - **Legacy converted deposits (DP1).** A read-only DEBUG diagnostic lists deposits converted
   before the `conversionTimestamp` fix (Settings → Experiments, `LegacyDepositDiagnostics`).
   Recovery waits for real data.

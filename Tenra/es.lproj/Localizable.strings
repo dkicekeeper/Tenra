@@ -114,6 +114,14 @@
 "settings.subcategories" = "Subcategorías";
 "settings.accounts" = "Cuentas";
 "settings.exportImport" = "Exportar e importar";
+"settings.importReminder" = "Recordatorio de extracto";
+"settings.importReminder.off" = "Desactivado";
+"settings.importReminder.week" = "Cada semana";
+"settings.importReminder.twoWeeks" = "Cada 2 semanas";
+"settings.importReminder.month" = "Cada mes";
+"settings.importReminder.footer" = "Después de importar un extracto bancario, Tenra te recordará importar el siguiente: las transferencias y pagos fuera de Apple Pay solo llegan con un extracto.";
+"importReminder.notification.title" = "Es hora de un extracto";
+"importReminder.notification.body" = "Abre el extracto PDF de tu banco en Tenra para añadir las transferencias y pagos que Apple Pay no registró.";
 "settings.exportData" = "Exportar datos";
 "settings.importData" = "Importar datos";
 "settings.dangerZone" = "Zona de peligro";

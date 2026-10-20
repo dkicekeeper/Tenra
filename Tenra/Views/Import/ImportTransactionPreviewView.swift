@@ -779,6 +779,8 @@ struct ImportTransactionPreviewView: View {
                 balance: accountsViewModel.balanceCoordinator
             )
             RatingPromptService.shared.recordTransactionAdded(count: saved)
+            // A statement came in: the reminder to import the next one starts over.
+            if saved > 0 { StatementImportReminder.recordImport() }
             dismiss()
         }
     }

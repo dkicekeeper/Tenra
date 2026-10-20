@@ -114,6 +114,14 @@
 "settings.subcategories" = "Alt Kategoriler";
 "settings.accounts" = "Hesaplar";
 "settings.exportImport" = "Dışa ve İçe Aktarma";
+"settings.importReminder" = "Hesap özeti hatırlatıcısı";
+"settings.importReminder.off" = "Kapalı";
+"settings.importReminder.week" = "Her hafta";
+"settings.importReminder.twoWeeks" = "2 haftada bir";
+"settings.importReminder.month" = "Her ay";
+"settings.importReminder.footer" = "Bir hesap özetini içe aktardıktan sonra Tenra bir sonrakini hatırlatır: Apple Pay dışındaki havaleler ve ödemeler yalnızca hesap özetiyle gelir.";
+"importReminder.notification.title" = "Hesap özeti zamanı";
+"importReminder.notification.body" = "Apple Pay'in kaydetmediği havale ve ödemeleri eklemek için bankanın PDF hesap özetini Tenra'da aç.";
 "settings.exportData" = "Verileri Dışa Aktar";
 "settings.importData" = "Verileri İçe Aktar";
 "settings.dangerZone" = "Tehlikeli Bölge";

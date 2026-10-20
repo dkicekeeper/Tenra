@@ -29,6 +29,15 @@ assistant runs, it attaches the file; elsewhere `MainTabView` opens the action t
 `OCRTab` hands the PDF to `PDFImportCoordinator(incomingFile:)` (behind Tenra Pro, as the tab is).
 Either way the copy in Documents/Inbox is deleted once read (`DocumentImportService.discardCopy`).
 A CSV opened without the assistant is not taken yet.
+
+**Statement reminder** (`StatementImportReminder`, `Services/Notifications/`): payments outside
+Apple Pay reach Tenra only with a statement, so after a statement import (the review screen saved
+at least one row) Tenra reminds the person to import the next one every 7 days by default
+(Settings → Export and import: off, every week, every 2 weeks, every month; owner's decision of
+2026-10-20). The reminders count from the day of the last import, at 10:00; the next 3 are
+scheduled ahead and rescheduled whenever Tenra comes to the front, after an import and when the
+interval changes. None before the first statement import; sent only with notification permission
+(never asked for here). Pinned by `StatementImportReminderTests`.
 `StatementReviewPreparer` turns its outcome into what the review screen needs (suggested
 categories, subcategory and transfer history, the statement's account, the rows that start
 unchecked), for both entry points: the import tab (`PDFImportCoordinator`) and the assistant's

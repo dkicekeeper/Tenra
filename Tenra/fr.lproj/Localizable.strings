@@ -114,6 +114,14 @@
 "settings.subcategories" = "Sous-catégories";
 "settings.accounts" = "Comptes";
 "settings.exportImport" = "Export et import";
+"settings.importReminder" = "Rappel de relevé";
+"settings.importReminder.off" = "Désactivé";
+"settings.importReminder.week" = "Chaque semaine";
+"settings.importReminder.twoWeeks" = "Toutes les 2 semaines";
+"settings.importReminder.month" = "Chaque mois";
+"settings.importReminder.footer" = "Après l'import d'un relevé bancaire, Tenra vous rappelle d'importer le suivant : les virements et paiements hors Apple Pay n'arrivent qu'avec un relevé.";
+"importReminder.notification.title" = "C'est l'heure d'un relevé";
+"importReminder.notification.body" = "Ouvrez le relevé PDF de votre banque dans Tenra pour ajouter les virements et paiements qu'Apple Pay n'a pas enregistrés.";
 "settings.exportData" = "Exporter les données";
 "settings.importData" = "Importer les données";
 "settings.dangerZone" = "Zone de danger";

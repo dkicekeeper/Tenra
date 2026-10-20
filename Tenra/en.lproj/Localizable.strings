@@ -1771,6 +1771,9 @@
 "merchant.detail.visits" = "Visits";
 "merchant.detail.averageCheck" = "Average check";
 "merchant.detail.lastVisit" = "Last visit";
+"merchant.detail.thisMonth" = "This month";
+"merchant.detail.thisYear" = "This year";
+"merchant.detail.byMonth" = "By month";
 "walletReview.title" = "To review";
 "walletReview.footer" = "Tenra picked the category or the account of these Apple Pay payments on its own. Tap a payment to fix it, or swipe right if it is correct. Your choice is remembered for the merchant and the card.";
 "walletReview.emptyTitle" = "Nothing to review";

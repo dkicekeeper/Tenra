@@ -1771,6 +1771,9 @@
 "merchant.detail.visits" = "Ziyaretler";
 "merchant.detail.averageCheck" = "Ortalama fiş";
 "merchant.detail.lastVisit" = "Son ziyaret";
+"merchant.detail.thisMonth" = "Bu ay";
+"merchant.detail.thisYear" = "Bu yıl";
+"merchant.detail.byMonth" = "Aylara göre";
 "walletReview.title" = "Kontrol edilecekler";
 "walletReview.footer" = "Bu Apple Pay ödemelerinin kategorisi veya hesabı otomatik seçildi. Düzeltmek için bir ödemeye dokun, doğruysa sağa kaydır. Seçimin işyeri ve kart için hatırlanır.";
 "walletReview.emptyTitle" = "Kontrol edilecek bir şey yok";

@@ -300,8 +300,9 @@ storefront button in `TransactionEditView` of a transaction whose merchant is re
 logo or a given name, so a transfer to a person gets none; Edit in its menu opens
 `MerchantCategoryEditView`, also for a merchant the memory does not hold yet, starting from its
 usual expense category, which the save remembers): `EntityDetailScaffold` with the merchant's logo and name, spent
-in the selected period, visits, average check, last visit, usual category, total, and every
-transaction of the merchant whatever recorded it. `MerchantHistory.summary` sweeps the history off
+in the selected period, visits, average check, last visit, usual category, this month, this year,
+total, the last 12 months as DesignKit's `BarChart` (`ChartValuePoint`, shown once something was
+spent), and every transaction of the merchant whatever recorded it. `MerchantHistory.summary` sweeps the history off
 the main actor through `SummaryCalculator`, keyed on `mutationVersion`, rates, base currency, the
 filter and the day. Pinned by `MerchantHistoryTests`.
 

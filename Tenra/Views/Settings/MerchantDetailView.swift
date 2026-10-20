@@ -3,8 +3,9 @@
 //  Tenra
 //
 //  One merchant's screen (docs/plan-auto-capture.md §7): its logo and name, what was
-//  spent there in the selected period, visits, the average check, the last visit and
-//  every transaction, whatever recorded it (Apple Pay, a statement, by hand).
+//  spent there in the selected period, this month and this year, visits, the average
+//  check, the last visit, the last 12 months as a chart and every transaction, whatever
+//  recorded it (Apple Pay, a statement, by hand).
 //  Opened from Settings → Siri & Shortcuts → Wallet merchants and from the transaction
 //  of a remembered merchant or of one with a logo or a given name (TransactionEditView);
 //  the menu edits the merchant (MerchantCategoryEditView).
@@ -110,6 +111,7 @@ struct MerchantDetailView: View {
                     subtitle: timeFilterManager.currentFilter.displayName
                 )
             },
+            customSections: { monthlyChart(baseCurrency: baseCurrency) },
             toolbarMenu: { toolbarMenu }
         )
         .heroAccentGlow(icon: icon.source, tint: icon.tint)
@@ -179,12 +181,53 @@ struct MerchantDetailView: View {
             ))
         }
         rows.append(InfoRowConfig(
+            icon: "calendar.circle",
+            label: String(localized: "merchant.detail.thisMonth"),
+            amount: summary.spentThisMonth,
+            currency: baseCurrency
+        ))
+        rows.append(InfoRowConfig(
+            icon: "calendar.badge.clock",
+            label: String(localized: "merchant.detail.thisYear"),
+            amount: summary.spentThisYear,
+            currency: baseCurrency
+        ))
+        rows.append(InfoRowConfig(
             icon: "sum",
             label: String(localized: "category.detail.totalSpent", defaultValue: "Total spent"),
             amount: summary.spentAllTime,
             currency: baseCurrency
         ))
         return rows
+    }
+
+    // MARK: - Monthly chart
+
+    private static let chartSeriesId = "spent"
+
+    /// The last 12 months as bars, a tap shows a month's amount. None until something was spent.
+    @ViewBuilder
+    private func monthlyChart(baseCurrency: String) -> some View {
+        if summary.months.contains(where: { $0.spent > 0 }) {
+            let title = String(localized: "merchant.detail.byMonth")
+            let series: ChartSeries<ChartValuePoint> = .keyed(
+                Self.chartSeriesId, name: title, coloring: .solid(AppColors.accent), baseline: .zero
+            )
+            let points: [ChartValuePoint] = summary.months.map { month in
+                ChartValuePoint(
+                    label: month.key,
+                    axisLabel: month.start.formatted(.dateTime.month(.abbreviated)),
+                    title: month.start.formatted(.dateTime.month(.wide).year()),
+                    values: [Self.chartSeriesId: month.spent]
+                )
+            }
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                SectionHeader(title)
+                    .screenPadding()
+                // Charts bleed to the screen edges (docs/domains/charts.md).
+                BarChart(dataPoints: points, series: series, valueFormat: .currency(baseCurrency))
+            }
+        }
     }
 
     // MARK: - Toolbar menu

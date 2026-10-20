@@ -1771,6 +1771,9 @@
 "merchant.detail.visits" = "Визиты";
 "merchant.detail.averageCheck" = "Средний чек";
 "merchant.detail.lastVisit" = "Последний визит";
+"merchant.detail.thisMonth" = "В этом месяце";
+"merchant.detail.thisYear" = "В этом году";
+"merchant.detail.byMonth" = "По месяцам";
 "walletReview.title" = "На проверку";
 "walletReview.footer" = "У этих оплат Apple Pay категория или счёт выбраны автоматически. Нажмите на оплату, чтобы исправить, или смахните вправо, если всё верно. Ваш выбор запомнится для продавца и карты.";
 "walletReview.emptyTitle" = "Проверять нечего";

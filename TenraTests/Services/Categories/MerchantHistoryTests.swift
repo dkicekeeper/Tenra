@@ -51,6 +51,18 @@ struct MerchantHistoryTests {
         )
     }
 
+    @Test("This month, this year and the last 12 months, future operations left out")
+    func months() {
+        let summary = summary()
+        #expect(summary.spentThisMonth == 10_000)
+        #expect(summary.spentThisYear == 20_000)
+        #expect(summary.months.count == MerchantHistory.monthsShown)
+        #expect(summary.months.first?.key == "2025-11")
+        #expect(summary.months.suffix(2).map(\.key) == ["2026-09", "2026-10"])
+        #expect(summary.months.suffix(2).map(\.spent) == [10_000, 10_000])
+        #expect(summary.months.dropLast(2).allSatisfy { $0.spent == 0 })
+    }
+
     @Test("Every description of the merchant counts; other merchants and transfers don't")
     func merchantsTransactions() {
         #expect(summary().transactions.map(\.id) == ["t5", "t4", "t2", "t1", "t3"])

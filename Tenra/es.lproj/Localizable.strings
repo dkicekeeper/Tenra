@@ -1771,6 +1771,9 @@
 "merchant.detail.visits" = "Visitas";
 "merchant.detail.averageCheck" = "Ticket medio";
 "merchant.detail.lastVisit" = "Última visita";
+"merchant.detail.thisMonth" = "Este mes";
+"merchant.detail.thisYear" = "Este año";
+"merchant.detail.byMonth" = "Por meses";
 "walletReview.title" = "Por revisar";
 "walletReview.footer" = "La categoría o la cuenta de estos pagos con Apple Pay se eligió automáticamente. Toca un pago para corregirlo o desliza a la derecha si es correcto. Tu elección se recordará para el comercio y la tarjeta.";
 "walletReview.emptyTitle" = "Nada que revisar";

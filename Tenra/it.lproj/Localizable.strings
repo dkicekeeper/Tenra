@@ -1771,6 +1771,9 @@
 "merchant.detail.visits" = "Visite";
 "merchant.detail.averageCheck" = "Scontrino medio";
 "merchant.detail.lastVisit" = "Ultima visita";
+"merchant.detail.thisMonth" = "Questo mese";
+"merchant.detail.thisYear" = "Quest'anno";
+"merchant.detail.byMonth" = "Per mese";
 "walletReview.title" = "Da controllare";
 "walletReview.footer" = "La categoria o il conto di questi pagamenti Apple Pay è stato scelto automaticamente. Tocca un pagamento per correggerlo o scorri a destra se è giusto. La tua scelta verrà ricordata per l'esercente e la carta.";
 "walletReview.emptyTitle" = "Niente da controllare";

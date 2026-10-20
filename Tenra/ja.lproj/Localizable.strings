@@ -1842,6 +1842,9 @@
 "transactionPreview.reconcile.less" = "Tenraの方が少ない額";
 "transactionPreview.reconcile.more" = "Tenraの方が多い額";
 "transactionPreview.reconcile.hint" = "未選択の行とこの期間の手入力を確認してください";
+"transactionPreview.walletMissing" = "明細書にない Apple Pay の支払い: %lld 件";
+"walletMissing.title" = "明細書にない支払い";
+"walletMissing.footer" = "Wallet のオートメーションはこれらの Apple Pay の支払いを記録しましたが、明細書に引き落としがありません。オートメーションは拒否された支払いでも動作します。拒否された支払いがあれば、左にスワイプして削除してください。";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligenceがカテゴリを選択中…";

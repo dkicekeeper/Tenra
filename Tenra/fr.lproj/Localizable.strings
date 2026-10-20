@@ -1842,6 +1842,9 @@
 "transactionPreview.reconcile.less" = "Tenra affiche moins de";
 "transactionPreview.reconcile.more" = "Tenra affiche plus de";
 "transactionPreview.reconcile.hint" = "Vérifiez les lignes non cochées et vos saisies manuelles de cette période";
+"transactionPreview.walletMissing" = "Paiements Apple Pay absents du relevé : %lld";
+"walletMissing.title" = "Absents du relevé";
+"walletMissing.footer" = "L'automatisation Wallet a enregistré ces paiements Apple Pay, mais le relevé n'en montre aucun débit. L'automatisation se déclenche aussi pour un paiement refusé : si l'un d'eux a été refusé, balayez-le vers la gauche pour le supprimer.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence choisit les catégories…";

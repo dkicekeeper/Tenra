@@ -105,6 +105,9 @@ final class WalletCaptureStore {
             }
     }
 
+    /// The transactions the Wallet action saved, while their captures are kept (90 days).
+    var transactionIds: [String] { Array(captures.keys) }
+
     /// The merchants of the kept captures, as Wallet wrote them, one per merchant.
     var merchants: [String] {
         var seen = Set<String>()

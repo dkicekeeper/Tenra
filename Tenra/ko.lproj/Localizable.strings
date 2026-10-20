@@ -1842,6 +1842,9 @@
 "transactionPreview.reconcile.less" = "Tenra가 적은 금액";
 "transactionPreview.reconcile.more" = "Tenra가 많은 금액";
 "transactionPreview.reconcile.hint" = "선택하지 않은 행과 이 기간의 직접 입력을 확인하세요";
+"transactionPreview.walletMissing" = "명세서에 없는 Apple Pay 결제: %lld건";
+"walletMissing.title" = "명세서에 없는 결제";
+"walletMissing.footer" = "Wallet 자동화가 이 Apple Pay 결제들을 기록했지만 명세서에는 출금 내역이 없어요. 자동화는 거절된 결제에도 실행돼요. 거절된 결제가 있다면 왼쪽으로 쓸어 넘겨 삭제하세요.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence가 카테고리를 고르는 중…";

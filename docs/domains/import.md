@@ -190,6 +190,17 @@ loop would drop them.
 recognized transaction can be added: a receipt carries no account information of its own.
 Statements are reviewed as transaction cards in `ImportTransactionPreviewView`.
 
+## Apple Pay payments the statement does not show
+
+The Wallet action ([intents.md](intents.md) §6.1) saves a payment without asking, and the Wallet
+trigger also fires for a declined one. `WalletStatementCheck.missing` lists the payments it saved
+on the statement's account (`WalletCaptureStore.transactionIds`) that no expense row of the same
+amount within a day accounts for, each row taken once. Only payments in the account's currency
+(a foreign one appears converted), dated from the statement's first row to 2 days before its last
+(a charge can post later). The review screen shows their count under the balance check; the sheet
+(`WalletMissingPaymentsView`) lists them as History rows: tap edits, swipe deletes with the usual
+confirmation. Nothing is deleted on its own. Pinned by `WalletStatementCheckTests`.
+
 ## Balance on import
 
 An account's balance is `initialBalance + Σ realized transactions` with no creation-date cutoff, and

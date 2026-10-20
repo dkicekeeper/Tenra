@@ -1842,6 +1842,9 @@
 "transactionPreview.reconcile.less" = "O Tenra mostra menos";
 "transactionPreview.reconcile.more" = "O Tenra mostra mais";
 "transactionPreview.reconcile.hint" = "Confira as linhas desmarcadas e seus lançamentos manuais deste período";
+"transactionPreview.walletMissing" = "Pagamentos com Apple Pay fora do extrato: %lld";
+"walletMissing.title" = "Fora do extrato";
+"walletMissing.footer" = "A automação do Wallet registrou estes pagamentos com Apple Pay, mas o extrato não mostra nenhuma cobrança deles. A automação também é acionada por um pagamento recusado: se algum foi recusado, deslize-o para a esquerda para excluí-lo.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "A Apple Intelligence está escolhendo categorias…";

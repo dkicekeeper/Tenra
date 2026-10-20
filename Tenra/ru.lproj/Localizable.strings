@@ -1842,6 +1842,9 @@
 "transactionPreview.reconcile.less" = "В Tenra меньше на";
 "transactionPreview.reconcile.more" = "В Tenra больше на";
 "transactionPreview.reconcile.hint" = "Проверьте строки без галочки и ручные записи за этот период";
+"transactionPreview.walletMissing" = "Оплат Apple Pay нет в выписке: %lld";
+"walletMissing.title" = "Нет в выписке";
+"walletMissing.footer" = "Автоматизация Wallet записала эти оплаты Apple Pay, но в выписке списания по ним нет. Автоматизация срабатывает и на отклонённую оплату: если какая-то из них не прошла, смахните её влево, чтобы удалить.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence подбирает категории…";

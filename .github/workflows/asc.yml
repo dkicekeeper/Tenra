@@ -22,7 +22,7 @@ on:
       command:
         description: "What to show"
         type: choice
-        options: [status, builds, reviews, availability, crashes, prepare-version, keywords, custom-pages, push-custom-pages, push-experiment, age-rating, push-version-screenshots, store-pages, push-creatives]
+        options: [status, builds, reviews, availability, crashes, prepare-version, keywords, custom-pages, push-custom-pages, push-experiment, age-rating, push-version-screenshots, store-pages, push-creatives, review-submissions]
         default: status
       build:
         description: "Build number (crashes: empty = all recent; prepare-version: the build to select)"

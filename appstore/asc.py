@@ -11,6 +11,8 @@
     python3 appstore/asc.py keywords [--locale ru,en-US]
                                                     the app's keywords (custom pages link to them)
     python3 appstore/asc.py custom-pages            custom product pages and their review state
+    python3 appstore/asc.py review-submissions      the latest review submissions, their items and
+                                                    states; the creative images by state
     python3 appstore/asc.py push-custom-pages [--submit]
                                                     create/update the pages in product-pages.json
     python3 appstore/asc.py push-experiment [--submit | --start | --stop]
@@ -534,7 +536,8 @@ def submit_for_review(app: str, items: list[tuple[str, str]], lenient: set[str] 
             }}})
             added += 1
         except ApiError as error:
-            if error.code == 409:   # already in this submission
+            # A 409 is also App Store Connect refusing the item: only "already" means it is in.
+            if error.code == 409 and "already" in str(error).lower():
                 added += 1
             elif relationship in lenient:
                 print(f"  {relationship} {item_id}: not added ({error})", flush=True)
@@ -557,6 +560,36 @@ def custom_pages(app: str) -> None:
         rows.append([page["attributes"].get("name"), page["attributes"].get("visible"), states,
                      page["attributes"].get("url") or ""])
     table("Custom product pages", ["Name", "Visible", "Versions", "URL"], rows)
+
+
+def review_submissions(app: str) -> None:
+    """The latest review submissions with their items by kind and state, and our creative
+    images in the asset library by state. Read only."""
+    found, _ = get_all("/v1/reviewSubmissions", {"filter[app]": app, "filter[platform]": "IOS", "limit": 10}, pages=1)
+    found.sort(key=lambda r: r["attributes"].get("submittedDate") or "9999", reverse=True)
+    rows = []
+    for submission in found[:6]:
+        items, _ = get_all(f"/v1/reviewSubmissions/{submission['id']}/items", {
+            "limit": 200, "include": "appStoreVersion,appCustomProductPageVersion,appStoreVersionExperimentV2,appAssetLibraryImage"})
+        kinds: dict[str, int] = {}
+        for item in items:
+            kind = next((name for name, value in (item.get("relationships") or {}).items()
+                         if (value or {}).get("data")), "item")
+            key = f"{kind} {item['attributes'].get('state')}"
+            kinds[key] = kinds.get(key, 0) + 1
+        rows.append([submission["id"][:8], submission["attributes"].get("state"),
+                     utc(submission["attributes"].get("submittedDate")),
+                     "; ".join(f"{count} {key}" for key, count in sorted(kinds.items())) or "-"])
+    table("Review submissions", ["Id", "State", "Submitted", "Items"], rows)
+
+    library = get(f"/v1/apps/{app}/assetLibrary")["data"]["id"]
+    images, _ = get_all(f"/v1/appAssetLibraries/{library}/images", {"limit": 200})
+    states: dict[str, int] = {}
+    for image in images:
+        if (image["attributes"].get("referenceName") or "").startswith("tenra-"):
+            state = image["attributes"].get("state")
+            states[state] = states.get(state, 0) + 1
+    table("Creative images in the asset library", ["State", "Images"], [[k, v] for k, v in sorted(states.items())])
 
 
 def editable_cpp_version(page_id: str) -> dict:
@@ -1153,6 +1186,8 @@ def main(argv: list[str]) -> None:
             keywords(app, locale)
     elif command == "custom-pages":
         custom_pages(app)
+    elif command == "review-submissions":
+        review_submissions(app)
     elif command == "push-custom-pages":
         push_custom_pages(app, "--submit" in args)
     elif command == "push-experiment":

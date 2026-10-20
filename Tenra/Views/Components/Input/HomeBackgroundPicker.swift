@@ -113,14 +113,14 @@ struct HomeBackgroundPicker<Settings: View>: View {
         case .none:
             // Plain system background — shows what the app looks like without any background
             Rectangle()
-                .fill(Color(.systemGroupedBackground))
+                .fill(AppColors.Background.baseAlt)
 
         case .gradient:
             // Live preview: same CategoryGradientBackground as the home screen,
             // with the user's real expense-colour weights + current opacity.
             // Adapts to light/dark via Color(.systemGroupedBackground) underlay.
             ZStack {
-                Color(.systemGroupedBackground)
+                AppColors.Background.baseAlt
                 CategoryGradientBackground(
                     weights: effectiveGradientWeights,
                     customCategories: customCategories
@@ -138,11 +138,11 @@ struct HomeBackgroundPicker<Settings: View>: View {
                     .animation(AppAnimation.gentleSpring, value: blurWallpaper)
             } else {
                 Rectangle()
-                    .fill(Color(.tertiarySystemGroupedBackground))
+                    .fill(AppColors.Background.neutral1)
                     .overlay(
                         Image(systemName: "photo")
                             .font(AppTypography.h2.weight(.ultraLight))
-                            .foregroundStyle(Color(.tertiaryLabel))
+                            .foregroundStyle(AppColors.Text.tertiary)
                     )
             }
         }

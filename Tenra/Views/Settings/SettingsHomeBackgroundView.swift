@@ -48,6 +48,9 @@ struct SettingsHomeBackgroundView: View {
             }
             .padding(.vertical, AppSpacing.lg)
         }
+        // The carousel's cards are the grouped-list card colour: they stand on the grouped
+        // background, as Ten's wardrobe's do (AssistantWardrobe).
+        .background(AppColors.Background.baseAlt)
         .navigationTitle(String(localized: "settings.background"))
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: selectedPhoto) { _, item in
@@ -70,45 +73,36 @@ struct SettingsHomeBackgroundView: View {
                 OpacitySliderRow(value: backgroundOpacity, onChange: onOpacityChange)
             }
         case .wallpaper:
+            // Form rows of a FormSection card: `.standard`, inset dividers (DesignKit's form
+            // contract); the photo picker's label is DesignKit's ActionRowLabel.
             FormSection {
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                    UniversalRow(
-                        config: .settings,
-                        leadingIcon: .sfSymbol("photo.on.rectangle", color: AppColors.accent, size: AppIconSize.md)
-                    ) {
-                        Text(wallpaperImage == nil
-                             ? String(localized: "settings.background.choosePhoto")
-                             : String(localized: "settings.background.changePhoto"))
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.Text.primary)
-                    } trailing: {
-                        DisclosureChevron()
-                    }
-                    .contentShape(Rectangle())
+                    ActionRowLabel(
+                        wallpaperImage == nil
+                            ? String(localized: "settings.background.choosePhoto")
+                            : String(localized: "settings.background.changePhoto"),
+                        systemImage: "photo.on.rectangle"
+                    )
                 }
                 .buttonStyle(.plain)
                 if wallpaperImage != nil {
-                    Divider()
+                    Divider().padding(.leading, AppSpacing.lg)
                     ToggleSettingsRow(
                         icon: "camera.filters",
                         title: String(localized: "settings.background.blurWallpaper"),
+                        config: .standard,
                         isOn: Binding(
                             get: { blurWallpaper },
                             set: { onBlurChange($0) }
                         )
                     )
-                    Divider()
-                    UniversalRow(
-                        config: .settings,
-                        leadingIcon: .sfSymbol("trash", color: AppColors.destructive, size: AppIconSize.md)
+                    Divider().padding(.leading, AppSpacing.lg)
+                    ActionSettingsRow(
+                        icon: "trash",
+                        title: String(localized: "settings.background.removePhoto"),
+                        isDestructive: true,
+                        config: .standard
                     ) {
-                        Text(String(localized: "settings.background.removePhoto"))
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.destructive)
-                    } trailing: {
-                        EmptyView()
-                    }
-                    .actionRow(role: .destructive) {
                         Task { await onWallpaperRemove() }
                     }
                 }

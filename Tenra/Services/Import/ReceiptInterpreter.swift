@@ -154,7 +154,16 @@ nonisolated struct ReceiptInterpreter {
     private static let excludedKeywords = [
         "subtotal", "подытог", "промежуточный", "zwischensumme", "sous-total",
         "subtotale", "ara toplam", "tax", "vat", "ндс", "mwst", "iva", "tva",
-        "kdv", "change", "сдача", "rückgeld", "cambio", "monnaie", "tip", "чаевые"
+        "kdv", "change", "сдача", "rückgeld", "cambio", "monnaie", "tip", "чаевые",
+        // A bank receipt's fee line ("Комиссия 150 ₸", "Сумма комиссии 150 ₸"): never the amount paid.
+        "комиссия", "комиссии", "commission", "fee"
+    ]
+
+    /// What a bank's receipt of a payment or transfer prints before whom the money went to,
+    /// at the start of a line ("Получатель: Иван И.", "Продавец SMALL"). Never a single
+    /// short word such as "to": it starts too many ordinary lines.
+    private static let recipientLabels = [
+        "получатель", "кому", "продавец", "магазин", "алушы", "recipient", "payee"
     ]
 
     static func heuristicDraft(
@@ -306,6 +315,7 @@ nonisolated struct ReceiptInterpreter {
     }
 
     private static func merchant(from lines: [String]) -> String {
+        if let recipient = labelledRecipient(lines) { return recipient }
         // The shop name is printed at the top, above any amount or date.
         for line in lines.prefix(5) {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -316,5 +326,35 @@ nonisolated struct ReceiptInterpreter {
             return trimmed
         }
         return lines.first ?? ""
+    }
+
+    /// The recipient a bank receipt names after one of `recipientLabels`: the rest of that line
+    /// ("Получатель: Иван И."), or the next line when the label stands alone.
+    private static func labelledRecipient(_ lines: [String]) -> String? {
+        let separators = CharacterSet(charactersIn: ":-\u{2013}\u{2014}").union(.whitespaces)
+        for (index, line) in lines.enumerated() {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            let lowered = trimmed.lowercased()
+            guard let label = recipientLabels.first(where: { label in
+                guard lowered.hasPrefix(label) else { return false }
+                // A whole word: "Магазин: SMALL", never "Магазины".
+                let next = lowered.dropFirst(label.count).first
+                return next.map { !$0.isLetter } ?? true
+            }) else { continue }
+
+            let rest = String(trimmed.dropFirst(label.count)).trimmingCharacters(in: separators)
+            let value: String
+            if !rest.isEmpty {
+                value = rest
+            } else if index + 1 < lines.count {
+                value = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
+            } else {
+                continue
+            }
+            guard value.count >= 2, value.contains(where: \.isLetter),
+                  !MoneyTokenParser.looksLikeMoney(value) else { continue }
+            return value
+        }
+        return nil
     }
 }

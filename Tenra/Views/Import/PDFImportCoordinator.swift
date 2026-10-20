@@ -9,6 +9,10 @@
 //  actual .csv file imports, see ImportFlowCoordinator).
 //  Extracted from ContentView for Single Responsibility Principle
 //
+//  A PDF is a statement or the receipt of one payment (DocumentImportService.importDocument):
+//  a receipt opens the receipt confirmation, as a scanned one does. A PDF opened in Tenra
+//  from another app while the assistant cannot take it arrives as `incomingFile`.
+//
 
 import SwiftUI
 import PDFKit
@@ -21,6 +25,10 @@ struct PDFImportCoordinator: View {
     let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
     let accountsViewModel: AccountsViewModel
+    /// A PDF handed over from another app ("Open in Tenra"); read once, then its copy goes.
+    var incomingFile: URL? = nil
+    /// Called as `incomingFile` is taken, so the sender stops offering it.
+    var onIncomingFileTaken: () -> Void = {}
 
     // MARK: - State
     @State private var showingFilePicker = false
@@ -103,6 +111,14 @@ struct PDFImportCoordinator: View {
                 }
             }
             .animation(AppAnimation.smooth, value: importError)
+            .onChange(of: incomingFile, initial: true) { _, url in
+                guard let url else { return }
+                onIncomingFileTaken()
+                Task {
+                    await analyzePDF(url: url)
+                    DocumentImportService.discardCopy(url)
+                }
+            }
     }
 
     // MARK: - Source Picker
@@ -206,13 +222,24 @@ struct PDFImportCoordinator: View {
 
         do {
             let baseCurrency = transactionsViewModel.transactionStore?.baseCurrency ?? "KZT"
-            let outcome = try await DocumentImportService.importStatement(
+            let content = try await DocumentImportService.importDocument(
                 from: url,
                 defaultCurrency: baseCurrency
             ) { current, total in
                 Task { @MainActor in
                     ocrProgress = (current: current, total: total)
                 }
+            }
+            let outcome: ImportOutcome
+            switch content {
+            case .receipt(let draft):
+                // The receipt of one payment a bank app shared: confirmed like a scanned one.
+                transactionsViewModel.isLoading = false
+                ocrProgress = nil
+                receiptDraft = draft
+                return
+            case .statement(let statement):
+                outcome = statement
             }
             importOutcome = outcome
             if outcome.statement.transactions.isEmpty {

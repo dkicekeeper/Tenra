@@ -28,6 +28,12 @@ struct ImportOutcome: Sendable {
     var closingBalances: [StatementBalance] = []
 }
 
+/// What a PDF from a bank app holds: a statement, or the receipt of one payment or transfer.
+enum DocumentContent: Sendable {
+    case statement(ImportOutcome)
+    case receipt(ReceiptDraft)
+}
+
 nonisolated struct DocumentImportService {
 
     /// Below this, escalate column resolution to Apple Intelligence.
@@ -38,6 +44,65 @@ nonisolated struct DocumentImportService {
         defaultCurrency: String,
         progress: (@Sendable (Int, Int) -> Void)? = nil
     ) async throws -> ImportOutcome {
+        let (snapshot, unreadablePages) = try await snapshot(of: url, progress: progress)
+        return try await interpret(snapshot: snapshot, defaultCurrency: defaultCurrency, unreadablePages: unreadablePages)
+    }
+
+    /// A PDF a bank app shares (every bank's is different): a statement, or the receipt of one
+    /// payment or transfer, which has no table of operations. See `content(snapshot:)`.
+    static func importDocument(
+        from url: URL,
+        defaultCurrency: String,
+        progress: (@Sendable (Int, Int) -> Void)? = nil
+    ) async throws -> DocumentContent {
+        let (snapshot, unreadablePages) = try await snapshot(of: url, progress: progress)
+        return try await content(snapshot: snapshot, defaultCurrency: defaultCurrency, unreadablePages: unreadablePages)
+    }
+
+    /// Read as a statement first. When no table of operations resolves (`noTextFound`,
+    /// `layoutNotRecognized`), the same text is read as a receipt (`ReceiptInterpreter`); a
+    /// table whose rows were all skipped stays a statement, so its diagnostics show.
+    static func content(
+        snapshot: DocumentSnapshot,
+        defaultCurrency: String,
+        unreadablePages: [Int] = []
+    ) async throws -> DocumentContent {
+        do {
+            return .statement(try await interpret(
+                snapshot: snapshot,
+                defaultCurrency: defaultCurrency,
+                unreadablePages: unreadablePages
+            ))
+        } catch let error as PDFError {
+            switch error {
+            case .noTextFound, .layoutNotRecognized:
+                guard let draft = try await ReceiptInterpreter.interpret(
+                    snapshot: snapshot,
+                    defaultCurrency: defaultCurrency
+                ) else { throw error }
+                return .receipt(draft)
+            default:
+                throw error
+            }
+        }
+    }
+
+    /// Deletes the copy of a document once read: the picker's in the temporary folder, the
+    /// one "Open in" leaves in Documents/Inbox. Never a file elsewhere.
+    static func discardCopy(_ url: URL) {
+        let path = url.standardizedFileURL.path
+        let temporary = FileManager.default.temporaryDirectory.standardizedFileURL.path
+        let inbox = URL.documentsDirectory.appending(path: "Inbox").standardizedFileURL.path
+        guard path.hasPrefix(temporary) || path.hasPrefix(inbox) else { return }
+        try? FileManager.default.removeItem(at: url)
+    }
+
+    /// The PDF's text: its text layer, else Vision over the rendered pages, with the pages
+    /// that could not be rendered.
+    private static func snapshot(
+        of url: URL,
+        progress: (@Sendable (Int, Int) -> Void)?
+    ) async throws -> (DocumentSnapshot, [Int]) {
         let isAccessing = url.startAccessingSecurityScopedResource()
         defer { if isAccessing { url.stopAccessingSecurityScopedResource() } }
 
@@ -64,8 +129,7 @@ nonisolated struct DocumentImportService {
             unreadablePages = images.enumerated().compactMap { $0.element == nil ? $0.offset : nil }
             snapshot = try await VisionDocumentExtractor.extract(images: images)
         }
-
-        return try await interpret(snapshot: snapshot, defaultCurrency: defaultCurrency, unreadablePages: unreadablePages)
+        return (snapshot, unreadablePages)
     }
 
     static func importStatement(

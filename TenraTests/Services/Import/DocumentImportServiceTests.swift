@@ -4,6 +4,7 @@
 //
 //  Pins bestTable's selection: a statement page holds several tables
 //  (account summary, fees, transactions); the transaction table must win.
+//  And a PDF with no table at all is a receipt, not an error.
 //
 
 import Testing
@@ -133,5 +134,25 @@ struct DocumentImportServiceTests {
         let outcome = try await DocumentImportService.interpret(snapshot: snapshot, defaultCurrency: "USD")
 
         #expect(outcome.statement.skipped.allSatisfy { $0.reason != "import.skip.pageUnreadable" })
+    }
+
+    @Test("a PDF with no table of operations is read as the receipt of one payment")
+    func receiptWithoutTable() async throws {
+        let page = DocumentSnapshot.Page(
+            index: 0,
+            tables: [],
+            lines: ["Bank of Tenra", "Получатель: SMALL", "Сумма 2 300 ₸"],
+            barcodes: []
+        )
+        let content = try await DocumentImportService.content(
+            snapshot: DocumentSnapshot(pages: [page], hadTextLayer: true),
+            defaultCurrency: "KZT"
+        )
+        guard case .receipt(let draft) = content else {
+            Issue.record("expected a receipt")
+            return
+        }
+        #expect(draft.merchant == "SMALL")
+        #expect(draft.total == 2300)
     }
 }

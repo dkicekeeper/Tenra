@@ -34,6 +34,25 @@ struct ReceiptInterpreterTests {
         #expect(draft?.date == "2026-01-08")
     }
 
+    @Test("a bank receipt's recipient is the merchant, its fee is never the amount")
+    func transferReceipt() {
+        let sameLine = receipt([
+            "Bank of Tenra",
+            "Перевод по номеру телефона",
+            "Получатель: Иван И.",
+            "Сумма 5 000 ₸",
+            "Сумма комиссии 150 ₸",
+            "20.10.2026 12:19"
+        ])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: sameLine, defaultCurrency: "KZT")
+        #expect(draft?.merchant == "Иван И.")
+        #expect(draft?.total == 5000)
+        #expect(draft?.date == "2026-10-20")
+
+        let nextLine = receipt(["Bank of Tenra", "Продавец", "SMALL", "Итого 2 300 ₸"])
+        #expect(ReceiptInterpreter.heuristicDraft(snapshot: nextLine, defaultCurrency: "KZT")?.merchant == "SMALL")
+    }
+
     @Test("merchant is the first substantial non-numeric line")
     func merchantFromFirstLine() {
         let snapshot = receipt([

@@ -128,7 +128,7 @@ private struct AssistantAttachmentSources: ViewModifier {
             // Closed without Pro: the copy of the file goes.
             guard !shown, !premium.isPro, let url = csvAwaitingPro else { return }
             csvAwaitingPro = nil
-            Self.discardCopy(url)
+            DocumentImportService.discardCopy(url)
         }
     }
 
@@ -148,8 +148,8 @@ private struct AssistantAttachmentSources: ViewModifier {
             importCSV(url)
         } else {
             read {
-                defer { Self.discardCopy(url) }
-                return try await statement(from: url)
+                defer { DocumentImportService.discardCopy(url) }
+                return try await document(from: url)
             }
         }
     }
@@ -162,18 +162,8 @@ private struct AssistantAttachmentSources: ViewModifier {
         )
         Task {
             await csvFlow.startImport(from: url)
-            Self.discardCopy(url)
+            DocumentImportService.discardCopy(url)
         }
-    }
-
-    /// Deletes the copy of a document once read: the picker's in the temporary folder, the
-    /// one "Open in" leaves in Documents/Inbox. Never a file elsewhere.
-    private static func discardCopy(_ url: URL) {
-        let path = url.standardizedFileURL.path
-        let temporary = FileManager.default.temporaryDirectory.standardizedFileURL.path
-        let inbox = URL.documentsDirectory.appending(path: "Inbox").standardizedFileURL.path
-        guard path.hasPrefix(temporary) || path.hasPrefix(inbox) else { return }
-        try? FileManager.default.removeItem(at: url)
     }
 
     private func presenting(_ kind: AssistantAttachmentSource) -> Binding<Bool> {
@@ -220,11 +210,19 @@ private struct AssistantAttachmentSources: ViewModifier {
         return (.receipt(draft), .receipt(draft, baseCurrency: baseCurrency))
     }
 
-    private func statement(from url: URL) async throws -> (AgentAttachment, AgentAttachmentSummary)? {
+    /// A PDF: a statement, or the receipt of one payment a bank app shared.
+    private func document(from url: URL) async throws -> (AgentAttachment, AgentAttachmentSummary)? {
         let baseCurrency = coordinator.transactionStore.baseCurrency
         let report = pageReporter()
-        let outcome = try await DocumentImportService.importStatement(from: url, defaultCurrency: baseCurrency) { page, pages in
+        let content = try await DocumentImportService.importDocument(from: url, defaultCurrency: baseCurrency) { page, pages in
             report(page, pages)
+        }
+        let outcome: ImportOutcome
+        switch content {
+        case .receipt(let draft):
+            return (.receipt(draft), .receipt(draft, baseCurrency: baseCurrency))
+        case .statement(let statement):
+            outcome = statement
         }
         guard !outcome.statement.transactions.isEmpty else { throw AttachmentReadError.unreadable }
         let review = await StatementReviewPreparer.prepare(

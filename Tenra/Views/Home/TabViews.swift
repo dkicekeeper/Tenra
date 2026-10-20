@@ -177,7 +177,9 @@ struct OCRTab: View {
                 PDFImportCoordinator(
                     transactionsViewModel: coordinator.transactionsViewModel,
                     categoriesViewModel: coordinator.categoriesViewModel,
-                    accountsViewModel: coordinator.accountsViewModel
+                    accountsViewModel: coordinator.accountsViewModel,
+                    incomingFile: handedOverPDF,
+                    onIncomingFileTaken: { _ = coordinator.consumePendingAttachment() }
                 )
 
                 Spacer()
@@ -187,5 +189,14 @@ struct OCRTab: View {
             }
         }
         .softScrollEdges()
+    }
+
+    /// A PDF opened in Tenra from another app while the assistant cannot take it (MainTabView
+    /// brings this tab forward). Waits here while Tenra Pro is locked.
+    private var handedOverPDF: URL? {
+        guard !AssistantAvailability.isAvailable,
+              let url = coordinator.pendingAttachment,
+              url.pathExtension.lowercased() == "pdf" else { return nil }
+        return url
     }
 }

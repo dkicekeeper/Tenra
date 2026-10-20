@@ -268,9 +268,15 @@ struct MainTabView: View {
                 )
             }
         }
-        // A file opened in Tenra from another app goes to the assistant, which attaches it.
+        // A file opened in Tenra from another app goes to the assistant, which attaches it;
+        // without the assistant a PDF (a statement or a receipt) opens in the import tab.
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in
-            if url != nil { openAssistant() }
+            guard let url else { return }
+            if assistantTakesActionTab {
+                openAssistant()
+            } else if url.pathExtension.lowercased() == "pdf" {
+                openImport()
+            }
         }
         // "Ask Ten" on an account, a category, an insight or the history.
         .onChange(of: coordinator.assistantTopic) { _, topic in
@@ -315,6 +321,14 @@ struct MainTabView: View {
         guard assistantTakesActionTab else { return }
         if tabBarMode == .expanded { tabBarMode = .normal }
         selectedTab = .assistant
+    }
+
+    /// The action tab's Import page, where a handed-over PDF is read (OCRTab).
+    private func openImport() {
+        withAnimation(AppAnimation.contentSpring) {
+            tabBarMode = .expanded
+            selectedTab = .ocr
+        }
     }
 }
 

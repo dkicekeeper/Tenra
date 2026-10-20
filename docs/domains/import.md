@@ -13,6 +13,22 @@ three-stage pipeline. Read this before touching anything in
 | Interpretation | `ColumnRoleResolver`, `IntelligentColumnRoleResolver`, `StatementInterpreter`, `ReceiptInterpreter` | Consume only `DocumentSnapshot`. |
 
 `DocumentImportService` is the single orchestrator. `PDFService` only rasterises pages.
+
+**A PDF is a statement or a receipt** (`DocumentImportService.importDocument` → `DocumentContent`).
+Every bank's PDF is different, and a bank app's receipt of one payment or transfer has no table of
+operations: the text is read as a statement first, and when no table resolves (`noTextFound`,
+`layoutNotRecognized`) the same text goes to `ReceiptInterpreter`. A table whose rows were all
+skipped stays a statement, so its diagnostics show. The receipt heuristic takes the recipient after
+a label at the start of a line ("Получатель", "Кому", "Продавец", "Магазин", "Алушы", "Recipient",
+"Payee"; the rest of the line or the next one) and never reads a fee line ("комиссия",
+"commission", "fee") as the amount. Pinned by `DocumentImportServiceTests` and
+`ReceiptInterpreterTests`.
+
+**"Open in Tenra"** (`CFBundleDocumentTypes`, `AppCoordinator.pendingAttachment`): where the
+assistant runs, it attaches the file; elsewhere `MainTabView` opens the action tab's Import page and
+`OCRTab` hands the PDF to `PDFImportCoordinator(incomingFile:)` (behind Tenra Pro, as the tab is).
+Either way the copy in Documents/Inbox is deleted once read (`DocumentImportService.discardCopy`).
+A CSV opened without the assistant is not taken yet.
 `StatementReviewPreparer` turns its outcome into what the review screen needs (suggested
 categories, subcategory and transfer history, the statement's account, the rows that start
 unchecked), for both entry points: the import tab (`PDFImportCoordinator`) and the assistant's

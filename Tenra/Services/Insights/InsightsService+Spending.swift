@@ -3,7 +3,8 @@
 //  Tenra
 //
 //  Top spending category, top merchant, period-over-period spending change,
-//  average daily spending, spending spike detection, category trend.
+//  average daily spending, spending spike detection, category trend, a merchant's
+//  growing average check.
 //
 
 import Foundation
@@ -779,6 +780,137 @@ extension InsightsService {
                 norm: avgTx,
                 color: multiplier >= 8 ? AppColors.destructive : AppColors.warning
             )
+        )
+    }
+
+    // MARK: - Average check growth
+
+    /// Visits a merchant needs in each window for its average check to mean something.
+    nonisolated static let checkGrowthMinimumVisits = 3
+    /// Below this the change is noise: one larger basket, a sale ending.
+    nonisolated static let checkGrowthThreshold = 0.15
+    nonisolated static let checkGrowthWindowDays = 90
+
+    /// The merchant whose average check grew most (docs/plan-auto-capture.md §7): the last 90
+    /// days against the 90 before, at least 3 visits in each, up at least 15 %. Realized
+    /// one-off `.expense` transactions grouped by `normalizedMerchant`; a subscription's new
+    /// price is `subscriptionPriceIncrease`'s. "Most" in money: (now − before) × visits now, so
+    /// a coffee up 30 % ranks below groceries up 20 %. The same for every granularity (shared).
+    nonisolated func generateAverageCheckGrowth(
+        baseCurrency: String,
+        transactions: [Transaction],
+        txDateMap: [String: Date]? = nil,
+        now: Date = Date()
+    ) -> Insight? {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: now)
+        guard let recentStart = calendar.date(byAdding: .day, value: -Self.checkGrowthWindowDays, to: today),
+              let earlierStart = calendar.date(byAdding: .day, value: -Self.checkGrowthWindowDays, to: recentStart)
+        else { return nil }
+
+        struct CheckWindow {
+            var total = 0.0
+            var visits = 0
+            var average: Double { visits > 0 ? total / Double(visits) : 0 }
+        }
+        struct MerchantChecks {
+            var earlier = CheckWindow()
+            var recent = CheckWindow()
+            var latestDate = ""
+            var latestDescription = ""
+        }
+        var merchants: [String: MerchantChecks] = [:]
+        // Descriptions repeat: each is normalized once.
+        var keyByDescription: [String: String] = [:]
+        for tx in transactions where tx.type == .expense && tx.recurringSeriesId == nil {
+            guard let date = txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date),
+                  date >= earlierStart, date <= today else { continue }
+            let key: String
+            if let cached = keyByDescription[tx.description] {
+                key = cached
+            } else {
+                key = CategorySuggestionService.normalizedMerchant(tx.description)
+                keyByDescription[tx.description] = key
+            }
+            guard key.count >= CategorySuggestionService.minimumMerchantLength else { continue }
+
+            let amount = resolveAmount(tx, baseCurrency: baseCurrency)
+            var merchant = merchants[key, default: MerchantChecks()]
+            if date >= recentStart {
+                merchant.recent.total += amount
+                merchant.recent.visits += 1
+            } else {
+                merchant.earlier.total += amount
+                merchant.earlier.visits += 1
+            }
+            if tx.date >= merchant.latestDate {
+                merchant.latestDate = tx.date
+                merchant.latestDescription = tx.description
+            }
+            merchants[key] = merchant
+        }
+
+        var best: (key: String, checks: MerchantChecks, extra: Double)?
+        for (key, checks) in merchants {
+            guard checks.earlier.visits >= Self.checkGrowthMinimumVisits,
+                  checks.recent.visits >= Self.checkGrowthMinimumVisits,
+                  checks.earlier.average > 0,
+                  checks.recent.average >= checks.earlier.average * (1 + Self.checkGrowthThreshold)
+            else { continue }
+            let extra = (checks.recent.average - checks.earlier.average) * Double(checks.recent.visits)
+            if let current = best, current.extra > extra || (current.extra == extra && current.key < key) { continue }
+            best = (key, checks, extra)
+        }
+        guard let best else { return nil }
+
+        let before = best.checks.earlier.average
+        let after = best.checks.recent.average
+        let growth = (after / before - 1) * 100
+        let name = MerchantName.displayName(best.checks.latestDescription)
+
+        let model = InsightFormulaModel(
+            id: "checkGrowth_\(best.key)",
+            titleKey: "insights.formula.checkGrowth.title",
+            icon: "receipt",
+            color: AppColors.warning,
+            heroValueText: Formatting.formatCurrencySmart(after, currency: baseCurrency),
+            heroLabelKey: "insights.formula.checkGrowth.heroLabel",
+            formulaHeaderKey: "insights.formula.checkGrowth.formulaHeader",
+            formulaRows: [
+                InsightFormulaRow(id: "merchant", labelKey: "insights.formula.checkGrowth.row.merchant", value: 0, kind: .rawText(name)),
+                InsightFormulaRow(id: "before", labelKey: "insights.formula.checkGrowth.row.before", value: before, kind: .currency),
+                InsightFormulaRow(id: "after", labelKey: "insights.formula.checkGrowth.row.after", value: after, kind: .currency),
+                InsightFormulaRow(id: "visits", labelKey: "insights.formula.checkGrowth.row.visits", value: 0, kind: .rawText("\(best.checks.earlier.visits) → \(best.checks.recent.visits)")),
+                InsightFormulaRow(id: "growth", labelKey: "insights.formula.checkGrowth.row.growth", value: growth, kind: .percent, isEmphasised: true)
+            ],
+            explainerKey: "insights.formula.checkGrowth.explainer",
+            recommendation: String(localized: "insights.formula.checkGrowth.rec"),
+            baseCurrency: baseCurrency
+        )
+
+        Self.logger.debug("🧾 [Insights] CheckGrowth — '\(name, privacy: .public)' \(String(format: "%.0f", before), privacy: .public) → \(String(format: "%.0f", after), privacy: .public)")
+        return Insight(
+            id: "check_growth",
+            type: .averageCheckGrowth,
+            title: String(localized: "insights.checkGrowth"),
+            subtitle: name,
+            metric: InsightMetric(
+                value: after,
+                formattedValue: Formatting.formatCurrencySmart(after, currency: baseCurrency),
+                currency: baseCurrency,
+                unit: nil
+            ),
+            trend: InsightTrend(
+                direction: .up,
+                changePercent: growth,
+                changeAbsolute: after - before,
+                comparisonPeriod: String(localized: "insights.checkGrowth.comparison")
+            ),
+            severity: .neutral,
+            category: .spending,
+            detailData: .formulaBreakdown(model),
+            // Was / now: the average check of the 90 days before against the last 90.
+            cardVisual: .barPair(previous: before, current: after, color: AppColors.warning, isProjection: false)
         )
     }
 

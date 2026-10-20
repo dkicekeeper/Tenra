@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Vezes acima da média";
 "insights.formula.largeTransaction.explainer" = "Pagamentos recorrentes como aluguel e assinaturas são excluídos: só compras avulsas contam. Uma compra 4× acima do seu gasto médio merece atenção.";
 "insights.formula.largeTransaction.rec" = "Confirme que a compra era esperada. Avulsa? Nada a fazer: o sinal some conforme a média se ajusta.";
+"insights.checkGrowth" = "O tíquete médio está subindo";
+"insights.checkGrowth.comparison" = "em relação aos 3 meses anteriores";
+"insights.formula.checkGrowth.title" = "Tíquete médio";
+"insights.formula.checkGrowth.heroLabel" = "Tíquete médio, últimos 90 dias";
+"insights.formula.checkGrowth.formulaHeader" = "Como é calculado";
+"insights.formula.checkGrowth.row.merchant" = "Estabelecimento";
+"insights.formula.checkGrowth.row.before" = "Antes (os 90 dias anteriores)";
+"insights.formula.checkGrowth.row.after" = "Agora (os últimos 90 dias)";
+"insights.formula.checkGrowth.row.visits" = "Compras, antes → agora";
+"insights.formula.checkGrowth.row.growth" = "Aumento";
+"insights.formula.checkGrowth.explainer" = "O tíquete médio dos últimos 90 dias comparado aos 90 dias anteriores, em estabelecimentos com pelo menos 3 compras em cada período. Assinaturas não contam: os aumentos de preço delas têm um insight próprio.";
+"insights.formula.checkGrowth.rec" = "Veja o que mudou: os preços, o que você compra lá ou quanto de cada vez.";
 "insights.dormant.accounts" = "Contas inativas";
 
 // MARK: - Tab Bar

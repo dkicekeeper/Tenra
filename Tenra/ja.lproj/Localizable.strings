@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "平均の何倍か";
 "insights.formula.largeTransaction.explainer" = "家賃やサブスクなどの定期支払いは除外され、単発の購入のみが対象です。平均支出の4倍の買い物は一度見直す価値があります。";
 "insights.formula.largeTransaction.rec" = "想定内の買い物か確認しましょう。単発なら対応不要です。平均が更新されればシグナルは消えます。";
+"insights.checkGrowth" = "平均購入額が上昇";
+"insights.checkGrowth.comparison" = "前の3か月と比較";
+"insights.formula.checkGrowth.title" = "平均購入額";
+"insights.formula.checkGrowth.heroLabel" = "平均購入額(直近90日)";
+"insights.formula.checkGrowth.formulaHeader" = "計算方法";
+"insights.formula.checkGrowth.row.merchant" = "店舗";
+"insights.formula.checkGrowth.row.before" = "以前(その前の90日)";
+"insights.formula.checkGrowth.row.after" = "現在(直近90日)";
+"insights.formula.checkGrowth.row.visits" = "購入回数(以前 → 現在)";
+"insights.formula.checkGrowth.row.growth" = "上昇率";
+"insights.formula.checkGrowth.explainer" = "直近90日の平均購入額を、その前の90日と比べます。どちらの期間にも3回以上購入した店舗が対象です。サブスクリプションは含みません。値上げには専用のインサイトがあります。";
+"insights.formula.checkGrowth.rec" = "何が変わったかを確認しましょう:価格、そこで買う物、1回の購入量。";
 "insights.dormant.accounts" = "使われていない口座";
 
 // MARK: - Tab Bar

@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Veces sobre la media";
 "insights.formula.largeTransaction.explainer" = "Los pagos recurrentes como alquiler y suscripciones quedan excluidos: solo cuentan las compras puntuales. Una compra 4 veces superior a tu gasto medio merece un vistazo.";
 "insights.formula.largeTransaction.rec" = "Asegúrate de que la compra sea esperada. ¿Puntual? No hace falta hacer nada: la señal desaparece al ajustarse la media.";
+"insights.checkGrowth" = "El ticket medio sube";
+"insights.checkGrowth.comparison" = "frente a los 3 meses anteriores";
+"insights.formula.checkGrowth.title" = "Ticket medio";
+"insights.formula.checkGrowth.heroLabel" = "Ticket medio, últimos 90 días";
+"insights.formula.checkGrowth.formulaHeader" = "Cómo se calcula";
+"insights.formula.checkGrowth.row.merchant" = "Comercio";
+"insights.formula.checkGrowth.row.before" = "Antes (los 90 días anteriores)";
+"insights.formula.checkGrowth.row.after" = "Ahora (los últimos 90 días)";
+"insights.formula.checkGrowth.row.visits" = "Compras, antes → ahora";
+"insights.formula.checkGrowth.row.growth" = "Subida";
+"insights.formula.checkGrowth.explainer" = "El ticket medio de los últimos 90 días frente a los 90 días anteriores, en comercios con al menos 3 compras en cada periodo. Las suscripciones no cuentan: sus subidas de precio tienen su propio análisis.";
+"insights.formula.checkGrowth.rec" = "Mira qué ha cambiado: los precios, lo que compras allí o cuánto de una vez.";
 "insights.dormant.accounts" = "Cuentas inactivas";
 
 // MARK: - Tab Bar

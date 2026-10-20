@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Volte sopra la media";
 "insights.formula.largeTransaction.explainer" = "I pagamenti ricorrenti come affitto e abbonamenti sono esclusi: contano solo gli acquisti una tantum. Un acquisto 4 volte superiore alla tua spesa media merita attenzione.";
 "insights.formula.largeTransaction.rec" = "Assicurati che l’acquisto fosse previsto. Una tantum? Nessuna azione necessaria: il segnale sparisce man mano che la media si aggiorna.";
+"insights.checkGrowth" = "Lo scontrino medio cresce";
+"insights.checkGrowth.comparison" = "rispetto ai 3 mesi precedenti";
+"insights.formula.checkGrowth.title" = "Scontrino medio";
+"insights.formula.checkGrowth.heroLabel" = "Scontrino medio, ultimi 90 giorni";
+"insights.formula.checkGrowth.formulaHeader" = "Come viene calcolato";
+"insights.formula.checkGrowth.row.merchant" = "Esercente";
+"insights.formula.checkGrowth.row.before" = "Prima (i 90 giorni precedenti)";
+"insights.formula.checkGrowth.row.after" = "Ora (gli ultimi 90 giorni)";
+"insights.formula.checkGrowth.row.visits" = "Acquisti, prima → ora";
+"insights.formula.checkGrowth.row.growth" = "Aumento";
+"insights.formula.checkGrowth.explainer" = "Lo scontrino medio degli ultimi 90 giorni rispetto ai 90 giorni precedenti, presso esercenti con almeno 3 acquisti in ciascun periodo. Gli abbonamenti non contano: i loro aumenti di prezzo hanno un'analisi a parte.";
+"insights.formula.checkGrowth.rec" = "Guarda cosa è cambiato: i prezzi, cosa compri lì o quanto ogni volta.";
 "insights.dormant.accounts" = "Conti inattivi";
 
 // MARK: - Tab Bar

@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Times above average";
 "insights.formula.largeTransaction.explainer" = "Recurring charges like rent and subscriptions are excluded: only one-off purchases count. A purchase 4× your average expense is worth a second look.";
 "insights.formula.largeTransaction.rec" = "Make sure the purchase is expected. One-off? No action needed. The signal clears as your average adjusts.";
+"insights.checkGrowth" = "Average check is up";
+"insights.checkGrowth.comparison" = "vs the 3 months before";
+"insights.formula.checkGrowth.title" = "Average check";
+"insights.formula.checkGrowth.heroLabel" = "Average check, last 90 days";
+"insights.formula.checkGrowth.formulaHeader" = "How it's computed";
+"insights.formula.checkGrowth.row.merchant" = "Merchant";
+"insights.formula.checkGrowth.row.before" = "Before (the 90 days earlier)";
+"insights.formula.checkGrowth.row.after" = "Now (the last 90 days)";
+"insights.formula.checkGrowth.row.visits" = "Purchases, before → now";
+"insights.formula.checkGrowth.row.growth" = "Growth";
+"insights.formula.checkGrowth.explainer" = "The average check of the last 90 days against the 90 days before, at merchants with at least 3 purchases in each. Subscriptions are left out: their price changes have an insight of their own.";
+"insights.formula.checkGrowth.rec" = "See what changed: prices, what you buy there, or how much at a time.";
 "insights.dormant.accounts" = "Idle Accounts";
 
 // MARK: - Tab Bar

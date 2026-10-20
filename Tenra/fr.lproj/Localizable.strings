@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Fois au-dessus de la moyenne";
 "insights.formula.largeTransaction.explainer" = "Les paiements récurrents (loyer, abonnements) sont exclus : seuls les achats ponctuels comptent. Un achat à 4× votre dépense moyenne mérite un second regard.";
 "insights.formula.largeTransaction.rec" = "Vérifiez que l’achat était prévu. Ponctuel ? Aucune action requise : le signal disparaît quand la moyenne s’ajuste.";
+"insights.checkGrowth" = "Le panier moyen augmente";
+"insights.checkGrowth.comparison" = "par rapport aux 3 mois précédents";
+"insights.formula.checkGrowth.title" = "Panier moyen";
+"insights.formula.checkGrowth.heroLabel" = "Panier moyen, 90 derniers jours";
+"insights.formula.checkGrowth.formulaHeader" = "Comment c’est calculé";
+"insights.formula.checkGrowth.row.merchant" = "Commerçant";
+"insights.formula.checkGrowth.row.before" = "Avant (les 90 jours précédents)";
+"insights.formula.checkGrowth.row.after" = "Maintenant (les 90 derniers jours)";
+"insights.formula.checkGrowth.row.visits" = "Achats, avant → maintenant";
+"insights.formula.checkGrowth.row.growth" = "Hausse";
+"insights.formula.checkGrowth.explainer" = "Le panier moyen des 90 derniers jours comparé aux 90 jours précédents, chez les commerçants avec au moins 3 achats sur chaque période. Les abonnements ne comptent pas : leurs hausses de prix ont leur propre analyse.";
+"insights.formula.checkGrowth.rec" = "Regardez ce qui a changé : les prix, ce que vous y achetez ou la quantité à chaque fois.";
 "insights.dormant.accounts" = "Comptes inactifs";
 
 // MARK: - Tab Bar

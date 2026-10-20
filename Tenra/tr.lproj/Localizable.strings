@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Ortalamanın katı";
 "insights.formula.largeTransaction.explainer" = "Kira ve abonelik gibi düzenli ödemeler hariçtir. Yalnızca tek seferlik alışverişler sayılır. Ortalama harcamanızın 4 katı bir alışveriş ikinci bir bakışı hak eder.";
 "insights.formula.largeTransaction.rec" = "Alışverişin beklenen bir harcama olduğundan emin olun. Tek seferlikse bir şey yapmanıza gerek yok. Ortalama güncellendikçe sinyal kaybolur.";
+"insights.checkGrowth" = "Ortalama sepet büyüyor";
+"insights.checkGrowth.comparison" = "önceki 3 aya göre";
+"insights.formula.checkGrowth.title" = "Ortalama sepet";
+"insights.formula.checkGrowth.heroLabel" = "Ortalama sepet, son 90 gün";
+"insights.formula.checkGrowth.formulaHeader" = "Nasıl hesaplanır";
+"insights.formula.checkGrowth.row.merchant" = "İşyeri";
+"insights.formula.checkGrowth.row.before" = "Önce (önceki 90 gün)";
+"insights.formula.checkGrowth.row.after" = "Şimdi (son 90 gün)";
+"insights.formula.checkGrowth.row.visits" = "Alışveriş, önce → şimdi";
+"insights.formula.checkGrowth.row.growth" = "Artış";
+"insights.formula.checkGrowth.explainer" = "Son 90 günün ortalama sepeti, önceki 90 günle karşılaştırılır; her iki dönemde en az 3 alışveriş yapılan işyerleri için. Abonelikler sayılmaz: fiyat artışları için ayrı bir içgörü var.";
+"insights.formula.checkGrowth.rec" = "Neyin değiştiğine bak: fiyatlar, orada ne aldığın ya da bir seferde ne kadar aldığın.";
 "insights.dormant.accounts" = "Atıl Hesaplar";
 
 // MARK: - Tab Bar

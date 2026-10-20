@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Faktor über dem Durchschnitt";
 "insights.formula.largeTransaction.explainer" = "Regelmäßige Zahlungen wie Miete und Abos sind ausgenommen. Nur Einzelkäufe zählen. Ein Kauf, der das 4-Fache Ihrer Durchschnittsausgabe beträgt, verdient einen zweiten Blick.";
 "insights.formula.largeTransaction.rec" = "Stellen Sie sicher, dass der Kauf erwartet war. Einmalig? Keine Aktion nötig. Das Signal verschwindet, sobald sich der Durchschnitt anpasst.";
+"insights.checkGrowth" = "Durchschnittlicher Bon steigt";
+"insights.checkGrowth.comparison" = "ggü. den 3 Monaten davor";
+"insights.formula.checkGrowth.title" = "Durchschnittlicher Bon";
+"insights.formula.checkGrowth.heroLabel" = "Durchschnittlicher Bon, letzte 90 Tage";
+"insights.formula.checkGrowth.formulaHeader" = "So wird es berechnet";
+"insights.formula.checkGrowth.row.merchant" = "Händler";
+"insights.formula.checkGrowth.row.before" = "Vorher (die 90 Tage davor)";
+"insights.formula.checkGrowth.row.after" = "Jetzt (die letzten 90 Tage)";
+"insights.formula.checkGrowth.row.visits" = "Einkäufe, vorher → jetzt";
+"insights.formula.checkGrowth.row.growth" = "Anstieg";
+"insights.formula.checkGrowth.explainer" = "Der durchschnittliche Bon der letzten 90 Tage im Vergleich zu den 90 Tagen davor, bei Händlern mit mindestens 3 Einkäufen in beiden Zeiträumen. Abos zählen nicht: Für ihre Preiserhöhungen gibt es eine eigene Erkenntnis.";
+"insights.formula.checkGrowth.rec" = "Schauen Sie, was sich geändert hat: die Preise, was Sie dort kaufen oder wie viel auf einmal.";
 "insights.dormant.accounts" = "Inaktive Konten";
 
 // MARK: - Tab Bar

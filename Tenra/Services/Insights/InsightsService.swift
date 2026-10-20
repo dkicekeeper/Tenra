@@ -503,6 +503,9 @@ nonisolated final class InsightsService {
             if let large = generateLargeTransaction(baseCurrency: baseCurrency, transactions: allTransactions, txDateMap: dateMap) {
                 insights.append(large)
             }
+            if let checkGrowth = generateAverageCheckGrowth(baseCurrency: baseCurrency, transactions: allTransactions, txDateMap: dateMap) {
+                insights.append(checkGrowth)
+            }
         } else {
             // Merge pre-computed shared insights (the budget ones already sit in their slot above)
             insights.append(contentsOf: sharedInsights!.filter { !Self.budgetInsightIDs.contains($0.id) })
@@ -580,7 +583,8 @@ nonisolated final class InsightsService {
         "accountDormancy",
         "emergency_fund",
         "spending_forecast",
-        "year_over_year"
+        "year_over_year",
+        "check_growth"
     ]).union(budgetInsightIDs)
 
     /// Ids `generateBudgetInsights` emits. Shared: each budget's spent covers the budget's

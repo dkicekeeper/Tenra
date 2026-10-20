@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "У скільки разів вище середньої";
 "insights.formula.largeTransaction.explainer" = "Регулярні платежі (оренда, підписки) виключені: враховуються лише разові покупки. Покупка вчетверо вища за вашу середню витрату заслуговує на увагу.";
 "insights.formula.largeTransaction.rec" = "Переконайтеся, що покупка очікувана. Разова? Нічого робити не треба: сигнал зникне з оновленням середньої.";
+"insights.checkGrowth" = "Середній чек зростає";
+"insights.checkGrowth.comparison" = "до 3 місяців перед цим";
+"insights.formula.checkGrowth.title" = "Середній чек";
+"insights.formula.checkGrowth.heroLabel" = "Середній чек за 90 днів";
+"insights.formula.checkGrowth.formulaHeader" = "Як це пораховано";
+"insights.formula.checkGrowth.row.merchant" = "Продавець";
+"insights.formula.checkGrowth.row.before" = "Раніше (90 днів перед цим)";
+"insights.formula.checkGrowth.row.after" = "Зараз (останні 90 днів)";
+"insights.formula.checkGrowth.row.visits" = "Покупок: раніше → зараз";
+"insights.formula.checkGrowth.row.growth" = "Зростання";
+"insights.formula.checkGrowth.explainer" = "Середній чек за останні 90 днів порівнюється з 90 днями перед ними, у продавців, де в кожному періоді було не менше 3 покупок. Підписки не враховуються: про їх подорожчання є окремий інсайт.";
+"insights.formula.checkGrowth.rec" = "Подивіться, що змінилося: ціни, що ви там купуєте чи скільки за раз.";
 "insights.dormant.accounts" = "Неактивні рахунки";
 
 // MARK: - Tab Bar

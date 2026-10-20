@@ -1052,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Во сколько раз выше средней";
 "insights.formula.largeTransaction.explainer" = "Регулярные платежи (аренда, подписки) исключены: учитываются только разовые покупки. Покупка в 4 раза выше вашей средней траты заслуживает внимания.";
 "insights.formula.largeTransaction.rec" = "Убедитесь, что покупка ожидаемая. Разовая? Ничего делать не нужно: сигнал исчезнет по мере обновления средней.";
+"insights.checkGrowth" = "Средний чек растёт";
+"insights.checkGrowth.comparison" = "к 3 месяцам до этого";
+"insights.formula.checkGrowth.title" = "Средний чек";
+"insights.formula.checkGrowth.heroLabel" = "Средний чек за 90 дней";
+"insights.formula.checkGrowth.formulaHeader" = "Как это посчитано";
+"insights.formula.checkGrowth.row.merchant" = "Продавец";
+"insights.formula.checkGrowth.row.before" = "Раньше (90 дней до этого)";
+"insights.formula.checkGrowth.row.after" = "Сейчас (последние 90 дней)";
+"insights.formula.checkGrowth.row.visits" = "Покупок: раньше → сейчас";
+"insights.formula.checkGrowth.row.growth" = "Рост";
+"insights.formula.checkGrowth.explainer" = "Средний чек за последние 90 дней сравнивается с 90 днями до них, у продавцов, где в каждом периоде было не меньше 3 покупок. Подписки не учитываются: об их подорожании есть свой инсайт.";
+"insights.formula.checkGrowth.rec" = "Посмотрите, что изменилось: цены, что вы там покупаете или сколько за раз.";
 "insights.dormant.accounts" = "Неактивные счета";
 
 // MARK: - Tab Bar

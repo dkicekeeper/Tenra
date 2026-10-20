@@ -1737,6 +1737,9 @@
 "settings.merchants.forgetMerchant" = "Dimentica esercente";
 "settings.merchants.categoryDeleted" = "Categoria eliminata, Tenra chiederà di nuovo";
 "settings.merchants.editFooter" = "I prossimi pagamenti qui verranno registrati con questa categoria. Dimentica l'esercente per ricominciare dal suo prossimo pagamento.";
+"merchant.detail.visits" = "Visite";
+"merchant.detail.averageCheck" = "Scontrino medio";
+"merchant.detail.lastVisit" = "Ultima visita";
 "walletReview.title" = "Da controllare";
 "walletReview.footer" = "La categoria o il conto di questi pagamenti Apple Pay è stato scelto automaticamente. Tocca un pagamento per correggerlo o scorri a destra se è giusto. La tua scelta verrà ricordata per l'esercente e la carta.";
 "walletReview.emptyTitle" = "Niente da controllare";

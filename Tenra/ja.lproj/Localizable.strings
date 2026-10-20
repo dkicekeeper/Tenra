@@ -1737,6 +1737,9 @@
 "settings.merchants.forgetMerchant" = "店舗を忘れる";
 "settings.merchants.categoryDeleted" = "カテゴリが削除されました。Tenra が再度尋ねます";
 "settings.merchants.editFooter" = "この店舗での次回以降の支払いは、このカテゴリで記録されます。次回の支払いからやり直すには、店舗を忘れてください。";
+"merchant.detail.visits" = "来店回数";
+"merchant.detail.averageCheck" = "平均単価";
+"merchant.detail.lastVisit" = "最終来店";
 "walletReview.title" = "確認待ち";
 "walletReview.footer" = "これらの Apple Pay の支払いは、カテゴリまたは口座が自動で選ばれています。修正するには支払いをタップ、正しければ右にスワイプしてください。選んだ内容は店舗とカードごとに記憶されます。";
 "walletReview.emptyTitle" = "確認するものはありません";

@@ -1,0 +1,211 @@
+//
+//  MerchantDetailView.swift
+//  Tenra
+//
+//  One merchant's screen (docs/plan-auto-capture.md §7): its logo and name, what was
+//  spent there in the selected period, visits, the average check, the last visit and
+//  every transaction, whatever recorded it (Apple Pay, a statement, by hand).
+//  Opened from Settings → Siri & Shortcuts → Wallet merchants; the toolbar edits the
+//  merchant (MerchantCategoryEditView) when the Wallet memory knows it.
+//
+//  Built on EntityDetailScaffold like the category screen. The history sweep runs off
+//  the main actor (MerchantHistory, red flag #9), keyed on every dimension it reads
+//  (red flag #12).
+//
+
+import SwiftUI
+
+struct MerchantDetailView: View {
+    /// The merchant as Wallet or the bank wrote it.
+    let merchant: String
+    let transactionsViewModel: TransactionsViewModel
+    let categoriesViewModel: CategoriesViewModel
+    let accountsViewModel: AccountsViewModel
+    /// Opens the merchant's edit sheet; nil hides "Edit".
+    var onEdit: (() -> Void)? = nil
+
+    @Environment(TransactionStore.self) private var transactionStore
+    @Environment(TimeFilterManager.self) private var timeFilterManager
+    @Environment(\.amountsHidden) private var amountsHidden
+
+    @State private var summary = MerchantHistory.Summary.empty
+    @State private var accountsById: [String: Account] = [:]
+
+    private var merchantKey: String { CategorySuggestionService.normalizedMerchant(merchant) }
+
+    private var name: String {
+        MerchantLogoStore.shared.customName(forDescription: merchant) ?? MerchantName.displayName(merchant)
+    }
+
+    private var usualCategory: CustomCategory? {
+        summary.usualCategory.flatMap { name in
+            categoriesViewModel.customCategories.first { $0.name == name && $0.type == .expense }
+        }
+    }
+
+    /// The merchant's logo, else its usual category's icon, else a shop.
+    private var heroIcon: (source: IconSource, tint: IconTint) {
+        if let logo = MerchantLogoStore.shared.iconSource(forDescription: merchant) {
+            return (logo, .original)
+        }
+        if let category = usualCategory {
+            return (category.iconSource, .monochrome(category.color))
+        }
+        return (.sfSymbol("storefront"), .monochrome(AppColors.textSecondary))
+    }
+
+    private var refreshKey: RefreshKey {
+        // `mutationVersion` is @ObservationIgnored: reading the observable array is what
+        // re-evaluates the body after an edit (CLAUDE.md, entity detail refresh trigger).
+        _ = transactionStore.transactions.count
+        return RefreshKey(
+            merchant: merchantKey,
+            mutationVersion: transactionStore.mutationVersion,
+            ratesVersion: transactionStore.currencyRatesVersion,
+            baseCurrency: transactionsViewModel.appSettings.baseCurrency,
+            filterHash: timeFilterManager.currentFilter.hashValue,
+            day: DateFormatters.dateFormatter.string(from: Date())
+        )
+    }
+
+    private struct RefreshKey: Equatable {
+        let merchant: String
+        let mutationVersion: Int
+        let ratesVersion: Int
+        let baseCurrency: String
+        let filterHash: Int
+        /// Visits and totals leave out future operations: a new day changes them.
+        let day: String
+    }
+
+    var body: some View {
+        let baseCurrency = transactionsViewModel.appSettings.baseCurrency
+        let icon = heroIcon
+
+        EntityDetailScaffold(
+            navigationTitle: name,
+            navigationAmount: summary.spentInPeriod,
+            navigationCurrency: baseCurrency,
+            infoRows: infoRows(baseCurrency: baseCurrency),
+            transactions: summary.transactions,
+            historyCurrency: baseCurrency,
+            accountsById: accountsById,
+            styleHelper: { tx in
+                CategoryStyleHelper.cached(
+                    category: tx.category,
+                    type: tx.type,
+                    customCategories: categoriesViewModel.customCategories
+                )
+            },
+            viewModel: transactionsViewModel,
+            categoriesViewModel: categoriesViewModel,
+            accountsViewModel: accountsViewModel,
+            balanceCoordinator: accountsViewModel.balanceCoordinator,
+            hero: {
+                HeroSection(
+                    icon: icon.source,
+                    title: name,
+                    iconTint: icon.tint,
+                    primaryAmount: summary.spentInPeriod,
+                    primaryCurrency: baseCurrency,
+                    subtitle: timeFilterManager.currentFilter.displayName
+                )
+            },
+            toolbarMenu: { toolbarMenu }
+        )
+        .heroAccentGlow(icon: icon.source, tint: icon.tint)
+        .task(id: refreshKey) {
+            await refresh()
+        }
+        .task(id: transactionStore.accountsMutationVersion) {
+            accountsById = Dictionary(uniqueKeysWithValues: transactionStore.accounts.map { ($0.id, $0) })
+        }
+    }
+
+    private func refresh() async {
+        let all = transactionStore.transactions
+        let key = merchantKey
+        let range = timeFilterManager.currentFilter.dateRange()
+        let baseCurrency = transactionsViewModel.appSettings.baseCurrency
+        let computed = await Task.detached(priority: .userInitiated) {
+            MerchantHistory.summary(
+                merchant: key,
+                in: all,
+                periodStart: range.start,
+                periodEnd: range.end,
+                baseCurrency: baseCurrency
+            )
+        }.value
+        guard !Task.isCancelled else { return }
+        summary = computed
+    }
+
+    // MARK: - Info rows
+
+    private func infoRows(baseCurrency: String) -> [InfoRowConfig] {
+        var rows = [
+            InfoRowConfig(
+                icon: "figure.walk",
+                label: String(localized: "merchant.detail.visits"),
+                value: "\(summary.visitsInPeriod)"
+            )
+        ]
+        if summary.visitsInPeriod > 0 {
+            rows.append(InfoRowConfig(
+                icon: "receipt",
+                label: String(localized: "merchant.detail.averageCheck"),
+                amount: summary.spentInPeriod / Double(summary.visitsInPeriod),
+                currency: baseCurrency
+            ))
+        }
+        if let lastVisit = summary.lastVisit {
+            rows.append(InfoRowConfig(
+                icon: "calendar",
+                label: String(localized: "merchant.detail.lastVisit"),
+                value: DateFormatters.displayString(from: lastVisit)
+            ))
+        }
+        if let category = usualCategory {
+            rows.append(InfoRowConfig(
+                icon: "folder",
+                label: String(localized: "transactionForm.category"),
+                value: category.name
+            ))
+        }
+        rows.append(InfoRowConfig(
+            icon: "sum",
+            label: String(localized: "category.detail.totalSpent", defaultValue: "Total spent"),
+            amount: summary.spentAllTime,
+            currency: baseCurrency
+        ))
+        return rows
+    }
+
+    // MARK: - Toolbar menu
+
+    @ViewBuilder
+    private var toolbarMenu: some View {
+        if let onEdit {
+            Button {
+                onEdit()
+            } label: {
+                Label(String(localized: "common.edit", defaultValue: "Edit"), systemImage: "pencil")
+            }
+        }
+    }
+}
+
+#Preview {
+    let coordinator = AppCoordinator()
+    NavigationStack {
+        MerchantDetailView(
+            merchant: "GREENMART 12",
+            transactionsViewModel: coordinator.transactionsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel
+        )
+    }
+    .environment(coordinator)
+    .environment(coordinator.transactionStore)
+    .environment(TimeFilterManager())
+}

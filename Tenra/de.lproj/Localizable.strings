@@ -1737,6 +1737,9 @@
 "settings.merchants.forgetMerchant" = "Händler vergessen";
 "settings.merchants.categoryDeleted" = "Kategorie gelöscht, Tenra fragt erneut";
 "settings.merchants.editFooter" = "Die nächsten Zahlungen hier werden mit dieser Kategorie erfasst. Vergessen Sie den Händler, um bei seiner nächsten Zahlung neu zu beginnen.";
+"merchant.detail.visits" = "Besuche";
+"merchant.detail.averageCheck" = "Durchschnittlicher Bon";
+"merchant.detail.lastVisit" = "Letzter Besuch";
 "walletReview.title" = "Zu prüfen";
 "walletReview.footer" = "Bei diesen Apple Pay-Zahlungen wurden Kategorie oder Konto automatisch gewählt. Tippen Sie auf eine Zahlung, um sie zu korrigieren, oder wischen Sie nach rechts, wenn alles stimmt. Ihre Wahl wird für den Händler und die Karte gemerkt.";
 "walletReview.emptyTitle" = "Nichts zu prüfen";

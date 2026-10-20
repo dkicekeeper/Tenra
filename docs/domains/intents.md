@@ -294,6 +294,13 @@ merchant and the guessed category (or account), no amount (lock screen). One per
 an earlier payment there still waits; never asks for the permission. A tap sets
 `WalletCaptureStore.isReviewRequested` (`AppDelegate`), and `MainTabView` presents To review.
 
+**A merchant's screen** (`MerchantDetailView`, from the Wallet merchants list; Edit in its menu
+opens `MerchantCategoryEditView`): `EntityDetailScaffold` with the merchant's logo and name, spent
+in the selected period, visits, average check, last visit, usual category, total, and every
+transaction of the merchant whatever recorded it. `MerchantHistory.summary` sweeps the history off
+the main actor through `SummaryCalculator`, keyed on `mutationVersion`, rates, base currency, the
+filter and the day. Pinned by `MerchantHistoryTests`.
+
 **Wallet cards** (`WalletCardsView`): `CardAccountMemory.cards`, the account picked with
 `NavigationPickerRow(style: .list)`, swipe to forget.
 

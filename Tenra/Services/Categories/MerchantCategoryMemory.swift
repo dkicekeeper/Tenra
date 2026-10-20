@@ -46,7 +46,7 @@ final class MerchantCategoryMemory {
     }
 
     /// A remembered merchant, as the Settings list shows it.
-    struct Merchant: Identifiable, Equatable {
+    struct Merchant: Identifiable, Hashable {
         /// The normalized merchant: the memory's key.
         let id: String
         let displayName: String

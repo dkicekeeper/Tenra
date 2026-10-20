@@ -1737,6 +1737,9 @@
 "settings.merchants.forgetMerchant" = "Забыть продавца";
 "settings.merchants.categoryDeleted" = "Категория удалена, Tenra спросит снова";
 "settings.merchants.editFooter" = "Следующие оплаты здесь запишутся с этой категорией. Забудьте продавца, чтобы начать заново с его следующей оплаты.";
+"merchant.detail.visits" = "Визиты";
+"merchant.detail.averageCheck" = "Средний чек";
+"merchant.detail.lastVisit" = "Последний визит";
 "walletReview.title" = "На проверку";
 "walletReview.footer" = "У этих оплат Apple Pay категория или счёт выбраны автоматически. Нажмите на оплату, чтобы исправить, или смахните вправо, если всё верно. Ваш выбор запомнится для продавца и карты.";
 "walletReview.emptyTitle" = "Проверять нечего";

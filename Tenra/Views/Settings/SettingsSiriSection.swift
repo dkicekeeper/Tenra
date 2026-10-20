@@ -38,7 +38,11 @@ struct SettingsSiriSection: View {
                 icon: "wallet.pass",
                 title: String(localized: "settings.merchants.title")
             ) {
-                MerchantCategoriesView(categoriesViewModel: categoriesViewModel)
+                MerchantCategoriesView(
+                    transactionsViewModel: transactionsViewModel,
+                    categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel
+                )
             }
 
             NavigationSettingsRow(

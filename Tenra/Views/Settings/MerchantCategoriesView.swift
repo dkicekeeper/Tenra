@@ -3,17 +3,20 @@
 //  Tenra
 //
 //  Settings → Siri & Shortcuts → Wallet merchants: the merchants the Wallet
-//  automation (AddExpenseIntent) remembered, each with its category and
-//  subcategory. Tap a merchant to reassign them (MerchantCategoryEditView), swipe
-//  to forget it: its next payment asks for a category again.
+//  automation remembered, each with its category and subcategory. Tap a merchant to
+//  open its screen (MerchantDetailView), whose Edit reassigns them
+//  (MerchantCategoryEditView); swipe to forget it.
 //
 
 import SwiftUI
 
 struct MerchantCategoriesView: View {
+    let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
+    let accountsViewModel: AccountsViewModel
 
     @State private var memory = MerchantCategoryMemory.shared
+    @State private var opened: MerchantCategoryMemory.Merchant?
     @State private var editing: MerchantCategoryMemory.Merchant?
 
     var body: some View {
@@ -38,6 +41,15 @@ struct MerchantCategoriesView: View {
         }
         .navigationTitle(String(localized: "settings.merchants.title"))
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(item: $opened) { merchant in
+            MerchantDetailView(
+                merchant: merchant.displayName,
+                transactionsViewModel: transactionsViewModel,
+                categoriesViewModel: categoriesViewModel,
+                accountsViewModel: accountsViewModel,
+                onEdit: { editing = merchant }
+            )
+        }
         .sheet(item: $editing) { merchant in
             MerchantCategoryEditView(
                 merchant: merchant,
@@ -52,7 +64,7 @@ struct MerchantCategoriesView: View {
     private func row(_ merchant: MerchantCategoryMemory.Merchant) -> some View {
         let category = expenseCategory(id: merchant.categoryId)
         return Button {
-            editing = merchant
+            opened = merchant
         } label: {
             UniversalRow(config: .settings, leadingIcon: iconConfig(for: category)) {
                 VStack(alignment: .leading, spacing: AppSpacing.xxs) {
@@ -125,6 +137,12 @@ struct MerchantCategoriesView: View {
 #Preview {
     let coordinator = AppCoordinator()
     NavigationStack {
-        MerchantCategoriesView(categoriesViewModel: coordinator.categoriesViewModel)
+        MerchantCategoriesView(
+            transactionsViewModel: coordinator.transactionsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel
+        )
     }
+    .environment(coordinator.transactionStore)
+    .environment(TimeFilterManager())
 }

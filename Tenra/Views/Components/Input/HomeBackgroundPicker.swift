@@ -2,12 +2,11 @@
 //  HomeBackgroundPicker.swift
 //  Tenra
 //
-//  The home screen's background, as Ten's wardrobe picks an accessory: DesignKit's
-//  `OptionCardPicker(style: .carousel)` (5.2.0). The chosen background large on top in a
-//  phone's shape, the three (none, the expense colours, a photo) in a row of cards under it,
-//  and under the row what the screen sets for the chosen one (`settings`). The cards are live
-//  previews: the gradient in the person's expense colours at the chosen intensity, the photo
-//  saved, blurred when the home blurs it.
+//  The home screen's background: DesignKit's `OptionCardPicker` (a carousel of previews since
+//  DesignKit 6.0.0). The three (none, the expense colours, a photo) as large previews in a
+//  phone's shape, the centred one the choice, and under the carousel what the screen sets for
+//  the chosen one (`settings`). The previews are live: the gradient in the person's expense
+//  colours at the chosen intensity, the photo saved, blurred when the home blurs it.
 //
 
 import SwiftUI
@@ -71,7 +70,6 @@ struct HomeBackgroundPicker<Settings: View>: View {
                     if mode != .wallpaper || wallpaperImage != nil { onModeSelect(mode) }
                 }
             ),
-            style: .carousel,
             title: { $0.localizedTitle }
         ) { mode in
             modeArtwork(mode)

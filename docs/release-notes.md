@@ -1,0 +1,206 @@
+# Tenra 1.7: What's New (ASC, 13 storefront locales)
+
+Version 1.7, drafted 2026-10-20 from PR #80 (`claude/auto-capture`, TestFlight 1.7 builds 32-34),
+before the device check of [plan-auto-capture.md](plan-auto-capture.md) §8: change it with what
+that check changes. `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes each
+block into App Store Connect → Tenra → 1.7 → the locale → "What's New in This Version". No em
+dashes (user rule). Names of screens as the app shows them in each locale (`settings.siri.header`,
+`walletReview.title`, `subscriptions.candidates.title`). When 1.7 ships, move this file to
+`archive/release-notes-1.7.md`.
+
+New since 1.6 (in the store since 2026-10-19):
+- Apple Pay payments recorded without a question ("Log an Apple Pay payment" in the Wallet
+  automation, the in-app setup guide), the category remembered per merchant and the account per
+  card, guesses in To review with a notification.
+- Merchant logos (on by default), a merchant's own page, names and logos of the user's own,
+  merchants in History's search suggestions.
+- "Looks like a subscription", the Top merchant and Average check is up insights.
+- A bank PDF opened in Tenra: a statement or a receipt (import behind Tenra Pro, or Ten), a
+  receipt repaying a personal debt; the statement reminder; Apple Pay payments missing from a
+  statement.
+
+## en-US
+
+```
+What's new in Tenra 1.7:
+• Apple Pay payments log themselves. Set up the Wallet automation once in Settings › Siri & Shortcuts, and every tap at a terminal is recorded with its merchant, amount, currency and card, without a single question.
+• Tenra learns as you go: the category for each merchant, the account for each card. A payment it had to guess waits in To review, and a quiet notification lets you check it.
+• Merchants get their logos and a page of their own: this month and this year, a monthly chart, visits and the average check. Give a merchant your own name or logo, and find it from search.
+• Looks like a subscription: charges that come back every month show up in Subscriptions, ready to track with one tap.
+• New insights: your top merchant, and a merchant whose average check keeps going up.
+• Open a bank PDF in Tenra from any app: a statement is imported, a payment receipt becomes one expense, and a transfer to someone you owe can repay that debt (import with Tenra Pro).
+• A statement reminder, every week or as you choose, and the statement check shows Apple Pay payments your bank does not list.
+```
+
+## ru
+
+```
+Что нового в Tenra 1.7:
+• Оплаты Apple Pay записываются сами. Один раз настройте автоматизацию Wallet в Настройках › Siri и команды, и каждая оплата на терминале запишется с продавцом, суммой, валютой и картой, без единого вопроса.
+• Tenra учится по ходу: запоминает категорию для каждого продавца и счёт для каждой карты. Оплата, в которой пришлось угадывать, ждёт в разделе «На проверку», а тихое уведомление подскажет её проверить.
+• У продавцов появились логотипы и своя страница: траты в этом месяце и за год, график по месяцам, визиты и средний чек. Дайте продавцу своё название или логотип и находите его через поиск.
+• «Похоже на подписку»: списания, которые повторяются каждый месяц, появляются в Подписках, и их можно отслеживать одним нажатием.
+• Новые инсайты: топ-продавец и продавец, у которого растёт средний чек.
+• Откройте PDF банка в Tenra из любого приложения: выписка импортируется, чек об оплате станет одним расходом, а перевод тому, кому вы должны, может погасить долг (импорт в Tenra Pro).
+• Напоминание о выписке, раз в неделю или как вам удобно, а сверка выписки покажет оплаты Apple Pay, которых нет у банка.
+```
+
+## de-DE
+
+```
+Neu in Tenra 1.7:
+• Apple Pay-Zahlungen tragen sich selbst ein. Richten Sie einmal die Wallet-Automation unter Einstellungen › Siri und Kurzbefehle ein, und jede Zahlung am Terminal wird mit Händler, Betrag, Währung und Karte erfasst, ohne eine einzige Frage.
+• Tenra lernt mit: die Kategorie für jeden Händler, das Konto für jede Karte. Eine Zahlung, bei der Tenra raten musste, wartet unter „Zu prüfen“, und eine dezente Mitteilung erinnert Sie daran.
+• Händler haben jetzt Logos und eine eigene Seite: dieser Monat und dieses Jahr, ein Monatsdiagramm, Besuche und der durchschnittliche Bon. Geben Sie einem Händler einen eigenen Namen oder ein Logo, und finden Sie ihn über die Suche.
+• „Sieht nach einem Abo aus“: Abbuchungen, die jeden Monat wiederkommen, erscheinen bei den Abos und lassen sich mit einem Tippen verfolgen.
+• Neue Hinweise: Ihr Top-Händler und ein Händler, dessen durchschnittlicher Bon immer weiter steigt.
+• Öffnen Sie ein Bank-PDF aus jeder App in Tenra: Ein Kontoauszug wird importiert, ein Zahlungsbeleg wird zu einer Ausgabe, und eine Überweisung an jemanden, dem Sie Geld schulden, kann diese Schuld tilgen (Import mit Tenra Pro).
+• Eine Erinnerung an den Kontoauszug, jede Woche oder wie Sie möchten, und der Abgleich zeigt Apple Pay-Zahlungen, die Ihre Bank nicht aufführt.
+```
+
+## es-ES
+
+```
+Novedades de Tenra 1.7:
+• Los pagos con Apple Pay se registran solos. Configura una vez la automatización de Wallet en Ajustes › Siri y atajos, y cada pago en el datáfono se guarda con su comercio, importe, divisa y tarjeta, sin una sola pregunta.
+• Tenra aprende sobre la marcha: la categoría de cada comercio y la cuenta de cada tarjeta. Un pago en el que tuvo que adivinar espera en «Por revisar», y una notificación discreta te avisa para comprobarlo.
+• Los comercios tienen logo y su propia página: este mes y este año, un gráfico mensual, visitas y el ticket medio. Ponle a un comercio tu propio nombre o logo, y encuéntralo desde la búsqueda.
+• «Parece una suscripción»: los cargos que se repiten cada mes aparecen en Suscripciones, listos para seguirlos con un toque.
+• Nuevos análisis: el comercio en el que más gastas, y un comercio cuyo ticket medio no deja de subir.
+• Abre un PDF del banco en Tenra desde cualquier app: un extracto se importa, un recibo de pago se convierte en un gasto, y una transferencia a alguien a quien debes dinero puede saldar esa deuda (importación con Tenra Pro).
+• Un recordatorio del extracto, cada semana o cuando prefieras, y la revisión del extracto muestra los pagos con Apple Pay que tu banco no incluye.
+```
+
+## es-MX
+
+```
+Novedades de Tenra 1.7:
+• Los pagos con Apple Pay se registran solos. Configura una vez la automatización de Wallet en Configuración › Siri y atajos, y cada pago en la terminal se guarda con su comercio, monto, moneda y tarjeta, sin una sola pregunta.
+• Tenra aprende sobre la marcha: la categoría de cada comercio y la cuenta de cada tarjeta. Un pago en el que tuvo que adivinar espera en «Por revisar», y una notificación discreta te avisa para revisarlo.
+• Los comercios tienen logo y su propia página: este mes y este año, una gráfica mensual, visitas y el ticket promedio. Ponle a un comercio tu propio nombre o logo, y encuéntralo desde la búsqueda.
+• «Parece una suscripción»: los cargos que se repiten cada mes aparecen en Suscripciones, listos para seguirlos con un toque.
+• Nuevos análisis: el comercio en el que más gastas, y un comercio cuyo ticket promedio no deja de subir.
+• Abre un PDF del banco en Tenra desde cualquier app: un estado de cuenta se importa, un comprobante de pago se convierte en un gasto, y una transferencia a alguien a quien le debes puede saldar esa deuda (importación con Tenra Pro).
+• Un recordatorio del estado de cuenta, cada semana o cuando prefieras, y la revisión del estado de cuenta muestra los pagos con Apple Pay que tu banco no incluye.
+```
+
+## fr-FR
+
+```
+Nouveautés de Tenra 1.7 :
+• Les paiements Apple Pay s'enregistrent tout seuls. Configurez une fois l'automatisation Wallet dans Réglages › Siri et raccourcis, et chaque paiement au terminal est enregistré avec son commerçant, son montant, sa devise et sa carte, sans la moindre question.
+• Tenra apprend au fil de l'eau : la catégorie de chaque commerçant, le compte de chaque carte. Un paiement pour lequel il a dû deviner attend dans « À vérifier », et une notification discrète vous invite à le vérifier.
+• Les commerçants ont leur logo et leur propre page : ce mois-ci et cette année, un graphique mensuel, les visites et le panier moyen. Donnez à un commerçant votre propre nom ou logo, et retrouvez-le depuis la recherche.
+• « Ressemble à un abonnement » : les prélèvements qui reviennent chaque mois apparaissent dans Abonnements, prêts à être suivis d'un geste.
+• Nouveaux conseils : votre premier commerçant, et un commerçant dont le panier moyen ne cesse d'augmenter.
+• Ouvrez un PDF de votre banque dans Tenra depuis n'importe quelle app : un relevé est importé, un reçu de paiement devient une dépense, et un virement à quelqu'un à qui vous devez de l'argent peut rembourser cette dette (import avec Tenra Pro).
+• Un rappel de relevé, chaque semaine ou quand vous le souhaitez, et la vérification du relevé montre les paiements Apple Pay que votre banque n'affiche pas.
+```
+
+## fr-CA
+
+```
+Nouveautés de Tenra 1.7 :
+• Les paiements Apple Pay s'enregistrent tout seuls. Configurez une fois l'automatisation Wallet dans Réglages › Siri et raccourcis, et chaque paiement au terminal est enregistré avec son commerçant, son montant, sa devise et sa carte, sans la moindre question.
+• Tenra apprend au fur et à mesure : la catégorie de chaque commerçant, le compte de chaque carte. Un paiement pour lequel il a dû deviner attend dans « À vérifier », et une notification discrète vous invite à le vérifier.
+• Les commerçants ont leur logo et leur propre page : ce mois-ci et cette année, un graphique mensuel, les visites et la facture moyenne. Donnez à un commerçant votre propre nom ou logo, et retrouvez-le depuis la recherche.
+• « Ressemble à un abonnement » : les frais qui reviennent chaque mois apparaissent dans Abonnements, prêts à être suivis d'un toucher.
+• Nouveaux conseils : votre premier commerçant, et un commerçant dont la facture moyenne ne cesse d'augmenter.
+• Ouvrez un PDF de votre institution financière dans Tenra depuis n'importe quelle app : un relevé est importé, un reçu de paiement devient une dépense, et un virement à quelqu'un à qui vous devez de l'argent peut rembourser cette dette (importation avec Tenra Pro).
+• Un rappel de relevé, chaque semaine ou quand vous le souhaitez, et la vérification du relevé montre les paiements Apple Pay que votre institution financière n'affiche pas.
+```
+
+## tr
+
+```
+Tenra 1.7'deki yenilikler:
+• Apple Pay ödemeleri kendiliğinden kaydedilir. Wallet otomasyonunu Ayarlar › Siri ve kısayollar'da bir kez kur; terminalde yaptığın her ödeme işyeri, tutar, para birimi ve kartıyla, tek bir soru sormadan kaydedilir.
+• Tenra kullandıkça öğrenir: her işyerinin kategorisini, her kartın hesabını. Tahmin etmek zorunda kaldığı bir ödeme "Kontrol edilecekler"de bekler, sakin bir bildirim de kontrol etmeni hatırlatır.
+• İşyerlerinin artık logoları ve kendi sayfaları var: bu ay ve bu yıl, aylık grafik, ziyaretler ve ortalama sepet. Bir işyerine kendi adını ya da logosunu ver, aramadan bul.
+• "Abonelik gibi görünüyor": her ay tekrarlanan ödemeler Abonelikler'de görünür, tek dokunuşla takip etmeye hazır.
+• Yeni öngörüler: en çok harcadığın işyeri ve ortalama sepeti sürekli büyüyen bir işyeri.
+• Herhangi bir uygulamadan bir banka PDF'ini Tenra'da aç: hesap özeti içe aktarılır, ödeme dekontu tek bir gidere dönüşür, borçlu olduğun birine yaptığın havale de o borcu kapatabilir (içe aktarma Tenra Pro ile).
+• Haftalık ya da istediğin sıklıkta bir hesap özeti hatırlatıcısı; hesap özeti kontrolü de bankanın listelemediği Apple Pay ödemelerini gösterir.
+```
+
+## pt-BR
+
+```
+Novidades do Tenra 1.7:
+• Os pagamentos com Apple Pay se registram sozinhos. Configure uma vez a automação da Wallet em Ajustes › Siri e atalhos, e cada pagamento na maquininha é salvo com o estabelecimento, o valor, a moeda e o cartão, sem nenhuma pergunta.
+• O Tenra aprende com o uso: a categoria de cada estabelecimento e a conta de cada cartão. Um pagamento em que ele precisou adivinhar fica em "Para revisar", e uma notificação discreta lembra você de conferir.
+• Os estabelecimentos ganharam logos e uma página própria: este mês e este ano, um gráfico mensal, as visitas e o tíquete médio. Dê ao estabelecimento um nome ou logo seu, e encontre-o pela busca.
+• "Parece uma assinatura": cobranças que se repetem todo mês aparecem em Assinaturas, prontas para acompanhar com um toque.
+• Novos insights: o estabelecimento com mais gastos e um estabelecimento cujo tíquete médio não para de subir.
+• Abra um PDF do banco no Tenra a partir de qualquer app: um extrato é importado, um comprovante de pagamento vira uma despesa, e uma transferência para alguém a quem você deve pode quitar essa dívida (importação com o Tenra Pro).
+• Um lembrete de extrato, toda semana ou como preferir, e a conferência do extrato mostra os pagamentos com Apple Pay que o seu banco não lista.
+```
+
+## it
+
+```
+Novità di Tenra 1.7:
+• I pagamenti con Apple Pay si registrano da soli. Configura una volta l'automazione Wallet in Impostazioni › Siri e comandi rapidi, e ogni pagamento al POS viene salvato con esercente, importo, valuta e carta, senza nemmeno una domanda.
+• Tenra impara strada facendo: la categoria di ogni esercente, il conto di ogni carta. Un pagamento in cui ha dovuto tirare a indovinare aspetta in «Da controllare», e una notifica discreta ti ricorda di verificarlo.
+• Gli esercenti hanno il loro logo e una pagina tutta loro: questo mese e quest'anno, un grafico mensile, le visite e lo scontrino medio. Dai a un esercente un nome o un logo tuo, e ritrovalo dalla ricerca.
+• «Sembra un abbonamento»: gli addebiti che tornano ogni mese compaiono in Abbonamenti, pronti da seguire con un tocco.
+• Nuovi suggerimenti: il tuo esercente principale e un esercente il cui scontrino medio continua a salire.
+• Apri in Tenra un PDF della banca da qualsiasi app: un estratto conto viene importato, una ricevuta di pagamento diventa una spesa, e un bonifico a qualcuno a cui devi dei soldi può saldare quel debito (importazione con Tenra Pro).
+• Un promemoria per l'estratto conto, ogni settimana o quando preferisci, e il controllo dell'estratto mostra i pagamenti Apple Pay che la tua banca non riporta.
+```
+
+## uk
+
+```
+Що нового в Tenra 1.7:
+• Оплати Apple Pay записуються самі. Один раз налаштуйте автоматизацію Wallet у Налаштуваннях › Siri та команди, і кожна оплата на терміналі запишеться з продавцем, сумою, валютою та карткою, без жодного запитання.
+• Tenra вчиться по ходу: запам'ятовує категорію для кожного продавця і рахунок для кожної картки. Оплата, у якій довелося вгадувати, чекає в розділі «На перевірку», а тихе сповіщення підкаже її перевірити.
+• У продавців з'явилися логотипи й власна сторінка: витрати цього місяця і за рік, графік по місяцях, візити й середній чек. Дайте продавцеві свою назву чи логотип і знаходьте його через пошук.
+• «Схоже на підписку»: списання, що повторюються щомісяця, з'являються в Підписках, і їх можна відстежувати одним дотиком.
+• Нові інсайти: головний продавець і продавець, у якого зростає середній чек.
+• Відкрийте PDF банку в Tenra з будь-якого застосунку: виписка імпортується, квитанція про оплату стане однією витратою, а переказ тому, кому ви винні, може погасити борг (імпорт у Tenra Pro).
+• Нагадування про виписку, щотижня чи як вам зручно, а звірка виписки покаже оплати Apple Pay, яких немає в банку.
+```
+
+## ja
+
+```
+Tenra 1.7 の新機能:
+• Apple Pay の支払いが自動で記録されます。設定 › Siri とショートカット で Wallet オートメーションを一度設定すれば、端末での支払いが店舗、金額、通貨、カードとともに、質問なしで記録されます。
+• Tenra は使うほど覚えます。店舗ごとのカテゴリ、カードごとの口座。推測で記録した支払いは「確認待ち」に入り、控えめな通知でお知らせします。
+• 店舗にロゴと専用ページが付きました。今月と今年の支出、月別グラフ、来店回数、平均購入額。店舗に自分で名前やロゴを付けて、検索から探せます。
+• 「サブスクリプションのようです」: 毎月くり返す支払いがサブスクリプションに表示され、ワンタップで管理を始められます。
+• 新しいインサイト: 支出トップの店舗と、平均購入額が上がり続けている店舗。
+• どのアプリからでも銀行の PDF を Tenra で開けます。明細書は読み込まれ、支払いのレシートは1件の支出になり、借りている相手への振込でその借りを返済できます(読み込みは Tenra Pro)。
+• 毎週または好きな間隔で明細書のリマインダー。明細書のチェックでは、銀行の明細にない Apple Pay の支払いが分かります。
+```
+
+## ko
+
+```
+Tenra 1.7의 새로운 기능:
+• Apple Pay 결제가 저절로 기록돼요. 설정 › Siri 및 단축어에서 Wallet 자동화를 한 번만 설정하면, 단말기에서 결제할 때마다 가맹점, 금액, 통화, 카드와 함께 아무것도 묻지 않고 기록돼요.
+• Tenra는 쓸수록 배워요. 가맹점마다 카테고리를, 카드마다 계좌를 기억해요. 추측해서 기록한 결제는 '확인할 결제'에서 기다리고, 조용한 알림으로 확인을 도와줘요.
+• 가맹점에 로고와 전용 페이지가 생겼어요. 이번 달과 올해 지출, 월별 차트, 방문 횟수, 평균 결제액. 가맹점에 나만의 이름이나 로고를 붙이고 검색으로 찾아보세요.
+• '구독으로 보여요': 매달 반복되는 결제가 구독에 나타나고, 한 번의 탭으로 관리할 수 있어요.
+• 새로운 인사이트: 지출이 가장 많은 가맹점과 평균 결제액이 계속 늘고 있는 가맹점.
+• 어떤 앱에서든 은행 PDF를 Tenra로 열어 보세요. 명세서는 가져오고, 결제 영수증은 지출 한 건이 되고, 빚진 사람에게 보낸 이체로 그 빚을 갚을 수 있어요(가져오기는 Tenra Pro).
+• 매주 또는 원하는 간격으로 명세서 알림을 받고, 명세서 확인에서 은행 내역에 없는 Apple Pay 결제를 볼 수 있어요.
+```
+
+## Submission checklist (1.7)
+
+1. **Device check** of the newest TestFlight build ([plan-auto-capture.md](plan-auto-capture.md) §8 and
+   the "not yet checked" list of PR #80), then fix what it finds.
+2. **Merge PR #80** into `main` once CI is green.
+3. **Archive from the Mac** with Xcode 27 (the store build compiles the iOS 27 code paths; CI's
+   Xcode 26 builds do not) and upload; check that build on the iOS 27 iPhone.
+4. **What's New**: this file, after step 1 (`prepare-version`).
+5. **Screenshots** of the main page from 1.7 (the decision of 2026-10-19 in
+   [promotion-plan.md](promotion-plan.md) §7).
+6. **App Privacy**: unchanged. Logo lookups by a merchant's name (logo.dev, Apple Pay merchants
+   only, never a sole proprietor) send only a company name, as the privacy policy already says
+   (`docs/public/privacy-policy.html`, Logos).
+7. **App Review notes**: how to try the Wallet automation without a real payment (Shortcuts →
+   the "Log an Apple Pay payment" action run by hand with an amount and a merchant), and that
+   nothing leaves the device for it but a logo lookup by a shop's name.

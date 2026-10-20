@@ -35,7 +35,9 @@ enum WalletReviewNotifier {
             return
         }
 
-        let merchant = payment.merchant.isEmpty ? "Apple Pay" : MerchantName.displayName(payment.merchant)
+        let merchant = payment.merchant.isEmpty
+            ? "Apple Pay"
+            : MerchantLogoStore.shared.customName(forDescription: payment.merchant) ?? MerchantName.displayName(payment.merchant)
         let content = UNMutableNotificationContent()
         content.title = String(localized: "walletReview.notification.title")
         if guesses.contains(.category) {

@@ -112,9 +112,13 @@ struct TransactionCard: View, Equatable {
                 return nil
             }
         }()
-        let merchantIconSource: IconSource? = showsMerchantLogos
-            && (transaction.type == .expense || transaction.type == .income)
+        let isMerchantRow = transaction.type == .expense || transaction.type == .income
+        let merchantIconSource: IconSource? = showsMerchantLogos && isMerchantRow
             ? MerchantLogoStore.shared.iconSource(forDescription: transaction.description)
+            : nil
+        // The name the user gave the merchant, instead of the bank's text.
+        let merchantName: String? = isMerchantRow
+            ? MerchantLogoStore.shared.customName(forDescription: transaction.description)
             : nil
         let seriesIconSource: IconSource? = series?.kind == .subscription ? series?.iconSource : nil
         let subscriptionIconSource: IconSource? = seriesIconSource ?? loanIconSource ?? merchantIconSource
@@ -133,6 +137,7 @@ struct TransactionCard: View, Equatable {
                 subscriptionIconSource: subscriptionIconSource,
                 showRecurringBadge: showRecurringBadge,
                 linkedSubcategories: linkedSubcategories,
+                note: merchantName,
                 transitionSourceID: transaction.id,
                 transitionNamespace: editNamespace
             )

@@ -118,6 +118,49 @@ struct MerchantLogoTests {
         #expect(!store.needsLookup(merchant: "Corner Bakery", online: true))
     }
 
+    // MARK: - The user's choices
+
+    @Test("A picked icon shows for the merchant and a lookup never replaces it")
+    func customIcon() {
+        let store = makeStore()
+        store.setCustomIcon(.sfSymbol("cart"), forMerchant: "CORNER BAKERY 2")
+
+        #expect(store.iconSource(forDescription: "Corner Bakery") == .sfSymbol("cart"))
+        #expect(!store.needsLookup(merchant: "Corner Bakery"))
+
+        store.record(.found("bakery.com"), merchant: "Corner Bakery")
+        #expect(store.iconSource(forDescription: "Corner Bakery") == .sfSymbol("cart"))
+
+        store.setCustomIcon(nil, forMerchant: "Corner Bakery")
+        #expect(store.iconSource(forDescription: "Corner Bakery") == nil)
+        #expect(store.needsLookup(merchant: "Corner Bakery"))
+    }
+
+    @Test("A name given to the merchant shows for its descriptions; cleared, the bank's text is back")
+    func customName() {
+        let store = makeStore()
+        store.setCustomName("  Пекарня у дома ", forMerchant: "CORNER BAKERY 2")
+
+        #expect(store.customName(forDescription: "Corner Bakery 7") == "Пекарня у дома")
+        #expect(store.customName(forDescription: "Greenmart") == nil)
+
+        store.setCustomName("", forMerchant: "Corner Bakery")
+        #expect(store.customName(forDescription: "Corner Bakery 7") == nil)
+    }
+
+    @Test("Picked icons and names survive a relaunch")
+    func choicesPersist() {
+        let defaults = UserDefaults(suiteName: "merchant.logo.\(UUID().uuidString)")!
+        do {
+            let store = MerchantLogoStore(defaults: defaults)
+            store.setCustomIcon(.brandService("bakery.com"), forMerchant: "Corner Bakery")
+            store.setCustomName("Пекарня", forMerchant: "Corner Bakery")
+        }
+        let reloaded = MerchantLogoStore(defaults: defaults)
+        #expect(reloaded.iconSource(forDescription: "CORNER BAKERY") == .brandService("bakery.com"))
+        #expect(reloaded.customName(forDescription: "CORNER BAKERY") == "Пекарня")
+    }
+
     // MARK: - History
 
     private func tx(_ id: String, _ description: String, _ type: TransactionType = .expense) -> Transaction {

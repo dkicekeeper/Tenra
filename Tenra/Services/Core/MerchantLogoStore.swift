@@ -13,7 +13,12 @@
 //  "... 456") gets the same logo, whatever recorded it.
 //
 //  "No logo" is checked again after 30 days: tenra-assets and logo.dev grow.
-//  Storage: a single Codable blob in `UserDefaults`.
+//
+//  Also what the user chose for a merchant in its edit sheet (MerchantCategoryEditView):
+//  an icon or logo of their own, which a lookup never replaces, and a name, which the
+//  merchant's transaction rows show instead of the bank's text.
+//
+//  Storage: two Codable blobs in `UserDefaults`, the logos and the names.
 //
 
 import Foundation
@@ -28,6 +33,8 @@ final class MerchantLogoStore {
         /// `LogoDevNameProvider.scheme` + the merchant's name.
         case found(String)
         case missing
+        /// Picked by the user: never looked up again.
+        case custom(IconSource)
     }
 
     struct Entry: Codable, Equatable {
@@ -41,6 +48,7 @@ final class MerchantLogoStore {
     static let shared = MerchantLogoStore()
 
     private static let storageKey = "merchantLogo.v1"
+    private static let namesKey = "merchantName.v1"
     /// The Settings switch (on by default): `@AppStorage` in the views that read it.
     static let enabledKey = "settings.merchantLogos"
     static let recheckInterval: TimeInterval = 30 * 24 * 60 * 60
@@ -48,30 +56,79 @@ final class MerchantLogoStore {
     @ObservationIgnored private let defaults: UserDefaults
     /// `[normalized merchant: entry]`
     @ObservationIgnored private var entries: [String: Entry]
-    /// Raw description → logo key ("" when none), so a list row normalizes its text once.
-    @ObservationIgnored private var keyByDescription: [String: String] = [:]
+    /// `[normalized merchant: the name the user gave it]`
+    @ObservationIgnored private var names: [String: String]
+    /// Raw description → normalized merchant ("" when too short), so a list row normalizes
+    /// its text once.
+    @ObservationIgnored private var merchantByDescription: [String: String] = [:]
     /// Bumped on every change: reading it is what re-renders a row when a logo is found.
     private(set) var version = 0
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        self.entries = Self.load(from: defaults)
+        self.entries = Self.load([String: Entry].self, key: Self.storageKey, from: defaults) ?? [:]
+        self.names = Self.load([String: String].self, key: Self.namesKey, from: defaults) ?? [:]
     }
 
-    /// The merchant's logo for a transaction's description, or nil when none was found.
+    /// The merchant's logo (found or picked) for a transaction's description, or nil.
     func iconSource(forDescription description: String) -> IconSource? {
         _ = version
-        if let key = keyByDescription[description] {
-            return key.isEmpty ? nil : .brandService(key)
+        guard let merchant = merchantKey(forDescription: description) else { return nil }
+        switch entries[merchant]?.state {
+        case .found(let key)?: return .brandService(key)
+        case .custom(let icon)?: return icon
+        case .missing?, nil: return nil
+        }
+    }
+
+    /// The name the user gave this transaction's merchant, or nil.
+    func customName(forDescription description: String) -> String? {
+        _ = version
+        return merchantKey(forDescription: description).flatMap { names[$0] }
+    }
+
+    private func merchantKey(forDescription description: String) -> String? {
+        if let cached = merchantByDescription[description] {
+            return cached.isEmpty ? nil : cached
         }
         let merchant = CategorySuggestionService.normalizedMerchant(description)
-        var key = ""
-        if merchant.count >= CategorySuggestionService.minimumMerchantLength,
-           case .found(let found)? = entries[merchant]?.state {
-            key = found
+        let key = merchant.count >= CategorySuggestionService.minimumMerchantLength ? merchant : ""
+        merchantByDescription[description] = key
+        return key.isEmpty ? nil : key
+    }
+
+    /// The merchant's lookup state or the icon the user picked; nil when never looked up.
+    func state(forMerchant merchant: String) -> State? {
+        Self.key(merchant).flatMap { entries[$0]?.state }
+    }
+
+    // MARK: - The user's choices
+
+    /// An icon or logo the user picked for the merchant; nil goes back to the lookup.
+    func setCustomIcon(_ icon: IconSource?, forMerchant merchant: String) {
+        guard let key = Self.key(merchant) else { return }
+        if let icon {
+            entries[key] = Entry(state: .custom(icon), checkedAt: Date(), lookedUpOnline: nil)
+        } else {
+            guard entries.removeValue(forKey: key) != nil else { return }
         }
-        keyByDescription[description] = key
-        return key.isEmpty ? nil : .brandService(key)
+        version += 1
+        persist()
+    }
+
+    /// A name the user gave the merchant; nil or empty goes back to the bank's text.
+    func setCustomName(_ name: String?, forMerchant merchant: String) {
+        guard let key = Self.key(merchant) else { return }
+        let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard names[key] != (trimmed.isEmpty ? nil : trimmed) else { return }
+        names[key] = trimmed.isEmpty ? nil : trimmed
+        version += 1
+        persistNames()
+    }
+
+    private static func key(_ merchant: String) -> String? {
+        let key = CategorySuggestionService.normalizedMerchant(merchant)
+        return key.count >= CategorySuggestionService.minimumMerchantLength ? key : nil
     }
 
     /// True when the merchant was never looked up, had no logo 30 days ago, or was looked up
@@ -80,16 +137,17 @@ final class MerchantLogoStore {
         let key = CategorySuggestionService.normalizedMerchant(merchant)
         guard key.count >= CategorySuggestionService.minimumMerchantLength else { return false }
         guard let entry = entries[key] else { return true }
+        // Found or picked: never looked up again.
         guard entry.state == .missing else { return false }
         return now.timeIntervalSince(entry.checkedAt) > Self.recheckInterval
             || (online && entry.lookedUpOnline == false)
     }
 
+    /// A lookup's result. Never replaces an icon the user picked meanwhile.
     func record(_ state: State, merchant: String, online: Bool = true, now: Date = Date()) {
-        let key = CategorySuggestionService.normalizedMerchant(merchant)
-        guard key.count >= CategorySuggestionService.minimumMerchantLength else { return }
+        guard let key = Self.key(merchant) else { return }
+        if case .custom? = entries[key]?.state { return }
         entries[key] = Entry(state: state, checkedAt: now, lookedUpOnline: online)
-        keyByDescription = [:]
         version += 1
         persist()
     }
@@ -97,23 +155,26 @@ final class MerchantLogoStore {
     /// Wipe everything. Exposed for tests.
     func reset() {
         entries = [:]
-        keyByDescription = [:]
+        names = [:]
         version += 1
         defaults.removeObject(forKey: Self.storageKey)
+        defaults.removeObject(forKey: Self.namesKey)
     }
 
     // MARK: - Persistence
 
-    private static func load(from defaults: UserDefaults) -> [String: Entry] {
-        guard let data = defaults.data(forKey: storageKey),
-              let decoded = try? JSONDecoder().decode([String: Entry].self, from: data) else {
-            return [:]
-        }
-        return decoded
+    private static func load<T: Decodable>(_ type: T.Type, key: String, from defaults: UserDefaults) -> T? {
+        guard let data = defaults.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(type, from: data)
     }
 
     private func persist() {
         guard let data = try? JSONEncoder().encode(entries) else { return }
         defaults.set(data, forKey: Self.storageKey)
+    }
+
+    private func persistNames() {
+        guard let data = try? JSONEncoder().encode(names) else { return }
+        defaults.set(data, forKey: Self.namesKey)
     }
 }

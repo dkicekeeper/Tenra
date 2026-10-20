@@ -56,7 +56,8 @@ struct MerchantCategoriesView: View {
         } label: {
             UniversalRow(config: .settings, leadingIcon: iconConfig(for: category)) {
                 VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                    Text(MerchantName.displayName(merchant.displayName))
+                    Text(MerchantLogoStore.shared.customName(forDescription: merchant.displayName)
+                         ?? MerchantName.displayName(merchant.displayName))
                         .font(AppTypography.h4)
                         .fontWeight(.medium)
                         .foregroundStyle(AppColors.textPrimary)

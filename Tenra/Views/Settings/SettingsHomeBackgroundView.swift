@@ -2,9 +2,10 @@
 //  SettingsHomeBackgroundView.swift
 //  Tenra
 //
-//  The home screen's background: DesignKit's option carousel (HomeBackgroundPicker), the
-//  chosen background large over the row of options, and under it that option's settings: the
-//  intensity of the expense colours, or a photo to pick, its blur and a way to remove it.
+//  The home screen's background: DesignKit's option carousel (HomeBackgroundPicker), each
+//  background a large preview, and under it the chosen one's settings in DesignKit's form rows
+//  (docs/migration-6.0.md in DesignKit): the intensity of the expense colours, or a photo to
+//  pick, its blur and a way to remove it.
 //
 
 import SwiftUI
@@ -48,8 +49,8 @@ struct SettingsHomeBackgroundView: View {
             }
             .padding(.vertical, AppSpacing.lg)
         }
-        // The carousel's cards are the grouped-list card colour: they stand on the grouped
-        // background, as Ten's wardrobe's do (AssistantWardrobe).
+        // The grouped background: the settings are FormSection cards. "None" previews this
+        // colour, the home's plain one; the preview's hairline keeps its shape.
         .background(AppColors.Background.baseAlt)
         .navigationTitle(String(localized: "settings.background"))
         .navigationBarTitleDisplayMode(.inline)

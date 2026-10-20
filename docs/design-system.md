@@ -131,8 +131,9 @@ what is still unused and where it could go):
   dated today or earlier (`TransactionAddModal.balanceAfter`).
 - `SpentBudgetText`: the category screen's budget row.
 - `.sparkleBurst`: money put towards a goal (`GoalDetailView`); reaching it celebrates instead.
-- `OptionCardPicker(style: .carousel)`: Home's background (`HomeBackgroundPicker`), the option's
-  settings under the row; a photo is applied once one is picked.
+- `OptionCardPicker` (a carousel of large previews since 6.0.0): Home's background
+  (`HomeBackgroundPicker`), the chosen option's settings under the carousel in form rows; a photo
+  is applied once one is picked.
 - Through DesignKit's own components, not called directly: `ChartSelectionBanner` and
   `ChartZoomControls` (in `LineChart`, `BarChart`, `ChartSwitcher`), `.chartDrawIn`,
   `AmountComparisonBar` (in `CashFlowCard`), `OnboardingStepIndicator` (in

@@ -19,22 +19,26 @@ struct SettingsAssistantSection: View {
     var body: some View {
         if AssistantAvailability.isAvailable {
             Section {
-                ToggleSettingsRow(
+                UniversalRow(
+                    String(localized: "settings.assistant.cloud"),
                     icon: "cloud",
-                    title: String(localized: "settings.assistant.cloud"),
-                    isOn: $hasConsent
+                    config: .settings,
+                    accessory: .toggle($hasConsent)
                 )
-                ToggleSettingsRow(
+                UniversalRow(
+                    String(localized: "settings.assistant.chatter"),
                     icon: "text.bubble",
-                    title: String(localized: "settings.assistant.chatter"),
-                    isOn: $chatterOn
+                    config: .settings,
+                    accessory: .toggle($chatterOn)
                 )
-                NavigationSettingsRow(
+                UniversalRow(
+                    String(localized: "assistant.memory.title"),
                     icon: "brain",
-                    title: String(localized: "assistant.memory.title")
-                ) {
+                    config: .settings,
+                    accessory: .navigation {
                     AssistantMemoryView(memory: memory)
                 }
+                )
             } header: {
                 SectionHeader(String(localized: "settings.assistant.header"), style: .compact)
             } footer: {

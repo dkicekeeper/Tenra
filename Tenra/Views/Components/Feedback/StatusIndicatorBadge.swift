@@ -28,7 +28,7 @@ extension RecurringSeries {
     HStack(spacing: AppSpacing.xl) {
         ForEach([EntityStatus.active, .paused, .archived, .pending], id: \.iconName) { status in
             VStack(spacing: AppSpacing.xs) {
-                StatusIndicatorBadge(status: status, font: AppTypography.h3)
+                StatusIndicatorBadge(status: status, size: AppIconSize.lg)
                 Text(status.accessibilityLabel)
                     .font(AppTypography.caption)
                     .foregroundStyle(.secondary)

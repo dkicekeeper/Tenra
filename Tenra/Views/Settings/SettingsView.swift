@@ -211,35 +211,41 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         Section {
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.insightSignals.title"),
                 icon: "bell.badge",
-                title: String(localized: "settings.insightSignals.title")
-            ) {
+                config: .settings,
+                accessory: .navigation {
                 InsightSignalSettingsView()
             }
+            )
         }
     }
 
     #if DEBUG
     private var experimentsSection: some View {
         Section {
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.experiments"),
                 icon: "flask",
-                title: String(localized: "settings.experiments")
-            ) {
+                config: .settings,
+                accessory: .navigation {
                 ExperimentsListView()
             }
-            NavigationSettingsRow(
+            )
+            UniversalRow(
+                String(localized: "settings.notificationDebug"),
                 icon: "bell.badge",
-                title: String(localized: "settings.notificationDebug")
-            ) {
+                config: .settings,
+                accessory: .navigation {
                 NotificationDebugView()
             }
-            ActionSettingsRow(
+            )
+            UniversalRow(
+                String(localized: "settings.debug.relaunchOnboarding"),
                 icon: "arrow.counterclockwise",
-                title: String(localized: "settings.debug.relaunchOnboarding"),
-                isDestructive: false,
-                action: { settingsViewModel.debugRelaunchOnboarding() }
+                config: .settings,
+                accessory: .action({ settingsViewModel.debugRelaunchOnboarding() })
             )
         }
     }
@@ -330,12 +336,14 @@ struct SettingsView: View {
             }
             // Launch health check + MetricKit crash/hang reports, shareable. In release builds
             // too: that's where silent failures (like a paywall with nothing to sell) happen.
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.diagnostics"),
                 icon: "stethoscope",
-                title: String(localized: "settings.diagnostics")
-            ) {
+                config: .settings,
+                accessory: .navigation {
                 DiagnosticsView()
             }
+            )
         }
     }
 

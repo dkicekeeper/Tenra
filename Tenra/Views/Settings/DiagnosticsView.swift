@@ -67,10 +67,11 @@ struct DiagnosticsView: View {
                     ProgressView()
                 }
             }
-            ActionSettingsRow(
+            UniversalRow(
+                String(localized: "diagnostics.runAgain"),
                 icon: "arrow.clockwise",
-                title: String(localized: "diagnostics.runAgain"),
-                action: { Task { await center.runHealthCheck() } }
+                config: .settings,
+                accessory: .action({ Task { await center.runHealthCheck() } })
             )
             .disabled(center.isChecking)
         } header: {

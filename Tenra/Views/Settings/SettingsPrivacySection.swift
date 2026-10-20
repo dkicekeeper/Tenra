@@ -15,15 +15,16 @@ struct SettingsPrivacySection: View {
 
     var body: some View {
         Section {
-            ToggleSettingsRow(
+            UniversalRow(
+                toggleTitle,
                 icon: symbolName,
-                title: toggleTitle,
-                isOn: Binding(
+                config: .settings,
+                accessory: .toggle(Binding(
                     get: { lock.isEnabled },
                     set: { newValue in
                         Task { await lock.setEnabled(newValue) }
                     }
-                )
+                ))
             )
             .disabled(biometry == .unavailable && !lock.isEnabled)
         } header: {

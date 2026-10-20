@@ -54,19 +54,17 @@ struct GoalEditView: View {
                     }
 
                     FormSection(header: String(localized: "goal.deadline")) {
-                        ToggleSettingsRow(
+                        UniversalRow(
+                            String(localized: "goal.hasDeadline"),
                             icon: "calendar",
-                            title: String(localized: "goal.hasDeadline"),
-                            config: .standard,
-                            isOn: $hasDeadline
+                            accessory: .toggle($hasDeadline)
                         )
                         if hasDeadline {
                             Divider().padding(.leading, AppSpacing.lg)
-                            DatePickerRow(
+                            UniversalRow(
+                                String(localized: "goal.deadline"),
                                 icon: "calendar.badge.clock",
-                                title: String(localized: "goal.deadline"),
-                                selection: $deadline,
-                                minDate: Date()
+                                accessory: .date($deadline, from: Date())
                             )
                         }
                     }
@@ -75,12 +73,11 @@ struct GoalEditView: View {
                         header: String(localized: "goal.account"),
                         footer: String(localized: "goal.account.hint")
                     ) {
-                        NavigationPickerRow(
+                        UniversalRow(
+                            String(localized: "goal.account"),
                             icon: "building.columns",
-                            title: String(localized: "goal.account"),
-                            selection: $linkedAccountId,
-                            options: [(label: String(localized: "goal.account.none"), value: "")]
-                                + accounts.map { (label: $0.name, value: $0.id) }
+                            accessory: .picker($linkedAccountId, options: [(label: String(localized: "goal.account.none"), value: "")]
+                                + accounts.map { (label: $0.name, value: $0.id) })
                         )
                         if goal == nil, linkedAccountId.isEmpty {
                             Divider().padding(.leading, AppSpacing.lg)

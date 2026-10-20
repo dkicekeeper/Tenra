@@ -24,11 +24,11 @@ struct InsightSignalSettingsView: View {
             if settings.isEnabled {
                 if permissionManager.authorizationStatus == .denied {
                     Section {
-                        ActionSettingsRow(
+                        UniversalRow(
+                            String(localized: "settings.insightSignals.permissionDenied"),
                             icon: "bell.slash",
-                            title: String(localized: "settings.insightSignals.permissionDenied"),
-                            isDestructive: false,
-                            action: { permissionManager.openAppSettings() }
+                            config: .settings,
+                            accessory: .action({ permissionManager.openAppSettings() })
                         )
                     }
                 }

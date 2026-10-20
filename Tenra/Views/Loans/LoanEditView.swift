@@ -163,9 +163,10 @@ struct LoanEditView: View {
                         // Loan type — menu picker (default `.annuity`, i.e. "Credit").
                         // Locked once the loan exists because amortisation tables
                         // can't be retroactively flipped between annuity/installment.
-                        MenuPickerRow(
-                            title: String(localized: "loan.typePicker", defaultValue: "Type"),
-                            selection: $loanType
+                        UniversalRow(
+                            String(localized: "loan.typePicker", defaultValue: "Type"),
+                            icon: "creditcard",
+                            accessory: .menu($loanType, options: LoanType.menuOptions)
                         )
                         .disabled(isEditing)
 
@@ -233,10 +234,10 @@ struct LoanEditView: View {
 
                         if !isEditing {
                             Divider()
-                            DatePickerRow(
+                            UniversalRow(
+                                String(localized: "loan.startDate", defaultValue: "Loan start date"),
                                 icon: "calendar",
-                                title: String(localized: "loan.startDate", defaultValue: "Loan start date"),
-                                selection: $startDate
+                                accessory: .date($startDate)
                             )
                         }
                     }
@@ -301,21 +302,19 @@ struct LoanEditView: View {
         if !expensePickerCategories.isEmpty {
             VStack(alignment: .leading, spacing: AppSpacing.sm) {
                 FormSection(header: String(localized: "loan.defaultTagging", defaultValue: "Default category")) {
-                    MenuPickerRow(
+                    UniversalRow(
+                        String(localized: "subscriptions.category", defaultValue: "Category"),
                         icon: "tag",
-                        title: String(localized: "subscriptions.category", defaultValue: "Category"),
-                        selection: $defaultCategory,
-                        options: categoryDropdownOptions
+                        accessory: .menu($defaultCategory, options: categoryDropdownOptions)
                     )
 
                     if defaultCategoryHasSubcategories {
                         Divider()
 
-                        MenuPickerRow(
+                        UniversalRow(
+                            String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"),
                             icon: "tag.fill",
-                            title: String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"),
-                            selection: $defaultSubcategoryId,
-                            options: subcategoryDropdownOptions
+                            accessory: .menu($defaultSubcategoryId, options: subcategoryDropdownOptions)
                         )
                     }
                 }

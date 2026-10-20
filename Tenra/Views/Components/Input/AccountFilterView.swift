@@ -35,10 +35,14 @@ struct AccountFilterView: View {
         NavigationStack {
             List {
                 Section {
-                    CheckmarkRow(String(localized: "filter.allAccounts"), isSelected: selectedAccountId == nil) {
+                    UniversalRow(
+                        String(localized: "filter.allAccounts"),
+                        config: .settings,
+                        accessory: .checkmark(isSelected: selectedAccountId == nil) {
                         selectedAccountId = nil
                         dismiss()
                     }
+                    )
                 }
 
                 if !regularAccounts.isEmpty {
@@ -85,17 +89,18 @@ struct AccountFilterView: View {
             ForEach(accounts) { account in
                 let balance = balanceCoordinator?.balances[account.id] ?? 0
 
-                CheckmarkRow(
+                UniversalRow(
                     account.name,
-                    icon: iconConfig(for: account),
+                    leadingIcon: iconConfig(for: account),
                     value: amountsHidden
                         ? Formatting.hiddenAmount(currency: account.currency)
                         : Formatting.formatCurrencySmart(balance, currency: account.currency),
-                    isSelected: selectedAccountId == account.id
-                ) {
+                    config: .settings,
+                    accessory: .checkmark(isSelected: selectedAccountId == account.id) {
                     selectedAccountId = account.id
                     dismiss()
                 }
+                )
             }
         } header: {
             SectionHeader(title)

@@ -27,20 +27,28 @@ struct AssistantAttachmentCard: View {
             switch summary.kind {
             case .receipt:
                 if let total = summary.expenses {
-                    InfoRow(
+                    UniversalRow(
+                        [summary.title, Self.day(summary.firstDate)].compactMap { $0 }.joined(separator: " · "),
                         icon: "receipt",
-                        label: [summary.title, Self.day(summary.firstDate)].compactMap { $0 }.joined(separator: " · "),
-                        amount: total.amount,
-                        currency: total.currency
+                        config: .info,
+                        accessory: .amount(total.amount, currency: total.currency)
                     )
                 }
             case .statement:
                 MetaLine(statementItems)
                 if let expenses = summary.expenses {
-                    InfoRow(label: String(localized: "insights.expenses"), amount: expenses.amount, currency: expenses.currency)
+                    UniversalRow(
+                        String(localized: "insights.expenses"),
+                        config: .info,
+                        accessory: .amount(expenses.amount, currency: expenses.currency)
+                    )
                 }
                 if let income = summary.income {
-                    InfoRow(label: String(localized: "insights.income"), amount: income.amount, currency: income.currency)
+                    UniversalRow(
+                        String(localized: "insights.income"),
+                        config: .info,
+                        accessory: .amount(income.amount, currency: income.currency)
+                    )
                 }
                 if summary.uncategorized > 0 {
                     InlineStatusText(message: String(format: String(localized: "assistant.attachment.uncategorized"), summary.uncategorized), type: .info)

@@ -20,16 +20,18 @@ struct SettingsExportImportSection: View {
 
     var body: some View {
         Section(header: SectionHeader(String(localized: "settings.exportImport"), style: .compact)) {
-            ActionSettingsRow(
+            UniversalRow(
+                String(localized: "settings.exportData"),
                 icon: "square.and.arrow.up",
-                title: String(localized: "settings.exportData"),
-                action: onExport
+                config: .settings,
+                accessory: .action(onExport)
             )
 
-            ActionSettingsRow(
+            UniversalRow(
+                String(localized: "settings.importData"),
                 icon: "square.and.arrow.down",
-                title: String(localized: "settings.importData"),
-                action: onImport
+                config: .settings,
+                accessory: .action(onImport)
             )
         }
     }

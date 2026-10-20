@@ -617,66 +617,72 @@ struct LoanDetailView: View {
             Text(String(localized: "loan.stats", defaultValue: "Statistics"))
                 .font(AppTypography.h4)
 
-            InfoRow(
+            UniversalRow(
+                String(localized: "loan.originalAmount", defaultValue: "Original Amount"),
                 icon: "banknote",
-                label: String(localized: "loan.originalAmount", defaultValue: "Original Amount"),
-                amount: NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue,
-                currency: account.currency
+                config: .info,
+                accessory: .amount(NSDecimalNumber(decimal: loanInfo.originalPrincipal).doubleValue, currency: account.currency)
             )
 
             if loanInfo.interestRateAnnual > 0 {
-                InfoRow(
+                UniversalRow(
+                    String(localized: "loan.interestRate", defaultValue: "Interest Rate"),
                     icon: "percent",
-                    label: String(localized: "loan.interestRate", defaultValue: "Interest Rate"),
-                    value: String(format: "%.2f%% %@", NSDecimalNumber(decimal: loanInfo.interestRateAnnual).doubleValue, String(localized: "loan.annual", defaultValue: "annual"))
+                    config: .info,
+                    accessory: .info(String(format: "%.2f%% %@", NSDecimalNumber(decimal: loanInfo.interestRateAnnual).doubleValue, String(localized: "loan.annual", defaultValue: "annual")))
                 )
 
-                InfoRow(
+                UniversalRow(
+                    String(localized: "loan.totalInterestPaid", defaultValue: "Interest Paid"),
                     icon: "chart.bar.fill",
-                    label: String(localized: "loan.totalInterestPaid", defaultValue: "Interest Paid"),
-                    amount: NSDecimalNumber(decimal: loanInfo.totalInterestPaid).doubleValue,
-                    currency: account.currency
+                    config: .info,
+                    accessory: .amount(NSDecimalNumber(decimal: loanInfo.totalInterestPaid).doubleValue, currency: account.currency)
                 )
 
                 let totalInterest = cachedSchedule.reduce(Decimal(0)) { $0 + $1.interest }
-                InfoRow(
+                UniversalRow(
+                    String(localized: "loan.projectedTotalInterest", defaultValue: "Total Interest (projected)"),
                     icon: "chart.line.uptrend.xyaxis",
-                    label: String(localized: "loan.projectedTotalInterest", defaultValue: "Total Interest (projected)"),
-                    amount: NSDecimalNumber(decimal: totalInterest).doubleValue,
-                    currency: account.currency
+                    config: .info,
+                    accessory: .amount(NSDecimalNumber(decimal: totalInterest).doubleValue, currency: account.currency)
                 )
             }
 
-            InfoRow(
+            UniversalRow(
+                String(localized: "loan.term", defaultValue: "Term"),
                 icon: "calendar",
-                label: String(localized: "loan.term", defaultValue: "Term"),
-                value: String(format: String(localized: "loan.termValue", defaultValue: "%d months"), loanInfo.termMonths)
+                config: .info,
+                accessory: .info(String(format: String(localized: "loan.termValue", defaultValue: "%d months"), loanInfo.termMonths))
             )
 
-            InfoRow(
+            UniversalRow(
+                String(localized: "loan.paymentsMade", defaultValue: "Payments Made"),
                 icon: "checkmark.circle",
-                label: String(localized: "loan.paymentsMade", defaultValue: "Payments Made"),
-                value: "\(loanInfo.paymentsMade) / \(loanInfo.termMonths)"
+                config: .info,
+                accessory: .info("\(loanInfo.paymentsMade) / \(loanInfo.termMonths)")
             )
 
             let remaining = LoanPaymentService.remainingPayments(loanInfo: loanInfo)
-            InfoRow(
+            UniversalRow(
+                String(localized: "loan.paymentsRemaining", defaultValue: "Remaining"),
                 icon: "hourglass",
-                label: String(localized: "loan.paymentsRemaining", defaultValue: "Remaining"),
-                value: String(format: String(localized: "loan.paymentsRemainingValue", defaultValue: "%d payments"), remaining)
+                config: .info,
+                accessory: .info(String(format: String(localized: "loan.paymentsRemainingValue", defaultValue: "%d payments"), remaining))
             )
 
-            InfoRow(
+            UniversalRow(
+                String(localized: "loan.endDate", defaultValue: "End Date"),
                 icon: "calendar.badge.clock",
-                label: String(localized: "loan.endDate", defaultValue: "End Date"),
-                value: formatDateString(loanInfo.endDate)
+                config: .info,
+                accessory: .info(formatDateString(loanInfo.endDate))
             )
 
             if !loanInfo.earlyRepayments.isEmpty {
-                InfoRow(
+                UniversalRow(
+                    String(localized: "loan.earlyRepayments", defaultValue: "Early Repayments"),
                     icon: "bolt.fill",
-                    label: String(localized: "loan.earlyRepayments", defaultValue: "Early Repayments"),
-                    value: "\(loanInfo.earlyRepayments.count)"
+                    config: .info,
+                    accessory: .info("\(loanInfo.earlyRepayments.count)")
                 )
             }
         }

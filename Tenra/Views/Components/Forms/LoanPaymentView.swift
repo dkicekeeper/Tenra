@@ -263,20 +263,20 @@ struct LoanPaymentView: View {
                 monthlyPayment: amount
             )
             FormSection(header: String(localized: "loan.impact", defaultValue: "Impact")) {
-                InfoRow(
+                UniversalRow(
+                    String(localized: "loan.interestPortion", defaultValue: "Interest"),
                     icon: "percent",
-                    label: String(localized: "loan.interestPortion", defaultValue: "Interest"),
-                    amount: NSDecimalNumber(decimal: breakdown.interest).doubleValue,
-                    currency: account.currency
+                    config: .info,
+                    accessory: .amount(NSDecimalNumber(decimal: breakdown.interest).doubleValue, currency: account.currency)
                 )
                 .padding(.horizontal, AppSpacing.lg)
                 .padding(.vertical, AppSpacing.sm)
                 Divider().padding(.leading, AppSpacing.lg)
-                InfoRow(
+                UniversalRow(
+                    String(localized: "loan.principalPortion", defaultValue: "Principal"),
                     icon: "arrow.down.to.line",
-                    label: String(localized: "loan.principalPortion", defaultValue: "Principal"),
-                    amount: NSDecimalNumber(decimal: breakdown.principal).doubleValue,
-                    currency: account.currency
+                    config: .info,
+                    accessory: .amount(NSDecimalNumber(decimal: breakdown.principal).doubleValue, currency: account.currency)
                 )
                 .padding(.horizontal, AppSpacing.lg)
                 .padding(.vertical, AppSpacing.sm)

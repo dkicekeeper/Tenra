@@ -115,21 +115,19 @@ struct LoanPayAllView: View {
                                     .foregroundStyle(AppColors.textSecondary)
                             }
                         } else {
-                            MenuPickerRow(
+                            UniversalRow(
+                                String(localized: "loan.sourceAccount", defaultValue: "From account"),
                                 icon: "building.columns",
-                                title: String(localized: "loan.sourceAccount", defaultValue: "From account"),
-                                selection: $selectedSourceAccountId,
-                                options: availableAccounts.map { (label: $0.name, value: $0.id) }
+                                accessory: .menu($selectedSourceAccountId, options: availableAccounts.map { (label: $0.name, value: $0.id) })
                             )
                         }
 
                         Divider().padding(.leading, AppSpacing.lg)
 
-                        DatePickerRow(
+                        UniversalRow(
+                            String(localized: "loan.date", defaultValue: "Date"),
                             icon: "calendar",
-                            title: String(localized: "loan.date", defaultValue: "Date"),
-                            selection: $paymentDate,
-                            maxDate: Date()
+                            accessory: .date($paymentDate, through: Date())
                         )
                     }
                 }

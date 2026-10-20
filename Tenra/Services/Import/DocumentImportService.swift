@@ -44,7 +44,7 @@ nonisolated struct DocumentImportService {
         defaultCurrency: String,
         progress: (@Sendable (Int, Int) -> Void)? = nil
     ) async throws -> ImportOutcome {
-        let (snapshot, unreadablePages) = try await snapshot(of: url, progress: progress)
+        let (snapshot, unreadablePages) = try await extractText(of: url, progress: progress)
         return try await interpret(snapshot: snapshot, defaultCurrency: defaultCurrency, unreadablePages: unreadablePages)
     }
 
@@ -55,7 +55,7 @@ nonisolated struct DocumentImportService {
         defaultCurrency: String,
         progress: (@Sendable (Int, Int) -> Void)? = nil
     ) async throws -> DocumentContent {
-        let (snapshot, unreadablePages) = try await snapshot(of: url, progress: progress)
+        let (snapshot, unreadablePages) = try await extractText(of: url, progress: progress)
         return try await content(snapshot: snapshot, defaultCurrency: defaultCurrency, unreadablePages: unreadablePages)
     }
 
@@ -99,7 +99,7 @@ nonisolated struct DocumentImportService {
 
     /// The PDF's text: its text layer, else Vision over the rendered pages, with the pages
     /// that could not be rendered.
-    private static func snapshot(
+    private static func extractText(
         of url: URL,
         progress: (@Sendable (Int, Int) -> Void)?
     ) async throws -> (DocumentSnapshot, [Int]) {

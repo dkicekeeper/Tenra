@@ -19,7 +19,7 @@ enum StatementImportReminder {
 
     static let identifierPrefix = "importReminder_"
     /// Days between reminders, 0 = off: `@AppStorage` in the Settings row.
-    static let intervalKey = "settings.importReminderDays"
+    nonisolated static let intervalKey = "settings.importReminderDays"
     nonisolated static let defaultIntervalDays = 7
     /// The Settings choices: off, every week, every 2 weeks, every month.
     nonisolated static let intervalChoices = [0, 7, 14, 30]

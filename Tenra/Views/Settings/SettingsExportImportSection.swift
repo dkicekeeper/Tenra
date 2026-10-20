@@ -53,7 +53,7 @@ struct SettingsExportImportSection: View {
     }
 
     private var reminderOptions: [(label: String, value: Int)] {
-        StatementImportReminder.intervalChoices.map { days in
+        StatementImportReminder.intervalChoices.map { days -> (label: String, value: Int) in
             switch days {
             case 0: return (String(localized: "settings.importReminder.off"), days)
             case 7: return (String(localized: "settings.importReminder.week"), days)

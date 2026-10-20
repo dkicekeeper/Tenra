@@ -211,35 +211,41 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         Section {
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.insightSignals.title"),
                 icon: "bell.badge",
-                title: String(localized: "settings.insightSignals.title")
-            ) {
-                InsightSignalSettingsView()
-            }
+                config: .settings,
+                accessory: .navigation {
+                    InsightSignalSettingsView()
+                }
+            )
         }
     }
 
     #if DEBUG
     private var experimentsSection: some View {
         Section {
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.experiments"),
                 icon: "flask",
-                title: String(localized: "settings.experiments")
-            ) {
-                ExperimentsListView()
-            }
-            NavigationSettingsRow(
+                config: .settings,
+                accessory: .navigation {
+                    ExperimentsListView()
+                }
+            )
+            UniversalRow(
+                String(localized: "settings.notificationDebug"),
                 icon: "bell.badge",
-                title: String(localized: "settings.notificationDebug")
-            ) {
-                NotificationDebugView()
-            }
-            ActionSettingsRow(
+                config: .settings,
+                accessory: .navigation {
+                    NotificationDebugView()
+                }
+            )
+            UniversalRow(
+                String(localized: "settings.debug.relaunchOnboarding"),
                 icon: "arrow.counterclockwise",
-                title: String(localized: "settings.debug.relaunchOnboarding"),
-                isDestructive: false,
-                action: { settingsViewModel.debugRelaunchOnboarding() }
+                config: .settings,
+                accessory: .action({ settingsViewModel.debugRelaunchOnboarding() })
             )
         }
     }
@@ -259,8 +265,7 @@ struct SettingsView: View {
                             .font(AppTypography.body)
                             .foregroundStyle(AppColors.textPrimary)
                     } trailing: {
-                        Image(systemName: "arrow.up.right")
-                            .font(AppTypography.bodySmall)
+                        Icon("arrow.up.right", size: AppIconSize.sm)
                             .foregroundStyle(AppColors.textSecondary)
                     }
                 }
@@ -275,8 +280,7 @@ struct SettingsView: View {
                             .font(AppTypography.body)
                             .foregroundStyle(AppColors.textPrimary)
                     } trailing: {
-                        Image(systemName: "arrow.up.right")
-                            .font(AppTypography.bodySmall)
+                        Icon("arrow.up.right", size: AppIconSize.sm)
                             .foregroundStyle(AppColors.textSecondary)
                     }
                 }
@@ -320,8 +324,7 @@ struct SettingsView: View {
                                  : String(supportID.suffix(8)))
                                 .font(AppTypography.bodySmall)
                                 .foregroundStyle(AppColors.textSecondary)
-                            Image(systemName: didCopySupportID ? "checkmark" : "doc.on.doc")
-                                .font(AppTypography.bodySmall)
+                            Icon(didCopySupportID ? "checkmark" : "doc.on.doc", size: AppIconSize.sm)
                                 .foregroundStyle(AppColors.textSecondary)
                         }
                     }
@@ -330,12 +333,14 @@ struct SettingsView: View {
             }
             // Launch health check + MetricKit crash/hang reports, shareable. In release builds
             // too: that's where silent failures (like a paywall with nothing to sell) happen.
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.diagnostics"),
                 icon: "stethoscope",
-                title: String(localized: "settings.diagnostics")
-            ) {
-                DiagnosticsView()
-            }
+                config: .settings,
+                accessory: .navigation {
+                    DiagnosticsView()
+                }
+            )
         }
     }
 

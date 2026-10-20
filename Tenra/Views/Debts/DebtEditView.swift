@@ -66,28 +66,26 @@ struct DebtEditView: View {
                             )
                         }
                         Divider().padding(.leading, AppSpacing.lg)
-                        DatePickerRow(
+                        UniversalRow(
+                            String(localized: "debt.date"),
                             icon: "calendar",
-                            title: String(localized: "debt.date"),
-                            selection: $date,
-                            maxDate: Date()
+                            accessory: .date($date, through: Date())
                         )
                     }
                     .screenPadding()
 
                     FormSection(header: String(localized: "debt.dueDate")) {
-                        ToggleSettingsRow(
+                        UniversalRow(
+                            String(localized: "debt.hasDueDate"),
                             icon: "calendar.badge.clock",
-                            title: String(localized: "debt.hasDueDate"),
-                            config: .standard,
-                            isOn: $hasDueDate
+                            accessory: .toggle($hasDueDate)
                         )
                         if hasDueDate {
                             Divider().padding(.leading, AppSpacing.lg)
-                            DatePickerRow(
+                            UniversalRow(
+                                String(localized: "debt.dueDate"),
                                 icon: "calendar.badge.clock",
-                                title: String(localized: "debt.dueDate"),
-                                selection: $dueDate
+                                accessory: .date($dueDate)
                             )
                         }
                     }

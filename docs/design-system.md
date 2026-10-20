@@ -103,7 +103,7 @@ decision, 2026-10). `Tenra/Views/Components/` keeps two kinds of views:
 | `Icons` | `IconPickerView` → `IconPicker` | |
 | `Input` | `AccountRadioButton` → `SelectableBalanceCard`, `AmountInputView` → `CurrencyAmountInput`, `CurrencySelectorView` → `CurrencyPickerMenu`, `SubscriptionCalendarView` → `MonthCalendar` | the filter sheets, the selectors, carousels and grids that load data, `HomeBackgroundPicker`, the import sheets |
 | `LinkPayments` | | `LinkPaymentsView` |
-| `Rows` | `AccountRow` / `CategoryRow` / `CategoryBreakdownRow` → `AmountRow`, `AmortizationScheduleRow` → `ScheduleRow`, `BudgetProgressRow` → `LimitProgressCard`, `HistoryEntryRow` → `AmountRow`, `MenuPickerRow` (domain inits) | `PeriodBreakdownRow` |
+| `Rows` | `AccountRow` / `CategoryRow` / `CategoryBreakdownRow` → `AmountRow`, `AmortizationScheduleRow` → `ScheduleRow`, `BudgetProgressRow` → `LimitProgressCard`, `HistoryEntryRow` → `AmountRow`, `MenuOptions.swift` (the menu options of `RecurringFrequency`, `RecurringOption`, `LoanType`, `ReminderOption` for `UniversalRow(accessory: .menu)`; `MenuPickerRow` domain inits before DesignKit 7.0.0) | `PeriodBreakdownRow` |
 
 Each file's header comment names what it adapts. Tenra keeps its screens over its own models by
 choice: filter sheets, home sections, transaction lists, entity detail screens, the lock screen,
@@ -168,7 +168,7 @@ EditSheetContainer(title:, wrapInForm: false, onSave:, onCancel:)   ✕ and ✓ 
     └── VStack(spacing: AppSpacing.xl)
         ├── EditableHeroSection(…)           icon (opens the picker), name, optional amount
         ├── FormSection(header:) {           a card of rows, dividers inset by AppSpacing.lg
-        │   UniversalRow / MenuPickerRow / DatePickerRow / FormTextField(style: .inline)
+        │   UniversalRow(accessory: .menu / .date / .toggle / …) / FormTextField(style: .inline)
         │   }
         └── FormSection(…) { … }
 ```
@@ -201,7 +201,7 @@ ScrollView
 └── VStack(spacing: AppSpacing.lg)
     ├── hero (HeroSection)         .screenPadding().scrollHero()
     ├── actions bar                primary + secondary DSButton
-    ├── info rows card             InfoRow list in .cardStyle()
+    ├── info rows card             UniversalRow(config: .info) + InfoRowLayout list in .cardStyle()
     ├── custom sections            the screen's own cards
     └── GroupedTransactionList     day headers SectionHeader (default style), TransactionCard rows
 + .heroAccentGlow(icon:tint:) on the screen; the title and amount appear in the nav bar once the
@@ -242,14 +242,14 @@ freeze (CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `F
 
 `List` of `Section(header: SectionHeader(title, style: .compact))` (every section, with a
 `footer:` of plain `Text` when it has one) with `UniversalRow(config: .settings)` rows:
-`.navigationRow {}`, `.actionRow(role:) {}`, `ToggleSettingsRow`, `NavigationSettingsRow` or a
-trailing `Toggle`. The list insets the rows, so `.settings` has no horizontal padding of its own.
-Form-card rows (`MenuPickerRow`, `NavigationPickerRow` in its default `.form` style) pad
-themselves and stay out of this list.
+`accessory: .navigation {}`, `.action {}` (with `role: .destructive` for a destructive one),
+`.toggle($value)` or `.picker`, `.menu` (DesignKit 7.0.0: one row with an accessory instead of
+the twelve rows before). The list insets the rows, so `.settings` has no horizontal padding of
+its own. A form card's rows keep the default `config: .standard` and pad themselves.
 
-- **A choice from a list**: the voice language is DesignKit's `NavigationPickerRow(style: .list)`
-  (4.14.0: the `.settings` row with the chosen value in `bodySmall` secondary, pushing a `List`
-  of `CheckmarkRow`s with system search when long); the base currency is a `NavigationLink` with
+- **A choice from a list**: the voice language is `UniversalRow(config: .settings, accessory:
+  .picker(…))` (the chosen value in `bodySmall` secondary, pushing a `List` of checkmark rows
+  with system search when long; `NavigationPickerRow(style: .list)` before DesignKit 7.0.0); the base currency is a `NavigationLink` with
   the same row, pushing `CurrencyPickerView`.
 - **Assistant** (`SettingsAssistantSection`): the cloud and "Ten chats" toggles and "What Ten
   knows about me" (`AssistantMemoryView`: a `List` of `ItemRow(style: .large)` without a chevron,
@@ -332,7 +332,7 @@ Rendering a money amount?
 ├── Standalone view (card, header, a row's trailing amount, chart label)
 │   └── FormattedAmountText(amount:currency:prefix:fontSize:fontWeight:color:)
 ├── Label-value row in a detail screen
-│   ├── One amount → InfoRow(… amount:, currency:, prefix:) / InfoRowConfig(… amount:, currency:)
+│   ├── One amount → UniversalRow(label, config: .info, accessory: .amount(…, currency:, prefix:)) / InfoRowConfig(… amount:, currency:)
 │   └── Composite ("X / Y (Z%)", "spent / budget", "+A · −B")
 │       → InfoRowConfig(… value: "<VoiceOver text>", valueContent: AnyView(
 │             HStack { FormattedAmountText(…); Text("/"); FormattedAmountText(…) }))
@@ -353,7 +353,7 @@ Rendering a money amount?
 ### Hidden amounts
 
 The eye on Home sets `\.amountsHidden`. `FormattedAmountText`, `RedactableAmount` and the rows
-built on them (`AmountRow`, `InfoRow`) hide themselves. A `String` the app builds with an amount
+built on them (`AmountRow`, `UniversalRow`'s `.amount` accessory) hide themselves. A `String` the app builds with an amount
 uses `amountsHidden ? Formatting.hiddenAmount(currency:) : Formatting.formatCurrencySmart(…)`
 (a hero subtitle, a forecast line, a money sheet's "left" line). An insight whose subtitle carries
 an amount also sets `Insight.hiddenSubtitle`, and views show `insight.subtitle(amountsHidden:)`.
@@ -369,7 +369,7 @@ calculator display, `.compact` for very tight chrome.
 ### Sign and prefix
 
 - Negative is automatic: `-1 200 ₸` for a negative `Double`.
-- Positive needs `prefix: "+"`: `prefix: diff > 0 ? "+" : ""` on `FormattedAmountText` or `InfoRow`.
+- Positive needs `prefix: "+"`: `prefix: diff > 0 ? "+" : ""` on `FormattedAmountText` or the `.amount` accessory.
 - Income and expense in transaction lists: `TransactionDisplayHelper.amountPrefix(for:)` and
   `.amountColor(for:)` (§6), passed to `FormattedAmountText`.
 
@@ -480,6 +480,11 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
    neutral name, skeleton, Gallery page, snapshot test), then a thin adapter here if it takes a
    Tenra model.
 3. Build the screen from the closest pattern in §4; amounts per §5.
+   Every symbol is DesignKit's `Icon` (7.0.0): under 44 pt a glyph without a plate
+   (`Icon("checkmark", size: AppIconSize.md)`, at the text style's size: caption → `xs`,
+   bodySmall → `sm`, body → `md`; `scalesWithText: false` in a control of a fixed size), from
+   44 pt a tile on its plate (`HeroSymbol` for a screen's big symbol). A toolbar's, menu's, swipe
+   action's, tab's or segment's symbol stays an `Image`: iOS draws it.
 4. Strings in all 11 locales (CLAUDE.md rule #13); no em dashes in user-facing text.
 5. `python3 scripts/design_lint.py` passes. A new `safeAreaBar` names its scroll edge style, a new `NavigationStack` carries `.softScrollEdges()` (§4).
 6. Don't change a shipped screen's layout as a side effect; the owner checks UI on device.

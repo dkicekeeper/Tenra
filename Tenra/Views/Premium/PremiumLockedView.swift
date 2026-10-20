@@ -20,9 +20,8 @@ struct PremiumLockedView: View {
         VStack(spacing: AppSpacing.xxl) {
             Spacer()
 
-            Image(systemName: icon)
-                .font(.system(size: AppIconSize.Tile.xl, weight: .light))
-                .foregroundStyle(AppColors.accent)
+            // A tile from 44 pt (DesignKit 7.0.0): the symbol on its pale disc, about as large as before.
+            HeroSymbol(systemImage: icon)
 
             VStack(spacing: AppSpacing.sm) {
                 Text(title)

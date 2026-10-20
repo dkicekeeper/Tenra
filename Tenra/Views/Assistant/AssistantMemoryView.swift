@@ -50,13 +50,15 @@ struct AssistantMemoryView: View {
                         Text(String(localized: "assistant.memory.footer"))
                     }
                     Section {
-                        ActionSettingsRow(
+                        UniversalRow(
+                            String(localized: "assistant.memory.forgetAll"),
                             icon: "trash",
-                            title: String(localized: "assistant.memory.forgetAll"),
-                            isDestructive: true
-                        ) {
-                            showingForgetAll = true
-                        }
+                            role: .destructive,
+                            config: .settings,
+                            accessory: .action {
+                                showingForgetAll = true
+                            }
+                        )
                     }
                 }
                 .transition(.skeletonReveal)

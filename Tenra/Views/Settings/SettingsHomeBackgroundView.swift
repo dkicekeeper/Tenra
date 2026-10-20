@@ -2,9 +2,10 @@
 //  SettingsHomeBackgroundView.swift
 //  Tenra
 //
-//  The home screen's background: DesignKit's option carousel (HomeBackgroundPicker), the
-//  chosen background large over the row of options, and under it that option's settings: the
-//  intensity of the expense colours, or a photo to pick, its blur and a way to remove it.
+//  The home screen's background: DesignKit's option carousel (HomeBackgroundPicker), each
+//  background a large preview, and under it the chosen one's settings in DesignKit's form rows
+//  (docs/migration-6.0.md in DesignKit): the intensity of the expense colours, or a photo to
+//  pick, its blur and a way to remove it.
 //
 
 import SwiftUI
@@ -48,6 +49,9 @@ struct SettingsHomeBackgroundView: View {
             }
             .padding(.vertical, AppSpacing.lg)
         }
+        // The grouped background: the settings are FormSection cards. "None" previews this
+        // colour, the home's plain one; the preview's hairline keeps its shape.
+        .background(AppColors.Background.baseAlt)
         .navigationTitle(String(localized: "settings.background"))
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: selectedPhoto) { _, item in
@@ -70,47 +74,37 @@ struct SettingsHomeBackgroundView: View {
                 OpacitySliderRow(value: backgroundOpacity, onChange: onOpacityChange)
             }
         case .wallpaper:
+            // DesignKit's rows in a FormSection card (`.standard`, inset dividers); the photo
+            // picker's label is a UniversalRow in the accent.
             FormSection {
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
                     UniversalRow(
-                        config: .settings,
-                        leadingIcon: .sfSymbol("photo.on.rectangle", color: AppColors.accent, size: AppIconSize.md)
-                    ) {
-                        Text(wallpaperImage == nil
-                             ? String(localized: "settings.background.choosePhoto")
-                             : String(localized: "settings.background.changePhoto"))
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.Text.primary)
-                    } trailing: {
-                        DisclosureChevron()
-                    }
+                        wallpaperImage == nil
+                            ? String(localized: "settings.background.choosePhoto")
+                            : String(localized: "settings.background.changePhoto"),
+                        icon: "photo.on.rectangle",
+                        titleColor: AppColors.accent
+                    )
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 if wallpaperImage != nil {
-                    Divider()
-                    ToggleSettingsRow(
+                    Divider().padding(.leading, AppSpacing.lg)
+                    UniversalRow(
+                        String(localized: "settings.background.blurWallpaper"),
                         icon: "camera.filters",
-                        title: String(localized: "settings.background.blurWallpaper"),
-                        isOn: Binding(
+                        accessory: .toggle(Binding(
                             get: { blurWallpaper },
                             set: { onBlurChange($0) }
-                        )
+                        ))
                     )
-                    Divider()
+                    Divider().padding(.leading, AppSpacing.lg)
                     UniversalRow(
-                        config: .settings,
-                        leadingIcon: .sfSymbol("trash", color: AppColors.destructive, size: AppIconSize.md)
-                    ) {
-                        Text(String(localized: "settings.background.removePhoto"))
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.destructive)
-                    } trailing: {
-                        EmptyView()
-                    }
-                    .actionRow(role: .destructive) {
-                        Task { await onWallpaperRemove() }
-                    }
+                        String(localized: "settings.background.removePhoto"),
+                        icon: "trash",
+                        role: .destructive,
+                        accessory: .action { Task { await onWallpaperRemove() } }
+                    )
                 }
             }
         }
@@ -119,21 +113,19 @@ struct SettingsHomeBackgroundView: View {
 
 // MARK: - Opacity Slider Row
 
-/// The expense colour's intensity: DesignKit's `SliderRow` over the stored opacity.
+/// The expense colour's intensity: DesignKit's slider row over the stored opacity.
 private struct OpacitySliderRow: View {
     let value: Double
     let onChange: (Double) -> Void
 
     var body: some View {
-        SliderRow(
+        UniversalRow(
             String(localized: "settings.background.opacity", defaultValue: "Colour intensity"),
-            systemImage: "circle.lefthalf.filled",
-            value: Binding(
+            icon: "circle.lefthalf.filled",
+            accessory: .slider(Binding(
                 get: { value },
                 set: { onChange($0) }
-            ),
-            in: 0.05...1.0,
-            valueText: "\(Int((value * 100).rounded()))%"
+            ), in: 0.05...1.0, valueText: "\(Int((value * 100).rounded()))%")
         )
     }
 }

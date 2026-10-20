@@ -20,12 +20,14 @@ struct SettingsSiriSection: View {
                     .font(AppTypography.bodySmall)
             }
 
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.merchants.title"),
                 icon: "wallet.pass",
-                title: String(localized: "settings.merchants.title")
-            ) {
-                MerchantCategoriesView(categoriesViewModel: categoriesViewModel)
-            }
+                config: .settings,
+                accessory: .navigation {
+                    MerchantCategoriesView(categoriesViewModel: categoriesViewModel)
+                }
+            )
 
             ShortcutsLink()
                 .shortcutsLinkStyle(.automaticOutline)

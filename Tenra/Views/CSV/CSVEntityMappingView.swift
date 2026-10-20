@@ -280,7 +280,7 @@ struct AccountMappingDetailView: View {
                             Text(account.name)
                             Spacer()
                             if selectedAccountId == account.id {
-                                Image(systemName: "checkmark")
+                                Icon("checkmark", size: AppIconSize.md)
                                     .foregroundStyle(AppColors.accent)
                             }
                         }
@@ -291,7 +291,7 @@ struct AccountMappingDetailView: View {
             Section {
                 Button(action: onCreateNew) {
                     HStack {
-                        Image(systemName: "plus.circle")
+                        Icon("plus.circle", size: AppIconSize.md)
                         Text("csvMapping.createAccount \(csvValue)")
                     }
                 }
@@ -324,14 +324,14 @@ struct CategoryMappingDetailView: View {
                         HStack {
                             Group {
                                 if case .sfSymbol(let symbolName) = category.iconSource {
-                                    Image(systemName: symbolName)
+                                    Icon(symbolName, size: AppIconSize.md)
                                         .foregroundStyle(category.color)
                                 }
                             }
                             Text(category.name)
                             Spacer()
                             if selectedCategoryName == category.name {
-                                Image(systemName: "checkmark")
+                                Icon("checkmark", size: AppIconSize.md)
                                     .foregroundStyle(AppColors.accent)
                             }
                         }
@@ -342,7 +342,7 @@ struct CategoryMappingDetailView: View {
             Section {
                 Button(action: onCreateNew) {
                     HStack {
-                        Image(systemName: "plus.circle")
+                        Icon("plus.circle", size: AppIconSize.md)
                         Text("csvMapping.createCategory \(categoryLabel) \(csvValue)")
                     }
                 }

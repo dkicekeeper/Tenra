@@ -43,10 +43,10 @@ struct DepositRateChangeView: View {
 
                         Divider().padding(.leading, AppSpacing.lg)
 
-                        DatePickerRow(
+                        UniversalRow(
+                            String(localized: "deposit.effectiveDate"),
                             icon: "calendar",
-                            title: String(localized: "deposit.effectiveDate"),
-                            selection: $effectiveFromDate
+                            accessory: .date($effectiveFromDate)
                         )
 
                         Divider().padding(.leading, AppSpacing.lg)

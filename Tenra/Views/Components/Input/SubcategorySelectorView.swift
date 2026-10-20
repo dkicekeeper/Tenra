@@ -68,8 +68,7 @@ struct SubcategorySelectorView: View {
 
                 // Кнопка поиска
                 Button(action: onSearchTap) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: AppIconSize.sm))
+                    Icon("magnifyingglass", size: AppIconSize.sm, scalesWithText: false)
                 }
                 .filterChipStyle()
                 .accessibilityLabel(String(localized: "transactionForm.searchSubcategories"))
@@ -77,8 +76,7 @@ struct SubcategorySelectorView: View {
                 // Кнопка сортировки
                 if let onReorderTap {
                     Button(action: onReorderTap) {
-                        Image(systemName: "arrow.up.arrow.down")
-                            .font(.system(size: AppIconSize.sm))
+                        Icon("arrow.up.arrow.down", size: AppIconSize.sm, scalesWithText: false)
                     }
                     .filterChipStyle()
                     .accessibilityLabel(String(localized: "subcategory.reorder"))
@@ -88,8 +86,7 @@ struct SubcategorySelectorView: View {
             // Если нет подкатегорий, показываем только кнопку поиска на всю ширину
             Button(action: onSearchTap) {
                 HStack {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: AppIconSize.sm))
+                    Icon("magnifyingglass", size: AppIconSize.sm, scalesWithText: false)
                     Text(String(localized: "transactionForm.addSubcategory"))
                 }
             }

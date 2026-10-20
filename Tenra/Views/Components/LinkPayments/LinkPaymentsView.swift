@@ -350,9 +350,8 @@ struct LinkPaymentsView: View {
                         return tx.convertedAmount ?? tx.amount
                     },
                     rowOverlay: { tx in
-                        Image(systemName: selectedIds.contains(tx.id) ? "checkmark.circle.fill" : "circle")
+                        Icon(selectedIds.contains(tx.id) ? "checkmark.circle.fill" : "circle", size: AppIconSize.md, scalesWithText: false)
                             .foregroundStyle(selectedIds.contains(tx.id) ? AppColors.accent : .secondary)
-                            .font(.system(size: AppIconSize.md))
                             .padding(.leading, AppSpacing.md)
                     }
                 )
@@ -638,7 +637,7 @@ struct TransactionSubcategoryFilterSheet: View {
                             .fontWeight(.medium)
                     } trailing: {
                         if selectedNames == nil {
-                            Image(systemName: "checkmark")
+                            Icon("checkmark", size: AppIconSize.md)
                                 .foregroundStyle(AppColors.accent)
                         }
                     }
@@ -668,7 +667,7 @@ struct TransactionSubcategoryFilterSheet: View {
                                 .fontWeight(.medium)
                         } trailing: {
                             if isSelected {
-                                Image(systemName: "checkmark")
+                                Icon("checkmark", size: AppIconSize.md)
                                     .foregroundStyle(AppColors.accent)
                             }
                         }

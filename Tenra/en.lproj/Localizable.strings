@@ -442,6 +442,9 @@
 "subscriptions.title" = "Subscriptions";
 "subscriptions.empty" = "No Subscriptions";
 "subscriptions.emptyDescription" = "Add a subscription to track recurring payments";
+"subscriptions.candidates.title" = "Looks like a subscription";
+"subscriptions.candidates.footer" = "These merchants charged you about the same amount every month. Tap one to add it as a subscription: its next charge is planned, the past payments stay as they are. Touch and hold to hide it.";
+"subscriptions.candidates.dismiss" = "Not a subscription";
 "subscriptions.addSubscription" = "Add Subscription";
 "subscriptions.deleteConfirmTitle" = "Delete subscription?";
 "subscriptions.deleteConfirmMessage" = "All subscription data and related transactions will be deleted.";

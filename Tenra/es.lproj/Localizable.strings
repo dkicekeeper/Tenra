@@ -442,6 +442,9 @@
 "subscriptions.title" = "Suscripciones";
 "subscriptions.empty" = "Sin suscripciones";
 "subscriptions.emptyDescription" = "Añade una suscripción para controlar tus pagos recurrentes";
+"subscriptions.candidates.title" = "Parece una suscripción";
+"subscriptions.candidates.footer" = "Estos comercios te cobraron más o menos lo mismo cada mes. Toca uno para añadirlo como suscripción: se planifica el próximo cargo y los pagos anteriores quedan como están. Mantén pulsado para ocultarlo.";
+"subscriptions.candidates.dismiss" = "No es una suscripción";
 "subscriptions.addSubscription" = "Añadir suscripción";
 "subscriptions.deleteConfirmTitle" = "¿Eliminar suscripción?";
 "subscriptions.deleteConfirmMessage" = "Se eliminarán todos los datos de la suscripción y las transacciones relacionadas.";

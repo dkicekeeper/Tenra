@@ -65,6 +65,24 @@ transaction in one batch. A generic recurring payment gets the rate check and th
 screen's edit path reuses `resolveOrCreateSubcategory` and `linkSubcategory`. Pinned by
 `SubscriptionCreationServiceTests`.
 
+## Looks like a subscription
+
+The subscriptions screen offers up to five merchants that charge about once a month and no
+series tracks ([`SubscriptionCandidateDetector`](../../Tenra/Services/Recurring/SubscriptionCandidateDetector.swift),
+run off the main actor over the whole history): grouped by normalized merchant and currency, the
+latest charges, at least three, follow each other every 26 to 35 days, each within 15 % of the
+latest amount, and the latest is at most 40 days old. A second charge inside the month breaks the
+run, so a shop visited weekly never qualifies. Only one-off expenses count (no `recurringSeriesId`).
+A merchant sharing a brand word with any series description is skipped, the billing company
+included (`WalletPaymentResolver.billedWords`: "iCloud+" covers "APPLE.COM/BILL").
+
+Tapping a candidate opens `SubscriptionEditView(draft:)`: the latest amount, category, account,
+the merchant's clean name and logo (`MerchantLogoStore`), and the next expected charge as
+`startDate`, so the generator records nothing that is already in the history. "Not a
+subscription" (context menu) stores the normalized merchant in `SubscriptionCandidateDismissals`
+(UserDefaults). The refresh key holds `mutationVersion`, every series description and today's
+date. Pinned by `SubscriptionCandidateDetectorTests`.
+
 ## Making an Existing Transaction Recurring
 
 ⚠️ **Never `createSeries(_:)` and then link an existing transaction to the new series.** The generator emits occurrence 0 on `startDate`, which is that transaction's own date, so the date would end up with two transactions. Use `createSeries(_:firstOccurrence:)`: it links the transaction, records it as the occurrence on `series.startDate`, and the generator resumes from the next period (generates nothing more when that date is already in the future). The transaction keeps its id, so its subcategory links survive. `TransactionEditCoordinator.handleRecurringSeries` uses it and aborts the save with the error if the series cannot be created. Pinned by `RecurringFirstOccurrenceTests` and `TransactionEditCoordinatorTests`.

@@ -14,6 +14,9 @@ struct SubscriptionEditView: View {
     let categoriesViewModel: CategoriesViewModel
     let accountsViewModel: AccountsViewModel
     let subscription: RecurringSeries?
+    /// A new subscription's starting values ("looks like a subscription"); ignored when
+    /// `subscription` is set. Saved under a new id.
+    var draft: RecurringSeries? = nil
 
     @Environment(\.dismiss) private var dismiss
 
@@ -152,7 +155,7 @@ struct SubscriptionEditView: View {
         }
         .onAppear {
             availableCategories = computeAvailableCategories()
-            if let subscription = subscription {
+            if let subscription = subscription ?? draft {
                 description = subscription.description
                 amountText = NSDecimalNumber(decimal: subscription.amount).stringValue
                 currency = subscription.currency

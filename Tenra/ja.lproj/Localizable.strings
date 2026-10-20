@@ -442,6 +442,9 @@
 "subscriptions.title" = "サブスク";
 "subscriptions.empty" = "サブスクがありません";
 "subscriptions.emptyDescription" = "サブスクを追加して定期的な支払いを管理しましょう";
+"subscriptions.candidates.title" = "サブスクリプションのようです";
+"subscriptions.candidates.footer" = "これらの店舗は毎月ほぼ同じ金額を請求しています。タップしてサブスクリプションとして追加すると、次回の請求が予定され、過去の支払いはそのまま残ります。長押しで非表示にできます。";
+"subscriptions.candidates.dismiss" = "サブスクリプションではない";
 "subscriptions.addSubscription" = "サブスクを追加";
 "subscriptions.deleteConfirmTitle" = "サブスクを削除しますか？";
 "subscriptions.deleteConfirmMessage" = "サブスクのすべてのデータと関連する取引が削除されます。";

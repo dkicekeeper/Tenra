@@ -442,6 +442,9 @@
 "subscriptions.title" = "Abonelikler";
 "subscriptions.empty" = "Abonelik Yok";
 "subscriptions.emptyDescription" = "Tekrarlayan ödemeleri takip etmek için abonelik ekle";
+"subscriptions.candidates.title" = "Abonelik gibi görünüyor";
+"subscriptions.candidates.footer" = "Bu işyerleri her ay yaklaşık aynı tutarı tahsil etti. Abonelik olarak eklemek için birine dokun: bir sonraki tahsilat planlanır, geçmiş ödemeler olduğu gibi kalır. Gizlemek için basılı tut.";
+"subscriptions.candidates.dismiss" = "Abonelik değil";
 "subscriptions.addSubscription" = "Abonelik Ekle";
 "subscriptions.deleteConfirmTitle" = "Abonelik silinsin mi?";
 "subscriptions.deleteConfirmMessage" = "Tüm abonelik verileri ve ilgili işlemler silinecek.";

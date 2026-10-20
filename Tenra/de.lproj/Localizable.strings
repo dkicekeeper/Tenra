@@ -442,6 +442,9 @@
 "subscriptions.title" = "Abos";
 "subscriptions.empty" = "Keine Abos";
 "subscriptions.emptyDescription" = "Fügen Sie ein Abo hinzu, um wiederkehrende Zahlungen zu verfolgen";
+"subscriptions.candidates.title" = "Sieht nach einem Abo aus";
+"subscriptions.candidates.footer" = "Diese Händler haben jeden Monat ungefähr denselben Betrag abgebucht. Tippen Sie, um ein Abo hinzuzufügen: Die nächste Abbuchung wird geplant, frühere Zahlungen bleiben, wie sie sind. Halten Sie gedrückt, um es auszublenden.";
+"subscriptions.candidates.dismiss" = "Kein Abo";
 "subscriptions.addSubscription" = "Abo hinzufügen";
 "subscriptions.deleteConfirmTitle" = "Abo löschen?";
 "subscriptions.deleteConfirmMessage" = "Alle Abo-Daten und zugehörigen Transaktionen werden gelöscht.";

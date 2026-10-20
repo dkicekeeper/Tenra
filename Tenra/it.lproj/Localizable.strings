@@ -442,6 +442,9 @@
 "subscriptions.title" = "Abbonamenti";
 "subscriptions.empty" = "Nessun abbonamento";
 "subscriptions.emptyDescription" = "Aggiungi un abbonamento per tenere traccia dei pagamenti ricorrenti";
+"subscriptions.candidates.title" = "Sembra un abbonamento";
+"subscriptions.candidates.footer" = "Questi esercenti ti hanno addebitato più o meno lo stesso importo ogni mese. Tocca per aggiungerlo come abbonamento: il prossimo addebito viene pianificato, i pagamenti passati restano come sono. Tieni premuto per nasconderlo.";
+"subscriptions.candidates.dismiss" = "Non è un abbonamento";
 "subscriptions.addSubscription" = "Aggiungi abbonamento";
 "subscriptions.deleteConfirmTitle" = "Eliminare l'abbonamento?";
 "subscriptions.deleteConfirmMessage" = "Tutti i dati dell'abbonamento e le operazioni collegate verranno eliminati.";

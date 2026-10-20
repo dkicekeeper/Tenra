@@ -442,6 +442,9 @@
 "subscriptions.title" = "Abonnements";
 "subscriptions.empty" = "Aucun abonnement";
 "subscriptions.emptyDescription" = "Ajoutez un abonnement pour suivre vos paiements récurrents";
+"subscriptions.candidates.title" = "Ressemble à un abonnement";
+"subscriptions.candidates.footer" = "Ces commerçants vous ont débité à peu près le même montant chaque mois. Touchez-en un pour l'ajouter comme abonnement : le prochain débit est planifié, les paiements passés restent tels quels. Maintenez le doigt pour le masquer.";
+"subscriptions.candidates.dismiss" = "Pas un abonnement";
 "subscriptions.addSubscription" = "Ajouter un abonnement";
 "subscriptions.deleteConfirmTitle" = "Supprimer l'abonnement ?";
 "subscriptions.deleteConfirmMessage" = "Toutes les données de l'abonnement et les opérations associées seront supprimées.";

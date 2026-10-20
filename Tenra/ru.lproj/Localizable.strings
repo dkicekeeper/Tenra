@@ -442,6 +442,9 @@
 "subscriptions.title" = "Подписки";
 "subscriptions.empty" = "Нет подписок";
 "subscriptions.emptyDescription" = "Добавьте подписку, чтобы отслеживать регулярные платежи";
+"subscriptions.candidates.title" = "Похоже на подписку";
+"subscriptions.candidates.footer" = "Эти продавцы списывали примерно одну и ту же сумму каждый месяц. Нажмите, чтобы добавить подписку: запланируется следующее списание, прошлые платежи останутся как есть. Удерживайте, чтобы скрыть.";
+"subscriptions.candidates.dismiss" = "Это не подписка";
 "subscriptions.addSubscription" = "Добавить подписку";
 "subscriptions.deleteConfirmTitle" = "Удалить подписку?";
 "subscriptions.deleteConfirmMessage" = "Все данные подписки и связанные операции будут удалены.";

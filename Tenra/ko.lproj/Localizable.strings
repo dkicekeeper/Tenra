@@ -442,6 +442,9 @@
 "subscriptions.title" = "구독";
 "subscriptions.empty" = "구독이 없어요";
 "subscriptions.emptyDescription" = "구독을 추가해 반복 결제를 관리해 보세요";
+"subscriptions.candidates.title" = "구독으로 보여요";
+"subscriptions.candidates.footer" = "이 가맹점들은 매달 거의 같은 금액을 청구했어요. 탭해서 구독으로 추가하면 다음 결제가 예정되고, 지난 결제는 그대로 남아요. 길게 눌러 숨길 수 있어요.";
+"subscriptions.candidates.dismiss" = "구독이 아니에요";
 "subscriptions.addSubscription" = "구독 추가";
 "subscriptions.deleteConfirmTitle" = "구독을 삭제할까요?";
 "subscriptions.deleteConfirmMessage" = "모든 구독 데이터와 관련 거래가 삭제돼요.";

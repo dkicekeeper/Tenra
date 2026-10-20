@@ -442,6 +442,9 @@
 "subscriptions.title" = "Assinaturas";
 "subscriptions.empty" = "Nenhuma Assinatura";
 "subscriptions.emptyDescription" = "Adicione uma assinatura para acompanhar pagamentos recorrentes";
+"subscriptions.candidates.title" = "Parece uma assinatura";
+"subscriptions.candidates.footer" = "Estes estabelecimentos cobraram mais ou menos o mesmo valor todo mês. Toque em um para adicioná-lo como assinatura: a próxima cobrança é planejada e os pagamentos anteriores ficam como estão. Toque e segure para ocultar.";
+"subscriptions.candidates.dismiss" = "Não é uma assinatura";
 "subscriptions.addSubscription" = "Adicionar Assinatura";
 "subscriptions.deleteConfirmTitle" = "Excluir assinatura?";
 "subscriptions.deleteConfirmMessage" = "Todos os dados da assinatura e as transações relacionadas serão excluídos.";

@@ -44,6 +44,22 @@ nonisolated enum MerchantName {
         return ["ип", "ip"].contains(first.trimmingCharacters(in: wrapping).lowercased())
     }
 
+    /// What to search for to find this merchant's transactions: the History search matches
+    /// a description that contains the text, ignoring case and diacritics. The clean name when
+    /// the bank's text contains it ("MAGNUM CASH&CARRY 123" → "Magnum Cash&Carry"), else its
+    /// longest word that it contains ("MAGNUM 12 CASH" → "Magnum"), else the text itself.
+    static func searchQuery(_ raw: String) -> String {
+        let name = displayName(raw)
+        let options: String.CompareOptions = [.caseInsensitive, .diacriticInsensitive]
+        if raw.range(of: name, options: options) != nil { return name }
+        let word = name
+            .split(separator: " ")
+            .map(String.init)
+            .filter { $0.count >= CategorySuggestionService.minimumMerchantLength && raw.range(of: $0, options: options) != nil }
+            .max { $0.count != $1.count ? $0.count < $1.count : $0 > $1 }
+        return word ?? raw.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     static func displayName(_ raw: String) -> String {
         var text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         let lowered = text.lowercased()

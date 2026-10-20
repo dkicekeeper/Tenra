@@ -189,6 +189,7 @@
 "search.fill" = "Змінити в полі пошуку";
 "search.suggestion.category" = "Категорія";
 "search.suggestion.subcategory" = "Підкатегорія";
+"search.suggestion.merchant" = "Продавець";
 
 // MARK: - Modals
 "modal.newAccount" = "Новий рахунок";

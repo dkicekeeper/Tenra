@@ -189,6 +189,7 @@
 "search.fill" = "검색창에서 편집";
 "search.suggestion.category" = "카테고리";
 "search.suggestion.subcategory" = "하위 카테고리";
+"search.suggestion.merchant" = "가맹점";
 
 // MARK: - Modals
 "modal.newAccount" = "새 계좌";

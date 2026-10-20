@@ -52,6 +52,15 @@ struct MerchantLogoTests {
         #expect(MerchantName.displayName("KZ") == "KZ")
     }
 
+    @Test("A merchant is searched by text its descriptions contain")
+    func searchQuery() {
+        #expect(MerchantName.searchQuery("GREENMART CASH&CARRY 123") == "Greenmart Cash&Carry")
+        #expect(MerchantName.searchQuery("TOO «SMALL» ALMATY KZ") == "Small")
+        // The clean name skips the store number in the middle: its longest word is searched.
+        #expect(MerchantName.searchQuery("GREENMART 12 CASH") == "Greenmart")
+        #expect(MerchantName.searchQuery("  12345 ") == "12345")
+    }
+
     @Test("A sole proprietor is recognized, so the person's name is never sent")
     func soleProprietor() {
         #expect(MerchantName.isSoleProprietor("ИП ИВАНОВ А.А."))

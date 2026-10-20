@@ -189,6 +189,7 @@
 "search.fill" = "Modifier dans le champ de recherche";
 "search.suggestion.category" = "Catégorie";
 "search.suggestion.subcategory" = "Sous-catégorie";
+"search.suggestion.merchant" = "Commerçant";
 
 // MARK: - Modals
 "modal.newAccount" = "Nouveau compte";

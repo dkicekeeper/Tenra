@@ -189,6 +189,7 @@
 "search.fill" = "Arama alanında düzenle";
 "search.suggestion.category" = "Kategori";
 "search.suggestion.subcategory" = "Alt kategori";
+"search.suggestion.merchant" = "İşyeri";
 
 // MARK: - Modals
 "modal.newAccount" = "Yeni Hesap";

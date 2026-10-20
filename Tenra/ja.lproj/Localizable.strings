@@ -189,6 +189,7 @@
 "search.fill" = "検索フィールドで編集";
 "search.suggestion.category" = "カテゴリ";
 "search.suggestion.subcategory" = "サブカテゴリ";
+"search.suggestion.merchant" = "店舗";
 
 // MARK: - Modals
 "modal.newAccount" = "新しい口座";

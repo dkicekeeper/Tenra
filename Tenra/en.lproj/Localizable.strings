@@ -189,6 +189,7 @@
 "search.fill" = "Edit in search field";
 "search.suggestion.category" = "Category";
 "search.suggestion.subcategory" = "Subcategory";
+"search.suggestion.merchant" = "Merchant";
 
 // MARK: - Modals
 "modal.newAccount" = "New Account";

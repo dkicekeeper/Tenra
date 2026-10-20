@@ -381,6 +381,16 @@ nonisolated final class InsightsService {
             preAggregated: preAggregated,
             categories: snapshot.categories
         ))
+        if let topMerchant = generateTopMerchant(
+            transactions: windowedTransactions,
+            granularity: granularity,
+            periodPoints: periodPoints,
+            txDateMap: dateMap,
+            baseCurrency: baseCurrency,
+            categories: snapshot.categories
+        ) {
+            insights.append(topMerchant)
+        }
 
         insights.append(contentsOf: generateIncomeInsights(
             filtered: windowedTransactions,

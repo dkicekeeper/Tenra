@@ -800,6 +800,7 @@
 "insights.emptyState.description" = "거래를 추가하면 재무 분석을 볼 수 있어요";
 "insights.noInsightsForFilter" = "이 카테고리에 대한 분석이 없어요";
 "insights.topCategory" = "지출이 가장 많은 카테고리";
+"insights.topMerchant" = "지출이 가장 많은 가맹점";
 "insights.ofTotal" = "전체 지출 중";
 "insights.spendingSpike" = "이상 지출이 감지됐어요";
 "insights.monthOverMonth" = "월간 지출 변화";

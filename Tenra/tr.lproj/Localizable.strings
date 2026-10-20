@@ -800,6 +800,7 @@
 "insights.emptyState.description" = "Finansal analizini görmek için birkaç işlem ekle";
 "insights.noInsightsForFilter" = "Bu kategori için analiz yok";
 "insights.topCategory" = "En Çok Harcanan Kategori";
+"insights.topMerchant" = "En Çok Harcanan İşyeri";
 "insights.ofTotal" = "toplam harcama payı";
 "insights.spendingSpike" = "Olağan Dışı Harcama Tespit Edildi";
 "insights.monthOverMonth" = "Aylık Harcama Değişimi";

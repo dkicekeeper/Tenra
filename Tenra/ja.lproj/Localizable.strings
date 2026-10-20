@@ -800,6 +800,7 @@
 "insights.emptyState.description" = "取引を追加すると家計の分析が表示されます";
 "insights.noInsightsForFilter" = "このカテゴリの分析はありません";
 "insights.topCategory" = "支出トップのカテゴリ";
+"insights.topMerchant" = "支出トップの店舗";
 "insights.ofTotal" = "全支出のうち";
 "insights.spendingSpike" = "異常な支出を検出しました";
 "insights.monthOverMonth" = "月間の支出の変化";

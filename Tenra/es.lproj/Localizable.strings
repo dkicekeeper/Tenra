@@ -800,6 +800,7 @@
 "insights.emptyState.description" = "Añade algunas transacciones para ver el análisis de tus finanzas";
 "insights.noInsightsForFilter" = "No hay análisis para esta categoría";
 "insights.topCategory" = "Categoría con más gasto";
+"insights.topMerchant" = "Comercio con más gasto";
 "insights.ofTotal" = "del gasto total";
 "insights.spendingSpike" = "Gasto inusual detectado";
 "insights.monthOverMonth" = "Variación del gasto mensual";

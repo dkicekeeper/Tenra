@@ -800,6 +800,7 @@
 "insights.emptyState.description" = "Add some transactions to see your financial insights";
 "insights.noInsightsForFilter" = "No insights for this category";
 "insights.topCategory" = "Top Spending Category";
+"insights.topMerchant" = "Top Merchant";
 "insights.ofTotal" = "of total spending";
 "insights.spendingSpike" = "Unusual Spending Detected";
 "insights.monthOverMonth" = "Monthly Spending Change";

@@ -2,7 +2,7 @@
 //  InsightsService+Spending.swift
 //  Tenra
 //
-//  Top spending category, period-over-period spending change,
+//  Top spending category, top merchant, period-over-period spending change,
 //  average daily spending, spending spike detection, category trend.
 //
 
@@ -500,6 +500,118 @@ extension InsightsService {
     // MARK: - Spending Spike
 
     /// Detects a category whose current-month spending exceeds 1.5× its 3-month historical average.
+    // MARK: - Top merchant
+
+    /// Merchants the detail lists, largest first.
+    nonisolated static let topMerchantListLimit = 10
+    /// A bucket with fewer merchants tells nothing the person does not know.
+    nonisolated static let topMerchantMinimumMerchants = 3
+
+    /// Where the money of the current bucket went, by merchant (docs/plan-auto-capture.md §7):
+    /// realized `.expense` transactions grouped by `CategorySuggestionService.normalizedMerchant`,
+    /// so "MAGNUM 12" and "MAGNUM 45" are one merchant. A description that only repeats its
+    /// category's name ("Groceries" in Groceries) names no merchant and is left out. Loan
+    /// payments name no shop either, but count in the total the share is of, as the top
+    /// category's does (the bucket's realized expenses). The detail lists the top 10, each
+    /// in the colour and icon of the category used most there.
+    nonisolated func generateTopMerchant(
+        transactions: [Transaction],
+        granularity: InsightGranularity,
+        periodPoints: [PeriodDataPoint],
+        txDateMap: [String: Date]?,
+        baseCurrency: String,
+        categories: [CustomCategory]
+    ) -> Insight? {
+        let currentKey = granularity.currentPeriodKey
+        let range: (start: Date, end: Date)? = granularity == .allTime
+            ? nil
+            : (granularity.periodStart(for: currentKey), granularity.periodEnd(for: currentKey))
+
+        struct MerchantTotal {
+            var total = 0.0
+            var latestDate = ""
+            var latestDescription = ""
+            var totalByCategory: [String: Double] = [:]
+        }
+        var merchants: [String: MerchantTotal] = [:]
+        // Descriptions repeat: each is normalized once.
+        var keyByDescription: [String: String] = [:]
+        var bucketTotal = 0.0
+        for tx in transactions where InsightsService.moneyBucket(tx.type) == .expense {
+            guard let date = txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date),
+                  LedgerPolicyRule.isRealized(date) else { continue }
+            if let range, date < range.start || date >= range.end { continue }
+            let amount = resolveAmount(tx, baseCurrency: baseCurrency)
+            bucketTotal += amount
+            guard tx.type == .expense else { continue }
+
+            let key: String
+            if let cached = keyByDescription[tx.description] {
+                key = cached
+            } else {
+                key = CategorySuggestionService.normalizedMerchant(tx.description)
+                keyByDescription[tx.description] = key
+            }
+            guard key.count >= CategorySuggestionService.minimumMerchantLength,
+                  key != CategorySuggestionService.normalizedMerchant(tx.category) else { continue }
+
+            var merchant = merchants[key, default: MerchantTotal()]
+            merchant.total += amount
+            if tx.date >= merchant.latestDate {
+                merchant.latestDate = tx.date
+                merchant.latestDescription = tx.description
+            }
+            merchant.totalByCategory[InsightsService.categoryKey(for: tx), default: 0] += amount
+            merchants[key] = merchant
+        }
+
+        let ranked = merchants
+            .filter { $0.value.total > 0 }
+            .sorted { $0.value.total != $1.value.total ? $0.value.total > $1.value.total : $0.key < $1.key }
+        guard ranked.count >= Self.topMerchantMinimumMerchants else { return nil }
+
+        let periodTotal = range == nil ? bucketTotal : (periodPoints.first { $0.key == currentKey }?.expenses ?? bucketTotal)
+        var categoryByName: [String: CustomCategory] = [:]
+        for category in categories { categoryByName[category.name] = category }
+
+        let items: [CategoryBreakdownItem] = ranked.prefix(Self.topMerchantListLimit).map { entry in
+            let usual = entry.value.totalByCategory
+                .max { $0.value != $1.value ? $0.value < $1.value : $0.key > $1.key }?
+                .key ?? ""
+            let category = categoryByName[usual]
+            let synthetic = InsightsService.syntheticCategoryStyle(for: usual)
+            return CategoryBreakdownItem(
+                id: entry.key,
+                categoryName: MerchantName.displayName(entry.value.latestDescription),
+                amount: entry.value.total,
+                percentage: periodTotal > 0 ? (entry.value.total / periodTotal) * 100 : 0,
+                color: category.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? AppColors.accent,
+                iconSource: category?.iconSource ?? synthetic?.icon,
+                subcategories: []
+            )
+        }
+        guard let top = items.first else { return nil }
+
+        return Insight(
+            id: "top_merchant",
+            type: .topMerchant,
+            title: String(localized: "insights.topMerchant"),
+            subtitle: top.categoryName,
+            metric: InsightMetric(
+                value: top.amount,
+                formattedValue: Formatting.formatCurrencySmart(top.amount, currency: baseCurrency),
+                currency: baseCurrency, unit: nil
+            ),
+            trend: InsightTrend(
+                direction: .down, changePercent: top.percentage, changeAbsolute: nil,
+                comparisonPeriod: String(format: "%.0f%% %@", top.percentage, String(localized: "insights.ofTotal"))
+            ),
+            severity: .neutral,
+            category: .spending,
+            detailData: .categoryBreakdown(items)
+        )
+    }
+
     nonisolated func generateSpendingSpike(baseCurrency: String, transactions: [Transaction], preAggregated: PreAggregatedData? = nil) -> Insight? {
         let calendar = Calendar.current
         let now = Date()

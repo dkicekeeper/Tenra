@@ -800,6 +800,7 @@
 "insights.emptyState.description" = "Ajoutez des opérations pour voir l'analyse de vos finances";
 "insights.noInsightsForFilter" = "Aucune analyse pour cette catégorie";
 "insights.topCategory" = "Première catégorie de dépenses";
+"insights.topMerchant" = "Premier commerçant";
 "insights.ofTotal" = "des dépenses totales";
 "insights.spendingSpike" = "Dépenses inhabituelles détectées";
 "insights.monthOverMonth" = "Évolution des dépenses mensuelles";

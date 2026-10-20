@@ -800,6 +800,7 @@
 "insights.emptyState.description" = "Adicione transações para ver suas análises financeiras";
 "insights.noInsightsForFilter" = "Nenhuma análise para esta categoria";
 "insights.topCategory" = "Maior Categoria de Gastos";
+"insights.topMerchant" = "Estabelecimento com mais gastos";
 "insights.ofTotal" = "do gasto total";
 "insights.spendingSpike" = "Gasto Incomum Detectado";
 "insights.monthOverMonth" = "Variação Mensal de Gastos";

@@ -800,6 +800,7 @@
 "insights.emptyState.description" = "Добавьте операции, чтобы увидеть финансовую аналитику";
 "insights.noInsightsForFilter" = "Нет данных для этой категории";
 "insights.topCategory" = "Топ категория расходов";
+"insights.topMerchant" = "Топ продавец";
 "insights.ofTotal" = "от общих расходов";
 "insights.spendingSpike" = "Обнаружены необычные траты";
 "insights.monthOverMonth" = "Расходы за месяц";

@@ -2,12 +2,11 @@
 //  HomeBackgroundPicker.swift
 //  Tenra
 //
-//  The home screen's background: DesignKit's `OptionCardPicker` (a carousel of large previews
-//  since 6.0.0). The three backgrounds (none, the expense colours, a photo) each in a phone's
-//  shape, the centred one the choice, the neighbours peeking at the sides; under the carousel
-//  what the screen sets for the chosen one (`settings`). The previews are live: the gradient in
-//  the person's expense colours at the chosen intensity, the photo saved, blurred when the home
-//  blurs it.
+//  The home screen's background: DesignKit's `OptionCardPicker` (a carousel of previews since
+//  DesignKit 6.0.0). The three (none, the expense colours, a photo) as large previews in a
+//  phone's shape, the centred one the choice, and under the carousel what the screen sets for
+//  the chosen one (`settings`). The previews are live: the gradient in the person's expense
+//  colours at the chosen intensity, the photo saved, blurred when the home blurs it.
 //
 
 import SwiftUI
@@ -112,14 +111,14 @@ struct HomeBackgroundPicker<Settings: View>: View {
         case .none:
             // Plain system background — shows what the app looks like without any background
             Rectangle()
-                .fill(AppColors.Background.baseAlt)
+                .fill(Color(.systemGroupedBackground))
 
         case .gradient:
             // Live preview: same CategoryGradientBackground as the home screen,
             // with the user's real expense-colour weights + current opacity.
             // Adapts to light/dark via Color(.systemGroupedBackground) underlay.
             ZStack {
-                AppColors.Background.baseAlt
+                Color(.systemGroupedBackground)
                 CategoryGradientBackground(
                     weights: effectiveGradientWeights,
                     customCategories: customCategories
@@ -137,11 +136,11 @@ struct HomeBackgroundPicker<Settings: View>: View {
                     .animation(AppAnimation.gentleSpring, value: blurWallpaper)
             } else {
                 Rectangle()
-                    .fill(AppColors.Background.neutral1)
+                    .fill(Color(.tertiarySystemGroupedBackground))
                     .overlay(
                         Image(systemName: "photo")
                             .font(AppTypography.h2.weight(.ultraLight))
-                            .foregroundStyle(AppColors.Text.tertiary)
+                            .foregroundStyle(Color(.tertiaryLabel))
                     )
             }
         }

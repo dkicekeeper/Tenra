@@ -131,9 +131,9 @@ what is still unused and where it could go):
   dated today or earlier (`TransactionAddModal.balanceAfter`).
 - `SpentBudgetText`: the category screen's budget row.
 - `.sparkleBurst`: money put towards a goal (`GoalDetailView`); reaching it celebrates instead.
-- `OptionCardPicker` (a carousel of large previews since 6.0.0): Home's background
-  (`HomeBackgroundPicker`), the chosen option's settings under the carousel in form rows; a photo
-  is applied once one is picked.
+- `OptionCardPicker` (a carousel of large previews since DesignKit 6.0.0): Home's background
+  (`HomeBackgroundPicker`), the option's settings under the carousel; a photo is applied once one
+  is picked.
 - Through DesignKit's own components, not called directly: `ChartSelectionBanner` and
   `ChartZoomControls` (in `LineChart`, `BarChart`, `ChartSwitcher`), `.chartDrawIn`,
   `AmountComparisonBar` (in `CashFlowCard`), `OnboardingStepIndicator` (in
@@ -194,9 +194,7 @@ on a debt (only a note and a date) is `MoneyEntrySheet`, an adapter over DesignK
 ### Entity detail
 
 `AccountDetailView`, `CategoryDetailView`, `SubscriptionDetailView`, `DepositDetailView`,
-`LoanDetailView`, `GoalDetailView`, `DebtDetailView`, `MerchantDetailView`, all through
-`EntityDetailScaffold` (the merchant's amounts and rows wait for its figures instead of showing
-zeros):
+`LoanDetailView`, `GoalDetailView`, `DebtDetailView`, all through `EntityDetailScaffold`:
 
 ```
 ScrollView
@@ -293,7 +291,7 @@ recent queries and suggestions in the system's own suggestion list. Each screen 
 
 | Screen | Recent queries key | Suggestions |
 |---|---|---|
-| History (`HistorySearchSuggestions`) | `history.recentSearches` | the user's categories and subcategories (the search matches them by name; accounts are left out, the text search does not match them), and merchants: the Wallet memory's and the history's frequent ones (3+ transactions, found off the main actor when the search opens) that have a logo or a given name, under that name with the logo; a tap fills `MerchantName.searchQuery`, text their descriptions contain |
+| History (`HistorySearchSuggestions`) | `history.recentSearches` | the user's categories and subcategories (the search matches them by name; accounts are left out, the text search does not match them) |
 | `LinkPaymentsView` | `linkPayments.recentSearches` | none |
 | `SubcategorySearchView` | `subcategorySearch.recentSearches` | none |
 

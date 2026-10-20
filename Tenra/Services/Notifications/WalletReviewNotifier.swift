@@ -55,4 +55,11 @@ enum WalletReviewNotifier {
         )
         try? await center.add(request)
     }
+
+    /// Takes a reviewed payment's notification out of Notification Center: a tap on it would
+    /// only open a list it has left.
+    static func removeDelivered(transactionId: String) {
+        UNUserNotificationCenter.current()
+            .removeDeliveredNotifications(withIdentifiers: [identifierPrefix + transactionId])
+    }
 }

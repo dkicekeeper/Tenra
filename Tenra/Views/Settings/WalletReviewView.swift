@@ -31,10 +31,26 @@ struct WalletReviewView: View {
         return captures.toReview.compactMap { transactionStore.transactionById[$0.id] }
     }
 
+    /// Before the full load the index holds part of the history only: a payment to review may
+    /// be missing from it (the list would flash empty), and a confirm would read its
+    /// subcategories before they are loaded and remember none. Placeholders until then.
+    private var isWaitingForHistory: Bool {
+        !captures.toReview.isEmpty && !transactionStore.hasCompletedInitialLoad
+    }
+
     var body: some View {
         let transactions = paymentsToReview
+        let isWaiting = isWaitingForHistory
         Group {
-            if transactions.isEmpty {
+            if isWaiting {
+                List {
+                    ForEach(0..<min(captures.toReview.count, 6), id: \.self) { _ in
+                        SkeletonRow()
+                    }
+                }
+                .listStyle(.plain)
+                .transition(.opacity)
+            } else if transactions.isEmpty {
                 EmptyState(
                     icon: "checkmark.circle",
                     title: String(localized: "walletReview.emptyTitle"),
@@ -56,10 +72,11 @@ struct WalletReviewView: View {
             }
         }
         .animation(AppAnimation.gentleSpring, value: transactions.isEmpty)
+        .animation(AppAnimation.gentleSpring, value: isWaiting)
         .navigationTitle(String(localized: "walletReview.title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if !transactions.isEmpty {
+            if !isWaiting, !transactions.isEmpty {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "walletReview.confirmAll")) {
                         HapticManager.success()
@@ -68,7 +85,8 @@ struct WalletReviewView: View {
                 }
             }
         }
-        .task {
+        // Again once the full load lands, if the list opened before it.
+        .task(id: isWaiting) {
             // Before the full load the index is partial, and every capture would look deleted.
             guard transactionStore.hasCompletedInitialLoad else { return }
             captures.removeCaptures(notIn: Set(transactionStore.transactionById.keys))

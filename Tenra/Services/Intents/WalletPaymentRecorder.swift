@@ -9,9 +9,10 @@
 //  2. the same payment within 90 seconds → the terminal fired twice;
 //  3. account and category through WalletPaymentResolver, guesses noted;
 //  4. a subscription's charge the series already recorded → nothing new;
-//  5. another currency: the cached rate, else one network request (the only one an
-//     intent makes, owner's decision 2026-10-19), else the payment waits in
-//     WalletCaptureStore.pending for a rate;
+//  5. another currency: the cached rate (refreshed first when stale), else one network
+//     request (the only one an intent makes, owner's decision 2026-10-19), else the
+//     payment waits in WalletCaptureStore.pending for a rate; a payment drained from the
+//     queue on a later day takes its own day's rate;
 //  6. saved through TransactionDraftService.commit, journaled in WalletCaptureStore.
 //
 //  Runs in whatever process the intent got: a cold one has only the fast path
@@ -174,9 +175,32 @@ enum WalletPaymentRecorder {
                 note: payment.merchant
             )
         }
+        // Today's payment takes the cached rate, refreshed first when it is stale (the stale
+        // one stays if that fails). A payment of another day (it waited in the queue, drained
+        // in the app) takes that day's rate. One request at most in the intent.
+        let isToday = Calendar.current.isDateInToday(payment.date)
+        let accountCurrency = accounts.first { $0.id == account.accountId }?.currency
+        var askedNetwork = false
+        if isToday, !CurrencyRateStore.shared.hasFreshRates,
+           let from = payment.currencyCode, let to = accountCurrency, from != to {
+            askedNetwork = true
+            _ = await CurrencyConverter.getExchangeRate(for: from)
+            _ = await CurrencyConverter.getExchangeRate(for: to)
+        }
         var result = draft(.cachedOnly)
+        if !isToday, case .success(let resolved) = result, resolved.convertedAmount != nil,
+           let to = accountCurrency,
+           let converted = await CurrencyConverter.convert(
+               amount: resolved.amount, from: resolved.currency, to: to, on: payment.date
+           ) {
+            result = draft(.provided(converted))
+        }
         if case .failure(.needsFXConversion(let amount, let from, let to)) = result {
-            result = draft(.provided(await CurrencyConverter.convert(amount: amount, from: from, to: to)))
+            var converted: Double?
+            if !askedNetwork {
+                converted = await CurrencyConverter.convert(amount: amount, from: from, to: to, on: isToday ? nil : payment.date)
+            }
+            result = draft(.provided(converted))
         }
 
         var transactionDraft: TransactionDraft
@@ -285,6 +309,7 @@ enum WalletPaymentRecorder {
             cards.remember(accountId: accountId, forCard: capture.payment.card)
         }
         captures.markReviewed(transactionId: transaction.id)
+        WalletReviewNotifier.removeDelivered(transactionId: transaction.id)
     }
 
     // MARK: - Category suggestion

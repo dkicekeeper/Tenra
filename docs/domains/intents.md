@@ -282,10 +282,12 @@ for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-captu
    com or bill don't count; a service counts its billing company too: iCloud+ and iTunes as Apple,
    YouTube as Google) → nothing new, the series already recorded it. Without a shared word
    the payment is recorded: a duplicate can be deleted, a dropped payment is lost.
-6. Currency: the passed code, else the account's. Cache, then one `CurrencyConverter.convert`,
-   else the payment waits in `WalletCaptureStore.pending` (saving without a rate would move the
-   balance by the raw foreign amount). The queue is recorded, each payment with its own date,
-   before the next payment and when the app comes to the front (`MainTabView`).
+6. Currency: the passed code, else the account's. Cache (refreshed first when
+   `CurrencyRateStore.hasFreshRates` is false; the stale rate stays if that fails), then one
+   `CurrencyConverter.convert`, one request in all, else the payment waits in
+   `WalletCaptureStore.pending` (saving without a rate would move the balance by the raw foreign
+   amount). The queue is recorded, each payment with its own date and that day's rate
+   (`convert(on:)`), before the next payment and when the app comes to the front (`MainTabView`).
 7. `TransactionDraftService.commit`; a guessed account does not reach `VoiceLearningStore`.
 8. `WalletCaptureStore.record`: the transaction id with the payment and its guesses. A capture
    with a guess not yet looked at is "To review". Captures live 90 days.
@@ -300,12 +302,16 @@ the card at once. Guesses are never remembered on their own.
 
 **To review** (`WalletReviewView`, Settings → Siri & Shortcuts, also a sheet over `MainTabView`):
 `WalletCaptureStore.toReview` as `TransactionCard`s; tap edits (saving confirms), swipe right or
-the toolbar confirms. Captures of deleted transactions are dropped once the store has loaded.
+the toolbar confirms. Until the full load (`hasCompletedInitialLoad`) it shows `SkeletonRow`s and
+no confirm: the partial index would flash an empty list, and a confirm would read the
+subcategories before they load and remember none. Captures of deleted transactions are dropped
+once the store has loaded.
 
 **Notification** (`WalletReviewNotifier`): after a save with a guess, "Check a payment" with the
 merchant and the guessed category (or account), no amount (lock screen). One per merchant while
 an earlier payment there still waits (a deleted one no longer does, once the store has loaded); never asks for the permission. A tap sets
 `WalletCaptureStore.isReviewRequested` (`AppDelegate`), and `MainTabView` presents To review.
+A confirmed payment's notification leaves Notification Center (`removeDelivered`).
 
 **A merchant's screen** (`MerchantDetailView`, from the Wallet merchants list and from the
 storefront button in `TransactionEditView` of a transaction whose merchant is remembered or has a

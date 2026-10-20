@@ -106,22 +106,14 @@ struct ImportTransactionPreviewView: View {
                         reconciliationView(check)
                     }
                     if walletMissingCount > 0 {
-                        Button {
+                        // DesignKit's notice with an action: a tap opens the payments.
+                        StatusBanner(
+                            String(format: String(localized: "transactionPreview.walletMissing"), walletMissingCount),
+                            status: .warning,
+                            style: .compact
+                        ) {
                             showingWalletMissing = true
-                        } label: {
-                            HStack {
-                                Label(
-                                    String(format: String(localized: "transactionPreview.walletMissing"), walletMissingCount),
-                                    systemImage: "exclamationmark.triangle.fill"
-                                )
-                                .foregroundStyle(AppColors.warning)
-                                Spacer()
-                                DisclosureChevron()
-                            }
-                            .font(AppTypography.bodySmall)
-                            .contentShape(Rectangle())
                         }
-                        .buttonStyle(.plain)
                         .padding(.top, AppSpacing.xs)
                     }
                     if isAskingIntelligence {

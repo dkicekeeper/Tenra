@@ -1771,11 +1771,12 @@
 "settings.siri.example2" = "Hey Siri, Tenra uygulamasında ne kadar harcadım";
 "settings.siri.example3" = "Hey Siri, Tenra uygulamasına gider ekle";
 "settings.merchants.title" = "Wallet işyerleri";
-"settings.merchants.footer" = "Bu işyerlerinde Wallet otomasyonuyla yapılan ödemeler bu kategori ve alt kategoriyle kaydedilir. Değiştirmek için bir işyerine dokun, unutmak için sola kaydır.";
+"settings.merchants.footer" = "Bu işyerlerinde Wallet otomasyonuyla yapılan ödemeler bu kategori ve alt kategoriyle kaydedilir. Ödemelerini görmek ve değiştirmek için bir işyerine dokun, unutmak için sola kaydır.";
 "settings.merchants.emptyTitle" = "Henüz işyeri yok";
 "settings.merchants.emptyMessage" = "Wallet otomasyonuyla Apple Pay ile ödeme yaptığın her işyerinin kategorisi, onu seçtiğin, onayladığın veya düzelttiğin anda burada hatırlanır.";
 "settings.merchants.forget" = "Unut";
 "settings.merchants.forgetMerchant" = "İşyerini unut";
+"settings.merchants.editTitle" = "İşyerini düzenle";
 "settings.merchants.showLogo" = "Logoyu göster";
 "settings.merchants.showLogo.footer" = "Kapalıyken bu işyerinin işlemlerinde kategori simgesi kalır.";
 "settings.merchants.categoryDeleted" = "Kategori silindi, Tenra yeniden soracak";
@@ -1786,6 +1787,7 @@
 "merchant.detail.thisMonth" = "Bu ay";
 "merchant.detail.thisYear" = "Bu yıl";
 "merchant.detail.byMonth" = "Aylara göre";
+"merchant.detail.open" = "İşyerindeki ödemeler";
 "walletReview.title" = "Kontrol edilecekler";
 "walletReview.footer" = "Bu Apple Pay ödemelerinin kategorisi veya hesabı otomatik seçildi. Düzeltmek için bir ödemeye dokun, doğruysa sağa kaydır. Seçimin işyeri ve kart için hatırlanır.";
 "walletReview.emptyTitle" = "Kontrol edilecek bir şey yok";

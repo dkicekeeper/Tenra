@@ -22,14 +22,12 @@ struct WalletSetupGuideView: View {
                 .screenPadding()
                 .padding(.vertical, AppSpacing.md)
         }
-        .safeAreaInset(edge: .bottom) {
-            Button {
+        // The article scrolls under the button with the soft edge (design-system.md §4).
+        .scrollEdgeEffectStyle(.soft, for: .bottom)
+        .safeAreaBar(edge: .bottom) {
+            DSButton(String(localized: "walletSetup.openShortcuts"), fullWidth: true) {
                 if let url = URL(string: "shortcuts://") { openURL(url) }
-            } label: {
-                Text(String(localized: "walletSetup.openShortcuts"))
-                    .frame(maxWidth: .infinity)
             }
-            .dsButton()
             .screenPadding()
             .padding(.bottom, AppSpacing.md)
         }

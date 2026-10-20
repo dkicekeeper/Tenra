@@ -1771,11 +1771,12 @@
 "settings.siri.example2" = "시리야, Tenra에서 얼마 썼어";
 "settings.siri.example3" = "시리야, Tenra에 지출 추가";
 "settings.merchants.title" = "Wallet 가맹점";
-"settings.merchants.footer" = "Wallet 자동화로 이 가맹점에서 결제하면 이 카테고리와 하위 카테고리로 기록돼요. 바꾸려면 가맹점을 탭하고, 잊으려면 왼쪽으로 쓸어 넘기세요.";
+"settings.merchants.footer" = "Wallet 자동화로 이 가맹점에서 결제하면 이 카테고리와 하위 카테고리로 기록돼요. 가맹점을 탭하면 결제 내역을 보고 바꿀 수 있고, 왼쪽으로 쓸어 넘기면 잊어요.";
 "settings.merchants.emptyTitle" = "아직 가맹점이 없어요";
 "settings.merchants.emptyMessage" = "Wallet 자동화로 Apple Pay 결제한 가맹점의 카테고리는 고르거나 확인하거나 고치면 여기에 기억돼요.";
 "settings.merchants.forget" = "잊기";
 "settings.merchants.forgetMerchant" = "가맹점 잊기";
+"settings.merchants.editTitle" = "가맹점 편집";
 "settings.merchants.showLogo" = "로고 표시";
 "settings.merchants.showLogo.footer" = "끄면 이 가맹점의 거래에 카테고리 아이콘이 표시됩니다.";
 "settings.merchants.categoryDeleted" = "카테고리가 삭제되어 Tenra가 다시 물어봐요";
@@ -1786,6 +1787,7 @@
 "merchant.detail.thisMonth" = "이번 달";
 "merchant.detail.thisYear" = "올해";
 "merchant.detail.byMonth" = "월별";
+"merchant.detail.open" = "가맹점 결제 내역";
 "walletReview.title" = "확인할 결제";
 "walletReview.footer" = "이 Apple Pay 결제들은 카테고리나 계좌가 자동으로 선택됐어요. 고치려면 결제를 탭하고, 맞다면 오른쪽으로 쓸어 넘기세요. 선택한 내용은 가맹점과 카드별로 기억돼요.";
 "walletReview.emptyTitle" = "확인할 결제가 없어요";

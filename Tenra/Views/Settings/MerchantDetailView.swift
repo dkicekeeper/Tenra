@@ -28,6 +28,9 @@ struct MerchantDetailView: View {
     @Environment(TimeFilterManager.self) private var timeFilterManager
 
     @State private var summary = MerchantHistory.Summary.empty
+    /// The figures arrived: until then the hero has no amount and the rows wait, rather than
+    /// showing zeros that jump to the real values.
+    @State private var hasLoaded = false
     @State private var accountsById: [String: Account] = [:]
     @State private var editing: MerchantCategoryMemory.Merchant?
 
@@ -84,9 +87,9 @@ struct MerchantDetailView: View {
 
         EntityDetailScaffold(
             navigationTitle: name,
-            navigationAmount: summary.spentInPeriod,
+            navigationAmount: hasLoaded ? summary.spentInPeriod : nil,
             navigationCurrency: baseCurrency,
-            infoRows: infoRows(baseCurrency: baseCurrency),
+            infoRows: hasLoaded ? infoRows(baseCurrency: baseCurrency) : [],
             transactions: summary.transactions,
             historyCurrency: baseCurrency,
             accountsById: accountsById,
@@ -106,7 +109,7 @@ struct MerchantDetailView: View {
                     icon: icon.source,
                     title: name,
                     iconTint: icon.tint,
-                    primaryAmount: summary.spentInPeriod,
+                    primaryAmount: hasLoaded ? summary.spentInPeriod : nil,
                     primaryCurrency: baseCurrency,
                     subtitle: timeFilterManager.currentFilter.displayName
                 )
@@ -146,6 +149,7 @@ struct MerchantDetailView: View {
         }.value
         guard !Task.isCancelled else { return }
         summary = computed
+        hasLoaded = true
     }
 
     // MARK: - Info rows
@@ -205,6 +209,16 @@ struct MerchantDetailView: View {
 
     private static let chartSeriesId = "spent"
 
+    /// "ЯНВ", with "'25" outside the current year, as the period charts label months
+    /// (PeriodAxisLabel.compact).
+    private static func axisLabel(for start: Date) -> String {
+        let calendar = Calendar.current
+        let month = String(start.formatted(.dateTime.month(.abbreviated)).uppercased().prefix(3))
+        let year = calendar.component(.year, from: start)
+        guard year != calendar.component(.year, from: Date()) else { return month }
+        return month + "'" + String(format: "%02d", year % 100)
+    }
+
     /// The last 12 months as bars, a tap shows a month's amount. None until something was spent.
     @ViewBuilder
     private func monthlyChart(baseCurrency: String) -> some View {
@@ -216,7 +230,7 @@ struct MerchantDetailView: View {
             let points: [ChartValuePoint] = summary.months.map { month in
                 ChartValuePoint(
                     label: month.key,
-                    axisLabel: month.start.formatted(.dateTime.month(.abbreviated)),
+                    axisLabel: Self.axisLabel(for: month.start),
                     title: month.start.formatted(.dateTime.month(.wide).year()),
                     values: [Self.chartSeriesId: month.spent]
                 )

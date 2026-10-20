@@ -1771,11 +1771,12 @@
 "settings.siri.example2" = "Hey Siri, how much did I spend in Tenra";
 "settings.siri.example3" = "Hey Siri, add an expense in Tenra";
 "settings.merchants.title" = "Wallet merchants";
-"settings.merchants.footer" = "Payments at these merchants through the Wallet automation get this category and subcategory. Tap a merchant to change them, or swipe left to forget it.";
+"settings.merchants.footer" = "Payments at these merchants through the Wallet automation get this category and subcategory. Tap a merchant to see its payments and change them, or swipe left to forget it.";
 "settings.merchants.emptyTitle" = "No merchants yet";
 "settings.merchants.emptyMessage" = "The category of each merchant you pay with Apple Pay through the Wallet automation is remembered here, once you choose, confirm or fix it.";
 "settings.merchants.forget" = "Forget";
 "settings.merchants.forgetMerchant" = "Forget merchant";
+"settings.merchants.editTitle" = "Edit merchant";
 "settings.merchants.showLogo" = "Show logo";
 "settings.merchants.showLogo.footer" = "Off: this merchant's transactions keep the category icon.";
 "settings.merchants.categoryDeleted" = "Category deleted, Tenra will ask again";
@@ -1786,6 +1787,7 @@
 "merchant.detail.thisMonth" = "This month";
 "merchant.detail.thisYear" = "This year";
 "merchant.detail.byMonth" = "By month";
+"merchant.detail.open" = "Merchant's payments";
 "walletReview.title" = "To review";
 "walletReview.footer" = "Tenra picked the category or the account of these Apple Pay payments on its own. Tap a payment to fix it, or swipe right if it is correct. Your choice is remembered for the merchant and the card.";
 "walletReview.emptyTitle" = "Nothing to review";

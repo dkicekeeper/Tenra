@@ -1771,11 +1771,12 @@
 "settings.siri.example2" = "Oye Siri, cuánto he gastado en Tenra";
 "settings.siri.example3" = "Oye Siri, añadir un gasto en Tenra";
 "settings.merchants.title" = "Comercios de Wallet";
-"settings.merchants.footer" = "Los pagos en estos comercios con la automatización de Wallet reciben esta categoría y subcategoría. Toca un comercio para cambiarlas o desliza a la izquierda para olvidarlo.";
+"settings.merchants.footer" = "Los pagos en estos comercios con la automatización de Wallet reciben esta categoría y subcategoría. Toca un comercio para ver sus pagos y cambiarlas, o desliza a la izquierda para olvidarlo.";
 "settings.merchants.emptyTitle" = "Aún no hay comercios";
 "settings.merchants.emptyMessage" = "Aquí se recuerda la categoría de cada comercio donde pagas con Apple Pay a través de la automatización de Wallet, en cuanto la eliges, confirmas o corriges.";
 "settings.merchants.forget" = "Olvidar";
 "settings.merchants.forgetMerchant" = "Olvidar comercio";
+"settings.merchants.editTitle" = "Editar comercio";
 "settings.merchants.showLogo" = "Mostrar logotipo";
 "settings.merchants.showLogo.footer" = "Desactívalo para que las operaciones de este comercio conserven el icono de la categoría.";
 "settings.merchants.categoryDeleted" = "Categoría eliminada, Tenra volverá a preguntar";
@@ -1786,6 +1787,7 @@
 "merchant.detail.thisMonth" = "Este mes";
 "merchant.detail.thisYear" = "Este año";
 "merchant.detail.byMonth" = "Por meses";
+"merchant.detail.open" = "Pagos del comercio";
 "walletReview.title" = "Por revisar";
 "walletReview.footer" = "La categoría o la cuenta de estos pagos con Apple Pay se eligió automáticamente. Toca un pago para corregirlo o desliza a la derecha si es correcto. Tu elección se recordará para el comercio y la tarjeta.";
 "walletReview.emptyTitle" = "Nada que revisar";

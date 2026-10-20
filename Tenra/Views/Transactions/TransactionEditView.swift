@@ -284,7 +284,7 @@ struct TransactionEditView: View {
                     } label: {
                         Image(systemName: "storefront")
                     }
-                    .accessibilityLabel(String(localized: "intent.walletPayment.parameter.merchant"))
+                    .accessibilityLabel(String(localized: "merchant.detail.open"))
                 }
             }
             ToolbarItem(placement: .confirmationAction) {

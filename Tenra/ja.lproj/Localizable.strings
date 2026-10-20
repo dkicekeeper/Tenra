@@ -1771,11 +1771,12 @@
 "settings.siri.example2" = "ヘイ Siri、Tenra でいくら使った";
 "settings.siri.example3" = "ヘイ Siri、Tenra に支出を追加";
 "settings.merchants.title" = "Wallet の店舗";
-"settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。変更するには店舗をタップ、忘れるには左にスワイプします。";
+"settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。店舗をタップすると支払いを確認して変更でき、左にスワイプすると忘れます。";
 "settings.merchants.emptyTitle" = "まだ店舗はありません";
 "settings.merchants.emptyMessage" = "Wallet のオートメーションで Apple Pay を使って支払った店舗のカテゴリは、選ぶ、確認する、または修正すると、ここに記憶されます。";
 "settings.merchants.forget" = "忘れる";
 "settings.merchants.forgetMerchant" = "店舗を忘れる";
+"settings.merchants.editTitle" = "店舗を編集";
 "settings.merchants.showLogo" = "ロゴを表示";
 "settings.merchants.showLogo.footer" = "オフにすると、この店舗の取引にはカテゴリのアイコンが表示されます。";
 "settings.merchants.categoryDeleted" = "カテゴリが削除されました。Tenra が再度尋ねます";
@@ -1786,6 +1787,7 @@
 "merchant.detail.thisMonth" = "今月";
 "merchant.detail.thisYear" = "今年";
 "merchant.detail.byMonth" = "月別";
+"merchant.detail.open" = "店舗での支払い";
 "walletReview.title" = "確認待ち";
 "walletReview.footer" = "これらの Apple Pay の支払いは、カテゴリまたは口座が自動で選ばれています。修正するには支払いをタップ、正しければ右にスワイプしてください。選んだ内容は店舗とカードごとに記憶されます。";
 "walletReview.emptyTitle" = "確認するものはありません";

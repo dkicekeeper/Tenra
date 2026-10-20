@@ -193,7 +193,9 @@ on a debt (only a note and a date) is `MoneyEntrySheet`, an adapter over DesignK
 ### Entity detail
 
 `AccountDetailView`, `CategoryDetailView`, `SubscriptionDetailView`, `DepositDetailView`,
-`LoanDetailView`, `GoalDetailView`, `DebtDetailView`, all through `EntityDetailScaffold`:
+`LoanDetailView`, `GoalDetailView`, `DebtDetailView`, `MerchantDetailView`, all through
+`EntityDetailScaffold` (the merchant's amounts and rows wait for its figures instead of showing
+zeros):
 
 ```
 ScrollView

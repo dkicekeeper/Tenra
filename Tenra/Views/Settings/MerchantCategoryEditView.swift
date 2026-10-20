@@ -74,7 +74,7 @@ struct MerchantCategoryEditView: View {
 
     var body: some View {
         EditSheetContainer(
-            title: initialName,
+            title: String(localized: "settings.merchants.editTitle"),
             isSaveDisabled: selectedCategoryId == nil,
             wrapInForm: false,
             onSave: save,
@@ -121,6 +121,10 @@ struct MerchantCategoryEditView: View {
         }
         .onChange(of: showsLogo) { _, shows in
             if !shows { icon = nil }
+        }
+        // A logo picked in the hero is a logo to show.
+        .onChange(of: icon) { _, picked in
+            if picked != nil { showsLogo = true }
         }
         .onChange(of: selectedCategory) { _, _ in
             // Another category's subcategories don't apply.

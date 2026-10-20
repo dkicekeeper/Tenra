@@ -498,9 +498,6 @@ extension InsightsService {
         return insights
     }
 
-    // MARK: - Spending Spike
-
-    /// Detects a category whose current-month spending exceeds 1.5× its 3-month historical average.
     // MARK: - Top merchant
 
     /// Merchants the detail lists, largest first.
@@ -616,6 +613,9 @@ extension InsightsService {
         )
     }
 
+    // MARK: - Spending Spike
+
+    /// Detects a category whose current-month spending exceeds 1.5× its 3-month historical average.
     nonisolated func generateSpendingSpike(baseCurrency: String, transactions: [Transaction], preAggregated: PreAggregatedData? = nil) -> Insight? {
         let calendar = Calendar.current
         let now = Date()

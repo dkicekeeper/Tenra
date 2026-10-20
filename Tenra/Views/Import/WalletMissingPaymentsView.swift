@@ -61,6 +61,10 @@ struct WalletMissingPaymentsView: View {
             }
         }
         .listStyle(.plain)
+        // Every payment deleted: nothing is left to look at.
+        .onChange(of: payments.isEmpty) { _, isEmpty in
+            if isEmpty { dismiss() }
+        }
         .navigationTitle(String(localized: "walletMissing.title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

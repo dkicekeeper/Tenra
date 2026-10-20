@@ -39,9 +39,9 @@ struct AccountFilterView: View {
                         String(localized: "filter.allAccounts"),
                         config: .settings,
                         accessory: .checkmark(isSelected: selectedAccountId == nil) {
-                        selectedAccountId = nil
-                        dismiss()
-                    }
+                            selectedAccountId = nil
+                            dismiss()
+                        }
                     )
                 }
 
@@ -97,9 +97,9 @@ struct AccountFilterView: View {
                         : Formatting.formatCurrencySmart(balance, currency: account.currency),
                     config: .settings,
                     accessory: .checkmark(isSelected: selectedAccountId == account.id) {
-                    selectedAccountId = account.id
-                    dismiss()
-                }
+                        selectedAccountId = account.id
+                        dismiss()
+                    }
                 )
             }
         } header: {

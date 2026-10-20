@@ -56,8 +56,8 @@ struct AssistantMemoryView: View {
                             role: .destructive,
                             config: .settings,
                             accessory: .action {
-                            showingForgetAll = true
-                        }
+                                showingForgetAll = true
+                            }
                         )
                     }
                 }

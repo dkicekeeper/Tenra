@@ -216,8 +216,8 @@ struct SettingsView: View {
                 icon: "bell.badge",
                 config: .settings,
                 accessory: .navigation {
-                InsightSignalSettingsView()
-            }
+                    InsightSignalSettingsView()
+                }
             )
         }
     }
@@ -230,16 +230,16 @@ struct SettingsView: View {
                 icon: "flask",
                 config: .settings,
                 accessory: .navigation {
-                ExperimentsListView()
-            }
+                    ExperimentsListView()
+                }
             )
             UniversalRow(
                 String(localized: "settings.notificationDebug"),
                 icon: "bell.badge",
                 config: .settings,
                 accessory: .navigation {
-                NotificationDebugView()
-            }
+                    NotificationDebugView()
+                }
             )
             UniversalRow(
                 String(localized: "settings.debug.relaunchOnboarding"),
@@ -341,8 +341,8 @@ struct SettingsView: View {
                 icon: "stethoscope",
                 config: .settings,
                 accessory: .navigation {
-                DiagnosticsView()
-            }
+                    DiagnosticsView()
+                }
             )
         }
     }

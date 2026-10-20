@@ -70,8 +70,8 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
                 icon: "photo.on.rectangle",
                 config: .settings,
                 accessory: .navigation {
-                backgroundDestination
-            }
+                    backgroundDestination
+                }
             )
 
             // DesignKit's list row (4.14.0): the settings row, its value and the list it pushes.

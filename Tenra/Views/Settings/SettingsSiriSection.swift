@@ -25,8 +25,8 @@ struct SettingsSiriSection: View {
                 icon: "wallet.pass",
                 config: .settings,
                 accessory: .navigation {
-                MerchantCategoriesView(categoriesViewModel: categoriesViewModel)
-            }
+                    MerchantCategoriesView(categoriesViewModel: categoriesViewModel)
+                }
             )
 
             ShortcutsLink()

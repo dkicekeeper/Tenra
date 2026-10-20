@@ -36,8 +36,8 @@ struct SettingsAssistantSection: View {
                     icon: "brain",
                     config: .settings,
                     accessory: .navigation {
-                    AssistantMemoryView(memory: memory)
-                }
+                        AssistantMemoryView(memory: memory)
+                    }
                 )
             } header: {
                 SectionHeader(String(localized: "settings.assistant.header"), style: .compact)

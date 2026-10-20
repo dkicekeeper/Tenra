@@ -55,10 +55,10 @@ struct CategoryFilterView: View {
                         String(localized: "categoryFilter.allCategories"),
                         config: .settings,
                         accessory: .checkmark(isSelected: isAllDeselected) {
-                        selectedExpenseCategories.removeAll()
-                        selectedIncomeCategories.removeAll()
-                        selectedDeletedCategories.removeAll()
-                    }
+                            selectedExpenseCategories.removeAll()
+                            selectedIncomeCategories.removeAll()
+                            selectedDeletedCategories.removeAll()
+                        }
                     )
                 }
 

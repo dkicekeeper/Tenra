@@ -17,7 +17,6 @@ struct MerchantCategoriesView: View {
 
     @State private var memory = MerchantCategoryMemory.shared
     @State private var opened: MerchantCategoryMemory.Merchant?
-    @State private var editing: MerchantCategoryMemory.Merchant?
 
     var body: some View {
         Group {
@@ -46,15 +45,7 @@ struct MerchantCategoriesView: View {
                 merchant: merchant.displayName,
                 transactionsViewModel: transactionsViewModel,
                 categoriesViewModel: categoriesViewModel,
-                accountsViewModel: accountsViewModel,
-                onEdit: { editing = merchant }
-            )
-        }
-        .sheet(item: $editing) { merchant in
-            MerchantCategoryEditView(
-                merchant: merchant,
-                categoriesViewModel: categoriesViewModel,
-                memory: memory
+                accountsViewModel: accountsViewModel
             )
         }
     }

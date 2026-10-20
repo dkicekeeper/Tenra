@@ -269,6 +269,23 @@ struct TransactionEditView: View {
                     recurringMenuButton
                 }
             }
+            // A remembered Wallet merchant's screen: every payment there.
+            if coordinator.transaction.type == .expense || coordinator.transaction.type == .income,
+               MerchantCategoryMemory.shared.merchant(forDescription: coordinator.transaction.description) != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        MerchantDetailView(
+                            merchant: coordinator.transaction.description,
+                            transactionsViewModel: coordinator.transactionsViewModel,
+                            categoriesViewModel: coordinator.categoriesViewModel,
+                            accountsViewModel: coordinator.accountsViewModel
+                        )
+                    } label: {
+                        Image(systemName: "storefront")
+                    }
+                    .accessibilityLabel(String(localized: "intent.walletPayment.parameter.merchant"))
+                }
+            }
             ToolbarItem(placement: .confirmationAction) {
                 Button {
                     coordinator.save { dismiss() }

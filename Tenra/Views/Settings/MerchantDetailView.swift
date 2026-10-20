@@ -5,8 +5,9 @@
 //  One merchant's screen (docs/plan-auto-capture.md §7): its logo and name, what was
 //  spent there in the selected period, visits, the average check, the last visit and
 //  every transaction, whatever recorded it (Apple Pay, a statement, by hand).
-//  Opened from Settings → Siri & Shortcuts → Wallet merchants; the toolbar edits the
-//  merchant (MerchantCategoryEditView) when the Wallet memory knows it.
+//  Opened from Settings → Siri & Shortcuts → Wallet merchants and from a remembered
+//  merchant's transaction (TransactionEditView); the menu edits the merchant
+//  (MerchantCategoryEditView).
 //
 //  Built on EntityDetailScaffold like the category screen. The history sweep runs off
 //  the main actor (MerchantHistory, red flag #9), keyed on every dimension it reads
@@ -21,8 +22,6 @@ struct MerchantDetailView: View {
     let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
     let accountsViewModel: AccountsViewModel
-    /// Opens the merchant's edit sheet; nil hides "Edit".
-    var onEdit: (() -> Void)? = nil
 
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(TimeFilterManager.self) private var timeFilterManager
@@ -30,6 +29,7 @@ struct MerchantDetailView: View {
 
     @State private var summary = MerchantHistory.Summary.empty
     @State private var accountsById: [String: Account] = [:]
+    @State private var editing: MerchantCategoryMemory.Merchant?
 
     private var merchantKey: String { CategorySuggestionService.normalizedMerchant(merchant) }
 
@@ -114,6 +114,13 @@ struct MerchantDetailView: View {
             toolbarMenu: { toolbarMenu }
         )
         .heroAccentGlow(icon: icon.source, tint: icon.tint)
+        .sheet(item: $editing) { known in
+            MerchantCategoryEditView(
+                merchant: known,
+                categoriesViewModel: categoriesViewModel,
+                memory: MerchantCategoryMemory.shared
+            )
+        }
         .task(id: refreshKey) {
             await refresh()
         }
@@ -185,9 +192,9 @@ struct MerchantDetailView: View {
 
     @ViewBuilder
     private var toolbarMenu: some View {
-        if let onEdit {
+        if let known = MerchantCategoryMemory.shared.merchant(forDescription: merchant) {
             Button {
-                onEdit()
+                editing = known
             } label: {
                 Label(String(localized: "common.edit", defaultValue: "Edit"), systemImage: "pencil")
             }

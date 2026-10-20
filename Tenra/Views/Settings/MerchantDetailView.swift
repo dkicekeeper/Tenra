@@ -25,7 +25,6 @@ struct MerchantDetailView: View {
 
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(TimeFilterManager.self) private var timeFilterManager
-    @Environment(\.amountsHidden) private var amountsHidden
 
     @State private var summary = MerchantHistory.Summary.empty
     @State private var accountsById: [String: Account] = [:]

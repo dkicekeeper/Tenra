@@ -54,6 +54,11 @@ people and has no account.
 - **Settling.** A repayment that covers what is left settles the debt on its date; deleting that
   repayment opens it again. "Settle" by hand (returned outside the app, or the rest forgiven)
   and "Reopen" are the person's own; lowering the amount to what already came back settles it.
+- **A receipt repays a debt.** A bank receipt shared to Tenra names who the money went to; when
+  exactly one open "I owe" debt has that person (`DebtRecipientMatcher`: the same first name, and
+  the same initial when both names have a second word), `ReceiptConfirmationView` shows "It's a
+  debt repayment" (on by default). Saving then adds the expense and a `DebtRepayment` in the debt's
+  currency (`convertSync`; without a rate there is no offer). Pinned by `DebtRecipientMatcherTests`.
 - **Overdue**: open and its due date is before today (`PersonalDebt.isOverdue`), a red badge in
   the list.
 - **Sorting.** Goals in list order (creation); reached goals in their own section. Open debts per

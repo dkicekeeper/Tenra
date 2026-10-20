@@ -1808,6 +1808,8 @@
 "import.source.receipt.title" = "Fiş tara";
 "import.source.receipt.subtitle" = "Kamerayı kağıt bir fişe doğrultun";
 "import.receipt.title" = "Fişi Gözden Geçir";
+"import.receipt.debtRepayment" = "Bu bir borç ödemesi";
+"import.receipt.debtRepayment.footer" = "Ödeme, %@ kişisine olan borcunu da azaltır.";
 "import.receipt.detailsHeader" = "Fiş Bilgileri";
 "import.receipt.merchant" = "Satıcı";
 "import.receipt.total" = "Toplam";

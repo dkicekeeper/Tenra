@@ -1808,6 +1808,8 @@
 "import.source.receipt.title" = "Scanner un reçu";
 "import.source.receipt.subtitle" = "Pointez la caméra vers un reçu papier";
 "import.receipt.title" = "Vérifier le reçu";
+"import.receipt.debtRepayment" = "C'est un remboursement de dette";
+"import.receipt.debtRepayment.footer" = "Le paiement réduit aussi ce que vous devez à %@.";
 "import.receipt.detailsHeader" = "Détails du reçu";
 "import.receipt.merchant" = "Commerçant";
 "import.receipt.total" = "Total";

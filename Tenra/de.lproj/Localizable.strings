@@ -1808,6 +1808,8 @@
 "import.source.receipt.title" = "Beleg scannen";
 "import.source.receipt.subtitle" = "Richten Sie die Kamera auf einen Papierbeleg";
 "import.receipt.title" = "Beleg prüfen";
+"import.receipt.debtRepayment" = "Das ist eine Schuldrückzahlung";
+"import.receipt.debtRepayment.footer" = "Die Zahlung verringert auch, was Sie %@ schulden.";
 "import.receipt.detailsHeader" = "Belegdetails";
 "import.receipt.merchant" = "Händler";
 "import.receipt.total" = "Gesamtbetrag";

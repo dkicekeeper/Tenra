@@ -1808,6 +1808,8 @@
 "import.source.receipt.title" = "Scansiona uno scontrino";
 "import.source.receipt.subtitle" = "Inquadra uno scontrino cartaceo con la fotocamera";
 "import.receipt.title" = "Rivedi scontrino";
+"import.receipt.debtRepayment" = "È la restituzione di un debito";
+"import.receipt.debtRepayment.footer" = "Il pagamento riduce anche quanto devi a %@.";
 "import.receipt.detailsHeader" = "Dettagli scontrino";
 "import.receipt.merchant" = "Esercente";
 "import.receipt.total" = "Totale";

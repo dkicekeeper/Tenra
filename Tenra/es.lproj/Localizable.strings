@@ -1808,6 +1808,8 @@
 "import.source.receipt.title" = "Escanear un recibo";
 "import.source.receipt.subtitle" = "Apunta la cámara a un recibo en papel";
 "import.receipt.title" = "Revisar recibo";
+"import.receipt.debtRepayment" = "Es la devolución de una deuda";
+"import.receipt.debtRepayment.footer" = "El pago también reduce lo que le debes a %@.";
 "import.receipt.detailsHeader" = "Detalles del recibo";
 "import.receipt.merchant" = "Comercio";
 "import.receipt.total" = "Total";

@@ -1808,6 +1808,8 @@
 "import.source.receipt.title" = "レシートをスキャン";
 "import.source.receipt.subtitle" = "紙のレシートにカメラを向けてください";
 "import.receipt.title" = "レシートを確認";
+"import.receipt.debtRepayment" = "借りたお金の返済です";
+"import.receipt.debtRepayment.footer" = "この支払いで%@への借りも減ります。";
 "import.receipt.detailsHeader" = "レシート詳細";
 "import.receipt.merchant" = "店舗";
 "import.receipt.total" = "合計金額";

@@ -1808,6 +1808,8 @@
 "import.source.receipt.title" = "Scan a receipt";
 "import.source.receipt.subtitle" = "Point the camera at a paper receipt";
 "import.receipt.title" = "Review Receipt";
+"import.receipt.debtRepayment" = "It's a debt repayment";
+"import.receipt.debtRepayment.footer" = "The payment also goes towards what you owe %@.";
 "import.receipt.detailsHeader" = "Receipt Details";
 "import.receipt.merchant" = "Merchant";
 "import.receipt.total" = "Total";

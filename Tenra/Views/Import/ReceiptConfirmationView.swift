@@ -18,6 +18,10 @@
 //  TransactionStore.validate still accepts an empty category as
 //  "uncategorized" when the user leaves it unset.
 //
+//  A receipt a bank app shared names the person the money went to: when the user owes that
+//  person (an open "I owe" debt, DebtRecipientMatcher), a switch records the payment as the
+//  debt's repayment too, in the debt's currency (docs/plan-auto-capture.md §6).
+//
 
 import SwiftUI
 
@@ -29,6 +33,7 @@ struct ReceiptConfirmationView: View {
     let categoriesViewModel: CategoriesViewModel
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppCoordinator.self) private var coordinator
 
     // Receipt carries its own currency, so the default prefers a regular
     // account already denominated in it over the plain "first regular
@@ -38,6 +43,9 @@ struct ReceiptConfirmationView: View {
 
     /// Pre-filled from CategorySuggestionProvider; nil saves as uncategorized.
     @State private var selectedCategoryName: String?
+
+    /// Record the payment as the repayment of the debt the recipient matches.
+    @State private var recordsRepayment = true
 
     init(
         draft: ReceiptDraft,
@@ -112,6 +120,18 @@ struct ReceiptConfirmationView: View {
                     )
                     .screenPadding()
 
+                    if let repayment = debtRepayment {
+                        FormSection(footer: String(format: String(localized: "import.receipt.debtRepayment.footer"), repayment.debt.person)) {
+                            ToggleSettingsRow(
+                                icon: "arrow.uturn.backward.circle",
+                                title: String(localized: "import.receipt.debtRepayment"),
+                                config: .standard,
+                                isOn: $recordsRepayment
+                            )
+                        }
+                        .screenPadding()
+                    }
+
                     if let balanceCoordinator = accountsViewModel.balanceCoordinator {
                         AccountSelectorView(
                             accounts: accountsViewModel.regularAccounts,
@@ -148,6 +168,15 @@ struct ReceiptConfirmationView: View {
             HapticManager.light()
             guard let selectedAccountId else { return }
             transactionsViewModel.addTransaction(makeTransaction(accountId: selectedAccountId))
+            if recordsRepayment, let repayment = debtRepayment {
+                let debts = coordinator.debtStore
+                let entry = DebtRepayment(
+                    amount: repayment.amount,
+                    date: FastDateParser.date(from: dateString) ?? Date(),
+                    note: draft.merchant
+                )
+                Task { await debts.addRepayment(entry, to: repayment.debt.id) }
+            }
             dismiss()
         } label: {
             Text(String(localized: "button.add"))
@@ -161,6 +190,19 @@ struct ReceiptConfirmationView: View {
         .disabled(selectedAccountId == nil)
         .opacity(selectedAccountId == nil ? 0.5 : 1)
         .screenPadding()
+    }
+
+    /// The open debt the recipient matches and the payment in its currency; nil without one,
+    /// or without a rate to convert to it.
+    private var debtRepayment: (debt: PersonalDebt, amount: Double)? {
+        guard let debt = DebtRecipientMatcher.debt(repaidTo: draft.merchant, in: coordinator.debtStore.debts) else {
+            return nil
+        }
+        if debt.currency == currency { return (debt, draft.total) }
+        guard let converted = CurrencyConverter.convertSync(amount: draft.total, from: currency, to: debt.currency) else {
+            return nil
+        }
+        return (debt, converted)
     }
 
     private func makeTransaction(accountId: String) -> Transaction {
@@ -230,4 +272,5 @@ struct ReceiptConfirmationView: View {
         accountsViewModel: coordinator.accountsViewModel,
         categoriesViewModel: coordinator.categoriesViewModel
     )
+    .environment(coordinator)
 }

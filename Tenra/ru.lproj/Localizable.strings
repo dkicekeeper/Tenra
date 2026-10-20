@@ -1808,6 +1808,8 @@
 "import.source.receipt.title" = "Сканировать чек";
 "import.source.receipt.subtitle" = "Наведите камеру на бумажный чек";
 "import.receipt.title" = "Проверка чека";
+"import.receipt.debtRepayment" = "Это возврат долга";
+"import.receipt.debtRepayment.footer" = "Платёж также уменьшит ваш долг: %@.";
 "import.receipt.detailsHeader" = "Данные чека";
 "import.receipt.merchant" = "Продавец";
 "import.receipt.total" = "Сумма";

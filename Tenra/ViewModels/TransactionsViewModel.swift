@@ -173,22 +173,35 @@ class TransactionsViewModel {
     // MARK: - CRUD Operations (Delegated to Services)
 
     func addTransaction(_ transaction: Transaction) {
-        guard let transactionStore = transactionStore else {
+        guard transactionStore != nil else {
             return
         }
 
         Task {
-            do {
-                _ = try await transactionStore.add(transaction)
-                // Success moment: the user is actively tracking finances. Let the rating
-                // service decide whether this crosses into prompt eligibility.
-                RatingPromptService.shared.recordTransactionAdded()
-                // Local-only counter, for comparing manual entry against Siri
-                // and Shortcuts. Never leaves the device.
-                IntentUsageCounters.shared.record(.manualAdd)
-            } catch {
-                errorMessage = error.localizedDescription
-            }
+            await addTransactionAndWait(transaction)
+        }
+    }
+
+    /// `addTransaction` for a caller that goes on only once it is saved: the saved
+    /// transaction, or nil when the save failed (`errorMessage` says why).
+    @discardableResult
+    func addTransactionAndWait(_ transaction: Transaction) async -> Transaction? {
+        guard let transactionStore = transactionStore else {
+            return nil
+        }
+
+        do {
+            let saved = try await transactionStore.add(transaction)
+            // Success moment: the user is actively tracking finances. Let the rating
+            // service decide whether this crosses into prompt eligibility.
+            RatingPromptService.shared.recordTransactionAdded()
+            // Local-only counter, for comparing manual entry against Siri
+            // and Shortcuts. Never leaves the device.
+            IntentUsageCounters.shared.record(.manualAdd)
+            return saved
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
         }
     }
 

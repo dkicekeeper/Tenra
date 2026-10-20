@@ -4,7 +4,7 @@
 //
 //  Pins bestTable's selection: a statement page holds several tables
 //  (account summary, fees, transactions); the transaction table must win.
-//  And a PDF with no table at all is a receipt, not an error.
+//  And a PDF with no table that reads as one payment is a receipt, not an error.
 //
 
 import Testing
@@ -154,5 +154,17 @@ struct DocumentImportServiceTests {
         }
         #expect(draft.merchant == "SMALL")
         #expect(draft.total == 2300)
+    }
+
+    @Test("a statement the parser cannot read keeps its error, never becomes one payment")
+    func unreadableStatementStaysAnError() async {
+        let lines = ["Выписка по счёту", "Итого 9 400"] + (1...6).map { "0\($0).10.2026 SMALL \($0)00" }
+        let page = DocumentSnapshot.Page(index: 0, tables: [], lines: lines, barcodes: [])
+        await #expect(throws: PDFError.self) {
+            _ = try await DocumentImportService.content(
+                snapshot: DocumentSnapshot(pages: [page], hadTextLayer: true),
+                defaultCurrency: "KZT"
+            )
+        }
     }
 }

@@ -23,6 +23,9 @@ struct ReceiptDraft: Sendable, Equatable {
     let currency: String?
     /// Canonical "yyyy-MM-dd", nil when the receipt showed no date.
     let date: String?
+    /// `merchant` is who a bank's receipt says the money went to ("Получатель: …"): a person
+    /// the user may owe. Only then is a debt repayment offered switched on.
+    var isRecipient: Bool = false
 }
 
 /// Structured output schema for the Apple Intelligence path.
@@ -74,6 +77,17 @@ nonisolated struct ReceiptInterpreter {
             logger.info("model vision capability: \(IntelligenceAvailability.supportsVision, privacy: .public)")
 
             if let draft = try await intelligentDraft(snapshot: snapshot, defaultCurrency: defaultCurrency) {
+                // The model is asked for a shop's name; a bank's receipt names whom the money
+                // went to after a label, and that is the merchant here too.
+                if let recipient = labelledRecipient(snapshot.allLines.filter { !$0.isEmpty }) {
+                    return ReceiptDraft(
+                        merchant: recipient,
+                        total: draft.total,
+                        currency: draft.currency,
+                        date: draft.date,
+                        isRecipient: true
+                    )
+                }
                 return draft
             }
         }
@@ -154,17 +168,33 @@ nonisolated struct ReceiptInterpreter {
     private static let excludedKeywords = [
         "subtotal", "подытог", "промежуточный", "zwischensumme", "sous-total",
         "subtotale", "ara toplam", "tax", "vat", "ндс", "mwst", "iva", "tva",
-        "kdv", "change", "сдача", "rückgeld", "cambio", "monnaie", "tip", "чаевые",
-        // A bank receipt's fee line ("Комиссия 150 ₸", "Сумма комиссии 150 ₸"): never the amount paid.
-        "комиссия", "комиссии", "commission", "fee"
+        "kdv", "change", "сдача", "rückgeld", "cambio", "monnaie", "tip", "чаевые"
     ]
 
+    /// A bank receipt's fee ("Комиссия 150 ₸", "Сумма комиссии 150 ₸"): never the amount paid,
+    /// unless the line is a total that includes it ("Итого с учётом комиссии 5 150").
+    private static let feeKeywords = ["комиссия", "комиссии", "комиссией", "commission", "fee"]
+    /// Total keywords a fee line can still be the total with. "Сумма" alone is a bank
+    /// receipt's word for any amount, its fee's too.
+    private static let feeInclusiveTotalKeywords = totalKeywords.filter { $0 != "сумма" }
+
+    private static func isFeeLine(tokens: Set<String>, lowered: String) -> Bool {
+        feeKeywords.contains { lineMatches($0, tokens: tokens, lowered: lowered) }
+            && !feeInclusiveTotalKeywords.contains { lineMatches($0, tokens: tokens, lowered: lowered) }
+    }
+
     /// What a bank's receipt of a payment or transfer prints before whom the money went to,
-    /// at the start of a line ("Получатель: Иван И.", "Продавец SMALL"). Never a single
-    /// short word such as "to": it starts too many ordinary lines.
+    /// at the start of a line: followed by a colon ("Получатель: Иван И."), by the name in the
+    /// next column (the text layer joins columns with a space: "Получатель Иван И.") or alone
+    /// on its line with the name on the next. Longest first. Never a single short word such
+    /// as "to": it starts too many ordinary lines.
     private static let recipientLabels = [
-        "получатель", "кому", "продавец", "магазин", "алушы", "recipient", "payee"
+        "получатель платежа", "получатель перевода", "получатель", "кому", "продавец", "магазин",
+        "алушы", "recipient", "payee"
     ]
+    /// Labels a shop's own receipt also starts ordinary lines with ("Магазин №12", "Продавец
+    /// Иванова А."): only "label:" or the label alone names a recipient.
+    private static let colonOnlyRecipientLabels: Set<String> = ["продавец", "магазин"]
 
     static func heuristicDraft(
         snapshot: DocumentSnapshot,
@@ -176,12 +206,25 @@ nonisolated struct ReceiptInterpreter {
         let total = totalFromLabelledLine(lines) ?? largestAmount(lines)
         guard let total else { return nil }
 
+        let recipient = labelledRecipient(lines)
         return ReceiptDraft(
-            merchant: merchant(from: lines),
+            merchant: recipient ?? merchant(from: lines),
             total: total.amount,
             currency: total.currency ?? defaultCurrency,
-            date: lines.compactMap(DateTokenParser.parse).first
+            date: lines.compactMap(DateTokenParser.parse).first,
+            isRecipient: recipient != nil
         )
+    }
+
+    /// Whether a PDF with no table of operations reads as the receipt of one payment rather
+    /// than a statement the parser could not read: one page, at most three dated lines (a
+    /// statement dates every row), and a labelled total or recipient. Anything else keeps
+    /// the statement's own error, never becomes a one-payment draft.
+    static func looksLikeOnePayment(_ snapshot: DocumentSnapshot) -> Bool {
+        guard snapshot.pages.count == 1 else { return false }
+        let lines = snapshot.allLines.filter { !$0.isEmpty }
+        guard lines.filter({ DateTokenParser.parse($0) != nil }).count <= 3 else { return false }
+        return totalFromLabelledLine(lines) != nil || labelledRecipient(lines) != nil
     }
 
     private static func totalFromLabelledLine(
@@ -193,6 +236,7 @@ nonisolated struct ReceiptInterpreter {
             let tokens = wordTokens(in: lowered)
             guard totalKeywords.contains(where: { lineMatches($0, tokens: tokens, lowered: lowered) }) else { continue }
             guard !excludedKeywords.contains(where: { lineMatches($0, tokens: tokens, lowered: lowered) }) else { continue }
+            guard !isFeeLine(tokens: tokens, lowered: lowered) else { continue }
             if let money = lastAmount(in: line), money.amount > 0 { return money }
         }
         return nil
@@ -204,6 +248,7 @@ nonisolated struct ReceiptInterpreter {
                 let lowered = line.lowercased()
                 let tokens = wordTokens(in: lowered)
                 return !excludedKeywords.contains { lineMatches($0, tokens: tokens, lowered: lowered) }
+                    && !isFeeLine(tokens: tokens, lowered: lowered)
             }
             .compactMap(lastAmount(in:))
             .max { $0.amount < $1.amount }
@@ -315,7 +360,6 @@ nonisolated struct ReceiptInterpreter {
     }
 
     private static func merchant(from lines: [String]) -> String {
-        if let recipient = labelledRecipient(lines) { return recipient }
         // The shop name is printed at the top, above any amount or date.
         for line in lines.prefix(5) {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -328,24 +372,35 @@ nonisolated struct ReceiptInterpreter {
         return lines.first ?? ""
     }
 
-    /// The recipient a bank receipt names after one of `recipientLabels`: the rest of that line
-    /// ("Получатель: Иван И."), or the next line when the label stands alone.
-    private static func labelledRecipient(_ lines: [String]) -> String? {
-        let separators = CharacterSet(charactersIn: ":-\u{2013}\u{2014}").union(.whitespaces)
+    /// The recipient a bank receipt names after one of `recipientLabels`: the rest of a
+    /// "label:" line ("Получатель: Иван И."), of a "label Name" line for a bank's labels, or the
+    /// next line when the label stands alone. "Продавец-консультант: …", "Получатель платежей
+    /// банка" or "Магазин «Пятёрочка»" are not labels: the name of a shop's receipt stays its
+    /// top line.
+    static func labelledRecipient(_ lines: [String]) -> String? {
         for (index, line) in lines.enumerated() {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
             let lowered = trimmed.lowercased()
-            guard let label = recipientLabels.first(where: { label in
-                guard lowered.hasPrefix(label) else { return false }
-                // A whole word: "Магазин: SMALL", never "Магазины".
-                let next = lowered.dropFirst(label.count).first
-                return next.map { !$0.isLetter } ?? true
-            }) else { continue }
+            guard let label = recipientLabels.first(where: { lowered.hasPrefix($0) }) else { continue }
 
-            let rest = String(trimmed.dropFirst(label.count)).trimmingCharacters(in: separators)
+            let rest = trimmed.dropFirst(label.count)
+            let afterLabel = rest.trimmingCharacters(in: .whitespaces)
+            let named: String
+            if afterLabel.hasPrefix(":") {
+                named = String(afterLabel.dropFirst()).trimmingCharacters(in: .whitespaces)
+            } else if afterLabel.isEmpty {
+                named = ""
+            } else if rest.first?.isWhitespace == true, !colonOnlyRecipientLabels.contains(label) {
+                // A name in the next column starts with a capital, a digit or a quote:
+                // "Получатель платежей банка" is a sentence, not a label and a name.
+                guard afterLabel.first?.isLowercase == false else { continue }
+                named = afterLabel
+            } else {
+                continue
+            }
             let value: String
-            if !rest.isEmpty {
-                value = rest
+            if !named.isEmpty {
+                value = named
             } else if index + 1 < lines.count {
                 value = lines[index + 1].trimmingCharacters(in: .whitespacesAndNewlines)
             } else {

@@ -8,8 +8,9 @@
 //
 //  Names are compared word by word on letters only (CategorySuggestionService.normalizedMerchant):
 //  the first word must be the same, and when both names carry a second one, its first letter
-//  too: "Иван И." repays "Иван Иванов", never "Иван Петров". Exactly one such debt or none:
-//  a guess between two people is no offer.
+//  too: "Иван И." repays "Иван Иванов", never "Иван Петров". A person saved by first name
+//  alone matches a masked surname ("Асель К."), not a second full word. Exactly one such debt
+//  or none: a guess between two people is no offer.
 //
 
 import Foundation
@@ -24,7 +25,10 @@ nonisolated enum DebtRecipientMatcher {
             guard debt.direction == .iOwe, !debt.isSettled else { return false }
             let personWords = words(debt.person)
             guard personWords.first == first else { return false }
-            guard recipientWords.count > 1, personWords.count > 1 else { return true }
+            guard recipientWords.count > 1 else { return true }
+            // A one-word person matches a masked surname ("Асель К."), never a second full
+            // word: "Алма ТВ" is a company, not the Алма the user owes.
+            guard personWords.count > 1 else { return recipientWords[1].count == 1 }
             return recipientWords[1].first == personWords[1].first
         }
         return matches.count == 1 ? matches.first : nil

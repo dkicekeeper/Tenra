@@ -60,8 +60,10 @@ nonisolated struct DocumentImportService {
     }
 
     /// Read as a statement first. When no table of operations resolves (`noTextFound`,
-    /// `layoutNotRecognized`), the same text is read as a receipt (`ReceiptInterpreter`); a
-    /// table whose rows were all skipped stays a statement, so its diagnostics show.
+    /// `layoutNotRecognized`) and the text reads as one payment
+    /// (`ReceiptInterpreter.looksLikeOnePayment`: one page, at most three dated lines, a labelled
+    /// total or recipient), it is read as a receipt. A statement the parser cannot read keeps
+    /// its error, and one whose rows were all skipped stays a statement for its diagnostics.
     static func content(
         snapshot: DocumentSnapshot,
         defaultCurrency: String,
@@ -76,7 +78,8 @@ nonisolated struct DocumentImportService {
         } catch let error as PDFError {
             switch error {
             case .noTextFound, .layoutNotRecognized:
-                guard let draft = try await ReceiptInterpreter.interpret(
+                guard ReceiptInterpreter.looksLikeOnePayment(snapshot),
+                      let draft = try await ReceiptInterpreter.interpret(
                     snapshot: snapshot,
                     defaultCurrency: defaultCurrency
                 ) else { throw error }

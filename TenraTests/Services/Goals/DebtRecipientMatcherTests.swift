@@ -3,7 +3,8 @@
 //  TenraTests
 //
 //  Pins which personal debt a receipt's recipient repays: an open "I owe" debt whose person
-//  has the same first name and, when both have one, the same initial; exactly one or none.
+//  has the same first name and, when both have one, the same initial (a first name alone
+//  takes only an initial after it); exactly one or none.
 //
 
 import Testing
@@ -29,6 +30,8 @@ struct DebtRecipientMatcherTests {
         #expect(match("Иван И.", debts) == "d1")
         #expect(match("ИВАН ИВАНОВ", debts) == "d1")
         #expect(match("Асель К.", debts) == "d2")
+        #expect(match("Асель", debts) == "d2")
+        #expect(match("Асель Каримова", debts) == nil)
         #expect(match("Иван П.", debts) == nil)
         #expect(match("Small", debts) == nil)
     }

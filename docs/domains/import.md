@@ -16,13 +16,19 @@ three-stage pipeline. Read this before touching anything in
 
 **A PDF is a statement or a receipt** (`DocumentImportService.importDocument` → `DocumentContent`).
 Every bank's PDF is different, and a bank app's receipt of one payment or transfer has no table of
-operations: the text is read as a statement first, and when no table resolves (`noTextFound`,
-`layoutNotRecognized`) the same text goes to `ReceiptInterpreter`. A table whose rows were all
-skipped stays a statement, so its diagnostics show. The receipt heuristic takes the recipient after
-a label at the start of a line ("Получатель", "Кому", "Продавец", "Магазин", "Алушы", "Recipient",
-"Payee"; the rest of the line or the next one) and never reads a fee line ("комиссия",
-"commission", "fee") as the amount. Pinned by `DocumentImportServiceTests` and
-`ReceiptInterpreterTests`.
+operations. When the statement path finds none (`noTextFound`, `layoutNotRecognized`) and the
+text reads as one payment (`ReceiptInterpreter.looksLikeOnePayment`: one page, at most three dated
+lines, a labelled total or recipient), it goes to `ReceiptInterpreter`; any other PDF keeps the
+statement's error, never becomes a one-payment draft. A table whose rows were all skipped stays a
+statement, so its diagnostics show. The recipient is the name after a label at the start of a line
+("Получатель", "Получатель платежа", "Кому", "Алушы", "Recipient", "Payee"): after a colon, in the
+next column (the text layer joins columns with a space, so "Получатель Иван И."; the name starts
+with a capital) or on the next line when the label stands alone. "Продавец" and "Магазин" also
+start a shop's own lines, so only "label:" or the label alone count for them. A recipient wins over
+the model's merchant too and sets `ReceiptDraft.isRecipient`. A fee line ("комиссия",
+"commission", "fee") is never the amount, unless it is a total that includes the fee ("Итого с
+учётом комиссии"; "Сумма" alone is any amount on a bank receipt). Pinned by
+`DocumentImportServiceTests` and `ReceiptInterpreterTests`.
 
 **"Open in Tenra"** (`CFBundleDocumentTypes`, `AppCoordinator.pendingAttachment`): where the
 assistant runs, it attaches the file; elsewhere `MainTabView` opens the action tab's Import page and

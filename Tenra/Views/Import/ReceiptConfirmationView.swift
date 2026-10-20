@@ -20,7 +20,9 @@
 //
 //  A receipt a bank app shared names the person the money went to: when the user owes that
 //  person (an open "I owe" debt, DebtRecipientMatcher), a switch records the payment as the
-//  debt's repayment too, in the debt's currency (docs/plan-auto-capture.md §6).
+//  debt's repayment too, in the debt's currency and at most what is left of it, once the
+//  expense is saved (docs/plan-auto-capture.md §6). The switch is on when the name came from
+//  the receipt's recipient label, off when it is only the receipt's top line.
 //
 
 import SwiftUI
@@ -45,7 +47,7 @@ struct ReceiptConfirmationView: View {
     @State private var selectedCategoryName: String?
 
     /// Record the payment as the repayment of the debt the recipient matches.
-    @State private var recordsRepayment = true
+    @State private var recordsRepayment: Bool
 
     init(
         draft: ReceiptDraft,
@@ -65,6 +67,7 @@ struct ReceiptConfirmationView: View {
             .first(where: { $0.currency == receiptCurrency })?.id
             ?? accountsViewModel.regularAccounts.first?.id
         _selectedAccountId = State(initialValue: defaultAccountId)
+        _recordsRepayment = State(initialValue: draft.isRecipient)
     }
 
     private var currency: String { draft.currency ?? baseCurrency }
@@ -167,15 +170,21 @@ struct ReceiptConfirmationView: View {
         Button {
             HapticManager.light()
             guard let selectedAccountId else { return }
-            transactionsViewModel.addTransaction(makeTransaction(accountId: selectedAccountId))
-            if recordsRepayment, let repayment = debtRepayment {
-                let debts = coordinator.debtStore
-                let entry = DebtRepayment(
-                    amount: repayment.amount,
+            let transaction = makeTransaction(accountId: selectedAccountId)
+            let viewModel = transactionsViewModel
+            let debts = coordinator.debtStore
+            var repayment: (debtId: String, entry: DebtRepayment)?
+            if recordsRepayment, let match = debtRepayment {
+                repayment = (match.debt.id, DebtRepayment(
+                    amount: match.amount,
                     date: FastDateParser.date(from: dateString) ?? Date(),
                     note: draft.merchant
-                )
-                Task { await debts.addRepayment(entry, to: repayment.debt.id) }
+                ))
+            }
+            // The repayment follows the expense: a failed save repays nothing.
+            Task { [repayment] in
+                guard await viewModel.addTransactionAndWait(transaction) != nil, let repayment else { return }
+                await debts.addRepayment(repayment.entry, to: repayment.debtId)
             }
             dismiss()
         } label: {
@@ -192,17 +201,17 @@ struct ReceiptConfirmationView: View {
         .screenPadding()
     }
 
-    /// The open debt the recipient matches and the payment in its currency; nil without one,
-    /// or without a rate to convert to it.
+    /// The open debt the recipient matches and the payment in its currency, at most what is
+    /// left of the debt; nil without one, or without a rate to convert to it.
     private var debtRepayment: (debt: PersonalDebt, amount: Double)? {
-        guard let debt = DebtRecipientMatcher.debt(repaidTo: draft.merchant, in: coordinator.debtStore.debts) else {
+        guard let debt = DebtRecipientMatcher.debt(repaidTo: draft.merchant, in: coordinator.debtStore.debts),
+              debt.remaining > 0 else {
             return nil
         }
-        if debt.currency == currency { return (debt, draft.total) }
-        guard let converted = CurrencyConverter.convertSync(amount: draft.total, from: currency, to: debt.currency) else {
+        guard let amount = CurrencyConverter.convertSync(amount: draft.total, from: currency, to: debt.currency) else {
             return nil
         }
-        return (debt, converted)
+        return (debt, min(amount, debt.remaining))
     }
 
     private func makeTransaction(accountId: String) -> Transaction {

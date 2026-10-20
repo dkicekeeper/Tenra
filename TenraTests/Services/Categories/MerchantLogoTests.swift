@@ -106,6 +106,38 @@ struct MerchantLogoTests {
         #expect(!store.needsLookup(merchant: "12"))
     }
 
+    @Test("A merchant looked up on device only is asked online once it pays with Apple Pay")
+    func onlineAfterLocal() {
+        let store = makeStore()
+        store.record(.missing, merchant: "Corner Bakery", online: false)
+
+        #expect(!store.needsLookup(merchant: "Corner Bakery", online: false))
+        #expect(store.needsLookup(merchant: "Corner Bakery", online: true))
+
+        store.record(.missing, merchant: "Corner Bakery", online: true)
+        #expect(!store.needsLookup(merchant: "Corner Bakery", online: true))
+    }
+
+    // MARK: - History
+
+    private func tx(_ id: String, _ description: String, _ type: TransactionType = .expense) -> Transaction {
+        Transaction(id: id, date: "2026-10-01", description: description, amount: 100, currency: "KZT", type: type, category: "Продукты")
+    }
+
+    @Test("Frequent merchants come from expenses and income, most visited first, as first written")
+    func frequentMerchants() {
+        let history = [
+            tx("1", "GREENMART 12"), tx("2", "Greenmart 14"), tx("3", "GREENMART 15"), tx("4", "greenmart"),
+            tx("5", "Corner Bakery"), tx("6", "CORNER BAKERY 2"), tx("7", "Corner bakery"),
+            tx("8", "Rare Shop"), tx("9", "Rare Shop"),
+            tx("10", "Own savings", .internalTransfer), tx("11", "Own savings", .internalTransfer),
+            tx("12", "Own savings", .internalTransfer),
+            tx("13", "12"), tx("14", "12"), tx("15", "12")
+        ]
+        let merchants = MerchantLogoResolver.frequentMerchants(in: history, minimumVisits: 3)
+        #expect(merchants == ["GREENMART 12", "Corner Bakery"])
+    }
+
     @Test("A row asked before the logo was found gets it afterwards")
     func memoRefreshes() {
         let store = makeStore()

@@ -12,8 +12,14 @@
 //     proprietor (ИП), whose name is a person's.
 //
 //  Nothing found → `.missing`, and the row keeps its category icon. Runs only in the
-//  app, when it comes to the front, for the merchants Apple Pay payments came from
-//  (remembered or captured), a few per pass: an intent never makes this request.
+//  app, when it comes to the front: an intent never makes these requests.
+//
+//  Two kinds of merchants:
+//  • the ones Apple Pay payments came from (remembered or captured): all three sources,
+//    a few per pass. Apple Pay only pays shops, never people;
+//  • the frequent ones in the history (statement imports, hand entries): sources 1 and 2
+//    only. A statement's rows include transfers to people ("Асель К."), and a person's
+//    name must never leave the device.
 //
 
 import Foundation
@@ -21,29 +27,66 @@ import Foundation
 @MainActor
 enum MerchantLogoResolver {
 
-    /// Lookups per pass, so a long list of new merchants spreads over a few launches.
+    /// Online lookups per pass, so a long list of new merchants spreads over a few launches.
     private static let lookupsPerPass = 12
+    /// On-device lookups per pass: no request but the daily tenra-assets index.
+    private static let localLookupsPerPass = 50
+    /// Visits that make a history merchant worth a logo.
+    nonisolated static let frequentVisits = 3
 
     private static var isRunning = false
+    /// The history pass runs at most every 12 hours: the counts barely move in between.
+    private static var lastHistoryPass: Date?
+    private static let historyPassInterval: TimeInterval = 12 * 60 * 60
 
     /// Looks up the merchants that were never looked up, or had no logo a month ago.
-    static func resolvePending(store: MerchantLogoStore = .shared) async {
+    /// `history`: the loaded transactions (empty before the full load), counted off the
+    /// main actor.
+    static func resolvePending(history: [Transaction] = [], store: MerchantLogoStore = .shared) async {
         guard !isRunning else { return }
         isRunning = true
         defer { isRunning = false }
 
         var seen = Set<String>()
-        let merchants = (MerchantCategoryMemory.shared.merchants.map(\.displayName) + WalletCaptureStore.shared.merchants)
+        let applePay = (MerchantCategoryMemory.shared.merchants.map(\.displayName) + WalletCaptureStore.shared.merchants)
             .filter { seen.insert(CategorySuggestionService.normalizedMerchant($0)).inserted }
-            .filter { store.needsLookup(merchant: $0) }
-            .prefix(lookupsPerPass)
+        for merchant in applePay.filter({ store.needsLookup(merchant: $0, online: true) }).prefix(lookupsPerPass) {
+            store.record(await lookUp(merchant, online: true), merchant: merchant, online: true)
+        }
 
-        for merchant in merchants {
-            store.record(await lookUp(merchant), merchant: merchant)
+        let now = Date()
+        guard !history.isEmpty,
+              lastHistoryPass.map({ now.timeIntervalSince($0) > historyPassInterval }) ?? true else { return }
+        lastHistoryPass = now
+        let frequent = await Task.detached(priority: .utility) {
+            frequentMerchants(in: history, minimumVisits: frequentVisits)
+        }.value
+        let local = frequent
+            .filter { seen.insert(CategorySuggestionService.normalizedMerchant($0)).inserted }
+            .filter { store.needsLookup(merchant: $0, online: false) }
+            .prefix(localLookupsPerPass)
+        for merchant in local {
+            store.record(await lookUp(merchant, online: false), merchant: merchant, online: false)
         }
     }
 
-    static func lookUp(_ merchant: String) async -> MerchantLogoStore.State {
+    /// Expense and income descriptions that name the same merchant at least
+    /// `minimumVisits` times, most frequent first, each as it was first written.
+    nonisolated static func frequentMerchants(in transactions: [Transaction], minimumVisits: Int) -> [String] {
+        var visits: [String: (count: Int, sample: String)] = [:]
+        for tx in transactions where tx.type == .expense || tx.type == .income {
+            let key = CategorySuggestionService.normalizedMerchant(tx.description)
+            guard key.count >= CategorySuggestionService.minimumMerchantLength else { continue }
+            visits[key, default: (0, tx.description)].count += 1
+        }
+        return visits
+            .filter { $0.value.count >= minimumVisits }
+            .sorted { $0.value.count != $1.value.count ? $0.value.count > $1.value.count : $0.key < $1.key }
+            .map { $0.value.sample }
+    }
+
+    /// `online`: whether logo.dev may be asked by name (Apple Pay merchants only).
+    static func lookUp(_ merchant: String, online: Bool = true) async -> MerchantLogoStore.State {
         let name = MerchantName.displayName(merchant)
 
         if let domain = registryDomain(forMerchant: name) {
@@ -53,7 +96,7 @@ enum MerchantLogoResolver {
             return .found(indexName)
         }
         // A sole proprietor's name is a person's: it stays on the device.
-        if !MerchantName.isSoleProprietor(merchant), let image = await LogoDevNameProvider.fetch(name: name) {
+        if online, !MerchantName.isSoleProprietor(merchant), let image = await LogoDevNameProvider.fetch(name: name) {
             let key = LogoDevNameProvider.scheme + name
             LogoDiskCache.shared.save(image, for: key)
             return .found(key)

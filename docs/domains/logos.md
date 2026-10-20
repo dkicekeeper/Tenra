@@ -108,7 +108,14 @@ General → "Merchant logos" (`MerchantLogoStore.enabledKey`, on by default). Pl
 - `MerchantLogoStore`: normalized merchant → `.found(key)` or `.missing` with the date; "missing"
   is looked up again after 30 days. `iconSource(forDescription:)` memoizes per description and
   reads `version`, so rows re-render when a logo is found.
-- Lookups run only in the app, when it comes to the front (`MainTabView`), at most 12 per pass, for
-  the merchants Apple Pay payments came from (`MerchantCategoryMemory`, `WalletCaptureStore`).
+- Lookups run only in the app, when it comes to the front (`MainTabView`), never in an intent:
+  - the merchants Apple Pay payments came from (`MerchantCategoryMemory`, `WalletCaptureStore`):
+    all three sources, at most 12 per pass. Apple Pay only pays shops;
+  - the history's frequent merchants (3+ expense or income visits, counted off the main actor,
+    `frequentMerchants`): the registry and tenra-assets only, at most 50 per pass, every 12 hours.
+    A statement's rows include transfers to people, whose names never leave the device. A
+    merchant checked on device only is asked online once it turns up in an Apple Pay payment
+    (`MerchantLogoStore.Entry.lookedUpOnline`).
+
   Any transaction whose description is the same merchant gets the logo, whatever recorded it.
 - Pinned by `MerchantLogoTests`.

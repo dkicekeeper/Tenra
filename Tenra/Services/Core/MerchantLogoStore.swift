@@ -33,6 +33,9 @@ final class MerchantLogoStore {
     struct Entry: Codable, Equatable {
         var state: State
         var checkedAt: Date
+        /// Whether logo.dev was asked too. nil in entries saved before history merchants
+        /// were looked up on device only, all of which were asked.
+        var lookedUpOnline: Bool?
     }
 
     static let shared = MerchantLogoStore()
@@ -71,18 +74,21 @@ final class MerchantLogoStore {
         return key.isEmpty ? nil : .brandService(key)
     }
 
-    /// True when the merchant was never looked up, or had no logo 30 days ago.
-    func needsLookup(merchant: String, now: Date = Date()) -> Bool {
+    /// True when the merchant was never looked up, had no logo 30 days ago, or was looked up
+    /// on device only and may now be asked online (it turned up in an Apple Pay payment).
+    func needsLookup(merchant: String, online: Bool = true, now: Date = Date()) -> Bool {
         let key = CategorySuggestionService.normalizedMerchant(merchant)
         guard key.count >= CategorySuggestionService.minimumMerchantLength else { return false }
         guard let entry = entries[key] else { return true }
-        return entry.state == .missing && now.timeIntervalSince(entry.checkedAt) > Self.recheckInterval
+        guard entry.state == .missing else { return false }
+        return now.timeIntervalSince(entry.checkedAt) > Self.recheckInterval
+            || (online && entry.lookedUpOnline == false)
     }
 
-    func record(_ state: State, merchant: String, now: Date = Date()) {
+    func record(_ state: State, merchant: String, online: Bool = true, now: Date = Date()) {
         let key = CategorySuggestionService.normalizedMerchant(merchant)
         guard key.count >= CategorySuggestionService.minimumMerchantLength else { return }
-        entries[key] = Entry(state: state, checkedAt: now)
+        entries[key] = Entry(state: state, checkedAt: now, lookedUpOnline: online)
         keyByDescription = [:]
         version += 1
         persist()

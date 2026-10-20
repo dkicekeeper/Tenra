@@ -259,8 +259,14 @@ struct MainTabView: View {
             if !WalletCaptureStore.shared.pending.isEmpty {
                 Task { await WalletPaymentRecorder.recordPending(services: IntentServices(coordinator: coordinator)) }
             }
-            // Logos of the merchants Apple Pay payments came from, looked up once each.
-            Task { await MerchantLogoResolver.resolvePending() }
+            // Merchant logos, looked up once each: Apple Pay merchants, then the history's
+            // frequent ones (on device only), once the full load has the history.
+            let store = coordinator.transactionStore
+            Task {
+                await MerchantLogoResolver.resolvePending(
+                    history: store.hasCompletedInitialLoad ? store.transactions : []
+                )
+            }
         }
         // A file opened in Tenra from another app goes to the assistant, which attaches it.
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in

@@ -392,7 +392,11 @@ struct AssistantView: View {
     }
 
     private static var presets: [String] {
-        [
+        #if DEBUG
+        // The screenshot capture taps the demo's questions in order (ScreenshotDemoTransport).
+        if ScreenshotDemoMode.isActive { return ScreenshotDemoReply.current().questions }
+        #endif
+        return [
             String(localized: "assistant.preset.month"),
             String(localized: "assistant.preset.allowance"),
             String(localized: "assistant.preset.compare"),

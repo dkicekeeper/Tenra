@@ -12,7 +12,7 @@
 #   ONLY=de-DE ./scripts/capture_screenshots.sh # single locale
 #   SIM_NAME="iPhone 17 Pro" SIM_OS=26.5 ./scripts/capture_screenshots.sh
 #   FRAMES=cpp ./scripts/capture_screenshots.sh # only 09-12 (custom product pages)
-#   FRAMES=ten ./scripts/capture_screenshots.sh # only Ten's 07, 13, 14
+#   FRAMES=ten ./scripts/capture_screenshots.sh # only Ten's 07, 13, 14, 17-19
 #
 # SIM_OS is required since Xcode 27: a bare name implies the newest OS, and
 # iPhone 17 Pro only exists on 26.5. Store shots stay on the public iOS.
@@ -27,7 +27,7 @@ RESULTS_ROOT="build/screenshot-results"
 BUNDLE_ID="dakacom.Tenra"
 FRAMES="${FRAMES:-all}"
 # 01-08 and 13-16 (default product page) + 09-12 (custom product pages); "cpp" takes only 09-12.
-case "$FRAMES" in cpp) EXPECTED=4 ;; ten) EXPECTED=3 ;; *) EXPECTED=16 ;; esac
+case "$FRAMES" in cpp) EXPECTED=4 ;; ten) EXPECTED=6 ;; *) EXPECTED=19 ;; esac
 
 # asc-locale | AppleLanguages | AppleLocale | demo currency
 LOCALES=(
@@ -131,9 +131,10 @@ if os.path.exists(manifest_path):
                     if not os.path.exists(src):
                         continue
                     base = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.splitext(human)[0])
-                    # Only our named marketing captures ("01-home"…"16-debts") —
-                    # skip auto-attachments (failure recordings, synthesized events).
-                    m = re.match(r"^([01][0-9]-[a-z-]+)", base)
+                    # Only our named marketing captures ("01-home"…"19-ten-loan", and
+                    # "90-debug-…" when a step finds nothing): skip auto-attachments
+                    # (failure recordings, synthesized events).
+                    m = re.match(r"^([0-9]{2}-[a-z0-9-]+)", base)
                     if not m:
                         continue
                     shutil.copy(src, os.path.join(dest, m.group(1) + ".png"))

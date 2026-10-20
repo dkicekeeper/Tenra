@@ -6,7 +6,9 @@ name: App Store Connect
 # docs/release-notes.md and selects the build once it is processed (never submits);
 # push-custom-pages and push-experiment create the custom product pages and the product page
 # test from appstore/product-pages.json (args: --submit sends them for review, --start starts
-# an approved test).
+# an approved test, --stop ends a running one). store-pages reads what each storefront page shows.
+# push-creatives puts the iOS 27 header and search art (screenshots/art/) on the live version
+# (args: --pages for the custom pages too, --submit sends them for review).
 # Run: Actions → App Store Connect → Run workflow, or Claude through the GitHub API. The result is
 # in the run's summary. Same API key as TestFlight: the ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8
 # repository secrets (docs/asc.md).
@@ -20,7 +22,7 @@ on:
       command:
         description: "What to show"
         type: choice
-        options: [status, builds, reviews, availability, crashes, prepare-version, keywords, custom-pages, push-custom-pages, push-experiment, age-rating, push-version-screenshots]
+        options: [status, builds, reviews, availability, crashes, prepare-version, keywords, custom-pages, push-custom-pages, push-experiment, age-rating, push-version-screenshots, store-pages, push-creatives]
         default: status
       build:
         description: "Build number (crashes: empty = all recent; prepare-version: the build to select)"

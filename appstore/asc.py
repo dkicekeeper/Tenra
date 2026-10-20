@@ -13,13 +13,24 @@
     python3 appstore/asc.py custom-pages            custom product pages and their review state
     python3 appstore/asc.py push-custom-pages [--submit]
                                                     create/update the pages in product-pages.json
-    python3 appstore/asc.py push-experiment [--submit | --start]
+    python3 appstore/asc.py push-experiment [--submit | --start | --stop]
                                                     the product page test in product-pages.json
+                                                    (--stop ends a running test: a new app version
+                                                    does not end it)
     python3 appstore/asc.py age-rating [--apply]    the age rating answers; --apply sets Tenra's
                                                     (needs a version in preparation)
     python3 appstore/asc.py push-version-screenshots --version 1.6 [--locale ru,en-US]
                                                     the version's own 6.9" screenshots, the frames
                                                     of `defaultOrder` in screenshot_captions.json
+    python3 appstore/asc.py store-pages [--version 1.6]
+                                                    what each storefront page shows: the version's
+                                                    screenshots per locale against screenshots/final,
+                                                    the page tests, the custom pages' languages
+    python3 appstore/asc.py push-creatives [--version 1.6] [--locale ru,en-US] [--pages] [--submit]
+                                                    the iOS 27 header and search art from
+                                                    screenshots/art/<locale>/ on the version (the
+                                                    live one by default) and, with --pages, on the
+                                                    custom pages; --submit sends them for review
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -502,8 +513,9 @@ def link_keywords(app: str, localization_id: str, locale: str, wanted: list[str]
     return f"{len(ids)} linked" + (f"; not app keywords: {', '.join(unknown)}" if unknown else "")
 
 
-def submit_for_review(app: str, items: list[tuple[str, str]]) -> None:
-    """Add (relationship, id) items to the open review submission, or a new one, and submit it."""
+def submit_for_review(app: str, items: list[tuple[str, str]], lenient: set[str] = frozenset()) -> None:
+    """Add (relationship, id) items to the open review submission, or a new one, and submit it.
+    An item of a `lenient` relationship that App Store Connect refuses is reported, not fatal."""
     open_ones, _ = get_all("/v1/reviewSubmissions",
                            {"filter[app]": app, "filter[platform]": "IOS", "filter[state]": "READY_FOR_REVIEW"})
     submission = open_ones[0] if open_ones else send("POST", "/v1/reviewSubmissions", {"data": {
@@ -511,20 +523,29 @@ def submit_for_review(app: str, items: list[tuple[str, str]]) -> None:
         "relationships": {"app": {"data": {"type": "apps", "id": app}}},
     }})["data"]
     types = {"appCustomProductPageVersion": "appCustomProductPageVersions",
-             "appStoreVersionExperimentV2": "appStoreVersionExperiments"}
+             "appStoreVersionExperimentV2": "appStoreVersionExperiments",
+             "appAssetLibraryImage": "appAssetLibraryImages"}
+    added = 0
     for relationship, item_id in items:
         try:
             send("POST", "/v1/reviewSubmissionItems", {"data": {"type": "reviewSubmissionItems", "relationships": {
                 "reviewSubmission": {"data": {"type": "reviewSubmissions", "id": submission["id"]}},
                 relationship: {"data": {"type": types[relationship], "id": item_id}},
             }}})
+            added += 1
         except ApiError as error:
-            if error.code != 409:   # 409: already in this submission
+            if error.code == 409:   # already in this submission
+                added += 1
+            elif relationship in lenient:
+                print(f"  {relationship} {item_id}: not added ({error})", flush=True)
+            else:
                 raise
+    if not added:
+        sys.exit("App Store Connect took none of the items: nothing submitted.")
     send("PATCH", f"/v1/reviewSubmissions/{submission['id']}", {"data": {
         "type": "reviewSubmissions", "id": submission["id"], "attributes": {"submitted": True},
     }})
-    print(f"Submitted for review: {len(items)} item(s).")
+    print(f"Submitted for review: {added} of {len(items)} item(s).")
 
 
 def custom_pages(app: str) -> None:
@@ -609,9 +630,10 @@ def push_custom_pages(app: str, submit: bool) -> None:
         submit_for_review(app, ready)
 
 
-def push_experiment(app: str, submit: bool, start: bool) -> None:
+def push_experiment(app: str, submit: bool, start: bool, stop: bool = False) -> None:
     """Create or update the product page optimization test in appstore/product-pages.json; with
-    submit, send it for review; with start, start it once App Review has approved it."""
+    submit, send it for review; with start, start it once App Review has approved it; with stop,
+    end it (every visitor then sees the default page)."""
     config = page_config()
     test = config["experiment"]
     locales = sorted(path.name for path in (ROOT / "screenshots" / "final").iterdir() if path.is_dir())
@@ -627,6 +649,13 @@ def push_experiment(app: str, submit: bool, start: bool) -> None:
         }})["data"]
         print(f"Test {test['name']!r} created, {test['trafficProportion']}% of visitors.")
     state = record["attributes"].get("state")
+    if stop:
+        if not record["attributes"].get("started") and state not in ("APPROVED", "ACCEPTED"):
+            sys.exit(f"Test is {state}: not running.")
+        updated = send("PATCH", f"/v2/appStoreVersionExperiments/{record['id']}", {"data": {
+            "type": "appStoreVersionExperiments", "id": record["id"], "attributes": {"started": False}}})["data"]
+        print(f"Test stopped: {updated['attributes'].get('state')}, ends {(updated['attributes'].get('endDate') or '')[:10]}.")
+        return
     if start:
         if state not in ("APPROVED", "ACCEPTED"):
             sys.exit(f"Test is {state}: it starts after App Review approves it.")
@@ -747,6 +776,224 @@ def push_version_screenshots(app: str, version: str, locales: list[str] | None) 
         print(f"{locale}: {result}", flush=True)
         rows.append([locale, len(files), result])
     table(f"Screenshots, {version}", ["Locale", "Frames", "Result"], rows)
+
+
+def store_version(app: str, version: str | None) -> dict:
+    """The version named, or the latest one on the App Store."""
+    params = {"filter[platform]": "IOS", "limit": 20}
+    if version:
+        params["filter[versionString]"] = version
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions", params)
+    if not version:
+        found = [v for v in found if v["attributes"].get("appStoreState") == "READY_FOR_DISTRIBUTION"
+                 or v["attributes"].get("appVersionState") == "READY_FOR_DISTRIBUTION"]
+        found.sort(key=lambda v: v["attributes"].get("createdDate") or "", reverse=True)
+    if not found:
+        sys.exit("No such version on the App Store.")
+    return found[0]
+
+
+def store_pages(app: str, version: str | None) -> None:
+    """What the store shows, read only: per localization of the version (the latest one on the
+    App Store by default), each screenshot set and how many of its screenshots are files in
+    screenshots/final/<locale>/ now; the product page tests with their state; the languages of
+    each custom page's versions."""
+    record = store_version(app, version)
+    name = record["attributes"].get("versionString")
+    localizations, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    rows = []
+    for item in sorted(localizations, key=lambda i: i["attributes"]["locale"]):
+        locale = item["attributes"]["locale"]
+        folder = ROOT / "screenshots" / "final" / locale
+        ours = {hashlib.md5(path.read_bytes()).hexdigest() for path in folder.glob("*.png")} if folder.is_dir() else set()
+        sets, _ = get_all(f"/v1/appStoreVersionLocalizations/{item['id']}/appScreenshotSets", {"limit": 50})
+        if not sets:
+            rows.append([locale, "none", 0, "-"])
+        for screenshot_set_record in sets:
+            shots, _ = get_all(f"/v1/appScreenshotSets/{screenshot_set_record['id']}/appScreenshots", {"limit": 50})
+            current = sum(1 for shot in shots if shot["attributes"].get("sourceFileChecksum") in ours)
+            rows.append([locale, screenshot_set_record["attributes"].get("screenshotDisplayType"), len(shots),
+                         f"{current}/{len(shots)}" if ours else "no folder"])
+    table(f"Screenshots of {name} (current = a file in screenshots/final/<locale>/)",
+          ["Locale", "Set", "Shots", "Current"], rows)
+
+    tests, _ = get_all(f"/v1/apps/{app}/appStoreVersionExperimentsV2", {"limit": 20})
+    table("Product page tests", ["Name", "State", "Traffic", "Started", "Ends"],
+          [[t["attributes"].get("name"), t["attributes"].get("state"), t["attributes"].get("trafficProportion"),
+            (t["attributes"].get("startDate") or "")[:10], (t["attributes"].get("endDate") or "")[:10]] for t in tests])
+
+    pages, _ = get_all(f"/v1/apps/{app}/appCustomProductPages", {"limit": 50})
+    rows = []
+    for page in pages:
+        versions, _ = get_all(f"/v1/appCustomProductPages/{page['id']}/appCustomProductPageVersions", {"limit": 10})
+        for page_version in versions:
+            locs, _ = get_all(f"/v1/appCustomProductPageVersions/{page_version['id']}/appCustomProductPageLocalizations",
+                              {"limit": 50})
+            rows.append([page["attributes"].get("name"), page_version["attributes"].get("state"),
+                         ", ".join(sorted(loc["attributes"]["locale"] for loc in locs))])
+    table("Custom product pages", ["Page", "Version", "Languages"], rows)
+
+
+# The iOS 27 creative assets (scripts/compose_store_art.py): placement type -> file stem.
+CREATIVES = {"PRODUCT_PAGE_HEADER_ASSET": "header", "APP_STORE_SEARCH_RESULTS_ASSET": "search"}
+ART = ROOT / "screenshots" / "art"
+
+
+def page_slug(name: str) -> str:
+    return name.lower().replace(" ", "-")
+
+
+def library_image(library: str, existing: dict[str, dict], path: Path) -> str:
+    """The asset library image holding `path`, uploaded unless an image with the same content is
+    already there. The library has no checksum for creative assets, so the reference name carries
+    one: tenra-<md5>-<file name>."""
+    data = path.read_bytes()
+    reference = f"tenra-{hashlib.md5(data).hexdigest()[:16]}-{path.parent.name}-{path.name}"
+    if reference in existing:
+        return existing[reference]["id"]
+    image = send("POST", "/v1/appAssetLibraryImages", {"data": {
+        "type": "appAssetLibraryImages",
+        "attributes": {"category": "CREATIVE_ASSETS", "fileName": path.name, "fileSize": len(data),
+                       "referenceName": reference},
+        "relationships": {"assetLibrary": {"data": {"type": "appAssetLibraries", "id": library}}},
+    }})["data"]
+    for operation in image["attributes"].get("uploadOperations") or []:
+        # Presigned upload URLs: no App Store Connect token.
+        chunk = data[operation["offset"]:operation["offset"] + operation["length"]]
+        headers = {header["name"]: header["value"] for header in operation.get("requestHeaders") or []}
+        upload = urllib.request.Request(operation["url"], data=chunk, method=operation["method"], headers=headers)
+        try:
+            with urllib.request.urlopen(upload, timeout=120):
+                pass
+        except urllib.error.HTTPError as error:
+            raise ApiError(error.code, f"upload of {path.name} failed") from None
+    # Committed with `uploaded` alone: this resource refuses a checksum.
+    send("PATCH", f"/v1/appAssetLibraryImages/{image['id']}", {"data": {
+        "type": "appAssetLibraryImages", "id": image["id"], "attributes": {"uploaded": True}}})
+    for _ in range(60):
+        attributes = get(f"/v1/appAssetLibraryImages/{image['id']}")["data"]["attributes"]
+        state = attributes.get("state")
+        if state == "FAILED":
+            details = "; ".join(d.get("code", "") for d in attributes.get("stateDetails") or [])
+            sys.exit(f"{path.relative_to(ROOT)}: App Store Connect refused it ({details or 'FAILED'}).")
+        if state not in ("AWAITING_UPLOAD", "UPLOAD_COMPLETE"):
+            break
+        time.sleep(5)
+    existing[reference] = image
+    return image["id"]
+
+
+def place(owner: str, owner_id: str, placement_type: str, image_id: str) -> str:
+    """Put the image on a version or custom page localization (`owner`: appStoreVersionLocalization
+    or appCustomProductPageLocalization). A placement can't be edited: one of the same type that
+    shows another image is deleted first."""
+    current, _ = get_all(f"/v1/{owner}s/{owner_id}/placements",
+                         {"filter[placementType]": placement_type, "include": "image", "limit": 50})
+    for placement in current:
+        shown = ((placement.get("relationships") or {}).get("image") or {}).get("data") or {}
+        if shown.get("id") == image_id:
+            return "unchanged"
+    for placement in current:
+        request(f"/v1/appAssetLibraryPlacements/{placement['id']}", method="DELETE")
+    send("POST", "/v1/appAssetLibraryPlacements", {"data": {
+        "type": "appAssetLibraryPlacements",
+        "attributes": {"placementType": placement_type},
+        "relationships": {
+            owner: {"data": {"type": owner + "s", "id": owner_id}},
+            "image": {"data": {"type": "appAssetLibraryImages", "id": image_id}},
+        },
+    }})
+    return "placed"
+
+
+def push_creatives(app: str, version: str | None, locales: list[str] | None, pages: bool, submit: bool) -> None:
+    """The header and search art from screenshots/art/<locale>/ on every localization of the
+    version (the latest one on the App Store by default: the art can change without a new
+    version), and with `pages` on the custom pages' editable versions too (search-<page>.png,
+    after push-custom-pages). With submit, sends the images App Review has not taken yet, and
+    the page versions with `pages`, for review. A version already on the App Store takes only
+    approved images: those show "after review", and running this again once App Review has
+    approved them places them."""
+    library = get(f"/v1/apps/{app}/assetLibrary")["data"]["id"]
+    images, _ = get_all(f"/v1/appAssetLibraries/{library}/images", {"limit": 200})
+    for image in images:
+        # Our uploads App Store Connect refused: gone, so a fixed file uploads afresh.
+        if (image["attributes"].get("referenceName") or "").startswith("tenra-") and image["attributes"].get("state") == "FAILED":
+            request(f"/v1/appAssetLibraryImages/{image['id']}", method="DELETE")
+    existing = {image["attributes"].get("referenceName"): image for image in images
+                if image["attributes"].get("state") not in ("FAILED", "ARCHIVED")}
+    used: set[str] = set()
+
+    def art(locale: str, stem: str) -> Path | None:
+        path = ART / locale / f"{stem}.png"
+        return path if path.exists() else None
+
+    record = store_version(app, version)
+    name = record["attributes"].get("versionString")
+    localizations, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    rows = []
+    for item in sorted(localizations, key=lambda i: i["attributes"]["locale"]):
+        locale = item["attributes"]["locale"]
+        if locales and locale not in locales:
+            continue
+        for placement_type, stem in CREATIVES.items():
+            path = art(locale, stem)
+            if not path:
+                rows.append([name, locale, stem, "no file"])
+                continue
+            image_id = library_image(library, existing, path)
+            used.add(image_id)
+            try:
+                result = place("appStoreVersionLocalization", item["id"], placement_type, image_id)
+            except ApiError as error:
+                # A version on the App Store takes only an image App Review has approved: the
+                # image goes to review first, and a run after the approval places it.
+                if error.code != 409 or "APPROVED" not in str(error):
+                    raise
+                result = "after review"
+            rows.append([name, locale, stem, result])
+            print(f"{name} {locale} {stem}: {result}", flush=True)
+
+    ready = []
+    if pages:
+        config = page_config()
+        found, _ = get_all(f"/v1/apps/{app}/appCustomProductPages", {"limit": 50})
+        by_name = {page["attributes"]["name"]: page for page in found}
+        for page in config["customPages"]:
+            record = by_name.get(page["name"])
+            if not record:
+                rows.append([page["name"], "", "", "no page: run push-custom-pages first"])
+                continue
+            page_version = editable_cpp_version(record["id"])
+            page_locs, _ = get_all(
+                f"/v1/appCustomProductPageVersions/{page_version['id']}/appCustomProductPageLocalizations", {"limit": 50})
+            for item in page_locs:
+                locale = item["attributes"]["locale"]
+                if locales and locale not in locales:
+                    continue
+                for placement_type, stem in (("PRODUCT_PAGE_HEADER_ASSET", "header"),
+                                             ("APP_STORE_SEARCH_RESULTS_ASSET", "search-" + page_slug(page["name"]))):
+                    path = art(locale, stem)
+                    if not path:
+                        rows.append([page["name"], locale, stem, "no file"])
+                        continue
+                    image_id = library_image(library, existing, path)
+                    used.add(image_id)
+                    result = place("appCustomProductPageLocalization", item["id"], placement_type, image_id)
+                    rows.append([page["name"], locale, stem, result])
+                    print(f"{page['name']} {locale} {stem}: {result}", flush=True)
+            ready.append(("appCustomProductPageVersion", page_version["id"]))
+    table("Creative assets", ["Page", "Locale", "Art", "Result"], rows)
+
+    if submit:
+        # Every image placed here that App Review has not taken yet, from this run or an earlier one.
+        waiting = [("appAssetLibraryImage", image_id) for image_id in sorted(used)
+                   if get(f"/v1/appAssetLibraryImages/{image_id}")["data"]["attributes"].get("state")
+                   in ("COMPLETE", "PREPARE_FOR_SUBMISSION", "READY_FOR_REVIEW", "REJECTED")]
+        if not waiting and not ready:
+            print("Nothing to submit.")
+            return
+        submit_for_review(app, waiting + ready, lenient={"appAssetLibraryImage"})
 
 
 def reviews(app: str, limit: int) -> None:
@@ -909,7 +1156,7 @@ def main(argv: list[str]) -> None:
     elif command == "push-custom-pages":
         push_custom_pages(app, "--submit" in args)
     elif command == "push-experiment":
-        push_experiment(app, "--submit" in args, "--start" in args)
+        push_experiment(app, "--submit" in args, "--start" in args, "--stop" in args)
     elif command == "age-rating":
         age_rating(app, "--apply" in args)
     elif command == "push-version-screenshots":
@@ -918,6 +1165,12 @@ def main(argv: list[str]) -> None:
             sys.exit("push-version-screenshots needs --version X.Y")
         locales = option("--locale")
         push_version_screenshots(app, version, locales.split(",") if locales else None)
+    elif command == "store-pages":
+        store_pages(app, option("--version"))
+    elif command == "push-creatives":
+        locales = option("--locale")
+        push_creatives(app, option("--version"), locales.split(",") if locales else None,
+                       "--pages" in args, "--submit" in args)
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

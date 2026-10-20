@@ -4,8 +4,9 @@
 //
 //  Teaches the Siri phrases. Without this, App Shortcuts are discoverable only
 //  by accident, and an undiscovered feature has no effect on retention.
-//  Also the way to what the Wallet automation keeps: the payments it saved with a
-//  guess (To review), the merchants and the cards it remembered.
+//  Also the way to the Wallet automation: how to set it up (WalletSetupGuideView) and
+//  what it keeps: the payments it saved with a guess (To review), the merchants and the
+//  cards it remembered.
 //
 
 import SwiftUI
@@ -21,6 +22,13 @@ struct SettingsSiriSection: View {
             ForEach(Self.examplePhrases, id: \.self) { phrase in
                 Label(phrase, systemImage: "quote.bubble")
                     .font(AppTypography.bodySmall)
+            }
+
+            NavigationSettingsRow(
+                icon: "list.number",
+                title: String(localized: "walletSetup.title")
+            ) {
+                WalletSetupGuideView()
             }
 
             NavigationSettingsRow(

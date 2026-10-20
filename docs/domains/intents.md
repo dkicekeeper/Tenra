@@ -308,6 +308,15 @@ filter and the day. Pinned by `MerchantHistoryTests`.
 **Wallet cards** (`WalletCardsView`): `CardAccountMemory.cards`, the account picked with
 `NavigationPickerRow(style: .list)`, swipe to forget.
 
+**Setup guide** (`WalletSetupGuideView`, first row of Settings → Siri & Shortcuts): DesignKit's
+`ArticleBody`, steps for the automation and the action's fields, the optional currency step and a
+note on replacing "Add an expense". Tenra's own action and field names come from the intent's
+strings (`intent.walletPayment.*`); of Shortcuts' labels, the guide names only those the owner's
+screenshot confirmed in Russian (2026-10-20): the input variable **Транзакция** (passed whole to
+the amount, as Shortcuts reads it as a number), its **Продавец**, the trigger's **Любая
+категория** / **Любой продавец** and the action's **Показать при запуске**. The others are
+described, and in the 9 other locales Apple's labels are best guesses.
+
 Pinned by `WalletPaymentResolverTests`, `WalletCaptureStoreTests`, `CardAccountMemoryTests`.
 
 ### 6.2 `AddExpenseIntent` (asks once per merchant)

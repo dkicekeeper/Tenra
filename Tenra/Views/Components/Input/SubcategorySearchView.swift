@@ -113,7 +113,7 @@ struct SubcategorySearchView: View {
                                     Text(subcategory.name)
                                     Spacer()
                                     if selectionMode == .multiple && selectedSubcategoryIds.contains(subcategory.id) {
-                                        Image(systemName: "checkmark")
+                                        Icon("checkmark", size: AppIconSize.md)
                                             .foregroundStyle(AppColors.accent)
                                     }
                                 }
@@ -178,7 +178,7 @@ struct SubcategorySearchView: View {
     private func createButton(subcategoryName: String) -> some View {
         Button(action: createSubcategoryFromSearch) {
             HStack(spacing: AppSpacing.sm) {
-                Image(systemName: "plus.circle.fill")
+                Icon("plus.circle.fill", size: AppIconSize.md)
                 Text(String(format: String(localized: "transactionForm.createSubcategory"), subcategoryName))
                     .font(AppTypography.body)
             }

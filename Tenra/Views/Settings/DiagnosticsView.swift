@@ -111,18 +111,15 @@ struct DiagnosticsView: View {
     private func statusIcon(_ status: LaunchHealthCheck.Status) -> some View {
         switch status {
         case .passed:
-            Image(systemName: "checkmark.circle.fill")
-                .font(AppTypography.body)
+            Icon("checkmark.circle.fill", size: AppIconSize.md)
                 .foregroundStyle(AppColors.success)
                 .accessibilityLabel(String(localized: "diagnostics.status.passed"))
         case .failed:
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(AppTypography.body)
+            Icon("exclamationmark.triangle.fill", size: AppIconSize.md)
                 .foregroundStyle(AppColors.destructive)
                 .accessibilityLabel(String(localized: "diagnostics.status.failed"))
         case .skipped:
-            Image(systemName: "minus.circle")
-                .font(AppTypography.body)
+            Icon("minus.circle", size: AppIconSize.md)
                 .foregroundStyle(AppColors.textSecondary)
                 .accessibilityLabel(String(localized: "diagnostics.status.skipped"))
         }

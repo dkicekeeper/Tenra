@@ -70,7 +70,7 @@ struct SubcategoryReorderView: View {
                             showingSubcategorySearch = true
                         } label: {
                             HStack(spacing: AppSpacing.sm) {
-                                Image(systemName: "plus.circle.fill")
+                                Icon("plus.circle.fill", size: AppIconSize.md)
                                 Text(String(localized: "category.addSubcategory"))
                             }
                             .font(AppTypography.body)

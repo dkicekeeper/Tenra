@@ -265,8 +265,7 @@ struct SettingsView: View {
                             .font(AppTypography.body)
                             .foregroundStyle(AppColors.textPrimary)
                     } trailing: {
-                        Image(systemName: "arrow.up.right")
-                            .font(AppTypography.bodySmall)
+                        Icon("arrow.up.right", size: AppIconSize.sm)
                             .foregroundStyle(AppColors.textSecondary)
                     }
                 }
@@ -281,8 +280,7 @@ struct SettingsView: View {
                             .font(AppTypography.body)
                             .foregroundStyle(AppColors.textPrimary)
                     } trailing: {
-                        Image(systemName: "arrow.up.right")
-                            .font(AppTypography.bodySmall)
+                        Icon("arrow.up.right", size: AppIconSize.sm)
                             .foregroundStyle(AppColors.textSecondary)
                     }
                 }
@@ -326,8 +324,7 @@ struct SettingsView: View {
                                  : String(supportID.suffix(8)))
                                 .font(AppTypography.bodySmall)
                                 .foregroundStyle(AppColors.textSecondary)
-                            Image(systemName: didCopySupportID ? "checkmark" : "doc.on.doc")
-                                .font(AppTypography.bodySmall)
+                            Icon(didCopySupportID ? "checkmark" : "doc.on.doc", size: AppIconSize.sm)
                                 .foregroundStyle(AppColors.textSecondary)
                         }
                     }

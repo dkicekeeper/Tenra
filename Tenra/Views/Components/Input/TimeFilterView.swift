@@ -44,7 +44,7 @@ struct TimeFilterView: View {
                                 .fontWeight(.regular)
                         } trailing: {
                             if selectedPreset == preset {
-                                Image(systemName: "checkmark")
+                                Icon("checkmark", size: AppIconSize.md)
                                     .foregroundStyle(AppColors.accent)
                             }
                         }
@@ -73,7 +73,7 @@ struct TimeFilterView: View {
                         }
                     } trailing: {
                         if selectedPreset == .custom {
-                            Image(systemName: "checkmark")
+                            Icon("checkmark", size: AppIconSize.md)
                                 .foregroundStyle(AppColors.accent)
                         }
                     }

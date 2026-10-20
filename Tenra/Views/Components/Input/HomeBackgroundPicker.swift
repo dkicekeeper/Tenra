@@ -139,8 +139,8 @@ struct HomeBackgroundPicker<Settings: View>: View {
                 Rectangle()
                     .fill(AppColors.Background.neutral1)
                     .overlay(
-                        Image(systemName: "photo")
-                            .font(AppTypography.h2.weight(.ultraLight))
+                        Icon("photo", size: AppIconSize.xl)
+                            .fontWeight(.ultraLight)
                             .foregroundStyle(AppColors.Text.tertiary)
                     )
             }

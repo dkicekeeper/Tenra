@@ -229,8 +229,7 @@ struct LoansListView: View {
                         .font(AppTypography.h4)
                         .foregroundStyle(AppColors.textSecondary)
                     Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(AppTypography.bodySmall)
+                    Icon("chevron.right", size: AppIconSize.sm)
                         .foregroundStyle(AppColors.textSecondary)
                         .rotationEffect(.degrees(isClosedSectionExpanded ? 90 : 0))
                 }

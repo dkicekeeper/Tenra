@@ -64,8 +64,7 @@ struct SettingsProSection: View {
                     .foregroundStyle(AppColors.textSecondary)
             }
         } trailing: {
-            Image(systemName: "chevron.right")
-                .font(AppTypography.bodySmall)
+            Icon("chevron.right", size: AppIconSize.sm)
                 .foregroundStyle(AppColors.textSecondary)
         }
         .actionRow {
@@ -144,8 +143,7 @@ struct SettingsProSection: View {
                 Text(String(localized: "settings.pro.status.active"))
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.success)
-                Image(systemName: "checkmark.seal.fill")
-                    .font(AppTypography.bodySmall)
+                Icon("checkmark.seal.fill", size: AppIconSize.sm)
                     .foregroundStyle(AppColors.success)
             }
             // A holographic foil on the Pro badge: its colours follow the finger (DesignKit).
@@ -163,8 +161,7 @@ struct SettingsProSection: View {
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textPrimary)
             } trailing: {
-                Image(systemName: "arrow.up.right")
-                    .font(AppTypography.bodySmall)
+                Icon("arrow.up.right", size: AppIconSize.sm)
                     .foregroundStyle(AppColors.textSecondary)
             }
         }
@@ -190,8 +187,7 @@ struct SettingsProSection: View {
                 Text(String(localized: "settings.pro.founder"))
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.success)
-                Image(systemName: "checkmark.seal.fill")
-                    .font(AppTypography.bodySmall)
+                Icon("checkmark.seal.fill", size: AppIconSize.sm)
                     .foregroundStyle(AppColors.success)
             }
             .holographic()

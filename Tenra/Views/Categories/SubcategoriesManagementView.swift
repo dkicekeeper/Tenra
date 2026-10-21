@@ -229,6 +229,9 @@ struct SubcategoryManagementRow: View {
             onEdit()
         } label: {
             ItemRow(subcategory.name, meta: [MetaLine(usage)], style: .large, titleFont: AppTypography.h4)
+                // ItemRow has no padding of its own; in a glass section the row gives itself its air.
+                .padding(.vertical, AppSpacing.md)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

@@ -27,6 +27,8 @@ struct BackupRowView: View {
                 .foregroundStyle(AppColors.accent)
                 .accessibilityHidden(true)
         }
+        // ItemRow has no padding of its own; in a glass section the row gives itself its air.
+        .padding(.vertical, AppSpacing.md)
         .contentShape(Rectangle())
         .onTapGesture {
             onRestore()

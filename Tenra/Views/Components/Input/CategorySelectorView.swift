@@ -3,9 +3,10 @@
 //  Tenra
 //
 //  Category picker of the money forms (edit a transaction, a voice entry, a receipt, a loan
-//  payment, a Wallet merchant): every category as a chip with its icon in its colour, wrapping
-//  over as many lines as it needs, the chosen one tinted. The chips are DesignKit's
-//  `UniversalFilterButton`, the subcategory chips under it.
+//  payment, a Wallet merchant): every category as a chip with its icon in its colour, in a row
+//  that scrolls sideways, the chosen one tinted and scrolled into view. The chips and the row are
+//  the subcategory chips' under it: DesignKit's `UniversalFilterButton` in a
+//  `UniversalCarousel(config: .filter)`.
 //
 
 import SwiftUI
@@ -48,12 +49,15 @@ struct CategorySelectorView: View {
                         .padding(AppSpacing.lg)
                 }
             } else {
-                FlowLayout {
+                UniversalCarousel(
+                    config: .filter,
+                    scrollToId: .constant(selectedCategory)
+                ) {
                     ForEach(categories, id: \.self) { category in
                         chip(category)
+                            .id(category)
                     }
                 }
-                .screenPadding()
             }
 
             if let warning = warningMessage {

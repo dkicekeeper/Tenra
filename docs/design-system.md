@@ -188,8 +188,9 @@ fields, then a conditional impact `FormSection`. **Tenra has no system `Form` sh
 `LoanEarlyRepaymentView`: a `ScrollView` with `HeroSection`, `AmountInputView(calculatorModel:)`,
 the source and category selectors under `SectionHeader`s and `FormSection`s for the rest, with the
 `CalculatorKeypad` in `.safeAreaInset(edge: .bottom)`. The categories are chips with their icon in
-their colour (`CategorySelectorView`: `UniversalFilterButton`s in a `FlowLayout`, over as many
-lines as they need), the subcategory chips under them. Rules in §5. Money towards a goal or back
+their colour in a row that scrolls sideways, as the subcategory chips under them
+(`CategorySelectorView`: `UniversalFilterButton`s in a `UniversalCarousel(config: .filter)`, the
+chosen one scrolled into view). Rules in §5. Money towards a goal or back
 on a debt (only a note and a date) is `MoneyEntrySheet`, an adapter over DesignKit's
 `AmountEntrySheet` (4.14.0), the same layout ready-made.
 

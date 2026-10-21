@@ -48,45 +48,49 @@ struct CategoryFilterView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // "All Categories" option
-                Section {
-                    UniversalRow(
-                        String(localized: "categoryFilter.allCategories"),
-                        config: .settings,
-                        accessory: .checkmark(isSelected: isAllDeselected) {
-                            selectedExpenseCategories.removeAll()
-                            selectedIncomeCategories.removeAll()
-                            selectedDeletedCategories.removeAll()
-                        }
-                    )
-                }
+            // DesignKit 8.0.0: glass sections on the page (a List before).
+            ScrollView {
+                VStack(spacing: AppSpacing.xl) {
+                    // "All Categories" option
+                    FormSection {
+                        UniversalRow(
+                            String(localized: "categoryFilter.allCategories"),
+                            accessory: .checkmark(isSelected: isAllDeselected) {
+                                selectedExpenseCategories.removeAll()
+                                selectedIncomeCategories.removeAll()
+                                selectedDeletedCategories.removeAll()
+                            }
+                        )
+                    }
 
-                // MARK: - Expense Categories
-                categorySection(
-                    title: String(localized: "transactionType.expense"),
-                    categories: activeExpenseCategories,
-                    emptyText: String(localized: "categoryFilter.noExpenseCategories"),
-                    selected: $selectedExpenseCategories
-                )
-
-                // MARK: - Income Categories
-                categorySection(
-                    title: String(localized: "transactionType.income"),
-                    categories: activeIncomeCategories,
-                    emptyText: String(localized: "categoryFilter.noIncomeCategories"),
-                    selected: $selectedIncomeCategories
-                )
-
-                // MARK: - Deleted Categories
-                if !deletedCategories.isEmpty {
+                    // MARK: - Expense Categories
                     categorySection(
-                        title: String(localized: "categoryFilter.deletedCategories"),
-                        categories: deletedCategories,
-                        emptyText: nil,
-                        selected: $selectedDeletedCategories
+                        title: String(localized: "transactionType.expense"),
+                        categories: activeExpenseCategories,
+                        emptyText: String(localized: "categoryFilter.noExpenseCategories"),
+                        selected: $selectedExpenseCategories
                     )
+
+                    // MARK: - Income Categories
+                    categorySection(
+                        title: String(localized: "transactionType.income"),
+                        categories: activeIncomeCategories,
+                        emptyText: String(localized: "categoryFilter.noIncomeCategories"),
+                        selected: $selectedIncomeCategories
+                    )
+
+                    // MARK: - Deleted Categories
+                    if !deletedCategories.isEmpty {
+                        categorySection(
+                            title: String(localized: "categoryFilter.deletedCategories"),
+                            categories: deletedCategories,
+                            emptyText: nil,
+                            selected: $selectedDeletedCategories
+                        )
+                    }
                 }
+                .screenPadding()
+                .padding(.vertical, AppSpacing.md)
             }
             .navigationTitle(String(localized: "navigation.categoryFilter"))
             .navigationBarTitleDisplayMode(.inline)
@@ -129,11 +133,12 @@ struct CategoryFilterView: View {
         emptyText: String?,
         selected: Binding<Set<String>>
     ) -> some View {
-        Section {
+        FormSection(header: title) {
             if categories.isEmpty {
                 if let emptyText {
                     Text(emptyText)
                         .foregroundStyle(.secondary)
+                        .padding(.vertical, AppSpacing.lg)
                 }
             } else {
                 ForEach(categories, id: \.self) { category in
@@ -149,8 +154,6 @@ struct CategoryFilterView: View {
                     }
                 }
             }
-        } header: {
-            SectionHeader(title)
         }
     }
 
@@ -161,7 +164,6 @@ struct CategoryFilterView: View {
         UniversalRow(
             category,
             leadingIcon: iconConfig(for: category),
-            config: .settings,
             accessory: .checkmark(isSelected: isSelected, action: action)
         )
     }

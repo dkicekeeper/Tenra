@@ -2,7 +2,8 @@
 //  TransactionCard.swift
 //  Tenra
 //
-//  Interactive transaction row: tap → edit sheet, swipe → delete / stop-resume recurring.
+//  Interactive transaction row: tap → edit sheet, long press → edit, delete, stop or resume the
+//  recurring series (DesignKit 8.0.0: no swipe actions).
 //  Thin wrapper over `TransactionCardView` (pure UI). Resolves recurring-series state
 //  from `TransactionStore` and subcategories from `CategoriesViewModel`.
 //
@@ -22,6 +23,15 @@ struct TransactionCard: View, Equatable {
     let categoriesViewModel: CategoriesViewModel?
     let accountsViewModel: AccountsViewModel?
     let balanceCoordinator: BalanceCoordinator?
+    /// An action of the screen the card is on, first in its long-press menu (To review's
+    /// "Correct").
+    let menuAction: MenuAction?
+
+    struct MenuAction {
+        let title: String
+        let systemImage: String
+        let action: () -> Void
+    }
 
     /// Equatable compares only the inputs that affect what the body renders.
     /// ViewModels are deliberately excluded — they're @Observable reference types
@@ -62,7 +72,8 @@ struct TransactionCard: View, Equatable {
         viewModel: TransactionsViewModel? = nil,
         categoriesViewModel: CategoriesViewModel? = nil,
         accountsViewModel: AccountsViewModel? = nil,
-        balanceCoordinator: BalanceCoordinator? = nil
+        balanceCoordinator: BalanceCoordinator? = nil,
+        menuAction: MenuAction? = nil
     ) {
         self.transaction = transaction
         self.currency = currency
@@ -73,6 +84,7 @@ struct TransactionCard: View, Equatable {
         self.categoriesViewModel = categoriesViewModel
         self.accountsViewModel = accountsViewModel
         self.balanceCoordinator = balanceCoordinator
+        self.menuAction = menuAction
     }
 
     private var isFutureDate: Bool {
@@ -92,7 +104,7 @@ struct TransactionCard: View, Equatable {
     }
 
     var body: some View {
-        // Hoist the lookup once — 5 downstream consumers (icon, badge, swipe Stop, swipe Resume,
+        // Hoist the lookup once — 5 downstream consumers (icon, badge, menu Stop, menu Resume,
         // alert binding) all read from the same `series` value below.
         let series = linkedRecurringSeries
         let isSeriesActive = series?.isActive ?? false
@@ -145,10 +157,23 @@ struct TransactionCard: View, Equatable {
         // `.bounce` gives the row a subtle press-scale — this card renders inside a
         // LazyVStack (not a List), so there is no system row highlight otherwise.
         .buttonStyle(.bounce)
-        .accessibilityHint(Text(String(localized: "accessibility.swipeForOptions")))
-        // Context menu mirrors swipeActions for non-List parents (entity detail screens
-        // render this card inside a LazyVStack where `.swipeActions` has no effect).
+        // DesignKit 8.0.0's one set of actions: a tap edits, a long press shows Edit, Delete and
+        // the recurring series' actions; no swipe actions.
         .contextMenu {
+            if let menuAction {
+                Button(action: menuAction.action) {
+                    Label(menuAction.title, systemImage: menuAction.systemImage)
+                }
+                Divider()
+            }
+
+            Button {
+                HapticManager.selection()
+                showingEditModal = true
+            } label: {
+                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+            }
+
             Button(role: .destructive) {
                 HapticManager.warning()
                 showingDeleteConfirmation = true
@@ -173,39 +198,8 @@ struct TransactionCard: View, Equatable {
                 }
             }
         }
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            // Удаление — НЕ используем role: .destructive, т.к. он заставляет
-            // SwiftUI анимированно удалить строку сразу по тапу, что дизмиссит
-            // confirmationDialog до того, как пользователь подтвердит.
-            Button {
-                HapticManager.warning()
-                showingDeleteConfirmation = true
-            } label: {
-                Label(String(localized: "button.delete"), systemImage: "trash")
-            }
-            .tint(AppColors.destructive)
-            .accessibilityLabel(String(localized: "accessibility.deleteTransaction"))
-
-            if isSeriesActive {
-                Button {
-                    showingStopRecurringConfirmation = true
-                } label: {
-                    Label(String(localized: "transaction.recurring"), systemImage: "arrow.clockwise")
-                }
-                .tint(AppColors.accent)
-                .accessibilityLabel(String(localized: "accessibility.stopRecurring"))
-            }
-
-            if !isSeriesActive, series != nil {
-                Button {
-                    HapticManager.selection()
-                    Task { await resumeRecurringSeries() }
-                } label: {
-                    Label(String(localized: "transaction.resumeRecurring", defaultValue: "Resume"), systemImage: "play.circle")
-                }
-                .tint(AppColors.success)
-                .accessibilityLabel(String(localized: "transaction.resumeRecurring", defaultValue: "Resume Recurring"))
-            }
+        .accessibilityAction(named: Text(String(localized: "button.delete"))) {
+            showingDeleteConfirmation = true
         }
         .alert(String(localized: "transaction.stopRecurring.title"), isPresented: $showingStopRecurringConfirmation) {
             Button(String(localized: "transaction.stopRecurring.cancel"), role: .cancel) {}

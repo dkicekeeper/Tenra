@@ -5,7 +5,7 @@
 //  From the statement review: the Apple Pay payments the Wallet action saved on the
 //  statement's account that the statement does not show (WalletStatementCheck). A
 //  declined payment also starts the automation, so some of them may never have been
-//  charged. The rows are the History's: tap to edit, swipe to delete (with the usual
+//  charged. The rows are the History's: tap to edit, touch and hold to delete (with the usual
 //  confirmation). Nothing is deleted on its own.
 //
 
@@ -29,8 +29,8 @@ struct WalletMissingPaymentsView: View {
     }
 
     var body: some View {
-        List {
-            Section {
+        ScrollView {
+            FormSection(footer: String(localized: "walletMissing.footer")) {
                 ForEach(payments) { transaction in
                     TransactionCard(
                         transaction: transaction,
@@ -49,18 +49,12 @@ struct WalletMissingPaymentsView: View {
                         balanceCoordinator: accountsViewModel.balanceCoordinator
                     )
                     .equatable()
-                    .listRowInsets(EdgeInsets(
-                        top: AppSpacing.sm,
-                        leading: AppSpacing.lg,
-                        bottom: AppSpacing.sm,
-                        trailing: AppSpacing.lg
-                    ))
+                    // The divider under the row's text: past its 44 pt icon and the space after it.
+                    .rowDividerInset(AppIconSize.Tile.sm + AppSpacing.md)
                 }
-            } footer: {
-                Text(String(localized: "walletMissing.footer"))
             }
+            .screenPadding()
         }
-        .listStyle(.plain)
         // Every payment deleted: nothing is left to look at.
         .onChange(of: payments.isEmpty) { _, isEmpty in
             if isEmpty { dismiss() }

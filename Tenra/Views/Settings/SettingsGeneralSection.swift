@@ -39,37 +39,25 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
     // MARK: - Body
 
     var body: some View {
-        Section(header: SectionHeader(String(localized: "settings.general"))) {
-            // Base Currency Picker
-            NavigationLink {
-                CurrencyPickerView(
-                    selectedCurrency: selectedCurrency,
-                    onSelect: onCurrencyChange
-                )
-            } label: {
-                UniversalRow(
-                    config: .settings,
-                    leadingIcon: .sfSymbol("dollarsign.circle",
-                                           color: AppColors.accent,
-                                           size: AppIconSize.md),
-                    title: String(localized: "settings.baseCurrency")
-                ) {
-                    HStack(spacing: AppSpacing.sm) {
-                        Text(Formatting.currencySymbol(for: selectedCurrency))
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textSecondary)
-                        Text(selectedCurrency)
-                            .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
-                    }
+        FormSection(header: String(localized: "settings.general")) {
+            // Base Currency Picker: a row with its value, pushing the currencies (DesignKit
+            // 8.0.0: a card's navigation row draws its own chevron).
+            UniversalRow(
+                String(localized: "settings.baseCurrency"),
+                icon: "dollarsign.circle",
+                value: "\(Formatting.currencySymbol(for: selectedCurrency)) \(selectedCurrency)",
+                accessory: .navigation {
+                    CurrencyPickerView(
+                        selectedCurrency: selectedCurrency,
+                        onSelect: onCurrencyChange
+                    )
                 }
-            }
+            )
 
             // Background settings navigation link
             UniversalRow(
                 String(localized: "settings.background"),
                 icon: "photo.on.rectangle",
-                config: .settings,
                 accessory: .navigation {
                     backgroundDestination
                 }
@@ -79,7 +67,6 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
             UniversalRow(
                 String(localized: "settings.voiceLanguage"),
                 icon: "waveform",
-                config: .settings,
                 accessory: .picker($voiceLanguage, options: voiceLanguageOptions)
             )
         }
@@ -96,7 +83,7 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
 
 #Preview {
     NavigationStack {
-        List {
+        ScrollView {
             SettingsGeneralSection(
                 selectedCurrency: "KZT",
                 onCurrencyChange: { _ in }

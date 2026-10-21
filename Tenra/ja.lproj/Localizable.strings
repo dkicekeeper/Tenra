@@ -1303,11 +1303,12 @@
 "settings.cloud.storage" = "ストレージ";
 "settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.iCloud.toggle" = "iCloudにバックアップを保存";
+"settings.cloud.iCloud.moving" = "データを移動中…";
 "settings.cloud.iCloud.footer" = "バックアップはiCloudに保存され、「ファイル」アプリには表示されず、他のデバイスのTenraで利用できます。";
 "settings.cloud.iCloud.unavailable" = "iCloud Driveにバックアップを保存するには、設定でiCloudにサインインしてください。";
 "settings.cloud.iCloud.movedToICloud" = "バックアップをiCloudに移動しました";
 "settings.cloud.iCloud.movedToLocal" = "バックアップをこのデバイスに移動しました";
-"settings.cloud.tapToRestoreHint" = "バックアップをタップすると復元できます。左にスワイプで削除します。";
+"settings.cloud.tapToRestoreHint" = "バックアップをタップすると復元できます。長押しで削除します。";
 "alert.restore.title" = "バックアップを復元しますか？";
 "alert.restore.message" = "現在のデータはすべて、%@のバックアップに置き換えられます。";
 "alert.restore.confirm" = "復元";
@@ -1791,7 +1792,7 @@
 "settings.siri.header" = "Siri とショートカット";
 "settings.siri.footer" = "ショートカットのオートメーションが、端末でのApple Payの支払いをTenraを開かずに自動で記録します。";
 "settings.merchants.title" = "Wallet の店舗";
-"settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。店舗をタップすると支払いを確認して変更でき、左にスワイプすると忘れます。";
+"settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。店舗をタップすると支払いを確認して変更でき、長押しして「忘れる」を選ぶと忘れます。";
 "settings.merchants.emptyTitle" = "まだ店舗はありません";
 "settings.merchants.emptyMessage" = "Wallet のオートメーションで Apple Pay を使って支払った店舗のカテゴリは、選ぶ、確認する、または修正すると、ここに記憶されます。";
 "settings.merchants.forget" = "忘れる";
@@ -1809,7 +1810,7 @@
 "merchant.detail.byMonth" = "月別";
 "merchant.detail.open" = "店舗での支払い";
 "walletReview.title" = "確認待ち";
-"walletReview.footer" = "これらの Apple Pay の支払いは、カテゴリまたは口座が自動で選ばれています。修正するには支払いをタップ、正しければ右にスワイプしてください。選んだ内容は店舗とカードごとに記憶されます。";
+"walletReview.footer" = "これらの Apple Pay の支払いは、カテゴリまたは口座が自動で選ばれています。修正するには支払いをタップ、正しければ長押しして「正しい」を選んでください。選んだ内容は店舗とカードごとに記憶されます。";
 "walletReview.emptyTitle" = "確認するものはありません";
 "walletReview.emptyMessage" = "カテゴリまたは口座が自動で選ばれた Apple Pay の支払いは、確認するまでここに表示されます。";
 "walletReview.confirm" = "正しい";
@@ -1818,7 +1819,7 @@
 "walletReview.notification.category" = "%1$@ を「%2$@」に記録しました。タップして確認してください。";
 "walletReview.notification.account" = "%1$@ を口座「%2$@」に記録しました。タップして確認してください。";
 "settings.cards.title" = "Wallet のカード";
-"settings.cards.footer" = "これらのカードでの Apple Pay の支払いは、表示された口座に記録されます。別の口座を選ぶにはカードをタップ、忘れるには左にスワイプします。";
+"settings.cards.footer" = "これらのカードでの Apple Pay の支払いは、表示された口座に記録されます。別の口座を選ぶにはカードをタップ、忘れるには長押しして「忘れる」を選びます。";
 "settings.cards.emptyTitle" = "まだカードはありません";
 "settings.cards.emptyMessage" = "Wallet のオートメーションがカードを渡すと、そのカードに選んだ、または確認した口座を Tenra がここに記憶します。";
 "settings.cards.accountDeleted" = "削除された口座";
@@ -1921,7 +1922,7 @@
 "transactionPreview.reconcile.hint" = "未選択の行とこの期間の手入力を確認してください";
 "transactionPreview.walletMissing" = "明細書にない Apple Pay の支払い: %lld 件";
 "walletMissing.title" = "明細書にない支払い";
-"walletMissing.footer" = "Wallet のオートメーションはこれらの Apple Pay の支払いを記録しましたが、明細書に引き落としがありません。オートメーションは拒否された支払いでも動作します。拒否された支払いがあれば、左にスワイプして削除してください。";
+"walletMissing.footer" = "Wallet のオートメーションはこれらの Apple Pay の支払いを記録しましたが、明細書に引き落としがありません。オートメーションは拒否された支払いでも動作します。拒否された支払いがあれば、長押しして削除してください。";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligenceがカテゴリを選択中…";

@@ -25,12 +25,17 @@ struct AssistantMemoryView: View {
     var body: some View {
         Group {
             if !memory.isLoaded {
-                // The rows to come (each fact is an ItemRow in the large style).
-                List {
-                    ForEach(0..<3, id: \.self) { _ in
-                        ItemRowSkeleton(style: .large)
+                // The rows to come (each fact is an ItemRow in the large style), in their card.
+                ScrollView {
+                    FormSection {
+                        ForEach(0..<3, id: \.self) { _ in
+                            ItemRowSkeleton(style: .large)
+                        }
                     }
+                    .screenPadding()
+                    .padding(.vertical, AppSpacing.md)
                 }
+                .scrollDisabled(true)
                 .transition(.opacity)
             } else if memory.facts.isEmpty {
                 MascotEmptyState(
@@ -41,25 +46,27 @@ struct AssistantMemoryView: View {
                 )
                 .transition(.skeletonReveal)
             } else {
-                List {
-                    Section {
-                        ForEach(memory.facts) { fact in
-                            row(fact)
-                        }
-                    } footer: {
-                        Text(String(localized: "assistant.memory.footer"))
-                    }
-                    Section {
-                        UniversalRow(
-                            String(localized: "assistant.memory.forgetAll"),
-                            icon: "trash",
-                            role: .destructive,
-                            config: .settings,
-                            accessory: .action {
-                                showingForgetAll = true
+                // DesignKit 8.0.0: glass sections on the page (a List before).
+                ScrollView {
+                    VStack(spacing: AppSpacing.xl) {
+                        FormSection(footer: String(localized: "assistant.memory.footer")) {
+                            ForEach(memory.facts) { fact in
+                                row(fact)
                             }
-                        )
+                        }
+                        FormSection {
+                            UniversalRow(
+                                String(localized: "assistant.memory.forgetAll"),
+                                icon: "trash",
+                                role: .destructive,
+                                accessory: .action {
+                                    showingForgetAll = true
+                                }
+                            )
+                        }
                     }
+                    .screenPadding()
+                    .padding(.vertical, AppSpacing.md)
                 }
                 .transition(.skeletonReveal)
             }
@@ -103,16 +110,15 @@ struct AssistantMemoryView: View {
         }
         .buttonStyle(.plain)
         .accessibilityHint(String(localized: "assistant.memory.editHint"))
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+        // A long press edits or forgets the fact (DesignKit 8.0.0: no swipe actions).
+        .contextMenu {
+            Button {
+                editing = Editing(fact: fact)
+            } label: {
+                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+            }
             Button(role: .destructive) {
                 HapticManager.warning()
-                Task { await memory.forget(fact.id) }
-            } label: {
-                Label(String(localized: "assistant.memory.forget"), systemImage: "trash")
-            }
-        }
-        .contextMenu {
-            Button(role: .destructive) {
                 Task { await memory.forget(fact.id) }
             } label: {
                 Label(String(localized: "assistant.memory.forget"), systemImage: "trash")

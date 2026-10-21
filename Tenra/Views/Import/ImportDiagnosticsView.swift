@@ -15,40 +15,41 @@ struct ImportDiagnosticsView: View {
     let intelligenceStatus: IntelligenceStatus
 
     var body: some View {
-        List {
-            Section {
-                LabeledContent(
-                    String(localized: "import.diagnostics.recognized"),
-                    value: "\(statement.transactions.count)"
-                )
-                LabeledContent(
-                    String(localized: "import.diagnostics.skipped"),
-                    value: "\(statement.skipped.count)"
-                )
-            }
-
-            if let explanationKey = intelligenceStatus.explanationKey {
-                Section {
-                    Text(String(localized: String.LocalizationValue(explanationKey)))
-                        .font(AppTypography.caption)
-                        .foregroundStyle(.secondary)
+        // DesignKit 8.0.0: glass sections on the page (a List before).
+        ScrollView {
+            VStack(spacing: AppSpacing.xl) {
+                FormSection(footer: intelligenceStatus.explanationKey.map {
+                    String(localized: String.LocalizationValue($0))
+                }) {
+                    UniversalRow(
+                        String(localized: "import.diagnostics.recognized"),
+                        value: "\(statement.transactions.count)"
+                    )
+                    UniversalRow(
+                        String(localized: "import.diagnostics.skipped"),
+                        value: "\(statement.skipped.count)"
+                    )
                 }
-            }
 
-            if !statement.skipped.isEmpty {
-                Section(String(localized: "import.diagnostics.skippedRows")) {
-                    ForEach(statement.skipped, id: \.rowIndex) { row in
-                        VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                            Text(rowSummary(for: row))
-                                .font(AppTypography.caption)
-                                .lineLimit(2)
-                            Text(String(localized: String.LocalizationValue(row.reason)))
-                                .font(AppTypography.caption)
-                                .foregroundStyle(.secondary)
+                if !statement.skipped.isEmpty {
+                    FormSection(header: String(localized: "import.diagnostics.skippedRows")) {
+                        ForEach(statement.skipped, id: \.rowIndex) { row in
+                            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                                Text(rowSummary(for: row))
+                                    .font(AppTypography.caption)
+                                    .lineLimit(2)
+                                Text(String(localized: String.LocalizationValue(row.reason)))
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, AppSpacing.md)
                         }
                     }
                 }
             }
+            .screenPadding()
+            .padding(.vertical, AppSpacing.md)
         }
         .navigationTitle(String(localized: "import.diagnostics.title"))
         .navigationBarTitleDisplayMode(.inline)

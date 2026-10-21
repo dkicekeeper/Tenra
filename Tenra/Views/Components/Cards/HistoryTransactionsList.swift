@@ -145,65 +145,37 @@ struct HistoryTransactionsList: View {
         let accountById = transactionsViewModel.transactionStore?.accountById ?? [:]
 
         return ScrollViewReader { proxy in
-            List {
-                ForEach(displaySections) { section in
-                    // `TransactionSection.transactions` is a COMPUTED property: each access
-                    // re-runs compactMap { entity.toTransaction() } over the section's managed
-                    // objects, with a DateFormatter.string per entity. It used to be read twice
-                    // per section (header + ForEach); with 100 visible sections that was ~1000
-                    // redundant materialisations per body pass, on the scroll path.
-                    let rows = section.transactions
-                    let displayLabel = displayLabelCache[section.date] ?? displayDateKey(from: section.date)
-                    Section(
-                        header: dateHeader(
+            // DesignKit 8.0.0: a glass card per day on the page (a List of sections before):
+            // the day and its total on top, the transactions under it with a divider under
+            // each row's text. A lazy stack of days, sliced as before.
+            ScrollView {
+                LazyVStack(spacing: AppSpacing.md) {
+                    ForEach(displaySections) { section in
+                        // `TransactionSection.transactions` is a COMPUTED property: each access
+                        // re-runs compactMap { entity.toTransaction() } over the section's managed
+                        // objects, with a DateFormatter.string per entity. Read once per section.
+                        let rows = section.transactions
+                        let displayLabel = displayLabelCache[section.date] ?? displayDateKey(from: section.date)
+                        dayCard(
                             isoDate: section.date,
                             displayLabel: displayLabel,
-                            transactions: rows
+                            rows: rows,
+                            accountById: accountById
                         )
-                    ) {
-                        ForEach(rows) { transaction in
-                            // Pre-resolve per-transaction data so that changes to OTHER accounts
-                            // or OTHER categories do not force a re-render of this row.
-                            let styleData = CategoryStyleHelper.cached(
-                                category: transaction.category,
-                                type: transaction.type,
-                                customCategories: categoriesViewModel.customCategories
-                            )
-                            let sourceAccount = transaction.accountId.flatMap { accountById[$0] }
-                            let targetAccount = transaction.targetAccountId.flatMap { accountById[$0] }
-                            TransactionCard(
-                                transaction: transaction,
-                                currency: baseCurrency,
-                                styleData: styleData,
-                                sourceAccount: sourceAccount,
-                                targetAccount: targetAccount,
-                                viewModel: transactionsViewModel,
-                                categoriesViewModel: categoriesViewModel,
-                                accountsViewModel: accountsViewModel,
-                                balanceCoordinator: accountsViewModel.balanceCoordinator
-                            )
-                            .equatable()
-                            .listRowInsets(EdgeInsets(
-                                top: AppSpacing.sm,
-                                leading: AppSpacing.lg,
-                                bottom: AppSpacing.sm,
-                                trailing: AppSpacing.lg
-                            ))
-                        }
+                        .id(section.id)
                     }
-                    .id(section.id)
-                }
 
-                // "Умная подгрузка" — when the end of the list scrolls into view, expand the
-                // visible window by `sectionLoadIncrement` more sections. The sections are in
-                // memory, so DesignKit's footer is only the trigger: it never shows `.loading`.
-                LoadMoreFooter(state: hasMore ? .more : .end) {
-                    listLogger.debug("⬇️ [HistoryList] loadMore — \(visibleSectionLimit) → \(visibleSectionLimit + sectionLoadIncrement) of \(sections.count)")
-                    visibleSectionLimit += sectionLoadIncrement
+                    // "Умная подгрузка" — when the end of the list scrolls into view, expand the
+                    // visible window by `sectionLoadIncrement` more sections. The sections are in
+                    // memory, so DesignKit's footer is only the trigger: it never shows `.loading`.
+                    LoadMoreFooter(state: hasMore ? .more : .end) {
+                        listLogger.debug("⬇️ [HistoryList] loadMore — \(visibleSectionLimit) → \(visibleSectionLimit + sectionLoadIncrement) of \(sections.count)")
+                        visibleSectionLimit += sectionLoadIncrement
+                    }
                 }
-                .listRowBackground(Color.clear)
+                .screenPadding()
+                .padding(.vertical, AppSpacing.md)
             }
-            .listStyle(.plain)
             // Populate the label cache synchronously before the first body pass
             // so every section header finds a cached label immediately — no cold-start
             // fallback calls to `displayDateKey` for all 100 visible sections.
@@ -219,6 +191,53 @@ struct HistoryTransactionsList: View {
         }
     }
 
+    // MARK: - Day card
+
+    /// One day: its date and total, then its transactions, in one glass card.
+    private func dayCard(
+        isoDate: String,
+        displayLabel: String,
+        rows: [Transaction],
+        accountById: [String: Account]
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            dateHeader(isoDate: isoDate, displayLabel: displayLabel, transactions: rows)
+                .padding(.top, AppSpacing.lg)
+                .padding(.bottom, AppSpacing.xs)
+            ForEach(Array(rows.enumerated()), id: \.element.id) { index, transaction in
+                // Pre-resolve per-transaction data so that changes to OTHER accounts
+                // or OTHER categories do not force a re-render of this row.
+                let styleData = CategoryStyleHelper.cached(
+                    category: transaction.category,
+                    type: transaction.type,
+                    customCategories: categoriesViewModel.customCategories
+                )
+                let sourceAccount = transaction.accountId.flatMap { accountById[$0] }
+                let targetAccount = transaction.targetAccountId.flatMap { accountById[$0] }
+                TransactionCard(
+                    transaction: transaction,
+                    currency: baseCurrency,
+                    styleData: styleData,
+                    sourceAccount: sourceAccount,
+                    targetAccount: targetAccount,
+                    viewModel: transactionsViewModel,
+                    categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel,
+                    balanceCoordinator: accountsViewModel.balanceCoordinator
+                )
+                .equatable()
+                if index < rows.count - 1 {
+                    // Under the row's text: past its 44 pt icon and the space after it.
+                    RowDivider(inset: AppIconSize.Tile.sm + AppSpacing.md)
+                }
+            }
+        }
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.bottom, AppSpacing.sm)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
+    }
+
     // MARK: - Date Header
 
     private func dateHeader(isoDate: String, displayLabel: String, transactions: [Transaction]) -> some View {
@@ -229,7 +248,7 @@ struct HistoryTransactionsList: View {
             viewModel: transactionsViewModel
         )
 
-        return SectionHeader(displayLabel, style: .card) {
+        return SectionHeader(displayLabel) {
             if dayExpenses > 0 {
                 FormattedAmountText(
                     amount: dayExpenses,

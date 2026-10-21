@@ -24,14 +24,15 @@ struct WalletCardsView: View {
                     description: String(localized: "settings.cards.emptyMessage")
                 )
             } else {
-                List {
-                    Section {
+                // DesignKit 8.0.0: a glass section on the page (a List before).
+                ScrollView {
+                    FormSection(footer: String(localized: "settings.cards.footer")) {
                         ForEach(memory.cards) { card in
                             row(card)
                         }
-                    } footer: {
-                        Text(String(localized: "settings.cards.footer"))
                     }
+                    .screenPadding()
+                    .padding(.vertical, AppSpacing.md)
                 }
             }
         }
@@ -45,7 +46,6 @@ struct WalletCardsView: View {
         UniversalRow(
             card.displayName,
             icon: "creditcard",
-            config: .settings,
             accessory: .picker(
                 Binding(
                     get: { card.accountId },
@@ -54,7 +54,8 @@ struct WalletCardsView: View {
                 options: accountOptions(keeping: card.accountId)
             )
         )
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+        // A long press forgets the card (DesignKit 8.0.0: no swipe actions).
+        .contextMenu {
             Button(role: .destructive) {
                 HapticManager.warning()
                 memory.forget(card: card.displayName)

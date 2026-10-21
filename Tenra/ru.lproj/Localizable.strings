@@ -1303,11 +1303,12 @@
 "settings.cloud.storage" = "Хранилище";
 "settings.cloud.storageUsed" = "%@ из %@";
 "settings.cloud.iCloud.toggle" = "Сохранять копии в iCloud";
+"settings.cloud.iCloud.moving" = "Переносим данные…";
 "settings.cloud.iCloud.footer" = "Копии хранятся в вашем iCloud, скрыты из приложения «Файлы» и доступны в Tenra на других ваших устройствах.";
 "settings.cloud.iCloud.unavailable" = "Войдите в iCloud в Настройках, чтобы хранить копии в iCloud Drive.";
 "settings.cloud.iCloud.movedToICloud" = "Копии перенесены в iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Копии перенесены на это устройство";
-"settings.cloud.tapToRestoreHint" = "Нажмите на копию, чтобы восстановить её. Смахните влево для удаления.";
+"settings.cloud.tapToRestoreHint" = "Нажмите на копию, чтобы восстановить её. Удерживайте, чтобы удалить.";
 "alert.restore.title" = "Восстановить данные?";
 "alert.restore.message" = "Все текущие данные будут заменены копией от %@.";
 "alert.restore.confirm" = "Восстановить";
@@ -1791,7 +1792,7 @@
 "settings.siri.header" = "Siri и команды";
 "settings.siri.footer" = "Автоматизация в Быстрых командах сама записывает каждую оплату Apple Pay на терминале, не открывая Tenra.";
 "settings.merchants.title" = "Продавцы Wallet";
-"settings.merchants.footer" = "Оплаты у этих продавцов через автоматизацию Wallet записываются с этой категорией и подкатегорией. Нажмите на продавца, чтобы увидеть его платежи и изменить их, или смахните влево, чтобы забыть.";
+"settings.merchants.footer" = "Оплаты у этих продавцов через автоматизацию Wallet записываются с этой категорией и подкатегорией. Нажмите на продавца, чтобы увидеть его платежи и изменить их, или удерживайте его и выберите «Забыть».";
 "settings.merchants.emptyTitle" = "Пока нет продавцов";
 "settings.merchants.emptyMessage" = "Здесь запоминается категория каждого продавца, у которого вы платите Apple Pay через автоматизацию Wallet, как только вы её выберете, подтвердите или исправите.";
 "settings.merchants.forget" = "Забыть";
@@ -1809,7 +1810,7 @@
 "merchant.detail.byMonth" = "По месяцам";
 "merchant.detail.open" = "Платежи продавца";
 "walletReview.title" = "На проверку";
-"walletReview.footer" = "У этих оплат Apple Pay категория или счёт выбраны автоматически. Нажмите на оплату, чтобы исправить, или смахните вправо, если всё верно. Ваш выбор запомнится для продавца и карты.";
+"walletReview.footer" = "У этих оплат Apple Pay категория или счёт выбраны автоматически. Нажмите на оплату, чтобы исправить, или удерживайте её и выберите «Верно». Ваш выбор запомнится для продавца и карты.";
 "walletReview.emptyTitle" = "Проверять нечего";
 "walletReview.emptyMessage" = "Здесь появляются оплаты Apple Pay, у которых категория или счёт выбраны автоматически, пока вы их не проверите.";
 "walletReview.confirm" = "Верно";
@@ -1818,7 +1819,7 @@
 "walletReview.notification.category" = "%1$@: записано в «%2$@». Нажмите, чтобы проверить.";
 "walletReview.notification.account" = "%1$@: записано на счёт «%2$@». Нажмите, чтобы проверить.";
 "settings.cards.title" = "Карты Wallet";
-"settings.cards.footer" = "Оплаты Apple Pay этими картами записываются на указанный счёт. Нажмите на карту, чтобы выбрать другой счёт, или смахните влево, чтобы забыть.";
+"settings.cards.footer" = "Оплаты Apple Pay этими картами записываются на указанный счёт. Нажмите на карту, чтобы выбрать другой счёт, или удерживайте её и выберите «Забыть».";
 "settings.cards.emptyTitle" = "Карт пока нет";
 "settings.cards.emptyMessage" = "Когда автоматизация Wallet передаёт карту, Tenra запоминает здесь счёт, который вы для неё выбрали или подтвердили.";
 "settings.cards.accountDeleted" = "Счёт удалён";
@@ -1921,7 +1922,7 @@
 "transactionPreview.reconcile.hint" = "Проверьте строки без галочки и ручные записи за этот период";
 "transactionPreview.walletMissing" = "Оплат Apple Pay нет в выписке: %lld";
 "walletMissing.title" = "Нет в выписке";
-"walletMissing.footer" = "Автоматизация Wallet записала эти оплаты Apple Pay, но в выписке списания по ним нет. Автоматизация срабатывает и на отклонённую оплату: если какая-то из них не прошла, смахните её влево, чтобы удалить.";
+"walletMissing.footer" = "Автоматизация Wallet записала эти оплаты Apple Pay, но в выписке списания по ним нет. Автоматизация срабатывает и на отклонённую оплату: если какая-то из них не прошла, удерживайте её, чтобы удалить.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence подбирает категории…";

@@ -20,19 +20,17 @@ struct SettingsDangerZoneSection: View {
     // MARK: - Body
 
     var body: some View {
-        Section(header: SectionHeader(String(localized: "settings.dangerZone"))) {
+        FormSection(header: String(localized: "settings.dangerZone")) {
             UniversalRow(
                 String(localized: "settings.resetLearning"),
                 icon: "trash",
                 role: .destructive,
-                config: .settings,
                 accessory: .action(onResetLearning)
             )
             UniversalRow(
                 String(localized: "settings.resetData"),
                 icon: "trash",
                 role: .destructive,
-                config: .settings,
                 accessory: .action(onResetData)
             )
         }
@@ -42,7 +40,7 @@ struct SettingsDangerZoneSection: View {
 // MARK: - Preview
 
 #Preview {
-    List {
+    ScrollView {
         SettingsDangerZoneSection(
             onResetData: {
             },

@@ -18,11 +18,10 @@ struct SettingsWalletSection: View {
     @AppStorage(MerchantLogoStore.enabledKey) private var showsMerchantLogos = true
 
     var body: some View {
-        Section {
+        FormSection(header: String(localized: "settings.wallet.header"), footer: String(localized: "settings.wallet.footer")) {
             UniversalRow(
                 String(localized: "walletReview.title"),
                 icon: "checkmark.circle",
-                config: .settings,
                 accessory: .navigation {
                     WalletReviewView(
                         transactionsViewModel: transactionsViewModel,
@@ -35,7 +34,6 @@ struct SettingsWalletSection: View {
             UniversalRow(
                 String(localized: "settings.wallet.merchants"),
                 icon: "storefront",
-                config: .settings,
                 accessory: .navigation {
                     MerchantCategoriesView(
                         transactionsViewModel: transactionsViewModel,
@@ -48,7 +46,6 @@ struct SettingsWalletSection: View {
             UniversalRow(
                 String(localized: "settings.wallet.cards"),
                 icon: "creditcard",
-                config: .settings,
                 accessory: .navigation { WalletCardsView(accountsViewModel: accountsViewModel) }
             )
 
@@ -56,13 +53,8 @@ struct SettingsWalletSection: View {
             UniversalRow(
                 String(localized: "settings.merchantLogos"),
                 icon: "photo.circle",
-                config: .settings,
                 accessory: .toggle($showsMerchantLogos)
             )
-        } header: {
-            SectionHeader(String(localized: "settings.wallet.header"))
-        } footer: {
-            Text(String(localized: "settings.wallet.footer"))
         }
     }
 }
@@ -70,7 +62,7 @@ struct SettingsWalletSection: View {
 #Preview {
     let coordinator = AppCoordinator()
     NavigationStack {
-        List {
+        ScrollView {
             SettingsWalletSection(
                 transactionsViewModel: coordinator.transactionsViewModel,
                 categoriesViewModel: coordinator.categoriesViewModel,

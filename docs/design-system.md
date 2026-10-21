@@ -244,12 +244,15 @@ dragging and adds; no swipe actions.
 
 ### History
 
-`HistoryTransactionsList`: a `List` of day `Section`s whose header is
-`SectionHeader(day, style: .card) { day total }` and whose rows are
-`TransactionCard(…).equatable()` with `listRowInsets`. `TransactionCard` adds the edit sheet,
-swipe and context menu to `TransactionCardView`, which maps the transaction onto DesignKit's
-`TransactionRow`. Sections are sliced with an infinite-scroll trigger: 500+ sections in a `List`
-freeze (CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `ForEach` (§6).
+`HistoryTransactionsList` (DesignKit 8.0.0): a `ScrollView` of a `LazyVStack` of day cards, each
+one glass card with the day and its total (`SectionHeader(day) { day total }`) on top and its
+`TransactionCard(…).equatable()` rows under it, a `RowDivider` under each row's text (past the
+44 pt icon). Entity detail screens and link payments show their days the same way
+(`GroupedTransactionList`). `TransactionCard` adds the edit sheet and the context menu (Edit,
+Delete, the recurring series' Stop or Resume; no swipe actions) to `TransactionCardView`, which
+maps the transaction onto DesignKit's `TransactionRow`. Sections are sliced with an
+infinite-scroll trigger (`LoadMoreFooter`), so a long history renders a bounded number of days
+(CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `ForEach` (§6).
 
 ### Settings
 

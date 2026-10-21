@@ -22,77 +22,66 @@ struct CloudBackupsView: View {
     @State private var backupToDelete: BackupMetadata?
 
     var body: some View {
-        List {
-            Section {
-                Toggle(isOn: Binding(
-                    get: { cloudSyncViewModel.iCloudEnabled },
-                    set: { newValue in
-                        Task { await cloudSyncViewModel.setICloudEnabled(newValue) }
-                    }
-                )) {
-                    HStack(spacing: AppSpacing.sm) {
-                        Text(String(localized: "settings.cloud.iCloud.toggle"))
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textPrimary)
-                        if cloudSyncViewModel.isMigratingICloud {
-                            ProgressView()
-                        }
-                    }
-                }
-                .tint(AppColors.accent)
-                .disabled(cloudSyncViewModel.isMigratingICloud || !cloudSyncViewModel.iCloudAvailable)
-            } footer: {
-                Text(String(localized: cloudSyncViewModel.iCloudAvailable
+        // DesignKit 8.0.0: glass sections on the page (a List of system toggles before).
+        ScrollView {
+            VStack(spacing: AppSpacing.xl) {
+                FormSection(footer: String(localized: cloudSyncViewModel.iCloudAvailable
                     ? "settings.cloud.iCloud.footer"
-                    : "settings.cloud.iCloud.unavailable"))
-            }
+                    : "settings.cloud.iCloud.unavailable")) {
+                    UniversalRow(
+                        String(localized: "settings.cloud.iCloud.toggle"),
+                        icon: "icloud",
+                        hint: cloudSyncViewModel.isMigratingICloud ? String(localized: "settings.cloud.iCloud.moving", defaultValue: "Moving…") : nil,
+                        accessory: .toggle(Binding(
+                            get: { cloudSyncViewModel.iCloudEnabled },
+                            set: { newValue in
+                                Task { await cloudSyncViewModel.setICloudEnabled(newValue) }
+                            }
+                        ))
+                    )
+                    .disabled(cloudSyncViewModel.isMigratingICloud || !cloudSyncViewModel.iCloudAvailable)
+                }
 
-            // A failed automatic backup stays in sight until a backup succeeds (DesignKit's
-            // StatusBanner).
-            if let failure = cloudSyncViewModel.automaticBackupFailure {
-                Section {
+                // A failed automatic backup stays in sight until a backup succeeds (DesignKit's
+                // StatusBanner).
+                if let failure = cloudSyncViewModel.automaticBackupFailure {
                     StatusBanner(
                         String(format: String(localized: "settings.cloud.autoBackup.failed"), failure),
                         status: .negative
                     )
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
                 }
-            }
 
-            Section {
-                Toggle(isOn: Binding(
-                    get: { cloudSyncViewModel.automaticBackupsEnabled },
-                    set: { cloudSyncViewModel.automaticBackupsEnabled = $0 }
-                )) {
-                    Text(String(localized: "settings.cloud.autoBackup.toggle"))
-                        .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textPrimary)
+                FormSection(footer: String(localized: "settings.cloud.autoBackup.footer")) {
+                    UniversalRow(
+                        String(localized: "settings.cloud.autoBackup.toggle"),
+                        icon: "clock.arrow.circlepath",
+                        accessory: .toggle(Binding(
+                            get: { cloudSyncViewModel.automaticBackupsEnabled },
+                            set: { cloudSyncViewModel.automaticBackupsEnabled = $0 }
+                        ))
+                    )
                 }
-                .tint(AppColors.accent)
-            } footer: {
-                Text(String(localized: "settings.cloud.autoBackup.footer"))
-            }
 
-            if !cloudSyncViewModel.backups.isEmpty {
-                Section {
-                    ForEach(cloudSyncViewModel.backups) { backup in
-                        BackupRowView(
-                            metadata: backup,
-                            onRestore: {
-                                backupToRestore = backup
-                                showingRestoreAlert = true
-                            },
-                            onDelete: {
-                                backupToDelete = backup
-                                showingDeleteAlert = true
-                            }
-                        )
+                if !cloudSyncViewModel.backups.isEmpty {
+                    FormSection(footer: String(localized: "settings.cloud.tapToRestoreHint")) {
+                        ForEach(cloudSyncViewModel.backups) { backup in
+                            BackupRowView(
+                                metadata: backup,
+                                onRestore: {
+                                    backupToRestore = backup
+                                    showingRestoreAlert = true
+                                },
+                                onDelete: {
+                                    backupToDelete = backup
+                                    showingDeleteAlert = true
+                                }
+                            )
+                        }
                     }
-                } footer: {
-                    Text(String(localized: "settings.cloud.tapToRestoreHint"))
                 }
             }
+            .screenPadding()
+            .padding(.vertical, AppSpacing.md)
         }
         .safeAreaInset(edge: .bottom) {
             Button {

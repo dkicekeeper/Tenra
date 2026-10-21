@@ -6,8 +6,8 @@
 //  category or account (WalletCaptureStore.toReview). Opened from Settings → Wallet and
 //  by a tap on a "check a payment" notification.
 //
-//  Tap a payment to fix it in the edit screen: saving there confirms it. Swipe right,
-//  or "All correct", to keep what Tenra guessed. Either way the category is
+//  Tap a payment to fix it in the edit screen: saving there confirms it. "Correct" in its
+//  long-press menu, or "All correct", keeps what Tenra guessed. Either way the category is
 //  remembered for the merchant and the account for the card
 //  (WalletPaymentRecorder.confirm), so the next payment there is not a guess.
 //
@@ -43,12 +43,15 @@ struct WalletReviewView: View {
         let isWaiting = isWaitingForHistory
         Group {
             if isWaiting {
-                List {
-                    ForEach(0..<min(captures.toReview.count, 6), id: \.self) { _ in
-                        SkeletonRow()
+                ScrollView {
+                    FormSection {
+                        ForEach(0..<min(captures.toReview.count, 6), id: \.self) { _ in
+                            SkeletonRow()
+                                .rowDividerInset(AppIconSize.xxl + AppSpacing.md)
+                        }
                     }
+                    .screenPadding()
                 }
-                .listStyle(.plain)
                 .transition(.opacity)
             } else if transactions.isEmpty {
                 EmptyState(
@@ -58,16 +61,14 @@ struct WalletReviewView: View {
                 )
                 .transition(.opacity)
             } else {
-                List {
-                    Section {
+                ScrollView {
+                    FormSection(footer: String(localized: "walletReview.footer")) {
                         ForEach(transactions) { transaction in
                             card(for: transaction)
                         }
-                    } footer: {
-                        Text(String(localized: "walletReview.footer"))
                     }
+                    .screenPadding()
                 }
-                .listStyle(.plain)
                 .transition(.opacity)
             }
         }
@@ -110,24 +111,18 @@ struct WalletReviewView: View {
             viewModel: transactionsViewModel,
             categoriesViewModel: categoriesViewModel,
             accountsViewModel: accountsViewModel,
-            balanceCoordinator: accountsViewModel.balanceCoordinator
-        )
-        .equatable()
-        .listRowInsets(EdgeInsets(
-            top: AppSpacing.sm,
-            leading: AppSpacing.lg,
-            bottom: AppSpacing.sm,
-            trailing: AppSpacing.lg
-        ))
-        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-            Button {
+            balanceCoordinator: accountsViewModel.balanceCoordinator,
+            menuAction: TransactionCard.MenuAction(
+                title: String(localized: "walletReview.confirm"),
+                systemImage: "checkmark"
+            ) {
                 HapticManager.success()
                 confirm(transaction)
-            } label: {
-                Label(String(localized: "walletReview.confirm"), systemImage: "checkmark")
             }
-            .tint(AppColors.success)
-        }
+        )
+        .equatable()
+        // The divider under the row's text: past its 44 pt icon and the space after it.
+        .rowDividerInset(AppIconSize.Tile.sm + AppSpacing.md)
         .accessibilityAction(named: Text(String(localized: "walletReview.confirm"))) {
             confirm(transaction)
         }

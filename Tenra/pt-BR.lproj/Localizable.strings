@@ -1303,11 +1303,12 @@
 "settings.cloud.storage" = "Armazenamento";
 "settings.cloud.storageUsed" = "%@ de %@";
 "settings.cloud.iCloud.toggle" = "Salvar backups no iCloud";
+"settings.cloud.iCloud.moving" = "Movendo seus dados…";
 "settings.cloud.iCloud.footer" = "Os backups ficam no seu iCloud, ocultos no app Arquivos, e disponíveis no Tenra nos seus outros dispositivos.";
 "settings.cloud.iCloud.unavailable" = "Entre no iCloud nos Ajustes para armazenar backups no iCloud Drive.";
 "settings.cloud.iCloud.movedToICloud" = "Backups movidos para o iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Backups movidos para este dispositivo";
-"settings.cloud.tapToRestoreHint" = "Toque em um backup para restaurá-lo. Deslize para a esquerda para apagar.";
+"settings.cloud.tapToRestoreHint" = "Toque em um backup para restaurá-lo. Toque e segure para apagar.";
 "alert.restore.title" = "Restaurar backup?";
 "alert.restore.message" = "Todos os dados atuais serão substituídos pelo backup de %@.";
 "alert.restore.confirm" = "Restaurar";
@@ -1791,7 +1792,7 @@
 "settings.siri.header" = "Siri e atalhos";
 "settings.siri.footer" = "Uma automação do Atalhos salva sozinha cada pagamento com Apple Pay em um terminal, sem abrir o Tenra.";
 "settings.merchants.title" = "Estabelecimentos do Wallet";
-"settings.merchants.footer" = "Os pagamentos nesses estabelecimentos pela automação do Wallet recebem esta categoria e subcategoria. Toque em um estabelecimento para ver os pagamentos e mudá-las, ou deslize para a esquerda para esquecê-lo.";
+"settings.merchants.footer" = "Os pagamentos nesses estabelecimentos pela automação do Wallet recebem esta categoria e subcategoria. Toque em um estabelecimento para ver os pagamentos e mudá-las, ou toque e segure e escolha Esquecer.";
 "settings.merchants.emptyTitle" = "Nenhum estabelecimento ainda";
 "settings.merchants.emptyMessage" = "A categoria de cada estabelecimento onde você paga com Apple Pay pela automação do Wallet fica guardada aqui assim que você a escolhe, confirma ou corrige.";
 "settings.merchants.forget" = "Esquecer";
@@ -1809,7 +1810,7 @@
 "merchant.detail.byMonth" = "Por mês";
 "merchant.detail.open" = "Pagamentos do estabelecimento";
 "walletReview.title" = "Para revisar";
-"walletReview.footer" = "A categoria ou a conta destes pagamentos com Apple Pay foi escolhida automaticamente. Toque em um pagamento para corrigi-lo ou deslize para a direita se estiver certo. Sua escolha fica guardada para o estabelecimento e o cartão.";
+"walletReview.footer" = "A categoria ou a conta destes pagamentos com Apple Pay foi escolhida automaticamente. Toque em um pagamento para corrigi-lo, ou toque e segure e escolha Correto. Sua escolha fica guardada para o estabelecimento e o cartão.";
 "walletReview.emptyTitle" = "Nada para revisar";
 "walletReview.emptyMessage" = "Os pagamentos com Apple Pay com categoria ou conta escolhida automaticamente aparecem aqui até você revisá-los.";
 "walletReview.confirm" = "Correto";
@@ -1818,7 +1819,7 @@
 "walletReview.notification.category" = "%1$@ foi registrado em “%2$@”. Toque para revisar.";
 "walletReview.notification.account" = "%1$@ foi registrado na conta “%2$@”. Toque para revisar.";
 "settings.cards.title" = "Cartões do Wallet";
-"settings.cards.footer" = "Os pagamentos com Apple Pay com estes cartões são registrados na conta indicada. Toque em um cartão para escolher outra conta ou deslize para a esquerda para esquecê-lo.";
+"settings.cards.footer" = "Os pagamentos com Apple Pay com estes cartões são registrados na conta indicada. Toque em um cartão para escolher outra conta, ou toque e segure e escolha Esquecer.";
 "settings.cards.emptyTitle" = "Nenhum cartão ainda";
 "settings.cards.emptyMessage" = "Quando a automação do Wallet passa o cartão, o Tenra guarda aqui a conta que você escolher ou confirmar para ele.";
 "settings.cards.accountDeleted" = "Conta excluída";
@@ -1921,7 +1922,7 @@
 "transactionPreview.reconcile.hint" = "Confira as linhas desmarcadas e seus lançamentos manuais deste período";
 "transactionPreview.walletMissing" = "Pagamentos com Apple Pay fora do extrato: %lld";
 "walletMissing.title" = "Fora do extrato";
-"walletMissing.footer" = "A automação do Wallet registrou estes pagamentos com Apple Pay, mas o extrato não mostra nenhuma cobrança deles. A automação também é acionada por um pagamento recusado: se algum foi recusado, deslize-o para a esquerda para excluí-lo.";
+"walletMissing.footer" = "A automação do Wallet registrou estes pagamentos com Apple Pay, mas o extrato não mostra nenhuma cobrança deles. A automação também é acionada por um pagamento recusado: se algum foi recusado, toque e segure para excluí-lo.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "A Apple Intelligence está escolhendo categorias…";

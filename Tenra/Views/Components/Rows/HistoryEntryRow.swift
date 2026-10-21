@@ -36,7 +36,7 @@ struct HistoryEntryRow: View {
 #Preview("History entries") {
     VStack(spacing: 0) {
         HistoryEntryRow(date: Date(), note: "Bonus", amount: 50_000, currency: "KZT", symbol: "plus")
-        Divider().padding(.leading, AppIconSize.Tile.sm + AppSpacing.md)
+        RowDivider(inset: AppIconSize.Tile.sm + AppSpacing.md)
         HistoryEntryRow(date: Date().addingTimeInterval(-86_400 * 30), note: nil, amount: 20_000, currency: "KZT", symbol: "arrow.uturn.down")
     }
     .padding(AppSpacing.lg)

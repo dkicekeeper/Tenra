@@ -29,14 +29,15 @@ struct MerchantCategoriesView: View {
                     description: String(localized: "settings.merchants.emptyMessage")
                 )
             } else {
-                List {
-                    Section {
+                // DesignKit 8.0.0: a glass section on the page (a List before).
+                ScrollView {
+                    FormSection(footer: String(localized: "settings.merchants.footer")) {
                         ForEach(memory.merchants) { merchant in
                             row(merchant)
                         }
-                    } footer: {
-                        Text(String(localized: "settings.merchants.footer"))
                     }
+                    .screenPadding()
+                    .padding(.vertical, AppSpacing.md)
                 }
             }
         }
@@ -59,7 +60,7 @@ struct MerchantCategoriesView: View {
         return Button {
             opened = merchant
         } label: {
-            UniversalRow(config: .settings, leadingIcon: iconConfig(for: merchant, category: category)) {
+            UniversalRow(leadingIcon: iconConfig(for: merchant, category: category)) {
                 VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                     Text(MerchantLogoStore.shared.customName(forDescription: merchant.displayName)
                          ?? MerchantName.displayName(merchant.displayName))
@@ -77,7 +78,10 @@ struct MerchantCategoriesView: View {
         .buttonStyle(.plain)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+        // The button keeps the row's divider inset to itself: the 44 pt tile and its space.
+        .rowDividerInset(AppIconSize.Tile.sm + AppSpacing.md)
+        // A long press forgets the merchant (DesignKit 8.0.0: no swipe actions).
+        .contextMenu {
             Button(role: .destructive) {
                 HapticManager.warning()
                 memory.forget(merchantId: merchant.id)

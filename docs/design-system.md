@@ -239,8 +239,9 @@ dragging and adds; no swipe actions.
   `PayoffProgressCardSkeleton`s until their store loads, replaced through `.skeletonReveal` (§7).
 - **Subcategories** (`SubcategoriesManagementView`): `CardList(.section)`, every subcategory a
   row of one glass card (`SubcategoryManagementRow`, `ItemRow(style: .large, titleFont:
-  AppTypography.h4)` with its usage in a `MetaLine`), in the chosen sort (name, last used,
-  usage) from the sort menu; no dragging (`canReorder: false`). A tap edits the name.
+  AppTypography.h4)` with its usage in a `MetaLine`, padded `AppSpacing.md` above and below:
+  `ItemRow` has no padding of its own), in the chosen sort (name, last used, usage) from the
+  sort menu; no dragging (`canReorder: false`). A tap edits the name.
 
 ### History
 
@@ -290,12 +291,15 @@ merchants, cards, the merchant logos switch), Backups, Export and import, Danger
   with system search when long; `NavigationPickerRow(style: .list)` before DesignKit 7.0.0); the base currency is a `NavigationLink` with
   the same row, pushing `CurrencyPickerView`.
 - **Assistant** (`SettingsAssistantSection`): the cloud and "Ten chats" toggles and "What Ten
-  knows about me" (`AssistantMemoryView`: a `List` of `ItemRow(style: .large)` without a chevron,
-  since a row opens an editor sheet; `ItemRowSkeleton(style: .large)` rows while loading).
+  knows about me" (`AssistantMemoryView`: a glass `FormSection` of `ItemRow(style: .large)`
+  without a chevron, since a row opens an editor sheet, and a long press edits or forgets;
+  `ItemRowSkeleton(style: .large)` rows while loading; each padded `AppSpacing.md` above and
+  below, as `ItemRow` has no padding of its own).
 
 - **Backups** (`BackupRowView`): `ItemRow(style: .large)` with the date, the "Auto" badge, a
-  `MetaLine` of counts and size, and the restore arrow as its accessory; tap restores, swipe
-  deletes.
+  `MetaLine` of counts and size, and the restore arrow as its accessory, padded `AppSpacing.md`
+  above and below in its glass `FormSection`; a tap restores, a long press shows Restore and
+  Delete.
 - **Quick-access currencies** (`QuickAccessCurrencyPickerView`): DesignKit's `CurrencyRow`, the
   row `CurrencyList` draws; an account's currency with `isLocked: true` (grey check), the others
   in a plain `Button` with `.contentShape(Rectangle())`.

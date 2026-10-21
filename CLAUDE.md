@@ -394,5 +394,5 @@ When unsure about architecture decisions:
 ---
 
 **Last Updated**: 2026-10-15
-**iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`: CI runs the GitHub runner's newest Xcode, still 26.x, where iOS 27 symbols don't exist)
+**iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`, so the project still builds with Xcode 26. Every GitHub workflow (CI, TestFlight, DesignKit update, Screenshots) builds with Xcode 27.0 on the `xcode-27` runner since 2026-10-21, so the iOS 27 paths are compiled, tested and shipped from the cloud; the Xcode pin is raised in all four at once, see [docs/asc.md](docs/asc.md))
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

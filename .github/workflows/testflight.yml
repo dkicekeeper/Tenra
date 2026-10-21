@@ -18,10 +18,10 @@ name: TestFlight
 #   ASC_ISSUER_ID   Issuer ID shown above the key list in App Store Connect
 #   ASC_KEY_P8      the full text of the downloaded AuthKey_<KeyID>.p8, BEGIN/END lines included
 #
-# Xcode: the runner's newest stable one. GitHub's macOS runners stop at Xcode 26.x for now,
-# and iOS 27 code sits behind `#if compiler(>=6.4)`, so a build from here has none of the
-# iOS 27-only UI until GitHub adds Xcode 27. The job summary says which Xcode built it.
-# App Store release builds keep coming from a Mac with Xcode 27 until then.
+# Xcode: 27.0 on GitHub's Xcode 27 image (`xcode-27`, public preview since 2026-10), so a build
+# from here has the iOS 27 UI (the code behind `#if compiler(>=6.4)`) and can go to the App
+# Store. Pinned as in ci.yml; the job summary says which Xcode built it and warns if it is
+# older than 27.
 
 on:
   workflow_dispatch:
@@ -40,7 +40,7 @@ concurrency:
 
 jobs:
   upload:
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 60
     outputs:
       build: ${{ steps.version.outputs.build }}
@@ -54,7 +54,7 @@ jobs:
 
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: "27.0"
 
       - name: App Store Connect API key
         env:

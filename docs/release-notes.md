@@ -193,8 +193,9 @@ Tenra 1.7의 새로운 기능:
 1. **Device check** of the newest TestFlight build ([plan-auto-capture.md](plan-auto-capture.md) §8 and
    the "not yet checked" list of PR #80), then fix what it finds.
 2. **Merge PR #80** into `main` once CI is green.
-3. **Archive from the Mac** with Xcode 27 (the store build compiles the iOS 27 code paths; CI's
-   Xcode 26 builds do not) and upload; check that build on the iOS 27 iPhone.
+3. **The store build** is a TestFlight build from GitHub: since 2026-10-21 it is built with
+   Xcode 27 and has the iOS 27 code paths ([asc.md](asc.md)). Check that build on the iOS 27
+   iPhone.
 4. **What's New**: this file, after step 1 (`prepare-version`).
 5. **Screenshots** of the main page from 1.7 (the decision of 2026-10-19 in
    [promotion-plan.md](promotion-plan.md) §7).

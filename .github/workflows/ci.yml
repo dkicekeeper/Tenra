@@ -23,37 +23,53 @@ jobs:
         run: python3 scripts/design_lint.py
 
   build-and-test:
-    runs-on: macos-26
+    # GitHub's Xcode 27 image (public preview since 2026-10, macOS 27): the iOS 27 SDK, so the
+    # code behind `#if compiler(>=6.4)` is compiled and tested too. Xcode pinned to the image's
+    # release, not `latest-stable`, which could pick its release candidate; raise it with the
+    # Mac's Xcode, in every workflow at once (docs/asc.md).
+    runs-on: xcode-27
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
-      # The runner's newest stable Xcode (26.x until GitHub adds Xcode 27). iOS 27 SDK code
-      # sits behind `#if compiler(>=6.4)`, so it compiles only where the SDK exists; a pinned
-      # old Xcode here made every build fail once the app adopted iOS 27 APIs.
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: "27.0"
 
       - name: Toolchain
         run: |
           xcodebuild -version
           swift --version
 
+      # An iPhone on the newest iOS runtime, by id: since Xcode 27 a bare `name=` destination
+      # means the newest OS, and a model missing from it is "not found".
       - name: Resolve simulator destination
         id: sim
         run: |
-          DEVICE=$(xcrun simctl list devices available | grep -E "iPhone" | head -1 | sed -E 's/^ *([^(]+) \(.*/\1/' | sed 's/ *$//')
-          if [ -z "$DEVICE" ]; then echo "No iPhone simulator available"; exit 1; fi
-          echo "device=$DEVICE" >> "$GITHUB_OUTPUT"
-          echo "Using simulator: $DEVICE"
+          xcrun simctl list devices available -j > simulators.json
+          SIM=$(python3 -c '
+          import json, re
+          best = None
+          for runtime, devices in json.load(open("simulators.json"))["devices"].items():
+              m = re.search(r"iOS-(\d+)-(\d+)", runtime)
+              phones = [d for d in devices if d["name"].startswith("iPhone")]
+              if m and phones:
+                  version = (int(m.group(1)), int(m.group(2)))
+                  if best is None or version > best[0]:
+                      best = (version, phones[0])
+          if best:
+              print(best[1]["udid"], "%s, iOS %d.%d" % (best[1]["name"], *best[0]))
+          ')
+          if [ -z "$SIM" ]; then echo "::error::No iPhone simulator available"; exit 1; fi
+          echo "id=${SIM%% *}" >> "$GITHUB_OUTPUT"
+          echo "Using simulator: ${SIM#* }"
 
       - name: Build and run unit tests
         run: |
           set -o pipefail
           xcodebuild test \
             -scheme Tenra \
-            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.device }}" \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.id }}" \
             -only-testing:TenraTests \
             2>&1 | tee xcodebuild.log | grep -aE "Test case .* (passed|failed)|error:|\*\* TEST (SUCCEEDED|FAILED)" || true
           grep -aq "\*\* TEST SUCCEEDED \*\*" xcodebuild.log

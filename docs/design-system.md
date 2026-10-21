@@ -142,8 +142,8 @@ what is still unused and where it could go):
 Every `NavigationStack` carries `.softScrollEdges()` (DesignKit 5.4.0), a sheet's and a
 full-screen cover's too, since a stack in a sheet does not take it from the screen under it: built
 with Xcode 27 the edge under the navigation bar and the tab bar as it comes on iOS 27 is hard, an
-almost opaque plate with a line (its gotchas.md). On iOS 26 and in an Xcode 26 build (the cloud
-TestFlight) it names nothing. DesignKit's sheets (`EditSheetContainer`, `DateRangePickerSheet`,
+almost opaque plate with a line (its gotchas.md). On iOS 26 and in an Xcode 26 build it names
+nothing (the cloud builds use Xcode 27 since 2026-10-21). DesignKit's sheets (`EditSheetContainer`, `DateRangePickerSheet`,
 `IconPicker`, …) carry their own. A new `NavigationStack` gets it too.
 
 A bar over scrolling content (`safeAreaBar`) names its edge style on the scroll view: built with

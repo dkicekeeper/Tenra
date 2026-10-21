@@ -484,9 +484,9 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
       (`belowLimit` / `limitReached`, `limitIncreaseSuggestion`), ошибки `networkFailure`,
       `quotaLimitReached` (с `resetDate`), `serviceUnavailable`. `supportedLanguages` отдаётся во
       время работы, так что есть ли русский, покажет только телефон на iOS 27.
-- [ ] Собирать код iOS 27 (ApplePCC, Siri iOS 27): на раннерах GitHub Xcode только до 26.6
-      (проверено 2026-10-15, macos-26 и macos-latest), поэтому CI и TestFlight его пропускают
-      (`#if compiler(>=6.4)`); пока такой код собирается только на Mac с Xcode 27.
+- [x] Собирать код iOS 27 (ApplePCC, Siri iOS 27) в облаке: с 21.10 CI и TestFlight идут на
+      раннере GitHub `xcode-27` с Xcode 27.0 ([asc.md](asc.md)), код за `#if compiler(>=6.4)`
+      собирается и тестируется там.
 - [ ] Запросить entitlement Private Cloud Compute для аккаунта (вместе с ApplePCC, см. ниже).
 - [x] Имя персонажа: Тэн (Ten).
 - [ ] Тексты экрана согласия по 5.1.2(i) во все 11 локалей, черновик новой метки App Privacy.

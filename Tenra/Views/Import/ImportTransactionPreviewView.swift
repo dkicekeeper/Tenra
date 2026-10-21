@@ -82,91 +82,106 @@ struct ImportTransactionPreviewView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Header
-                VStack(spacing: AppSpacing.sm) {
-                    Text(String(format: String(localized: "transactionPreview.found"), transactions.count))
-                        .font(AppTypography.h4)
-                    Text(String(localized: "transactionPreview.selectHint"))
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
-                    if !regularAccounts.isEmpty {
-                        HStack(spacing: AppSpacing.xs) {
-                            Text(String(localized: "transactionPreview.statementAccount"))
+                // DesignKit 8.0.0: glass cards on the page, the header's and the rows' (a List
+                // under a grey header before).
+                ScrollView {
+                    VStack(spacing: AppSpacing.xl) {
+                        // Header
+                        VStack(spacing: AppSpacing.sm) {
+                            Text(String(format: String(localized: "transactionPreview.found"), transactions.count))
+                                .font(AppTypography.h4)
+                            Text(String(localized: "transactionPreview.selectHint"))
                                 .font(AppTypography.bodySmall)
                                 .foregroundStyle(AppColors.textSecondary)
-                            Picker(String(localized: "transactionPreview.statementAccount"), selection: $statementAccountId) {
-                                ForEach(regularAccounts) { account in
-                                    Text("\(account.name) (\(Formatting.currencySymbol(for: account.currency)))").tag(account.id)
+                            if !regularAccounts.isEmpty {
+                                HStack(spacing: AppSpacing.xs) {
+                                    Text(String(localized: "transactionPreview.statementAccount"))
+                                        .font(AppTypography.bodySmall)
+                                        .foregroundStyle(AppColors.textSecondary)
+                                    Picker(String(localized: "transactionPreview.statementAccount"), selection: $statementAccountId) {
+                                        ForEach(regularAccounts) { account in
+                                            Text("\(account.name) (\(Formatting.currencySymbol(for: account.currency)))").tag(account.id)
+                                        }
+                                    }
+                                    .pickerStyle(MenuPickerStyle())
                                 }
                             }
-                            .pickerStyle(MenuPickerStyle())
-                        }
-                    }
-                    if let check = reconciliation {
-                        reconciliationView(check)
-                    }
-                    if walletMissingCount > 0 {
-                        // DesignKit's notice with an action: a tap opens the payments.
-                        StatusBanner(
-                            String(format: String(localized: "transactionPreview.walletMissing"), walletMissingCount),
-                            status: .warning,
-                            style: .compact
-                        ) {
-                            showingWalletMissing = true
-                        }
-                        .padding(.top, AppSpacing.xs)
-                    }
-                    if isAskingIntelligence {
-                        HStack(spacing: AppSpacing.xs) {
-                            ProgressView()
-                                .controlSize(.small)
-                            Text(String(localized: "transactionPreview.intelligence.progress"))
-                                .font(AppTypography.caption)
-                                .foregroundStyle(AppColors.textSecondary)
-                        }
-                        .transition(.opacity)
-                    }
-                }
-                .cardContentPadding()
-                .frame(maxWidth: .infinity)
-                .background(AppColors.bgCard)
-
-                // Transaction list
-                List {
-                    ForEach(transactions) { transaction in
-                        ImportTransactionPreviewRow(
-                            transaction: transaction,
-                            isSelected: selectedTransactions.contains(transaction.id),
-                            selectedAccountId: accountMapping[transaction.id],
-                            availableAccounts: availableAccounts(for: transaction),
-                            onToggle: { toggle(transaction) },
-                            onAccountSelect: { accountId in
-                                selectAccount(accountId, for: transaction)
-                            },
-                            category: effectiveCategory(for: transaction),
-                            categoryOptions: categoryOptions(for: transaction),
-                            customCategories: customCategories,
-                            subcategory: subcategoryMapping[transaction.id].flatMap { transactionStore.subcategoryById[$0] },
-                            subcategoryOptions: subcategoryOptions(for: transaction),
-                            transferAccount: transferMapping[transaction.id].flatMap { id in
-                                regularAccounts.first { $0.id == id }
-                            },
-                            transferOptions: transferOptions(for: transaction),
-                            notice: notice(for: transaction),
-                            isIntelligenceSuggestion: intelligenceSuggested.contains(transaction.id),
-                            onCategorySelect: { name in
-                                selectCategory(name, for: transaction)
-                            },
-                            onSubcategorySelect: { id in
-                                selectSubcategory(id, for: transaction)
-                            },
-                            onTransferSelect: { id in
-                                selectTransfer(id, for: transaction)
+                            if let check = reconciliation {
+                                reconciliationView(check)
                             }
-                        )
+                            if walletMissingCount > 0 {
+                                // DesignKit's notice with an action: a tap opens the payments.
+                                StatusBanner(
+                                    String(format: String(localized: "transactionPreview.walletMissing"), walletMissingCount),
+                                    status: .warning,
+                                    style: .compact
+                                ) {
+                                    showingWalletMissing = true
+                                }
+                                .padding(.top, AppSpacing.xs)
+                            }
+                            if isAskingIntelligence {
+                                HStack(spacing: AppSpacing.xs) {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                    Text(String(localized: "transactionPreview.intelligence.progress"))
+                                        .font(AppTypography.caption)
+                                        .foregroundStyle(AppColors.textSecondary)
+                                }
+                                .transition(.opacity)
+                            }
+                        }
+                        .cardContentPadding()
+                        .frame(maxWidth: .infinity)
+                        .cardStyle()
+
+                        // Transaction list: rows in one glass card, lazy for a long statement.
+                        LazyVStack(spacing: 0) {
+                            ForEach(Array(transactions.enumerated()), id: \.element.id) { index, transaction in
+                                ImportTransactionPreviewRow(
+                                    transaction: transaction,
+                                    isSelected: selectedTransactions.contains(transaction.id),
+                                    selectedAccountId: accountMapping[transaction.id],
+                                    availableAccounts: availableAccounts(for: transaction),
+                                    onToggle: { toggle(transaction) },
+                                    onAccountSelect: { accountId in
+                                        selectAccount(accountId, for: transaction)
+                                    },
+                                    category: effectiveCategory(for: transaction),
+                                    categoryOptions: categoryOptions(for: transaction),
+                                    customCategories: customCategories,
+                                    subcategory: subcategoryMapping[transaction.id].flatMap { transactionStore.subcategoryById[$0] },
+                                    subcategoryOptions: subcategoryOptions(for: transaction),
+                                    transferAccount: transferMapping[transaction.id].flatMap { id in
+                                        regularAccounts.first { $0.id == id }
+                                    },
+                                    transferOptions: transferOptions(for: transaction),
+                                    notice: notice(for: transaction),
+                                    isIntelligenceSuggestion: intelligenceSuggested.contains(transaction.id),
+                                    onCategorySelect: { name in
+                                        selectCategory(name, for: transaction)
+                                    },
+                                    onSubcategorySelect: { id in
+                                        selectSubcategory(id, for: transaction)
+                                    },
+                                    onTransferSelect: { id in
+                                        selectTransfer(id, for: transaction)
+                                    }
+                                )
+                                .padding(.vertical, AppSpacing.md)
+                                if index < transactions.count - 1 {
+                                    // Under the card's text: past the check, its space, the 44 pt icon
+                                    // and the space after it.
+                                    RowDivider(inset: AppIconSize.md + AppSpacing.sm + AppIconSize.Tile.sm + AppSpacing.md)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, AppSpacing.lg)
+                        .cardStyle()
                     }
+                    .screenPadding()
+                    .padding(.vertical, AppSpacing.md)
                 }
-                .listStyle(PlainListStyle())
 
                 // Action buttons — Select All / Deselect All
                 HStack(spacing: AppSpacing.md) {
@@ -979,7 +994,7 @@ struct ImportTransactionPreviewRow: View {
                 // header: "For read-only / selection UIs use TransactionCardView
                 // directly — it has no env dependencies and no side effects").
                 // These transactions do not exist in TransactionStore yet, so
-                // TransactionCard's tap-to-edit / swipe-to-delete / recurring
+                // TransactionCard's tap-to-edit / long-press delete / recurring
                 // actions would resolve against a transaction the store has
                 // never seen — this screen's own checkbox and pickers are the
                 // only actions that make sense before import.

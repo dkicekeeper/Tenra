@@ -23,6 +23,15 @@ struct TransactionCard: View, Equatable {
     let categoriesViewModel: CategoriesViewModel?
     let accountsViewModel: AccountsViewModel?
     let balanceCoordinator: BalanceCoordinator?
+    /// An action of the screen the card is on, first in its long-press menu (To review's
+    /// "Correct").
+    let menuAction: MenuAction?
+
+    struct MenuAction {
+        let title: String
+        let systemImage: String
+        let action: () -> Void
+    }
 
     /// Equatable compares only the inputs that affect what the body renders.
     /// ViewModels are deliberately excluded — they're @Observable reference types
@@ -63,7 +72,8 @@ struct TransactionCard: View, Equatable {
         viewModel: TransactionsViewModel? = nil,
         categoriesViewModel: CategoriesViewModel? = nil,
         accountsViewModel: AccountsViewModel? = nil,
-        balanceCoordinator: BalanceCoordinator? = nil
+        balanceCoordinator: BalanceCoordinator? = nil,
+        menuAction: MenuAction? = nil
     ) {
         self.transaction = transaction
         self.currency = currency
@@ -74,6 +84,7 @@ struct TransactionCard: View, Equatable {
         self.categoriesViewModel = categoriesViewModel
         self.accountsViewModel = accountsViewModel
         self.balanceCoordinator = balanceCoordinator
+        self.menuAction = menuAction
     }
 
     private var isFutureDate: Bool {
@@ -149,6 +160,13 @@ struct TransactionCard: View, Equatable {
         // DesignKit 8.0.0's one set of actions: a tap edits, a long press shows Edit, Delete and
         // the recurring series' actions; no swipe actions.
         .contextMenu {
+            if let menuAction {
+                Button(action: menuAction.action) {
+                    Label(menuAction.title, systemImage: menuAction.systemImage)
+                }
+                Divider()
+            }
+
             Button {
                 HapticManager.selection()
                 showingEditModal = true

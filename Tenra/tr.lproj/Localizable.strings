@@ -1308,7 +1308,7 @@
 "settings.cloud.iCloud.unavailable" = "Yedekleri iCloud Drive'da saklamak için Ayarlar'dan iCloud'a giriş yap.";
 "settings.cloud.iCloud.movedToICloud" = "Yedekler iCloud'a taşındı";
 "settings.cloud.iCloud.movedToLocal" = "Yedekler bu cihaza taşındı";
-"settings.cloud.tapToRestoreHint" = "Geri yüklemek için bir yedeğe dokun. Silmek için sola kaydır.";
+"settings.cloud.tapToRestoreHint" = "Geri yüklemek için bir yedeğe dokun. Silmek için basılı tut.";
 "alert.restore.title" = "Yedek Geri Yüklensin mi?";
 "alert.restore.message" = "Tüm mevcut veriler %@ tarihli yedekle değiştirilecek.";
 "alert.restore.confirm" = "Geri Yükle";
@@ -1792,7 +1792,7 @@
 "settings.siri.header" = "Siri ve kısayollar";
 "settings.siri.footer" = "Bir Kestirmeler otomasyonu, terminaldeki her Apple Pay ödemesini Tenra'yı açmadan kendiliğinden kaydeder.";
 "settings.merchants.title" = "Wallet işyerleri";
-"settings.merchants.footer" = "Bu işyerlerinde Wallet otomasyonuyla yapılan ödemeler bu kategori ve alt kategoriyle kaydedilir. Ödemelerini görmek ve değiştirmek için bir işyerine dokun, unutmak için sola kaydır.";
+"settings.merchants.footer" = "Bu işyerlerinde Wallet otomasyonuyla yapılan ödemeler bu kategori ve alt kategoriyle kaydedilir. Ödemelerini görmek ve değiştirmek için bir işyerine dokun, unutmak için basılı tutup Unut'u seç.";
 "settings.merchants.emptyTitle" = "Henüz işyeri yok";
 "settings.merchants.emptyMessage" = "Wallet otomasyonuyla Apple Pay ile ödeme yaptığın her işyerinin kategorisi, onu seçtiğin, onayladığın veya düzelttiğin anda burada hatırlanır.";
 "settings.merchants.forget" = "Unut";
@@ -1810,7 +1810,7 @@
 "merchant.detail.byMonth" = "Aylara göre";
 "merchant.detail.open" = "İşyerindeki ödemeler";
 "walletReview.title" = "Kontrol edilecekler";
-"walletReview.footer" = "Bu Apple Pay ödemelerinin kategorisi veya hesabı otomatik seçildi. Düzeltmek için bir ödemeye dokun, doğruysa sağa kaydır. Seçimin işyeri ve kart için hatırlanır.";
+"walletReview.footer" = "Bu Apple Pay ödemelerinin kategorisi veya hesabı otomatik seçildi. Düzeltmek için bir ödemeye dokun, doğruysa basılı tutup Doğru'yu seç. Seçimin işyeri ve kart için hatırlanır.";
 "walletReview.emptyTitle" = "Kontrol edilecek bir şey yok";
 "walletReview.emptyMessage" = "Kategorisi veya hesabı otomatik seçilen Apple Pay ödemeleri, sen kontrol edene kadar burada görünür.";
 "walletReview.confirm" = "Doğru";
@@ -1819,7 +1819,7 @@
 "walletReview.notification.category" = "%1$@ ödemesi %2$@ kategorisine kaydedildi. Kontrol etmek için dokun.";
 "walletReview.notification.account" = "%1$@ ödemesi %2$@ hesabına kaydedildi. Kontrol etmek için dokun.";
 "settings.cards.title" = "Wallet kartları";
-"settings.cards.footer" = "Bu kartlarla yapılan Apple Pay ödemeleri gösterilen hesaba kaydedilir. Başka bir hesap seçmek için bir karta dokun, unutmak için sola kaydır.";
+"settings.cards.footer" = "Bu kartlarla yapılan Apple Pay ödemeleri gösterilen hesaba kaydedilir. Başka bir hesap seçmek için bir karta dokun, unutmak için basılı tutup Unut'u seç.";
 "settings.cards.emptyTitle" = "Henüz kart yok";
 "settings.cards.emptyMessage" = "Wallet otomasyonu kartı aktardığında Tenra, onun için seçtiğin veya onayladığın hesabı burada hatırlar.";
 "settings.cards.accountDeleted" = "Hesap silindi";
@@ -1922,7 +1922,7 @@
 "transactionPreview.reconcile.hint" = "İşaretsiz satırları ve bu dönemdeki manuel kayıtlarınızı kontrol edin";
 "transactionPreview.walletMissing" = "Ekstrede olmayan Apple Pay ödemeleri: %lld";
 "walletMissing.title" = "Ekstrede yok";
-"walletMissing.footer" = "Wallet otomasyonu bu Apple Pay ödemelerini kaydetti, ancak ekstrede bunlar için bir tahsilat yok. Otomasyon reddedilen bir ödemede de çalışır: bunlardan biri reddedildiyse silmek için sola kaydır.";
+"walletMissing.footer" = "Wallet otomasyonu bu Apple Pay ödemelerini kaydetti, ancak ekstrede bunlar için bir tahsilat yok. Otomasyon reddedilen bir ödemede de çalışır: bunlardan biri reddedildiyse silmek için basılı tut.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence kategorileri seçiyor…";

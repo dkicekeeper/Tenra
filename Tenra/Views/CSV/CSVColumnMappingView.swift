@@ -25,14 +25,15 @@ struct CSVColumnMappingView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
+            // DesignKit 8.0.0: glass sections on the page (a Form before).
+            ScrollView {
+                VStack(spacing: AppSpacing.xl) {
                     CSVImportSteps(current: CSVImportSteps.columns)
+                    requiredFieldsSection
+                    optionalFieldsSection
                 }
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets())
-                requiredFieldsSection
-                optionalFieldsSection
+                .screenPadding()
+                .padding(.vertical, AppSpacing.md)
             }
             .navigationTitle(String(localized: "csvImport.mapping.title"))
             .navigationBarTitleDisplayMode(.inline)
@@ -46,7 +47,7 @@ struct CSVColumnMappingView: View {
     // MARK: - Sections
 
     private var requiredFieldsSection: some View {
-        Section(header: Text(String(localized: "csvImport.mapping.required"))) {
+        FormSection(header: String(localized: "csvImport.mapping.required")) {
             columnPicker(
                 title: String(localized: "csvImport.mapping.date"),
                 binding: bindingFor(\.dateColumn)
@@ -84,7 +85,7 @@ struct CSVColumnMappingView: View {
     }
 
     private var optionalFieldsSection: some View {
-        Section(header: Text(String(localized: "csvImport.mapping.optional"))) {
+        FormSection(header: String(localized: "csvImport.mapping.optional")) {
             columnPicker(
                 title: String(localized: "csvImport.mapping.targetAccount"),
                 binding: bindingFor(\.targetAccountColumn)
@@ -127,34 +128,41 @@ struct CSVColumnMappingView: View {
         title: String,
         binding: Binding<String?>
     ) -> some View {
-        Picker(title, selection: Binding(
-            get: { binding.wrappedValue ?? "" },
-            set: { binding.wrappedValue = $0.isEmpty ? nil : $0 }
-        )) {
-            Text(String(localized: "csvImport.mapping.none")).tag("")
-            ForEach(csvFile.headers, id: \.self) { header in
-                Text(header).tag(header)
-            }
-        }
+        UniversalRow(
+            title,
+            accessory: .menu(
+                Binding(
+                    get: { binding.wrappedValue ?? "" },
+                    set: { binding.wrappedValue = $0.isEmpty ? nil : $0 }
+                ),
+                options: [(label: String(localized: "csvImport.mapping.none"), value: "")]
+                    + csvFile.headers.map { (label: $0, value: $0) }
+            )
+        )
     }
 
     private var dateFormatPicker: some View {
-        Picker(String(localized: "csvImport.mapping.dateFormat"), selection: $mapping.dateFormat) {
-            ForEach(DateFormatType.allCases, id: \.self) { format in
-                Text(format.rawValue).tag(format)
-            }
-        }
+        UniversalRow(
+            String(localized: "csvImport.mapping.dateFormat"),
+            accessory: .menu(
+                $mapping.dateFormat,
+                options: DateFormatType.allCases.map { (label: $0.rawValue, value: $0) }
+            )
+        )
     }
 
     private var subcategoriesSeparatorPicker: some View {
-        Picker(
+        UniversalRow(
             String(localized: "csvImport.mapping.subcategoriesSeparator"),
-            selection: $mapping.subcategoriesSeparator
-        ) {
-            Text("; " + String(localized: "csvImport.mapping.separator.semicolon")).tag(";")
-            Text(", " + String(localized: "csvImport.mapping.separator.comma")).tag(",")
-            Text("| " + String(localized: "csvImport.mapping.separator.pipe")).tag("|")
-        }
+            accessory: .menu(
+                $mapping.subcategoriesSeparator,
+                options: [
+                    (label: "; " + String(localized: "csvImport.mapping.separator.semicolon"), value: ";"),
+                    (label: ", " + String(localized: "csvImport.mapping.separator.comma"), value: ","),
+                    (label: "| " + String(localized: "csvImport.mapping.separator.pipe"), value: "|"),
+                ]
+            )
+        )
     }
 
     // MARK: - Toolbar

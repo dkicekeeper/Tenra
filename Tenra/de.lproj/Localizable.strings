@@ -1308,7 +1308,7 @@
 "settings.cloud.iCloud.unavailable" = "Melden Sie sich in den Einstellungen bei iCloud an, um Backups in iCloud Drive zu speichern.";
 "settings.cloud.iCloud.movedToICloud" = "Backups nach iCloud verschoben";
 "settings.cloud.iCloud.movedToLocal" = "Backups auf dieses Gerät verschoben";
-"settings.cloud.tapToRestoreHint" = "Tippen Sie auf ein Backup, um es wiederherzustellen. Zum Löschen nach links wischen.";
+"settings.cloud.tapToRestoreHint" = "Tippen Sie auf ein Backup, um es wiederherzustellen. Zum Löschen gedrückt halten.";
 "alert.restore.title" = "Backup wiederherstellen?";
 "alert.restore.message" = "Alle aktuellen Daten werden durch das Backup vom %@ ersetzt.";
 "alert.restore.confirm" = "Wiederherstellen";
@@ -1792,7 +1792,7 @@
 "settings.siri.header" = "Siri und Kurzbefehle";
 "settings.siri.footer" = "Eine Kurzbefehle-Automation speichert jede Apple-Pay-Zahlung am Terminal von selbst, ohne Tenra zu öffnen.";
 "settings.merchants.title" = "Wallet-Händler";
-"settings.merchants.footer" = "Zahlungen bei diesen Händlern über die Wallet-Automation erhalten diese Kategorie und Unterkategorie. Tippen Sie auf einen Händler, um seine Zahlungen zu sehen und sie zu ändern, oder wischen Sie nach links, um ihn zu vergessen.";
+"settings.merchants.footer" = "Zahlungen bei diesen Händlern über die Wallet-Automation erhalten diese Kategorie und Unterkategorie. Tippen Sie auf einen Händler, um seine Zahlungen zu sehen und sie zu ändern, oder halten Sie ihn gedrückt und wählen Sie „Vergessen“.";
 "settings.merchants.emptyTitle" = "Noch keine Händler";
 "settings.merchants.emptyMessage" = "Hier wird die Kategorie jedes Händlers gemerkt, bei dem Sie über die Wallet-Automation mit Apple Pay zahlen, sobald Sie sie wählen, bestätigen oder korrigieren.";
 "settings.merchants.forget" = "Vergessen";
@@ -1810,7 +1810,7 @@
 "merchant.detail.byMonth" = "Nach Monaten";
 "merchant.detail.open" = "Zahlungen beim Händler";
 "walletReview.title" = "Zu prüfen";
-"walletReview.footer" = "Bei diesen Apple Pay-Zahlungen wurden Kategorie oder Konto automatisch gewählt. Tippen Sie auf eine Zahlung, um sie zu korrigieren, oder wischen Sie nach rechts, wenn alles stimmt. Ihre Wahl wird für den Händler und die Karte gemerkt.";
+"walletReview.footer" = "Bei diesen Apple Pay-Zahlungen wurden Kategorie oder Konto automatisch gewählt. Tippen Sie auf eine Zahlung, um sie zu korrigieren, oder halten Sie sie gedrückt und wählen Sie „Stimmt“, wenn alles passt. Ihre Wahl wird für den Händler und die Karte gemerkt.";
 "walletReview.emptyTitle" = "Nichts zu prüfen";
 "walletReview.emptyMessage" = "Hier erscheinen Apple Pay-Zahlungen mit automatisch gewählter Kategorie oder automatisch gewähltem Konto, bis Sie sie prüfen.";
 "walletReview.confirm" = "Stimmt";
@@ -1819,7 +1819,7 @@
 "walletReview.notification.category" = "%1$@ wurde unter „%2$@“ erfasst. Zum Prüfen tippen.";
 "walletReview.notification.account" = "%1$@ wurde auf dem Konto „%2$@“ erfasst. Zum Prüfen tippen.";
 "settings.cards.title" = "Wallet-Karten";
-"settings.cards.footer" = "Apple Pay-Zahlungen mit diesen Karten werden auf dem angezeigten Konto erfasst. Tippen Sie auf eine Karte, um ein anderes Konto zu wählen, oder wischen Sie nach links, um sie zu vergessen.";
+"settings.cards.footer" = "Apple Pay-Zahlungen mit diesen Karten werden auf dem angezeigten Konto erfasst. Tippen Sie auf eine Karte, um ein anderes Konto zu wählen, oder halten Sie sie gedrückt und wählen Sie „Vergessen“.";
 "settings.cards.emptyTitle" = "Noch keine Karten";
 "settings.cards.emptyMessage" = "Wenn die Wallet-Automation die Karte übergibt, merkt sich Tenra hier das Konto, das Sie dafür wählen oder bestätigen.";
 "settings.cards.accountDeleted" = "Konto gelöscht";
@@ -1922,7 +1922,7 @@
 "transactionPreview.reconcile.hint" = "Prüfe nicht markierte Zeilen und deine manuellen Einträge für diesen Zeitraum";
 "transactionPreview.walletMissing" = "Apple Pay-Zahlungen, die nicht im Auszug stehen: %lld";
 "walletMissing.title" = "Nicht im Auszug";
-"walletMissing.footer" = "Die Wallet-Automation hat diese Apple Pay-Zahlungen erfasst, aber der Auszug zeigt keine Belastung dafür. Die Automation startet auch bei einer abgelehnten Zahlung: Wurde eine davon abgelehnt, wischen Sie sie nach links, um sie zu löschen.";
+"walletMissing.footer" = "Die Wallet-Automation hat diese Apple Pay-Zahlungen erfasst, aber der Auszug zeigt keine Belastung dafür. Die Automation startet auch bei einer abgelehnten Zahlung: Wurde eine davon abgelehnt, halten Sie sie gedrückt und löschen Sie sie.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence wählt Kategorien…";

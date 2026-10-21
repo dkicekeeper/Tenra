@@ -36,67 +36,49 @@ struct CSVEntityMappingView: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                if !uniqueAccounts.isEmpty {
-                    Section(header: Text(String(localized: "csvMapping.accountsSection", defaultValue: "Account Mapping"))) {
-                        ForEach(uniqueAccounts, id: \.self) { accountValue in
-                            NavigationLink(value: CSVMappingDestination.account(accountValue)) {
-                                HStack {
-                                    Text(accountValue)
-                                    Spacer()
-                                    if let accountId = accountMappings[accountValue],
-                                       let account = accountsViewModel.accounts.first(where: { $0.id == accountId }) {
-                                        Text(account.name)
-                                            .foregroundStyle(.secondary)
-                                    } else {
-                                        Text(String(localized: "csvMapping.notSelected", defaultValue: "Not Selected"))
-                                            .foregroundStyle(AppColors.warning)
-                                    }
-                                }
+            // DesignKit 8.0.0: glass sections on the page (a Form before).
+            ScrollView {
+                VStack(spacing: AppSpacing.xl) {
+                    if !uniqueAccounts.isEmpty {
+                        FormSection(header: String(localized: "csvMapping.accountsSection", defaultValue: "Account Mapping")) {
+                            ForEach(uniqueAccounts, id: \.self) { accountValue in
+                                mappingRow(
+                                    accountValue,
+                                    mapped: accountMappings[accountValue].flatMap { accountId in
+                                        accountsViewModel.accounts.first(where: { $0.id == accountId })?.name
+                                    },
+                                    destination: .account(accountValue)
+                                )
+                            }
+                        }
+                    }
+
+                    if mapping.categoryColumn != nil, !uniqueCategories.isEmpty {
+                        FormSection(header: String(localized: "csvMapping.categoriesSection", defaultValue: "Category Mapping")) {
+                            ForEach(uniqueCategories, id: \.self) { categoryValue in
+                                mappingRow(
+                                    categoryValue,
+                                    mapped: categoryMappings[categoryValue],
+                                    destination: .expenseCategory(categoryValue)
+                                )
+                            }
+                        }
+                    }
+
+                    if !uniqueIncomeCategories.isEmpty {
+                        FormSection(header: String(localized: "csvMapping.incomeCategoriesSection", defaultValue: "Income Category Mapping")) {
+                            ForEach(uniqueIncomeCategories, id: \.self) { categoryValue in
+                                mappingRow(
+                                    categoryValue,
+                                    mapped: categoryMappings[categoryValue],
+                                    destination: .incomeCategory(categoryValue)
+                                )
                             }
                         }
                     }
                 }
-                
-                if mapping.categoryColumn != nil, !uniqueCategories.isEmpty {
-                    Section(header: Text(String(localized: "csvMapping.categoriesSection", defaultValue: "Category Mapping"))) {
-                        ForEach(uniqueCategories, id: \.self) { categoryValue in
-                            NavigationLink(value: CSVMappingDestination.expenseCategory(categoryValue)) {
-                                HStack {
-                                    Text(categoryValue)
-                                    Spacer()
-                                    if let categoryName = categoryMappings[categoryValue] {
-                                        Text(categoryName)
-                                            .foregroundStyle(.secondary)
-                                    } else {
-                                        Text(String(localized: "csvMapping.notSelected", defaultValue: "Not Selected"))
-                                            .foregroundStyle(AppColors.warning)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                if !uniqueIncomeCategories.isEmpty {
-                    Section(header: Text(String(localized: "csvMapping.incomeCategoriesSection", defaultValue: "Income Category Mapping"))) {
-                        ForEach(uniqueIncomeCategories, id: \.self) { categoryValue in
-                            NavigationLink(value: CSVMappingDestination.incomeCategory(categoryValue)) {
-                                HStack {
-                                    Text(categoryValue)
-                                    Spacer()
-                                    if let categoryName = categoryMappings[categoryValue] {
-                                        Text(categoryName)
-                                            .foregroundStyle(.secondary)
-                                    } else {
-                                        Text(String(localized: "csvMapping.notSelected", defaultValue: "Not Selected"))
-                                            .foregroundStyle(AppColors.warning)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                .screenPadding()
+                .padding(.vertical, AppSpacing.md)
             }
             .navigationDestination(for: CSVMappingDestination.self) { dest in
                 switch dest {
@@ -174,6 +156,27 @@ struct CSVEntityMappingView: View {
         .softScrollEdges()
     }
     
+    /// A value from the file and what it maps to, "Not selected" in the warning colour; a tap
+    /// opens the choice.
+    private func mappingRow(_ title: String, mapped: String?, destination: CSVMappingDestination) -> some View {
+        NavigationLink(value: destination) {
+            UniversalRow {
+                Text(title)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColors.textPrimary)
+            } trailing: {
+                HStack(spacing: AppSpacing.sm) {
+                    Text(mapped ?? String(localized: "csvMapping.notSelected", defaultValue: "Not Selected"))
+                        .font(AppTypography.body)
+                        .foregroundStyle(mapped == nil ? AppColors.warning : AppColors.textSecondary)
+                    DisclosureChevron()
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
     private func parseType(_ typeString: String) -> TransactionType? {
         let n = typeString.lowercased().trimmingCharacters(in: .whitespaces)
         if let t = mapping.typeMappings[n] { return t }
@@ -269,33 +272,43 @@ struct AccountMappingDetailView: View {
     let onCreateNew: () -> Void
     
     var body: some View {
-        Form {
-            Section(header: Text("csvMapping.selectAccount \(csvValue)")) {
-                ForEach(accounts.sortedByOrder()) { account in
-                    Button(action: {
-                        selectedAccountId = account.id
-                    }) {
-                        HStack {
-                            Icon(source: account.iconSource, size: AppIconSize.lg)
-                            Text(account.name)
-                            Spacer()
-                            if selectedAccountId == account.id {
+        // DesignKit 8.0.0: glass sections on the page (a Form before).
+        ScrollView {
+            VStack(spacing: AppSpacing.xl) {
+                FormSection(header: String(localized: "csvMapping.selectAccount \(csvValue)")) {
+                    ForEach(accounts.sortedByOrder()) { account in
+                        let isSelected = selectedAccountId == account.id
+                        UniversalRow {
+                            HStack(spacing: AppSpacing.md) {
+                                Icon(source: account.iconSource, size: AppIconSize.lg)
+                                Text(account.name)
+                                    .font(AppTypography.body)
+                                    .foregroundStyle(AppColors.textPrimary)
+                            }
+                        } trailing: {
+                            if isSelected {
                                 Icon("checkmark", size: AppIconSize.md)
                                     .foregroundStyle(AppColors.accent)
                             }
                         }
+                        .selectableRow(isSelected: isSelected) {
+                            HapticManager.selection()
+                            selectedAccountId = account.id
+                        }
+                        .rowDividerInset(AppIconSize.lg + AppSpacing.md)
                     }
                 }
-            }
-            
-            Section {
-                Button(action: onCreateNew) {
-                    HStack {
-                        Icon("plus.circle", size: AppIconSize.md)
-                        Text("csvMapping.createAccount \(csvValue)")
-                    }
+
+                FormSection {
+                    UniversalRow(
+                        String(localized: "csvMapping.createAccount \(csvValue)"),
+                        icon: "plus.circle",
+                        accessory: .action(onCreateNew)
+                    )
                 }
             }
+            .screenPadding()
+            .padding(.vertical, AppSpacing.md)
         }
         .navigationTitle(String(localized: "csvMapping.accountMappingTitle", defaultValue: "Account Mapping"))
     }
@@ -315,42 +328,55 @@ struct CategoryMappingDetailView: View {
     }
     
     var body: some View {
-        Form {
-            Section(header: Text("csvMapping.selectCategory \(categoryLabel) \(csvValue)")) {
-                ForEach(categories, id: \.name) { category in
-                    Button(action: {
-                        selectedCategoryName = category.name
-                    }) {
-                        HStack {
-                            Group {
+        // DesignKit 8.0.0: glass sections on the page (a Form before).
+        ScrollView {
+            VStack(spacing: AppSpacing.xl) {
+                FormSection(header: String(localized: "csvMapping.selectCategory \(categoryLabel) \(csvValue)")) {
+                    ForEach(categories, id: \.name) { category in
+                        let isSelected = selectedCategoryName == category.name
+                        UniversalRow {
+                            HStack(spacing: AppSpacing.md) {
                                 if case .sfSymbol(let symbolName) = category.iconSource {
-                                    Icon(symbolName, size: AppIconSize.md)
+                                    Icon(symbolName, size: AppIconSize.lg)
                                         .foregroundStyle(category.color)
                                 }
+                                Text(category.name)
+                                    .font(AppTypography.body)
+                                    .foregroundStyle(AppColors.textPrimary)
                             }
-                            Text(category.name)
-                            Spacer()
-                            if selectedCategoryName == category.name {
+                        } trailing: {
+                            if isSelected {
                                 Icon("checkmark", size: AppIconSize.md)
                                     .foregroundStyle(AppColors.accent)
                             }
                         }
+                        .selectableRow(isSelected: isSelected) {
+                            HapticManager.selection()
+                            selectedCategoryName = category.name
+                        }
+                        .rowDividerInset(hasSymbol(category) ? AppIconSize.lg + AppSpacing.md : 0)
                     }
                 }
-            }
-            
-            Section {
-                Button(action: onCreateNew) {
-                    HStack {
-                        Icon("plus.circle", size: AppIconSize.md)
-                        Text("csvMapping.createCategory \(categoryLabel) \(csvValue)")
-                    }
+
+                FormSection {
+                    UniversalRow(
+                        String(localized: "csvMapping.createCategory \(categoryLabel) \(csvValue)"),
+                        icon: "plus.circle",
+                        accessory: .action(onCreateNew)
+                    )
                 }
             }
+            .screenPadding()
+            .padding(.vertical, AppSpacing.md)
         }
         .navigationTitle(categoryType == .income
             ? String(localized: "csvMapping.incomeCategoryMappingTitle", defaultValue: "Income Category Mapping")
             : String(localized: "csvMapping.categoryMappingTitle", defaultValue: "Category Mapping"))
+    }
+
+    private func hasSymbol(_ category: CustomCategory) -> Bool {
+        if case .sfSymbol = category.iconSource { return true }
+        return false
     }
 }
 

@@ -74,7 +74,7 @@ struct SettingsHomeBackgroundView: View {
                 OpacitySliderRow(value: backgroundOpacity, onChange: onOpacityChange)
             }
         case .wallpaper:
-            // DesignKit's rows in a FormSection card (`.standard`, inset dividers); the photo
+            // DesignKit's rows in a FormSection card (`.standard`, its own dividers); the photo
             // picker's label is a UniversalRow in the accent.
             FormSection {
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
@@ -88,8 +88,9 @@ struct SettingsHomeBackgroundView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                // The picker's label keeps the row's divider inset to itself: its icon and space.
+                .rowDividerInset(AppIconSize.lg + AppSpacing.md)
                 if wallpaperImage != nil {
-                    Divider().padding(.leading, AppSpacing.lg)
                     UniversalRow(
                         String(localized: "settings.background.blurWallpaper"),
                         icon: "camera.filters",
@@ -98,7 +99,6 @@ struct SettingsHomeBackgroundView: View {
                             set: { onBlurChange($0) }
                         ))
                     )
-                    Divider().padding(.leading, AppSpacing.lg)
                     UniversalRow(
                         String(localized: "settings.background.removePhoto"),
                         icon: "trash",

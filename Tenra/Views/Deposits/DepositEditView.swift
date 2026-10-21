@@ -54,77 +54,33 @@ struct DepositEditView: View {
 
                     // Bank name + interest rate grouped in one card
                     FormSection(header: String(localized: "deposit.bankDetails", defaultValue: "Bank & Rate")) {
-                        UniversalRow(
-                            leadingIcon: .sfSymbol("building.columns", color: AppColors.accent, size: AppIconSize.lg),
-                            title: String(localized: "deposit.bank")
-                        ) {
-                            FormTextField(
-                                text: $bankName,
-                                placeholder: String(localized: "deposit.bankNamePlaceholder"),
-                                style: .inline
-                            )
-                        }
+                        UniversalRow(String(localized: "deposit.bank"), icon: "building.columns",
+                                     accessory: .textField($bankName, placeholder: String(localized: "deposit.bankNamePlaceholder")))
 
-                        Divider()
-
-                        UniversalRow(
-                            leadingIcon: .sfSymbol("percent", color: AppColors.accent, size: AppIconSize.lg),
-                            title: String(localized: "deposit.interestRate")
-                        ) {
-                            FormTextField(
-                                text: $interestRateText,
-                                placeholder: "0.0",
-                                style: .inline,
-                                keyboardType: .decimalPad
-                            )
-                        }
-
-                        Divider()
+                        UniversalRow(String(localized: "deposit.interestRate"), icon: "percent",
+                                     accessory: .textField($interestRateText, placeholder: "0.0", keyboard: .decimalPad))
 
                         // How the bank counts days: 30/360 for most Kazakh banks,
                         // actual days / 365 or 366 in Russia (DepositDayCount).
                         UniversalRow(
-                            leadingIcon: .sfSymbol("divide", color: AppColors.accent, size: AppIconSize.lg),
+                            String(localized: "deposit.dayCount.title"),
+                            icon: "divide",
                             hint: String(localized: "deposit.dayCount.hint"),
-                            title: String(localized: "deposit.dayCount.title")
-                        ) {
-                            Picker(String(localized: "deposit.dayCount.title"), selection: $dayCount) {
-                                ForEach(DepositDayCount.allCases, id: \.self) { method in
-                                    Text(method.localizedTitle).tag(method)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .labelsHidden()
-                        }
+                            accessory: .menu($dayCount, options: DepositDayCount.allCases.map { (label: $0.localizedTitle, value: $0) })
+                        )
                     }
 
                     // Posting day + capitalization grouped in one card
                     FormSection(header: String(localized: "deposit.schedule", defaultValue: "Schedule")) {
-                        UniversalRow(
-                            leadingIcon: .sfSymbol("calendar.badge.clock", color: AppColors.accent, size: AppIconSize.lg),
-                            title: String(localized: "deposit.dayOfMonth")
-                        ) {
-                            HStack(spacing: AppSpacing.sm) {
-                                Text("\(interestPostingDay)")
-                                    .font(AppTypography.bodySmall)
-                                    .foregroundStyle(AppColors.textPrimary)
-                                    .frame(minWidth: 28, alignment: .trailing)
-                                Stepper("", value: $interestPostingDay, in: 1...31)
-                                    .labelsHidden()
-                                    .fixedSize()
-                            }
-                        }
-
-                        Divider()
+                        UniversalRow(String(localized: "deposit.dayOfMonth"), icon: "calendar.badge.clock",
+                                     accessory: .stepper($interestPostingDay, in: 1...31))
 
                         UniversalRow(
-                            leadingIcon: .sfSymbol("arrow.triangle.2.circlepath", color: AppColors.accent, size: AppIconSize.lg),
+                            String(localized: "deposit.enableCapitalization"),
+                            icon: "arrow.triangle.2.circlepath",
                             hint: String(localized: "deposit.capitalizationHint"),
-                            title: String(localized: "deposit.enableCapitalization")
-                        ) {
-                            Toggle("", isOn: $capitalizationEnabled)
-                                .labelsHidden()
-                        }
+                            accessory: .toggle($capitalizationEnabled)
+                        )
                     }
                 }
                 .screenPadding()

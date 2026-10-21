@@ -266,20 +266,13 @@ struct LoanPaymentView: View {
                 UniversalRow(
                     String(localized: "loan.interestPortion", defaultValue: "Interest"),
                     icon: "percent",
-                    config: .info,
                     accessory: .amount(NSDecimalNumber(decimal: breakdown.interest).doubleValue, currency: account.currency)
                 )
-                .padding(.horizontal, AppSpacing.lg)
-                .padding(.vertical, AppSpacing.sm)
-                Divider().padding(.leading, AppSpacing.lg)
                 UniversalRow(
                     String(localized: "loan.principalPortion", defaultValue: "Principal"),
                     icon: "arrow.down.to.line",
-                    config: .info,
                     accessory: .amount(NSDecimalNumber(decimal: breakdown.principal).doubleValue, currency: account.currency)
                 )
-                .padding(.horizontal, AppSpacing.lg)
-                .padding(.vertical, AppSpacing.sm)
             }
             .screenPadding()
         }

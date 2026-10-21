@@ -83,33 +83,20 @@ struct ReceiptConfirmationView: View {
                         UniversalRow(
                             String(localized: "import.receipt.merchant"),
                             icon: "storefront",
-                            config: .info,
                             accessory: .info(draft.merchant)
                         )
-                        .padding(.horizontal, AppSpacing.lg)
-                        .padding(.vertical, AppSpacing.sm)
-
-                        Divider().padding(.leading, AppSpacing.lg)
 
                         UniversalRow(
                             String(localized: "import.receipt.total"),
                             icon: "banknote",
-                            config: .info,
                             accessory: .amount(draft.total, currency: currency)
                         )
-                        .padding(.horizontal, AppSpacing.lg)
-                        .padding(.vertical, AppSpacing.sm)
-
-                        Divider().padding(.leading, AppSpacing.lg)
 
                         UniversalRow(
                             String(localized: "transaction.date"),
                             icon: "calendar",
-                            config: .info,
                             accessory: .info(dateString)
                         )
-                        .padding(.horizontal, AppSpacing.lg)
-                        .padding(.vertical, AppSpacing.sm)
                     }
                     .screenPadding()
 

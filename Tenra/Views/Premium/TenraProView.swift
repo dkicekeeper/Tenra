@@ -170,10 +170,7 @@ struct TenraProView: View {
 
     private var featuresSection: some View {
         FormSection(header: String(localized: "pro.page.features")) {
-            ForEach(Array(Self.features.enumerated()), id: \.offset) { index, feature in
-                if index > 0 {
-                    Divider().padding(.leading, AppSpacing.lg)
-                }
+            ForEach(Array(Self.features.enumerated()), id: \.offset) { _, feature in
                 UniversalRow(
                     leadingIcon: .sfSymbol(feature.icon, color: AppColors.accent, size: AppIconSize.lg)
                 ) {
@@ -218,7 +215,6 @@ struct TenraProView: View {
                 .buttonStyle(.plain)
             } else {
                 restorePurchasesRow
-                Divider().padding(.leading, AppSpacing.lg)
                 redeemCodeRow
             }
         }
@@ -242,6 +238,8 @@ struct TenraProView: View {
         }
         .actionRow { restorePurchases() }
         .buttonStyle(.plain)
+        // The button around the row keeps its divider inset to itself: the icon and its space.
+        .rowDividerInset(AppIconSize.lg + AppSpacing.md)
     }
 
     /// Opens the App Store's offer-code sheet (codes made in App Store Connect →

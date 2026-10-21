@@ -41,15 +41,11 @@ struct DepositRateChangeView: View {
                             )
                         }
 
-                        Divider().padding(.leading, AppSpacing.lg)
-
                         UniversalRow(
                             String(localized: "deposit.effectiveDate"),
                             icon: "calendar",
                             accessory: .date($effectiveFromDate)
                         )
-
-                        Divider().padding(.leading, AppSpacing.lg)
 
                         UniversalRow(
                             leadingIcon: .sfSymbol("note.text", color: AppColors.accent, size: AppIconSize.lg),

@@ -54,6 +54,8 @@ struct ImportSourcePicker: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(.tertiary)
         }
+        // DesignKit 8.0.0: a standard row pads only vertically; the card pads it at the sides.
+        .padding(.horizontal, AppSpacing.lg)
         .cardStyle()
         .actionRow {
             HapticManager.light()

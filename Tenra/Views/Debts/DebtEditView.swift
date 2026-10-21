@@ -55,17 +55,8 @@ struct DebtEditView: View {
                     )
 
                     FormSection {
-                        UniversalRow(
-                            leadingIcon: .sfSymbol("person", color: AppColors.accent, size: AppIconSize.lg),
-                            title: String(localized: "debt.person")
-                        ) {
-                            FormTextField(
-                                text: $person,
-                                placeholder: String(localized: "debt.personPlaceholder"),
-                                style: .inline
-                            )
-                        }
-                        Divider().padding(.leading, AppSpacing.lg)
+                        UniversalRow(String(localized: "debt.person"), icon: "person",
+                                     accessory: .textField($person, placeholder: String(localized: "debt.personPlaceholder")))
                         UniversalRow(
                             String(localized: "debt.date"),
                             icon: "calendar",
@@ -81,7 +72,6 @@ struct DebtEditView: View {
                             accessory: .toggle($hasDueDate)
                         )
                         if hasDueDate {
-                            Divider().padding(.leading, AppSpacing.lg)
                             UniversalRow(
                                 String(localized: "debt.dueDate"),
                                 icon: "calendar.badge.clock",

@@ -24,7 +24,7 @@ struct SettingsExportImportSection: View {
 
     var body: some View {
         Section(
-            header: SectionHeader(String(localized: "settings.exportImport"), style: .compact),
+            header: SectionHeader(String(localized: "settings.exportImport")),
             footer: Text(String(localized: "settings.importReminder.footer"))
         ) {
             UniversalRow(

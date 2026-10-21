@@ -60,7 +60,6 @@ struct GoalEditView: View {
                             accessory: .toggle($hasDeadline)
                         )
                         if hasDeadline {
-                            Divider().padding(.leading, AppSpacing.lg)
                             UniversalRow(
                                 String(localized: "goal.deadline"),
                                 icon: "calendar.badge.clock",
@@ -80,18 +79,8 @@ struct GoalEditView: View {
                                 + accounts.map { (label: $0.name, value: $0.id) })
                         )
                         if goal == nil, linkedAccountId.isEmpty {
-                            Divider().padding(.leading, AppSpacing.lg)
-                            UniversalRow(
-                                leadingIcon: .sfSymbol("banknote", color: AppColors.accent, size: AppIconSize.lg),
-                                title: String(localized: "goal.alreadySaved")
-                            ) {
-                                FormTextField(
-                                    text: $alreadySavedText,
-                                    placeholder: "0",
-                                    style: .inline,
-                                    keyboardType: .decimalPad
-                                )
-                            }
+                            UniversalRow(String(localized: "goal.alreadySaved"), icon: "banknote",
+                                         accessory: .textField($alreadySavedText, placeholder: "0", keyboard: .decimalPad))
                         }
                     }
                 }

@@ -60,7 +60,7 @@ struct SettingsWalletSection: View {
                 accessory: .toggle($showsMerchantLogos)
             )
         } header: {
-            SectionHeader(String(localized: "settings.wallet.header"), style: .compact)
+            SectionHeader(String(localized: "settings.wallet.header"))
         } footer: {
             Text(String(localized: "settings.wallet.footer"))
         }

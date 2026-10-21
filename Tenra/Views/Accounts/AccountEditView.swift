@@ -62,13 +62,11 @@ struct AccountEditView: View {
                     // the account list and its own detail view.
                     FormSection(header: String(localized: "account.balanceSection", defaultValue: "Balance")) {
                         UniversalRow(
-                            leadingIcon: .sfSymbol("sum", color: AppColors.accent, size: AppIconSize.lg),
+                            String(localized: "account.includeInBalance", defaultValue: "Include in balance"),
+                            icon: "sum",
                             hint: String(localized: "account.includeInBalanceHint", defaultValue: "Count this account in your total balance and analytics."),
-                            title: String(localized: "account.includeInBalance", defaultValue: "Include in balance")
-                        ) {
-                            Toggle("", isOn: $includeInBalance)
-                                .labelsHidden()
-                        }
+                            accessory: .toggle($includeInBalance)
+                        )
                     }
 
                     // Validation Error

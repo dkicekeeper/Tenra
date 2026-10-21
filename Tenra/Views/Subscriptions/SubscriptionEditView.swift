@@ -128,21 +128,18 @@ struct SubscriptionEditView: View {
                             icon: "arrow.triangle.2.circlepath",
                             accessory: .menu($selectedFrequency, options: RecurringFrequency.menuOptions)
                         )
-                        Divider()
 
                         UniversalRow(
                             String(localized: "common.startDate"),
                             icon: "calendar",
                             accessory: .date($startDate)
                         )
-                        Divider()
 
                         UniversalRow(
                             String(localized: "subscriptions.category"),
                             icon: "tag",
                             accessory: .menu($selectedCategory, options: availableCategories.map { (label: $0, value: $0) })
                         )
-                        Divider()
 
                         UniversalRow(
                             String(localized: "subscription.reminders"),

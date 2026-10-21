@@ -19,7 +19,7 @@ struct SettingsSiriSection: View {
                 accessory: .navigation { WalletSetupGuideView() }
             )
         } header: {
-            SectionHeader(String(localized: "settings.siri.header"), style: .compact)
+            SectionHeader(String(localized: "settings.siri.header"))
         } footer: {
             Text(String(localized: "settings.siri.footer"))
         }

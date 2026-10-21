@@ -59,7 +59,9 @@ struct CategoryEditView: View {
                     )
 
                     // Color Picker
-                    UniversalRow(String(localized: "common.color"), config: .settings, accessory: .colors($selectedColor))
+                    FormSection {
+                        UniversalRow(String(localized: "common.color"), accessory: .colors($selectedColor))
+                    }
 
                     // Validation Error
                     if let error = validationError {
@@ -69,38 +71,27 @@ struct CategoryEditView: View {
 
                     // Budget Settings Section (expense categories only)
                     if type == .expense {
-                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                            HStack {
-                                SectionHeader(
-                                    String(localized: "category.budget", defaultValue: "Budget"),
-                                    style: .default
-                                )
-                                Spacer()
-                            }
-                            BudgetSettingsSection(
-                                budgetAmount: $budgetAmount,
-                                selectedPeriod: $selectedPeriod,
-                                resetDay: $resetDay
-                            )
-                        }
+                        BudgetSettingsSection(
+                            header: String(localized: "category.budget", defaultValue: "Budget"),
+                            budgetAmount: $budgetAmount,
+                            selectedPeriod: $selectedPeriod,
+                            resetDay: $resetDay
+                        )
                     }
 
                     // Subcategories Section (edit mode only)
                     if category != nil {
-//                        FormSection(header: String(localized: "category.subcategories")) {
+                        FormSection {
                             UniversalRow(
-                                leadingIcon: .sfSymbol("list.bullet", color: AppColors.accent),
-                                title: String(localized: "category.manageSubcategories")
-                            ) {
-                                Text("\(linkedSubcategories.count)")
-                                    .font(AppTypography.body)
-                                    .foregroundStyle(AppColors.textSecondary)
-                            }
-                            .actionRow {
-                                HapticManager.light()
-                                showingSubcategoryManager = true
-                            }
-//                        }
+                                String(localized: "category.manageSubcategories"),
+                                icon: "list.bullet",
+                                value: "\(linkedSubcategories.count)",
+                                accessory: .action {
+                                    HapticManager.light()
+                                    showingSubcategoryManager = true
+                                }
+                            )
+                        }
                     }
                 }
                 .screenPadding()

@@ -147,18 +147,8 @@ struct LoanEditView: View {
 
                     // Loan details: bank, type, interest rate
                     FormSection(header: String(localized: "loan.detailsSection", defaultValue: "Loan Details")) {
-                        UniversalRow(
-                            leadingIcon: .sfSymbol("building.columns", color: AppColors.accent, size: AppIconSize.lg),
-                            title: String(localized: "loan.bankLabel", defaultValue: "Bank")
-                        ) {
-                            FormTextField(
-                                text: $bankName,
-                                placeholder: String(localized: "loan.bankPlaceholder", defaultValue: "Bank name"),
-                                style: .inline
-                            )
-                        }
-
-                        Divider()
+                        UniversalRow(String(localized: "loan.bankLabel", defaultValue: "Bank"), icon: "building.columns",
+                                     accessory: .textField($bankName, placeholder: String(localized: "loan.bankPlaceholder", defaultValue: "Bank name")))
 
                         // Loan type — menu picker (default `.annuity`, i.e. "Credit").
                         // Locked once the loan exists because amortisation tables
@@ -166,74 +156,26 @@ struct LoanEditView: View {
                         UniversalRow(
                             String(localized: "loan.typePicker", defaultValue: "Type"),
                             icon: "creditcard",
+                            hint: loanTypeHint,
                             accessory: .menu($loanType, options: LoanType.menuOptions)
                         )
                         .disabled(isEditing)
 
-                        if isEditing {
-                            Text(String(localized: "loan.typeLockedHint", defaultValue: "Loan type cannot be changed after creation"))
-                                .font(AppTypography.caption)
-                                .foregroundStyle(AppColors.textSecondary)
-                                .padding(.horizontal, AppSpacing.lg)
-                                .padding(.bottom, AppSpacing.lg)
-                        } else if loanType == .installment {
-                            Text(String(localized: "loan.installmentHint", defaultValue: "Installment = 0% interest, equal payments"))
-                                .font(AppTypography.caption)
-                                .foregroundStyle(AppColors.textSecondary)
-                                .padding(.horizontal, AppSpacing.lg)
-                                .padding(.bottom, AppSpacing.lg)
-                        }
-
                         if loanType == .annuity {
-                            Divider()
-
-                            UniversalRow(
-                                leadingIcon: .sfSymbol("percent", color: AppColors.accent, size: AppIconSize.lg),
-                                title: String(localized: "loan.interestRateLabel", defaultValue: "Rate (year)")
-                            ) {
-                                FormTextField(
-                                    text: $interestRateText,
-                                    placeholder: "0.0",
-                                    style: .inline,
-                                    keyboardType: .decimalPad
-                                )
-                            }
+                            UniversalRow(String(localized: "loan.interestRateLabel", defaultValue: "Rate (year)"), icon: "percent",
+                                         accessory: .textField($interestRateText, placeholder: "0.0", keyboard: .decimalPad))
                         }
                     }
 
                     // Loan schedule: term, payment day, start date
                     FormSection(header: String(localized: "loan.scheduleSection", defaultValue: "Schedule")) {
-                        UniversalRow(
-                            leadingIcon: .sfSymbol("clock", color: AppColors.accent, size: AppIconSize.lg),
-                            title: String(localized: "loan.termLabel", defaultValue: "Term (month)")
-                        ) {
-                            FormTextField(
-                                text: $termMonthsText,
-                                placeholder: "0",
-                                style: .inline,
-                                keyboardType: .numberPad
-                            )
-                        }
+                        UniversalRow(String(localized: "loan.termLabel", defaultValue: "Term (month)"), icon: "clock",
+                                     accessory: .textField($termMonthsText, placeholder: "0", keyboard: .numberPad))
 
-                        Divider()
-
-                        UniversalRow(
-                            leadingIcon: .sfSymbol("calendar.badge.clock", color: AppColors.accent, size: AppIconSize.lg),
-                            title: String(localized: "loan.paymentDay", defaultValue: "Payment day")
-                        ) {
-                            HStack(spacing: AppSpacing.sm) {
-                                Text("\(paymentDay)")
-                                    .font(AppTypography.bodySmall)
-                                    .foregroundStyle(AppColors.textPrimary)
-                                    .frame(minWidth: 28, alignment: .trailing)
-                                Stepper("", value: $paymentDay, in: 1...31)
-                                    .labelsHidden()
-                                    .fixedSize()
-                            }
-                        }
+                        UniversalRow(String(localized: "loan.paymentDay", defaultValue: "Payment day"), icon: "calendar.badge.clock",
+                                     accessory: .stepper($paymentDay, in: 1...31))
 
                         if !isEditing {
-                            Divider()
                             UniversalRow(
                                 String(localized: "loan.startDate", defaultValue: "Loan start date"),
                                 icon: "calendar",
@@ -295,37 +237,42 @@ struct LoanEditView: View {
         }
     }
 
+    /// Under the type: why it is locked once the loan exists, or what an installment is.
+    private var loanTypeHint: String? {
+        if isEditing {
+            return String(localized: "loan.typeLockedHint", defaultValue: "Loan type cannot be changed after creation")
+        }
+        if loanType == .installment {
+            return String(localized: "loan.installmentHint", defaultValue: "Installment = 0% interest, equal payments")
+        }
+        return nil
+    }
+
     // MARK: - Default Tagging Section
 
     @ViewBuilder
     private var defaultTaggingSection: some View {
         if !expensePickerCategories.isEmpty {
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                FormSection(header: String(localized: "loan.defaultTagging", defaultValue: "Default category")) {
-                    UniversalRow(
-                        String(localized: "subscriptions.category", defaultValue: "Category"),
-                        icon: "tag",
-                        accessory: .menu($defaultCategory, options: categoryDropdownOptions)
-                    )
-
-                    if defaultCategoryHasSubcategories {
-                        Divider()
-
-                        UniversalRow(
-                            String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"),
-                            icon: "tag.fill",
-                            accessory: .menu($defaultSubcategoryId, options: subcategoryDropdownOptions)
-                        )
-                    }
-                }
-
-                Text(String(
+            FormSection(
+                header: String(localized: "loan.defaultTagging", defaultValue: "Default category"),
+                footer: String(
                     localized: "loan.defaultTaggingHint",
                     defaultValue: "Pre-fills the payment form. Last-used category from previous payments takes precedence."
-                ))
-                .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textSecondary)
-                .padding(.horizontal, AppSpacing.lg)
+                )
+            ) {
+                UniversalRow(
+                    String(localized: "subscriptions.category", defaultValue: "Category"),
+                    icon: "tag",
+                    accessory: .menu($defaultCategory, options: categoryDropdownOptions)
+                )
+
+                if defaultCategoryHasSubcategories {
+                    UniversalRow(
+                        String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"),
+                        icon: "tag.fill",
+                        accessory: .menu($defaultSubcategoryId, options: subcategoryDropdownOptions)
+                    )
+                }
             }
             .onChange(of: defaultCategory) { oldValue, newValue in
                 // Subcategory ids are scoped to a single category — clear the

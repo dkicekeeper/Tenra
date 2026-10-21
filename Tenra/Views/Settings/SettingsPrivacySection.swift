@@ -28,7 +28,7 @@ struct SettingsPrivacySection: View {
             )
             .disabled(biometry == .unavailable && !lock.isEnabled)
         } header: {
-            SectionHeader(String(localized: "settings.privacy.header"), style: .compact)
+            SectionHeader(String(localized: "settings.privacy.header"))
         } footer: {
             Text(String(localized: biometry == .unavailable
                 ? "settings.appLock.unavailable"

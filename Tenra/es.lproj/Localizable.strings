@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Personalizar...";
 "settings.wallpaper" = "Fondo de pantalla de inicio";
 "settings.background" = "Fondo";
+"settings.merchantLogos" = "Logotipos de comercios";
 "home.hint.categories" = "Toca una categoría para añadir un gasto";
 "settings.voiceLanguage" = "Idioma de voz";
 "settings.voiceLanguage.app" = "Como en la app";
@@ -113,6 +114,14 @@
 "settings.subcategories" = "Subcategorías";
 "settings.accounts" = "Cuentas";
 "settings.exportImport" = "Exportar e importar";
+"settings.importReminder" = "Recordatorio de extracto";
+"settings.importReminder.off" = "Desactivado";
+"settings.importReminder.week" = "Cada semana";
+"settings.importReminder.twoWeeks" = "Cada 2 semanas";
+"settings.importReminder.month" = "Cada mes";
+"settings.importReminder.footer" = "Después de importar un extracto bancario, Tenra te recordará importar el siguiente: las transferencias y pagos fuera de Apple Pay solo llegan con un extracto.";
+"importReminder.notification.title" = "Es hora de un extracto";
+"importReminder.notification.body" = "Abre el extracto PDF de tu banco en Tenra para añadir las transferencias y pagos que Apple Pay no registró.";
 "settings.exportData" = "Exportar datos";
 "settings.importData" = "Importar datos";
 "settings.dangerZone" = "Zona de peligro";
@@ -188,6 +197,7 @@
 "search.fill" = "Editar en el campo de búsqueda";
 "search.suggestion.category" = "Categoría";
 "search.suggestion.subcategory" = "Subcategoría";
+"search.suggestion.merchant" = "Comercio";
 
 // MARK: - Modals
 "modal.newAccount" = "Nueva cuenta";
@@ -441,6 +451,9 @@
 "subscriptions.title" = "Suscripciones";
 "subscriptions.empty" = "Sin suscripciones";
 "subscriptions.emptyDescription" = "Añade una suscripción para controlar tus pagos recurrentes";
+"subscriptions.candidates.title" = "Parece una suscripción";
+"subscriptions.candidates.footer" = "Estos comercios te cobraron más o menos lo mismo cada mes. Toca uno para añadirlo como suscripción: se planifica el próximo cargo y los pagos anteriores quedan como están. Mantén pulsado para ocultarlo.";
+"subscriptions.candidates.dismiss" = "No es una suscripción";
 "subscriptions.addSubscription" = "Añadir suscripción";
 "subscriptions.deleteConfirmTitle" = "¿Eliminar suscripción?";
 "subscriptions.deleteConfirmMessage" = "Se eliminarán todos los datos de la suscripción y las transacciones relacionadas.";
@@ -795,6 +808,7 @@
 "insights.emptyState.description" = "Añade algunas transacciones para ver el análisis de tus finanzas";
 "insights.noInsightsForFilter" = "No hay análisis para esta categoría";
 "insights.topCategory" = "Categoría con más gasto";
+"insights.topMerchant" = "Comercio con más gasto";
 "insights.ofTotal" = "del gasto total";
 "insights.spendingSpike" = "Gasto inusual detectado";
 "insights.monthOverMonth" = "Variación del gasto mensual";
@@ -1038,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Veces sobre la media";
 "insights.formula.largeTransaction.explainer" = "Los pagos recurrentes como alquiler y suscripciones quedan excluidos: solo cuentan las compras puntuales. Una compra 4 veces superior a tu gasto medio merece un vistazo.";
 "insights.formula.largeTransaction.rec" = "Asegúrate de que la compra sea esperada. ¿Puntual? No hace falta hacer nada: la señal desaparece al ajustarse la media.";
+"insights.checkGrowth" = "El ticket medio sube";
+"insights.checkGrowth.comparison" = "frente a los 3 meses anteriores";
+"insights.formula.checkGrowth.title" = "Ticket medio";
+"insights.formula.checkGrowth.heroLabel" = "Ticket medio, últimos 90 días";
+"insights.formula.checkGrowth.formulaHeader" = "Cómo se calcula";
+"insights.formula.checkGrowth.row.merchant" = "Comercio";
+"insights.formula.checkGrowth.row.before" = "Antes (los 90 días anteriores)";
+"insights.formula.checkGrowth.row.after" = "Ahora (los últimos 90 días)";
+"insights.formula.checkGrowth.row.visits" = "Compras, antes → ahora";
+"insights.formula.checkGrowth.row.growth" = "Subida";
+"insights.formula.checkGrowth.explainer" = "El ticket medio de los últimos 90 días frente a los 90 días anteriores, en comercios con al menos 3 compras en cada periodo. Las suscripciones no cuentan: sus subidas de precio tienen su propio análisis.";
+"insights.formula.checkGrowth.rec" = "Mira qué ha cambiado: los precios, lo que compras allí o cuánto de una vez.";
 "insights.dormant.accounts" = "Cuentas inactivas";
 
 // MARK: - Tab Bar
@@ -1698,6 +1724,34 @@
 "intent.addExpense.saved" = "Añadido: %1$@, %2$@.";
 "intent.addExpense.askCategory" = "¿Qué categoría para %@? Tenra la recordará.";
 "intent.addExpense.askSubcategory" = "¿Qué subcategoría para %@?";
+"intent.walletPayment.title" = "Registrar un pago con Apple Pay";
+"intent.walletPayment.description" = "Para la automatización de Wallet: registra un pago con tarjeta con su comercio, tarjeta y divisa, sin preguntar nada. Tenra recuerda la categoría de cada comercio y la cuenta de cada tarjeta.";
+"intent.walletPayment.parameter.amount" = "Importe";
+"intent.walletPayment.parameter.currency" = "Código de divisa";
+"intent.walletPayment.parameter.merchant" = "Comercio";
+"intent.walletPayment.parameter.card" = "Tarjeta";
+"intent.walletPayment.parameter.account" = "Cuenta";
+"intent.walletPayment.duplicate" = "Este pago ya está registrado.";
+"intent.walletPayment.subscription" = "Ya registrado como la suscripción «%@».";
+"intent.walletPayment.noAmount" = "Este pago no tiene importe, no se ha registrado nada.";
+"intent.walletPayment.queued" = "Aún no hay tipo de cambio. Tenra registrará el pago en cuanto lo tenga.";
+"intent.walletPayment.noAccount" = "Añade una cuenta en Tenra para registrar pagos.";
+"walletSetup.title" = "Configurar la automatización de Wallet";
+"walletSetup.intro" = "Así cada pago con Apple Pay en un terminal se guarda solo, con el comercio, el importe, la moneda y la tarjeta. Wallet no comparte los pagos en línea: llegan con el extracto.";
+"walletSetup.trigger" = "Automatización";
+"walletSetup.step.open" = "Abre **Atajos**, ve a **Automatización**, toca **+** y elige **Wallet**.";
+"walletSetup.step.cards" = "Elige tus tarjetas, deja cualquier categoría y cualquier comercio, y haz que se ejecute de inmediato, sin confirmar.";
+"walletSetup.step.action" = "Añade la acción de Tenra **%@**.";
+"walletSetup.fields" = "Los campos de la acción";
+"walletSetup.step.amount" = "**%@**: toca el campo y elige **Transacción**.";
+"walletSetup.step.merchant" = "**%@**: elige **Transacción**, tócala de nuevo y elige su comercio.";
+"walletSetup.step.card" = "**%@**: otra vez **Transacción**, con su tarjeta. Con ella Tenra aprende desde qué cuenta paga cada tarjeta.";
+"walletSetup.step.account" = "**%@**: déjalo vacío, Tenra elige la cuenta y la recuerda para la tarjeta. En una automatización de una sola tarjeta puedes fijarla ya.";
+"walletSetup.step.quiet" = "Desactiva mostrar al ejecutar, para que los pagos se guarden sin preguntas.";
+"walletSetup.currency" = "Pagos en otra moneda";
+"walletSetup.currency.text" = "Sin este paso un pago se guarda en la moneda de su cuenta. Antes de la acción de Tenra añade una variable con el importe de **Transacción** y en **%@** elige esa variable y su código de moneda.";
+"walletSetup.note.oldAction" = "¿Ya tienes una automatización con **%1$@**? Cámbiala por **%2$@**: no pregunta nada, recuerda tus tarjetas y nunca guarda un pago dos veces.";
+"walletSetup.openShortcuts" = "Abrir Atajos";
 "intent.entity.account" = "Cuenta";
 "intent.entity.category" = "Categoría";
 "intent.entity.subcategory" = "Subcategoría";
@@ -1717,13 +1771,37 @@
 "settings.siri.example2" = "Oye Siri, cuánto he gastado en Tenra";
 "settings.siri.example3" = "Oye Siri, añadir un gasto en Tenra";
 "settings.merchants.title" = "Comercios de Wallet";
-"settings.merchants.footer" = "Los pagos en estos comercios con la automatización de Wallet reciben esta categoría y subcategoría. Toca un comercio para cambiarlas o desliza a la izquierda para olvidarlo.";
+"settings.merchants.footer" = "Los pagos en estos comercios con la automatización de Wallet reciben esta categoría y subcategoría. Toca un comercio para ver sus pagos y cambiarlas, o desliza a la izquierda para olvidarlo.";
 "settings.merchants.emptyTitle" = "Aún no hay comercios";
-"settings.merchants.emptyMessage" = "Cuando la automatización de Wallet añade un gasto, Tenra pregunta la categoría una vez por comercio y la recuerda aquí. En la automatización, pasa el comercio a «Nota» y deja «Categoría» vacía.";
+"settings.merchants.emptyMessage" = "Aquí se recuerda la categoría de cada comercio donde pagas con Apple Pay a través de la automatización de Wallet, en cuanto la eliges, confirmas o corriges.";
 "settings.merchants.forget" = "Olvidar";
 "settings.merchants.forgetMerchant" = "Olvidar comercio";
+"settings.merchants.editTitle" = "Editar comercio";
+"settings.merchants.showLogo" = "Mostrar logotipo";
+"settings.merchants.showLogo.footer" = "Desactívalo para que las operaciones de este comercio conserven el icono de la categoría.";
 "settings.merchants.categoryDeleted" = "Categoría eliminada, Tenra volverá a preguntar";
-"settings.merchants.editFooter" = "Los próximos pagos aquí se registrarán con esta categoría. Si olvidas el comercio, Tenra volverá a preguntar en su próximo pago.";
+"settings.merchants.editFooter" = "Los próximos pagos aquí se registrarán con esta categoría. Olvida el comercio para empezar de nuevo en su próximo pago.";
+"merchant.detail.visits" = "Visitas";
+"merchant.detail.averageCheck" = "Ticket medio";
+"merchant.detail.lastVisit" = "Última visita";
+"merchant.detail.thisMonth" = "Este mes";
+"merchant.detail.thisYear" = "Este año";
+"merchant.detail.byMonth" = "Por meses";
+"merchant.detail.open" = "Pagos del comercio";
+"walletReview.title" = "Por revisar";
+"walletReview.footer" = "La categoría o la cuenta de estos pagos con Apple Pay se eligió automáticamente. Toca un pago para corregirlo o desliza a la derecha si es correcto. Tu elección se recordará para el comercio y la tarjeta.";
+"walletReview.emptyTitle" = "Nada que revisar";
+"walletReview.emptyMessage" = "Aquí aparecen los pagos con Apple Pay con una categoría o cuenta elegida automáticamente, hasta que los revises.";
+"walletReview.confirm" = "Correcto";
+"walletReview.confirmAll" = "Todo correcto";
+"walletReview.notification.title" = "Revisa un pago";
+"walletReview.notification.category" = "%1$@ se registró en «%2$@». Toca para revisarlo.";
+"walletReview.notification.account" = "%1$@ se registró en la cuenta «%2$@». Toca para revisarlo.";
+"settings.cards.title" = "Tarjetas de Wallet";
+"settings.cards.footer" = "Los pagos con Apple Pay con estas tarjetas se registran en la cuenta indicada. Toca una tarjeta para elegir otra cuenta o desliza a la izquierda para olvidarla.";
+"settings.cards.emptyTitle" = "Aún no hay tarjetas";
+"settings.cards.emptyMessage" = "Cuando la automatización de Wallet pasa la tarjeta, Tenra recuerda aquí la cuenta que elijas o confirmes para ella.";
+"settings.cards.accountDeleted" = "Cuenta eliminada";
 
 
 /* MARK: - Document import */
@@ -1732,6 +1810,8 @@
 "import.source.receipt.title" = "Escanear un recibo";
 "import.source.receipt.subtitle" = "Apunta la cámara a un recibo en papel";
 "import.receipt.title" = "Revisar recibo";
+"import.receipt.debtRepayment" = "Es la devolución de una deuda";
+"import.receipt.debtRepayment.footer" = "El pago también reduce lo que le debes a %@.";
 "import.receipt.detailsHeader" = "Detalles del recibo";
 "import.receipt.merchant" = "Comercio";
 "import.receipt.total" = "Total";
@@ -1815,6 +1895,9 @@
 "transactionPreview.reconcile.less" = "Tenra muestra menos por";
 "transactionPreview.reconcile.more" = "Tenra muestra más por";
 "transactionPreview.reconcile.hint" = "Revisa las filas sin marcar y tus entradas manuales de este periodo";
+"transactionPreview.walletMissing" = "Pagos con Apple Pay que no están en el extracto: %lld";
+"walletMissing.title" = "No están en el extracto";
+"walletMissing.footer" = "La automatización de Wallet registró estos pagos con Apple Pay, pero el extracto no muestra ningún cargo. La automatización también se activa con un pago rechazado: si alguno fue rechazado, deslízalo a la izquierda para eliminarlo.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence está eligiendo categorías…";

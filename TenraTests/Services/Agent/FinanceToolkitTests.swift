@@ -69,6 +69,20 @@ struct FinanceToolkitTests {
         #expect(value.value(atPath: "groups.1.label") == "Кафе")
     }
 
+    @Test func merchantsGroupAcrossShopNumbers() async throws {
+        let (toolkit, store) = Self.make()
+        store.transactions += [Self.tx("t8", "2026-10-12", 1_000, .expense, "Продукты", "MAGNUM 77")]
+        let output = await toolkit.execute(
+            name: "get_spending_summary",
+            input: ["from": "2026-10-01", "to": "2026-10-31", "type": "expense", "group_by": "merchant"]
+        )
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value.value(atPath: "groups.0.key") == "magnum")
+        #expect(value.value(atPath: "groups.0.label") == "Magnum")
+        #expect(value.value(atPath: "groups.0.total") == .number(9_000))
+        #expect(value.value(atPath: "groups.1.label") == "Coffee Boom")
+    }
+
     @Test func categoryFilterTakesIds() async throws {
         let (output, store) = await Self.run("get_spending_summary", ["from": "2026-10-01", "to": "2026-10-31", "type": "expense", "category_ids": ["cat_cafe"]])
         _ = store

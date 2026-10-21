@@ -18,7 +18,11 @@ nonisolated final class LettermarkProvider: LogoProvider {
     private static let palette: [UIColor] = CategoryColors.paletteColors.map { UIColor($0) }
 
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
-        let letters = Self.extractLetters(from: domain)
+        // A merchant's logo found by its name: the name's letters, never the scheme's "NA".
+        let label = domain.hasPrefix(LogoDevNameProvider.scheme)
+            ? String(domain.dropFirst(LogoDevNameProvider.scheme.count))
+            : domain
+        let letters = Self.extractLetters(from: label)
         let color = Self.deterministicColor(for: domain)
         return Self.renderLettermark(letters: letters, color: color, size: size)
     }

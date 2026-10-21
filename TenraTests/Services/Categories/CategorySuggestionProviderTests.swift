@@ -2,8 +2,8 @@
 //  CategorySuggestionProviderTests.swift
 //  TenraTests
 //
-//  Pins the tier order for import category suggestions (history → brand →
-//  voice keyword), that every candidate must resolve to one of the user's own
+//  Pins the tier order for import category suggestions (merchant memory →
+//  history → brand → voice keyword), that every candidate must resolve to one of the user's own
 //  categories, and that a miss never turns into "Other".
 //
 //  Category names are built from the localization keys so the suite passes in
@@ -128,8 +128,31 @@ struct CategorySuggestionProviderTests {
             for: [expense, transfer, unknown],
             history: [],
             categories: [Self.category(Self.transport)],
-            keywordMatcher: Self.noKeywords
+            keywordMatcher: Self.noKeywords,
+            memory: nil
         )
         #expect(result == ["e1": Self.transport])
+    }
+
+    @Test("The category chosen for a merchant beats its most used one, if it still exists")
+    func rememberedMerchantFirst() async {
+        let transport = Self.category(Self.transport)
+        let groceries = Self.category(Self.groceries)
+        let memory = MerchantCategoryMemory(defaults: UserDefaults(suiteName: "suggestion.memory.\(UUID().uuidString)")!)
+        memory.remember(categoryId: groceries.id, forMerchant: "YANDEX.GO 12")
+        let history = [Self.tx("YANDEX.GO", category: Self.transport), Self.tx("YANDEX.GO", category: Self.transport)]
+        let row = Self.tx("YANDEX.GO 345", id: "e1")
+
+        let remembered = await CategorySuggestionProvider.suggestions(
+            for: [row], history: history, categories: [transport, groceries],
+            keywordMatcher: Self.noKeywords, memory: memory
+        )
+        #expect(remembered == ["e1": Self.groceries])
+
+        let deleted = await CategorySuggestionProvider.suggestions(
+            for: [row], history: history, categories: [transport],
+            keywordMatcher: Self.noKeywords, memory: memory
+        )
+        #expect(deleted == ["e1": Self.transport])
     }
 }

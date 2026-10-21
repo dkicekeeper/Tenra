@@ -46,7 +46,7 @@ final class MerchantCategoryMemory {
     }
 
     /// A remembered merchant, as the Settings list shows it.
-    struct Merchant: Identifiable, Equatable {
+    struct Merchant: Identifiable, Hashable {
         /// The normalized merchant: the memory's key.
         let id: String
         let displayName: String
@@ -117,6 +117,17 @@ final class MerchantCategoryMemory {
                 )
             }
             .sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+    }
+
+    /// The remembered merchant a transaction's description names, if any.
+    func merchant(forDescription description: String) -> Merchant? {
+        guard let key = Self.key(forMerchant: description), let entry = entries[key] else { return nil }
+        return Merchant(
+            id: key,
+            displayName: entry.displayName ?? key.capitalized,
+            categoryId: entry.categoryId,
+            subcategoryIds: entry.subcategoryIds
+        )
     }
 
     /// The user's choice in Settings for a listed merchant: a category and its

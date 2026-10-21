@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 /// Central logo service with waterfall provider chain.
-/// Chain: jsDelivr → LogoDev → GoogleFavicon → Lettermark
+/// Chain: jsDelivr → LogoDev by name (merchant keys only) → LogoDev → GoogleFavicon → Lettermark
 final class LogoService {
     static let shared = LogoService()
 
@@ -19,6 +19,7 @@ final class LogoService {
     // LogoService is NOT @Observable — no @ObservationIgnored needed
     private let providers: [any LogoProvider] = [
         JsDelivrLogoProvider(),
+        LogoDevNameProvider(),
         LogoDevProvider(),
         GoogleFaviconProvider(),
         LettermarkProvider(),
@@ -35,6 +36,15 @@ final class LogoService {
         ) { [weak self] _ in
             self?.memoryCache.removeAllObjects()
         }
+    }
+
+    /// A logo found outside the chain (MerchantLogoResolver's lookup by name), kept under its
+    /// key in memory and on disk: the rows the lookup refreshes find it at once, before the
+    /// disk write ends, instead of asking for it again.
+    @MainActor
+    func remember(_ image: UIImage, for key: String) {
+        memoryCache.setObject(image, forKey: key as NSString)
+        diskCache.save(image, for: key)
     }
 
     /// Loads a brand logo through the provider chain.

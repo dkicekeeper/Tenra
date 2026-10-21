@@ -269,6 +269,24 @@ struct TransactionEditView: View {
                     recurringMenuButton
                 }
             }
+            // The merchant's screen: every payment there. For a remembered Wallet merchant, or
+            // one with a logo or a given name (a brand, not a person paid by transfer).
+            if coordinator.transaction.type == .expense || coordinator.transaction.type == .income,
+               hasMerchantScreen(coordinator.transaction.description) {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        MerchantDetailView(
+                            merchant: coordinator.transaction.description,
+                            transactionsViewModel: coordinator.transactionsViewModel,
+                            categoriesViewModel: coordinator.categoriesViewModel,
+                            accountsViewModel: coordinator.accountsViewModel
+                        )
+                    } label: {
+                        Image(systemName: "storefront")
+                    }
+                    .accessibilityLabel(String(localized: "merchant.detail.open"))
+                }
+            }
             ToolbarItem(placement: .confirmationAction) {
                 Button {
                     coordinator.save { dismiss() }
@@ -280,6 +298,15 @@ struct TransactionEditView: View {
                 .accessibilityLabel(String(localized: "button.save"))
             }
         }
+    }
+
+    /// A merchant worth a screen: remembered by the Wallet automation, or one with a logo or
+    /// a name the user gave it. A transfer to a person has neither.
+    private func hasMerchantScreen(_ description: String) -> Bool {
+        let logos = MerchantLogoStore.shared
+        return MerchantCategoryMemory.shared.merchant(forDescription: description) != nil
+            || logos.iconSource(forDescription: description) != nil
+            || logos.customName(forDescription: description) != nil
     }
 
     private var recurringMenuButton: some View {

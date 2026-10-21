@@ -64,6 +64,10 @@ struct ImportTransactionPreviewView: View {
     /// The statement account's balance at the statement's closing date before the
     /// import, next to the balance the statement prints. Nil when either is unknown.
     @State private var reconciliationBase: ReconciliationBase?
+    /// Apple Pay payments saved on the statement's account that the statement does not
+    /// show (WalletStatementCheck): possibly declined.
+    @State private var walletMissingIds: [String] = []
+    @State private var showingWalletMissing = false
 
     private struct ReconciliationBase: Equatable {
         let accountId: String
@@ -100,6 +104,17 @@ struct ImportTransactionPreviewView: View {
                     }
                     if let check = reconciliation {
                         reconciliationView(check)
+                    }
+                    if walletMissingCount > 0 {
+                        // DesignKit's notice with an action: a tap opens the payments.
+                        StatusBanner(
+                            String(format: String(localized: "transactionPreview.walletMissing"), walletMissingCount),
+                            status: .warning,
+                            style: .compact
+                        ) {
+                            showingWalletMissing = true
+                        }
+                        .padding(.top, AppSpacing.xs)
                     }
                     if isAskingIntelligence {
                         HStack(spacing: AppSpacing.xs) {
@@ -216,6 +231,18 @@ struct ImportTransactionPreviewView: View {
                     }
                 }
             }
+            .sheet(isPresented: $showingWalletMissing) {
+                NavigationStack {
+                    WalletMissingPaymentsView(
+                        transactionIds: walletMissingIds,
+                        transactionsViewModel: transactionsViewModel,
+                        categoriesViewModel: categoriesViewModel,
+                        accountsViewModel: accountsViewModel
+                    )
+                }
+                .softScrollEdges()
+                .environment(transactionStore)
+            }
             .onAppear {
                 categoryMapping = suggestedCategories
                 for transaction in transactions {
@@ -235,6 +262,25 @@ struct ImportTransactionPreviewView: View {
     }
 
     private var regularAccounts: [Account] { accountsViewModel.regularAccounts }
+
+    // MARK: - Apple Pay payments the statement does not show
+
+    /// Still saved: one deleted from the list no longer counts.
+    private var walletMissingCount: Int {
+        _ = transactionStore.transactions.count
+        return walletMissingIds.filter { transactionStore.transactionById[$0] != nil }.count
+    }
+
+    private func walletMissingPayments() -> [String] {
+        guard let account = regularAccounts.first(where: { $0.id == statementAccountId }) else { return [] }
+        let captured = WalletCaptureStore.shared.transactionIds.compactMap { transactionStore.transactionById[$0] }
+        return WalletStatementCheck.missing(
+            captured: captured,
+            rows: transactions,
+            accountId: account.id,
+            accountCurrency: account.currency
+        ).map(\.id)
+    }
 
     // MARK: - Balance check
 
@@ -457,6 +503,7 @@ struct ImportTransactionPreviewView: View {
         duplicateReasons = duplicates
         transferMatches = matches
         reconciliationBase = makeReconciliationBase()
+        walletMissingIds = walletMissingPayments()
 
         // The other side of a transfer already in Tenra wins; otherwise what the
         // user did with the same description on this account before.
@@ -724,6 +771,8 @@ struct ImportTransactionPreviewView: View {
                 balance: accountsViewModel.balanceCoordinator
             )
             RatingPromptService.shared.recordTransactionAdded(count: saved)
+            // A statement came in: the reminder to import the next one starts over.
+            if saved > 0 { StatementImportReminder.recordImport() }
             dismiss()
         }
     }

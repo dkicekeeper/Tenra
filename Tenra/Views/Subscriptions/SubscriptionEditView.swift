@@ -14,6 +14,11 @@ struct SubscriptionEditView: View {
     let categoriesViewModel: CategoriesViewModel
     let accountsViewModel: AccountsViewModel
     let subscription: RecurringSeries?
+    /// A new subscription's starting values ("looks like a subscription"); ignored when
+    /// `subscription` is set. Saved under a new id.
+    var draft: RecurringSeries? = nil
+    /// Called once a new subscription is saved.
+    var onCreated: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
 
@@ -151,7 +156,7 @@ struct SubscriptionEditView: View {
         }
         .onAppear {
             availableCategories = computeAvailableCategories()
-            if let subscription = subscription {
+            if let subscription = subscription ?? draft {
                 description = subscription.description
                 amountText = NSDecimalNumber(decimal: subscription.amount).stringValue
                 currency = subscription.currency
@@ -322,6 +327,7 @@ struct SubscriptionEditView: View {
                 // its subcategory, the links).
                 guard let oldSeries = subscription else {
                     try await SubscriptionCreationService.create(series, store: transactionStore, categoriesViewModel: categoriesViewModel)
+                    onCreated?()
                     finishSave(needsPermissionSheet: needsPermissionSheet)
                     return
                 }

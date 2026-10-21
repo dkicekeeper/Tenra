@@ -503,12 +503,13 @@ struct InsightsView: View {
 
     /// Builds the correct InsightDetailView variant depending on category.
     /// Spending and income insights get category drill-down (income so the deposit-interest
-    /// source opens the deposits behind it); all others are read-only.
+    /// source opens the deposits behind it); all others are read-only, the top merchant too:
+    /// its rows are merchants, not categories.
     /// @ViewBuilder enables conditional branches with different generic specialisations
     /// (InsightDetailView<InsightDeepDiveView> vs InsightDetailView<Never>) without AnyView.
     @ViewBuilder
     private func insightDetailView(for insight: Insight) -> some View {
-        if insight.category == .spending || insight.category == .income {
+        if (insight.category == .spending || insight.category == .income) && insight.type != .topMerchant {
             InsightDetailView(insight: insight, currency: insightsViewModel.baseCurrency) { item, periodKey in
                 InsightDeepDiveView(
                     categoryName: item.categoryName,

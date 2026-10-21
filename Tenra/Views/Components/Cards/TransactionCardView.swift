@@ -26,6 +26,9 @@ struct TransactionCardView: View {
     let showRecurringBadge: Bool
     /// Pre-resolved subcategory links (caller resolves via `categoriesViewModel`).
     let linkedSubcategories: [Subcategory]
+    /// Shown instead of the description: the name the user gave the merchant
+    /// (`MerchantLogoStore.customName`). nil shows the description.
+    let noteOverride: String?
 
     /// Optional zoom-transition source. When both id and namespace are non-nil, the
     /// transaction's icon becomes the matched source for a zoom transition into the
@@ -42,6 +45,7 @@ struct TransactionCardView: View {
         subscriptionIconSource: IconSource? = nil,
         showRecurringBadge: Bool = false,
         linkedSubcategories: [Subcategory] = [],
+        note: String? = nil,
         transitionSourceID: String? = nil,
         transitionNamespace: Namespace.ID? = nil
     ) {
@@ -53,6 +57,7 @@ struct TransactionCardView: View {
         self.subscriptionIconSource = subscriptionIconSource
         self.showRecurringBadge = showRecurringBadge
         self.linkedSubcategories = linkedSubcategories
+        self.noteOverride = note
         self.transitionSourceID = transitionSourceID
         self.transitionNamespace = transitionNamespace
     }
@@ -66,7 +71,7 @@ struct TransactionCardView: View {
     var body: some View {
         TransactionRow(
             subject,
-            note: transaction.description,
+            note: noteOverride ?? transaction.description,
             icon: subscriptionIconSource ?? .sfSymbol(styleData.iconName),
             iconTint: subscriptionIconSource != nil
                 ? .original

@@ -228,13 +228,57 @@ struct MainTabView: View {
             .softScrollEdges()
             .environment(coordinator.transactionStore)
         }
+        // A tap on "check a payment" (WalletReviewNotifier): the Apple Pay payments saved
+        // with a guess.
+        .sheet(isPresented: Binding(
+            get: { WalletCaptureStore.shared.isReviewRequested },
+            set: { WalletCaptureStore.shared.isReviewRequested = $0 }
+        )) {
+            NavigationStack {
+                WalletReviewView(
+                    transactionsViewModel: coordinator.transactionsViewModel,
+                    categoriesViewModel: coordinator.categoriesViewModel,
+                    accountsViewModel: coordinator.accountsViewModel
+                )
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(String(localized: "button.close"), systemImage: "xmark") {
+                            WalletCaptureStore.shared.isReviewRequested = false
+                        }
+                    }
+                }
+            }
+            .softScrollEdges()
+            .environment(coordinator.transactionStore)
+        }
         // Ten writes first about tomorrow's charges whenever the app comes to the front.
         .onChange(of: scenePhase, initial: true) { _, phase in
-            if phase == .active { coordinator.refreshAssistantInbox() }
+            guard phase == .active else { return }
+            coordinator.refreshAssistantInbox()
+            // The next statement reminders, scheduled ahead (StatementImportReminder).
+            Task { await StatementImportReminder.reschedule() }
+            // Apple Pay payments that waited for an exchange rate (LogWalletPaymentIntent).
+            if !WalletCaptureStore.shared.pending.isEmpty {
+                Task { await WalletPaymentRecorder.recordPending(services: IntentServices(coordinator: coordinator)) }
+            }
+            // Merchant logos, looked up once each: Apple Pay merchants, then the history's
+            // frequent ones (on device only), once the full load has the history.
+            let store = coordinator.transactionStore
+            Task {
+                await MerchantLogoResolver.resolvePending(
+                    history: store.hasCompletedInitialLoad ? store.transactions : []
+                )
+            }
         }
-        // A file opened in Tenra from another app goes to the assistant, which attaches it.
+        // A file opened in Tenra from another app goes to the assistant, which attaches it;
+        // without the assistant a PDF (a statement or a receipt) opens in the import tab.
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in
-            if url != nil { openAssistant() }
+            guard let url else { return }
+            if assistantTakesActionTab {
+                openAssistant()
+            } else if url.pathExtension.lowercased() == "pdf" {
+                openImport()
+            }
         }
         // "Ask Ten" on an account, a category, an insight or the history.
         .onChange(of: coordinator.assistantTopic) { _, topic in
@@ -279,6 +323,14 @@ struct MainTabView: View {
         guard assistantTakesActionTab else { return }
         if tabBarMode == .expanded { tabBarMode = .normal }
         selectedTab = .assistant
+    }
+
+    /// The action tab's Import page, where a handed-over PDF is read (OCRTab).
+    private func openImport() {
+        withAnimation(AppAnimation.contentSpring) {
+            tabBarMode = .expanded
+            selectedTab = .ocr
+        }
     }
 }
 

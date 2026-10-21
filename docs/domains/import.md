@@ -13,6 +13,37 @@ three-stage pipeline. Read this before touching anything in
 | Interpretation | `ColumnRoleResolver`, `IntelligentColumnRoleResolver`, `StatementInterpreter`, `ReceiptInterpreter` | Consume only `DocumentSnapshot`. |
 
 `DocumentImportService` is the single orchestrator. `PDFService` only rasterises pages.
+
+**A PDF is a statement or a receipt** (`DocumentImportService.importDocument` → `DocumentContent`).
+Every bank's PDF is different, and a bank app's receipt of one payment or transfer has no table of
+operations. When the statement path finds none (`noTextFound`, `layoutNotRecognized`) and the
+text reads as one payment (`ReceiptInterpreter.looksLikeOnePayment`: one page, at most three dated
+lines, a labelled total or recipient), it goes to `ReceiptInterpreter`; any other PDF keeps the
+statement's error, never becomes a one-payment draft. A table whose rows were all skipped stays a
+statement, so its diagnostics show. The recipient is the name after a label at the start of a line
+("Получатель", "Получатель платежа", "Кому", "Алушы", "Recipient", "Payee"): after a colon, in the
+next column (the text layer joins columns with a space, so "Получатель Иван И."; the name starts
+with a capital) or on the next line when the label stands alone. "Продавец" and "Магазин" also
+start a shop's own lines, so only "label:" or the label alone count for them. A recipient wins over
+the model's merchant too and sets `ReceiptDraft.isRecipient`. A fee line ("комиссия",
+"commission", "fee") is never the amount, unless it is a total that includes the fee ("Итого с
+учётом комиссии"; "Сумма" alone is any amount on a bank receipt). Pinned by
+`DocumentImportServiceTests` and `ReceiptInterpreterTests`.
+
+**"Open in Tenra"** (`CFBundleDocumentTypes`, `AppCoordinator.pendingAttachment`): where the
+assistant runs, it attaches the file; elsewhere `MainTabView` opens the action tab's Import page and
+`OCRTab` hands the PDF to `PDFImportCoordinator(incomingFile:)` (behind Tenra Pro, as the tab is).
+Either way the copy in Documents/Inbox is deleted once read (`DocumentImportService.discardCopy`).
+A CSV opened without the assistant is not taken yet.
+
+**Statement reminder** (`StatementImportReminder`, `Services/Notifications/`): payments outside
+Apple Pay reach Tenra only with a statement, so after a statement import (the review screen saved
+at least one row) Tenra reminds the person to import the next one every 7 days by default
+(Settings → Export and import: off, every week, every 2 weeks, every month; owner's decision of
+2026-10-20). The reminders count from the day of the last import, at 10:00; the next 3 are
+scheduled ahead and rescheduled whenever Tenra comes to the front, after an import and when the
+interval changes. None before the first statement import; sent only with notification permission
+(never asked for here). Pinned by `StatementImportReminderTests`.
 `StatementReviewPreparer` turns its outcome into what the review screen needs (suggested
 categories, subcategory and transfer history, the statement's account, the rows that start
 unchecked), for both entry points: the import tab (`PDFImportCoordinator`) and the assistant's
@@ -152,6 +183,10 @@ suggested at review time, because an empty category drops a row out of every cat
 aggregate and budget. `CategorySuggestionProvider` (`Services/Categories/`) fills the
 pickers in `ImportTransactionPreviewView` and `ReceiptConfirmationView`, tier by tier:
 
+0. **Merchant memory** (expense only, batch `suggestions`): the category the user chose for the
+   merchant (`MerchantCategoryMemory`: Wallet payments, To review, the merchant's edit sheet),
+   if it still exists. It beats history: it is the latest explicit choice, history the most
+   frequent one.
 1. **History**: the category the user used most for the same merchant and type
    (`CategorySuggestionService.buildHistoryIndex`, built in `Task.detached` on every
    import and never cached, so it always reflects the store). This tier is the
@@ -189,6 +224,17 @@ loop would drop them.
 `ReceiptConfirmationView` requires the user to pick the destination account before the
 recognized transaction can be added: a receipt carries no account information of its own.
 Statements are reviewed as transaction cards in `ImportTransactionPreviewView`.
+
+## Apple Pay payments the statement does not show
+
+The Wallet action ([intents.md](intents.md) §6.1) saves a payment without asking, and the Wallet
+trigger also fires for a declined one. `WalletStatementCheck.missing` lists the payments it saved
+on the statement's account (`WalletCaptureStore.transactionIds`) that no expense row of the same
+amount within a day accounts for, each row taken once. Only payments in the account's currency
+(a foreign one appears converted), dated from the statement's first row to 2 days before its last
+(a charge can post later). The review screen shows their count under the balance check; the sheet
+(`WalletMissingPaymentsView`) lists them as History rows: tap edits, swipe deletes with the usual
+confirmation. Nothing is deleted on its own. Pinned by `WalletStatementCheckTests`.
 
 ## Balance on import
 

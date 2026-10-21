@@ -69,7 +69,11 @@ struct SettingsView: View {
                 SettingsAssistantSection()
                 SettingsPrivacySection()
                 notificationsSection
-                SettingsSiriSection(categoriesViewModel: categoriesViewModel)
+                SettingsSiriSection(
+                    transactionsViewModel: transactionsViewModel,
+                    categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel
+                )
                 cloudSection
                 exportImportSection
                 dangerZoneSection

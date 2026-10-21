@@ -79,7 +79,8 @@ nonisolated final class JsDelivrLogoProvider: LogoProvider {
             inFlightFetch = fetchTask
             let result = await fetchTask.value
             inFlightFetch = nil
-            return result
+            // A failed refresh keeps the index it had (storeFetchResult): use it.
+            return result.isEmpty ? (index ?? [:]) : result
         }
 
         private func storeFetchResult(_ result: [String: String]) {
@@ -204,6 +205,7 @@ nonisolated final class JsDelivrLogoProvider: LogoProvider {
     // MARK: - LogoProvider
 
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
+        guard !domain.hasPrefix(LogoDevNameProvider.scheme) else { return nil }
         let index = await Self.indexActor.getIndex()
         guard !index.isEmpty else { return nil }
 
@@ -253,6 +255,31 @@ nonisolated final class JsDelivrLogoProvider: LogoProvider {
         }
 
         return nil
+    }
+
+    /// The tenra-assets name a merchant's logo is filed under ("Magnum Cash&Carry" →
+    /// "magnum"), matched locally against the index: nothing about the merchant leaves the
+    /// device. nil when the repo has no logo for it. `fetchLogo` finds the same file again
+    /// from the returned name.
+    static func indexName(forMerchant name: String) async -> String? {
+        let index = await indexActor.getIndex()
+        guard !index.isEmpty else { return nil }
+        let whole = IndexActor.normalize(name)
+        var candidates = [whole, stripCommonSuffixes(whole)]
+        // The first word alone ("Magnum" of "Magnum Cash&Carry"), when it is long enough
+        // to name a brand rather than a kind of shop, and not a person's name before an
+        // initial ("Altyn K.").
+        if let first = name.split(separator: " ").first.map({ IndexActor.normalize(String($0)) }),
+           first.count >= 4, !MerchantName.isPersonWithInitials(name) {
+            candidates.append(first)
+        }
+        return candidates.first { !$0.isEmpty && index[$0] != nil }
+    }
+
+    /// Whether the tenra-assets index could be loaded: without it, a merchant missing from
+    /// it is not known to have no logo.
+    static func hasIndex() async -> Bool {
+        !(await indexActor.getIndex()).isEmpty
     }
 
     // MARK: - Helpers

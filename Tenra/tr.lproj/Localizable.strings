@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Özelleştir...";
 "settings.wallpaper" = "Ana Sayfa Duvar Kağıdı";
 "settings.background" = "Arka Plan";
+"settings.merchantLogos" = "İşyeri logoları";
 "home.hint.categories" = "Harcama eklemek için bir kategoriye dokunun";
 "settings.voiceLanguage" = "Ses Dili";
 "settings.voiceLanguage.app" = "Uygulamadaki gibi";
@@ -113,6 +114,14 @@
 "settings.subcategories" = "Alt Kategoriler";
 "settings.accounts" = "Hesaplar";
 "settings.exportImport" = "Dışa ve İçe Aktarma";
+"settings.importReminder" = "Hesap özeti hatırlatıcısı";
+"settings.importReminder.off" = "Kapalı";
+"settings.importReminder.week" = "Her hafta";
+"settings.importReminder.twoWeeks" = "2 haftada bir";
+"settings.importReminder.month" = "Her ay";
+"settings.importReminder.footer" = "Bir hesap özetini içe aktardıktan sonra Tenra bir sonrakini hatırlatır: Apple Pay dışındaki havaleler ve ödemeler yalnızca hesap özetiyle gelir.";
+"importReminder.notification.title" = "Hesap özeti zamanı";
+"importReminder.notification.body" = "Apple Pay'in kaydetmediği havale ve ödemeleri eklemek için bankanın PDF hesap özetini Tenra'da aç.";
 "settings.exportData" = "Verileri Dışa Aktar";
 "settings.importData" = "Verileri İçe Aktar";
 "settings.dangerZone" = "Tehlikeli Bölge";
@@ -188,6 +197,7 @@
 "search.fill" = "Arama alanında düzenle";
 "search.suggestion.category" = "Kategori";
 "search.suggestion.subcategory" = "Alt kategori";
+"search.suggestion.merchant" = "İşyeri";
 
 // MARK: - Modals
 "modal.newAccount" = "Yeni Hesap";
@@ -441,6 +451,9 @@
 "subscriptions.title" = "Abonelikler";
 "subscriptions.empty" = "Abonelik Yok";
 "subscriptions.emptyDescription" = "Tekrarlayan ödemeleri takip etmek için abonelik ekle";
+"subscriptions.candidates.title" = "Abonelik gibi görünüyor";
+"subscriptions.candidates.footer" = "Bu işyerleri her ay yaklaşık aynı tutarı tahsil etti. Abonelik olarak eklemek için birine dokun: bir sonraki tahsilat planlanır, geçmiş ödemeler olduğu gibi kalır. Gizlemek için basılı tut.";
+"subscriptions.candidates.dismiss" = "Abonelik değil";
 "subscriptions.addSubscription" = "Abonelik Ekle";
 "subscriptions.deleteConfirmTitle" = "Abonelik silinsin mi?";
 "subscriptions.deleteConfirmMessage" = "Tüm abonelik verileri ve ilgili işlemler silinecek.";
@@ -795,6 +808,7 @@
 "insights.emptyState.description" = "Finansal analizini görmek için birkaç işlem ekle";
 "insights.noInsightsForFilter" = "Bu kategori için analiz yok";
 "insights.topCategory" = "En Çok Harcanan Kategori";
+"insights.topMerchant" = "En Çok Harcanan İşyeri";
 "insights.ofTotal" = "toplam harcama payı";
 "insights.spendingSpike" = "Olağan Dışı Harcama Tespit Edildi";
 "insights.monthOverMonth" = "Aylık Harcama Değişimi";
@@ -1038,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Ortalamanın katı";
 "insights.formula.largeTransaction.explainer" = "Kira ve abonelik gibi düzenli ödemeler hariçtir. Yalnızca tek seferlik alışverişler sayılır. Ortalama harcamanızın 4 katı bir alışveriş ikinci bir bakışı hak eder.";
 "insights.formula.largeTransaction.rec" = "Alışverişin beklenen bir harcama olduğundan emin olun. Tek seferlikse bir şey yapmanıza gerek yok. Ortalama güncellendikçe sinyal kaybolur.";
+"insights.checkGrowth" = "Ortalama sepet büyüyor";
+"insights.checkGrowth.comparison" = "önceki 3 aya göre";
+"insights.formula.checkGrowth.title" = "Ortalama sepet";
+"insights.formula.checkGrowth.heroLabel" = "Ortalama sepet, son 90 gün";
+"insights.formula.checkGrowth.formulaHeader" = "Nasıl hesaplanır";
+"insights.formula.checkGrowth.row.merchant" = "İşyeri";
+"insights.formula.checkGrowth.row.before" = "Önce (önceki 90 gün)";
+"insights.formula.checkGrowth.row.after" = "Şimdi (son 90 gün)";
+"insights.formula.checkGrowth.row.visits" = "Alışveriş, önce → şimdi";
+"insights.formula.checkGrowth.row.growth" = "Artış";
+"insights.formula.checkGrowth.explainer" = "Son 90 günün ortalama sepeti, önceki 90 günle karşılaştırılır; her iki dönemde en az 3 alışveriş yapılan işyerleri için. Abonelikler sayılmaz: fiyat artışları için ayrı bir içgörü var.";
+"insights.formula.checkGrowth.rec" = "Neyin değiştiğine bak: fiyatlar, orada ne aldığın ya da bir seferde ne kadar aldığın.";
 "insights.dormant.accounts" = "Atıl Hesaplar";
 
 // MARK: - Tab Bar
@@ -1698,6 +1724,34 @@
 "intent.addExpense.saved" = "Eklendi: %1$@, %2$@.";
 "intent.addExpense.askCategory" = "%@ için hangi kategori? Tenra bunu hatırlayacak.";
 "intent.addExpense.askSubcategory" = "%@ için hangi alt kategori?";
+"intent.walletPayment.title" = "Apple Pay ödemesini kaydet";
+"intent.walletPayment.description" = "Wallet otomasyonu için: kartla yapılan ödemeyi işyeri, kart ve para birimiyle, hiçbir şey sormadan kaydeder. Tenra her işyerinin kategorisini ve her kartın hesabını hatırlar.";
+"intent.walletPayment.parameter.amount" = "Tutar";
+"intent.walletPayment.parameter.currency" = "Para birimi kodu";
+"intent.walletPayment.parameter.merchant" = "İşyeri";
+"intent.walletPayment.parameter.card" = "Kart";
+"intent.walletPayment.parameter.account" = "Hesap";
+"intent.walletPayment.duplicate" = "Bu ödeme zaten kaydedildi.";
+"intent.walletPayment.subscription" = "Zaten %@ aboneliği olarak kaydedildi.";
+"intent.walletPayment.noAmount" = "Bu ödemede tutar yok, hiçbir şey kaydedilmedi.";
+"intent.walletPayment.queued" = "Henüz döviz kuru yok. Tenra ödemeyi kur gelir gelmez kaydedecek.";
+"intent.walletPayment.noAccount" = "Ödemeleri kaydetmek için Tenra'ya bir hesap ekleyin.";
+"walletSetup.title" = "Wallet otomasyonunu kur";
+"walletSetup.intro" = "Böylece terminaldeki her Apple Pay ödemesi işyeri, tutar, para birimi ve kartla kendiliğinden kaydedilir. Wallet çevrim içi ödemeleri iletmez: onlar hesap özetiyle gelir.";
+"walletSetup.trigger" = "Otomasyon";
+"walletSetup.step.open" = "**Kestirmeler**'i aç, **Otomasyon**'a git, **+**'ya dokun ve **Wallet**'ı seç.";
+"walletSetup.step.cards" = "Kartlarını seç, her kategoriyi ve her işyerini bırak ve otomasyonu onay sormadan hemen çalıştır.";
+"walletSetup.step.action" = "Tenra'nın **%@** eylemini ekle.";
+"walletSetup.fields" = "Eylemin alanları";
+"walletSetup.step.amount" = "**%@**: alana dokun ve **İşlem**'i seç.";
+"walletSetup.step.merchant" = "**%@**: **İşlem**'i seç, ona tekrar dokun ve işyerini seç.";
+"walletSetup.step.card" = "**%@**: yine **İşlem**, kartıyla. Tenra bundan her kartın hangi hesaptan ödediğini öğrenir.";
+"walletSetup.step.account" = "**%@**: boş bırak, Tenra hesabı seçer ve kart için hatırlar. Tek kartlık bir otomasyonda hemen de seçebilirsin.";
+"walletSetup.step.quiet" = "Ödemeler soru sormadan kaydedilsin diye çalıştırınca göstermeyi kapat.";
+"walletSetup.currency" = "Başka para biriminde ödemeler";
+"walletSetup.currency.text" = "Bu adım olmadan ödeme hesabın para biriminde kaydedilir. Tenra eyleminden önce **İşlem**'in tutarıyla bir değişken ekle, sonra **%@** alanında bu değişkeni ve para birimi kodunu seç.";
+"walletSetup.note.oldAction" = "**%1$@** eylemli bir otomasyonun mu var? Onu **%2$@** ile değiştir: hiçbir şey sormaz, kartlarını hatırlar ve bir ödemeyi asla iki kez kaydetmez.";
+"walletSetup.openShortcuts" = "Kestirmeler'i aç";
 "intent.entity.account" = "Hesap";
 "intent.entity.category" = "Kategori";
 "intent.entity.subcategory" = "Alt kategori";
@@ -1717,13 +1771,37 @@
 "settings.siri.example2" = "Hey Siri, Tenra uygulamasında ne kadar harcadım";
 "settings.siri.example3" = "Hey Siri, Tenra uygulamasına gider ekle";
 "settings.merchants.title" = "Wallet işyerleri";
-"settings.merchants.footer" = "Bu işyerlerinde Wallet otomasyonuyla yapılan ödemeler bu kategori ve alt kategoriyle kaydedilir. Değiştirmek için bir işyerine dokun, unutmak için sola kaydır.";
+"settings.merchants.footer" = "Bu işyerlerinde Wallet otomasyonuyla yapılan ödemeler bu kategori ve alt kategoriyle kaydedilir. Ödemelerini görmek ve değiştirmek için bir işyerine dokun, unutmak için sola kaydır.";
 "settings.merchants.emptyTitle" = "Henüz işyeri yok";
-"settings.merchants.emptyMessage" = "Wallet otomasyonu bir harcama eklediğinde Tenra her işyeri için kategoriyi bir kez sorar ve burada hatırlar. Otomasyonda işyerini \"Not\" alanına aktar ve \"Kategori\" alanını boş bırak.";
+"settings.merchants.emptyMessage" = "Wallet otomasyonuyla Apple Pay ile ödeme yaptığın her işyerinin kategorisi, onu seçtiğin, onayladığın veya düzelttiğin anda burada hatırlanır.";
 "settings.merchants.forget" = "Unut";
 "settings.merchants.forgetMerchant" = "İşyerini unut";
+"settings.merchants.editTitle" = "İşyerini düzenle";
+"settings.merchants.showLogo" = "Logoyu göster";
+"settings.merchants.showLogo.footer" = "Kapalıyken bu işyerinin işlemlerinde kategori simgesi kalır.";
 "settings.merchants.categoryDeleted" = "Kategori silindi, Tenra yeniden soracak";
-"settings.merchants.editFooter" = "Buradaki sonraki ödemeler bu kategoriyle kaydedilir. İşyerini unutursan Tenra bir sonraki ödemesinde yeniden sorar.";
+"settings.merchants.editFooter" = "Buradaki sonraki ödemeler bu kategoriyle kaydedilir. Bir sonraki ödemesinde baştan başlamak için işyerini unut.";
+"merchant.detail.visits" = "Ziyaretler";
+"merchant.detail.averageCheck" = "Ortalama fiş";
+"merchant.detail.lastVisit" = "Son ziyaret";
+"merchant.detail.thisMonth" = "Bu ay";
+"merchant.detail.thisYear" = "Bu yıl";
+"merchant.detail.byMonth" = "Aylara göre";
+"merchant.detail.open" = "İşyerindeki ödemeler";
+"walletReview.title" = "Kontrol edilecekler";
+"walletReview.footer" = "Bu Apple Pay ödemelerinin kategorisi veya hesabı otomatik seçildi. Düzeltmek için bir ödemeye dokun, doğruysa sağa kaydır. Seçimin işyeri ve kart için hatırlanır.";
+"walletReview.emptyTitle" = "Kontrol edilecek bir şey yok";
+"walletReview.emptyMessage" = "Kategorisi veya hesabı otomatik seçilen Apple Pay ödemeleri, sen kontrol edene kadar burada görünür.";
+"walletReview.confirm" = "Doğru";
+"walletReview.confirmAll" = "Hepsi doğru";
+"walletReview.notification.title" = "Bir ödemeyi kontrol et";
+"walletReview.notification.category" = "%1$@ ödemesi %2$@ kategorisine kaydedildi. Kontrol etmek için dokun.";
+"walletReview.notification.account" = "%1$@ ödemesi %2$@ hesabına kaydedildi. Kontrol etmek için dokun.";
+"settings.cards.title" = "Wallet kartları";
+"settings.cards.footer" = "Bu kartlarla yapılan Apple Pay ödemeleri gösterilen hesaba kaydedilir. Başka bir hesap seçmek için bir karta dokun, unutmak için sola kaydır.";
+"settings.cards.emptyTitle" = "Henüz kart yok";
+"settings.cards.emptyMessage" = "Wallet otomasyonu kartı aktardığında Tenra, onun için seçtiğin veya onayladığın hesabı burada hatırlar.";
+"settings.cards.accountDeleted" = "Hesap silindi";
 
 
 /* MARK: - Document import */
@@ -1732,6 +1810,8 @@
 "import.source.receipt.title" = "Fiş tara";
 "import.source.receipt.subtitle" = "Kamerayı kağıt bir fişe doğrultun";
 "import.receipt.title" = "Fişi Gözden Geçir";
+"import.receipt.debtRepayment" = "Bu bir borç ödemesi";
+"import.receipt.debtRepayment.footer" = "Ödeme, %@ kişisine olan borcunu da azaltır.";
 "import.receipt.detailsHeader" = "Fiş Bilgileri";
 "import.receipt.merchant" = "Satıcı";
 "import.receipt.total" = "Toplam";
@@ -1815,6 +1895,9 @@
 "transactionPreview.reconcile.less" = "Tenra'da şu kadar az";
 "transactionPreview.reconcile.more" = "Tenra'da şu kadar fazla";
 "transactionPreview.reconcile.hint" = "İşaretsiz satırları ve bu dönemdeki manuel kayıtlarınızı kontrol edin";
+"transactionPreview.walletMissing" = "Ekstrede olmayan Apple Pay ödemeleri: %lld";
+"walletMissing.title" = "Ekstrede yok";
+"walletMissing.footer" = "Wallet otomasyonu bu Apple Pay ödemelerini kaydetti, ancak ekstrede bunlar için bir tahsilat yok. Otomasyon reddedilen bir ödemede de çalışır: bunlardan biri reddedildiyse silmek için sola kaydır.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence kategorileri seçiyor…";

@@ -20,6 +20,8 @@ nonisolated final class GoogleFaviconProvider: LogoProvider {
     }()
 
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
+        // Only a domain has a favicon; anything else would get Google's blank globe.
+        guard !domain.hasPrefix(LogoDevNameProvider.scheme), domain.contains(".") else { return nil }
         var components = URLComponents(string: "https://www.google.com/s2/favicons")!
         components.queryItems = [
             URLQueryItem(name: "domain", value: domain),

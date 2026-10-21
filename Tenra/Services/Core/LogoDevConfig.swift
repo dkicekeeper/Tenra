@@ -55,7 +55,21 @@ enum LogoDevConfig {
         
         #if DEBUG
         #endif
-        
+
         return url
+    }
+
+    /// The logo of a company found by its name ("Magnum Cash&Carry"), for a merchant
+    /// without a known domain. `fallback=404`: an unknown name answers 404 instead of a
+    /// generated monogram, so "no logo" is told apart from a logo.
+    nonisolated static func nameLogoURL(for name: String) -> URL? {
+        guard let key = publicKey else { return nil }
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
+        guard !trimmed.isEmpty,
+              let encoded = trimmed.addingPercentEncoding(withAllowedCharacters: allowed) else {
+            return nil
+        }
+        return URL(string: "https://img.logo.dev/name/\(encoded)?token=\(key)&size=128&format=png&fallback=404")
     }
 }

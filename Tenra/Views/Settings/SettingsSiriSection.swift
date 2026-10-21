@@ -4,14 +4,18 @@
 //
 //  Teaches the Siri phrases. Without this, App Shortcuts are discoverable only
 //  by accident, and an undiscovered feature has no effect on retention.
-//  Also the way to the merchants the Wallet automation remembered.
+//  Also the way to the Wallet automation: how to set it up (WalletSetupGuideView) and
+//  what it keeps: the payments it saved with a guess (To review), the merchants and the
+//  cards it remembered.
 //
 
 import SwiftUI
 import AppIntents
 
 struct SettingsSiriSection: View {
+    let transactionsViewModel: TransactionsViewModel
     let categoriesViewModel: CategoriesViewModel
+    let accountsViewModel: AccountsViewModel
 
     var body: some View {
         Section {
@@ -21,12 +25,43 @@ struct SettingsSiriSection: View {
             }
 
             UniversalRow(
+                String(localized: "walletSetup.title"),
+                icon: "list.number",
+                config: .settings,
+                accessory: .navigation { WalletSetupGuideView() }
+            )
+
+            UniversalRow(
+                String(localized: "walletReview.title"),
+                icon: "checkmark.circle",
+                config: .settings,
+                accessory: .navigation {
+                    WalletReviewView(
+                        transactionsViewModel: transactionsViewModel,
+                        categoriesViewModel: categoriesViewModel,
+                        accountsViewModel: accountsViewModel
+                    )
+                }
+            )
+
+            UniversalRow(
                 String(localized: "settings.merchants.title"),
                 icon: "wallet.pass",
                 config: .settings,
                 accessory: .navigation {
-                    MerchantCategoriesView(categoriesViewModel: categoriesViewModel)
+                    MerchantCategoriesView(
+                        transactionsViewModel: transactionsViewModel,
+                        categoriesViewModel: categoriesViewModel,
+                        accountsViewModel: accountsViewModel
+                    )
                 }
+            )
+
+            UniversalRow(
+                String(localized: "settings.cards.title"),
+                icon: "creditcard",
+                config: .settings,
+                accessory: .navigation { WalletCardsView(accountsViewModel: accountsViewModel) }
             )
 
             ShortcutsLink()

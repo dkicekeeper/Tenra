@@ -34,6 +34,66 @@ struct ReceiptInterpreterTests {
         #expect(draft?.date == "2026-01-08")
     }
 
+    @Test("a bank receipt's recipient is the merchant, its fee is never the amount")
+    func transferReceipt() {
+        let sameLine = receipt([
+            "Bank of Tenra",
+            "Перевод по номеру телефона",
+            "Получатель: Иван И.",
+            "Сумма 5 000 ₸",
+            "Сумма комиссии 150 ₸",
+            "20.10.2026 12:19"
+        ])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: sameLine, defaultCurrency: "KZT")
+        #expect(draft?.merchant == "Иван И.")
+        #expect(draft?.isRecipient == true)
+        #expect(draft?.total == 5000)
+        #expect(draft?.date == "2026-10-20")
+
+        let nextLine = receipt(["Bank of Tenra", "Продавец", "SMALL", "Итого 2 300 ₸"])
+        #expect(ReceiptInterpreter.heuristicDraft(snapshot: nextLine, defaultCurrency: "KZT")?.merchant == "SMALL")
+
+        // The text layer joins a two-column receipt's label and value with a space.
+        let columns = receipt(["Bank of Tenra", "Получатель платежа ТОО Альфа", "Сумма 7 000 ₸"])
+        #expect(ReceiptInterpreter.heuristicDraft(snapshot: columns, defaultCurrency: "KZT")?.merchant == "ТОО Альфа")
+    }
+
+    @Test("a shop's lines that start like a label name no recipient")
+    func notRecipientLabels() {
+        #expect(ReceiptInterpreter.labelledRecipient(["Продавец-консультант: Анна"]) == nil)
+        #expect(ReceiptInterpreter.labelledRecipient(["Магазин «Пятёрочка»"]) == nil)
+        #expect(ReceiptInterpreter.labelledRecipient(["Продавец Иванова А."]) == nil)
+        #expect(ReceiptInterpreter.labelledRecipient(["Получатель платежей банка"]) == nil)
+        #expect(ReceiptInterpreter.labelledRecipient(["Магазины рядом"]) == nil)
+        #expect(ReceiptInterpreter.labelledRecipient(["Продавец : SMALL"]) == "SMALL")
+
+        let shop = receipt(["Магазин «Пятёрочка»", "Хлеб 320", "Итого 320"])
+        let draft = ReceiptInterpreter.heuristicDraft(snapshot: shop, defaultCurrency: "KZT")
+        #expect(draft?.merchant == "Магазин «Пятёрочка»")
+        #expect(draft?.isRecipient == false)
+    }
+
+    @Test("a fee is never the amount, a total that includes it is")
+    func feeInclusiveTotal() {
+        let snapshot = receipt([
+            "Bank of Tenra",
+            "Комиссия 150 ₸",
+            "Итого с учетом комиссии 5 150 ₸"
+        ])
+        #expect(ReceiptInterpreter.heuristicDraft(snapshot: snapshot, defaultCurrency: "KZT")?.total == 5150)
+
+        let feeLargest = receipt(["Bank of Tenra", "Перевод 900 ₸", "Комиссия за перевод 1 000 ₸"])
+        #expect(ReceiptInterpreter.heuristicDraft(snapshot: feeLargest, defaultCurrency: "KZT")?.total == 900)
+    }
+
+    @Test("only one page with few dates and a labelled total or recipient reads as one payment")
+    func onePaymentShape() {
+        #expect(ReceiptInterpreter.looksLikeOnePayment(receipt(["Bank of Tenra", "Получатель: SMALL", "Сумма 2 300 ₸"])))
+        #expect(!ReceiptInterpreter.looksLikeOnePayment(receipt(["Bank of Tenra", "SMALL 2 300 ₸"])))
+        let rows = ["01.10.2026 SMALL 2 300", "02.10.2026 MAGNUM 5 000", "03.10.2026 TAXI 1 200", "04.10.2026 CAFE 900"]
+        #expect(!ReceiptInterpreter.looksLikeOnePayment(receipt(["Выписка", "Итого 9 400"] + rows)))
+    }
+
     @Test("merchant is the first substantial non-numeric line")
     func merchantFromFirstLine() {
         let snapshot = receipt([

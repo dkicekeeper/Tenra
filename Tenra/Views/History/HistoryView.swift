@@ -28,6 +28,10 @@ struct HistoryView: View {
     @State private var expensesCache = DateSectionExpensesCache()
     /// Amount index for the numeric search, built off the main actor while typing.
     @State private var amountSearch = TransactionAmountSearch.Cache()
+    /// The history's frequent merchants for the search suggestions, and the
+    /// `mutationVersion` they were found at.
+    @State private var merchantSamples: [String] = []
+    @State private var merchantSamplesVersion: Int?
 
     // MARK: - State
 
@@ -249,8 +253,12 @@ struct HistoryView: View {
         .modifier(HistorySearchSuggestions(
             text: $filterCoordinator.searchText,
             categories: categoriesViewModel.customCategories,
-            subcategories: categoriesViewModel.subcategories
+            subcategories: categoriesViewModel.subcategories,
+            merchantSamples: merchantSamples
         ))
+        .task(id: merchantSamplesKey) {
+            await refreshMerchantSamples(version: merchantSamplesKey)
+        }
         .onAppear {
             handleOnAppear()
         }
@@ -434,6 +442,32 @@ struct HistoryView: View {
         guard TransactionAmountSearch.needle(from: query) != nil,
               let store = transactionsViewModel.transactionStore else { return }
         amountSearch.prepare(transactions: store.transactions, version: amountSearchVersion(of: store))
+    }
+
+    /// Frequent merchants are found when the search opens, again only after a transaction
+    /// changed; nil while the search is closed.
+    private var merchantSamplesKey: Int? {
+        guard filterCoordinator.isSearchActive,
+              let store = transactionsViewModel.transactionStore else { return nil }
+        // `mutationVersion` is @ObservationIgnored: the count is what re-evaluates the key.
+        _ = store.transactions.count
+        return store.mutationVersion
+    }
+
+    /// The merchants of 3+ transactions, most frequent first, found off the main actor.
+    private func refreshMerchantSamples(version: Int?) async {
+        guard let version, version != merchantSamplesVersion,
+              let store = transactionsViewModel.transactionStore else { return }
+        let transactions = store.transactions
+        let samples = await Task.detached(priority: .utility) {
+            Array(MerchantLogoResolver.frequentMerchants(
+                in: transactions,
+                minimumVisits: MerchantLogoResolver.frequentVisits
+            ).prefix(100))
+        }.value
+        guard !Task.isCancelled else { return }
+        merchantSamples = samples
+        merchantSamplesVersion = version
     }
 
     /// The transaction set the amount index is built from: any add, edit or delete

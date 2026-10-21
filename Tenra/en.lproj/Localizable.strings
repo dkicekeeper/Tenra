@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Customize...";
 "settings.wallpaper" = "Home Wallpaper";
 "settings.background" = "Background";
+"settings.merchantLogos" = "Merchant logos";
 "home.hint.categories" = "Tap a category to add an expense";
 "settings.voiceLanguage" = "Voice language";
 "settings.voiceLanguage.app" = "As in the app";
@@ -113,6 +114,14 @@
 "settings.subcategories" = "Subcategories";
 "settings.accounts" = "Accounts";
 "settings.exportImport" = "Export & Import";
+"settings.importReminder" = "Statement reminder";
+"settings.importReminder.off" = "Off";
+"settings.importReminder.week" = "Every week";
+"settings.importReminder.twoWeeks" = "Every 2 weeks";
+"settings.importReminder.month" = "Every month";
+"settings.importReminder.footer" = "After you import a bank statement, Tenra reminds you to import the next one: transfers and payments outside Apple Pay only come in with a statement.";
+"importReminder.notification.title" = "Time for a bank statement";
+"importReminder.notification.body" = "Open your bank's PDF statement in Tenra to add the transfers and payments Apple Pay did not record.";
 "settings.exportData" = "Export Data";
 "settings.importData" = "Import Data";
 "settings.dangerZone" = "Danger Zone";
@@ -188,6 +197,7 @@
 "search.fill" = "Edit in search field";
 "search.suggestion.category" = "Category";
 "search.suggestion.subcategory" = "Subcategory";
+"search.suggestion.merchant" = "Merchant";
 
 // MARK: - Modals
 "modal.newAccount" = "New Account";
@@ -441,6 +451,9 @@
 "subscriptions.title" = "Subscriptions";
 "subscriptions.empty" = "No Subscriptions";
 "subscriptions.emptyDescription" = "Add a subscription to track recurring payments";
+"subscriptions.candidates.title" = "Looks like a subscription";
+"subscriptions.candidates.footer" = "These merchants charged you about the same amount every month. Tap one to add it as a subscription: its next charge is planned, the past payments stay as they are. Touch and hold to hide it.";
+"subscriptions.candidates.dismiss" = "Not a subscription";
 "subscriptions.addSubscription" = "Add Subscription";
 "subscriptions.deleteConfirmTitle" = "Delete subscription?";
 "subscriptions.deleteConfirmMessage" = "All subscription data and related transactions will be deleted.";
@@ -795,6 +808,7 @@
 "insights.emptyState.description" = "Add some transactions to see your financial insights";
 "insights.noInsightsForFilter" = "No insights for this category";
 "insights.topCategory" = "Top Spending Category";
+"insights.topMerchant" = "Top Merchant";
 "insights.ofTotal" = "of total spending";
 "insights.spendingSpike" = "Unusual Spending Detected";
 "insights.monthOverMonth" = "Monthly Spending Change";
@@ -1038,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "Times above average";
 "insights.formula.largeTransaction.explainer" = "Recurring charges like rent and subscriptions are excluded: only one-off purchases count. A purchase 4× your average expense is worth a second look.";
 "insights.formula.largeTransaction.rec" = "Make sure the purchase is expected. One-off? No action needed. The signal clears as your average adjusts.";
+"insights.checkGrowth" = "Average check is up";
+"insights.checkGrowth.comparison" = "vs the 3 months before";
+"insights.formula.checkGrowth.title" = "Average check";
+"insights.formula.checkGrowth.heroLabel" = "Average check, last 90 days";
+"insights.formula.checkGrowth.formulaHeader" = "How it's computed";
+"insights.formula.checkGrowth.row.merchant" = "Merchant";
+"insights.formula.checkGrowth.row.before" = "Before (the 90 days earlier)";
+"insights.formula.checkGrowth.row.after" = "Now (the last 90 days)";
+"insights.formula.checkGrowth.row.visits" = "Purchases, before → now";
+"insights.formula.checkGrowth.row.growth" = "Growth";
+"insights.formula.checkGrowth.explainer" = "The average check of the last 90 days against the 90 days before, at merchants with at least 3 purchases in each. Subscriptions are left out: their price changes have an insight of their own.";
+"insights.formula.checkGrowth.rec" = "See what changed: prices, what you buy there, or how much at a time.";
 "insights.dormant.accounts" = "Idle Accounts";
 
 // MARK: - Tab Bar
@@ -1698,6 +1724,34 @@
 "intent.addExpense.saved" = "Added %1$@, %2$@.";
 "intent.addExpense.askCategory" = "Which category for %@? Tenra will remember it.";
 "intent.addExpense.askSubcategory" = "Which subcategory for %@?";
+"intent.walletPayment.title" = "Log an Apple Pay payment";
+"intent.walletPayment.description" = "For the Wallet automation: records a card payment with its merchant, card and currency, without asking anything. Tenra remembers the category of each merchant and the account of each card.";
+"intent.walletPayment.parameter.amount" = "Amount";
+"intent.walletPayment.parameter.currency" = "Currency code";
+"intent.walletPayment.parameter.merchant" = "Merchant";
+"intent.walletPayment.parameter.card" = "Card";
+"intent.walletPayment.parameter.account" = "Account";
+"intent.walletPayment.duplicate" = "This payment is already recorded.";
+"intent.walletPayment.subscription" = "Already recorded as the %@ subscription.";
+"intent.walletPayment.noAmount" = "No amount in this payment, nothing recorded.";
+"intent.walletPayment.queued" = "No exchange rate yet. Tenra records this payment as soon as it gets one.";
+"intent.walletPayment.noAccount" = "Add an account in Tenra to record payments.";
+"walletSetup.title" = "Set up the Wallet automation";
+"walletSetup.intro" = "Then every Apple Pay payment at a terminal is saved on its own, with the merchant, amount, currency and card. Wallet does not pass on online payments: they come in with a statement.";
+"walletSetup.trigger" = "Automation";
+"walletSetup.step.open" = "Open **Shortcuts**, go to **Automation**, tap **+** and choose **Wallet**.";
+"walletSetup.step.cards" = "Pick your cards, keep **Any Category** and **Any Merchant**, and let it run immediately, without asking.";
+"walletSetup.step.action" = "Add Tenra's **%@** action.";
+"walletSetup.fields" = "The action's fields";
+"walletSetup.step.amount" = "**%@**: tap the field and choose **Transaction**.";
+"walletSetup.step.merchant" = "**%@**: choose **Transaction**, tap it again and pick its **Merchant**.";
+"walletSetup.step.card" = "**%@**: **Transaction** again, with its card. From it Tenra learns which account each card pays from.";
+"walletSetup.step.account" = "**%@**: leave it empty, Tenra picks the account and remembers it for the card. For an automation of a single card you can set it right away.";
+"walletSetup.step.quiet" = "Turn off **Show When Run**, so payments are saved without a question.";
+"walletSetup.currency" = "Payments in another currency";
+"walletSetup.currency.text" = "Without this step a payment is saved in its account's currency. Before Tenra's action add **Set Variable** with the amount of **Transaction**, then in **%@** choose that variable and its currency code.";
+"walletSetup.note.oldAction" = "Already have an automation with **%1$@**? Replace it with **%2$@**: it asks nothing, remembers your cards and never saves a payment twice.";
+"walletSetup.openShortcuts" = "Open Shortcuts";
 "intent.entity.account" = "Account";
 "intent.entity.category" = "Category";
 "intent.entity.subcategory" = "Subcategory";
@@ -1717,13 +1771,37 @@
 "settings.siri.example2" = "Hey Siri, how much did I spend in Tenra";
 "settings.siri.example3" = "Hey Siri, add an expense in Tenra";
 "settings.merchants.title" = "Wallet merchants";
-"settings.merchants.footer" = "Payments at these merchants through the Wallet automation get this category and subcategory. Tap a merchant to change them, or swipe left to forget it.";
+"settings.merchants.footer" = "Payments at these merchants through the Wallet automation get this category and subcategory. Tap a merchant to see its payments and change them, or swipe left to forget it.";
 "settings.merchants.emptyTitle" = "No merchants yet";
-"settings.merchants.emptyMessage" = "When the Wallet automation adds an expense, Tenra asks for the category once per merchant and remembers it here. In the automation, pass the merchant to Note and leave Category empty.";
+"settings.merchants.emptyMessage" = "The category of each merchant you pay with Apple Pay through the Wallet automation is remembered here, once you choose, confirm or fix it.";
 "settings.merchants.forget" = "Forget";
 "settings.merchants.forgetMerchant" = "Forget merchant";
+"settings.merchants.editTitle" = "Edit merchant";
+"settings.merchants.showLogo" = "Show logo";
+"settings.merchants.showLogo.footer" = "Off: this merchant's transactions keep the category icon.";
 "settings.merchants.categoryDeleted" = "Category deleted, Tenra will ask again";
-"settings.merchants.editFooter" = "The next payments here are recorded with this category. Forget the merchant and Tenra asks again on its next payment.";
+"settings.merchants.editFooter" = "The next payments here are recorded with this category. Forget the merchant to start over on its next payment.";
+"merchant.detail.visits" = "Visits";
+"merchant.detail.averageCheck" = "Average check";
+"merchant.detail.lastVisit" = "Last visit";
+"merchant.detail.thisMonth" = "This month";
+"merchant.detail.thisYear" = "This year";
+"merchant.detail.byMonth" = "By month";
+"merchant.detail.open" = "Merchant's payments";
+"walletReview.title" = "To review";
+"walletReview.footer" = "Tenra picked the category or the account of these Apple Pay payments on its own. Tap a payment to fix it, or swipe right if it is correct. Your choice is remembered for the merchant and the card.";
+"walletReview.emptyTitle" = "Nothing to review";
+"walletReview.emptyMessage" = "Apple Pay payments recorded with an automatic category or account appear here until you check them.";
+"walletReview.confirm" = "Correct";
+"walletReview.confirmAll" = "All correct";
+"walletReview.notification.title" = "Check a payment";
+"walletReview.notification.category" = "%1$@ is recorded in %2$@. Tap to check.";
+"walletReview.notification.account" = "%1$@ is recorded on %2$@. Tap to check.";
+"settings.cards.title" = "Wallet cards";
+"settings.cards.footer" = "Apple Pay payments with these cards are recorded on the account shown. Tap a card to pick another account, or swipe left to forget it.";
+"settings.cards.emptyTitle" = "No cards yet";
+"settings.cards.emptyMessage" = "When the Wallet automation passes the card, Tenra remembers the account you choose or confirm for it here.";
+"settings.cards.accountDeleted" = "Account deleted";
 
 
 /* MARK: - Document import */
@@ -1732,6 +1810,8 @@
 "import.source.receipt.title" = "Scan a receipt";
 "import.source.receipt.subtitle" = "Point the camera at a paper receipt";
 "import.receipt.title" = "Review Receipt";
+"import.receipt.debtRepayment" = "It's a debt repayment";
+"import.receipt.debtRepayment.footer" = "The payment also goes towards what you owe %@.";
 "import.receipt.detailsHeader" = "Receipt Details";
 "import.receipt.merchant" = "Merchant";
 "import.receipt.total" = "Total";
@@ -1815,6 +1895,9 @@
 "transactionPreview.reconcile.less" = "Tenra shows less by";
 "transactionPreview.reconcile.more" = "Tenra shows more by";
 "transactionPreview.reconcile.hint" = "Check unchecked rows and your manual entries for this period";
+"transactionPreview.walletMissing" = "Apple Pay payments not in this statement: %lld";
+"walletMissing.title" = "Not in the statement";
+"walletMissing.footer" = "The Wallet automation recorded these Apple Pay payments, but the statement shows no charge for them. A declined payment also starts the automation: if one of these was declined, swipe it left to delete it.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence is picking categories…";

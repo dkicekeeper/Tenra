@@ -95,6 +95,7 @@
 "currency.customizeAction" = "Налаштувати...";
 "settings.wallpaper" = "Шпалери головної";
 "settings.background" = "Тло";
+"settings.merchantLogos" = "Логотипи магазинів";
 "home.hint.categories" = "Натисніть на категорію, щоб додати витрату";
 "settings.voiceLanguage" = "Мова голосу";
 "settings.voiceLanguage.app" = "Як у застосунку";
@@ -113,6 +114,14 @@
 "settings.subcategories" = "Підкатегорії";
 "settings.accounts" = "Рахунки";
 "settings.exportImport" = "Експорт та імпорт";
+"settings.importReminder" = "Нагадувати про виписку";
+"settings.importReminder.off" = "Вимк.";
+"settings.importReminder.week" = "Щотижня";
+"settings.importReminder.twoWeeks" = "Раз на 2 тижні";
+"settings.importReminder.month" = "Раз на місяць";
+"settings.importReminder.footer" = "Після імпорту виписки Tenra нагадає завантажити наступну: перекази й оплати не через Apple Pay потрапляють у Tenra лише з випискою.";
+"importReminder.notification.title" = "Час завантажити виписку";
+"importReminder.notification.body" = "Відкрийте PDF-виписку банку в Tenra, щоб додати перекази й оплати, які не записав Apple Pay.";
 "settings.exportData" = "Експортувати дані";
 "settings.importData" = "Імпортувати дані";
 "settings.dangerZone" = "Небезпечна зона";
@@ -188,6 +197,7 @@
 "search.fill" = "Змінити в полі пошуку";
 "search.suggestion.category" = "Категорія";
 "search.suggestion.subcategory" = "Підкатегорія";
+"search.suggestion.merchant" = "Продавець";
 
 // MARK: - Modals
 "modal.newAccount" = "Новий рахунок";
@@ -441,6 +451,9 @@
 "subscriptions.title" = "Підписки";
 "subscriptions.empty" = "Немає підписок";
 "subscriptions.emptyDescription" = "Додайте підписку, щоб відстежувати регулярні платежі";
+"subscriptions.candidates.title" = "Схоже на підписку";
+"subscriptions.candidates.footer" = "Ці продавці списували приблизно однакову суму щомісяця. Натисніть, щоб додати підписку: заплановано наступне списання, минулі платежі залишаться як є. Утримуйте, щоб приховати.";
+"subscriptions.candidates.dismiss" = "Це не підписка";
 "subscriptions.addSubscription" = "Додати підписку";
 "subscriptions.deleteConfirmTitle" = "Видалити підписку?";
 "subscriptions.deleteConfirmMessage" = "Усі дані підписки та пов'язані операції буде видалено.";
@@ -795,6 +808,7 @@
 "insights.emptyState.description" = "Додайте кілька операцій, щоб побачити аналітику ваших фінансів";
 "insights.noInsightsForFilter" = "Немає аналітики для цієї категорії";
 "insights.topCategory" = "Головна категорія витрат";
+"insights.topMerchant" = "Головний продавець";
 "insights.ofTotal" = "від усіх витрат";
 "insights.spendingSpike" = "Виявлено незвичні витрати";
 "insights.monthOverMonth" = "Зміна витрат за місяць";
@@ -1038,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "У скільки разів вище середньої";
 "insights.formula.largeTransaction.explainer" = "Регулярні платежі (оренда, підписки) виключені: враховуються лише разові покупки. Покупка вчетверо вища за вашу середню витрату заслуговує на увагу.";
 "insights.formula.largeTransaction.rec" = "Переконайтеся, що покупка очікувана. Разова? Нічого робити не треба: сигнал зникне з оновленням середньої.";
+"insights.checkGrowth" = "Середній чек зростає";
+"insights.checkGrowth.comparison" = "до 3 місяців перед цим";
+"insights.formula.checkGrowth.title" = "Середній чек";
+"insights.formula.checkGrowth.heroLabel" = "Середній чек за 90 днів";
+"insights.formula.checkGrowth.formulaHeader" = "Як це пораховано";
+"insights.formula.checkGrowth.row.merchant" = "Продавець";
+"insights.formula.checkGrowth.row.before" = "Раніше (90 днів перед цим)";
+"insights.formula.checkGrowth.row.after" = "Зараз (останні 90 днів)";
+"insights.formula.checkGrowth.row.visits" = "Покупок: раніше → зараз";
+"insights.formula.checkGrowth.row.growth" = "Зростання";
+"insights.formula.checkGrowth.explainer" = "Середній чек за останні 90 днів порівнюється з 90 днями перед ними, у продавців, де в кожному періоді було не менше 3 покупок. Підписки не враховуються: про їх подорожчання є окремий інсайт.";
+"insights.formula.checkGrowth.rec" = "Подивіться, що змінилося: ціни, що ви там купуєте чи скільки за раз.";
 "insights.dormant.accounts" = "Неактивні рахунки";
 
 // MARK: - Tab Bar
@@ -1698,6 +1724,34 @@
 "intent.addExpense.saved" = "Додано: %1$@, %2$@.";
 "intent.addExpense.askCategory" = "Яка категорія для %@? Tenra її запам'ятає.";
 "intent.addExpense.askSubcategory" = "Яка підкатегорія для %@?";
+"intent.walletPayment.title" = "Записати оплату Apple Pay";
+"intent.walletPayment.description" = "Для автоматизації Wallet: записує оплату карткою з продавцем, карткою та валютою, нічого не питаючи. Tenra запам'ятовує категорію кожного продавця і рахунок кожної картки.";
+"intent.walletPayment.parameter.amount" = "Сума";
+"intent.walletPayment.parameter.currency" = "Код валюти";
+"intent.walletPayment.parameter.merchant" = "Продавець";
+"intent.walletPayment.parameter.card" = "Картка";
+"intent.walletPayment.parameter.account" = "Рахунок";
+"intent.walletPayment.duplicate" = "Цю оплату вже записано.";
+"intent.walletPayment.subscription" = "Уже записано як підписку «%@».";
+"intent.walletPayment.noAmount" = "В оплаті немає суми, нічого не записано.";
+"intent.walletPayment.queued" = "Курсу валюти поки немає. Tenra запише оплату, щойно він з'явиться.";
+"intent.walletPayment.noAccount" = "Додайте рахунок у Tenra, щоб записувати оплати.";
+"walletSetup.title" = "Налаштувати автоматизацію Wallet";
+"walletSetup.intro" = "Після цього кожна оплата Apple Pay на терміналі записується сама: із продавцем, сумою, валютою і карткою. Онлайн-оплати Wallet не передає, вони прийдуть із випискою.";
+"walletSetup.trigger" = "Автоматизація";
+"walletSetup.step.open" = "Відкрийте **Швидкі команди**, вкладку **Автоматизація**, натисніть **+** і виберіть **Wallet**.";
+"walletSetup.step.cards" = "Позначте свої картки, залиште будь-яку категорію і будь-якого продавця та виберіть запуск одразу, без підтвердження.";
+"walletSetup.step.action" = "Додайте дію Tenra **%@**.";
+"walletSetup.fields" = "Поля дії";
+"walletSetup.step.amount" = "**%@**: натисніть на поле і виберіть **Транзакція**.";
+"walletSetup.step.merchant" = "**%@**: виберіть **Транзакція**, натисніть на неї ще раз і виберіть продавця.";
+"walletSetup.step.card" = "**%@**: знову **Транзакція**, її картка. За нею Tenra дізнається, з якого рахунку платить кожна картка.";
+"walletSetup.step.account" = "**%@**: залиште порожнім, Tenra вибере рахунок і запам'ятає його для картки. Якщо автоматизація для однієї картки, можна вказати рахунок одразу.";
+"walletSetup.step.quiet" = "Вимкніть показ під час запуску, щоб оплата записувалася без запитань.";
+"walletSetup.currency" = "Оплата в іншій валюті";
+"walletSetup.currency.text" = "Без цього кроку оплата записується у валюті рахунку. Перед дією Tenra додайте **Задати змінну** і вкажіть у ній суму з **Транзакція**. Потім у полі **%@** виберіть цю змінну та її код валюти.";
+"walletSetup.note.oldAction" = "Вже є автоматизація з дією **%1$@**? Замініть її на **%2$@**: вона нічого не питає, пам'ятає картки і не записує оплату двічі.";
+"walletSetup.openShortcuts" = "Відкрити Швидкі команди";
 "intent.entity.account" = "Рахунок";
 "intent.entity.category" = "Категорія";
 "intent.entity.subcategory" = "Підкатегорія";
@@ -1717,13 +1771,37 @@
 "settings.siri.example2" = "Привіт, Siri, скільки я витратив у Tenra";
 "settings.siri.example3" = "Привіт, Siri, додай витрату в Tenra";
 "settings.merchants.title" = "Продавці Wallet";
-"settings.merchants.footer" = "Оплати в цих продавців через автоматизацію Wallet записуються з цією категорією та підкатегорією. Натисніть на продавця, щоб змінити їх, або змахніть ліворуч, щоб забути.";
+"settings.merchants.footer" = "Оплати в цих продавців через автоматизацію Wallet записуються з цією категорією та підкатегорією. Натисніть на продавця, щоб побачити його платежі й змінити їх, або змахніть ліворуч, щоб забути.";
 "settings.merchants.emptyTitle" = "Поки немає продавців";
-"settings.merchants.emptyMessage" = "Коли автоматизація Wallet додає витрату, Tenra один раз питає категорію для продавця і запам'ятовує її тут. В автоматизації передайте продавця в поле «Нотатка» і залиште «Категорію» порожньою.";
+"settings.merchants.emptyMessage" = "Тут запам'ятовується категорія кожного продавця, у якого ви платите Apple Pay через автоматизацію Wallet, щойно ви її виберете, підтвердите або виправите.";
 "settings.merchants.forget" = "Забути";
 "settings.merchants.forgetMerchant" = "Забути продавця";
+"settings.merchants.editTitle" = "Змінити продавця";
+"settings.merchants.showLogo" = "Показувати логотип";
+"settings.merchants.showLogo.footer" = "Вимкніть, щоб в операціях цього продавця залишалася іконка категорії.";
 "settings.merchants.categoryDeleted" = "Категорію видалено, Tenra запитає знову";
-"settings.merchants.editFooter" = "Наступні оплати тут запишуться з цією категорією. Якщо забути продавця, Tenra запитає категорію під час наступної оплати.";
+"settings.merchants.editFooter" = "Наступні оплати тут запишуться з цією категорією. Забудьте продавця, щоб почати заново з його наступної оплати.";
+"merchant.detail.visits" = "Візити";
+"merchant.detail.averageCheck" = "Середній чек";
+"merchant.detail.lastVisit" = "Останній візит";
+"merchant.detail.thisMonth" = "Цього місяця";
+"merchant.detail.thisYear" = "Цього року";
+"merchant.detail.byMonth" = "По місяцях";
+"merchant.detail.open" = "Платежі продавця";
+"walletReview.title" = "На перевірку";
+"walletReview.footer" = "У цих оплат Apple Pay категорію або рахунок вибрано автоматично. Натисніть на оплату, щоб виправити, або змахніть праворуч, якщо все правильно. Ваш вибір запам'ятається для продавця і картки.";
+"walletReview.emptyTitle" = "Перевіряти нічого";
+"walletReview.emptyMessage" = "Тут з'являються оплати Apple Pay, у яких категорію або рахунок вибрано автоматично, доки ви їх не перевірите.";
+"walletReview.confirm" = "Правильно";
+"walletReview.confirmAll" = "Усе правильно";
+"walletReview.notification.title" = "Перевірте оплату";
+"walletReview.notification.category" = "%1$@: записано в «%2$@». Натисніть, щоб перевірити.";
+"walletReview.notification.account" = "%1$@: записано на рахунок «%2$@». Натисніть, щоб перевірити.";
+"settings.cards.title" = "Картки Wallet";
+"settings.cards.footer" = "Оплати Apple Pay цими картками записуються на вказаний рахунок. Натисніть на картку, щоб вибрати інший рахунок, або змахніть ліворуч, щоб забути.";
+"settings.cards.emptyTitle" = "Карток поки немає";
+"settings.cards.emptyMessage" = "Коли автоматизація Wallet передає картку, Tenra запам'ятовує тут рахунок, який ви для неї вибрали або підтвердили.";
+"settings.cards.accountDeleted" = "Рахунок видалено";
 
 
 /* MARK: - Document import */
@@ -1732,6 +1810,8 @@
 "import.source.receipt.title" = "Сканувати чек";
 "import.source.receipt.subtitle" = "Наведіть камеру на паперовий чек";
 "import.receipt.title" = "Перевірка чека";
+"import.receipt.debtRepayment" = "Це повернення боргу";
+"import.receipt.debtRepayment.footer" = "Платіж також зменшить ваш борг: %@.";
 "import.receipt.detailsHeader" = "Дані чека";
 "import.receipt.merchant" = "Продавець";
 "import.receipt.total" = "Сума";
@@ -1815,6 +1895,9 @@
 "transactionPreview.reconcile.less" = "У Tenra менше на";
 "transactionPreview.reconcile.more" = "У Tenra більше на";
 "transactionPreview.reconcile.hint" = "Перевірте рядки без позначки та ручні записи за цей період";
+"transactionPreview.walletMissing" = "Оплат Apple Pay немає у виписці: %lld";
+"walletMissing.title" = "Немає у виписці";
+"walletMissing.footer" = "Автоматизація Wallet записала ці оплати Apple Pay, але у виписці списання за ними немає. Автоматизація спрацьовує і на відхилену оплату: якщо якась із них не пройшла, змахніть її ліворуч, щоб видалити.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence добирає категорії…";

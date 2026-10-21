@@ -218,9 +218,21 @@ nonisolated enum FinanceToolkitCompute {
                 key = s.categoryIdByName[tx.category] ?? tx.category
                 label = tx.category
             case "merchant":
-                let merchant = tx.description.trimmingCharacters(in: .whitespacesAndNewlines)
-                key = merchant.isEmpty ? tx.category : merchant
-                label = key
+                // One merchant however its shops are numbered ("MAGNUM 123", "Magnum 456"),
+                // named as a person would write it (MerchantName).
+                let merchant = CategorySuggestionService.normalizedMerchant(tx.description)
+                let written = tx.description.trimmingCharacters(in: .whitespacesAndNewlines)
+                if merchant.count >= CategorySuggestionService.minimumMerchantLength {
+                    key = merchant
+                    label = labels[merchant] ?? MerchantName.displayName(tx.description)
+                } else if !written.isEmpty {
+                    // Too short to stand for a merchant's words ("WB"): as it is written.
+                    key = written.lowercased()
+                    label = written
+                } else {
+                    key = tx.category
+                    label = tx.category
+                }
             case "week":
                 key = weekStart(of: tx.date)
                 label = key

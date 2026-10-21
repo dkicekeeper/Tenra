@@ -139,6 +139,8 @@ enum InsightType: String, Hashable {
     case accountDormancy        // accounts idle 30+ days with non-zero balance
     case subscriptionPriceIncrease // latest charge higher than the previous one (audit 2026-07)
     case largeTransaction          // big non-recurring expense vs 90d average (audit 2026-07)
+    case topMerchant               // where the current bucket's money went, by merchant
+    case averageCheckGrowth        // a merchant's average check, 90 days against the 90 before
 }
 
 // MARK: - Insight Metric
@@ -191,9 +193,10 @@ extension InsightType {
         case .spendingSpike, .monthOverMonthChange, .averageDailySpending,
              .categoryTrend, .totalRecurringCost, .subscriptionGrowth,
              .budgetOverspend, .budgetUnderutilized, .projectedOverspend, .accountDormancy,
-             .yearOverYear, .spendingForecast, .subscriptionPriceIncrease, .largeTransaction:
+             .yearOverYear, .spendingForecast, .subscriptionPriceIncrease, .largeTransaction,
+             .averageCheckGrowth:
             return true
-        case .topSpendingCategory, .incomeGrowth, .incomeSourceBreakdown,
+        case .topSpendingCategory, .topMerchant, .incomeGrowth, .incomeSourceBreakdown,
              .netCashFlow, .bestMonth, .projectedBalance, .accountActivity,
              .totalWealth, .wealthGrowth, .savingsRate, .emergencyFund,
              .subcategoryBreakdown:

@@ -17,14 +17,19 @@ struct SubscriptionsListView: View {
     private enum SubscriptionSheetItem: Identifiable {
         case new
         case edit(RecurringSeries)
+        /// A "looks like a subscription" candidate, as a new subscription's starting values.
+        case draft(RecurringSeries, SubscriptionCandidateDetector.Candidate)
         var id: String {
             switch self {
             case .new: return "new"
             case .edit(let sub): return sub.id
+            case .draft(let sub, _): return "draft-" + sub.id
             }
         }
     }
     @State private var sheetItem: SubscriptionSheetItem?
+    /// Merchants charged monthly that no subscription tracks (SubscriptionCandidateDetector).
+    @State private var candidates: [SubscriptionCandidateDetector.Candidate] = []
 
     var body: some View {
         ScrollView {
@@ -45,8 +50,13 @@ struct SubscriptionsListView: View {
                     subscriptionsList
                         .screenPadding()
                 }
+
+                candidatesSection
             }
             .padding(.vertical, AppSpacing.md)
+        }
+        .task(id: candidatesKey) {
+            await refreshCandidates()
         }
         .navigationTitle(String(localized: "subscriptions.title"))
         .navigationBarTitleDisplayMode(.large)
@@ -89,6 +99,21 @@ struct SubscriptionsListView: View {
                     accountsViewModel: accountsViewModel,
                     subscription: subscription
                 )
+            case .draft(let draft, let candidate):
+                SubscriptionEditView(
+                    transactionStore: transactionStore,
+                    transactionsViewModel: transactionsViewModel,
+                    categoriesViewModel: categoriesViewModel,
+                    accountsViewModel: accountsViewModel,
+                    subscription: nil,
+                    draft: draft,
+                    // Its charges stay one-offs and a renamed subscription shares no word with
+                    // the merchant: without this the candidate would be offered again.
+                    onCreated: {
+                        SubscriptionCandidateDismissals.dismiss(candidate.merchant)
+                        candidates.removeAll { $0.id == candidate.id }
+                    }
+                )
             }
         }
     }
@@ -106,6 +131,100 @@ struct SubscriptionsListView: View {
         )
     }
     
+    // MARK: - Looks like a subscription
+
+    private var candidatesKey: CandidatesKey {
+        // `mutationVersion` is @ObservationIgnored: reading the observable arrays is what
+        // re-evaluates the body after a transaction or a subscription changes.
+        _ = transactionStore.transactions.count
+        return CandidatesKey(
+            mutationVersion: transactionStore.mutationVersion,
+            trackedDescriptions: transactionStore.recurringSeries.map(\.description),
+            day: DateFormatters.dateFormatter.string(from: Date())
+        )
+    }
+
+    private struct CandidatesKey: Equatable {
+        let mutationVersion: Int
+        let trackedDescriptions: [String]
+        /// "At most 40 days old" moves with the day.
+        let day: String
+    }
+
+    private func refreshCandidates() async {
+        let all = transactionStore.transactions
+        let tracked = transactionStore.recurringSeries.map(\.description)
+        let dismissed = SubscriptionCandidateDismissals.all()
+        let found = await Task.detached(priority: .utility) {
+            SubscriptionCandidateDetector.candidates(in: all, trackedDescriptions: tracked, dismissed: dismissed)
+        }.value
+        guard !Task.isCancelled else { return }
+        candidates = found
+    }
+
+    @ViewBuilder
+    private var candidatesSection: some View {
+        if !candidates.isEmpty {
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
+                SectionHeader(String(localized: "subscriptions.candidates.title"))
+                ForEach(candidates) { candidate in
+                    let draft = draftSeries(for: candidate)
+                    Button {
+                        sheetItem = .draft(draft, candidate)
+                    } label: {
+                        SubscriptionCard(
+                            subscription: draft,
+                            nextChargeDate: candidate.nextDate,
+                            baseCurrency: transactionsViewModel.appSettings.baseCurrency
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .contextMenu {
+                        Button(String(localized: "subscriptions.candidates.dismiss"), systemImage: "xmark") {
+                            dismiss(candidate)
+                        }
+                    }
+                    .accessibilityAction(named: Text(String(localized: "subscriptions.candidates.dismiss"))) {
+                        dismiss(candidate)
+                    }
+                }
+                Text(String(localized: "subscriptions.candidates.footer"))
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(AppColors.textSecondary)
+            }
+            .screenPadding()
+        }
+    }
+
+    /// The candidate as a new monthly subscription starting at its next expected charge, so
+    /// nothing already recorded is generated again.
+    private func draftSeries(for candidate: SubscriptionCandidateDetector.Candidate) -> RecurringSeries {
+        let logos = MerchantLogoStore.shared
+        return RecurringSeries(
+            id: "candidate-" + candidate.id,
+            // Through its text: Decimal(Double) keeps binary noise (9.99 → 9.990000000000002).
+            amount: Decimal(string: String(candidate.amount)) ?? Decimal(candidate.amount),
+            currency: candidate.currency,
+            category: candidate.category,
+            description: logos.customName(forDescription: candidate.sampleDescription)
+                ?? MerchantName.displayName(candidate.sampleDescription),
+            accountId: candidate.accountId,
+            frequency: .monthly,
+            startDate: DateFormatters.dateFormatter.string(from: candidate.nextDate),
+            kind: .subscription,
+            iconSource: logos.iconSource(forDescription: candidate.sampleDescription),
+            status: .active
+        )
+    }
+
+    private func dismiss(_ candidate: SubscriptionCandidateDetector.Candidate) {
+        HapticManager.selection()
+        SubscriptionCandidateDismissals.dismiss(candidate.merchant)
+        withAnimation(AppAnimation.gentleSpring) {
+            candidates.removeAll { $0.id == candidate.id }
+        }
+    }
+
     private var subscriptionsList: some View {
         VStack(spacing: AppSpacing.md) {
             ForEach(Array(transactionStore.subscriptions.enumerated()), id: \.element.id) { index, subscription in

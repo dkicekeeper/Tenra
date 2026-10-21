@@ -95,6 +95,7 @@
 "currency.customizeAction" = "カスタマイズ…";
 "settings.wallpaper" = "ホームの壁紙";
 "settings.background" = "背景";
+"settings.merchantLogos" = "店舗のロゴ";
 "home.hint.categories" = "カテゴリをタップして支出を追加";
 "settings.voiceLanguage" = "音声の言語";
 "settings.voiceLanguage.app" = "アプリと同じ";
@@ -113,6 +114,14 @@
 "settings.subcategories" = "サブカテゴリ";
 "settings.accounts" = "口座";
 "settings.exportImport" = "エクスポート・インポート";
+"settings.importReminder" = "明細書のリマインダー";
+"settings.importReminder.off" = "オフ";
+"settings.importReminder.week" = "毎週";
+"settings.importReminder.twoWeeks" = "2週間ごと";
+"settings.importReminder.month" = "毎月";
+"settings.importReminder.footer" = "銀行の明細書を読み込むと、次の明細書をTenraがお知らせします。Apple Pay以外の振込や支払いは明細書からのみ取り込まれます。";
+"importReminder.notification.title" = "明細書を読み込みましょう";
+"importReminder.notification.body" = "銀行のPDF明細書をTenraで開いて、Apple Payで記録されなかった振込や支払いを追加しましょう。";
 "settings.exportData" = "データをエクスポート";
 "settings.importData" = "データをインポート";
 "settings.dangerZone" = "危険な操作";
@@ -188,6 +197,7 @@
 "search.fill" = "検索フィールドで編集";
 "search.suggestion.category" = "カテゴリ";
 "search.suggestion.subcategory" = "サブカテゴリ";
+"search.suggestion.merchant" = "店舗";
 
 // MARK: - Modals
 "modal.newAccount" = "新しい口座";
@@ -441,6 +451,9 @@
 "subscriptions.title" = "サブスク";
 "subscriptions.empty" = "サブスクがありません";
 "subscriptions.emptyDescription" = "サブスクを追加して定期的な支払いを管理しましょう";
+"subscriptions.candidates.title" = "サブスクリプションのようです";
+"subscriptions.candidates.footer" = "これらの店舗は毎月ほぼ同じ金額を請求しています。タップしてサブスクリプションとして追加すると、次回の請求が予定され、過去の支払いはそのまま残ります。長押しで非表示にできます。";
+"subscriptions.candidates.dismiss" = "サブスクリプションではない";
 "subscriptions.addSubscription" = "サブスクを追加";
 "subscriptions.deleteConfirmTitle" = "サブスクを削除しますか？";
 "subscriptions.deleteConfirmMessage" = "サブスクのすべてのデータと関連する取引が削除されます。";
@@ -795,6 +808,7 @@
 "insights.emptyState.description" = "取引を追加すると家計の分析が表示されます";
 "insights.noInsightsForFilter" = "このカテゴリの分析はありません";
 "insights.topCategory" = "支出トップのカテゴリ";
+"insights.topMerchant" = "支出トップの店舗";
 "insights.ofTotal" = "全支出のうち";
 "insights.spendingSpike" = "異常な支出を検出しました";
 "insights.monthOverMonth" = "月間の支出の変化";
@@ -1038,6 +1052,18 @@
 "insights.formula.largeTransaction.row.multiplier" = "平均の何倍か";
 "insights.formula.largeTransaction.explainer" = "家賃やサブスクなどの定期支払いは除外され、単発の購入のみが対象です。平均支出の4倍の買い物は一度見直す価値があります。";
 "insights.formula.largeTransaction.rec" = "想定内の買い物か確認しましょう。単発なら対応不要です。平均が更新されればシグナルは消えます。";
+"insights.checkGrowth" = "平均購入額が上昇";
+"insights.checkGrowth.comparison" = "前の3か月と比較";
+"insights.formula.checkGrowth.title" = "平均購入額";
+"insights.formula.checkGrowth.heroLabel" = "平均購入額(直近90日)";
+"insights.formula.checkGrowth.formulaHeader" = "計算方法";
+"insights.formula.checkGrowth.row.merchant" = "店舗";
+"insights.formula.checkGrowth.row.before" = "以前(その前の90日)";
+"insights.formula.checkGrowth.row.after" = "現在(直近90日)";
+"insights.formula.checkGrowth.row.visits" = "購入回数(以前 → 現在)";
+"insights.formula.checkGrowth.row.growth" = "上昇率";
+"insights.formula.checkGrowth.explainer" = "直近90日の平均購入額を、その前の90日と比べます。どちらの期間にも3回以上購入した店舗が対象です。サブスクリプションは含みません。値上げには専用のインサイトがあります。";
+"insights.formula.checkGrowth.rec" = "何が変わったかを確認しましょう:価格、そこで買う物、1回の購入量。";
 "insights.dormant.accounts" = "使われていない口座";
 
 // MARK: - Tab Bar
@@ -1698,6 +1724,34 @@
 "intent.addExpense.saved" = "追加しました: %1$@、%2$@。";
 "intent.addExpense.askCategory" = "%@ のカテゴリは？Tenra が覚えておきます。";
 "intent.addExpense.askSubcategory" = "%@ のサブカテゴリは？";
+"intent.walletPayment.title" = "Apple Pay の支払いを記録";
+"intent.walletPayment.description" = "Wallet のオートメーション用: カード払いを店舗、カード、通貨とともに、何も尋ねずに記録します。Tenra は店舗ごとのカテゴリとカードごとの口座を記憶します。";
+"intent.walletPayment.parameter.amount" = "金額";
+"intent.walletPayment.parameter.currency" = "通貨コード";
+"intent.walletPayment.parameter.merchant" = "店舗";
+"intent.walletPayment.parameter.card" = "カード";
+"intent.walletPayment.parameter.account" = "口座";
+"intent.walletPayment.duplicate" = "この支払いはすでに記録されています。";
+"intent.walletPayment.subscription" = "サブスクリプション「%@」としてすでに記録されています。";
+"intent.walletPayment.noAmount" = "この支払いには金額がないため、何も記録していません。";
+"intent.walletPayment.queued" = "まだ為替レートがありません。レートを取得しだい、Tenra が支払いを記録します。";
+"intent.walletPayment.noAccount" = "支払いを記録するには、Tenra に口座を追加してください。";
+"walletSetup.title" = "Walletオートメーションを設定";
+"walletSetup.intro" = "設定すると、端末でのApple Pay支払いが店舗、金額、通貨、カードとともに自動で記録されます。オンライン決済はWalletから渡されないため、明細書で取り込まれます。";
+"walletSetup.trigger" = "オートメーション";
+"walletSetup.step.open" = "**ショートカット**を開き、**オートメーション**で**+**をタップして**Wallet**を選びます。";
+"walletSetup.step.cards" = "カードを選び、カテゴリと店舗はすべてのままにして、確認なしですぐに実行する設定にします。";
+"walletSetup.step.action" = "Tenraのアクション**%@**を追加します。";
+"walletSetup.fields" = "アクションの項目";
+"walletSetup.step.amount" = "**%@**: 項目をタップして**取引**を選びます。";
+"walletSetup.step.merchant" = "**%@**: **取引**を選び、もう一度タップして店舗を選びます。";
+"walletSetup.step.card" = "**%@**: もう一度**取引**のカードを選びます。これでTenraはカードごとの支払い口座を覚えます。";
+"walletSetup.step.account" = "**%@**: 空のままでかまいません。Tenraが口座を選び、カードごとに覚えます。カード1枚だけのオートメーションならすぐに指定することもできます。";
+"walletSetup.step.quiet" = "支払いが質問なしで記録されるよう、実行時の表示をオフにします。";
+"walletSetup.currency" = "他の通貨での支払い";
+"walletSetup.currency.text" = "この手順がないと、支払いは口座の通貨で記録されます。Tenraのアクションの前に**取引**の金額を入れた変数を追加し、**%@**でその変数と通貨コードを選びます。";
+"walletSetup.note.oldAction" = "**%1$@**のオートメーションがすでにありますか?**%2$@**に置き換えてください。何も尋ねず、カードを覚え、同じ支払いを二重に記録しません。";
+"walletSetup.openShortcuts" = "ショートカットを開く";
 "intent.entity.account" = "口座";
 "intent.entity.category" = "カテゴリ";
 "intent.entity.subcategory" = "サブカテゴリ";
@@ -1717,13 +1771,37 @@
 "settings.siri.example2" = "ヘイ Siri、Tenra でいくら使った";
 "settings.siri.example3" = "ヘイ Siri、Tenra に支出を追加";
 "settings.merchants.title" = "Wallet の店舗";
-"settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。変更するには店舗をタップ、忘れるには左にスワイプします。";
+"settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。店舗をタップすると支払いを確認して変更でき、左にスワイプすると忘れます。";
 "settings.merchants.emptyTitle" = "まだ店舗はありません";
-"settings.merchants.emptyMessage" = "Wallet のオートメーションが支出を追加すると、Tenra は店舗ごとに一度だけカテゴリを尋ね、ここに覚えておきます。オートメーションでは店舗を「メモ」に渡し、「カテゴリ」は空のままにしてください。";
+"settings.merchants.emptyMessage" = "Wallet のオートメーションで Apple Pay を使って支払った店舗のカテゴリは、選ぶ、確認する、または修正すると、ここに記憶されます。";
 "settings.merchants.forget" = "忘れる";
 "settings.merchants.forgetMerchant" = "店舗を忘れる";
+"settings.merchants.editTitle" = "店舗を編集";
+"settings.merchants.showLogo" = "ロゴを表示";
+"settings.merchants.showLogo.footer" = "オフにすると、この店舗の取引にはカテゴリのアイコンが表示されます。";
 "settings.merchants.categoryDeleted" = "カテゴリが削除されました。Tenra が再度尋ねます";
-"settings.merchants.editFooter" = "この店舗での次回以降の支払いは、このカテゴリで記録されます。店舗を忘れると、次回の支払いで Tenra が再度尋ねます。";
+"settings.merchants.editFooter" = "この店舗での次回以降の支払いは、このカテゴリで記録されます。次回の支払いからやり直すには、店舗を忘れてください。";
+"merchant.detail.visits" = "来店回数";
+"merchant.detail.averageCheck" = "平均単価";
+"merchant.detail.lastVisit" = "最終来店";
+"merchant.detail.thisMonth" = "今月";
+"merchant.detail.thisYear" = "今年";
+"merchant.detail.byMonth" = "月別";
+"merchant.detail.open" = "店舗での支払い";
+"walletReview.title" = "確認待ち";
+"walletReview.footer" = "これらの Apple Pay の支払いは、カテゴリまたは口座が自動で選ばれています。修正するには支払いをタップ、正しければ右にスワイプしてください。選んだ内容は店舗とカードごとに記憶されます。";
+"walletReview.emptyTitle" = "確認するものはありません";
+"walletReview.emptyMessage" = "カテゴリまたは口座が自動で選ばれた Apple Pay の支払いは、確認するまでここに表示されます。";
+"walletReview.confirm" = "正しい";
+"walletReview.confirmAll" = "すべて正しい";
+"walletReview.notification.title" = "支払いを確認してください";
+"walletReview.notification.category" = "%1$@ を「%2$@」に記録しました。タップして確認してください。";
+"walletReview.notification.account" = "%1$@ を口座「%2$@」に記録しました。タップして確認してください。";
+"settings.cards.title" = "Wallet のカード";
+"settings.cards.footer" = "これらのカードでの Apple Pay の支払いは、表示された口座に記録されます。別の口座を選ぶにはカードをタップ、忘れるには左にスワイプします。";
+"settings.cards.emptyTitle" = "まだカードはありません";
+"settings.cards.emptyMessage" = "Wallet のオートメーションがカードを渡すと、そのカードに選んだ、または確認した口座を Tenra がここに記憶します。";
+"settings.cards.accountDeleted" = "削除された口座";
 
 
 /* MARK: - Document import */
@@ -1732,6 +1810,8 @@
 "import.source.receipt.title" = "レシートをスキャン";
 "import.source.receipt.subtitle" = "紙のレシートにカメラを向けてください";
 "import.receipt.title" = "レシートを確認";
+"import.receipt.debtRepayment" = "借りたお金の返済です";
+"import.receipt.debtRepayment.footer" = "この支払いで%@への借りも減ります。";
 "import.receipt.detailsHeader" = "レシート詳細";
 "import.receipt.merchant" = "店舗";
 "import.receipt.total" = "合計金額";
@@ -1815,6 +1895,9 @@
 "transactionPreview.reconcile.less" = "Tenraの方が少ない額";
 "transactionPreview.reconcile.more" = "Tenraの方が多い額";
 "transactionPreview.reconcile.hint" = "未選択の行とこの期間の手入力を確認してください";
+"transactionPreview.walletMissing" = "明細書にない Apple Pay の支払い: %lld 件";
+"walletMissing.title" = "明細書にない支払い";
+"walletMissing.footer" = "Wallet のオートメーションはこれらの Apple Pay の支払いを記録しましたが、明細書に引き落としがありません。オートメーションは拒否された支払いでも動作します。拒否された支払いがあれば、左にスワイプして削除してください。";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligenceがカテゴリを選択中…";

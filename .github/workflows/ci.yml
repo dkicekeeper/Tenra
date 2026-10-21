@@ -28,7 +28,9 @@ jobs:
     # release, not `latest-stable`, which could pick its release candidate; raise it with the
     # Mac's Xcode, in every workflow at once (docs/asc.md).
     runs-on: xcode-27
-    timeout-minutes: 60
+    # About twice macos-26's time: some 20 minutes to build, 20 to test, more when a simulator
+    # clone freezes (CLAUDE.md, Testing).
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 

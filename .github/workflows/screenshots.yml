@@ -34,7 +34,7 @@ jobs:
   capture:
     # Xcode 27, as CI and TestFlight (ci.yml explains the pin).
     runs-on: xcode-27
-    timeout-minutes: 120
+    timeout-minutes: 180 # the Xcode 27 image is about twice as slow as macos-26 was
     steps:
       - uses: actions/checkout@v4
 

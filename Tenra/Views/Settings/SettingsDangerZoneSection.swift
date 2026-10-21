@@ -21,17 +21,19 @@ struct SettingsDangerZoneSection: View {
 
     var body: some View {
         Section(header: SectionHeader(String(localized: "settings.dangerZone"), style: .compact)) {
-            ActionSettingsRow(
+            UniversalRow(
+                String(localized: "settings.resetLearning"),
                 icon: "trash",
-                title: String(localized: "settings.resetLearning"),
-                isDestructive: true,
-                action: onResetLearning
+                role: .destructive,
+                config: .settings,
+                accessory: .action(onResetLearning)
             )
-            ActionSettingsRow(
+            UniversalRow(
+                String(localized: "settings.resetData"),
                 icon: "trash",
-                title: String(localized: "settings.resetData"),
-                isDestructive: true,
-                action: onResetData
+                role: .destructive,
+                config: .settings,
+                accessory: .action(onResetData)
             )
         }
     }

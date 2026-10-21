@@ -66,27 +66,29 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
             }
 
             // Background settings navigation link
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.background"),
                 icon: "photo.on.rectangle",
-                title: String(localized: "settings.background")
-            ) {
-                backgroundDestination
-            }
+                config: .settings,
+                accessory: .navigation {
+                    backgroundDestination
+                }
+            )
 
             // A merchant's logo instead of the category icon in transaction rows (MerchantLogoStore).
-            ToggleSettingsRow(
+            UniversalRow(
+                String(localized: "settings.merchantLogos"),
                 icon: "storefront",
-                title: String(localized: "settings.merchantLogos"),
-                isOn: $showsMerchantLogos
+                config: .settings,
+                accessory: .toggle($showsMerchantLogos)
             )
 
             // DesignKit's list row (4.14.0): the settings row, its value and the list it pushes.
-            NavigationPickerRow(
+            UniversalRow(
+                String(localized: "settings.voiceLanguage"),
                 icon: "waveform",
-                title: String(localized: "settings.voiceLanguage"),
-                selection: $voiceLanguage,
-                options: voiceLanguageOptions,
-                style: .list
+                config: .settings,
+                accessory: .picker($voiceLanguage, options: voiceLanguageOptions)
             )
         }
     }

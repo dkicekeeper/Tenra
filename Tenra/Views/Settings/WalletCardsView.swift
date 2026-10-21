@@ -42,15 +42,17 @@ struct WalletCardsView: View {
     // MARK: - Row
 
     private func row(_ card: CardAccountMemory.Card) -> some View {
-        NavigationPickerRow(
+        UniversalRow(
+            card.displayName,
             icon: "creditcard",
-            title: card.displayName,
-            selection: Binding(
-                get: { card.accountId },
-                set: { memory.remember(accountId: $0, forCard: card.displayName) }
-            ),
-            options: accountOptions(keeping: card.accountId),
-            style: .list
+            config: .settings,
+            accessory: .picker(
+                Binding(
+                    get: { card.accountId },
+                    set: { memory.remember(accountId: $0, forCard: card.displayName) }
+                ),
+                options: accountOptions(keeping: card.accountId)
+            )
         )
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) {

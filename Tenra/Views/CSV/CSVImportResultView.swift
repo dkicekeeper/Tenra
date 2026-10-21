@@ -253,7 +253,7 @@ struct StatRow: View {
     var body: some View {
         HStack {
             if let icon = icon {
-                Image(systemName: icon)
+                Icon(icon, size: AppIconSize.md)
                     .foregroundStyle(color)
             }
             Text(label)

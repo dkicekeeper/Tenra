@@ -59,7 +59,7 @@ struct CategoryEditView: View {
                     )
 
                     // Color Picker
-                    ColorPickerRow(selectedColorHex: $selectedColor)
+                    UniversalRow(String(localized: "common.color"), config: .settings, accessory: .colors($selectedColor))
 
                     // Validation Error
                     if let error = validationError {

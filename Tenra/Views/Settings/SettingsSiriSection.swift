@@ -24,41 +24,45 @@ struct SettingsSiriSection: View {
                     .font(AppTypography.bodySmall)
             }
 
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "walletSetup.title"),
                 icon: "list.number",
-                title: String(localized: "walletSetup.title")
-            ) {
-                WalletSetupGuideView()
-            }
+                config: .settings,
+                accessory: .navigation { WalletSetupGuideView() }
+            )
 
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "walletReview.title"),
                 icon: "checkmark.circle",
-                title: String(localized: "walletReview.title")
-            ) {
-                WalletReviewView(
-                    transactionsViewModel: transactionsViewModel,
-                    categoriesViewModel: categoriesViewModel,
-                    accountsViewModel: accountsViewModel
-                )
-            }
+                config: .settings,
+                accessory: .navigation {
+                    WalletReviewView(
+                        transactionsViewModel: transactionsViewModel,
+                        categoriesViewModel: categoriesViewModel,
+                        accountsViewModel: accountsViewModel
+                    )
+                }
+            )
 
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.merchants.title"),
                 icon: "wallet.pass",
-                title: String(localized: "settings.merchants.title")
-            ) {
-                MerchantCategoriesView(
-                    transactionsViewModel: transactionsViewModel,
-                    categoriesViewModel: categoriesViewModel,
-                    accountsViewModel: accountsViewModel
-                )
-            }
+                config: .settings,
+                accessory: .navigation {
+                    MerchantCategoriesView(
+                        transactionsViewModel: transactionsViewModel,
+                        categoriesViewModel: categoriesViewModel,
+                        accountsViewModel: accountsViewModel
+                    )
+                }
+            )
 
-            NavigationSettingsRow(
+            UniversalRow(
+                String(localized: "settings.cards.title"),
                 icon: "creditcard",
-                title: String(localized: "settings.cards.title")
-            ) {
-                WalletCardsView(accountsViewModel: accountsViewModel)
-            }
+                config: .settings,
+                accessory: .navigation { WalletCardsView(accountsViewModel: accountsViewModel) }
+            )
 
             ShortcutsLink()
                 .shortcutsLinkStyle(.automaticOutline)

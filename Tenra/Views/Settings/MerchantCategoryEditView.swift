@@ -89,11 +89,10 @@ struct MerchantCategoryEditView: View {
                     )
 
                     FormSection(footer: String(localized: "settings.merchants.showLogo.footer")) {
-                        ToggleSettingsRow(
+                        UniversalRow(
+                            String(localized: "settings.merchants.showLogo"),
                             icon: "storefront",
-                            title: String(localized: "settings.merchants.showLogo"),
-                            config: .standard,
-                            isOn: $showsLogo
+                            accessory: .toggle($showsLogo)
                         )
                     }
                     .screenPadding()

@@ -74,38 +74,37 @@ struct SettingsHomeBackgroundView: View {
                 OpacitySliderRow(value: backgroundOpacity, onChange: onOpacityChange)
             }
         case .wallpaper:
-            // Form rows of a FormSection card: `.standard`, inset dividers (DesignKit's form
-            // contract); the photo picker's label is DesignKit's ActionRowLabel.
+            // DesignKit's rows in a FormSection card (`.standard`, inset dividers); the photo
+            // picker's label is a UniversalRow in the accent.
             FormSection {
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                    ActionRowLabel(
+                    UniversalRow(
                         wallpaperImage == nil
                             ? String(localized: "settings.background.choosePhoto")
                             : String(localized: "settings.background.changePhoto"),
-                        systemImage: "photo.on.rectangle"
+                        icon: "photo.on.rectangle",
+                        titleColor: AppColors.accent
                     )
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 if wallpaperImage != nil {
                     Divider().padding(.leading, AppSpacing.lg)
-                    ToggleSettingsRow(
+                    UniversalRow(
+                        String(localized: "settings.background.blurWallpaper"),
                         icon: "camera.filters",
-                        title: String(localized: "settings.background.blurWallpaper"),
-                        config: .standard,
-                        isOn: Binding(
+                        accessory: .toggle(Binding(
                             get: { blurWallpaper },
                             set: { onBlurChange($0) }
-                        )
+                        ))
                     )
                     Divider().padding(.leading, AppSpacing.lg)
-                    ActionSettingsRow(
+                    UniversalRow(
+                        String(localized: "settings.background.removePhoto"),
                         icon: "trash",
-                        title: String(localized: "settings.background.removePhoto"),
-                        isDestructive: true,
-                        config: .standard
-                    ) {
-                        Task { await onWallpaperRemove() }
-                    }
+                        role: .destructive,
+                        accessory: .action { Task { await onWallpaperRemove() } }
+                    )
                 }
             }
         }
@@ -114,21 +113,19 @@ struct SettingsHomeBackgroundView: View {
 
 // MARK: - Opacity Slider Row
 
-/// The expense colour's intensity: DesignKit's `SliderRow` over the stored opacity.
+/// The expense colour's intensity: DesignKit's slider row over the stored opacity.
 private struct OpacitySliderRow: View {
     let value: Double
     let onChange: (Double) -> Void
 
     var body: some View {
-        SliderRow(
+        UniversalRow(
             String(localized: "settings.background.opacity", defaultValue: "Colour intensity"),
-            systemImage: "circle.lefthalf.filled",
-            value: Binding(
+            icon: "circle.lefthalf.filled",
+            accessory: .slider(Binding(
                 get: { value },
                 set: { onChange($0) }
-            ),
-            in: 0.05...1.0,
-            valueText: "\(Int((value * 100).rounded()))%"
+            ), in: 0.05...1.0, valueText: "\(Int((value * 100).rounded()))%")
         )
     }
 }

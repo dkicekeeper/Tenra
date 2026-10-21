@@ -147,8 +147,8 @@ struct PDFImportCoordinator: View {
             hint: summary,
             title: String(localized: "import.diagnostics.title")
         ) {
-            Image(systemName: "chevron.right")
-                .font(.system(size: AppIconSize.sm, weight: .semibold))
+            Icon("chevron.right", size: AppIconSize.sm, scalesWithText: false)
+                .fontWeight(.semibold)
                 .foregroundStyle(.tertiary)
         }
         .cardStyle()

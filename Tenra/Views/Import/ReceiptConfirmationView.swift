@@ -80,31 +80,33 @@ struct ReceiptConfirmationView: View {
             ScrollView {
                 VStack(spacing: AppSpacing.lg) {
                     FormSection(header: String(localized: "import.receipt.detailsHeader")) {
-                        InfoRow(
+                        UniversalRow(
+                            String(localized: "import.receipt.merchant"),
                             icon: "storefront",
-                            label: String(localized: "import.receipt.merchant"),
-                            value: draft.merchant
+                            config: .info,
+                            accessory: .info(draft.merchant)
                         )
                         .padding(.horizontal, AppSpacing.lg)
                         .padding(.vertical, AppSpacing.sm)
 
                         Divider().padding(.leading, AppSpacing.lg)
 
-                        InfoRow(
+                        UniversalRow(
+                            String(localized: "import.receipt.total"),
                             icon: "banknote",
-                            label: String(localized: "import.receipt.total"),
-                            amount: draft.total,
-                            currency: currency
+                            config: .info,
+                            accessory: .amount(draft.total, currency: currency)
                         )
                         .padding(.horizontal, AppSpacing.lg)
                         .padding(.vertical, AppSpacing.sm)
 
                         Divider().padding(.leading, AppSpacing.lg)
 
-                        InfoRow(
+                        UniversalRow(
+                            String(localized: "transaction.date"),
                             icon: "calendar",
-                            label: String(localized: "transaction.date"),
-                            value: dateString
+                            config: .info,
+                            accessory: .info(dateString)
                         )
                         .padding(.horizontal, AppSpacing.lg)
                         .padding(.vertical, AppSpacing.sm)
@@ -125,11 +127,10 @@ struct ReceiptConfirmationView: View {
 
                     if let repayment = debtRepayment {
                         FormSection(footer: String(format: String(localized: "import.receipt.debtRepayment.footer"), repayment.debt.person)) {
-                            ToggleSettingsRow(
+                            UniversalRow(
+                                String(localized: "import.receipt.debtRepayment"),
                                 icon: "arrow.uturn.backward.circle",
-                                title: String(localized: "import.receipt.debtRepayment"),
-                                config: .standard,
-                                isOn: $recordsRepayment
+                                accessory: .toggle($recordsRepayment)
                             )
                         }
                         .screenPadding()

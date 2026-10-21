@@ -22,8 +22,7 @@ struct BackupRowView: View {
             style: .large
         ) {
             // Affordance hinting the row is tappable to restore.
-            Image(systemName: "arrow.counterclockwise")
-                .font(AppTypography.bodySmall)
+            Icon("arrow.counterclockwise", size: AppIconSize.sm)
                 .foregroundStyle(AppColors.accent)
                 .accessibilityHidden(true)
         }

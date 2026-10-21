@@ -53,8 +53,7 @@ struct VoiceInputCoordinator: View {
             HapticManager.light()
             showingVoiceInput = true
         }) {
-            Image(systemName: "mic.fill")
-                .font(.system(size: AppIconSize.lg))
+            Icon("mic.fill", size: AppIconSize.lg, scalesWithText: false)
                 .fontWeight(.semibold)
                 .frame(width: 64, height: 64)
         }

@@ -116,7 +116,7 @@ struct EditableHeroSection: View {
                 titlePlaceholder: String(localized: "category.namePlaceholder"),
                 config: .categoryHero
             )
-            ColorPickerRow(selectedColorHex: $color)
+            UniversalRow(String(localized: "common.color"), config: .settings, accessory: .colors($color))
                 .padding(.horizontal, AppSpacing.lg)
         }
     }

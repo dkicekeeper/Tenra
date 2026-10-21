@@ -123,32 +123,31 @@ struct SubscriptionEditView: View {
                     
                     // Schedule, category & reminders
                     FormSection(header: String(localized: "subscription.scheduleSection")) {
-                        MenuPickerRow(
+                        UniversalRow(
+                            String(localized: "common.frequency"),
                             icon: "arrow.triangle.2.circlepath",
-                            title: String(localized: "common.frequency"),
-                            selection: $selectedFrequency
+                            accessory: .menu($selectedFrequency, options: RecurringFrequency.menuOptions)
                         )
                         Divider()
 
-                        DatePickerRow(
+                        UniversalRow(
+                            String(localized: "common.startDate"),
                             icon: "calendar",
-                            title: String(localized: "common.startDate"),
-                            selection: $startDate
+                            accessory: .date($startDate)
                         )
                         Divider()
 
-                        MenuPickerRow(
+                        UniversalRow(
+                            String(localized: "subscriptions.category"),
                             icon: "tag",
-                            title: String(localized: "subscriptions.category"),
-                            selection: $selectedCategory,
-                            options: availableCategories.map { (label: $0, value: $0) }
+                            accessory: .menu($selectedCategory, options: availableCategories.map { (label: $0, value: $0) })
                         )
                         Divider()
 
-                        MenuPickerRow(
+                        UniversalRow(
+                            String(localized: "subscription.reminders"),
                             icon: "bell",
-                            title: String(localized: "subscription.reminders"),
-                            selection: $reminder
+                            accessory: .menu($reminder, options: ReminderOption.menuOptions)
                         )
                     }
                 }

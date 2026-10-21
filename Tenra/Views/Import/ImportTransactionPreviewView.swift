@@ -953,15 +953,16 @@ struct ImportTransactionPreviewRow: View {
             HStack(alignment: .center, spacing: AppSpacing.sm) {
                 // Checkbox button with spring animation
                 Button(action: onToggle) {
-                    Image(systemName: hasNoMatchingAccount
-                        ? "exclamationmark.circle"
-                        : (isSelected ? "checkmark.circle.fill" : "circle")
+                    Icon(
+                        hasNoMatchingAccount
+                            ? "exclamationmark.circle"
+                            : (isSelected ? "checkmark.circle.fill" : "circle"),
+                        size: AppIconSize.md
                     )
                         .foregroundStyle(hasNoMatchingAccount
                             ? AppColors.warning
                             : (isSelected ? AppColors.accent : AppColors.textSecondary)
                         )
-                        .font(AppTypography.h4)
                         .animation(AppAnimation.contentSpring, value: isSelected)
                 }
                 .buttonStyle(.plain)

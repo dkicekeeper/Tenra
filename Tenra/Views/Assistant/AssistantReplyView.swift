@@ -392,7 +392,11 @@ private struct AssistantForecastCard: View {
             if !forecast.obligations.isEmpty {
                 FormSection(header: String(format: String(localized: "assistant.forecast.obligations"), untilText), style: .glass) {
                     ForEach(Array(forecast.obligations.prefix(Self.obligationLimit).enumerated()), id: \.offset) { _, obligation in
-                        InfoRow(label: label(obligation), amount: obligation.amount, currency: forecast.currency)
+                        UniversalRow(
+                            label(obligation),
+                            config: .info,
+                            accessory: .amount(obligation.amount, currency: forecast.currency)
+                        )
                     }
                 }
             }
@@ -572,17 +576,17 @@ private struct AssistantDraftCard: View {
     @ViewBuilder
     private func budgetRows(_ budget: AgentBudgetDraft, store: TransactionStore) -> some View {
         let name = store.categories.first { $0.id == budget.categoryId }?.name ?? ""
-        InfoRow(
+        UniversalRow(
+            "\(name) · \(Self.periodName(budget.period))",
             icon: "gauge.with.dots.needle.50percent",
-            label: "\(name) · \(Self.periodName(budget.period))",
-            amount: budget.amount,
-            currency: store.baseCurrency
+            config: .info,
+            accessory: .amount(budget.amount, currency: store.baseCurrency)
         )
         if let previous = budget.previousAmount {
-            InfoRow(
-                label: "\(String(localized: "assistant.draft.budgetWas")) · \(Self.periodName(budget.previousPeriod))",
-                amount: previous,
-                currency: store.baseCurrency
+            UniversalRow(
+                "\(String(localized: "assistant.draft.budgetWas")) · \(Self.periodName(budget.previousPeriod))",
+                config: .info,
+                accessory: .amount(previous, currency: store.baseCurrency)
             )
         }
     }
@@ -590,11 +594,11 @@ private struct AssistantDraftCard: View {
     /// The subscription or regular payment: its name, how often, the first charge, the amount.
     private func recurringRow(_ series: RecurringSeries) -> some View {
         let first = FastDateParser.date(from: series.startDate)?.formatted(.dateTime.day().month(.abbreviated)) ?? series.startDate
-        return InfoRow(
+        return UniversalRow(
+            "\(series.description) · \(series.frequency.displayName) · \(first)",
             icon: series.kind == .subscription ? "repeat.circle" : "repeat",
-            label: "\(series.description) · \(series.frequency.displayName) · \(first)",
-            amount: NSDecimalNumber(decimal: series.amount).doubleValue,
-            currency: series.currency
+            config: .info,
+            accessory: .amount(NSDecimalNumber(decimal: series.amount).doubleValue, currency: series.currency)
         )
     }
 
@@ -622,18 +626,23 @@ private struct AssistantDraftCard: View {
         var parts = [goal.name]
         if let deadline = goal.deadline { parts.append(DateFormatters.displayDateOmittingCurrentYear(deadline)) }
         if let accountId = goal.linkedAccountId, let account = store.accountById[accountId] { parts.append(account.name) }
-        return InfoRow(icon: "target", label: parts.joined(separator: " · "), amount: goal.targetAmount, currency: goal.currency)
+        return UniversalRow(
+            parts.joined(separator: " · "),
+            icon: "target",
+            config: .info,
+            accessory: .amount(goal.targetAmount, currency: goal.currency)
+        )
     }
 
     /// Money towards a goal: the goal and the day, the amount.
     private func contributionRow(goalId: String, _ contribution: GoalContribution) -> some View {
         let goal = coordinator.goalStore.goal(id: goalId)
         let day = DateFormatters.displayDateOmittingCurrentYear(contribution.date)
-        return InfoRow(
+        return UniversalRow(
+            "\(goal?.name ?? "") · \(day)",
             icon: "plus.circle",
-            label: "\(goal?.name ?? "") · \(day)",
-            amount: contribution.amount,
-            currency: goal?.currency ?? ""
+            config: .info,
+            accessory: .amount(contribution.amount, currency: goal?.currency ?? "")
         )
     }
 
@@ -644,11 +653,11 @@ private struct AssistantDraftCard: View {
             debt.direction == .owedToMe ? String(localized: "debt.section.owedToMe") : String(localized: "debt.section.iOwe"),
         ]
         if let due = debt.dueDate { parts.append(DateFormatters.displayDateOmittingCurrentYear(due)) }
-        return InfoRow(
+        return UniversalRow(
+            parts.joined(separator: " · "),
             icon: debt.direction == .owedToMe ? "arrow.down.left.circle" : "arrow.up.right.circle",
-            label: parts.joined(separator: " · "),
-            amount: debt.amount,
-            currency: debt.currency
+            config: .info,
+            accessory: .amount(debt.amount, currency: debt.currency)
         )
     }
 
@@ -656,11 +665,11 @@ private struct AssistantDraftCard: View {
     private func repaymentRow(debtId: String, _ repayment: DebtRepayment) -> some View {
         let debt = coordinator.debtStore.debt(id: debtId)
         let day = DateFormatters.displayDateOmittingCurrentYear(repayment.date)
-        return InfoRow(
+        return UniversalRow(
+            "\(debt?.person ?? "") · \(day)",
             icon: "arrow.uturn.down",
-            label: "\(debt?.person ?? "") · \(day)",
-            amount: repayment.amount,
-            currency: debt?.currency ?? ""
+            config: .info,
+            accessory: .amount(repayment.amount, currency: debt?.currency ?? "")
         )
     }
 

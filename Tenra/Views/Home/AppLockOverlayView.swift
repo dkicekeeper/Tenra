@@ -20,9 +20,8 @@ struct AppLockOverlayView: View {
             AppColors.bgBase.ignoresSafeArea()
 
             VStack(spacing: AppSpacing.lg) {
-                Image(systemName: "lock.fill")
-                    .font(.system(size: AppIconSize.Tile.sm, weight: .semibold))
-                    .foregroundStyle(AppColors.accent)
+                // A tile from 44 pt (DesignKit 7.0.0): the lock on its pale disc.
+                HeroSymbol(systemImage: "lock.fill", size: AppIconSize.Tile.xxxl, drawsOnAppear: false)
 
                 Text("Tenra")
                     .font(AppTypography.h4)

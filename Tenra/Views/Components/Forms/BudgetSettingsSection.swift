@@ -36,15 +36,14 @@ struct BudgetSettingsSection: View {
                     .padding(.leading, AppSpacing.lg)
 
                 // Budget Period
-                MenuPickerRow(
+                UniversalRow(
+                    String(localized: "budget.period"),
                     icon: "calendar",
-                    title: String(localized: "budget.period"),
-                    selection: $selectedPeriod,
-                    options: [
+                    accessory: .menu($selectedPeriod, options: [
                         (label: String(localized: "budget.weekly"), value: CustomCategory.BudgetPeriod.weekly),
                         (label: String(localized: "budget.monthly"), value: CustomCategory.BudgetPeriod.monthly),
                         (label: String(localized: "yearly"), value: CustomCategory.BudgetPeriod.yearly)
-                    ]
+                    ])
                 )
 
                 if selectedPeriod == .monthly {
@@ -68,7 +67,7 @@ struct BudgetSettingsSection: View {
 
             }
             // Form-style card (Material, not Liquid Glass) — this card hosts a
-            // `MenuPickerRow` whose menu would otherwise morph the whole card on
+            // menu row (`UniversalRow(accessory: .menu)`) whose menu would otherwise morph the whole card on
             // iOS 26. See `formCardStyle` doc.
             .formCardStyle()
 

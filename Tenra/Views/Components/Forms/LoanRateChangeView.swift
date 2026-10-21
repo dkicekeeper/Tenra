@@ -44,10 +44,10 @@ struct LoanRateChangeView: View {
 
                         Divider().padding(.leading, AppSpacing.lg)
 
-                        DatePickerRow(
+                        UniversalRow(
+                            String(localized: "loan.effectiveDate", defaultValue: "Effective from"),
                             icon: "calendar",
-                            title: String(localized: "loan.effectiveDate", defaultValue: "Effective from"),
-                            selection: $effectiveFromDate
+                            accessory: .date($effectiveFromDate)
                         )
 
                         Divider().padding(.leading, AppSpacing.lg)
@@ -76,21 +76,20 @@ struct LoanRateChangeView: View {
                         let diff = newPayment - loanInfo.monthlyPayment
 
                         FormSection(header: String(localized: "loan.rateChangeImpact", defaultValue: "Impact")) {
-                            InfoRow(
+                            UniversalRow(
+                                String(localized: "loan.newMonthlyPayment", defaultValue: "New monthly payment"),
                                 icon: "banknote",
-                                label: String(localized: "loan.newMonthlyPayment", defaultValue: "New monthly payment"),
-                                amount: NSDecimalNumber(decimal: newPayment).doubleValue,
-                                currency: account.currency
+                                config: .info,
+                                accessory: .amount(NSDecimalNumber(decimal: newPayment).doubleValue, currency: account.currency)
                             )
                             .padding(.horizontal, AppSpacing.lg)
                             .padding(.vertical, AppSpacing.sm)
                             Divider().padding(.leading, AppSpacing.lg)
-                            InfoRow(
+                            UniversalRow(
+                                String(localized: "loan.paymentChange", defaultValue: "Change"),
                                 icon: diff > 0 ? "arrow.up" : "arrow.down",
-                                label: String(localized: "loan.paymentChange", defaultValue: "Change"),
-                                amount: NSDecimalNumber(decimal: diff).doubleValue,
-                                currency: account.currency,
-                                prefix: diff > 0 ? "+" : ""
+                                config: .info,
+                                accessory: .amount(NSDecimalNumber(decimal: diff).doubleValue, currency: account.currency, prefix: diff > 0 ? "+" : "")
                             )
                             .padding(.horizontal, AppSpacing.lg)
                             .padding(.vertical, AppSpacing.sm)

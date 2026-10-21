@@ -273,29 +273,33 @@ struct DepositDetailView: View {
                     Divider()
 
                     // Details
-                    InfoRow(
-                        icon: "percent",
-                        label: String(localized: "deposit.rate"),
+                    UniversalRow(
                         // `deposit.rateAnnual` is a plain suffix ("% годовых" / "% annual"),
                         // NOT a printf format — concatenate to avoid String(format:) dropping the rate.
-                        value: "\(formatRate(depositInfo.interestRateAnnual))\(String(localized: "deposit.rateAnnual"))"
+                        String(localized: "deposit.rate"),
+                        icon: "percent",
+                        config: .info,
+                        accessory: .info("\(formatRate(depositInfo.interestRateAnnual))\(String(localized: "deposit.rateAnnual"))")
                     )
-                    InfoRow(
+                    UniversalRow(
+                        String(localized: "deposit.capitalization"),
                         icon: "arrow.triangle.2.circlepath",
-                        label: String(localized: "deposit.capitalization"),
-                        value: depositInfo.capitalizationEnabled
+                        config: .info,
+                        accessory: .info(depositInfo.capitalizationEnabled
                             ? String(localized: "deposit.capitalizationEnabled")
-                            : String(localized: "deposit.capitalizationDisabled")
+                            : String(localized: "deposit.capitalizationDisabled"))
                     )
-                    InfoRow(
+                    UniversalRow(
+                        String(localized: "deposit.postingDay"),
                         icon: "calendar.day.timeline.left",
-                        label: String(localized: "deposit.postingDay"),
-                        value: "\(depositInfo.interestPostingDay)"
+                        config: .info,
+                        accessory: .info("\(depositInfo.interestPostingDay)")
                     )
-                    InfoRow(
+                    UniversalRow(
+                        String(localized: "deposit.dayCount.title"),
                         icon: "divide",
-                        label: String(localized: "deposit.dayCount.title"),
-                        value: depositInfo.dayCount.localizedTitle
+                        config: .info,
+                        accessory: .info(depositInfo.dayCount.localizedTitle)
                     )
                 }
                 .padding(AppSpacing.lg)

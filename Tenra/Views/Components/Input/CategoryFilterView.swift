@@ -51,11 +51,15 @@ struct CategoryFilterView: View {
             List {
                 // "All Categories" option
                 Section {
-                    CheckmarkRow(String(localized: "categoryFilter.allCategories"), isSelected: isAllDeselected) {
-                        selectedExpenseCategories.removeAll()
-                        selectedIncomeCategories.removeAll()
-                        selectedDeletedCategories.removeAll()
-                    }
+                    UniversalRow(
+                        String(localized: "categoryFilter.allCategories"),
+                        config: .settings,
+                        accessory: .checkmark(isSelected: isAllDeselected) {
+                            selectedExpenseCategories.removeAll()
+                            selectedIncomeCategories.removeAll()
+                            selectedDeletedCategories.removeAll()
+                        }
+                    )
                 }
 
                 // MARK: - Expense Categories
@@ -154,7 +158,12 @@ struct CategoryFilterView: View {
 
     @ViewBuilder
     private func categoryRow(category: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        CheckmarkRow(category, icon: iconConfig(for: category), isSelected: isSelected, action: action)
+        UniversalRow(
+            category,
+            leadingIcon: iconConfig(for: category),
+            config: .settings,
+            accessory: .checkmark(isSelected: isSelected, action: action)
+        )
     }
 
     /// Plated like the category rows (`CategoryRow`): the icon in the category's colour on a

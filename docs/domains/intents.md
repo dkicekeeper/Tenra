@@ -325,7 +325,7 @@ the main actor through `SummaryCalculator`, keyed on `mutationVersion`, rates, b
 filter and the day. Pinned by `MerchantHistoryTests`.
 
 **Wallet cards** (`WalletCardsView`): `CardAccountMemory.cards`, the account picked with
-`NavigationPickerRow(style: .list)`, swipe to forget.
+a `UniversalRow` with `.picker` (`config: .settings`), swipe to forget.
 
 **Setup guide** (`WalletSetupGuideView`, first row of Settings → Siri & Shortcuts): DesignKit's
 `ArticleBody`, steps for the automation and the action's fields, the optional currency step and a

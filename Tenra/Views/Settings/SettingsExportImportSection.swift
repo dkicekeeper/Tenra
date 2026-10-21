@@ -27,24 +27,25 @@ struct SettingsExportImportSection: View {
             header: SectionHeader(String(localized: "settings.exportImport"), style: .compact),
             footer: Text(String(localized: "settings.importReminder.footer"))
         ) {
-            ActionSettingsRow(
+            UniversalRow(
+                String(localized: "settings.exportData"),
                 icon: "square.and.arrow.up",
-                title: String(localized: "settings.exportData"),
-                action: onExport
+                config: .settings,
+                accessory: .action(onExport)
             )
 
-            ActionSettingsRow(
+            UniversalRow(
+                String(localized: "settings.importData"),
                 icon: "square.and.arrow.down",
-                title: String(localized: "settings.importData"),
-                action: onImport
+                config: .settings,
+                accessory: .action(onImport)
             )
 
-            NavigationPickerRow(
+            UniversalRow(
+                String(localized: "settings.importReminder"),
                 icon: "bell",
-                title: String(localized: "settings.importReminder"),
-                selection: $reminderDays,
-                options: reminderOptions,
-                style: .list
+                config: .settings,
+                accessory: .picker($reminderDays, options: reminderOptions)
             )
         }
         .onChange(of: reminderDays) { _, _ in

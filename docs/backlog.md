@@ -39,12 +39,14 @@ with the commit of every fix, are in
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
   hold rules and data, no views: they belong in `Services/Agent/`, as does the catalogue half
-  of `AssistantWardrobe`. Move once the wardrobe settles (another session is iterating on it).
+  of `AssistantWardrobe`. Move once the wardrobe settles (no change to it since 2026-10-16, so
+  it may have).
 
 Found by the release audit of 2026-10-15 (details and file references:
 [archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md)):
-- **Ten on Home keeps animating** while a notice is unread (`AssistantNoticeCard`, no
-  `AmbientMotionGate`): measure on device, else the still `CreatureGlyph` there.
+- **Ten on Home keeps animating** while a notice is unread (`AssistantNoticeCard`'s live
+  `ParticleCreature`; its `AmbientMotionGate` stops it only under Reduce Motion or iOS 27's
+  low-resource mode): measure on device, else the still `CreatureGlyph` there.
 - **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
   consent go out with the next cloud question; the Settings toggle skips the consent sheet; the
   cloud mode shows in the RU/BY storefronts (451 on every question).
@@ -60,8 +62,8 @@ Found by the release audit of 2026-10-15 (details and file references:
   repayment above what is left and a due date before the loan.
 - **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
-- **Copy:** German Ten strings say "du", the app "Sie"; the Terms of Use say Tenra never sees
-  financial data; mic and speech permission texts don't mention Ten.
+- **Copy:** German Ten strings (`assistant.*`) say "du", the app "Sie"; mic and speech
+  permission texts don't mention Ten.
 - **Server before traffic:** Durable Objects counters, a Rate Limiting binding, separate free and
   Pro caps, a RevenueCat timeout, no count for a failed upstream call, abort on disconnect, a
   `protocol` range and an app build header.

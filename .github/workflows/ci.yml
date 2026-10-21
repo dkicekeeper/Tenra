@@ -21,6 +21,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: No raw design values beyond the baseline
         run: python3 scripts/design_lint.py
+      # Every row of a glass section pads itself and keeps its divider under its text
+      # (DesignKit 8.1.0; CLAUDE.md, UI Components).
+      - name: Rows of glass sections
+        run: python3 scripts/section_rows_lint.py
 
   build-and-test:
     # GitHub's Xcode 27 image (public preview since 2026-10, macOS 27): the iOS 27 SDK, so the

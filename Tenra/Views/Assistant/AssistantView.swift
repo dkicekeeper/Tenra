@@ -317,7 +317,9 @@ struct AssistantView: View {
                             meta: [MetaLine([.text(thread.updatedAt.formatted(.relative(presentation: .named)))])],
                             leading: .symbol("bubble.left.and.text.bubble.right"),
                             style: .large,
-                            titleLineLimit: 1
+                            titleLineLimit: 1,
+                            // A stack that spaces its rows, not a glass section (DesignKit 8.1.0).
+                            verticalPadding: 0
                         ) {
                             DisclosureChevron()
                         }

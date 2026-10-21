@@ -213,6 +213,8 @@ struct TenraProView: View {
                     }
                 }
                 .buttonStyle(.plain)
+                // A link's label keeps the row's divider inset to itself: its icon and space.
+                .rowDividerInset(AppIconSize.lg + AppSpacing.md)
             } else {
                 restorePurchasesRow
                 redeemCodeRow

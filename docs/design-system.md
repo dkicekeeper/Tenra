@@ -54,6 +54,14 @@ spacing, radii and animations come from the tokens. The baseline is empty, so an
 a justified exception carries `// design-lint:ignore <reason>`. A category's stored hex is data,
 not a design value.
 
+**Rows of a glass section** (`python3 scripts/section_rows_lint.py`, CI `design-lint`): a
+`FormSection` or `CardList(layout: .section)` puts its rows back to back, so each row pads itself
+vertically (DesignKit's rows do: `UniversalRow`, `ItemRow` since 8.1.0; a custom row takes
+`.padding(.vertical, AppSpacing.md)`), and a link around a row with a leading icon carries
+`.rowDividerInset(_:)`, which its label keeps to itself. In a stack that spaces its rows an
+`ItemRow` takes `verticalPadding: 0` (Ten's recent chats, a fact in a reply card). A justified
+exception carries `// section-rows-lint:ignore <reason>`.
+
 ---
 
 ## 2. DesignKitBridge
@@ -239,8 +247,8 @@ dragging and adds; no swipe actions.
   `PayoffProgressCardSkeleton`s until their store loads, replaced through `.skeletonReveal` (§7).
 - **Subcategories** (`SubcategoriesManagementView`): `CardList(.section)`, every subcategory a
   row of one glass card (`SubcategoryManagementRow`, `ItemRow(style: .large, titleFont:
-  AppTypography.h4)` with its usage in a `MetaLine`, padded `AppSpacing.md` above and below:
-  `ItemRow` has no padding of its own), in the chosen sort (name, last used, usage) from the
+  AppTypography.h4)` with its usage in a `MetaLine`, which pads itself in the section since
+  DesignKit 8.1.0), in the chosen sort (name, last used, usage) from the
   sort menu; no dragging (`canReorder: false`). A tap edits the name.
 
 ### History
@@ -293,12 +301,12 @@ merchants, cards, the merchant logos switch), Backups, Export and import, Danger
 - **Assistant** (`SettingsAssistantSection`): the cloud and "Ten chats" toggles and "What Ten
   knows about me" (`AssistantMemoryView`: a glass `FormSection` of `ItemRow(style: .large)`
   without a chevron, since a row opens an editor sheet, and a long press edits or forgets;
-  `ItemRowSkeleton(style: .large)` rows while loading; each padded `AppSpacing.md` above and
-  below, as `ItemRow` has no padding of its own).
+  `ItemRowSkeleton(style: .large)` rows while loading; rows and skeletons pad themselves in the
+  section since DesignKit 8.1.0).
 
 - **Backups** (`BackupRowView`): `ItemRow(style: .large)` with the date, the "Auto" badge, a
-  `MetaLine` of counts and size, and the restore arrow as its accessory, padded `AppSpacing.md`
-  above and below in its glass `FormSection`; a tap restores, a long press shows Restore and
+  `MetaLine` of counts and size, and the restore arrow as its accessory, in a glass
+  `FormSection` where it pads itself (DesignKit 8.1.0); a tap restores, a long press shows Restore and
   Delete.
 - **Quick-access currencies** (`QuickAccessCurrencyPickerView`): DesignKit's `CurrencyRow`, the
   row `CurrencyList` draws; an account's currency with `isLocked: true` (grey check), the others

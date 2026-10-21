@@ -616,7 +616,9 @@ private struct AssistantDraftCard: View {
             fact.text ?? fact.replaces?.text ?? "",
             meta: [MetaLine([.text(note)])],
             leading: .symbol(fact.text == nil ? "eraser" : "brain"),
-            style: .large
+            style: .large,
+            // The card spaces its pieces (AssistantCard), not a glass section (DesignKit 8.1.0).
+            verticalPadding: 0
         )
         .accessibilityElement(children: .combine)
     }

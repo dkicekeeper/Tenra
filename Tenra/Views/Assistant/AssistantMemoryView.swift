@@ -30,7 +30,6 @@ struct AssistantMemoryView: View {
                     FormSection {
                         ForEach(0..<3, id: \.self) { _ in
                             ItemRowSkeleton(style: .large)
-                                .padding(.vertical, AppSpacing.md)
                         }
                     }
                     .screenPadding()
@@ -107,8 +106,6 @@ struct AssistantMemoryView: View {
                 meta: [MetaLine([.text(Text(fact.updatedAt, format: .dateTime.day().month().year()))])],
                 style: .large
             )
-            // ItemRow has no padding of its own; in a glass section the row gives itself its air.
-            .padding(.vertical, AppSpacing.md)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

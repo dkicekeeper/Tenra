@@ -243,6 +243,7 @@ SN) снова 28-44% показов; KZ всего 15 и 23 показа в н�
   Product Page Optimization.
 - [ ] **Тэн в магазине** с 19.10 (сервер на Cloudflare Workers Paid, модель Haiku 5.5, промпт
   2026-10-17.4): следить за тратами Anthropic, лимит $20 в месяц (решение 18.10: поднять, если
-  траты растут). Entitlement Private Cloud Compute отложен до Xcode 27 на раннерах GitHub
-  ([backlog.md](backlog.md), решения).
+  траты растут). Код iOS 27 (Private Cloud Compute, Siri iOS 27) с 21.10 собирается в облаке на
+  Xcode 27 ([asc.md](asc.md)); entitlement Private Cloud Compute запрашивает основатель, после
+  релиза 1.7 ([plan-ai-assistant.md](plan-ai-assistant.md)).
 - [ ] Ответы на отзывы, паритет ключей, `семейный` (§5 A и C).

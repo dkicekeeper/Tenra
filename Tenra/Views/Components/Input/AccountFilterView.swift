@@ -33,38 +33,42 @@ struct AccountFilterView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    UniversalRow(
-                        String(localized: "filter.allAccounts"),
-                        config: .settings,
-                        accessory: .checkmark(isSelected: selectedAccountId == nil) {
-                            selectedAccountId = nil
-                            dismiss()
-                        }
-                    )
-                }
+            // DesignKit 8.0.0: glass sections on the page (a List before).
+            ScrollView {
+                VStack(spacing: AppSpacing.xl) {
+                    FormSection {
+                        UniversalRow(
+                            String(localized: "filter.allAccounts"),
+                            accessory: .checkmark(isSelected: selectedAccountId == nil) {
+                                selectedAccountId = nil
+                                dismiss()
+                            }
+                        )
+                    }
 
-                if !regularAccounts.isEmpty {
-                    accountSection(
-                        title: String(localized: "account.type.regular", defaultValue: "Счета"),
-                        accounts: regularAccounts
-                    )
-                }
+                    if !regularAccounts.isEmpty {
+                        accountSection(
+                            title: String(localized: "account.type.regular", defaultValue: "Счета"),
+                            accounts: regularAccounts
+                        )
+                    }
 
-                if !depositAccounts.isEmpty {
-                    accountSection(
-                        title: String(localized: "account.type.deposit", defaultValue: "Депозиты"),
-                        accounts: depositAccounts
-                    )
-                }
+                    if !depositAccounts.isEmpty {
+                        accountSection(
+                            title: String(localized: "account.type.deposit", defaultValue: "Депозиты"),
+                            accounts: depositAccounts
+                        )
+                    }
 
-                if !loanAccounts.isEmpty {
-                    accountSection(
-                        title: String(localized: "account.type.loan", defaultValue: "Кредиты"),
-                        accounts: loanAccounts
-                    )
+                    if !loanAccounts.isEmpty {
+                        accountSection(
+                            title: String(localized: "account.type.loan", defaultValue: "Кредиты"),
+                            accounts: loanAccounts
+                        )
+                    }
                 }
+                .screenPadding()
+                .padding(.vertical, AppSpacing.md)
             }
             .navigationTitle(String(localized: "filter.accounts", defaultValue: "Счета"))
             .navigationBarTitleDisplayMode(.inline)
@@ -85,7 +89,7 @@ struct AccountFilterView: View {
     // MARK: - Account Section
 
     private func accountSection(title: String, accounts: [Account]) -> some View {
-        Section {
+        FormSection(header: title) {
             ForEach(accounts) { account in
                 let balance = balanceCoordinator?.balances[account.id] ?? 0
 
@@ -95,15 +99,12 @@ struct AccountFilterView: View {
                     value: amountsHidden
                         ? Formatting.hiddenAmount(currency: account.currency)
                         : Formatting.formatCurrencySmart(balance, currency: account.currency),
-                    config: .settings,
                     accessory: .checkmark(isSelected: selectedAccountId == account.id) {
                         selectedAccountId = account.id
                         dismiss()
                     }
                 )
             }
-        } header: {
-            SectionHeader(title)
         }
     }
 

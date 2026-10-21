@@ -19,6 +19,11 @@ struct InsightDetailView<CategoryDestination: View>: View {
     /// The `String?` is the period key of the breakdown page the user tapped from
     /// (`nil` for non-paged breakdowns) so the destination dives into the right month.
     private let _onCategoryTap: ((CategoryBreakdownItem, String?) -> CategoryDestination)?
+    /// The navigation title in place of the insight's own: the Insights grid's "Available
+    /// balance" card opens the wealth insight under the card's name.
+    private var titleOverride: String? = nil
+
+    private var screenTitle: String { titleOverride ?? insight.title }
 
     private var logger: Logger { Logger(subsystem: "Tenra", category: "InsightDetailView") }
 
@@ -70,7 +75,8 @@ struct InsightDetailView<CategoryDestination: View>: View {
                             // Detail breakdown
                             detailSection
                         }
-                        // Rises over the fading end of the hero's gradient.
+                        // Rises over the fading end of the hero's gradient (on the page,
+                        // it takes back the header's bottom padding).
                         .padding(.top, -AppSpacing.xxl)
                     }
                     .padding(.bottom, AppSpacing.md)
@@ -79,11 +85,11 @@ struct InsightDetailView<CategoryDestination: View>: View {
                 .heroScrollEdge()
             }
         }
-        .navigationTitle(insight.title)
+        .navigationTitle(screenTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                AskAssistantToolbarButton(topic: .insight(title: insight.title))
+                AskAssistantToolbarButton(topic: .insight(title: screenTitle))
             }
         }
         .onAppear {
@@ -95,7 +101,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
     /// insights lead with a hero gauge of their own (`ScoreGaugeCard` in the hero style) in
     /// place of the header and the half gauge: the savings rate, a large expense against the
     /// usual one, and what is left of the budgets. The others put their header and hero visual
-    /// on the colour, in white.
+    /// on the colour, in white, when `showsHeroColour`; otherwise the header stays on the page.
     @ViewBuilder
     private var heroHeader: some View {
         switch (insight.type, insight.cardVisual) {
@@ -125,17 +131,53 @@ struct InsightDetailView<CategoryDestination: View>: View {
                 entranceDelay: Self.heroEntranceDelay
             )
         default:
-            VStack(spacing: AppSpacing.xl) {
-                headerSection
-
-                // Hero visual (2026-07 visual refresh) — full-size sibling
-                // of the feed card's cardVisual, above the data sections.
-                heroChartSection
+            if showsHeroColour {
+                headerAndHeroVisual
+                    .heroBackground(insight.severity.color)
+            } else {
+                headerAndHeroVisual
             }
-            .frame(maxWidth: .infinity)
-            .padding(.top, AppSpacing.md)
-            .padding(.bottom, AppSpacing.xxl)
-            .heroBackground(insight.severity.color)
+        }
+    }
+
+    private var headerAndHeroVisual: some View {
+        VStack(spacing: AppSpacing.xl) {
+            headerSection
+
+            // Hero visual (2026-07 visual refresh) — full-size sibling
+            // of the feed card's cardVisual, above the data sections.
+            heroChartSection
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, AppSpacing.md)
+        .padding(.bottom, AppSpacing.xxl)
+    }
+
+    /// The tone's colour goes behind the header only with a hero visual on it, and never on a
+    /// screen with an `OrbChart` (the owner's rules, 2026-10). Header alone, the colour ended
+    /// right under it with the full chart half on its fade (cash flow, income growth, the
+    /// daily average, wealth change, the budget lists).
+    private var showsHeroColour: Bool {
+        hasHeroVisual && !showsOrbChart
+    }
+
+    /// `heroChartSection` draws something.
+    private var hasHeroVisual: Bool {
+        switch insight.cardVisual {
+        case .halfGauge, .barPair, .milestoneGauge, .sparkline, .proportionBar:
+            return true
+        case .ring, .budgetBars, .donut, nil:
+            return false
+        }
+    }
+
+    /// `chartSection` draws an `OrbChart`.
+    private var showsOrbChart: Bool {
+        switch insight.detailData {
+        case .categoryBreakdown, .wealthBreakdown:
+            return true
+        default:
+            return false
         }
     }
 
@@ -415,10 +457,12 @@ private struct WealthOrbSection: View {
 
 extension InsightDetailView where CategoryDestination == Never {
     /// Init without category drill-down. No chevron shown; category rows are non-tappable.
-    init(insight: Insight, currency: String) {
+    /// - Parameter title: The navigation title in place of the insight's own.
+    init(insight: Insight, currency: String, title: String? = nil) {
         self.insight = insight
         self.currency = currency
         self._onCategoryTap = nil
+        self.titleOverride = title
     }
 }
 

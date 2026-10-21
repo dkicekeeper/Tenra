@@ -301,12 +301,17 @@ struct InsightsView: View {
     }
 
     /// Wealth insight (per-account composition) when it exists — it is computed from the
-    /// SAME account filter as `availableBalance`, so the totals agree. Falls back to the
-    /// overview summary before the first insights pass completes.
+    /// SAME account filter as `availableBalance`, so the totals agree — under the card's own
+    /// name, "Available balance" (the feed keeps the insight's "Accumulated capital"). Falls
+    /// back to the overview summary before the first insights pass completes.
     @ViewBuilder
     private var balanceDestination: some View {
         if let wealth = insightsViewModel.insights.first(where: { $0.type == .totalWealth }) {
-            insightDetailView(for: wealth)
+            InsightDetailView(
+                insight: wealth,
+                currency: insightsViewModel.baseCurrency,
+                title: String(localized: "insights.availableBalance")
+            )
         } else {
             summaryDetail(focus: .overview)
         }

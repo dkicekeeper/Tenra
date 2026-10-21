@@ -50,7 +50,8 @@ extension RecurringSeriesEntity {
             kind: kind,
             iconSource: iconSource,
             reminderOffsets: nil, // Not stored in Entity yet
-            status: status
+            status: status,
+            order: order?.intValue
         )
     }
 
@@ -84,6 +85,7 @@ extension RecurringSeriesEntity {
             entity.brandId = nil
         }
         entity.status = series.status?.rawValue
+        entity.order = series.order.map { NSNumber(value: $0) }
         // account relationship will be set separately
         return entity
     }

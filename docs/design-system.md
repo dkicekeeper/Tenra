@@ -220,17 +220,27 @@ ScrollView
 
 ### Lists
 
-- **Management** (`AccountsManagementView`, `CategoriesManagementView`): `List` of `AccountRow` /
-  `CategoryRow`, `.onMove` while reordering, swipe to delete in the row adapter.
-- **Cards** (`SubscriptionsListView`, `LoansListView`, `GoalsListView`, `DebtsListView`):
-  `ScrollView` of `SubscriptionCard` / `LoanCard` / `GoalCard` / `DebtCard` in `NavigationLink`s
-  with a staggered `.chartAppear`, `EmptyState` when there are none. Goals and debts show three
+Every list of things the person keeps is DesignKit's `CardList` with `.cardListToolbar` (8.0.0):
+one set of actions on all of them. A tap opens an item, a long press shows Edit and Delete (with
+a confirmation), the toolbar selects several to delete ("Delete N" under the list), reorders by
+dragging and adds; no swipe actions.
+
+- **A card per item** (`AccountsManagementView`, `DepositsListView`, `CategoriesManagementView`):
+  `CardList(.cards)` of `AccountRow` / `CategoryRow` (DesignKit's `AmountRow` in the list style)
+  padded in a glass card each; `CardListSkeleton` while the balances load. The order is
+  `Account.order` (accounts and deposits apart) and `CustomCategory.order`.
+- **Ready-made cards** (`LoansListView`, `GoalsListView`, `DebtsListView`,
+  `SubscriptionsListView`): `CardList(.stack)` of `LoanCard` / `GoalCard` / `DebtCard` /
+  `SubscriptionCard` (DesignKit's `PayoffProgressCard` and `RecurringPaymentCard`) in
+  `NavigationLink`s; the circle and the handle sit beside the card. The order is `Account.order`
+  (loans: only while the filter shows every loan), `SavingsGoal.order` (within in progress or
+  reached), `PersonalDebt.order` and `RecurringSeries.order` (CoreData v16; nil keeps the list's
+  own order, the soonest due first for debts). Goals and debts show three
   `PayoffProgressCardSkeleton`s until their store loads, replaced through `.skeletonReveal` (§7).
-- **Deposits** (`DepositsListView`): `List` of `AccountRow`; `AmountRowSkeleton(style: .list)`
-  rows while loading, replaced through `.transition(.skeletonReveal)` (§7).
-- **Subcategories** (`SubcategoriesManagementView`): `List` of `SubcategoryManagementRow`, a
-  plain `Button` over `ItemRow(style: .large, titleFont: AppTypography.h4)` with the usage in a
-  `MetaLine` ("Used 14 times · Oct 9, 2026").
+- **Subcategories** (`SubcategoriesManagementView`): `CardList(.section)`, every subcategory a
+  row of one glass card (`SubcategoryManagementRow`, `ItemRow(style: .large, titleFont:
+  AppTypography.h4)` with its usage in a `MetaLine`), in the chosen sort (name, last used,
+  usage) from the sort menu; no dragging (`canReorder: false`). A tap edits the name.
 
 ### History
 

@@ -1507,6 +1507,12 @@
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "Видалити %d підкатегорій?";
+"bulk.deleteDeposits.title" = "Видалити %d вкладів?";
+"bulk.deleteLoans.title" = "Видалити %d кредитів?";
+"bulk.deleteDebts.title" = "Видалити %d боргів?";
+"bulk.deleteGoals.title" = "Видалити %d цілей?";
+"bulk.deleteSubscriptions.title" = "Видалити %d підписок?";
+"subcategory.deleteTitle" = "Видалити підкатегорію?";
 "bulk.deleteSubcategories.confirm" = "Видалити";
 
 // MARK: - Account Detail View

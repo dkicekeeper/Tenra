@@ -36,9 +36,10 @@ struct SubcategoriesManagementView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showingAddSubcategory = false
     @State private var editingSubcategory: Subcategory?
-    @State private var mode: ManagementMode = .normal
+    @State private var mode: CardListMode = .browsing
     @State private var selection: Set<String> = []
-    @State private var showingBulkDeleteDialog = false
+    /// The subcategories a confirmation is asked for: one from its menu, or the ones selected.
+    @State private var subcategoriesToDelete: Set<String> = []
     @State private var sortOrder: SubcategorySortOrder = .alphabetical
 
     private func handleSortOrderChange(_ newValue: SubcategorySortOrder) {
@@ -77,74 +78,23 @@ struct SubcategoriesManagementView: View {
     /// background-built `stats` cache became unnecessary once those indexes
     /// landed (see TransactionStore+SubcategoryIndex).
     private func subcategoryRow(for subcategory: Subcategory) -> some View {
-        let isSelected = selection.contains(subcategory.id)
-
-        return HStack(spacing: AppSpacing.md) {
-            if mode.isSelecting {
-                SelectionIndicator(isSelected: isSelected)
-                    .transition(.popIn)
+        SubcategoryManagementRow(
+            subcategory: subcategory,
+            usageCount: categoriesViewModel.subcategoryUsageCount(for: subcategory.id),
+            lastUsedDate: categoriesViewModel.subcategoryLastUsedDate(for: subcategory.id),
+            onEdit: { editingSubcategory = subcategory }
+        )
+        .contextMenu {
+            Button {
+                editingSubcategory = subcategory
+            } label: {
+                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
             }
-
-            SubcategoryManagementRow(
-                subcategory: subcategory,
-                usageCount: categoriesViewModel.subcategoryUsageCount(for: subcategory.id),
-                lastUsedDate: categoriesViewModel.subcategoryLastUsedDate(for: subcategory.id),
-                onEdit: { handleRowTap(subcategory) },
-                onDelete: {
-                    HapticManager.warning()
-                    categoriesViewModel.deleteSubcategory(subcategory.id)
-                }
-            )
-        }
-        .animation(AppAnimation.contentSpring, value: mode)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    /// Selecting mode toggles on the row's own tap: the row is a `Button`, so a
-    /// `List(selection:)` binding never sees the tap. See `SelectionIndicator`.
-    private func handleRowTap(_ subcategory: Subcategory) {
-        guard mode.isSelecting else {
-            editingSubcategory = subcategory
-            return
-        }
-        HapticManager.selection()
-        if selection.contains(subcategory.id) {
-            selection.remove(subcategory.id)
-        } else {
-            selection.insert(subcategory.id)
-        }
-    }
-
-    // MARK: - Toolbar
-
-    /// Add subcategory (normal) / select-all (selecting) — the screen's primary action.
-    /// Extracted so iOS 27 can mark it `.visibilityPriority(.high)`; see
-    /// `AccountsManagementView.primaryTrailingItem` for the rationale.
-    @ToolbarContentBuilder
-    private var primaryTrailingItem: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            if mode == .normal {
-                Button(action: {
-                    HapticManager.light()
-                    showingAddSubcategory = true
-                }) {
-                    Image(systemName: "plus")
-                }
-                .dsButton()
-            } else if mode.isSelecting {
-                Button {
-                    HapticManager.selection()
-                    let allIds = Set(sortedSubcategories.map(\.id))
-                    if selection == allIds {
-                        selection.removeAll()
-                    } else {
-                        selection = allIds
-                    }
-                } label: {
-                    Text(selection.count == sortedSubcategories.count
-                         ? String(localized: "bulk.deselectAll")
-                         : String(localized: "bulk.selectAll"))
-                }
+            Button(role: .destructive) {
+                HapticManager.warning()
+                subcategoriesToDelete = [subcategory.id]
+            } label: {
+                Label(String(localized: "button.delete"), systemImage: "trash")
             }
         }
     }
@@ -162,19 +112,22 @@ struct SubcategoriesManagementView: View {
                     }
                 )
             } else {
-                List {
-                    ForEach(sortedSubcategories) { subcategory in
+                // One glass section of rows (DesignKit 8.0.0's `CardList(layout: .section)`), in
+                // the chosen sort: the order is the sort's, so there is no dragging.
+                ScrollView {
+                    CardList(sortedSubcategories, layout: .section, mode: mode, selection: $selection) { subcategory in
                         subcategoryRow(for: subcategory)
                     }
+                    .screenPadding()
+                    .padding(.vertical, AppSpacing.md)
                 }
-                .environment(\.editMode, .constant(mode.editMode))
             }
         }
         .navigationTitle(String(localized: "settings.subcategories"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                if mode == .normal {
+            if mode == .browsing {
+                ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Picker("", selection: $sortOrder) {
                             ForEach(SubcategorySortOrder.allCases) { order in
@@ -189,74 +142,33 @@ struct SubcategoriesManagementView: View {
                     .accessibilityLabel(String(localized: "subcategory.sort.title"))
                 }
             }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItem(placement: .topBarTrailing) {
-                switch mode {
-                case .normal:
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) { mode = .selecting }
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                    }
-                    .accessibilityLabel(String(localized: "bulk.select"))
-                case .selecting:
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) {
-                            mode = .normal
-                            selection.removeAll()
-                        }
-                    } label: {
-                        Text(String(localized: "bulk.done"))
-                    }
-                    .dsButton()
-                case .reordering:
-                    EmptyView()
-                }
-            }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
-            if #available(iOS 27, *) {
-                primaryTrailingItem.visibilityPriority(.high)
-            } else {
-                primaryTrailingItem
-            }
-            #else
-            primaryTrailingItem
-            #endif
         }
+        .cardListToolbar(
+            mode: $mode,
+            selection: $selection,
+            allIDs: sortedSubcategories.map(\.id),
+            canReorder: false,
+            addLabel: String(localized: "subcategory.new"),
+            onAdd: { showingAddSubcategory = true },
+            onDeleteSelected: { subcategoriesToDelete = selection }
+        )
         .onChange(of: sortOrder) { _, newValue in
             handleSortOrderChange(newValue)
         }
-        .overlay(alignment: .bottom) {
-            if mode.isSelecting && !selection.isEmpty {
-                DSButton(
-                    String(format: String(localized: "bulk.deleteCount"), selection.count),
-                    role: .destructive,
-                    shape: .capsule,
-                    fullWidth: true
-                ) {
-                    showingBulkDeleteDialog = true
-                }
-                .font(AppTypography.bodyEmphasis)
-                .screenPadding()
-                .padding(.bottom, AppSpacing.lg)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .animation(AppAnimation.contentSpring, value: selection.count)
-            }
-        }
         .alert(
-            String(format: String(localized: "bulk.deleteSubcategories.title"), selection.count),
-            isPresented: $showingBulkDeleteDialog
+            subcategoriesToDelete.count > 1
+                ? String(format: String(localized: "bulk.deleteSubcategories.title"), subcategoriesToDelete.count)
+                : String(localized: "subcategory.deleteTitle", defaultValue: "Delete subcategory?"),
+            isPresented: Binding(get: { !subcategoriesToDelete.isEmpty }, set: { if !$0 { subcategoriesToDelete = [] } })
         ) {
             Button(String(localized: "button.cancel"), role: .cancel) {}
             Button(String(localized: "bulk.deleteSubcategories.confirm"), role: .destructive) {
                 HapticManager.warning()
-                categoriesViewModel.deleteSubcategories(selection)
+                categoriesViewModel.deleteSubcategories(subcategoriesToDelete)
+                subcategoriesToDelete = []
                 withAnimation(AppAnimation.contentSpring) {
                     selection.removeAll()
-                    mode = .normal
+                    mode = .browsing
                 }
             }
         }
@@ -303,7 +215,6 @@ struct SubcategoryManagementRow: View {
     let usageCount: Int
     let lastUsedDate: Date?
     let onEdit: () -> Void
-    let onDelete: () -> Void
 
     private nonisolated static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -320,11 +231,6 @@ struct SubcategoryManagementRow: View {
             ItemRow(subcategory.name, meta: [MetaLine(usage)], style: .large, titleFont: AppTypography.h4)
         }
         .buttonStyle(.plain)
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(role: .destructive, action: onDelete) {
-                Label(String(localized: "button.delete"), systemImage: "trash")
-            }
-        }
     }
 
     /// "Used 14 times · Oct 9, 2026", or "Not used".
@@ -345,12 +251,12 @@ struct SubcategoryEditView: View {
     let onCancel: () -> Void
     
     @State private var name: String = ""
-    @FocusState private var isNameFocused: Bool
     
     var body: some View {
         EditSheetContainer(
             title: subcategory == nil ? String(localized: "modal.newSubcategory") : String(localized: "modal.editSubcategory"),
             isSaveDisabled: name.trimmingCharacters(in: .whitespaces).isEmpty,
+            wrapInForm: false,
             onSave: {
                 let subcategoryToSave = Subcategory(
                     id: subcategory?.id ?? UUID().uuidString,
@@ -360,21 +266,22 @@ struct SubcategoryEditView: View {
             },
             onCancel: onCancel
         ) {
-            Section(header: Text(String(localized: "common.name"))) {
-                TextField(String(localized: "subcategory.namePlaceholder"), text: $name)
-                    .focused($isNameFocused)
+            // DesignKit's card form (8.0.0: one look; the system Form before).
+            ScrollView {
+                FormSection(header: String(localized: "common.name")) {
+                    FormTextField(
+                        text: $name,
+                        placeholder: String(localized: "subcategory.namePlaceholder"),
+                        style: .row,
+                        autofocus: subcategory == nil
+                    )
+                }
+                .screenPadding()
+                .padding(.top, AppSpacing.md)
             }
         }
         .task {
-            if let subcategory = subcategory {
-                name = subcategory.name
-                isNameFocused = false
-            } else {
-                name = ""
-                // Yield to the runloop so the view finishes layout before activating focus
-                await Task.yield()
-                isNameFocused = true
-            }
+            name = subcategory?.name ?? ""
         }
     }
 }
@@ -413,8 +320,7 @@ struct SubcategoryEditView: View {
                 subcategory: subcategory,
                 usageCount: [5, 12, 0, 3][index],
                 lastUsedDate: index == 2 ? nil : Date().addingTimeInterval(Double(-index) * 86400),
-                onEdit: {},
-                onDelete: {}
+                onEdit: {}
             )
         }
     }

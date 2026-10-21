@@ -22,7 +22,7 @@ struct CategoriesManagementView: View {
     @State private var categoryToDelete: CustomCategory?
     @State private var showingDeleteDialog = false
     @State private var navigatingCategory: CustomCategory?
-    @State private var mode: ManagementMode = .normal
+    @State private var mode: CardListMode = .browsing
     @State private var selection: Set<String> = []
     @State private var showingBulkDeleteDialog = false
 
@@ -80,127 +80,43 @@ struct CategoriesManagementView: View {
         budgetProgressMap = map
     }
 
-    // MARK: - Toolbar
-
-    /// Add category (normal) / select-all (selecting) — the screen's primary action.
-    /// Extracted so iOS 27 can mark it `.visibilityPriority(.high)`; see
-    /// `AccountsManagementView.primaryTrailingItem` for the rationale.
-    @ToolbarContentBuilder
-    private var primaryTrailingItem: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            if mode == .normal {
-                Button {
-                    HapticManager.light()
-                    showingAddCategory = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .dsButton()
-            } else if mode.isSelecting {
-                Button {
-                    HapticManager.selection()
-                    let filteredIds = Set(filteredCategories.map(\.id))
-                    if selection == filteredIds {
-                        selection.removeAll()
-                    } else {
-                        selection = filteredIds
-                    }
-                } label: {
-                    Text(selection.count == filteredCategories.count
-                         ? String(localized: "bulk.deselectAll")
-                         : String(localized: "bulk.selectAll"))
-                }
-            }
-        }
-    }
-
     // MARK: - Methods
 
-    /// iOS 26 path: edit-mode drag handles report an `IndexSet` + offset.
+    /// A drag in DesignKit's `CardList` reports an `IndexSet` + offset, as `List`'s `onMove`.
     private func moveCategory(from source: IndexSet, to destination: Int) {
         var updatedCategories = filteredCategories
         updatedCategories.move(fromOffsets: source, toOffset: destination)
+        // The snapshot moves at once, so the card follows the finger; the store keeps it.
+        filteredCategories = updatedCategories
         applyReorder(orderedIds: updatedCategories.map { $0.id })
     }
 
     /// Atomic reorder + single CoreData persist; was N× saveCategoriesSync.
     private func applyReorder(orderedIds: [String]) {
         transactionStore.reorderCategories(orderedIds: orderedIds)
-        HapticManager.selection()
     }
 
     // MARK: - List
 
-    /// On iOS 27 rows drag directly (`reorderable()` + the `reorderContainer` in `body`);
-    /// iOS 26 keeps `onMove`, which only works while `mode == .reordering`.
-    @ViewBuilder
+    /// A card per category (DesignKit 8.0.0's `CardList`): a tap opens it, a long press shows
+    /// Edit and Delete; the toolbar selects several to delete and changes the order by dragging.
     private var categoriesList: some View {
-        List {
-            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
-            if #available(iOS 27, *) {
-                ForEach(filteredCategories) { category in
-                    categoryRow(category)
-                }
-                .reorderable()
-            } else {
-                ForEach(filteredCategories) { category in
-                    categoryRow(category)
-                }
-                .onMove(perform: mode.isReordering ? moveCategory : nil)
+        ScrollView {
+            CardList(filteredCategories, mode: mode, selection: $selection, onMove: moveCategory) { category in
+                categoryCard(category)
             }
-            #else
-            ForEach(filteredCategories) { category in
-                categoryRow(category)
-            }
-            .onMove(perform: mode.isReordering ? moveCategory : nil)
-            #endif
-        }
-        .environment(\.editMode, .constant(mode.editMode))
-    }
-
-    /// Selecting mode toggles on the row's own tap: `CategoryRow` is a `Button`, so a
-    /// `List(selection:)` binding never sees the tap. See `SelectionIndicator`.
-    private func handleRowTap(_ category: CustomCategory) {
-        guard mode.isSelecting else {
-            navigatingCategory = category
-            return
-        }
-        HapticManager.selection()
-        if selection.contains(category.id) {
-            selection.remove(category.id)
-        } else {
-            selection.insert(category.id)
+            .screenPadding()
+            .padding(.vertical, AppSpacing.md)
         }
     }
 
-    @ViewBuilder
-    private func categoryRow(_ category: CustomCategory) -> some View {
-        let isSelected = selection.contains(category.id)
-
-        HStack(spacing: AppSpacing.md) {
-            if mode.isSelecting {
-                SelectionIndicator(isSelected: isSelected)
-                    .transition(.popIn)
-            }
-
-            categoryRowContent(category)
-        }
-        .animation(AppAnimation.contentSpring, value: mode)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    @ViewBuilder
-    private func categoryRowContent(_ category: CustomCategory) -> some View {
+    private func categoryCard(_ category: CustomCategory) -> some View {
         CategoryRow(
             category: category,
             isDefault: false,
             budgetProgress: budgetProgressMap[category.id],
             currency: transactionsViewModel.appSettings.baseCurrency,
-            onEdit: { handleRowTap(category) },
-            onDelete: {
-                categoryToDelete = category
-                showingDeleteDialog = true
-            },
+            onEdit: { navigatingCategory = category },
             transitionSourceID: category.id,
             transitionNamespace: categoryNamespace
         )
@@ -245,84 +161,21 @@ struct CategoriesManagementView: View {
                     }
                 )
             } else {
-                #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
-                if #available(iOS 27, *) {
-                    categoriesList
-                        .reorderContainer(for: CustomCategory.self) { difference in
-                            var reordered = filteredCategories
-                            difference.apply(to: &reordered)
-                            applyReorder(orderedIds: reordered.map(\.id))
-                        }
-                } else {
-                    categoriesList
-                }
-                #else
                 categoriesList
-                #endif
             }
         }
         .animation(AppAnimation.contentSpring, value: selectedType)
         .navigationTitle(String(localized: "navigation.categories"))
         .navigationBarTitleDisplayMode(.large)
         .task(id: listKey) { rebuildCategorySnapshots() }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                switch mode {
-                case .normal:
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) { mode = .selecting }
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                    }
-                    .accessibilityLabel(String(localized: "bulk.select"))
-                case .selecting:
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) {
-                            mode = .normal
-                            selection.removeAll()
-                        }
-                    } label: {
-                        Text(String(localized: "bulk.done"))
-                    }
-                    .dsButton()
-                case .reordering:
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) { mode = .normal }
-                    } label: {
-                        Image(systemName: "checkmark")
-                    }
-                    .dsButton()
-                }
-            }
-            // iOS 27 drags rows directly (`reorderable()`), so the mode this button
-            // switches into exists only for iOS 26, where `onMove` needs edit mode.
-            if #unavailable(iOS 27) {
-                ToolbarSpacer(.fixed, placement: .topBarTrailing)
-                ToolbarItem(placement: .topBarTrailing) {
-                    if mode == .normal {
-                        Button {
-                            HapticManager.light()
-                            withAnimation(AppAnimation.contentSpring) { mode = .reordering }
-                        } label: {
-                            Image(systemName: "arrow.up.arrow.down")
-                        }
-                    }
-                }
-            }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
-            if #available(iOS 27, *) {
-                primaryTrailingItem.visibilityPriority(.high)
-            } else {
-                primaryTrailingItem
-            }
-            #else
-            primaryTrailingItem
-            #endif
-        }
+        // DesignKit 8.0.0: the same toolbar on every list.
+        .cardListToolbar(
+            mode: $mode,
+            selection: $selection,
+            allIDs: filteredCategories.map(\.id),
+            onAdd: { showingAddCategory = true },
+            onDeleteSelected: { showingBulkDeleteDialog = true }
+        )
         // The picker as a bar under the navigation bar: the bar's soft edge goes on under it, so
         // the rows blur under both (a safeAreaInset has no edge effect of its own). Named:
         // built with Xcode 27 the edge as it comes is hard (DesignKit 5.1.0).
@@ -387,23 +240,6 @@ struct CategoriesManagementView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
-        .overlay(alignment: .bottom) {
-            if mode.isSelecting && !selection.isEmpty {
-                DSButton(
-                    String(format: String(localized: "bulk.deleteCount"), selection.count),
-                    role: .destructive,
-                    shape: .capsule,
-                    fullWidth: true
-                ) {
-                    showingBulkDeleteDialog = true
-                }
-                .font(AppTypography.bodyEmphasis)
-                .screenPadding()
-                .padding(.bottom, AppSpacing.lg)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .animation(AppAnimation.contentSpring, value: selection.count)
-            }
-        }
         .alert(
             String(format: String(localized: "bulk.deleteCategories.title"), selection.count),
             isPresented: $showingBulkDeleteDialog
@@ -417,7 +253,7 @@ struct CategoriesManagementView: View {
                 }
                 withAnimation(AppAnimation.contentSpring) {
                     selection.removeAll()
-                    mode = .normal
+                    mode = .browsing
                 }
             }
             Button(String(localized: "bulk.deleteCategories.withTransactions"), role: .destructive) {
@@ -429,7 +265,7 @@ struct CategoriesManagementView: View {
                 }
                 withAnimation(AppAnimation.contentSpring) {
                     selection.removeAll()
-                    mode = .normal
+                    mode = .browsing
                 }
             }
         } message: {
@@ -527,8 +363,7 @@ struct CategoriesManagementView: View {
             isDefault: false,
             budgetProgress: nil,
             currency: "KZT",
-            onEdit: {},
-            onDelete: {}
+            onEdit: {}
         )
         .padding(.vertical, AppSpacing.xs)
         .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))

@@ -1507,6 +1507,12 @@
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "Apagar %d subcategorias?";
+"bulk.deleteDeposits.title" = "Apagar %d depósitos?";
+"bulk.deleteLoans.title" = "Apagar %d empréstimos?";
+"bulk.deleteDebts.title" = "Apagar %d dívidas?";
+"bulk.deleteGoals.title" = "Apagar %d metas?";
+"bulk.deleteSubscriptions.title" = "Apagar %d assinaturas?";
+"subcategory.deleteTitle" = "Apagar subcategoria?";
 "bulk.deleteSubcategories.confirm" = "Apagar";
 
 // MARK: - Account Detail View

@@ -37,6 +37,9 @@ struct RecurringSeries: Identifiable, Codable, Equatable, Hashable {
     var iconSource: IconSource? // Unified icon/logo source (SF Symbol, brand service)
     var reminderOffsets: [Int]? // Days before charge (e.g., [1, 3, 7, 30])
     var status: SubscriptionStatus? // For subscriptions: active/paused/archived
+    /// Where the person put it in the subscriptions list (DesignKit 8.0.0's drag to reorder);
+    /// nil keeps the list's own order.
+    var order: Int?
     
     init(
         id: String = UUID().uuidString,
@@ -54,7 +57,8 @@ struct RecurringSeries: Identifiable, Codable, Equatable, Hashable {
         kind: RecurringSeriesKind = .generic,
         iconSource: IconSource? = nil,
         reminderOffsets: [Int]? = nil,
-        status: SubscriptionStatus? = nil
+        status: SubscriptionStatus? = nil,
+        order: Int? = nil
     ) {
         self.id = id
         self.isActive = isActive
@@ -72,6 +76,7 @@ struct RecurringSeries: Identifiable, Codable, Equatable, Hashable {
         self.iconSource = iconSource
         self.reminderOffsets = reminderOffsets
         self.status = status
+        self.order = order
     }
     
     // Helper computed property
@@ -91,7 +96,7 @@ struct RecurringSeries: Identifiable, Codable, Equatable, Hashable {
     enum CodingKeys: String, CodingKey {
         case id, isActive, amount, currency, category, subcategory, description
         case accountId, targetAccountId, frequency, startDate, lastGeneratedDate
-        case kind, brandLogo, brandId, iconSource, reminderOffsets, status
+        case kind, brandLogo, brandId, iconSource, reminderOffsets, status, order
     }
 
     init(from decoder: Decoder) throws {
@@ -125,6 +130,7 @@ struct RecurringSeries: Identifiable, Codable, Equatable, Hashable {
 
         reminderOffsets = try container.decodeIfPresent([Int].self, forKey: .reminderOffsets)
         status = try container.decodeIfPresent(SubscriptionStatus.self, forKey: .status)
+        order = try container.decodeIfPresent(Int.self, forKey: .order)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -145,6 +151,7 @@ struct RecurringSeries: Identifiable, Codable, Equatable, Hashable {
         try container.encodeIfPresent(iconSource, forKey: .iconSource)
         try container.encodeIfPresent(reminderOffsets, forKey: .reminderOffsets)
         try container.encodeIfPresent(status, forKey: .status)
+        try container.encodeIfPresent(order, forKey: .order)
     }
     
     /// Calculate all occurrences of this recurring transaction within a given date interval

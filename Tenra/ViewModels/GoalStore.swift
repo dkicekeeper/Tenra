@@ -128,6 +128,23 @@ final class GoalStore {
         await repository?.delete(id: id)
     }
 
+    /// The goals of one list (in progress, or reached) in the order the person dragged them to
+    /// (DesignKit 8.0.0's list): they take that list's places among all the goals, in memory at
+    /// once (the list moves while the finger does), then kept.
+    func reorder(_ orderedIds: [String]) async {
+        let places = orderedIds.compactMap { id in goals.first { $0.id == id }?.order }.sorted()
+        var moved: [SavingsGoal] = []
+        for (id, place) in zip(orderedIds, places) {
+            guard let i = goals.firstIndex(where: { $0.id == id }), goals[i].order != place else { continue }
+            goals[i].order = place
+            moved.append(goals[i])
+        }
+        goals.sort { $0.order < $1.order }
+        for goal in moved {
+            await repository?.save(goal)
+        }
+    }
+
     func addContribution(_ contribution: GoalContribution, to goalId: String) async {
         guard var goal = goal(id: goalId) else { return }
         goal.contributions.append(contribution)

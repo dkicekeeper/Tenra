@@ -1507,6 +1507,12 @@
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "%d alt kategori silinsin mi?";
+"bulk.deleteDeposits.title" = "%d mevduat silinsin mi?";
+"bulk.deleteLoans.title" = "%d kredi silinsin mi?";
+"bulk.deleteDebts.title" = "%d borç silinsin mi?";
+"bulk.deleteGoals.title" = "%d hedef silinsin mi?";
+"bulk.deleteSubscriptions.title" = "%d abonelik silinsin mi?";
+"subcategory.deleteTitle" = "Alt kategori silinsin mi?";
 "bulk.deleteSubcategories.confirm" = "Sil";
 
 // MARK: - Account Detail View

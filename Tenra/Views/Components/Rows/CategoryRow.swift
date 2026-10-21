@@ -2,9 +2,9 @@
 //  CategoryRow.swift
 //  Tenra
 //
-//  Category row of the categories list. Adapter over DesignKit's `AmountRow` (a `.limit` row): the
-//  category, its budget, the tap, the swipe-to-delete, the over-budget haptic and the
-//  VoiceOver label stay here.
+//  Category card of the categories list (DesignKit 8.0.0's `CardList`). Adapter over DesignKit's
+//  `AmountRow` (a `.limit` row): the category, its budget, the tap, the over-budget haptic and
+//  the VoiceOver label stay here. No swipe actions: Edit and Delete are the card's context menu.
 //
 
 import SwiftUI
@@ -15,7 +15,6 @@ struct CategoryRow: View, Equatable {
     let budgetProgress: BudgetProgress?
     let currency: String
     let onEdit: () -> Void
-    let onDelete: () -> Void
 
     /// Optional zoom-transition source. When both id and namespace are non-nil,
     /// the icon (with budget ring) becomes the matched source for
@@ -66,16 +65,6 @@ struct CategoryRow: View, Equatable {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(categoryAccessibilityLabel)
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            if !isDefault {
-                Button(role: .destructive) {
-                    HapticManager.warning()
-                    onDelete()
-                } label: {
-                    Label(String(localized: "button.delete"), systemImage: "trash")
-                }
-            }
-        }
         // Budget overflow haptic — fires when spending first crosses 100 %
         .onChange(of: budgetProgress?.isOverBudget) { _, isOver in
             if isOver == true { HapticManager.warning() }
@@ -98,8 +87,7 @@ struct CategoryRow: View, Equatable {
             isDefault: false,
             budgetProgress: nil,
             currency: "KZT",
-            onEdit: {},
-            onDelete: {}
+            onEdit: {}
         )
         .padding(.vertical, AppSpacing.xs)
         .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))

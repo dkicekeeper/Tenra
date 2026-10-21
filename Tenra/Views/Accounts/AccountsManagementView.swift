@@ -28,7 +28,7 @@ struct AccountsManagementView: View {
     @State private var showingAccountDeleteDialog = false
     @State private var convertingAccount: Account?
     @State private var linkingInterestDeposit: Account?
-    @State private var mode: ManagementMode = .normal
+    @State private var mode: CardListMode = .browsing
     @State private var selection: Set<String> = []
     @State private var showingBulkDeleteDialog = false
 
@@ -47,52 +47,20 @@ struct AccountsManagementView: View {
         accountsViewModel.accounts.filter { !$0.isLoan && !$0.isDeposit }.sortedByOrder()
     }
 
-    // MARK: - Toolbar
+    // MARK: - Methods
 
-    /// Add account (normal) / select-all (selecting) — the screen's primary action.
-    /// Extracted so iOS 27 can mark it `.visibilityPriority(.high)`: when the bar runs
-    /// out of room (narrow window on iPad or iPhone Mirroring), the select and reorder
-    /// items move into the overflow menu first and this one stays put.
-    @ToolbarContentBuilder
-    private var primaryTrailingItem: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            if mode == .normal {
-                Button {
-                    HapticManager.light()
-                    // Free tier caps regular accounts; Pro is unlimited. The
-                    // empty-state add (0 accounts) is never gated — only the
-                    // (limit+1)-th account routes to the paywall.
-                    if premium.isPro || sortedAccounts.count < PremiumConfig.freeAccountLimit {
-                        showingAddAccount = true
-                    } else {
-                        pendingConvertAccount = nil  // this paywall resumes add-account
-                        showingPaywall = true
-                    }
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .dsButton()
-                .accessibilityLabel(String(localized: "account.newAccount"))
-            } else if mode.isSelecting {
-                Button {
-                    HapticManager.selection()
-                    if selection.count == sortedAccounts.count {
-                        selection.removeAll()
-                    } else {
-                        selection = Set(sortedAccounts.map(\.id))
-                    }
-                } label: {
-                    Text(selection.count == sortedAccounts.count
-                         ? String(localized: "bulk.deselectAll")
-                         : String(localized: "bulk.selectAll"))
-                }
-            }
+    /// New account: the free tier caps regular accounts, Pro is unlimited. The empty-state add
+    /// (0 accounts) is never gated; only the (limit+1)-th account routes to the paywall.
+    private func addAccount() {
+        if premium.isPro || sortedAccounts.count < PremiumConfig.freeAccountLimit {
+            showingAddAccount = true
+        } else {
+            pendingConvertAccount = nil  // this paywall resumes add-account
+            showingPaywall = true
         }
     }
 
-    // MARK: - Methods
-
-    /// iOS 26 path: edit-mode drag handles report an `IndexSet` + offset.
+    /// A drag in DesignKit's `CardList` reports an `IndexSet` + offset, as `List`'s `onMove`.
     private func moveAccount(from source: IndexSet, to destination: Int) {
         var reordered = sortedAccounts
         reordered.move(fromOffsets: source, toOffset: destination)
@@ -103,80 +71,32 @@ struct AccountsManagementView: View {
     /// trigger a balance recalculation.
     private func applyReorder(orderedIds: [String]) {
         transactionStore.reorderAccounts(orderedIds)
-        HapticManager.selection()
+    }
+
+    private func confirmDelete(_ account: Account) {
+        HapticManager.warning()
+        accountToDelete = account
+        showingAccountDeleteDialog = true
     }
 
     // MARK: - List
 
-    /// On iOS 27 rows are draggable directly (`reorderable()`, paired with the
-    /// `reorderContainer` in `body`), so reordering no longer needs the edit-mode
-    /// detour. iOS 26 keeps `onMove`, which only works while `mode == .reordering`.
-    @ViewBuilder
+    /// A card per account (DesignKit 8.0.0's `CardList`): a tap opens it, a long press shows
+    /// Edit and Delete; the toolbar selects several to delete and changes the order by dragging.
     private func accountsList(coordinator: BalanceCoordinator) -> some View {
-        List {
-            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
-            if #available(iOS 27, *) {
-                ForEach(sortedAccounts) { account in
-                    accountRow(account, coordinator: coordinator)
-                }
-                .reorderable()
-            } else {
-                ForEach(sortedAccounts) { account in
-                    accountRow(account, coordinator: coordinator)
-                }
-                .onMove(perform: mode.isReordering ? moveAccount : nil)
+        ScrollView {
+            CardList(sortedAccounts, mode: mode, selection: $selection, onMove: moveAccount) { account in
+                accountCard(account, coordinator: coordinator)
             }
-            #else
-            ForEach(sortedAccounts) { account in
-                accountRow(account, coordinator: coordinator)
-            }
-            .onMove(perform: mode.isReordering ? moveAccount : nil)
-            #endif
-        }
-        .environment(\.editMode, .constant(mode.editMode))
-    }
-
-    /// Selecting mode toggles on the row's own tap: `AccountRow` is a `Button`, so a
-    /// `List(selection:)` binding never sees the tap. See `SelectionIndicator`.
-    private func handleRowTap(_ account: Account) {
-        guard mode.isSelecting else {
-            navigatingAccount = account
-            return
-        }
-        HapticManager.selection()
-        if selection.contains(account.id) {
-            selection.remove(account.id)
-        } else {
-            selection.insert(account.id)
+            .screenPadding()
+            .padding(.vertical, AppSpacing.md)
         }
     }
 
-    @ViewBuilder
-    private func accountRow(_ account: Account, coordinator: BalanceCoordinator) -> some View {
-        let isSelected = selection.contains(account.id)
-
-        HStack(spacing: AppSpacing.md) {
-            if mode.isSelecting {
-                SelectionIndicator(isSelected: isSelected)
-                    .transition(.popIn)
-            }
-
-            accountRowContent(account, coordinator: coordinator)
-        }
-        .animation(AppAnimation.contentSpring, value: mode)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    @ViewBuilder
-    private func accountRowContent(_ account: Account, coordinator: BalanceCoordinator) -> some View {
+    private func accountCard(_ account: Account, coordinator: BalanceCoordinator) -> some View {
         AccountRow(
             account: account,
-            onEdit: { handleRowTap(account) },
-            onDelete: {
-                HapticManager.warning()
-                accountToDelete = account
-                showingAccountDeleteDialog = true
-            },
+            onEdit: { navigatingAccount = account },
             balanceCoordinator: coordinator,
             interestToday: depositsViewModel.interestToday(for: account),
             nextPostingDate: depositsViewModel.nextPostingDate(for: account),
@@ -191,15 +111,13 @@ struct AccountsManagementView: View {
             }
 
             Button(role: .destructive) {
-                HapticManager.warning()
-                accountToDelete = account
-                showingAccountDeleteDialog = true
+                confirmDelete(account)
             } label: {
                 Label(String(localized: "button.delete"), systemImage: "trash")
             }
         }
     }
-    
+
     var body: some View {
         Group {
             if sortedAccounts.isEmpty {
@@ -214,36 +132,16 @@ struct AccountsManagementView: View {
                     line: String(localized: "assistant.empty.accounts")
                 )
             } else if let coordinator = accountsViewModel.balanceCoordinator {
-                #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
-                if #available(iOS 27, *) {
-                    accountsList(coordinator: coordinator)
-                        .reorderContainer(for: Account.self) { difference in
-                            var reordered = sortedAccounts
-                            difference.apply(to: &reordered)
-                            applyReorder(orderedIds: reordered.map(\.id))
-                        }
-                        .transition(.skeletonReveal)
-                } else {
-                    accountsList(coordinator: coordinator)
-                        .transition(.skeletonReveal)
-                }
-                #else
                 accountsList(coordinator: coordinator)
                     .transition(.skeletonReveal)
-                #endif
             } else {
-                // balanceCoordinator not yet initialized — skeleton rows in place of the list
-                VStack(spacing: 0) {
-                    // The skeleton of the rows to come (AccountRow is DesignKit's AmountRow in the list style).
-                    ForEach(0..<4, id: \.self) { _ in
-                        AmountRowSkeleton(style: .list)
-                            .padding(.vertical, AppSpacing.sm)
-                    }
+                // balanceCoordinator not yet initialized — the cards' skeleton in place of the list
+                ScrollView {
+                    CardListSkeleton(count: 4)
+                        .screenPadding()
+                        .padding(.vertical, AppSpacing.md)
                 }
-                .screenPadding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(String(localized: "progress.loadingAccounts"))
+                .scrollDisabled(true)
                 .transition(.opacity)
             }
         }
@@ -251,66 +149,16 @@ struct AccountsManagementView: View {
         .animation(AppAnimation.smooth, value: accountsViewModel.balanceCoordinator == nil)
         .navigationTitle(String(localized: "settings.accounts"))
         .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                switch mode {
-                case .normal:
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) { mode = .selecting }
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                    }
-                    .accessibilityLabel(String(localized: "bulk.select"))
-                case .selecting:
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) {
-                            mode = .normal
-                            selection.removeAll()
-                        }
-                    } label: {
-                        Text(String(localized: "bulk.done"))
-                    }
-                    .dsButton()
-                case .reordering:
-                    Button {
-                        HapticManager.light()
-                        withAnimation(AppAnimation.contentSpring) { mode = .normal }
-                    } label: {
-                        Image(systemName: "checkmark")
-                    }
-                    .dsButton()
-                    .accessibilityLabel(String(localized: "accessibility.accounts.doneReordering"))
-                }
-            }
-            // iOS 27 drags rows directly (`reorderable()`), so the mode this button
-            // switches into exists only for iOS 26, where `onMove` needs edit mode.
-            if #unavailable(iOS 27) {
-                ToolbarSpacer(.fixed, placement: .topBarTrailing)
-                ToolbarItem(placement: .topBarTrailing) {
-                    if mode == .normal {
-                        Button {
-                            HapticManager.light()
-                            withAnimation(AppAnimation.contentSpring) { mode = .reordering }
-                        } label: {
-                            Image(systemName: "arrow.up.arrow.down")
-                        }
-                        .accessibilityLabel(String(localized: "accessibility.accounts.reorder"))
-                    }
-                }
-            }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            #if compiler(>=6.4) // iOS 27 SDK (Xcode 27); Xcode 26 builds keep the iOS 26 path
-            if #available(iOS 27, *) {
-                primaryTrailingItem.visibilityPriority(.high)
-            } else {
-                primaryTrailingItem
-            }
-            #else
-            primaryTrailingItem
-            #endif
-        }
+        // DesignKit 8.0.0: the same toolbar on every list (select, reorder, add; Done;
+        // "Delete N" under the list).
+        .cardListToolbar(
+            mode: $mode,
+            selection: $selection,
+            allIDs: sortedAccounts.map(\.id),
+            addLabel: String(localized: "account.newAccount"),
+            onAdd: addAccount,
+            onDeleteSelected: { showingBulkDeleteDialog = true }
+        )
         .navigationDestination(item: $navigatingAccount) { account in
             Group {
                 if account.isDeposit {
@@ -459,23 +307,6 @@ struct AccountsManagementView: View {
                 }
             )
         }
-        .overlay(alignment: .bottom) {
-            if mode.isSelecting && !selection.isEmpty {
-                DSButton(
-                    String(format: String(localized: "bulk.deleteCount"), selection.count),
-                    role: .destructive,
-                    shape: .capsule,
-                    fullWidth: true
-                ) {
-                    showingBulkDeleteDialog = true
-                }
-                .font(AppTypography.bodyEmphasis)
-                .screenPadding()
-                .padding(.bottom, AppSpacing.lg)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .animation(AppAnimation.contentSpring, value: selection.count)
-            }
-        }
         .alert(
             String(format: String(localized: "bulk.deleteAccounts.title"), selection.count),
             isPresented: $showingBulkDeleteDialog
@@ -492,7 +323,7 @@ struct AccountsManagementView: View {
                 }
                 withAnimation(AppAnimation.contentSpring) {
                     selection.removeAll()
-                    mode = .normal
+                    mode = .browsing
                 }
             }
             Button(String(localized: "bulk.deleteAccounts.withTransactions"), role: .destructive) {
@@ -506,7 +337,7 @@ struct AccountsManagementView: View {
                 }
                 withAnimation(AppAnimation.contentSpring) {
                     selection.removeAll()
-                    mode = .normal
+                    mode = .browsing
                 }
             }
         } message: {
@@ -651,7 +482,6 @@ struct AccountsManagementView: View {
                 AccountRow(
                     account: account,
                     onEdit: {},
-                    onDelete: {},
                     balanceCoordinator: balanceCoordinator
                 )
             }

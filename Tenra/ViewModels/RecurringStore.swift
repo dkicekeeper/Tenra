@@ -106,6 +106,21 @@ final class RecurringStore {
         // Note: Transaction regeneration is handled in TransactionStore+Recurring.updateSeries()
     }
 
+    /// The subscriptions in the order the person dragged them to (DesignKit 8.0.0's list):
+    /// each gets its place, in memory at once (the list moves while the finger does), then
+    /// kept with the other series. The schedule and the transactions do not change.
+    func reorderSeries(_ orderedIds: [String]) {
+        var moved = false
+        for (index, id) in orderedIds.enumerated() {
+            guard let i = recurringSeries.firstIndex(where: { $0.id == id }), recurringSeries[i].order != index else { continue }
+            recurringSeries[i].order = index
+            seriesById[id] = recurringSeries[i]
+            noteSeriesChanged(id)
+            moved = true
+        }
+        if moved { saveSeries() }
+    }
+
     func handleSeriesStopped(seriesId: String) {
         if let index = recurringSeries.firstIndex(where: { $0.id == seriesId }) {
             var updatedSeries = recurringSeries[index]

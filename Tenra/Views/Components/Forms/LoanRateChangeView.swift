@@ -42,15 +42,11 @@ struct LoanRateChangeView: View {
                             )
                         }
 
-                        Divider().padding(.leading, AppSpacing.lg)
-
                         UniversalRow(
                             String(localized: "loan.effectiveDate", defaultValue: "Effective from"),
                             icon: "calendar",
                             accessory: .date($effectiveFromDate)
                         )
-
-                        Divider().padding(.leading, AppSpacing.lg)
 
                         UniversalRow(
                             leadingIcon: .sfSymbol("note.text", color: AppColors.accent, size: AppIconSize.lg),
@@ -79,20 +75,13 @@ struct LoanRateChangeView: View {
                             UniversalRow(
                                 String(localized: "loan.newMonthlyPayment", defaultValue: "New monthly payment"),
                                 icon: "banknote",
-                                config: .info,
                                 accessory: .amount(NSDecimalNumber(decimal: newPayment).doubleValue, currency: account.currency)
                             )
-                            .padding(.horizontal, AppSpacing.lg)
-                            .padding(.vertical, AppSpacing.sm)
-                            Divider().padding(.leading, AppSpacing.lg)
                             UniversalRow(
                                 String(localized: "loan.paymentChange", defaultValue: "Change"),
                                 icon: diff > 0 ? "arrow.up" : "arrow.down",
-                                config: .info,
                                 accessory: .amount(NSDecimalNumber(decimal: diff).doubleValue, currency: account.currency, prefix: diff > 0 ? "+" : "")
                             )
-                            .padding(.horizontal, AppSpacing.lg)
-                            .padding(.vertical, AppSpacing.sm)
                         }
                     }
                 }

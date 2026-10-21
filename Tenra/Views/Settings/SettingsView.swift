@@ -260,7 +260,7 @@ struct SettingsView: View {
     // MARK: - About Section
 
     private var aboutSection: some View {
-        Section(header: SectionHeader(String(localized: "settings.about"), style: .compact)) {
+        Section(header: SectionHeader(String(localized: "settings.about"))) {
             if let url = URL(string: "https://dkicekeeper.github.io/Tenra/privacy-policy.html") {
                 Link(destination: url) {
                     UniversalRow(

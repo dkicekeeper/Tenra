@@ -286,41 +286,27 @@ struct LoanEarlyRepaymentView: View {
             UniversalRow(
                 String(localized: "loan.termReduction", defaultValue: "Term reduced by"),
                 icon: "calendar.badge.minus",
-                config: .info,
                 accessory: .info(String(
                     format: String(localized: "loan.monthsValue", defaultValue: "%d months"),
                     loanInfo.termMonths - preview.termMonths
                 ))
             )
-            .padding(.horizontal, AppSpacing.lg)
-            .padding(.vertical, AppSpacing.sm)
-            Divider().padding(.leading, AppSpacing.lg)
             UniversalRow(
                 String(localized: "loan.newEndDate", defaultValue: "New end date"),
                 icon: "calendar",
-                config: .info,
                 accessory: .info(DateFormatters.displayString(from: preview.endDate))
             )
-            .padding(.horizontal, AppSpacing.lg)
-            .padding(.vertical, AppSpacing.sm)
         case .reducePayment:
             UniversalRow(
                 String(localized: "loan.paymentReduction", defaultValue: "Payment reduced by"),
                 icon: "arrow.down.circle",
-                config: .info,
                 accessory: .amount(NSDecimalNumber(decimal: loanInfo.monthlyPayment - preview.monthlyPayment).doubleValue, currency: account.currency)
             )
-            .padding(.horizontal, AppSpacing.lg)
-            .padding(.vertical, AppSpacing.sm)
-            Divider().padding(.leading, AppSpacing.lg)
             UniversalRow(
                 String(localized: "loan.newMonthlyPayment", defaultValue: "New monthly payment"),
                 icon: "banknote",
-                config: .info,
                 accessory: .amount(NSDecimalNumber(decimal: preview.monthlyPayment).doubleValue, currency: account.currency)
             )
-            .padding(.horizontal, AppSpacing.lg)
-            .padding(.vertical, AppSpacing.sm)
         }
     }
 

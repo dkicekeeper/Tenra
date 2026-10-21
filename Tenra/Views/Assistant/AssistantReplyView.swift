@@ -152,7 +152,7 @@ private struct AssistantChartCard: View {
     private static let rowLimit = 6
 
     var body: some View {
-        FormSection(header: title, style: .glass) {
+        AssistantCard(title) {
             if chart.isTimeline {
                 timeline
             } else {
@@ -264,7 +264,7 @@ private struct AssistantTransactionsCard: View {
         let store = coordinator.transactionStore
         let transactions = ids.prefix(Self.rowLimit).compactMap { store.transactionById[$0] }
         if !transactions.isEmpty {
-            FormSection(header: title, style: .glass) {
+            AssistantCard(title) {
                 ForEach(transactions) { transaction in
                     TransactionCardView(
                         transaction: transaction,
@@ -390,7 +390,7 @@ private struct AssistantForecastCard: View {
                     .accessibilityLabel(String(localized: "assistant.forecast.balance"))
             }
             if !forecast.obligations.isEmpty {
-                FormSection(header: String(format: String(localized: "assistant.forecast.obligations"), untilText), style: .glass) {
+                AssistantCard(String(format: String(localized: "assistant.forecast.obligations"), untilText)) {
                     ForEach(Array(forecast.obligations.prefix(Self.obligationLimit).enumerated()), id: \.offset) { _, obligation in
                         UniversalRow(
                             label(obligation),
@@ -441,7 +441,7 @@ private struct AssistantDraftCard: View {
     var body: some View {
         let store = coordinator.transactionStore
         let state = book.states[draft.id] ?? .pending
-        FormSection(style: .glass) {
+        AssistantCard {
             ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
                 if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
                     let row = TransactionCardView(
@@ -740,8 +740,9 @@ private struct AssistantDraftCard: View {
 
 // MARK: - Open
 
-/// A row into one of the app's screens, pushed on the assistant's stack: a standard row (it
-/// pads itself) in a card, in the accent, with the chevron of a push outside a List.
+/// A row into one of the app's screens, pushed on the assistant's stack: a standard row in a
+/// card that pads it at the sides (DesignKit 8.0.0), in the accent, with the chevron of a push
+/// outside a List.
 private struct AssistantOpenLink: View {
     let route: AssistantRoute
     let label: String
@@ -756,6 +757,7 @@ private struct AssistantOpenLink: View {
             ) {
                 DisclosureChevron()
             }
+            .padding(.horizontal, AppSpacing.lg)
             .contentShape(Rectangle())
             .cardStyle()
         }

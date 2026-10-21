@@ -40,7 +40,7 @@ struct SettingsAssistantSection: View {
                     }
                 )
             } header: {
-                SectionHeader(String(localized: "settings.assistant.header"), style: .compact)
+                SectionHeader(String(localized: "settings.assistant.header"))
             } footer: {
                 Text(String(localized: "settings.assistant.footer"))
             }

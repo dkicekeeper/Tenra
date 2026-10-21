@@ -54,11 +54,8 @@ struct LoanPayAllView: View {
                 VStack(spacing: AppSpacing.lg) {
                     // Loans + Total in one card
                     FormSection(header: String(localized: "loan.payAllLoans", defaultValue: "Loans")) {
-                        ForEach(Array(activeLoans.enumerated()), id: \.element.id) { index, loan in
+                        ForEach(activeLoans) { loan in
                             if let loanInfo = loan.loanInfo {
-                                if index > 0 {
-                                    Divider().padding(.leading, AppSpacing.lg)
-                                }
                                 UniversalRow(
                                     config: .standard,
                                     leadingIcon: .custom(source: loan.iconSource, style: .roundedLogo(size: AppIconSize.lg))
@@ -87,8 +84,6 @@ struct LoanPayAllView: View {
                                 }
                             }
                         }
-
-                        Divider().padding(.leading, AppSpacing.lg)
 
                         UniversalRow(
                             leadingIcon: .sfSymbol("sum", color: AppColors.accent, size: AppIconSize.lg),
@@ -121,8 +116,6 @@ struct LoanPayAllView: View {
                                 accessory: .menu($selectedSourceAccountId, options: availableAccounts.map { (label: $0.name, value: $0.id) })
                             )
                         }
-
-                        Divider().padding(.leading, AppSpacing.lg)
 
                         UniversalRow(
                             String(localized: "loan.date", defaultValue: "Date"),

@@ -11,71 +11,31 @@ import SwiftUI
 /// Universal budget settings section component
 /// Displays budget amount, period, and reset day fields in a card
 struct BudgetSettingsSection: View {
+    var header: String? = nil
     @Binding var budgetAmount: String
     @Binding var selectedPeriod: CustomCategory.BudgetPeriod
     @Binding var resetDay: Int
 
     var body: some View {
-        VStack(spacing: AppSpacing.md) {
-            VStack(spacing: 0) {
-                // Budget Amount
-                UniversalRow(
-                    leadingIcon: .sfSymbol("banknote", color: AppColors.accent, size: AppIconSize.lg),
-                    title: String(localized: "budget.amount")
-                ) {
-                    FormTextField(
-                        text: $budgetAmount,
-                        placeholder: "0",
-                        style: .inline,
-                        keyboardType: .decimalPad
-                    )
-                    .accessibilityLabel(String(localized: "budget.amount"))
-                }
+        // DesignKit's glass section (8.0.0), its dividers its own; the reset day's explanation
+        // as its footer.
+        FormSection(header: header, footer: selectedPeriod == .monthly ? String(localized: "budget_reset_day_description") : nil) {
+            UniversalRow(String(localized: "budget.amount"), icon: "banknote",
+                         accessory: .textField($budgetAmount, placeholder: "0", keyboard: .decimalPad))
 
-                Divider()
-                    .padding(.leading, AppSpacing.lg)
-
-                // Budget Period
-                UniversalRow(
-                    String(localized: "budget.period"),
-                    icon: "calendar",
-                    accessory: .menu($selectedPeriod, options: [
-                        (label: String(localized: "budget.weekly"), value: CustomCategory.BudgetPeriod.weekly),
-                        (label: String(localized: "budget.monthly"), value: CustomCategory.BudgetPeriod.monthly),
-                        (label: String(localized: "yearly"), value: CustomCategory.BudgetPeriod.yearly)
-                    ])
-                )
-
-                if selectedPeriod == .monthly {
-                    Divider()
-                        .padding(.leading, AppSpacing.lg)
-
-                    // Reset Day
-                    UniversalRow(
-                        config: .standard,
-                        leadingIcon: .sfSymbol("arrow.clockwise", color: AppColors.accent, size: AppIconSize.lg)
-                    ) {
-                        Stepper(
-                            String(localized: "budget_reset_day") + " \(resetDay)",
-                            value: $resetDay,
-                            in: 1...31
-                        )
-                        .accessibilityLabel(String(localized: "budget_reset_day"))
-                        .accessibilityValue("\(resetDay)")
-                    }
-                }
-
-            }
-            // Form-style card (Material, not Liquid Glass) — this card hosts a
-            // menu row (`UniversalRow(accessory: .menu)`) whose menu would otherwise morph the whole card on
-            // iOS 26. See `formCardStyle` doc.
-            .formCardStyle()
+            UniversalRow(
+                String(localized: "budget.period"),
+                icon: "calendar",
+                accessory: .menu($selectedPeriod, options: [
+                    (label: String(localized: "budget.weekly"), value: CustomCategory.BudgetPeriod.weekly),
+                    (label: String(localized: "budget.monthly"), value: CustomCategory.BudgetPeriod.monthly),
+                    (label: String(localized: "yearly"), value: CustomCategory.BudgetPeriod.yearly)
+                ])
+            )
 
             if selectedPeriod == .monthly {
-                Text(String(localized: "budget_reset_day_description"))
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                UniversalRow(String(localized: "budget_reset_day"), icon: "arrow.clockwise",
+                             accessory: .stepper($resetDay, in: 1...31))
             }
         }
     }

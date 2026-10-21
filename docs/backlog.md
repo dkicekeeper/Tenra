@@ -126,5 +126,6 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Minimum iOS stays 26** (2026-08-26): older iOS would add 15-18% installs at the cost of a
   second UI path.
 - **No behavioural analytics SDK** (2026-10-12): crashes and usage come from App Analytics,
-  Xcode Organizer, TestFlight and on-device Diagnostics; App Privacy stays "Data Not Collected".
+  Xcode Organizer, TestFlight and on-device Diagnostics; the App Privacy label lists only what Ten
+  sends (since 1.6), no analytics.
   Screen-level analytics (TelemetryDeck or Aptabase) only once traffic makes it meaningful.

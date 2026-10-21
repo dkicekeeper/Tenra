@@ -11,24 +11,19 @@ import SwiftUI
 
 struct SettingsSiriSection: View {
     var body: some View {
-        Section {
+        FormSection(header: String(localized: "settings.siri.header"), footer: String(localized: "settings.siri.footer")) {
             UniversalRow(
                 String(localized: "walletSetup.title"),
                 icon: "wallet.pass",
-                config: .settings,
                 accessory: .navigation { WalletSetupGuideView() }
             )
-        } header: {
-            SectionHeader(String(localized: "settings.siri.header"))
-        } footer: {
-            Text(String(localized: "settings.siri.footer"))
         }
     }
 }
 
 #Preview {
     NavigationStack {
-        List {
+        ScrollView {
             SettingsSiriSection()
         }
     }

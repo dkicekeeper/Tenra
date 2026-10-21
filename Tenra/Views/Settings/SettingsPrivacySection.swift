@@ -14,11 +14,10 @@ struct SettingsPrivacySection: View {
     @State private var biometry: AppLockBiometry = .unavailable
 
     var body: some View {
-        Section {
+        FormSection(header: String(localized: "settings.privacy.header"), footer: String(localized: biometry == .unavailable ? "settings.appLock.unavailable" : "settings.appLock.footer")) {
             UniversalRow(
                 toggleTitle,
                 icon: symbolName,
-                config: .settings,
                 accessory: .toggle(Binding(
                     get: { lock.isEnabled },
                     set: { newValue in
@@ -27,12 +26,6 @@ struct SettingsPrivacySection: View {
                 ))
             )
             .disabled(biometry == .unavailable && !lock.isEnabled)
-        } header: {
-            SectionHeader(String(localized: "settings.privacy.header"))
-        } footer: {
-            Text(String(localized: biometry == .unavailable
-                ? "settings.appLock.unavailable"
-                : "settings.appLock.footer"))
         }
         .task {
             biometry = lock.authenticator.biometry()
@@ -58,7 +51,7 @@ struct SettingsPrivacySection: View {
 
 #Preview {
     NavigationStack {
-        List {
+        ScrollView {
             SettingsPrivacySection()
         }
     }

@@ -18,13 +18,12 @@ struct SettingsProSection: View {
     @State private var ctaShine = 0
 
     var body: some View {
-        Section {
+        FormSection {
             UniversalRow(
                 premium.isPro ? "Tenra Pro" : String(localized: "settings.pro.cta.title"),
                 icon: "crown.fill",
                 value: status,
                 hint: premium.isPro ? nil : String(localized: "settings.pro.cta.subtitle"),
-                config: .settings,
                 accessory: .navigation { TenraProView() }
             )
             .shine(trigger: ctaShine, in: Rectangle())
@@ -46,7 +45,7 @@ struct SettingsProSection: View {
 
 #Preview {
     NavigationStack {
-        List {
+        ScrollView {
             SettingsProSection()
         }
     }

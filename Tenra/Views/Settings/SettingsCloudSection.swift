@@ -14,22 +14,13 @@ struct SettingsCloudSection: View {
     let backupsDestination: CloudBackupsView
 
     var body: some View {
-        Section(header: SectionHeader(String(localized: "settings.cloud"))) {
+        FormSection(header: String(localized: "settings.cloud")) {
             UniversalRow(
-                config: .settings,
-                leadingIcon: .sfSymbol("externaldrive", color: AppColors.accent, size: AppIconSize.md)
-            ) {
-                Text(String(localized: "settings.cloud.backups"))
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-            } trailing: {
-                Text(ByteCountFormatter.string(fromByteCount: storageUsed, countStyle: .file))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
-            .navigationRow {
-                backupsDestination
-            }
+                String(localized: "settings.cloud.backups"),
+                icon: "externaldrive",
+                value: ByteCountFormatter.string(fromByteCount: storageUsed, countStyle: .file),
+                accessory: .navigation { backupsDestination }
+            )
         }
     }
 }

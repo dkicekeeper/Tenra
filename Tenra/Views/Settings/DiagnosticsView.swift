@@ -17,24 +17,28 @@ struct DiagnosticsView: View {
     @State private var shareItems: [URL] = []
 
     var body: some View {
-        List {
-            launchCheckSection
-            reportsSection
-            Section {
-                ShareLink(items: shareItems) {
-                    UniversalRow(
-                        config: .settings,
-                        leadingIcon: .sfSymbol("square.and.arrow.up", color: AppColors.accent, size: AppIconSize.md)
-                    ) {
-                        Text(String(localized: "diagnostics.share"))
-                            .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textPrimary)
-                    } trailing: {
-                        EmptyView()
+        // DesignKit 8.0.0: glass sections on the page (a List before).
+        ScrollView {
+            VStack(spacing: AppSpacing.xl) {
+                launchCheckSection
+                reportsSection
+                FormSection {
+                    ShareLink(items: shareItems) {
+                        UniversalRow(
+                            leadingIcon: .sfSymbol("square.and.arrow.up", color: AppColors.accent, size: AppIconSize.lg)
+                        ) {
+                            Text(String(localized: "diagnostics.share"))
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppColors.textPrimary)
+                        } trailing: {
+                            EmptyView()
+                        }
                     }
+                    .disabled(shareItems.isEmpty)
                 }
-                .disabled(shareItems.isEmpty)
             }
+            .screenPadding()
+            .padding(.vertical, AppSpacing.md)
         }
         .navigationTitle(String(localized: "settings.diagnostics"))
         .navigationBarTitleDisplayMode(.inline)
@@ -53,13 +57,21 @@ struct DiagnosticsView: View {
     // MARK: - Launch check
 
     private var launchCheckSection: some View {
-        Section {
+        FormSection(
+            header: String(localized: "diagnostics.launchCheck.header"),
+            footer: center.lastReport.map { report in
+                String(
+                    format: String(localized: "diagnostics.launchCheck.footer"),
+                    report.finishedAt.formatted(date: .abbreviated, time: .shortened)
+                )
+            }
+        ) {
             if let report = center.lastReport {
                 ForEach(report.results) { result in
                     checkRow(result)
                 }
             } else {
-                UniversalRow(config: .settings) {
+                UniversalRow {
                     Text(String(localized: "diagnostics.checking"))
                         .font(AppTypography.body)
                         .foregroundStyle(AppColors.textSecondary)
@@ -70,26 +82,15 @@ struct DiagnosticsView: View {
             UniversalRow(
                 String(localized: "diagnostics.runAgain"),
                 icon: "arrow.clockwise",
-                config: .settings,
                 accessory: .action({ Task { await center.runHealthCheck() } })
             )
             .disabled(center.isChecking)
-        } header: {
-            SectionHeader(String(localized: "diagnostics.launchCheck.header"))
-        } footer: {
-            if let report = center.lastReport {
-                Text(String(
-                    format: String(localized: "diagnostics.launchCheck.footer"),
-                    report.finishedAt.formatted(date: .abbreviated, time: .shortened)
-                ))
-            }
         }
     }
 
     private func checkRow(_ result: LaunchHealthCheck.Result) -> some View {
         UniversalRow(
-            config: .settings,
-            leadingIcon: .sfSymbol(icon(for: result.item), color: AppColors.accent, size: AppIconSize.md)
+            leadingIcon: .sfSymbol(icon(for: result.item), color: AppColors.accent, size: AppIconSize.lg)
         ) {
             VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                 Text(title(for: result.item))
@@ -169,19 +170,19 @@ struct DiagnosticsView: View {
     // MARK: - MetricKit reports
 
     private var reportsSection: some View {
-        Section {
+        FormSection(header: String(localized: "diagnostics.reports.header"), footer: String(localized: "diagnostics.reports.footer")) {
             if payloads.isEmpty {
                 Text(String(localized: "diagnostics.reports.empty"))
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textSecondary)
+                    .padding(.vertical, AppSpacing.lg)
             } else {
                 ForEach(payloads) { payload in
                     UniversalRow(
-                        config: .settings,
                         leadingIcon: .sfSymbol(
                             payload.counts.crashes > 0 ? "exclamationmark.octagon" : "doc.text",
                             color: payload.counts.crashes > 0 ? AppColors.destructive : AppColors.accent,
-                            size: AppIconSize.md
+                            size: AppIconSize.lg
                         )
                     ) {
                         VStack(alignment: .leading, spacing: AppSpacing.xxs) {
@@ -198,10 +199,6 @@ struct DiagnosticsView: View {
                     .accessibilityElement(children: .combine)
                 }
             }
-        } header: {
-            SectionHeader(String(localized: "diagnostics.reports.header"))
-        } footer: {
-            Text(String(localized: "diagnostics.reports.footer"))
         }
     }
 

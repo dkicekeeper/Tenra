@@ -1303,6 +1303,7 @@
 "settings.cloud.storage" = "Depolama";
 "settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.iCloud.toggle" = "Yedekleri iCloud'a kaydet";
+"settings.cloud.iCloud.moving" = "Verileriniz taşınıyor…";
 "settings.cloud.iCloud.footer" = "Yedekler iCloud'unda saklanır, Dosyalar uygulamasında gizlidir ve diğer cihazlarındaki Tenra'da kullanılabilir.";
 "settings.cloud.iCloud.unavailable" = "Yedekleri iCloud Drive'da saklamak için Ayarlar'dan iCloud'a giriş yap.";
 "settings.cloud.iCloud.movedToICloud" = "Yedekler iCloud'a taşındı";

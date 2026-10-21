@@ -1696,6 +1696,14 @@
 "settings.pro.restore.restored" = "Restaurado";
 "settings.pro.restore.none" = "No se encontraron compras";
 "settings.pro.restore.failed" = "No se pudo restaurar";
+"pro.page.subtitle" = "Todo Tenra, sin límites";
+"pro.page.features" = "Qué incluye Pro";
+"pro.feature.accounts" = "Cuentas ilimitadas";
+"pro.feature.voice" = "Entrada por voz";
+"pro.feature.import" = "Importación de extractos PDF y CSV";
+"pro.feature.deposits" = "Depósitos con intereses";
+"pro.feature.loans" = "Préstamos con calendario de pagos";
+"pro.feature.debts" = "Deudas personales";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Registrar una operación";
@@ -1738,11 +1746,9 @@
 "intent.walletPayment.noAccount" = "Añade una cuenta en Tenra para registrar pagos.";
 "walletSetup.title" = "Configurar la automatización de Wallet";
 "walletSetup.intro" = "Así cada pago con Apple Pay en un terminal se guarda solo, con el comercio, el importe, la moneda y la tarjeta. Wallet no comparte los pagos en línea: llegan con el extracto.";
-"walletSetup.trigger" = "Automatización";
 "walletSetup.step.open" = "Abre **Atajos**, ve a **Automatización**, toca **+** y elige **Wallet**.";
 "walletSetup.step.cards" = "Elige tus tarjetas, deja cualquier categoría y cualquier comercio, y haz que se ejecute de inmediato, sin confirmar.";
 "walletSetup.step.action" = "Añade la acción de Tenra **%@**.";
-"walletSetup.fields" = "Los campos de la acción";
 "walletSetup.step.amount" = "**%@**: toca el campo y elige **Transacción**.";
 "walletSetup.step.merchant" = "**%@**: elige **Transacción**, tócala de nuevo y elige su comercio.";
 "walletSetup.step.card" = "**%@**: otra vez **Transacción**, con su tarjeta. Con ella Tenra aprende desde qué cuenta paga cada tarjeta.";
@@ -1752,6 +1758,17 @@
 "walletSetup.currency.text" = "Sin este paso un pago se guarda en la moneda de su cuenta. Antes de la acción de Tenra añade una variable con el importe de **Transacción** y en **%@** elige esa variable y su código de moneda.";
 "walletSetup.note.oldAction" = "¿Ya tienes una automatización con **%1$@**? Cámbiala por **%2$@**: no pregunta nada, recuerda tus tarjetas y nunca guarda un pago dos veces.";
 "walletSetup.openShortcuts" = "Abrir Atajos";
+"walletSetup.page.intro" = "Los pagos con Apple Pay se guardan solos";
+"walletSetup.page.trigger" = "Crea la automatización";
+"walletSetup.page.cards" = "Elige tus tarjetas";
+"walletSetup.page.action" = "Añade la acción de Tenra";
+"walletSetup.page.quiet" = "Sin preguntas";
+"walletSetup.page.step" = "Paso %1$lld de %2$lld";
+"walletSetup.page.optional" = "Opcional";
+"walletSetup.mock.transaction" = "Transacción";
+"walletSetup.mock.merchant" = "Comercio";
+"walletSetup.mock.showWhenRun" = "Mostrar al ejecutar";
+"walletSetup.mock.setVariable" = "Configurar variable";
 "intent.entity.account" = "Cuenta";
 "intent.entity.category" = "Categoría";
 "intent.entity.subcategory" = "Subcategoría";
@@ -1766,10 +1783,7 @@
 
 /* MARK: - Settings: Siri & Shortcuts */
 "settings.siri.header" = "Siri y atajos";
-"settings.siri.footer" = "Dígale esto a Siri y Tenra registra la operación sin abrirse.";
-"settings.siri.example1" = "Oye Siri, registrar una operación en Tenra";
-"settings.siri.example2" = "Oye Siri, cuánto he gastado en Tenra";
-"settings.siri.example3" = "Oye Siri, añadir un gasto en Tenra";
+"settings.siri.footer" = "Una automatización de Atajos guarda sola cada pago con Apple Pay en un terminal, sin abrir Tenra.";
 "settings.merchants.title" = "Comercios de Wallet";
 "settings.merchants.footer" = "Los pagos en estos comercios con la automatización de Wallet reciben esta categoría y subcategoría. Toca un comercio para ver sus pagos y cambiarlas, o desliza a la izquierda para olvidarlo.";
 "settings.merchants.emptyTitle" = "Aún no hay comercios";
@@ -1802,6 +1816,10 @@
 "settings.cards.emptyTitle" = "Aún no hay tarjetas";
 "settings.cards.emptyMessage" = "Cuando la automatización de Wallet pasa la tarjeta, Tenra recuerda aquí la cuenta que elijas o confirmes para ella.";
 "settings.cards.accountDeleted" = "Cuenta eliminada";
+"settings.wallet.header" = "Wallet";
+"settings.wallet.merchants" = "Comercios";
+"settings.wallet.cards" = "Tarjetas";
+"settings.wallet.footer" = "Pagos con Apple Pay guardados por la automatización de Wallet: revisa los que se adivinaron y asigna una categoría a cada comercio y una cuenta a cada tarjeta.";
 
 
 /* MARK: - Document import */

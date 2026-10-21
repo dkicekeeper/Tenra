@@ -1696,6 +1696,14 @@
 "settings.pro.restore.restored" = "Восстановлено";
 "settings.pro.restore.none" = "Покупки не найдены";
 "settings.pro.restore.failed" = "Не удалось восстановить";
+"pro.page.subtitle" = "Все возможности Tenra без ограничений";
+"pro.page.features" = "Что входит в Pro";
+"pro.feature.accounts" = "Безлимитные счета";
+"pro.feature.voice" = "Голосовой ввод";
+"pro.feature.import" = "Импорт выписок PDF и CSV";
+"pro.feature.deposits" = "Вклады с начислением процентов";
+"pro.feature.loans" = "Кредиты с графиком платежей";
+"pro.feature.debts" = "Личные долги";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Записать операцию";
@@ -1738,11 +1746,9 @@
 "intent.walletPayment.noAccount" = "Добавьте счёт в Tenra, чтобы записывать оплаты.";
 "walletSetup.title" = "Настроить автоматизацию Wallet";
 "walletSetup.intro" = "После этого каждая оплата Apple Pay на терминале записывается сама: с продавцом, суммой, валютой и картой. Онлайн-оплаты Wallet не передаёт, они придут с выпиской.";
-"walletSetup.trigger" = "Автоматизация";
 "walletSetup.step.open" = "Откройте **Быстрые команды**, вкладку **Автоматизация**, нажмите **+** и выберите **Wallet**.";
 "walletSetup.step.cards" = "Отметьте свои карты, оставьте **Любая категория** и **Любой продавец** и выберите запуск сразу, без подтверждения.";
 "walletSetup.step.action" = "Добавьте действие Tenra **%@**.";
-"walletSetup.fields" = "Поля действия";
 "walletSetup.step.amount" = "**%@**: нажмите на поле и выберите **Транзакция**.";
 "walletSetup.step.merchant" = "**%@**: выберите **Транзакция**, нажмите на неё ещё раз и выберите **Продавец**.";
 "walletSetup.step.card" = "**%@**: снова **Транзакция**, её карта. По ней Tenra узнаёт, с какого счёта платит каждая карта.";
@@ -1752,6 +1758,17 @@
 "walletSetup.currency.text" = "Без этого шага оплата записывается в валюте счёта. Перед действием Tenra добавьте **Задать переменную** и укажите в ней сумму из **Транзакция**. Затем в поле **%@** выберите эту переменную и её код валюты.";
 "walletSetup.note.oldAction" = "Уже есть автоматизация с действием **%1$@**? Замените его на **%2$@**: оно ничего не спрашивает, помнит карты и не записывает оплату дважды.";
 "walletSetup.openShortcuts" = "Открыть Быстрые команды";
+"walletSetup.page.intro" = "Оплаты Apple Pay записываются сами";
+"walletSetup.page.trigger" = "Создайте автоматизацию";
+"walletSetup.page.cards" = "Выберите карты";
+"walletSetup.page.action" = "Добавьте действие Tenra";
+"walletSetup.page.quiet" = "Без вопросов";
+"walletSetup.page.step" = "Шаг %1$lld из %2$lld";
+"walletSetup.page.optional" = "Необязательно";
+"walletSetup.mock.transaction" = "Транзакция";
+"walletSetup.mock.merchant" = "Продавец";
+"walletSetup.mock.showWhenRun" = "Показать при запуске";
+"walletSetup.mock.setVariable" = "Задать переменную";
 "intent.entity.account" = "Счёт";
 "intent.entity.category" = "Категория";
 "intent.entity.subcategory" = "Подкатегория";
@@ -1766,10 +1783,7 @@
 
 /* MARK: - Settings: Siri & Shortcuts */
 "settings.siri.header" = "Siri и команды";
-"settings.siri.footer" = "Скажите это Siri, и Tenra запишет операцию, не открывая приложение.";
-"settings.siri.example1" = "Привет, Siri, запиши операцию в Tenra";
-"settings.siri.example2" = "Привет, Siri, сколько я потратил в Tenra";
-"settings.siri.example3" = "Привет, Siri, добавь трату в Tenra";
+"settings.siri.footer" = "Автоматизация в Быстрых командах сама записывает каждую оплату Apple Pay на терминале, не открывая Tenra.";
 "settings.merchants.title" = "Продавцы Wallet";
 "settings.merchants.footer" = "Оплаты у этих продавцов через автоматизацию Wallet записываются с этой категорией и подкатегорией. Нажмите на продавца, чтобы увидеть его платежи и изменить их, или смахните влево, чтобы забыть.";
 "settings.merchants.emptyTitle" = "Пока нет продавцов";
@@ -1802,6 +1816,10 @@
 "settings.cards.emptyTitle" = "Карт пока нет";
 "settings.cards.emptyMessage" = "Когда автоматизация Wallet передаёт карту, Tenra запоминает здесь счёт, который вы для неё выбрали или подтвердили.";
 "settings.cards.accountDeleted" = "Счёт удалён";
+"settings.wallet.header" = "Wallet";
+"settings.wallet.merchants" = "Продавцы";
+"settings.wallet.cards" = "Карты";
+"settings.wallet.footer" = "Оплаты Apple Pay, записанные автоматизацией Wallet: проверьте угаданные, задайте категорию каждому продавцу и счёт каждой карте.";
 
 
 /* MARK: - Document import */

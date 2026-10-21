@@ -2,262 +2,53 @@
 //  SettingsProSection.swift
 //  Tenra
 //
-//  "Tenra Pro" block at the top of Settings: purchase CTA for free users,
-//  subscription status (plan + renewal date) for subscribers, and the
-//  Founding-User state for grandfathered users. Self-contained — reads
-//  PremiumManager from the environment and owns its paywall presentation,
-//  so SettingsView just drops `SettingsProSection()` into its List.
-//  Free users can also redeem an App Store offer code here (StoreKit's own
-//  sheet; PremiumManager syncs the result with RevenueCat).
+//  "Tenra Pro" row at the top of Settings, opening its page (TenraProView): the pitch for a
+//  free user (with DesignKit's shine sweeping across it once), the status for a subscriber or a
+//  Founding User. Self-contained: reads PremiumManager from the environment, so SettingsView
+//  just drops `SettingsProSection()` into its List.
 //
 
-import StoreKit
 import SwiftUI
 
 struct SettingsProSection: View {
 
     @Environment(PremiumManager.self) private var premium
 
-    @State private var showingPaywall = false
-    @State private var showingCodeRedemption = false
-    @State private var isRestoring = false
-    @State private var restoreOutcome: RestoreOutcome?
-    /// Bumped each time the purchase row appears: DesignKit's shine sweeps across it once.
+    /// Bumped each time a free user's row appears: DesignKit's shine sweeps across it once.
     @State private var ctaShine = 0
 
-    private enum RestoreOutcome {
-        case restored
-        case nothingToRestore
-        case failed
-    }
-
     var body: some View {
-        Section(header: SectionHeader("Tenra Pro", style: .compact)) {
-            if premium.isSubscriber {
-                subscriberStatusRow
-                if premium.proStatus?.plan != .lifetime {
-                    manageSubscriptionRow
-                }
-            } else if premium.isFounder {
-                founderRow
-            } else {
-                purchaseCTARow
-                restorePurchasesRow
-                redeemCodeRow
-            }
-        }
-    }
-
-    // MARK: - Free: purchase CTA + restore
-
-    private var purchaseCTARow: some View {
-        UniversalRow(
-            config: .settings,
-            leadingIcon: .sfSymbol("crown.fill", color: AppColors.accent, size: AppIconSize.md)
-        ) {
-            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                Text(String(localized: "settings.pro.cta.title"))
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-                Text(String(localized: "settings.pro.cta.subtitle"))
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
-        } trailing: {
-            Icon("chevron.right", size: AppIconSize.sm)
-                .foregroundStyle(AppColors.textSecondary)
-        }
-        .actionRow {
-            HapticManager.light()
-            showingPaywall = true
-        }
-        .shine(trigger: ctaShine, in: Rectangle())
-        .onAppear { ctaShine += 1 }
-        // On this row, not on the Section: in a List a modifier on a Section is
-        // copied onto each of its rows, and two presenters on one binding (the
-        // free state has two rows) opened the paywall and dropped it at once.
-        .paywallSheet(isPresented: $showingPaywall)
-    }
-
-    private var restorePurchasesRow: some View {
-        UniversalRow(
-            config: .settings,
-            leadingIcon: .sfSymbol("arrow.clockwise", color: AppColors.accent, size: AppIconSize.md)
-        ) {
-            Text(String(localized: "settings.pro.restore"))
-                .font(AppTypography.body)
-                .foregroundStyle(AppColors.textPrimary)
-        } trailing: {
-            if isRestoring {
-                ProgressView()
-            } else if let restoreOutcome {
-                Text(label(for: restoreOutcome))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(restoreOutcome == .failed ? AppColors.destructive : AppColors.textSecondary)
-            }
-        }
-        .actionRow { restorePurchases() }
-    }
-
-    /// Opens the App Store's offer-code sheet (codes made in App Store Connect →
-    /// the subscription → Offer Codes). A redeemed code unlocks Pro like a purchase.
-    private var redeemCodeRow: some View {
-        UniversalRow(
-            config: .settings,
-            leadingIcon: .sfSymbol("giftcard", color: AppColors.accent, size: AppIconSize.md)
-        ) {
-            Text(String(localized: "settings.pro.redeemCode"))
-                .font(AppTypography.body)
-                .foregroundStyle(AppColors.textPrimary)
-        }
-        .actionRow {
-            HapticManager.light()
-            showingCodeRedemption = true
-        }
-        // On this row, like the paywall: one presenter per binding.
-        .offerCodeRedemption(isPresented: $showingCodeRedemption) { result in
-            guard case .success = result else { return }
-            Task { await premium.syncAfterOfferCodeRedemption() }
-        }
-    }
-
-    // MARK: - Subscriber: status + manage
-
-    private var subscriberStatusRow: some View {
-        UniversalRow(
-            config: .settings,
-            leadingIcon: .sfSymbol("crown.fill", color: AppColors.accent, size: AppIconSize.md)
-        ) {
-            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                Text(verbatim: "Tenra Pro")
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-                if let subtitle = subscriptionSubtitle {
-                    Text(subtitle)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textSecondary)
-                }
-            }
-        } trailing: {
-            HStack(spacing: AppSpacing.xs) {
-                Text(String(localized: "settings.pro.status.active"))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.success)
-                Icon("checkmark.seal.fill", size: AppIconSize.sm)
-                    .foregroundStyle(AppColors.success)
-            }
-            // A holographic foil on the Pro badge: its colours follow the finger (DesignKit).
-            .holographic()
-        }
-    }
-
-    private var manageSubscriptionRow: some View {
-        Link(destination: manageSubscriptionURL) {
+        Section {
             UniversalRow(
+                premium.isPro ? "Tenra Pro" : String(localized: "settings.pro.cta.title"),
+                icon: "crown.fill",
+                value: status,
+                hint: premium.isPro ? nil : String(localized: "settings.pro.cta.subtitle"),
                 config: .settings,
-                leadingIcon: .sfSymbol("gearshape", color: AppColors.accent, size: AppIconSize.md)
-            ) {
-                Text(String(localized: "settings.pro.manage"))
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-            } trailing: {
-                Icon("arrow.up.right", size: AppIconSize.sm)
-                    .foregroundStyle(AppColors.textSecondary)
+                accessory: .navigation { TenraProView() }
+            )
+            .shine(trigger: ctaShine, in: Rectangle())
+            .onAppear {
+                if !premium.isPro { ctaShine += 1 }
             }
         }
     }
 
-    // MARK: - Founder
-
-    private var founderRow: some View {
-        UniversalRow(
-            config: .settings,
-            leadingIcon: .sfSymbol("crown.fill", color: AppColors.accent, size: AppIconSize.md)
-        ) {
-            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                Text(verbatim: "Tenra Pro")
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
-                Text(String(localized: "settings.pro.founder.subtitle"))
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
-            }
-        } trailing: {
-            HStack(spacing: AppSpacing.xs) {
-                Text(String(localized: "settings.pro.founder"))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.success)
-                Icon("checkmark.seal.fill", size: AppIconSize.sm)
-                    .foregroundStyle(AppColors.success)
-            }
-            .holographic()
-        }
-    }
-
-    // MARK: - Helpers
-
-    /// "Annual · Renews 12 Aug 2026" / "Monthly · Expires …" / "Lifetime access".
-    private var subscriptionSubtitle: String? {
-        guard let status = premium.proStatus else { return nil }
-        if status.plan == .lifetime {
-            return String(localized: "settings.pro.plan.lifetime")
-        }
-        let planName: String
-        switch status.plan {
-        case .monthly:  planName = String(localized: "settings.pro.plan.monthly")
-        case .annual:   planName = String(localized: "settings.pro.plan.annual")
-        case .lifetime, .unknown: planName = "Pro"
-        }
-        guard let date = status.expirationDate else { return planName }
-        let dateString = date.formatted(date: .abbreviated, time: .omitted)
-        let key = status.willRenew ? "settings.pro.status.renews" : "settings.pro.status.expires"
-        return String(
-            format: String(localized: String.LocalizationValue(key)),
-            planName, dateString
-        )
-    }
-
-    /// RevenueCat's per-customer management URL when known; Apple's generic
-    /// subscriptions page otherwise (opens the App Store subscription list).
-    private var manageSubscriptionURL: URL {
-        premium.proStatus?.managementURL
-            ?? URL(string: "https://apps.apple.com/account/subscriptions")!
-    }
-
-    private func label(for outcome: RestoreOutcome) -> String {
-        switch outcome {
-        case .restored:         String(localized: "settings.pro.restore.restored")
-        case .nothingToRestore: String(localized: "settings.pro.restore.none")
-        case .failed:           String(localized: "settings.pro.restore.failed")
-        }
-    }
-
-    private func restorePurchases() {
-        guard !isRestoring else { return }
-        HapticManager.light()
-        isRestoring = true
-        restoreOutcome = nil
-        Task {
-            do {
-                try await premium.restorePurchases()
-                // A successful restore that unlocked Pro flips `isSubscriber`,
-                // which re-renders this section into the status state — the
-                // outcome label only matters when nothing was found.
-                restoreOutcome = premium.isPro ? .restored : .nothingToRestore
-                if premium.isPro { HapticManager.success() }
-            } catch {
-                restoreOutcome = .failed
-            }
-            isRestoring = false
-        }
+    /// "Active" for a subscriber, "Free forever" for a Founding User.
+    private var status: String? {
+        if premium.isSubscriber { return String(localized: "settings.pro.status.active") }
+        if premium.isFounder { return String(localized: "settings.pro.founder") }
+        return nil
     }
 }
 
 // MARK: - Preview
 
 #Preview {
-    List {
-        SettingsProSection()
+    NavigationStack {
+        List {
+            SettingsProSection()
+        }
     }
     .environment(PremiumManager.shared)
 }

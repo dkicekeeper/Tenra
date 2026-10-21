@@ -1696,6 +1696,14 @@
 "settings.pro.restore.restored" = "Restored";
 "settings.pro.restore.none" = "No purchases found";
 "settings.pro.restore.failed" = "Couldn't restore";
+"pro.page.subtitle" = "All of Tenra, with no limits";
+"pro.page.features" = "What's in Pro";
+"pro.feature.accounts" = "Unlimited accounts";
+"pro.feature.voice" = "Voice input";
+"pro.feature.import" = "PDF and CSV statement import";
+"pro.feature.deposits" = "Deposits with interest";
+"pro.feature.loans" = "Loans with payment schedules";
+"pro.feature.debts" = "Personal debts";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Log a transaction";
@@ -1738,11 +1746,9 @@
 "intent.walletPayment.noAccount" = "Add an account in Tenra to record payments.";
 "walletSetup.title" = "Set up the Wallet automation";
 "walletSetup.intro" = "Then every Apple Pay payment at a terminal is saved on its own, with the merchant, amount, currency and card. Wallet does not pass on online payments: they come in with a statement.";
-"walletSetup.trigger" = "Automation";
 "walletSetup.step.open" = "Open **Shortcuts**, go to **Automation**, tap **+** and choose **Wallet**.";
 "walletSetup.step.cards" = "Pick your cards, keep **Any Category** and **Any Merchant**, and let it run immediately, without asking.";
 "walletSetup.step.action" = "Add Tenra's **%@** action.";
-"walletSetup.fields" = "The action's fields";
 "walletSetup.step.amount" = "**%@**: tap the field and choose **Transaction**.";
 "walletSetup.step.merchant" = "**%@**: choose **Transaction**, tap it again and pick its **Merchant**.";
 "walletSetup.step.card" = "**%@**: **Transaction** again, with its card. From it Tenra learns which account each card pays from.";
@@ -1752,6 +1758,17 @@
 "walletSetup.currency.text" = "Without this step a payment is saved in its account's currency. Before Tenra's action add **Set Variable** with the amount of **Transaction**, then in **%@** choose that variable and its currency code.";
 "walletSetup.note.oldAction" = "Already have an automation with **%1$@**? Replace it with **%2$@**: it asks nothing, remembers your cards and never saves a payment twice.";
 "walletSetup.openShortcuts" = "Open Shortcuts";
+"walletSetup.page.intro" = "Apple Pay payments, saved on their own";
+"walletSetup.page.trigger" = "Create the automation";
+"walletSetup.page.cards" = "Choose your cards";
+"walletSetup.page.action" = "Add Tenra's action";
+"walletSetup.page.quiet" = "No questions asked";
+"walletSetup.page.step" = "Step %1$lld of %2$lld";
+"walletSetup.page.optional" = "Optional";
+"walletSetup.mock.transaction" = "Transaction";
+"walletSetup.mock.merchant" = "Merchant";
+"walletSetup.mock.showWhenRun" = "Show When Run";
+"walletSetup.mock.setVariable" = "Set Variable";
 "intent.entity.account" = "Account";
 "intent.entity.category" = "Category";
 "intent.entity.subcategory" = "Subcategory";
@@ -1766,10 +1783,7 @@
 
 /* MARK: - Settings: Siri & Shortcuts */
 "settings.siri.header" = "Siri & Shortcuts";
-"settings.siri.footer" = "Say one of these to Siri and Tenra records the transaction without opening.";
-"settings.siri.example1" = "Hey Siri, log a transaction in Tenra";
-"settings.siri.example2" = "Hey Siri, how much did I spend in Tenra";
-"settings.siri.example3" = "Hey Siri, add an expense in Tenra";
+"settings.siri.footer" = "A Shortcuts automation saves every Apple Pay payment at a terminal on its own, without opening Tenra.";
 "settings.merchants.title" = "Wallet merchants";
 "settings.merchants.footer" = "Payments at these merchants through the Wallet automation get this category and subcategory. Tap a merchant to see its payments and change them, or swipe left to forget it.";
 "settings.merchants.emptyTitle" = "No merchants yet";
@@ -1802,6 +1816,10 @@
 "settings.cards.emptyTitle" = "No cards yet";
 "settings.cards.emptyMessage" = "When the Wallet automation passes the card, Tenra remembers the account you choose or confirm for it here.";
 "settings.cards.accountDeleted" = "Account deleted";
+"settings.wallet.header" = "Wallet";
+"settings.wallet.merchants" = "Merchants";
+"settings.wallet.cards" = "Cards";
+"settings.wallet.footer" = "Apple Pay payments saved by the Wallet automation: check the guessed ones, set a category for each merchant and an account for each card.";
 
 
 /* MARK: - Document import */

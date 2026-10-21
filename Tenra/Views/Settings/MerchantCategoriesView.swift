@@ -2,7 +2,7 @@
 //  MerchantCategoriesView.swift
 //  Tenra
 //
-//  Settings → Siri & Shortcuts → Wallet merchants: the merchants the Wallet
+//  Settings → Wallet → Merchants: the merchants the Wallet
 //  automation remembered, each with its category and subcategory. Tap a merchant to
 //  open its screen (MerchantDetailView), whose Edit reassigns them
 //  (MerchantCategoryEditView); swipe to forget it.

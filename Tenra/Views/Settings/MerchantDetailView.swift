@@ -6,7 +6,7 @@
 //  spent there in the selected period, this month and this year, visits, the average
 //  check, the last visit, the last 12 months as a chart and every transaction, whatever
 //  recorded it (Apple Pay, a statement, by hand).
-//  Opened from Settings → Siri & Shortcuts → Wallet merchants and from the transaction
+//  Opened from Settings → Wallet → Merchants and from the transaction
 //  of a remembered merchant or of one with a logo or a given name (TransactionEditView);
 //  the menu edits the merchant (MerchantCategoryEditView).
 //

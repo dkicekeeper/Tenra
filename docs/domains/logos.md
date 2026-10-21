@@ -137,7 +137,7 @@ General → "Merchant logos" (`MerchantLogoStore.enabledKey`, on by default). Pl
     (`MerchantLogoStore.Entry.lookedUpOnline`).
 
   Any transaction whose description is the same merchant gets the logo, whatever recorded it.
-- The user's choices, in the merchant's sheet (Settings → Siri & Shortcuts → Wallet merchants →
+- The user's choices, in the merchant's sheet (Settings → Wallet → Merchants →
   a merchant, `MerchantCategoryEditView`, an `EditableHeroSection` on top): an icon or logo of
   their own (`State.custom`, never replaced by a lookup), "Show logo" off (`State.hidden`: the
   category icon stays and no lookup runs; on again goes back to the lookup; the merchant's screen

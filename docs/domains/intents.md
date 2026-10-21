@@ -100,8 +100,11 @@ left out, and that logging several at once is part of Tenra Pro
 
 ### 2.4 Discoverability
 
-- Settings → **Siri & Shortcuts** (`SettingsSiriSection`): localized example phrases, To
-  review, the Wallet merchants and cards lists (§6) and a `ShortcutsLink` to the Shortcuts app.
+- Settings → **Siri & Shortcuts** (`SettingsSiriSection`): one row, the step-by-step guide to
+  the Wallet automation (§6.1). Right under it, Settings → **Wallet** (`SettingsWalletSection`):
+  To review, the merchants and cards lists (§6) and the merchant logos switch. No example
+  phrases and no `ShortcutsLink` (owner's decision, 2026-10-21): the system surfaces the App
+  Shortcuts itself (`TenraShortcuts`).
 - `VoiceInputConfirmationView` donates `LogTransactionIntent` after a successful in-app voice
   save (`LogTransactionIntent.donate(phrase:)`).
 - `TenraShortcuts` (`AppShortcutsProvider`) surfaces the shortcuts in Spotlight and Siri
@@ -300,7 +303,7 @@ not reviewed yet: editing an old payment's note must not undo what the user set 
 guessed account kept as it was stays a guess. An account fixed in the automation is remembered for
 the card at once. Guesses are never remembered on their own.
 
-**To review** (`WalletReviewView`, Settings → Siri & Shortcuts, also a sheet over `MainTabView`):
+**To review** (`WalletReviewView`, Settings → Wallet, also a sheet over `MainTabView`):
 `WalletCaptureStore.toReview` as `TransactionCard`s; tap edits (saving confirms), swipe right or
 the toolbar confirms. Until the full load (`hasCompletedInitialLoad`) it shows `SkeletonRow`s and
 no confirm: the partial index would flash an empty list, and a confirm would read the
@@ -327,13 +330,21 @@ filter and the day. Pinned by `MerchantHistoryTests`.
 **Wallet cards** (`WalletCardsView`): `CardAccountMemory.cards`, the account picked with
 a `UniversalRow` with `.picker` (`config: .settings`), swipe to forget.
 
-**Setup guide** (`WalletSetupGuideView`, first row of Settings → Siri & Shortcuts): DesignKit's
-`ArticleBody`, steps for the automation and the action's fields, the optional currency step and a
-note on replacing "Add an expense". Tenra's own action and field names come from the intent's
-strings (`intent.walletPayment.*`); of Shortcuts' labels, the guide names only those the owner's
-screenshot confirmed in Russian (2026-10-20): the input variable **Транзакция** (passed whole to
-the amount, as Shortcuts reads it as a number), its **Продавец**, the trigger's **Любая
-категория** / **Любой продавец** and the action's **Показать при запуске**. The others are
+**Setup guide** (`WalletSetupGuideView`, the row of Settings → Siri & Shortcuts): a pager, one
+step per page (intro, the trigger, the cards, Tenra's action with a note on replacing "Add an
+expense", its four fields one by one, Show When Run, and the optional currency step), moved on
+with Next or a swipe; Shortcuts opens from the toolbar and from the last page's button. Each page
+has "Step N of M", a title, the step's text in DesignKit's `ArticleBody` and a picture of the
+Shortcuts screen the step is on (`WalletSetupIllustration`): a schema drawn with tokens, so it
+follows the language and the theme, the words it names written out, the rest grey bars, what to
+tap outlined in the accent. A screenshot in `Assets.xcassets` named `wallet-setup-<step id>`
+(`trigger`, `cards`, `action`, `amount`, `merchant`, `card`, `account`, `quiet`, `currency`; a
+localized image set for other languages) replaces the drawing with no code change. Tenra's own
+action and field names come from the intent's strings (`intent.walletPayment.*`); of Shortcuts'
+labels, the guide names only those the owner's screenshot confirmed in Russian (2026-10-20): the
+input variable **Транзакция** (passed whole to the amount, as Shortcuts reads it as a number), its
+**Продавец**, the trigger's **Любая категория** / **Любой продавец** and the action's **Показать
+при запуске**; the pictures add **Задать переменную** (`walletSetup.mock.*`). The others are
 described, and in the 9 other locales Apple's labels are best guesses.
 
 Pinned by `WalletPaymentResolverTests`, `WalletCaptureStoreTests`, `CardAccountMemoryTests`.
@@ -361,7 +372,7 @@ decided, empty = "no subcategory"), and the merchant as Wallet last wrote it, fo
   category reads as unknown, so the merchant is asked again.
 - Changing the category or subcategory of such a transaction in the app corrects an already
   remembered merchant (`TransactionEditCoordinator` → `correct`).
-- **Settings → Siri & Shortcuts → Wallet merchants** (`MerchantCategoriesView`) lists the
+- **Settings → Wallet → Merchants** (`MerchantCategoriesView`) lists the
   remembered merchants with their category and subcategories. Tap to reassign
   (`MerchantCategoryEditView`, the transaction form's category and subcategory pickers →
   `reassign`), swipe or "Forget merchant" to forget (`forget`: the next payment asks again).

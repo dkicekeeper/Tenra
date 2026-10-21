@@ -250,6 +250,27 @@ freeze (CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `F
 the twelve rows before). The list insets the rows, so `.settings` has no horizontal padding of
 its own. A form card's rows keep the default `config: .standard` and pad themselves.
 
+The sections go from the app as a whole to its features, then the data, then what can't be
+undone: Tenra Pro (one row), General (base currency, background, voice language), insight
+alerts, Privacy, Assistant, Siri & Shortcuts (the Wallet automation guide), Wallet (To review,
+merchants, cards, the merchant logos switch), Backups, Export and import, Danger zone, About.
+
+- **Tenra Pro** (`SettingsProSection`): one row with the crown, pushing `TenraProView`; a free
+  user's row says "Get Tenra Pro" with what it brings as the hint and the shine sweeping across it
+  once, a subscriber's and a Founding User's say "Tenra Pro" with the status as the value.
+  `TenraProView` is a `ScrollView`: a `HeroSection` (crown, "Tenra Pro", the status `Badge` with
+  `.holographic()`, the plan and renewal date or the pitch) on DesignKit's drifting
+  `AuroraBackground` (behind the scroll view, under the navigation bar, fading into the page below
+  the hero), the buy `DSButton` for a free user, a `FormSection` of what Pro includes (a check on
+  each for a Pro user) and one of the state's actions (restore and redeem a code, or manage the
+  subscription). The paywall and the offer-code sheet hang on the screen, not on the button and
+  the row that open them: buying removes both.
+- **Wallet automation guide** (`WalletSetupGuideView`): a paged `TabView`, one step per page, the
+  Next `DSButton` in a `safeAreaBar`; each page a picture (`WalletSetupIllustration`: the
+  Shortcuts screen as a schema of `AppColors.Background` cards, grey bars for what the step does
+  not name, the thing to tap on a pale accent with `selectionOutline`, decorative for VoiceOver),
+  "Step N of M" in the accent, an `h3` title and `ArticleBody`. A screenshot in the asset catalog
+  replaces a picture (docs/domains/intents.md §6.1).
 - **A choice from a list**: the voice language is `UniversalRow(config: .settings, accessory:
   .picker(…))` (the chosen value in `bodySmall` secondary, pushing a `List` of checkmark rows
   with system search when long; `NavigationPickerRow(style: .list)` before DesignKit 7.0.0); the base currency is a `NavigationLink` with

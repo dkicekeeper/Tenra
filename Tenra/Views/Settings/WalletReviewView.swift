@@ -3,8 +3,8 @@
 //  Tenra
 //
 //  To review: the Apple Pay payments LogWalletPaymentIntent saved with a guessed
-//  category or account (WalletCaptureStore.toReview). Opened from Settings → Siri &
-//  Shortcuts and by a tap on a "check a payment" notification.
+//  category or account (WalletCaptureStore.toReview). Opened from Settings → Wallet and
+//  by a tap on a "check a payment" notification.
 //
 //  Tap a payment to fix it in the edit screen: saving there confirms it. Swipe right,
 //  or "All correct", to keep what Tenra guessed. Either way the category is

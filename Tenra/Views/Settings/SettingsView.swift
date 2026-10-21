@@ -63,13 +63,15 @@ struct SettingsView: View {
 
     private var settingsList: some View {
         ZStack(alignment: .top) {
+            // From the app as a whole to its features, then the data, then what can't be undone.
             List {
                 SettingsProSection()
                 generalSection
-                SettingsAssistantSection()
-                SettingsPrivacySection()
                 notificationsSection
-                SettingsSiriSection(
+                SettingsPrivacySection()
+                SettingsAssistantSection()
+                SettingsSiriSection()
+                SettingsWalletSection(
                     transactionsViewModel: transactionsViewModel,
                     categoriesViewModel: categoriesViewModel,
                     accountsViewModel: accountsViewModel

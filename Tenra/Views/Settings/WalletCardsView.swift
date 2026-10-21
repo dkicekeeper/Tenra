@@ -2,7 +2,7 @@
 //  WalletCardsView.swift
 //  Tenra
 //
-//  Settings → Siri & Shortcuts → Wallet cards: the cards whose payments the Wallet
+//  Settings → Wallet → Cards: the cards whose payments the Wallet
 //  action (LogWalletPaymentIntent) records, each with its account (CardAccountMemory).
 //  Pick another account for a card, or swipe to forget it: its next payment goes to
 //  the suggested account and waits in To review.

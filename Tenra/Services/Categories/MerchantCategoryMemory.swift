@@ -22,7 +22,7 @@
 //  The natural ceiling is the number of distinct merchants the user pays with
 //  Apple Pay, which stays small.
 //
-//  Settings → Siri & Shortcuts → Wallet merchants (`MerchantCategoriesView`) lists
+//  Settings → Wallet → Merchants (`MerchantCategoriesView`) lists
 //  the remembered merchants: the user reassigns a category and subcategory or
 //  forgets a merchant there. `@Observable`, so that list follows every change.
 //

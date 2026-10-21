@@ -1696,6 +1696,14 @@
 "settings.pro.restore.restored" = "復元しました";
 "settings.pro.restore.none" = "購入が見つかりません";
 "settings.pro.restore.failed" = "復元できませんでした";
+"pro.page.subtitle" = "Tenraのすべてを制限なしで";
+"pro.page.features" = "Proに含まれるもの";
+"pro.feature.accounts" = "口座の数は無制限";
+"pro.feature.voice" = "音声入力";
+"pro.feature.import" = "PDF・CSV明細の取り込み";
+"pro.feature.deposits" = "利息付きの預金";
+"pro.feature.loans" = "返済スケジュール付きのローン";
+"pro.feature.debts" = "個人間の貸し借り";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "取引を記録";
@@ -1738,11 +1746,9 @@
 "intent.walletPayment.noAccount" = "支払いを記録するには、Tenra に口座を追加してください。";
 "walletSetup.title" = "Walletオートメーションを設定";
 "walletSetup.intro" = "設定すると、端末でのApple Pay支払いが店舗、金額、通貨、カードとともに自動で記録されます。オンライン決済はWalletから渡されないため、明細書で取り込まれます。";
-"walletSetup.trigger" = "オートメーション";
 "walletSetup.step.open" = "**ショートカット**を開き、**オートメーション**で**+**をタップして**Wallet**を選びます。";
 "walletSetup.step.cards" = "カードを選び、カテゴリと店舗はすべてのままにして、確認なしですぐに実行する設定にします。";
 "walletSetup.step.action" = "Tenraのアクション**%@**を追加します。";
-"walletSetup.fields" = "アクションの項目";
 "walletSetup.step.amount" = "**%@**: 項目をタップして**取引**を選びます。";
 "walletSetup.step.merchant" = "**%@**: **取引**を選び、もう一度タップして店舗を選びます。";
 "walletSetup.step.card" = "**%@**: もう一度**取引**のカードを選びます。これでTenraはカードごとの支払い口座を覚えます。";
@@ -1752,6 +1758,17 @@
 "walletSetup.currency.text" = "この手順がないと、支払いは口座の通貨で記録されます。Tenraのアクションの前に**取引**の金額を入れた変数を追加し、**%@**でその変数と通貨コードを選びます。";
 "walletSetup.note.oldAction" = "**%1$@**のオートメーションがすでにありますか?**%2$@**に置き換えてください。何も尋ねず、カードを覚え、同じ支払いを二重に記録しません。";
 "walletSetup.openShortcuts" = "ショートカットを開く";
+"walletSetup.page.intro" = "Apple Payの支払いを自動で記録";
+"walletSetup.page.trigger" = "オートメーションを作成";
+"walletSetup.page.cards" = "カードを選ぶ";
+"walletSetup.page.action" = "Tenraのアクションを追加";
+"walletSetup.page.quiet" = "確認なしで記録";
+"walletSetup.page.step" = "ステップ %1$lld / %2$lld";
+"walletSetup.page.optional" = "任意";
+"walletSetup.mock.transaction" = "取引";
+"walletSetup.mock.merchant" = "店舗";
+"walletSetup.mock.showWhenRun" = "実行時に表示";
+"walletSetup.mock.setVariable" = "変数を設定";
 "intent.entity.account" = "口座";
 "intent.entity.category" = "カテゴリ";
 "intent.entity.subcategory" = "サブカテゴリ";
@@ -1766,10 +1783,7 @@
 
 /* MARK: - Settings: Siri & Shortcuts */
 "settings.siri.header" = "Siri とショートカット";
-"settings.siri.footer" = "Siri に話しかけるだけで、アプリを開かずに記録できます。";
-"settings.siri.example1" = "ヘイ Siri、Tenra に取引を記録";
-"settings.siri.example2" = "ヘイ Siri、Tenra でいくら使った";
-"settings.siri.example3" = "ヘイ Siri、Tenra に支出を追加";
+"settings.siri.footer" = "ショートカットのオートメーションが、端末でのApple Payの支払いをTenraを開かずに自動で記録します。";
 "settings.merchants.title" = "Wallet の店舗";
 "settings.merchants.footer" = "Wallet のオートメーションでこれらの店舗に支払うと、このカテゴリとサブカテゴリで記録されます。店舗をタップすると支払いを確認して変更でき、左にスワイプすると忘れます。";
 "settings.merchants.emptyTitle" = "まだ店舗はありません";
@@ -1802,6 +1816,10 @@
 "settings.cards.emptyTitle" = "まだカードはありません";
 "settings.cards.emptyMessage" = "Wallet のオートメーションがカードを渡すと、そのカードに選んだ、または確認した口座を Tenra がここに記憶します。";
 "settings.cards.accountDeleted" = "削除された口座";
+"settings.wallet.header" = "Wallet";
+"settings.wallet.merchants" = "店舗";
+"settings.wallet.cards" = "カード";
+"settings.wallet.footer" = "WalletオートメーションがApple Payの支払いを記録します。推測された支払いを確認し、店舗ごとにカテゴリ、カードごとに口座を設定してください。";
 
 
 /* MARK: - Document import */

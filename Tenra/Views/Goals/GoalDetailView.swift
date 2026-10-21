@@ -218,7 +218,7 @@ struct GoalDetailView: View {
                             }
                         }
                         if contribution.id != contributions.last?.id {
-                            Divider().padding(.leading, AppIconSize.Tile.sm + AppSpacing.md)
+                            RowDivider(inset: AppIconSize.Tile.sm + AppSpacing.md)
                         }
                     }
                     // A deleted entry breaks into dust, as a deleted transaction does.

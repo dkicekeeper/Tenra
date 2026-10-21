@@ -192,7 +192,9 @@ struct GroupedTransactionList<Overlay: View>: View {
     private var transactionsList: some View {
         LazyVStack(spacing: AppSpacing.md, pinnedViews: []) {
                 ForEach(cachedSections) { section in
-                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                    // DesignKit 8.0.0: a glass card per day, as in History: the day and its
+                    // total on top, the transactions under it, a divider under each row's text.
+                    VStack(alignment: .leading, spacing: 0) {
                         HStack {
                             SectionHeader(section.displayLabel)
                             Spacer()
@@ -208,8 +210,8 @@ struct GroupedTransactionList<Overlay: View>: View {
                                 )
                             }
                         }
-//                        .padding(.horizontal, AppSpacing.lg)
-                        .padding(.top, AppSpacing.sm)
+                        .padding(.top, AppSpacing.lg)
+                        .padding(.bottom, AppSpacing.xs)
 
                         ForEach(Array(section.transactions.enumerated()), id: \.element.id) { index, transaction in
                             let sourceAccount = transaction.accountId.flatMap { accountsById[$0] }
@@ -265,11 +267,14 @@ struct GroupedTransactionList<Overlay: View>: View {
                             }
 
                             if index < section.transactions.count - 1 {
-                                Divider()
-                                    .padding(.leading, AppIconSize.Tile.sm + AppSpacing.md)
+                                RowDivider(inset: AppIconSize.Tile.sm + AppSpacing.md)
                             }
                         }
                     }
+                    .padding(.horizontal, AppSpacing.lg)
+                    .padding(.bottom, AppSpacing.sm)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .cardStyle()
                 }
 
                 if visibleLimit < transactions.count {

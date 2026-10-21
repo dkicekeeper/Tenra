@@ -223,7 +223,8 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                     row.trailing ?? AnyView(EmptyView())
                 }
                 if row.id != infoRows.last?.id {
-                    Divider().padding(.leading, AppSpacing.lg)
+                    // DesignKit 8.0.0's one divider: under the row's text, past its icon.
+                    RowDivider(inset: row.icon == nil ? 0 : AppIconSize.lg + AppSpacing.md)
                 }
             }
         }

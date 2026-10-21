@@ -5,6 +5,7 @@
 //  Created on 2024
 //
 
+import OSLog
 import SwiftUI
 
 struct SubscriptionsListView: View {
@@ -28,6 +29,13 @@ struct SubscriptionsListView: View {
         }
     }
     @State private var sheetItem: SubscriptionSheetItem?
+    // DesignKit 8.0.0's list actions: select several, reorder, edit and delete from the menu.
+    @State private var mode: CardListMode = .browsing
+    @State private var selection: Set<String> = []
+    /// The subscriptions a confirmation is asked for: one from its menu, or the ones selected.
+    @State private var subscriptionsToDelete: [String] = []
+
+    private static let logger = Logger(subsystem: "Tenra", category: "SubscriptionsListView")
     /// Merchants charged monthly that no subscription tracks (SubscriptionCandidateDetector).
     @State private var candidates: [SubscriptionCandidateDetector.Candidate] = []
 
@@ -71,15 +79,30 @@ struct SubscriptionsListView: View {
             .environment(timeFilterManager)
             .navigationTransition(.zoom(sourceID: subscription.id, in: subscriptionNamespace))
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    sheetItem = .new
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .dsButton()
+        .cardListToolbar(
+            mode: $mode,
+            selection: $selection,
+            allIDs: transactionStore.subscriptions.map(\.id),
+            addLabel: String(localized: "subscriptions.addSubscription"),
+            onAdd: { sheetItem = .new },
+            onDeleteSelected: { subscriptionsToDelete = Array(selection) }
+        )
+        // As on the subscription's own screen: its transactions can stay in the history.
+        .alert(
+            subscriptionsToDelete.count > 1
+                ? String(format: String(localized: "bulk.deleteSubscriptions.title", defaultValue: "Delete %d subscriptions?"), subscriptionsToDelete.count)
+                : String(localized: "subscriptions.deleteConfirmTitle"),
+            isPresented: Binding(get: { !subscriptionsToDelete.isEmpty }, set: { if !$0 { subscriptionsToDelete = [] } })
+        ) {
+            Button(String(localized: "quickAdd.cancel"), role: .cancel) {}
+            Button(String(localized: "subscriptions.deleteOnlySubscription"), role: .destructive) {
+                deleteSubscriptions(deleteTransactions: false)
             }
+            Button(String(localized: "subscriptions.deleteSubscriptionAndTransactions"), role: .destructive) {
+                deleteSubscriptions(deleteTransactions: true)
+            }
+        } message: {
+            Text(String(localized: "subscriptions.deleteConfirmMessage"))
         }
         .sheet(item: $sheetItem) { item in
             switch item {
@@ -225,24 +248,58 @@ struct SubscriptionsListView: View {
         }
     }
 
+    /// The subscriptions as DesignKit's `CardList` of ready-made cards (8.0.0): a tap opens one,
+    /// a long press shows Edit and Delete, the toolbar selects several to delete and reorders.
     private var subscriptionsList: some View {
-        VStack(spacing: AppSpacing.md) {
-            ForEach(Array(transactionStore.subscriptions.enumerated()), id: \.element.id) { index, subscription in
-                let nextChargeDate = transactionStore.nextChargeDate(for: subscription.id)
-
-                NavigationLink(value: subscription) {
-                    SubscriptionCard(
-                        subscription: subscription,
-                        nextChargeDate: nextChargeDate,
-                        baseCurrency: transactionsViewModel.appSettings.baseCurrency
-                    )
-                    .equatable()
-                    .matchedTransitionSource(id: subscription.id, in: subscriptionNamespace)
-                }
-                .buttonStyle(PlainButtonStyle())
-                .accessibilityIdentifier("subscriptions.card")
-                .chartAppear(delay: Double(index) * 0.05)
+        let subscriptions = transactionStore.subscriptions
+        return CardList(subscriptions, layout: .stack, mode: mode, selection: $selection, onMove: { source, destination in
+            var reordered = subscriptions
+            reordered.move(fromOffsets: source, toOffset: destination)
+            transactionStore.reorderSubscriptions(reordered.map(\.id))
+        }) { subscription in
+            NavigationLink(value: subscription) {
+                SubscriptionCard(
+                    subscription: subscription,
+                    nextChargeDate: transactionStore.nextChargeDate(for: subscription.id),
+                    baseCurrency: transactionsViewModel.appSettings.baseCurrency
+                )
+                .equatable()
+                .matchedTransitionSource(id: subscription.id, in: subscriptionNamespace)
             }
+            .buttonStyle(PlainButtonStyle())
+            .accessibilityIdentifier("subscriptions.card")
+            .contextMenu {
+                Button {
+                    sheetItem = .edit(subscription)
+                } label: {
+                    Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                }
+                Button(role: .destructive) {
+                    HapticManager.warning()
+                    subscriptionsToDelete = [subscription.id]
+                } label: {
+                    Label(String(localized: "button.delete"), systemImage: "trash")
+                }
+            }
+        }
+    }
+
+    private func deleteSubscriptions(deleteTransactions: Bool) {
+        HapticManager.warning()
+        let ids = subscriptionsToDelete
+        subscriptionsToDelete = []
+        Task {
+            for id in ids {
+                do {
+                    try await transactionStore.deleteSeries(id: id, deleteTransactions: deleteTransactions)
+                } catch {
+                    Self.logger.error("deleteSeries failed: \(String(describing: error), privacy: .public)")
+                }
+            }
+        }
+        withAnimation(AppAnimation.contentSpring) {
+            selection.removeAll()
+            mode = .browsing
         }
     }
 }

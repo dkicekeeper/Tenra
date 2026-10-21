@@ -26,6 +26,9 @@ struct DepositsListView: View {
     @State private var depositToDelete: Account?
     @State private var showingDeleteDialog = false
     @State private var linkingInterestDeposit: Account?
+    @State private var mode: CardListMode = .browsing
+    @State private var selection: Set<String> = []
+    @State private var showingBulkDeleteDialog = false
 
     @Namespace private var depositNamespace
 
@@ -33,6 +36,37 @@ struct DepositsListView: View {
 
     private var deposits: [Account] {
         accountsViewModel.depositAccounts.sortedByOrder()
+    }
+
+    /// Deposits are a Pro feature (interest accrual + capitalization tracking): every add path
+    /// routes non-Pro users to the paywall.
+    private func addDeposit() {
+        HapticManager.light()
+        if premium.isPro {
+            showingAddDeposit = true
+        } else {
+            showingPaywall = true
+        }
+    }
+
+    /// A drag in DesignKit's `CardList`: the deposits' own order (`Account.order`, by list).
+    private func moveDeposit(from source: IndexSet, to destination: Int) {
+        var reordered = deposits
+        reordered.move(fromOffsets: source, toOffset: destination)
+        transactionStore.reorderAccounts(reordered.map(\.id))
+    }
+
+    private func confirmDelete(_ deposit: Account) {
+        HapticManager.warning()
+        depositToDelete = deposit
+        showingDeleteDialog = true
+    }
+
+    /// A deposit goes with its transactions (interest, top-ups), as one deleted from its menu.
+    private func delete(_ deposit: Account) async {
+        await transactionStore.deleteTransactions(forAccountId: deposit.id)
+        depositsViewModel.deleteDeposit(deposit)
+        transactionsViewModel.cleanupDeletedAccount(deposit.id)
     }
 
     var body: some View {
@@ -43,29 +77,17 @@ struct DepositsListView: View {
                     title: String(localized: "deposit.emptyTitle", defaultValue: "No Deposits"),
                     description: String(localized: "deposit.emptyDescription", defaultValue: "Add a deposit to track interest accrual and capitalization"),
                     actionTitle: String(localized: "account.newDeposit", defaultValue: "New Deposit"),
-                    action: {
-                        HapticManager.light()
-                        // Deposits are a Pro feature (interest accrual + capitalization
-                        // tracking) — every add path routes non-Pro users to the paywall.
-                        if premium.isPro {
-                            showingAddDeposit = true
-                        } else {
-                            showingPaywall = true
-                        }
-                    },
+                    action: addDeposit,
                     line: String(localized: "assistant.empty.deposits")
                 )
             } else if let coordinator = accountsViewModel.balanceCoordinator {
-                List {
-                    ForEach(deposits) { deposit in
+                // A card per deposit (DesignKit 8.0.0's `CardList`): a tap opens it, a long press
+                // shows Edit and Delete; the toolbar selects, reorders and adds.
+                ScrollView {
+                    CardList(deposits, mode: mode, selection: $selection, onMove: moveDeposit) { deposit in
                         AccountRow(
                             account: deposit,
                             onEdit: { navigatingDeposit = deposit },
-                            onDelete: {
-                                HapticManager.warning()
-                                depositToDelete = deposit
-                                showingDeleteDialog = true
-                            },
                             balanceCoordinator: coordinator,
                             interestToday: depositsViewModel.interestToday(for: deposit),
                             nextPostingDate: depositsViewModel.nextPostingDate(for: deposit),
@@ -79,28 +101,23 @@ struct DepositsListView: View {
                                 Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
                             }
                             Button(role: .destructive) {
-                                HapticManager.warning()
-                                depositToDelete = deposit
-                                showingDeleteDialog = true
+                                confirmDelete(deposit)
                             } label: {
                                 Label(String(localized: "button.delete"), systemImage: "trash")
                             }
                         }
                     }
+                    .screenPadding()
+                    .padding(.vertical, AppSpacing.md)
                 }
                 .transition(.skeletonReveal)
             } else {
-                VStack(spacing: 0) {
-                    // The skeleton of the rows to come (AccountRow is DesignKit's AmountRow in the list style).
-                    ForEach(0..<3, id: \.self) { _ in
-                        AmountRowSkeleton(style: .list)
-                            .padding(.vertical, AppSpacing.sm)
-                    }
+                ScrollView {
+                    CardListSkeleton(count: 3)
+                        .screenPadding()
+                        .padding(.vertical, AppSpacing.md)
                 }
-                .screenPadding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(String(localized: "progress.loadingData"))
+                .scrollDisabled(true)
                 .transition(.opacity)
             }
         }
@@ -111,22 +128,14 @@ struct DepositsListView: View {
         .task {
             await reconcileDeposits()
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    HapticManager.light()
-                    if premium.isPro {
-                        showingAddDeposit = true
-                    } else {
-                        showingPaywall = true
-                    }
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .dsButton()
-                .accessibilityLabel(String(localized: "account.newDeposit", defaultValue: "New Deposit"))
-            }
-        }
+        .cardListToolbar(
+            mode: $mode,
+            selection: $selection,
+            allIDs: deposits.map(\.id),
+            addLabel: String(localized: "account.newDeposit", defaultValue: "New Deposit"),
+            onAdd: addDeposit,
+            onDeleteSelected: { showingBulkDeleteDialog = true }
+        )
         .paywallSheet(isPresented: $showingPaywall) {
             // After unlocking Pro, continue straight into the add-deposit flow.
             showingAddDeposit = true
@@ -189,14 +198,34 @@ struct DepositsListView: View {
             Button(String(localized: "button.delete"), role: .destructive) {
                 HapticManager.warning()
                 Task {
-                    await transactionStore.deleteTransactions(forAccountId: deposit.id)
-                    depositsViewModel.deleteDeposit(deposit)
-                    transactionsViewModel.cleanupDeletedAccount(deposit.id)
+                    await delete(deposit)
                     transactionsViewModel.clearAndRebuildAggregateCache()
                 }
                 depositToDelete = nil
             }
         } message: { _ in
+            Text(String(localized: "deposit.deleteMessage", defaultValue: "All deposit data and related transactions will be deleted."))
+        }
+        .alert(
+            String(format: String(localized: "bulk.deleteDeposits.title", defaultValue: "Delete %d deposits?"), selection.count),
+            isPresented: $showingBulkDeleteDialog
+        ) {
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+            Button(String(localized: "button.delete"), role: .destructive) {
+                HapticManager.warning()
+                let doomed = deposits.filter { selection.contains($0.id) }
+                Task {
+                    for deposit in doomed {
+                        await delete(deposit)
+                    }
+                    transactionsViewModel.clearAndRebuildAggregateCache()
+                }
+                withAnimation(AppAnimation.contentSpring) {
+                    selection.removeAll()
+                    mode = .browsing
+                }
+            }
+        } message: {
             Text(String(localized: "deposit.deleteMessage", defaultValue: "All deposit data and related transactions will be deleted."))
         }
     }

@@ -4,7 +4,8 @@
 //
 //  Personal debts, from the Debts card in Finances (docs/domains/goals-and-debts.md): what
 //  others owe the person, what the person owes, then the settled ones; a tap opens one
-//  (DebtDetailView). Debts are a Tenra Pro feature: every add path routes non-Pro users to the
+//  (DebtDetailView), a long press edits or deletes it, the toolbar selects several to delete
+//  and reorders them within their section (DesignKit 8.0.0's `CardList`). Debts are a Tenra Pro feature: every add path routes non-Pro users to the
 //  paywall and continues into the form once Pro is on; debts already kept stay open to view.
 //
 
@@ -17,6 +18,12 @@ struct DebtsListView: View {
     @Environment(PremiumManager.self) private var premium
     @State private var showingAdd = false
     @State private var showingPaywall = false
+    // DesignKit 8.0.0's list actions: select several, reorder, edit and delete from the menu.
+    @State private var mode: CardListMode = .browsing
+    @State private var selection: Set<String> = []
+    @State private var editingDebt: PersonalDebt?
+    /// The debts a confirmation is asked for: one from its menu, or the ones selected.
+    @State private var debtsToDelete: [String] = []
 
     var body: some View {
         let today = Date()
@@ -59,14 +66,42 @@ struct DebtsListView: View {
         .animation(AppAnimation.smooth, value: debtStore.isLoaded)
         .navigationTitle(String(localized: "debt.listTitle"))
         .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: add) {
-                    Image(systemName: "plus")
-                }
-                .dsButton()
-                .accessibilityLabel(String(localized: "debt.new"))
+        .cardListToolbar(
+            mode: $mode,
+            selection: $selection,
+            allIDs: debtStore.debts.map(\.id),
+            addLabel: String(localized: "debt.new"),
+            onAdd: add,
+            onDeleteSelected: { debtsToDelete = Array(selection) }
+        )
+        .sheet(item: $editingDebt) { debt in
+            DebtEditView(debt: debt, appSettings: coordinator.transactionsViewModel.appSettings) { updated in
+                Task { await debtStore.update(updated) }
             }
+        }
+        .alert(
+            debtsToDelete.count > 1
+                ? String(format: String(localized: "bulk.deleteDebts.title", defaultValue: "Delete %d debts?"), debtsToDelete.count)
+                : String(localized: "debt.deleteTitle"),
+            isPresented: Binding(get: { !debtsToDelete.isEmpty }, set: { if !$0 { debtsToDelete = [] } })
+        ) {
+            Button(String(localized: "button.delete"), role: .destructive) {
+                HapticManager.warning()
+                let ids = debtsToDelete
+                debtsToDelete = []
+                Task {
+                    for id in ids {
+                        await debtStore.delete(id: id)
+                    }
+                }
+                withAnimation(AppAnimation.contentSpring) {
+                    selection.removeAll()
+                    mode = .browsing
+                }
+            }
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "debt.deleteMessage"))
         }
         .paywallSheet(isPresented: $showingPaywall) {
             // After unlocking Pro, continue straight into the new debt.
@@ -80,21 +115,39 @@ struct DebtsListView: View {
         .task { await debtStore.load() }
     }
 
+    /// One way of debts as DesignKit's `CardList` of ready-made cards (8.0.0): a tap opens a
+    /// debt, a long press shows Edit and Delete; a drag puts it in its place within the section.
     @ViewBuilder
     private func section(_ title: String, debts: [PersonalDebt], today: Date) -> some View {
         if !debts.isEmpty {
             SectionHeader(title)
                 .screenPadding()
                 .padding(.top, AppSpacing.sm)
-            ForEach(Array(debts.enumerated()), id: \.element.id) { index, debt in
+            CardList(debts, layout: .stack, mode: mode, selection: $selection, onMove: { source, destination in
+                var reordered = debts
+                reordered.move(fromOffsets: source, toOffset: destination)
+                Task { await debtStore.reorder(reordered.map(\.id)) }
+            }) { debt in
                 NavigationLink(value: FinancesDestination.debtDetail(debt.id)) {
                     DebtCard(debt: debt, today: today)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("debts.card")
-                .screenPadding()
-                .chartAppear(delay: Double(index) * 0.05)
+                .contextMenu {
+                    Button {
+                        editingDebt = debt
+                    } label: {
+                        Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        HapticManager.warning()
+                        debtsToDelete = [debt.id]
+                    } label: {
+                        Label(String(localized: "button.delete"), systemImage: "trash")
+                    }
+                }
             }
+            .screenPadding()
         }
     }
 

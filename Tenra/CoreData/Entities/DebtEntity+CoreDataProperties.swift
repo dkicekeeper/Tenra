@@ -22,6 +22,8 @@ extension DebtEntity {
     @NSManaged public nonisolated var note: String?
     @NSManaged public nonisolated var repayments: Data?  // [DebtRepayment] as JSON
     @NSManaged public nonisolated var settledAt: Date?
+    /// The person's own place in the list (v16); nil keeps the list's default order.
+    @NSManaged public nonisolated var order: NSNumber?
 
 }
 

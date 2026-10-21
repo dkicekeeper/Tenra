@@ -50,6 +50,9 @@ nonisolated struct PersonalDebt: Equatable, Hashable, Identifiable, Sendable {
     var repayments: [DebtRepayment]
     /// When it was settled; nil while it is open.
     var settledAt: Date?
+    /// Where the person put it in its list (DesignKit 8.0.0's drag to reorder); nil keeps the
+    /// list's own order (the soonest due first).
+    var order: Int?
 
     init(
         id: String = UUID().uuidString,
@@ -61,7 +64,8 @@ nonisolated struct PersonalDebt: Equatable, Hashable, Identifiable, Sendable {
         dueDate: Date? = nil,
         note: String? = nil,
         repayments: [DebtRepayment] = [],
-        settledAt: Date? = nil
+        settledAt: Date? = nil,
+        order: Int? = nil
     ) {
         self.id = id
         self.direction = direction
@@ -73,6 +77,7 @@ nonisolated struct PersonalDebt: Equatable, Hashable, Identifiable, Sendable {
         self.note = note
         self.repayments = repayments
         self.settledAt = settledAt
+        self.order = order
     }
 
     /// What came back so far.

@@ -1507,6 +1507,12 @@
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "%d件のサブカテゴリを削除しますか？";
+"bulk.deleteDeposits.title" = "%d件の預金を削除しますか？";
+"bulk.deleteLoans.title" = "%d件のローンを削除しますか？";
+"bulk.deleteDebts.title" = "%d件の貸し借りを削除しますか？";
+"bulk.deleteGoals.title" = "%d件の目標を削除しますか？";
+"bulk.deleteSubscriptions.title" = "%d件のサブスクリプションを削除しますか？";
+"subcategory.deleteTitle" = "サブカテゴリを削除しますか？";
 "bulk.deleteSubcategories.confirm" = "削除";
 
 // MARK: - Account Detail View

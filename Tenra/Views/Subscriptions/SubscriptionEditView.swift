@@ -267,7 +267,9 @@ struct SubscriptionEditView: View {
             kind: .subscription,
             iconSource: selectedIconSource,
             reminderOffsets: reminder == .none ? nil : Array(reminder.asOffsets).sorted(),
-            status: subscription?.status ?? .active
+            status: subscription?.status ?? .active,
+            // Its place in the list stays where the person put it.
+            order: subscription?.order
         )
 
         // Decide between immediate save and propagation alert.

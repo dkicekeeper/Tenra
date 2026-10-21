@@ -18,8 +18,24 @@ extension TransactionStore {
     /// Computed properties for recurring data
 
     /// Get all subscriptions (convenience)
+    /// The subscriptions, in the person's order (DesignKit 8.0.0's drag to reorder); those
+    /// never moved after, as they were added.
     var subscriptions: [RecurringSeries] {
-        recurringSeries.filter { $0.isSubscription }
+        let all = recurringSeries.filter { $0.isSubscription }
+        guard all.contains(where: { $0.order != nil }) else { return all }
+        return all.enumerated().sorted { lhs, rhs in
+            switch (lhs.element.order, rhs.element.order) {
+            case let (l?, r?) where l != r: return l < r
+            case (_?, nil): return true
+            case (nil, _?): return false
+            default: return lhs.offset < rhs.offset
+            }
+        }.map(\.element)
+    }
+
+    /// Puts the subscriptions in the order the person dragged them to.
+    func reorderSubscriptions(_ orderedIds: [String]) {
+        recurringStore.reorderSeries(orderedIds)
     }
 
     /// Get active subscriptions (convenience)

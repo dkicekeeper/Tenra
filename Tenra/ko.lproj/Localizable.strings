@@ -1507,6 +1507,12 @@
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "하위 카테고리 %d개를 삭제할까요?";
+"bulk.deleteDeposits.title" = "예금 %d개를 삭제할까요?";
+"bulk.deleteLoans.title" = "대출 %d개를 삭제할까요?";
+"bulk.deleteDebts.title" = "빚 %d개를 삭제할까요?";
+"bulk.deleteGoals.title" = "목표 %d개를 삭제할까요?";
+"bulk.deleteSubscriptions.title" = "구독 %d개를 삭제할까요?";
+"subcategory.deleteTitle" = "하위 카테고리를 삭제할까요?";
 "bulk.deleteSubcategories.confirm" = "삭제";
 
 // MARK: - Account Detail View

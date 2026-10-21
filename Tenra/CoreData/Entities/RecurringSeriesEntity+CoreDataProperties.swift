@@ -32,6 +32,8 @@ extension RecurringSeriesEntity {
     @NSManaged public nonisolated var brandLogo: String?
     @NSManaged public nonisolated var brandId: String?
     @NSManaged public nonisolated var status: String?
+    /// The person's place for it in the subscriptions list (v16); nil keeps the default order.
+    @NSManaged public nonisolated var order: NSNumber?
     @NSManaged public nonisolated var account: AccountEntity?
     @NSManaged public nonisolated var transactions: NSSet?
     @NSManaged public nonisolated var occurrences: NSSet?

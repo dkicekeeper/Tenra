@@ -27,6 +27,12 @@ struct LoansListView: View {
     /// which fires at midnight and, when midnight passed in the background, on return to the
     /// foreground: a new month must not keep last month's statuses.
     @State private var today = Date()
+    // DesignKit 8.0.0's list actions: select several, reorder, edit and delete from the menu.
+    @State private var mode: CardListMode = .browsing
+    @State private var selection: Set<String> = []
+    @State private var editingLoan: Account?
+    /// The loans a confirmation is asked for: one from its menu, or the ones selected.
+    @State private var loansToDelete: [Account] = []
 
     private let logger = Logger(subsystem: "Tenra", category: "LoansListView")
 
@@ -62,6 +68,30 @@ struct LoansListView: View {
         }
     }
 
+    /// Loans are a Pro feature (amortization + payment tracking): every add path routes
+    /// non-Pro users to the paywall.
+    private func addLoan() {
+        HapticManager.light()
+        if premium.isPro {
+            showingAddLoan = true
+        } else {
+            showingPaywall = true
+        }
+    }
+
+    /// A drag in DesignKit's `CardList`: the active loans' own order (`Account.order`), only
+    /// while every loan is shown (a filtered list has gaps the move can't place).
+    private func moveLoan(from source: IndexSet, to destination: Int) {
+        var reordered = filteredLoans
+        reordered.move(fromOffsets: source, toOffset: destination)
+        transactionStore.reorderAccounts(reordered.map(\.id))
+    }
+
+    private func confirmDelete(_ loans: [Account]) {
+        HapticManager.warning()
+        loansToDelete = loans
+    }
+
     var body: some View {
         Group {
             if loansViewModel.loans.isEmpty {
@@ -70,16 +100,7 @@ struct LoansListView: View {
                     title: String(localized: "loan.emptyTitle", defaultValue: "No Loans"),
                     description: String(localized: "loan.emptyDescription", defaultValue: "Add your credits and installments to track payments and progress"),
                     actionTitle: String(localized: "loan.addLoan", defaultValue: "Add Loan"),
-                    action: {
-                        HapticManager.light()
-                        // Loans are a Pro feature (amortization + payment tracking) —
-                        // every add path routes non-Pro users to the paywall.
-                        if premium.isPro {
-                            showingAddLoan = true
-                        } else {
-                            showingPaywall = true
-                        }
-                    },
+                    action: addLoan,
                     line: String(localized: "assistant.empty.loans")
                 )
             } else {
@@ -101,15 +122,23 @@ struct LoansListView: View {
                             .screenPadding()
                         }
 
-                        // Loan cards
-                        ForEach(Array(filteredLoans.enumerated()), id: \.element.id) { index, loan in
+                        // Loan cards: DesignKit's `CardList` of ready-made cards (8.0.0): a tap opens
+                        // a loan, a long press shows Edit and Delete, the toolbar selects and
+                        // reorders.
+                        CardList(
+                            filteredLoans,
+                            layout: .stack,
+                            mode: mode,
+                            selection: $selection,
+                            onMove: selectedFilter == .all ? moveLoan : nil
+                        ) { loan in
                             NavigationLink(value: FinancesDestination.loanDetail(loan.id)) {
                                 LoanCard(loan: loan, monthStatus: monthStatuses[loan.id])
                             }
                             .buttonStyle(.plain)
-                            .chartAppear(delay: Double(index) * 0.05)
-                            .screenPadding()
+                            .contextMenu { loanMenu(loan) }
                         }
+                        .screenPadding()
 
                         if !filteredClosedLoans.isEmpty {
                             closedLoansSection
@@ -120,21 +149,46 @@ struct LoansListView: View {
             }
         }
         .navigationTitle(String(localized: "loan.listTitle", defaultValue: "Loans"))
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    HapticManager.light()
-                    if premium.isPro {
-                        showingAddLoan = true
-                    } else {
-                        showingPaywall = true
-                    }
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .dsButton()
-                .accessibilityLabel(String(localized: "loan.add", defaultValue: "Add Loan"))
+        .cardListToolbar(
+            mode: $mode,
+            selection: $selection,
+            allIDs: filteredLoans.map(\.id),
+            canReorder: selectedFilter == .all,
+            addLabel: String(localized: "loan.add", defaultValue: "Add Loan"),
+            onAdd: addLoan,
+            onDeleteSelected: {
+                confirmDelete(filteredLoans.filter { selection.contains($0.id) })
             }
+        )
+        .sheet(item: $editingLoan) { loan in
+            LoanEditView(
+                loansViewModel: loansViewModel,
+                account: loan,
+                onSave: { updatedAccount in
+                    loansViewModel.updateLoan(updatedAccount)
+                    transactionsViewModel.recalculateAccountBalances()
+                    editingLoan = nil
+                }
+            )
+        }
+        // As on the loan's own screen: retiring a loan keeps its payments (real expenses),
+        // one entered by mistake goes with them.
+        .confirmationDialog(
+            loansToDelete.count > 1
+                ? String(format: String(localized: "bulk.deleteLoans.title", defaultValue: "Delete %d loans?"), loansToDelete.count)
+                : String(localized: "loan.deleteTitle", defaultValue: "Delete Loan?"),
+            isPresented: Binding(get: { !loansToDelete.isEmpty }, set: { if !$0 { loansToDelete = [] } }),
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "loan.deleteKeepPayments", defaultValue: "Delete, keep payments")) {
+                deleteLoans(keepingPayments: true)
+            }
+            Button(String(localized: "loan.deleteWithPayments", defaultValue: "Delete everything"), role: .destructive) {
+                deleteLoans(keepingPayments: false)
+            }
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "loan.deleteMessage", defaultValue: "Payments made on this loan are real expenses on your bank accounts. You can keep them in history, or delete them along with the loan."))
         }
         .paywallSheet(isPresented: $showingPaywall) {
             // After unlocking Pro, continue straight into the add-loan flow.
@@ -173,6 +227,43 @@ struct LoansListView: View {
         .animation(AppAnimation.gentleSpring, value: payAllError)
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             today = Date()
+        }
+    }
+
+    // MARK: - Actions
+
+    @ViewBuilder
+    private func loanMenu(_ loan: Account) -> some View {
+        Button {
+            editingLoan = loan
+        } label: {
+            Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+        }
+        Button(role: .destructive) {
+            confirmDelete([loan])
+        } label: {
+            Label(String(localized: "button.delete"), systemImage: "trash")
+        }
+    }
+
+    private func deleteLoans(keepingPayments: Bool) {
+        HapticManager.warning()
+        let doomed = loansToDelete
+        loansToDelete = []
+        Task {
+            for loan in doomed {
+                if keepingPayments {
+                    await loansViewModel.deleteLoanPreservingPayments(loan, transactionStore: transactionStore)
+                } else {
+                    await transactionStore.deleteTransactions(forAccountId: loan.id)
+                    loansViewModel.deleteLoan(loan)
+                }
+            }
+            transactionsViewModel.recalculateAccountBalances()
+        }
+        withAnimation(AppAnimation.contentSpring) {
+            selection.removeAll()
+            mode = .browsing
         }
     }
 
@@ -244,6 +335,7 @@ struct LoansListView: View {
                         LoanCard(loan: loan)
                     }
                     .buttonStyle(.plain)
+                    .contextMenu { loanMenu(loan) }
                     .screenPadding()
                 }
             }

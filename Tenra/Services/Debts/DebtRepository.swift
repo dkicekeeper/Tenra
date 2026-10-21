@@ -57,6 +57,7 @@ nonisolated final class DebtRepository: @unchecked Sendable {
                 entity.note = debt.note
                 entity.repayments = try debt.repayments.isEmpty ? nil : JSONEncoder().encode(debt.repayments)
                 entity.settledAt = debt.settledAt
+                entity.order = debt.order.map { NSNumber(value: $0) }
                 if context.hasChanges { try context.save() }
             } catch {
                 Self.logger.error("save failed: \(error.localizedDescription, privacy: .public)")
@@ -92,7 +93,8 @@ nonisolated final class DebtRepository: @unchecked Sendable {
             dueDate: entity.dueDate,
             note: entity.note,
             repayments: entity.repayments.flatMap { try? JSONDecoder().decode([DebtRepayment].self, from: $0) } ?? [],
-            settledAt: entity.settledAt
+            settledAt: entity.settledAt,
+            order: entity.order?.intValue
         )
     }
 }

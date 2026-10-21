@@ -7,7 +7,7 @@
 //  the debt; deleting that repayment opens it again. Settling by hand (the rest forgiven) and
 //  reopening are the person's own choices.
 //
-//  Kept in CoreData v15 through DebtRepository; nil keeps the debts in memory only (previews,
+//  Kept in CoreData v15 (v16: the person's order) through DebtRepository; nil keeps the debts in memory only (previews,
 //  tests). The list reloads when the store is replaced (delete all data, a restored backup).
 //  Debts are Tenra Pro: the screens gate adding one, the store does not.
 //
@@ -60,23 +60,39 @@ final class DebtStore {
         debts.first { $0.id == id }
     }
 
-    /// Open debts one way, the soonest due first, those without a date after, oldest first.
+    /// Open debts one way, in the order the person dragged them to (DesignKit 8.0.0's list);
+    /// those never moved after, the soonest due first, those without a date after, oldest first.
     func open(_ direction: DebtDirection) -> [PersonalDebt] {
-        debts
-            .filter { $0.direction == direction && !$0.isSettled }
-            .sorted { lhs, rhs in
-                switch (lhs.dueDate, rhs.dueDate) {
-                case let (l?, r?) where l != r: return l < r
-                case (_?, nil): return true
-                case (nil, _?): return false
-                default: return lhs.date < rhs.date
-                }
+        Self.personFirst(debts.filter { $0.direction == direction && !$0.isSettled }) { lhs, rhs in
+            switch (lhs.dueDate, rhs.dueDate) {
+            case let (l?, r?) where l != r: return l < r
+            case (_?, nil): return true
+            case (nil, _?): return false
+            default: return lhs.date < rhs.date
             }
+        }
     }
 
-    /// Settled debts, the latest first.
+    /// Settled debts, in the person's order; those never moved after, the latest first.
     var settled: [PersonalDebt] {
-        debts.filter(\.isSettled).sorted { ($0.settledAt ?? .distantPast) > ($1.settledAt ?? .distantPast) }
+        Self.personFirst(debts.filter(\.isSettled)) {
+            ($0.settledAt ?? .distantPast) > ($1.settledAt ?? .distantPast)
+        }
+    }
+
+    /// The debts the person placed (`order`) first, by their place; the rest by `rule`.
+    private static func personFirst(
+        _ debts: [PersonalDebt],
+        by rule: (PersonalDebt, PersonalDebt) -> Bool
+    ) -> [PersonalDebt] {
+        debts.sorted { lhs, rhs in
+            switch (lhs.order, rhs.order) {
+            case let (l?, r?) where l != r: return l < r
+            case (_?, nil): return true
+            case (nil, _?): return false
+            default: return rule(lhs, rhs)
+            }
+        }
     }
 
     /// What is still owed one way, in `currency`.
@@ -103,6 +119,20 @@ final class DebtStore {
     func delete(id: String) async {
         debts.removeAll { $0.id == id }
         await repository?.delete(id: id)
+    }
+
+    /// The debts of one list in the order the person dragged them to: each gets its place, in
+    /// memory at once (the list moves while the finger does), then kept.
+    func reorder(_ orderedIds: [String]) async {
+        var moved: [PersonalDebt] = []
+        for (index, id) in orderedIds.enumerated() {
+            guard let i = debts.firstIndex(where: { $0.id == id }), debts[i].order != index else { continue }
+            debts[i].order = index
+            moved.append(debts[i])
+        }
+        for debt in moved {
+            await repository?.save(debt)
+        }
     }
 
     /// Adds a repayment; one that covers what is left settles the debt on its date.

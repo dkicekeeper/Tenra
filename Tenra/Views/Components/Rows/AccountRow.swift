@@ -2,9 +2,9 @@
 //  AccountRow.swift
 //  Tenra
 //
-//  Account row of the accounts and deposits lists. Adapter over DesignKit's `AmountRow` (list style):
-//  the account, the deposit interest copy, the tap, the swipe-to-delete and the VoiceOver
-//  label stay here.
+//  Account card of the accounts and deposits lists (DesignKit 8.0.0's `CardList`). Adapter over
+//  DesignKit's `AmountRow` (list style): the account, the deposit interest copy, the tap and the
+//  VoiceOver label stay here. No swipe actions: Edit and Delete are the card's context menu.
 //
 
 import SwiftUI
@@ -12,7 +12,6 @@ import SwiftUI
 struct AccountRow: View {
     let account: Account
     let onEdit: () -> Void
-    let onDelete: () -> Void
     let balanceCoordinator: BalanceCoordinator
     /// Pre-computed interest accrued to today (from parent via DepositInterestService)
     var interestToday: Double? = nil
@@ -81,14 +80,6 @@ struct AccountRow: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accountAccessibilityLabel)
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(role: .destructive) {
-                HapticManager.warning()
-                onDelete()
-            } label: {
-                Label(String(localized: "button.delete"), systemImage: "trash")
-            }
-        }
     }
 }
 
@@ -106,7 +97,6 @@ struct AccountRow: View {
         AccountRow(
             account: sampleAccount,
             onEdit: {},
-            onDelete: {},
             balanceCoordinator: coordinator.balanceCoordinator
         )
         .padding(.horizontal)

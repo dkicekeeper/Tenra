@@ -283,6 +283,7 @@ nonisolated final class RecurringRepository: RecurringRepositoryProtocol, @unche
             entity.brandId = nil
         }
         entity.status = item.status?.rawValue
+        entity.order = item.order.map { NSNumber(value: $0) }
 
         // Update account relationship using pre-fetched dictionary (O(1) lookup)
         entity.account = accountDict[item.accountId ?? ""]

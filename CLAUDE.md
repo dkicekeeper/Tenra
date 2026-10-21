@@ -345,7 +345,7 @@ When working with this project:
 6. **Maintain consistency**: follow existing code style and conventions
 7. **Performance first**: consider performance implications; consult [gotchas.md](docs/gotchas.md) for known hot-paths
 8. **Test changes**: verify builds and runs after modifications
-9. **Document refactoring**: update affected docs in `docs/` when architecture changes
+9. **Docs follow every change, in the same commit**: a task is not done while a doc it touches is stale (rules in Documentation below)
 10. **Growth work updates the plan**: any release prep, ASO/metadata change, or ASC/RevenueCat analytics pull must also refresh [docs/promotion-plan.md](docs/promotion-plan.md) (releases §1, the weekly metrics table §6, open tasks §7) — it is the single source of truth for growth state
 
 ### Preferred Tools
@@ -385,6 +385,13 @@ When unsure about architecture decisions:
 
 ## Documentation
 
+- **Every change updates the docs it makes stale, in the same commit.** Before committing, check what the change touches and bring each of these up to date:
+  - the domain doc of the area (the "When to Read Which Doc" table: `docs/domains/*.md`, `design-system.md`, `architecture.md`, `asc.md`, …) and this file when a rule, a command or a workflow changes;
+  - the plan in flight (`docs/plan-*.md`): tick the item, rewrite its status line, and move the plan to `docs/archive/plans/` once it has fully landed;
+  - `docs/backlog.md`: delete the line that landed, edit a decision that changed;
+  - a change the user sees: `docs/release-notes.md` (What's New in all 13 storefronts, the submission checklist);
+  - a TestFlight build, a release, App Store Connect or metrics work: `docs/promotion-plan.md` (§1, §6, §7).
+- **Re-check the plans against the code regularly, not only the lines a change touched**: when a session picks up planned work, before release prep, and in the Saturday session ([promotion-plan.md](docs/promotion-plan.md) §7). For each open item verify in the code and `git log` whether it landed; fix the marks and every stale statement (a "blocked until" that no longer holds, a merged PR still listed as open, a renamed screen, a build number). A stale plan is a bug: the next session acts on it.
 - **All current documentation lives in `docs/`; anything no longer current moves to `docs/archive/`** in the same commit that makes it stale (a plan that landed → `docs/archive/plans/`, release notes once the version ships, a finished audit → `docs/archive/`, a superseded spec → `docs/archive/specs/` after its lasting rules go into the domain doc). Current = describes the app as it is now, or work in flight. No docs elsewhere, apart from the tool-mandated `CLAUDE.md`, `AGENTS.md` and `.claude/skills/*/SKILL.md`.
 - **Flat:** only `docs/domains/` (one file per domain) and `docs/public/` (the Pages site) are folders. Work in flight is a file in `docs/`: a plan `plan-<topic>.md`, the What's New of the version being prepared `release-notes.md`; open items, ideas and decisions go in `docs/backlog.md`. Skills that default to other folders (superpowers → `docs/superpowers/`, GSD → `.planning/`) write there instead.
 - **No history in current docs:** "before X it did Y", bug stories and finished checklists go in the commit message or the archive.
@@ -393,6 +400,6 @@ When unsure about architecture decisions:
 
 ---
 
-**Last Updated**: 2026-10-15
+**Last Updated**: 2026-10-21
 **iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`, so the project still builds with Xcode 26. Every GitHub workflow (CI, TestFlight, DesignKit update, Screenshots) builds with Xcode 27.0 on the `xcode-27` runner since 2026-10-21, so the iOS 27 paths are compiled, tested and shipped from the cloud; the Xcode pin is raised in all four at once, see [docs/asc.md](docs/asc.md))
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

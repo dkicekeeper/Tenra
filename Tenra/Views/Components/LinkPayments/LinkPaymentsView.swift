@@ -629,56 +629,40 @@ struct TransactionSubcategoryFilterSheet: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    UniversalRow(config: .settings) {
-                        Text(String(localized: "subscription.filterAll", defaultValue: "All"))
-                            .font(AppTypography.h4)
-                            .fontWeight(.medium)
-                    } trailing: {
-                        if selectedNames == nil {
-                            Icon("checkmark", size: AppIconSize.md)
-                                .foregroundStyle(AppColors.accent)
-                        }
-                    }
-                    .selectableRow(isSelected: selectedNames == nil) {
-                        HapticManager.selection()
-                        selectedNames = nil
-                    }
-                }
-
-                Section {
-                    ForEach(subcategories, id: \.self) { name in
-                        let isSelected = selectedNames?.contains(name) == true
-                        // Plated like the category and account filters' icons, at their 44 pt.
+            // DesignKit 8.0.0: glass sections on the page (a List before).
+            ScrollView {
+                VStack(spacing: AppSpacing.xl) {
+                    FormSection {
                         UniversalRow(
-                            config: .settings,
-                            leadingIcon: .custom(
-                                source: .sfSymbol("tag"),
-                                style: .circle(
-                                    size: AppIconSize.Tile.sm,
-                                    tint: .monochrome(AppColors.accent),
-                                    backgroundColor: AppColors.pale(AppColors.accent)
-                                )
-                            )
-                        ) {
-                            Text(name)
-                                .font(AppTypography.h4)
-                                .fontWeight(.medium)
-                        } trailing: {
-                            if isSelected {
-                                Icon("checkmark", size: AppIconSize.md)
-                                    .foregroundStyle(AppColors.accent)
+                            String(localized: "subscription.filterAll", defaultValue: "All"),
+                            accessory: .checkmark(isSelected: selectedNames == nil) {
+                                selectedNames = nil
                             }
-                        }
-                        .selectableRow(isSelected: isSelected) {
-                            HapticManager.selection()
-                            toggle(name)
+                        )
+                    }
+
+                    FormSection(header: String(localized: "subscription.linkPayments.subcategories", defaultValue: "Subcategories")) {
+                        ForEach(subcategories, id: \.self) { name in
+                            // Plated like the category and account filters' icons, at their 44 pt.
+                            UniversalRow(
+                                name,
+                                leadingIcon: .custom(
+                                    source: .sfSymbol("tag"),
+                                    style: .circle(
+                                        size: AppIconSize.Tile.sm,
+                                        tint: .monochrome(AppColors.accent),
+                                        backgroundColor: AppColors.pale(AppColors.accent)
+                                    )
+                                ),
+                                accessory: .checkmark(isSelected: selectedNames?.contains(name) == true) {
+                                    toggle(name)
+                                }
+                            )
                         }
                     }
-                } header: {
-                    SectionHeader(String(localized: "subscription.linkPayments.subcategories", defaultValue: "Subcategories"))
                 }
+                .screenPadding()
+                .padding(.vertical, AppSpacing.md)
             }
             .navigationTitle(String(localized: "subscription.linkPayments.subcategories", defaultValue: "Subcategories"))
             .navigationBarTitleDisplayMode(.inline)

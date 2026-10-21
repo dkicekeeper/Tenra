@@ -1308,7 +1308,7 @@
 "settings.cloud.iCloud.unavailable" = "Accedi a iCloud in Impostazioni per salvare i backup su iCloud Drive.";
 "settings.cloud.iCloud.movedToICloud" = "Backup spostati su iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Backup spostati su questo dispositivo";
-"settings.cloud.tapToRestoreHint" = "Tocca un backup per ripristinarlo. Scorri verso sinistra per eliminarlo.";
+"settings.cloud.tapToRestoreHint" = "Tocca un backup per ripristinarlo. Tienilo premuto per eliminarlo.";
 "alert.restore.title" = "Ripristinare il backup?";
 "alert.restore.message" = "Tutti i dati attuali saranno sostituiti con il backup del %@.";
 "alert.restore.confirm" = "Ripristina";
@@ -1792,7 +1792,7 @@
 "settings.siri.header" = "Siri e comandi rapidi";
 "settings.siri.footer" = "Un'automazione di Comandi rapidi salva da sola ogni pagamento Apple Pay al terminale, senza aprire Tenra.";
 "settings.merchants.title" = "Esercenti Wallet";
-"settings.merchants.footer" = "I pagamenti presso questi esercenti con l'automazione Wallet ricevono questa categoria e sottocategoria. Tocca un esercente per vederne i pagamenti e cambiarle, o scorri a sinistra per dimenticarlo.";
+"settings.merchants.footer" = "I pagamenti presso questi esercenti con l'automazione Wallet ricevono questa categoria e sottocategoria. Tocca un esercente per vederne i pagamenti e cambiarle, oppure tienilo premuto e scegli Dimentica.";
 "settings.merchants.emptyTitle" = "Ancora nessun esercente";
 "settings.merchants.emptyMessage" = "Qui viene ricordata la categoria di ogni esercente dove paghi con Apple Pay tramite l'automazione Wallet, appena la scegli, confermi o correggi.";
 "settings.merchants.forget" = "Dimentica";
@@ -1810,7 +1810,7 @@
 "merchant.detail.byMonth" = "Per mese";
 "merchant.detail.open" = "Pagamenti dell'esercente";
 "walletReview.title" = "Da controllare";
-"walletReview.footer" = "La categoria o il conto di questi pagamenti Apple Pay è stato scelto automaticamente. Tocca un pagamento per correggerlo o scorri a destra se è giusto. La tua scelta verrà ricordata per l'esercente e la carta.";
+"walletReview.footer" = "La categoria o il conto di questi pagamenti Apple Pay è stato scelto automaticamente. Tocca un pagamento per correggerlo, oppure tienilo premuto e scegli Giusto. La tua scelta verrà ricordata per l'esercente e la carta.";
 "walletReview.emptyTitle" = "Niente da controllare";
 "walletReview.emptyMessage" = "Qui compaiono i pagamenti Apple Pay con categoria o conto scelti automaticamente, finché non li controlli.";
 "walletReview.confirm" = "Giusto";
@@ -1819,7 +1819,7 @@
 "walletReview.notification.category" = "%1$@ è stato registrato in «%2$@». Tocca per controllare.";
 "walletReview.notification.account" = "%1$@ è stato registrato sul conto «%2$@». Tocca per controllare.";
 "settings.cards.title" = "Carte Wallet";
-"settings.cards.footer" = "I pagamenti Apple Pay con queste carte vengono registrati sul conto indicato. Tocca una carta per scegliere un altro conto o scorri a sinistra per dimenticarla.";
+"settings.cards.footer" = "I pagamenti Apple Pay con queste carte vengono registrati sul conto indicato. Tocca una carta per scegliere un altro conto, oppure tienila premuta e scegli Dimentica.";
 "settings.cards.emptyTitle" = "Ancora nessuna carta";
 "settings.cards.emptyMessage" = "Quando l'automazione Wallet passa la carta, Tenra ricorda qui il conto che scegli o confermi per essa.";
 "settings.cards.accountDeleted" = "Conto eliminato";
@@ -1922,7 +1922,7 @@
 "transactionPreview.reconcile.hint" = "Controlla le righe non selezionate e le tue voci manuali di questo periodo";
 "transactionPreview.walletMissing" = "Pagamenti Apple Pay non presenti nell'estratto: %lld";
 "walletMissing.title" = "Non nell'estratto";
-"walletMissing.footer" = "L'automazione Wallet ha registrato questi pagamenti Apple Pay, ma l'estratto non mostra alcun addebito. L'automazione parte anche per un pagamento rifiutato: se uno di questi è stato rifiutato, scorrilo a sinistra per eliminarlo.";
+"walletMissing.footer" = "L'automazione Wallet ha registrato questi pagamenti Apple Pay, ma l'estratto non mostra alcun addebito. L'automazione parte anche per un pagamento rifiutato: se uno di questi è stato rifiutato, tienilo premuto per eliminarlo.";
 
 /* Statement import review: categories picked by the on-device Apple Intelligence model */
 "transactionPreview.intelligence.progress" = "Apple Intelligence sta scegliendo le categorie…";

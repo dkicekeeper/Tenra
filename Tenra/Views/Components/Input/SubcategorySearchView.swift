@@ -86,53 +86,13 @@ struct SubcategorySearchView: View {
                         description: String(localized: "emptyState.tryDifferentSearch")
                     )
                 } else {
-                    List {
-                        ForEach(searchResults) { subcategory in
-                            Button {
-                                if selectionMode == .single {
-                                    // Одиночный выбор - вызываем callback и закрываем
-                                    onSingleSelect?(subcategory.id)
-                                    dismiss()
-                                } else {
-                                    // Множественный выбор
-                                    if selectedSubcategoryIds.contains(subcategory.id) {
-                                        selectedSubcategoryIds.remove(subcategory.id)
-                                    } else {
-                                        selectedSubcategoryIds.insert(subcategory.id)
-                                        // Автоматически привязываем к категории, если еще не привязана
-                                        if !categoryId.isEmpty {
-                                            categoriesViewModel.linkSubcategoryToCategory(
-                                                subcategoryId: subcategory.id,
-                                                categoryId: categoryId
-                                            )
-                                        }
-                                    }
-                                }
-                            } label: {
-                                HStack {
-                                    Text(subcategory.name)
-                                    Spacer()
-                                    if selectionMode == .multiple && selectedSubcategoryIds.contains(subcategory.id) {
-                                        Icon("checkmark", size: AppIconSize.md)
-                                            .foregroundStyle(AppColors.accent)
-                                    }
-                                }
-                            }
-                            .buttonStyle(.plain)
-                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                                if !categoryId.isEmpty && selectionMode == .multiple {
-                                    Button {
-                                        categoriesViewModel.unlinkSubcategoryFromCategory(
-                                            subcategoryId: subcategory.id,
-                                            categoryId: categoryId
-                                        )
-                                    } label: {
-                                        Label(String(localized: "subcategorySearch.unlink"), systemImage: "link.slash")
-                                    }
-                                    .tint(AppColors.warning)
-                                }
+                    ScrollView {
+                        FormSection {
+                            ForEach(searchResults) { subcategory in
+                                row(for: subcategory)
                             }
                         }
+                        .screenPadding()
                     }
                 }
             }
@@ -173,6 +133,49 @@ struct SubcategorySearchView: View {
             }
         }
         .softScrollEdges()
+    }
+
+    /// A tap picks the subcategory; a long press unlinks it from the category (DesignKit 8.0.0:
+    /// no swipe actions).
+    private func row(for subcategory: Subcategory) -> some View {
+        UniversalRow(
+            subcategory.name,
+            accessory: selectionMode == .single
+                ? RowAccessory.action {
+                    onSingleSelect?(subcategory.id)
+                    dismiss()
+                }
+                : RowAccessory.checkmark(isSelected: selectedSubcategoryIds.contains(subcategory.id)) {
+                    toggle(subcategory)
+                }
+        )
+        .contextMenu {
+            if !categoryId.isEmpty && selectionMode == .multiple {
+                Button {
+                    categoriesViewModel.unlinkSubcategoryFromCategory(
+                        subcategoryId: subcategory.id,
+                        categoryId: categoryId
+                    )
+                } label: {
+                    Label(String(localized: "subcategorySearch.unlink"), systemImage: "link.slash")
+                }
+            }
+        }
+    }
+
+    private func toggle(_ subcategory: Subcategory) {
+        if selectedSubcategoryIds.contains(subcategory.id) {
+            selectedSubcategoryIds.remove(subcategory.id)
+        } else {
+            selectedSubcategoryIds.insert(subcategory.id)
+            // Автоматически привязываем к категории, если еще не привязана
+            if !categoryId.isEmpty {
+                categoriesViewModel.linkSubcategoryToCategory(
+                    subcategoryId: subcategory.id,
+                    categoryId: categoryId
+                )
+            }
+        }
     }
 
     private func createButton(subcategoryName: String) -> some View {

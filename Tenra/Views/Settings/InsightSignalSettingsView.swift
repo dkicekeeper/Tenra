@@ -16,33 +16,40 @@ struct InsightSignalSettingsView: View {
     @State private var permissionManager = NotificationPermissionManager.shared
 
     var body: some View {
-        List {
-            Section(footer: Text(String(localized: "settings.insightSignals.footer"))) {
-                Toggle(String(localized: "settings.insightSignals.master"), isOn: masterBinding)
-            }
+        // DesignKit 8.0.0: glass sections of rows (a List of system toggles before).
+        ScrollView {
+            VStack(spacing: AppSpacing.xl) {
+                FormSection(footer: String(localized: "settings.insightSignals.footer")) {
+                    UniversalRow(String(localized: "settings.insightSignals.master"), icon: "bell.badge",
+                                 accessory: .toggle(masterBinding))
+                }
 
-            if settings.isEnabled {
-                if permissionManager.authorizationStatus == .denied {
-                    Section {
-                        UniversalRow(
-                            String(localized: "settings.insightSignals.permissionDenied"),
-                            icon: "bell.slash",
-                            config: .settings,
-                            accessory: .action({ permissionManager.openAppSettings() })
-                        )
+                if settings.isEnabled {
+                    if permissionManager.authorizationStatus == .denied {
+                        FormSection {
+                            UniversalRow(
+                                String(localized: "settings.insightSignals.permissionDenied"),
+                                icon: "bell.slash",
+                                accessory: .action({ permissionManager.openAppSettings() })
+                            )
+                        }
+                    }
+
+                    FormSection {
+                        ForEach(InsightSignalKind.allCases, id: \.rawValue) { kind in
+                            UniversalRow(kind.displayName, accessory: .toggle(kindBinding(kind)))
+                        }
+                    }
+
+                    FormSection {
+                        UniversalRow(String(localized: "settings.insightSignals.weeklyDigest"), icon: "calendar",
+                                     accessory: .toggle(digestBinding))
                     }
                 }
-
-                Section {
-                    ForEach(InsightSignalKind.allCases, id: \.rawValue) { kind in
-                        Toggle(kind.displayName, isOn: kindBinding(kind))
-                    }
-                }
-
-                Section {
-                    Toggle(String(localized: "settings.insightSignals.weeklyDigest"), isOn: digestBinding)
-                }
             }
+            .screenPadding()
+            .padding(.vertical, AppSpacing.md)
+            .animation(AppAnimation.contentSpring, value: settings.isEnabled)
         }
         .navigationTitle(String(localized: "settings.insightSignals.title"))
         .navigationBarTitleDisplayMode(.inline)

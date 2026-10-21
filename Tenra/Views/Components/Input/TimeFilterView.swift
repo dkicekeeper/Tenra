@@ -34,56 +34,57 @@ struct TimeFilterView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // MARK: - Presets
-                Section {
-                    ForEach(presetOptions, id: \.self) { preset in
-                        UniversalRow(config: .settings) {
-                            Text(preset.localizedName)
-                                .font(AppTypography.h4)
-                                .fontWeight(.regular)
+            // DesignKit 8.0.0: glass sections on the page (a List before).
+            ScrollView {
+                VStack(spacing: AppSpacing.xl) {
+                    // MARK: - Presets
+                    FormSection(header: String(localized: "timeFilter.presets", defaultValue: "Пресеты")) {
+                        ForEach(presetOptions, id: \.self) { preset in
+                            UniversalRow {
+                                Text(preset.localizedName)
+                                    .font(AppTypography.h4)
+                                    .fontWeight(.regular)
+                            } trailing: {
+                                if selectedPreset == preset {
+                                    Icon("checkmark", size: AppIconSize.md)
+                                        .foregroundStyle(AppColors.accent)
+                                }
+                            }
+                            .selectableRow(isSelected: selectedPreset == preset) {
+                                selectedPreset = preset
+                                filterManager.setPreset(preset)
+                                dismiss()
+                            }
+                        }
+                    }
+
+                    // MARK: - Custom Range
+                    FormSection(header: String(localized: "timeFilter.customRange", defaultValue: "Свой период")) {
+                        UniversalRow {
+                            VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                                Text(String(localized: "timeFilter.customPeriod", defaultValue: "Пользовательский период"))
+                                    .font(AppTypography.h4)
+                                    .fontWeight(.regular)
+                                if selectedPreset == .custom {
+                                    Text(customRangeDescription)
+                                        .font(AppTypography.caption)
+                                        .foregroundStyle(AppColors.textSecondary)
+                                }
+                            }
                         } trailing: {
-                            if selectedPreset == preset {
+                            if selectedPreset == .custom {
                                 Icon("checkmark", size: AppIconSize.md)
                                     .foregroundStyle(AppColors.accent)
                             }
                         }
-                        .selectableRow(isSelected: selectedPreset == preset) {
-                            selectedPreset = preset
-                            filterManager.setPreset(preset)
-                            dismiss()
+                        .selectableRow(isSelected: selectedPreset == .custom) {
+                            selectedPreset = .custom
+                            showingCustomPicker = true
                         }
                     }
-                } header: {
-                    SectionHeader(String(localized: "timeFilter.presets", defaultValue: "Пресеты"))
                 }
-
-                // MARK: - Custom Range
-                Section {
-                    UniversalRow(config: .settings) {
-                        VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                            Text(String(localized: "timeFilter.customPeriod", defaultValue: "Пользовательский период"))
-                                .font(AppTypography.h4)
-                                .fontWeight(.regular)
-                            if selectedPreset == .custom {
-                                Text(customRangeDescription)
-                                    .font(AppTypography.caption)
-                                    .foregroundStyle(AppColors.textSecondary)
-                            }
-                        }
-                    } trailing: {
-                        if selectedPreset == .custom {
-                            Icon("checkmark", size: AppIconSize.md)
-                                .foregroundStyle(AppColors.accent)
-                        }
-                    }
-                    .selectableRow(isSelected: selectedPreset == .custom) {
-                        selectedPreset = .custom
-                        showingCustomPicker = true
-                    }
-                } header: {
-                    SectionHeader(String(localized: "timeFilter.customRange", defaultValue: "Свой период"))
-                }
+                .screenPadding()
+                .padding(.vertical, AppSpacing.md)
             }
             .navigationTitle(String(localized: "timeFilter.title", defaultValue: "Фильтр по времени"))
             .navigationBarTitleDisplayMode(.inline)

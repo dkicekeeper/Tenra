@@ -1303,6 +1303,7 @@
 "settings.cloud.storage" = "Хранилище";
 "settings.cloud.storageUsed" = "%@ из %@";
 "settings.cloud.iCloud.toggle" = "Сохранять копии в iCloud";
+"settings.cloud.iCloud.moving" = "Переносим данные…";
 "settings.cloud.iCloud.footer" = "Копии хранятся в вашем iCloud, скрыты из приложения «Файлы» и доступны в Tenra на других ваших устройствах.";
 "settings.cloud.iCloud.unavailable" = "Войдите в iCloud в Настройках, чтобы хранить копии в iCloud Drive.";
 "settings.cloud.iCloud.movedToICloud" = "Копии перенесены в iCloud";

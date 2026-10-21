@@ -64,7 +64,9 @@ struct SettingsView: View {
     private var settingsList: some View {
         ZStack(alignment: .top) {
             // From the app as a whole to its features, then the data, then what can't be undone.
-            List {
+            // DesignKit 8.0.0: glass sections on the page, as every screen (a List before).
+            ScrollView {
+                VStack(spacing: AppSpacing.xl) {
                 SettingsProSection()
                 generalSection
                 notificationsSection
@@ -83,6 +85,9 @@ struct SettingsView: View {
                 experimentsSection
                 #endif
                 aboutSection
+                }
+                .screenPadding()
+                .padding(.vertical, AppSpacing.md)
             }
             .navigationTitle(String(localized: "settings.title"))
             .navigationBarTitleDisplayMode(.large)
@@ -216,11 +221,10 @@ struct SettingsView: View {
     // MARK: - Notifications Section
 
     private var notificationsSection: some View {
-        Section {
+        FormSection {
             UniversalRow(
                 String(localized: "settings.insightSignals.title"),
                 icon: "bell.badge",
-                config: .settings,
                 accessory: .navigation {
                     InsightSignalSettingsView()
                 }
@@ -230,11 +234,10 @@ struct SettingsView: View {
 
     #if DEBUG
     private var experimentsSection: some View {
-        Section {
+        FormSection {
             UniversalRow(
                 String(localized: "settings.experiments"),
                 icon: "flask",
-                config: .settings,
                 accessory: .navigation {
                     ExperimentsListView()
                 }
@@ -242,7 +245,6 @@ struct SettingsView: View {
             UniversalRow(
                 String(localized: "settings.notificationDebug"),
                 icon: "bell.badge",
-                config: .settings,
                 accessory: .navigation {
                     NotificationDebugView()
                 }
@@ -250,7 +252,6 @@ struct SettingsView: View {
             UniversalRow(
                 String(localized: "settings.debug.relaunchOnboarding"),
                 icon: "arrow.counterclockwise",
-                config: .settings,
                 accessory: .action({ settingsViewModel.debugRelaunchOnboarding() })
             )
         }
@@ -260,12 +261,11 @@ struct SettingsView: View {
     // MARK: - About Section
 
     private var aboutSection: some View {
-        Section(header: SectionHeader(String(localized: "settings.about"))) {
+        FormSection(header: String(localized: "settings.about")) {
             if let url = URL(string: "https://dkicekeeper.github.io/Tenra/privacy-policy.html") {
                 Link(destination: url) {
                     UniversalRow(
-                        config: .settings,
-                        leadingIcon: .sfSymbol("hand.raised", color: AppColors.accent, size: AppIconSize.md)
+                        leadingIcon: .sfSymbol("hand.raised", color: AppColors.accent, size: AppIconSize.lg)
                     ) {
                         Text(String(localized: "settings.privacyPolicy"))
                             .font(AppTypography.body)
@@ -275,12 +275,13 @@ struct SettingsView: View {
                             .foregroundStyle(AppColors.textSecondary)
                     }
                 }
+                // A link's label keeps the row's divider inset to itself: its icon and space.
+                .rowDividerInset(AppIconSize.lg + AppSpacing.md)
             }
             if let url = URL(string: "https://dkicekeeper.github.io/Tenra/terms-of-use.html") {
                 Link(destination: url) {
                     UniversalRow(
-                        config: .settings,
-                        leadingIcon: .sfSymbol("doc.text", color: AppColors.accent, size: AppIconSize.md)
+                        leadingIcon: .sfSymbol("doc.text", color: AppColors.accent, size: AppIconSize.lg)
                     ) {
                         Text(String(localized: "settings.termsOfUse"))
                             .font(AppTypography.body)
@@ -290,10 +291,11 @@ struct SettingsView: View {
                             .foregroundStyle(AppColors.textSecondary)
                     }
                 }
+                // A link's label keeps the row's divider inset to itself: its icon and space.
+                .rowDividerInset(AppIconSize.lg + AppSpacing.md)
             }
             UniversalRow(
-                config: .settings,
-                leadingIcon: .sfSymbol("info.circle", color: AppColors.accent, size: AppIconSize.md)
+                leadingIcon: .sfSymbol("info.circle", color: AppColors.accent, size: AppIconSize.lg)
             ) {
                 Text(String(localized: "settings.version"))
                     .font(AppTypography.body)
@@ -317,8 +319,7 @@ struct SettingsView: View {
                     }
                 } label: {
                     UniversalRow(
-                        config: .settings,
-                        leadingIcon: .sfSymbol("person.text.rectangle", color: AppColors.accent, size: AppIconSize.md)
+                        leadingIcon: .sfSymbol("person.text.rectangle", color: AppColors.accent, size: AppIconSize.lg)
                     ) {
                         Text(String(localized: "settings.supportID"))
                             .font(AppTypography.body)
@@ -336,13 +337,13 @@ struct SettingsView: View {
                     }
                 }
                 .buttonStyle(.plain)
+                .rowDividerInset(AppIconSize.lg + AppSpacing.md)
             }
             // Launch health check + MetricKit crash/hang reports, shareable. In release builds
             // too: that's where silent failures (like a paywall with nothing to sell) happen.
             UniversalRow(
                 String(localized: "settings.diagnostics"),
                 icon: "stethoscope",
-                config: .settings,
                 accessory: .navigation {
                     DiagnosticsView()
                 }

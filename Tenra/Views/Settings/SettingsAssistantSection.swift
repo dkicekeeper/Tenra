@@ -18,31 +18,24 @@ struct SettingsAssistantSection: View {
 
     var body: some View {
         if AssistantAvailability.isAvailable {
-            Section {
+            FormSection(header: String(localized: "settings.assistant.header"), footer: String(localized: "settings.assistant.footer")) {
                 UniversalRow(
                     String(localized: "settings.assistant.cloud"),
                     icon: "cloud",
-                    config: .settings,
                     accessory: .toggle($hasConsent)
                 )
                 UniversalRow(
                     String(localized: "settings.assistant.chatter"),
                     icon: "text.bubble",
-                    config: .settings,
                     accessory: .toggle($chatterOn)
                 )
                 UniversalRow(
                     String(localized: "assistant.memory.title"),
                     icon: "brain",
-                    config: .settings,
                     accessory: .navigation {
                         AssistantMemoryView(memory: memory)
                     }
                 )
-            } header: {
-                SectionHeader(String(localized: "settings.assistant.header"))
-            } footer: {
-                Text(String(localized: "settings.assistant.footer"))
             }
         }
     }
@@ -50,7 +43,7 @@ struct SettingsAssistantSection: View {
 
 #Preview {
     NavigationStack {
-        List {
+        ScrollView {
             SettingsAssistantSection()
         }
     }

@@ -23,28 +23,25 @@ struct SettingsExportImportSection: View {
     // MARK: - Body
 
     var body: some View {
-        Section(
-            header: SectionHeader(String(localized: "settings.exportImport")),
-            footer: Text(String(localized: "settings.importReminder.footer"))
+        FormSection(
+            header: String(localized: "settings.exportImport"),
+            footer: String(localized: "settings.importReminder.footer")
         ) {
             UniversalRow(
                 String(localized: "settings.exportData"),
                 icon: "square.and.arrow.up",
-                config: .settings,
                 accessory: .action(onExport)
             )
 
             UniversalRow(
                 String(localized: "settings.importData"),
                 icon: "square.and.arrow.down",
-                config: .settings,
                 accessory: .action(onImport)
             )
 
             UniversalRow(
                 String(localized: "settings.importReminder"),
                 icon: "bell",
-                config: .settings,
                 accessory: .picker($reminderDays, options: reminderOptions)
             )
         }
@@ -68,7 +65,7 @@ struct SettingsExportImportSection: View {
 // MARK: - Preview
 
 #Preview {
-    List {
+    ScrollView {
         SettingsExportImportSection(
             onExport: {
             },

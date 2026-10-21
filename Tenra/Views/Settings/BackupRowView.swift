@@ -2,7 +2,8 @@
 //  BackupRowView.swift
 //  Tenra
 //
-//  Single backup row with metadata and swipe actions (DesignKit's ItemRow, .large).
+//  Single backup row with metadata (DesignKit's ItemRow, .large): a tap restores, a long press
+//  shows Restore and Delete (DesignKit 8.0.0: no swipe actions).
 //
 
 import SwiftUI
@@ -33,12 +34,20 @@ struct BackupRowView: View {
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
         .accessibilityHint(Text(String(localized: "settings.cloud.restore")))
-        .swipeActions(edge: .trailing) {
+        .contextMenu {
+            Button {
+                onRestore()
+            } label: {
+                Label(String(localized: "settings.cloud.restore"), systemImage: "arrow.counterclockwise")
+            }
             Button(role: .destructive) {
                 onDelete()
             } label: {
                 Label(String(localized: "settings.cloud.delete"), systemImage: "trash")
             }
+        }
+        .accessibilityAction(named: Text(String(localized: "settings.cloud.delete"))) {
+            onDelete()
         }
     }
 

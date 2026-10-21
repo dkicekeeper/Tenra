@@ -2,7 +2,10 @@
 //  CategorySelectorView.swift
 //  Tenra
 //
-//  Reusable category selector component with horizontal scroll
+//  Category picker of the money forms (edit a transaction, a voice entry, a receipt, a loan
+//  payment, a Wallet merchant): every category as a chip with its icon in its colour, wrapping
+//  over as many lines as it needs, the chosen one tinted. The chips are DesignKit's
+//  `UniversalFilterButton`, the subcategory chips under it.
 //
 
 import SwiftUI
@@ -15,7 +18,6 @@ struct CategorySelectorView: View {
     let onSelectionChange: ((String?) -> Void)?
     let emptyStateMessage: String?
     let warningMessage: String?
-    let budgetProgressMap: [String: BudgetProgress]?
 
     init(
         categories: [String],
@@ -24,8 +26,7 @@ struct CategorySelectorView: View {
         selectedCategory: Binding<String?>,
         onSelectionChange: ((String?) -> Void)? = nil,
         emptyStateMessage: String? = nil,
-        warningMessage: String? = nil,
-        budgetProgressMap: [String: BudgetProgress]? = nil
+        warningMessage: String? = nil
     ) {
         self.categories = categories
         self.type = type
@@ -34,9 +35,8 @@ struct CategorySelectorView: View {
         self.onSelectionChange = onSelectionChange
         self.emptyStateMessage = emptyStateMessage
         self.warningMessage = warningMessage
-        self.budgetProgressMap = budgetProgressMap
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
             if categories.isEmpty {
@@ -48,26 +48,12 @@ struct CategorySelectorView: View {
                         .padding(AppSpacing.lg)
                 }
             } else {
-                UniversalCarousel(
-                    config: .standard,
-                    scrollToId: .constant(selectedCategory)
-                ) {
+                FlowLayout {
                     ForEach(categories, id: \.self) { category in
-                        CategoryChip(
-                            category: category,
-                            type: type,
-                            customCategories: customCategories,
-                            isSelected: selectedCategory == category,
-                            onTap: {
-                                selectedCategory = category
-                                onSelectionChange?(category)
-                            },
-                            budgetProgress: budgetProgressMap?[category]
-                        )
-                        .frame(width: 80)
-                        .id(category)
+                        chip(category)
                     }
                 }
+                .screenPadding()
             }
 
             if let warning = warningMessage {
@@ -76,21 +62,38 @@ struct CategorySelectorView: View {
             }
         }
     }
+
+    private func chip(_ category: String) -> some View {
+        let style = CategoryStyleHelper.cached(category: category, type: type, customCategories: customCategories)
+        return UniversalFilterButton(
+            title: category,
+            isSelected: selectedCategory == category,
+            showChevron: false,
+            onTap: {
+                HapticManager.selection()
+                selectedCategory = category
+                onSelectionChange?(category)
+            }
+        ) {
+            Icon(style.iconName, size: AppIconSize.sm, tint: .monochrome(style.iconColor))
+        }
+        .accessibilityLabel(String(format: String(localized: "accessibility.category.label"), category))
+    }
 }
 
 #Preview {
-    @Previewable @State var selectedCategory: String? = nil
-    
+    @Previewable @State var selectedCategory: String? = "Transport"
+
     return VStack {
         CategorySelectorView(
-            categories: ["Food", "Transport", "Shopping", "Entertainment"],
+            categories: ["Food", "Transport", "Shopping", "Entertainment", "Health", "Home"],
             type: .expense,
             customCategories: [],
             selectedCategory: $selectedCategory,
             emptyStateMessage: nil,
             warningMessage: nil
         )
-        
+
         CategorySelectorView(
             categories: [],
             type: .expense,
@@ -100,5 +103,5 @@ struct CategorySelectorView: View {
             warningMessage: nil
         )
     }
-    .padding()
+    .padding(.vertical)
 }

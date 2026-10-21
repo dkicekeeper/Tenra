@@ -187,7 +187,9 @@ fields, then a conditional impact `FormSection`. **Tenra has no system `Form` sh
 `TransactionAddModal`, `TransactionEditView`, `AccountActionView`, `LoanPaymentView`,
 `LoanEarlyRepaymentView`: a `ScrollView` with `HeroSection`, `AmountInputView(calculatorModel:)`,
 the source and category selectors under `SectionHeader`s and `FormSection`s for the rest, with the
-`CalculatorKeypad` in `.safeAreaInset(edge: .bottom)`. Rules in §5. Money towards a goal or back
+`CalculatorKeypad` in `.safeAreaInset(edge: .bottom)`. The categories are chips with their icon in
+their colour (`CategorySelectorView`: `UniversalFilterButton`s in a `FlowLayout`, over as many
+lines as they need), the subcategory chips under them. Rules in §5. Money towards a goal or back
 on a debt (only a note and a date) is `MoneyEntrySheet`, an adapter over DesignKit's
 `AmountEntrySheet` (4.14.0), the same layout ready-made.
 
@@ -280,7 +282,10 @@ its own. A form card's rows keep the default `config: .standard` and pad themsel
   (`SectionHeader(title, systemImage:, style: .large)`); detail screens put
   `SectionHeader(style: .large)` over their charts.
 - **Filter sheets** (`AccountFilterView`, `CategoryFilterView`, `TimeFilterView`):
-  `SectionHeader(title)` (default style) over selectable rows.
+  `SectionHeader(title)` (default style) over selectable rows; History opens them at half height,
+  pulling up to full (`[.medium, .large]`). An account's or a category's icon in a list row is a
+  44 pt tile (`AppIconSize.Tile.sm`) on its plate, as in the accounts, deposits and categories
+  lists (`AmountRow(style: .list)`): the filters, a link payment's subcategories, Wallet merchants.
 
 ### Search
 

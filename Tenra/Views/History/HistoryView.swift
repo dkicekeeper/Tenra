@@ -85,12 +85,12 @@ struct HistoryView: View {
                         transactionsViewModel.selectedCategories = newFilter
                     }
                 )
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingTimeFilter) {
                 TimeFilterView(filterManager: timeFilterManager)
-                    .presentationDetents([.medium])
+                    .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $filterCoordinator.showingAccountFilter) {
@@ -99,7 +99,7 @@ struct HistoryView: View {
                     selectedAccountId: $filterCoordinator.selectedAccountFilter,
                     balanceCoordinator: accountsViewModel.balanceCoordinator
                 )
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
     }

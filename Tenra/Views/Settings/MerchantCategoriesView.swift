@@ -98,13 +98,14 @@ struct MerchantCategoriesView: View {
     }
 
     /// Plated like the category filter rows: the icon in the category's colour on a pale
-    /// circle of it; a deleted category shows the neutral folder.
+    /// circle of it; a deleted category shows the neutral folder. 44 pt (`Tile.sm`), the size of
+    /// the accounts, deposits and categories lists.
     private func iconConfig(for category: CustomCategory?) -> IconConfig {
         if let category {
             return .custom(
                 source: category.iconSource,
                 style: .circle(
-                    size: AppIconSize.xl,
+                    size: AppIconSize.Tile.sm,
                     tint: .monochrome(category.color),
                     backgroundColor: AppColors.pale(category.color)
                 )
@@ -113,7 +114,7 @@ struct MerchantCategoriesView: View {
         return .custom(
             source: .sfSymbol("folder"),
             style: .circle(
-                size: AppIconSize.xl,
+                size: AppIconSize.Tile.sm,
                 tint: .monochrome(AppColors.textSecondary),
                 backgroundColor: AppColors.Status.neutralPale
             )

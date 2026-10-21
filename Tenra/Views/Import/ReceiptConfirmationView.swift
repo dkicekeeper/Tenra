@@ -112,7 +112,6 @@ struct ReceiptConfirmationView: View {
                         selectedCategory: $selectedCategoryName,
                         emptyStateMessage: String(localized: "transactionForm.noCategories")
                     )
-                    .screenPadding()
 
                     if let balanceCoordinator = accountsViewModel.balanceCoordinator {
                         AccountSelectorView(

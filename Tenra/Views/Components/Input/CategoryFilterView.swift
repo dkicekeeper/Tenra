@@ -168,13 +168,14 @@ struct CategoryFilterView: View {
 
     /// Plated like the category rows (`CategoryRow`): the icon in the category's colour on a
     /// pale circle of it. A category deleted since keeps the neutral folder, on a neutral
-    /// plate. `xl`, the size the category icons here already had.
+    /// plate. 44 pt (`Tile.sm`), the categories list's size: from 44 pt an `Icon` is a tile
+    /// and keeps its plate (DesignKit 7.0.0).
     private func iconConfig(for categoryName: String) -> IconConfig {
         if let custom = customCategories.first(where: { $0.name == categoryName }) {
             return .custom(
                 source: custom.iconSource,
                 style: .circle(
-                    size: AppIconSize.xl,
+                    size: AppIconSize.Tile.sm,
                     tint: .monochrome(custom.color),
                     backgroundColor: AppColors.pale(custom.color)
                 )
@@ -183,7 +184,7 @@ struct CategoryFilterView: View {
         return .custom(
             source: .sfSymbol("folder"),
             style: .circle(
-                size: AppIconSize.xl,
+                size: AppIconSize.Tile.sm,
                 tint: .monochrome(AppColors.textSecondary),
                 backgroundColor: AppColors.Status.neutralPale
             )

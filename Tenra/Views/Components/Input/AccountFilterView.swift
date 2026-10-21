@@ -113,21 +113,22 @@ struct AccountFilterView: View {
     /// (`Icon(source:size:)`). An SF Symbol, which the account rows draw in the accent,
     /// sits on a pale accent circle, the category-row plate: the account rows' `bgCard`
     /// plate is the colour of this sheet's grouped rows in dark mode and would vanish. No
-    /// icon: the placeholder on a neutral plate. `xl`, the size these icons already had.
+    /// icon: the placeholder on a neutral plate. 44 pt (`Tile.sm`), the accounts list's size:
+    /// from 44 pt an `Icon` is a tile and keeps its plate (DesignKit 7.0.0).
     private func iconConfig(for account: Account) -> IconConfig {
         let style: IconStyle
         switch account.iconSource {
         case .brandService:
-            style = .serviceLogo(size: AppIconSize.xl)
+            style = .serviceLogo(size: AppIconSize.Tile.sm)
         case .sfSymbol:
             style = .circle(
-                size: AppIconSize.xl,
+                size: AppIconSize.Tile.sm,
                 tint: .monochrome(AppColors.accent),
                 backgroundColor: AppColors.pale(AppColors.accent)
             )
         case .none:
             style = .circle(
-                size: AppIconSize.xl,
+                size: AppIconSize.Tile.sm,
                 tint: .monochrome(AppColors.textSecondary),
                 backgroundColor: AppColors.Status.neutralPale
             )

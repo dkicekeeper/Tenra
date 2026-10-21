@@ -373,7 +373,9 @@ decided, empty = "no subcategory"), and the merchant as Wallet last wrote it, fo
 - Changing the category or subcategory of such a transaction in the app corrects an already
   remembered merchant (`TransactionEditCoordinator` → `correct`).
 - **Settings → Wallet → Merchants** (`MerchantCategoriesView`) lists the
-  remembered merchants with their category and subcategories. Tap to reassign
+  remembered merchants with their category and subcategories, each with its logo (found or
+  picked, while the Settings switch is on, as on its transaction rows) or else its category's
+  icon. Tap to reassign
   (`MerchantCategoryEditView`, the transaction form's category and subcategory pickers →
   `reassign`), swipe or "Forget merchant" to forget (`forget`: the next payment asks again).
 - Pinned by `MerchantCategoryMemoryTests` (normalization, subcategory decisions, the list,

@@ -17,6 +17,8 @@ struct MerchantCategoriesView: View {
 
     @State private var memory = MerchantCategoryMemory.shared
     @State private var opened: MerchantCategoryMemory.Merchant?
+    /// Settings → Wallet → "Merchant logos" (on by default), as on the merchant's transaction rows.
+    @AppStorage(MerchantLogoStore.enabledKey) private var showsMerchantLogos = true
 
     var body: some View {
         Group {
@@ -57,7 +59,7 @@ struct MerchantCategoriesView: View {
         return Button {
             opened = merchant
         } label: {
-            UniversalRow(config: .settings, leadingIcon: iconConfig(for: category)) {
+            UniversalRow(config: .settings, leadingIcon: iconConfig(for: merchant, category: category)) {
                 VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                     Text(MerchantLogoStore.shared.customName(forDescription: merchant.displayName)
                          ?? MerchantName.displayName(merchant.displayName))
@@ -101,10 +103,22 @@ struct MerchantCategoriesView: View {
         return ([category.name] + [subcategoryNames.joined(separator: ", ")]).joined(separator: " · ")
     }
 
-    /// Plated like the category filter rows: the icon in the category's colour on a pale
-    /// circle of it; a deleted category shows the neutral folder. 44 pt (`Tile.sm`), the size of
-    /// the accounts, deposits and categories lists.
-    private func iconConfig(for category: CustomCategory?) -> IconConfig {
+    /// The merchant's logo, found or picked (when logos are on), as its transaction rows show
+    /// it; else plated like the category filter rows: the icon in the category's colour on a
+    /// pale circle of it; a deleted category shows the neutral folder. 44 pt (`Tile.sm`), the
+    /// size of the accounts, deposits and categories lists.
+    private func iconConfig(for merchant: MerchantCategoryMemory.Merchant, category: CustomCategory?) -> IconConfig {
+        if showsMerchantLogos,
+           let logo = MerchantLogoStore.shared.iconSource(forDescription: merchant.displayName) {
+            return .custom(
+                source: logo,
+                style: .circle(
+                    size: AppIconSize.Tile.sm,
+                    tint: .original,
+                    backgroundColor: category.map { AppColors.pale($0.color) } ?? AppColors.Status.neutralPale
+                )
+            )
+        }
         if let category {
             return .custom(
                 source: category.iconSource,

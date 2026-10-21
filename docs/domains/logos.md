@@ -141,7 +141,7 @@ General → "Merchant logos" (`MerchantLogoStore.enabledKey`, on by default). Pl
   a merchant, `MerchantCategoryEditView`, an `EditableHeroSection` on top): an icon or logo of
   their own (`State.custom`, never replaced by a lookup), "Show logo" off (`State.hidden`: the
   category icon stays and no lookup runs; on again goes back to the lookup; the merchant's screen
-  follows the Settings switch too) and a name, which the merchant's
+  and its row in the Wallet merchants list follow the Settings switch too) and a name, which the merchant's
   transaction rows show instead of the bank's text (`TransactionCardView(note:)`; without a
   name the row is as before). "Forget merchant" drops both.
 - Pinned by `MerchantLogoTests`.

@@ -1708,7 +1708,7 @@
 "pro.feature.accounts" = "Безлимитные счета";
 "pro.feature.voice" = "Голосовой ввод";
 "pro.feature.import" = "Импорт выписок PDF и CSV";
-"pro.feature.deposits" = "Вклады с начислением процентов";
+"pro.feature.deposits" = "Депозиты с начислением процентов";
 "pro.feature.loans" = "Кредиты с графиком платежей";
 "pro.feature.debts" = "Личные долги";
 

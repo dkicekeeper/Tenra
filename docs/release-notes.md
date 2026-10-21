@@ -1,6 +1,7 @@
 # Tenra 1.7: What's New (ASC, 13 storefront locales)
 
-Version 1.7, drafted 2026-10-20 from PR #80 (`claude/auto-capture`, TestFlight 1.7 builds 32-34),
+Version 1.7, drafted 2026-10-20 from PR #80 (`claude/auto-capture`, in `main` since 2026-10-21),
+updated 2026-10-21 with the new Settings and DesignKit 8.0 (PRs #84-#88, TestFlight build 49),
 before the device check of [plan-auto-capture.md](plan-auto-capture.md) §8: change it with what
 that check changes. `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes each
 block into App Store Connect → Tenra → 1.7 → the locale → "What's New in This Version". No em
@@ -18,6 +19,13 @@ New since 1.6 (in the store since 2026-10-19):
 - A bank PDF opened in Tenra: a statement or a receipt (import behind Tenra Pro, or Ten), a
   receipt repaying a personal debt; the statement reminder; Apple Pay payments missing from a
   statement.
+- DesignKit 8.0: forms, lists, filters, History's days and Settings on glass sections; one set of
+  actions on every list (tap opens, touch and hold for Edit and Delete, select several, drag to
+  reorder; no swipes), reordering for deposits, loans, debts, goals and subscriptions (CoreData
+  v16: an order on debts and subscriptions).
+- Settings: Tenra Pro page (hero on the aurora), a Wallet section, the Wallet setup guide step by
+  step with a picture of each Shortcuts screen; Siri's example phrases gone.
+- The cloud builds compile with Xcode 27, so 1.7 is the first store build with the iOS 27 UI.
 
 ## en-US
 
@@ -30,6 +38,8 @@ What's new in Tenra 1.7:
 • New insights: your top merchant, and a merchant whose average check keeps going up.
 • Open a bank PDF in Tenra from any app: a statement is imported, a payment receipt becomes one expense, and a transfer to someone you owe can repay that debt (import with Tenra Pro).
 • A statement reminder, every week or as you choose, and the statement check shows Apple Pay payments your bank does not list.
+• A fresh look: screens, forms and lists on glass cards. Every list works the same way: touch and hold to edit or delete, select several at once, and drag deposits, loans, debts, goals and subscriptions into your own order.
+• Settings, reorganized: Tenra Pro has a page of its own, Apple Pay payments get their own Wallet section, and the Wallet setup guide goes step by step, with a picture of every screen.
 ```
 
 ## ru
@@ -43,6 +53,8 @@ What's new in Tenra 1.7:
 • Новые инсайты: топ-продавец и продавец, у которого растёт средний чек.
 • Откройте PDF банка в Tenra из любого приложения: выписка импортируется, чек об оплате станет одним расходом, а перевод тому, кому вы должны, может погасить долг (импорт в Tenra Pro).
 • Напоминание о выписке, раз в неделю или как вам удобно, а сверка выписки покажет оплаты Apple Pay, которых нет у банка.
+• Новый вид: экраны, формы и списки на стеклянных карточках. Все списки работают одинаково: удерживайте, чтобы изменить или удалить, выбирайте несколько сразу и расставляйте депозиты, кредиты, долги, цели и подписки в своём порядке.
+• Настройки по-новому: у Tenra Pro своя страница, у оплат Apple Pay свой раздел Wallet, а инструкция по автоматизации Wallet идёт по шагам, с картинкой каждого экрана.
 ```
 
 ## de-DE
@@ -56,6 +68,8 @@ Neu in Tenra 1.7:
 • Neue Hinweise: Ihr Top-Händler und ein Händler, dessen durchschnittlicher Bon immer weiter steigt.
 • Öffnen Sie ein Bank-PDF aus jeder App in Tenra: Ein Kontoauszug wird importiert, ein Zahlungsbeleg wird zu einer Ausgabe, und eine Überweisung an jemanden, dem Sie Geld schulden, kann diese Schuld tilgen (Import mit Tenra Pro).
 • Eine Erinnerung an den Kontoauszug, jede Woche oder wie Sie möchten, und der Abgleich zeigt Apple Pay-Zahlungen, die Ihre Bank nicht aufführt.
+• Ein frischer Look: Bildschirme, Formulare und Listen auf Glaskarten. Alle Listen funktionieren gleich: gedrückt halten zum Bearbeiten oder Löschen, mehrere auf einmal auswählen und Sparkonten, Kredite, Schulden, Sparziele und Abos in Ihre eigene Reihenfolge ziehen.
+• Neu geordnete Einstellungen: Tenra Pro hat eine eigene Seite, Apple Pay-Zahlungen einen eigenen Wallet-Bereich, und die Anleitung zur Wallet-Automation führt Schritt für Schritt, mit einem Bild jedes Bildschirms.
 ```
 
 ## es-ES
@@ -69,6 +83,8 @@ Novedades de Tenra 1.7:
 • Nuevos análisis: el comercio en el que más gastas, y un comercio cuyo ticket medio no deja de subir.
 • Abre un PDF del banco en Tenra desde cualquier app: un extracto se importa, un recibo de pago se convierte en un gasto, y una transferencia a alguien a quien debes dinero puede saldar esa deuda (importación con Tenra Pro).
 • Un recordatorio del extracto, cada semana o cuando prefieras, y la revisión del extracto muestra los pagos con Apple Pay que tu banco no incluye.
+• Un aspecto renovado: pantallas, formularios y listas en tarjetas de cristal. Todas las listas funcionan igual: mantén pulsado para editar o eliminar, selecciona varios a la vez y ordena a tu manera depósitos, préstamos, deudas, metas y suscripciones arrastrándolos.
+• Ajustes reorganizados: Tenra Pro tiene su propia página, los pagos con Apple Pay su propia sección Wallet, y la guía de la automatización de Wallet va paso a paso, con una imagen de cada pantalla.
 ```
 
 ## es-MX
@@ -82,6 +98,8 @@ Novedades de Tenra 1.7:
 • Nuevos análisis: el comercio en el que más gastas, y un comercio cuyo ticket promedio no deja de subir.
 • Abre un PDF del banco en Tenra desde cualquier app: un estado de cuenta se importa, un comprobante de pago se convierte en un gasto, y una transferencia a alguien a quien le debes puede saldar esa deuda (importación con Tenra Pro).
 • Un recordatorio del estado de cuenta, cada semana o cuando prefieras, y la revisión del estado de cuenta muestra los pagos con Apple Pay que tu banco no incluye.
+• Un aspecto renovado: pantallas, formularios y listas en tarjetas de cristal. Todas las listas funcionan igual: mantén presionado para editar o eliminar, selecciona varios a la vez y ordena a tu manera depósitos, préstamos, deudas, metas y suscripciones arrastrándolos.
+• Configuración reorganizada: Tenra Pro tiene su propia página, los pagos con Apple Pay su propia sección Wallet, y la guía de la automatización de Wallet va paso a paso, con una imagen de cada pantalla.
 ```
 
 ## fr-FR
@@ -95,6 +113,8 @@ Nouveautés de Tenra 1.7 :
 • Nouveaux conseils : votre premier commerçant, et un commerçant dont le panier moyen ne cesse d'augmenter.
 • Ouvrez un PDF de votre banque dans Tenra depuis n'importe quelle app : un relevé est importé, un reçu de paiement devient une dépense, et un virement à quelqu'un à qui vous devez de l'argent peut rembourser cette dette (import avec Tenra Pro).
 • Un rappel de relevé, chaque semaine ou quand vous le souhaitez, et la vérification du relevé montre les paiements Apple Pay que votre banque n'affiche pas.
+• Un nouveau look : écrans, formulaires et listes sur des cartes en verre. Toutes les listes fonctionnent de la même façon : maintenez le doigt pour modifier ou supprimer, sélectionnez-en plusieurs à la fois et faites glisser comptes épargne, prêts, dettes, objectifs et abonnements dans l'ordre de votre choix.
+• Des réglages réorganisés : Tenra Pro a sa propre page, les paiements Apple Pay leur propre section Wallet, et le guide de l'automatisation Wallet avance étape par étape, avec une image de chaque écran.
 ```
 
 ## fr-CA
@@ -108,6 +128,8 @@ Nouveautés de Tenra 1.7 :
 • Nouveaux conseils : votre premier commerçant, et un commerçant dont la facture moyenne ne cesse d'augmenter.
 • Ouvrez un PDF de votre institution financière dans Tenra depuis n'importe quelle app : un relevé est importé, un reçu de paiement devient une dépense, et un virement à quelqu'un à qui vous devez de l'argent peut rembourser cette dette (importation avec Tenra Pro).
 • Un rappel de relevé, chaque semaine ou quand vous le souhaitez, et la vérification du relevé montre les paiements Apple Pay que votre institution financière n'affiche pas.
+• Un nouveau look : écrans, formulaires et listes sur des cartes en verre. Toutes les listes fonctionnent de la même façon : maintenez le doigt pour modifier ou supprimer, sélectionnez-en plusieurs à la fois et faites glisser comptes épargne, prêts, dettes, objectifs et abonnements dans l'ordre de votre choix.
+• Des réglages réorganisés : Tenra Pro a sa propre page, les paiements Apple Pay leur propre section Wallet, et le guide de l'automatisation Wallet avance étape par étape, avec une image de chaque écran.
 ```
 
 ## tr
@@ -121,6 +143,8 @@ Tenra 1.7'deki yenilikler:
 • Yeni öngörüler: en çok harcadığın işyeri ve ortalama sepeti sürekli büyüyen bir işyeri.
 • Herhangi bir uygulamadan bir banka PDF'ini Tenra'da aç: hesap özeti içe aktarılır, ödeme dekontu tek bir gidere dönüşür, borçlu olduğun birine yaptığın havale de o borcu kapatabilir (içe aktarma Tenra Pro ile).
 • Haftalık ya da istediğin sıklıkta bir hesap özeti hatırlatıcısı; hesap özeti kontrolü de bankanın listelemediği Apple Pay ödemelerini gösterir.
+• Yeni bir görünüm: ekranlar, formlar ve listeler cam kartlarda. Tüm listeler aynı şekilde çalışır: düzenlemek ya da silmek için basılı tut, birkaçını aynı anda seç; mevduatları, kredileri, borçları, hedefleri ve abonelikleri sürükleyerek kendi sırana koy.
+• Yeniden düzenlenen Ayarlar: Tenra Pro'nun kendi sayfası, Apple Pay ödemelerinin kendi Wallet bölümü var; Wallet otomasyonu rehberi de her ekranın resmiyle adım adım ilerler.
 ```
 
 ## pt-BR
@@ -134,6 +158,8 @@ Novidades do Tenra 1.7:
 • Novos insights: o estabelecimento com mais gastos e um estabelecimento cujo tíquete médio não para de subir.
 • Abra um PDF do banco no Tenra a partir de qualquer app: um extrato é importado, um comprovante de pagamento vira uma despesa, e uma transferência para alguém a quem você deve pode quitar essa dívida (importação com o Tenra Pro).
 • Um lembrete de extrato, toda semana ou como preferir, e a conferência do extrato mostra os pagamentos com Apple Pay que o seu banco não lista.
+• Um visual renovado: telas, formulários e listas em cartões de vidro. Todas as listas funcionam do mesmo jeito: toque e segure para editar ou apagar, selecione vários de uma vez e arraste depósitos, empréstimos, dívidas, metas e assinaturas para a sua própria ordem.
+• Ajustes reorganizados: o Tenra Pro tem uma página própria, os pagamentos com Apple Pay uma seção Wallet só deles, e o guia da automação da Wallet vai passo a passo, com uma imagem de cada tela.
 ```
 
 ## it
@@ -147,6 +173,8 @@ Novità di Tenra 1.7:
 • Nuovi suggerimenti: il tuo esercente principale e un esercente il cui scontrino medio continua a salire.
 • Apri in Tenra un PDF della banca da qualsiasi app: un estratto conto viene importato, una ricevuta di pagamento diventa una spesa, e un bonifico a qualcuno a cui devi dei soldi può saldare quel debito (importazione con Tenra Pro).
 • Un promemoria per l'estratto conto, ogni settimana o quando preferisci, e il controllo dell'estratto mostra i pagamenti Apple Pay che la tua banca non riporta.
+• Un aspetto nuovo: schermate, moduli ed elenchi su schede di vetro. Tutti gli elenchi funzionano allo stesso modo: tieni premuto per modificare o eliminare, selezionane diversi insieme e trascina depositi, prestiti, debiti, obiettivi e abbonamenti nell'ordine che preferisci.
+• Impostazioni riorganizzate: Tenra Pro ha una pagina tutta sua, i pagamenti Apple Pay una sezione Wallet dedicata, e la guida all'automazione Wallet procede passo dopo passo, con un'immagine di ogni schermata.
 ```
 
 ## uk
@@ -160,6 +188,8 @@ Novità di Tenra 1.7:
 • Нові інсайти: головний продавець і продавець, у якого зростає середній чек.
 • Відкрийте PDF банку в Tenra з будь-якого застосунку: виписка імпортується, квитанція про оплату стане однією витратою, а переказ тому, кому ви винні, може погасити борг (імпорт у Tenra Pro).
 • Нагадування про виписку, щотижня чи як вам зручно, а звірка виписки покаже оплати Apple Pay, яких немає в банку.
+• Новий вигляд: екрани, форми та списки на скляних картках. Усі списки працюють однаково: утримуйте, щоб змінити чи видалити, вибирайте кілька одразу й розставляйте депозити, кредити, борги, цілі та підписки у своєму порядку.
+• Налаштування по-новому: у Tenra Pro своя сторінка, в оплат Apple Pay свій розділ Wallet, а інструкція з автоматизації Wallet іде крок за кроком, з картинкою кожного екрана.
 ```
 
 ## ja
@@ -173,6 +203,8 @@ Tenra 1.7 の新機能:
 • 新しいインサイト: 支出トップの店舗と、平均購入額が上がり続けている店舗。
 • どのアプリからでも銀行の PDF を Tenra で開けます。明細書は読み込まれ、支払いのレシートは1件の支出になり、借りている相手への振込でその借りを返済できます(読み込みは Tenra Pro)。
 • 毎週または好きな間隔で明細書のリマインダー。明細書のチェックでは、銀行の明細にない Apple Pay の支払いが分かります。
+• 新しいデザイン: 画面、フォーム、リストがガラスのカードになりました。どのリストも同じ操作です。長押しで編集や削除、まとめて選択ができ、預金、ローン、貸し借り、貯金目標、サブスクリプションはドラッグで好きな順に並べ替えられます。
+• 設定を整理しました。Tenra Pro は専用ページに、Apple Pay の支払いは Wallet セクションにまとまり、Wallet オートメーションの設定ガイドは各画面の図付きでステップごとに進みます。
 ```
 
 ## ko
@@ -186,22 +218,42 @@ Tenra 1.7의 새로운 기능:
 • 새로운 인사이트: 지출이 가장 많은 가맹점과 평균 결제액이 계속 늘고 있는 가맹점.
 • 어떤 앱에서든 은행 PDF를 Tenra로 열어 보세요. 명세서는 가져오고, 결제 영수증은 지출 한 건이 되고, 빚진 사람에게 보낸 이체로 그 빚을 갚을 수 있어요(가져오기는 Tenra Pro).
 • 매주 또는 원하는 간격으로 명세서 알림을 받고, 명세서 확인에서 은행 내역에 없는 Apple Pay 결제를 볼 수 있어요.
+• 새로운 디자인: 화면, 양식, 목록이 유리 카드로 바뀌었어요. 모든 목록이 똑같이 동작해요. 길게 눌러 편집하거나 삭제하고, 여러 개를 한 번에 선택하고, 예금, 대출, 빌린 돈, 저축 목표, 구독을 끌어서 원하는 순서로 정리할 수 있어요.
+• 새로 정리한 설정: Tenra Pro에 전용 페이지가 생기고, Apple Pay 결제는 Wallet 섹션에 모였어요. Wallet 자동화 설정 가이드는 화면마다 그림과 함께 단계별로 안내해요.
 ```
 
 ## Submission checklist (1.7)
 
-1. **Device check** of the newest TestFlight build ([plan-auto-capture.md](plan-auto-capture.md) §8 and
-   the "not yet checked" list of PR #80), then fix what it finds.
-2. **Merge PR #80** into `main` once CI is green.
-3. **The store build** is a TestFlight build from GitHub: since 2026-10-21 it is built with
-   Xcode 27 and has the iOS 27 code paths ([asc.md](asc.md)). Check that build on the iOS 27
-   iPhone.
-4. **What's New**: this file, after step 1 (`prepare-version`).
-5. **Screenshots** of the main page from 1.7 (the decision of 2026-10-19 in
-   [promotion-plan.md](promotion-plan.md) §7).
-6. **App Privacy**: unchanged. Logo lookups by a merchant's name (logo.dev, Apple Pay merchants
+1. **Device check** of the newest TestFlight build (49 on 2026-10-21) on the iOS 27 iPhone, then
+   fix what it finds:
+   - the Wallet automation ([plan-auto-capture.md](plan-auto-capture.md) §8 and the "not yet
+     checked" list of PR #80), set up by the new step-by-step guide;
+   - **the update from 1.6** (CoreData v15 → v16, lightweight): install the store's 1.6 with data,
+     then the TestFlight build over it; debts and subscriptions keep their order, nothing lost;
+   - the lists' one set of actions (touch and hold, select, reorder; no swipes left anywhere), the
+     glass sections, the Tenra Pro page in light and dark, the Wallet section.
+2. **The store build** is the TestFlight build from GitHub that passed step 1: built with Xcode 27,
+   it has the iOS 27 code paths ([asc.md](asc.md)).
+3. **What's New**: this file, after step 1 (`prepare-version` with that build).
+4. **Screenshots** of the main page from 1.7 (the decision of 2026-10-19 in
+   [promotion-plan.md](promotion-plan.md) §7): Actions → Screenshots, now on iOS 27 (iPhone 17 Pro
+   made by the workflow). 13 locales take about 160 minutes on the Xcode 27 runner, so two runs of
+   six or seven locales each, within the 180-minute limit.
+5. **App Privacy**: unchanged. Logo lookups by a merchant's name (logo.dev, Apple Pay merchants
    only, never a sole proprietor) send only a company name, as the privacy policy already says
    (`docs/public/privacy-policy.html`, Logos).
-7. **App Review notes**: how to try the Wallet automation without a real payment (Shortcuts →
-   the "Log an Apple Pay payment" action run by hand with an amount and a merchant), and that
-   nothing leaves the device for it but a logo lookup by a shop's name.
+6. **App Review notes** (App Store Connect → 1.7 → App Review Information → Notes), in English:
+
+```
+Apple Pay capture (new in 1.7) uses the Shortcuts "Wallet" personal automation, which fires only
+on a real contactless payment. To try it without one: open Shortcuts, create a new shortcut, add
+the Tenra action "Log an Apple Pay payment", fill in an amount (e.g. 1500) and a merchant
+(e.g. "Coffee Boom") and run it. The payment appears in Tenra at once, under the category the app
+guessed, and waits in Settings > Wallet > To review. The step-by-step setup guide for the real
+automation is in Settings > Siri & Shortcuts.
+
+Nothing about the payment leaves the device. The only network request is a logo lookup by the
+shop's name (never a person's name), as described in the privacy policy.
+
+Tenra Pro features can be tried with a sandbox purchase on the paywall (Settings > Tenra Pro).
+```

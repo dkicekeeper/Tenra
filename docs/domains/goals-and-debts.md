@@ -4,7 +4,7 @@ Savings goals and personal debts: two small domains with their own CoreData rows
 in Finances, list, detail and edit screens. They read accounts but never write them: a goal or
 a debt never changes an account balance or a transaction. Goals are free; debts are Tenra Pro.
 Ten (the assistant) reads and drafts them in phase 4b of
-[plan-ai-assistant.md](../plan-ai-assistant.md).
+[assistant.md](assistant.md).
 
 ## Model
 

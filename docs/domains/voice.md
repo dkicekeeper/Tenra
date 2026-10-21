@@ -20,7 +20,7 @@ Present via `.sheet()`, **NEVER via `.navigationDestination()`** (nested `Naviga
   opened with are only its starting point)
 - `editsDate: true` adds the add form's date buttons (`dateButtonsSafeArea`); the voice flow
   keeps the date it heard. The assistant's confirm card uses both to edit a draft
-  (`AgentDraftEditor`, [plan-ai-assistant.md](../plan-ai-assistant.md) §3.1)
+  (`AgentDraftEditor`, [assistant.md](assistant.md) §3)
 
 ## Live preview cards are not `TransactionCard`
 
@@ -121,7 +121,7 @@ its own `VoiceInputService`, the 5-second silence stop. Stopped, it shows what i
 Ten" sends it as a message, "Say it again" records anew. There is no local preview: a plain
 record ("кофе 1500 и такси 2300") is drafted on the phone by the assistant's FastPath
 (`AgentFastPath`, the same `parseMulti`), anything else goes to the model
-([plan-ai-assistant.md](../plan-ai-assistant.md) §3.8).
+([assistant.md](assistant.md) §7).
 
 Screenshot mode (`isScreenshotDemo`) passes no level: the glow and the orb breathe on their own.
 

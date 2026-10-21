@@ -5,7 +5,7 @@ import type { KVLike } from "./quota";
 
 // App Attest (Apple's DeviceCheck): proof that a request comes from the real Tenra app on a
 // real Apple device. It is what lets people without Pro use the cloud brain: their quota is
-// counted per attested key, which a script cannot mint (docs/plan-ai-assistant.md §5, §6).
+// counted per attested key, which a script cannot mint (docs/domains/assistant.md §8, §11).
 //
 //   GET  /v1/attest/challenge            → {challenge}       one-time, 5 minutes
 //   POST /v1/attest {keyId, attestation, challenge}          once per install

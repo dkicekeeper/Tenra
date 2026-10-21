@@ -201,7 +201,7 @@ JSON-ом на строке, как взносы у целей. `AssetRepository
 
 ## 7. Тэн
 
-По образцу целей и долгов ([plan-ai-assistant.md](plan-ai-assistant.md), фаза 4b):
+По образцу целей и долгов ([domains/goals-and-debts.md](domains/goals-and-debts.md), [domains/assistant.md](domains/assistant.md) §3):
 - **Контекст:** строка `assets:` в `<app_context>` (id, имя, валюта, без сумм).
 - **Чтение:** `get_assets` (стоимость, дата оценки, устарела ли, цена покупки, прирост, рост в
   год, аренда и содержание за 12 мес, доходность, своя доля) и `get_net_worth` (разбивка

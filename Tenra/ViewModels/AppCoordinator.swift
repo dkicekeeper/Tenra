@@ -117,8 +117,8 @@ class AppCoordinator {
     }
 
     /// The AI assistant's thread, made on first use; nil while its server is not configured
-    /// (Info.plist `TenraAssistantURL`, docs/plan-ai-assistant.md §5.1). Without Pro it spends
-    /// the free allowance, and the server needs App Attest (§3.7).
+    /// (Info.plist `TenraAssistantURL`, docs/domains/assistant.md §12). Without Pro it spends
+    /// the free allowance, and the server needs App Attest (§8).
     func assistant() -> AssistantViewModel? {
         if let assistantModel { return assistantModel }
         guard let url = AgentConfig.serverURL else { return nil }

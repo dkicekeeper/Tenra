@@ -2,7 +2,7 @@
 //  AgentThreadStore.swift
 //  Tenra
 //
-//  The assistant's threads on the phone (docs/plan-ai-assistant.md §3.4): CoreData v13,
+//  The assistant's threads on the phone (docs/domains/assistant.md §5): CoreData v13,
 //  `AgentThreadEntity`, the conversation as JSON. The server keeps nothing, so this is the only
 //  copy. The latest thread comes back when the assistant opens, a new chat starts another, and
 //  only the latest `keep` threads stay; the person can delete one from the assistant's home.

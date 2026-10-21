@@ -2,7 +2,7 @@
 //  AssistantView.swift
 //  Tenra
 //
-//  The assistant's home, the action tab's page (docs/plan-ai-assistant.md §1, §3.6): Ten in the
+//  The assistant's home, the action tab's page (docs/domains/assistant.md §1, §9): Ten in the
 //  greeting, ready-made questions (or questions about the screen "Ask Ten" came from,
 //  AssistantEntryPoints), the latest chats and the field. Whatever goes from here starts a new
 //  chat, pushed as a page of its own (AssistantChatView): a question, a voice message, an
@@ -14,7 +14,7 @@
 //  sheet (App Review 5.1.2(i)) and goes once they turn the cloud mode on; a plain record is
 //  drafted on the phone and needs none (FastPath).
 //
-//  The field carries what used to sit behind "+" (§3.8): the paperclip's menu attaches a
+//  The field carries what used to sit behind "+" (§7): the paperclip's menu attaches a
 //  receipt (scanner or photos) or a statement (PDF, or CSV into its own import flow), read on
 //  the phone into a summary card (AssistantAttachmentSources, AssistantAttachmentCard); the
 //  microphone (while the field is empty) opens the voice sheet, whose words go as a message

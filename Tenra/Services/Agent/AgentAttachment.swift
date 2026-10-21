@@ -2,7 +2,7 @@
 //  AgentAttachment.swift
 //  Tenra
 //
-//  A receipt or a statement attached in the assistant's chat (docs/plan-ai-assistant.md §3.8).
+//  A receipt or a statement attached in the assistant's chat (docs/domains/assistant.md §7).
 //  It is read on the phone by the import pipelines (docs/domains/import.md) and never leaves it:
 //  the chat shows a summary card built without the model, "Review" opens the app's own review
 //  screen, and the model sees only the summary (counts, period, totals by category, flags) in an

@@ -2,7 +2,7 @@
 //  AssistantDestinationView.swift
 //  Tenra
 //
-//  Where an `open` block of a reply leads (docs/plan-ai-assistant.md §3.3): the app's own
+//  Where an `open` block of a reply leads (docs/domains/assistant.md §4): the app's own
 //  screens, pushed on the assistant's navigation stack, built the way the screens that own
 //  them build them. The model names the destination and, for an account or a category, its id
 //  from <app_context>; an id that matches nothing (deleted since, or made up) shows an empty

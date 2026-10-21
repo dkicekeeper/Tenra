@@ -4,7 +4,7 @@
 //
 //  What a loan costs from today, and what it would cost refinanced, with an extra payment every
 //  month or with an early repayment now. Pure arithmetic on the remaining principal, the rate
-//  and the payment, for the assistant's `simulate_loan` (docs/plan-ai-assistant.md §3.1); the
+//  and the payment, for the assistant's `simulate_loan` (docs/domains/assistant.md §3); the
 //  same formulas run in server/assistant/eval/simulator.ts, keep them in step.
 //
 

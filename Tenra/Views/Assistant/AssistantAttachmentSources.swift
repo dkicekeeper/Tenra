@@ -2,7 +2,7 @@
 //  AssistantAttachmentSources.swift
 //  Tenra
 //
-//  Where an attachment comes from (docs/plan-ai-assistant.md §3.8): the paperclip's menu
+//  Where an attachment comes from (docs/domains/assistant.md §7): the paperclip's menu
 //  (`AssistantAttachmentMenu`) picks a source, and this modifier presents it and reads what was
 //  picked with the import pipelines (docs/domains/import.md), on the phone:
 //  - a receipt from the camera scanner or from photos: VisionDocumentExtractor, then

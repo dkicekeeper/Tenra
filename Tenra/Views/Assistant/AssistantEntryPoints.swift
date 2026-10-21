@@ -2,7 +2,7 @@
 //  AssistantEntryPoints.swift
 //  Tenra
 //
-//  Asking Ten from where the question comes up (docs/plan-ai-assistant.md §3.8, context entry
+//  Asking Ten from where the question comes up (docs/domains/assistant.md §7, context entry
 //  points): an account, a category, an insight, the history, a goal, a debt. The screen names its topic
 //  (`AppCoordinator.ask(about:)`), the assistant opens over the tabs with ready-made questions
 //  about it in place of its general ones; nothing is sent before the person picks one or types.

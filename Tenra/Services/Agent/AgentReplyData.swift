@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Reads the figures of a reply block from the tool results it points at (`source` = the
-//  tool_use id, `path` = a dotted path inside that result; docs/plan-ai-assistant.md §3.3). The
+//  tool_use id, `path` = a dotted path inside that result; docs/domains/assistant.md §4). The
 //  model never writes a number: every amount on screen comes from here, from the phone's own
 //  tool results, so a block whose reference does not resolve shows nothing rather than a guess.
 //

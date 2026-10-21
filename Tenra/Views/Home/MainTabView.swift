@@ -5,7 +5,7 @@
 //  Root tab bar using the iOS 26 Tab API: Home | Analytics | Finances and an action tab.
 //
 //  Where the assistant can run (its server set in Info.plist `TenraAssistantURL`, App Attest on
-//  the device; docs/plan-ai-assistant.md §3.8), the action tab is its mascot (Ten) and the
+//  the device; docs/domains/assistant.md §7), the action tab is its mascot (Ten) and the
 //  assistant is that tab's page; voice and import are reached from its field. "Ask Ten" on a
 //  screen, a message Ten wrote on Home and a file opened in Tenra switch to it.
 //

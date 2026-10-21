@@ -2,7 +2,7 @@
 //  AssistantVoiceSheet.swift
 //  Tenra
 //
-//  Speaking to the assistant (docs/plan-ai-assistant.md §3.8, "voice in the chat"): the
+//  Speaking to the assistant (docs/domains/assistant.md §7, "voice in the chat"): the
 //  composer's microphone opens this sheet, which listens with the voice screen's own pieces
 //  (the edge glow, the "Speak..." prompt, the orb that stops it) and shows the words as they
 //  are recognized. Stopped, by the orb or after five seconds without new words, it shows what

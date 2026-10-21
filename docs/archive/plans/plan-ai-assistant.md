@@ -1,5 +1,8 @@
 # План: Tenra как ИИ-помощник по финансам
 
+> В архиве с 2026-10-21. Как Тэн устроен сейчас: [domains/assistant.md](../../domains/assistant.md);
+> открытая работа (модели Apple и Siri iOS 27): [plan-assistant-ios27.md](../../plan-assistant-ios27.md).
+
 > Статус (сверено с кодом 2026-10-21): Тэн в магазине с 1.6 (19.10), фазы 0-4 сделаны, сервер на
 > Cloudflare (Haiku 5.5, промпт 2026-10-17.4). Открыто (§5): мозги Apple (ApplePCC,
 > AppleOnDevice) и Siri iOS 27, которые с 21.10 можно собирать в облаке на Xcode 27, entitlement
@@ -398,7 +401,7 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
 ### 3.8 Вложения и голос через ассистента
 
 - Распознавание остаётся на телефоне и идёт существующими конвейерами, правила
-  [domains/import.md](domains/import.md) не меняются:
+  [domains/import.md](../../domains/import.md) не меняются:
   - голос: `VoiceInputService` → `VoiceInputParser.parseMulti` → `TransactionDraftService`
     (FastPath, без LLM);
   - чек: `VisionDocumentExtractor` → `ReceiptInterpreter`;
@@ -498,7 +501,7 @@ SwiftUI `Canvas` и `TimelineView` от 34 pt; шлейфы и 120 Гц чере
       `quotaLimitReached` (с `resetDate`), `serviceUnavailable`. `supportedLanguages` отдаётся во
       время работы, так что есть ли русский, покажет только телефон на iOS 27.
 - [x] Собирать код iOS 27 (ApplePCC, Siri iOS 27) в облаке: с 21.10 CI и TestFlight идут на
-      раннере GitHub `xcode-27` с Xcode 27.0 ([asc.md](asc.md)), код за `#if compiler(>=6.4)`
+      раннере GitHub `xcode-27` с Xcode 27.0 ([asc.md](../../asc.md)), код за `#if compiler(>=6.4)`
       собирается и тестируется там.
 - [ ] Запросить entitlement Private Cloud Compute для аккаунта (вместе с ApplePCC, см. ниже).
 - [x] Имя персонажа: Тэн (Ten).

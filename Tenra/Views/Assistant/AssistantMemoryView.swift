@@ -2,7 +2,7 @@
 //  AssistantMemoryView.swift
 //  Tenra
 //
-//  "What Ten knows about me" (docs/plan-ai-assistant.md §3.4), from Settings → Assistant: the
+//  "What Ten knows about me" (docs/domains/assistant.md §5), from Settings → Assistant: the
 //  facts the assistant remembers (AgentMemory), oldest first. A tap opens one to change it, a
 //  swipe forgets it, "+" adds one by hand, "Forget everything" clears the list. Ten sees them
 //  in every chat; facts it proposes in a chat arrive here once the person saves them.

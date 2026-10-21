@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  One assistant reply: its blocks top to bottom as the app's own cards and rows
-//  (docs/plan-ai-assistant.md §3.3). Figures come from the tool results by reference
+//  (docs/domains/assistant.md §4). Figures come from the tool results by reference
 //  (AgentReplyData); lists resolve back to the app's models by id, so a transaction is a
 //  `TransactionCardView`, a budget a `BudgetProgressRow`, a subscription a `SubscriptionCard`
 //  and an insight an `InsightsCardView`, exactly as everywhere else in the app. A block whose
@@ -415,7 +415,7 @@ private struct AssistantForecastCard: View {
 
 // MARK: - Confirm
 
-/// A draft to save (plan §1, "do"): its operations as they will look in the history (a budget
+/// A draft to save (docs/domains/assistant.md §1, "do"): its operations as they will look in the history (a budget
 /// as its new limit next to the old one, a subscription as its name, frequency and first
 /// charge, a fact to remember as its text, a goal as its name and target, a debt as who and
 /// how much, money towards a goal or back on a debt as the amount), what Tenra guessed, Save;

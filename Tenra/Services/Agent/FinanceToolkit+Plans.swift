@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Ten's tools for savings goals and personal debts (docs/domains/goals-and-debts.md,
-//  docs/plan-ai-assistant.md phase 4). `get_goals` and `get_debts` read them with the app's
+//  docs/domains/assistant.md §3). `get_goals` and `get_debts` read them with the app's
 //  own progress (GoalProgress, PersonalDebt); `draft_goal`, `draft_goal_contribution`,
 //  `draft_debt` and `draft_debt_repayment` file drafts the person saves on the confirm card,
 //  through GoalStore and DebtStore. New debts are Tenra Pro: without it `draft_debt` says so

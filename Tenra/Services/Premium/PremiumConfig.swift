@@ -43,7 +43,7 @@ enum PremiumConfig {
     /// The daily logging loop stays free; scale + depth is Pro. See strategy doc §3.
     static let freeAccountLimit = 3
 
-    /// The AI assistant's free allowance (docs/promotion-plan.md §2, plan-ai-assistant.md §6):
+    /// The AI assistant's free allowance (docs/promotion-plan.md §2, domains/assistant.md §11):
     /// enough to get hooked in the first week, then a taste every month. An action is one
     /// question the assistant answers. Counted on the device (`AssistantUsageStore`).
     enum Assistant {

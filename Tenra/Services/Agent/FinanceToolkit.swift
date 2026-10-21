@@ -2,7 +2,7 @@
 //  FinanceToolkit.swift
 //  Tenra
 //
-//  Executes the assistant's tools on the phone (docs/plan-ai-assistant.md §3.1). The cloud
+//  Executes the assistant's tools on the phone (docs/domains/assistant.md §3). The cloud
 //  model never sees the database, only the results of the tools it asks for. Tool names and
 //  input shapes are the contract in server/assistant/src/tools.ts.
 //

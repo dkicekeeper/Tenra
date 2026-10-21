@@ -114,7 +114,7 @@ struct VoiceTab: View {
 
 // MARK: - AssistantTab
 
-/// The AI assistant (beta, docs/plan-ai-assistant.md), the action tab's page where it can run:
+/// The AI assistant (docs/domains/assistant.md), the action tab's page where it can run:
 /// Pro, or the free allowance without it. Its home (AssistantView) owns the navigation stack,
 /// each chat a page on it. The server answers only an app it can verify with App Attest, Pro or
 /// not, so a device without it (the Simulator included) gets no assistant. The thread lives in

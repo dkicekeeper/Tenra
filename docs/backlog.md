@@ -122,7 +122,7 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
   ([promotion-plan.md](promotion-plan.md)).
 - **The assistant runs on Claude through the proxy** (2026-10-15). Apple's Private Cloud
   Compute model and Siri on iOS 27 can come now: since 2026-10-21 CI and TestFlight build with
-  Xcode 27 on GitHub's `xcode-27` runner ([asc.md](asc.md), [plan-ai-assistant.md](plan-ai-assistant.md) §5).
+  Xcode 27 on GitHub's `xcode-27` runner ([asc.md](asc.md), [plan-assistant-ios27.md](plan-assistant-ios27.md)).
 - **Minimum iOS stays 26** (2026-08-26): older iOS would add 15-18% installs at the cost of a
   second UI path.
 - **No behavioural analytics SDK** (2026-10-12): crashes and usage come from App Analytics,

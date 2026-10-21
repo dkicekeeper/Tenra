@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  One chat with the assistant, pushed from its home (AssistantView) as a page of its own
-//  (docs/plan-ai-assistant.md §3.3, §3.6): the person's questions in bubbles, the replies as the
+//  (docs/domains/assistant.md §4, §9): the person's questions in bubbles, the replies as the
 //  app's own cards, the step the assistant is on while it works, and the field with Ten's
 //  suggestions for what to ask next in one row over it, where the thumb is. The navigation bar
 //  holds only the way back to the home and Ten in the middle, 120 pt (the owner's size): it
@@ -24,7 +24,7 @@
 //  tall, so a long reply is read from its start. A tap on the thread puts the keyboard away.
 //
 //  Without Pro, a line over the field counts the free answers once 3 or fewer are left
-//  (docs/plan-ai-assistant.md §6) and opens the paywall; a question over the allowance waits in
+//  (docs/domains/assistant.md §11) and opens the paywall; a question over the allowance waits in
 //  the thread with the Pro button and goes once Pro is on. The paperclip attaches a receipt or
 //  a statement to this chat, the microphone dictates the next message.
 //

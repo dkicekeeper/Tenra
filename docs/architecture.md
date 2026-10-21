@@ -118,8 +118,8 @@ Saves with the same operation name run one at a time; none is dropped.
 | v10 | `CategoryAggregateEntity.expenseAmount` / `expenseAmountSet` |
 | v11 | `CategorySubcategoryLinkEntity.sortOrder` |
 | v12 | `AccountEntity.includeInBalance` (accounts excluded from the Finances total and insights aggregates) |
-| v13 | `AgentThreadEntity` (the assistant's threads as JSON, `byUpdatedAtIndex`; `AgentThreadStore`, [plan-ai-assistant.md](plan-ai-assistant.md) §3.4) |
-| v14 | `AgentFactEntity` (the facts the assistant remembers, `byCreatedAtIndex`; `AgentFactStore` under `AgentMemory`, [plan-ai-assistant.md](plan-ai-assistant.md) §3.4) |
+| v13 | `AgentThreadEntity` (the assistant's threads as JSON, `byUpdatedAtIndex`; `AgentThreadStore`, [domains/assistant.md](domains/assistant.md) §5) |
+| v14 | `AgentFactEntity` (the facts the assistant remembers, `byCreatedAtIndex`; `AgentFactStore` under `AgentMemory`, [domains/assistant.md](domains/assistant.md) §5) |
 | v15 | `GoalEntity`, `DebtEntity` (savings goals and personal debts, history as JSON; `GoalRepository` / `DebtRepository` under `GoalStore` / `DebtStore`, [domains/goals-and-debts.md](domains/goals-and-debts.md)) |
 
 `CategoryAggregateEntity` and `AccountAggregateEntity` hold the persisted aggregate tables that the next launch warm-starts from (see [domains/categories.md](domains/categories.md)). `MonthlyAggregateEntity` remains in the model but nothing reads or writes it.

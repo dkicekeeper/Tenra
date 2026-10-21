@@ -2,8 +2,8 @@
 //  AgentWire.swift
 //  Tenra
 //
-//  The app ↔ server protocol of the assistant (server/assistant, docs/plan-ai-assistant.md
-//  §3.7). One call to `POST /v1/turn` is one model call; the app runs the loop and executes the
+//  The app ↔ server protocol of the assistant (server/assistant, docs/domains/assistant.md
+//  §8). One call to `POST /v1/turn` is one model call; the app runs the loop and executes the
 //  tools on the phone. Messages use the Anthropic Messages format; content blocks are kept as
 //  `JSONValue` so they go back to the server exactly as they came.
 //

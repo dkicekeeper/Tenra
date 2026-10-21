@@ -2,13 +2,13 @@
 //  AssistantInbox.swift
 //  Tenra
 //
-//  Ten writes first (docs/plan-ai-assistant.md, phase 3): what the app already notices becomes a
+//  Ten writes first (docs/domains/assistant.md §6): what the app already notices becomes a
 //  message from the assistant. A critical or warning insight (the same kinds that may push,
 //  InsightSignalKind), last week's summary once a week, a subscription charged tomorrow, a
 //  personal debt due tomorrow, and a savings goal fallen behind its schedule (once a month).
 //  Messages wait in this inbox until the person goes through them or closes them on Home ("Ten
 //  writes", AssistantNoticesSection; never in the chat). Going through one is a question like
-//  any other, so it spends a free answer (plan §6: messages are free to read, the analysis is
+//  any other, so it spends a free answer (docs/domains/assistant.md §11: messages are free to read, the analysis is
 //  not).
 //
 //  Each message has a key that never posts twice (an insight's id or signal key, the week, the

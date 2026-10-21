@@ -4,7 +4,7 @@
 //
 //  Runs the assistant loop for one thread: send the conversation, execute the tools Claude
 //  asks for on the phone, send their results, repeat until it calls `render_reply`
-//  (docs/plan-ai-assistant.md §3.7). History is append-only: assistant turns are stored as the
+//  (docs/domains/assistant.md §8). History is append-only: assistant turns are stored as the
 //  server returned them and never edited, or the thinking blocks and the prompt cache break.
 //
 

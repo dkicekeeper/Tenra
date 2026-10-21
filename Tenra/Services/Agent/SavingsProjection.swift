@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Compound growth of regular saving or investing for the assistant's `project_savings`
-//  (docs/plan-ai-assistant.md §3.1): a starting amount, a contribution at the end of every
+//  (docs/domains/assistant.md §3): a starting amount, a contribution at the end of every
 //  month and an assumed annual return, compounded monthly at the rate that gives that return
 //  over a year. The return is the person's or the model's assumption, never a forecast. The
 //  same formula runs in server/assistant/eval/simulator.ts, keep them in step.

@@ -2,7 +2,7 @@
 //  AgentPartialReply.swift
 //  Tenra
 //
-//  The reply's text while the model is still writing it (docs/plan-ai-assistant.md §3.7): the
+//  The reply's text while the model is still writing it (docs/domains/assistant.md §8): the
 //  server forwards `render_reply`'s input JSON piece by piece (event "reply"), and this reads the
 //  text blocks written so far out of the unfinished JSON. The JSON is closed where it was cut (an
 //  open string, the open arrays and objects) and parsed; a cut that leaves it unreadable (inside a

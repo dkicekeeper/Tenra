@@ -2,7 +2,7 @@
 //  AssistantViewModel.swift
 //  Tenra
 //
-//  The assistant screen's state (docs/plan-ai-assistant.md §3.7): the visible thread of
+//  The assistant screen's state (docs/domains/assistant.md §8): the visible thread of
 //  questions and replies, what the assistant is doing right now (the step names the tool it
 //  runs), and a failed question that can be retried. The conversation itself (history, tools,
 //  the server loop) is `AgentConversation`; this type only turns it into screen state.
@@ -23,7 +23,7 @@
 //  conversation itself. A new chat starts another thread; a kept one can be opened again or
 //  deleted from the assistant's home.
 //
-//  FastPath (AgentFastPath, plan §3.8): a message the phone's parser understands as income or
+//  FastPath (AgentFastPath, §7): a message the phone's parser understands as income or
 //  expenses becomes a draft on the phone, without the cloud and without the consent the cloud
 //  needs. Typed, it is free; spoken, it spends one free answer, as voice does. The model hears
 //  about such a draft with the next question, in <draft_status>; the thread keeps where it
@@ -31,7 +31,7 @@
 //
 //  An attachment (a receipt or a statement read on the phone, AgentAttachment) joins the thread
 //  as its summary card. The model sees the summary with the next question, as an
-//  <attachment_result> block. Opening its review spends one free answer, once (plan §6:
+//  <attachment_result> block. Opening its review spends one free answer, once (§11:
 //  reading is free, the limit is checked where the work is taken). Attachments are not kept
 //  across launches.
 //

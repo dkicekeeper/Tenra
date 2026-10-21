@@ -2,8 +2,8 @@
 //  AgentDraftEditor.swift
 //  Tenra
 //
-//  Changing an income or an expense of a draft before it is saved (docs/plan-ai-assistant.md
-//  §1, "Сделать": Save or edit). The confirm card opens the voice confirmation form on the
+//  Changing an income or an expense of a draft before it is saved (docs/domains/assistant.md
+//  §3, a draft edited before saving). The confirm card opens the voice confirmation form on the
 //  operation; what comes back is resolved again by `TransactionDraftService.makeDraft`, the path
 //  the draft came from, so the edited operation is exactly what Save writes. The account and the
 //  category were picked on the form: they are no longer guesses.

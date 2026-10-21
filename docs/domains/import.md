@@ -51,7 +51,7 @@ attachments (`AssistantAttachmentSources`: scanner or photos for a receipt, a PD
 CSV into its own flow, and files opened in Tenra from another app through
 `CFBundleDocumentTypes`; the copy read there is deleted once read). The assistant shows a summary
 card and opens the same review screens; the model sees only the summary
-([plan-ai-assistant.md](../plan-ai-assistant.md) §3.8).
+([assistant.md](assistant.md) §7).
 
 ## Rules
 

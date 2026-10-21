@@ -2,7 +2,7 @@
 //  AssistantAttachmentCard.swift
 //  Tenra
 //
-//  A receipt or a statement attached in the chat (docs/plan-ai-assistant.md §3.8): what the
+//  A receipt or a statement attached in the chat (docs/domains/assistant.md §7): what the
 //  phone read, without the model (a receipt's shop, total and date; a statement's rows, period,
 //  expenses and income, the rows that need a category or could not be read), and "Review",
 //  which opens the app's own review screen (ReceiptConfirmationView, ImportTransactionPreviewView)

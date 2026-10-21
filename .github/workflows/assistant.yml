@@ -1,6 +1,6 @@
 name: Assistant server
 
-# The Cloudflare Worker behind the AI assistant (server/assistant, docs/plan-ai-assistant.md).
+# The Cloudflare Worker behind the AI assistant (server/assistant, docs/domains/assistant.md).
 # Push: typecheck and unit tests. Manual run: deploy the Worker, or run the model eval.
 #
 # Repository secrets used by the manual jobs:

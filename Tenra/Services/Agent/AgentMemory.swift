@@ -2,7 +2,7 @@
 //  AgentMemory.swift
 //  Tenra
 //
-//  What Ten remembers about the person across chats (docs/plan-ai-assistant.md §3.4): short
+//  What Ten remembers about the person across chats (docs/domains/assistant.md §5): short
 //  facts about their money ("salary comes on the 10th", "saving for a car", "Kaspi is the main
 //  card"). The model proposes one with `draft_fact` and the person keeps it with Save on the
 //  card, like any draft (AgentDraftBook); Settings → Assistant → "What Ten knows about me"

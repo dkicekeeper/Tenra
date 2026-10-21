@@ -4,8 +4,8 @@
 //
 //  A JSON value that round-trips without loss. The assistant stores Claude's content blocks
 //  (text, thinking with its signature, tool calls) exactly as the server returned them and
-//  sends them back unchanged on the next call: history is append-only (docs/plan-ai-assistant.md
-//  §3.7), so the app never re-models those blocks into its own types.
+//  sends them back unchanged on the next call: history is append-only (docs/domains/assistant.md
+//  §8), so the app never re-models those blocks into its own types.
 //
 
 import Foundation

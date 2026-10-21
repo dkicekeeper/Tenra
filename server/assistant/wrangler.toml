@@ -12,7 +12,7 @@ head_sampling_rate = 1
 [vars]
 # Off switch: "false" makes every turn answer 503 `disabled` without calling Anthropic.
 ASSISTANT_ENABLED = "true"
-# Production model, chosen by the eval (docs/plan-ai-assistant.md §6): on 2026-10-14 Haiku 5.5
+# Production model, chosen by the eval (docs/domains/assistant.md §11): on 2026-10-14 Haiku 5.5
 # passed 25/25 like Sonnet and Opus at about 1/37 of Opus's cost.
 ASSISTANT_MODEL = "claude-haiku-5-5"
 ASSISTANT_EFFORT = "low"

@@ -2,7 +2,7 @@
 //  AgentProtocolTests.swift
 //  TenraTests
 //
-//  The app side of the assistant protocol (docs/plan-ai-assistant.md §3.7): JSON values that
+//  The app side of the assistant protocol (docs/domains/assistant.md §8): JSON values that
 //  round-trip, the SSE stream, the reply blocks, server errors and the <app_context> block.
 //
 

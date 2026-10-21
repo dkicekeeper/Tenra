@@ -5,7 +5,7 @@
 //  The assistant's reply, decoded from the input of its `render_reply` tool call. The model
 //  picks which cards to show; every figure in a card comes from a tool result by reference
 //  (`source` = the result's `result_id`, `path` = a dotted path inside it), never from text
-//  (docs/plan-ai-assistant.md §3.3). Block types the app doesn't know yet decode as
+//  (docs/domains/assistant.md §4). Block types the app doesn't know yet decode as
 //  `.unsupported`, so the server can add one without breaking older builds. `render_reply`
 //  is not a strict tool (the API refuses the grammar of its block union), so a block the
 //  model got wrong decodes as `.unsupported` too, and the rest of the reply still shows.

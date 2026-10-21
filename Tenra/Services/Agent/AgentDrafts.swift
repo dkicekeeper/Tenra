@@ -2,7 +2,7 @@
 //  AgentDrafts.swift
 //  Tenra
 //
-//  What the assistant prepares to write (docs/plan-ai-assistant.md §3.1, "write only through a
+//  What the assistant prepares to write (docs/domains/assistant.md §3, "write only through a
 //  draft"). A draft tool resolves the model's operations against the user's accounts and
 //  categories and files them here under a draft id; nothing is saved until the person taps
 //  Save on the confirm card. Saving goes through the app's own write paths

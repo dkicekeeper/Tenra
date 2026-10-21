@@ -2,7 +2,7 @@
 //  AgentFastPath.swift
 //  Tenra
 //
-//  FastPath (docs/plan-ai-assistant.md §3.8): a message the phone's own parser understands as
+//  FastPath (docs/domains/assistant.md §7): a message the phone's own parser understands as
 //  income or expenses ("кофе 1500 и такси 2300") becomes a draft on the phone, the confirm card
 //  without the cloud. The parser is the voice one (`VoiceInputParser.parseMulti`), the draft the
 //  path every other draft takes (`TransactionDraftService.makeDraft`, FinanceToolkit).

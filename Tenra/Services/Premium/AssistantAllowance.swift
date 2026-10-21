@@ -8,7 +8,7 @@
 //  reinstall does not reset it.
 //
 //  The assistant screen checks it before each question (AssistantViewModel.Access); the server
-//  keeps its own, larger quota per App Attest key (docs/plan-ai-assistant.md §3.7).
+//  keeps its own, larger quota per App Attest key (docs/domains/assistant.md §8).
 //
 
 import Foundation

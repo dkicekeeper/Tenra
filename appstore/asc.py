@@ -1140,8 +1140,12 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
     used: set[str] = set()
 
     def art(locale: str, stem: str) -> Path | None:
-        path = ART / locale / f"{stem}.png"
-        return path if path.exists() else None
+        # A locale without its own art takes its copyFrom's (en-GB: ru), like its screenshots.
+        for folder in dict.fromkeys([locale, screenshot_source(locale)]):
+            path = ART / folder / f"{stem}.png"
+            if path.exists():
+                return path
+        return None
 
     record = store_version(app, version)
     name = record["attributes"].get("versionString")

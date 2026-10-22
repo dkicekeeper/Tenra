@@ -36,31 +36,10 @@ with the commit of every fix, are in
   `LoanDetailView` delete paths call `recalculateAccountBalances()` where
   `recalculateBalances(for:)` with the touched accounts would do.
 
-Found by the product audit of 2026-10-22 (market data, competitors and the reasoning:
-[archive/product-audit-2026-10-22.md](archive/product-audit-2026-10-22.md); the owner's decisions
-D1-D7 are in [promotion-plan.md](promotion-plan.md) §7):
-- **The Tenra Pro page doesn't name Ten.** `TenraProView.features` lists accounts, voice,
-  import, deposits, loans and debts; Ten without a limit, Pro's main value since 1.6, is missing.
-  Put it first (11 locales) and check the RevenueCat paywall copy in the dashboard.
-- **Activation.** Onboarding ends on an empty Home: no step for the Wallet automation (or, on
-  iOS 27, bank notifications), no "load a Kaspi statement, Ten reads it" (free within Ten's
-  first-week allowance), no Home card while auto-capture is not set up, no Ten notice after a
-  few manual entries.
-- **Backups off iCloud by default.** `CloudBackupService.isICloudEnabled` defaults to `false`:
-  the weekly backup stays in the app's container, lost with a reinstall or a phone set up from
-  scratch, and onboarding offers no restore. Data loss on a phone switch is the top complaint
-  about manual trackers. Turn iCloud on by default (decision D5) and offer "Restore from backup"
-  on the first onboarding screen when iCloud holds one.
-- **Quick-add templates, widgets, Control Center, Lock Screen** (moved from Ideas: every direct
-  competitor has widgets). Templates first (in-app, cheap, the content a widget shows). There is
-  no widget target or App Group today: share a small snapshot file through an App Group rather
-  than moving the CoreData store.
-- **Kazakh as the 12th locale** (decision D4): both Qalta apps have it, and it is a system
-  language in iOS 27. Check whether App Store Connect takes Kazakh metadata.
-- **"How much can I spend a day" on Home:** today only Ten shows it (`FinanceToolkit`'s
-  `daily_allowance`); upcoming payments counted in a budget.
-- **Local counters for auto-capture** in Diagnostics (Wallet and notification captures, To review
-  share), so the owner's and testers' phones show whether people keep it on.
+- **Product audit of 2026-10-22** ([archive/product-audit-2026-10-22.md](archive/product-audit-2026-10-22.md)):
+  its items are in [plan-ads-readiness.md](plan-ads-readiness.md) (the Pro page, activation,
+  iCloud backups by default, auto-capture counters for 1.7; widgets and templates, Kazakh,
+  money for today for 1.8).
 
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
@@ -76,8 +55,9 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
   consent go out with the next cloud question; the Settings toggle skips the consent sheet; the
   cloud mode shows in the RU/BY storefronts (451 on every question).
-- **Ten's error paths:** attestation and RevenueCat failures read as permanent, no Retry, a new
-  key per question; a size 400 offers a Retry that resends the same request.
+- **Ten's error paths** (in [plan-ads-readiness.md](plan-ads-readiness.md) B3): attestation and
+  RevenueCat failures read as permanent, no Retry, a new key per question; a size 400 offers a
+  Retry that resends the same request.
 - **Notices:** amounts ignore "hide amounts"; a notice outlives its deleted debt, goal or
   subscription.
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
@@ -90,9 +70,10 @@ Found by the release audit of 2026-10-15 (details and file references:
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
 - **Copy:** German Ten strings (`assistant.*`) say "du", the app "Sie"; mic and speech
   permission texts don't mention Ten.
-- **Server before traffic:** Durable Objects counters, a Rate Limiting binding, separate free and
-  Pro caps, a RevenueCat timeout, no count for a failed upstream call, abort on disconnect, a
-  `protocol` range and an app build header.
+- **Server before traffic** (sizing in [plan-ads-readiness.md](plan-ads-readiness.md) A5, the
+  rest C5): Durable Objects counters, a Rate Limiting binding, separate free and Pro caps, a
+  RevenueCat timeout, no count for a failed upstream call, abort on disconnect, a `protocol`
+  range and an app build header.
 
 Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the

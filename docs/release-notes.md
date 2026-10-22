@@ -227,6 +227,11 @@ Tenra 1.7의 새로운 기능:
 
 ## Submission checklist (1.7)
 
+0. **Ready for ads:** P0 of [plan-ads-readiness.md](plan-ads-readiness.md) §2.2 has landed (ASA
+   attribution, the Pro page names Ten, onboarding sells auto-capture, iCloud backups by default
+   and restore on the welcome screen, Ten's capacity, the store page), P1 §2.3 as far as it fits;
+   What's New below gets the lines for what the user sees, and the device check covers the new
+   screens.
 1. **Device check** of the newest TestFlight build (51 on 2026-10-22: DesignKit 8.1.0 and the bank
    notification action on top of 49) on the iOS 27 iPhone, then
    fix what it finds:

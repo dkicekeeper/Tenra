@@ -104,6 +104,9 @@
 "home.today.untilIncome" = "На день до надходження %@";
 "home.today.untilMonthEnd" = "На день до кінця місяця";
 "home.today.setAside" = "%1$@, %2$@ відкладено на платежі";
+"home.iCloudAsk.title" = "Зберігайте копії в iCloud";
+"home.iCloudAsk.message" = "Щотижнева копія зараз лише на цьому iPhone. В iCloud Drive вона переживе новий телефон або перевстановлення.";
+"home.iCloudAsk.action" = "Увімкнути";
 "settings.voiceLanguage" = "Мова голосу";
 "settings.voiceLanguage.app" = "Як у застосунку";
 "settings.background.none" = "Без тла";
@@ -1914,6 +1917,7 @@
 "onboarding.autoCapture.afterStart" = "Після старту";
 "onboarding.restore" = "Відновити з копії";
 "onboarding.cta.nextWithCount" = "Далі • обрано %d";
+"onboarding.restore.hint" = "Торкніться копії, щоб повернути дані на цей iPhone.";
 "transactionForm.addIncomeCategory" = "Додати категорію доходу";
 
 /* Statement import duplicate markers */

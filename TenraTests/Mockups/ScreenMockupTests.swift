@@ -83,6 +83,20 @@ struct ScreenMockupTests {
         }
     }
 
+    @Test("Home: the one-time iCloud ask for an older install")
+    func homeICloudAsk() async throws {
+        try await render("05-home-icloud-ask", height: 500) {
+            VStack(spacing: AppSpacing.lg) {
+                ICloudBackupAskCard(onTurnOn: {}, onHide: {})
+                AutoCaptureSetupCard(onSetUp: {}, onHide: {})
+                Spacer()
+            }
+            .screenPadding()
+            .padding(.vertical, AppSpacing.xl)
+            .background(AppColors.Background.base)
+        }
+    }
+
     // MARK: - Rendering
 
     /// Draws `content` in an iPhone-sized window, in the light and the dark theme, into

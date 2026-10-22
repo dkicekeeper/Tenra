@@ -104,6 +104,9 @@
 "home.today.untilIncome" = "%@ tarihindeki gelire kadar günlük";
 "home.today.untilMonthEnd" = "Ay sonuna kadar günlük";
 "home.today.setAside" = "%1$@, ödemeler için %2$@ ayrıldı";
+"home.iCloudAsk.title" = "Yedekleri iCloud’da saklayın";
+"home.iCloudAsk.message" = "Haftalık yedeğiniz yalnızca bu iPhone’da. iCloud Drive’da yeni bir telefona veya yeniden yüklemeye dayanır.";
+"home.iCloudAsk.action" = "Aç";
 "settings.voiceLanguage" = "Ses Dili";
 "settings.voiceLanguage.app" = "Uygulamadaki gibi";
 "settings.background.none" = "Arka Plan Yok";
@@ -1914,6 +1917,7 @@
 "onboarding.autoCapture.afterStart" = "Başladıktan sonra";
 "onboarding.restore" = "Yedekten geri yükle";
 "onboarding.cta.nextWithCount" = "İleri • %d seçildi";
+"onboarding.restore.hint" = "Verilerinizi bu iPhone’a geri getirmek için bir yedeğe dokunun.";
 "transactionForm.addIncomeCategory" = "Gelir kategorisi ekle";
 
 /* Statement import duplicate markers */

@@ -104,6 +104,9 @@
 "home.today.untilIncome" = "%@の入金まで1日あたり";
 "home.today.untilMonthEnd" = "月末まで1日あたり";
 "home.today.setAside" = "%1$@、支払い用に%2$@を確保済み";
+"home.iCloudAsk.title" = "バックアップをiCloudに保存";
+"home.iCloudAsk.message" = "毎週のバックアップは今このiPhoneにしかありません。iCloud Driveに置けば、機種変更や再インストールでも残ります。";
+"home.iCloudAsk.action" = "オンにする";
 "settings.voiceLanguage" = "音声の言語";
 "settings.voiceLanguage.app" = "アプリと同じ";
 "settings.background.none" = "背景なし";
@@ -1914,6 +1917,7 @@
 "onboarding.autoCapture.afterStart" = "開始後に";
 "onboarding.restore" = "バックアップから復元";
 "onboarding.cta.nextWithCount" = "次へ • %d件選択中";
+"onboarding.restore.hint" = "バックアップをタップすると、このiPhoneにデータを戻せます。";
 "transactionForm.addIncomeCategory" = "収入カテゴリを追加";
 
 /* Statement import duplicate markers */

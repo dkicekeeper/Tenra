@@ -66,6 +66,11 @@ final class OnboardingViewModel {
     /// iCloud Drive holds a backup of Tenra: the welcome screen offers to restore it.
     var hasCloudBackup = false
 
+    /// The backups iCloud Drive holds, newest first, for the restore sheet.
+    var cloudBackups: [BackupMetadata] = [] {
+        didSet { hasCloudBackup = !cloudBackups.isEmpty }
+    }
+
     /// The list of iCloud backups to restore from, over the welcome screen.
     var showingRestore = false
 
@@ -129,6 +134,28 @@ final class OnboardingViewModel {
         logger.info("onboarding_step_completed step=account")
     }
 
+    /// The backups' view model, for the restore sheet; nil in tests.
+    var cloudSyncViewModel: CloudSyncViewModel? { coordinator?.cloudSyncViewModel }
+
+    /// Looks for backups in iCloud Drive while the welcome screen shows (a new phone, a
+    /// reinstall). Nothing without an iCloud account or a backup.
+    func checkForCloudBackups() async {
+        guard let coordinator else { return }
+        cloudBackups = await coordinator.cloudSyncViewModel.iCloudBackupsForRestore()
+    }
+
+    /// Restores `backup` and ends onboarding on the restored data. On failure the sheet stays
+    /// with the error, and onboarding goes on as before.
+    func restore(_ backup: BackupMetadata) async {
+        guard let coordinator, !isFinishing else { return }
+        isFinishing = true
+        defer { isFinishing = false }
+        guard await coordinator.cloudSyncViewModel.restoreFromOnboarding(backup) else { return }
+        showingRestore = false
+        coordinator.completeOnboarding()
+        logger.info("onboarding_restored_backup")
+    }
+
     func toggleAfterFinish(_ followUp: FollowUp) {
         afterFinish = afterFinish == followUp ? nil : followUp
     }
@@ -146,7 +173,14 @@ final class OnboardingViewModel {
 
         await coordinator.settingsViewModel.updateBaseCurrency(draftCurrency)
         coordinator.completeOnboarding()
+        adoptICloudBackups(coordinator)
         logger.info("onboarding_skipped")
+    }
+
+    /// A new install keeps its backups in iCloud Drive (CloudSyncViewModel.adoptICloudForNewInstall),
+    /// off the path to Home.
+    private func adoptICloudBackups(_ coordinator: AppCoordinator) {
+        Task { await coordinator.cloudSyncViewModel.adoptICloudForNewInstall() }
     }
 
     // MARK: - Final commit
@@ -207,6 +241,7 @@ final class OnboardingViewModel {
         }
 
         coordinator.completeOnboarding()
+        adoptICloudBackups(coordinator)
         logger.info("onboarding_finished selectedCount=\(self.selectedPresetCount, privacy: .public)")
     }
 }

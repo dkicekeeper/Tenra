@@ -104,6 +104,9 @@
 "home.today.untilIncome" = "В день до поступления %@";
 "home.today.untilMonthEnd" = "В день до конца месяца";
 "home.today.setAside" = "%1$@, %2$@ отложено на платежи";
+"home.iCloudAsk.title" = "Храните копии в iCloud";
+"home.iCloudAsk.message" = "Еженедельная копия сейчас лежит только на этом iPhone. В iCloud Drive она переживёт новый телефон или переустановку.";
+"home.iCloudAsk.action" = "Включить";
 "settings.voiceLanguage" = "Язык голоса";
 "settings.voiceLanguage.app" = "Как в приложении";
 "settings.background.none" = "Без фона";
@@ -1914,6 +1917,7 @@
 "onboarding.autoCapture.afterStart" = "После старта";
 "onboarding.restore" = "Восстановить из копии";
 "onboarding.cta.nextWithCount" = "Далее • выбрано %d";
+"onboarding.restore.hint" = "Нажмите на копию, чтобы вернуть данные на этот iPhone.";
 "transactionForm.addIncomeCategory" = "Добавить категорию дохода";
 
 /* Statement import duplicate markers */

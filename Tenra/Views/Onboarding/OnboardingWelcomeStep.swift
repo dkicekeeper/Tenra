@@ -53,6 +53,13 @@ struct OnboardingWelcomeStep: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .onboardingAccentGlow()
+        // A new phone or a reinstall: the backups iCloud Drive kept (CloudBackupService).
+        .task { await vm.checkForCloudBackups() }
+        .sheet(isPresented: $vm.showingRestore) {
+            if let cloudSync = vm.cloudSyncViewModel {
+                OnboardingRestoreSheet(vm: vm, cloudSync: cloudSync)
+            }
+        }
         .onChange(of: vm.path.isEmpty) { _, isBackOnWelcome in
             if isBackOnWelcome {
                 // Restart the phase cycle from index 0 when the user pops back.

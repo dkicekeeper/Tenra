@@ -11,7 +11,8 @@ import SwiftUI
 struct BackupRowView: View {
     let metadata: BackupMetadata
     let onRestore: () -> Void
-    let onDelete: () -> Void
+    /// None on the welcome screen's restore list: there a backup is only restored.
+    var onDelete: (() -> Void)? = nil
 
     var body: some View {
         // Made by the weekly automatic backup ("Auto" badge): these have their own limit
@@ -40,14 +41,16 @@ struct BackupRowView: View {
             } label: {
                 Label(String(localized: "settings.cloud.restore"), systemImage: "arrow.counterclockwise")
             }
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                Label(String(localized: "settings.cloud.delete"), systemImage: "trash")
+            if let onDelete {
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label(String(localized: "settings.cloud.delete"), systemImage: "trash")
+                }
             }
         }
         .accessibilityAction(named: Text(String(localized: "settings.cloud.delete"))) {
-            onDelete()
+            onDelete?()
         }
     }
 

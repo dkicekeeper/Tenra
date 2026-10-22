@@ -104,6 +104,9 @@
 "home.today.untilIncome" = "Al día hasta el ingreso del %@";
 "home.today.untilMonthEnd" = "Al día hasta fin de mes";
 "home.today.setAside" = "%1$@, con %2$@ apartado para pagos";
+"home.iCloudAsk.title" = "Guarda las copias en iCloud";
+"home.iCloudAsk.message" = "Tu copia semanal solo está en este iPhone. En iCloud Drive sobrevive a un teléfono nuevo o a una reinstalación.";
+"home.iCloudAsk.action" = "Activar";
 "settings.voiceLanguage" = "Idioma de voz";
 "settings.voiceLanguage.app" = "Como en la app";
 "settings.background.none" = "Sin fondo";
@@ -1914,6 +1917,7 @@
 "onboarding.autoCapture.afterStart" = "Tras empezar";
 "onboarding.restore" = "Restaurar una copia";
 "onboarding.cta.nextWithCount" = "Siguiente • %d seleccionadas";
+"onboarding.restore.hint" = "Toca una copia para recuperar tus datos en este iPhone.";
 "transactionForm.addIncomeCategory" = "Añadir categoría de ingresos";
 
 /* Statement import duplicate markers */

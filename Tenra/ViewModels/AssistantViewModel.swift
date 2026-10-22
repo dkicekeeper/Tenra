@@ -36,6 +36,7 @@
 //  across launches.
 //
 
+import DeviceCheck
 import Foundation
 import Observation
 
@@ -639,6 +640,10 @@ enum AssistantFailure: Equatable {
     case refused
     /// The free answers are used up for now.
     case freeLimit
+    /// The device cannot prove it runs the real app (no App Attest).
+    case unsupportedDevice
+    /// The request itself was refused (too long a thread): sending it again cannot help.
+    case tooLong
     case generic
 
     init(_ error: Error) {
@@ -649,10 +654,14 @@ enum AssistantFailure: Equatable {
             case .busy: self = .busy
             case .unauthorized: self = .proRequired
             case .regionUnavailable: self = .regionUnavailable
-            case .disabled, .notConfigured, .entitlementUnavailable: self = .unavailable
-            // The server could not verify this app instance; Pro does not change that.
-            case .attestation: self = .unavailable
-            case .invalidRequest, .http: self = .generic
+            case .disabled, .notConfigured: self = .unavailable
+            // RevenueCat did not answer the server: Pro could not be checked this time.
+            case .entitlementUnavailable: self = .busy
+            // No App Attest on this device is final; a refused or failed registration or
+            // signature is worth one more try (a new assertion, a new key).
+            case .attestation(let reason): self = reason == "unsupported" ? .unsupportedDevice : .generic
+            case .invalidRequest: self = .tooLong
+            case .http(let status): self = status >= 500 ? .busy : .generic
             }
         case let error as AgentConversationError:
             switch error {
@@ -660,6 +669,8 @@ enum AssistantFailure: Equatable {
             case .stream(_, let retryable): self = retryable ? .busy : .generic
             case .truncated, .noReply, .invalidReply, .tooManySteps: self = .generic
             }
+        case let error as DCError:
+            self = error.code == .featureUnsupported ? .unsupportedDevice : .generic
         case let error as URLError:
             switch error.code {
             case .notConnectedToInternet, .networkConnectionLost, .timedOut, .cannotConnectToHost,
@@ -677,7 +688,8 @@ enum AssistantFailure: Equatable {
     var canRetry: Bool {
         switch self {
         case .offline, .busy, .generic: true
-        case .limitReached, .proRequired, .regionUnavailable, .unavailable, .refused, .freeLimit: false
+        case .limitReached, .proRequired, .regionUnavailable, .unavailable, .refused, .freeLimit,
+             .unsupportedDevice, .tooLong: false
         }
     }
 
@@ -691,6 +703,8 @@ enum AssistantFailure: Equatable {
         case .unavailable: String(localized: "assistant.error.unavailable")
         case .refused: String(localized: "assistant.error.refused")
         case .freeLimit: String(localized: "assistant.error.freeLimit")
+        case .unsupportedDevice: String(localized: "assistant.error.device")
+        case .tooLong: String(localized: "assistant.error.tooLong")
         case .generic: String(localized: "assistant.error.generic")
         }
     }

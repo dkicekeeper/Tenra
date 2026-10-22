@@ -55,9 +55,6 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
   consent go out with the next cloud question; the Settings toggle skips the consent sheet; the
   cloud mode shows in the RU/BY storefronts (451 on every question).
-- **Ten's error paths** (in [plan-ads-readiness.md](plan-ads-readiness.md) B3): attestation and
-  RevenueCat failures read as permanent, no Retry, a new key per question; a size 400 offers a
-  Retry that resends the same request.
 - **Notices:** amounts ignore "hide amounts"; a notice outlives its deleted debt, goal or
   subscription.
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece

@@ -611,7 +611,23 @@ struct AssistantViewModelTests {
 
     @Test func aFailedAttestationIsNotSoldAsPro() {
         // The server checks App Attest for Pro too, so Pro would not help.
-        #expect(AssistantFailure(AgentServerError.attestation(reason: "unsupported")) == .unavailable)
+        #expect(AssistantFailure(AgentServerError.attestation(reason: "unsupported")) == .unsupportedDevice)
+        #expect(AssistantFailure.unsupportedDevice.canRetry == false)
+    }
+
+    @Test func passingFailuresOfferARetry() {
+        // A refused or failed registration or signature: one more try makes a new one.
+        #expect(AssistantFailure(AgentServerError.attestation(reason: "counter")).canRetry)
+        // RevenueCat did not answer the server: Pro could not be checked this time.
+        #expect(AssistantFailure(AgentServerError.entitlementUnavailable) == .busy)
+        #expect(AssistantFailure(AgentServerError.http(status: 500)) == .busy)
+        #expect(AssistantFailure(URLError(.notConnectedToInternet)) == .offline)
+    }
+
+    @Test func aRefusedRequestIsNotResent() {
+        // A 400 from the turn (its size, its fields): the same request would fail again.
+        #expect(AssistantFailure(AgentServerError.invalidRequest(reason: "size")) == .tooLong)
+        #expect(AssistantFailure.tooLong.canRetry == false)
     }
 
     @Test func stepsAreNamedAfterTheTools() {

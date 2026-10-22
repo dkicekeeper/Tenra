@@ -113,7 +113,8 @@ enum AssistantChatter {
         case .refused, .generic:
             return (CreatureSpeech(String(localized: "assistant.chatter.unclear"), emotion: .calm, placement: .trailing,
                                    maxWidth: AssistantMetrics.chatSpeechWidth), .shrug)
-        case .busy, .limitReached, .proRequired, .regionUnavailable, .unavailable, .freeLimit:
+        case .busy, .limitReached, .proRequired, .regionUnavailable, .unavailable, .freeLimit,
+             .unsupportedDevice, .tooLong:
             return (nil, .flinch)
         }
     }

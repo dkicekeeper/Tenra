@@ -2074,6 +2074,7 @@
 "assistant.forecast.balance" = "日ごとの残高";
 "assistant.forecast.obligations" = "%@までの支払い";
 "assistant.error.generic" = "問題が発生しました。もう一度お試しください。";
+"assistant.error.tooLong" = "このチャットはアシスタントには長くなりすぎました。新しいチャットを始めて、もう一度聞いてください。";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "アシスタント";

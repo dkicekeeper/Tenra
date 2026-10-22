@@ -2074,6 +2074,7 @@
 "assistant.forecast.balance" = "Günlük bakiye";
 "assistant.forecast.obligations" = "%@ tarihine kadar ödemeler";
 "assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
+"assistant.error.tooLong" = "Bu sohbet asistan için fazla uzadı. Yeni bir sohbet başlatıp tekrar sorun.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Asistan";

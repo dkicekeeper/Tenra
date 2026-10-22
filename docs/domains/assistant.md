@@ -275,6 +275,12 @@ The app runs the agent loop, because the tools run on the phone: one server call
 - Errors before the stream: 400 `invalid`, 401 `user`, 401 `attest` (with `reason`), 429 `quota`
   or `busy`, 451 `region_unavailable` (the app shows `assistant.error.region`), 502
   `entitlement_unavailable`, 503 `disabled`.
+- In the app (`AssistantFailure`): a turn refused as `invalid` (its size, its fields) is
+  `tooLong`, with no Retry (resending fails the same way); 502 (RevenueCat did not answer) and
+  5xx are `busy`; an `attest` refusal or a refused registration (400 `attestation` from
+  `/v1/attest`) is `generic` with Retry (a new assertion or a new key), except `unsupported`
+  (`unsupportedDevice`). A failure to sign (no network while registering the key) is thrown, not
+  swallowed: it reads as offline, not as a permanent refusal.
 - **App Attest** (`src/appattest.ts`): a turn is accepted only from the real app on a real device,
   Pro or not, and the signature is checked before RevenueCat and any KV write. Once per install:
   `GET /v1/attest/challenge` → `{challenge}` (single use, 5 minutes); the app makes a

@@ -2074,6 +2074,7 @@
 "assistant.forecast.balance" = "Kontostand pro Tag";
 "assistant.forecast.obligations" = "Abbuchungen bis %@";
 "assistant.error.generic" = "Etwas ist schiefgelaufen. Versuche es erneut.";
+"assistant.error.tooLong" = "Dieser Chat ist für den Assistenten zu lang geworden. Starten Sie einen neuen und fragen Sie noch einmal.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistent";

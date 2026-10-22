@@ -2074,6 +2074,7 @@
 "assistant.forecast.balance" = "Balance by day";
 "assistant.forecast.obligations" = "Going out until %@";
 "assistant.error.generic" = "Something went wrong. Try again.";
+"assistant.error.tooLong" = "This chat got too long for the assistant. Start a new one and ask again.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistant";

@@ -1778,7 +1778,7 @@
 "intent.bankNotification.parameter.app" = "App";
 "intent.bankNotification.parameter.date" = "日付";
 "intent.bankNotification.notOperation" = "この通知には支出も収入もないため、何も記録されませんでした。";
-"intent.bankNotification.ownTransfer" = "自分の口座間の振替は記録されません。";
+"intent.bankNotification.ownTransfer" = "自分の口座間の振替です。もう一方の銀行の通知が届いたら、Tenraが記録します。";
 "intent.bankNotification.cash" = "現金の引き出しは記録されません。現金で支払ったものを記録してください。";
 "walletSetup.title" = "Walletオートメーションを設定";
 "walletSetup.intro" = "設定すると、端末でのApple Pay支払いが店舗、金額、通貨、カードとともに自動で記録されます。オンライン決済はWalletから渡されないため、明細書で取り込まれます。";
@@ -2269,3 +2269,23 @@
 "status.archived" = "アーカイブ済み";
 "status.pending" = "保留中";
 "textInput.characterCount" = "%2$lld文字中%1$lld文字";
+
+"bankSetup.title" = "銀行の通知を設定";
+"bankSetup.page.intro" = "銀行の通知から取引を記録";
+"bankSetup.page.trigger" = "銀行アプリを選ぶ";
+"bankSetup.page.action" = "Tenraのアクションを追加";
+"bankSetup.page.quiet" = "確認なしで実行";
+"bankSetup.page.check" = "通知を確認";
+"bankSetup.intro" = "iOS 27では、通知が届いたときにショートカットがアクションを実行できます。Tenraは銀行の通知から金額、通貨、カード、店名を読み取り、支出または収入を確認なしで記録します。テキストがiPhoneの外に出ることはありません。";
+"bankSetup.step.trigger" = "**ショートカット** › **オートメーション** › **+** を開き、アプリからの通知のトリガを選びます。使っている銀行アプリをすべて選択します。フィルタは追加しないでください。コード、広告、残高はTenraが自動で無視します。";
+"bankSetup.step.action" = "空のオートメーションを作成し、**%@**を探して追加します。";
+"bankSetup.step.fields" = "各フィールドに**通知**変数の対応するプロパティを入れます。**%1$@**にタイトル、**%2$@**にサブタイトル、**%3$@**に本文、**%4$@**にアプリ、**%5$@**に日付。";
+"bankSetup.step.quiet" = "ショートカットに表示された場合は「すぐに実行」を選び、実行時の通知をオフにします。これで完了です。次の支払いの通知がTenraの取引になります。";
+"bankSetup.note.filters" = "追加したフィルタは入力するか削除してください。そのままではオートメーションがオンになりません。";
+"bankSetup.check.text" = "銀行の通知の本文を貼り付けると、Tenraが何を記録するか確認できます。何も保存されません。";
+"bankSetup.check.placeholder" = "通知の本文";
+"bankSetup.check.result" = "Tenraが記録する内容";
+"bankSetup.check.kind" = "種類";
+"bankSetup.check.counterparty" = "店名または送金元";
+"bankSetup.check.card" = "カード";
+"bankSetup.check.none" = "取引ではありません。このテキストからTenraは何も記録しません。";

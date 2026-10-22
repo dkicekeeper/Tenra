@@ -56,8 +56,6 @@ final class OnboardingViewModel {
     enum FollowUp: Hashable {
         /// Ten (or the import tab) with a statement to pick.
         case statement
-        /// The bank notification setup guide (iOS 27).
-        case bankNotifications
     }
 
     /// Step 4: the follow-up picked, if any. One at a time: a second tap clears it.
@@ -77,9 +75,8 @@ final class OnboardingViewModel {
     /// The step indicator's symbols: Tenra's three data steps and the auto-capture step.
     static let stepSymbols = OnboardingStepIndicator.tenraSymbols + ["wave.3.right"]
 
-    /// Whether the auto-capture step offers bank notifications: iOS 27's notification trigger,
-    /// once its setup guide is in the build.
-    static var offersBankNotifications: Bool { false }
+    /// Whether the auto-capture step offers bank notifications: iOS 27's notification trigger.
+    static var offersBankNotifications: Bool { BankNotificationGuideView.isAvailable }
 
     // MARK: - Init
 

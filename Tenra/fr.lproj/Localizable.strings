@@ -1778,7 +1778,7 @@
 "intent.bankNotification.parameter.app" = "App";
 "intent.bankNotification.parameter.date" = "Date";
 "intent.bankNotification.notOperation" = "Aucune dépense ni aucun revenu dans cette notification, rien n'a été enregistré.";
-"intent.bankNotification.ownTransfer" = "Un virement entre vos propres comptes n'est pas enregistré.";
+"intent.bankNotification.ownTransfer" = "Un virement entre vos propres comptes : Tenra l’enregistre dès que la notification de l’autre banque arrive.";
 "intent.bankNotification.cash" = "Un retrait d'espèces n'est pas enregistré : enregistrez ce que vous payez en espèces.";
 "walletSetup.title" = "Configurer l'automatisation Wallet";
 "walletSetup.intro" = "Ensuite, chaque paiement Apple Pay sur un terminal est enregistré tout seul, avec le commerçant, le montant, la devise et la carte. Wallet ne transmet pas les paiements en ligne : ils arrivent avec le relevé.";
@@ -2269,3 +2269,23 @@
 "status.archived" = "Archivé";
 "status.pending" = "En attente";
 "textInput.characterCount" = "%1$lld sur %2$lld caractères";
+
+"bankSetup.title" = "Configurer les notifications bancaires";
+"bankSetup.page.intro" = "Des opérations depuis les notifications de votre banque";
+"bankSetup.page.trigger" = "Choisissez vos apps bancaires";
+"bankSetup.page.action" = "Ajoutez l’action de Tenra";
+"bankSetup.page.quiet" = "Sans rien demander";
+"bankSetup.page.check" = "Vérifier une notification";
+"bankSetup.intro" = "Sous iOS 27, Raccourcis peut lancer une action à l’arrivée d’une notification. Tenra lit le montant, la devise, la carte et le commerçant dans la notification de votre banque et enregistre la dépense ou le revenu sans rien demander. Le texte ne quitte jamais votre iPhone.";
+"bankSetup.step.trigger" = "Ouvrez **Raccourcis** › **Automatisation** › **+** et choisissez le déclencheur d’une notification d’une app. Cochez toutes vos apps bancaires. N’ajoutez aucun filtre : Tenra ignore elle-même les codes, les promotions et les soldes.";
+"bankSetup.step.action" = "Créez une automatisation vierge, cherchez **%@** et ajoutez-la.";
+"bankSetup.step.fields" = "Remplissez ses champs avec la variable **Notification**, chacun avec sa propriété : **%1$@** avec le titre, **%2$@** avec le sous-titre, **%3$@** avec le texte, **%4$@** avec l’app et **%5$@** avec la date.";
+"bankSetup.step.quiet" = "Si Raccourcis le propose, choisissez l’exécution immédiate et désactivez la notification d’exécution. C’est fait : la prochaine notification de paiement devient une opération dans Tenra.";
+"bankSetup.note.filters" = "Un filtre ajouté doit être rempli ou supprimé, sinon l’automatisation ne s’active pas.";
+"bankSetup.check.text" = "Collez le texte d’une notification de votre banque pour voir ce que Tenra en enregistrerait. Rien n’est conservé.";
+"bankSetup.check.placeholder" = "Texte de la notification";
+"bankSetup.check.result" = "Tenra enregistrerait";
+"bankSetup.check.kind" = "Type";
+"bankSetup.check.counterparty" = "Commerçant ou expéditeur";
+"bankSetup.check.card" = "Carte";
+"bankSetup.check.none" = "Ce n’est pas une opération : Tenra n’enregistre rien de ce texte.";

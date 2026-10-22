@@ -261,6 +261,10 @@ struct MainTabView: View {
             if !WalletCaptureStore.shared.pending.isEmpty {
                 Task { await WalletPaymentRecorder.recordPending(services: IntentServices(coordinator: coordinator)) }
             }
+            // Sides of transfers between own accounts from bank notifications, paired.
+            if !WalletCaptureStore.shared.transferSides.isEmpty {
+                Task { await OwnTransferRecorder.recordPairs(services: IntentServices(coordinator: coordinator)) }
+            }
             // Merchant logos, looked up once each: Apple Pay merchants, then the history's
             // frequent ones (on device only), once the full load has the history.
             let store = coordinator.transactionStore
@@ -294,6 +298,7 @@ struct MainTabView: View {
             }
         }
         // "Ask Ten" on an account, a category, an insight or the history.
+        .onChange(of: coordinator.assistantTopic) { _, topic in
             if topic != nil { openAssistant() }
         }
         // "Go through it" on a message Ten wrote, on Home.

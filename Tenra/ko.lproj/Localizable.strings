@@ -1778,7 +1778,7 @@
 "intent.bankNotification.parameter.app" = "앱";
 "intent.bankNotification.parameter.date" = "날짜";
 "intent.bankNotification.notOperation" = "이 알림에는 지출이나 수입이 없어 아무것도 기록하지 않았습니다.";
-"intent.bankNotification.ownTransfer" = "내 계좌 간 이체는 기록되지 않습니다.";
+"intent.bankNotification.ownTransfer" = "내 계좌 간 이체입니다. 다른 은행의 알림이 오면 Tenra가 기록합니다.";
 "intent.bankNotification.cash" = "현금 인출은 기록되지 않습니다. 현금으로 쓴 내역을 기록하세요.";
 "walletSetup.title" = "Wallet 자동화 설정";
 "walletSetup.intro" = "설정하면 단말기에서 Apple Pay로 결제할 때마다 가맹점, 금액, 통화, 카드와 함께 자동으로 기록됩니다. 온라인 결제는 Wallet이 전달하지 않으므로 명세서로 들어옵니다.";
@@ -2269,3 +2269,23 @@
 "status.archived" = "보관됨";
 "status.pending" = "대기 중";
 "textInput.characterCount" = "%2$lld자 중 %1$lld자";
+
+"bankSetup.title" = "은행 알림 설정";
+"bankSetup.page.intro" = "은행 알림으로 거래 기록";
+"bankSetup.page.trigger" = "은행 앱 선택";
+"bankSetup.page.action" = "Tenra 동작 추가";
+"bankSetup.page.quiet" = "묻지 않고 실행";
+"bankSetup.page.check" = "알림 확인";
+"bankSetup.intro" = "iOS 27에서는 알림이 오면 단축어가 동작을 실행할 수 있습니다. Tenra는 은행 알림에서 금액, 통화, 카드, 가맹점을 읽어 묻지 않고 지출이나 수입을 기록합니다. 텍스트는 iPhone 밖으로 나가지 않습니다.";
+"bankSetup.step.trigger" = "**단축어** › **자동화** › **+**를 열고 앱 알림 트리거를 선택하세요. 사용하는 은행 앱을 모두 선택합니다. 필터는 추가하지 마세요. 코드, 광고, 잔액은 Tenra가 알아서 건너뜁니다.";
+"bankSetup.step.action" = "빈 자동화를 만들고 **%@**을(를) 찾아 추가하세요.";
+"bankSetup.step.fields" = "각 필드를 **알림** 변수의 해당 속성으로 채우세요. **%1$@**에는 제목, **%2$@**에는 부제, **%3$@**에는 본문, **%4$@**에는 앱, **%5$@**에는 날짜를 넣습니다.";
+"bankSetup.step.quiet" = "단축어에서 제안하면 즉시 실행을 선택하고 실행 알림을 끄세요. 완료되었습니다. 다음 결제 알림부터 Tenra의 거래가 됩니다.";
+"bankSetup.note.filters" = "추가한 필터는 채우거나 삭제해야 합니다. 그렇지 않으면 자동화가 켜지지 않습니다.";
+"bankSetup.check.text" = "은행 알림의 텍스트를 붙여 넣으면 Tenra가 무엇을 기록할지 볼 수 있습니다. 아무것도 저장되지 않습니다.";
+"bankSetup.check.placeholder" = "알림 텍스트";
+"bankSetup.check.result" = "Tenra가 기록할 내용";
+"bankSetup.check.kind" = "유형";
+"bankSetup.check.counterparty" = "가맹점 또는 보낸 사람";
+"bankSetup.check.card" = "카드";
+"bankSetup.check.none" = "거래가 아닙니다. Tenra는 이 텍스트에서 아무것도 기록하지 않습니다.";

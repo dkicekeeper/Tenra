@@ -1778,7 +1778,7 @@
 "intent.bankNotification.parameter.app" = "App";
 "intent.bankNotification.parameter.date" = "Fecha";
 "intent.bankNotification.notOperation" = "No hay gasto ni ingreso en esta notificación, no se registró nada.";
-"intent.bankNotification.ownTransfer" = "Una transferencia entre tus propias cuentas no se registra.";
+"intent.bankNotification.ownTransfer" = "Una transferencia entre tus propias cuentas: Tenra la registra cuando llegue la notificación del otro banco.";
 "intent.bankNotification.cash" = "Un retiro de efectivo no se registra: registra en qué gastas el efectivo.";
 "walletSetup.title" = "Configurar la automatización de Wallet";
 "walletSetup.intro" = "Así cada pago con Apple Pay en un terminal se guarda solo, con el comercio, el importe, la moneda y la tarjeta. Wallet no comparte los pagos en línea: llegan con el extracto.";
@@ -2269,3 +2269,23 @@
 "status.archived" = "Archivada";
 "status.pending" = "Pendiente";
 "textInput.characterCount" = "%1$lld de %2$lld caracteres";
+
+"bankSetup.title" = "Configurar las notificaciones del banco";
+"bankSetup.page.intro" = "Movimientos desde las notificaciones de tu banco";
+"bankSetup.page.trigger" = "Elige las apps de tus bancos";
+"bankSetup.page.action" = "Añade la acción de Tenra";
+"bankSetup.page.quiet" = "Sin preguntar";
+"bankSetup.page.check" = "Comprobar una notificación";
+"bankSetup.intro" = "En iOS 27, Atajos puede ejecutar una acción cuando llega una notificación. Tenra lee el importe, la moneda, la tarjeta y el comercio de la notificación de tu banco y registra el gasto o el ingreso sin preguntar. El texto nunca sale de tu iPhone.";
+"bankSetup.step.trigger" = "Abre **Atajos** › **Automatización** › **+** y elige el disparador de una notificación de una app. Marca todas las apps de tus bancos. No añadas filtros: Tenra omite códigos, promociones y saldos por sí sola.";
+"bankSetup.step.action" = "Crea una automatización en blanco, busca **%@** y añádela.";
+"bankSetup.step.fields" = "Rellena sus campos con la variable **Notificación**, cada uno con su propiedad: **%1$@** con el título, **%2$@** con el subtítulo, **%3$@** con el texto, **%4$@** con la app y **%5$@** con la fecha.";
+"bankSetup.step.quiet" = "Si Atajos lo ofrece, elige ejecutar al instante y desactiva la notificación de ejecución. Listo: la próxima notificación de un pago será un movimiento en Tenra.";
+"bankSetup.note.filters" = "Un filtro añadido debe rellenarse o eliminarse; si no, la automatización no se activa.";
+"bankSetup.check.text" = "Pega el texto de una notificación de tu banco para ver qué registraría Tenra. No se guarda nada.";
+"bankSetup.check.placeholder" = "Texto de la notificación";
+"bankSetup.check.result" = "Tenra registraría";
+"bankSetup.check.kind" = "Tipo";
+"bankSetup.check.counterparty" = "Comercio o remitente";
+"bankSetup.check.card" = "Tarjeta";
+"bankSetup.check.none" = "No es un movimiento: Tenra no registra nada de este texto.";

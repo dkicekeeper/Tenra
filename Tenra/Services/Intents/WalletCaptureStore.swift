@@ -77,6 +77,9 @@ final class WalletCaptureStore {
         var matchedOccurrences: [String: Date]?
         /// When the first payment was ever recorded. nil in snapshots saved before it was kept.
         var firstCaptureAt: Date?
+        /// Sides of transfers between own accounts waiting for their other side. nil in
+        /// snapshots saved before it was kept.
+        var transferSides: [OwnTransferMatcher.Side]?
     }
 
     /// How much the automations record, for Diagnostics and the Home setup card. Local only.
@@ -114,6 +117,9 @@ final class WalletCaptureStore {
     /// When an automation first recorded a payment; outlives the captures' 90 days, so
     /// "has auto-capture ever worked" stays answered.
     private(set) var firstCaptureAt: Date?
+    /// One side of a transfer between own accounts per bank notification, until
+    /// OwnTransferRecorder pairs it with the other bank's side (or it is two days old).
+    private(set) var transferSides: [OwnTransferMatcher.Side]
     /// Set by a tap on a "check a payment" notification (WalletReviewNotifier): MainTabView
     /// presents the To review list. Not persisted.
     var isReviewRequested = false
@@ -126,6 +132,22 @@ final class WalletCaptureStore {
         self.matchedOccurrences = snapshot.matchedOccurrences ?? [:]
         // Snapshots from before the field: the oldest kept capture is the best answer.
         self.firstCaptureAt = snapshot.firstCaptureAt ?? snapshot.captures.values.map(\.payment.date).min()
+        self.transferSides = snapshot.transferSides ?? []
+    }
+
+    // MARK: - Transfers between own accounts
+
+    func enqueueTransferSide(_ side: OwnTransferMatcher.Side) {
+        guard !transferSides.contains(where: { $0.id == side.id }) else { return }
+        transferSides.append(side)
+        persist()
+    }
+
+    /// What OwnTransferRecorder left waiting.
+    func setTransferSides(_ sides: [OwnTransferMatcher.Side]) {
+        guard sides != transferSides else { return }
+        transferSides = sides
+        persist()
     }
 
     // MARK: - Captures
@@ -273,6 +295,7 @@ final class WalletCaptureStore {
         pending = []
         matchedOccurrences = [:]
         firstCaptureAt = nil
+        transferSides = []
         defaults.removeObject(forKey: Self.storageKey)
     }
 
@@ -281,7 +304,7 @@ final class WalletCaptureStore {
     private static func load(from defaults: UserDefaults) -> Snapshot {
         guard let data = defaults.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode(Snapshot.self, from: data) else {
-            return Snapshot(captures: [:], pending: [], matchedOccurrences: [:], firstCaptureAt: nil)
+            return Snapshot(captures: [:], pending: [], matchedOccurrences: [:], firstCaptureAt: nil, transferSides: [])
         }
         return decoded
     }
@@ -291,7 +314,8 @@ final class WalletCaptureStore {
             captures: captures,
             pending: pending,
             matchedOccurrences: matchedOccurrences,
-            firstCaptureAt: firstCaptureAt
+            firstCaptureAt: firstCaptureAt,
+            transferSides: transferSides
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: Self.storageKey)

@@ -9,13 +9,15 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
 
 ## Locales
 
-- **In the app: 11.** en (development language and fallback), ru, de, es, fr, tr, pt-BR, it, uk,
-  ja, ko. Each `Tenra/<locale>.lproj/` holds `Localizable.strings`, `Localizable.stringsdict`
+- **In the app: 12.** en (development language and fallback), ru, de, es, fr, tr, pt-BR, it, uk,
+  ja, ko, kk (Kazakh, Cyrillic, since 1.7; the owner's decision of 2026-10-22: both local
+  competitors have it and it is a system language in iOS 27). Each `Tenra/<locale>.lproj/` holds `Localizable.strings`, `Localizable.stringsdict`
   (plurals), `InfoPlist.strings` (permission prompts) and `AppShortcuts.strings` (Siri phrases).
 - **On the App Store: 13 storefront locales**: de-DE, en-US, es-ES, es-MX, fr-CA, fr-FR, it, ja,
   ko, pt-BR, ru, tr, uk. The app's es and fr cover both of their storefronts.
 - **Features per language.** Voice input (`VoiceInputParser`, `VoiceInputSegmenter`) and CSV type
-  values (`CSVColumnMapping`) understand the nine languages written with spaces. ja and ko get the
+  values (`CSVColumnMapping`) understand the nine languages written with spaces (not kk yet:
+  its keywords would collide with Russian ones in the flat maps, see Adding a language). ja and ko get the
   UI, dates and currencies in voice input; parsing amounts and categories from ja/ko speech is
   deferred (it needs word segmentation; notes in the archive). Statement and receipt import is
   language-independent (Vision documents, [domains/import.md](domains/import.md)).
@@ -34,9 +36,10 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
 - **No em dashes** in any user-facing text: comma, colon, period, or two sentences.
 - **Quotes:** escape straight quotes (`\"`) or use the language's own (« », „ “, 「 」).
 - **Tone** (set by the existing translations; follow it, don't choose again): de *Sie*, fr *vous*,
-  ru and uk *вы*, es, it, pt-BR and tr informal, ja and ko polite (です/ます, 해요). "Tenra Pro" is
+  ru and uk *вы*, kk *Сіз* (a Latin name takes its suffix after a hyphen: Tenra-да), es, it, pt-BR and tr informal, ja and ko polite (です/ます, 해요). "Tenra Pro" is
   never translated.
-- **Plurals** go in `.stringsdict`: ru and uk one/few/many/other; ja and ko other only; the rest
+- **Plurals** go in `.stringsdict`: ru and uk one/few/many/other; ja and ko other only; kk one and
+  other with the same text (the noun after a number stays singular); the rest
   one/other (fr and pt-BR use "one" for 0 and 1.x too, check the wording). Any string with a
   count next to a noun ("%lld accounts") is a plural, in every locale (tr: one = other), and the
   key lives only in `.stringsdict`. Format it with

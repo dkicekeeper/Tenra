@@ -1778,7 +1778,7 @@
 "intent.bankNotification.parameter.app" = "App";
 "intent.bankNotification.parameter.date" = "Datum";
 "intent.bankNotification.notOperation" = "Keine Ausgabe oder Einnahme in dieser Mitteilung, nichts erfasst.";
-"intent.bankNotification.ownTransfer" = "Eine Überweisung zwischen Ihren eigenen Konten wird nicht erfasst.";
+"intent.bankNotification.ownTransfer" = "Eine Überweisung zwischen Ihren eigenen Konten: Tenra erfasst sie, sobald die Mitteilung der anderen Bank eintrifft.";
 "intent.bankNotification.cash" = "Eine Bargeldabhebung wird nicht erfasst: Erfassen Sie, wofür Sie das Bargeld ausgeben.";
 "walletSetup.title" = "Wallet-Automation einrichten";
 "walletSetup.intro" = "Danach wird jede Apple Pay-Zahlung am Terminal von selbst gespeichert, mit Händler, Betrag, Währung und Karte. Onlinezahlungen gibt Wallet nicht weiter: Sie kommen mit dem Kontoauszug.";
@@ -2269,3 +2269,23 @@
 "status.archived" = "Archiviert";
 "status.pending" = "Ausstehend";
 "textInput.characterCount" = "%1$lld von %2$lld Zeichen";
+
+"bankSetup.title" = "Bankmitteilungen einrichten";
+"bankSetup.page.intro" = "Buchungen aus Ihren Bankmitteilungen";
+"bankSetup.page.trigger" = "Wählen Sie Ihre Bank-Apps";
+"bankSetup.page.action" = "Fügen Sie die Tenra-Aktion hinzu";
+"bankSetup.page.quiet" = "Ohne Rückfrage ausführen";
+"bankSetup.page.check" = "Mitteilung prüfen";
+"bankSetup.intro" = "Ab iOS 27 können Kurzbefehle eine Aktion starten, wenn eine Mitteilung eintrifft. Tenra liest Betrag, Währung, Karte und Händler aus der Mitteilung Ihrer Bank und erfasst die Ausgabe oder Einnahme ohne Rückfrage. Der Text verlässt Ihr iPhone nie.";
+"bankSetup.step.trigger" = "Öffnen Sie **Kurzbefehle** › **Automation** › **+** und wählen Sie den Auslöser für eine Mitteilung einer App. Wählen Sie alle Bank-Apps, die Sie nutzen. Fügen Sie keine Filter hinzu: Codes, Werbung und Kontostände überspringt Tenra selbst.";
+"bankSetup.step.action" = "Erstellen Sie eine leere Automation, suchen Sie **%@** und fügen Sie es hinzu.";
+"bankSetup.step.fields" = "Füllen Sie die Felder aus der Variablen **Mitteilung**, jedes mit seiner Eigenschaft: **%1$@** mit dem Titel, **%2$@** mit dem Untertitel, **%3$@** mit dem Text, **%4$@** mit der App und **%5$@** mit dem Datum.";
+"bankSetup.step.quiet" = "Wenn Kurzbefehle es anbietet, wählen Sie die sofortige Ausführung und schalten Sie die Mitteilung zur Ausführung aus. Fertig: Die nächste Zahlungsmitteilung wird zu einer Buchung in Tenra.";
+"bankSetup.note.filters" = "Ein hinzugefügter Filter muss ausgefüllt oder entfernt werden, sonst schaltet sich die Automation nicht ein.";
+"bankSetup.check.text" = "Fügen Sie den Text einer Mitteilung Ihrer Bank ein, um zu sehen, was Tenra daraus erfassen würde. Nichts wird gespeichert.";
+"bankSetup.check.placeholder" = "Text der Mitteilung";
+"bankSetup.check.result" = "Tenra würde erfassen";
+"bankSetup.check.kind" = "Art";
+"bankSetup.check.counterparty" = "Händler oder Absender";
+"bankSetup.check.card" = "Karte";
+"bankSetup.check.none" = "Keine Buchung: Aus diesem Text erfasst Tenra nichts.";

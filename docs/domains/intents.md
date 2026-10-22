@@ -445,9 +445,28 @@ notification, learning on confirm. The "card" is the app plus the card's digits
 an income category from the sender's history (the merchant memory holds expense categories), no
 subscription matching.
 
-Not recorded, with a dialog saying so: a transfer between own accounts (each bank's notification
-shows one side; recording it as an expense or an income would count the money twice) and a cash
-withdrawal (the spending is logged later).
+Not recorded, with a dialog saying so: a cash withdrawal (the spending is logged later).
+
+### 7.3 Transfers between own accounts
+
+Each bank's notification shows one side ("−15 000" in one app, "+15 000 between own accounts" in
+the other); recording either as an expense or an income would count the money twice. The parser
+marks the direction (`BankNotification.isIncoming`: the sign, else the operation word), the intent
+queues the side (`WalletCaptureStore.transferSides`, with the card key) and `OwnTransferRecorder`
+pairs sides right away in the intent and again when the app comes to the front (MainTabView):
+`OwnTransferMatcher.match` takes the same currency, the receiving amount equal to the sent one or
+up to 1 % less (a fee), within 15 minutes, two different cards, the closest in time. A pair whose
+cards both have an account (`CardAccountMemory`) in the sides' currencies becomes one
+`TransactionStore.transfer`; otherwise it waits. A side alone for 48 hours is dropped. Pinned by
+`OwnTransferMatcherTests`.
+
+### 7.4 Setup guide and "Check a notification"
+
+`BankNotificationGuideView` (Settings → Siri & Shortcuts and the onboarding's auto-capture step,
+iOS 27 only: `BankNotificationGuideView.isAvailable`): the intro, the trigger (the bank apps, no
+filters), Tenra's action and its five fields from the **Notification** variable, running without a
+question, and a last page where a pasted notification shows what the parser finds (type, amount,
+merchant or sender, card), nothing saved.
 
 A bank notification's merchants are kept out of `WalletCaptureStore.merchants`, the list looked up
 online for logos ([logos.md](logos.md)): they name people too (a transfer).
@@ -460,7 +479,7 @@ A widget extension target (`TenraWidgetsExtension`, bundle id `dakacom.Tenra.Ten
 folder `TenraWidgets/`, synchronized like the app's) embedded in the app. App Group
 `group.dakacom.Tenra` in both entitlements. No DesignKit in the extension (its package uses
 APIs an extension may not): system fonts, the accent from its own asset catalog, its own
-`Localizable.strings` in 11 locales.
+`Localizable.strings` in 12 locales.
 
 - **Data**: the app writes `widget-snapshot.json` into the App Group (`WidgetSnapshotStore`,
   `Services/Widgets/WidgetSnapshot.swift`) after the full load (ContentView) and when it goes to

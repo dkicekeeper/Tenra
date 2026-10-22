@@ -1,0 +1,16 @@
+/* TenraWidgets: the widget extension's strings (its own bundle). */
+
+"widget.today.name" = "Бүгінге";
+"widget.today.description" = "Келесі кіріске дейін күніне қанша жұмсауға болатыны және бүгін қанша кеткені.";
+"widget.today.title" = "Бүгінге";
+"widget.today.untilIncome" = "%@ дейін күніне";
+"widget.today.untilMonthEnd" = "ай соңына дейін күніне";
+"widget.today.inline" = "Бүгінге %@";
+"widget.today.spent" = "Бүгін: %@";
+"widget.today.empty" = "Бүгінгі ақшаны көру үшін Tenra ашыңыз";
+"widget.quickAdd.title" = "Шығыс жазу";
+"widget.quickAdd.description" = "Сатып алуды жазу үшін Tenra ашады.";
+"widget.sample.food" = "Тамақ";
+"widget.sample.transport" = "Көлік";
+"widget.sample.coffee" = "Кофе";
+"widget.sample.shopping" = "Сатып алулар";

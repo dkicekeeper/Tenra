@@ -3,7 +3,8 @@
 //  Tenra
 //
 //  Settings → Siri & Shortcuts: the way into the Shortcuts Wallet automation, a step-by-step
-//  guide to setting it up (WalletSetupGuideView). What the automation keeps (To review, the
+//  guide to setting it up (WalletSetupGuideView), and on iOS 27 the bank notification
+//  automation's (BankNotificationGuideView). What the automation keeps (To review, the
 //  merchants, the cards) is in the Wallet section under this one.
 //
 
@@ -17,6 +18,14 @@ struct SettingsSiriSection: View {
                 icon: "wallet.pass",
                 accessory: .navigation { WalletSetupGuideView() }
             )
+            // The notification trigger exists from iOS 27 (docs/domains/intents.md §7).
+            if BankNotificationGuideView.isAvailable {
+                UniversalRow(
+                    String(localized: "bankSetup.title"),
+                    icon: "bell.badge",
+                    accessory: .navigation { BankNotificationGuideView() }
+                )
+            }
         }
     }
 }

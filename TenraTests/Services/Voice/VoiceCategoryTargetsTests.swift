@@ -16,7 +16,7 @@ import Foundation
 @MainActor
 struct VoiceCategoryTargetsTests {
 
-    private static let locales = ["en", "ru", "de", "es", "fr", "tr", "pt-BR", "it", "uk", "ja", "ko"]
+    private static let locales = ["en", "ru", "de", "es", "fr", "tr", "pt-BR", "it", "uk", "ja", "ko", "kk"]
 
     private static let presetKeys = (CategoryPreset.defaultExpense + CategoryPreset.defaultIncome).map(\.nameKey)
 

@@ -1778,7 +1778,7 @@
 "intent.bankNotification.parameter.app" = "App";
 "intent.bankNotification.parameter.date" = "Data";
 "intent.bankNotification.notOperation" = "Nessuna spesa o entrata in questa notifica, non è stato registrato nulla.";
-"intent.bankNotification.ownTransfer" = "Un trasferimento tra i tuoi conti non viene registrato.";
+"intent.bankNotification.ownTransfer" = "Un trasferimento tra i tuoi conti: Tenra lo registra quando arriva la notifica dell’altra banca.";
 "intent.bankNotification.cash" = "Un prelievo di contanti non viene registrato: registra ciò che paghi in contanti.";
 "walletSetup.title" = "Configura l'automazione Wallet";
 "walletSetup.intro" = "Così ogni pagamento Apple Pay al terminale viene salvato da solo, con esercente, importo, valuta e carta. I pagamenti online Wallet non li passa: arrivano con l'estratto conto.";
@@ -2269,3 +2269,23 @@
 "status.archived" = "Archiviato";
 "status.pending" = "In attesa";
 "textInput.characterCount" = "%1$lld di %2$lld caratteri";
+
+"bankSetup.title" = "Configura le notifiche della banca";
+"bankSetup.page.intro" = "Operazioni dalle notifiche della tua banca";
+"bankSetup.page.trigger" = "Scegli le app delle tue banche";
+"bankSetup.page.action" = "Aggiungi l’azione di Tenra";
+"bankSetup.page.quiet" = "Senza chiedere";
+"bankSetup.page.check" = "Verifica una notifica";
+"bankSetup.intro" = "Su iOS 27 Comandi può avviare un’azione quando arriva una notifica. Tenra legge importo, valuta, carta ed esercente dalla notifica della tua banca e registra la spesa o l’entrata senza chiedere nulla. Il testo non lascia mai il tuo iPhone.";
+"bankSetup.step.trigger" = "Apri **Comandi** › **Automazione** › **+** e scegli il trigger per una notifica da un’app. Seleziona tutte le app delle tue banche. Non aggiungere filtri: Tenra salta da sé codici, promozioni e saldi.";
+"bankSetup.step.action" = "Crea un’automazione vuota, cerca **%@** e aggiungila.";
+"bankSetup.step.fields" = "Compila i campi con la variabile **Notifica**, ognuno con la sua proprietà: **%1$@** con il titolo, **%2$@** con il sottotitolo, **%3$@** con il testo, **%4$@** con l’app e **%5$@** con la data.";
+"bankSetup.step.quiet" = "Se Comandi lo propone, scegli l’esecuzione immediata e disattiva la notifica di esecuzione. Fatto: la prossima notifica di pagamento diventa un’operazione in Tenra.";
+"bankSetup.note.filters" = "Un filtro aggiunto va compilato o rimosso, altrimenti l’automazione non si attiva.";
+"bankSetup.check.text" = "Incolla il testo di una notifica della tua banca per vedere cosa registrerebbe Tenra. Non viene salvato nulla.";
+"bankSetup.check.placeholder" = "Testo della notifica";
+"bankSetup.check.result" = "Tenra registrerebbe";
+"bankSetup.check.kind" = "Tipo";
+"bankSetup.check.counterparty" = "Esercente o mittente";
+"bankSetup.check.card" = "Carta";
+"bankSetup.check.none" = "Non è un’operazione: Tenra non registra nulla da questo testo.";

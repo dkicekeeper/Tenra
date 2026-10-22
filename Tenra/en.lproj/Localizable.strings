@@ -1778,7 +1778,7 @@
 "intent.bankNotification.parameter.app" = "App";
 "intent.bankNotification.parameter.date" = "Date";
 "intent.bankNotification.notOperation" = "No expense or income in this notification, nothing recorded.";
-"intent.bankNotification.ownTransfer" = "A transfer between your own accounts is not recorded.";
+"intent.bankNotification.ownTransfer" = "A transfer between your own accounts: Tenra records it once the other bank’s notification arrives.";
 "intent.bankNotification.cash" = "A cash withdrawal is not recorded: log what you spend the cash on.";
 "walletSetup.title" = "Set up the Wallet automation";
 "walletSetup.intro" = "Then every Apple Pay payment at a terminal is saved on its own, with the merchant, amount, currency and card. Wallet does not pass on online payments: they come in with a statement.";
@@ -2269,3 +2269,23 @@
 "status.archived" = "Archived";
 "status.pending" = "Pending";
 "textInput.characterCount" = "%1$lld of %2$lld characters";
+
+"bankSetup.title" = "Set up bank notifications";
+"bankSetup.page.intro" = "Entries from your bank’s notifications";
+"bankSetup.page.trigger" = "Pick your bank apps";
+"bankSetup.page.action" = "Add Tenra’s action";
+"bankSetup.page.quiet" = "Run without asking";
+"bankSetup.page.check" = "Check a notification";
+"bankSetup.intro" = "On iOS 27 Shortcuts can run an action when a notification arrives. Tenra reads the amount, currency, card and merchant from your bank’s notification and records the expense or income without a question. The text never leaves your iPhone.";
+"bankSetup.step.trigger" = "Open **Shortcuts** › **Automation** › **+** and choose the trigger for a notification from an app. Select every bank app you use. Add no filters: Tenra skips codes, promos and balances itself.";
+"bankSetup.step.action" = "Start a new blank automation, find **%@** and add it.";
+"bankSetup.step.fields" = "Fill its fields from the **Notification** variable, each with its property: **%1$@** with the title, **%2$@** with the subtitle, **%3$@** with the text, **%4$@** with the app and **%5$@** with the date.";
+"bankSetup.step.quiet" = "If Shortcuts offers it, choose to run immediately and turn off the notification about the run. Done: the next notification about a payment becomes an entry in Tenra.";
+"bankSetup.note.filters" = "A filter you add has to be filled in or removed, otherwise the automation does not turn on.";
+"bankSetup.check.text" = "Paste the text of one of your bank’s notifications to see what Tenra would record from it. Nothing is saved.";
+"bankSetup.check.placeholder" = "Notification text";
+"bankSetup.check.result" = "Tenra would record";
+"bankSetup.check.kind" = "Type";
+"bankSetup.check.counterparty" = "Merchant or sender";
+"bankSetup.check.card" = "Card";
+"bankSetup.check.none" = "Not an operation: Tenra records nothing from this text.";

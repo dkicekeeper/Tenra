@@ -43,6 +43,9 @@ nonisolated struct BankNotification: Equatable, Sendable {
     let counterparty: String
     /// The last four digits of the card or account, when the notification shows them.
     let cardDigits: String?
+    /// Money came into this bank's account: an income, or the receiving side of a transfer
+    /// between own accounts (OwnTransferMatcher pairs it with the sending side).
+    var isIncoming: Bool = false
 }
 
 nonisolated enum BankNotificationParser {
@@ -117,12 +120,24 @@ nonisolated enum BankNotificationParser {
             ? extraFees.filter { $0.currency == money.currency }.reduce(money.amount) { $0 + $1.amount }
             : money.amount
         let party = kind == .expense || kind == .income ? counterpartyName(in: lines, word: word) : ""
+        // Which way the money went: the sign, else the word ("Пополнение", "from …").
+        let incoming: Bool
+        if money.sign == "+" {
+            incoming = true
+        } else if money.sign == "-" {
+            incoming = false
+        } else if let word {
+            incoming = word.kind == .income || (word.kind == .transfer && isIncoming(lines[word.line]))
+        } else {
+            incoming = kind == .income
+        }
         return BankNotification(
             kind: kind,
             amount: amount,
             currencyCode: money.currency,
             counterparty: party,
-            cardDigits: digits
+            cardDigits: digits,
+            isIncoming: kind == .income || (kind == .ownTransfer && incoming)
         )
     }
 

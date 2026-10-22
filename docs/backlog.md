@@ -36,6 +36,32 @@ with the commit of every fix, are in
   `LoanDetailView` delete paths call `recalculateAccountBalances()` where
   `recalculateBalances(for:)` with the touched accounts would do.
 
+Found by the product audit of 2026-10-22 (market data, competitors and the reasoning:
+[archive/product-audit-2026-10-22.md](archive/product-audit-2026-10-22.md); the owner's decisions
+D1-D7 are in [promotion-plan.md](promotion-plan.md) §7):
+- **The Tenra Pro page doesn't name Ten.** `TenraProView.features` lists accounts, voice,
+  import, deposits, loans and debts; Ten without a limit, Pro's main value since 1.6, is missing.
+  Put it first (11 locales) and check the RevenueCat paywall copy in the dashboard.
+- **Activation.** Onboarding ends on an empty Home: no step for the Wallet automation (or, on
+  iOS 27, bank notifications), no "load a Kaspi statement, Ten reads it" (free within Ten's
+  first-week allowance), no Home card while auto-capture is not set up, no Ten notice after a
+  few manual entries.
+- **Backups off iCloud by default.** `CloudBackupService.isICloudEnabled` defaults to `false`:
+  the weekly backup stays in the app's container, lost with a reinstall or a phone set up from
+  scratch, and onboarding offers no restore. Data loss on a phone switch is the top complaint
+  about manual trackers. Turn iCloud on by default (decision D5) and offer "Restore from backup"
+  on the first onboarding screen when iCloud holds one.
+- **Quick-add templates, widgets, Control Center, Lock Screen** (moved from Ideas: every direct
+  competitor has widgets). Templates first (in-app, cheap, the content a widget shows). There is
+  no widget target or App Group today: share a small snapshot file through an App Group rather
+  than moving the CoreData store.
+- **Kazakh as the 12th locale** (decision D4): both Qalta apps have it, and it is a system
+  language in iOS 27. Check whether App Store Connect takes Kazakh metadata.
+- **"How much can I spend a day" on Home:** today only Ten shows it (`FinanceToolkit`'s
+  `daily_allowance`); upcoming payments counted in a budget.
+- **Local counters for auto-capture** in Diagnostics (Wallet and notification captures, To review
+  share), so the owner's and testers' phones show whether people keep it on.
+
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
   hold rules and data, no views: they belong in `Services/Agent/`, as does the catalogue half
@@ -87,9 +113,6 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 
 ## Ideas, not planned yet
 
-- **Quick-add templates, widgets, Control Center, Lock Screen.** Templates first (in-app, cheap,
-  the content a widget shows). There is no widget target or App Group today: share a small
-  snapshot file through an App Group rather than moving the CoreData store.
 - **Statement import:** a one-tap "align the balance to the statement" after the closing-balance
   check (today it only shows the difference).
 - **Subscriptions as expected payments**, merged with the real charges when they arrive.
@@ -116,7 +139,8 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
   account's currency doesn't reconvert its transactions; transfers saved without a target
   amount before the edit fix stay as saved.
 - **No family / shared budget**: it needs sync, and CloudKit sync was removed on 2026-04-22
-  after data loss. Drop `семейный` from the ru keyword field in the next ASO pass.
+  after data loss. Drop `семейный` from the ru keyword field in the next ASO pass. Up for review
+  (product audit 2026-10-22, decision D6): both Qalta apps in KZ now offer a shared or family book.
 - **No Create ML category model**: history, brand and keyword tiers are cheaper and explainable.
 - **iPad deferred**: it matters for featuring, not for traffic
   ([promotion-plan.md](promotion-plan.md)).

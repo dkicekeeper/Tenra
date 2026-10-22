@@ -201,6 +201,18 @@ struct WalletPaymentResolverTests {
         #expect(choice == WalletPaymentResolver.CategoryChoice(name: other.name, subcategoryIds: nil, isGuess: true))
     }
 
+    @Test("An income from a bank's notification takes an income category")
+    func incomeSuggestion() {
+        let choice = WalletPaymentResolver.category(
+            remembered: nil,
+            rememberedSubcategoryIds: nil,
+            suggestion: "Зарплата",
+            categories: [groceries, salary, other],
+            type: .income
+        )
+        #expect(choice == WalletPaymentResolver.CategoryChoice(name: "Зарплата", subcategoryIds: nil, isGuess: true))
+    }
+
     @Test("Without Other the payment stays uncategorized")
     func uncategorizedWithoutOther() {
         let choice = WalletPaymentResolver.category(

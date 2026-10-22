@@ -1751,6 +1751,16 @@
 "intent.walletPayment.noAmount" = "この支払いには金額がないため、何も記録していません。";
 "intent.walletPayment.queued" = "まだ為替レートがありません。レートを取得しだい、Tenra が支払いを記録します。";
 "intent.walletPayment.noAccount" = "支払いを記録するには、Tenra に口座を追加してください。";
+"intent.bankNotification.title" = "銀行の通知を記録";
+"intent.bankNotification.description" = "通知オートメーション用: 銀行の通知から支出または収入を読み取り、確認なしで記録します。どの銀行でも使えます。Tenraは銀行とカードごとの口座、加盟店ごとのカテゴリを記憶します。";
+"intent.bankNotification.parameter.title" = "タイトル";
+"intent.bankNotification.parameter.subtitle" = "サブタイトル";
+"intent.bankNotification.parameter.text" = "本文";
+"intent.bankNotification.parameter.app" = "App";
+"intent.bankNotification.parameter.date" = "日付";
+"intent.bankNotification.notOperation" = "この通知には支出も収入もないため、何も記録されませんでした。";
+"intent.bankNotification.ownTransfer" = "自分の口座間の振替は記録されません。";
+"intent.bankNotification.cash" = "現金の引き出しは記録されません。現金で支払ったものを記録してください。";
 "walletSetup.title" = "Walletオートメーションを設定";
 "walletSetup.intro" = "設定すると、端末でのApple Pay支払いが店舗、金額、通貨、カードとともに自動で記録されます。オンライン決済はWalletから渡されないため、明細書で取り込まれます。";
 "walletSetup.step.open" = "**ショートカット**を開き、**オートメーション**で**+**をタップして**Wallet**を選びます。";

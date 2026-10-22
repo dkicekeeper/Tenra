@@ -15,7 +15,8 @@
 //    recorded by the next payment or when the app comes to the front.
 //
 //  Both also answer "did this payment just arrive?": terminals sometimes fire the
-//  automation twice for one tap.
+//  automation twice for one tap, and a card payment at a terminal also makes the bank
+//  send a notification (LogBankNotificationIntent records those through the same path).
 //
 //  Storage: a single Codable blob in `UserDefaults`, like MerchantCategoryMemory.
 //  Captures are kept for 90 days, which bounds it by the number of Apple Pay
@@ -25,7 +26,8 @@
 import Foundation
 import Observation
 
-/// One payment as the Wallet automation delivered it.
+/// One payment as the Wallet automation delivered it, or one operation from a bank's
+/// notification (`bankApp` set).
 nonisolated struct WalletPayment: Codable, Equatable, Identifiable, Sendable {
     let id: String
     var amount: Double
@@ -38,6 +40,13 @@ nonisolated struct WalletPayment: Codable, Equatable, Identifiable, Sendable {
     /// The account fixed in the automation, if any.
     var accountId: String?
     var date: Date
+    /// The bank app whose notification this came from (LogBankNotificationIntent); nil for
+    /// an Apple Pay payment.
+    var bankApp: String? = nil
+    /// Money in: a bank notification's top-up or incoming transfer. nil means an expense.
+    var isIncome: Bool? = nil
+
+    var isExpense: Bool { isIncome != true }
 }
 
 @MainActor
@@ -74,6 +83,9 @@ final class WalletCaptureStore {
 
     /// Two identical payments this close together are one tap fired twice.
     static let duplicateWindow: TimeInterval = 90
+    /// An Apple Pay payment and a bank's notification of the same amount this close
+    /// together are one payment, reported by both.
+    static let crossSourceWindow: TimeInterval = 5 * 60
     /// Captures older than this are dropped: their review is long over.
     static let retention: TimeInterval = 90 * 24 * 60 * 60
 
@@ -120,10 +132,13 @@ final class WalletCaptureStore {
     /// The transactions the Wallet action saved, while their captures are kept (90 days).
     var transactionIds: [String] { Array(captures.keys) }
 
-    /// The merchants of the kept captures, as Wallet wrote them, one per merchant.
+    /// The merchants of the kept Apple Pay captures, as Wallet wrote them, one per merchant.
+    /// Not a bank notification's: those name people too (a transfer), and these merchants
+    /// are looked up online (MerchantLogoResolver).
     var merchants: [String] {
         var seen = Set<String>()
         return captures.values
+            .filter { $0.payment.bankApp == nil }
             .map(\.payment.merchant)
             .filter { !$0.isEmpty && seen.insert(CategorySuggestionService.normalizedMerchant($0)).inserted }
     }
@@ -181,20 +196,25 @@ final class WalletCaptureStore {
     // MARK: - Duplicates
 
     /// True when the same payment (amount, currency, merchant, card) was recorded or
-    /// queued within `duplicateWindow`.
+    /// queued within `duplicateWindow`, or the other source (Apple Pay, a bank's
+    /// notification) reported an expense of the same amount within `crossSourceWindow`.
     func isDuplicate(_ payment: WalletPayment) -> Bool {
         let key = Self.duplicateKey(payment)
         let recent = captures.values.map(\.payment) + pending
         return recent.contains { other in
-            other.id != payment.id
-                && abs(other.date.timeIntervalSince(payment.date)) <= Self.duplicateWindow
-                && abs(other.amount - payment.amount) < 0.005
-                && Self.duplicateKey(other) == key
+            guard other.id != payment.id, abs(other.amount - payment.amount) < 0.005 else { return false }
+            let gap = abs(other.date.timeIntervalSince(payment.date))
+            if gap <= Self.duplicateWindow, Self.duplicateKey(other) == key { return true }
+            return gap <= Self.crossSourceWindow
+                && (other.bankApp == nil) != (payment.bankApp == nil)
+                && other.isExpense && payment.isExpense
+                && (other.currencyCode == nil || payment.currencyCode == nil || other.currencyCode == payment.currencyCode)
         }
     }
 
     private static func duplicateKey(_ payment: WalletPayment) -> String {
         [
+            payment.isExpense ? "" : "in",
             payment.currencyCode ?? "",
             CategorySuggestionService.normalizedMerchant(payment.merchant),
             CardAccountMemory.key(forCard: payment.card) ?? ""

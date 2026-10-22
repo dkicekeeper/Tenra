@@ -1751,6 +1751,16 @@
 "intent.walletPayment.noAmount" = "Diese Zahlung hat keinen Betrag, nichts erfasst.";
 "intent.walletPayment.queued" = "Noch kein Wechselkurs. Tenra erfasst die Zahlung, sobald einer verfügbar ist.";
 "intent.walletPayment.noAccount" = "Fügen Sie in Tenra ein Konto hinzu, um Zahlungen zu erfassen.";
+"intent.bankNotification.title" = "Bankmitteilung erfassen";
+"intent.bankNotification.description" = "Für die Mitteilungs-Automation: liest eine Ausgabe oder Einnahme aus der Mitteilung einer Bank und erfasst sie ohne Rückfrage. Funktioniert mit jeder Bank. Tenra merkt sich das Konto jeder Bank und Karte und die Kategorie jedes Händlers.";
+"intent.bankNotification.parameter.title" = "Titel";
+"intent.bankNotification.parameter.subtitle" = "Untertitel";
+"intent.bankNotification.parameter.text" = "Text";
+"intent.bankNotification.parameter.app" = "App";
+"intent.bankNotification.parameter.date" = "Datum";
+"intent.bankNotification.notOperation" = "Keine Ausgabe oder Einnahme in dieser Mitteilung, nichts erfasst.";
+"intent.bankNotification.ownTransfer" = "Eine Überweisung zwischen Ihren eigenen Konten wird nicht erfasst.";
+"intent.bankNotification.cash" = "Eine Bargeldabhebung wird nicht erfasst: Erfassen Sie, wofür Sie das Bargeld ausgeben.";
 "walletSetup.title" = "Wallet-Automation einrichten";
 "walletSetup.intro" = "Danach wird jede Apple Pay-Zahlung am Terminal von selbst gespeichert, mit Händler, Betrag, Währung und Karte. Onlinezahlungen gibt Wallet nicht weiter: Sie kommen mit dem Kontoauszug.";
 "walletSetup.step.open" = "Öffnen Sie **Kurzbefehle**, gehen Sie zu **Automation**, tippen Sie auf **+** und wählen Sie **Wallet**.";

@@ -1751,6 +1751,16 @@
 "intent.walletPayment.noAmount" = "В оплате нет суммы, ничего не записано.";
 "intent.walletPayment.queued" = "Курса валюты пока нет. Tenra запишет оплату, как только он появится.";
 "intent.walletPayment.noAccount" = "Добавьте счёт в Tenra, чтобы записывать оплаты.";
+"intent.bankNotification.title" = "Записать уведомление банка";
+"intent.bankNotification.description" = "Для автоматизации по уведомлениям: находит в уведомлении банка расход или доход и записывает его, ничего не спрашивая. Подходит для любого банка. Tenra запоминает счёт каждого банка и карты и категорию каждого продавца.";
+"intent.bankNotification.parameter.title" = "Заголовок";
+"intent.bankNotification.parameter.subtitle" = "Подзаголовок";
+"intent.bankNotification.parameter.text" = "Текст";
+"intent.bankNotification.parameter.app" = "Приложение";
+"intent.bankNotification.parameter.date" = "Дата";
+"intent.bankNotification.notOperation" = "В уведомлении нет расхода или дохода, ничего не записано.";
+"intent.bankNotification.ownTransfer" = "Перевод между своими счетами не записывается.";
+"intent.bankNotification.cash" = "Снятие наличных не записывается: записывайте то, на что тратите наличные.";
 "walletSetup.title" = "Настроить автоматизацию Wallet";
 "walletSetup.intro" = "После этого каждая оплата Apple Pay на терминале записывается сама: с продавцом, суммой, валютой и картой. Онлайн-оплаты Wallet не передаёт, они придут с выпиской.";
 "walletSetup.step.open" = "Откройте **Быстрые команды**, вкладку **Автоматизация**, нажмите **+** и выберите **Wallet**.";

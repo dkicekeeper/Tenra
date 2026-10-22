@@ -61,6 +61,59 @@ struct WalletCaptureStoreTests {
         #expect(!store.isDuplicate(payment(merchant: "Corner Bakery", at: 10)))
     }
 
+    private func bankPayment(
+        _ amount: Double = 3_500,
+        merchant: String = "Greenmart",
+        isIncome: Bool = false,
+        at offset: TimeInterval
+    ) -> WalletPayment {
+        WalletPayment(
+            id: UUID().uuidString,
+            amount: amount,
+            currencyCode: "KZT",
+            merchant: merchant,
+            card: "Bank •• 1234",
+            accountId: nil,
+            date: start.addingTimeInterval(offset),
+            bankApp: "Bank",
+            isIncome: isIncome
+        )
+    }
+
+    @Test("Apple Pay and the bank's notification of the same payment are one payment, either order")
+    func crossSourceDuplicate() {
+        let store = WalletCaptureStore(defaults: makeDefaults())
+        store.record(transactionId: "tx-1", payment: payment(currency: "KZT"), guesses: [], now: start)
+
+        #expect(store.isDuplicate(bankPayment(at: 120)))
+        #expect(!store.isDuplicate(bankPayment(at: WalletCaptureStore.crossSourceWindow + 1)))
+        #expect(!store.isDuplicate(bankPayment(3_600, at: 120)))
+        #expect(!store.isDuplicate(bankPayment(isIncome: true, at: 120)))
+
+        let other = WalletCaptureStore(defaults: makeDefaults())
+        other.record(transactionId: "tx-2", payment: bankPayment(at: 0), guesses: [], now: start)
+        #expect(other.isDuplicate(payment(currency: "KZT", at: 60)))
+    }
+
+    @Test("Two notifications of the same bank are the same payment only within the repeat window")
+    func bankRepeat() {
+        let store = WalletCaptureStore(defaults: makeDefaults())
+        store.record(transactionId: "tx-1", payment: bankPayment(at: 0), guesses: [], now: start)
+
+        #expect(store.isDuplicate(bankPayment(at: 60)))
+        #expect(!store.isDuplicate(bankPayment(at: 200)))
+        #expect(!store.isDuplicate(bankPayment(merchant: "Иван П.", at: 60)))
+    }
+
+    @Test("A bank notification's merchants are never looked up online: they name people too")
+    func bankMerchantsStayLocal() {
+        let store = WalletCaptureStore(defaults: makeDefaults())
+        store.record(transactionId: "tx-1", payment: payment(), guesses: [], now: start)
+        store.record(transactionId: "tx-2", payment: bankPayment(merchant: "Иван П.", at: 600), guesses: [], now: start)
+
+        #expect(store.merchants == ["GREENMART CASH&CARRY 123"])
+    }
+
     @Test("A queued payment counts for the guard too")
     func pendingCountsAsDuplicate() {
         let store = WalletCaptureStore(defaults: makeDefaults())

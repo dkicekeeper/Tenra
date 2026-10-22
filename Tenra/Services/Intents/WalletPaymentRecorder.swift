@@ -2,11 +2,13 @@
 //  WalletPaymentRecorder.swift
 //  Tenra
 //
-//  Records an Apple Pay payment from LogWalletPaymentIntent without a single
-//  question (docs/plan-auto-capture.md §4):
+//  Records an Apple Pay payment from LogWalletPaymentIntent, or an expense or an income
+//  from a bank's notification (LogBankNotificationIntent), without a single question
+//  (docs/plan-auto-capture.md §4):
 //
 //  1. no amount (a transit gate, a payload the trigger lost) → nothing to record;
-//  2. the same payment within 90 seconds → the terminal fired twice;
+//  2. the same payment within 90 seconds → the terminal fired twice; the same expense
+//     from the other source (Apple Pay, the bank's notification) within 5 minutes;
 //  3. account and category through WalletPaymentResolver, guesses noted;
 //  4. a subscription's charge the series already recorded → nothing new;
 //  5. another currency: the cached rate (refreshed first when stale), else one network
@@ -107,16 +109,19 @@ enum WalletPaymentRecorder {
         let categories = services.categories.customCategories
         let context = CoreDataStack.shared.viewContext
         let memory = MerchantCategoryMemory.shared
+        let type: TransactionType = payment.isExpense ? .expense : .income
 
-        // Category first: the account ranking is keyed on it.
-        let remembered = memory.category(forMerchant: payment.merchant, in: categories)
+        // Category first: the account ranking is keyed on it. The merchant memory holds
+        // expense categories: an income's comes from the sender's history.
+        let remembered = payment.isExpense ? memory.category(forMerchant: payment.merchant, in: categories) : nil
         let category = WalletPaymentResolver.category(
             remembered: remembered,
             rememberedSubcategoryIds: remembered == nil ? nil : memory.subcategoryIds(forMerchant: payment.merchant),
             suggestion: remembered == nil
-                ? suggestedCategory(for: payment.merchant, categories: categories, services: services, context: context)
+                ? suggestedCategory(for: payment.merchant, type: type, categories: categories, services: services, context: context)
                 : nil,
-            categories: categories
+            categories: categories,
+            type: type
         )
 
         guard let account = WalletPaymentResolver.account(
@@ -143,7 +148,8 @@ enum WalletPaymentRecorder {
         let candidates = subscriptionOccurrences(around: payment.date, context: context).filter {
             $0.accountId == account.accountId && !captures.isMatched(occurrenceId: $0.id)
         }
-        if let day = ImportDuplicateDetector.dayNumber(DateFormatters.dateFormatter.string(from: payment.date)),
+        if payment.isExpense,
+           let day = ImportDuplicateDetector.dayNumber(DateFormatters.dateFormatter.string(from: payment.date)),
            let occurrence = WalletPaymentResolver.subscriptionOccurrence(
                amount: payment.amount,
                currency: currency,
@@ -156,7 +162,7 @@ enum WalletPaymentRecorder {
         }
 
         let operation = ParsedOperation(
-            type: .expense,
+            type: type,
             amount: Decimal(payment.amount),
             currencyCode: payment.currencyCode,
             date: payment.date,
@@ -318,16 +324,17 @@ enum WalletPaymentRecorder {
     /// category for (CategorySuggestionProvider), resolved to one of their categories.
     private static func suggestedCategory(
         for merchant: String,
+        type: TransactionType,
         categories: [CustomCategory],
         services: IntentServices,
         context: NSManagedObjectContext
     ) -> String? {
         guard MerchantCategoryMemory.key(forMerchant: merchant) != nil else { return nil }
-        let index = CategorySuggestionService.buildHistoryIndex(from: history(of: merchant, context: context))
+        let index = CategorySuggestionService.buildHistoryIndex(from: history(of: merchant, type: type, context: context))
         let parser = services.makeParser()
         return CategorySuggestionProvider.suggestion(
             for: merchant,
-            type: .expense,
+            type: type,
             index: index,
             categories: categories,
             keywordMatcher: { parser.keywordCategory(in: $0) }
@@ -348,11 +355,15 @@ enum WalletPaymentRecorder {
         return ((try? context.fetch(request)) ?? []).map { $0.toTransaction() }
     }
 
-    /// Recent expenses whose description contains the merchant's first word. Broad on
+    /// Recent expenses (or incomes) whose description contains the merchant's first word. Broad on
     /// purpose ("MAGNUM CASH&CARRY 123" and "... 456" share it): the history index then
     /// compares normalized merchants exactly. The word of its clean name (MerchantName), so
     /// a legal form in front ("ИП", "ТОО") is not the word searched.
-    static func history(of merchant: String, context: NSManagedObjectContext) -> [Transaction] {
+    static func history(
+        of merchant: String,
+        type: TransactionType = .expense,
+        context: NSManagedObjectContext
+    ) -> [Transaction] {
         guard let firstWord = CategorySuggestionService.normalizedMerchant(MerchantName.displayName(merchant))
             .split(separator: " ")
             .first,
@@ -361,7 +372,7 @@ enum WalletPaymentRecorder {
         let request = NSFetchRequest<TransactionEntity>(entityName: "TransactionEntity")
         request.predicate = NSPredicate(
             format: "type == %@ AND descriptionText CONTAINS[cd] %@",
-            TransactionType.expense.rawValue,
+            type.rawValue,
             String(firstWord)
         )
         request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]

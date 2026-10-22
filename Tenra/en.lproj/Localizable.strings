@@ -1751,6 +1751,16 @@
 "intent.walletPayment.noAmount" = "No amount in this payment, nothing recorded.";
 "intent.walletPayment.queued" = "No exchange rate yet. Tenra records this payment as soon as it gets one.";
 "intent.walletPayment.noAccount" = "Add an account in Tenra to record payments.";
+"intent.bankNotification.title" = "Log a bank notification";
+"intent.bankNotification.description" = "For the notification automation: reads an expense or an income from a bank's notification and records it without asking anything. Works with any bank. Tenra remembers the account of each bank and card and the category of each merchant.";
+"intent.bankNotification.parameter.title" = "Title";
+"intent.bankNotification.parameter.subtitle" = "Subtitle";
+"intent.bankNotification.parameter.text" = "Text";
+"intent.bankNotification.parameter.app" = "App";
+"intent.bankNotification.parameter.date" = "Date";
+"intent.bankNotification.notOperation" = "No expense or income in this notification, nothing recorded.";
+"intent.bankNotification.ownTransfer" = "A transfer between your own accounts is not recorded.";
+"intent.bankNotification.cash" = "A cash withdrawal is not recorded: log what you spend the cash on.";
 "walletSetup.title" = "Set up the Wallet automation";
 "walletSetup.intro" = "Then every Apple Pay payment at a terminal is saved on its own, with the merchant, amount, currency and card. Wallet does not pass on online payments: they come in with a statement.";
 "walletSetup.step.open" = "Open **Shortcuts**, go to **Automation**, tap **+** and choose **Wallet**.";

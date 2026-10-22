@@ -126,7 +126,8 @@ General → "Merchant logos" (`MerchantLogoStore.enabledKey`, on by default). Pl
   description and reads `version`, so rows re-render when a logo is found.
 - Lookups run only in the app, when it comes to the front (`MainTabView`), never in an intent:
   - the merchants Apple Pay payments came from (`WalletCaptureStore`, `LogWalletPaymentIntent`):
-    all four sources, at most 12 per pass. Apple Pay only pays shops;
+    all four sources, at most 12 per pass. Apple Pay only pays shops; a bank notification's
+    merchants (`LogBankNotificationIntent`) are not in this list, they name people too;
   - the remembered merchants (`MerchantCategoryMemory`): on device only, at most 50 per pass. The
     memory also keeps a receipt's recipient and the note of any "Add expense" shortcut run, which
     may name a person;

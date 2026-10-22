@@ -136,20 +136,22 @@ enum WalletPaymentResolver {
 
     /// The category a payment goes to: the one the user chose for this merchant
     /// before, else a suggestion (history, brands, keywords; already resolved to one
-    /// of the user's categories), else "Other". Only the first is not a guess.
+    /// of the user's categories), else "Other". Only the first is not a guess. `type`
+    /// is income for money in from a bank's notification.
     static func category(
         remembered: CustomCategory?,
         rememberedSubcategoryIds: [String]?,
         suggestion: String?,
-        categories: [CustomCategory]
+        categories: [CustomCategory],
+        type: TransactionType = .expense
     ) -> CategoryChoice {
         if let remembered {
             return CategoryChoice(name: remembered.name, subcategoryIds: rememberedSubcategoryIds, isGuess: false)
         }
-        if let suggestion, categories.contains(where: { $0.type == .expense && $0.name == suggestion }) {
+        if let suggestion, categories.contains(where: { $0.type == type && $0.name == suggestion }) {
             return CategoryChoice(name: suggestion, subcategoryIds: nil, isGuess: true)
         }
-        let fallback = TransactionDraftService.resolveCategory(named: nil, type: .expense, in: categories)
+        let fallback = TransactionDraftService.resolveCategory(named: nil, type: type, in: categories)
         return CategoryChoice(name: fallback.name, subcategoryIds: nil, isGuess: true)
     }
 }

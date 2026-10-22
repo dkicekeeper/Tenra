@@ -41,7 +41,13 @@ The action for the Wallet automation (§6): amount, currency code, merchant, car
 optional account. Never asks and never comes to the foreground (`supportedModes = .background`):
 what Tenra cannot know is saved as a guess and journaled for review.
 
-### 1.4 `CheckSpendingIntent`
+### 1.4 `LogBankNotificationIntent`
+
+The action for the iOS 27 notification automation (§7): the notification's title, subtitle, text,
+app and date. Silent like the Wallet action (`supportedModes = .background`), records through the
+same path.
+
+### 1.5 `CheckSpendingIntent`
 
 Read-only: spending today / this week / this month (`SpendingPeriod`), as a spoken dialog
 plus a snippet. `authenticationPolicy = .requiresAuthentication`: totals need an unlocked
@@ -70,6 +76,7 @@ A financial write must never happen silently on a misheard phrase:
   prompt would make automations unusable.
 - `LogWalletPaymentIntent` never confirms (owner's decision 2026-10-19): a card payment did
   happen, so it is saved at once and what was guessed is journaled for review instead (§6.1).
+  `LogBankNotificationIntent` neither, for the same reason: the bank says the money moved (§7).
 
 ### 2.2 Blocking issues → open the app
 
@@ -116,13 +123,14 @@ left out, and that logging several at once is part of Tenra Pro
 
 ### 3.1 Files
 
-- `Tenra/Intents/`: the four intents, `TenraShortcuts`, `Entities/` (account, category,
+- `Tenra/Intents/`: the five intents, `TenraShortcuts`, `Entities/` (account, category,
   subcategory `AppEntity`s with their queries), `Snippets/` (`TransactionConfirmationSnippet`,
   `TransactionConfirmationSnippetIntent`, `SpendingSummarySnippet`).
 - `Services/Intents/`: `IntentEnvironment`, `TransactionDraft` + `TransactionDraftService`,
   `IntentAccountSuggester`, `IntentSubcategoryStore`, `SpendingQueryService`, `IntentHandoff`,
   `IntentUsageCounters`, the Wallet action's `WalletPaymentResolver`, `WalletPaymentRecorder`,
-  `WalletCaptureStore`, `CardAccountMemory`. `Services/Notifications/WalletReviewNotifier`
+  `WalletCaptureStore`, `CardAccountMemory`, the bank notification action's
+  `BankNotificationParser`. `Services/Notifications/WalletReviewNotifier`
   and the Settings screens `WalletReviewView`, `WalletCardsView`, `MerchantCategoriesView`.
 
 ### 3.2 `IntentEnvironment`
@@ -261,7 +269,10 @@ for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-captu
 
 1. Amount ≤ 0 (a transit gate, a lost payload) → nothing recorded.
 2. The same amount, currency, normalized merchant and card within 90 seconds
-   (`WalletCaptureStore.isDuplicate`, captures and queue) → the terminal fired twice. The
+   (`WalletCaptureStore.isDuplicate`, captures and queue) → the terminal fired twice; an expense
+   of the same amount (and currency, when both have one) from the other source within 5 minutes
+   (`crossSourceWindow`: Apple Pay at a terminal also makes the bank send a notification, §7)
+   → one payment, whichever came first. The
    payment's time is taken when the intent starts, before the queue drains. Right after this
    check the payment goes into `WalletCaptureStore.pending` (before the first await, so a second
    run of the same tap sees it) and leaves it only once saved: a run the system ends mid-save
@@ -380,3 +391,62 @@ decided, empty = "no subcategory"), and the merchant as Wallet last wrote it, fo
   `reassign`), swipe or "Forget merchant" to forget (`forget`: the next payment asks again).
 - Pinned by `MerchantCategoryMemoryTests` (normalization, subcategory decisions, the list,
   reassign, forget, entries saved before display names existed).
+
+---
+
+## 7. Bank notifications (iOS 27)
+
+The Shortcuts trigger "When I get a notification from <app>" (iOS 27, one or several apps, runs on
+a locked phone) passes the variable **Notification**, whose properties come separately: Title,
+Subtitle, Text, App, Date (and Urgent, Sender, Recipients, Related content, Name). The automation:
+the bank apps, no filter, the action **Log a bank notification** with Title, Subtitle, Text, App
+and Date. Plan and what is still open: [plan-notification-capture.md](../plan-notification-capture.md).
+
+### 7.1 `BankNotificationParser` (bank-agnostic)
+
+No bank's format is coded: every bank writes the same parts in its own words, read from the title,
+subtitle and text as one list of lines.
+
+- **Amount**: a number with a currency, the currency before it (a symbol, `R$`, an ISO code) or
+  after it (a symbol, a code, a local word: тг, руб, TL, zł, 円 …). A number with no currency is
+  never money (card numbers, times, percentages, a deposit's number). A currency in front ends the
+  amount at its number, so the word after it stays the merchant ("$5 Uber").
+- **Balance and fee** by the words in front of the amount on its line ("Доступно", "Available",
+  "Bakiye" …; "Комиссия", "fee" …). A balance is never the amount; a fee is added to an expense.
+  The signed amount wins, else the first one.
+- **Operation word**: the first one, line by line (the line it is on names the operation, later
+  lines are details such as "Списано с … **1234"); words of four letters and more match a
+  word's start, shorter ones the whole word ("atm", not "atmosphere"); Japanese and Korean words
+  match inside the text. Cash → `cashWithdrawal`; an own-account marker anywhere
+  (`StatementOperationKind`, "между своими", "депозит") unless the word is an expense's →
+  `ownTransfer`; then the sign; then the word (a transfer is an expense unless it came in: "от",
+  "from", "входящий"). An unsigned amount needs a balance, a card mask, the word among its line's
+  first three or on the amount's line, so a promo naming a sum is not an operation.
+- **Never an operation**: codes, declined payments, cashback, promos ("получите", "скидка",
+  "offer" …), a balance alone, no currency. Nil: nothing recorded beats a wrong record.
+- **Counterparty**: what follows the operation word on its line, cut at a balance or fee word,
+  without amounts, masks and leading prepositions or fillers ("от", "at", "aprovada em"); else the
+  first later line that is not a detail.
+- **Card**: the last four digits of a mask (`**1234`, `•• 1234`, "ending 1234").
+- Lexicon: the app's 11 languages and Kazakh, arrays (a repeated word is harmless).
+
+Pinned by `BankNotificationParserTests` (invented texts in the layouts of Kaspi, Freedom and other
+banks' wording).
+
+### 7.2 Recording
+
+`LogBankNotificationIntent` turns an expense or an income into a `WalletPayment` with `bankApp`
+(the App property, "" when missing) and `isIncome`, and records it through
+`WalletPaymentRecorder.record` (§6.1): duplicates, currency and queue, To review and its
+notification, learning on confirm. The "card" is the app plus the card's digits
+(`BankNotificationParser.cardName`: "Freedom •• 1234", or "Kaspi.kz" without a mask), so
+`CardAccountMemory` and Settings → Wallet → Cards hold one account per bank card. An income takes
+an income category from the sender's history (the merchant memory holds expense categories), no
+subscription matching.
+
+Not recorded, with a dialog saying so: a transfer between own accounts (each bank's notification
+shows one side; recording it as an expense or an income would count the money twice) and a cash
+withdrawal (the spending is logged later).
+
+A bank notification's merchants are kept out of `WalletCaptureStore.merchants`, the list looked up
+online for logos ([logos.md](logos.md)): they name people too (a transfer).

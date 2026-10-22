@@ -26,6 +26,9 @@ New since 1.6 (in the store since 2026-10-19):
 - Settings: Tenra Pro page (hero on the aurora), a Wallet section, the Wallet setup guide step by
   step with a picture of each Shortcuts screen; Siri's example phrases gone.
 - The cloud builds compile with Xcode 27, so 1.7 is the first store build with the iOS 27 UI.
+- In the build since 2026-10-22, not in What's New until the device check says it works: "Log a
+  bank notification" for the iOS 27 notification automation (any bank's expenses and incomes,
+  [plan-notification-capture.md](plan-notification-capture.md)).
 
 ## en-US
 
@@ -231,7 +234,10 @@ Tenra 1.7의 새로운 기능:
    - **the update from 1.6** (CoreData v15 → v16, lightweight): install the store's 1.6 with data,
      then the TestFlight build over it; debts and subscriptions keep their order, nothing lost;
    - the lists' one set of actions (touch and hold, select, reorder; no swipes left anywhere), the
-     glass sections, the Tenra Pro page in light and dark, the Wallet section.
+     glass sections, the Tenra Pro page in light and dark, the Wallet section;
+   - the bank notification automation with Kaspi and Freedom (iOS 27,
+     [plan-notification-capture.md](plan-notification-capture.md) §11): announce it in What's New
+     and the App Review notes only if it works.
 2. **The store build** is the TestFlight build from GitHub that passed step 1: built with Xcode 27,
    it has the iOS 27 code paths ([asc.md](asc.md)).
 3. **What's New**: this file, after step 1 (`prepare-version` with that build).

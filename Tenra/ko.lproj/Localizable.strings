@@ -1751,6 +1751,16 @@
 "intent.walletPayment.noAmount" = "이 결제에는 금액이 없어 아무것도 기록하지 않았어요.";
 "intent.walletPayment.queued" = "아직 환율이 없어요. 환율을 받는 대로 Tenra가 결제를 기록할게요.";
 "intent.walletPayment.noAccount" = "결제를 기록하려면 Tenra에 계좌를 추가하세요.";
+"intent.bankNotification.title" = "은행 알림 기록";
+"intent.bankNotification.description" = "알림 자동화용: 은행 알림에서 지출 또는 수입을 읽어 아무것도 묻지 않고 기록합니다. 모든 은행에서 작동합니다. Tenra는 은행과 카드별 계좌, 가맹점별 카테고리를 기억합니다.";
+"intent.bankNotification.parameter.title" = "제목";
+"intent.bankNotification.parameter.subtitle" = "부제목";
+"intent.bankNotification.parameter.text" = "본문";
+"intent.bankNotification.parameter.app" = "앱";
+"intent.bankNotification.parameter.date" = "날짜";
+"intent.bankNotification.notOperation" = "이 알림에는 지출이나 수입이 없어 아무것도 기록하지 않았습니다.";
+"intent.bankNotification.ownTransfer" = "내 계좌 간 이체는 기록되지 않습니다.";
+"intent.bankNotification.cash" = "현금 인출은 기록되지 않습니다. 현금으로 쓴 내역을 기록하세요.";
 "walletSetup.title" = "Wallet 자동화 설정";
 "walletSetup.intro" = "설정하면 단말기에서 Apple Pay로 결제할 때마다 가맹점, 금액, 통화, 카드와 함께 자동으로 기록됩니다. 온라인 결제는 Wallet이 전달하지 않으므로 명세서로 들어옵니다.";
 "walletSetup.step.open" = "**단축어**를 열고 **자동화**에서 **+**를 탭한 다음 **Wallet**을 선택하세요.";

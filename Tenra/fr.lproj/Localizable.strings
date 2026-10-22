@@ -1751,6 +1751,16 @@
 "intent.walletPayment.noAmount" = "Ce paiement n'a pas de montant, rien n'a été enregistré.";
 "intent.walletPayment.queued" = "Pas encore de taux de change. Tenra enregistrera le paiement dès qu'il en aura un.";
 "intent.walletPayment.noAccount" = "Ajoutez un compte dans Tenra pour enregistrer des paiements.";
+"intent.bankNotification.title" = "Enregistrer une notification bancaire";
+"intent.bankNotification.description" = "Pour l'automatisation des notifications : lit une dépense ou un revenu dans la notification d'une banque et l'enregistre sans rien demander. Fonctionne avec toutes les banques. Tenra retient le compte de chaque banque et carte et la catégorie de chaque commerçant.";
+"intent.bankNotification.parameter.title" = "Titre";
+"intent.bankNotification.parameter.subtitle" = "Sous-titre";
+"intent.bankNotification.parameter.text" = "Texte";
+"intent.bankNotification.parameter.app" = "App";
+"intent.bankNotification.parameter.date" = "Date";
+"intent.bankNotification.notOperation" = "Aucune dépense ni aucun revenu dans cette notification, rien n'a été enregistré.";
+"intent.bankNotification.ownTransfer" = "Un virement entre vos propres comptes n'est pas enregistré.";
+"intent.bankNotification.cash" = "Un retrait d'espèces n'est pas enregistré : enregistrez ce que vous payez en espèces.";
 "walletSetup.title" = "Configurer l'automatisation Wallet";
 "walletSetup.intro" = "Ensuite, chaque paiement Apple Pay sur un terminal est enregistré tout seul, avec le commerçant, le montant, la devise et la carte. Wallet ne transmet pas les paiements en ligne : ils arrivent avec le relevé.";
 "walletSetup.step.open" = "Ouvrez **Raccourcis**, allez dans **Automatisation**, touchez **+** et choisissez **Wallet**.";

@@ -1751,6 +1751,16 @@
 "intent.walletPayment.noAmount" = "Questo pagamento non ha un importo, non è stato registrato nulla.";
 "intent.walletPayment.queued" = "Non c'è ancora un tasso di cambio. Tenra registrerà il pagamento appena ne avrà uno.";
 "intent.walletPayment.noAccount" = "Aggiungi un conto in Tenra per registrare i pagamenti.";
+"intent.bankNotification.title" = "Registra notifica della banca";
+"intent.bankNotification.description" = "Per l'automazione delle notifiche: legge una spesa o un'entrata dalla notifica di una banca e la registra senza chiedere nulla. Funziona con qualsiasi banca. Tenra ricorda il conto di ogni banca e carta e la categoria di ogni esercente.";
+"intent.bankNotification.parameter.title" = "Titolo";
+"intent.bankNotification.parameter.subtitle" = "Sottotitolo";
+"intent.bankNotification.parameter.text" = "Testo";
+"intent.bankNotification.parameter.app" = "App";
+"intent.bankNotification.parameter.date" = "Data";
+"intent.bankNotification.notOperation" = "Nessuna spesa o entrata in questa notifica, non è stato registrato nulla.";
+"intent.bankNotification.ownTransfer" = "Un trasferimento tra i tuoi conti non viene registrato.";
+"intent.bankNotification.cash" = "Un prelievo di contanti non viene registrato: registra ciò che paghi in contanti.";
 "walletSetup.title" = "Configura l'automazione Wallet";
 "walletSetup.intro" = "Così ogni pagamento Apple Pay al terminale viene salvato da solo, con esercente, importo, valuta e carta. I pagamenti online Wallet non li passa: arrivano con l'estratto conto.";
 "walletSetup.step.open" = "Apri **Comandi rapidi**, vai su **Automazione**, tocca **+** e scegli **Wallet**.";

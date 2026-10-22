@@ -1751,6 +1751,16 @@
 "intent.walletPayment.noAmount" = "Bu ödemede tutar yok, hiçbir şey kaydedilmedi.";
 "intent.walletPayment.queued" = "Henüz döviz kuru yok. Tenra ödemeyi kur gelir gelmez kaydedecek.";
 "intent.walletPayment.noAccount" = "Ödemeleri kaydetmek için Tenra'ya bir hesap ekleyin.";
+"intent.bankNotification.title" = "Banka bildirimini kaydet";
+"intent.bankNotification.description" = "Bildirim otomasyonu için: bir bankanın bildirimindeki gideri veya geliri okur ve hiçbir şey sormadan kaydeder. Her bankayla çalışır. Tenra her bankanın ve kartın hesabını, her satıcının kategorisini hatırlar.";
+"intent.bankNotification.parameter.title" = "Başlık";
+"intent.bankNotification.parameter.subtitle" = "Alt başlık";
+"intent.bankNotification.parameter.text" = "Metin";
+"intent.bankNotification.parameter.app" = "Uygulama";
+"intent.bankNotification.parameter.date" = "Tarih";
+"intent.bankNotification.notOperation" = "Bu bildirimde gider veya gelir yok, hiçbir şey kaydedilmedi.";
+"intent.bankNotification.ownTransfer" = "Kendi hesaplarınız arasındaki transfer kaydedilmez.";
+"intent.bankNotification.cash" = "Nakit çekim kaydedilmez: nakitle ne aldığınızı kaydedin.";
 "walletSetup.title" = "Wallet otomasyonunu kur";
 "walletSetup.intro" = "Böylece terminaldeki her Apple Pay ödemesi işyeri, tutar, para birimi ve kartla kendiliğinden kaydedilir. Wallet çevrim içi ödemeleri iletmez: onlar hesap özetiyle gelir.";
 "walletSetup.step.open" = "**Kestirmeler**'i aç, **Otomasyon**'a git, **+**'ya dokun ve **Wallet**'ı seç.";

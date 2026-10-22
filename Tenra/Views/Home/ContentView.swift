@@ -447,6 +447,7 @@ struct ContentView: View {
                 .foregroundStyle(.primary)
         }
         .accessibilityLabel(String(localized: "settings.title"))
+        .accessibilityIdentifier("home.settingsButton")
     }
 
     private var timeFilterButton: some View {

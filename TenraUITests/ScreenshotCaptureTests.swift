@@ -5,16 +5,17 @@
 //  Automated App Store screenshot capture. Launches the app in ScreenshotDemo
 //  mode (seeded dataset, Pro unlocked, offline FX, Ten's answers scripted on the
 //  phone) with the language/locale passed via TEST_RUNNER_* environment variables,
-//  walks the marketing screens (01-08 and 13-16 on the default product page, 09-12
-//  and Ten's 17-19 for the custom product pages: subscriptions, currencies, a deposit,
-//  loans) and stores
+//  walks the marketing screens (01-08, 13-16 and the auto-capture 20-21 for the default
+//  product page, 09-12 and Ten's 17-19 for the custom product pages: subscriptions,
+//  currencies, a deposit, loans; the auto-capture page takes 20, 21, 09 and 01) and stores
 //  full-resolution screenshots as keepAlways attachments.
 //
 //  Run via scripts/capture_screenshots.sh — it loops all storefront locales
 //  and exports the attachments from the .xcresult bundles.
 //
 //  Environment (set with TEST_RUNNER_ prefix on xcodebuild):
-//    SCREENSHOT_FRAMES         — "cpp" captures 02 and 09-12 (custom product pages); default all
+//    SCREENSHOT_FRAMES         — "cpp" captures 02 and 09-12 (custom product pages), "ten"
+//                                Ten's 07, 13, 14, 17-19, "autocapture" 20-21; default all
 //    SCREENSHOT_LANGUAGE       — AppleLanguages value for the app ("de", "es-MX", …)
 //    SCREENSHOT_LOCALE         — AppleLocale value ("de_DE", "es_MX", …)
 //    SCREENSHOT_DEMO_CURRENCY  — seeded dataset currency ("EUR", "MXN", …)
@@ -86,6 +87,12 @@ final class ScreenshotCaptureTests: XCTestCase {
             return
         }
 
+        if env["SCREENSHOT_FRAMES"] == "autocapture" {
+            // Only the auto-capture frames (20-21): a quick run while they are being worked on.
+            captureAutoCapture()
+            return
+        }
+
         snap("01-home")
 
         // ── 6. History (from Home) ───────────────────────────────────────────
@@ -144,6 +151,137 @@ final class ScreenshotCaptureTests: XCTestCase {
         captureCustomPageFrames()
         captureGoalsAndDebts()
         captureTen()
+        // Last: it goes back to Home from Ten's chat, so a step it misses costs no other frame.
+        captureAutoCapture()
+    }
+
+    // MARK: - Auto-capture
+
+    /// 20-21 in Settings → Wallet, a sheet over Home: the Apple Pay payments the Wallet
+    /// automation recorded with a guess (To review), then a merchant's own screen (Merchants →
+    /// Starbucks, ScreenshotDemoSeeder). Starts anywhere, ends on Home with the sheet closed.
+    private func captureAutoCapture() {
+        guard showHome() else {
+            debugSnapshot("autocapture-home")
+            return
+        }
+        let settingsButton = app.descendants(matching: .any)["home.settingsButton"].firstMatch
+        let toReview = app.descendants(matching: .any)["settings.wallet.toReview"].firstMatch
+        let merchants = app.descendants(matching: .any)["settings.wallet.merchants"].firstMatch
+
+        // ── 20. To review: payments that recorded themselves, with logos ─────
+        // A cold first locale can drop a tap that lands before Home responds: tap again.
+        for _ in 0..<3 where !toReview.exists && settingsButton.isHittable {
+            settingsButton.tap()
+            _ = toReview.waitForExistence(timeout: 15)
+        }
+        guard toReview.exists else {
+            debugSnapshot("settings")
+            closeSettings(showing: toReview)
+            return
+        }
+        scrollIntoView(toReview)
+        guard toReview.isHittable else {
+            debugSnapshot("settings-wallet")
+            closeSettings(showing: toReview)
+            return
+        }
+        toReview.tap()
+        // The list shows placeholders until the full load, then the payments; then the logos.
+        if app.descendants(matching: .any)["walletReview.payment"].firstMatch.waitForExistence(timeout: 60) {
+            sleep(5)
+            snap("20-autocapture")
+        } else {
+            debugSnapshot("to-review")
+        }
+        backToSettings(showing: toReview)
+
+        // ── 21. A merchant's own screen ──────────────────────────────────────
+        scrollIntoView(merchants)
+        guard merchants.exists, merchants.isHittable else {
+            debugSnapshot("settings-merchants")
+            closeSettings(showing: toReview)
+            return
+        }
+        merchants.tap()
+        let starbucks = app.descendants(matching: .any)["merchants.row.starbucks"].firstMatch
+        let anyMerchant = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier BEGINSWITH %@", "merchants.row.")).firstMatch
+        let merchant = starbucks.waitForExistence(timeout: 10) ? starbucks : anyMerchant
+        if merchant.exists && merchant.isHittable {
+            merchant.tap()
+            sleep(5)   // the history sweep, the monthly chart and the logo
+            snap("21-merchant")
+        } else {
+            debugSnapshot("merchants")
+        }
+        closeSettings(showing: toReview)
+    }
+
+    /// Home's root, wherever the run is: Ten's chat (where the default run ends) hides the tab
+    /// bar, so step back until it shows, then take its first tab.
+    private func showHome() -> Bool {
+        let settingsButton = app.descendants(matching: .any)["home.settingsButton"].firstMatch
+        for _ in 0..<4 {
+            if settingsButton.exists && settingsButton.isHittable { return true }
+            let tabBar = app.tabBars.firstMatch
+            if tabBar.exists && tabBar.isHittable {
+                // A scrolled screen collapses the bar to the current tab and the action tab.
+                for _ in 0..<3 where tabBar.buttons.count < 3 {
+                    app.swipeDown()
+                    sleep(1)
+                }
+                let homeTab = tabBar.buttons.element(boundBy: 0)
+                if homeTab.exists && homeTab.isHittable {
+                    homeTab.tap()
+                    _ = settingsButton.waitForExistence(timeout: 10)
+                }
+            } else {
+                goBack()
+            }
+        }
+        return settingsButton.exists && settingsButton.isHittable
+    }
+
+    /// Scrolls until `element` is on screen: slow swipes, so a long page does not fly past it,
+    /// and back down when it went up under the bar.
+    private func scrollIntoView(_ element: XCUIElement) {
+        for _ in 0..<12 {
+            if element.exists && element.isHittable { return }
+            if element.exists && element.frame.maxY < app.frame.midY {
+                app.swipeDown(velocity: .slow)
+            } else {
+                app.swipeUp(velocity: .slow)
+            }
+        }
+    }
+
+    /// Back inside the Settings sheet until its list shows `row` again: the system back button
+    /// (Home's stack under the sheet is at its root, so the only one is the sheet's), else a swipe
+    /// from the sheet's left edge. Not `goBack()`: Home's navigation bar under the sheet can
+    /// answer its query first.
+    private func backToSettings(showing row: XCUIElement) {
+        for _ in 0..<3 {
+            if row.exists && row.isHittable { return }
+            let back = app.buttons["BackButton"].firstMatch
+            if back.exists && back.isHittable {
+                back.tap()
+            } else {
+                let edge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.5))
+                edge.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)))
+            }
+            sleep(1)
+        }
+    }
+
+    /// Closes the Settings sheet, from wherever it is: back to its list, then swipes down until
+    /// the list is at its top and the next swipe takes the sheet down.
+    private func closeSettings(showing row: XCUIElement) {
+        backToSettings(showing: row)
+        for _ in 0..<8 where row.exists {
+            app.swipeDown()
+            sleep(1)
+        }
     }
 
     // MARK: - Goals and debts

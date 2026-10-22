@@ -126,6 +126,7 @@ struct WalletReviewView: View {
         .accessibilityAction(named: Text(String(localized: "walletReview.confirm"))) {
             confirm(transaction)
         }
+        .accessibilityIdentifier("walletReview.payment")
     }
 
     /// Keeps the payment as it is saved now, and remembers it for its merchant and card.

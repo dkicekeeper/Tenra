@@ -78,6 +78,7 @@ struct MerchantCategoriesView: View {
         .buttonStyle(.plain)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("merchants.row.\(merchant.id)")
         // The button keeps the row's divider inset to itself: the 44 pt tile and its space.
         .rowDividerInset(AppIconSize.Tile.sm + AppSpacing.md)
         // A long press forgets the merchant (DesignKit 8.0.0: no swipe actions).

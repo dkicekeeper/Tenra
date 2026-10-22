@@ -11,7 +11,7 @@
 | Создать версию в App Store, вставить What's New из `docs/release-notes.md` (заметки версии, которая готовится) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
 | Специальные страницы продукта и тест страницы (скриншоты, промо-текст, ключевые слова) из `appstore/product-pages.json` | GitHub Actions, `.github/workflows/asc.yml` | `push-custom-pages`, `push-experiment` (поле `args`: `--submit`, `--start`) |
 | Выдать или забрать Tenra Pro (`pro`) одному покупателю, посмотреть, что о нём знает RevenueCat | GitHub Actions, `.github/workflows/revenuecat.yml`, секрет `REVENUECAT_SECRET_KEY` | Actions → RevenueCat: `grant` / `revoke` / `status`, `app_user_id`, `days`; id в логе скрыт |
-| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp` или `ten`; `art` рисует Тэна для шапки |
+| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp`, `ten` или `autocapture`; `art` рисует Тэна для шапки |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
 
 Репозиторий Tenra публичный, поэтому логи Actions видны всем. Продажи и выручку `asc.py` в Actions
@@ -119,9 +119,10 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 
 ## Скриншоты, специальные страницы и тест страницы
 
-1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-19, `cpp` только 02 и
-   09-12 для специальных страниц, `ten` только кадры Тэна 07, 13, 14, 17-19). Workflow держит один запуск и одну
-   очередь: новый запуск, пока один ждёт, отменяет ждущий. Шаг Тэна, который ничего не нашёл,
+1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-21, `cpp` только 02 и
+   09-12 для специальных страниц, `ten` только кадры Тэна 07, 13, 14, 17-19, `autocapture` только
+   кадры автозаписи 20-21). Workflow держит один запуск и одну
+   очередь: новый запуск, пока один ждёт, отменяет ждущий. Шаг Тэна или автозаписи, который ничего не нашёл,
    кладёт рядом `90-debug-<шаг>` (экран) и `90-debug-<шаг>-tree` (дерево доступности, текст). Артефакт `raw-screenshots` кладётся в `screenshots/raw/<локаль>/`.
    Все 13 локалей помещаются в один запуск (около 80 минут). Перед сборкой просмотреть кадры:
    у первой локали запуска логотипы подписок могут не успеть загрузиться (квадраты с буквами
@@ -137,7 +138,13 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
    ответы Тэна про подписки, деньги во всех валютах и досрочный платёж по кредиту. В демо у Тэна
    четыре готовых вопроса (этот месяц, подписки, валюты, кредит), тест нажимает их по порядку,
    и на каждый `ScreenshotDemoTransport` вызывает свой инструмент; слова ответов и вопросы без
-   своего пресета лежат в `ScreenshotDemoTenLines`.
+   своего пресета лежат в `ScreenshotDemoTenLines`. Кадры 20-21, автозапись: «На проверку»
+   (Настройки → Wallet: оплаты Apple Pay, которые записались сами, с логотипами мерчантов и
+   категорией, выбранной Tenra) и экран мерчанта (Настройки → Wallet → Продавцы → Starbucks).
+   Сид кладёт эти оплаты в `WalletCaptureStore` так же, как `LogWalletPaymentIntent`, с памятью
+   мерчанта и карты и логотипами в `MerchantLogoStore` (`ScreenshotDemoSeeder.buildApplePay`) и
+   сбрасывает всё это на каждом запуске; тест снимает их последними, после Тэна. Строки Истории
+   оплату из Wallet никак не отмечают, поэтому кадр автозаписи снят с «На проверку», а не с Истории.
 2. **Собрать кадры:** `python3 scripts/compose_screenshots.py [локали] [--frames 13-ten-answer …]`
    кладёт 1320×2868 в `screenshots/final/<локаль>/`. Фон и iPhone берутся из шести шаблонов
    `screenshots/templates/background-a…f.png` (сняты с макетов Figma, файл Tenra, страница
@@ -149,8 +156,11 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
    системы или скачивает в `~/.cache/tenra-fonts`. Новый дизайн фона или модели: экспортировать
    шаблон из Figma без подписи, экран залить чёрным, положить в `screenshots/templates/`.
 3. **Отправить:** скриншоты версии: `push-version-screenshots` с `version` (кадры из
-   `defaultOrder` в `scripts/screenshot_captions.json`, у tr свой `order`, не больше 10);
-   специальные страницы: `push-custom-pages --submit`; тест страницы: `push-experiment --submit`,
+   `defaultOrder` в `scripts/screenshot_captions.json`, у tr свой `order`, не больше 10; с 1.7
+   первым идёт кадр автозаписи 20);
+   специальные страницы: `push-custom-pages --submit` (пятая, «Автозапись», с кадрами 20, 21, 09 и
+   01; пока 20-21 не собраны во всех локалях, команда останавливается на «Missing screenshots» для
+   всех страниц, как и `push-version-screenshots`); тест страницы: `push-experiment --submit`,
    потом после одобрения `push-experiment --start`. Повторный запуск не перезаливает
    неизменённые скриншоты.
 4. **Шапка и кадр для поиска (iOS 27):** `python3 scripts/compose_store_art.py [локали]

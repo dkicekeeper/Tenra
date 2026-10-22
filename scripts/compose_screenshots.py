@@ -51,7 +51,7 @@ TITLE_WIDTH, SUBTITLE_WIDTH = 1135, 1125
 
 # Frame file -> its caption key and template. Six backgrounds (a-f) cycle so that neither the
 # default order nor tr's, nor a custom product page's (appstore/product-pages.json), puts the
-# same background twice in a row.
+# same background twice in a row. 13 is on e since 1.7's order puts it after 03 (c).
 FRAMES = {
     "01-home": ("home", "a"),
     "02-finances": ("finances", "b"),
@@ -65,13 +65,15 @@ FRAMES = {
     "10-subscription-detail": ("subscription", "c"),
     "11-deposit": ("deposit", "f"),
     "12-loans": ("loans", "d"),
-    "13-ten-answer": ("ten", "c"),
+    "13-ten-answer": ("ten", "e"),
     "14-ten-draft": ("draft", "d"),
     "15-goal": ("goal", "c"),
     "16-debts": ("debts", "f"),
     "17-ten-subscriptions": ("tensubs", "e"),
     "18-ten-currencies": ("tenfx", "d"),
     "19-ten-loan": ("tenloan", "c"),
+    "20-autocapture": ("autocapture", "f"),
+    "21-merchant": ("merchant", "a"),
 }
 
 FONTS = {

@@ -578,23 +578,23 @@ class VoiceInputParser {
     /// they onboarded in, so the target resolves through its group: "groceries"
     /// lands in "Продукты" for someone whose categories are Russian.
     static let categoryGroups: [[String]] = [
-        ["Groceries", "Продукты", "Lebensmittel", "Supermercado", "Courses", "Market", "Mercado", "Spesa", "Продукти", "食費", "장보기"],
-        ["Dining out", "Кафе и рестораны", "Essen gehen", "Restaurantes", "Restaurants", "Dışarıda yemek", "Ristoranti", "Кафе та ресторани", "外食", "외식"],
-        ["Transport", "Транспорт", "Transporte", "Transports", "Ulaşım", "Trasporti", "交通", "교통"],
-        ["Housing", "Жильё", "Wohnen", "Vivienda", "Logement", "Konut", "Moradia", "Casa", "Житло", "住居", "주거"],
-        ["Utilities", "Коммунальные", "Nebenkosten", "Servicios públicos", "Charges", "Faturalar", "Contas de casa", "Utenze", "Комунальні послуги", "光熱費", "공과금"],
-        ["Health", "Здоровье", "Gesundheit", "Salud", "Santé", "Sağlık", "Saúde", "Salute", "Здоров'я", "健康", "건강"],
-        ["Clothing", "Одежда", "Kleidung", "Ropa", "Vêtements", "Giyim", "Roupas", "Abbigliamento", "Одяг", "衣類", "의류"],
-        ["Entertainment", "Развлечения", "Unterhaltung", "Entretenimiento", "Loisirs", "Eğlence", "Lazer", "Svago", "Розваги", "娯楽", "여가"],
-        ["Travel", "Путешествия", "Reisen", "Viajes", "Voyages", "Seyahat", "Viagens", "Viaggi", "Подорожі", "旅行", "여행"],
-        ["Education", "Образование", "Bildung", "Educación", "Éducation", "Eğitim", "Educação", "Istruzione", "Освіта", "教育", "교육"],
-        ["Gifts", "Подарки", "Geschenke", "Regalos", "Cadeaux", "Hediyeler", "Presentes", "Regali", "Подарунки", "ギフト", "선물"],
-        ["Subscriptions", "Подписки", "Abos", "Suscripciones", "Abonnements", "Abonelikler", "Assinaturas", "Abbonamenti", "Підписки", "サブスク", "구독"],
-        ["Pets", "Питомцы", "Haustiere", "Mascotas", "Animaux", "Evcil hayvanlar", "Animali", "Домашні улюбленці", "ペット", "반려동물"],
-        ["Services", "Услуги", "Dienstleistungen", "Servicios", "Hizmetler", "Serviços", "Servizi", "Послуги", "サービス", "서비스"],
-        ["Other", "Прочее", "Sonstiges", "Otros", "Autre", "Diğer", "Outros", "Altro", "Інше", "その他", "기타"],
-        ["Salary", "Зарплата", "Gehalt", "Salario", "Salaire", "Maaş", "Salário", "Stipendio", "給与", "급여"],
-        ["Other income", "Прочие доходы", "Sonstige Einnahmen", "Otros ingresos", "Autres revenus", "Diğer gelirler", "Outras receitas", "Altre entrate", "Інші доходи", "その他の収入", "기타 수입"]
+        ["Groceries", "Продукты", "Lebensmittel", "Supermercado", "Courses", "Market", "Mercado", "Spesa", "Продукти", "食費", "장보기", "Азық-түлік"],
+        ["Dining out", "Кафе и рестораны", "Essen gehen", "Restaurantes", "Restaurants", "Dışarıda yemek", "Ristoranti", "Кафе та ресторани", "外食", "외식", "Кафе мен мейрамханалар"],
+        ["Transport", "Транспорт", "Transporte", "Transports", "Ulaşım", "Trasporti", "交通", "교통", "Көлік"],
+        ["Housing", "Жильё", "Wohnen", "Vivienda", "Logement", "Konut", "Moradia", "Casa", "Житло", "住居", "주거", "Тұрғын үй"],
+        ["Utilities", "Коммунальные", "Nebenkosten", "Servicios públicos", "Charges", "Faturalar", "Contas de casa", "Utenze", "Комунальні послуги", "光熱費", "공과금", "Коммуналдық"],
+        ["Health", "Здоровье", "Gesundheit", "Salud", "Santé", "Sağlık", "Saúde", "Salute", "Здоров'я", "健康", "건강", "Денсаулық"],
+        ["Clothing", "Одежда", "Kleidung", "Ropa", "Vêtements", "Giyim", "Roupas", "Abbigliamento", "Одяг", "衣類", "의류", "Киім"],
+        ["Entertainment", "Развлечения", "Unterhaltung", "Entretenimiento", "Loisirs", "Eğlence", "Lazer", "Svago", "Розваги", "娯楽", "여가", "Ойын-сауық"],
+        ["Travel", "Путешествия", "Reisen", "Viajes", "Voyages", "Seyahat", "Viagens", "Viaggi", "Подорожі", "旅行", "여행", "Саяхат"],
+        ["Education", "Образование", "Bildung", "Educación", "Éducation", "Eğitim", "Educação", "Istruzione", "Освіта", "教育", "교육", "Білім"],
+        ["Gifts", "Подарки", "Geschenke", "Regalos", "Cadeaux", "Hediyeler", "Presentes", "Regali", "Подарунки", "ギフト", "선물", "Сыйлықтар"],
+        ["Subscriptions", "Подписки", "Abos", "Suscripciones", "Abonnements", "Abonelikler", "Assinaturas", "Abbonamenti", "Підписки", "サブスク", "구독", "Жазылымдар"],
+        ["Pets", "Питомцы", "Haustiere", "Mascotas", "Animaux", "Evcil hayvanlar", "Animali", "Домашні улюбленці", "ペット", "반려동물", "Үй жануарлары"],
+        ["Services", "Услуги", "Dienstleistungen", "Servicios", "Hizmetler", "Serviços", "Servizi", "Послуги", "サービス", "서비스", "Қызметтер"],
+        ["Other", "Прочее", "Sonstiges", "Otros", "Autre", "Diğer", "Outros", "Altro", "Інше", "その他", "기타", "Басқа"],
+        ["Salary", "Зарплата", "Gehalt", "Salario", "Salaire", "Maaş", "Salário", "Stipendio", "給与", "급여", "Жалақы"],
+        ["Other income", "Прочие доходы", "Sonstige Einnahmen", "Otros ingresos", "Autres revenus", "Diğer gelirler", "Outras receitas", "Altre entrate", "Інші доходи", "その他の収入", "기타 수입", "Басқа кірістер"]
     ]
 
     private static let categoryGroupByName: [String: [String]] = {

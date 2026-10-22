@@ -1270,6 +1270,14 @@
 "diagnostics.report.cpuExceptions" = "CPU-Spitzen: %lld";
 "diagnostics.report.slowLaunches" = "Langsame Starts: %lld";
 "diagnostics.share" = "Diagnose teilen";
+"diagnostics.capture.header" = "Automatische Erfassung";
+"diagnostics.capture.footer" = "Zahlungen, die die Wallet- und Bankmitteilungs-Automationen auf diesem iPhone in den letzten 90 Tagen erfasst haben. Nichts verlässt das Gerät.";
+"diagnostics.capture.applePay" = "Apple Pay-Zahlungen";
+"diagnostics.capture.notifications" = "Bankmitteilungen";
+"diagnostics.capture.counts" = "%lld in 7 Tagen, %lld in 30";
+"diagnostics.capture.pending" = "Warten auf einen Kurs";
+"diagnostics.capture.last" = "Zuletzt erfasst";
+"diagnostics.capture.never" = "Nie";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Einstellungen öffnen";
@@ -1705,6 +1713,7 @@
 "settings.pro.restore.failed" = "Fehlgeschlagen";
 "pro.page.subtitle" = "Alle Funktionen von Tenra, ohne Grenzen";
 "pro.page.features" = "Das bietet Pro";
+"pro.feature.assistant" = "Ten, der KI-Assistent, ohne Limit";
 "pro.feature.accounts" = "Unbegrenzt viele Konten";
 "pro.feature.voice" = "Spracheingabe";
 "pro.feature.import" = "Import von PDF- und CSV-Kontoauszügen";

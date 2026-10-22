@@ -1270,6 +1270,14 @@
 "diagnostics.report.cpuExceptions" = "Навантаження на CPU: %lld";
 "diagnostics.report.slowLaunches" = "Повільні запуски: %lld";
 "diagnostics.share" = "Поділитися діагностикою";
+"diagnostics.capture.header" = "Автозапис";
+"diagnostics.capture.footer" = "Оплати, які автоматизації Wallet і сповіщень банку записали на цьому iPhone за останні 90 днів. Ніщо не залишає пристрій.";
+"diagnostics.capture.applePay" = "Оплати Apple Pay";
+"diagnostics.capture.notifications" = "Сповіщення банків";
+"diagnostics.capture.counts" = "%lld за 7 днів, %lld за 30";
+"diagnostics.capture.pending" = "Чекають курсу";
+"diagnostics.capture.last" = "Останній запис";
+"diagnostics.capture.never" = "Не було";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Відкрити налаштування";
@@ -1705,6 +1713,7 @@
 "settings.pro.restore.failed" = "Не вдалося відновити";
 "pro.page.subtitle" = "Усі можливості Tenra без обмежень";
 "pro.page.features" = "Що входить до Pro";
+"pro.feature.assistant" = "Тен, ШІ-помічник, без ліміту";
 "pro.feature.accounts" = "Необмежена кількість рахунків";
 "pro.feature.voice" = "Голосове введення";
 "pro.feature.import" = "Імпорт виписок PDF і CSV";

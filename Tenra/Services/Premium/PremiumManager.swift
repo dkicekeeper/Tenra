@@ -163,6 +163,10 @@ final class PremiumManager {
 
         Purchases.logLevel = .warn
         Purchases.configure(withAPIKey: PremiumConfig.revenueCatAPIKey)
+        // Apple Search Ads attribution: RevenueCat sends the AdServices token to Apple and ties
+        // trials and purchases to the campaign and keyword (ROAS, promotion-plan §5 B). AdServices
+        // needs no ATT prompt and is not tracking under Apple's rules.
+        Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
         isConfigured = true
 
         observeCustomerInfo()

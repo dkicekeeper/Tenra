@@ -1270,6 +1270,14 @@
 "diagnostics.report.cpuExceptions" = "CPU高負荷: %lld";
 "diagnostics.report.slowLaunches" = "起動の遅延: %lld";
 "diagnostics.share" = "診断情報を共有";
+"diagnostics.capture.header" = "自動記録";
+"diagnostics.capture.footer" = "過去90日間にWalletと銀行通知のオートメーションがこのiPhoneに記録した支払い。デバイスの外には何も送られません。";
+"diagnostics.capture.applePay" = "Apple Payの支払い";
+"diagnostics.capture.notifications" = "銀行の通知";
+"diagnostics.capture.counts" = "7日間で%lld件、30日間で%lld件";
+"diagnostics.capture.pending" = "レート待ち";
+"diagnostics.capture.last" = "最後の記録";
+"diagnostics.capture.never" = "なし";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "設定を開く";
@@ -1705,6 +1713,7 @@
 "settings.pro.restore.failed" = "復元できませんでした";
 "pro.page.subtitle" = "Tenraのすべてを制限なしで";
 "pro.page.features" = "Proに含まれるもの";
+"pro.feature.assistant" = "AIアシスタントのテン、回数無制限";
 "pro.feature.accounts" = "口座の数は無制限";
 "pro.feature.voice" = "音声入力";
 "pro.feature.import" = "PDF・CSV明細の取り込み";

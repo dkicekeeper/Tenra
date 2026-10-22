@@ -1270,6 +1270,14 @@
 "diagnostics.report.cpuExceptions" = "CPU zirveleri: %lld";
 "diagnostics.report.slowLaunches" = "Yavaş açılışlar: %lld";
 "diagnostics.share" = "Tanılamayı Paylaş";
+"diagnostics.capture.header" = "Otomatik kayıt";
+"diagnostics.capture.footer" = "Wallet ve banka bildirimi otomasyonlarının son 90 günde bu iPhone’a kaydettiği ödemeler. Hiçbir şey cihazdan çıkmaz.";
+"diagnostics.capture.applePay" = "Apple Pay ödemeleri";
+"diagnostics.capture.notifications" = "Banka bildirimleri";
+"diagnostics.capture.counts" = "7 günde %lld, 30 günde %lld";
+"diagnostics.capture.pending" = "Kur bekleyenler";
+"diagnostics.capture.last" = "Son kayıt";
+"diagnostics.capture.never" = "Hiç";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Ayarları Aç";
@@ -1705,6 +1713,7 @@
 "settings.pro.restore.failed" = "Geri yüklenemedi";
 "pro.page.subtitle" = "Tenra'nın tüm özellikleri, sınırsız";
 "pro.page.features" = "Pro'da neler var";
+"pro.feature.assistant" = "Yapay zekâ asistanı Ten, sınırsız";
 "pro.feature.accounts" = "Sınırsız hesap";
 "pro.feature.voice" = "Sesli giriş";
 "pro.feature.import" = "PDF ve CSV ekstre içe aktarma";

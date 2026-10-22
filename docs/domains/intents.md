@@ -304,7 +304,8 @@ for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-captu
    (`convert(on:)`), before the next payment and when the app comes to the front (`MainTabView`).
 7. `TransactionDraftService.commit`; a guessed account does not reach `VoiceLearningStore`.
 8. `WalletCaptureStore.record`: the transaction id with the payment and its guesses. A capture
-   with a guess not yet looked at is "To review". Captures live 90 days.
+   with a guess not yet looked at is "To review". Captures live 90 days. `firstCaptureAt` outlives them
+   (`hasEverCaptured`), and `activity(now:)` counts the kept captures by source for Diagnostics.
 
 Learning: `WalletPaymentRecorder.confirm` remembers a captured transaction's category and
 subcategories for the merchant and its account for the card, and marks the capture reviewed. On

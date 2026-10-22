@@ -283,6 +283,7 @@ On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `
 
 ## Monetization (Tenra Pro)
 
+- **Apple Search Ads attribution**: `PremiumManager.configure()` turns on RevenueCat's AdServices token collection (no ATT); the RevenueCat dashboard's Apple Search Ads integration ties trials and purchases to campaigns.
 - **SDK isolation**: ONLY [PremiumManager](Tenra/Services/Premium/PremiumManager.swift) imports `RevenueCat`; ONLY [PaywallSheet](Tenra/Views/Premium/PaywallSheet.swift) imports `RevenueCatUI`. Feature gates depend solely on `premium.isPro` — never import the SDK elsewhere.
 - **Gate pattern** (3 lines): `@Environment(PremiumManager.self)` + `@State showingPaywall` + `.paywallSheet(isPresented:onUnlocked:)`; `onUnlocked` resumes the interrupted flow (after a purchase, or a restore that actually unlocked Pro). Whole-tab gates use `PremiumLockedView` (Voice/OCR tabs in TabViews.swift).
 - **Paywall shows RevenueCatUI only when there is something to sell**: `PaywallSheet` first awaits `PremiumManager.checkOfferings()` (`OfferingsAvailability`, plain values); otherwise it shows a localized "temporarily unavailable" state with a retry (RevenueCatUI's own error alert closes the sheet: the 3-month "opens then closes" bug, RevenueCat error 23). A restore closes the sheet only when `applyPaywallResult(_:)` says `pro` is active, else "nothing to restore". Settings → About → Diagnostics shows whether the App Store returns products (launch health check).

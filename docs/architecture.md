@@ -44,6 +44,9 @@ See [TransactionStore+LoadMerge.swift](../Tenra/ViewModels/TransactionStore+Load
 - [DiagnosticsCenter](../Tenra/Services/Diagnostics/DiagnosticsCenter.swift) registers a MetricKit subscriber in `didFinishLaunching`; diagnostic payloads (crashes, hangs, disk writes, CPU, slow launches) are kept as MetricKit JSON in Application Support/Diagnostics (latest 20, excluded from backup).
 - Launch health check, 2 s after the first frame: store opened + a COUNT reads, saved `AppSettings` decode (SettingsStorageService otherwise swaps in defaults silently), current RevenueCat offering has packages. Failures log as `os.Logger` errors (subsystem `Tenra`, category `Diagnostics`).
 - Settings → About → Diagnostics lists both and shares them (a summary `.txt` + the payload JSON) with `ShareLink`.
+- The same screen shows what the automations recorded (`WalletCaptureStore.activity()`: Apple Pay
+  payments and bank notifications in the last 7 and 30 days, To review, waiting for a rate, the last
+  capture), so a phone in hand answers whether auto-capture keeps working. Not shared, not sent.
 
 ## TransactionStore
 

@@ -39,6 +39,47 @@ struct WalletCaptureStoreTests {
         )
     }
 
+    // MARK: - Activity
+
+    @Test("Activity counts the captures of the last 7 and 30 days by source")
+    func activityCounts() {
+        let defaults = makeDefaults()
+        let store = WalletCaptureStore(defaults: defaults)
+        let day: TimeInterval = 86_400
+        var notification = payment(500, merchant: "Kaspi", at: -20 * day)
+        notification.bankApp = "Kaspi.kz"
+        store.record(transactionId: "tx-1", payment: payment(at: -2 * day), guesses: [.category], now: start)
+        store.record(transactionId: "tx-2", payment: payment(1_200, at: -10 * day), guesses: [], now: start)
+        store.record(transactionId: "tx-3", payment: notification, guesses: [], now: start)
+        store.record(transactionId: "tx-4", payment: payment(900, at: -40 * day), guesses: [], now: start)
+
+        let activity = store.activity(now: start)
+
+        #expect(activity.applePayLast7Days == 1)
+        #expect(activity.applePayLast30Days == 2)
+        #expect(activity.notificationsLast7Days == 0)
+        #expect(activity.notificationsLast30Days == 1)
+        #expect(activity.toReview == 1)
+        #expect(activity.lastCaptureAt == start.addingTimeInterval(-2 * day))
+        #expect(activity.firstCaptureAt == start)
+        #expect(store.hasEverCaptured)
+    }
+
+    @Test("The first capture's date survives a reload, and a fresh store has none")
+    func firstCaptureSurvivesReload() {
+        let defaults = makeDefaults()
+        let fresh = WalletCaptureStore(defaults: defaults)
+        #expect(!fresh.hasEverCaptured)
+
+        fresh.record(transactionId: "tx-1", payment: payment(), guesses: [], now: start)
+        fresh.record(transactionId: "tx-2", payment: payment(at: 3_600), guesses: [], now: start.addingTimeInterval(3_600))
+
+        let reloaded = WalletCaptureStore(defaults: defaults)
+        #expect(reloaded.firstCaptureAt == start)
+        reloaded.reset()
+        #expect(!reloaded.hasEverCaptured)
+    }
+
     // MARK: - Duplicates
 
     @Test("The same payment within 90 seconds is a terminal firing twice")

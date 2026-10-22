@@ -31,13 +31,15 @@ struct TenraProView: View {
         case failed
     }
 
-    /// Gated features (CLAUDE.md, Monetization): what a free user gets by buying Pro.
+    /// Gated features (CLAUDE.md, Monetization): what a free user gets by buying Pro, most
+    /// valued first. Ten leads: it is Pro's main value (free users get an allowance).
     private static let features: [(icon: String, key: String)] = [
-        ("creditcard", "pro.feature.accounts"),
-        ("waveform", "pro.feature.voice"),
+        ("sparkles", "pro.feature.assistant"),
         ("doc.text.viewfinder", "pro.feature.import"),
         ("building.columns", "pro.feature.deposits"),
         ("banknote", "pro.feature.loans"),
+        ("waveform", "pro.feature.voice"),
+        ("creditcard", "pro.feature.accounts"),
         ("person.2", "pro.feature.debts")
     ]
 

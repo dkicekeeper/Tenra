@@ -1270,6 +1270,14 @@
 "diagnostics.report.cpuExceptions" = "CPU 과부하: %lld";
 "diagnostics.report.slowLaunches" = "느린 실행: %lld";
 "diagnostics.share" = "진단 정보 공유";
+"diagnostics.capture.header" = "자동 기록";
+"diagnostics.capture.footer" = "지난 90일 동안 Wallet 및 은행 알림 자동화가 이 iPhone에 기록한 결제입니다. 기기 밖으로 아무것도 나가지 않습니다.";
+"diagnostics.capture.applePay" = "Apple Pay 결제";
+"diagnostics.capture.notifications" = "은행 알림";
+"diagnostics.capture.counts" = "7일간 %lld건, 30일간 %lld건";
+"diagnostics.capture.pending" = "환율 대기 중";
+"diagnostics.capture.last" = "마지막 기록";
+"diagnostics.capture.never" = "없음";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "설정 열기";
@@ -1705,6 +1713,7 @@
 "settings.pro.restore.failed" = "복원 실패";
 "pro.page.subtitle" = "Tenra의 모든 기능을 제한 없이";
 "pro.page.features" = "Pro에 포함된 기능";
+"pro.feature.assistant" = "AI 어시스턴트 텐, 무제한";
 "pro.feature.accounts" = "무제한 계좌";
 "pro.feature.voice" = "음성 입력";
 "pro.feature.import" = "PDF 및 CSV 명세서 가져오기";

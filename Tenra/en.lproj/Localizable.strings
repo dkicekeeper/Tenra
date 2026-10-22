@@ -1270,6 +1270,14 @@
 "diagnostics.report.cpuExceptions" = "CPU spikes: %lld";
 "diagnostics.report.slowLaunches" = "Slow launches: %lld";
 "diagnostics.share" = "Share Diagnostics";
+"diagnostics.capture.header" = "Automatic capture";
+"diagnostics.capture.footer" = "Payments the Wallet and bank notification automations recorded on this iPhone in the last 90 days. Nothing leaves the device.";
+"diagnostics.capture.applePay" = "Apple Pay payments";
+"diagnostics.capture.notifications" = "Bank notifications";
+"diagnostics.capture.counts" = "%lld in 7 days, %lld in 30";
+"diagnostics.capture.pending" = "Waiting for a rate";
+"diagnostics.capture.last" = "Last recorded";
+"diagnostics.capture.never" = "Never";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Open Settings";
@@ -1705,6 +1713,7 @@
 "settings.pro.restore.failed" = "Couldn't restore";
 "pro.page.subtitle" = "All of Tenra, with no limits";
 "pro.page.features" = "What's in Pro";
+"pro.feature.assistant" = "Ten, the AI assistant, with no limit";
 "pro.feature.accounts" = "Unlimited accounts";
 "pro.feature.voice" = "Voice input";
 "pro.feature.import" = "PDF and CSV statement import";

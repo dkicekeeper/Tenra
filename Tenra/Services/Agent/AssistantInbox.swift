@@ -42,6 +42,9 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
     var kind: Kind
     var title: String
     var body: String
+    /// `body` with its amounts as dots, shown while "hide amounts" is on. nil for a message
+    /// without amounts and for one kept before the field existed (then the body shows).
+    var hiddenBody: String? = nil
     var mood: Mood
     /// What "Go through it" asks.
     var question: String
@@ -88,6 +91,7 @@ enum AssistantNotices {
                     kind: .signal,
                     title: insight.title,
                     body: InsightSignalService.notificationBody(for: insight),
+                    hiddenBody: InsightSignalService.hiddenNotificationBody(for: insight),
                     mood: InsightSignalKind.from(insight)?.isSurprise == true ? .surprised : .concerned,
                     question: String(format: String(localized: "assistant.notice.ask"), insight.title),
                     insightId: insight.id,
@@ -105,7 +109,9 @@ enum AssistantNotices {
         guard week.expenses > 0 else { return nil }
         let weekLabel = InsightGranularity.week.headingLabel(for: week.key)
         let spent = Formatting.formatCurrencySmart(week.expenses, currency: baseCurrency)
+        let hiddenSpent = Formatting.hiddenAmount(currency: baseCurrency)
         var body = String(format: String(localized: "notification.weeklyDigest.body.simple"), weekLabel, spent)
+        var hiddenBody = String(format: String(localized: "notification.weeklyDigest.body.simple"), weekLabel, hiddenSpent)
         var mood = AssistantNotice.Mood.idle
         if currentIndex > 1 {
             let before = weekPoints[currentIndex - 2]
@@ -115,6 +121,10 @@ enum AssistantNotices {
                     format: String(localized: "notification.weeklyDigest.body.withComparison"),
                     weekLabel, spent, String(format: "%+.0f%%", change)
                 )
+                hiddenBody = String(
+                    format: String(localized: "notification.weeklyDigest.body.withComparison"),
+                    weekLabel, hiddenSpent, String(format: "%+.0f%%", change)
+                )
                 mood = change <= -5 ? .happy : (change >= 20 ? .concerned : .idle)
             }
         }
@@ -123,6 +133,7 @@ enum AssistantNotices {
             kind: .digest,
             title: String(localized: "notification.weeklyDigest.title"),
             body: body,
+            hiddenBody: hiddenBody,
             mood: mood,
             question: String(localized: "assistant.notice.ask.digest"),
             insightId: nil,
@@ -146,9 +157,11 @@ enum AssistantNotices {
                 kind: .charge,
                 title: series.description,
                 body: String(format: String(localized: "assistant.notice.charge"), amount),
+                hiddenBody: String(format: String(localized: "assistant.notice.charge"), Formatting.hiddenAmount(currency: series.currency)),
                 mood: .idle,
                 question: String(format: String(localized: "assistant.notice.ask.charge"), series.description),
                 insightId: nil,
+                subjectId: series.id,
                 createdAt: now
             )
         }
@@ -163,13 +176,15 @@ extension AssistantNotices {
             guard !debt.isSettled, let due = debt.dueDate, calendar.isDate(due, inSameDayAs: tomorrow) else { return nil }
             let amount = Formatting.formatCurrencySmart(debt.remaining, currency: debt.currency)
             let owedToMe = debt.direction == .owedToMe
+            let format = owedToMe
+                ? String(localized: "assistant.notice.debt.owedToMe")
+                : String(localized: "assistant.notice.debt.iOwe")
             return AssistantNotice(
                 id: "debt:\(debt.id):\(FastDateParser.string(from: tomorrow))",
                 kind: .debt,
                 title: debt.person,
-                body: String(format: owedToMe
-                    ? String(localized: "assistant.notice.debt.owedToMe")
-                    : String(localized: "assistant.notice.debt.iOwe"), amount),
+                body: String(format: format, amount),
+                hiddenBody: String(format: format, Formatting.hiddenAmount(currency: debt.currency)),
                 mood: owedToMe ? .idle : .concerned,
                 question: String(format: String(localized: "assistant.notice.ask.debt"), debt.person),
                 insightId: nil,
@@ -206,6 +221,11 @@ extension AssistantNotices {
                     Formatting.formatCurrencySmart(monthly, currency: goal.currency),
                     DateFormatters.displayDateOmittingCurrentYear(deadline)
                 ),
+                hiddenBody: String(
+                    format: String(localized: "assistant.notice.goal.behind"),
+                    Formatting.hiddenAmount(currency: goal.currency),
+                    DateFormatters.displayDateOmittingCurrentYear(deadline)
+                ),
                 mood: .concerned,
                 question: String(format: String(localized: "assistant.notice.ask.goal"), goal.name),
                 insightId: nil,
@@ -219,6 +239,29 @@ extension AssistantNotices {
     static let goalGraceDays: Double = 30
     /// How far below the time gone the saved share must fall.
     static let goalBehindShare = 0.2
+}
+
+extension AssistantNotices {
+    /// What messages may still talk about: the active subscriptions, the open debts and the
+    /// goals. A message about one that is gone (deleted, a subscription paused, a debt settled)
+    /// would send the person to something that is not there.
+    struct Subjects: Equatable {
+        var subscriptions: Set<String>
+        var debts: Set<String>
+        var goals: Set<String>
+
+        func contains(_ notice: AssistantNotice) -> Bool {
+            switch notice.kind {
+            case .charge:
+                // Charges kept before `subjectId` was set carry the series in their key.
+                let id = notice.subjectId ?? notice.id.split(separator: ":").dropFirst().first.map(String.init)
+                return id.map(subscriptions.contains) ?? true
+            case .debt: return notice.subjectId.map(debts.contains) ?? true
+            case .goal: return notice.subjectId.map(goals.contains) ?? true
+            case .signal, .digest: return true
+            }
+        }
+    }
 }
 
 // MARK: - Inbox
@@ -275,6 +318,15 @@ final class AssistantInbox {
         if let horizon = calendar.date(byAdding: .day, value: -Self.rememberDays, to: now) {
             posted = posted.filter { $0.value >= horizon }
         }
+        save()
+    }
+
+    /// Drops the messages about a subscription, a debt or a goal that is gone. Their keys stay
+    /// posted, so they never come back.
+    func drop(outside subjects: AssistantNotices.Subjects) {
+        let kept = notices.filter(subjects.contains)
+        guard kept.count != notices.count else { return }
+        notices = kept
         save()
     }
 

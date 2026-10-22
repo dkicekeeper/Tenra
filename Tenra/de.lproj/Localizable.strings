@@ -1944,7 +1944,7 @@
 "transactionPreview.subcategory" = "Unterkategorie";
 "transactionPreview.noSubcategory" = "Keine Unterkategorie";
 "transactionPreview.transferMerge" = "Passt zu einer Buchung auf %@: wird als eine Überweisung gespeichert";
-"transactionPreview.alreadyTransfer" = "Bereits als Überweisung zwischen deinen Konten erfasst";
+"transactionPreview.alreadyTransfer" = "Bereits als Überweisung zwischen Ihren Konten erfasst";
 
 /* Statement import review: hints that name the saved entry a row matched (%1$@ entry, %2$@ date; transfer: from, to, date; merge: entry, account, date) */
 "transactionPreview.possibleDuplicateOf" = "Scheint schon erfasst: „%1$@“, %2$@";
@@ -1960,7 +1960,7 @@
 "transactionPreview.reconcile.match" = "Stimmt überein";
 "transactionPreview.reconcile.less" = "Tenra zeigt weniger um";
 "transactionPreview.reconcile.more" = "Tenra zeigt mehr um";
-"transactionPreview.reconcile.hint" = "Prüfe nicht markierte Zeilen und deine manuellen Einträge für diesen Zeitraum";
+"transactionPreview.reconcile.hint" = "Prüfen Sie nicht markierte Zeilen und Ihre manuellen Einträge für diesen Zeitraum";
 "transactionPreview.walletMissing" = "Apple Pay-Zahlungen, die nicht im Auszug stehen: %lld";
 "walletMissing.title" = "Nicht im Auszug";
 "walletMissing.footer" = "Die Wallet-Automation hat diese Apple Pay-Zahlungen erfasst, aber der Auszug zeigt keine Belastung dafür. Die Automation startet auch bei einer abgelehnten Zahlung: Wurde eine davon abgelehnt, halten Sie sie gedrückt und löschen Sie sie.";
@@ -2012,30 +2012,30 @@
 "assistant.step.accounts" = "Prüfe Konten…";
 "assistant.step.budgets" = "Prüfe Budgets…";
 "assistant.step.recurring" = "Sehe mir Abos an…";
-"assistant.step.insights" = "Lese deine Analysen…";
+"assistant.step.insights" = "Lese Ihre Analysen…";
 "assistant.step.calculating" = "Rechne nach…";
 "assistant.step.composing" = "Stelle die Antwort zusammen…";
-"assistant.error.offline" = "Keine Verbindung. Prüfe das Internet und versuche es erneut.";
-"assistant.error.busy" = "Der Assistent ist gerade ausgelastet. Versuche es gleich noch einmal.";
-"assistant.error.limit" = "Deine Fragen für diesen Monat sind aufgebraucht. Das Limit erneuert sich im nächsten Monat.";
+"assistant.error.offline" = "Keine Verbindung. Prüfen Sie das Internet und versuchen Sie es erneut.";
+"assistant.error.busy" = "Der Assistent ist gerade ausgelastet. Versuchen Sie es gleich noch einmal.";
+"assistant.error.limit" = "Ihre Fragen für diesen Monat sind aufgebraucht. Das Limit erneuert sich im nächsten Monat.";
 "assistant.error.pro" = "Der Assistent gehört zu Tenra Pro.";
-"assistant.error.region" = "Der Assistent ist in deiner Region noch nicht verfügbar.";
-"assistant.error.unavailable" = "Der Assistent ist gerade nicht verfügbar. Versuche es später erneut.";
+"assistant.error.region" = "Der Assistent ist in Ihrer Region noch nicht verfügbar.";
+"assistant.error.unavailable" = "Der Assistent ist gerade nicht verfügbar. Versuchen Sie es später erneut.";
 "assistant.error.device" = "Der Assistent ist auf diesem Gerät nicht verfügbar.";
-"assistant.error.refused" = "Dabei kann ich nicht helfen. Frag mich etwas zu deinem Geld.";
-"assistant.error.freeLimit" = "Die kostenlosen Antworten sind vorerst aufgebraucht. Mit Tenra Pro kannst du weiterfragen.";
+"assistant.error.refused" = "Dabei kann ich nicht helfen. Fragen Sie mich etwas zu Ihrem Geld.";
+"assistant.error.freeLimit" = "Die kostenlosen Antworten sind vorerst aufgebraucht. Mit Tenra Pro können Sie weiterfragen.";
 "assistant.allowance.renews" = "Neue kostenlose Antworten ab %@";
 "assistant.open.missing" = "Das gibt es in Tenra nicht mehr";
 "assistant.draft.save" = "Speichern";
 "assistant.draft.saved" = "Gespeichert";
 "assistant.draft.undo" = "Widerrufen";
 "assistant.draft.undone" = "Rückgängig gemacht. Nichts wurde gespeichert.";
-"assistant.draft.failed" = "Speichern fehlgeschlagen. Versuch es noch einmal.";
+"assistant.draft.failed" = "Speichern fehlgeschlagen. Versuchen Sie es noch einmal.";
 "assistant.draft.accountGuessed" = "Tenra hat das Konto gewählt. Prüf es vor dem Speichern.";
 "assistant.draft.categoryGuessed" = "Tenra hat die Kategorie gewählt. Prüf sie vor dem Speichern.";
 "assistant.draft.budgetWas" = "Vorher";
 "assistant.draft.editHint" = "Öffnet die Buchung zum Bearbeiten";
-"assistant.draft.editTip" = "Tipp auf die Buchung, um sie zu ändern.";
+"assistant.draft.editTip" = "Tippen Sie auf die Buchung, um sie zu ändern.";
 "assistant.voice.send" = "Ten fragen";
 "assistant.voice.again" = "Noch mal sagen";
 "assistant.attach.scan" = "Beleg scannen";
@@ -2073,18 +2073,18 @@
 "assistant.forecast.free" = "Frei verfügbar: %@";
 "assistant.forecast.balance" = "Kontostand pro Tag";
 "assistant.forecast.obligations" = "Abbuchungen bis %@";
-"assistant.error.generic" = "Etwas ist schiefgelaufen. Versuche es erneut.";
+"assistant.error.generic" = "Etwas ist schiefgelaufen. Versuchen Sie es erneut.";
 "assistant.error.tooLong" = "Dieser Chat ist für den Assistenten zu lang geworden. Starten Sie einen neuen und fragen Sie noch einmal.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistent";
 "assistant.greeting.title" = "Hallo, ich bin Ten";
-"assistant.greeting.message" = "Ich helfe dir mit deinem Geld: Ausgaben, Sparen, Kredite und Investieren. Ich sehe mir deine Daten auf diesem iPhone an und antworte mit Karten.";
+"assistant.greeting.message" = "Ich helfe Ihnen mit Ihrem Geld: Ausgaben, Sparen, Kredite und Investieren. Ich sehe mir Ihre Daten auf diesem iPhone an und antworte mit Karten.";
 "assistant.attach" = "Beleg oder Kontoauszug anhängen";
-"assistant.greeting.tools" = "Büroklammer: ein Beleg oder Kontoauszug. Mikrofon: sag es einfach.";
+"assistant.greeting.tools" = "Büroklammer: ein Beleg oder Kontoauszug. Mikrofon: sagen Sie es einfach.";
 "composer.send" = "Senden";
 "composer.voice" = "Diktieren";
-"assistant.composer.placeholder" = "Frag zu deinem Geld…";
+"assistant.composer.placeholder" = "Fragen Sie zu Ihrem Geld…";
 "assistant.preset.month" = "Meine Ausgaben diesen Monat";
 "assistant.preset.compare" = "Vergleiche mit dem Vormonat";
 "assistant.preset.budgets" = "Wie stehen meine Budgets?";
@@ -2096,7 +2096,7 @@
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Der Assistent arbeitet in der Cloud";
-"assistant.consent.message" = "Für eine Antwort fragt er Claude, ein Modell von Anthropic. Nur deine Frage und was er für die Antwort nachschlägt verlassen das iPhone: Summen, Kategorien, Kontonamen, deine Ziele und Schulden, die Fakten, die er sich über dich merkt, und die nötigen Buchungen. Deine Datenbank, Belege und Kontoauszüge bleiben hier. Der Server von Tenra speichert keine Fragen und Antworten, und deine Daten werden nicht zum Training von Modellen genutzt.";
+"assistant.consent.message" = "Für eine Antwort fragt er Claude, ein Modell von Anthropic. Nur Ihre Frage und was er für die Antwort nachschlägt verlassen das iPhone: Summen, Kategorien, Kontonamen, Ihre Ziele und Schulden, die Fakten, die er sich über Sie merkt, und die nötigen Buchungen. Ihre Datenbank, Belege und Kontoauszüge bleiben hier. Der Server von Tenra speichert keine Fragen und Antworten, und Ihre Daten werden nicht zum Training von Modellen genutzt.";
 "assistant.consent.allow" = "Einschalten";
 "assistant.consent.notNow" = "Nicht jetzt";
 
@@ -2106,21 +2106,21 @@
 "assistant.fact.was" = "Vorher: %@";
 "settings.assistant.header" = "Assistent";
 "settings.assistant.cloud" = "Antworten aus der Cloud";
-"settings.assistant.footer" = "Ten antwortet mit Claude, einem Modell von Anthropic. Ausgeschaltet fragt Ten erneut, bevor deine nächste Frage das iPhone verlässt.";
+"settings.assistant.footer" = "Ten antwortet mit Claude, einem Modell von Anthropic. Ausgeschaltet fragt Ten erneut, bevor Ihre nächste Frage das iPhone verlässt.";
 "assistant.memory.title" = "Was Ten über mich weiß";
-"assistant.memory.emptyTitle" = "Ten weiß noch nichts über dich";
-"assistant.memory.emptyMessage" = "Erzähl Ten im Chat von deinem Geld, zum Beispiel wann dein Gehalt kommt oder worauf du sparst. Ten bietet an, es sich zu merken, und du entscheidest.";
-"assistant.memory.footer" = "Ten sieht diese Fakten in jedem Chat. Sie bleiben auf diesem iPhone und verlassen es nur mit deinen Fragen.";
+"assistant.memory.emptyTitle" = "Ten weiß noch nichts über Sie";
+"assistant.memory.emptyMessage" = "Erzählen Sie Ten im Chat von Ihrem Geld, zum Beispiel wann Ihr Gehalt kommt oder worauf Sie sparen. Ten bietet an, es sich zu merken, und Sie entscheiden.";
+"assistant.memory.footer" = "Ten sieht diese Fakten in jedem Chat. Sie bleiben auf diesem iPhone und verlassen es nur mit Ihren Fragen.";
 "assistant.memory.add" = "Fakt hinzufügen";
 "assistant.memory.new" = "Neuer Fakt";
 "assistant.memory.edit" = "Fakt bearbeiten";
 "assistant.memory.placeholder" = "Zum Beispiel: Gehalt kommt am 10.";
-"assistant.memory.editorFooter" = "Ein kurzer Satz über dein Geld: wann dein Gehalt kommt, worauf du sparst, welche Karte die wichtigste ist. Keine Kartennummern oder Passwörter.";
+"assistant.memory.editorFooter" = "Ein kurzer Satz über Ihr Geld: wann Ihr Gehalt kommt, worauf Sie sparen, welche Karte die wichtigste ist. Keine Kartennummern oder Passwörter.";
 "assistant.memory.editHint" = "Öffnet den Fakt zum Bearbeiten";
 "assistant.memory.forget" = "Vergessen";
 "assistant.memory.forgetAll" = "Alles vergessen";
 "assistant.memory.forgetAllTitle" = "Alle Fakten vergessen?";
-"assistant.memory.forgetAllMessage" = "Ten weiß dann wieder nichts über dich. Deine Buchungen und Chats bleiben.";
+"assistant.memory.forgetAllMessage" = "Ten weiß dann wieder nichts über Sie. Ihre Buchungen und Chats bleiben.";
 "assistant.memory.tooLong" = "Bleib bei einem kurzen Satz.";
 "assistant.memory.full" = "Ten merkt sich bis zu %lld Fakten. Vergiss einen, um einen neuen hinzuzufügen.";
 "assistant.memory.duplicate" = "Das merkt sich Ten schon.";
@@ -2217,7 +2217,7 @@
 "assistant.chatter.afternoon" = "Guten Tag!";
 "assistant.chatter.evening" = "Guten Abend!";
 "assistant.chatter.night" = "Pst… es ist spät";
-"assistant.chatter.askMe" = "Frag mich einfach";
+"assistant.chatter.askMe" = "Fragen Sie mich einfach";
 "assistant.chatter.hmm" = "Hmm…";
 "assistant.chatter.counting" = "Ich rechne…";
 "assistant.chatter.looking" = "Moment, ich schau mal…";
@@ -2256,12 +2256,12 @@
 /* Ten in empty lists (DesignKit 4.13) */
 "assistant.empty.goals" = "Sparen wir auf etwas?";
 "assistant.empty.debts" = "Wer schuldet wem was? Schreiben wir's auf";
-"assistant.empty.subscriptions" = "Füg Abos hinzu, ich erinnere dich";
-"assistant.empty.deposits" = "Hier wachsen deine Einlagen";
+"assistant.empty.subscriptions" = "Fügen Sie Abos hinzu, ich erinnere Sie";
+"assistant.empty.deposits" = "Hier wachsen Ihre Einlagen";
 "assistant.empty.loans" = "Kredite rechne ich auch mit";
 "assistant.empty.accounts" = "Fangen wir mit einem Konto an?";
 "assistant.empty.history" = "Noch leer. Fügen wir die erste hinzu?";
-"assistant.empty.memory" = "Erzähl mir von dir, ich merke es mir";
+"assistant.empty.memory" = "Erzählen Sie mir von sich, ich merke es mir";
 
 /* DesignKit's own accessibility labels (StatusIndicatorBadge, CharacterCount): looked up in the app's strings. */
 "status.active" = "Aktiv";

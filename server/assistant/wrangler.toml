@@ -22,8 +22,12 @@ PRO_MONTHLY_CALLS = "900"
 # Without Pro, per App Attest key (one install) per month. The app's own allowance is 30
 # answers in the first week, then 10 a month; about 3 calls an answer, plus headroom.
 FREE_MONTHLY_CALLS = "150"
-# Circuit breaker on total spend: model calls per day across all users.
-GLOBAL_DAILY_CALLS = "5000"
+# Circuit breaker on total spend: model calls per day across all users. Sized to the Anthropic
+# workspace's monthly limit ($50 during the ads): a call costs about $0.0014 on Haiku (§11 of
+# docs/domains/assistant.md), so 1 200 calls is about $1.7, a 30th of the limit. A busy day
+# silences Ten until midnight UTC instead of the limit silencing it for the rest of the month.
+# Expected with ads at $10 a day: about 100 calls a day. Raise it with the limit (limit × 24).
+GLOBAL_DAILY_CALLS = "1200"
 # Countries not served by the Anthropic API (anthropic.com/supported-countries).
 BLOCKED_COUNTRIES = "RU,BY"
 # The app App Attest assertions must come from: Team ID + bundle id.

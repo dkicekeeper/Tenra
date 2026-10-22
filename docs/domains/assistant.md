@@ -201,6 +201,12 @@ count of the rest; "Go through it" opens the assistant with a question and a `<n
 free action), "Hide" shows the next. Works without notification permission. A push of an insight
 still opens Analytics.
 
+A notice keeps a copy of its text with the amounts as dots (`hiddenBody`), shown while "hide
+amounts" is on. A notice about a subscription, a debt or a goal leaves with it: the Home section
+shows only notices whose subject is still there (`AssistantNotices.Subjects`: active
+subscriptions, open debts, goals, read once every store has loaded), and
+`refreshAssistantInbox` drops the rest for good (their keys stay posted).
+
 ## 7. The tab, the chat, voice and attachments
 
 - **Navigation** (owner's decisions, 2026-10-14): the tab's root is the assistant's home
@@ -340,8 +346,10 @@ spending, no em dashes, in all 11 languages.
   ≈ $0.002 a message, ≈ $0.12 for 60 a month, against ≈ $0.67 a month net of an annual Pro.
   Production runs Haiku 5.5: the same eval score as Sonnet and Opus, and the only one within the
   subscription's price. Another model is one line (`ASSISTANT_MODEL`) and a deploy. The Anthropic
-  workspace has a monthly spend limit ($20, raise if spending grows; at the limit Ten is silent for
-  everyone until the next month).
+  workspace has a monthly spend limit ($20; $50 with spend alerts at 50 % and 80 % while the ads
+  run; at the limit Ten is silent for everyone until the next month). `GLOBAL_DAILY_CALLS` (1 200)
+  keeps one day under a 30th of that limit, about $0.0014 a call, so a busy day silences Ten until
+  midnight UTC rather than the limit for the month; raise the two together (calls ≈ limit × 24).
 
 ## 12. Setup, deploy and eval
 

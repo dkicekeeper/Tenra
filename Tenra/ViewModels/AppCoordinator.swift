@@ -257,6 +257,9 @@ class AppCoordinator {
     func refreshAssistantInbox(now: Date = Date()) {
         guard AssistantAvailability.isAvailable else { return }
         observeStoreResetForAssistant()
+        if let subjects = assistantNoticeSubjects {
+            AssistantInbox.shared.drop(outside: subjects)
+        }
         let scheduler = SubscriptionNotificationScheduler.shared
         AssistantInbox.shared.post(
             AssistantNotices.charges(
@@ -267,6 +270,17 @@ class AppCoordinator {
                 + AssistantNotices.debtsDue(debtStore.debts, now: now)
                 + AssistantNotices.goalsBehind(goalStore.goals, saved: { [goalStore] in goalStore.saved(for: $0) }, now: now),
             now: now
+        )
+    }
+
+    /// What Ten's messages may still talk about (AssistantNotices.Subjects); nil until every
+    /// store has read its data, when an empty list would mean "not read yet".
+    var assistantNoticeSubjects: AssistantNotices.Subjects? {
+        guard isFullyInitialized, goalStore.isLoaded, debtStore.isLoaded else { return nil }
+        return AssistantNotices.Subjects(
+            subscriptions: Set(transactionStore.activeSubscriptions.map(\.id)),
+            debts: Set(debtStore.debts.filter { !$0.isSettled }.map(\.id)),
+            goals: Set(goalStore.goals.map(\.id))
         )
     }
 

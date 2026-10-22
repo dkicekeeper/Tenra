@@ -16,6 +16,8 @@ struct AssistantNoticeCard: View {
     let onAsk: () -> Void
     let onHide: () -> Void
 
+    @Environment(\.amountsHidden) private var amountsHidden
+
     /// The last message Ten perked up at, so it does it once per message.
     @AppStorage("assistant.notice.perked") private var perkedNotice = ""
     @State private var perks = 0
@@ -23,7 +25,7 @@ struct AssistantNoticeCard: View {
     var body: some View {
         NoticeCard(
             title: notice.title,
-            message: notice.body,
+            message: amountsHidden ? (notice.hiddenBody ?? notice.body) : notice.body,
             actionTitle: String(localized: "assistant.notice.goThrough"),
             actionSystemImage: "sparkles",
             action: onAsk,
@@ -56,7 +58,10 @@ struct AssistantNoticesSection: View {
     private let inbox = AssistantInbox.shared
 
     var body: some View {
-        let unread = inbox.unread
+        // A message about a subscription, a debt or a goal deleted since is not shown; the next
+        // refresh drops it (AppCoordinator.refreshAssistantInbox).
+        let subjects = coordinator.assistantNoticeSubjects
+        let unread = inbox.unread.filter { subjects?.contains($0) ?? true }
         // The animation sits outside the conditional, so the section fades in and out (the
         // last one hidden) instead of making Home jump.
         Group {

@@ -37,7 +37,9 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
 - **Quotes:** escape straight quotes (`\"`) or use the language's own (« », „ “, 「 」).
 - **Tone** (set by the existing translations; follow it, don't choose again): de *Sie*, fr *vous*,
   ru and uk *вы*, kk *Сіз* (a Latin name takes its suffix after a hyphen: Tenra-да), es, it, pt-BR and tr informal, ja and ko polite (です/ます, 해요). "Tenra Pro" is
-  never translated.
+  never translated. Ten's replies follow the same tone (the Style rules in
+  `server/assistant/src/prompt.ts`); strings the person says to Ten (ready questions, "Go through
+  it") stay informal.
 - **Plurals** go in `.stringsdict`: ru and uk one/few/many/other; ja and ko other only; kk one and
   other with the same text (the noun after a number stays singular); the rest
   one/other (fr and pt-BR use "one" for 0 and 1.x too, check the wording). Any string with a

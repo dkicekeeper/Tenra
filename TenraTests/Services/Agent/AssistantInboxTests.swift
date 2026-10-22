@@ -156,6 +156,55 @@ struct AssistantInboxTests {
         #expect(notices.first?.question == String(format: String(localized: "assistant.notice.ask.charge"), "Netflix"))
     }
 
+    /// "Hide amounts" hides them in Ten's messages too: each message keeps a copy with dots.
+    @Test func everyMessageHasAVariantWithoutItsAmounts() throws {
+        let signal = try #require(AssistantNotices.signals(from: [Self.insight("over", severity: .warning)], now: Self.now).first)
+        let hiddenSignal = try #require(signal.hiddenBody)
+        #expect(signal.body.contains("100"))
+        #expect(!hiddenSignal.contains("100"))
+        #expect(hiddenSignal.contains(Formatting.hiddenAmount(currency: "KZT")))
+
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Self.now))!
+        let netflix = RecurringSeries(amount: 4990, currency: "KZT", category: "Subscriptions", description: "Netflix",
+                                      frequency: .monthly, startDate: "2026-01-15", kind: .subscription, status: .active)
+        let charge = try #require(AssistantNotices.charges(subscriptions: [netflix], nextCharge: { _ in tomorrow }, now: Self.now).first)
+        let hiddenCharge = try #require(charge.hiddenBody)
+        #expect(!hiddenCharge.contains("990"))
+        #expect(hiddenCharge.contains(Formatting.hiddenAmount(currency: "KZT")))
+
+        // A message kept before the field existed still decodes, without it (its body shows).
+        var kept = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(charge)) as? [String: Any])
+        kept["hiddenBody"] = nil
+        let decoded = try JSONDecoder().decode(AssistantNotice.self, from: JSONSerialization.data(withJSONObject: kept))
+        #expect(decoded.hiddenBody == nil)
+        #expect(decoded.body == charge.body)
+    }
+
+    /// A message about a subscription, a debt or a goal that is gone leaves the list for good.
+    @Test func aMessageLeavesWithWhatItIsAbout() throws {
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Self.now))!
+        let netflix = RecurringSeries(amount: 4990, currency: "KZT", category: "Subscriptions", description: "Netflix",
+                                      frequency: .monthly, startDate: "2026-01-15", kind: .subscription, status: .active)
+        let charge = try #require(AssistantNotices.charges(subscriptions: [netflix], nextCharge: { _ in tomorrow }, now: Self.now).first)
+        #expect(charge.subjectId == netflix.id)
+        var kept = charge
+        kept.subjectId = nil
+        kept.id = "charge:old:2026-01-15"
+        let signal = try #require(AssistantNotices.signals(from: [Self.insight("over", severity: .warning)], now: Self.now).first)
+
+        let inbox = Self.inbox()
+        inbox.post([charge, kept, signal], now: Self.now)
+        inbox.drop(outside: AssistantNotices.Subjects(subscriptions: [netflix.id], debts: [], goals: []))
+        // The charge kept before subjects were stored reads its series from the key.
+        #expect(Set(inbox.notices.map(\.id)) == [charge.id, signal.id])
+
+        inbox.drop(outside: AssistantNotices.Subjects(subscriptions: [], debts: [], goals: []))
+        #expect(inbox.notices.map(\.id) == [signal.id])
+        // Its key stays posted: it never comes back.
+        inbox.post([charge], now: Self.now)
+        #expect(inbox.notices.map(\.id) == [signal.id])
+    }
+
     @Test func goingThroughAMessageAsksItsQuestionWithTheMessage() async {
         let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "none")])]])
         let model = AssistantViewModel(conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()), context: { "<app_context>a</app_context>" })

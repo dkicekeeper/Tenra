@@ -227,7 +227,8 @@ Tenra 1.7의 새로운 기능:
 
 ## Submission checklist (1.7)
 
-1. **Device check** of the newest TestFlight build (49 on 2026-10-21) on the iOS 27 iPhone, then
+1. **Device check** of the newest TestFlight build (51 on 2026-10-22: DesignKit 8.1.0 and the bank
+   notification action on top of 49) on the iOS 27 iPhone, then
    fix what it finds:
    - the Wallet automation ([plan-auto-capture.md](plan-auto-capture.md) §8 and the "not yet
      checked" list of PR #80), set up by the new step-by-step guide;

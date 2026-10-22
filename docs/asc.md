@@ -60,6 +60,26 @@ github.com/dkicekeeper/Tenra → **Settings** → **Secrets and variables** → 
 App Store Connect → Tenra → **TestFlight** → **Internal Testing** → группа с тобой, включить
 **Automatic Distribution**: новые сборки придут в приложение TestFlight сами.
 
+### 5. App Group для виджетов (основатель, один раз)
+
+Приложение и расширение виджетов (`dakacom.Tenra.TenraWidgets`) делят данные через App Group
+`group.dakacom.Tenra` (`WidgetSnapshotStore`, [domains/intents.md](domains/intents.md) §8).
+Автоматическая подпись из облака с ключом API создаёт App ID и профили, но группу не
+регистрирует и к App ID не привязывает: без этого архив падает с «Authentication failed: Make
+sure a bearer token was provided…» и «No profiles for 'dakacom.Tenra' were found» на обеих целях.
+В [developer.apple.com](https://developer.apple.com/account/resources/identifiers/list) →
+Certificates, Identifiers & Profiles → Identifiers:
+
+1. **«+» → App Groups** → Description `Tenra`, Identifier `group.dakacom.Tenra` → Register.
+2. **`dakacom.Tenra`** → Capabilities → отметить **App Groups** → Configure → выбрать
+   `group.dakacom.Tenra` → Continue → Save (старые профили станут недействительными, это норма:
+   сборка создаст новые).
+3. **«+» → App IDs → App** → Description `Tenra Widgets`, Bundle ID Explicit
+   `dakacom.Tenra.TenraWidgets` → отметить **App Groups** → Register; затем открыть его,
+   App Groups → Configure → `group.dakacom.Tenra` → Save.
+
+После этого Claude запускает TestFlight снова; профили для обеих целей сборка сделает сама.
+
 ## Каждая сборка
 
 Claude запускает TestFlight через GitHub API (или ты: Actions → TestFlight → Run workflow, ветка
@@ -207,3 +227,5 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 - **«HTTP 403»** — у ключа нет нужной роли (продажам нужна Sales, Finance или Admin).
 - **Ошибка подписи / «Cloud signing permission error»** при сборке — у ключа в секретах роль ниже
   Admin.
+- **«Authentication failed: Make sure a bearer token was provided…»** и «No profiles for …» на
+  архиве: у App ID нет App Group, которую просят entitlements (шаг 5).

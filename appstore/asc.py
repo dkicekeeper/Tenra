@@ -16,6 +16,11 @@
                                                     language (what a storefront without its own
                                                     language falls back to); keywords themselves only
                                                     outside Actions
+    python3 appstore/asc.py push-metadata [--apply] the texts in appstore/metadata.json: name and
+                                                    subtitle (a version in preparation), promotional
+                                                    text, keywords, description; creates a missing
+                                                    locale from its `copyFrom`. Without --apply it
+                                                    only shows what would change
     python3 appstore/asc.py custom-pages            custom product pages and their review state
     python3 appstore/asc.py review-submissions      the latest review submissions, their items and
                                                     states; the creative images by state
@@ -806,9 +811,10 @@ def push_version_screenshots(app: str, version: str, locales: list[str] | None) 
         locale = item["attributes"]["locale"]
         if locales and locale not in locales:
             continue
-        settings = captions["locales"].get(locale, {})
+        source = screenshot_source(locale)
+        settings = captions["locales"].get(source, {})
         frames = settings.get("order") or captions["defaultOrder"]
-        files = frame_files(config, frames, locale)
+        files = frame_files(config, frames, source)
         print(f"{locale}: {len(files)} frames", flush=True)
         set_id = screenshot_set("appStoreVersionLocalization", item["id"])
         result = put_screenshots(set_id, files)
@@ -862,6 +868,144 @@ def metadata(app: str, version: str | None) -> None:
                      "(hidden in Actions)" if in_actions else words])
     table(f"Version {record['attributes'].get('versionString')}",
           ["Locale", "Promotional text", "Chars", "Description chars", "Keyword chars", "Keywords"], rows)
+
+
+METADATA = Path(__file__).resolve().parent / "metadata.json"
+TEXT_LIMITS = {"name": 30, "subtitle": 30, "promotionalText": 170, "keywords": 100, "description": 4000}
+
+
+def metadata_config() -> dict:
+    config = json.loads(METADATA.read_text(encoding="utf-8"))
+    for locale, fields in config["locales"].items():
+        for field, limit in TEXT_LIMITS.items():
+            text = fields.get(field)
+            if text is not None and len(text) > limit:
+                sys.exit(f"{locale} {field} is {len(text)} characters; App Store Connect allows {limit}.")
+            if text and "\u2014" in text:
+                sys.exit(f"{locale} {field} has an em dash (user rule: none in store texts).")
+    return config
+
+
+def screenshot_source(locale: str) -> str:
+    """The folder of screenshots/final a locale takes: its own, or its copyFrom's in metadata.json
+    when it has none (en-GB shows the Russian frames)."""
+    if (ROOT / "screenshots" / "final" / locale).is_dir() or not METADATA.exists():
+        return locale
+    return metadata_config()["locales"].get(locale, {}).get("copyFrom", locale)
+
+
+def edited_keywords(current: str, fields: dict) -> tuple[str, list[str]]:
+    """The keyword field after `keywords`, or after `keywordsRemove` and `keywordsAdd` applied to
+    the field as it is; words that would pass 100 characters are left out and returned."""
+    if "keywords" in fields:
+        return fields["keywords"], []
+    drop = {word.lower() for word in fields.get("keywordsRemove", [])}
+    words = [w.strip() for w in current.split(",") if w.strip() and w.strip().lower() not in drop]
+    no_room = []
+    for word in fields.get("keywordsAdd", []):
+        if word.lower() in {w.lower() for w in words}:
+            continue
+        if len(",".join(words + [word])) > TEXT_LIMITS["keywords"]:
+            no_room.append(word)
+        else:
+            words.append(word)
+    return ",".join(words), no_room
+
+
+def push_metadata(app: str, apply: bool) -> None:
+    """The store texts of appstore/metadata.json. Name and subtitle live in the app info and change
+    only while a version is in preparation; promotional text changes any time; keywords and
+    description belong to the version named in the file. A locale missing in App Store Connect is
+    created from its `copyFrom` (description, URLs, What's New, privacy policy). Without `apply`
+    nothing is written."""
+    config = metadata_config()
+    in_actions = bool(os.environ.get("GITHUB_ACTIONS"))
+    shown = lambda field, text: f"({len(text)} characters)" if field == "keywords" and in_actions else text
+
+    infos, _ = get_all(f"/v1/apps/{app}/appInfos", {"limit": 10})
+    info = next((i for i in infos if (i["attributes"].get("state") or i["attributes"].get("appStoreState")) in EDITABLE), None)
+    info_locs = {}
+    if info:
+        found, _ = get_all(f"/v1/appInfos/{info['id']}/appInfoLocalizations", {"limit": 50})
+        info_locs = {item["attributes"]["locale"]: item for item in found}
+    else:
+        live = infos[0] if infos else None
+        if live:
+            found, _ = get_all(f"/v1/appInfos/{live['id']}/appInfoLocalizations", {"limit": 50})
+            info_locs = {item["attributes"]["locale"]: item for item in found}
+
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
+                       {"filter[versionString]": config["version"], "filter[platform]": "IOS"})
+    if not found:
+        sys.exit(f"Version {config['version']} does not exist: run prepare-version first.")
+    record = found[0]
+    editable = (record["attributes"].get("appVersionState") or record["attributes"].get("appStoreState")) in EDITABLE
+    existing, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    version_locs = {item["attributes"]["locale"]: item for item in existing}
+
+    rows = []
+    for locale, fields in config["locales"].items():
+        source = fields.get("copyFrom")
+        # App info: name and subtitle.
+        wanted = {k: fields[k] for k in ("name", "subtitle") if k in fields}
+        current = info_locs.get(locale)
+        if wanted and not info:
+            rows.append([locale, "name, subtitle", "", "needs a version in preparation"])
+        elif info and (wanted or (current is None and source)):
+            attrs = current["attributes"] if current else {}
+            changes = {k: v for k, v in wanted.items() if attrs.get(k) != v}
+            if current is None:
+                base = info_locs.get(source, {}).get("attributes", {}) if source else {}
+                changes = {"name": base.get("name"), "privacyPolicyUrl": base.get("privacyPolicyUrl"), **changes}
+                changes = {k: v for k, v in changes.items() if v}
+            for field, value in changes.items():
+                rows.append([locale, field, attrs.get(field) or "", value])
+            if apply and changes:
+                if current:
+                    send("PATCH", f"/v1/appInfoLocalizations/{current['id']}", {"data": {
+                        "type": "appInfoLocalizations", "id": current["id"], "attributes": changes}})
+                else:
+                    send("POST", "/v1/appInfoLocalizations", {"data": {
+                        "type": "appInfoLocalizations", "attributes": {"locale": locale, **changes},
+                        "relationships": {"appInfo": {"data": {"type": "appInfos", "id": info["id"]}}}}})
+
+        # Version: promotional text, keywords, description.
+        current = version_locs.get(locale)
+        if current is None and not editable:
+            rows.append([locale, "version texts", "", f"no {locale} yet: created while a version is in preparation"])
+            continue
+        attrs = current["attributes"] if current else {}
+        changes = {}
+        if "promotionalText" in fields:
+            changes["promotionalText"] = fields["promotionalText"]
+        if editable:
+            if any(k in fields for k in ("keywords", "keywordsAdd", "keywordsRemove")):
+                words, no_room = edited_keywords(attrs.get("keywords") or "", fields)
+                changes["keywords"] = words
+                if no_room:
+                    rows.append([locale, "keywords", "", "no room for: " + ", ".join(no_room)])
+            if "description" in fields:
+                changes["description"] = fields["description"]
+            if current is None and source:
+                base = version_locs.get(source, {}).get("attributes", {})
+                for field in ("description", "supportUrl", "marketingUrl", "whatsNew"):
+                    if base.get(field) and field not in changes:
+                        changes[field] = base[field]
+        elif any(k in fields for k in ("keywords", "keywordsAdd", "keywordsRemove", "description")):
+            rows.append([locale, "keywords, description", "", f"version {config['version']} is not in preparation"])
+        changes = {k: v for k, v in changes.items() if attrs.get(k) != v}
+        for field, value in changes.items():
+            rows.append([locale, field, shown(field, attrs.get(field) or ""), shown(field, value)])
+        if apply and changes:
+            if current:
+                send("PATCH", f"/v1/appStoreVersionLocalizations/{current['id']}", {"data": {
+                    "type": "appStoreVersionLocalizations", "id": current["id"], "attributes": changes}})
+            elif editable:
+                send("POST", "/v1/appStoreVersionLocalizations", {"data": {
+                    "type": "appStoreVersionLocalizations", "attributes": {"locale": locale, **changes},
+                    "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": record["id"]}}}}})
+    title = f"Store texts, {config['version']}" + ("" if apply else " (dry run: --apply writes them)")
+    table(title, ["Locale", "Field", "Now", "New"], [[r[0], r[1], str(r[2]).replace("|", "/"), str(r[3]).replace("|", "/")] for r in rows])
 
 
 def store_pages(app: str, version: str | None) -> None:
@@ -1224,6 +1368,8 @@ def main(argv: list[str]) -> None:
             keywords(app, locale)
     elif command == "metadata":
         metadata(app, option("--version"))
+    elif command == "push-metadata":
+        push_metadata(app, "--apply" in args)
     elif command == "custom-pages":
         custom_pages(app)
     elif command == "review-submissions":

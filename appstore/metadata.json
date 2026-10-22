@@ -1,0 +1,130 @@
+{
+  "comment": "Store texts per locale for `asc.py push-metadata` (docs/asc.md): name and subtitle (30 characters, app info, only while a version is in preparation), promotionalText (170, any time), keywords (100, the whole field) or keywordsAdd / keywordsRemove (words changed in the field as it is), description. copyFrom fills what a new localization needs (description, support and marketing URLs, What's New, privacy policy URL) from another locale and takes its screenshots. No em dashes. Status: draft of 2026-10-22 for 1.7, waiting for the founder's approval (docs/plan-ads-readiness.md A6).",
+  "version": "1.7",
+  "locales": {
+    "en-US": {
+      "subtitle": "Expenses that log themselves",
+      "promotionalText": "New in 1.7: Apple Pay payments log themselves, with the merchant and its logo. A widget shows what you can spend today, and Ten, the assistant, answers about your money.",
+      "keywordsAdd": [
+        "money",
+        "manager",
+        "subscriptions"
+      ]
+    },
+    "ru": {
+      "subtitle": "Расходы записываются сами",
+      "promotionalText": "Новое в 1.7: оплаты Apple Pay записываются сами, с продавцом и логотипом. Виджет показывает, сколько можно потратить сегодня, а Тэн, помощник, ответит про ваши деньги.",
+      "keywordsRemove": [
+        "семейный"
+      ],
+      "keywordsAdd": [
+        "финансы",
+        "подписки",
+        "контроль"
+      ]
+    },
+    "uk": {
+      "subtitle": "Витрати записуються самі",
+      "promotionalText": "Нове в 1.7: оплати Apple Pay записуються самі, з продавцем і логотипом. Віджет показує, скільки можна витратити сьогодні, а Тен, помічник, відповість про ваші гроші.",
+      "keywordsAdd": [
+        "фінанси",
+        "підписки",
+        "контроль"
+      ]
+    },
+    "de-DE": {
+      "subtitle": "Ausgaben erfassen sich selbst",
+      "promotionalText": "Neu in 1.7: Apple-Pay-Zahlungen erfassen sich selbst, mit Händler und Logo. Ein Widget zeigt, was Sie heute ausgeben können, und Ten beantwortet Ihre Fragen zum Geld.",
+      "keywordsAdd": [
+        "abos",
+        "finanzplaner"
+      ]
+    },
+    "es-ES": {
+      "subtitle": "Gastos que se anotan solos",
+      "promotionalText": "Novedad en 1.7: los pagos con Apple Pay se anotan solos, con el comercio y su logo. Un widget muestra cuánto puedes gastar hoy, y Ten responde sobre tu dinero.",
+      "keywordsAdd": [
+        "finanzas",
+        "suscripciones"
+      ]
+    },
+    "es-MX": {
+      "subtitle": "Gastos que se anotan solos",
+      "promotionalText": "Novedad en 1.7: los pagos con Apple Pay se anotan solos, con el comercio y su logo. Un widget muestra cuánto puedes gastar hoy, y Ten responde sobre tu dinero.",
+      "keywordsAdd": [
+        "finanzas",
+        "suscripciones"
+      ]
+    },
+    "fr-FR": {
+      "subtitle": "Les dépenses se notent seules",
+      "promotionalText": "Nouveau en 1.7 : les paiements Apple Pay se notent seuls, avec le commerçant et son logo. Un widget indique combien dépenser aujourd’hui, et Ten répond sur votre argent.",
+      "keywordsAdd": [
+        "gestion",
+        "argent",
+        "abonnements"
+      ]
+    },
+    "fr-CA": {
+      "subtitle": "Les dépenses se notent seules",
+      "promotionalText": "Nouveau en 1.7 : les paiements Apple Pay se notent seuls, avec le commerçant et son logo. Un widget indique combien dépenser aujourd’hui, et Ten répond sur votre argent.",
+      "keywordsAdd": [
+        "gestion",
+        "argent",
+        "abonnements"
+      ]
+    },
+    "it": {
+      "subtitle": "Spese registrate da sole",
+      "promotionalText": "Novità in 1.7: i pagamenti Apple Pay si registrano da soli, con esercente e logo. Un widget mostra quanto puoi spendere oggi, e Ten risponde sui tuoi soldi.",
+      "keywordsAdd": [
+        "soldi",
+        "abbonamenti",
+        "risparmi"
+      ]
+    },
+    "pt-BR": {
+      "subtitle": "Gastos registrados sozinhos",
+      "promotionalText": "Novo no 1.7: pagamentos com Apple Pay se registram sozinhos, com a loja e o logo. Um widget mostra quanto você pode gastar hoje, e o Ten responde sobre seu dinheiro.",
+      "keywordsAdd": [
+        "orçamento",
+        "finanças",
+        "pessoais"
+      ]
+    },
+    "tr": {
+      "subtitle": "Harcamalar kendini kaydeder",
+      "promotionalText": "1.7'de yeni: Apple Pay ödemeleri işyeri ve logosuyla kendiliğinden kaydedilir. Widget bugün ne kadar harcayabileceğini gösterir, Ten de paranla ilgili soruları yanıtlar.",
+      "keywordsAdd": [
+        "para",
+        "yönetimi",
+        "dolar",
+        "euro"
+      ]
+    },
+    "ja": {
+      "subtitle": "支出が自動で記録される家計簿",
+      "promotionalText": "1.7 の新機能: Apple Pay の支払いが店舗とロゴ付きで自動記録されます。ウィジェットで今日使える金額がわかり、アシスタントのテンがお金の質問に答えます。",
+      "keywordsAdd": [
+        "サブスク",
+        "節約"
+      ]
+    },
+    "ko": {
+      "subtitle": "지출이 저절로 기록되는 가계부",
+      "promotionalText": "1.7의 새로운 기능: Apple Pay 결제가 가맹점과 로고와 함께 저절로 기록돼요. 위젯으로 오늘 쓸 수 있는 금액을 보고, 어시스턴트 텐이 돈에 대한 질문에 답해요.",
+      "keywordsAdd": [
+        "구독",
+        "저축",
+        "소비"
+      ]
+    },
+    "en-GB": {
+      "copyFrom": "ru",
+      "name": "Tenra: Учёт расходов и бюджет",
+      "subtitle": "Траты записываются сами",
+      "keywords": "финансы,деньги,доходы,кошелек,трекер,выписка,подписки,долги,копилка,кредит,ии,помощник,қаржы,шығын",
+      "promotionalText": "Новое в 1.7: оплаты Apple Pay записываются сами, с продавцом и логотипом. Виджет показывает, сколько можно потратить сегодня, а Тэн, помощник, ответит про ваши деньги."
+    }
+  }
+}

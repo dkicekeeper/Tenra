@@ -98,6 +98,11 @@ python3 appstore/asc.py metadata [--version 1.7]
                                                 # по локалям: название, подзаголовок, Promotional Text,
                                                 # длины описания и ключей, основной язык; сами ключи
                                                 # только вне Actions (лог публичный)
+python3 appstore/asc.py push-metadata [--apply]  # тексты из appstore/metadata.json: название и подзаголовок
+                                                # (пока версия готовится), Promotional Text, ключи целиком
+                                                # или keywordsAdd/keywordsRemove к тому, что есть, описание;
+                                                # недостающую локаль создаёт по copyFrom (описание, ссылки,
+                                                # What's New, кадры). Без --apply только показывает изменения
 python3 appstore/asc.py custom-pages            # специальные страницы и состояние их версий
 python3 appstore/asc.py push-custom-pages [--submit]
                                                 # создать/обновить страницы из appstore/product-pages.json

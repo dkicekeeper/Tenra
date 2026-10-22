@@ -488,17 +488,18 @@ final class FinanceToolkit: AgentToolExecuting {
 
     // MARK: - Forecast
 
-    private struct ForecastInput: Decodable {
-        struct Change: Decodable {
-            let label: String
-            let amount: Double
-            let date: String
-        }
+    /// A what-if change to the forecast: money in (> 0) or out (< 0) on a day.
+    struct ForecastChange: Decodable {
+        let label: String
+        let amount: Double
+        let date: String
+    }
 
+    private struct ForecastInput: Decodable {
         let until: String
         let cushion: Double?
         let accountIds: [String]?
-        let extraChanges: [Change]?
+        let extraChanges: [ForecastChange]?
 
         enum CodingKeys: String, CodingKey {
             case until, cushion
@@ -507,10 +508,28 @@ final class FinanceToolkit: AgentToolExecuting {
         }
     }
 
-    private struct Outflow {
+    struct Outflow {
         let date: String
         let label: String
         let amount: Double
+    }
+
+    /// What `forecast_balance` returns, typed: Home's "For today" card reads it too
+    /// (DailyAllowance), so both say the same number.
+    struct BalanceForecast {
+        let currency: String
+        let today: String
+        let until: String
+        let days: Int
+        let startBalance: Double
+        let outflows: [Outflow]
+        let outflowTotal: Double
+        let cushion: Double
+        let extraTotal: Double
+        let free: Double
+        let dailyAllowance: Double
+        let series: [(date: String, balance: Double)]
+        let missingRates: Set<String>
     }
 
     /// The longest projection: a year and a little.
@@ -527,10 +546,46 @@ final class FinanceToolkit: AgentToolExecuting {
     /// has the eval simulator's shape.
     private func forecastBalance(_ input: JSONValue) async throws -> JSONValue {
         let args = try input.decoded(as: ForecastInput.self)
+        let forecast = try await forecast(
+            until: args.until,
+            cushion: args.cushion ?? 0,
+            accountIds: args.accountIds,
+            extraChanges: args.extraChanges ?? []
+        )
+        let round = FinanceToolkitCompute.round2
+        return [
+            "currency": .string(forecast.currency),
+            "today": .string(forecast.today),
+            "until": .string(forecast.until),
+            "days": .number(Double(forecast.days)),
+            "start_balance": .number(round(forecast.startBalance)),
+            "obligations": .array(forecast.outflows.map { outflow -> JSONValue in
+                ["date": .string(outflow.date), "label": .string(outflow.label), "amount": .number(round(outflow.amount))]
+            }),
+            "obligations_total": .number(round(forecast.outflowTotal)),
+            "cushion": .number(round(forecast.cushion)),
+            "extra_changes_total": .number(round(forecast.extraTotal)),
+            "free_amount": .number(round(forecast.free)),
+            "daily_allowance": .number(forecast.dailyAllowance),
+            "series": .array(forecast.series.map { point -> JSONValue in
+                ["date": .string(point.date), "balance": .number(round(point.balance))]
+            }),
+            "missing_rates": .array(forecast.missingRates.sorted().map(JSONValue.string)),
+        ]
+    }
+
+    /// The forecast itself (see `forecastBalance`): `until` is `yyyy-MM-dd`, after today and
+    /// within `forecastMaxDays`.
+    func forecast(
+        until untilKey: String,
+        cushion requestedCushion: Double = 0,
+        accountIds requestedAccountIds: [String]? = nil,
+        extraChanges: [ForecastChange] = []
+    ) async throws -> BalanceForecast {
         let calendar = FastDateParser.calendar
         let moment = now()
         let todayKey = FastDateParser.string(from: moment)
-        guard let today = FastDateParser.date(from: todayKey), let until = FastDateParser.date(from: args.until) else {
+        guard let today = FastDateParser.date(from: todayKey), let until = FastDateParser.date(from: untilKey) else {
             throw FinanceToolError(message: "Dates must be YYYY-MM-DD.")
         }
         guard let days = calendar.dateComponents([.day], from: today, to: until).day, days > 0 else {
@@ -554,7 +609,7 @@ final class FinanceToolkit: AgentToolExecuting {
         // Accounts and today's balance.
         let accountsById = Dictionary(store.accounts.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let accounts: [Account]
-        if let ids = args.accountIds, !ids.isEmpty {
+        if let ids = requestedAccountIds, !ids.isEmpty {
             accounts = try ids.map { id in
                 guard let account = accountsById[id] else { throw FinanceToolError(message: "Unknown account \(id).") }
                 return account
@@ -569,7 +624,6 @@ final class FinanceToolkit: AgentToolExecuting {
         }
 
         var outflows: [Outflow] = []
-        let untilKey = args.until
 
         // Subscriptions and recurring payments: every occurrence after today, before `until`.
         let typeByName = Dictionary(store.categories.map { ($0.name, $0.type) }, uniquingKeysWith: { first, _ in first })
@@ -633,14 +687,14 @@ final class FinanceToolkit: AgentToolExecuting {
         outflows.sort { $0.date == $1.date ? $0.label < $1.label : $0.date < $1.date }
 
         // What if.
-        let extras = (args.extraChanges ?? []).filter { $0.date > todayKey && $0.date < untilKey }
-        let cushion = max(0, args.cushion ?? 0)
+        let extras = extraChanges.filter { $0.date > todayKey && $0.date < untilKey }
+        let cushion = max(0, requestedCushion)
         let outflowTotal = outflows.reduce(0) { $0 + $1.amount }
         let extraTotal = extras.reduce(0) { $0 + $1.amount }
         let free = start - outflowTotal - cushion + extraTotal
         let allowance = free > 0 ? (free / Double(days) * 100).rounded(.down) / 100 : 0
 
-        var series: [JSONValue] = []
+        var series: [(date: String, balance: Double)] = []
         var balance = start
         for offset in 0...days {
             guard let day = calendar.date(byAdding: .day, value: offset, to: today) else { break }
@@ -648,27 +702,24 @@ final class FinanceToolkit: AgentToolExecuting {
             if offset > 0 { balance -= allowance }
             balance -= outflows.filter { $0.date == key }.reduce(0) { $0 + $1.amount }
             balance += extras.filter { $0.date == key }.reduce(0) { $0 + $1.amount }
-            series.append(["date": .string(key), "balance": .number(FinanceToolkitCompute.round2(balance))])
+            series.append((key, balance))
         }
 
-        let round = FinanceToolkitCompute.round2
-        return [
-            "currency": .string(base),
-            "today": .string(todayKey),
-            "until": .string(untilKey),
-            "days": .number(Double(days)),
-            "start_balance": .number(round(start)),
-            "obligations": .array(outflows.map { outflow -> JSONValue in
-                ["date": .string(outflow.date), "label": .string(outflow.label), "amount": .number(round(outflow.amount))]
-            }),
-            "obligations_total": .number(round(outflowTotal)),
-            "cushion": .number(round(cushion)),
-            "extra_changes_total": .number(round(extraTotal)),
-            "free_amount": .number(round(free)),
-            "daily_allowance": .number(allowance),
-            "series": .array(series),
-            "missing_rates": .array(missingRates.sorted().map(JSONValue.string)),
-        ]
+        return BalanceForecast(
+            currency: base,
+            today: todayKey,
+            until: untilKey,
+            days: days,
+            startBalance: start,
+            outflows: outflows,
+            outflowTotal: outflowTotal,
+            cushion: cushion,
+            extraTotal: extraTotal,
+            free: free,
+            dailyAllowance: allowance,
+            series: series,
+            missingRates: missingRates
+        )
     }
 
     /// The loan's payment day in the month of `reference`, clamped to the month's length.

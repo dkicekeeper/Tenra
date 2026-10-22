@@ -94,6 +94,10 @@ python3 appstore/asc.py prepare-version --version 1.5 --build 6 [--wait 30]
                                                 # создать версию (выпуск после одобрения), What's New
                                                 # из docs/release-notes.md, выбрать сборку; без отправки
 python3 appstore/asc.py keywords --locale ru,en-US   # слова из поля Keywords: к ним привязываются спец. страницы
+python3 appstore/asc.py metadata [--version 1.7]
+                                                # по локалям: название, подзаголовок, Promotional Text,
+                                                # длины описания и ключей, основной язык; сами ключи
+                                                # только вне Actions (лог публичный)
 python3 appstore/asc.py custom-pages            # специальные страницы и состояние их версий
 python3 appstore/asc.py push-custom-pages [--submit]
                                                 # создать/обновить страницы из appstore/product-pages.json

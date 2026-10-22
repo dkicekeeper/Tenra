@@ -10,6 +10,12 @@
                                                     docs/release-notes.md, select build N (no submit)
     python3 appstore/asc.py keywords [--locale ru,en-US]
                                                     the app's keywords (custom pages link to them)
+    python3 appstore/asc.py metadata [--version 1.7]
+                                                    per locale: name, subtitle, promotional text,
+                                                    description and keyword lengths, and the primary
+                                                    language (what a storefront without its own
+                                                    language falls back to); keywords themselves only
+                                                    outside Actions
     python3 appstore/asc.py custom-pages            custom product pages and their review state
     python3 appstore/asc.py review-submissions      the latest review submissions, their items and
                                                     states; the creative images by state
@@ -826,6 +832,38 @@ def store_version(app: str, version: str | None) -> dict:
     return found[0]
 
 
+def metadata(app: str, version: str | None) -> None:
+    """The texts each localization shows, read only. Kazakhstan, Belarus, Uzbekistan and most
+    storefronts index only English (U.K.) (Apple's "App Store localizations" table): without an
+    en-GB localization they fall back to the primary language printed here. The keyword field is
+    not public on the store, so in Actions (a public log) only its length shows."""
+    primary = get(f"/v1/apps/{app}")["data"]["attributes"].get("primaryLocale")
+    print(f"Primary language: {primary}\n")
+    infos, _ = get_all(f"/v1/apps/{app}/appInfos", {"limit": 10})
+    rows = []
+    for info in infos:
+        state = info["attributes"].get("appStoreState") or info["attributes"].get("state")
+        localizations, _ = get_all(f"/v1/appInfos/{info['id']}/appInfoLocalizations", {"limit": 50})
+        for item in sorted(localizations, key=lambda i: i["attributes"]["locale"]):
+            a = item["attributes"]
+            subtitle = a.get("subtitle") or ""
+            rows.append([state, a["locale"], a.get("name") or "", subtitle, len(subtitle)])
+    table("Name and subtitle (app info)", ["State", "Locale", "Name", "Subtitle", "Chars"], rows)
+
+    record = store_version(app, version)
+    in_actions = bool(os.environ.get("GITHUB_ACTIONS"))
+    localizations, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    rows = []
+    for item in sorted(localizations, key=lambda i: i["attributes"]["locale"]):
+        a = item["attributes"]
+        words = a.get("keywords") or ""
+        promo = (a.get("promotionalText") or "").replace("\n", " ")
+        rows.append([a["locale"], promo, len(promo), len(a.get("description") or ""), len(words),
+                     "(hidden in Actions)" if in_actions else words])
+    table(f"Version {record['attributes'].get('versionString')}",
+          ["Locale", "Promotional text", "Chars", "Description chars", "Keyword chars", "Keywords"], rows)
+
+
 def store_pages(app: str, version: str | None) -> None:
     """What the store shows, read only: per localization of the version (the latest one on the
     App Store by default), each screenshot set and how many of its screenshots are files in
@@ -1184,6 +1222,8 @@ def main(argv: list[str]) -> None:
     elif command == "keywords":
         for locale in option("--locale", "en-US").split(","):
             keywords(app, locale)
+    elif command == "metadata":
+        metadata(app, option("--version"))
     elif command == "custom-pages":
         custom_pages(app)
     elif command == "review-submissions":

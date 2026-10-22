@@ -103,7 +103,7 @@
 "home.today.title" = "Bugün için";
 "home.today.untilIncome" = "%@ tarihindeki gelire kadar günlük";
 "home.today.untilMonthEnd" = "Ay sonuna kadar günlük";
-"home.today.setAside" = "%1$@, ödemeler için %2$@ ayrıldı";
+"home.today.setAside" = "Ödemeler için %@ ayrıldı";
 "home.iCloudAsk.title" = "Yedekleri iCloud’da saklayın";
 "home.iCloudAsk.message" = "Haftalık yedeğiniz yalnızca bu iPhone’da. iCloud Drive’da yeni bir telefona veya yeniden yüklemeye dayanır.";
 "home.iCloudAsk.action" = "Aç";

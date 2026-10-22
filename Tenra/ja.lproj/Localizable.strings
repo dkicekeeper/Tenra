@@ -103,7 +103,7 @@
 "home.today.title" = "今日の予算";
 "home.today.untilIncome" = "%@の入金まで1日あたり";
 "home.today.untilMonthEnd" = "月末まで1日あたり";
-"home.today.setAside" = "%1$@、支払い用に%2$@を確保済み";
+"home.today.setAside" = "支払い用に%@を確保済み";
 "home.iCloudAsk.title" = "バックアップをiCloudに保存";
 "home.iCloudAsk.message" = "毎週のバックアップは今このiPhoneにしかありません。iCloud Driveに置けば、機種変更や再インストールでも残ります。";
 "home.iCloudAsk.action" = "オンにする";

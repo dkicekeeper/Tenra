@@ -103,7 +103,7 @@
 "home.today.title" = "Pour aujourd’hui";
 "home.today.untilIncome" = "Par jour jusqu’au revenu du %@";
 "home.today.untilMonthEnd" = "Par jour jusqu’à la fin du mois";
-"home.today.setAside" = "%1$@, dont %2$@ mis de côté pour les paiements";
+"home.today.setAside" = "%@ mis de côté pour les paiements";
 "home.iCloudAsk.title" = "Gardez les sauvegardes dans iCloud";
 "home.iCloudAsk.message" = "Votre sauvegarde hebdomadaire n’est que sur cet iPhone. Dans iCloud Drive, elle survit à un nouveau téléphone ou à une réinstallation.";
 "home.iCloudAsk.action" = "Activer";

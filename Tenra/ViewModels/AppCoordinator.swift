@@ -86,6 +86,16 @@ class AppCoordinator {
     /// asks its question. Cleared once taken.
     private(set) var pendingNotice: AssistantNotice?
 
+    /// What a widget or the Control Center button asked for (`tenra://add`): Home opens the
+    /// add-transaction form for the category, or with none the assistant (Home where it does
+    /// not run). Cleared once taken.
+    private(set) var pendingQuickAdd: QuickAdd?
+
+    nonisolated struct QuickAdd: Equatable, Sendable {
+        /// An expense category's name; nil opens the assistant.
+        let category: String?
+    }
+
     /// Cold-launch stash: when iOS launches the app from a notification tap, the
     /// `userNotificationCenter(_:didReceive:)` handler runs BEFORE `AppCoordinator`
     /// is constructed (the coordinator waits for CoreData prewarm). AppDelegate
@@ -197,6 +207,37 @@ class AppCoordinator {
 
     func consumePendingSubscription() {
         pendingSubscriptionSeriesId = nil
+    }
+
+    /// A URL the app was opened with: Tenra's own (`tenra://`, from a widget or Control Center)
+    /// or a file another app handed over.
+    func open(_ url: URL) {
+        if url.scheme == Self.urlScheme {
+            handleDeepLink(url)
+        } else {
+            openAttachment(url)
+        }
+    }
+
+    /// The app's URL scheme (Info.plist CFBundleURLTypes).
+    nonisolated static let urlScheme = "tenra"
+
+    /// `tenra://add` and `tenra://add?category=<name>`; anything else is ignored.
+    func handleDeepLink(_ url: URL) {
+        guard let request = Self.quickAdd(from: url) else { return }
+        pendingQuickAdd = request
+    }
+
+    nonisolated static func quickAdd(from url: URL) -> QuickAdd? {
+        guard url.scheme == urlScheme, url.host() == "add" else { return nil }
+        let category = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            .queryItems?.first { $0.name == "category" }?.value
+        return QuickAdd(category: category?.isEmpty == false ? category : nil)
+    }
+
+    func consumePendingQuickAdd() -> QuickAdd? {
+        defer { pendingQuickAdd = nil }
+        return pendingQuickAdd
     }
 
     /// A file handed over by another app; anything but a PDF or a CSV is ignored.

@@ -103,7 +103,7 @@
 "home.today.title" = "Per oggi";
 "home.today.untilIncome" = "Al giorno fino all’entrata del %@";
 "home.today.untilMonthEnd" = "Al giorno fino a fine mese";
-"home.today.setAside" = "%1$@, con %2$@ da parte per i pagamenti";
+"home.today.setAside" = "%@ da parte per i pagamenti";
 "home.iCloudAsk.title" = "Conserva i backup in iCloud";
 "home.iCloudAsk.message" = "Il backup settimanale è solo su questo iPhone. In iCloud Drive sopravvive a un nuovo telefono o a una reinstallazione.";
 "home.iCloudAsk.action" = "Attiva";

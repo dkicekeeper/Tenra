@@ -280,8 +280,20 @@ struct MainTabView: View {
                 openImport()
             }
         }
+        // A widget's category or Control Center's "Log an expense" (tenra://add): the add
+        // form on Home for a category (ContentView takes it), else the assistant.
+        .onChange(of: coordinator.pendingQuickAdd, initial: true) { _, request in
+            guard let request else { return }
+            if request.category == nil, assistantTakesActionTab {
+                _ = coordinator.consumePendingQuickAdd()
+                openAssistant()
+            } else {
+                if tabBarMode == .expanded { tabBarMode = .normal }
+                selectedTab = .home
+                previousTab = .home
+            }
+        }
         // "Ask Ten" on an account, a category, an insight or the history.
-        .onChange(of: coordinator.assistantTopic) { _, topic in
             if topic != nil { openAssistant() }
         }
         // "Go through it" on a message Ten wrote, on Home.

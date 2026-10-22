@@ -52,11 +52,10 @@ struct DailyAllowanceCard: View {
             span = String(localized: "home.today.untilMonthEnd")
         }
         guard setAside > 0, !amountsHidden else { return span }
-        return String(
-            format: String(localized: "home.today.setAside"),
-            span,
-            Formatting.formatCurrencySmart(setAside, currency: currency)
-        )
+        // The amount never breaks across lines: its group separators become non-breaking.
+        let amount = Formatting.formatCurrencySmart(setAside, currency: currency)
+            .replacingOccurrences(of: " ", with: "\u{00A0}")
+        return span + "\n" + String(format: String(localized: "home.today.setAside"), amount)
     }
 }
 

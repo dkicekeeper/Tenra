@@ -1,9 +1,9 @@
 # App Intents & Siri
 
 Domain reference for `Tenra/Intents/**` (thin App Intents adapters) and `Services/Intents/**`
-(the logic they call). The intents live in the main app target and run in the app's own
-process: no extension, no App Group. Future work (quick-add templates, widgets, Control
-Center, savings goals) is tracked in [backlog.md](../backlog.md).
+(the logic they call), and the widget extension (§8). The intents live in the main app target
+and run in the app's own process. The only extension is `TenraWidgets`, which reads one JSON
+file the app writes into the App Group; the CoreData store stays the app's.
 
 How a parsed operation becomes a transaction draft (category, account, currency) is shared
 with the in-app voice flow and documented once, in
@@ -451,3 +451,34 @@ withdrawal (the spending is logged later).
 
 A bank notification's merchants are kept out of `WalletCaptureStore.merchants`, the list looked up
 online for logos ([logos.md](logos.md)): they name people too (a transfer).
+
+---
+
+## 8. Widgets and Control Center (`TenraWidgets`)
+
+A widget extension target (`TenraWidgetsExtension`, bundle id `dakacom.Tenra.TenraWidgets`,
+folder `TenraWidgets/`, synchronized like the app's) embedded in the app. App Group
+`group.dakacom.Tenra` in both entitlements. No DesignKit in the extension (its package uses
+APIs an extension may not): system fonts, the accent from its own asset catalog, its own
+`Localizable.strings` in 11 locales.
+
+- **Data**: the app writes `widget-snapshot.json` into the App Group (`WidgetSnapshotStore`,
+  `Services/Widgets/WidgetSnapshot.swift`) after the full load (ContentView) and when it goes to
+  the background (TenraApp), only when it changed, then `WidgetCenter.reloadAllTimelines()`.
+  Contents: the day, the base currency, "hide amounts", For today (`DailyAllowance`, the same
+  number as Home and Ten's forecast), the income it runs to, realized expenses today
+  (`summaryContribution`), the four expense categories used most in the last 30 days. The
+  extension decodes it with its own copy of the type (`TenraWidgets/WidgetData.swift`); the keys
+  are pinned by `WidgetSnapshotTests`. A snapshot from another day shows 0 spent; the timeline
+  redraws after midnight.
+- **For today** (`TodayWidget`): small, medium (with the four categories), Lock Screen
+  rectangular, inline and circular. "Hide amounts" shows dots.
+- **Log an expense** (`QuickAddControl`, a `ControlWidgetButton` with `OpenURLIntent`): Control
+  Center, the Lock Screen and the Action button.
+- **Links**: `tenra://add` opens the assistant (Home where it does not run), `tenra://add?category=
+  <name>` Home's add form for that expense category (`AppCoordinator.handleDeepLink` →
+  `pendingQuickAdd`; MainTabView and ContentView take it). The scheme is in Info.plist
+  `CFBundleURLTypes`; any other URL is a file handed over (`openAttachment`).
+- **Signing**: the cloud archive registers the extension's id and the App Group through
+  `-allowProvisioningUpdates` with the ASC key ([asc.md](../asc.md)).
+

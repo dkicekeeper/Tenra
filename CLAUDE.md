@@ -122,6 +122,7 @@ Tenra/
 ├── Extensions/          # Swift extensions
 ├── Utils/               # Helper utilities and formatters
 └── CoreData/            # CoreData stack and entities
+TenraWidgets/            # Widget extension: For today, Log an expense (domains/intents.md §8)
 ```
 
 **Note:** `Account`, `Transaction`, and several related structs (`DepositInfo`, `LoanInfo`, summaries) all live in `Tenra/Models/Transaction.swift` — don't grep for `Models/Account.swift`, it doesn't exist.

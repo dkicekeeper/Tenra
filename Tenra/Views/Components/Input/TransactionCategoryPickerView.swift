@@ -17,6 +17,10 @@ struct TransactionCategoryPickerView: View {
 
     @State private var coordinator: TransactionCategoryPickerCoordinator
 
+    /// An expense category to open the add form for, set from outside (a widget's category on
+    /// Home); cleared once opened.
+    @Binding private var externalSelection: String?
+
     // MARK: - Environment
 
     @Environment(TimeFilterManager.self) private var timeFilterManager
@@ -30,8 +34,10 @@ struct TransactionCategoryPickerView: View {
         categoriesViewModel: CategoriesViewModel,
         accountsViewModel: AccountsViewModel,
         transactionStore: TransactionStore,
-        timeFilterManager: TimeFilterManager
+        timeFilterManager: TimeFilterManager,
+        externalSelection: Binding<String?> = .constant(nil)
     ) {
+        _externalSelection = externalSelection
         _coordinator = State(initialValue: TransactionCategoryPickerCoordinator(
             transactionsViewModel: transactionsViewModel,
             categoriesViewModel: categoriesViewModel,
@@ -64,6 +70,11 @@ struct TransactionCategoryPickerView: View {
         }
         .sheet(isPresented: $coordinator.showingAddCategory) {
             categoryEditSheet
+        }
+        .onChange(of: externalSelection, initial: true) { _, name in
+            guard let name else { return }
+            externalSelection = nil
+            coordinator.handleCategorySelected(name, type: .expense)
         }
         // Recompute the display snapshot off-MainActor whenever an input changes
         // (`RefreshKey`: period bounds, transactions, categories, rates, base currency,

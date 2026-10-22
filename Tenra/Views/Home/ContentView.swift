@@ -34,6 +34,8 @@ struct ContentView: View {
     @State private var showingSettings = false
     /// The first launch's hint over the categories (showCategoryHintIfNeeded).
     @State private var showingCategoryHint = false
+    /// A widget's category to open the add form for (AppCoordinator.pendingQuickAdd).
+    @State private var quickAddCategory: String?
 
     // MARK: - Summary Trigger
     // Equatable snapshot of every input that drives the summary card.
@@ -143,6 +145,18 @@ struct ContentView: View {
                     accountCount: coordinator.transactionStore.accounts.count,
                     categoryCount: coordinator.transactionStore.categories.count
                 )
+                // The widgets get today's figures once the history is loaded.
+                await WidgetSnapshotBuilder.refresh(coordinator: coordinator)
+            }
+            // A widget's category (tenra://add?category=…): back to Home's root, then the
+            // add form for it. Without a category MainTabView opened the assistant, or Home
+            // where it does not run.
+            .onChange(of: coordinator.pendingQuickAdd, initial: true) { _, request in
+                // A request without a category is the assistant's (MainTabView takes it).
+                guard let request, request.category != nil || !AssistantAvailability.isAvailable else { return }
+                _ = coordinator.consumePendingQuickAdd()
+                navigationPath = NavigationPath()
+                quickAddCategory = request.category
             }
             // Reactive summary
             // Fires whenever transactions count, active filter, import state, or
@@ -289,7 +303,8 @@ struct ContentView: View {
             categoriesViewModel: categoriesViewModel,
             accountsViewModel: accountsViewModel,
             transactionStore: coordinator.transactionStore,
-            timeFilterManager: timeFilterManager
+            timeFilterManager: timeFilterManager,
+            externalSelection: $quickAddCategory
         )
         .screenPadding()
         // The first launch: a hint over the categories, once (DesignKit's Tooltip, over the

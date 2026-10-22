@@ -103,7 +103,7 @@
 "home.today.title" = "오늘의 예산";
 "home.today.untilIncome" = "%@ 입금일까지 하루";
 "home.today.untilMonthEnd" = "월말까지 하루";
-"home.today.setAside" = "%1$@, 결제용으로 %2$@ 확보됨";
+"home.today.setAside" = "결제용으로 %@ 확보됨";
 "home.iCloudAsk.title" = "백업을 iCloud에 보관하세요";
 "home.iCloudAsk.message" = "주간 백업이 지금은 이 iPhone에만 있습니다. iCloud Drive에 두면 새 휴대폰이나 재설치 후에도 남습니다.";
 "home.iCloudAsk.action" = "켜기";

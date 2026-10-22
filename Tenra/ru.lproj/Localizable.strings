@@ -103,7 +103,7 @@
 "home.today.title" = "На сегодня";
 "home.today.untilIncome" = "В день до поступления %@";
 "home.today.untilMonthEnd" = "В день до конца месяца";
-"home.today.setAside" = "%1$@, %2$@ отложено на платежи";
+"home.today.setAside" = "%@ отложено на платежи";
 "home.iCloudAsk.title" = "Храните копии в iCloud";
 "home.iCloudAsk.message" = "Еженедельная копия сейчас лежит только на этом iPhone. В iCloud Drive она переживёт новый телефон или переустановку.";
 "home.iCloudAsk.action" = "Включить";

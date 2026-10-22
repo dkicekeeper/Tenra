@@ -58,6 +58,8 @@ struct OnboardingAutoCaptureStep: View {
                         accessory: .action { vm.toggleAfterFinish(.statement) }
                     )
                 }
+                // The onboarding stack centres its text; rows read from the leading edge.
+                .multilineTextAlignment(.leading)
                 .screenPadding()
                 .padding(.top, AppSpacing.md)
             }

@@ -97,6 +97,13 @@
 "settings.background" = "Arka Plan";
 "settings.merchantLogos" = "İşyeri logoları";
 "home.hint.categories" = "Harcama eklemek için bir kategoriye dokunun";
+"home.autoCapture.title" = "Bırakın Tenra kaydetsin";
+"home.autoCapture.message" = "Wallet otomasyonunu bir kez kurun, Apple Pay ödemeleri burada kendiliğinden görünsün.";
+"home.autoCapture.action" = "Kur";
+"home.today.title" = "Bugün için";
+"home.today.untilIncome" = "%@ tarihindeki gelire kadar günlük";
+"home.today.untilMonthEnd" = "Ay sonuna kadar günlük";
+"home.today.setAside" = "%1$@, ödemeler için %2$@ ayrıldı";
 "settings.voiceLanguage" = "Ses Dili";
 "settings.voiceLanguage.app" = "Uygulamadaki gibi";
 "settings.background.none" = "Arka Plan Yok";
@@ -1558,8 +1565,8 @@
 
 "onboarding.welcome.page1.title" = "Tüm finansların tek yerde";
 "onboarding.welcome.page1.subtitle" = "Hesaplar, mevduatlar, krediler, abonelikler ve harcama kategorileri. Hepsi anlaşılır analizle birlikte.";
-"onboarding.welcome.page2.title" = "İşlemleri sesle ekle";
-"onboarding.welcome.page2.subtitle" = "\"Kahveye 90 lira\" de. Tenra tutarı, para birimini ve kategoriyi anlar. Ya da PDF/CSV ekstrelerini içe aktar.";
+"onboarding.welcome.page2.title" = "Kendi kendine kaydeder";
+"onboarding.welcome.page2.subtitle" = "Apple Pay ödemeleri, bankanızın bildirimleri ve ekstreleri yazmadan işleme dönüşür. Banka girişi yok.";
 "onboarding.welcome.page3.title" = "Verilerin sende kalır";
 "onboarding.welcome.page3.subtitle" = "Her şey cihazında saklanır. iCloud yedeği isteğe bağlıdır. Hesap yok, kayıt yok.";
 
@@ -1896,6 +1903,17 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "Maaş";
 "onboarding.preset.otherIncome" = "Diğer gelirler";
+"onboarding.autoCapture.title" = "Bırakın Tenra kaydetsin";
+"onboarding.autoCapture.subtitle" = "Banka girişi yok. Her biri birkaç dakika sürer, şimdi ya da sonra.";
+"onboarding.autoCapture.applePay.title" = "Apple Pay ödemeleri";
+"onboarding.autoCapture.applePay.hint" = "Terminalde iPhone veya Watch ile her ödeme kaydedilir";
+"onboarding.autoCapture.notifications.title" = "Banka bildirimleri";
+"onboarding.autoCapture.notifications.hint" = "Her bankanın bildirimlerinden havaleler, QR ve çevrimiçi ödemeler";
+"onboarding.autoCapture.statement.title" = "Banka ekstresi";
+"onboarding.autoCapture.statement.hint" = "Geçen ayın PDF’ini yükleyin, Ten işlemlere ayırsın";
+"onboarding.autoCapture.afterStart" = "Başladıktan sonra";
+"onboarding.restore" = "Yedekten geri yükle";
+"onboarding.cta.nextWithCount" = "İleri • %d seçildi";
 "transactionForm.addIncomeCategory" = "Gelir kategorisi ekle";
 
 /* Statement import duplicate markers */

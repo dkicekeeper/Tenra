@@ -97,6 +97,13 @@
 "settings.background" = "배경";
 "settings.merchantLogos" = "가맹점 로고";
 "home.hint.categories" = "카테고리를 탭해 지출을 추가하세요";
+"home.autoCapture.title" = "기록은 Tenra에게 맡기세요";
+"home.autoCapture.message" = "Wallet 자동화를 한 번 설정하면 Apple Pay 결제가 여기에 저절로 나타납니다.";
+"home.autoCapture.action" = "설정하기";
+"home.today.title" = "오늘의 예산";
+"home.today.untilIncome" = "%@ 입금일까지 하루";
+"home.today.untilMonthEnd" = "월말까지 하루";
+"home.today.setAside" = "%1$@, 결제용으로 %2$@ 확보됨";
 "settings.voiceLanguage" = "음성 언어";
 "settings.voiceLanguage.app" = "앱과 동일";
 "settings.background.none" = "배경 없음";
@@ -1558,8 +1565,8 @@
 
 "onboarding.welcome.page1.title" = "모든 금융을 한곳에";
 "onboarding.welcome.page1.subtitle" = "계좌, 예금, 대출, 구독, 지출 카테고리를 명확한 분석과 함께 관리해요.";
-"onboarding.welcome.page2.title" = "음성으로 거래를 추가하세요";
-"onboarding.welcome.page2.subtitle" = "\"커피 800텡게\"라고 말하면 Tenra가 금액, 통화, 카테고리를 알아들어요. PDF·CSV 명세서를 가져올 수도 있어요.";
+"onboarding.welcome.page2.title" = "알아서 기록";
+"onboarding.welcome.page2.subtitle" = "Apple Pay 결제, 은행 알림과 명세서가 입력 없이 거래가 됩니다. 은행 로그인은 필요 없습니다.";
 "onboarding.welcome.page3.title" = "내 데이터는 내 것이에요";
 "onboarding.welcome.page3.subtitle" = "모든 데이터는 기기에 저장돼요. iCloud 백업은 선택이에요. 계정도, 가입도 필요 없어요.";
 
@@ -1896,6 +1903,17 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "급여";
 "onboarding.preset.otherIncome" = "기타 수입";
+"onboarding.autoCapture.title" = "기록은 Tenra에게 맡기세요";
+"onboarding.autoCapture.subtitle" = "은행 로그인은 필요 없습니다. 각각 몇 분이면 되고, 지금이나 나중에 할 수 있습니다.";
+"onboarding.autoCapture.applePay.title" = "Apple Pay 결제";
+"onboarding.autoCapture.applePay.hint" = "단말기에서 iPhone이나 Watch로 결제할 때마다 기록됩니다";
+"onboarding.autoCapture.notifications.title" = "은행 알림";
+"onboarding.autoCapture.notifications.hint" = "모든 은행 알림에서 이체, QR 결제, 온라인 결제를 기록합니다";
+"onboarding.autoCapture.statement.title" = "은행 명세서";
+"onboarding.autoCapture.statement.hint" = "지난달 PDF를 불러오면 텐이 거래로 정리합니다";
+"onboarding.autoCapture.afterStart" = "시작 후";
+"onboarding.restore" = "백업에서 복원";
+"onboarding.cta.nextWithCount" = "다음 • %d개 선택됨";
 "transactionForm.addIncomeCategory" = "수입 카테고리 추가";
 
 /* Statement import duplicate markers */

@@ -15,6 +15,8 @@ enum OnboardingStep: Hashable {
     case currency
     case account
     case categories
+    /// What fills Tenra without typing: the Wallet automation, bank notifications, a statement.
+    case autoCapture
 }
 
 /// Draft for the first account being created during onboarding.
@@ -49,6 +51,30 @@ final class OnboardingViewModel {
 
     /// True while the final commit pipeline is running (disables the Done button).
     var isFinishing: Bool = false
+
+    /// What onboarding opens once it is done, chosen on the auto-capture step.
+    enum FollowUp: Hashable {
+        /// Ten (or the import tab) with a statement to pick.
+        case statement
+        /// The bank notification setup guide (iOS 27).
+        case bankNotifications
+    }
+
+    /// Step 4: the follow-up picked, if any. One at a time: a second tap clears it.
+    var afterFinish: FollowUp?
+
+    /// iCloud Drive holds a backup of Tenra: the welcome screen offers to restore it.
+    var hasCloudBackup = false
+
+    /// The list of iCloud backups to restore from, over the welcome screen.
+    var showingRestore = false
+
+    /// The step indicator's symbols: Tenra's three data steps and the auto-capture step.
+    static let stepSymbols = OnboardingStepIndicator.tenraSymbols + ["wave.3.right"]
+
+    /// Whether the auto-capture step offers bank notifications: iOS 27's notification trigger,
+    /// once its setup guide is in the build.
+    static var offersBankNotifications: Bool { false }
 
     // MARK: - Init
 
@@ -101,6 +127,10 @@ final class OnboardingViewModel {
         // values live in `draftAccount` and survive back/forward navigation.
         path.append(.categories)
         logger.info("onboarding_step_completed step=account")
+    }
+
+    func toggleAfterFinish(_ followUp: FollowUp) {
+        afterFinish = afterFinish == followUp ? nil : followUp
     }
 
     // MARK: - Skip

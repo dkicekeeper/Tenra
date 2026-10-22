@@ -97,6 +97,13 @@
 "settings.background" = "Fundo";
 "settings.merchantLogos" = "Logotipos dos estabelecimentos";
 "home.hint.categories" = "Toque em uma categoria para adicionar um gasto";
+"home.autoCapture.title" = "Deixe o Tenra registrar";
+"home.autoCapture.message" = "Configure a automação da Wallet uma vez, e os pagamentos com Apple Pay aparecem aqui sozinhos.";
+"home.autoCapture.action" = "Configurar";
+"home.today.title" = "Para hoje";
+"home.today.untilIncome" = "Por dia até a entrada de %@";
+"home.today.untilMonthEnd" = "Por dia até o fim do mês";
+"home.today.setAside" = "%1$@, com %2$@ reservado para pagamentos";
 "settings.voiceLanguage" = "Idioma da voz";
 "settings.voiceLanguage.app" = "Como no app";
 "settings.background.none" = "Sem fundo";
@@ -1558,8 +1565,8 @@
 
 "onboarding.welcome.page1.title" = "Todas as suas finanças em um só lugar";
 "onboarding.welcome.page1.subtitle" = "Contas, depósitos, empréstimos, assinaturas e categorias de gastos: tudo junto, com análises claras.";
-"onboarding.welcome.page2.title" = "Adicione transações por voz";
-"onboarding.welcome.page2.subtitle" = "Diga \"Café 15 reais\": o Tenra reconhece o valor, a moeda e a categoria. Ou importe extratos em PDF/CSV.";
+"onboarding.welcome.page2.title" = "Registra sozinho";
+"onboarding.welcome.page2.subtitle" = "Pagamentos com Apple Pay, notificações e extratos do seu banco viram lançamentos sem digitar. Sem login no banco.";
 "onboarding.welcome.page3.title" = "Seus dados continuam sendo seus";
 "onboarding.welcome.page3.subtitle" = "Tudo fica armazenado no seu dispositivo. O backup no iCloud é opcional. Sem contas, sem cadastro.";
 
@@ -1896,6 +1903,17 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "Salário";
 "onboarding.preset.otherIncome" = "Outras receitas";
+"onboarding.autoCapture.title" = "Deixe o Tenra registrar";
+"onboarding.autoCapture.subtitle" = "Sem login no banco. Cada um leva alguns minutos, agora ou depois.";
+"onboarding.autoCapture.applePay.title" = "Pagamentos com Apple Pay";
+"onboarding.autoCapture.applePay.hint" = "Cada pagamento com iPhone ou Watch no terminal é registrado";
+"onboarding.autoCapture.notifications.title" = "Notificações do banco";
+"onboarding.autoCapture.notifications.hint" = "Transferências, pagamentos por QR e online das notificações de qualquer banco";
+"onboarding.autoCapture.statement.title" = "Um extrato bancário";
+"onboarding.autoCapture.statement.hint" = "Carregue o PDF do mês passado e o Ten organiza os lançamentos";
+"onboarding.autoCapture.afterStart" = "Depois de começar";
+"onboarding.restore" = "Restaurar um backup";
+"onboarding.cta.nextWithCount" = "Avançar • %d selecionadas";
 "transactionForm.addIncomeCategory" = "Adicionar categoria de receita";
 
 /* Statement import duplicate markers */

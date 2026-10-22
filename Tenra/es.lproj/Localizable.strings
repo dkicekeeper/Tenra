@@ -97,6 +97,13 @@
 "settings.background" = "Fondo";
 "settings.merchantLogos" = "Logotipos de comercios";
 "home.hint.categories" = "Toca una categoría para añadir un gasto";
+"home.autoCapture.title" = "Deja que Tenra lo registre";
+"home.autoCapture.message" = "Configura la automatización de Wallet una vez y los pagos con Apple Pay aparecerán aquí solos.";
+"home.autoCapture.action" = "Configurar";
+"home.today.title" = "Para hoy";
+"home.today.untilIncome" = "Al día hasta el ingreso del %@";
+"home.today.untilMonthEnd" = "Al día hasta fin de mes";
+"home.today.setAside" = "%1$@, con %2$@ apartado para pagos";
 "settings.voiceLanguage" = "Idioma de voz";
 "settings.voiceLanguage.app" = "Como en la app";
 "settings.background.none" = "Sin fondo";
@@ -1558,8 +1565,8 @@
 
 "onboarding.welcome.page1.title" = "Todas tus finanzas en un solo lugar";
 "onboarding.welcome.page1.subtitle" = "Cuentas, depósitos, préstamos, suscripciones y categorías de gasto, junto con análisis claros.";
-"onboarding.welcome.page2.title" = "Añade transacciones con tu voz";
-"onboarding.welcome.page2.subtitle" = "Di \"Café 800 tenge\" y Tenra reconoce el importe, la moneda y la categoría. O importa extractos desde PDF/CSV.";
+"onboarding.welcome.page2.title" = "Se registra solo";
+"onboarding.welcome.page2.subtitle" = "Los pagos con Apple Pay, las notificaciones y los extractos de tu banco se convierten en movimientos sin escribir. Sin iniciar sesión en el banco.";
 "onboarding.welcome.page3.title" = "Tus datos siguen siendo tuyos";
 "onboarding.welcome.page3.subtitle" = "Todo se guarda en tu dispositivo. La copia de seguridad en iCloud es opcional. Sin cuentas ni registro.";
 
@@ -1896,6 +1903,17 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "Salario";
 "onboarding.preset.otherIncome" = "Otros ingresos";
+"onboarding.autoCapture.title" = "Deja que Tenra lo registre";
+"onboarding.autoCapture.subtitle" = "Sin iniciar sesión en el banco. Cada uno lleva un par de minutos, ahora o después.";
+"onboarding.autoCapture.applePay.title" = "Pagos con Apple Pay";
+"onboarding.autoCapture.applePay.hint" = "Cada pago con el iPhone o el Watch en un terminal se registra";
+"onboarding.autoCapture.notifications.title" = "Notificaciones del banco";
+"onboarding.autoCapture.notifications.hint" = "Transferencias, pagos QR y en línea desde las notificaciones de cualquier banco";
+"onboarding.autoCapture.statement.title" = "Un extracto bancario";
+"onboarding.autoCapture.statement.hint" = "Carga el PDF del mes pasado y Ten lo ordena en movimientos";
+"onboarding.autoCapture.afterStart" = "Tras empezar";
+"onboarding.restore" = "Restaurar una copia";
+"onboarding.cta.nextWithCount" = "Siguiente • %d seleccionadas";
 "transactionForm.addIncomeCategory" = "Añadir categoría de ingresos";
 
 /* Statement import duplicate markers */

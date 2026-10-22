@@ -97,6 +97,13 @@
 "settings.background" = "Arrière-plan";
 "settings.merchantLogos" = "Logos des commerçants";
 "home.hint.categories" = "Touchez une catégorie pour ajouter une dépense";
+"home.autoCapture.title" = "Laissez Tenra enregistrer";
+"home.autoCapture.message" = "Configurez l’automatisation Wallet une fois, et les paiements Apple Pay apparaîtront ici d’eux-mêmes.";
+"home.autoCapture.action" = "Configurer";
+"home.today.title" = "Pour aujourd’hui";
+"home.today.untilIncome" = "Par jour jusqu’au revenu du %@";
+"home.today.untilMonthEnd" = "Par jour jusqu’à la fin du mois";
+"home.today.setAside" = "%1$@, dont %2$@ mis de côté pour les paiements";
 "settings.voiceLanguage" = "Langue de la voix";
 "settings.voiceLanguage.app" = "Comme dans l’app";
 "settings.background.none" = "Aucun arrière-plan";
@@ -1558,8 +1565,8 @@
 
 "onboarding.welcome.page1.title" = "Toutes vos finances au même endroit";
 "onboarding.welcome.page1.subtitle" = "Comptes, comptes épargne, crédits, abonnements et catégories de dépenses, le tout avec une analyse claire.";
-"onboarding.welcome.page2.title" = "Ajoutez des opérations à la voix";
-"onboarding.welcome.page2.subtitle" = "Dites \"Café 800 tenge\" et Tenra reconnaît le montant, la devise et la catégorie. Ou importez vos relevés PDF/CSV.";
+"onboarding.welcome.page2.title" = "S’enregistre tout seul";
+"onboarding.welcome.page2.subtitle" = "Les paiements Apple Pay, les notifications et les relevés de votre banque deviennent des opérations sans saisie. Sans connexion à la banque.";
 "onboarding.welcome.page3.title" = "Vos données restent les vôtres";
 "onboarding.welcome.page3.subtitle" = "Tout est stocké sur votre appareil. La sauvegarde iCloud est facultative. Pas de compte, pas d'inscription.";
 
@@ -1896,6 +1903,17 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "Salaire";
 "onboarding.preset.otherIncome" = "Autres revenus";
+"onboarding.autoCapture.title" = "Laissez Tenra enregistrer";
+"onboarding.autoCapture.subtitle" = "Sans connexion à la banque. Chacun prend quelques minutes, maintenant ou plus tard.";
+"onboarding.autoCapture.applePay.title" = "Paiements Apple Pay";
+"onboarding.autoCapture.applePay.hint" = "Chaque paiement avec l’iPhone ou la Watch au terminal est enregistré";
+"onboarding.autoCapture.notifications.title" = "Notifications bancaires";
+"onboarding.autoCapture.notifications.hint" = "Virements, paiements QR et en ligne depuis les notifications de toute banque";
+"onboarding.autoCapture.statement.title" = "Un relevé bancaire";
+"onboarding.autoCapture.statement.hint" = "Chargez le PDF du mois dernier, et Ten le range en opérations";
+"onboarding.autoCapture.afterStart" = "Après le début";
+"onboarding.restore" = "Restaurer une sauvegarde";
+"onboarding.cta.nextWithCount" = "Suivant • %d sélectionnées";
 "transactionForm.addIncomeCategory" = "Ajouter une catégorie de revenus";
 
 /* Statement import duplicate markers */

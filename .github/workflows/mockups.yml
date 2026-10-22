@@ -1,0 +1,92 @@
+# Renders screens in review to PNG (TenraTests/Mockups/ScreenMockupTests.swift) on an iPhone
+# simulator, in each requested language, light and dark, and uploads them as the "mockups"
+# artifact: how a layout looks before it ships, without a Mac. The suite runs only here (it is
+# skipped where MOCKUP_DIR is not set, so CI ignores it). docs/asc.md, "Mockups".
+name: Mockups
+
+on:
+  # A push that changes the mockups renders them (a workflow_dispatch needs the file on main).
+  push:
+    branches: ["claude/**"]
+    paths:
+      - "TenraTests/Mockups/**"
+      - ".github/workflows/mockups.yml"
+  workflow_dispatch:
+    inputs:
+      languages:
+        description: "Languages, space-separated (the app's .lproj codes)"
+        default: "ru en"
+        required: false
+
+jobs:
+  render:
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "27.0"
+
+      # The newest iOS runtime's first iPhone, by id (same as ci.yml).
+      - name: Resolve simulator destination
+        id: sim
+        run: |
+          xcrun simctl list devices available -j > simulators.json
+          SIM=$(python3 -c '
+          import json, re
+          best = None
+          for runtime, devices in json.load(open("simulators.json"))["devices"].items():
+              m = re.search(r"iOS-(\d+)-(\d+)", runtime)
+              phones = [d for d in devices if d["name"].startswith("iPhone")]
+              if m and phones:
+                  version = (int(m.group(1)), int(m.group(2)))
+                  if best is None or version > best[0]:
+                      best = (version, phones[0])
+          if best:
+              print(best[1]["udid"], "%s, iOS %d.%d" % (best[1]["name"], *best[0]))
+          ')
+          if [ -z "$SIM" ]; then echo "::error::No iPhone simulator available"; exit 1; fi
+          echo "id=${SIM%% *}" >> "$GITHUB_OUTPUT"
+          echo "Using simulator: ${SIM#* }"
+
+      - name: Build for testing
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -scheme Tenra \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.id }}" \
+            -derivedDataPath "$RUNNER_TEMP/dd" \
+            2>&1 | tee build.log | grep -aE "error:|\*\* TEST BUILD (SUCCEEDED|FAILED)" || true
+          grep -aq "TEST BUILD SUCCEEDED" build.log
+
+      - name: Render
+        env:
+          LANGUAGES: ${{ inputs.languages || 'ru en' }}
+        run: |
+          set -o pipefail
+          for LANG_CODE in $LANGUAGES; do
+            mkdir -p "$RUNNER_TEMP/mockups/$LANG_CODE"
+            TEST_RUNNER_MOCKUP_DIR="$RUNNER_TEMP/mockups/$LANG_CODE" xcodebuild test-without-building \
+              -scheme Tenra \
+              -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.id }}" \
+              -derivedDataPath "$RUNNER_TEMP/dd" \
+              -only-testing:TenraTests/ScreenMockupTests \
+              -parallel-testing-enabled NO \
+              -testLanguage "$LANG_CODE" \
+              2>&1 | tee "render-$LANG_CODE.log" | grep -aE "Test case .* (passed|failed)|error:|\*\* TEST (SUCCEEDED|FAILED)" || true
+          done
+          ls -R "$RUNNER_TEMP/mockups"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mockups
+          path: ${{ runner.temp }}/mockups
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mockups-logs
+          path: "*.log"

@@ -30,7 +30,7 @@ struct OnboardingWelcomeStep: View {
             subtitle: String(localized: "onboarding.welcome.page1.subtitle")
         ),
         LoopOnBoardingPhase(
-            symbol: "mic.fill",
+            symbol: "wave.3.right",
             title: String(localized: "onboarding.welcome.page2.title"),
             subtitle: String(localized: "onboarding.welcome.page2.subtitle")
         ),
@@ -99,7 +99,17 @@ struct OnboardingWelcomeStep: View {
                 }
                 .dsButton()
                 .screenPadding()
-                .padding(.bottom, AppSpacing.lg)
+                .padding(.bottom, vm.hasCloudBackup ? AppSpacing.sm : AppSpacing.lg)
+
+                // A backup in iCloud (a new phone, a reinstall): bring the data back instead
+                // of starting over.
+                if vm.hasCloudBackup {
+                    Button(String(localized: "onboarding.restore")) {
+                        vm.showingRestore = true
+                    }
+                    .dsButton(.flat, role: .neutral, size: .medium)
+                    .padding(.bottom, AppSpacing.lg)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(Self.phaseSpring, value: index)

@@ -97,6 +97,13 @@
 "settings.background" = "背景";
 "settings.merchantLogos" = "店舗のロゴ";
 "home.hint.categories" = "カテゴリをタップして支出を追加";
+"home.autoCapture.title" = "記録はTenraにおまかせ";
+"home.autoCapture.message" = "Walletオートメーションを一度設定すれば、Apple Payの支払いがここに自動で表示されます。";
+"home.autoCapture.action" = "設定する";
+"home.today.title" = "今日の予算";
+"home.today.untilIncome" = "%@の入金まで1日あたり";
+"home.today.untilMonthEnd" = "月末まで1日あたり";
+"home.today.setAside" = "%1$@、支払い用に%2$@を確保済み";
 "settings.voiceLanguage" = "音声の言語";
 "settings.voiceLanguage.app" = "アプリと同じ";
 "settings.background.none" = "背景なし";
@@ -1558,8 +1565,8 @@
 
 "onboarding.welcome.page1.title" = "すべての家計を、ひとつに";
 "onboarding.welcome.page1.subtitle" = "口座・預金・ローン・サブスク・支出カテゴリを、わかりやすい分析とともにまとめて管理できます。";
-"onboarding.welcome.page2.title" = "音声で取引を追加";
-"onboarding.welcome.page2.subtitle" = "「コーヒー 800テンゲ」と話すだけで、Tenraが金額・通貨・カテゴリを認識します。PDF/CSVの明細を取り込むこともできます。";
+"onboarding.welcome.page2.title" = "自動で記録";
+"onboarding.welcome.page2.subtitle" = "Apple Payの支払い、銀行の通知や明細が入力なしで取引になります。銀行へのログインは不要です。";
 "onboarding.welcome.page3.title" = "データはあなたのもの";
 "onboarding.welcome.page3.subtitle" = "すべて端末内に保存されます。iCloudバックアップは任意です。アカウント登録もサインアップも不要です。";
 
@@ -1896,6 +1903,17 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "給与";
 "onboarding.preset.otherIncome" = "その他の収入";
+"onboarding.autoCapture.title" = "記録はTenraにおまかせ";
+"onboarding.autoCapture.subtitle" = "銀行へのログインは不要。どれも数分で、今でも後でも設定できます。";
+"onboarding.autoCapture.applePay.title" = "Apple Payの支払い";
+"onboarding.autoCapture.applePay.hint" = "iPhoneやWatchで端末にタッチした支払いを記録します";
+"onboarding.autoCapture.notifications.title" = "銀行の通知";
+"onboarding.autoCapture.notifications.hint" = "どの銀行の通知からも、振込、QR決済、オンライン決済を記録します";
+"onboarding.autoCapture.statement.title" = "銀行の明細";
+"onboarding.autoCapture.statement.hint" = "先月のPDFを読み込むと、テンが取引に振り分けます";
+"onboarding.autoCapture.afterStart" = "開始後に";
+"onboarding.restore" = "バックアップから復元";
+"onboarding.cta.nextWithCount" = "次へ • %d件選択中";
 "transactionForm.addIncomeCategory" = "収入カテゴリを追加";
 
 /* Statement import duplicate markers */

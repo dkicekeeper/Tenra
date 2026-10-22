@@ -97,6 +97,13 @@
 "settings.background" = "Тло";
 "settings.merchantLogos" = "Логотипи магазинів";
 "home.hint.categories" = "Натисніть на категорію, щоб додати витрату";
+"home.autoCapture.title" = "Нехай Tenra записує сама";
+"home.autoCapture.message" = "Налаштуйте автоматизацію Wallet один раз, і оплати Apple Pay з’являтимуться тут самі.";
+"home.autoCapture.action" = "Налаштувати";
+"home.today.title" = "На сьогодні";
+"home.today.untilIncome" = "На день до надходження %@";
+"home.today.untilMonthEnd" = "На день до кінця місяця";
+"home.today.setAside" = "%1$@, %2$@ відкладено на платежі";
 "settings.voiceLanguage" = "Мова голосу";
 "settings.voiceLanguage.app" = "Як у застосунку";
 "settings.background.none" = "Без тла";
@@ -1558,8 +1565,8 @@
 
 "onboarding.welcome.page1.title" = "Усі ваші фінанси в одному місці";
 "onboarding.welcome.page1.subtitle" = "Рахунки, депозити, кредити, підписки й категорії витрат разом із зрозумілою аналітикою.";
-"onboarding.welcome.page2.title" = "Додавайте операції голосом";
-"onboarding.welcome.page2.subtitle" = "Скажіть «Кава 800 тенге», і Tenra розпізнає суму, валюту й категорію. Або імпортуйте виписки з PDF/CSV.";
+"onboarding.welcome.page2.title" = "Записує сама";
+"onboarding.welcome.page2.subtitle" = "Оплати Apple Pay, сповіщення й виписки банку стають операціями без ручного введення. Без входу в банк.";
 "onboarding.welcome.page3.title" = "Ваші дані залишаються вашими";
 "onboarding.welcome.page3.subtitle" = "Усе зберігається на пристрої. Резервна копія в iCloud за бажанням. Без облікових записів, без реєстрації.";
 
@@ -1896,6 +1903,17 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "Зарплата";
 "onboarding.preset.otherIncome" = "Інші доходи";
+"onboarding.autoCapture.title" = "Нехай Tenra записує сама";
+"onboarding.autoCapture.subtitle" = "Без входу в банк. Кожне займе кілька хвилин, зараз або пізніше.";
+"onboarding.autoCapture.applePay.title" = "Оплати Apple Pay";
+"onboarding.autoCapture.applePay.hint" = "Кожна оплата телефоном або годинником запишеться сама";
+"onboarding.autoCapture.notifications.title" = "Сповіщення банку";
+"onboarding.autoCapture.notifications.hint" = "Перекази, оплати за QR та онлайн зі сповіщень будь-якого банку";
+"onboarding.autoCapture.statement.title" = "Виписка з банку";
+"onboarding.autoCapture.statement.hint" = "Завантажте PDF за минулий місяць, і Тен рознесе операції";
+"onboarding.autoCapture.afterStart" = "Після старту";
+"onboarding.restore" = "Відновити з копії";
+"onboarding.cta.nextWithCount" = "Далі • обрано %d";
 "transactionForm.addIncomeCategory" = "Додати категорію доходу";
 
 /* Statement import duplicate markers */

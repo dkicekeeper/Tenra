@@ -312,8 +312,9 @@ Tenra 1.7의 새로운 기능:
    and restore on the welcome screen, Ten's capacity, the store page), P1 §2.3 as far as it fits;
    What's New below gets the lines for what the user sees, and the device check covers the new
    screens.
-1. **Device check** of the newest TestFlight build (54 on 2026-10-23: everything of 1.7, the
-   widgets, Kazakh and the screens from the approved mockups) on the iOS 27 iPhone, then
+1. **Device check** of the newest TestFlight build (55 on 2026-10-23: everything of 1.7, the
+   widgets, Kazakh, the screens from the approved mockups and the founder's notes of 2026-10-23)
+   on the iOS 27 iPhone, then
    fix what it finds:
    - the Wallet automation ([plan-auto-capture.md](plan-auto-capture.md) §8 and the "not yet
      checked" list of PR #80), set up by the new step-by-step guide;

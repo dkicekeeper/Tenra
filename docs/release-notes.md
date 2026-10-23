@@ -314,7 +314,7 @@ Tenra 1.7의 새로운 기능:
    and restore on the welcome screen, Ten's capacity, the store page), P1 §2.3 as far as it fits;
    What's New below gets the lines for what the user sees, and the device check covers the new
    screens.
-1. **Device check** of the newest TestFlight build (55 on 2026-10-23: everything of 1.7, the
+1. **Device check** of the newest TestFlight build (56 on 2026-10-23: everything of 1.7, the
    widgets, Kazakh, the screens from the approved mockups and the founder's notes of 2026-10-23)
    on the iOS 27 iPhone, then
    fix what it finds:
@@ -336,9 +336,9 @@ Tenra 1.7의 새로운 기능:
    updates What's New and selects the build).
 4. **Screenshots** of the main page from 1.7: done on 2026-10-23. The 14 sets (13 locales and kk
    for en-GB) were shot in two runs of seven, about 70 minutes each, approved by the founder and
-   uploaded to version 1.7 in 13 locales (`push-version-screenshots`). en-GB gets kk's once
-   `push-metadata --apply` has created it. Re-shoot only what changes: `frames: home` and the
-   other partial modes ([asc.md](asc.md)).
+   uploaded to version 1.7 in all 14 localizations (`push-version-screenshots`), en-GB with kk's.
+   The store texts are applied (`push-metadata --apply`). Re-shoot only what changes:
+   `frames: home` and the other partial modes ([asc.md](asc.md)).
 5. **App Privacy**: unchanged. Logo lookups by a merchant's name (logo.dev, Apple Pay merchants
    only, never a sole proprietor) send only a company name, as the privacy policy already says
    (`docs/public/privacy-policy.html`, Logos).

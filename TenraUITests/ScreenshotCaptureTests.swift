@@ -15,7 +15,8 @@
 //
 //  Environment (set with TEST_RUNNER_ prefix on xcodebuild):
 //    SCREENSHOT_FRAMES         — "cpp" captures 02 and 09-12 (custom product pages), "ten"
-//                                Ten's 07, 13, 14, 17-19, "autocapture" 20-21; default all
+//                                Ten's 07, 13, 14, 17-19, "autocapture" 20-21, "home" 01;
+//                                default all
 //    SCREENSHOT_LANGUAGE       — AppleLanguages value for the app ("de", "es-MX", …)
 //    SCREENSHOT_LOCALE         — AppleLocale value ("de_DE", "es_MX", …)
 //    SCREENSHOT_DEMO_CURRENCY  — seeded dataset currency ("EUR", "MXN", …)
@@ -94,6 +95,11 @@ final class ScreenshotCaptureTests: XCTestCase {
         }
 
         snap("01-home")
+
+        if env["SCREENSHOT_FRAMES"] == "home" {
+            // Only Home (01): a quick run after a change to Home or the demo's categories.
+            return
+        }
 
         // ── 6. History (from Home) ───────────────────────────────────────────
         historyLink.tap()

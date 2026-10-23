@@ -12,7 +12,7 @@
 | Специальные страницы продукта и тест страницы (скриншоты, промо-текст, ключевые слова) из `appstore/product-pages.json` | GitHub Actions, `.github/workflows/asc.yml` | `push-custom-pages`, `push-experiment` (поле `args`: `--submit`, `--start`) |
 | Выдать или забрать Tenra Pro (`pro`) одному покупателю, посмотреть, что о нём знает RevenueCat | GitHub Actions, `.github/workflows/revenuecat.yml`, секрет `REVENUECAT_SECRET_KEY` | Actions → RevenueCat: `grant` / `revoke` / `status`, `app_user_id`, `days`; id в логе скрыт |
 | Пробные, подписки, MRR, выручка из графиков RevenueCat (для §6 [promotion-plan.md](promotion-plan.md)) | локальная сессия Claude Code с плагином RevenueCat (MCP), проект `proj3c40e272` | Claude вызывает `get-chart-data` сам; установки берутся из ASC, New Customers и Active Users до 23.10 раздуты прогонами симулятора в CI |
-| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp`, `ten` или `autocapture`; `art` рисует Тэна для шапки |
+| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp`, `ten`, `autocapture` или `home`; `art` рисует Тэна для шапки |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
 
 Репозиторий Tenra публичный, поэтому логи Actions видны всем. Продажи и выручку `asc.py` в Actions
@@ -144,7 +144,7 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 
 1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-21, `cpp` только 02 и
    09-12 для специальных страниц, `ten` только кадры Тэна 07, 13, 14, 17-19, `autocapture` только
-   кадры автозаписи 20-21). Workflow держит один запуск и одну
+   кадры автозаписи 20-21, `home` только главную 01). Workflow держит один запуск и одну
    очередь: новый запуск, пока один ждёт, отменяет ждущий. Шаг Тэна или автозаписи, который ничего не нашёл,
    кладёт рядом `90-debug-<шаг>` (экран) и `90-debug-<шаг>-tree` (дерево доступности, текст). Артефакт `raw-screenshots` кладётся в `screenshots/raw/<локаль>/`.
    Все 13 локалей помещаются в один запуск (около 80 минут); четырнадцатый набор, `kk`, снимается

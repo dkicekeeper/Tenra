@@ -47,6 +47,10 @@ enum ScreenshotDemoSeeder {
 
         try? repository.saveAccountsSync(dataset.accounts)
         try? repository.saveCategoriesSync(dataset.categories)
+        // The grid's order lives in UserDefaults (CategoryOrderManager), not the store: without
+        // it Home sorted the categories by name, which put Kazakh's empty "Басқа" and "Білім"
+        // first. The presets' order, as onboarding gives a real person.
+        CategoryOrderManager.shared.saveOrders(from: dataset.categories)
         try? repository.saveTransactionsSync(dataset.transactions)
 
         // Recurring saves are fire-and-forget background tasks — poll until

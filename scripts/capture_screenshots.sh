@@ -14,6 +14,7 @@
 #   FRAMES=cpp ./scripts/capture_screenshots.sh # only 09-12 (custom product pages)
 #   FRAMES=ten ./scripts/capture_screenshots.sh # only Ten's 07, 13, 14, 17-19
 #   FRAMES=autocapture ./scripts/capture_screenshots.sh # only the auto-capture 20-21
+#   FRAMES=home ./scripts/capture_screenshots.sh # only Home, 01
 #
 # SIM_OS is required since Xcode 27: a bare name implies the newest OS, and
 # iPhone 17 Pro only exists on 26.5. Store shots stay on the public iOS.
@@ -29,7 +30,7 @@ BUNDLE_ID="dakacom.Tenra"
 FRAMES="${FRAMES:-all}"
 # 01-21: the default product page's and the custom product pages' frames; "cpp" takes only
 # 09-12, "ten" Ten's six, "autocapture" 20-21.
-case "$FRAMES" in cpp) EXPECTED=4 ;; ten) EXPECTED=6 ;; autocapture) EXPECTED=2 ;; *) EXPECTED=21 ;; esac
+case "$FRAMES" in cpp) EXPECTED=4 ;; ten) EXPECTED=6 ;; autocapture) EXPECTED=2 ;; home) EXPECTED=1 ;; *) EXPECTED=21 ;; esac
 
 # asc-locale | AppleLanguages | AppleLocale | demo currency
 # kk is no App Store locale (App Store Connect has no Kazakh): its frames are the ones en-GB
@@ -108,7 +109,7 @@ for entry in "${LOCALES[@]}"; do
 
   # Export attachments (PNG screenshots) from the result bundle.
   dest="$OUT_ROOT/$asc_locale"
-  # A cpp, ten or autocapture run adds its frames next to the existing ones.
+  # A cpp, ten, autocapture or home run adds its frames next to the existing ones.
   if [[ "$FRAMES" == "all" ]]; then rm -rf "$dest"; fi
   mkdir -p "$dest"
   export_dir="$(mktemp -d)"

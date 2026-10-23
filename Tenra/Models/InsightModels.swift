@@ -200,7 +200,7 @@ extension InsightType {
         case .topSpendingCategory, .topMerchant, .incomeGrowth, .incomeSourceBreakdown,
              .netCashFlow, .bestMonth, .projectedBalance, .accountActivity,
              .totalWealth, .wealthGrowth, .savingsRate, .emergencyFund,
-             .subcategoryBreakdown:
+             .subcategoryBreakdown, .dailyAllowance:
             return false
         }
     }
